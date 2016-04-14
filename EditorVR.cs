@@ -9,16 +9,15 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.VR
 {
-    //[EditorWindowTitle(title = "EditorVR")]
-	[InitializeOnLoad]
+    [InitializeOnLoad]
 	public class EditorVR : EditorWindow
 	{
-		[MenuItem("Window/EditorVR (new)", false, 2001)]
+		[MenuItem("Window/EditorVR (new)", false)]
 		public static void ShowEditorVR()
 		{
 			EditorVR.GetWindow<EditorVR>("EditorVR", true);
 		}
-		[MenuItem("Window/EditorVR (new)", true, 2001)]
+		[MenuItem("Window/EditorVR (new)", true)]
 		public static bool ShouldShowEditorVR()
 		{
 			return PlayerSettings.virtualRealitySupported;
@@ -115,10 +114,9 @@ namespace UnityEditor.VR
 
         public static event System.Action onEnable = delegate {};
         public static event System.Action onDisable = delegate {};
-		// We deliberately override SceneView's OnSceneGUI delegate hook because we want to allow specific EditorVR callbacks
-		//public static new OnSceneFunc onSceneGUIDelegate;
+        public static event System.Action<EditorWindow> onGUIDelegate = delegate { };
 
-		public DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
+        public DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
         
 		[NonSerialized]
 		private Camera m_Camera;
@@ -213,35 +211,6 @@ namespace UnityEditor.VR
             m_LastHeadRotation = headRotation;
         }
 
-        internal void OnResized()
-        {
-            //float vrAspect = VRSettings.GetAspect();
-
-            //float width = position.width;
-            //float height = position.height;
-
-            //float aspect = width / height;
-
-            // TODO: AE 10/23/2015 - Match the aspect of the GUIView with the HMD eye texture aspect
-            //    if (!Mathf.Approximately(vrAspect, aspect))
-            //    {
-            //        Rect rect = position;
-            //        if (aspect > vrAspect)
-            //        {
-            //            rect.width = height * vrAspect;
-            //        }
-            //        else
-            //        {
-            //            rect.height = width / vrAspect;
-            //        }
-            //        //position = rect;
-            //        Vector2 size = new Vector2(rect.width, rect.height);
-            //        minSize = maxSize = size;
-            //    }           
-
-            //Debug.Log("RESIZED: " + aspect + " vs "+ vrAspect);
-        }
-
 		// TODO: Share this between SceneView/EditorVR in SceneViewUtilies
 		private void CreateCameraTargetTexture(Rect cameraRect, bool hdr)
 		{
@@ -288,17 +257,14 @@ namespace UnityEditor.VR
 			bool hdr = false; // SceneViewIsRenderingHDR();
 			CreateCameraTargetTexture(cameraRect, hdr);
 			m_Camera.targetTexture = m_SceneTargetTexture;
-		}
+		}     
 
-		private void OnGUI()
+        private void OnGUI()
         {
-			//if (onSceneGUIDelegate != null)
-			//{                
-			//    onSceneGUIDelegate(this);
-			//    ResetOnSceneGUIState();
-			//}
+            onGUIDelegate(this);
+            SceneViewUtilities.ResetOnGUIState();
 
-			SetupCamera();
+            SetupCamera();
 
 			Rect guiRect = new Rect(0, 0, position.width, position.height);
 			Rect cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
