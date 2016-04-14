@@ -3,6 +3,8 @@ using System;
 using UnityEngine;
 using UnityEngine.VR;
 using UnityEngine.Assertions;
+using System.Collections;
+using UnityEditor.VR.Helpers;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.VR
@@ -12,23 +14,14 @@ namespace UnityEditor.VR
 	public class EditorVR : EditorWindow
 	{
 		[MenuItem("Window/EditorVR (new)", false, 2001)]
-		static void ShowSceneViewVR()
+		public static void ShowEditorVR()
 		{
 			EditorVR.GetWindow<EditorVR>("EditorVR", true);
 		}
 		[MenuItem("Window/EditorVR (new)", true, 2001)]
-		static bool ShouldShowSceneViewVR()
+		public static bool ShouldShowEditorVR()
 		{
 			return PlayerSettings.virtualRealitySupported;
-		}
-
-
-		// Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
-		// EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
-		// we watch until playmode is done and then relaunch. 
-		static EditorVR()
-		{
-			EditorApplication.update += ReopenOnExitPlaymode;
 		}
 
 		public static EditorVR GetWindow()
@@ -36,7 +29,26 @@ namespace UnityEditor.VR
 			return EditorWindow.GetWindow<EditorVR>(true);
 		}
 
-		private static void ReopenOnExitPlaymode()
+        public static Coroutine StartCoroutine(IEnumerator routine)
+        {
+            if (s_ActiveView && s_ActiveView.m_CameraPivot)
+            {
+                EditorMonoBehaviour mb = s_ActiveView.m_CameraPivot.GetComponent<EditorMonoBehaviour>();
+                return mb.StartCoroutine(routine);
+            }
+
+            return null;
+        }
+
+        // Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
+        // EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
+        // we watch until playmode is done and then relaunch.  
+        static EditorVR()
+        {
+            EditorApplication.update += ReopenOnExitPlaymode;
+        }
+
+        private static void ReopenOnExitPlaymode()
 		{
 			bool launch = EditorPrefs.GetBool(kLaunchOnExitPlaymode, false);
             if (!launch || !EditorApplication.isPlaying)
@@ -47,37 +59,7 @@ namespace UnityEditor.VR
 					GetWindow();				
 			}
 		}
-
-		//public static Vector3 viewerPosition
-  //      {
-  //          set
-  //          {
-  //              if (s_ActiveView)
-  //              {
-  //                  s_ActiveView.pivot = value;
-  //              }
-  //          }
-  //          get
-  //          {
-  //              return s_ActiveView ? s_ActiveView.pivot : Vector3.zero;
-  //          }
-  //      }
-    
-  //      public static Quaternion viewerRotation
-  //      {
-  //          set
-  //          {
-  //              if (s_ActiveView)
-  //              {
-  //                  s_ActiveView.rotation = value;
-  //              }
-  //          }
-  //          get
-  //          {
-  //              return s_ActiveView ? s_ActiveView.rotation : Quaternion.identity;
-  //          }
-  //      }
-
+        
 		public static Transform viewerPivot
 		{
 			get
@@ -137,7 +119,7 @@ namespace UnityEditor.VR
 		//public static new OnSceneFunc onSceneGUIDelegate;
 
 		public DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
-
+        
 		[NonSerialized]
 		private Camera m_Camera;
 
@@ -168,7 +150,7 @@ namespace UnityEditor.VR
 			m_Camera.enabled = false;
 			m_Camera.cameraType = CameraType.VR;
 
-			GameObject pivotGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCameraPivot", defaultHideFlags);
+			GameObject pivotGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCameraPivot", defaultHideFlags, typeof(EditorMonoBehaviour));
             m_CameraPivot = pivotGO.transform;
             m_Camera.transform.parent = m_CameraPivot;
 			m_Camera.nearClipPlane = 0.01f;
