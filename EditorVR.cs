@@ -5,6 +5,7 @@ using UnityEngine.VR;
 using UnityEngine.Assertions;
 using System.Collections;
 using UnityEditor.VR.Helpers;
+using System.Reflection;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.VR
@@ -12,12 +13,12 @@ namespace UnityEditor.VR
     [InitializeOnLoad]
 	public class EditorVR : EditorWindow
 	{
-		[MenuItem("Window/EditorVR (new)", false)]
+		[MenuItem("Window/EditorVR", false)]
 		public static void ShowEditorVR()
 		{
 			EditorVR.GetWindow<EditorVR>("EditorVR", true);
 		}
-		[MenuItem("Window/EditorVR (new)", true)]
+		[MenuItem("Window/EditorVR", true)]
 		public static bool ShouldShowEditorVR()
 		{
 			return PlayerSettings.virtualRealitySupported;
@@ -159,8 +160,9 @@ namespace UnityEditor.VR
             Vector3 position = m_CameraPivot.position;
             position.y = kHeadHeight;
             m_CameraPivot.position = position;
-			m_CameraPivot.rotation = Quaternion.identity;            
+			m_CameraPivot.rotation = Quaternion.identity;
 
+            // Disable other views to increase rendering performance for EditorVR
             SetOtherViewsEnabled(false);
 
 			VRSettings.StartRenderingToDevice();
@@ -198,7 +200,6 @@ namespace UnityEditor.VR
             Quaternion headRotation = InputTracking.GetLocalRotation(VRNode.Head);
             if (Quaternion.Angle(headRotation, m_LastHeadRotation) > 0.1f)
             {
-                // Disable other views to increase rendering performance for VR
                 if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
                 {
                     SetSceneViewsEnabled(false);
@@ -311,7 +312,7 @@ namespace UnityEditor.VR
             // This also allows scripts with [ExecuteInEditMode] to run
             SceneViewUtilities.SetSceneRepaintDirty();            
 
-            // Re-enable the other views if there has been no activity from the HMD
+            // Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
             if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
             {
                  SetSceneViewsEnabled(true);
@@ -320,23 +321,14 @@ namespace UnityEditor.VR
 
         private void SetGameViewsEnabled(bool enabled)
         {
-            GameView[] gameViews = Resources.FindObjectsOfTypeAll<GameView>();
-            foreach (GameView gv in gameViews)
-            {
-                gv.renderEnabled = enabled;
-            }
+            Assembly asm = Assembly.GetAssembly(typeof(UnityEditor.EditorWindow));
+            Type type = asm.GetType("UnityEditor.GameView");
+            SceneViewUtilities.SetViewsEnabled(type, enabled);
         }
 
         private void SetSceneViewsEnabled(bool enabled)
         {
-            SceneView[] sceneViews = Resources.FindObjectsOfTypeAll<SceneView>();
-            foreach (SceneView sv in sceneViews)
-            {
-                if (sv.camera && sv.camera.cameraType != CameraType.VR)
-                {
-                    sv.renderEnabled = enabled;
-                }
-            }
+            SceneViewUtilities.SetViewsEnabled(typeof(SceneView), enabled);
         }
 
         private void SetOtherViewsEnabled(bool enabled)
