@@ -272,8 +272,6 @@ namespace UnityEditor.VR
 			PrepareCameraTargetTexture(cameraRect);
 			Handles.ClearCamera(cameraRect, m_Camera);
 			
-			m_Camera.cullingMask = Tools.visibleLayers;
-
 			// Draw camera
 			bool pushedGUIClip;
 			DoDrawCamera(guiRect, out pushedGUIClip);
