@@ -29,12 +29,6 @@ namespace UnityEditor.VR
 			return EditorWindow.GetWindow<EditorVR>(true);
 		}
 
-		public static void Relaunch()
-		{
-			//GetWindow();
-			EditorApplication.ExecuteMenuItem("Window/EditorVR");
-		}
-
         public static Coroutine StartCoroutine(IEnumerator routine)
         {
             if (s_ActiveView && s_ActiveView.m_CameraPivot)
@@ -52,26 +46,18 @@ namespace UnityEditor.VR
         static EditorVR()
         {
             EditorApplication.update += ReopenOnExitPlaymode;
-			initializeTime = Time.realtimeSinceStartup;
-		}
+        }
 
         private static void ReopenOnExitPlaymode()
 		{
-			if (Time.realtimeSinceStartup >= initializeTime + kRelaunchDelayDefault)
+			bool launch = EditorPrefs.GetBool(kLaunchOnExitPlaymode, false);
+            if (!launch || !EditorApplication.isPlaying)
 			{
-				bool launch = EditorPrefs.GetBool(kLaunchOnExitPlaymode, false);
-				if (!launch || !EditorApplication.isPlaying)
-				{
-					EditorPrefs.DeleteKey(kLaunchOnExitPlaymode);
-					EditorApplication.update -= ReopenOnExitPlaymode;
-					if (launch)
-					{						
-						var window = GetWindow();
-						window.Close();
-						EditorApplication.delayCall += Relaunch;
-					}
-				}
-			}		
+				EditorPrefs.DeleteKey(kLaunchOnExitPlaymode);
+				EditorApplication.update -= ReopenOnExitPlaymode;
+				if (launch)
+					GetWindow();				
+			}
 		}
         
 		public static Transform viewerPivot
@@ -140,19 +126,16 @@ namespace UnityEditor.VR
 
 		private static EditorVR s_ActiveView = null;
 		private static HideFlags defaultHideFlags = HideFlags.DontSave;
-		private static float initializeTime = 0f;
 
 		private Transform m_CameraPivot = null;
         private Quaternion m_LastHeadRotation = Quaternion.identity;
         private float m_TimeSinceLastHMDChange = 0f;
-		
+        
 		private const string kLaunchOnExitPlaymode = "EditorVR.LaunchOnExitPlaymode";
         private const float kHMDActivityTimeout = 3f; // in seconds
-		private const float kRelaunchDelayDefault = 1f; // in seconds
                 
         public void OnEnable()
         {
-			Debug.Log("OnEnable");
 			EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
 
 			Assert.IsNull(s_ActiveView, "Only one EditorVR should be active");
@@ -181,7 +164,7 @@ namespace UnityEditor.VR
 
             // Disable other views to increase rendering performance for EditorVR
             SetOtherViewsEnabled(false);
-			
+
 			VRSettings.StartRenderingToDevice();
             InputTracking.Recenter();
 
@@ -190,12 +173,11 @@ namespace UnityEditor.VR
 
         public void OnDisable()
         {
-			Debug.Log("OnDisable");
 			onDisable();
 
-			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
+            EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
-			VRSettings.StopRenderingToDevice();
+            VRSettings.StopRenderingToDevice();
 
             SetOtherViewsEnabled(true);
 
@@ -204,30 +186,6 @@ namespace UnityEditor.VR
 
             Assert.IsNotNull(s_ActiveView, "EditorVR should have an active view");
 			s_ActiveView = null;
-        }
-
-		protected void SetupCamera()
-        {
-            // Transfer original camera position and rotation to pivot, since it will get overridden by tracking
-            //m_CameraPivot.position = m_Camera.transform.position;
-            //m_CameraPivot.rotation = m_Camera.transform.rotation;
-            //m_Camera.ResetFieldOfView(); // Use FOV from HMD
-
-            // Latch HMD values initially
-            m_Camera.transform.localPosition = InputTracking.GetLocalPosition(VRNode.Head);
-            Quaternion headRotation = InputTracking.GetLocalRotation(VRNode.Head);
-            if (Quaternion.Angle(headRotation, m_LastHeadRotation) > 0.1f)
-            {
-                if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
-                {
-                    SetSceneViewsEnabled(false);
-                }
-
-                // Keep track of HMD activity by tracking head rotations
-                m_TimeSinceLastHMDChange = Time.realtimeSinceStartup;
-            }
-            m_Camera.transform.localRotation = headRotation;
-            m_LastHeadRotation = headRotation;
         }
 
 		// TODO: Share this between SceneView/EditorVR in SceneViewUtilies
@@ -282,9 +240,7 @@ namespace UnityEditor.VR
         {
             onGUIDelegate(this);
             SceneViewUtilities.ResetOnGUIState();
-
-            SetupCamera();
-
+          
 			Rect guiRect = new Rect(0, 0, position.width, position.height);
 			Rect cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
 			PrepareCameraTargetTexture(cameraRect);
@@ -309,7 +265,6 @@ namespace UnityEditor.VR
 
 		private void OnPlaymodeStateChanged()
         {
-			Debug.Log("OnPlaymodeStateChanged at " + Time.realtimeSinceStartup);
             if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
 				EditorPrefs.SetBool(kLaunchOnExitPlaymode, true);
@@ -327,13 +282,18 @@ namespace UnityEditor.VR
 			
             // Force the window to repaint every tick, since we need live updating
             // This also allows scripts with [ExecuteInEditMode] to run
-            SceneViewUtilities.SetSceneRepaintDirty();            
+            SceneViewUtilities.SetSceneRepaintDirty();
+
+            // Keep track of HMD activity by tracking head rotations
+            Quaternion headRotation = InputTracking.GetLocalRotation(VRNode.Head);
+            if (Quaternion.Angle(headRotation, m_LastHeadRotation) > 0.1f)
+            {
+                m_TimeSinceLastHMDChange = Time.realtimeSinceStartup;
+            }
+            m_LastHeadRotation = headRotation;
 
             // Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
-            if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
-            {
-                 SetSceneViewsEnabled(true);
-            }
+            SetSceneViewsEnabled(Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + kHMDActivityTimeout);
         }
 
         private void SetGameViewsEnabled(bool enabled)
