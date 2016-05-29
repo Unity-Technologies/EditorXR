@@ -29,6 +29,12 @@ namespace UnityEditor.VR
 			return EditorWindow.GetWindow<EditorVR>(true);
 		}
 
+		public static void Relaunch()
+		{
+			//GetWindow();
+			EditorApplication.ExecuteMenuItem("Window/EditorVR");
+		}
+
         public static Coroutine StartCoroutine(IEnumerator routine)
         {
             if (s_ActiveView && s_ActiveView.m_CameraPivot)
@@ -46,18 +52,26 @@ namespace UnityEditor.VR
         static EditorVR()
         {
             EditorApplication.update += ReopenOnExitPlaymode;
-        }
+			initializeTime = Time.realtimeSinceStartup;
+		}
 
         private static void ReopenOnExitPlaymode()
 		{
-			bool launch = EditorPrefs.GetBool(kLaunchOnExitPlaymode, false);
-            if (!launch || !EditorApplication.isPlaying)
+			if (Time.realtimeSinceStartup >= initializeTime + kRelaunchDelayDefault)
 			{
-				EditorPrefs.DeleteKey(kLaunchOnExitPlaymode);
-				EditorApplication.update -= ReopenOnExitPlaymode;
-				if (launch)
-					GetWindow();				
-			}
+				bool launch = EditorPrefs.GetBool(kLaunchOnExitPlaymode, false);
+				if (!launch || !EditorApplication.isPlaying)
+				{
+					EditorPrefs.DeleteKey(kLaunchOnExitPlaymode);
+					EditorApplication.update -= ReopenOnExitPlaymode;
+					if (launch)
+					{						
+						var window = GetWindow();
+						window.Close();
+						EditorApplication.delayCall += Relaunch;
+					}
+				}
+			}		
 		}
         
 		public static Transform viewerPivot
@@ -126,6 +140,7 @@ namespace UnityEditor.VR
 
 		private static EditorVR s_ActiveView = null;
 		private static HideFlags defaultHideFlags = HideFlags.DontSave;
+		private static float initializeTime = 0f;
 
 		private Transform m_CameraPivot = null;
         private Quaternion m_LastHeadRotation = Quaternion.identity;
@@ -133,9 +148,11 @@ namespace UnityEditor.VR
 		
 		private const string kLaunchOnExitPlaymode = "EditorVR.LaunchOnExitPlaymode";
         private const float kHMDActivityTimeout = 3f; // in seconds
+		private const float kRelaunchDelayDefault = 1f; // in seconds
                 
         public void OnEnable()
         {
+			Debug.Log("OnEnable");
 			EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
 
 			Assert.IsNull(s_ActiveView, "Only one EditorVR should be active");
@@ -164,7 +181,7 @@ namespace UnityEditor.VR
 
             // Disable other views to increase rendering performance for EditorVR
             SetOtherViewsEnabled(false);
-
+			
 			VRSettings.StartRenderingToDevice();
             InputTracking.Recenter();
 
@@ -173,11 +190,12 @@ namespace UnityEditor.VR
 
         public void OnDisable()
         {
+			Debug.Log("OnDisable");
 			onDisable();
 
-            EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
+			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
-            VRSettings.StopRenderingToDevice();
+			VRSettings.StopRenderingToDevice();
 
             SetOtherViewsEnabled(true);
 
@@ -291,6 +309,7 @@ namespace UnityEditor.VR
 
 		private void OnPlaymodeStateChanged()
         {
+			Debug.Log("OnPlaymodeStateChanged at " + Time.realtimeSinceStartup);
             if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
 				EditorPrefs.SetBool(kLaunchOnExitPlaymode, true);
