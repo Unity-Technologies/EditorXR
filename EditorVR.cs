@@ -6,6 +6,7 @@ using UnityEngine.Assertions;
 using System.Collections;
 using UnityEditor.VR.Helpers;
 using System.Reflection;
+using UnityEditor.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.VR
@@ -27,6 +28,18 @@ namespace UnityEditor.VR
 		public static EditorVR GetWindow()
 		{
 			return EditorWindow.GetWindow<EditorVR>(true);
+		}
+		
+		public static void Recenter()
+		{
+			InputTracking.Recenter();
+			var pivot = viewerPivot;
+			if (pivot)
+			{
+				Vector3 position = pivot.position;
+				position.y = kHeadHeight;
+				pivot.position = position;
+			}			
 		}
 
         public static Coroutine StartCoroutine(IEnumerator routine)
@@ -117,7 +130,7 @@ namespace UnityEditor.VR
         public static event System.Action onDisable = delegate {};
         public static event System.Action<EditorWindow> onGUIDelegate = delegate { };
 
-        public DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
+		public DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
         
 		[NonSerialized]
 		private Camera m_Camera;
@@ -130,15 +143,19 @@ namespace UnityEditor.VR
 		private Transform m_CameraPivot = null;
         private Quaternion m_LastHeadRotation = Quaternion.identity;
         private float m_TimeSinceLastHMDChange = 0f;
-        
+
+		private const float kHeadHeight = 1.7f;
 		private const string kLaunchOnExitPlaymode = "EditorVR.LaunchOnExitPlaymode";
-        private const float kHMDActivityTimeout = 3f; // in seconds
+		private const string kLastSceneEdited = "EditorVR.LastSceneEdited";
+		private const string kCameraPosition = "EditorVR.CameraPosition";
+		private const string kCameraRotation = "EditorVR.CameraRotation";
+		private const float kHMDActivityTimeout = 3f; // in seconds
                 
         public void OnEnable()
         {
 			EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
 
-			Assert.IsNull(s_ActiveView, "Only one EditorVR should be active");
+			Assert.IsNull(s_ActiveView, "Only one EditorVR should be active"); 
 
 			autoRepaintOnSceneChange = true;
 			wantsMouseMove = true;
@@ -156,7 +173,6 @@ namespace UnityEditor.VR
 			m_Camera.farClipPlane = 1000f;
 
             // Generally, we want to be at a standing height, so default to that
-            const float kHeadHeight = 1.7f;
             Vector3 position = m_CameraPivot.position;
             position.y = kHeadHeight;
             m_CameraPivot.position = position;
@@ -168,14 +184,28 @@ namespace UnityEditor.VR
 			VRSettings.StartRenderingToDevice();
             InputTracking.Recenter();
 
+			if (EditorPrefs.GetString(kLastSceneEdited, string.Empty) == EditorSceneManager.GetActiveScene().name)
+			{
+				m_CameraPivot.transform.position = GetPrefsVector(kCameraPosition);
+				m_CameraPivot.transform.rotation = Quaternion.Euler(GetPrefsVector(kCameraRotation));
+
+				EditorPrefs.DeleteKey(kLastSceneEdited);
+				EditorPrefs.DeleteKey(kCameraPosition);
+				EditorPrefs.DeleteKey(kCameraRotation);
+			}
+
 			onEnable();
         }
 
-        public void OnDisable()
+		public void OnDisable()
         {
 			onDisable();
 
-            EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
+			EditorPrefs.SetString(kLastSceneEdited, EditorSceneManager.GetActiveScene().name);
+			SetPrefsVector(kCameraPosition, m_CameraPivot.transform.position);
+			SetPrefsVector(kCameraRotation, m_CameraPivot.transform.rotation.eulerAngles);
+
+			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
             VRSettings.StopRenderingToDevice();
 
@@ -187,6 +217,22 @@ namespace UnityEditor.VR
             Assert.IsNotNull(s_ActiveView, "EditorVR should have an active view");
 			s_ActiveView = null;
         }
+
+		private Vector3 GetPrefsVector(string keyPrefix)
+		{
+			Vector3 vector = Vector3.zero;
+			vector.x = EditorPrefs.GetFloat(keyPrefix + ".x", 0f);
+			vector.y = EditorPrefs.GetFloat(keyPrefix + ".y", 0f);
+			vector.z = EditorPrefs.GetFloat(keyPrefix + ".z", 0f);
+			return vector;
+		}
+
+		private void SetPrefsVector(string keyPrefix, Vector3 vector)
+		{
+			EditorPrefs.SetFloat(keyPrefix + ".x", vector.x);
+			EditorPrefs.SetFloat(keyPrefix + ".y", vector.y);
+			EditorPrefs.SetFloat(keyPrefix + ".z", vector.z);
+		}
 
 		// TODO: Share this between SceneView/EditorVR in SceneViewUtilies
 		private void CreateCameraTargetTexture(Rect cameraRect, bool hdr)
