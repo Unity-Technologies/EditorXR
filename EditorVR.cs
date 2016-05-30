@@ -30,9 +30,11 @@ namespace UnityEditor.VR
 			return EditorWindow.GetWindow<EditorVR>(true);
 		}
 		
-		public static void Recenter()
+		public static void Recenter(bool recenterHMD = true)
 		{
-			InputTracking.Recenter();
+			if (recenterHMD)
+				InputTracking.Recenter();
+
 			var pivot = viewerPivot;
 			if (pivot)
 			{
