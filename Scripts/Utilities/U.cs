@@ -298,8 +298,13 @@ class U {
 		GameObject go = Object.Instantiate<GameObject>(prefab);
 		go.transform.SetParent(parent, worldPositionStays);
 		go.SetActive(true);
+#if UNITY_EDITOR
 		if (!Application.isPlaying && runInEditMode)
+		{
 			U.SetRunInEditModeRecursively(go, true);
+			go.hideFlags = EditorVR.kDefaultHideFlags;
+		}
+#endif
 		return go;
 	}
 

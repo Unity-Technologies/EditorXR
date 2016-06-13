@@ -125,7 +125,7 @@ namespace UnityEditor.VR
 		private RenderTexture m_SceneTargetTexture;
 
 		private static EditorVR s_ActiveView = null;
-		private static HideFlags defaultHideFlags = HideFlags.DontSave;
+		public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
 		private Transform m_CameraPivot = null;
         private Quaternion m_LastHeadRotation = Quaternion.identity;
@@ -144,12 +144,12 @@ namespace UnityEditor.VR
 			wantsMouseMove = true;
 			s_ActiveView = this;
 
-			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCamera", defaultHideFlags, typeof(Camera));
+			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCamera", kDefaultHideFlags, typeof(Camera));
 			m_Camera = cameraGO.GetComponent<Camera>();
 			m_Camera.enabled = false;
 			m_Camera.cameraType = CameraType.VR;
 
-			GameObject pivotGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCameraPivot", defaultHideFlags, typeof(EditorMonoBehaviour));
+			GameObject pivotGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCameraPivot", kDefaultHideFlags, typeof(EditorMonoBehaviour));
             m_CameraPivot = pivotGO.transform;
             m_Camera.transform.parent = m_CameraPivot;
 			m_Camera.nearClipPlane = 0.01f;
