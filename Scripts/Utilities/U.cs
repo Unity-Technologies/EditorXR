@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 #if UNITY_EDITOR
 using UnityEditor.VR;
 #endif
@@ -242,7 +243,7 @@ class U {
 				Object.DestroyImmediate(o);
 			else
 			{	
-                EditorVR.StartCoroutine(DestroyInSeconds(o, t));
+                EditorVRView.StartCoroutine(DestroyInSeconds(o, t));
 			}			
 		}
 	}
@@ -271,9 +272,9 @@ class U {
 	{
 		Camera camera = Camera.main;
 #if UNITY_EDITOR
-		if (!Application.isPlaying && EditorVR.viewerCamera)
+		if (!Application.isPlaying && EditorVRView.viewerCamera)
 		{
-			camera = EditorVR.viewerCamera;
+			camera = EditorVRView.viewerCamera;
 		}
 #endif
 
@@ -286,8 +287,8 @@ class U {
 #if UNITY_EDITOR
 		if (!Application.isPlaying)
 		{
-			if (EditorVR.viewerCamera)
-				pivot = EditorVR.viewerCamera.transform.parent;
+			if (EditorVRView.viewerCamera)
+				pivot = EditorVRView.viewerCamera.transform.parent;
 		}
 #endif
 		return pivot;
@@ -306,6 +307,19 @@ class U {
 		}
 #endif
 		return go;
+	}
+
+	public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : MonoBehaviour
+	{
+#if UNITY_EDITOR
+		T component = EditorUtility.CreateGameObjectWithHideFlags(typeof(T).Name, EditorVR.kDefaultHideFlags, typeof(T)).GetComponent<T>();
+		if (!Application.isPlaying)
+			component.runInEditMode = true;
+#else
+		T component = new GameObject(typeof(T).Name).AddComponent<T>();
+#endif
+		component.transform.parent = parent;
+		return component;
 	}
 
 	public static void SetLayerRecursively(GameObject root, int layer)
