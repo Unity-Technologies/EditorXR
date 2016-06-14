@@ -6,8 +6,10 @@ using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Proxies
 {
-	public class SixenseProxy : MonoBehaviour
+	public class SixenseProxy : MonoBehaviour, IProxy
 	{
+		public TrackedObject TrackedObjectInput { private get; set; }
+
 		[SerializeField]
 		private GameObject m_HandProxyPrefab;
 		
@@ -17,7 +19,7 @@ namespace UnityEngine.VR.Proxies
 
 		void Awake()
 		{
-			m_SixenseInput = gameObject.AddComponent<SixenseInputToEvents>();
+			m_SixenseInput = U.AddComponent<SixenseInputToEvents>(gameObject);
 		}
 
 		void Start()
@@ -28,8 +30,11 @@ namespace UnityEngine.VR.Proxies
 
 		void Update()
 		{
+			m_LeftHand.position = TrackedObjectInput.leftPosition.vector3;
+			m_LeftHand.rotation = TrackedObjectInput.leftRotation.quaternion;
 
+			m_RightHand.position = TrackedObjectInput.rightPosition.vector3;
+			m_RightHand.rotation = TrackedObjectInput.rightRotation.quaternion;
 		}
-
 	}
 }

@@ -17,6 +17,15 @@ MonoBehaviour:
   - {fileID: 114000013037932804}
   - {fileID: 114000014064690054}
   - {fileID: 114000013194096026}
+  - {fileID: 114000010189177792}
+  - {fileID: 114000012296404806}
+  - {fileID: 114000010499948952}
+  - {fileID: 114000011150845918}
+  - {fileID: 114000014192652546}
+  - {fileID: 114000012061762406}
+  - {fileID: 114000013195994428}
+  - {fileID: 114000011632217576}
+  - {fileID: 114000011399545658}
   m_ControlSchemes:
   - m_Name: Sixense
     m_SerializableDeviceTypes:
@@ -71,8 +80,251 @@ MonoBehaviour:
       sensitivity: 1000
       snap: 1
       primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 10
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 11
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 12
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources: []
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 13
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 0
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 14
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 0
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 15
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 0
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 16
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 0
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 23
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 0
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources: []
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
   m_MapTypeName: TrackedObject, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
+--- !u!114 &114000010189177792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: TrackedObject
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 4
+  m_ControlData:
+    componentControlIndices: 
+    controlType: 2
+    name: Right Position.X
+    defaultValue: 0
+--- !u!114 &114000010499948952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Right Position.Z
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 6
+  m_ControlData:
+    componentControlIndices: 
+    controlType: 2
+    name: Right Position.Z
+    defaultValue: 0
+--- !u!114 &114000011150845918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: TrackedObject
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 7
+  m_ControlData:
+    componentControlIndices: 040000000500000006000000
+    controlType: 4
+    name: Right Position
+    defaultValue: 0
+--- !u!114 &114000011399545658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: TrackedObject
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 12
+  m_ControlData:
+    componentControlIndices: 08000000090000000a0000000b000000
+    controlType: 6
+    name: Left Rotation
+    defaultValue: 0
+--- !u!114 &114000011632217576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: TrackedObject
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 11
+  m_ControlData:
+    componentControlIndices: 
+    controlType: 2
+    name: Left Rotation.W
+    defaultValue: 0
+--- !u!114 &114000012061762406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: TrackedObject
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 9
+  m_ControlData:
+    componentControlIndices: 
+    controlType: 2
+    name: Left Rotation.Y
+    defaultValue: 0
+--- !u!114 &114000012296404806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: TrackedObject
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 5
+  m_ControlData:
+    componentControlIndices: 
+    controlType: 2
+    name: Right Position.Y
+    defaultValue: 0
 --- !u!114 &114000012697452144
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -130,6 +382,25 @@ MonoBehaviour:
     controlType: 4
     name: Left Position
     defaultValue: 0
+--- !u!114 &114000013195994428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: TrackedObject
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 10
+  m_ControlData:
+    componentControlIndices: 
+    controlType: 2
+    name: Left Rotation.Z
+    defaultValue: 0
 --- !u!114 &114000014064690054
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -148,4 +419,23 @@ MonoBehaviour:
     componentControlIndices: 
     controlType: 2
     name: Left Position.Z
+    defaultValue: 0
+--- !u!114 &114000014192652546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: TrackedObject
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 8
+  m_ControlData:
+    componentControlIndices: 
+    controlType: 2
+    name: Left Rotation.X
     defaultValue: 0
