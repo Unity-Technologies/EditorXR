@@ -12,7 +12,9 @@ namespace UnityEngine.VR.Proxies
 
 		[SerializeField]
 		private GameObject m_HandProxyPrefab;
-		
+		[SerializeField]
+		public PlayerInput m_PlayerInput;
+
 		private SixenseInputToEvents m_SixenseInput;
 		private Transform m_LeftHand;
 		private Transform m_RightHand;
@@ -26,6 +28,10 @@ namespace UnityEngine.VR.Proxies
 		{
 			m_LeftHand = U.InstantiateAndSetActive(m_HandProxyPrefab, transform).transform;
 			m_RightHand = U.InstantiateAndSetActive(m_HandProxyPrefab, transform).transform;
+
+			// In standalone play-mode usage, attempt to get the TrackedObjectInput 
+			if (TrackedObjectInput == null && m_PlayerInput)
+				TrackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 		}
 
 		void Update()
