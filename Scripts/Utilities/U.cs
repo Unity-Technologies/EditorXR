@@ -302,7 +302,7 @@ class U {
 #if UNITY_EDITOR
 		if (!Application.isPlaying && runInEditMode)
 		{
-			U.SetRunInEditModeRecursively(go, true);
+			U.SetRunInEditModeRecursively(go, runInEditMode);
 			go.hideFlags = EditorVR.kDefaultHideFlags;
 		}
 #endif
@@ -314,7 +314,7 @@ class U {
 #if UNITY_EDITOR
 		T component = EditorUtility.CreateGameObjectWithHideFlags(typeof(T).Name, EditorVR.kDefaultHideFlags, typeof(T)).GetComponent<T>();
 		if (!Application.isPlaying)
-			component.runInEditMode = true;
+			U.SetRunInEditModeRecursively(component.gameObject, true);
 #else
 		T component = new GameObject(typeof(T).Name).AddComponent<T>();
 #endif
@@ -342,10 +342,15 @@ class U {
 
 	public static void SetRunInEditModeRecursively(GameObject go, bool enabled)
 	{
-		MonoBehaviour[] monoBehaviours = go.GetComponentsInChildren<MonoBehaviour>();
+		MonoBehaviour[] monoBehaviours = go.GetComponents<MonoBehaviour>();
 		foreach (MonoBehaviour mb in monoBehaviours)
 		{
 			mb.runInEditMode = enabled;
+		}
+
+		foreach (Transform child in go.transform)
+		{
+			SetRunInEditModeRecursively(child.gameObject, enabled);
 		}
 	}
 
@@ -357,12 +362,7 @@ class U {
 	public static T AddComponent<T>(GameObject go) where T : Component
 	{
 		T component = go.AddComponent<T>();
-		if (!Application.isPlaying)
-		{
-			MonoBehaviour mb = component as MonoBehaviour;
-			if (mb)
-				mb.runInEditMode = true;
-		}
+		SetRunInEditModeRecursively(go, true);
 		return component;
 	}
 
