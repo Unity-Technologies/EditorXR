@@ -54,15 +54,12 @@ MonoBehaviour:
   m_RunInEditMode: 0
   autoAssignGlobal: 1
   actionMaps:
-  - actionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a, type: 2}
+  - actionMap: {fileID: 11400000, guid: 7629f3c1c455be74d86e5f78cadba9c5, type: 2}
     active: 1
     blockSubsequent: 0
   - actionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a, type: 2}
     active: 1
     blockSubsequent: 0
-  - actionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a, type: 2}
-    active: 1
-    blockSubsequent: 0
-  - actionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a, type: 2}
+  - actionMap: {fileID: 11400000, guid: a97c335242dc8a341a94fccacad6457d, type: 2}
     active: 1
     blockSubsequent: 0
