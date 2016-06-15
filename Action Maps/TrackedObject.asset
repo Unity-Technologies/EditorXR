@@ -26,6 +26,11 @@ MonoBehaviour:
   - {fileID: 114000013195994428}
   - {fileID: 114000011632217576}
   - {fileID: 114000011399545658}
+  - {fileID: 114000012306099208}
+  - {fileID: 114000012382641376}
+  - {fileID: 114000012637430000}
+  - {fileID: 114000013828770450}
+  - {fileID: 114000011465318430}
   m_ControlSchemes:
   - m_Name: Sixense
     m_SerializableDeviceTypes:
@@ -183,6 +188,61 @@ MonoBehaviour:
       sensitivity: 1000
       snap: 1
       primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 13
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 14
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 15
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 16
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources: []
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
     - sources: []
       deadZone: 0.3
       buttonAxisSources: []
@@ -220,7 +280,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Right Position.Z
+  m_Name: TrackedObject
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
@@ -267,6 +327,25 @@ MonoBehaviour:
     componentControlIndices: 08000000090000000a0000000b000000
     controlType: 6
     name: Left Rotation
+    defaultValue: 0
+--- !u!114 &114000011465318430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Right Rotation
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 17
+  m_ControlData:
+    componentControlIndices: 0d0000000e0000000f00000010000000
+    controlType: 6
+    name: Right Rotation
     defaultValue: 0
 --- !u!114 &114000011632217576
 MonoBehaviour:
@@ -324,6 +403,63 @@ MonoBehaviour:
     componentControlIndices: 
     controlType: 2
     name: Right Position.Y
+    defaultValue: 0
+--- !u!114 &114000012306099208
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Right Rotation.X
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 13
+  m_ControlData:
+    componentControlIndices: 
+    controlType: 2
+    name: Right Rotation.X
+    defaultValue: 0
+--- !u!114 &114000012382641376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Right Rotation.Y
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 14
+  m_ControlData:
+    componentControlIndices: 
+    controlType: 2
+    name: Right Rotation.Y
+    defaultValue: 0
+--- !u!114 &114000012637430000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Right Rotation.Z
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 15
+  m_ControlData:
+    componentControlIndices: 
+    controlType: 2
+    name: Right Rotation.Z
     defaultValue: 0
 --- !u!114 &114000012697452144
 MonoBehaviour:
@@ -400,6 +536,25 @@ MonoBehaviour:
     componentControlIndices: 
     controlType: 2
     name: Left Rotation.Z
+    defaultValue: 0
+--- !u!114 &114000013828770450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Right Rotation.W
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 16
+  m_ControlData:
+    componentControlIndices: 
+    controlType: 2
+    name: Right Rotation.W
     defaultValue: 0
 --- !u!114 &114000014064690054
 MonoBehaviour:

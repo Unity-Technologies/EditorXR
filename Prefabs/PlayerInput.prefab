@@ -57,3 +57,12 @@ MonoBehaviour:
   - actionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a, type: 2}
     active: 1
     blockSubsequent: 0
+  - actionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a, type: 2}
+    active: 1
+    blockSubsequent: 0
+  - actionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a, type: 2}
+    active: 1
+    blockSubsequent: 0
+  - actionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a, type: 2}
+    active: 1
+    blockSubsequent: 0
