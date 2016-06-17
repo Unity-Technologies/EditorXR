@@ -176,12 +176,7 @@ MonoBehaviour:
       sensitivity: 1000
       snap: 1
       primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 23
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+    - sources: []
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -268,7 +263,10 @@ MonoBehaviour:
   m_ActionIndex: 4
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Right Position.X
     defaultValue: 0
 --- !u!114 &114000010499948952
@@ -287,7 +285,10 @@ MonoBehaviour:
   m_ActionIndex: 6
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Right Position.Z
     defaultValue: 0
 --- !u!114 &114000011150845918
@@ -306,7 +307,10 @@ MonoBehaviour:
   m_ActionIndex: 7
   m_ControlData:
     componentControlIndices: 040000000500000006000000
-    controlType: 4
+    controlType:
+      m_TypeName: UnityEngine.InputNew.Vector3InputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Right Position
     defaultValue: 0
 --- !u!114 &114000011399545658
@@ -325,7 +329,10 @@ MonoBehaviour:
   m_ActionIndex: 12
   m_ControlData:
     componentControlIndices: 08000000090000000a0000000b000000
-    controlType: 6
+    controlType:
+      m_TypeName: UnityEngine.InputNew.QuaternionInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Left Rotation
     defaultValue: 0
 --- !u!114 &114000011465318430
@@ -344,7 +351,10 @@ MonoBehaviour:
   m_ActionIndex: 17
   m_ControlData:
     componentControlIndices: 0d0000000e0000000f00000010000000
-    controlType: 6
+    controlType:
+      m_TypeName: UnityEngine.InputNew.QuaternionInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Right Rotation
     defaultValue: 0
 --- !u!114 &114000011632217576
@@ -363,7 +373,10 @@ MonoBehaviour:
   m_ActionIndex: 11
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Left Rotation.W
     defaultValue: 0
 --- !u!114 &114000012061762406
@@ -382,7 +395,10 @@ MonoBehaviour:
   m_ActionIndex: 9
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Left Rotation.Y
     defaultValue: 0
 --- !u!114 &114000012296404806
@@ -401,7 +417,10 @@ MonoBehaviour:
   m_ActionIndex: 5
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Right Position.Y
     defaultValue: 0
 --- !u!114 &114000012306099208
@@ -420,7 +439,10 @@ MonoBehaviour:
   m_ActionIndex: 13
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Right Rotation.X
     defaultValue: 0
 --- !u!114 &114000012382641376
@@ -439,7 +461,10 @@ MonoBehaviour:
   m_ActionIndex: 14
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Right Rotation.Y
     defaultValue: 0
 --- !u!114 &114000012637430000
@@ -451,14 +476,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Right Rotation.Z
+  m_Name: TrackedObject
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 15
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Right Rotation.Z
     defaultValue: 0
 --- !u!114 &114000012697452144
@@ -477,7 +505,10 @@ MonoBehaviour:
   m_ActionIndex: 0
   m_ControlData:
     componentControlIndices: 000000000000000000000000
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Left Position.X
     defaultValue: 0
 --- !u!114 &114000013037932804
@@ -496,7 +527,10 @@ MonoBehaviour:
   m_ActionIndex: 1
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Left Position.Y
     defaultValue: 0
 --- !u!114 &114000013194096026
@@ -515,7 +549,10 @@ MonoBehaviour:
   m_ActionIndex: 3
   m_ControlData:
     componentControlIndices: 000000000100000002000000
-    controlType: 4
+    controlType:
+      m_TypeName: UnityEngine.InputNew.Vector3InputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Left Position
     defaultValue: 0
 --- !u!114 &114000013195994428
@@ -534,7 +571,10 @@ MonoBehaviour:
   m_ActionIndex: 10
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Left Rotation.Z
     defaultValue: 0
 --- !u!114 &114000013828770450
@@ -553,7 +593,10 @@ MonoBehaviour:
   m_ActionIndex: 16
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Right Rotation.W
     defaultValue: 0
 --- !u!114 &114000014064690054
@@ -572,7 +615,10 @@ MonoBehaviour:
   m_ActionIndex: 2
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Left Position.Z
     defaultValue: 0
 --- !u!114 &114000014192652546
@@ -591,6 +637,9 @@ MonoBehaviour:
   m_ActionIndex: 8
   m_ControlData:
     componentControlIndices: 
-    controlType: 2
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Left Rotation.X
     defaultValue: 0
