@@ -1,7 +1,11 @@
+using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 #if UNITY_EDITOR
 using UnityEditor.VR;
 #endif
@@ -311,18 +315,23 @@ class U {
 
 	public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : MonoBehaviour
 	{
-#if UNITY_EDITOR
-		T component = EditorUtility.CreateGameObjectWithHideFlags(typeof(T).Name, EditorVR.kDefaultHideFlags, typeof(T)).GetComponent<T>();
-		if (!Application.isPlaying)
-			U.SetRunInEditModeRecursively(component.gameObject, true);
-#else
-		T component = new GameObject(typeof(T).Name).AddComponent<T>();
-#endif
-		component.transform.parent = parent;
-		return component;
+	    return (T) CreateGameObjectWithComponent(typeof(T), parent);
 	}
 
-	public static void SetLayerRecursively(GameObject root, int layer)
+    public static Component CreateGameObjectWithComponent(Type type, Transform parent = null)
+    {
+#if UNITY_EDITOR
+        Component component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, EditorVR.kDefaultHideFlags, type).GetComponent(type);
+        if (!Application.isPlaying)
+            SetRunInEditModeRecursively(component.gameObject, true);
+#else
+        Component component = new GameObject(type.Name).AddComponent(type);
+#endif
+        component.transform.parent = parent;
+        return component;
+    }
+
+    public static void SetLayerRecursively(GameObject root, int layer)
 	{
 		Transform[] transforms = root.GetComponentsInChildren<Transform>();
 		for (int i = 0; i < transforms.Length; i++)
@@ -357,16 +366,32 @@ class U {
 	public static bool IsEditModeActive(MonoBehaviour mb)
 	{
 		return !Application.isPlaying && mb.runInEditMode;
-	}
+    }
 
-	public static T AddComponent<T>(GameObject go) where T : Component
-	{
-		T component = go.AddComponent<T>();
-		SetRunInEditModeRecursively(go, true);
-		return component;
-	}
+    public static T AddComponent<T>(GameObject go) where T : Component
+    {
+        return (T)AddComponent(typeof(T), go);
+    }
 
-	public static GameObject SpawnGhostWireframe(GameObject obj, Material ghostMaterial, bool enableRenderers = true)
+    public static Component AddComponent(Type type, GameObject go)
+    {
+        Component component = go.AddComponent(type);
+        SetRunInEditModeRecursively(go, true);
+        return component;
+    }
+
+    public static IEnumerable<Type> GetImplementationsOfInterface(Type type)
+    {
+        if (type.IsInterface)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes())
+                .Where(p => type.IsAssignableFrom(p) && !p.IsInterface);
+        }
+        return new List<Type>();
+    }
+
+    public static GameObject SpawnGhostWireframe(GameObject obj, Material ghostMaterial, bool enableRenderers = true)
 	{
 		// spawn ghost
 		GameObject ghostObj = U.InstantiateAndSetActive(obj, obj.transform.parent);

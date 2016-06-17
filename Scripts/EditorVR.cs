@@ -34,23 +34,22 @@ public class EditorVR : MonoBehaviour
     private PlayerHandle m_Handle;
 
     private List<Stack<ITool>> m_ToolStacks = new List<Stack<ITool>>();
+    private IEnumerable<Type> m_AllTools;
 
     void Awake()
 	{
         InitializePlayerHandle();
         CreateDefaultActionMapInputs();
-		IProxy proxy = U.CreateGameObjectWithComponent<SixenseProxy>(transform);  //TODO change to proxy interface
-		proxy.TrackedObjectInput = m_Handle.GetActions<TrackedObject>();
+        m_ToolStacks.Add(new Stack<ITool>()); // Create stacks for left and right hand.
         m_ToolStacks.Add(new Stack<ITool>());
-        m_ToolStacks.Add(new Stack<ITool>());
-        // TODO: Collect all tools. Check if tool is SingleInstance; don't add multiple if so.
-        // Tmp: adding manually
-        var joystickLoco = U.AddComponent<JoystickLocomotionTool>(gameObject);
-        joystickLoco.ViewerPivot = EditorVRView.viewerPivot;
-        joystickLoco.ActionMapInput = CreateActionMapInput(joystickLoco.ActionMap);
-        m_ToolStacks[kLeftHand].Push(joystickLoco);
-        m_ToolStacks[kRightHand].Push(joystickLoco);
-        UpdateHandleMaps();
+        foreach (Type proxyType in U.GetImplementationsOfInterface(typeof(IProxy)))
+        {
+            IProxy proxy = U.CreateGameObjectWithComponent(proxyType, transform) as IProxy;
+		    proxy.TrackedObjectInput = m_Handle.GetActions<TrackedObject>();
+        }
+        m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
+        AddToolToStack(kLeftHand, typeof(JoystickLocomotionTool));
+        AddToolToStack(kRightHand, typeof(JoystickLocomotionTool));
     }
 
     private void InitializePlayerHandle()
@@ -94,8 +93,24 @@ public class EditorVR : MonoBehaviour
         }
     }
 
+    private void AddToolToStack(int handIndex, Type toolType)
+    {
+        ITool toolComponent = U.AddComponent(toolType, gameObject) as ITool;
+        if (toolComponent != null)
+        {
+            toolComponent.ActionMapInput = CreateActionMapInput(toolComponent.ActionMap);
+            ILocomotion locomotionComponent = toolComponent as ILocomotion;
+            if (locomotionComponent != null)
+            {
+                locomotionComponent.ViewerPivot = EditorVRView.viewerPivot;
+            }
+            m_ToolStacks[handIndex].Push(toolComponent);
+            UpdateHandleMaps();
+        }
+    }
+
 #if UNITY_EDITOR
-	private static EditorVR s_Instance;
+    private static EditorVR s_Instance;
 	private static InputManager s_InputManager;
 
 	static EditorVR()
