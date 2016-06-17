@@ -44,7 +44,7 @@ public class EditorVR : MonoBehaviour
         m_ToolStacks.Add(new Stack<ITool>());
         foreach (Type proxyType in U.GetImplementationsOfInterface(typeof(IProxy)))
         {
-            IProxy proxy = U.CreateGameObjectWithComponent(proxyType, transform) as IProxy;
+            IProxy proxy = U.CreateGameObjectWithComponent(proxyType, EditorVRView.viewerPivot) as IProxy;
 		    proxy.TrackedObjectInput = m_Handle.GetActions<TrackedObject>();
         }
         m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
