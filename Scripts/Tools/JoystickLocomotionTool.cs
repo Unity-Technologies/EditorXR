@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEditor.VR;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 
@@ -18,7 +19,7 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion
 
     public bool SingleInstance
     {
-        get { return true; }
+        get { return true; } 
     }
 
     public Transform ViewerPivot
@@ -53,7 +54,8 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion
         var moveDirection =
             (Vector3.forward * m_JoystickLocomotionInput.moveForward.value +
              Vector3.right * m_JoystickLocomotionInput.moveRight.value).normalized;
-        m_ViewerPivot.Translate(moveDirection * m_MoveSpeed * Time.unscaledDeltaTime, Space.Self);
+        moveDirection = EditorVRView.viewerCamera.transform.TransformVector(moveDirection);
+        m_ViewerPivot.Translate(moveDirection * m_MoveSpeed * Time.unscaledDeltaTime, Space.World);
         m_ViewerPivot.Rotate(Vector3.up, m_JoystickLocomotionInput.yaw.value * m_TurnSpeed * Time.unscaledDeltaTime, Space.Self);
     }
 

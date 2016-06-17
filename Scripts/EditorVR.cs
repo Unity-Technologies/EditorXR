@@ -121,37 +121,41 @@ public class EditorVR : MonoBehaviour
 
 	private static void OnEVREnabled()
 	{
-		// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-		//	in edit mode we need to handle lifecycle explicitly
-		InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
-		foreach (var m in managers)
-		{
-			U.Destroy(m.gameObject);
-		}
-
-		managers = Resources.FindObjectsOfTypeAll<InputManager>();
-		if (managers.Length == 0)
-		{
-			// Attempt creating object hierarchy via an implicit static constructor call by touching the class
-			InputSystem.ExecuteEvents();
-			managers = Resources.FindObjectsOfTypeAll<InputManager>();
-
-			if (managers.Length == 0)
-			{
-				typeof(InputSystem).TypeInitializer.Invoke(null, null);
-				managers = Resources.FindObjectsOfTypeAll<InputManager>();
-			}			
-		}
-		Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
-
-		s_InputManager = managers[0];
-		s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
-		U.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
-
-		s_Instance = U.CreateGameObjectWithComponent<EditorVR>();		
+	    InitializeInputManager();
+	    s_Instance = U.CreateGameObjectWithComponent<EditorVR>();
 	}
 
-	private static void OnEVRDisabled()
+    private static void InitializeInputManager()
+    {
+        // HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
+        //	in edit mode we need to handle lifecycle explicitly
+        InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
+        foreach (var m in managers)
+        {
+            U.Destroy(m.gameObject);
+        }
+
+        managers = Resources.FindObjectsOfTypeAll<InputManager>();
+        if (managers.Length == 0)
+        {
+            // Attempt creating object hierarchy via an implicit static constructor call by touching the class
+            InputSystem.ExecuteEvents();
+            managers = Resources.FindObjectsOfTypeAll<InputManager>();
+
+            if (managers.Length == 0)
+            {
+                typeof(InputSystem).TypeInitializer.Invoke(null, null);
+                managers = Resources.FindObjectsOfTypeAll<InputManager>();
+            }
+        }
+        Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
+
+        s_InputManager = managers[0];
+        s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
+        U.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
+    }
+
+    private static void OnEVRDisabled()
 	{
 		U.Destroy(s_Instance.gameObject);
 		U.Destroy(s_InputManager.gameObject);
