@@ -81,7 +81,10 @@ MonoBehaviour:
   m_ActionIndex: 1
   m_ControlData:
     componentControlIndices: 
-    controlType: 1
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Move Right
     defaultValue: 0
 --- !u!114 &114000010321248940
@@ -100,7 +103,10 @@ MonoBehaviour:
   m_ActionIndex: 2
   m_ControlData:
     componentControlIndices: 
-    controlType: 1
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Yaw
     defaultValue: 0
 --- !u!114 &114000011114386886
@@ -119,6 +125,9 @@ MonoBehaviour:
   m_ActionIndex: 0
   m_ControlData:
     componentControlIndices: 
-    controlType: 1
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Move Forward
     defaultValue: 0
