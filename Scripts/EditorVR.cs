@@ -37,7 +37,9 @@ public class EditorVR : MonoBehaviour
     private IEnumerable<Type> m_AllTools;
 
     void Awake()
-	{
+    {
+        EditorVRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
+        EditorVRView.viewerPivot.localPosition = Vector3.zero; // HACK reset pivot to match steam origin
         InitializePlayerHandle();
         CreateDefaultActionMapInputs();
         CreateAllProxies();
@@ -73,7 +75,7 @@ public class EditorVR : MonoBehaviour
         m_AllProxies = U.GetImplementationsOfInterface(typeof(IProxy));
         foreach (Type proxyType in m_AllProxies)
         {
-            IProxy proxy = U.CreateGameObjectWithComponent(proxyType, transform) as IProxy;
+            IProxy proxy = U.CreateGameObjectWithComponent(proxyType, EditorVRView.viewerPivot) as IProxy;
 		    proxy.TrackedObjectInput = m_Handle.GetActions<TrackedObject>();
             if (!proxy.Active)
             {
