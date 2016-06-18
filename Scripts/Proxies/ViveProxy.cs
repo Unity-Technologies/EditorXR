@@ -27,9 +27,6 @@ namespace UnityEngine.VR.Proxies
 
         void Start()
         {
-            //HACK Reset VR view pivot to origin to match steam positioning
-            EditorVRView.viewerPivot.position = Vector3.zero;
-
             SteamVR_Render.instance.transform.parent = gameObject.transform;
             m_LeftHand = U.InstantiateAndSetActive(m_HandProxyPrefab, transform).transform;
             m_LeftModel = m_LeftHand.GetComponent<SteamVR_RenderModel>(); // TODO: AddComponent at runtime and remove it from the prefab (requires the steam device model loading to work properly in editor)

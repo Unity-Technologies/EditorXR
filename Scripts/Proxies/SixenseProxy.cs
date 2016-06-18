@@ -36,11 +36,12 @@ namespace UnityEngine.VR.Proxies
 
 		void Update()
 		{
-			m_LeftHand.position = TrackedObjectInput.leftPosition.vector3;
-			m_LeftHand.rotation = TrackedObjectInput.leftRotation.quaternion;
+			m_LeftHand.localPosition = TrackedObjectInput.leftPosition.vector3;
+			m_LeftHand.localRotation = TrackedObjectInput.leftRotation.quaternion;
 
-			m_RightHand.position = TrackedObjectInput.rightPosition.vector3;
-			m_RightHand.rotation = TrackedObjectInput.rightRotation.quaternion;
+			m_RightHand.localPosition = TrackedObjectInput.rightPosition.vector3;
+			m_RightHand.localRotation = TrackedObjectInput.rightRotation.quaternion;
+
 		}
 	}
 }

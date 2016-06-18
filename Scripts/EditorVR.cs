@@ -37,7 +37,9 @@ public class EditorVR : MonoBehaviour
     private IEnumerable<Type> m_AllTools;
 
     void Awake()
-	{
+    {
+        EditorVRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
+        EditorVRView.viewerPivot.localPosition = Vector3.zero; // HACK reset pivot to match steam origin
         InitializePlayerHandle();
         CreateDefaultActionMapInputs();
         m_ToolStacks.Add(new Stack<ITool>()); // Create stacks for left and right hand.
@@ -45,7 +47,7 @@ public class EditorVR : MonoBehaviour
         foreach (Type proxyType in U.GetImplementationsOfInterface(typeof(IProxy)))
         {
             IProxy proxy = U.CreateGameObjectWithComponent(proxyType, EditorVRView.viewerPivot) as IProxy;
-		    proxy.TrackedObjectInput = m_Handle.GetActions<TrackedObject>();
+            proxy.TrackedObjectInput = m_Handle.GetActions<TrackedObject>();
         }
         m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
         AddToolToStack(kLeftHand, typeof(JoystickLocomotionTool));
