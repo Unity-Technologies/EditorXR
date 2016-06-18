@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEditor.VR;
 using UnityEngine.InputNew;
 
@@ -9,14 +10,46 @@ namespace UnityEngine.VR.Proxies
     {
         public TrackedObject TrackedObjectInput { private get; set; }
 
+        public bool Active
+        {
+            get
+            {
+                return true; // TODO: Check if Vive is connected
+            }
+        }
+
+        public Dictionary<Node, Transform> RayOrigins
+        {
+            get
+            {
+                return new Dictionary<Node, Transform>
+                {
+                    { Node.Left, m_LeftHandRayOrigin },
+                    { Node.Right, m_RightHandRayOrigin }
+                };
+            }
+        }
+
+        public bool Hidden
+        {
+            set
+            {
+                gameObject.SetActive(!value);
+            }
+        }
+        
         [SerializeField]
         private GameObject m_HandProxyPrefab;
         [SerializeField]
         public PlayerInput m_PlayerInput;
+        [SerializeField]
+        private Transform m_RayOrigin;
 
         private ViveInputToEvents m_ViveInput;
         private Transform m_LeftHand;
         private Transform m_RightHand;
+        private Transform m_RightHandRayOrigin;
+        private Transform m_LeftHandRayOrigin;
 
         private SteamVR_RenderModel m_RightModel;
         private SteamVR_RenderModel m_LeftModel;
@@ -32,10 +65,12 @@ namespace UnityEngine.VR.Proxies
 
             SteamVR_Render.instance.transform.parent = gameObject.transform;
             m_LeftHand = U.InstantiateAndSetActive(m_HandProxyPrefab, transform).transform;
-            m_LeftModel = m_LeftHand.GetComponent<SteamVR_RenderModel>(); // TODO: AddComponent at runtime and remove it from the prefab (requires the steam device model loading to work properly in editor)
+            m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(); // TODO: AddComponent at runtime and remove it from the prefab (requires the steam device model loading to work properly in editor)
+            m_LeftHandRayOrigin = m_LeftHand.FindChild("RayOrigin");
 
             m_RightHand = U.InstantiateAndSetActive(m_HandProxyPrefab, transform).transform;
-            m_RightModel = m_RightHand.GetComponent<SteamVR_RenderModel>();
+            m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>();
+            m_RightHandRayOrigin = m_RightHand.FindChild("RayOrigin");
 
             // In standalone play-mode usage, attempt to get the TrackedObjectInput 
             if (TrackedObjectInput == null && m_PlayerInput)

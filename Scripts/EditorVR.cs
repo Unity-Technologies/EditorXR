@@ -23,9 +23,8 @@ public class EditorVR : MonoBehaviour
     private ActionMap m_DefaultActionMap;
     [SerializeField]
     private ActionMap m_TrackedObjectActionMap;
-
-    private const int kLeftHand = 0;
-    private const int kRightHand = 1;
+    [SerializeField]
+    private VRLineRenderer m_PointerRayPrefab;
 
     private readonly List<ActionMap> kDefaultActionMaps = new List<ActionMap> ();
 
@@ -33,23 +32,22 @@ public class EditorVR : MonoBehaviour
 
     private PlayerHandle m_Handle;
 
-    private List<Stack<ITool>> m_ToolStacks = new List<Stack<ITool>>();
+    private Dictionary<Node, Stack<ITool>> m_ToolStacks = new Dictionary<Node, Stack<ITool>>();
+    private IEnumerable<Type> m_AllProxies;
     private IEnumerable<Type> m_AllTools;
 
     void Awake()
 	{
         InitializePlayerHandle();
         CreateDefaultActionMapInputs();
-        m_ToolStacks.Add(new Stack<ITool>()); // Create stacks for left and right hand.
-        m_ToolStacks.Add(new Stack<ITool>());
-        foreach (Type proxyType in U.GetImplementationsOfInterface(typeof(IProxy)))
+        CreateAllProxies();
+        foreach (var node in Enum.GetValues(typeof(Node)))
         {
-            IProxy proxy = U.CreateGameObjectWithComponent(proxyType, EditorVRView.viewerPivot) as IProxy;
-		    proxy.TrackedObjectInput = m_Handle.GetActions<TrackedObject>();
+            m_ToolStacks.Add((Node)node, new Stack<ITool>());
         }
         m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
-        AddToolToStack(kLeftHand, typeof(JoystickLocomotionTool));
-        AddToolToStack(kRightHand, typeof(JoystickLocomotionTool));
+        AddToolToStack(Node.Left, typeof(JoystickLocomotionTool));
+        AddToolToStack(Node.Right, typeof(JoystickLocomotionTool));
     }
 
     private void InitializePlayerHandle()
@@ -70,6 +68,27 @@ public class EditorVR : MonoBehaviour
         m_Handle.maps.Add(CreateActionMapInput(m_DefaultActionMap));
     }
 
+    private void CreateAllProxies()
+    {
+        m_AllProxies = U.GetImplementationsOfInterface(typeof(IProxy));
+        foreach (Type proxyType in m_AllProxies)
+        {
+            IProxy proxy = U.CreateGameObjectWithComponent(proxyType, transform) as IProxy;
+		    proxy.TrackedObjectInput = m_Handle.GetActions<TrackedObject>();
+            if (!proxy.Active)
+            {
+                proxy.Hidden = true;
+                continue;
+            }
+            foreach (var rayOriginBase in proxy.RayOrigins)
+            {
+                var rayTransform = U.InstantiateAndSetActive(m_PointerRayPrefab.gameObject, rayOriginBase.Value).transform;
+                rayTransform.position = rayOriginBase.Value.position;
+                rayTransform.rotation = rayOriginBase.Value.rotation;
+            }
+        }
+    }
+
     private ActionMapInput CreateActionMapInput(ActionMap map)
     {
         var actionMapInput = ActionMapInput.Create(map);
@@ -82,7 +101,7 @@ public class EditorVR : MonoBehaviour
     {
         var maps = m_Handle.maps;
         maps.RemoveRange(m_ToolActionMapInputIndex, maps.Count - kDefaultActionMaps.Count);
-        foreach (Stack<ITool> stack in m_ToolStacks)
+        foreach (Stack<ITool> stack in m_ToolStacks.Values)
         {
             foreach (ITool tool in stack.Reverse())
             {
@@ -93,7 +112,7 @@ public class EditorVR : MonoBehaviour
         }
     }
 
-    private void AddToolToStack(int handIndex, Type toolType)
+    private void AddToolToStack(Node node, Type toolType)
     {
         ITool toolComponent = U.AddComponent(toolType, gameObject) as ITool;
         if (toolComponent != null)
@@ -104,7 +123,7 @@ public class EditorVR : MonoBehaviour
             {
                 locomotionComponent.ViewerPivot = EditorVRView.viewerPivot;
             }
-            m_ToolStacks[handIndex].Push(toolComponent);
+            m_ToolStacks[node].Push(toolComponent);
             UpdateHandleMaps();
         }
     }

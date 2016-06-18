@@ -8,26 +8,59 @@ namespace UnityEngine.VR.Proxies
 {
 	public class SixenseProxy : MonoBehaviour, IProxy
 	{
-		public TrackedObject TrackedObjectInput { private get; set; }
+	    public TrackedObject TrackedObjectInput { private get; set; }
 
-		[SerializeField]
+	    public bool Active
+	    {
+	        get
+	        {
+	            return SixenseInput.IsBaseConnected(0);
+	        }
+	    }
+
+	    public Dictionary<Node, Transform> RayOrigins
+	    {
+	        get
+	        {
+	            return new Dictionary<Node, Transform>
+	            {
+                    { Node.Left, m_LeftHandRayOrigin },
+                    { Node.Right, m_RightHandRayOrigin }
+	            };
+	        }
+	    }
+
+	    public bool Hidden
+	    {
+	        set
+	        {
+	            gameObject.SetActive(!value);
+	        }
+	    }
+
+	    [SerializeField]
 		private GameObject m_HandProxyPrefab;
 		[SerializeField]
 		public PlayerInput m_PlayerInput;
-
-		private SixenseInputToEvents m_SixenseInput;
+        [SerializeField]
+        private Transform m_RayOrigin;
+        
 		private Transform m_LeftHand;
 		private Transform m_RightHand;
-
+	    private Transform m_LeftHandRayOrigin;
+	    private Transform m_RightHandRayOrigin;
+        
 		void Awake()
 		{
-			m_SixenseInput = U.AddComponent<SixenseInputToEvents>(gameObject);
+			U.AddComponent<SixenseInputToEvents>(gameObject);
 		}
 
 		void Start()
 		{
 			m_LeftHand = U.InstantiateAndSetActive(m_HandProxyPrefab, transform).transform;
 			m_RightHand = U.InstantiateAndSetActive(m_HandProxyPrefab, transform).transform;
+            m_LeftHandRayOrigin = m_LeftHand.FindChild("RayOrigin");
+            m_RightHandRayOrigin = m_RightHand.FindChild("RayOrigin");
 
 			// In standalone play-mode usage, attempt to get the TrackedObjectInput 
 			if (TrackedObjectInput == null && m_PlayerInput)

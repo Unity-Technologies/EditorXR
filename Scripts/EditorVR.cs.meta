@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 1d288f1a40f3bc54bb07e9a5eb99d137
-timeCreated: 1466016986
+timeCreated: 1466189890
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
@@ -10,7 +10,7 @@ MonoImporter:
       type: 2}
   - m_TrackedObjectActionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a,
       type: 2}
-  - m_PlayerInputPrefab: {fileID: 1000014158511810, guid: 334fa7f78e6b2124e95659b210857bf6,
+  - m_PointerRayPrefab: {fileID: 114000010982492852, guid: 6c037b4595ca1ab4c921efeac9524073,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
