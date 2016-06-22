@@ -2,7 +2,7 @@
 {
     public enum Node
     {
-        Left,
-        Right
+        LeftHand,
+        RightHand
     }
 }

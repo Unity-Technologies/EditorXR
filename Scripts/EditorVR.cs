@@ -30,11 +30,13 @@ public class EditorVR : MonoBehaviour
 
     private int m_ToolActionMapInputIndex; // Index to start adding input maps for active tools
 
-    private PlayerHandle m_Handle;
+    private PlayerHandle m_PlayerHandle;
 
-    private Dictionary<Node, Stack<ITool>> m_ToolStacks = new Dictionary<Node, Stack<ITool>>();
+    private Dictionary<InputDevice, Stack<ITool>> m_ToolStacks = new Dictionary<InputDevice, Stack<ITool>>();
     private IEnumerable<Type> m_AllProxies;
     private IEnumerable<Type> m_AllTools;
+
+	private Dictionary<Type, ActionMap> m_ToolActionMaps;
 
     void Awake()
     {
@@ -43,20 +45,36 @@ public class EditorVR : MonoBehaviour
         InitializePlayerHandle();
         CreateDefaultActionMapInputs();
         CreateAllProxies();
-        foreach (var node in Enum.GetValues(typeof(Node)))
-        {
-            m_ToolStacks.Add((Node)node, new Stack<ITool>());
-        }
-        m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
-        AddToolToStack(Node.Left, typeof(JoystickLocomotionTool));
-        AddToolToStack(Node.Right, typeof(JoystickLocomotionTool));
-    }
+		foreach (var device in InputSystem.devices)
+		{
+			m_ToolStacks.Add(device, new Stack<ITool>());
+		}
+		m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
+		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);
+
+		SpawnTool(typeof(JoystickLocomotionTool));
+	}
 
     private void InitializePlayerHandle()
     {
-        m_Handle = PlayerHandleManager.GetNewPlayerHandle();
-        m_Handle.global = true;
+        m_PlayerHandle = PlayerHandleManager.GetNewPlayerHandle();
+        m_PlayerHandle.global = true;
     }
+
+	private Dictionary<Type, ActionMap> CollectToolActionMaps(IEnumerable<Type> toolTypes)
+	{
+		var toolMaps = new Dictionary<Type, ActionMap>();
+	    foreach (var t in toolTypes)
+	    {
+		    if (!t.IsSubclassOf(typeof(MonoBehaviour)))
+				continue;
+
+		    var tool = gameObject.AddComponent(t) as ITool;
+		    toolMaps.Add(t, tool.ActionMap);
+		    U.Destroy(tool as MonoBehaviour);
+	    }
+		return toolMaps;
+	}
 
     private void CreateDefaultActionMapInputs()
     {
@@ -64,10 +82,10 @@ public class EditorVR : MonoBehaviour
         kDefaultActionMaps.Add(m_TrackedObjectActionMap);
         kDefaultActionMaps.Add(m_DefaultActionMap);
 
-        m_Handle.maps.Add(CreateActionMapInput(m_MenuActionMap));
-        m_Handle.maps.Add(CreateActionMapInput(m_TrackedObjectActionMap));
-        m_ToolActionMapInputIndex = m_Handle.maps.Count; // Set index where active tool action map inputs will be added
-        m_Handle.maps.Add(CreateActionMapInput(m_DefaultActionMap));
+        m_PlayerHandle.maps.Add(CreateActionMapInput(m_MenuActionMap));
+        m_PlayerHandle.maps.Add(CreateActionMapInput(m_TrackedObjectActionMap));
+        m_ToolActionMapInputIndex = m_PlayerHandle.maps.Count; // Set index where active tool action map inputs will be added
+        m_PlayerHandle.maps.Add(CreateActionMapInput(m_DefaultActionMap));
     }
 
     private void CreateAllProxies()
@@ -76,7 +94,7 @@ public class EditorVR : MonoBehaviour
         foreach (Type proxyType in m_AllProxies)
         {
             IProxy proxy = U.CreateGameObjectWithComponent(proxyType, EditorVRView.viewerPivot) as IProxy;
-		    proxy.TrackedObjectInput = m_Handle.GetActions<TrackedObject>();
+		    proxy.TrackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
             if (!proxy.Active)
             {
                 proxy.Hidden = true;
@@ -94,39 +112,53 @@ public class EditorVR : MonoBehaviour
     private ActionMapInput CreateActionMapInput(ActionMap map)
     {
         var actionMapInput = ActionMapInput.Create(map);
-        actionMapInput.TryInitializeWithDevices(m_Handle.GetApplicableDevices());
+        actionMapInput.TryInitializeWithDevices(m_PlayerHandle.GetApplicableDevices());
         actionMapInput.active = true;
         return actionMapInput;
     }
 
-    private void UpdateHandleMaps()
+    private void UpdatePlayerHandleMaps()
     {
-        var maps = m_Handle.maps;
+        var maps = m_PlayerHandle.maps;
         maps.RemoveRange(m_ToolActionMapInputIndex, maps.Count - kDefaultActionMaps.Count);
         foreach (Stack<ITool> stack in m_ToolStacks.Values)
         {
             foreach (ITool tool in stack.Reverse())
             {
-                if (tool.SingleInstance && maps.Contains(tool.ActionMapInput))
-                    continue;
-                maps.Insert(m_ToolActionMapInputIndex, tool.ActionMapInput);
+				if (maps.Contains(tool.ActionMapInput))
+					continue;
+				maps.Insert(m_ToolActionMapInputIndex, tool.ActionMapInput);
             }
         }
     }
 
-    private void AddToolToStack(Node node, Type toolType)
-    {
-        ITool toolComponent = U.AddComponent(toolType, gameObject) as ITool;
-        if (toolComponent != null)
+	private void SpawnTool(Type toolType)
+	{
+		if (!typeof(ITool).IsAssignableFrom(toolType))
+			return;
+
+        ITool tool = U.AddComponent(toolType, gameObject) as ITool;
+        tool.ActionMapInput = CreateActionMapInput(tool.ActionMap);
+	    var devices = U.GetActionMapInputDevices(m_ToolActionMaps[toolType]);
+
+        ILocomotion locomotionComponent = tool as ILocomotion;
+        if (locomotionComponent != null)
         {
-            toolComponent.ActionMapInput = CreateActionMapInput(toolComponent.ActionMap);
-            ILocomotion locomotionComponent = toolComponent as ILocomotion;
-            if (locomotionComponent != null)
-            {
-                locomotionComponent.ViewerPivot = EditorVRView.viewerPivot;
-            }
-            m_ToolStacks[node].Push(toolComponent);
-            UpdateHandleMaps();
+            locomotionComponent.ViewerPivot = EditorVRView.viewerPivot;
+        }
+
+	    foreach (var device in devices)
+	    {
+		    AddToolToStack(device, tool);
+	    }
+	}
+
+    private void AddToolToStack(InputDevice device, ITool tool)
+    {
+        if (tool != null)
+        {
+            m_ToolStacks[device].Push(tool);
+            UpdatePlayerHandleMaps();
         }
     }
 

@@ -14,7 +14,7 @@ namespace UnityEngine.VR.Proxies
 	    {
 	        get
 	        {
-	            return SixenseInput.IsBaseConnected(0);
+		        return true;//SixenseInput.IsBaseConnected(0);
 	        }
 	    }
 
@@ -22,10 +22,11 @@ namespace UnityEngine.VR.Proxies
 	    {
 	        get
 	        {
+				// TODO: This should be defined once instead of newing on every access
 	            return new Dictionary<Node, Transform>
 	            {
-                    { Node.Left, m_LeftHandRayOrigin },
-                    { Node.Right, m_RightHandRayOrigin }
+                    { Node.LeftHand, m_LeftHandRayOrigin },
+                    { Node.RightHand, m_RightHandRayOrigin }
 	            };
 	        }
 	    }

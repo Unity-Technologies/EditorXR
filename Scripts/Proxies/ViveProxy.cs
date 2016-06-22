@@ -24,8 +24,8 @@ namespace UnityEngine.VR.Proxies
             {
                 return new Dictionary<Node, Transform>
                 {
-                    { Node.Left, m_LeftHandRayOrigin },
-                    { Node.Right, m_RightHandRayOrigin }
+                    { Node.LeftHand, m_LeftHandRayOrigin },
+                    { Node.RightHand, m_RightHandRayOrigin }
                 };
             }
         }

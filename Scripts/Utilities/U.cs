@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEngine.InputNew;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 #if UNITY_EDITOR
@@ -390,6 +391,27 @@ class U {
         }
         return new List<Type>();
     }
+
+	public static HashSet<InputDevice> GetActionMapInputDevices(ActionMap map)
+	{
+		var inputDevices = new HashSet<InputDevice>();
+		var systemDevices = InputSystem.devices;
+		foreach (var scheme in map.controlSchemes)
+		{
+			foreach (var deviceType in scheme.serializableDeviceTypes)
+			{
+				foreach (var systemDevice in systemDevices)
+				{
+					if (systemDevice.GetType() == deviceType.value &&
+					    (deviceType.TagIndex == -1 || deviceType.TagIndex == systemDevice.TagIndex))
+					{
+						inputDevices.Add(systemDevice);
+					}
+				}
+			}
+		}
+		return inputDevices;
+	}
 
     public static GameObject SpawnGhostWireframe(GameObject obj, Material ghostMaterial, bool enableRenderers = true)
 	{
