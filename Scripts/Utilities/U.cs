@@ -417,7 +417,16 @@ class U {
 		return inputDevices;
 	}
 
-    public static GameObject SpawnGhostWireframe(GameObject obj, Material ghostMaterial, bool enableRenderers = true)
+	public static void CollectSerializableTypesFromActionMapInput(ActionMapInput actionMapInput, ref HashSet<SerializableType> types)
+	{
+		foreach (var deviceType in actionMapInput.controlScheme.serializableDeviceTypes)
+		{
+			types.Add(deviceType);
+		}	
+	}
+
+
+	public static GameObject SpawnGhostWireframe(GameObject obj, Material ghostMaterial, bool enableRenderers = true)
 	{
 		// spawn ghost
 		GameObject ghostObj = U.InstantiateAndSetActive(obj, obj.transform.parent);

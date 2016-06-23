@@ -47,17 +47,29 @@ public class EditorVR : MonoBehaviour
         InitializePlayerHandle();
         CreateDefaultActionMapInputs();
         CreateAllProxies();
+		// TEMP
+	    InputDevice leftHand = null;
+	    InputDevice rightHand = null;
 		foreach (var device in InputSystem.devices)
 		{
+			if (device.GetType() == typeof(VRInputDevice) && device.TagIndex != -1)
+			{
+				if (VRInputDevice.Tags[device.TagIndex] == "Left")
+					leftHand = device;
+				else if (VRInputDevice.Tags[device.TagIndex] == "Right")
+					rightHand = device;
+			}
 			m_ToolStacks.Add(device, new Stack<ITool>());
 		}
 		m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
+		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
 		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);
 
 		SpawnTool(typeof(JoystickLocomotionTool));
-	    SpawnTool(typeof(MakeCubeTool));
-    }
+	    SpawnTool(typeof(MakeCubeTool), rightHand);
+		SpawnTool(typeof(MakeSphereTool), leftHand);
+	}
 
     private void InitializePlayerHandle()
     {
@@ -167,34 +179,108 @@ public class EditorVR : MonoBehaviour
 		Debug.LogError(string.Format("EVR: {0}", error));
 	}
 
-	private void SpawnTool(Type toolType)
+	/// <summary>
+	/// Spawn a tool on a tool stack (e.g. right hand). In some cases, a tool may be device tag agnostic (e.g. right or
+	/// left hand), so in those cases we map the source bindings of the action map input to the correct device tag.
+	/// </summary>
+	/// <param name="toolType">The tool to spawn</param>
+	/// <param name="device">The input device that serves as a key for the tool stack that the tool should spawned on 
+	/// (optional). If not specified, then it uses the action map to determine which devices the tool should be spawned
+	/// on.</param>
+	private void SpawnTool(Type toolType, InputDevice device = null)
 	{
 		if (!typeof(ITool).IsAssignableFrom(toolType))
 			return;
 
-		ITool tool = U.AddComponent(toolType, gameObject) as ITool;
-		IStandardActionMap standardMap = tool as IStandardActionMap;
+		HashSet<SerializableType> serializableTypes = new HashSet<SerializableType>();
+		var tool = U.AddComponent(toolType, gameObject) as ITool;
+		var standardMap = tool as IStandardActionMap;
 		if (standardMap != null)
 		{
-			standardMap.StandardInput = (Standard)CreateActionMapInput(m_StandardToolActionMap);
+			ActionMap actionMap = m_StandardToolActionMap;
+
+			if (device != null)
+			{
+				actionMap = ScriptableObject.CreateInstance<ActionMap>();
+				EditorUtility.CopySerialized(m_StandardToolActionMap, actionMap);
+				UpdateActionMapForDevice(actionMap, device);
+			}
+
+			standardMap.StandardInput = (Standard)CreateActionMapInput(actionMap);
+			U.CollectSerializableTypesFromActionMapInput(standardMap.StandardInput, ref serializableTypes);
 		}
 			
-		ICustomActionMap customMap = tool as ICustomActionMap;
+		var customMap = tool as ICustomActionMap;
 		if (customMap != null)
 		{
-			customMap.ActionMapInput = CreateActionMapInput(customMap.ActionMap);
+			ActionMap actionMap = customMap.ActionMap;
+
+			if (device != null)
+			{
+				actionMap = ScriptableObject.CreateInstance<ActionMap>();
+				EditorUtility.CopySerialized(customMap.ActionMap, actionMap);
+				UpdateActionMapForDevice(actionMap, device);
+			}
+
+			customMap.ActionMapInput = CreateActionMapInput(actionMap);
+			U.CollectSerializableTypesFromActionMapInput(customMap.ActionMapInput, ref serializableTypes);
 		}
 
-		var devices = U.CollectInputDevicesFromActionMaps(m_ToolActionMaps[toolType]);
+		if (device != null)
+		{
+			var untaggedDevicesFound = 0;
+			var taggedDevicesFound = 0;
+			foreach (var serializableType in serializableTypes)
+			{
+				if (serializableType.TagIndex != -1)
+				{
+					taggedDevicesFound++;
 
-		IRay ray = tool as IRay;
+					if (serializableType.TagIndex != device.TagIndex)
+					{
+						LogError(
+							string.Format("The action map for {0} contains a specific device tag, but is being spawned on the wrong device tag",
+								toolType));
+						U.Destroy(tool as MonoBehaviour);
+						return;
+					}
+				}
+				else
+				{
+					untaggedDevicesFound++;
+				}
+			}
+
+			if (taggedDevicesFound > 0 && untaggedDevicesFound != 0)
+			{
+				LogError(
+					string.Format("The action map for {0} contains both a specific device tag and an unspecified tag, which is not supported",
+						toolType));
+				U.Destroy(tool as MonoBehaviour);
+				return;
+			}
+		}
+
+		HashSet<InputDevice> devices = null;
+		if (device != null)
+		{
+			devices = new HashSet<InputDevice> {device};
+		}
+		else
+		{
+			// TODO: Do we need to collect devices across all control schemes?
+			devices = U.CollectInputDevicesFromActionMaps(m_ToolActionMaps[toolType]);
+		}
+
+		var ray = tool as IRay;
 		if (ray != null)
 		{
-			// TODO: Get active proxy per node, pass its rayorigin.
+			// TODO: Get active proxy per node, pass its ray origin.
 			foreach (var proxy in m_AllProxies)
 			{
 				if (proxy.Active)
 				{
+					// TODO: We need to (potentially) map nodes to input devices
 					Transform rayOrigin;
 					if (proxy.RayOrigins.TryGetValue(Node.RightHand, out rayOrigin))
 					{
@@ -211,10 +297,30 @@ public class EditorVR : MonoBehaviour
             locomotionComponent.ViewerPivot = EditorVRView.viewerPivot;
         }
 
-	    foreach (var device in devices)
+	    foreach (var dev in devices)
 	    {
-		    AddToolToStack(device, tool);
+		    AddToolToStack(dev, tool);
 	    }
+	}
+
+	private void UpdateActionMapForDevice(ActionMap actionMap, InputDevice device)
+	{
+		foreach (var scheme in actionMap.controlSchemes)
+		{
+			foreach (var serializableDeviceType in scheme.serializableDeviceTypes)
+			{
+				if (serializableDeviceType.value == device.GetType() && serializableDeviceType.TagIndex == -1)
+					serializableDeviceType.TagIndex = device.TagIndex;
+			}
+			foreach (var binding in scheme.bindings)
+			{
+				foreach (var source in binding.sources)
+				{
+					if (source.deviceType.value == device.GetType() && source.deviceType.TagIndex == -1)
+						source.deviceType.TagIndex = device.TagIndex;
+				}
+			}	
+		}
 	}
 
     private void AddToolToStack(InputDevice device, ITool tool)
