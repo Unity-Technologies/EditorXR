@@ -92,7 +92,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Positions:
   - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 1}
+  - {x: 0, y: 0, z: 100}
   m_ColorStart: {r: 1, g: 1, b: 1, a: 1}
   m_ColorEnd: {r: 1, g: 1, b: 1, a: 1}
   m_WidthStart: 0.05
