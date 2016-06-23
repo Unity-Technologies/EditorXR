@@ -392,23 +392,27 @@ class U {
         return new List<Type>();
     }
 
-	public static HashSet<InputDevice> GetActionMapInputDevices(ActionMap map)
+	public static HashSet<InputDevice> CollectInputDevicesFromActionMaps(List<ActionMap> maps)
 	{
 		var inputDevices = new HashSet<InputDevice>();
 		var systemDevices = InputSystem.devices;
-		foreach (var scheme in map.controlSchemes)
+
+		foreach (var map in maps)
 		{
-			foreach (var deviceType in scheme.serializableDeviceTypes)
+			foreach (var scheme in map.controlSchemes)
 			{
-				foreach (var systemDevice in systemDevices)
+				foreach (var deviceType in scheme.serializableDeviceTypes)
 				{
-					if (systemDevice.GetType() == deviceType.value &&
-					    (deviceType.TagIndex == -1 || deviceType.TagIndex == systemDevice.TagIndex))
+					foreach (var systemDevice in systemDevices)
 					{
-						inputDevices.Add(systemDevice);
+						if (systemDevice.GetType() == deviceType.value &&
+							(deviceType.TagIndex == -1 || deviceType.TagIndex == systemDevice.TagIndex))
+						{
+							inputDevices.Add(systemDevice);
+						}
 					}
 				}
-			}
+			}	
 		}
 		return inputDevices;
 	}

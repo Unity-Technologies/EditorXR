@@ -6,7 +6,7 @@ using UnityEngine.InputNew;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 
-public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion
+public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomActionMap
 {
 	public ActionMap ActionMap
 	{
@@ -16,7 +16,7 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion
 	public ActionMapInput ActionMapInput
 	{
 		get { return m_JoystickLocomotionInput; }
-		set { m_JoystickLocomotionInput = (JoystickLocomotion) value; }
+		set { m_JoystickLocomotionInput = (JoystickLocomotion)value; }
 	}
 
 	public Transform ViewerPivot

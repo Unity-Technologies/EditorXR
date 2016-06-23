@@ -23,7 +23,9 @@ public class EditorVR : MonoBehaviour
     private ActionMap m_DefaultActionMap;
     [SerializeField]
     private ActionMap m_TrackedObjectActionMap;
-    [SerializeField]
+	[SerializeField]
+	private ActionMap m_StandardToolActionMap;
+	[SerializeField]
     private VRLineRenderer m_PointerRayPrefab;
 
     private readonly List<ActionMap> kDefaultActionMaps = new List<ActionMap> ();
@@ -36,7 +38,7 @@ public class EditorVR : MonoBehaviour
     private IEnumerable<Type> m_AllProxies;
     private IEnumerable<Type> m_AllTools;
 
-	private Dictionary<Type, ActionMap> m_ToolActionMaps;
+	private Dictionary<Type, List<ActionMap>> m_ToolActionMaps;
 
     void Awake()
     {
@@ -50,10 +52,12 @@ public class EditorVR : MonoBehaviour
 			m_ToolStacks.Add(device, new Stack<ITool>());
 		}
 		m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
+		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
 		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);
 
 		SpawnTool(typeof(JoystickLocomotionTool));
-	}
+	    SpawnTool(typeof(MakeCubeTool));
+    }
 
     private void InitializePlayerHandle()
     {
@@ -61,17 +65,29 @@ public class EditorVR : MonoBehaviour
         m_PlayerHandle.global = true;
     }
 
-	private Dictionary<Type, ActionMap> CollectToolActionMaps(IEnumerable<Type> toolTypes)
+	private Dictionary<Type, List<ActionMap>> CollectToolActionMaps(IEnumerable<Type> toolTypes)
 	{
-		var toolMaps = new Dictionary<Type, ActionMap>();
-	    foreach (var t in toolTypes)
+		var toolMaps = new Dictionary<Type, List<ActionMap>>();
+		
+		foreach (var t in toolTypes)
 	    {
 		    if (!t.IsSubclassOf(typeof(MonoBehaviour)))
 				continue;
 
 		    var tool = gameObject.AddComponent(t) as ITool;
-		    toolMaps.Add(t, tool.ActionMap);
-		    U.Destroy(tool as MonoBehaviour);
+			List<ActionMap> actionMaps = new List<ActionMap>();
+
+			var customActionMap = tool as ICustomActionMap;
+			if (customActionMap != null)
+				actionMaps.Add(customActionMap.ActionMap);
+
+		    var standardActionMap = tool as IStandardActionMap;
+			if (standardActionMap != null)
+				actionMaps.Add(m_StandardToolActionMap);
+
+		    toolMaps.Add(t, actionMaps);
+
+			U.Destroy(tool as MonoBehaviour);
 	    }
 		return toolMaps;
 	}
@@ -125,21 +141,51 @@ public class EditorVR : MonoBehaviour
         {
             foreach (ITool tool in stack.Reverse())
             {
-				if (maps.Contains(tool.ActionMapInput))
-					continue;
-				maps.Insert(m_ToolActionMapInputIndex, tool.ActionMapInput);
+	            IStandardActionMap standardActionMap = tool as IStandardActionMap;
+	            if (standardActionMap != null)
+	            {
+		            if (!maps.Contains(standardActionMap.StandardInput))
+		            {
+			            maps.Insert(m_ToolActionMapInputIndex, standardActionMap.StandardInput);
+		            }
+				}
+
+				ICustomActionMap customActionMap = tool as ICustomActionMap;
+	            if (customActionMap != null)
+	            {
+		            if (!maps.Contains(customActionMap.ActionMapInput))
+		            {
+						maps.Insert(m_ToolActionMapInputIndex, customActionMap.ActionMapInput);
+					}
+				}					
             }
         }
     }
+
+	private void LogError(string error)
+	{
+		Debug.LogError(string.Format("EVR: {0}", error));
+	}
 
 	private void SpawnTool(Type toolType)
 	{
 		if (!typeof(ITool).IsAssignableFrom(toolType))
 			return;
 
-        ITool tool = U.AddComponent(toolType, gameObject) as ITool;
-        tool.ActionMapInput = CreateActionMapInput(tool.ActionMap);
-	    var devices = U.GetActionMapInputDevices(m_ToolActionMaps[toolType]);
+		ITool tool = U.AddComponent(toolType, gameObject) as ITool;
+		IStandardActionMap standardMap = tool as IStandardActionMap;
+		if (standardMap != null)
+		{
+			standardMap.StandardInput = (Standard)CreateActionMapInput(m_StandardToolActionMap);
+		}
+			
+		ICustomActionMap customMap = tool as ICustomActionMap;
+		if (customMap != null)
+		{
+			customMap.ActionMapInput = CreateActionMapInput(customMap.ActionMap);
+		}
+
+		var devices = U.CollectInputDevicesFromActionMaps(m_ToolActionMaps[toolType]);
 
         ILocomotion locomotionComponent = tool as ILocomotion;
         if (locomotionComponent != null)
