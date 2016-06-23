@@ -40,6 +40,12 @@ public class EditorVR : MonoBehaviour
 
 	private Dictionary<Type, List<ActionMap>> m_ToolActionMaps;
 
+	private Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
+	{
+		{ "Left", Node.LeftHand },
+		{ "Right", Node.RightHand }
+	};
+
     void Awake()
     {
         EditorVRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
@@ -71,7 +77,12 @@ public class EditorVR : MonoBehaviour
 		SpawnTool(typeof(MakeSphereTool), leftHand);
 	}
 
-    private void InitializePlayerHandle()
+	void OnDestroy()
+	{
+		PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
+	}
+
+	private void InitializePlayerHandle()
     {
         m_PlayerHandle = PlayerHandleManager.GetNewPlayerHandle();
         m_PlayerHandle.global = true;
@@ -272,26 +283,34 @@ public class EditorVR : MonoBehaviour
 			devices = U.CollectInputDevicesFromActionMaps(m_ToolActionMaps[toolType]);
 		}
 
-		var ray = tool as IRay;
-		if (ray != null)
+		if (device != null)
 		{
-			// TODO: Get active proxy per node, pass its ray origin.
-			foreach (var proxy in m_AllProxies)
+			var ray = tool as IRay;
+			if (ray != null)
 			{
-				if (proxy.Active)
+				// TODO: Get active proxy per node, pass its ray origin.
+				foreach (var proxy in m_AllProxies)
 				{
-					// TODO: We need to (potentially) map nodes to input devices
-					Transform rayOrigin;
-					if (proxy.RayOrigins.TryGetValue(Node.RightHand, out rayOrigin))
+					if (proxy.Active)
 					{
-						ray.RayOrigin = rayOrigin;
-						break;
+						var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
+						var tag = tags[device.TagIndex];
+						Node node;
+						if (m_TagToNode.TryGetValue(tag, out node))
+						{
+							Transform rayOrigin;
+							if (proxy.RayOrigins.TryGetValue(node, out rayOrigin))
+							{
+								ray.RayOrigin = rayOrigin;
+								break;
+							}
+						}
 					}
 				}
 			}
 		}
 
-        ILocomotion locomotionComponent = tool as ILocomotion;
+		ILocomotion locomotionComponent = tool as ILocomotion;
         if (locomotionComponent != null)
         {
             locomotionComponent.ViewerPivot = EditorVRView.viewerPivot;

@@ -19,7 +19,8 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay
 			if (RayOrigin)
 			{
 				cube.position = RayOrigin.position + RayOrigin.forward * 5f;
-            }
+				cube.parent = transform;
+			}
 		}
 
 	}

@@ -27,14 +27,14 @@ public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay
 		}
 		set
 		{
-			m_Standard = (Standard)value;
+			m_Standard = (StandardAlt)value;
 		}
 	}
 
 	[SerializeField]
 	private ActionMap m_ActionMap;
 	[SerializeField]
-	private Standard m_Standard;
+	private StandardAlt m_Standard;
 
 	private void Update()
 	{
@@ -44,9 +44,8 @@ public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay
 			if (RayOrigin)
 			{
 				cube.position = RayOrigin.position + RayOrigin.forward * 5f;
-            }
+				cube.parent = transform;
+			}
 		}
-
 	}
-
 }
