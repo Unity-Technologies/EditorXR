@@ -14,7 +14,7 @@ namespace UnityEngine.VR.Proxies
         {
             get
             {
-                return true; // TODO: Check if Vive is connected
+                return false; // TODO: Check if Vive is connected
             }
         }
 

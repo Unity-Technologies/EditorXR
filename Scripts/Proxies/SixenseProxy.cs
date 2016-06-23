@@ -14,7 +14,7 @@ namespace UnityEngine.VR.Proxies
 	    {
 	        get
 	        {
-		        return true;//SixenseInput.IsBaseConnected(0);
+		        return true;
 	        }
 	    }
 

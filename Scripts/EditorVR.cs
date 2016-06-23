@@ -35,7 +35,7 @@ public class EditorVR : MonoBehaviour
     private PlayerHandle m_PlayerHandle;
 
     private Dictionary<InputDevice, Stack<ITool>> m_ToolStacks = new Dictionary<InputDevice, Stack<ITool>>();
-    private IEnumerable<Type> m_AllProxies;
+    private List<IProxy> m_AllProxies = new List<IProxy>();
     private IEnumerable<Type> m_AllTools;
 
 	private Dictionary<Type, List<ActionMap>> m_ToolActionMaps;
@@ -106,8 +106,7 @@ public class EditorVR : MonoBehaviour
 
     private void CreateAllProxies()
     {
-        m_AllProxies = U.GetImplementationsOfInterface(typeof(IProxy));
-        foreach (Type proxyType in m_AllProxies)
+        foreach (Type proxyType in U.GetImplementationsOfInterface(typeof(IProxy)))
         {
             IProxy proxy = U.CreateGameObjectWithComponent(proxyType, EditorVRView.viewerPivot) as IProxy;
 		    proxy.TrackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
@@ -122,6 +121,7 @@ public class EditorVR : MonoBehaviour
                 rayTransform.position = rayOriginBase.Value.position;
                 rayTransform.rotation = rayOriginBase.Value.rotation;
             }
+			m_AllProxies.Add(proxy);
         }
     }
 
@@ -186,6 +186,24 @@ public class EditorVR : MonoBehaviour
 		}
 
 		var devices = U.CollectInputDevicesFromActionMaps(m_ToolActionMaps[toolType]);
+
+		IRay ray = tool as IRay;
+		if (ray != null)
+		{
+			// TODO: Get active proxy per node, pass its rayorigin.
+			foreach (var proxy in m_AllProxies)
+			{
+				if (proxy.Active)
+				{
+					Transform rayOrigin;
+					if (proxy.RayOrigins.TryGetValue(Node.RightHand, out rayOrigin))
+					{
+						ray.RayOrigin = rayOrigin;
+						break;
+					}
+				}
+			}
+		}
 
         ILocomotion locomotionComponent = tool as ILocomotion;
         if (locomotionComponent != null)
