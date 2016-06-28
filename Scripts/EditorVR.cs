@@ -6,6 +6,7 @@ using UnityEngine.InputNew;
 using UnityEngine.VR.Proxies;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.EventSystems;
 using UnityEngine.VR.Tools;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -27,6 +28,10 @@ public class EditorVR : MonoBehaviour
 	private ActionMap m_StandardToolActionMap;
 	[SerializeField]
     private VRLineRenderer m_PointerRayPrefab;
+
+    private EventSystem m_EventSystem;
+    private MultipleRayInputModule m_InputModule;
+    private Camera m_EventCamera;
 
     private readonly List<ActionMap> kDefaultActionMaps = new List<ActionMap> ();
 
@@ -53,6 +58,7 @@ public class EditorVR : MonoBehaviour
         InitializePlayerHandle();
         CreateDefaultActionMapInputs();
         CreateAllProxies();
+        CreateEventSystem();
 		// TEMP
 	    InputDevice leftHand = null;
 	    InputDevice rightHand = null;
@@ -73,8 +79,8 @@ public class EditorVR : MonoBehaviour
 		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);
 
 		SpawnTool(typeof(JoystickLocomotionTool));
-	    SpawnTool(typeof(MakeCubeTool), rightHand);
-		SpawnTool(typeof(MakeSphereTool), leftHand);
+	    SpawnTool(typeof(CreatePrimitiveTool), leftHand);
+		SpawnTool(typeof(MakeCubeTool), rightHand);
 	}
 
 	void OnDestroy()
@@ -146,6 +152,51 @@ public class EditorVR : MonoBehaviour
             }
 			m_AllProxies.Add(proxy);
         }
+    }
+
+    private void CreateEventSystem()
+    {
+        // Create event system, input module, and event camera
+        m_EventSystem = U.AddComponent<EventSystem>(gameObject);
+        m_InputModule = U.AddComponent<MultipleRayInputModule>(gameObject);
+        m_EventCamera = U.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+        m_InputModule.EventCamera = m_EventCamera;
+        m_InputModule.EventCamera.clearFlags = CameraClearFlags.Nothing;
+        m_InputModule.EventCamera.cullingMask = 0;
+
+        foreach (var proxy in m_AllProxies)
+        {
+            foreach (var rayOriginBase in proxy.RayOrigins)
+            {              
+                var actionMapCopy = ScriptableObject.CreateInstance<ActionMap>();
+                EditorUtility.CopySerialized(m_InputModule.ActionMap, actionMapCopy);
+                foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node, and update the action map copy
+                {
+                    if (device.TagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.TagIndex]] == rayOriginBase.Key)
+                    {
+                        UpdateActionMapForDevice(actionMapCopy, device);
+                        break;
+                    }
+                }
+                // Add ActionMapInput to player handle maps stack below default maps and above tools, and increase the offset index where tool inputs will be added
+                ActionMapInput input = CreateActionMapInput(actionMapCopy);
+                kDefaultActionMaps.Add(actionMapCopy);
+                m_PlayerHandle.maps.Insert(m_ToolActionMapInputIndex, input);
+                m_ToolActionMapInputIndex++;
+
+                // Add RayOrigin transform and ActionMapInput reference to input module lists
+                m_InputModule.RayOrigins.Add(rayOriginBase.Value);
+                m_InputModule.AddActionMapInput(input); 
+            }
+        }
+    }
+
+    private GameObject InstantiateUI(GameObject prefab)
+    {
+        var go = U.InstantiateAndSetActive(prefab, transform);
+        foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
+            canvas.worldCamera = m_EventCamera;
+        return go;
     }
 
     private ActionMapInput CreateActionMapInput(ActionMap map)
@@ -315,6 +366,10 @@ public class EditorVR : MonoBehaviour
         {
             locomotionComponent.ViewerPivot = EditorVRView.viewerPivot;
         }
+
+        IInstantiateUI instantiateUITool = tool as IInstantiateUI;
+	    if (instantiateUITool != null)
+	        instantiateUITool.InstantiateUI = InstantiateUI;
 
 	    foreach (var dev in devices)
 	    {

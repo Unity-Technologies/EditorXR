@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a88637e6fe98dcd4da6c6238d3cfc5a4
+timeCreated: 1467063996
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - CanvasPrefab: {fileID: 223000013217348412, guid: e7802aaeab4fbb8499979706e954f478,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
