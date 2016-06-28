@@ -86,15 +86,15 @@ public class ViveInputToEvents
 
     private void SendButtonEvents(int steamDeviceIndex, int deviceIndex) {
         foreach (EVRButtonId button in Enum.GetValues(typeof(EVRButtonId))) {
-            bool keyDown = SteamVR_Controller.Input(steamDeviceIndex).GetPressDown(button);
-            bool keyUp = SteamVR_Controller.Input(steamDeviceIndex).GetPressUp(button);
+            bool isDown = SteamVR_Controller.Input(steamDeviceIndex).GetPressDown(button);
+            bool isUp = SteamVR_Controller.Input(steamDeviceIndex).GetPressUp(button);
 
-            if (keyDown || keyUp) {
+            if (isDown || isUp) {
                 var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
                 inputEvent.deviceType = typeof(VRInputDevice);
                 inputEvent.deviceIndex = deviceIndex; 
                 inputEvent.controlIndex = axisCount + (int)button;
-                inputEvent.value = keyDown ? 1.0f : 0.0f;
+                inputEvent.value = isDown ? 1.0f : 0.0f;
 
                 //Debug.Log(string.Format("event: {0}; button: {1}; hand: {2}", inputEvent, button, deviceIndex));
 

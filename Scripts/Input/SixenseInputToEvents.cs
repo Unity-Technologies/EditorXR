@@ -136,10 +136,10 @@ public class SixenseInputToEvents : MonoBehaviour
         var controller = SixenseInput.Controllers[sixenseDeviceIndex];
         foreach (SixenseButtons button in Enum.GetValues(typeof(SixenseButtons)))
         {
-            bool keyDown = controller.GetButtonDown(button);
-            bool keyUp = controller.GetButtonUp(button);
+            bool isDown = controller.GetButtonDown(button);
+            bool isUp = controller.GetButtonUp(button);
 
-            if (keyDown || keyUp)
+            if (isDown || isUp)
             {
 	            int buttonIndex = GetButtonIndex(button);
 	            if (buttonIndex >= 0)
@@ -148,7 +148,7 @@ public class SixenseInputToEvents : MonoBehaviour
 		            inputEvent.deviceType = typeof(VRInputDevice);
 		            inputEvent.deviceIndex = deviceIndex;
 		            inputEvent.controlIndex = buttonIndex;
-		            inputEvent.value = keyDown ? 1.0f : 0.0f;
+		            inputEvent.value = isDown ? 1.0f : 0.0f;
 
 		            InputSystem.QueueEvent(inputEvent);
 	            }

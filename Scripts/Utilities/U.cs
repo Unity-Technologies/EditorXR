@@ -355,7 +355,8 @@ class U {
 		MonoBehaviour[] monoBehaviours = go.GetComponents<MonoBehaviour>();
 		foreach (MonoBehaviour mb in monoBehaviours)
 		{
-			mb.runInEditMode = enabled;
+			if (mb)
+				mb.runInEditMode = enabled;
 		}
 
 		foreach (Transform child in go.transform)
@@ -387,7 +388,7 @@ class U {
         {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
-                .Where(p => type.IsAssignableFrom(p) && !p.IsInterface);
+                .Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
         }
         return new List<Type>();
     }
