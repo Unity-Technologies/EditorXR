@@ -6,19 +6,12 @@ using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Proxies
 {
-	public class SixenseProxy : TwoHandedProxyBase
+	public class TouchProxy : TwoHandedProxyBase
 	{
-		public override bool Active
-		{
-			get
-			{
-				return false;
-			}
-		}
-
 		public override void Awake()
 		{
-			U.AddComponent<SixenseInputToEvents>(gameObject);
+			base.Awake();
+			U.AddComponent<OVRTouchInputToEvents>(gameObject);
 		}		
 	}
 }
