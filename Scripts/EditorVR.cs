@@ -51,7 +51,11 @@ public class EditorVR : MonoBehaviour
 		{ "Right", Node.RightHand }
 	};
 
-    void Awake()
+	// TEMP
+	InputDevice leftHand = null;
+	InputDevice rightHand = null;
+
+	private void Awake()
     {
         EditorVRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
         EditorVRView.viewerPivot.localPosition = Vector3.zero; // HACK reset pivot to match steam origin
@@ -59,9 +63,6 @@ public class EditorVR : MonoBehaviour
         CreateDefaultActionMapInputs();
         CreateAllProxies();
         CreateEventSystem();
-		// TEMP
-	    InputDevice leftHand = null;
-	    InputDevice rightHand = null;
 		foreach (var device in InputSystem.devices)
 		{
 			if (device.GetType() == typeof(VRInputDevice) && device.TagIndex != -1)
@@ -76,16 +77,48 @@ public class EditorVR : MonoBehaviour
 		m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
 		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
-		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);
+		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);		
+    }
 
-		SpawnTool(typeof(JoystickLocomotionTool));
-	    SpawnTool(typeof(CreatePrimitiveTool), leftHand);
-		SpawnTool(typeof(MakeCubeTool), rightHand);
+	private IEnumerator Start()
+	{
+		// Delay until at least one proxy initializes
+		bool proxyActive = false;
+		while (!proxyActive)
+		{
+			foreach (var proxy in m_AllProxies)
+			{
+				if (proxy.Active)
+				{					
+					proxyActive = true;
+					break;
+				}
+			}
+
+			yield return null;
+		}
+
+		// HACK: U.AddComponent doesn't work properly from an IEnumerator (missing default references when spawned), so currently
+		// it's necessary to spawn the tools in a separate non-IEnumerator context.
+		EditorApplication.delayCall += () =>
+		{
+			SpawnTool(typeof(JoystickLocomotionTool));
+			SpawnTool(typeof(CreatePrimitiveTool), leftHand);
+			SpawnTool(typeof(MakeCubeTool), rightHand);
+		};
 	}
 
-	void OnDestroy()
+	private void OnDestroy()
 	{
 		PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
+	}
+
+	private void Update()
+	{
+		foreach (var proxy in m_AllProxies)
+		{			
+			proxy.Hidden = !proxy.Active;
+		}
 	}
 
 	private void InitializePlayerHandle()
@@ -139,11 +172,6 @@ public class EditorVR : MonoBehaviour
         {
             IProxy proxy = U.CreateGameObjectWithComponent(proxyType, EditorVRView.viewerPivot) as IProxy;
 		    proxy.TrackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
-            if (!proxy.Active)
-            {
-                proxy.Hidden = true;
-                continue;
-            }
             foreach (var rayOriginBase in proxy.RayOrigins)
             {
                 var rayTransform = U.InstantiateAndSetActive(m_PointerRayPrefab.gameObject, rayOriginBase.Value).transform;

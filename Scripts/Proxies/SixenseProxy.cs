@@ -12,14 +12,16 @@ namespace UnityEngine.VR.Proxies
 		{
 			get
 			{
-				return true;
+				return m_InputToEvents.Active;
 			}
 		}
+
+		private SixenseInputToEvents m_InputToEvents;
 
 		public override void Awake()
 		{
             base.Awake();
-			U.AddComponent<SixenseInputToEvents>(gameObject);
+			m_InputToEvents = U.AddComponent<SixenseInputToEvents>(gameObject);
 		}		
 	}
 }

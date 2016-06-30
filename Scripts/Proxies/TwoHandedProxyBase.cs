@@ -32,7 +32,9 @@ namespace UnityEngine.VR.Proxies
 		{
 			set
 			{
-				gameObject.SetActive(!value);
+				var renderers = GetComponentsInChildren<Renderer>();
+				foreach (var r in renderers)
+					r.enabled = !value;
 			}
 		}
 

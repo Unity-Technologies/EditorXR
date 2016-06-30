@@ -8,6 +8,8 @@ using UnityEngine.InputNew;
 
 public class SixenseInputToEvents : MonoBehaviour
 {    
+	public bool Active { get; private set; }
+
     public const uint kControllerCount = SixenseInput.MAX_CONTROLLERS;
 	public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
 	public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
@@ -35,6 +37,7 @@ public class SixenseInputToEvents : MonoBehaviour
 
 	private void Update()
 	{
+		Active = false;
 		if (!SixenseInput.IsBaseConnected(0))
 			return;
 
@@ -42,6 +45,8 @@ public class SixenseInputToEvents : MonoBehaviour
 		{
 			if (SixenseInput.Controllers[i] == null || !SixenseInput.Controllers[i].Enabled)
 				continue;
+
+			Active = true;
 
 			int deviceIndex = kDeviceOffset + (SixenseInput.Controllers[i].Hand == SixenseHands.LEFT ? 0 : 1);
 			SendButtonEvents(i, deviceIndex);

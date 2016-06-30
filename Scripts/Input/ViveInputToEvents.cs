@@ -7,28 +7,36 @@ using UnityEngine.InputNew;
 using UnityEngine.VR;
 using Valve.VR;
 
-public class ViveInputToEvents
-    : MonoBehaviour {
+public class ViveInputToEvents : MonoBehaviour
+{
+	public bool Active { get; private set; }
     public int[] SteamDevice
     {
         get { return steamDeviceIndices; }
     }
+
     private enum XorY { X, Y }
     private readonly int[] steamDeviceIndices = new int[] { -1, -1 };
 
 
-    public void Update() {
-        for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++) {
+    public void Update()
+    {
+	    Active = false;
+
+        for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++)
+		{
             var steamDeviceIndex = steamDeviceIndices[(int)hand];
 
-            if (steamDeviceIndex == -1) 
-                {
+            if (steamDeviceIndex == -1)
+			{
                 steamDeviceIndex = SteamVR_Controller.GetDeviceIndex(hand == VRInputDevice.Handedness.Left
                      ? SteamVR_Controller.DeviceRelation.Leftmost
                      : SteamVR_Controller.DeviceRelation.Rightmost);
 
                 if (steamDeviceIndex == -1)
                     continue;
+
+				Active = true;
 
                 if (hand == VRInputDevice.Handedness.Left)
                 {
@@ -45,9 +53,8 @@ public class ViveInputToEvents
                 {
                     continue;
                 }
-
-
             }
+
             int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
             SendButtonEvents(steamDeviceIndex, deviceIndex);
             SendAxisEvents(steamDeviceIndex, deviceIndex);

@@ -4,6 +4,8 @@ using UnityEngine.InputNew;
 
 public class OVRTouchInputToEvents : MonoBehaviour
 {
+	public bool Active { get; private set; }
+
 	public const uint kControllerCount = 2;
 	public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
 	public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
@@ -17,10 +19,14 @@ public class OVRTouchInputToEvents : MonoBehaviour
 		// Manually update the Touch input
 		OVRInput.Update();
 
-	    if ((OVRInput.GetActiveController() & OVRInput.Controller.Touch) == 0)
-		    return;
+		if ((OVRInput.GetActiveController() & OVRInput.Controller.Touch) == 0)
+		{
+			Active = false;
+			return;
+		}
+		Active = true;
 
-        for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++)
+		for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++)
         {
 	        OVRInput.Controller controller = hand == VRInputDevice.Handedness.Left ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
 			int ovrIndex = controller == OVRInput.Controller.LTouch ? 0 : 1;
