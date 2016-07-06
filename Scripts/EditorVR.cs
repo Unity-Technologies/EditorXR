@@ -29,17 +29,23 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
     private VRLineRenderer m_PointerRayPrefab;
 
+	private TrackedObject m_TrackedObjectInput;
+	private Default m_DefaultActionInput;
+
     private EventSystem m_EventSystem;
     private MultipleRayInputModule m_InputModule;
     private Camera m_EventCamera;
 
-    private readonly List<ActionMap> kDefaultActionMaps = new List<ActionMap> ();
-
-    private int m_ToolActionMapInputIndex; // Index to start adding input maps for active tools
-
     private PlayerHandle m_PlayerHandle;
 
-    private Dictionary<InputDevice, Stack<ITool>> m_ToolStacks = new Dictionary<InputDevice, Stack<ITool>>();
+	private class ToolStack
+	{
+		public Stack<ITool> tools;
+		public Menu menuInput;
+		public ActionMapInput uiInput;
+	}
+
+    private Dictionary<InputDevice, ToolStack> m_ToolStacks = new Dictionary<InputDevice, ToolStack>();
     private List<IProxy> m_AllProxies = new List<IProxy>();
     private IEnumerable<Type> m_AllTools;
 
@@ -62,9 +68,19 @@ public class EditorVR : MonoBehaviour
         InitializePlayerHandle();
         CreateDefaultActionMapInputs();
         CreateAllProxies();
+		CreateToolStacks();
         CreateEventSystem();
+		m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
+		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
+		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
+		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);		
+    }
+
+	private void CreateToolStacks()
+	{
 		foreach (var device in InputSystem.devices)
 		{
+			// HACK to grab left and right hand for now
 			if (device.GetType() == typeof(VRInputDevice) && device.TagIndex != -1)
 			{
 				if (VRInputDevice.Tags[device.TagIndex] == "Left")
@@ -72,13 +88,14 @@ public class EditorVR : MonoBehaviour
 				else if (VRInputDevice.Tags[device.TagIndex] == "Right")
 					rightHand = device;
 			}
-			m_ToolStacks.Add(device, new Stack<ITool>());
+			var toolStack = new ToolStack
+			{
+				tools = new Stack<ITool>(),
+				menuInput = (Menu)CreateActionMapInput(CloneActionMapForDevice(m_MenuActionMap, device))
+			};
+			m_ToolStacks.Add(device, toolStack);
 		}
-		m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
-		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
-		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
-		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);		
-    }
+	}
 
 	private IEnumerator Start()
 	{
@@ -103,8 +120,6 @@ public class EditorVR : MonoBehaviour
 		EditorApplication.delayCall += () =>
 		{
 			SpawnTool(typeof(JoystickLocomotionTool));
-			SpawnTool(typeof(CreatePrimitiveTool), leftHand);
-			SpawnTool(typeof(MakeCubeTool), rightHand);
 		};
 	}
 
@@ -114,10 +129,22 @@ public class EditorVR : MonoBehaviour
 	}
 
 	private void Update()
-	{
+	{		
 		foreach (var proxy in m_AllProxies)
 		{			
 			proxy.Hidden = !proxy.Active;
+		}
+
+		foreach (var kvp in m_ToolStacks)
+		{
+			if (kvp.Value.menuInput.show.wasJustPressed && !kvp.Value.tools.Any(t => t.GetType() == typeof(MainMenuDev)))
+			{
+				// HACK to workaround missing MonoScript serialized fields
+				EditorApplication.delayCall += () =>
+				{
+					SpawnTool(typeof(MainMenuDev), kvp.Key);
+				};
+			}
 		}
 	}
 
@@ -155,15 +182,11 @@ public class EditorVR : MonoBehaviour
 	}
 
     private void CreateDefaultActionMapInputs()
-    {
-        kDefaultActionMaps.Add(m_MenuActionMap);
-        kDefaultActionMaps.Add(m_TrackedObjectActionMap);
-        kDefaultActionMaps.Add(m_DefaultActionMap);
+    {        
+		m_TrackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap);
+        m_DefaultActionInput = (Default)CreateActionMapInput(m_DefaultActionMap);
 
-        m_PlayerHandle.maps.Add(CreateActionMapInput(m_MenuActionMap));
-        m_PlayerHandle.maps.Add(CreateActionMapInput(m_TrackedObjectActionMap));
-        m_ToolActionMapInputIndex = m_PlayerHandle.maps.Count; // Set index where active tool action map inputs will be added
-        m_PlayerHandle.maps.Add(CreateActionMapInput(m_DefaultActionMap));
+		UpdatePlayerHandleMaps();
     }
 
     private void CreateAllProxies()
@@ -195,26 +218,24 @@ public class EditorVR : MonoBehaviour
         foreach (var proxy in m_AllProxies)
         {
             foreach (var rayOriginBase in proxy.RayOrigins)
-            {              
-                var actionMapCopy = ScriptableObject.CreateInstance<ActionMap>();
-                EditorUtility.CopySerialized(m_InputModule.ActionMap, actionMapCopy);
+            {
                 foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node, and update the action map copy
                 {
                     if (device.TagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.TagIndex]] == rayOriginBase.Key)
                     {
-                        UpdateActionMapForDevice(actionMapCopy, device);
-                        break;
+	                    ToolStack toolStack;
+	                    if (m_ToolStacks.TryGetValue(device, out toolStack))
+	                    {
+		                    // Add ActionMapInput to player handle maps stack below default maps and above tools, and increase the offset index where tool inputs will be added
+		                    toolStack.uiInput = CreateActionMapInput(CloneActionMapForDevice(m_InputModule.ActionMap, device));
+
+		                    // Add RayOrigin transform and ActionMapInput reference to input module lists
+		                    m_InputModule.RayOrigins.Add(rayOriginBase.Value);
+		                    m_InputModule.AddActionMapInput(toolStack.uiInput);
+	                    }
+	                    break;
                     }
                 }
-                // Add ActionMapInput to player handle maps stack below default maps and above tools, and increase the offset index where tool inputs will be added
-                ActionMapInput input = CreateActionMapInput(actionMapCopy);
-                kDefaultActionMaps.Add(actionMapCopy);
-                m_PlayerHandle.maps.Insert(m_ToolActionMapInputIndex, input);
-                m_ToolActionMapInputIndex++;
-
-                // Add RayOrigin transform and ActionMapInput reference to input module lists
-                m_InputModule.RayOrigins.Add(rayOriginBase.Value);
-                m_InputModule.AddActionMapInput(input); 
             }
         }
     }
@@ -238,17 +259,29 @@ public class EditorVR : MonoBehaviour
     private void UpdatePlayerHandleMaps()
     {
         var maps = m_PlayerHandle.maps;
-        maps.RemoveRange(m_ToolActionMapInputIndex, maps.Count - kDefaultActionMaps.Count);
-        foreach (Stack<ITool> stack in m_ToolStacks.Values)
+		maps.Clear();
+
+		foreach (ToolStack toolStack in m_ToolStacks.Values)
+		{
+			maps.Add(toolStack.menuInput);
+
+			// Not every tool has UI
+			if (toolStack.uiInput != null)
+				maps.Add(toolStack.uiInput);
+		}
+
+	    maps.Add(m_TrackedObjectInput);
+
+	    foreach (ToolStack toolStack in m_ToolStacks.Values)
         {
-            foreach (ITool tool in stack.Reverse())
+            foreach (ITool tool in toolStack.tools.Reverse())
             {
 	            IStandardActionMap standardActionMap = tool as IStandardActionMap;
 	            if (standardActionMap != null)
 	            {
 		            if (!maps.Contains(standardActionMap.StandardInput))
 		            {
-			            maps.Insert(m_ToolActionMapInputIndex, standardActionMap.StandardInput);
+			            maps.Add(standardActionMap.StandardInput);
 		            }
 				}
 
@@ -257,11 +290,13 @@ public class EditorVR : MonoBehaviour
 	            {
 		            if (!maps.Contains(customActionMap.ActionMapInput))
 		            {
-						maps.Insert(m_ToolActionMapInputIndex, customActionMap.ActionMapInput);
+						maps.Add(customActionMap.ActionMapInput);
 					}
 				}					
             }
         }
+
+		maps.Add(m_DefaultActionInput);
     }
 
 	private void LogError(string error)
@@ -291,9 +326,7 @@ public class EditorVR : MonoBehaviour
 
 			if (device != null)
 			{
-				actionMap = ScriptableObject.CreateInstance<ActionMap>();
-				EditorUtility.CopySerialized(m_StandardToolActionMap, actionMap);
-				UpdateActionMapForDevice(actionMap, device);
+				actionMap = CloneActionMapForDevice(actionMap, device);
 			}
 
 			standardMap.StandardInput = (Standard)CreateActionMapInput(actionMap);
@@ -307,9 +340,7 @@ public class EditorVR : MonoBehaviour
 
 			if (device != null)
 			{
-				actionMap = ScriptableObject.CreateInstance<ActionMap>();
-				EditorUtility.CopySerialized(customMap.ActionMap, actionMap);
-				UpdateActionMapForDevice(actionMap, device);
+				actionMap = CloneActionMapForDevice(actionMap, device);
 			}
 
 			customMap.ActionMapInput = CreateActionMapInput(actionMap);
@@ -389,20 +420,66 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
-		ILocomotion locomotionComponent = tool as ILocomotion;
+		var locomotionComponent = tool as ILocomotion;
         if (locomotionComponent != null)
         {
             locomotionComponent.ViewerPivot = EditorVRView.viewerPivot;
         }
 
-        IInstantiateUI instantiateUITool = tool as IInstantiateUI;
+        var instantiateUITool = tool as IInstantiateUI;
 	    if (instantiateUITool != null)
 	        instantiateUITool.InstantiateUI = InstantiateUI;
 
-	    foreach (var dev in devices)
+		var mainMenuTool = tool as IMainMenu;
+		if (mainMenuTool != null)
+		{
+			mainMenuTool.MenuTools = m_AllTools.ToList();
+			mainMenuTool.SelectTool = SelectTool;
+		}
+
+		foreach (var dev in devices)
 	    {
 		    AddToolToStack(dev, tool);
 	    }
+	}
+
+	private InputDevice GetInputDeviceForTool(ITool tool)
+	{
+		foreach (var kvp in m_ToolStacks)
+		{
+			foreach (var t in kvp.Value.tools)
+			{
+				if (t == tool)
+					return kvp.Key;
+			}
+		}
+
+		return null;
+	}
+
+	private bool SelectTool(IMainMenu menu, Type tool)
+	{
+		var device = GetInputDeviceForTool(menu as ITool);
+		if (device != null)
+		{
+			// HACK to workaround missing serialized fields coming from the MonoScript
+			EditorApplication.delayCall += () =>
+			{
+				SpawnTool(tool, device);
+			};
+			return true;
+		}
+
+		return false;
+	}
+
+	private ActionMap CloneActionMapForDevice(ActionMap actionMap, InputDevice device)
+	{
+		var cloneMap = ScriptableObject.CreateInstance<ActionMap>();
+		EditorUtility.CopySerialized(actionMap, cloneMap);
+		UpdateActionMapForDevice(cloneMap, device);
+
+		return cloneMap;
 	}
 
 	private void UpdateActionMapForDevice(ActionMap actionMap, InputDevice device)
@@ -429,7 +506,7 @@ public class EditorVR : MonoBehaviour
     {
         if (tool != null)
         {
-            m_ToolStacks[device].Push(tool);
+            m_ToolStacks[device].tools.Push(tool);
             UpdatePlayerHandleMaps();
         }
     }

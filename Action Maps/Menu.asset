@@ -19,10 +19,7 @@ MonoBehaviour:
     m_SerializableDeviceTypes:
     - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: 0
-    - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      m_TagIndex: 1
+      m_TagIndex: -1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
@@ -30,12 +27,7 @@ MonoBehaviour:
         deviceType:
           m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
             Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
-      - controlIndex: 27
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+          m_TagIndex: -1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -52,7 +44,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Menu
+  m_Name: Show
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
@@ -63,5 +55,5 @@ MonoBehaviour:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1
-    name: Menu
+    name: Show
     defaultValue: 0

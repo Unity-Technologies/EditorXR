@@ -5,5 +5,5 @@ using UnityEngine.InputNew;
 public class Menu : ActionMapInput {
 	public Menu (ActionMap actionMap) : base (actionMap) { }
 	
-	public ButtonInputControl @menu { get { return (ButtonInputControl)this[0]; } }
+	public ButtonInputControl @show { get { return (ButtonInputControl)this[0]; } }
 }
