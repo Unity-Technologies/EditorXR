@@ -11,12 +11,12 @@ using Object = UnityEngine.Object;
 namespace UnityEditor.VR
 {
     [InitializeOnLoad]
-	public class EditorVR : EditorWindow
+	public class EditorVRView : EditorWindow
 	{
 		[MenuItem("Window/EditorVR", false)]
 		public static void ShowEditorVR()
 		{
-			EditorVR.GetWindow<EditorVR>("EditorVR", true);
+			EditorVRView.GetWindow<EditorVRView>("EditorVR", true);
 		}
 		[MenuItem("Window/EditorVR", true)]
 		public static bool ShouldShowEditorVR()
@@ -24,9 +24,9 @@ namespace UnityEditor.VR
 			return PlayerSettings.virtualRealitySupported;
 		}
 
-		public static EditorVR GetWindow()
+		public static EditorVRView GetWindow()
 		{
-			return EditorWindow.GetWindow<EditorVR>(true);
+			return EditorWindow.GetWindow<EditorVRView>(true);
 		}
 
         public static Coroutine StartCoroutine(IEnumerator routine)
@@ -43,7 +43,7 @@ namespace UnityEditor.VR
         // Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
         // EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
         // we watch until playmode is done and then relaunch.  
-        static EditorVR()
+        static EditorVRView()
         {
             EditorApplication.update += ReopenOnExitPlaymode;
         }
@@ -105,7 +105,7 @@ namespace UnityEditor.VR
             }
         }
 
-        public static EditorVR activeView
+        public static EditorVRView activeView
         {
             get
             {
@@ -124,8 +124,7 @@ namespace UnityEditor.VR
 
 		private RenderTexture m_SceneTargetTexture;
 
-		private static EditorVR s_ActiveView = null;
-		private static HideFlags defaultHideFlags = HideFlags.DontSave;
+		private static EditorVRView s_ActiveView = null;
 
 		private Transform m_CameraPivot = null;
         private Quaternion m_LastHeadRotation = Quaternion.identity;
@@ -133,8 +132,8 @@ namespace UnityEditor.VR
 		
 		private const string kLaunchOnExitPlaymode = "EditorVR.LaunchOnExitPlaymode";
         private const float kHMDActivityTimeout = 3f; // in seconds
-                
-        public void OnEnable()
+
+	    public void OnEnable()
         {
 			EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
 
@@ -144,12 +143,12 @@ namespace UnityEditor.VR
 			wantsMouseMove = true;
 			s_ActiveView = this;
 
-			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCamera", defaultHideFlags, typeof(Camera));
+			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCamera", EditorVR.kDefaultHideFlags, typeof(Camera));
 			m_Camera = cameraGO.GetComponent<Camera>();
 			m_Camera.enabled = false;
 			m_Camera.cameraType = CameraType.VR;
 
-			GameObject pivotGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCameraPivot", defaultHideFlags, typeof(EditorMonoBehaviour));
+			GameObject pivotGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCameraPivot", EditorVR.kDefaultHideFlags, typeof(EditorMonoBehaviour));
             m_CameraPivot = pivotGO.transform;
             m_Camera.transform.parent = m_CameraPivot;
 			m_Camera.nearClipPlane = 0.01f;

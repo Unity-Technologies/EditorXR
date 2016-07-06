@@ -1,6 +1,12 @@
+using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
+using UnityEngine.InputNew;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 #if UNITY_EDITOR
 using UnityEditor.VR;
 #endif
@@ -242,7 +248,7 @@ class U {
 				Object.DestroyImmediate(o);
 			else
 			{	
-                EditorVR.StartCoroutine(DestroyInSeconds(o, t));
+                EditorVRView.StartCoroutine(DestroyInSeconds(o, t));
 			}			
 		}
 	}
@@ -271,9 +277,9 @@ class U {
 	{
 		Camera camera = Camera.main;
 #if UNITY_EDITOR
-		if (!Application.isPlaying && EditorVR.viewerCamera)
+		if (!Application.isPlaying && EditorVRView.viewerCamera)
 		{
-			camera = EditorVR.viewerCamera;
+			camera = EditorVRView.viewerCamera;
 		}
 #endif
 
@@ -286,8 +292,8 @@ class U {
 #if UNITY_EDITOR
 		if (!Application.isPlaying)
 		{
-			if (EditorVR.viewerCamera)
-				pivot = EditorVR.viewerCamera.transform.parent;
+			if (EditorVRView.viewerCamera)
+				pivot = EditorVRView.viewerCamera.transform.parent;
 		}
 #endif
 		return pivot;
@@ -298,12 +304,35 @@ class U {
 		GameObject go = Object.Instantiate<GameObject>(prefab);
 		go.transform.SetParent(parent, worldPositionStays);
 		go.SetActive(true);
+#if UNITY_EDITOR
 		if (!Application.isPlaying && runInEditMode)
-			U.SetRunInEditModeRecursively(go, true);
+		{
+			U.SetRunInEditModeRecursively(go, runInEditMode);
+			go.hideFlags = EditorVR.kDefaultHideFlags;
+		}
+#endif
 		return go;
 	}
 
-	public static void SetLayerRecursively(GameObject root, int layer)
+	public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : MonoBehaviour
+	{
+	    return (T) CreateGameObjectWithComponent(typeof(T), parent);
+	}
+
+    public static Component CreateGameObjectWithComponent(Type type, Transform parent = null)
+    {
+#if UNITY_EDITOR
+        Component component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, EditorVR.kDefaultHideFlags, type).GetComponent(type);
+        if (!Application.isPlaying)
+            SetRunInEditModeRecursively(component.gameObject, true);
+#else
+        Component component = new GameObject(type.Name).AddComponent(type);
+#endif
+        component.transform.parent = parent;
+        return component;
+    }
+
+    public static void SetLayerRecursively(GameObject root, int layer)
 	{
 		Transform[] transforms = root.GetComponentsInChildren<Transform>();
 		for (int i = 0; i < transforms.Length; i++)
@@ -323,29 +352,80 @@ class U {
 
 	public static void SetRunInEditModeRecursively(GameObject go, bool enabled)
 	{
-		MonoBehaviour[] monoBehaviours = go.GetComponentsInChildren<MonoBehaviour>();
+		MonoBehaviour[] monoBehaviours = go.GetComponents<MonoBehaviour>();
 		foreach (MonoBehaviour mb in monoBehaviours)
 		{
-			mb.runInEditMode = enabled;
+			if (mb)
+				mb.runInEditMode = enabled;
+		}
+
+		foreach (Transform child in go.transform)
+		{
+			SetRunInEditModeRecursively(child.gameObject, enabled);
 		}
 	}
 
 	public static bool IsEditModeActive(MonoBehaviour mb)
 	{
 		return !Application.isPlaying && mb.runInEditMode;
+    }
+
+    public static T AddComponent<T>(GameObject go) where T : Component
+    {
+        return (T)AddComponent(typeof(T), go);
+    }
+
+    public static Component AddComponent(Type type, GameObject go)
+    {
+        Component component = go.AddComponent(type);
+        SetRunInEditModeRecursively(go, true);
+        return component;
+    }
+
+    public static IEnumerable<Type> GetImplementationsOfInterface(Type type)
+    {
+        if (type.IsInterface)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes())
+                .Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
+        }
+        return new List<Type>();
+    }
+
+	public static HashSet<InputDevice> CollectInputDevicesFromActionMaps(List<ActionMap> maps)
+	{
+		var inputDevices = new HashSet<InputDevice>();
+		var systemDevices = InputSystem.devices;
+
+		foreach (var map in maps)
+		{
+			foreach (var scheme in map.controlSchemes)
+			{
+				foreach (var deviceType in scheme.serializableDeviceTypes)
+				{
+					foreach (var systemDevice in systemDevices)
+					{
+						if (systemDevice.GetType() == deviceType.value &&
+							(deviceType.TagIndex == -1 || deviceType.TagIndex == systemDevice.TagIndex))
+						{
+							inputDevices.Add(systemDevice);
+						}
+					}
+				}
+			}	
+		}
+		return inputDevices;
 	}
 
-	public static T AddComponent<T>(GameObject go) where T : Component
+	public static void CollectSerializableTypesFromActionMapInput(ActionMapInput actionMapInput, ref HashSet<SerializableType> types)
 	{
-		T component = go.AddComponent<T>();
-		if (!Application.isPlaying)
+		foreach (var deviceType in actionMapInput.controlScheme.serializableDeviceTypes)
 		{
-			MonoBehaviour mb = component as MonoBehaviour;
-			if (mb)
-				mb.runInEditMode = true;
-		}
-		return component;
+			types.Add(deviceType);
+		}	
 	}
+
 
 	public static GameObject SpawnGhostWireframe(GameObject obj, Material ghostMaterial, bool enableRenderers = true)
 	{

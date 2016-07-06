@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 1cb511ab83fbb8a43a1bcc71143e5392
+timeCreated: 1467058320
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - EventCameraPrefab: {fileID: 20000012271368486, guid: 6078fbea960c1014cba733bb3ec1d7ad,
+      type: 2}
+  - m_UIActionMap: {fileID: 11400000, guid: 1bd3bab3184120948a569469b61b216b, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

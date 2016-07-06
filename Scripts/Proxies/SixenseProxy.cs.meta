@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 533cc1f4378be8540b46a00c8a103877
+timeCreated: 1467068979
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_LeftHandProxyPrefab: {fileID: 150470, guid: ea7d63f56711a60489bf0fe2405f5895,
+      type: 2}
+  - m_RightHandProxyPrefab: {fileID: 150470, guid: ea7d63f56711a60489bf0fe2405f5895,
+      type: 2}
+  - m_PlayerInput: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
