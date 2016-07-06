@@ -140,9 +140,10 @@ public class EditorVR : MonoBehaviour
 			if (kvp.Value.menuInput.show.wasJustPressed && !kvp.Value.tools.Any(t => t.GetType() == typeof(MainMenuDev)))
 			{
 				// HACK to workaround missing MonoScript serialized fields
+			    var device = kvp.Key;
 				EditorApplication.delayCall += () =>
 				{
-					SpawnTool(typeof(MainMenuDev), kvp.Key);
+					SpawnTool(typeof(MainMenuDev), device);
 				};
 			}
 		}
@@ -227,17 +228,18 @@ public class EditorVR : MonoBehaviour
 	                    if (m_ToolStacks.TryGetValue(device, out toolStack))
 	                    {
 		                    // Add ActionMapInput to player handle maps stack below default maps and above tools, and increase the offset index where tool inputs will be added
-		                    toolStack.uiInput = CreateActionMapInput(CloneActionMapForDevice(m_InputModule.ActionMap, device));
+                            if(toolStack.uiInput == null)
+		                        toolStack.uiInput = CreateActionMapInput(CloneActionMapForDevice(m_InputModule.ActionMap, device));
 
-		                    // Add RayOrigin transform and ActionMapInput reference to input module lists
-		                    m_InputModule.RayOrigins.Add(rayOriginBase.Value);
-		                    m_InputModule.AddActionMapInput(toolStack.uiInput);
+		                    // Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+                            m_InputModule.AddRaycastSource(proxy, rayOriginBase.Value, toolStack.uiInput);
 	                    }
 	                    break;
                     }
                 }
             }
         }
+        UpdatePlayerHandleMaps();
     }
 
     private GameObject InstantiateUI(GameObject prefab)

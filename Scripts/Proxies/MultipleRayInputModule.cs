@@ -21,13 +21,22 @@ namespace UnityEngine.VR.Proxies
         {
             get {  return m_UIActionMap; }
         }
-        private readonly List<UIActions> m_UIActionMapInputs = new List<UIActions>();
 
-        public List<Transform> RayOrigins
+        private class RaycastSource
         {
-            get { return m_RayOrigins; }
+            public IProxy proxy; // Needed for checking if proxy is active
+            public Transform rayOrigin;
+            public UIActions actionMapInput;
+
+            public RaycastSource(IProxy proxy, Transform rayOrigin, UIActions actionMapInput)
+            {
+                this.proxy = proxy;
+                this.rayOrigin = rayOrigin;
+                this.actionMapInput = actionMapInput;
+            }
         }
-        private readonly List<Transform> m_RayOrigins = new List<Transform>();
+       
+        private readonly List<RaycastSource> m_RaycastSources = new List<RaycastSource>();
 
         [SerializeField]
         private ActionMap m_UIActionMap;
@@ -39,13 +48,15 @@ namespace UnityEngine.VR.Proxies
         private List<GameObject> CurrentPressed = new List<GameObject>();
         private List<GameObject> CurrentDragging = new List<GameObject>();
 
-        public void AddActionMapInput(ActionMapInput actionMapInput)
+
+        public void AddRaycastSource(IProxy proxy, Transform rayOrigin, ActionMapInput actionMapInput)
         {
             UIActions actions = (UIActions) actionMapInput;
-            if(actions != null)
-                m_UIActionMapInputs.Add(actions);
-            else
+            if(actions == null)
                 Debug.LogError("Cannot add actionMapInput to InputModule that is not of type UIActions.");
+
+            actions.active = false;
+            m_RaycastSources.Add(new RaycastSource(proxy, rayOrigin, actions));
         }
 
         public override void Process()
@@ -56,7 +67,7 @@ namespace UnityEngine.VR.Proxies
                 return;
 
             //Process events for all different transforms in RayOrigins
-            for (int i = 0; i < RayOrigins.Count; i++)
+            for (int i = 0; i < m_RaycastSources.Count; i++)
             {
                 // Expand lists if needed
                 while (i >= CurrentPoint.Count)
@@ -66,27 +77,27 @@ namespace UnityEngine.VR.Proxies
                 while (i >= CurrentDragging.Count)
                     CurrentDragging.Add(null);
 
+                if (!m_RaycastSources[i].proxy.Active)
+                    continue;
+
                 CurrentPoint[i] = GetRayIntersection(i); // Check all currently running raycasters
 
                 HandlePointerExitAndEnter(PointEvents[i], CurrentPoint[i]); // Send enter and exit events
 
-                if (m_UIActionMapInputs[i] != null)
-                {
-                    // Activate actionmap input only if pointer is interacting with something
-                    m_UIActionMapInputs[i].active = CurrentPoint[i] != null || CurrentPressed[i] != null || CurrentDragging[i] != null;
-                    if (!m_UIActionMapInputs[i].active)
-                        continue;
+                // Activate actionmap input only if pointer is interacting with something
+                m_RaycastSources[i].actionMapInput.active = CurrentPoint[i] != null || CurrentPressed[i] != null || CurrentDragging[i] != null;
+                if (!m_RaycastSources[i].actionMapInput.active)
+                    continue;
 
-                    //Send select pressed and released events
-                    if (m_UIActionMapInputs[i].select.wasJustPressed)
-                        OnSelectPressed(i);
+                //Send select pressed and released events
+                if (m_RaycastSources[i].actionMapInput.select.wasJustPressed)
+                    OnSelectPressed(i);
 
-                    if (m_UIActionMapInputs[i].select.wasJustReleased)
-                        OnSelectReleased(i);
+                if (m_RaycastSources[i].actionMapInput.select.wasJustReleased)
+                    OnSelectReleased(i);
 
-                    if (CurrentDragging[i] != null)
-                        ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteEvents.dragHandler);
-                }
+                if (CurrentDragging[i] != null)
+                    ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteEvents.dragHandler);
             }
         }
 
@@ -162,8 +173,8 @@ namespace UnityEngine.VR.Proxies
         {
             GameObject hit = null;
             // Move camera to position and rotation for the ray origin
-            m_EventCamera.transform.position = RayOrigins[i].position;
-            m_EventCamera.transform.rotation = RayOrigins[i].rotation;
+            m_EventCamera.transform.position = m_RaycastSources[i].rayOrigin.position;
+            m_EventCamera.transform.rotation = m_RaycastSources[i].rayOrigin.rotation;
 
             if (i >= PointEvents.Count)
                 PointEvents.Add(new PointerEventData(base.eventSystem));

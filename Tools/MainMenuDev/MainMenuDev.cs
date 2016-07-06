@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using UnityEngine.VR.Tools;
 
@@ -35,7 +36,6 @@ public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
 		{
 			var go = InstantiateUI(m_MainMenuPrefab.gameObject);
 			m_MenuCanvas = go.GetComponent<Canvas>();
-			Debug.Log(m_MenuCanvas.GetComponent<GraphicRaycaster>().runInEditMode);
 			m_Layout = m_MenuCanvas.GetComponentInChildren<GridLayoutGroup>().GetComponent<RectTransform>();
 			m_ButtonTemplate = m_Layout.GetChild(0).gameObject;
 			m_ButtonTemplate.SetActive(false);
@@ -46,7 +46,8 @@ public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
 
 	void OnDestroy()
 	{
-		U.Destroy(m_MenuCanvas.gameObject);
+		if(m_MenuCanvas != null)
+            U.Destroy(m_MenuCanvas.gameObject);
 	}
 
 	private void CreateToolButtons()
@@ -54,14 +55,23 @@ public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
 		foreach (var menuTool in MenuTools)
 		{
 			var newButton = U.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
+		    newButton.name = menuTool.Name;
 			var text = newButton.GetComponentInChildren<Text>();
 			text.text = menuTool.Name;
 			var button = newButton.GetComponent<Button>();
-			button.onClick.AddListener(() =>
-			{
-				if (SelectTool(this, menuTool))
-					U.Destroy(this);
-			});
+            AddButtonListener(button, menuTool);
 		}
 	}
+
+    private void AddButtonListener(Button b, Type t)
+    {
+        b.onClick.RemoveAllListeners();
+        b.onClick.AddListener(() =>
+        {
+            string n = b.name;
+            if (SelectTool(this, t))
+                U.Destroy(this);         
+        });
+        b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
+    }
 }
