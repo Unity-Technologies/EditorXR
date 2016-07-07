@@ -31,7 +31,7 @@
             public static float GetSizeForDistanceToCamera(GameObject obj, float minScale, float scaleAt100)
             {
                 float dist = DistanceToCamera(obj);
-                float scale = MathUtilities.Map(dist, 0, 100, minScale, scaleAt100);
+                float scale = Math.Map(dist, 0, 100, minScale, scaleAt100);
                 if (scale < minScale) scale = minScale;
                 return scale;
             }

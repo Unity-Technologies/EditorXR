@@ -331,7 +331,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			standardMap.StandardInput = (Standard)CreateActionMapInput(actionMap);
-			U.Object.CollectSerializableTypesFromActionMapInput(standardMap.StandardInput, ref serializableTypes);
+			U.Input.CollectSerializableTypesFromActionMapInput(standardMap.StandardInput, ref serializableTypes);
 		}
 			
 		var customMap = tool as ICustomActionMap;
@@ -345,7 +345,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			customMap.ActionMapInput = CreateActionMapInput(actionMap);
-			U.Object.CollectSerializableTypesFromActionMapInput(customMap.ActionMapInput, ref serializableTypes);
+			U.Input.CollectSerializableTypesFromActionMapInput(customMap.ActionMapInput, ref serializableTypes);
 		}
 
 		if (device != null)
@@ -391,7 +391,7 @@ public class EditorVR : MonoBehaviour
 		else
 		{
 			// TODO: Do we need to collect devices across all control schemes?
-			devices = U.Object.CollectInputDevicesFromActionMaps(m_ToolActionMaps[toolType]);
+			devices = U.Input.CollectInputDevicesFromActionMaps(m_ToolActionMaps[toolType]);
 		}
 
 		if (device != null)

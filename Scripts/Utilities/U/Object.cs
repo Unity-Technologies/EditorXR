@@ -5,9 +5,8 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using UnityEngine.InputNew;
+    using UMaterial = UnityEngine.Material;
     using UObject = UnityEngine.Object;
-    using Random = UnityEngine.Random;
 #if UNITY_EDITOR
     using UnityEditor;
     using UnityEditor.VR;
@@ -156,40 +155,7 @@
                 }
                 return new List<Type>();
             }
-
-            public static HashSet<InputDevice> CollectInputDevicesFromActionMaps(List<ActionMap> maps)
-            {
-                var inputDevices = new HashSet<InputDevice>();
-                var systemDevices = InputSystem.devices;
-
-                foreach (var map in maps)
-                {
-                    foreach (var scheme in map.controlSchemes)
-                    {
-                        foreach (var deviceType in scheme.serializableDeviceTypes)
-                        {
-                            foreach (var systemDevice in systemDevices)
-                            {
-                                if (systemDevice.GetType() == deviceType.value &&
-                                    (deviceType.TagIndex == -1 || deviceType.TagIndex == systemDevice.TagIndex))
-                                {
-                                    inputDevices.Add(systemDevice);
-                                }
-                            }
-                        }
-                    }
-                }
-                return inputDevices;
-            }
-
-            public static void CollectSerializableTypesFromActionMapInput(ActionMapInput actionMapInput, ref HashSet<SerializableType> types)
-            {
-                foreach (var deviceType in actionMapInput.controlScheme.serializableDeviceTypes)
-                {
-                    types.Add(deviceType);
-                }
-            }
-
+            
             public static void Destroy(UObject o, float t = 0f)
             {
                 if (Application.isPlaying)
@@ -216,93 +182,7 @@
                 UObject.DestroyImmediate(o);
             }
             
-            /// <summary>
-            /// Get a material clone; IMPORTANT: Make sure to call U.Destroy() on this material when done!
-            /// </summary>
-            /// <param name="renderer"></param>
-            /// <returns>Material</returns>
-            public static Material GetMaterialClone(Renderer renderer)
-            {
-                // The following is equivalent to renderer.material, but gets rid of the error messages in edit mode
-                return renderer.material = UObject.Instantiate(renderer.sharedMaterial);
-            }
-
-            // from http://wiki.unity3d.com/index.php?title=HexConverter
-            // Note that Color32 and Color implictly convert to each other. You may pass a Color object to this method without first casting it.
-            public static string ColorToHex(Color32 color)
-            {
-                string hex = color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2");
-                return hex;
-            }
-
-            public static Color HexToColor(string hex)
-            {
-                byte r = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
-                byte g = byte.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
-                byte b = byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
-                return new Color32(r, g, b, 255);
-            }
-
-            public static Color RandomColor()
-            {
-                float r = Random.value;
-                float g = Random.value;
-                float b = Random.value;
-                return new Color(r, g, b);
-            }
-
-            public static void SetObjectColor(GameObject obj, Color col)
-            {
-                Material material = new Material(obj.GetComponent<Renderer>().sharedMaterial);
-                material.color = col;
-                obj.GetComponent<Renderer>().sharedMaterial = material;
-            }
-
-            public static Color GetObjectColor(GameObject obj)
-            {
-                return obj.GetComponent<Renderer>().sharedMaterial.color;
-            }
-
-            public static void SetObjectAlpha(GameObject obj, float alpha)
-            {
-                Color col = GetObjectColor(obj);
-                col.a = alpha;
-                SetObjectColor(obj, col);
-            }
-
-            public static void SetObjectEmissionColor(GameObject obj, Color col)
-            {
-                Renderer r = obj.GetComponent<Renderer>();
-                if (r)
-                {
-                    Material material = new Material(r.sharedMaterial);
-                    if (material.HasProperty("_EmissionColor"))
-                    {
-                        material.SetColor("_EmissionColor", col);
-                        obj.GetComponent<Renderer>().sharedMaterial = material;
-                    }
-                    else
-                    {
-                        Destroy(material);
-                    }
-                }
-
-            }
-            public static Color GetObjectEmissionColor(GameObject obj)
-            {
-                Renderer r = obj.GetComponent<Renderer>();
-                if (r)
-                {
-                    Material material = r.sharedMaterial;
-                    if (material.HasProperty("_EmissionColor"))
-                    {
-                        return material.GetColor("_EmissionColor");
-                    }
-                }
-                return Color.white;
-            }
-            
-            public static GameObject SpawnGhostWireframe(GameObject obj, Material ghostMaterial, bool enableRenderers = true)
+            public static GameObject SpawnGhostWireframe(GameObject obj, UMaterial ghostMaterial, bool enableRenderers = true)
             {
                 // spawn ghost
                 GameObject ghostObj = InstantiateAndSetActive(obj, obj.transform.parent);
@@ -326,11 +206,11 @@
             }
 
             // generates wireframe if contains a renderer 
-            private static void GenerateWireframe(Renderer r, Material ghostMaterial)
+            private static void GenerateWireframe(Renderer r, UMaterial ghostMaterial)
             {
                 if (r)
                 {
-                    Material[] materials = r.sharedMaterials;
+                    UMaterial[] materials = r.sharedMaterials;
                     for (int i = 0; i < materials.Length; i++)
                         materials[i] = ghostMaterial;
                     r.sharedMaterials = materials;

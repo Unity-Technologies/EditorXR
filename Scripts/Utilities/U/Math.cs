@@ -8,9 +8,9 @@
     public partial class U
     {
         /// <summary>
-        /// Computation related EditorVR utilities
+        /// Math related EditorVR utilities
         /// </summary>
-        public class MathUtilities
+        public class Math
         {
             // snaps value to a unit. unit can be any number.
             // for example, with a unit of 0.2, 0.41 -> 0.4, and 0.52 -> 0.6
