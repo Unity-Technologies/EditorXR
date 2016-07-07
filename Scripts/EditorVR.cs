@@ -38,14 +38,14 @@ public class EditorVR : MonoBehaviour
 
     private PlayerHandle m_PlayerHandle;
 
-	private class ToolStack
+	private class DeviceData
 	{
 		public Stack<ITool> tools;
 		public Menu menuInput;
 		public ActionMapInput uiInput;
 	}
 
-    private Dictionary<InputDevice, ToolStack> m_ToolStacks = new Dictionary<InputDevice, ToolStack>();
+    private Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
     private List<IProxy> m_AllProxies = new List<IProxy>();
     private IEnumerable<Type> m_AllTools;
 
@@ -68,7 +68,7 @@ public class EditorVR : MonoBehaviour
         InitializePlayerHandle();
         CreateDefaultActionMapInputs();
         CreateAllProxies();
-		CreateToolStacks();
+		CreateDeviceData();
         CreateEventSystem();
 		m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
@@ -76,7 +76,7 @@ public class EditorVR : MonoBehaviour
 		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);		
     }
 
-	private void CreateToolStacks()
+	private void CreateDeviceData()
 	{
 		foreach (var device in InputSystem.devices)
 		{
@@ -88,12 +88,12 @@ public class EditorVR : MonoBehaviour
 				else if (VRInputDevice.Tags[device.TagIndex] == "Right")
 					rightHand = device;
 			}
-			var toolStack = new ToolStack
+			var deviceData = new DeviceData
 			{
 				tools = new Stack<ITool>(),
 				menuInput = (Menu)CreateActionMapInput(CloneActionMapForDevice(m_MenuActionMap, device))
 			};
-			m_ToolStacks.Add(device, toolStack);
+			m_DeviceData.Add(device, deviceData);
 		}
 	}
 
@@ -135,7 +135,7 @@ public class EditorVR : MonoBehaviour
 			proxy.Hidden = !proxy.Active;
 		}
 
-		foreach (var kvp in m_ToolStacks)
+		foreach (var kvp in m_DeviceData)
 		{
 			if (kvp.Value.menuInput.show.wasJustPressed && !kvp.Value.tools.Any(t => t.GetType() == typeof(MainMenuDev)))
 			{
@@ -223,15 +223,14 @@ public class EditorVR : MonoBehaviour
                 {
                     if (device.TagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.TagIndex]] == rayOriginBase.Key)
                     {
-	                    ToolStack toolStack;
-	                    if (m_ToolStacks.TryGetValue(device, out toolStack))
+	                    DeviceData deviceData;
+	                    if (m_DeviceData.TryGetValue(device, out deviceData))
 	                    {
-		                    // Add ActionMapInput to player handle maps stack below default maps and above tools, and increase the offset index where tool inputs will be added
-		                    toolStack.uiInput = CreateActionMapInput(CloneActionMapForDevice(m_InputModule.ActionMap, device));
+		                    deviceData.uiInput = CreateActionMapInput(CloneActionMapForDevice(m_InputModule.ActionMap, device));
 
 		                    // Add RayOrigin transform and ActionMapInput reference to input module lists
 		                    m_InputModule.RayOrigins.Add(rayOriginBase.Value);
-		                    m_InputModule.AddActionMapInput(toolStack.uiInput);
+		                    m_InputModule.AddActionMapInput(deviceData.uiInput);
 	                    }
 	                    break;
                     }
@@ -261,20 +260,20 @@ public class EditorVR : MonoBehaviour
         var maps = m_PlayerHandle.maps;
 		maps.Clear();
 
-		foreach (ToolStack toolStack in m_ToolStacks.Values)
+		foreach (DeviceData deviceData in m_DeviceData.Values)
 		{
-			maps.Add(toolStack.menuInput);
+			maps.Add(deviceData.menuInput);
 
 			// Not every tool has UI
-			if (toolStack.uiInput != null)
-				maps.Add(toolStack.uiInput);
+			if (deviceData.uiInput != null)
+				maps.Add(deviceData.uiInput);
 		}
 
 	    maps.Add(m_TrackedObjectInput);
 
-	    foreach (ToolStack toolStack in m_ToolStacks.Values)
+	    foreach (DeviceData deviceData in m_DeviceData.Values)
         {
-            foreach (ITool tool in toolStack.tools.Reverse())
+            foreach (ITool tool in deviceData.tools.Reverse())
             {
 	            IStandardActionMap standardActionMap = tool as IStandardActionMap;
 	            if (standardActionMap != null)
@@ -309,7 +308,7 @@ public class EditorVR : MonoBehaviour
 	/// left hand), so in those cases we map the source bindings of the action map input to the correct device tag.
 	/// </summary>
 	/// <param name="toolType">The tool to spawn</param>
-	/// <param name="device">The input device that serves as a key for the tool stack that the tool should spawned on 
+	/// <param name="device">The input device that serves as a key for the deviceData that the tool should spawned on 
 	/// (optional). If not specified, then it uses the action map to determine which devices the tool should be spawned
 	/// on.</param>
 	private void SpawnTool(Type toolType, InputDevice device = null)
@@ -445,7 +444,7 @@ public class EditorVR : MonoBehaviour
 
 	private InputDevice GetInputDeviceForTool(ITool tool)
 	{
-		foreach (var kvp in m_ToolStacks)
+		foreach (var kvp in m_DeviceData)
 		{
 			foreach (var t in kvp.Value.tools)
 			{
@@ -506,7 +505,7 @@ public class EditorVR : MonoBehaviour
     {
         if (tool != null)
         {
-            m_ToolStacks[device].tools.Push(tool);
+            m_DeviceData[device].tools.Push(tool);
             UpdatePlayerHandleMaps();
         }
     }
