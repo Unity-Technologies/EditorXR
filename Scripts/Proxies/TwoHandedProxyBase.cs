@@ -1,9 +1,6 @@
-﻿using UnityEngine;
-using System;
-using System.Collections.Generic;
-using System.Security.AccessControl;
+﻿using System.Collections.Generic;
+using UnityEditor.VR.Utilities;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Proxies
 {
@@ -52,8 +49,8 @@ namespace UnityEngine.VR.Proxies
 
 		public virtual void Awake()
 		{
-			m_LeftHand = U.InstantiateAndSetActive(m_LeftHandProxyPrefab, transform).transform;
-			m_RightHand = U.InstantiateAndSetActive(m_RightHandProxyPrefab, transform).transform;
+			m_LeftHand = U.Object.InstantiateAndSetActive(m_LeftHandProxyPrefab, transform).transform;
+			m_RightHand = U.Object.InstantiateAndSetActive(m_RightHandProxyPrefab, transform).transform;
 			m_LeftHandRayOrigin = m_LeftHand.FindChild("RayOrigin");
 			m_RightHandRayOrigin = m_RightHand.FindChild("RayOrigin");
 

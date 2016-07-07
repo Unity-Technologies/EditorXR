@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using System;
-using System.Collections.Generic;
-using System.Security.AccessControl;
-using UnityEngine.InputNew;
+﻿using UnityEditor.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
 {
@@ -21,7 +17,7 @@ namespace UnityEngine.VR.Proxies
 		public override void Awake()
 		{
 			base.Awake();
-			m_InputToEvents = U.AddComponent<OVRTouchInputToEvents>(gameObject);
+			m_InputToEvents = U.Object.AddComponent<OVRTouchInputToEvents>(gameObject);
 		}		
 	}
 }
