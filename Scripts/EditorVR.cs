@@ -220,19 +220,19 @@ public class EditorVR : MonoBehaviour
         {
             foreach (var rayOriginBase in proxy.RayOrigins)
             {
-                foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node, and update the action map copy
+                foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
                 {
                     if (device.TagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.TagIndex]] == rayOriginBase.Key)
                     {
 	                    ToolStack toolStack;
 	                    if (m_ToolStacks.TryGetValue(device, out toolStack))
 	                    {
-		                    // Add ActionMapInput to player handle maps stack below default maps and above tools, and increase the offset index where tool inputs will be added
-                            if(toolStack.uiInput == null)
+                            // Create ui action map input for device.
+                            if (toolStack.uiInput == null)
 		                        toolStack.uiInput = CreateActionMapInput(CloneActionMapForDevice(m_InputModule.ActionMap, device));
 
 		                    // Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-                            m_InputModule.AddRaycastSource(proxy, rayOriginBase.Value, toolStack.uiInput);
+                            m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, toolStack.uiInput);
 	                    }
 	                    break;
                     }
@@ -439,9 +439,9 @@ public class EditorVR : MonoBehaviour
 			mainMenuTool.SelectTool = SelectTool;
 		}
 
-		foreach (var dev in devices)
+	    foreach (var dev in devices)
 	    {
-		    AddToolToStack(dev, tool);
+	        AddToolToStack(dev, tool);
 	    }
 	}
 

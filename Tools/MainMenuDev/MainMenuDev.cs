@@ -46,7 +46,7 @@ public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
 
 	void OnDestroy()
 	{
-		if(m_MenuCanvas != null)
+		if (m_MenuCanvas != null)
             U.Destroy(m_MenuCanvas.gameObject);
 	}
 
@@ -70,7 +70,7 @@ public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
         {
             string n = b.name;
             if (SelectTool(this, t))
-                U.Destroy(this);         
+                U.Destroy(this);
         });
         b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
     }
