@@ -68,7 +68,7 @@ public class EditorVR : MonoBehaviour
         InitializePlayerHandle();
         CreateDefaultActionMapInputs();
         CreateAllProxies();
-		CreateDeviceData();
+        CreateDeviceDataForInputDevices();
         CreateEventSystem();
 		m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
@@ -76,7 +76,7 @@ public class EditorVR : MonoBehaviour
 		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);		
     }
 
-	private void CreateDeviceData()
+	private void CreateDeviceDataForInputDevices()
 	{
 		foreach (var device in InputSystem.devices)
 		{
@@ -308,7 +308,7 @@ public class EditorVR : MonoBehaviour
 	/// left hand), so in those cases we map the source bindings of the action map input to the correct device tag.
 	/// </summary>
 	/// <param name="toolType">The tool to spawn</param>
-	/// <param name="device">The input device that serves as a key for the deviceData that the tool should spawned on 
+	/// <param name="device">The input device whose tool stack the tool should be spawned on 
 	/// (optional). If not specified, then it uses the action map to determine which devices the tool should be spawned
 	/// on.</param>
 	private void SpawnTool(Type toolType, InputDevice device = null)
