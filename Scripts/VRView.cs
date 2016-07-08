@@ -11,22 +11,11 @@ using Object = UnityEngine.Object;
 namespace UnityEditor.VR
 {
     [InitializeOnLoad]
-	public class EditorVRView : EditorWindow
+	public class VRView : EditorWindow
 	{
-		[MenuItem("Window/EditorVR", false)]
-		public static void ShowEditorVR()
+		public static VRView GetWindow()
 		{
-			EditorVRView.GetWindow<EditorVRView>("EditorVR", true);
-		}
-		[MenuItem("Window/EditorVR", true)]
-		public static bool ShouldShowEditorVR()
-		{
-			return PlayerSettings.virtualRealitySupported;
-		}
-
-		public static EditorVRView GetWindow()
-		{
-			return EditorWindow.GetWindow<EditorVRView>(true);
+			return EditorWindow.GetWindow<VRView>(true);
 		}
 
         public static Coroutine StartCoroutine(IEnumerator routine)
@@ -43,7 +32,7 @@ namespace UnityEditor.VR
         // Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
         // EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
         // we watch until playmode is done and then relaunch.  
-        static EditorVRView()
+        static VRView()
         {
             EditorApplication.update += ReopenOnExitPlaymode;
         }
@@ -105,7 +94,7 @@ namespace UnityEditor.VR
             }
         }
 
-        public static EditorVRView activeView
+        public static VRView activeView
         {
             get
             {
@@ -124,7 +113,7 @@ namespace UnityEditor.VR
 
 		private RenderTexture m_SceneTargetTexture;
 
-		private static EditorVRView s_ActiveView = null;
+		private static VRView s_ActiveView = null;
 
 		private Transform m_CameraPivot = null;
         private Quaternion m_LastHeadRotation = Quaternion.identity;

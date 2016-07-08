@@ -248,7 +248,7 @@ class U {
 				Object.DestroyImmediate(o);
 			else
 			{	
-                EditorVRView.StartCoroutine(DestroyInSeconds(o, t));
+                VRView.StartCoroutine(DestroyInSeconds(o, t));
 			}			
 		}
 	}
@@ -277,9 +277,9 @@ class U {
 	{
 		Camera camera = Camera.main;
 #if UNITY_EDITOR
-		if (!Application.isPlaying && EditorVRView.viewerCamera)
+		if (!Application.isPlaying && VRView.viewerCamera)
 		{
-			camera = EditorVRView.viewerCamera;
+			camera = VRView.viewerCamera;
 		}
 #endif
 
@@ -292,8 +292,8 @@ class U {
 #if UNITY_EDITOR
 		if (!Application.isPlaying)
 		{
-			if (EditorVRView.viewerCamera)
-				pivot = EditorVRView.viewerCamera.transform.parent;
+			if (VRView.viewerCamera)
+				pivot = VRView.viewerCamera.transform.parent;
 		}
 #endif
 		return pivot;
