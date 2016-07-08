@@ -1,4 +1,4 @@
-﻿namespace UnityEditor.VR.Utilities
+﻿namespace UnityEngine.VR.Utilities
 {
     using System;
     using UnityEngine;
@@ -89,7 +89,7 @@
                 if (!Application.isPlaying)
                     SetRunInEditModeRecursively(component.gameObject, true);
 #else
-        Component component = new GameObject(type.Name).AddComponent(type);
+                Component component = new GameObject(type.Name).AddComponent(type);
 #endif
                 component.transform.parent = parent;
                 return component;
@@ -162,6 +162,7 @@
                 {
                     Object.Destroy(o, t);
                 }
+#if UNITY_EDITOR
                 else
                 {
                     if (Mathf.Approximately(t, 0f))
@@ -171,6 +172,7 @@
                         EditorVRView.StartCoroutine(DestroyInSeconds(o, t));
                     }
                 }
+#endif
             }
 
             private static IEnumerator DestroyInSeconds(UObject o, float t)

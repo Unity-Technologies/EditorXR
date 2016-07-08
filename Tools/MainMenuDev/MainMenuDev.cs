@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEditor.VR.Utilities;
+using UnityEngine.VR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Tools;

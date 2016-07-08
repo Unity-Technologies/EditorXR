@@ -1,12 +1,9 @@
-﻿namespace UnityEditor.VR.Utilities
+﻿namespace UnityEngine.VR.Utilities
 {
     using UnityEngine;
     using Random = UnityEngine.Random;
     using UMaterial = UnityEngine.Material;
     using UObject = UnityEngine.Object;
-#if UNITY_EDITOR
-
-#endif
 
     /// <summary>
     /// EditorVR Utilities

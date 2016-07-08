@@ -1,10 +1,7 @@
-﻿namespace UnityEditor.VR.Utilities
+﻿namespace UnityEngine.VR.Utilities
 {
     using System.Collections.Generic;
     using UnityEngine.InputNew;
-#if UNITY_EDITOR
-
-#endif
 
     /// <summary>
     /// EditorVR Utilities

@@ -1,4 +1,4 @@
-﻿using UnityEditor.VR.Utilities;
+﻿using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
 {

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using UnityEditor.VR.Utilities;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
 {
-	public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
+    public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
 	{
 		public virtual TrackedObject TrackedObjectInput { protected get; set; }
 

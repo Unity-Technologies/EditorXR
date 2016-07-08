@@ -1,17 +1,17 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections;
-using System;
-using UnityEngine.Assertions;
-using UnityEngine.InputNew;
-using UnityEngine.VR.Proxies;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
+using UnityEngine.InputNew;
+using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;
-using UnityEditor.VR.Utilities;
 #endif
 
 [InitializeOnLoad]
