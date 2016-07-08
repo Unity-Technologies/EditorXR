@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.VR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Tools;
@@ -46,21 +46,21 @@ public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
 
 	void OnDestroy()
 	{
-		U.Destroy(m_MenuCanvas.gameObject);
+		U.Object.Destroy(m_MenuCanvas.gameObject);
 	}
 
 	private void CreateToolButtons()
 	{
 		foreach (var menuTool in MenuTools)
 		{
-			var newButton = U.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
+			var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
 			var text = newButton.GetComponentInChildren<Text>();
 			text.text = menuTool.Name;
 			var button = newButton.GetComponent<Button>();
 			button.onClick.AddListener(() =>
 			{
 				if (SelectTool(this, menuTool))
-					U.Destroy(this);
+					U.Object.Destroy(this);
 			});
 		}
 	}

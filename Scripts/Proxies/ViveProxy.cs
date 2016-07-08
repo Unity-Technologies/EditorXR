@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.VR;
-using UnityEngine.InputNew;
+﻿using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
 {
@@ -24,7 +20,7 @@ namespace UnityEngine.VR.Proxies
         public override void Awake()
         {
 	        base.Awake();
-            m_InputToEvents = U.AddComponent<ViveInputToEvents>(gameObject);
+            m_InputToEvents = U.Object.AddComponent<ViveInputToEvents>(gameObject);
         }
 
         public override void Start()
