@@ -24,6 +24,12 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
     private Canvas CanvasPrefab;
     private Canvas m_ToolCanvas;
 
+    void OnDestroy()
+    {
+        if (m_ToolCanvas != null)
+            U.Destroy(m_ToolCanvas.gameObject);
+    }
+
     void Update()
     {
         if (StandardInput.action.wasJustPressed)
@@ -37,4 +43,5 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
                 m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - EditorVRView.viewerCamera.transform.position);            
         }
     }
+
 }

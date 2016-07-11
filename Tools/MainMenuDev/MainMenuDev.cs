@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.VR.Tools;
 
 [ExecuteInEditMode]
-public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
+public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 {
 	public Transform RayOrigin
 	{
@@ -68,7 +68,6 @@ public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
         b.onClick.RemoveAllListeners();
         b.onClick.AddListener(() =>
         {
-            string n = b.name;
             if (SelectTool(this, t))
                 U.Destroy(this);
         });
