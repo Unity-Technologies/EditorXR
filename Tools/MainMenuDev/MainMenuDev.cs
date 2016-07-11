@@ -8,7 +8,7 @@ using UnityEngine.VR.Tools;
 [ExecuteInEditMode]
 public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
 {
-	public Transform RayOrigin
+	public Transform rayOrigin
 	{
 		get; set;
 	}
@@ -18,7 +18,7 @@ public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
 		private get; set;
 	}
 
-	public List<Type> MenuTools { private get; set; }
+	public List<Type> menuTools { private get; set; }
 
 	public Func<IMainMenu, Type, bool> SelectTool { private get; set; }
 
@@ -40,7 +40,7 @@ public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
 			m_ButtonTemplate = m_Layout.GetChild(0).gameObject;
 			m_ButtonTemplate.SetActive(false);
 		}
-		m_MenuCanvas.transform.SetParent(RayOrigin, false);
+		m_MenuCanvas.transform.SetParent(rayOrigin, false);
 		CreateToolButtons();
 	}
 
@@ -51,7 +51,7 @@ public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
 
 	private void CreateToolButtons()
 	{
-		foreach (var menuTool in MenuTools)
+		foreach (var menuTool in menuTools)
 		{
 			var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
 			var text = newButton.GetComponentInChildren<Text>();

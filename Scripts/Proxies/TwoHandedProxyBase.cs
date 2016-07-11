@@ -6,9 +6,9 @@ namespace UnityEngine.VR.Proxies
 {
     public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
 	{
-		public virtual TrackedObject TrackedObjectInput { protected get; set; }
+		public virtual TrackedObject trackedObjectInput { protected get; set; }
 
-		public virtual bool Active
+		public virtual bool active
 		{
 			get
 			{
@@ -17,7 +17,7 @@ namespace UnityEngine.VR.Proxies
 		}
 
 		protected Dictionary<Node, Transform> m_RayOrigins;
-		public virtual Dictionary<Node, Transform> RayOrigins
+		public virtual Dictionary<Node, Transform> rayOrigins
 		{
 			get
 			{
@@ -25,7 +25,7 @@ namespace UnityEngine.VR.Proxies
 			}
 		}
 
-		public virtual bool Hidden
+		public virtual bool hidden
 		{
 			set
 			{
@@ -64,17 +64,17 @@ namespace UnityEngine.VR.Proxies
 		public virtual void Start()
 		{			
 			// In standalone play-mode usage, attempt to get the TrackedObjectInput 
-			if (TrackedObjectInput == null && m_PlayerInput)
-				TrackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
+			if (trackedObjectInput == null && m_PlayerInput)
+				trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 		}
 
 		public virtual void Update()
 		{
-			m_LeftHand.localPosition = TrackedObjectInput.leftPosition.vector3;
-			m_LeftHand.localRotation = TrackedObjectInput.leftRotation.quaternion;
+			m_LeftHand.localPosition = trackedObjectInput.leftPosition.vector3;
+			m_LeftHand.localRotation = trackedObjectInput.leftRotation.quaternion;
 
-			m_RightHand.localPosition = TrackedObjectInput.rightPosition.vector3;
-			m_RightHand.localRotation = TrackedObjectInput.rightRotation.quaternion;
+			m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
+			m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
 		}
 	}
 }

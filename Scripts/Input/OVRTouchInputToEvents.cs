@@ -4,7 +4,7 @@ using UnityEngine.InputNew;
 
 public class OVRTouchInputToEvents : MonoBehaviour
 {
-	public bool Active { get; private set; }
+	public bool active { get; private set; }
 
 	public const uint kControllerCount = 2;
 	public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
@@ -21,10 +21,10 @@ public class OVRTouchInputToEvents : MonoBehaviour
 
 		if ((OVRInput.GetActiveController() & OVRInput.Controller.Touch) == 0)
 		{
-			Active = false;
+			active = false;
 			return;
 		}
-		Active = true;
+		active = true;
 
 		for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++)
 		{

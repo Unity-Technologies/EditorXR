@@ -11,19 +11,19 @@ namespace UnityEngine.VR.Proxies
 		[SerializeField]
 		public Camera EventCameraPrefab; // Camera to be instantiated and assigned to EventCamera property
 
-		public Camera EventCamera
+		public Camera eventCamera
 		{
 			get { return m_EventCamera; }
 			set { m_EventCamera = value; }
 		}
 
-		public ActionMap ActionMap
+		public ActionMap actionMap
 		{
 			get {  return m_UIActionMap; }
 		}
 		private readonly List<UIActions> m_UIActionMapInputs = new List<UIActions>();
 
-		public List<Transform> RayOrigins
+		public List<Transform> rayOrigins
 		{
 			get { return m_RayOrigins; }
 		}
@@ -56,7 +56,7 @@ namespace UnityEngine.VR.Proxies
 				return;
 
 			//Process events for all different transforms in RayOrigins
-			for (int i = 0; i < RayOrigins.Count; i++)
+			for (int i = 0; i < rayOrigins.Count; i++)
 			{
 				// Expand lists if needed
 				while (i >= CurrentPoint.Count)
@@ -162,8 +162,8 @@ namespace UnityEngine.VR.Proxies
 		{
 			GameObject hit = null;
 			// Move camera to position and rotation for the ray origin
-			m_EventCamera.transform.position = RayOrigins[i].position;
-			m_EventCamera.transform.rotation = RayOrigins[i].rotation;
+			m_EventCamera.transform.position = rayOrigins[i].position;
+			m_EventCamera.transform.rotation = rayOrigins[i].rotation;
 
 			if (i >= PointEvents.Count)
 				PointEvents.Add(new PointerEventData(base.eventSystem));

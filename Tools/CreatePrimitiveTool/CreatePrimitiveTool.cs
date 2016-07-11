@@ -5,12 +5,12 @@ using UnityEngine.VR.Tools;
 
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateUI
 {
-	public Standard StandardInput
+	public Standard standardInput
 	{
 		get; set;
 	}
 
-	public Transform RayOrigin
+	public Transform rayOrigin
 	{
 		get; set;
 	}
@@ -26,14 +26,14 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 
 	void Update()
 	{
-		if (StandardInput.action.wasJustPressed)
+		if (standardInput.action.wasJustPressed)
 		{
 				if (m_ToolCanvas == null)
 				{
 					var go = InstantiateUI(CanvasPrefab.gameObject);
 					m_ToolCanvas = go.GetComponent<Canvas>();
 				}
-				m_ToolCanvas.transform.position = RayOrigin.position + RayOrigin.forward*5f;
+				m_ToolCanvas.transform.position = rayOrigin.position + rayOrigin.forward*5f;
 				m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - VRView.viewerCamera.transform.position);            
 		}
 	}

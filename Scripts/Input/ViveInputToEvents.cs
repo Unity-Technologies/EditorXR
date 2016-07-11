@@ -9,8 +9,8 @@ using Valve.VR;
 
 public class ViveInputToEvents : MonoBehaviour
 {
-	public bool Active { get; private set; }
-	public int[] SteamDevice
+	public bool active { get; private set; }
+	public int[] steamDevice
 	{
 		get { return steamDeviceIndices; }
 	}
@@ -21,7 +21,7 @@ public class ViveInputToEvents : MonoBehaviour
 
 	public void Update()
 	{
-		Active = false;
+		active = false;
 
 		for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++)
 		{
@@ -36,7 +36,7 @@ public class ViveInputToEvents : MonoBehaviour
 				if (steamDeviceIndex == -1)
 					continue;
 
-				Active = true;
+				active = true;
 
 				if (hand == VRInputDevice.Handedness.Left)
 				{

@@ -8,18 +8,18 @@ using UnityEngine.VR.Tools;
 
 public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomActionMap
 {
-	public ActionMap ActionMap
+	public ActionMap actionMap
 	{
 		get { return m_LocomotionActionMap; }
 	}
 
-	public ActionMapInput ActionMapInput
+	public ActionMapInput actionMapInput
 	{
 		get { return m_JoystickLocomotionInput; }
 		set { m_JoystickLocomotionInput = (JoystickLocomotion)value; }
 	}
 
-	public Transform ViewerPivot
+	public Transform viewerPivot
 	{
 		set { m_ViewerPivot = value; }
 	}

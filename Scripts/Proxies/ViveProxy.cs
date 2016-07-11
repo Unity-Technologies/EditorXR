@@ -4,11 +4,11 @@ namespace UnityEngine.VR.Proxies
 {
 	public class ViveProxy : TwoHandedProxyBase
 	{
-		public override bool Active
+		public override bool active
 		{
 			get
 			{
-				return m_InputToEvents.Active;
+				return m_InputToEvents.active;
 			}
 		}
 
@@ -34,14 +34,14 @@ namespace UnityEngine.VR.Proxies
 		public override void Update()
 		{
 			//If proxy is not mapped to a physical input device, check if one has been assigned
-			if ((int)m_LeftModel.index == -1 && m_InputToEvents.SteamDevice[0] != -1)
+			if ((int)m_LeftModel.index == -1 && m_InputToEvents.steamDevice[0] != -1)
 			{
 				// HACK set device index individually instead of calling SetDeviceIndex because loading device mesh dynamically does not work in editor. Prefab has Model Override set and mesh generated, calling SetDeviceIndex clears the model.
-				m_LeftModel.index = (SteamVR_TrackedObject.EIndex) m_InputToEvents.SteamDevice[0];
+				m_LeftModel.index = (SteamVR_TrackedObject.EIndex) m_InputToEvents.steamDevice[0];
 			}
-			if ((int)m_RightModel.index == -1 && m_InputToEvents.SteamDevice[1] != -1)
+			if ((int)m_RightModel.index == -1 && m_InputToEvents.steamDevice[1] != -1)
 			{
-				m_RightModel.index = (SteamVR_TrackedObject.EIndex) m_InputToEvents.SteamDevice[1];
+				m_RightModel.index = (SteamVR_TrackedObject.EIndex) m_InputToEvents.steamDevice[1];
 			}
 
 			base.Update();

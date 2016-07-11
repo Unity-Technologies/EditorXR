@@ -4,11 +4,11 @@ namespace UnityEngine.VR.Proxies
 {
 	public class TouchProxy : TwoHandedProxyBase
 	{
-		public override bool Active
+		public override bool active
 		{
 			get
 			{
-				return m_InputToEvents.Active;
+				return m_InputToEvents.active;
 			}
 		}
 

@@ -8,7 +8,7 @@ using UnityEngine.InputNew;
 
 public class SixenseInputToEvents : MonoBehaviour
 {
-	public bool Active { get; private set; }
+	public bool active { get; private set; }
 
 	public const uint kControllerCount = SixenseInput.MAX_CONTROLLERS;
 	public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
@@ -21,13 +21,7 @@ public class SixenseInputToEvents : MonoBehaviour
 	private readonly Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
 
 	private Vector3[] m_ControllerOffsets = new Vector3[SixenseInput.MAX_CONTROLLERS];
-
 	private Quaternion m_RotationOffset = Quaternion.identity;
-
-	public Vector3[] ControllerOffsets
-	{
-		get { return m_ControllerOffsets; }
-	}
 
 	private void Awake()
 	{
@@ -37,7 +31,7 @@ public class SixenseInputToEvents : MonoBehaviour
 
 	private void Update()
 	{
-		Active = false;
+		active = false;
 		if (!SixenseInput.IsBaseConnected(0))
 			return;
 
@@ -46,7 +40,7 @@ public class SixenseInputToEvents : MonoBehaviour
 			if (SixenseInput.Controllers[i] == null || !SixenseInput.Controllers[i].Enabled)
 				continue;
 
-			Active = true;
+			active = true;
 
 			int deviceIndex = kDeviceOffset + (SixenseInput.Controllers[i].Hand == SixenseHands.LEFT ? 0 : 1);
 			SendButtonEvents(i, deviceIndex);
@@ -62,11 +56,8 @@ public class SixenseInputToEvents : MonoBehaviour
 			{
 				CalibrateControllers();
 			}
-
 		}
-
 	}
-
 
 	private float GetAxis(int deviceIndex, VRInputDevice.VRControl axis)
 	{

@@ -94,7 +94,7 @@ public class EditorVR : MonoBehaviour
 		{
 			foreach (var proxy in m_AllProxies)
 			{
-				if (proxy.Active)
+				if (proxy.active)
 				{
 					proxyActive = true;
 					break;
@@ -121,7 +121,7 @@ public class EditorVR : MonoBehaviour
 	{		
 		foreach (var proxy in m_AllProxies)
 		{			
-			proxy.Hidden = !proxy.Active;
+			proxy.hidden = !proxy.active;
 		}
 
 		foreach (var kvp in m_DeviceData)
@@ -157,7 +157,7 @@ public class EditorVR : MonoBehaviour
 
 			var customActionMap = tool as ICustomActionMap;
 			if (customActionMap != null)
-				actionMaps.Add(customActionMap.ActionMap);
+				actionMaps.Add(customActionMap.actionMap);
 
 			var standardActionMap = tool as IStandardActionMap;
 			if (standardActionMap != null)
@@ -183,8 +183,8 @@ public class EditorVR : MonoBehaviour
 		foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
 		{
 			IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
-			proxy.TrackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
-			foreach (var rayOriginBase in proxy.RayOrigins)
+			proxy.trackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
+			foreach (var rayOriginBase in proxy.rayOrigins)
 			{
 				var rayTransform = U.Object.InstantiateAndSetActive(m_PointerRayPrefab.gameObject, rayOriginBase.Value).transform;
 				rayTransform.position = rayOriginBase.Value.position;
@@ -200,13 +200,13 @@ public class EditorVR : MonoBehaviour
 		m_EventSystem = U.Object.AddComponent<EventSystem>(gameObject);
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
-		m_InputModule.EventCamera = m_EventCamera;
-		m_InputModule.EventCamera.clearFlags = CameraClearFlags.Nothing;
-		m_InputModule.EventCamera.cullingMask = 0;
+		m_InputModule.eventCamera = m_EventCamera;
+		m_InputModule.eventCamera.clearFlags = CameraClearFlags.Nothing;
+		m_InputModule.eventCamera.cullingMask = 0;
 
 		foreach (var proxy in m_AllProxies)
 		{
-			foreach (var rayOriginBase in proxy.RayOrigins)
+			foreach (var rayOriginBase in proxy.rayOrigins)
 			{
 				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node, and update the action map copy
 				{
@@ -215,10 +215,10 @@ public class EditorVR : MonoBehaviour
 						DeviceData deviceData;
 						if (m_DeviceData.TryGetValue(device, out deviceData))
 						{
-							deviceData.uiInput = CreateActionMapInput(CloneActionMapForDevice(m_InputModule.ActionMap, device));
+							deviceData.uiInput = CreateActionMapInput(CloneActionMapForDevice(m_InputModule.actionMap, device));
 
 							// Add RayOrigin transform and ActionMapInput reference to input module lists
-							m_InputModule.RayOrigins.Add(rayOriginBase.Value);
+							m_InputModule.rayOrigins.Add(rayOriginBase.Value);
 							m_InputModule.AddActionMapInput(deviceData.uiInput);
 						}
 						break;
@@ -267,18 +267,18 @@ public class EditorVR : MonoBehaviour
 				IStandardActionMap standardActionMap = tool as IStandardActionMap;
 				if (standardActionMap != null)
 				{
-					if (!maps.Contains(standardActionMap.StandardInput))
+					if (!maps.Contains(standardActionMap.standardInput))
 					{
-						maps.Add(standardActionMap.StandardInput);
+						maps.Add(standardActionMap.standardInput);
 					}
 				}
 
 				ICustomActionMap customActionMap = tool as ICustomActionMap;
 				if (customActionMap != null)
 				{
-					if (!maps.Contains(customActionMap.ActionMapInput))
+					if (!maps.Contains(customActionMap.actionMapInput))
 					{
-						maps.Add(customActionMap.ActionMapInput);
+						maps.Add(customActionMap.actionMapInput);
 					}
 				}
 			}
@@ -317,22 +317,22 @@ public class EditorVR : MonoBehaviour
 				actionMap = CloneActionMapForDevice(actionMap, device);
 			}
 
-			standardMap.StandardInput = (Standard)CreateActionMapInput(actionMap);
-			U.Input.CollectSerializableTypesFromActionMapInput(standardMap.StandardInput, ref serializableTypes);
+			standardMap.standardInput = (Standard)CreateActionMapInput(actionMap);
+			U.Input.CollectSerializableTypesFromActionMapInput(standardMap.standardInput, ref serializableTypes);
 		}
 			
 		var customMap = tool as ICustomActionMap;
 		if (customMap != null)
 		{
-			ActionMap actionMap = customMap.ActionMap;
+			ActionMap actionMap = customMap.actionMap;
 
 			if (device != null)
 			{
 				actionMap = CloneActionMapForDevice(actionMap, device);
 			}
 
-			customMap.ActionMapInput = CreateActionMapInput(actionMap);
-			U.Input.CollectSerializableTypesFromActionMapInput(customMap.ActionMapInput, ref serializableTypes);
+			customMap.actionMapInput = CreateActionMapInput(actionMap);
+			U.Input.CollectSerializableTypesFromActionMapInput(customMap.actionMapInput, ref serializableTypes);
 		}
 
 		if (device != null)
@@ -389,7 +389,7 @@ public class EditorVR : MonoBehaviour
 				// TODO: Get active proxy per node, pass its ray origin.
 				foreach (var proxy in m_AllProxies)
 				{
-					if (proxy.Active)
+					if (proxy.active)
 					{
 						var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
 						var tag = tags[device.TagIndex];
@@ -397,9 +397,9 @@ public class EditorVR : MonoBehaviour
 						if (m_TagToNode.TryGetValue(tag, out node))
 						{
 							Transform rayOrigin;
-							if (proxy.RayOrigins.TryGetValue(node, out rayOrigin))
+							if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
 							{
-								ray.RayOrigin = rayOrigin;
+								ray.rayOrigin = rayOrigin;
 								break;
 							}
 						}
@@ -411,7 +411,7 @@ public class EditorVR : MonoBehaviour
 		var locomotionComponent = tool as ILocomotion;
 		if (locomotionComponent != null)
 		{
-			locomotionComponent.ViewerPivot = VRView.viewerPivot;
+			locomotionComponent.viewerPivot = VRView.viewerPivot;
 		}
 
 		var instantiateUITool = tool as IInstantiateUI;
@@ -421,7 +421,7 @@ public class EditorVR : MonoBehaviour
 		var mainMenuTool = tool as IMainMenu;
 		if (mainMenuTool != null)
 		{
-			mainMenuTool.MenuTools = m_AllTools.ToList();
+			mainMenuTool.menuTools = m_AllTools.ToList();
 			mainMenuTool.SelectTool = SelectTool;
 		}
 
