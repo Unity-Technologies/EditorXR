@@ -169,7 +169,7 @@
                         UObject.DestroyImmediate(o);
                     else
                     {
-                        EditorVRView.StartCoroutine(DestroyInSeconds(o, t));
+                        VRView.StartCoroutine(DestroyInSeconds(o, t));
                     }
                 }
 #endif

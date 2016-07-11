@@ -40,9 +40,9 @@
             {
                 UnityEngine.Camera camera = UnityEngine.Camera.main;
 #if UNITY_EDITOR
-                if (!Application.isPlaying && EditorVRView.viewerCamera)
+                if (!Application.isPlaying && VRView.viewerCamera)
                 {
-                    camera = EditorVRView.viewerCamera;
+                    camera = VRView.viewerCamera;
                 }
 #endif
 
@@ -55,8 +55,8 @@
 #if UNITY_EDITOR
                 if (!Application.isPlaying)
                 {
-                    if (EditorVRView.viewerCamera)
-                        pivot = EditorVRView.viewerCamera.transform.parent;
+                    if (VRView.viewerCamera)
+                        pivot = VRView.viewerCamera.transform.parent;
                 }
 #endif
                 return pivot;

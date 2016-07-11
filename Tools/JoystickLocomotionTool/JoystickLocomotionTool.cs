@@ -51,7 +51,7 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustom
         var moveDirection =
             (Vector3.forward * m_JoystickLocomotionInput.moveForward.value +
              Vector3.right * m_JoystickLocomotionInput.moveRight.value).normalized;
-        moveDirection = EditorVRView.viewerCamera.transform.TransformVector(moveDirection);
+        moveDirection = VRView.viewerCamera.transform.TransformVector(moveDirection);
         m_ViewerPivot.Translate(moveDirection * m_MoveSpeed * Time.unscaledDeltaTime, Space.World);
         m_ViewerPivot.Rotate(Vector3.up, m_JoystickLocomotionInput.yaw.value * m_TurnSpeed * Time.unscaledDeltaTime, Space.Self);	    
     }
