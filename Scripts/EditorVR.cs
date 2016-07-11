@@ -1,13 +1,14 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections;
-using System;
-using UnityEngine.Assertions;
-using UnityEngine.InputNew;
-using UnityEngine.VR.Proxies;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
+using UnityEngine.InputNew;
+using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;
@@ -70,7 +71,7 @@ public class EditorVR : MonoBehaviour
         CreateAllProxies();
         CreateDeviceDataForInputDevices();
         CreateEventSystem();
-		m_AllTools = U.GetImplementationsOfInterface(typeof(ITool));
+		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
 		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
 		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);		
@@ -176,7 +177,7 @@ public class EditorVR : MonoBehaviour
 
 		    toolMaps.Add(t, actionMaps);
 
-			U.Destroy(tool as MonoBehaviour);
+			U.Object.Destroy(tool as MonoBehaviour);
 	    }
 		return toolMaps;
 	}
@@ -191,13 +192,13 @@ public class EditorVR : MonoBehaviour
 
     private void CreateAllProxies()
     {
-        foreach (Type proxyType in U.GetImplementationsOfInterface(typeof(IProxy)))
+        foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
         {
-            IProxy proxy = U.CreateGameObjectWithComponent(proxyType, EditorVRView.viewerPivot) as IProxy;
+            IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, EditorVRView.viewerPivot) as IProxy;
 		    proxy.TrackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
             foreach (var rayOriginBase in proxy.RayOrigins)
             {
-                var rayTransform = U.InstantiateAndSetActive(m_PointerRayPrefab.gameObject, rayOriginBase.Value).transform;
+                var rayTransform = U.Object.InstantiateAndSetActive(m_PointerRayPrefab.gameObject, rayOriginBase.Value).transform;
                 rayTransform.position = rayOriginBase.Value.position;
                 rayTransform.rotation = rayOriginBase.Value.rotation;
             }
@@ -208,9 +209,9 @@ public class EditorVR : MonoBehaviour
     private void CreateEventSystem()
     {
         // Create event system, input module, and event camera
-        m_EventSystem = U.AddComponent<EventSystem>(gameObject);
-        m_InputModule = U.AddComponent<MultipleRayInputModule>(gameObject);
-        m_EventCamera = U.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+        m_EventSystem = U.Object.AddComponent<EventSystem>(gameObject);
+        m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
+        m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
         m_InputModule.EventCamera = m_EventCamera;
         m_InputModule.EventCamera.clearFlags = CameraClearFlags.Nothing;
         m_InputModule.EventCamera.cullingMask = 0;
@@ -241,7 +242,7 @@ public class EditorVR : MonoBehaviour
 
     private GameObject InstantiateUI(GameObject prefab)
     {
-        var go = U.InstantiateAndSetActive(prefab, transform);
+        var go = U.Object.InstantiateAndSetActive(prefab, transform);
         foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
             canvas.worldCamera = m_EventCamera;
         return go;
@@ -317,7 +318,7 @@ public class EditorVR : MonoBehaviour
 			return;
 
 		HashSet<SerializableType> serializableTypes = new HashSet<SerializableType>();
-		var tool = U.AddComponent(toolType, gameObject) as ITool;
+		var tool = U.Object.AddComponent(toolType, gameObject) as ITool;
 		var standardMap = tool as IStandardActionMap;
 		if (standardMap != null)
 		{
@@ -329,7 +330,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			standardMap.StandardInput = (Standard)CreateActionMapInput(actionMap);
-			U.CollectSerializableTypesFromActionMapInput(standardMap.StandardInput, ref serializableTypes);
+			U.Input.CollectSerializableTypesFromActionMapInput(standardMap.StandardInput, ref serializableTypes);
 		}
 			
 		var customMap = tool as ICustomActionMap;
@@ -343,7 +344,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			customMap.ActionMapInput = CreateActionMapInput(actionMap);
-			U.CollectSerializableTypesFromActionMapInput(customMap.ActionMapInput, ref serializableTypes);
+			U.Input.CollectSerializableTypesFromActionMapInput(customMap.ActionMapInput, ref serializableTypes);
 		}
 
 		if (device != null)
@@ -361,7 +362,7 @@ public class EditorVR : MonoBehaviour
 						LogError(
 							string.Format("The action map for {0} contains a specific device tag, but is being spawned on the wrong device tag",
 								toolType));
-						U.Destroy(tool as MonoBehaviour);
+						U.Object.Destroy(tool as MonoBehaviour);
 						return;
 					}
 				}
@@ -376,7 +377,7 @@ public class EditorVR : MonoBehaviour
 				LogError(
 					string.Format("The action map for {0} contains both a specific device tag and an unspecified tag, which is not supported",
 						toolType));
-				U.Destroy(tool as MonoBehaviour);
+				U.Object.Destroy(tool as MonoBehaviour);
 				return;
 			}
 		}
@@ -389,7 +390,7 @@ public class EditorVR : MonoBehaviour
 		else
 		{
 			// TODO: Do we need to collect devices across all control schemes?
-			devices = U.CollectInputDevicesFromActionMaps(m_ToolActionMaps[toolType]);
+			devices = U.Input.CollectInputDevicesFromActionMaps(m_ToolActionMaps[toolType]);
 		}
 
 		if (device != null)
@@ -523,7 +524,7 @@ public class EditorVR : MonoBehaviour
 	private static void OnEVREnabled()
 	{
 	    InitializeInputManager();
-	    s_Instance = U.CreateGameObjectWithComponent<EditorVR>();
+	    s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
 	}
 
     private static void InitializeInputManager()
@@ -533,7 +534,7 @@ public class EditorVR : MonoBehaviour
         InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
         foreach (var m in managers)
         {
-            U.Destroy(m.gameObject);
+            U.Object.Destroy(m.gameObject);
         }
 
         managers = Resources.FindObjectsOfTypeAll<InputManager>();
@@ -553,13 +554,13 @@ public class EditorVR : MonoBehaviour
 
         s_InputManager = managers[0];
         s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
-        U.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
+        U.Object.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
     }
 
     private static void OnEVRDisabled()
 	{
-		U.Destroy(s_Instance.gameObject);
-		U.Destroy(s_InputManager.gameObject);
+		U.Object.Destroy(s_Instance.gameObject);
+		U.Object.Destroy(s_InputManager.gameObject);
 	}
 #endif
 }
