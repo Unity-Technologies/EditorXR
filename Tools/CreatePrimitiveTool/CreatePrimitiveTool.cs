@@ -34,7 +34,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 					m_ToolCanvas = go.GetComponent<Canvas>();
 				}
 				m_ToolCanvas.transform.position = RayOrigin.position + RayOrigin.forward*5f;
-				m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - EditorVRView.viewerCamera.transform.position);            
+				m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - VRView.viewerCamera.transform.position);            
 		}
 	}
 }
