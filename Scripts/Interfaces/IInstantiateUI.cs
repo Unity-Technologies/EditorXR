@@ -4,8 +4,8 @@ using System;
 
 public interface IInstantiateUI {
 
-    Func<GameObject, GameObject> InstantiateUI
-    {
-        set;
-    }
+	Func<GameObject, GameObject> InstantiateUI
+	{
+		set;
+	}
 }

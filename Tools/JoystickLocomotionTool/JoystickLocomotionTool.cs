@@ -40,19 +40,19 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustom
 	
 	private JoystickLocomotion m_JoystickLocomotionInput;
 
-    void Start()
-    {
-        if (m_JoystickLocomotionInput == null && m_PlayerInput)
-            m_JoystickLocomotionInput = m_PlayerInput.GetActions<JoystickLocomotion>();
-    }
+	void Start()
+	{
+		if (m_JoystickLocomotionInput == null && m_PlayerInput)
+			m_JoystickLocomotionInput = m_PlayerInput.GetActions<JoystickLocomotion>();
+	}
 	
-    void Update()
-    {
-        var moveDirection =
-            (Vector3.forward * m_JoystickLocomotionInput.moveForward.value +
-             Vector3.right * m_JoystickLocomotionInput.moveRight.value).normalized;
-        moveDirection = EditorVRView.viewerCamera.transform.TransformVector(moveDirection);
-        m_ViewerPivot.Translate(moveDirection * m_MoveSpeed * Time.unscaledDeltaTime, Space.World);
-        m_ViewerPivot.Rotate(Vector3.up, m_JoystickLocomotionInput.yaw.value * m_TurnSpeed * Time.unscaledDeltaTime, Space.Self);	    
-    }
+	void Update()
+	{
+		var moveDirection =
+			(Vector3.forward * m_JoystickLocomotionInput.moveForward.value +
+			 Vector3.right * m_JoystickLocomotionInput.moveRight.value).normalized;
+		moveDirection = EditorVRView.viewerCamera.transform.TransformVector(moveDirection);
+		m_ViewerPivot.Translate(moveDirection * m_MoveSpeed * Time.unscaledDeltaTime, Space.World);
+		m_ViewerPivot.Rotate(Vector3.up, m_JoystickLocomotionInput.yaw.value * m_TurnSpeed * Time.unscaledDeltaTime, Space.Self);	    
+	}
 }

@@ -2,7 +2,7 @@
 
 namespace UnityEngine.VR.Proxies
 {
-    public class SixenseProxy : TwoHandedProxyBase
+	public class SixenseProxy : TwoHandedProxyBase
 	{
 		public override bool Active
 		{
@@ -16,7 +16,7 @@ namespace UnityEngine.VR.Proxies
 
 		public override void Awake()
 		{
-            base.Awake();
+			base.Awake();
 			m_InputToEvents = U.Object.AddComponent<SixenseInputToEvents>(gameObject);
 		}		
 	}

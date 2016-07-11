@@ -30,7 +30,7 @@ public class MainMenuDev : MonoBehaviour, ITool, IRay, IInstantiateUI, IMainMenu
 	private GameObject m_ButtonTemplate;
 
 	void Start()
-	{	
+	{
 		if (m_MenuCanvas == null)
 		{
 			var go = InstantiateUI(m_MainMenuPrefab.gameObject);
