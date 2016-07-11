@@ -406,8 +406,8 @@ class U {
 				{
 					foreach (var systemDevice in systemDevices)
 					{
-						if (systemDevice.GetType() == deviceType.value &&
-							(deviceType.TagIndex == -1 || deviceType.TagIndex == systemDevice.TagIndex))
+						if (systemDevice.GetType() == deviceType.type.value &&
+							(deviceType.tagIndex == -1 || deviceType.tagIndex == systemDevice.tagIndex))
 						{
 							inputDevices.Add(systemDevice);
 						}
@@ -418,7 +418,7 @@ class U {
 		return inputDevices;
 	}
 
-	public static void CollectSerializableTypesFromActionMapInput(ActionMapInput actionMapInput, ref HashSet<SerializableType> types)
+	public static void CollectSerializableTypesFromActionMapInput(ActionMapInput actionMapInput, ref HashSet<SerializableDeviceType> types)
 	{
 		foreach (var deviceType in actionMapInput.controlScheme.serializableDeviceTypes)
 		{

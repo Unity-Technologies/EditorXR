@@ -81,11 +81,11 @@ public class EditorVR : MonoBehaviour
 		foreach (var device in InputSystem.devices)
 		{
 			// HACK to grab left and right hand for now
-			if (device.GetType() == typeof(VRInputDevice) && device.TagIndex != -1)
+			if (device.GetType() == typeof(VRInputDevice) && device.tagIndex != -1)
 			{
-				if (VRInputDevice.Tags[device.TagIndex] == "Left")
+				if (VRInputDevice.Tags[device.tagIndex] == "Left")
 					leftHand = device;
-				else if (VRInputDevice.Tags[device.TagIndex] == "Right")
+				else if (VRInputDevice.Tags[device.tagIndex] == "Right")
 					rightHand = device;
 			}
 			var deviceData = new DeviceData
@@ -221,7 +221,7 @@ public class EditorVR : MonoBehaviour
             {
                 foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node, and update the action map copy
                 {
-                    if (device.TagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.TagIndex]] == rayOriginBase.Key)
+                    if (device.tagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.tagIndex]] == rayOriginBase.Key)
                     {
 	                    DeviceData deviceData;
 	                    if (m_DeviceData.TryGetValue(device, out deviceData))
@@ -316,7 +316,7 @@ public class EditorVR : MonoBehaviour
 		if (!typeof(ITool).IsAssignableFrom(toolType))
 			return;
 
-		HashSet<SerializableType> serializableTypes = new HashSet<SerializableType>();
+		HashSet<SerializableDeviceType> serializableTypes = new HashSet<SerializableDeviceType>();
 		var tool = U.AddComponent(toolType, gameObject) as ITool;
 		var standardMap = tool as IStandardActionMap;
 		if (standardMap != null)
@@ -352,11 +352,11 @@ public class EditorVR : MonoBehaviour
 			var taggedDevicesFound = 0;
 			foreach (var serializableType in serializableTypes)
 			{
-				if (serializableType.TagIndex != -1)
+				if (serializableType.tagIndex != -1)
 				{
 					taggedDevicesFound++;
 
-					if (serializableType.TagIndex != device.TagIndex)
+					if (serializableType.tagIndex != device.tagIndex)
 					{
 						LogError(
 							string.Format("The action map for {0} contains a specific device tag, but is being spawned on the wrong device tag",
@@ -403,7 +403,7 @@ public class EditorVR : MonoBehaviour
 					if (proxy.Active)
 					{
 						var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
-						var tag = tags[device.TagIndex];
+						var tag = tags[device.tagIndex];
 						Node node;
 						if (m_TagToNode.TryGetValue(tag, out node))
 						{
@@ -487,15 +487,15 @@ public class EditorVR : MonoBehaviour
 		{
 			foreach (var serializableDeviceType in scheme.serializableDeviceTypes)
 			{
-				if (serializableDeviceType.value == device.GetType() && serializableDeviceType.TagIndex == -1)
-					serializableDeviceType.TagIndex = device.TagIndex;
+				if (serializableDeviceType.type.value == device.GetType() && serializableDeviceType.tagIndex == -1)
+					serializableDeviceType.tagIndex = device.tagIndex;
 			}
 			foreach (var binding in scheme.bindings)
 			{
 				foreach (var source in binding.sources)
 				{
-					if (source.deviceType.value == device.GetType() && source.deviceType.TagIndex == -1)
-						source.deviceType.TagIndex = device.TagIndex;
+					if (source.deviceType.type.value == device.GetType() && source.deviceType.tagIndex == -1)
+						source.deviceType.tagIndex = device.tagIndex;
 				}
 			}	
 		}

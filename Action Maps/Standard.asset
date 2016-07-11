@@ -17,16 +17,18 @@ MonoBehaviour:
   m_ControlSchemes:
   - m_Name: VRInputDevice
     m_SerializableDeviceTypes:
-    - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
+    - m_Type:
+        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
       - controlIndex: 2
         deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
+          m_Type:
+            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+              Culture=neutral, PublicKeyToken=null
           m_TagIndex: -1
       deadZone: 0.3
       buttonAxisSources: []
@@ -54,6 +56,5 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Action
     defaultValue: 0
