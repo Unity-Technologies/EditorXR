@@ -1,12 +1,8 @@
-﻿using UnityEngine;
-using System;
-using System.Collections.Generic;
-using System.Security.AccessControl;
-using UnityEngine.InputNew;
+﻿using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
 {
-	public class SixenseProxy : TwoHandedProxyBase
+    public class SixenseProxy : TwoHandedProxyBase
 	{
 		public override bool Active
 		{
@@ -21,7 +17,7 @@ namespace UnityEngine.VR.Proxies
 		public override void Awake()
 		{
             base.Awake();
-			m_InputToEvents = U.AddComponent<SixenseInputToEvents>(gameObject);
+			m_InputToEvents = U.Object.AddComponent<SixenseInputToEvents>(gameObject);
 		}		
 	}
 }
