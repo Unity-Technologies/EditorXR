@@ -503,6 +503,8 @@ public class EditorVR : MonoBehaviour
 	{
 		var untaggedDevicesFound = 0;
 		var taggedDevicesFound = 0;
+		var nonMatchingTagIndices = 0;
+		var matchingTagIndices = 0;
 
 		foreach (var scheme in actionMap.controlSchemes)
 		{
@@ -512,35 +514,39 @@ public class EditorVR : MonoBehaviour
 				{
 					taggedDevicesFound++;
 					if (serializableDeviceType.TagIndex != device.TagIndex)
-					{
-						LogError(
-							string.Format("The action map {0} contains a specific device tag, but is being spawned on the wrong device tag",
-								actionMap));
-						return;
-					}
+						nonMatchingTagIndices++;
+					else
+						matchingTagIndices++;
 				}
 				else
 					untaggedDevicesFound++;
 
-				if (serializableDeviceType.value == device.GetType() && serializableDeviceType.TagIndex == -1)
-					serializableDeviceType.TagIndex = device.TagIndex; // Update tag in action map to match device tag
+			}
+		}
+
+		if (nonMatchingTagIndices > 0 && matchingTagIndices == 0) // There is no specified tag that matches the current device, but there is one that does not match
+			LogError(string.Format("The action map {0} contains a specific device tag, but is being spawned on the wrong device tag", actionMap));
+
+		if (taggedDevicesFound > 0 && untaggedDevicesFound != 0)
+			LogError(string.Format("The action map {0} contains both a specific device tag and an unspecified tag, which is not supported", actionMap.name));
+
+		// Update all device tags and bindings tagged with no tag (index -1)
+		foreach (var scheme in actionMap.controlSchemes)
+		{
+			foreach (var serializableDeviceType in scheme.serializableDeviceTypes)
+			{
+				if (serializableDeviceType.TagIndex == -1)
+					serializableDeviceType.TagIndex = device.TagIndex;
 			}
 
 			foreach (var binding in scheme.bindings)
 			{
-				foreach (var source in binding.sources) 
+				foreach (var source in binding.sources)
 				{
 					if (source.deviceType.value == device.GetType() && source.deviceType.TagIndex == -1)
 						source.deviceType.TagIndex = device.TagIndex;
 				}
-			}	
-		}
-
-		if (taggedDevicesFound > 0 && untaggedDevicesFound != 0)
-		{
-			LogError(
-				string.Format("The action map {0} contains both a specific device tag and an unspecified tag, which is not supported",
-					actionMap.name));
+			}
 		}
 	}
 
