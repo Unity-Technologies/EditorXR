@@ -44,5 +44,4 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
                 m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - EditorVRView.viewerCamera.transform.position);            
         }
     }
-
 }

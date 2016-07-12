@@ -52,19 +52,21 @@ namespace UnityEngine.VR.Proxies
         private List<GameObject> CurrentDragging = new List<GameObject>();
 
 
-        public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput)
-        {
-            UIActions actions = (UIActions) actionMapInput;
-            if (actions == null)
-                Debug.LogError("Cannot add actionMapInput to InputModule that is not of type UIActions.");
-
-            actions.active = false;
-            Transform rayOrigin = null;
-            if (proxy.RayOrigins.TryGetValue(node, out rayOrigin))
-                m_RaycastSources.Add(new RaycastSource(proxy, node, rayOrigin, actions));
-            else
-                Debug.LogError("Failed to get ray origin transform for node " + node + " from proxy " + proxy);
-        }
+		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput)
+		{
+			UIActions actions = (UIActions) actionMapInput;
+			if (actions == null)
+			{
+				Debug.LogError("Cannot add actionMapInput to InputModule that is not of type UIActions.");
+				return;
+			}
+			actions.active = false;
+			Transform rayOrigin = null;
+			if (proxy.RayOrigins.TryGetValue(node, out rayOrigin))
+				m_RaycastSources.Add(new RaycastSource(proxy, node, rayOrigin, actions));
+			else
+				Debug.LogError("Failed to get ray origin transform for node " + node + " from proxy " + proxy);
+		}
 
         public override void Process()
         {
