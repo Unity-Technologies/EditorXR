@@ -187,15 +187,15 @@ public class SixenseInputToEvents : MonoBehaviour
     {
         //Assume controllers are on the side of the HMD and facing forward (aligned with base)
         float span = (SixenseInput.Controllers[1].Position * kHydraUnits - SixenseInput.Controllers[0].Position * kHydraUnits).magnitude; //Distance between controllers
-        Transform headPivot = EditorVRView.viewerCamera.transform;
+        Transform headPivot = VRView.viewerCamera.transform;
         Vector3 lookDirection = headPivot.forward;
         lookDirection.y = 0f;
-        lookDirection = EditorVRView.viewerPivot.InverseTransformDirection(lookDirection.normalized);
+        lookDirection = VRView.viewerPivot.InverseTransformDirection(lookDirection.normalized);
         if (lookDirection != Vector3.zero)
             m_RotationOffset = Quaternion.LookRotation(lookDirection);
         
-        m_ControllerOffsets[0] = EditorVRView.viewerPivot.InverseTransformPoint(headPivot.position + (-headPivot.right * span * 0.5f)) - (m_RotationOffset * SixenseInput.Controllers[0].Position * kHydraUnits);
-        m_ControllerOffsets[1] = EditorVRView.viewerPivot.InverseTransformPoint(headPivot.position + (headPivot.right * span * 0.5f)) - (m_RotationOffset * SixenseInput.Controllers[1].Position * kHydraUnits);
+        m_ControllerOffsets[0] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (-headPivot.right * span * 0.5f)) - (m_RotationOffset * SixenseInput.Controllers[0].Position * kHydraUnits);
+        m_ControllerOffsets[1] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (headPivot.right * span * 0.5f)) - (m_RotationOffset * SixenseInput.Controllers[1].Position * kHydraUnits);
 
     }
 }

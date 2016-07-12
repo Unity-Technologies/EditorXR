@@ -60,14 +60,10 @@ public class EditorVR : MonoBehaviour
 		{ "Right", Node.RightHand }
 	};
 
-	// TEMP
-	InputDevice leftHand = null;
-	InputDevice rightHand = null;
-
 	private void Awake()
     {
-        EditorVRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
-        EditorVRView.viewerPivot.localPosition = Vector3.zero; // HACK reset pivot to match steam origin
+        VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
+        VRView.viewerPivot.localPosition = Vector3.zero; // HACK reset pivot to match steam origin
         InitializePlayerHandle();
         CreateDefaultActionMapInputs();
         CreateAllProxies();
@@ -83,14 +79,6 @@ public class EditorVR : MonoBehaviour
 	{
 		foreach (var device in InputSystem.devices)
 		{
-			// HACK to grab left and right hand for now
-			if (device.GetType() == typeof(VRInputDevice) && device.TagIndex != -1)
-			{
-				if (VRInputDevice.Tags[device.TagIndex] == "Left")
-					leftHand = device;
-				else if (VRInputDevice.Tags[device.TagIndex] == "Right")
-					rightHand = device;
-			}
 			var deviceData = new DeviceData
 			{
 				tools = new Stack<ITool>(),
@@ -207,7 +195,7 @@ public class EditorVR : MonoBehaviour
     {
         foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
         {
-            IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, EditorVRView.viewerPivot) as IProxy;
+            IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
 		    proxy.TrackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
             foreach (var rayOriginBase in proxy.RayOrigins)
             {
@@ -416,7 +404,7 @@ public class EditorVR : MonoBehaviour
 
 		var locomotionComponent = obj as ILocomotion;
 		if (locomotionComponent != null)
-			locomotionComponent.ViewerPivot = EditorVRView.viewerPivot;
+			locomotionComponent.ViewerPivot = VRView.viewerPivot;
 
 		var instantiateUITool = obj as IInstantiateUI;
 		if (instantiateUITool != null)
@@ -563,10 +551,21 @@ public class EditorVR : MonoBehaviour
     private static EditorVR s_Instance;
 	private static InputManager s_InputManager;
 
+	[MenuItem("Window/EditorVR", false)]
+	public static void ShowEditorVR()
+	{
+		VRView.GetWindow<VRView>("EditorVR", true);
+	}
+	[MenuItem("Window/EditorVR", true)]
+	public static bool ShouldShowEditorVR()
+	{
+		return PlayerSettings.virtualRealitySupported;
+	}
+
 	static EditorVR()
 	{
-		EditorVRView.onEnable += OnEVREnabled;
-		EditorVRView.onDisable += OnEVRDisabled;
+		VRView.onEnable += OnEVREnabled;
+		VRView.onDisable += OnEVRDisabled;
 	}
 
 	private static void OnEVREnabled()
