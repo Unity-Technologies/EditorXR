@@ -18,7 +18,6 @@ public class ViveInputToEvents : MonoBehaviour
 
 	public bool active { get; private set; }
 
-
 	public void Update()
 	{
 		active = false;
@@ -39,20 +38,11 @@ public class ViveInputToEvents : MonoBehaviour
 				active = true;
 
 				if (hand == VRInputDevice.Handedness.Left)
-				{
 					steamDeviceIndices[(int)hand] = steamDeviceIndex;
-					//Debug.Log("Assigned Left " + steamDeviceIndex);
-
-				}
 				else if(steamDeviceIndex != steamDeviceIndices[(int)VRInputDevice.Handedness.Left]) // Do not assign device to right hand if it is same device as left hand
-				{
 					steamDeviceIndices[(int)hand] = steamDeviceIndex;
-					//Debug.Log("Assigned Right " + steamDeviceIndex);        
-				}
 				else
-				{
 					continue;
-				}
 			}
 
 			int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
@@ -80,11 +70,10 @@ public class ViveInputToEvents : MonoBehaviour
 				inputEvent.controlIndex = a;
 				inputEvent.value = xy == XorY.X ? axisVec.x : axisVec.y;
 
-				if (Mathf.Approximately(m_LastAxisValues[steamDeviceIndex, a], inputEvent.value)) {
+				if (Mathf.Approximately(m_LastAxisValues[steamDeviceIndex, a], inputEvent.value)) { //TODO Does continue need to be commented out for some reason?
 					//continue;
 				}
 				m_LastAxisValues[steamDeviceIndex, a] = inputEvent.value;
-				// Debug.Log("Axis event: " + inputEvent);
 
 				InputSystem.QueueEvent(inputEvent);
 			}
@@ -102,8 +91,6 @@ public class ViveInputToEvents : MonoBehaviour
 				inputEvent.deviceIndex = deviceIndex; 
 				inputEvent.controlIndex = axisCount + (int)button;
 				inputEvent.value = isDown ? 1.0f : 0.0f;
-
-				//Debug.Log(string.Format("event: {0}; button: {1}; hand: {2}", inputEvent, button, deviceIndex));
 
 				InputSystem.QueueEvent(inputEvent);
 			}
