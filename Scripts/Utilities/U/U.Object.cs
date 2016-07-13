@@ -77,7 +77,31 @@
                 return o.layer == LayerMask.NameToLayer(s);
             }
 
-            public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : MonoBehaviour
+			/// <summary>
+			/// Create an empty VR GameObject.
+			/// </summary>
+			/// <param name="name">Name of the new GameObject</param>
+			/// <param name="parent">Transform to parent new object under</param>
+			/// <returns>The newly created empty GameObject</returns>
+			public static GameObject CreateEmptyGameObject(String name = null, Transform parent = null)
+			{
+				GameObject empty = null;
+				if (String.IsNullOrEmpty(name))
+					name = "Empty";
+#if UNITY_EDITOR
+				empty = EditorUtility.CreateGameObjectWithHideFlags(name, EditorVR.kDefaultHideFlags);
+				if (!Application.isPlaying)
+					SetRunInEditModeRecursively(empty.transform.gameObject, true);
+#else
+                empty = new GameObject(name);
+#endif
+				empty.transform.parent = parent;
+				empty.transform.localPosition = Vector3.zero;  // If parent is defined, assume local position for a new GameObject should be cleared
+
+				return empty;
+			}
+
+			public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : MonoBehaviour
             {
                 return (T)CreateGameObjectWithComponent(typeof(T), parent);
             }

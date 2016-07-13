@@ -113,6 +113,13 @@ public class EditorVR : MonoBehaviour
 		    HashSet<InputDevice> devices;
             var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
             AddToolToDeviceData(tool, devices);
+
+			// HACK
+			tool = SpawnTool(typeof(BlinkLocomotionToolEVR), out devices);
+			AddToolToDeviceData(tool, devices);
+
+			// HACK
+			VRView.viewerPivot.localPosition = new Vector3(0f, 1.7f, 0f); // HACK: just here to initially offset the height of the cam & input for devices without positional head tracking (hydra).  Oculus & Vive testing soon.  Remove later
 		};
 	}
 
@@ -348,6 +355,34 @@ public class EditorVR : MonoBehaviour
 			U.Input.CollectSerializableTypesFromActionMapInput(customMap.ActionMapInput, ref serializableTypes);
 		}
 
+		#region Temp Code Hack
+		var blinkLocomotionTool = tool as BlinkLocomotionToolEVR; // TODO: remove if not needed
+		if (blinkLocomotionTool != null)
+		{
+			blinkLocomotionTool.ViewerPivot = VRView.viewerPivot; // HACK: Setup proper pivot handling
+			
+			foreach (var proxy in m_AllProxies)
+			{
+				if (proxy.Active) //proxy.Active)
+				{
+					// TODO: setup proper tag handling
+					
+					var tag = "Left"; // TODO: remove, just making 0 for testing
+					Node node;// = Node.LeftHand;
+					if (m_TagToNode.TryGetValue(tag, out node))
+					{
+						Transform rayOrigin;
+						if (proxy.RayOrigins.TryGetValue(node, out rayOrigin))
+						{
+							blinkLocomotionTool.RayOrigin = rayOrigin;
+							break;
+						}
+					}
+				}
+			}
+		}
+		#endregion
+		
 		ConnectInterfaces(tool, device);        	
 		return tool;
 	}

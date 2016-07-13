@@ -2,6 +2,7 @@
 // todo 
 
 using UnityEngine;
+using UnityEngineInternal;
 
 public class VRArcRenderer : MonoBehaviour
 {
@@ -33,8 +34,14 @@ public class VRArcRenderer : MonoBehaviour
     public GameObject motionIndicatorSphere;
     private Transform[] motionSpheres;
     private float motionSphereOffset;
+	private Transform toolPoint;
+	
+    Vector3 lastPosition;
+    Quaternion lastRotation;
+	private bool m_validTarget = false;
 
-    private Transform toolPoint;
+	public Vector3 locatorPosition { get { return locatorRoot.position; } }
+	public bool validTarget { get { return m_validTarget; } }
 
     void Awake()
     {
@@ -112,16 +119,16 @@ public class VRArcRenderer : MonoBehaviour
         // set the position of the locator
         locatorRoot.position = final + Vector3.up * 0.01f;
 
-        var valid = false;
+        m_validTarget = false;
 
         var colliders = Physics.OverlapSphere( final, radius, layerMask.value );
         foreach ( var collider in colliders )
         {
-            valid = true;
+			m_validTarget = true;
             // todo check for invalid colliders
         }
 
-        SetColors(valid ? validLocationColor : invalidLocationColor);
+        SetColors(validTarget ? validLocationColor : invalidLocationColor);
 
         // calculate and send points to the line renderer
         segmentPositions = new Vector3[lineSegmentCount];
@@ -167,22 +174,19 @@ public class VRArcRenderer : MonoBehaviour
 
     public void ShowLine(bool show = true)
     {
-        locatorRoot.gameObject.SetActive( show );
+        locatorRoot.gameObject.SetActive(show);
         lineRendererMeshRenderer.enabled = show;
     }
 
-    void SetColors( Color color )
+    void SetColors(Color color)
     {
         locatorSprite.color = color;
         locatorTubeRenderer.material.color = color;
 
-        lineRenderer.SetColors( color, color );
+        lineRenderer.SetColors(color, color);
 
         motionSpheres[0].GetComponent<MeshRenderer>().sharedMaterial.color = color;
     }
-
-    Vector3 lastPosition;
-    Quaternion lastRotation;
 
 	// Update is called once per frame
 	void Update ()

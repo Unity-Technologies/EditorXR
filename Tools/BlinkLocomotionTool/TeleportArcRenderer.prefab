@@ -283,6 +283,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d580b86a6ae18014293c9b5059b2121b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
   m_Positions: []
   m_ColorStart: {r: 1, g: 0, b: 0, a: 1}
   m_ColorEnd: {r: 1, g: 0, b: 0, a: 1}
@@ -300,6 +301,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cf1060efd014427c9d7b70e0492b81f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
   lineSegmentCount: 32
   range: 5
   radius: 0.1
@@ -327,7 +329,7 @@ SpriteRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
