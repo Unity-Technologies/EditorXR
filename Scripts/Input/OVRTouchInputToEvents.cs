@@ -27,16 +27,16 @@ public class OVRTouchInputToEvents : MonoBehaviour
 		active = true;
 
 		for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++)
-		{
-			OVRInput.Controller controller = hand == VRInputDevice.Handedness.Left ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
+        {
+	        OVRInput.Controller controller = hand == VRInputDevice.Handedness.Left ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
 			int ovrIndex = controller == OVRInput.Controller.LTouch ? 0 : 1;
 			int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
-			SendButtonEvents(controller, deviceIndex);
-			SendAxisEvents(controller, ovrIndex, deviceIndex);
-			SendTrackingEvents(controller, ovrIndex, deviceIndex);
-		}
-	}
-
+            SendButtonEvents(controller, deviceIndex);
+            SendAxisEvents(controller, ovrIndex, deviceIndex);
+            SendTrackingEvents(controller, ovrIndex, deviceIndex);
+        }
+    }
+    
 	private float GetAxis(OVRInput.Controller controller, VRInputDevice.VRControl axis)
 	{
 		switch (axis)
@@ -48,7 +48,7 @@ public class OVRTouchInputToEvents : MonoBehaviour
 			case VRInputDevice.VRControl.LeftStickY:
 				return OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller).y;
 		}
-
+		
 		return 0f;
 	}
 
@@ -62,7 +62,7 @@ public class OVRTouchInputToEvents : MonoBehaviour
 			inputEvent.controlIndex = axis;
 			inputEvent.value = GetAxis(controller, (VRInputDevice.VRControl)axis);
 			
-			if (Mathf.Approximately(m_LastAxisValues[ovrIndex, axis], inputEvent.value))
+            if (Mathf.Approximately(m_LastAxisValues[ovrIndex, axis], inputEvent.value))
 				continue;
 
 			m_LastAxisValues[ovrIndex, axis] = inputEvent.value;
@@ -125,18 +125,18 @@ public class OVRTouchInputToEvents : MonoBehaviour
 			return;
 
 		var inputEvent = InputSystem.CreateEvent<VREvent>();
-		inputEvent.deviceType = typeof(VRInputDevice);
-		inputEvent.deviceIndex = deviceIndex;		
-		inputEvent.localPosition = OVRInput.GetLocalControllerPosition(ovrController);
-		inputEvent.localRotation = OVRInput.GetLocalControllerRotation(ovrController);
+        inputEvent.deviceType = typeof(VRInputDevice);
+        inputEvent.deviceIndex = deviceIndex;		
+        inputEvent.localPosition = OVRInput.GetLocalControllerPosition(ovrController);
+        inputEvent.localRotation = OVRInput.GetLocalControllerRotation(ovrController);
 
-		if (inputEvent.localPosition == m_LastPositionValues[ovrIndex] &&
-			inputEvent.localRotation == m_LastRotationValues[ovrIndex])
-			return;
+        if (inputEvent.localPosition == m_LastPositionValues[ovrIndex] &&
+            inputEvent.localRotation == m_LastRotationValues[ovrIndex])
+            return;
 
-		m_LastPositionValues[ovrIndex] = inputEvent.localPosition;
-		m_LastRotationValues[ovrIndex] = inputEvent.localRotation;
+        m_LastPositionValues[ovrIndex] = inputEvent.localPosition;
+        m_LastRotationValues[ovrIndex] = inputEvent.localRotation;
 
-		InputSystem.QueueEvent(inputEvent);
-	}
+        InputSystem.QueueEvent(inputEvent);
+    }
 }

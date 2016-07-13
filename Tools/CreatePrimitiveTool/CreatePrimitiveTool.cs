@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEditor.VR;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
 
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateUI
 {
@@ -37,4 +38,9 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 				m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - VRView.viewerCamera.transform.position);            
 		}
 	}
+    void OnDestroy()
+    {
+        if (m_ToolCanvas != null)
+            U.Object.Destroy(m_ToolCanvas.gameObject);
+    }
 }
