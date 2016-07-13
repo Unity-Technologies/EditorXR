@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEngine.VR.Utilities;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class CreatePrimitiveMenu : MonoBehaviour
@@ -14,7 +15,7 @@ public class CreatePrimitiveMenu : MonoBehaviour
         Transform primitive = GameObject.CreatePrimitive((PrimitiveType)type).transform;
         primitive.position = transform.position;
         primitive.localScale = Vector3.one*m_ScaleSlider.value;
-        U.Destroy(gameObject);
+        U.Object.Destroy(gameObject);
     }
 
     public void UpdateScaleValue()

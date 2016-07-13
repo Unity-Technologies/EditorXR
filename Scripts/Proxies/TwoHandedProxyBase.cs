@@ -1,13 +1,10 @@
-﻿using UnityEngine;
-using System;
-using System.Collections.Generic;
-using System.Security.AccessControl;
+﻿using System.Collections.Generic;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
 {
-	public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
+    public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
 	{
 		public virtual TrackedObject TrackedObjectInput { protected get; set; }
 
@@ -52,8 +49,8 @@ namespace UnityEngine.VR.Proxies
 
 		public virtual void Awake()
 		{
-			m_LeftHand = U.InstantiateAndSetActive(m_LeftHandProxyPrefab, transform).transform;
-			m_RightHand = U.InstantiateAndSetActive(m_RightHandProxyPrefab, transform).transform;
+			m_LeftHand = U.Object.InstantiateAndSetActive(m_LeftHandProxyPrefab, transform).transform;
+			m_RightHand = U.Object.InstantiateAndSetActive(m_RightHandProxyPrefab, transform).transform;
 			m_LeftHandRayOrigin = m_LeftHand.FindChild("RayOrigin");
 			m_RightHandRayOrigin = m_RightHand.FindChild("RayOrigin");
 
