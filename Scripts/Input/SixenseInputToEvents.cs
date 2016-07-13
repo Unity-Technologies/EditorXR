@@ -8,8 +8,6 @@ using UnityEngine.InputNew;
 
 public class SixenseInputToEvents : MonoBehaviour
 {
-	public bool active { get; private set; }
-
 	public const uint kControllerCount = SixenseInput.MAX_CONTROLLERS;
 	public const int kAxisCount = (int) VRInputDevice.VRControl.Analog9 + 1;
 	public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
@@ -22,6 +20,8 @@ public class SixenseInputToEvents : MonoBehaviour
 
 	private Vector3[] m_ControllerOffsets = new Vector3[SixenseInput.MAX_CONTROLLERS];
 	private Quaternion m_RotationOffset = Quaternion.identity;
+
+	public bool active { get; private set; }
 
 	private void Awake()
 	{

@@ -9,14 +9,14 @@ using Valve.VR;
 
 public class ViveInputToEvents : MonoBehaviour
 {
-	public bool active { get; private set; }
+	private enum XorY { X, Y }
 	public int[] steamDevice
 	{
 		get { return steamDeviceIndices; }
 	}
-
-	private enum XorY { X, Y }
 	private readonly int[] steamDeviceIndices = new int[] { -1, -1 };
+
+	public bool active { get; private set; }
 
 
 	public void Update()

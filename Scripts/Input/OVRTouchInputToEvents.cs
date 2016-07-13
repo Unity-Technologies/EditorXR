@@ -4,8 +4,6 @@ using UnityEngine.InputNew;
 
 public class OVRTouchInputToEvents : MonoBehaviour
 {
-	public bool active { get; private set; }
-
 	public const uint kControllerCount = 2;
 	public const int kAxisCount = (int) VRInputDevice.VRControl.Analog9 + 1;
 	public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
@@ -13,6 +11,8 @@ public class OVRTouchInputToEvents : MonoBehaviour
 	private float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
 	private Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
 	private Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
+
+	public bool active { get; private set; }
 
 	public void Update()
 	{

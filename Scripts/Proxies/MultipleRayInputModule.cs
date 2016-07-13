@@ -12,6 +12,12 @@ namespace UnityEngine.VR.Proxies
 		[SerializeField]
 		public Camera EventCameraPrefab; // Camera to be instantiated and assigned to EventCamera property
 
+		private readonly List<RaycastSource> m_RaycastSources = new List<RaycastSource>();
+		private List<PointerEventData> PointEvents = new List<PointerEventData>();
+		private List<GameObject> CurrentPoint = new List<GameObject>();
+		private List<GameObject> CurrentPressed = new List<GameObject>();
+		private List<GameObject> CurrentDragging = new List<GameObject>();
+
 		public Camera eventCamera
 		{
 			get { return m_EventCamera; }
@@ -21,8 +27,9 @@ namespace UnityEngine.VR.Proxies
 
 		public ActionMap actionMap
 		{
-			get {  return m_UIActionMap; }
+			get { return m_UIActionMap; }
 		}
+
 		[SerializeField]
 		private ActionMap m_UIActionMap;
 
@@ -41,13 +48,6 @@ namespace UnityEngine.VR.Proxies
 				this.actionMapInput = actionMapInput;
 			}
 		}
-	   
-		private readonly List<RaycastSource> m_RaycastSources = new List<RaycastSource>();
-
-		private List<PointerEventData> PointEvents = new List<PointerEventData>();
-		private List<GameObject> CurrentPoint = new List<GameObject>();
-		private List<GameObject> CurrentPressed = new List<GameObject>();
-		private List<GameObject> CurrentDragging = new List<GameObject>();
 
 		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput)
 		{

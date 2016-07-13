@@ -9,19 +9,17 @@ using UnityEngine.VR.Tools;
 public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomActionMap
 {
 
-	[Header("Settings")]
 	[SerializeField]
 	private float m_MoveSpeed = 1f;
 	[SerializeField]
 	private float m_TurnSpeed = 30f;
+	[SerializeField]
+	private PlayerInput m_PlayerInput;
 
 	public Transform viewerPivot
 	{
 		set { m_ViewerPivot = value; }
 	}
-
-	[Header("References")]
-
 	[SerializeField]
 	private Transform m_ViewerPivot;
 
@@ -29,9 +27,9 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustom
 	{
 		get { return m_LocomotionActionMap; }
 	}
-
 	[SerializeField]
 	private ActionMap m_LocomotionActionMap;
+
 	public ActionMapInput actionMapInput
 	{
 		get { return m_JoystickLocomotionInput; }
@@ -39,8 +37,6 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustom
 	}
 	private JoystickLocomotion m_JoystickLocomotionInput;
 
-	[SerializeField]
-	private PlayerInput m_PlayerInput;
 
 	void Start()
 	{

@@ -4,17 +4,9 @@ using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
 {
-    public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
+	public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
 	{
 
-		public virtual Dictionary<Node, Transform> rayOrigins
-		{
-			get
-			{
-				return m_RayOrigins;
-			}
-		}
-		protected Dictionary<Node, Transform> m_RayOrigins;
 		[SerializeField]
 		protected GameObject m_LeftHandProxyPrefab;
 		[SerializeField]
@@ -26,6 +18,13 @@ namespace UnityEngine.VR.Proxies
 		protected Transform m_RightHand;
 		protected Transform m_LeftHandRayOrigin;
 		protected Transform m_RightHandRayOrigin;
+
+		public virtual Dictionary<Node, Transform> rayOrigins
+		{
+			get { return m_RayOrigins; }
+		}
+
+		protected Dictionary<Node, Transform> m_RayOrigins;
 
 		public virtual TrackedObject trackedObjectInput { protected get; set; }
 

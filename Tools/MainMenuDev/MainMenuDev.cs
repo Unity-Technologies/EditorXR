@@ -9,9 +9,6 @@ using UnityEngine.VR.Tools;
 [ExecuteInEditMode]
 public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 {
-	public List<Type> menuTools { private get; set; }
-
-	public Func<IMainMenu, Type, bool> SelectTool { private get; set; }
 
 	[SerializeField]
 	private Canvas m_MainMenuPrefab;
@@ -20,15 +17,12 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 	private RectTransform m_Layout;
 	private GameObject m_ButtonTemplate;
 
-	public Transform rayOrigin
-	{
-		get; set;
-	}
+	public Transform rayOrigin { get; set; }
 
-	public Func<GameObject, GameObject> InstantiateUI
-	{
-		private get; set;
-	}
+	public List<Type> menuTools { private get; set; }
+	public Func<IMainMenu, Type, bool> SelectTool { private get; set; }
+
+	public Func<GameObject, GameObject> InstantiateUI { private get; set; }
 
 	void Start()
 	{

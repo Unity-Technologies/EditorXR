@@ -4,6 +4,8 @@ namespace UnityEngine.VR.Proxies
 {
 	public class SixenseProxy : TwoHandedProxyBase
 	{
+		private SixenseInputToEvents m_InputToEvents;
+
 		public override bool active
 		{
 			get
@@ -11,8 +13,6 @@ namespace UnityEngine.VR.Proxies
 				return m_InputToEvents.active;
 			}
 		}
-
-		private SixenseInputToEvents m_InputToEvents;
 
 		public override void Awake()
 		{
