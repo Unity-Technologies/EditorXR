@@ -6,6 +6,27 @@ namespace UnityEngine.VR.Proxies
 {
     public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
 	{
+
+		public virtual Dictionary<Node, Transform> rayOrigins
+		{
+			get
+			{
+				return m_RayOrigins;
+			}
+		}
+		protected Dictionary<Node, Transform> m_RayOrigins;
+		[SerializeField]
+		protected GameObject m_LeftHandProxyPrefab;
+		[SerializeField]
+		protected GameObject m_RightHandProxyPrefab;
+		[SerializeField]
+		protected PlayerInput m_PlayerInput;
+
+		protected Transform m_LeftHand;
+		protected Transform m_RightHand;
+		protected Transform m_LeftHandRayOrigin;
+		protected Transform m_RightHandRayOrigin;
+
 		public virtual TrackedObject trackedObjectInput { protected get; set; }
 
 		public virtual bool active
@@ -13,15 +34,6 @@ namespace UnityEngine.VR.Proxies
 			get
 			{
 				return true;
-			}
-		}
-
-		protected Dictionary<Node, Transform> m_RayOrigins;
-		public virtual Dictionary<Node, Transform> rayOrigins
-		{
-			get
-			{
-				return m_RayOrigins;
 			}
 		}
 
@@ -34,18 +46,6 @@ namespace UnityEngine.VR.Proxies
 					r.enabled = !value;
 			}
 		}
-
-		[SerializeField]
-		protected GameObject m_LeftHandProxyPrefab;
-		[SerializeField]
-		protected GameObject m_RightHandProxyPrefab;
-		[SerializeField]
-		protected PlayerInput m_PlayerInput;
-
-		protected Transform m_LeftHand;
-		protected Transform m_RightHand;
-		protected Transform m_LeftHandRayOrigin;
-		protected Transform m_RightHandRayOrigin;
 
 		public virtual void Awake()
 		{

@@ -11,12 +11,12 @@ public class SixenseInputToEvents : MonoBehaviour
 	public bool active { get; private set; }
 
 	public const uint kControllerCount = SixenseInput.MAX_CONTROLLERS;
-	public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
+	public const int kAxisCount = (int) VRInputDevice.VRControl.Analog9 + 1;
 	public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
 
 	private const float kHydraUnits = 0.001f; // input is in mm
 
-	private readonly float [,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
+	private readonly float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
 	private readonly Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
 	private readonly Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
 
@@ -79,14 +79,14 @@ public class SixenseInputToEvents : MonoBehaviour
 	}
 
 	private void SendAxisEvents(int sixenseDeviceIndex, int deviceIndex)
-	{        
+	{
 		for (var axis = 0; axis < kAxisCount; ++axis)
 		{
 			var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 			inputEvent.deviceType = typeof(VRInputDevice);
 			inputEvent.deviceIndex = deviceIndex;
 			inputEvent.controlIndex = axis;
-			inputEvent.value = GetAxis(sixenseDeviceIndex, (VRInputDevice.VRControl)axis);
+			inputEvent.value = GetAxis(sixenseDeviceIndex, (VRInputDevice.VRControl) axis);
 
 			if (Mathf.Approximately(m_LastAxisValues[sixenseDeviceIndex, axis], inputEvent.value))
 				continue;
@@ -105,25 +105,25 @@ public class SixenseInputToEvents : MonoBehaviour
 				return (int) VRInputDevice.VRControl.Action1;
 
 			case SixenseButtons.TWO:
-				return (int)VRInputDevice.VRControl.Action2;
+				return (int) VRInputDevice.VRControl.Action2;
 
 			case SixenseButtons.THREE:
-				return (int)VRInputDevice.VRControl.Action3;
+				return (int) VRInputDevice.VRControl.Action3;
 
 			case SixenseButtons.FOUR:
-				return (int)VRInputDevice.VRControl.Action4;
+				return (int) VRInputDevice.VRControl.Action4;
 
 			case SixenseButtons.BUMPER:
-				return (int)VRInputDevice.VRControl.Action5;
+				return (int) VRInputDevice.VRControl.Action5;
 
 			case SixenseButtons.TRIGGER:
-				return (int)VRInputDevice.VRControl.Trigger1;
+				return (int) VRInputDevice.VRControl.Trigger1;
 
 			case SixenseButtons.START:
-				return (int)VRInputDevice.VRControl.Start;
+				return (int) VRInputDevice.VRControl.Start;
 
 			case SixenseButtons.JOYSTICK:
-				return (int)VRInputDevice.VRControl.LeftStickButton;
+				return (int) VRInputDevice.VRControl.LeftStickButton;
 		}
 
 		// Not all buttons are currently mapped
@@ -159,10 +159,11 @@ public class SixenseInputToEvents : MonoBehaviour
 	{
 		var controller = SixenseInput.Controllers[sixenseDeviceIndex];
 		var inputEvent = InputSystem.CreateEvent<VREvent>();
-		inputEvent.deviceType = typeof (VRInputDevice);
+		inputEvent.deviceType = typeof(VRInputDevice);
 		inputEvent.deviceIndex = deviceIndex;
-		inputEvent.localPosition = (m_RotationOffset * controller.Position * kHydraUnits) + m_ControllerOffsets[sixenseDeviceIndex];
-		inputEvent.localRotation = m_RotationOffset * controller.Rotation;
+		inputEvent.localPosition = (m_RotationOffset*controller.Position*kHydraUnits) +
+									m_ControllerOffsets[sixenseDeviceIndex];
+		inputEvent.localRotation = m_RotationOffset*controller.Rotation;
 
 		if (inputEvent.localPosition == m_LastPositionValues[sixenseDeviceIndex] &&
 			inputEvent.localRotation == m_LastRotationValues[sixenseDeviceIndex])
@@ -177,14 +178,18 @@ public class SixenseInputToEvents : MonoBehaviour
 	void CalibrateControllers()
 	{
 		//Assume controllers are on the side of the HMD and facing forward (aligned with base)
-		float span = (SixenseInput.Controllers[1].Position * kHydraUnits - SixenseInput.Controllers[0].Position * kHydraUnits).magnitude; //Distance between controllers
+		float span =
+			(SixenseInput.Controllers[1].Position*kHydraUnits - SixenseInput.Controllers[0].Position*kHydraUnits).magnitude;
+			//Distance between controllers
 		Transform headPivot = VRView.viewerCamera.transform;
 		Vector3 lookDirection = headPivot.forward;
 		lookDirection.y = 0f;
 		lookDirection = VRView.viewerPivot.InverseTransformDirection(lookDirection.normalized);
 		if (lookDirection != Vector3.zero)
 			m_RotationOffset = Quaternion.LookRotation(lookDirection);
-		m_ControllerOffsets[0] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (-headPivot.right * span * 0.5f)) - (m_RotationOffset * SixenseInput.Controllers[0].Position * kHydraUnits);
-		m_ControllerOffsets[1] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (headPivot.right * span * 0.5f)) - (m_RotationOffset * SixenseInput.Controllers[1].Position * kHydraUnits);
+		m_ControllerOffsets[0] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (-headPivot.right*span*0.5f)) -
+								(m_RotationOffset*SixenseInput.Controllers[0].Position*kHydraUnits);
+		m_ControllerOffsets[1] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (headPivot.right*span*0.5f)) -
+								(m_RotationOffset*SixenseInput.Controllers[1].Position*kHydraUnits);
 	}
 }

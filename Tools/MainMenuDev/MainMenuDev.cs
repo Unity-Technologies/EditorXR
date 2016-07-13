@@ -9,16 +9,6 @@ using UnityEngine.VR.Tools;
 [ExecuteInEditMode]
 public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 {
-	public Transform rayOrigin
-	{
-		get; set;
-	}
-
-	public Func<GameObject, GameObject> InstantiateUI
-	{
-		private get; set;
-	}
-
 	public List<Type> menuTools { private get; set; }
 
 	public Func<IMainMenu, Type, bool> SelectTool { private get; set; }
@@ -29,6 +19,16 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 
 	private RectTransform m_Layout;
 	private GameObject m_ButtonTemplate;
+
+	public Transform rayOrigin
+	{
+		get; set;
+	}
+
+	public Func<GameObject, GameObject> InstantiateUI
+	{
+		private get; set;
+	}
 
 	void Start()
 	{
@@ -55,22 +55,22 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 		foreach (var menuTool in menuTools)
 		{
 			var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
-		    newButton.name = menuTool.Name;
+			newButton.name = menuTool.Name;
 			var text = newButton.GetComponentInChildren<Text>();
 			text.text = menuTool.Name;
 			var button = newButton.GetComponent<Button>();
-            AddButtonListener(button, menuTool);
+			AddButtonListener(button, menuTool);
 		}
 	}
 
-    private void AddButtonListener(Button b, Type t)
-    {
-        b.onClick.RemoveAllListeners();
-        b.onClick.AddListener(() =>
-        {
-            if (SelectTool(this, t))
-                U.Object.Destroy(this);
-        });
-        b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
-    }
+	private void AddButtonListener(Button b, Type t)
+	{
+		b.onClick.RemoveAllListeners();
+		b.onClick.AddListener(() =>
+		{
+			if (SelectTool(this, t))
+				U.Object.Destroy(this);
+		});
+		b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
+	}
 }

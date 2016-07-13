@@ -4,6 +4,11 @@ namespace UnityEngine.VR.Proxies
 {
 	public class ViveProxy : TwoHandedProxyBase
 	{
+		private ViveInputToEvents m_InputToEvents;
+
+		private SteamVR_RenderModel m_RightModel;
+		private SteamVR_RenderModel m_LeftModel;
+
 		public override bool active
 		{
 			get
@@ -11,11 +16,6 @@ namespace UnityEngine.VR.Proxies
 				return m_InputToEvents.active;
 			}
 		}
-
-		private ViveInputToEvents m_InputToEvents;
-
-		private SteamVR_RenderModel m_RightModel;
-		private SteamVR_RenderModel m_LeftModel;
 
 		public override void Awake()
 		{

@@ -283,18 +283,14 @@ public class EditorVR : MonoBehaviour
 				if (standardActionMap != null)
 				{
 					if (!maps.Contains(standardActionMap.standardInput))
-					{
 						maps.Add(standardActionMap.standardInput);
-					}
 				}
 
 				ICustomActionMap customActionMap = tool as ICustomActionMap;
 				if (customActionMap != null)
 				{
 					if (!maps.Contains(customActionMap.actionMapInput))
-					{
 						maps.Add(customActionMap.actionMapInput);
-					}
 				}
 			}
 		}
@@ -335,7 +331,7 @@ public class EditorVR : MonoBehaviour
 			usedDevices.UnionWith(standardMap.standardInput.GetCurrentlyUsedDevices());
 			U.Input.CollectSerializableTypesFromActionMapInput(standardMap.standardInput, ref serializableTypes);
 		}
-			
+
 		var customMap = tool as ICustomActionMap;
 		if (customMap != null)
 		{
@@ -384,9 +380,11 @@ public class EditorVR : MonoBehaviour
 				{
 					if (!proxy.active)
 						continue;
+
 					var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
 					if (device.TagIndex == -1)
 						continue;
+
 					var tag = tags[device.TagIndex];
 					Node node;
 					if (m_TagToNode.TryGetValue(tag, out node))
@@ -447,9 +445,8 @@ public class EditorVR : MonoBehaviour
 			{
 				var deviceData = m_DeviceData[dev];
 				if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
-				{
 					DespawnTool(deviceData.currentTool);
-				}
+
 				deviceData.tools.Push(newTool);
 				deviceData.currentTool = newTool;
 			}
@@ -508,7 +505,6 @@ public class EditorVR : MonoBehaviour
 				}
 				else
 					untaggedDevicesFound++;
-
 			}
 		}
 

@@ -45,7 +45,7 @@ namespace UnityEditor.VR
 				EditorPrefs.DeleteKey(kLaunchOnExitPlaymode);
 				EditorApplication.update -= ReopenOnExitPlaymode;
 				if (launch)
-					GetWindow();				
+					GetWindow();
 			}
 		}
 		
@@ -189,9 +189,7 @@ namespace UnityEditor.VR
 			if (Quaternion.Angle(headRotation, m_LastHeadRotation) > 0.1f)
 			{
 				if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
-				{
 					SetSceneViewsEnabled(false);
-				}
 
 				// Keep track of HMD activity by tracking head rotations
 				m_TimeSinceLastHMDChange = Time.realtimeSinceStartup;
@@ -292,19 +290,15 @@ namespace UnityEditor.VR
 		{
 			// If code is compiling, then we need to clean up the window resources before classes get re-initialized
 			if (EditorApplication.isCompiling)
-			{
 				Close();
-			}
-			
+
 			// Force the window to repaint every tick, since we need live updating
 			// This also allows scripts with [ExecuteInEditMode] to run
-			SceneViewUtilities.SetSceneRepaintDirty();            
+			SceneViewUtilities.SetSceneRepaintDirty();
 
 			// Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
 			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
-			{
 				 SetSceneViewsEnabled(true);
-			}
 		}
 
 		private void SetGameViewsEnabled(bool enabled)

@@ -18,6 +18,6 @@ namespace UnityEngine.VR.Proxies
 		{
 			base.Awake();
 			m_InputToEvents = U.Object.AddComponent<SixenseInputToEvents>(gameObject);
-		}		
+		}
 	}
 }

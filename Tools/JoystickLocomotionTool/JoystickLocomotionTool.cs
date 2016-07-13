@@ -8,21 +8,6 @@ using UnityEngine.VR.Tools;
 
 public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomActionMap
 {
-	public ActionMap actionMap
-	{
-		get { return m_LocomotionActionMap; }
-	}
-
-	public ActionMapInput actionMapInput
-	{
-		get { return m_JoystickLocomotionInput; }
-		set { m_JoystickLocomotionInput = (JoystickLocomotion)value; }
-	}
-
-	public Transform viewerPivot
-	{
-		set { m_ViewerPivot = value; }
-	}
 
 	[Header("Settings")]
 	[SerializeField]
@@ -30,22 +15,39 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustom
 	[SerializeField]
 	private float m_TurnSpeed = 30f;
 
+	public Transform viewerPivot
+	{
+		set { m_ViewerPivot = value; }
+	}
+
 	[Header("References")]
+
 	[SerializeField]
 	private Transform m_ViewerPivot;
+
+	public ActionMap actionMap
+	{
+		get { return m_LocomotionActionMap; }
+	}
+
 	[SerializeField]
 	private ActionMap m_LocomotionActionMap;
+	public ActionMapInput actionMapInput
+	{
+		get { return m_JoystickLocomotionInput; }
+		set { m_JoystickLocomotionInput = (JoystickLocomotion)value; }
+	}
+	private JoystickLocomotion m_JoystickLocomotionInput;
+
 	[SerializeField]
 	private PlayerInput m_PlayerInput;
-	
-	private JoystickLocomotion m_JoystickLocomotionInput;
 
 	void Start()
 	{
 		if (m_JoystickLocomotionInput == null && m_PlayerInput)
 			m_JoystickLocomotionInput = m_PlayerInput.GetActions<JoystickLocomotion>();
 	}
-	
+
 	void Update()
 	{
 		var moveDirection =
