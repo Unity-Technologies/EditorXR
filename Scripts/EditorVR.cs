@@ -44,6 +44,8 @@ public class EditorVR : MonoBehaviour
 		public Stack<ITool> tools;
 		public Menu menuInput;
 		public ActionMapInput uiInput;
+		public IMainMenu mainMenu;
+		public ITool currentTool;
 	}
 
     private Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
@@ -108,7 +110,9 @@ public class EditorVR : MonoBehaviour
 		// it's necessary to spawn the tools in a separate non-IEnumerator context.
 		EditorApplication.delayCall += () =>
 		{
-			SpawnTool(typeof(JoystickLocomotionTool));
+		    HashSet<InputDevice> devices;
+            var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
+            AddToolToDeviceData(tool, devices);
 		};
 	}
 
@@ -118,26 +122,35 @@ public class EditorVR : MonoBehaviour
 	}
 
 	private void Update()
-	{		
+	{
 		foreach (var proxy in m_AllProxies)
-		{			
+		{
 			proxy.Hidden = !proxy.Active;
 		}
 
 		foreach (var kvp in m_DeviceData)
 		{
-			if (kvp.Value.menuInput.show.wasJustPressed && !kvp.Value.tools.Any(t => t.GetType() == typeof(MainMenuDev)))
+			if (kvp.Value.menuInput.show.wasJustPressed)
 			{
-				// HACK to workaround missing MonoScript serialized fields
-				EditorApplication.delayCall += () =>
+				var device = kvp.Key;
+				if (m_DeviceData[device].mainMenu != null) // Close menu if already open
 				{
-					SpawnTool(typeof(MainMenuDev), kvp.Key);
-				};
+					U.Object.Destroy(m_DeviceData[device].mainMenu as MonoBehaviour);
+					m_DeviceData[device].mainMenu = null;
+				}
+				else
+				{
+					// HACK to workaround missing MonoScript serialized fields
+					EditorApplication.delayCall += () =>
+					{
+						SpawnMainMenu(typeof(MainMenuDev), device);
+					};
+				}
 			}
 		}
 	}
 
-	private void InitializePlayerHandle()
+    private void InitializePlayerHandle()
     {
         m_PlayerHandle = PlayerHandleManager.GetNewPlayerHandle();
         m_PlayerHandle.global = true;
@@ -194,59 +207,61 @@ public class EditorVR : MonoBehaviour
         }
     }
 
-    private void CreateEventSystem()
-    {
-        // Create event system, input module, and event camera
-        m_EventSystem = U.Object.AddComponent<EventSystem>(gameObject);
-        m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
-        m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
-        m_InputModule.EventCamera = m_EventCamera;
-        m_InputModule.EventCamera.clearFlags = CameraClearFlags.Nothing;
-        m_InputModule.EventCamera.cullingMask = 0;
+	private void CreateEventSystem()
+	{
+		// Create event system, input module, and event camera
+		m_EventSystem = U.Object.AddComponent<EventSystem>(gameObject);
+		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
+		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+		m_InputModule.EventCamera = m_EventCamera;
+		m_InputModule.EventCamera.clearFlags = CameraClearFlags.Nothing;
+		m_InputModule.EventCamera.cullingMask = 0;
 
-        foreach (var proxy in m_AllProxies)
-        {
-            foreach (var rayOriginBase in proxy.RayOrigins)
-            {
-                foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node, and update the action map copy
-                {
-                    if (device.TagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.TagIndex]] == rayOriginBase.Key)
-                    {
-	                    DeviceData deviceData;
-	                    if (m_DeviceData.TryGetValue(device, out deviceData))
-	                    {
-		                    deviceData.uiInput = CreateActionMapInput(CloneActionMapForDevice(m_InputModule.ActionMap, device));
+		foreach (var proxy in m_AllProxies)
+		{
+			foreach (var rayOriginBase in proxy.RayOrigins)
+			{
+				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
+				{
+					if (device.TagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.TagIndex]] == rayOriginBase.Key)
+					{
+						DeviceData deviceData;
+						if (m_DeviceData.TryGetValue(device, out deviceData))
+						{
+							// Create ui action map input for device.
+							if (deviceData.uiInput == null)
+								deviceData.uiInput = CreateActionMapInput(CloneActionMapForDevice(m_InputModule.ActionMap, device));
 
-		                    // Add RayOrigin transform and ActionMapInput reference to input module lists
-		                    m_InputModule.RayOrigins.Add(rayOriginBase.Value);
-		                    m_InputModule.AddActionMapInput(deviceData.uiInput);
-	                    }
-	                    break;
-                    }
-                }
-            }
-        }
-    }
+							// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+							m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, deviceData.uiInput);
+						}
+						break;
+					}
+				}
+			}
+		}
+		UpdatePlayerHandleMaps();
+	}
 
-    private GameObject InstantiateUI(GameObject prefab)
-    {
-        var go = U.Object.InstantiateAndSetActive(prefab, transform);
-        foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
-            canvas.worldCamera = m_EventCamera;
-        return go;
-    }
+	private GameObject InstantiateUI(GameObject prefab)
+	{
+		var go = U.Object.InstantiateAndSetActive(prefab, transform);
+		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
+			canvas.worldCamera = m_EventCamera;
+		return go;
+	}
 
-    private ActionMapInput CreateActionMapInput(ActionMap map)
-    {
-        var actionMapInput = ActionMapInput.Create(map);
-        actionMapInput.TryInitializeWithDevices(m_PlayerHandle.GetApplicableDevices());
-        actionMapInput.active = true;
-        return actionMapInput;
-    }
+	private ActionMapInput CreateActionMapInput(ActionMap map)
+	{
+		var actionMapInput = ActionMapInput.Create(map);
+		actionMapInput.TryInitializeWithDevices(m_PlayerHandle.GetApplicableDevices());
+		actionMapInput.active = true;
+		return actionMapInput;
+	}
 
-    private void UpdatePlayerHandleMaps()
-    {
-        var maps = m_PlayerHandle.maps;
+	private void UpdatePlayerHandleMaps()
+	{
+		var maps = m_PlayerHandle.maps;
 		maps.Clear();
 
 		foreach (DeviceData deviceData in m_DeviceData.Values)
@@ -285,8 +300,8 @@ public class EditorVR : MonoBehaviour
         }
 
 		maps.Add(m_DefaultActionInput);
-    }
-
+    }	
+    
 	private void LogError(string error)
 	{
 		Debug.LogError(string.Format("EVR: {0}", error));
@@ -300,135 +315,100 @@ public class EditorVR : MonoBehaviour
 	/// <param name="device">The input device whose tool stack the tool should be spawned on 
 	/// (optional). If not specified, then it uses the action map to determine which devices the tool should be spawned
 	/// on.</param>
-	private void SpawnTool(Type toolType, InputDevice device = null)
+	/// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
+	private ITool SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device = null)
 	{
+		usedDevices = new HashSet<InputDevice>();
 		if (!typeof(ITool).IsAssignableFrom(toolType))
-			return;
+			return null;
 
-		HashSet<SerializableType> serializableTypes = new HashSet<SerializableType>();
+		var serializableTypes = new HashSet<SerializableType>();
 		var tool = U.Object.AddComponent(toolType, gameObject) as ITool;
 		var standardMap = tool as IStandardActionMap;
 		if (standardMap != null)
 		{
-			ActionMap actionMap = m_StandardToolActionMap;
-
+			var actionMap = m_StandardToolActionMap;
 			if (device != null)
-			{
 				actionMap = CloneActionMapForDevice(actionMap, device);
-			}
 
 			standardMap.StandardInput = (Standard)CreateActionMapInput(actionMap);
+			usedDevices.UnionWith(standardMap.StandardInput.GetCurrentlyUsedDevices());
 			U.Input.CollectSerializableTypesFromActionMapInput(standardMap.StandardInput, ref serializableTypes);
 		}
 			
 		var customMap = tool as ICustomActionMap;
 		if (customMap != null)
 		{
-			ActionMap actionMap = customMap.ActionMap;
-
+			var actionMap = customMap.ActionMap;
 			if (device != null)
-			{
 				actionMap = CloneActionMapForDevice(actionMap, device);
-			}
 
 			customMap.ActionMapInput = CreateActionMapInput(actionMap);
+			usedDevices.UnionWith(customMap.ActionMapInput.GetCurrentlyUsedDevices());
 			U.Input.CollectSerializableTypesFromActionMapInput(customMap.ActionMapInput, ref serializableTypes);
 		}
 
+		ConnectInterfaces(tool, device);        	
+		return tool;
+	}
+
+	private void AddToolToDeviceData(ITool tool, HashSet<InputDevice> devices)
+	{
+		foreach (var dev in devices)
+			AddToolToStack(dev, tool);
+	}
+
+	private void SpawnMainMenu(Type type, InputDevice device)
+	{
+		if (!typeof(IMainMenu).IsAssignableFrom(type))
+			return;
+
+		var mainMenu = U.Object.AddComponent(type, gameObject) as IMainMenu;
+		if (mainMenu != null)
+		{
+			mainMenu.MenuTools = m_AllTools.ToList();
+			mainMenu.SelectTool = SelectTool;
+			m_DeviceData[device].mainMenu = mainMenu;
+			ConnectInterfaces(mainMenu, device);
+		}
+	}
+
+	private void ConnectInterfaces(object obj, InputDevice device = null)
+	{
 		if (device != null)
 		{
-			var untaggedDevicesFound = 0;
-			var taggedDevicesFound = 0;
-			foreach (var serializableType in serializableTypes)
-			{
-				if (serializableType.TagIndex != -1)
-				{
-					taggedDevicesFound++;
-
-					if (serializableType.TagIndex != device.TagIndex)
-					{
-						LogError(
-							string.Format("The action map for {0} contains a specific device tag, but is being spawned on the wrong device tag",
-								toolType));
-						U.Object.Destroy(tool as MonoBehaviour);
-						return;
-					}
-				}
-				else
-				{
-					untaggedDevicesFound++;
-				}
-			}
-
-			if (taggedDevicesFound > 0 && untaggedDevicesFound != 0)
-			{
-				LogError(
-					string.Format("The action map for {0} contains both a specific device tag and an unspecified tag, which is not supported",
-						toolType));
-				U.Object.Destroy(tool as MonoBehaviour);
-				return;
-			}
-		}
-
-		HashSet<InputDevice> devices = null;
-		if (device != null)
-		{
-			devices = new HashSet<InputDevice> {device};
-		}
-		else
-		{
-			// TODO: Do we need to collect devices across all control schemes?
-			devices = U.Input.CollectInputDevicesFromActionMaps(m_ToolActionMaps[toolType]);
-		}
-
-		if (device != null)
-		{
-			var ray = tool as IRay;
+			var ray = obj as IRay;
 			if (ray != null)
 			{
-				// TODO: Get active proxy per node, pass its ray origin.
 				foreach (var proxy in m_AllProxies)
 				{
-					if (proxy.Active)
+					if (!proxy.Active)
+						continue;
+					var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
+					if (device.TagIndex == -1)
+						continue;
+					var tag = tags[device.TagIndex];
+					Node node;
+					if (m_TagToNode.TryGetValue(tag, out node))
 					{
-						var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
-						var tag = tags[device.TagIndex];
-						Node node;
-						if (m_TagToNode.TryGetValue(tag, out node))
+						Transform rayOrigin;
+						if (proxy.RayOrigins.TryGetValue(node, out rayOrigin))
 						{
-							Transform rayOrigin;
-							if (proxy.RayOrigins.TryGetValue(node, out rayOrigin))
-							{
-								ray.RayOrigin = rayOrigin;
-								break;
-							}
+							ray.RayOrigin = rayOrigin;
+							break;
 						}
 					}
 				}
 			}
 		}
 
-		var locomotionComponent = tool as ILocomotion;
-        if (locomotionComponent != null)
-        {
-            locomotionComponent.ViewerPivot = VRView.viewerPivot;
-        }
+		var locomotionComponent = obj as ILocomotion;
+		if (locomotionComponent != null)
+			locomotionComponent.ViewerPivot = VRView.viewerPivot;
 
-        var instantiateUITool = tool as IInstantiateUI;
-	    if (instantiateUITool != null)
-	        instantiateUITool.InstantiateUI = InstantiateUI;
-
-		var mainMenuTool = tool as IMainMenu;
-		if (mainMenuTool != null)
-		{
-			mainMenuTool.MenuTools = m_AllTools.ToList();
-			mainMenuTool.SelectTool = SelectTool;
-		}
-
-		foreach (var dev in devices)
-	    {
-		    AddToolToStack(dev, tool);
-	    }
+		var instantiateUITool = obj as IInstantiateUI;
+		if (instantiateUITool != null)
+			instantiateUITool.InstantiateUI = InstantiateUI;
 	}
 
 	private InputDevice GetInputDeviceForTool(ITool tool)
@@ -441,24 +421,61 @@ public class EditorVR : MonoBehaviour
 					return kvp.Key;
 			}
 		}
-
 		return null;
 	}
 
 	private bool SelectTool(IMainMenu menu, Type tool)
 	{
-		var device = GetInputDeviceForTool(menu as ITool);
-		if (device != null)
+		InputDevice device = null;
+		foreach (var kvp in m_DeviceData)
 		{
-			// HACK to workaround missing serialized fields coming from the MonoScript
-			EditorApplication.delayCall += () =>
-			{
-				SpawnTool(tool, device);
-			};
-			return true;
+			if (kvp.Value.mainMenu == menu)
+				device = kvp.Key;
 		}
 
-		return false;
+		if (device == null)
+			return false;
+
+		// HACK to workaround missing serialized fields coming from the MonoScript
+		EditorApplication.delayCall += () =>
+		{
+			// Spawn tool and collect all devices that this tool will need
+			HashSet<InputDevice> usedDevices;
+			var newTool = SpawnTool(tool, out usedDevices, device);
+
+			foreach (var dev in usedDevices)
+			{
+				var deviceData = m_DeviceData[dev];
+				if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
+				{
+					DespawnTool(deviceData.currentTool);
+				}
+				deviceData.tools.Push(newTool);
+				deviceData.currentTool = newTool;
+			}
+			UpdatePlayerHandleMaps();
+		};
+
+		return true;
+	}
+
+	private void DespawnTool(ITool tool)
+	{
+		foreach (var deviceData in m_DeviceData.Values)
+		{
+			// Remove the tool if it is the current tool on this device tool stack
+			if (deviceData.currentTool == tool) 
+			{
+				if (deviceData.tools.Peek() != deviceData.currentTool)
+				{
+					Debug.LogError("Tool at top of stack is not current tool.");
+					continue;
+				}
+				deviceData.tools.Pop();
+				deviceData.currentTool = null;
+			}
+		}
+		U.Object.Destroy(tool as MonoBehaviour);
 	}
 
 	private ActionMap CloneActionMapForDevice(ActionMap actionMap, InputDevice device)
@@ -472,13 +489,44 @@ public class EditorVR : MonoBehaviour
 
 	private void UpdateActionMapForDevice(ActionMap actionMap, InputDevice device)
 	{
+		var untaggedDevicesFound = 0;
+		var taggedDevicesFound = 0;
+		var nonMatchingTagIndices = 0;
+		var matchingTagIndices = 0;
+
 		foreach (var scheme in actionMap.controlSchemes)
 		{
 			foreach (var serializableDeviceType in scheme.serializableDeviceTypes)
 			{
-				if (serializableDeviceType.value == device.GetType() && serializableDeviceType.TagIndex == -1)
+				if (serializableDeviceType.TagIndex != -1)
+				{
+					taggedDevicesFound++;
+					if (serializableDeviceType.TagIndex != device.TagIndex)
+						nonMatchingTagIndices++;
+					else
+						matchingTagIndices++;
+				}
+				else
+					untaggedDevicesFound++;
+
+			}
+		}
+
+		if (nonMatchingTagIndices > 0 && matchingTagIndices == 0) // There is no specified tag that matches the current device, but there is one that does not match
+			LogError(string.Format("The action map {0} contains a specific device tag, but is being spawned on the wrong device tag", actionMap));
+
+		if (taggedDevicesFound > 0 && untaggedDevicesFound != 0)
+			LogError(string.Format("The action map {0} contains both a specific device tag and an unspecified tag, which is not supported", actionMap.name));
+
+		// Update all device tags and bindings tagged with no tag (index -1)
+		foreach (var scheme in actionMap.controlSchemes)
+		{
+			foreach (var serializableDeviceType in scheme.serializableDeviceTypes)
+			{
+				if (serializableDeviceType.TagIndex == -1)
 					serializableDeviceType.TagIndex = device.TagIndex;
 			}
+
 			foreach (var binding in scheme.bindings)
 			{
 				foreach (var source in binding.sources)
@@ -486,18 +534,18 @@ public class EditorVR : MonoBehaviour
 					if (source.deviceType.value == device.GetType() && source.deviceType.TagIndex == -1)
 						source.deviceType.TagIndex = device.TagIndex;
 				}
-			}	
+			}
 		}
 	}
 
-    private void AddToolToStack(InputDevice device, ITool tool)
-    {
-        if (tool != null)
-        {
-            m_DeviceData[device].tools.Push(tool);
-            UpdatePlayerHandleMaps();
-        }
-    }
+	private void AddToolToStack(InputDevice device, ITool tool)
+	{
+		if (tool != null)
+		{
+			m_DeviceData[device].tools.Push(tool);
+			UpdatePlayerHandleMaps();
+		}
+	}
 
 #if UNITY_EDITOR
     private static EditorVR s_Instance;

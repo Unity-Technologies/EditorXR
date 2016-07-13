@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEditor.VR;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
 
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateUI
 {
@@ -23,6 +24,12 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
     [SerializeField]
     private Canvas CanvasPrefab;
     private Canvas m_ToolCanvas;
+
+    void OnDestroy()
+    {
+        if (m_ToolCanvas != null)
+            U.Object.Destroy(m_ToolCanvas.gameObject);
+    }
 
     void Update()
     {
