@@ -9,7 +9,7 @@ using UnityEngine.InputNew;
 public class SixenseInputToEvents : MonoBehaviour
 {
 	public const uint kControllerCount = SixenseInput.MAX_CONTROLLERS;
-	public const int kAxisCount = (int) VRInputDevice.VRControl.Analog9 + 1;
+	public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
 	public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
 
 	private const float kHydraUnits = 0.001f; // input is in mm
@@ -48,14 +48,12 @@ public class SixenseInputToEvents : MonoBehaviour
 			SendTrackingEvents(i, deviceIndex);
 		}
 
-		//Check for calibrate
+		// Check for calibrate
 		if (SixenseInput.Controllers[0] != null && SixenseInput.Controllers[1] != null)
 		{
 			if (SixenseInput.Controllers[0].GetButton(SixenseButtons.START) &&
 				SixenseInput.Controllers[1].GetButton(SixenseButtons.START))
-			{
 				CalibrateControllers();
-			}
 		}
 	}
 
@@ -86,7 +84,7 @@ public class SixenseInputToEvents : MonoBehaviour
 			inputEvent.deviceType = typeof(VRInputDevice);
 			inputEvent.deviceIndex = deviceIndex;
 			inputEvent.controlIndex = axis;
-			inputEvent.value = GetAxis(sixenseDeviceIndex, (VRInputDevice.VRControl) axis);
+			inputEvent.value = GetAxis(sixenseDeviceIndex, (VRInputDevice.VRControl)axis);
 
 			if (Mathf.Approximately(m_LastAxisValues[sixenseDeviceIndex, axis], inputEvent.value))
 				continue;
@@ -102,28 +100,28 @@ public class SixenseInputToEvents : MonoBehaviour
 		switch (button)
 		{
 			case SixenseButtons.ONE:
-				return (int) VRInputDevice.VRControl.Action1;
+				return (int)VRInputDevice.VRControl.Action1;
 
 			case SixenseButtons.TWO:
-				return (int) VRInputDevice.VRControl.Action2;
+				return (int)VRInputDevice.VRControl.Action2;
 
 			case SixenseButtons.THREE:
-				return (int) VRInputDevice.VRControl.Action3;
+				return (int)VRInputDevice.VRControl.Action3;
 
 			case SixenseButtons.FOUR:
-				return (int) VRInputDevice.VRControl.Action4;
+				return (int)VRInputDevice.VRControl.Action4;
 
 			case SixenseButtons.BUMPER:
-				return (int) VRInputDevice.VRControl.Action5;
+				return (int)VRInputDevice.VRControl.Action5;
 
 			case SixenseButtons.TRIGGER:
-				return (int) VRInputDevice.VRControl.Trigger1;
+				return (int)VRInputDevice.VRControl.Trigger1;
 
 			case SixenseButtons.START:
-				return (int) VRInputDevice.VRControl.Start;
+				return (int)VRInputDevice.VRControl.Start;
 
 			case SixenseButtons.JOYSTICK:
-				return (int) VRInputDevice.VRControl.LeftStickButton;
+				return (int)VRInputDevice.VRControl.LeftStickButton;
 		}
 
 		// Not all buttons are currently mapped
@@ -177,12 +175,11 @@ public class SixenseInputToEvents : MonoBehaviour
 
 	void CalibrateControllers()
 	{
-		//Assume controllers are on the side of the HMD and facing forward (aligned with base)
-		float span =
-			(SixenseInput.Controllers[1].Position*kHydraUnits - SixenseInput.Controllers[0].Position*kHydraUnits).magnitude;
-			//Distance between controllers
-		Transform headPivot = VRView.viewerCamera.transform;
-		Vector3 lookDirection = headPivot.forward;
+		// Assume controllers are on the side of the HMD and facing forward (aligned with base)
+		var  span = (SixenseInput.Controllers[1].Position*kHydraUnits - SixenseInput.Controllers[0].Position*kHydraUnits).magnitude;
+		// Distance between controllers
+		var headPivot = VRView.viewerCamera.transform;
+		var lookDirection = headPivot.forward;
 		lookDirection.y = 0f;
 		lookDirection = VRView.viewerPivot.InverseTransformDirection(lookDirection.normalized);
 		if (lookDirection != Vector3.zero)

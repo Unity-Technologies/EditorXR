@@ -20,15 +20,15 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 	public Transform rayOrigin { get; set; }
 
 	public List<Type> menuTools { private get; set; }
-	public Func<IMainMenu, Type, bool> SelectTool { private get; set; }
+	public Func<IMainMenu, Type, bool> selectTool { private get; set; }
 
-	public Func<GameObject, GameObject> InstantiateUI { private get; set; }
+	public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
 	void Start()
 	{
 		if (m_MenuCanvas == null)
 		{
-			var go = InstantiateUI(m_MainMenuPrefab.gameObject);
+			var go = instantiateUI(m_MainMenuPrefab.gameObject);
 			m_MenuCanvas = go.GetComponent<Canvas>();
 			m_Layout = m_MenuCanvas.GetComponentInChildren<GridLayoutGroup>().GetComponent<RectTransform>();
 			m_ButtonTemplate = m_Layout.GetChild(0).gameObject;
@@ -62,7 +62,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 		b.onClick.RemoveAllListeners();
 		b.onClick.AddListener(() =>
 		{
-			if (SelectTool(this, t))
+			if (selectTool(this, t))
 				U.Object.Destroy(this);
 		});
 		b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);

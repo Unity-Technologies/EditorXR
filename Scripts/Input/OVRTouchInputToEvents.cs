@@ -5,7 +5,7 @@ using UnityEngine.InputNew;
 public class OVRTouchInputToEvents : MonoBehaviour
 {
 	public const uint kControllerCount = 2;
-	public const int kAxisCount = (int) VRInputDevice.VRControl.Analog9 + 1;
+	public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
 	public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
 
 	private float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
@@ -27,7 +27,7 @@ public class OVRTouchInputToEvents : MonoBehaviour
 		active = true;
 
 		for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left;
-			(int) hand <= (int) VRInputDevice.Handedness.Right;
+			(int)hand <= (int)VRInputDevice.Handedness.Right;
 			hand++)
 		{
 			OVRInput.Controller controller = hand == VRInputDevice.Handedness.Left
@@ -35,7 +35,7 @@ public class OVRTouchInputToEvents : MonoBehaviour
 				: OVRInput.Controller.RTouch;
 			int ovrIndex = controller == OVRInput.Controller.LTouch ? 0 : 1;
 			int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4;
-				// TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
+			// TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
 			SendButtonEvents(controller, deviceIndex);
 			SendAxisEvents(controller, ovrIndex, deviceIndex);
 			SendTrackingEvents(controller, ovrIndex, deviceIndex);
@@ -65,7 +65,7 @@ public class OVRTouchInputToEvents : MonoBehaviour
 			inputEvent.deviceType = typeof(VRInputDevice);
 			inputEvent.deviceIndex = deviceIndex;
 			inputEvent.controlIndex = axis;
-			inputEvent.value = GetAxis(controller, (VRInputDevice.VRControl) axis);
+			inputEvent.value = GetAxis(controller, (VRInputDevice.VRControl)axis);
 
 			if (Mathf.Approximately(m_LastAxisValues[ovrIndex, axis], inputEvent.value))
 				continue;
@@ -81,19 +81,19 @@ public class OVRTouchInputToEvents : MonoBehaviour
 		switch (button)
 		{
 			case OVRInput.Button.One:
-				return (int) VRInputDevice.VRControl.Action1;
+				return (int)VRInputDevice.VRControl.Action1;
 
 			case OVRInput.Button.Two:
-				return (int) VRInputDevice.VRControl.Action2;
+				return (int)VRInputDevice.VRControl.Action2;
 
 			case OVRInput.Button.PrimaryIndexTrigger:
-				return (int) VRInputDevice.VRControl.Trigger1;
+				return (int)VRInputDevice.VRControl.Trigger1;
 
 			case OVRInput.Button.PrimaryHandTrigger:
-				return (int) VRInputDevice.VRControl.Trigger2;
+				return (int)VRInputDevice.VRControl.Trigger2;
 
 			case OVRInput.Button.PrimaryThumbstick:
-				return (int) VRInputDevice.VRControl.LeftStickButton;
+				return (int)VRInputDevice.VRControl.LeftStickButton;
 		}
 
 		// Not all buttons are currently mapped

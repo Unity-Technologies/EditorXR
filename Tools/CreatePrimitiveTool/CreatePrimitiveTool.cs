@@ -20,7 +20,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 		get; set;
 	}
 
-	public Func<GameObject, GameObject> InstantiateUI
+	public Func<GameObject, GameObject> instantiateUI
 	{
 		private get; set;
 	}
@@ -31,7 +31,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 		{
 				if (m_ToolCanvas == null)
 				{
-					var go = InstantiateUI(CanvasPrefab.gameObject);
+					var go = instantiateUI(CanvasPrefab.gameObject);
 					m_ToolCanvas = go.GetComponent<Canvas>();
 				}
 				m_ToolCanvas.transform.position = rayOrigin.position + rayOrigin.forward*5f;

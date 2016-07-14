@@ -363,7 +363,7 @@ public class EditorVR : MonoBehaviour
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_AllTools.ToList();
-			mainMenu.SelectTool = SelectTool;
+			mainMenu.selectTool = SelectTool;
 			m_DeviceData[device].mainMenu = mainMenu;
 			ConnectInterfaces(mainMenu, device);
 		}
@@ -406,7 +406,7 @@ public class EditorVR : MonoBehaviour
 
 		var instantiateUITool = obj as IInstantiateUI;
 		if (instantiateUITool != null)
-			instantiateUITool.InstantiateUI = InstantiateUI;
+			instantiateUITool.instantiateUI = InstantiateUI;
 	}
 
 	private InputDevice GetInputDeviceForTool(ITool tool)

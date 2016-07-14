@@ -59,18 +59,23 @@ public class ViveInputToEvents : MonoBehaviour
 	private Vector3[] m_LastPositionValues = new Vector3[controllerCount];
 	private Quaternion[] m_LastRotationValues = new Quaternion[controllerCount];
 
-	private void SendAxisEvents(int steamDeviceIndex, int deviceIndex) {
+	private void SendAxisEvents(int steamDeviceIndex, int deviceIndex)
+	{
 		int a = 0;
-		for (int axis = (int)EVRButtonId.k_EButton_Axis0; axis <= (int)EVRButtonId.k_EButton_Axis4; ++axis) {
+		for (int axis = (int)EVRButtonId.k_EButton_Axis0; axis <= (int)EVRButtonId.k_EButton_Axis4; ++axis)
+		{
 			Vector2 axisVec = SteamVR_Controller.Input(steamDeviceIndex).GetAxis((EVRButtonId)axis);
-			for (XorY xy = XorY.X; (int)xy <= (int)XorY.Y; xy++, a++) {
+			for (XorY xy = XorY.X; (int)xy <= (int)XorY.Y; xy++, a++)
+			{
 				var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 				inputEvent.deviceType = typeof(VRInputDevice);
 				inputEvent.deviceIndex = deviceIndex;
 				inputEvent.controlIndex = a;
 				inputEvent.value = xy == XorY.X ? axisVec.x : axisVec.y;
 
-				if (Mathf.Approximately(m_LastAxisValues[steamDeviceIndex, a], inputEvent.value)) { //TODO Does continue need to be commented out for some reason?
+				if (Mathf.Approximately(m_LastAxisValues[steamDeviceIndex, a], inputEvent.value))
+				{
+					//TODO Does continue need to be commented out for some reason?
 					//continue;
 				}
 				m_LastAxisValues[steamDeviceIndex, a] = inputEvent.value;
@@ -80,15 +85,18 @@ public class ViveInputToEvents : MonoBehaviour
 		}
 	}
 
-	private void SendButtonEvents(int steamDeviceIndex, int deviceIndex) {
-		foreach (EVRButtonId button in Enum.GetValues(typeof(EVRButtonId))) {
+	private void SendButtonEvents(int steamDeviceIndex, int deviceIndex)
+	{
+		foreach (EVRButtonId button in Enum.GetValues(typeof(EVRButtonId)))
+		{
 			bool isDown = SteamVR_Controller.Input(steamDeviceIndex).GetPressDown(button);
 			bool isUp = SteamVR_Controller.Input(steamDeviceIndex).GetPressUp(button);
 
-			if (isDown || isUp) {
+			if (isDown || isUp)
+			{
 				var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 				inputEvent.deviceType = typeof(VRInputDevice);
-				inputEvent.deviceIndex = deviceIndex; 
+				inputEvent.deviceIndex = deviceIndex;
 				inputEvent.controlIndex = axisCount + (int)button;
 				inputEvent.value = isDown ? 1.0f : 0.0f;
 
@@ -97,7 +105,8 @@ public class ViveInputToEvents : MonoBehaviour
 		}
 	}
 
-	private void SendTrackingEvents(int steamDeviceIndex, int deviceIndex) {
+	private void SendTrackingEvents(int steamDeviceIndex, int deviceIndex)
+	{
 		var inputEvent = InputSystem.CreateEvent<VREvent>();
 		inputEvent.deviceType = typeof(VRInputDevice);
 		inputEvent.deviceIndex = deviceIndex;
