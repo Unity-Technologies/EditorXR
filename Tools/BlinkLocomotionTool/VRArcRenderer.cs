@@ -1,6 +1,7 @@
 ﻿// todo test for arcing to different heights
 // todo 
 
+using System.Collections;
 using UnityEngine;
 using UnityEngineInternal;
 
@@ -73,7 +74,20 @@ public class VRArcRenderer : MonoBehaviour
     void OnEnable()
     {
         ShowLine(false);
+	    StartCoroutine(AnimateShow());
     }
+
+	private IEnumerator AnimateShow()
+	{
+		float scaleUp = 0f;
+		while (scaleUp < 1)
+		{
+			locatorRoot.localScale = Vector3.one * scaleUp;
+			lineRenderer.SetWidth(scaleUp, scaleUp);
+			scaleUp = UnityEngine.VR.Utilities.U.Math.Ease(scaleUp, 1f, 8, 0.05f);
+			yield return null;
+		}
+	}
 
     //http://devmag.org.za/2011/04/05/bzier-curves-a-tutorial/
     Vector3 CalculateBezierPoint( float t, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3 )
@@ -191,9 +205,10 @@ public class VRArcRenderer : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-		motionSphereOffset = (motionSphereOffset + (Time.deltaTime * motionSphereSpeed)) % (1.0f/(float)motionSphereCount);
+		//motionSphereOffset = (motionSphereOffset + (Time.deltaTime * motionSphereSpeed)) % (1.0f/(float)motionSphereCount);
+		motionSphereOffset = (motionSphereOffset + (UnityEngine.Time.unscaledDeltaTime * motionSphereSpeed)) % (1.0f / (float)motionSphereCount);
 
-	    if ( lastPosition != transform.position || lastRotation != transform.rotation )
+		if ( lastPosition != transform.position || lastRotation != transform.rotation )
 	    {
 	        DrawArc();
 	        lastPosition = transform.position;

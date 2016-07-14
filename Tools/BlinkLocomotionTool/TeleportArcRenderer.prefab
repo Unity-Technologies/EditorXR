@@ -146,7 +146,7 @@ Transform:
   m_GameObject: {fileID: 1000014117712074}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.2, z: 0}
-  m_LocalScale: {x: 0.86, y: 0.4, z: 0.86}
+  m_LocalScale: {x: 1.72, y: 0.4, z: 1.72}
   m_Children: []
   m_Father: {fileID: 4000012679276312}
   m_RootOrder: 1
@@ -159,7 +159,7 @@ Transform:
   m_GameObject: {fileID: 1000012798930120}
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.1000003, z: 0.1000003}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.1}
   m_Children: []
   m_Father: {fileID: 4000012679276312}
   m_RootOrder: 0
@@ -303,14 +303,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   lineSegmentCount: 32
-  range: 5
+  range: 12
   radius: 0.1
   layerMask:
     serializedVersion: 2
     m_Bits: 4294967295
   locatorRoot: {fileID: 4000012679276312}
   locatorTubeRenderer: {fileID: 23000010284103870}
-  validLocationColor: {r: 0.25490198, g: 0.7529412, b: 1, a: 1}
+  validLocationColor: {r: 0.50855184, g: 1, b: 0.491, a: 1}
   invalidLocationColor: {r: 1, g: 0.3882353, b: 0.3882353, a: 1}
   maxArc: 0.85
   motionSphereCount: 10

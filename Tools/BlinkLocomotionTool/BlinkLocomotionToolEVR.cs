@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using System.Xml;
 using UnityEditor;
 using UnityEngine;
@@ -42,7 +43,7 @@ public class BlinkLocomotionToolEVR : MonoBehaviour, ITool, ILocomotion, IRay, I
     }
 	private static readonly Color m_FadeInColor = Color.black;
 	private static readonly Color m_FadeOutColor = new Color(0f, 0f, 0f, 0f);
-	private static readonly Color m_InvalidTargetColor = Color.white;
+	private static readonly Color m_InvalidTargetColor = new Color(1f, 0.25f, 0.25f, 0.125f);
 
 	private Transform m_ViewerPivot;
     private Plane m_DefaultGroundPlane;
@@ -91,6 +92,10 @@ public class BlinkLocomotionToolEVR : MonoBehaviour, ITool, ILocomotion, IRay, I
     private GameObject m_FadeImageGO;  // use a fade image if we are parenting to the gave ray origin.  Otherwise use a fade sphere
     private GameObject m_BlinkArcGO;
 	private VRArcRenderer m_VRArcRenderer;
+	private VRLineRenderer[] m_PointerRayRenderers;
+	private Transform[] m_PointerTips;
+	private Vector3 m_OriginalTipScale;
+	private bool m_Blinking = false;
 
 	void Start()
     {
@@ -123,6 +128,7 @@ public class BlinkLocomotionToolEVR : MonoBehaviour, ITool, ILocomotion, IRay, I
 		m_VRArcRenderer = m_BlinkArcGO.GetComponentInChildren<VRArcRenderer>();
 		m_BlinkArcGO.transform.parent = RayOrigin;
         m_BlinkArcGO.transform.localPosition = Vector3.zero;
+		m_BlinkArcGO.transform.rotation = Quaternion.identity;
         m_BlinkArcGO.SetActive(false);
 
         // Create the UI element that does the fading. 
@@ -132,13 +138,16 @@ public class BlinkLocomotionToolEVR : MonoBehaviour, ITool, ILocomotion, IRay, I
         // fades for platforms that support it, and fall back to a method like this for those that don't.
         m_FadeImageGO = U.Object.InstantiateAndSetActive(m_FadeImagePrefab);
         m_FadeImageGO.transform.position = m_ViewerPivot.position + m_ViewerPivot.forward * 0.1f;
-        m_FadeImageGO.transform.parent = m_ViewerPivot;
+        //m_FadeImageGO.transform.parent = m_ViewerPivot;
+		m_FadeImageGO.transform.parent = GameObject.Find("SixenseProxy").transform; // HACK: remove
         m_FadeImage = m_FadeImageGO.GetComponentInChildren<Image>();
 	    m_FadeImage.color = m_FadeOutColor; // set initial color to fully transparent black
 		m_FadeImage.gameObject.SetActive(false);
-
+		m_PointerRayRenderers = transform.GetComponentsInChildren<VRLineRenderer>();
+		m_PointerTips = transform.GetComponentsInChildren<Transform>().Where( x => x.gameObject.name == "Tip").ToArray();
+		m_OriginalTipScale = m_PointerTips[0].localScale;
 		//EditorApplication.delayCall += () => { StartCoroutine(TestFade()); };
-	}
+    }
 
     private IEnumerator TestFade()
     {
@@ -165,11 +174,16 @@ public class BlinkLocomotionToolEVR : MonoBehaviour, ITool, ILocomotion, IRay, I
 
     void Update()
     {
+	    //if (m_Blinking)
+		    //return;
+
         if (StandardInput.blink.wasJustPressed)
         {
             m_BlinkArcGO.SetActive(true);
 			Debug.LogWarning("Blink was just pressed : " + name);
-        }
+			//m_Blinking = true;
+			StartCoroutine(HidePointerRay());
+		}
         else if (StandardInput.blink.isHeld)
         {
             Ray ray = new Ray(RayOrigin.position, RayOrigin.forward);
@@ -213,7 +227,7 @@ public class BlinkLocomotionToolEVR : MonoBehaviour, ITool, ILocomotion, IRay, I
 			Debug.LogWarning("Blink was just released : " + name);
 
 			m_BlinkArcGO.SetActive(false);
-            //if (m_WasOnGround)
+            //if (m_WasOnGround) // Was told that ground detection doesnt matter at this point in development
                 StartCoroutine(FadeAndTeleport());
         }
     }
@@ -223,9 +237,11 @@ public class BlinkLocomotionToolEVR : MonoBehaviour, ITool, ILocomotion, IRay, I
     {
 	    bool validTarget = m_VRArcRenderer.validTarget;
 	    Color fadeInColor = validTarget ? m_FadeInColor : m_InvalidTargetColor;
+	    float easeDivider = validTarget ? 3f : 2f;
 
-        Debug.LogWarning("Fading Blink overlay!");
+		Debug.LogWarning("Fading Blink overlay!");
         m_FadeImage.gameObject.SetActive(true);
+	    
 		//m_FadeImage.CrossFadeAlpha(0, 0, false); // crossfade not working properly
 		//m_FadeImage.CrossFadeAlpha(1, m_FadeTime, false); // crossfade not working properly
 		//m_FadeImage.CrossFadeColor(m_FadeInColor, 3, false, true); // crossfade not working properly
@@ -233,7 +249,7 @@ public class BlinkLocomotionToolEVR : MonoBehaviour, ITool, ILocomotion, IRay, I
 		float fadeAmount = 0f;
 	    while (fadeAmount < 1) //m_FadeImage.color != m_FadeInColor)
 	    {
-		    fadeAmount = U.Math.Ease(fadeAmount, 1f, 4, 0.05f);
+		    fadeAmount = U.Math.Ease(fadeAmount, 1f, easeDivider, 0.05f);
 		    m_FadeImage.color = Color.Lerp(m_FadeOutColor, fadeInColor, fadeAmount);
 		    yield return null;
 	    }
@@ -256,14 +272,53 @@ public class BlinkLocomotionToolEVR : MonoBehaviour, ITool, ILocomotion, IRay, I
 
 		yield return null;
 
+	    easeDivider *= 2;
+		StopCoroutine(HidePointerRay());
+		foreach (var tip in m_PointerTips)
+		{
+			tip.localScale = m_OriginalTipScale;
+		}
+
 		while (fadeAmount > 0) //m_FadeImage.color != m_FadeInColor)
 		{
-			fadeAmount = U.Math.Ease(fadeAmount, 0f, 8, 0.05f);
+			fadeAmount = U.Math.Ease(fadeAmount, 0f, easeDivider, 0.05f);
 			m_FadeImage.color = Color.Lerp(m_FadeOutColor, fadeInColor, fadeAmount);
+
+			foreach (var pointerRayRenderer in m_PointerRayRenderers)
+			{
+				pointerRayRenderer.SetWidth((1 - fadeAmount) * 0.05f, (1 - fadeAmount) * 0.05f);
+			}
 			yield return null;
 		}
         m_FadeImage.gameObject.SetActive(false);
+	    m_Blinking = false;
     }
+
+	private IEnumerator HidePointerRay()
+	{
+		foreach (var tip in m_PointerTips)
+		{
+			tip.localScale = Vector3.zero;
+		}
+		float fadeAmount = 0f;
+		float currentWidth = 0.05f; // TODO: fetch current width
+		float speed = 0.0025f;
+		while (currentWidth > 0.000001f)
+		{
+			//fadeAmount = U.Math.Ease(currentWidth, 0f, 256f, 0);
+			foreach (var pointerRayRenderer in m_PointerRayRenderers)
+			{
+				currentWidth -= speed;
+				pointerRayRenderer.SetWidth(currentWidth, currentWidth);
+			}
+			yield return null;
+		}
+
+		foreach (var pointerRayRenderer in m_PointerRayRenderers)
+		{
+			pointerRayRenderer.SetWidth(0f, 0f);
+		}
+	}
 
     private void HideIndicator()
     {

@@ -354,7 +354,7 @@ public class EditorVR : MonoBehaviour
 			usedDevices.UnionWith(customMap.ActionMapInput.GetCurrentlyUsedDevices());
 			U.Input.CollectSerializableTypesFromActionMapInput(customMap.ActionMapInput, ref serializableTypes);
 		}
-
+		 
 		#region Temp Code Hack
 		var blinkLocomotionTool = tool as BlinkLocomotionToolEVR; // TODO: remove if not needed
 		if (blinkLocomotionTool != null)
