@@ -52,6 +52,8 @@ public class EditorVR : MonoBehaviour
     private List<IProxy> m_AllProxies = new List<IProxy>();
     private IEnumerable<Type> m_AllTools;
 
+	private Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
+
 	private Dictionary<Type, List<ActionMap>> m_ToolActionMaps;
 
 	private Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
@@ -105,7 +107,6 @@ public class EditorVR : MonoBehaviour
 
 			yield return null;
 		}
-
 		// HACK: U.AddComponent doesn't work properly from an IEnumerator (missing default references when spawned), so currently
 		// it's necessary to spawn the tools in a separate non-IEnumerator context.
 		EditorApplication.delayCall += () =>
@@ -114,6 +115,49 @@ public class EditorVR : MonoBehaviour
             var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
             AddToolToDeviceData(tool, devices);
 		};
+	}
+
+	private void OnEnable()
+	{
+#if UNITY_EDITOR
+		if (Application.isPlaying)
+		{
+			SceneView.onSceneGUIDelegate += OnSceneGUI;
+		}
+		else
+		{
+			VRView.onGUIDelegate += OnSceneGUI;
+		}
+#endif
+	}
+
+	private void OnDisable()
+	{
+#if UNITY_EDITOR
+		if (Application.isPlaying)
+		{
+			SceneView.onSceneGUIDelegate -= OnSceneGUI;
+		}
+		else
+		{
+			VRView.onGUIDelegate -= OnSceneGUI;
+		}
+#endif
+}
+
+	private void OnSceneGUI(EditorWindow obj)
+	{
+		if (Event.current.type == EventType.MouseMove)
+		{
+			foreach (var proxy in m_AllProxies)
+			{
+				if (proxy.Active)
+				{
+					foreach (var rayOrigin in proxy.RayOrigins.Values)
+						m_RaycastGameObjects[rayOrigin] = CheckRaycastByPixel(new Ray(rayOrigin.position, rayOrigin.forward));
+				}
+			}
+		}
 	}
 
 	private void OnDestroy()
@@ -148,6 +192,21 @@ public class EditorVR : MonoBehaviour
 				}
 			}
 		}
+
+		// Send a "mouse moved" event, so scene picking can occur for the controller
+#if UNITY_EDITOR
+		Event e = new Event();
+        e.type = EventType.MouseMove;	
+		if (Application.isPlaying)
+		{
+			SceneView.lastActiveSceneView.SendEvent(e);
+		}
+		else
+		{
+			VRView.activeView.SendEvent(e);
+		}
+#endif
+
 	}
 
     private void InitializePlayerHandle()
@@ -214,8 +273,8 @@ public class EditorVR : MonoBehaviour
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_InputModule.EventCamera = m_EventCamera;
-		m_InputModule.EventCamera.clearFlags = CameraClearFlags.Nothing;
-		m_InputModule.EventCamera.cullingMask = 0;
+		//m_InputModule.EventCamera.clearFlags = CameraClearFlags.Nothing;
+		//m_InputModule.EventCamera.cullingMask = 0;
 
 		foreach (var proxy in m_AllProxies)
 		{
@@ -409,6 +468,11 @@ public class EditorVR : MonoBehaviour
 		var instantiateUITool = obj as IInstantiateUI;
 		if (instantiateUITool != null)
 			instantiateUITool.InstantiateUI = InstantiateUI;
+
+		var pointerTool = obj as IRaycaster;
+		if (pointerTool != null)
+			pointerTool.GetGameObjectOver = GetGameObjectOver;
+
 	}
 
 	private InputDevice GetInputDeviceForTool(ITool tool)
@@ -545,6 +609,35 @@ public class EditorVR : MonoBehaviour
 			m_DeviceData[device].tools.Push(tool);
 			UpdatePlayerHandleMaps();
 		}
+	}
+
+	private GameObject GetGameObjectOver(Transform rayOrigin)
+	{
+		GameObject go;
+		if (m_RaycastGameObjects.TryGetValue(rayOrigin, out go))
+			return go;
+		else
+			LogError("Transform rayOrigin is not set to raycast from.");
+		return null;
+	}
+
+	private GameObject CheckRaycastByPixel(Ray ray)
+	{
+		m_EventCamera.transform.position = ray.origin;
+		m_EventCamera.transform.forward = ray.direction;
+
+		Camera restoreCamera = Camera.current;
+		// HACK: Match Screen.width/height for scene picking
+		m_EventCamera.targetTexture = RenderTexture.GetTemporary(Screen.width, Screen.height);
+		Camera.SetupCurrent(m_EventCamera);
+
+		GameObject go = HandleUtility.PickGameObject(m_EventCamera.pixelRect.center, true);
+
+		Camera.SetupCurrent(restoreCamera);
+		RenderTexture.ReleaseTemporary(m_EventCamera.targetTexture);
+		m_EventCamera.targetTexture = null;
+
+		return go;
 	}
 
 #if UNITY_EDITOR
