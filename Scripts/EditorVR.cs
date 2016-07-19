@@ -36,6 +36,8 @@ public class EditorVR : MonoBehaviour
     private EventSystem m_EventSystem;
     private MultipleRayInputModule m_InputModule;
     private Camera m_EventCamera;
+	private RaycastModule m_RaycastModule;
+	private HighlightModule m_HighlightModule;
 
     private PlayerHandle m_PlayerHandle;
 
@@ -51,8 +53,6 @@ public class EditorVR : MonoBehaviour
     private Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
     private List<IProxy> m_AllProxies = new List<IProxy>();
     private IEnumerable<Type> m_AllTools;
-
-	private Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
 
 	private Dictionary<Type, List<ActionMap>> m_ToolActionMaps;
 
@@ -71,6 +71,8 @@ public class EditorVR : MonoBehaviour
         CreateAllProxies();
         CreateDeviceDataForInputDevices();
         CreateEventSystem();
+		m_RaycastModule = U.Object.AddComponent<RaycastModule>(gameObject);
+		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
 		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
@@ -120,43 +122,22 @@ public class EditorVR : MonoBehaviour
 	private void OnEnable()
 	{
 #if UNITY_EDITOR
-		if (Application.isPlaying)
-		{
-			SceneView.onSceneGUIDelegate += OnSceneGUI;
-		}
-		else
-		{
-			VRView.onGUIDelegate += OnSceneGUI;
-		}
+		VRView.onGUIDelegate += OnSceneGUI;
 #endif
 	}
 
 	private void OnDisable()
 	{
 #if UNITY_EDITOR
-		if (Application.isPlaying)
-		{
-			SceneView.onSceneGUIDelegate -= OnSceneGUI;
-		}
-		else
-		{
-			VRView.onGUIDelegate -= OnSceneGUI;
-		}
+		VRView.onGUIDelegate -= OnSceneGUI;
 #endif
-}
+	}
 
 	private void OnSceneGUI(EditorWindow obj)
 	{
 		if (Event.current.type == EventType.MouseMove)
 		{
-			foreach (var proxy in m_AllProxies)
-			{
-				if (proxy.Active)
-				{
-					foreach (var rayOrigin in proxy.RayOrigins.Values)
-						m_RaycastGameObjects[rayOrigin] = CheckRaycastByPixel(new Ray(rayOrigin.position, rayOrigin.forward));
-				}
-			}
+			m_RaycastModule.UpdateGUIRaycasts(m_AllProxies, m_EventCamera);
 		}
 	}
 
@@ -193,10 +174,10 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
-		// Send a "mouse moved" event, so scene picking can occur for the controller
+		// HACK: Send a "mouse moved" event, so scene picking can occur for the controller
 #if UNITY_EDITOR
 		Event e = new Event();
-        e.type = EventType.MouseMove;	
+		e.type = EventType.MouseMove;
 		if (Application.isPlaying)
 		{
 			SceneView.lastActiveSceneView.SendEvent(e);
@@ -469,9 +450,13 @@ public class EditorVR : MonoBehaviour
 		if (instantiateUITool != null)
 			instantiateUITool.InstantiateUI = InstantiateUI;
 
-		var pointerTool = obj as IRaycaster;
-		if (pointerTool != null)
-			pointerTool.GetGameObjectOver = GetGameObjectOver;
+		var raycasterComponent = obj as IRaycaster;
+		if (raycasterComponent != null)
+			raycasterComponent.getFirstGameObject = m_RaycastModule.GetFirstGameObject;
+		
+		var highlightComponent = obj as IHighlight;
+		if (highlightComponent != null)
+			highlightComponent.setHighlight = m_HighlightModule.SetHighlight;
 
 	}
 
@@ -609,35 +594,6 @@ public class EditorVR : MonoBehaviour
 			m_DeviceData[device].tools.Push(tool);
 			UpdatePlayerHandleMaps();
 		}
-	}
-
-	private GameObject GetGameObjectOver(Transform rayOrigin)
-	{
-		GameObject go;
-		if (m_RaycastGameObjects.TryGetValue(rayOrigin, out go))
-			return go;
-		else
-			LogError("Transform rayOrigin is not set to raycast from.");
-		return null;
-	}
-
-	private GameObject CheckRaycastByPixel(Ray ray)
-	{
-		m_EventCamera.transform.position = ray.origin;
-		m_EventCamera.transform.forward = ray.direction;
-
-		Camera restoreCamera = Camera.current;
-		// HACK: Match Screen.width/height for scene picking
-		m_EventCamera.targetTexture = RenderTexture.GetTemporary(Screen.width, Screen.height);
-		Camera.SetupCurrent(m_EventCamera);
-
-		GameObject go = HandleUtility.PickGameObject(m_EventCamera.pixelRect.center, true);
-
-		Camera.SetupCurrent(restoreCamera);
-		RenderTexture.ReleaseTemporary(m_EventCamera.targetTexture);
-		m_EventCamera.targetTexture = null;
-
-		return go;
 	}
 
 #if UNITY_EDITOR

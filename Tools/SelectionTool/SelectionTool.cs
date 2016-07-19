@@ -7,83 +7,67 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine.EventSystems;
 
-public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, IStandardActionMap
+public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, IStandardActionMap, IHighlight
 {
-	[SerializeField]
-	private Material m_HighlightMaterial;
+
+	private float m_DoubleClickIntervalMax = 0.3f;
+	private float m_DoubleClickIntervalMin = 0.15f;
 
 	private GameObject m_CurrentOver;
+	private DateTime m_LastSelectTime;
 
-	private static readonly Dictionary<Renderer, Material[]> s_SavedMaterials = new Dictionary<Renderer,Material[]>();
-	private static readonly Dictionary<GameObject, int> s_CurrentPointers = new Dictionary<GameObject, int>();
+	private static GameObject s_CurrentPrefabRoot;
 
-	public Func<Transform, GameObject> GetGameObjectOver { private get; set; }
+	public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 
 	public Transform RayOrigin { get; set; }
 
 	public Standard StandardInput { get; set; }
 
+	public Action<GameObject, bool> setHighlight { private get; set; }
+
+
 	void Update()
 	{
-		var newOver = GetGameObjectOver(RayOrigin);
-		if (newOver != m_CurrentOver)
+		var newOver = getFirstGameObject(RayOrigin);
+
+		if (newOver != null)// If gameObject is within a prefab and not the current prefab, choose prefab root
 		{
-			if(m_CurrentOver != null)
-				OnHoverExit(m_CurrentOver);
-
-			if(newOver != null)
-				OnHoverEnter(newOver);
-
-			m_CurrentOver = newOver;
+			var newPrefabRoot = PrefabUtility.FindPrefabRoot(newOver);
+			if (newPrefabRoot != s_CurrentPrefabRoot)
+				newOver = newPrefabRoot;
 		}
 
-		if (StandardInput.action.wasJustPressed)
+		if (newOver != m_CurrentOver) // Handle changing highlight
+		{
+			if(m_CurrentOver != null)
+				setHighlight(m_CurrentOver, false);
+
+			if(newOver != null)
+				setHighlight(newOver, true);
+		}
+
+		m_CurrentOver = newOver;
+
+		if (StandardInput.action.wasJustPressed) // Handle select button press
+		{
+			// Detect double click
+			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
+			m_LastSelectTime = DateTime.Now;
+			if (timeSinceLastSelect < m_DoubleClickIntervalMax && timeSinceLastSelect > m_DoubleClickIntervalMin)
+				s_CurrentPrefabRoot = m_CurrentOver;
+
+			// Reset current prefab if selecting outside of it
+			if (PrefabUtility.FindPrefabRoot(m_CurrentOver) != s_CurrentPrefabRoot)
+				s_CurrentPrefabRoot = null;
+
 			Selection.activeGameObject = m_CurrentOver;
+		}
 	}
 
 	void OnDestroy()
 	{
-		foreach (var kvp in s_SavedMaterials)
-			kvp.Key.sharedMaterials = kvp.Value;
-	}
-
-	private void OnHoverEnter(GameObject go)
-	{
-		if (!s_CurrentPointers.ContainsKey(go))
-			s_CurrentPointers.Add(go, 1);
-		else
-			s_CurrentPointers[go]++;
-
-		if (s_CurrentPointers[go] == 1)
-		{
-			var renderers = go.GetComponentsInChildren<Renderer>();
-			foreach (var ren in renderers)
-			{
-				if (!s_SavedMaterials.ContainsKey(ren))
-					s_SavedMaterials.Add(ren, ren.sharedMaterials);
-				ren.sharedMaterial = m_HighlightMaterial; // TODO Should change all materials not just the first
-			}
-		}
-	}
-
-	private void OnHoverExit(GameObject go)
-	{
-		if (!s_CurrentPointers.ContainsKey(go))
-		{
-			Debug.Log("Selection tool hover exiting go that was never entered.");
-			return;
-		}
-		else
-			s_CurrentPointers[go]--;
-
-		if (s_CurrentPointers[go] == 0)
-		{
-			var renderers = go.GetComponentsInChildren<Renderer>();
-			foreach (var ren in renderers)
-			{
-				ren.sharedMaterials = s_SavedMaterials[ren];
-				s_SavedMaterials.Remove(ren);
-			}
-		}
+		if(m_CurrentOver != null)
+			setHighlight(m_CurrentOver, false);
 	}
 }

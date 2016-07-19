@@ -2,10 +2,12 @@
 using UnityEngine;
 using System.Collections;
 
+
 namespace UnityEngine.VR.Tools
 {
-	public interface IRaycaster
+	public interface IHighlight
 	{
-		Func<Transform, GameObject> getFirstGameObject { set; }
+		Action<GameObject, bool> setHighlight { set; }
+
 	}
 }
