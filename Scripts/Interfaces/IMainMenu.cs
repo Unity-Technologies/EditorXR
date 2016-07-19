@@ -5,7 +5,7 @@ namespace UnityEngine.VR.Tools
 {
 	public interface IMainMenu
 	{
-		List<Type> MenuTools { set; }
-		Func<IMainMenu, Type, bool> SelectTool { set; }
+		List<Type> menuTools { set; }
+		Func<IMainMenu, Type, bool> selectTool { set; }
 	}
 }

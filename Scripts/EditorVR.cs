@@ -19,25 +19,25 @@ public class EditorVR : MonoBehaviour
 {
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
-    [SerializeField]
-    private ActionMap m_MenuActionMap;
-    [SerializeField]
-    private ActionMap m_DefaultActionMap;
-    [SerializeField]
-    private ActionMap m_TrackedObjectActionMap;
+	[SerializeField]
+	private ActionMap m_MenuActionMap;
+	[SerializeField]
+	private ActionMap m_DefaultActionMap;
+	[SerializeField]
+	private ActionMap m_TrackedObjectActionMap;
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
 	[SerializeField]
-    private VRLineRenderer m_PointerRayPrefab;
+	private VRLineRenderer m_PointerRayPrefab;
 
 	private TrackedObject m_TrackedObjectInput;
 	private Default m_DefaultActionInput;
 
-    private EventSystem m_EventSystem;
-    private MultipleRayInputModule m_InputModule;
-    private Camera m_EventCamera;
+	private EventSystem m_EventSystem;
+	private MultipleRayInputModule m_InputModule;
+	private Camera m_EventCamera;
 
-    private PlayerHandle m_PlayerHandle;
+	private PlayerHandle m_PlayerHandle;
 
 	private class DeviceData
 	{
@@ -48,9 +48,9 @@ public class EditorVR : MonoBehaviour
 		public ITool currentTool;
 	}
 
-    private Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
-    private List<IProxy> m_AllProxies = new List<IProxy>();
-    private IEnumerable<Type> m_AllTools;
+	private Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
+	private List<IProxy> m_AllProxies = new List<IProxy>();
+	private IEnumerable<Type> m_AllTools;
 
 	private Dictionary<Type, List<ActionMap>> m_ToolActionMaps;
 
@@ -61,19 +61,19 @@ public class EditorVR : MonoBehaviour
 	};
 
 	private void Awake()
-    {
-        VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
-        VRView.viewerPivot.localPosition = Vector3.zero; // HACK reset pivot to match steam origin
-        InitializePlayerHandle();
-        CreateDefaultActionMapInputs();
-        CreateAllProxies();
-        CreateDeviceDataForInputDevices();
-        CreateEventSystem();
+	{
+		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
+		VRView.viewerPivot.localPosition = Vector3.zero; // HACK reset pivot to match steam origin
+		InitializePlayerHandle();
+		CreateDefaultActionMapInputs();
+		CreateAllProxies();
+		CreateDeviceDataForInputDevices();
+		CreateEventSystem();
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
 		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
 		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);		
-    }
+	}
 
 	private void CreateDeviceDataForInputDevices()
 	{
@@ -96,8 +96,8 @@ public class EditorVR : MonoBehaviour
 		{
 			foreach (var proxy in m_AllProxies)
 			{
-				if (proxy.Active)
-				{					
+				if (proxy.active)
+				{
 					proxyActive = true;
 					break;
 				}
@@ -110,9 +110,9 @@ public class EditorVR : MonoBehaviour
 		// it's necessary to spawn the tools in a separate non-IEnumerator context.
 		EditorApplication.delayCall += () =>
 		{
-		    HashSet<InputDevice> devices;
-            var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
-            AddToolToDeviceData(tool, devices);
+			HashSet<InputDevice> devices;
+			var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
+			AddToolToDeviceData(tool, devices);
 		};
 	}
 
@@ -125,7 +125,7 @@ public class EditorVR : MonoBehaviour
 	{
 		foreach (var proxy in m_AllProxies)
 		{
-			proxy.Hidden = !proxy.Active;
+			proxy.hidden = !proxy.active;
 		}
 
 		foreach (var kvp in m_DeviceData)
@@ -151,61 +151,61 @@ public class EditorVR : MonoBehaviour
 	}
 
     private void InitializePlayerHandle()
-    {
-        m_PlayerHandle = PlayerHandleManager.GetNewPlayerHandle();
-        m_PlayerHandle.global = true;
-    }
+	{
+		m_PlayerHandle = PlayerHandleManager.GetNewPlayerHandle();
+		m_PlayerHandle.global = true;
+	}
 
 	private Dictionary<Type, List<ActionMap>> CollectToolActionMaps(IEnumerable<Type> toolTypes)
 	{
 		var toolMaps = new Dictionary<Type, List<ActionMap>>();
 		
 		foreach (var t in toolTypes)
-	    {
-		    if (!t.IsSubclassOf(typeof(MonoBehaviour)))
+		{
+			if (!t.IsSubclassOf(typeof(MonoBehaviour)))
 				continue;
 
-		    var tool = gameObject.AddComponent(t) as ITool;
+			var tool = gameObject.AddComponent(t) as ITool;
 			List<ActionMap> actionMaps = new List<ActionMap>();
 
 			var customActionMap = tool as ICustomActionMap;
 			if (customActionMap != null)
-				actionMaps.Add(customActionMap.ActionMap);
+				actionMaps.Add(customActionMap.actionMap);
 
-		    var standardActionMap = tool as IStandardActionMap;
+			var standardActionMap = tool as IStandardActionMap;
 			if (standardActionMap != null)
 				actionMaps.Add(m_StandardToolActionMap);
 
-		    toolMaps.Add(t, actionMaps);
+			toolMaps.Add(t, actionMaps);
 
 			U.Object.Destroy(tool as MonoBehaviour);
-	    }
+		}
 		return toolMaps;
 	}
 
-    private void CreateDefaultActionMapInputs()
-    {        
+	private void CreateDefaultActionMapInputs()
+	{
 		m_TrackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap, null);
-        m_DefaultActionInput = (Default)CreateActionMapInput(m_DefaultActionMap, null);
+		m_DefaultActionInput = (Default)CreateActionMapInput(m_DefaultActionMap, null);
 
 		UpdatePlayerHandleMaps();
-    }
+	}
 
-    private void CreateAllProxies()
-    {
-        foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
-        {
-            IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
-		    proxy.TrackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
-            foreach (var rayOriginBase in proxy.RayOrigins)
-            {
-                var rayTransform = U.Object.InstantiateAndSetActive(m_PointerRayPrefab.gameObject, rayOriginBase.Value).transform;
-                rayTransform.position = rayOriginBase.Value.position;
-                rayTransform.rotation = rayOriginBase.Value.rotation;
-            }
+	private void CreateAllProxies()
+	{
+		foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
+		{
+			IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
+			proxy.trackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
+			foreach (var rayOriginBase in proxy.rayOrigins)
+			{
+				var rayTransform = U.Object.InstantiateAndSetActive(m_PointerRayPrefab.gameObject, rayOriginBase.Value).transform;
+				rayTransform.position = rayOriginBase.Value.position;
+				rayTransform.rotation = rayOriginBase.Value.rotation;
+			}
 			m_AllProxies.Add(proxy);
-        }
-    }
+		}
+	}
 
 	private void CreateEventSystem()
 	{
@@ -213,13 +213,13 @@ public class EditorVR : MonoBehaviour
 		m_EventSystem = U.Object.AddComponent<EventSystem>(gameObject);
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
-		m_InputModule.EventCamera = m_EventCamera;
-		m_InputModule.EventCamera.clearFlags = CameraClearFlags.Nothing;
-		m_InputModule.EventCamera.cullingMask = 0;
+		m_InputModule.eventCamera = m_EventCamera;
+		m_InputModule.eventCamera.clearFlags = CameraClearFlags.Nothing;
+		m_InputModule.eventCamera.cullingMask = 0;
 
 		foreach (var proxy in m_AllProxies)
 		{
-			foreach (var rayOriginBase in proxy.RayOrigins)
+			foreach (var rayOriginBase in proxy.rayOrigins)
 			{
 				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
 				{
@@ -230,7 +230,7 @@ public class EditorVR : MonoBehaviour
 						{
 							// Create ui action map input for device.
 							if (deviceData.uiInput == null)
-								deviceData.uiInput = CreateActionMapInput(m_InputModule.ActionMap, device);
+								deviceData.uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
 
 							// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 							m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, deviceData.uiInput);
@@ -253,6 +253,10 @@ public class EditorVR : MonoBehaviour
 
 	private ActionMapInput CreateActionMapInput(ActionMap map, InputDevice device)
 	{
+		// Check for improper use of action maps first
+		if (device != null && !IsValidActionMapForDevice(map, device))
+			return null;
+
 		var devices = device == null ? m_PlayerHandle.GetApplicableDevices() : new InputDevice[] { device };
 		
 		var actionMapInput = ActionMapInput.Create(map);
@@ -277,35 +281,31 @@ public class EditorVR : MonoBehaviour
 				maps.Add(deviceData.uiInput);
 		}
 
-	    maps.Add(m_TrackedObjectInput);
+		maps.Add(m_TrackedObjectInput);
 
-	    foreach (DeviceData deviceData in m_DeviceData.Values)
-        {
-            foreach (ITool tool in deviceData.tools.Reverse())
-            {
-	            IStandardActionMap standardActionMap = tool as IStandardActionMap;
-	            if (standardActionMap != null)
-	            {
-		            if (!maps.Contains(standardActionMap.StandardInput))
-		            {
-			            maps.Add(standardActionMap.StandardInput);
-		            }
+		foreach (DeviceData deviceData in m_DeviceData.Values)
+		{
+			foreach (ITool tool in deviceData.tools.Reverse())
+			{
+				IStandardActionMap standardActionMap = tool as IStandardActionMap;
+				if (standardActionMap != null)
+				{
+					if (!maps.Contains(standardActionMap.standardInput))
+						maps.Add(standardActionMap.standardInput);
 				}
 
 				ICustomActionMap customActionMap = tool as ICustomActionMap;
-	            if (customActionMap != null)
-	            {
-		            if (!maps.Contains(customActionMap.ActionMapInput))
-		            {
-						maps.Add(customActionMap.ActionMapInput);
-					}
-				}					
-            }
-        }
+				if (customActionMap != null)
+				{
+					if (!maps.Contains(customActionMap.actionMapInput))
+						maps.Add(customActionMap.actionMapInput);
+				}
+			}
+		}
 
 		maps.Add(m_DefaultActionInput);
-    }	
-    
+	}
+
 	private void LogError(string error)
 	{
 		Debug.LogError(string.Format("EVR: {0}", error));
@@ -334,24 +334,24 @@ public class EditorVR : MonoBehaviour
 			//if (device != null)
 			//	actionMap = CloneActionMapForDevice(actionMap, device);
 
-			standardMap.StandardInput = (Standard)CreateActionMapInput(actionMap, device);
-			usedDevices.UnionWith(standardMap.StandardInput.GetCurrentlyUsedDevices());
-			U.Input.CollectDeviceSlotsFromActionMapInput(standardMap.StandardInput, ref deviceSlots);
+			standardMap.standardInput = (Standard)CreateActionMapInput(actionMap, device);
+			usedDevices.UnionWith(standardMap.standardInput.GetCurrentlyUsedDevices());
+			U.Input.CollectDeviceSlotsFromActionMapInput(standardMap.standardInput, ref deviceSlots);
 		}
-			
+
 		var customMap = tool as ICustomActionMap;
 		if (customMap != null)
 		{
-			var actionMap = customMap.ActionMap;
+			var actionMap = customMap.actionMap;
 			//if (device != null)
 			//	actionMap = CloneActionMapForDevice(actionMap, device);
 
-			customMap.ActionMapInput = CreateActionMapInput(actionMap, device);
-			usedDevices.UnionWith(customMap.ActionMapInput.GetCurrentlyUsedDevices());
-			U.Input.CollectDeviceSlotsFromActionMapInput(customMap.ActionMapInput, ref deviceSlots);
+			customMap.actionMapInput = CreateActionMapInput(actionMap, device);
+			usedDevices.UnionWith(customMap.actionMapInput.GetCurrentlyUsedDevices());
+			U.Input.CollectDeviceSlotsFromActionMapInput(customMap.actionMapInput, ref deviceSlots);
 		}
 
-		ConnectInterfaces(tool, device);        	
+		ConnectInterfaces(tool, device);
 		return tool;
 	}
 
@@ -369,8 +369,8 @@ public class EditorVR : MonoBehaviour
 		var mainMenu = U.Object.AddComponent(type, gameObject) as IMainMenu;
 		if (mainMenu != null)
 		{
-			mainMenu.MenuTools = m_AllTools.ToList();
-			mainMenu.SelectTool = SelectTool;
+			mainMenu.menuTools = m_AllTools.ToList();
+			mainMenu.selectTool = SelectTool;
 			m_DeviceData[device].mainMenu = mainMenu;
 			ConnectInterfaces(mainMenu, device);
 		}
@@ -385,19 +385,21 @@ public class EditorVR : MonoBehaviour
 			{
 				foreach (var proxy in m_AllProxies)
 				{
-					if (!proxy.Active)
+					if (!proxy.active)
 						continue;
+
 					var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
 					if (device.tagIndex == -1)
 						continue;
+
 					var tag = tags[device.tagIndex];
 					Node node;
 					if (m_TagToNode.TryGetValue(tag, out node))
 					{
 						Transform rayOrigin;
-						if (proxy.RayOrigins.TryGetValue(node, out rayOrigin))
+						if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
 						{
-							ray.RayOrigin = rayOrigin;
+							ray.rayOrigin = rayOrigin;
 							break;
 						}
 					}
@@ -407,11 +409,11 @@ public class EditorVR : MonoBehaviour
 
 		var locomotionComponent = obj as ILocomotion;
 		if (locomotionComponent != null)
-			locomotionComponent.ViewerPivot = VRView.viewerPivot;
+			locomotionComponent.viewerPivot = VRView.viewerPivot;
 
 		var instantiateUITool = obj as IInstantiateUI;
 		if (instantiateUITool != null)
-			instantiateUITool.InstantiateUI = InstantiateUI;
+			instantiateUITool.instantiateUI = InstantiateUI;
 	}
 
 	private InputDevice GetInputDeviceForTool(ITool tool)
@@ -450,9 +452,8 @@ public class EditorVR : MonoBehaviour
 			{
 				var deviceData = m_DeviceData[dev];
 				if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
-				{
 					DespawnTool(deviceData.currentTool);
-				}
+
 				deviceData.tools.Push(newTool);
 				deviceData.currentTool = newTool;
 			}
@@ -481,6 +482,45 @@ public class EditorVR : MonoBehaviour
 		U.Object.Destroy(tool as MonoBehaviour);
 	}
 
+	private bool IsValidActionMapForDevice(ActionMap actionMap, InputDevice device)
+	{
+		var untaggedDevicesFound = 0;
+		var taggedDevicesFound = 0;
+		var nonMatchingTagIndices = 0;
+		var matchingTagIndices = 0;
+
+		foreach (var scheme in actionMap.controlSchemes)
+		{
+			foreach (var serializableDeviceType in scheme.deviceSlots)
+			{
+				if (serializableDeviceType.tagIndex != -1)
+				{
+					taggedDevicesFound++;
+					if (serializableDeviceType.tagIndex != device.tagIndex)
+						nonMatchingTagIndices++;
+					else
+						matchingTagIndices++;
+				}
+				else
+					untaggedDevicesFound++;
+			}
+		}
+			
+		if (nonMatchingTagIndices > 0 && matchingTagIndices == 0)
+		{
+			LogError(string.Format("The action map {0} contains a specific device tag, but is being spawned on the wrong device tag", actionMap));
+			return false;
+		}
+
+		if (taggedDevicesFound > 0 && untaggedDevicesFound != 0)
+		{			
+			LogError(string.Format("The action map {0} contains both a specific device tag and an unspecified tag, which is not supported", actionMap.name));
+			return false;
+		}
+
+		return true;
+	}
+
 	private void AddToolToStack(InputDevice device, ITool tool)
 	{
 		if (tool != null)
@@ -491,7 +531,7 @@ public class EditorVR : MonoBehaviour
 	}
 
 #if UNITY_EDITOR
-    private static EditorVR s_Instance;
+	private static EditorVR s_Instance;
 	private static InputManager s_InputManager;
 
 	[MenuItem("Window/EditorVR", false)]
@@ -513,41 +553,41 @@ public class EditorVR : MonoBehaviour
 
 	private static void OnEVREnabled()
 	{
-	    InitializeInputManager();
-	    s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
+		InitializeInputManager();
+		s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
 	}
 
-    private static void InitializeInputManager()
-    {
-        // HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-        //	in edit mode we need to handle lifecycle explicitly
-        InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
-        foreach (var m in managers)
-        {
-            U.Object.Destroy(m.gameObject);
-        }
+	private static void InitializeInputManager()
+	{
+		// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
+		//	in edit mode we need to handle lifecycle explicitly
+		InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
+		foreach (var m in managers)
+		{
+			U.Object.Destroy(m.gameObject);
+		}
 
-        managers = Resources.FindObjectsOfTypeAll<InputManager>();
-        if (managers.Length == 0)
-        {
-            // Attempt creating object hierarchy via an implicit static constructor call by touching the class
-            InputSystem.ExecuteEvents();
-            managers = Resources.FindObjectsOfTypeAll<InputManager>();
+		managers = Resources.FindObjectsOfTypeAll<InputManager>();
+		if (managers.Length == 0)
+		{
+			// Attempt creating object hierarchy via an implicit static constructor call by touching the class
+			InputSystem.ExecuteEvents();
+			managers = Resources.FindObjectsOfTypeAll<InputManager>();
 
-            if (managers.Length == 0)
-            {
-                typeof(InputSystem).TypeInitializer.Invoke(null, null);
-                managers = Resources.FindObjectsOfTypeAll<InputManager>();
-            }
-        }
-        Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
+			if (managers.Length == 0)
+			{
+				typeof(InputSystem).TypeInitializer.Invoke(null, null);
+				managers = Resources.FindObjectsOfTypeAll<InputManager>();
+			}
+		}
+		Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
 
-        s_InputManager = managers[0];
-        s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
-        U.Object.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
-    }
+		s_InputManager = managers[0];
+		s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
+		U.Object.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
+	}
 
-    private static void OnEVRDisabled()
+	private static void OnEVRDisabled()
 	{
 		U.Object.Destroy(s_Instance.gameObject);
 		U.Object.Destroy(s_InputManager.gameObject);

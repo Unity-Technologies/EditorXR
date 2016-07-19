@@ -2,8 +2,8 @@
 
 namespace UnityEngine.VR.Tools
 {
-    public interface ILocomotion
-    {
-        Transform ViewerPivot { set; }
-    }
+	public interface ILocomotion
+	{
+		Transform viewerPivot { set; }
+	}
 }

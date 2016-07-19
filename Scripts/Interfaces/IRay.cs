@@ -5,7 +5,7 @@ namespace UnityEngine.VR.Tools
 {
 	public interface IRay
 	{
-		Transform RayOrigin
+		Transform rayOrigin
 		{
 			set;
 		}
