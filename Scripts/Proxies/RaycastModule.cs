@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.VR;
 using UnityEngine.VR.Proxies;
 
 public class RaycastModule : MonoBehaviour
@@ -13,6 +14,7 @@ public class RaycastModule : MonoBehaviour
 
 	public void UpdateGUIRaycasts(List<IProxy> proxies, Camera camera)
 	{
+		UpdateIgnoreList();
 		foreach (var proxy in proxies)
 		{
 			if (proxy.active)
@@ -33,6 +35,14 @@ public class RaycastModule : MonoBehaviour
 		return null;
 	}
 
+	private void UpdateIgnoreList()
+	{
+		var children = VRView.viewerPivot.parent.GetComponentsInChildren<Transform>();
+		m_IgnoreList = new GameObject[children.Length];
+		for (int i = 0; i < children.Length; i++)
+			m_IgnoreList[i] = children[i].gameObject;
+	}
+
 	private GameObject RaycastByPixel(Ray ray, Camera camera)
 	{
 		camera.transform.position = ray.origin;
@@ -44,7 +54,7 @@ public class RaycastModule : MonoBehaviour
 		Camera.SetupCurrent(camera);
 		
 		// TODO populate ignore list and use it to prevent raycasts from returning editor vr's gameobjects
-		var go = HandleUtility.PickGameObject(camera.pixelRect.center, false);//, m_IgnoreList);
+		var go = HandleUtility.PickGameObject(camera.pixelRect.center, false, m_IgnoreList);
 
 		Camera.SetupCurrent(restoreCamera);
 		RenderTexture.ReleaseTemporary(camera.targetTexture);

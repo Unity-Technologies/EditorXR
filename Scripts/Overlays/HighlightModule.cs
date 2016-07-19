@@ -18,8 +18,8 @@ public class HighlightModule : MonoBehaviour
 				continue;
 			foreach (var m in go.GetComponentsInChildren<MeshFilter>())
 			{
-				for (int i = 0; i < m.mesh.subMeshCount; i++)
-					Graphics.DrawMesh(m.mesh, m.transform.localToWorldMatrix, m_HighlightMaterial, 0, null, i);
+				for (int i = 0; i < m.sharedMesh.subMeshCount; i++)
+					Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, m_HighlightMaterial, 0, null, i);
 			}
 		}
 	}

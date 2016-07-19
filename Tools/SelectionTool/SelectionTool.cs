@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine.EventSystems;
+using UnityEngine.InputNew;
 
-public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, IStandardActionMap, IHighlight
+public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
 {
-
 	private float m_DoubleClickIntervalMax = 0.3f;
 	private float m_DoubleClickIntervalMin = 0.15f;
 
@@ -18,17 +18,32 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, IStandardAc
 
 	private static GameObject s_CurrentPrefabRoot;
 
+	public ActionMap actionMap { get { return m_ActionMap; } }
+	[SerializeField]
+	private ActionMap m_ActionMap;
+
+	public ActionMapInput actionMapInput
+	{
+		get { return m_SelectionInput; }
+		set { m_SelectionInput = (SelectionInput)value; }
+	}
+	private SelectionInput m_SelectionInput;
+
 	public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 
 	public Transform rayOrigin { get; set; }
 
-	public Standard standardInput { get; set; }
-
 	public Action<GameObject, bool> setHighlight { private get; set; }
-
 
 	void Update()
 	{
+		if (m_SelectionInput.parent.wasJustPressed)
+		{
+			var go = Selection.activeGameObject;
+			if (go.transform.parent != null)
+				Selection.activeGameObject = go.transform.parent.gameObject;
+		}
+
 		var newOver = getFirstGameObject(rayOrigin);
 
 		if (newOver != null)// If gameObject is within a prefab and not the current prefab, choose prefab root
@@ -49,7 +64,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, IStandardAc
 
 		m_CurrentOver = newOver;
 
-		if (standardInput.action.wasJustPressed) // Handle select button press
+		if (m_SelectionInput.select.wasJustPressed) // Handle select button press
 		{
 			// Detect double click
 			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
