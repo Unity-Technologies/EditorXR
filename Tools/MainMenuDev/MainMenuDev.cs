@@ -9,19 +9,6 @@ using UnityEngine.VR.Tools;
 [ExecuteInEditMode]
 public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 {
-	public Transform RayOrigin
-	{
-		get; set;
-	}
-
-	public Func<GameObject, GameObject> InstantiateUI
-	{
-		private get; set;
-	}
-
-	public List<Type> MenuTools { private get; set; }
-
-	public Func<IMainMenu, Type, bool> SelectTool { private get; set; }
 
 	[SerializeField]
 	private Canvas m_MainMenuPrefab;
@@ -30,17 +17,24 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 	private RectTransform m_Layout;
 	private GameObject m_ButtonTemplate;
 
+	public Transform rayOrigin { get; set; }
+
+	public List<Type> menuTools { private get; set; }
+	public Func<IMainMenu, Type, bool> selectTool { private get; set; }
+
+	public Func<GameObject, GameObject> instantiateUI { private get; set; }
+
 	void Start()
-	{	
+	{
 		if (m_MenuCanvas == null)
 		{
-			var go = InstantiateUI(m_MainMenuPrefab.gameObject);
+			var go = instantiateUI(m_MainMenuPrefab.gameObject);
 			m_MenuCanvas = go.GetComponent<Canvas>();
 			m_Layout = m_MenuCanvas.GetComponentInChildren<GridLayoutGroup>().GetComponent<RectTransform>();
 			m_ButtonTemplate = m_Layout.GetChild(0).gameObject;
 			m_ButtonTemplate.SetActive(false);
 		}
-		m_MenuCanvas.transform.SetParent(RayOrigin, false);
+		m_MenuCanvas.transform.SetParent(rayOrigin, false);
 		CreateToolButtons();
 	}
 
@@ -52,25 +46,25 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 
 	private void CreateToolButtons()
 	{
-		foreach (var menuTool in MenuTools)
+		foreach (var menuTool in menuTools)
 		{
 			var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
-		    newButton.name = menuTool.Name;
+			newButton.name = menuTool.Name;
 			var text = newButton.GetComponentInChildren<Text>();
 			text.text = menuTool.Name;
 			var button = newButton.GetComponent<Button>();
-            AddButtonListener(button, menuTool);
+			AddButtonListener(button, menuTool);
 		}
 	}
 
-    private void AddButtonListener(Button b, Type t)
-    {
-        b.onClick.RemoveAllListeners();
-        b.onClick.AddListener(() =>
-        {
-            if (SelectTool(this, t))
-                U.Object.Destroy(this);
-        });
-        b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
-    }
+	private void AddButtonListener(Button b, Type t)
+	{
+		b.onClick.RemoveAllListeners();
+		b.onClick.AddListener(() =>
+		{
+			if (selectTool(this, t))
+				U.Object.Destroy(this);
+		});
+		b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
+	}
 }

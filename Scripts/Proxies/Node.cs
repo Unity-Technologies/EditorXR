@@ -1,8 +1,8 @@
 ﻿namespace UnityEngine.VR.Proxies
 {
-    public enum Node
-    {
-        LeftHand,
-        RightHand
-    }
+	public enum Node
+	{
+		LeftHand,
+		RightHand
+	}
 }
