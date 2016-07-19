@@ -4,12 +4,12 @@ namespace UnityEngine.VR.Tools
 {
 	public interface ICustomActionMap
 	{
-		ActionMap ActionMap
+		ActionMap actionMap
 		{
 			get;
 		}
 
-		ActionMapInput ActionMapInput
+		ActionMapInput actionMapInput
 		{
 			set;
 			get;

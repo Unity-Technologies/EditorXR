@@ -4,20 +4,20 @@ namespace UnityEngine.VR.Proxies
 {
 	public class TouchProxy : TwoHandedProxyBase
 	{
-		public override bool Active
+		private OVRTouchInputToEvents m_InputToEvents;
+
+		public override bool active
 		{
 			get
 			{
-				return m_InputToEvents.Active;
+				return m_InputToEvents.active;
 			}
 		}
-
-		private OVRTouchInputToEvents m_InputToEvents;
 
 		public override void Awake()
 		{
 			base.Awake();
 			m_InputToEvents = U.Object.AddComponent<OVRTouchInputToEvents>(gameObject);
-		}		
+		}
 	}
 }

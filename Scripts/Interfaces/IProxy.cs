@@ -6,24 +6,24 @@ namespace UnityEngine.VR.Proxies
 {
 	public interface IProxy
 	{
-        bool Active
-        {
-            get;
-        }
+		bool active
+		{
+			get;
+		}
 
-        TrackedObject TrackedObjectInput
+		TrackedObject trackedObjectInput
 		{
 			set;
 		}
 
-	    Dictionary<Node, Transform> RayOrigins
-	    {
-	        get;
-	    }
+		Dictionary<Node, Transform> rayOrigins
+		{
+			get;
+		}
 
-	    bool Hidden
-	    {
-	        set;
-	    }
+		bool hidden
+		{
+			set;
+		}
 	}
 }
