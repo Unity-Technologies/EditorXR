@@ -18,12 +18,14 @@ MonoBehaviour:
   - {fileID: 114000010321248940}
   m_ControlSchemes:
   - m_Name: Sixense
-    m_SerializableDeviceTypes:
-    - m_Type:
+    m_DeviceSlots:
+    - m_Key: 1
+      m_Type:
         m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: 0
-    - m_Type:
+    - m_Key: 2
+      m_Type:
         m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: 1
@@ -31,11 +33,7 @@ MonoBehaviour:
     m_Bindings:
     - sources:
       - controlIndex: 1
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -44,11 +42,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 0
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -57,11 +51,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 0
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000

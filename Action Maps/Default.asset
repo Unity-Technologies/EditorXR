@@ -15,8 +15,9 @@ MonoBehaviour:
   m_Actions: []
   m_ControlSchemes:
   - m_Name: Sixense
-    m_SerializableDeviceTypes:
-    - m_Type:
+    m_DeviceSlots:
+    - m_Key: 1
+      m_Type:
         m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1

@@ -33,12 +33,14 @@ MonoBehaviour:
   - {fileID: 114000011465318430}
   m_ControlSchemes:
   - m_Name: TrackedObjects
-    m_SerializableDeviceTypes:
-    - m_Type:
+    m_DeviceSlots:
+    - m_Key: 1
+      m_Type:
         m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: 0
-    - m_Type:
+    - m_Key: 2
+      m_Type:
         m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: 1
@@ -46,11 +48,7 @@ MonoBehaviour:
     m_Bindings:
     - sources:
       - controlIndex: 10
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -59,11 +57,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 11
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -72,11 +66,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 12
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -92,11 +82,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 10
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -105,11 +91,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 11
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -118,11 +100,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 12
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -138,11 +116,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 13
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -151,11 +125,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 14
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -164,11 +134,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 15
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -177,11 +143,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 16
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -197,11 +159,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 13
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -210,11 +168,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 14
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -223,11 +177,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 15
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -236,11 +186,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 16
-        deviceType:
-          m_Type:
-            m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-              Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
