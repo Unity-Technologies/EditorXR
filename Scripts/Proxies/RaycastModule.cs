@@ -15,9 +15,9 @@ public class RaycastModule : MonoBehaviour
 	{
 		foreach (var proxy in proxies)
 		{
-			if (proxy.Active)
+			if (proxy.active)
 			{
-				foreach (var rayOrigin in proxy.RayOrigins.Values)
+				foreach (var rayOrigin in proxy.rayOrigins.Values)
 					m_RaycastGameObjects[rayOrigin] = RaycastByPixel(new Ray(rayOrigin.position, rayOrigin.forward), camera);
 			}
 		}

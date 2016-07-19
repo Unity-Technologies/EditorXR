@@ -20,16 +20,16 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, IStandardAc
 
 	public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 
-	public Transform RayOrigin { get; set; }
+	public Transform rayOrigin { get; set; }
 
-	public Standard StandardInput { get; set; }
+	public Standard standardInput { get; set; }
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
 
 	void Update()
 	{
-		var newOver = getFirstGameObject(RayOrigin);
+		var newOver = getFirstGameObject(rayOrigin);
 
 		if (newOver != null)// If gameObject is within a prefab and not the current prefab, choose prefab root
 		{
@@ -49,7 +49,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, IStandardAc
 
 		m_CurrentOver = newOver;
 
-		if (StandardInput.action.wasJustPressed) // Handle select button press
+		if (standardInput.action.wasJustPressed) // Handle select button press
 		{
 			// Detect double click
 			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
