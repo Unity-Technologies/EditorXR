@@ -35,6 +35,7 @@ public class EditorVR : MonoBehaviour
 
 	private EventSystem m_EventSystem;
 	private MultipleRayInputModule m_InputModule;
+	private SpatialHasher m_SpatialHasher;
 	private Camera m_EventCamera;
 
 	private PlayerHandle m_PlayerHandle;
@@ -69,10 +70,11 @@ public class EditorVR : MonoBehaviour
 		CreateAllProxies();
 		CreateDeviceDataForInputDevices();
 		CreateEventSystem();
+		CreateSpatialHasher();
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
 		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
-		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);		
+		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);
 	}
 
 	private void CreateDeviceDataForInputDevices()
@@ -159,7 +161,7 @@ public class EditorVR : MonoBehaviour
 	private Dictionary<Type, List<ActionMap>> CollectToolActionMaps(IEnumerable<Type> toolTypes)
 	{
 		var toolMaps = new Dictionary<Type, List<ActionMap>>();
-		
+
 		foreach (var t in toolTypes)
 		{
 			if (!t.IsSubclassOf(typeof(MonoBehaviour)))
@@ -243,6 +245,29 @@ public class EditorVR : MonoBehaviour
 		UpdatePlayerHandleMaps();
 	}
 
+	private void CreateSpatialHasher() {
+		// Create event system, input module, and event camera
+		m_SpatialHasher = U.Object.AddComponent<SpatialHasher>(gameObject);
+
+		foreach (var proxy in m_AllProxies) {
+			foreach (var rayOriginBase in proxy.rayOrigins) {
+				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
+				{
+					if (device.TagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.TagIndex]] == rayOriginBase.Key) {
+						DeviceData deviceData;
+						if (m_DeviceData.TryGetValue(device, out deviceData)) {
+
+							// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+							m_SpatialHasher.AddTester(rayOriginBase.Value);
+						}
+						break;
+					}
+				}
+			}
+		}
+		UpdatePlayerHandleMaps();
+	}
+
 	private GameObject InstantiateUI(GameObject prefab)
 	{
 		var go = U.Object.InstantiateAndSetActive(prefab, transform);
@@ -308,7 +333,7 @@ public class EditorVR : MonoBehaviour
 	/// left hand), so in those cases we map the source bindings of the action map input to the correct device tag.
 	/// </summary>
 	/// <param name="toolType">The tool to spawn</param>
-	/// <param name="device">The input device whose tool stack the tool should be spawned on 
+	/// <param name="device">The input device whose tool stack the tool should be spawned on
 	/// (optional). If not specified, then it uses the action map to determine which devices the tool should be spawned
 	/// on.</param>
 	/// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
@@ -461,7 +486,7 @@ public class EditorVR : MonoBehaviour
 		foreach (var deviceData in m_DeviceData.Values)
 		{
 			// Remove the tool if it is the current tool on this device tool stack
-			if (deviceData.currentTool == tool) 
+			if (deviceData.currentTool == tool)
 			{
 				if (deviceData.tools.Peek() != deviceData.currentTool)
 				{
