@@ -13,9 +13,9 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 	private const float kDoubleClickIntervalMax = 0.3f;
 	private const float kDoubleClickIntervalMin = 0.15f;
 
-	private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>();
+	private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
-	private GameObject m_CurrentOver;
+	private GameObject m_HoverGameObject;
 	private DateTime m_LastSelectTime;
 
 	private static GameObject s_CurrentPrefabRoot;
@@ -33,7 +33,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 
 	public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 
-	public Transform rayOrigin { get; set; }
+	public Transform rayOrigin { private get; set; }
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
@@ -42,7 +42,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 		if (rayOrigin == null)
 			return;
 
-		// Handle parent button press
+		// Change activeGameObject selection to its parent transform when parent button is pressed 
 		if (m_SelectionInput.parent.wasJustPressed)
 		{
 			var go = Selection.activeGameObject;
@@ -54,27 +54,27 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 			}
 		}
 
-		var newOver = getFirstGameObject(rayOrigin);
+		var newHoverGameObject = getFirstGameObject(rayOrigin);
 
-		if (newOver != null)
+		if (newHoverGameObject != null)
 		{
 			// If gameObject is within a prefab and not the current prefab, choose prefab root
-			var newPrefabRoot = PrefabUtility.FindPrefabRoot(newOver);
+			var newPrefabRoot = PrefabUtility.FindPrefabRoot(newHoverGameObject);
 			if (newPrefabRoot != s_CurrentPrefabRoot)
-				newOver = newPrefabRoot;
+				newHoverGameObject = newPrefabRoot;
 		}
 
 		// Handle changing highlight
-		if (newOver != m_CurrentOver)
+		if (newHoverGameObject != m_HoverGameObject)
 		{
-			if(m_CurrentOver != null)
-				setHighlight(m_CurrentOver, false);
+			if (m_HoverGameObject != null)
+				setHighlight(m_HoverGameObject, false);
 
-			if(newOver != null)
-				setHighlight(newOver, true);
+			if (newHoverGameObject != null)
+				setHighlight(newHoverGameObject, true);
 		}
 
-		m_CurrentOver = newOver;
+		m_HoverGameObject = newHoverGameObject;
 
 		// Handle select button press
 		if (m_SelectionInput.select.wasJustPressed) 
@@ -84,33 +84,33 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 			m_LastSelectTime = DateTime.Now;
 			if (timeSinceLastSelect < kDoubleClickIntervalMax && timeSinceLastSelect > kDoubleClickIntervalMin)
 			{
-				s_CurrentPrefabRoot = m_CurrentOver;
+				s_CurrentPrefabRoot = m_HoverGameObject;
 				s_SelectedObjects.Remove(s_CurrentPrefabRoot);
 			}
 			else
 			{
 				// Reset current prefab if selecting outside of it
-				if (PrefabUtility.FindPrefabRoot(m_CurrentOver) != s_CurrentPrefabRoot)
+				if (PrefabUtility.FindPrefabRoot(m_HoverGameObject) != s_CurrentPrefabRoot)
 					s_CurrentPrefabRoot = null;
 
 				// Multi-Select
-				if (m_SelectionInput.multiselect.isHeld)
+				if (m_SelectionInput.multiSelect.isHeld)
 				{
-					if (s_SelectedObjects.Contains(m_CurrentOver)) // Remove from selection
+					if (s_SelectedObjects.Contains(m_HoverGameObject)) // Remove from selection
 					{
-						s_SelectedObjects.Remove(m_CurrentOver);
+						s_SelectedObjects.Remove(m_HoverGameObject);
 					}
 					else
 					{
-						s_SelectedObjects.Add(m_CurrentOver); // Add to selection
-						Selection.activeGameObject = m_CurrentOver;
+						s_SelectedObjects.Add(m_HoverGameObject); // Add to selection
+						Selection.activeGameObject = m_HoverGameObject;
 					}
 				}
 				else
 				{
 					s_SelectedObjects.Clear();
-					Selection.activeGameObject = m_CurrentOver;
-					s_SelectedObjects.Add(m_CurrentOver);
+					Selection.activeGameObject = m_HoverGameObject;
+					s_SelectedObjects.Add(m_HoverGameObject);
 				}
 			}
 			Selection.objects = s_SelectedObjects.ToArray();
@@ -119,10 +119,10 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 
 	void OnDisable()
 	{
-		if (m_CurrentOver != null)
+		if (m_HoverGameObject != null)
 		{
-			setHighlight(m_CurrentOver, false);
-			m_CurrentOver = null;
+			setHighlight(m_HoverGameObject, false);
+			m_HoverGameObject = null;
 		}
 	}
 }

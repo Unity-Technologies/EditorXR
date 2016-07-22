@@ -5,13 +5,15 @@ using UnityEditor;
 using UnityEditor.VR;
 using UnityEngine.VR.Proxies;
 
-public class RaycastModule : MonoBehaviour
+public class PixelRaycastModule : MonoBehaviour
 {
 	private Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
 
 	private GameObject[] m_IgnoreList;
 
-	public void UpdateGUIRaycasts(List<IProxy> proxies, Camera camera)
+	public Transform ignoreRoot { get; set; }
+
+	public void UpdateRaycasts(List<IProxy> proxies, Camera camera)
 	{
 		UpdateIgnoreList();
 		foreach (var proxy in proxies)
@@ -19,7 +21,7 @@ public class RaycastModule : MonoBehaviour
 			if (proxy.active)
 			{
 				foreach (var rayOrigin in proxy.rayOrigins.Values)
-					m_RaycastGameObjects[rayOrigin] = RaycastByPixel(new Ray(rayOrigin.position, rayOrigin.forward), camera);
+					m_RaycastGameObjects[rayOrigin] = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera);
 			}
 		}
 	}
@@ -36,13 +38,13 @@ public class RaycastModule : MonoBehaviour
 
 	private void UpdateIgnoreList()
 	{
-		var children = VRView.viewerPivot.parent.GetComponentsInChildren<Transform>();
+		var children = ignoreRoot.GetComponentsInChildren<Transform>();
 		m_IgnoreList = new GameObject[children.Length];
 		for (int i = 0; i < children.Length; i++)
 			m_IgnoreList[i] = children[i].gameObject;
 	}
 
-	private GameObject RaycastByPixel(Ray ray, Camera camera)
+	private GameObject Raycast(Ray ray, Camera camera)
 	{
 		camera.transform.position = ray.origin;
 		camera.transform.forward = ray.direction;

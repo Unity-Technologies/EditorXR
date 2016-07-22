@@ -36,7 +36,7 @@ public class EditorVR : MonoBehaviour
 	private EventSystem m_EventSystem;
 	private MultipleRayInputModule m_InputModule;
 	private Camera m_EventCamera;
-	private RaycastModule m_RaycastModule;
+	private PixelRaycastModule m_PixelRaycastModule;
 	private HighlightModule m_HighlightModule;
 
 	private PlayerHandle m_PlayerHandle;
@@ -71,7 +71,8 @@ public class EditorVR : MonoBehaviour
 		CreateAllProxies();
 		CreateDeviceDataForInputDevices();
 		CreateEventSystem();
-		m_RaycastModule = U.Object.AddComponent<RaycastModule>(gameObject);
+		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
+		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
@@ -117,8 +118,10 @@ public class EditorVR : MonoBehaviour
 			var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
 			AddToolToDeviceData(tool, devices);
 
+			// Spawn selection tools by default 
 			foreach (var deviceData in m_DeviceData)
 			{
+				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
 				if (deviceData.Key.TagIndex == -1)
 					continue;
 				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
@@ -145,7 +148,7 @@ public class EditorVR : MonoBehaviour
 	{
 		if (Event.current.type == EventType.MouseMove)
 		{
-			m_RaycastModule.UpdateGUIRaycasts(m_AllProxies, m_EventCamera);
+			m_PixelRaycastModule.UpdateRaycasts(m_AllProxies, m_EventCamera);
 		}
 	}
 
@@ -182,23 +185,15 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
-		// HACK: Send a "mouse moved" event, so scene picking can occur for the controller
 #if UNITY_EDITOR
+		// HACK: Send a "mouse moved" event, so scene picking can occur for the controller
 		Event e = new Event();
 		e.type = EventType.MouseMove;
-		if (Application.isPlaying)
-		{
-			SceneView.lastActiveSceneView.SendEvent(e);
-		}
-		else
-		{
-			VRView.activeView.SendEvent(e);
-		}
+		VRView.activeView.SendEvent(e);
 #endif
-
 	}
 
-    private void InitializePlayerHandle()
+	private void InitializePlayerHandle()
 	{
 		m_PlayerHandle = PlayerHandleManager.GetNewPlayerHandle();
 		m_PlayerHandle.global = true;
@@ -456,7 +451,7 @@ public class EditorVR : MonoBehaviour
 
 		var raycasterComponent = obj as IRaycaster;
 		if (raycasterComponent != null)
-			raycasterComponent.getFirstGameObject = m_RaycastModule.GetFirstGameObject;
+			raycasterComponent.getFirstGameObject = m_PixelRaycastModule.GetFirstGameObject;
 		
 		var highlightComponent = obj as IHighlight;
 		if (highlightComponent != null)
