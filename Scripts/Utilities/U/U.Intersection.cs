@@ -14,7 +14,8 @@ namespace UnityEngine.VR.Utilities
 				Vector3 objInvScale = InvertVector3(obj.sceneObject.transform.lossyScale);
 				Quaternion objInvRotation = Quaternion.Inverse(obj.sceneObject.transform.rotation);
 
-				for (int j = 0; j < tester.rays.Length; j++) {
+				for (int j = 0; j < tester.rays.Length; j++)
+				{
 					Ray ray = tester.rays[j];
 					//Transform to object space
 					ray.origin = Vector3.Scale(
@@ -33,27 +34,35 @@ namespace UnityEngine.VR.Utilities
 				}
 				return false;
 			}
-			public static int TestRay(SpatialObject obj, Ray ray) {
+
+			public static int TestRay(SpatialObject obj, Ray ray)
+			{
 				Vector3 q = ray.origin + ray.direction * k_RayMax;
 				int hitCount = 0;
 				//Keep track of what triangles we've already tested
 				//TODO: Test hashset vs list
 				HashSet<Vector4i> tested = new HashSet<Vector4i>();
-				foreach (var triBucket in obj.triBuckets) {
+				foreach (var triBucket in obj.triBuckets)
+				{
 					Vector3 min = triBucket.Key.mul(obj.cellSize);
 					Vector3 max = min + Vector3.one * obj.cellSize;
-					if (IntersectRayAABB(ray, min, max, 0, k_RayMax)) {
-						foreach (var tri in triBucket.Value) {
-							if (tested.Add(tri)) {
+					if (IntersectRayAABB(ray, min, max, 0, k_RayMax))
+					{
+						foreach (var tri in triBucket.Value)
+						{
+							if (tested.Add(tri))
+							{
 								Vector3 a = obj.vertices[tri.X];
 								Vector3 b = obj.vertices[tri.Y];
 								Vector3 c = obj.vertices[tri.Z];
 								float u, v, w, t;
-								if (IntersectSegmentTriangle(ray.origin, q, a, b, c, out u, out v, out w, out t)) {
+								if (IntersectSegmentTriangle(ray.origin, q, a, b, c, out u, out v, out w, out t))
+								{
 									hitCount++;
 								}
 								//Test back face
-								if (IntersectSegmentTriangle(ray.origin, q, a, c, b, out u, out v, out w, out t)) {
+								if (IntersectSegmentTriangle(ray.origin, q, a, c, b, out u, out v, out w, out t))
+								{
 									hitCount++;
 								}
 							}
@@ -62,11 +71,15 @@ namespace UnityEngine.VR.Utilities
 				}
 				return hitCount;
 			}
-			public static Vector3 InvertVector3(Vector3 vec) {
+
+			public static Vector3 InvertVector3(Vector3 vec)
+			{
 				return new Vector3(1 / vec.x, 1 / vec.y, 1 / vec.z);
 			}
+
 			//from Real Time Collision Detection p.141
-			public static Vector3 ClosestPtPointTriangle(Vector3 p, Vector3 a, Vector3 b, Vector3 c) {
+			public static Vector3 ClosestPtPointTriangle(Vector3 p, Vector3 a, Vector3 b, Vector3 c)
+			{
 				float v, w;
 				Vector3 ab = b - a;
 				Vector3 ac = c - a;
@@ -84,7 +97,8 @@ namespace UnityEngine.VR.Utilities
 
 				// Check if p in edge region of AB, if so return projection of P onto AB
 				float vc = d1 * d4 - d3 * d2;
-				if (vc <= 0.0f && d1 >= 0.0f && d3 <= 0.0f) {
+				if (vc <= 0.0f && d1 >= 0.0f && d3 <= 0.0f)
+				{
 					v = d1 / (d1 - d3);
 					return a + v * ab; // barycentric coordinates (1-v,v,0)
 				}
@@ -96,14 +110,16 @@ namespace UnityEngine.VR.Utilities
 
 				// Check if P in edge region of AC, if os return projection of P onto AC
 				float vb = d5 * d2 - d1 * d6;
-				if (vb <= 0.0f && d2 >= 0.0f && d6 <= 0.0f) {
+				if (vb <= 0.0f && d2 >= 0.0f && d6 <= 0.0f)
+				{
 					w = d2 / (d2 - d6);
 					return a + w * ac; // barycentric coordinates (1-w,0,w)
 				}
 
 				// Check if P in edge region of BC, if so return projection of P onto BC
 				float va = d3 * d6 - d5 * d4;
-				if (va <= 0.0f && (d4 - d3) >= 0.0f && (d5 - d6) >= 0.0f) {
+				if (va <= 0.0f && (d4 - d3) >= 0.0f && (d5 - d6) >= 0.0f)
+				{
 					w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
 					return b + w * (c - b); // barycentric coordinates (0,1-w,w)
 				}
@@ -118,7 +134,8 @@ namespace UnityEngine.VR.Utilities
 			// From Real Time Collision Detection p.167
 			// Returns true if sphere intersects triangle ABC, false otherwise.
 			// Point is the point on abc closest to the sphere center
-			public static bool TestSphereTriangle(Vector3 center, float radius, Vector3 a, Vector3 b, Vector3 c, out Vector3 point) {
+			public static bool TestSphereTriangle(Vector3 center, float radius, Vector3 a, Vector3 b, Vector3 c, out Vector3 point)
+			{
 				// Find point on triangle ABC closest to sphere center
 				point = ClosestPtPointTriangle(center, a, b, c);
 				// Sphere and triangle intersect if the (squared) distance from the sphere
@@ -128,7 +145,8 @@ namespace UnityEngine.VR.Utilities
 			}
 
 			// From Real Time Collision Detection p.191
-			public static bool IntersectSegmentTriangle(Vector3 p, Vector3 q, Vector3 a, Vector3 b, Vector3 c, out float u, out float v, out float w, out float t) {
+			public static bool IntersectSegmentTriangle(Vector3 p, Vector3 q, Vector3 a, Vector3 b, Vector3 c, out float u, out float v, out float w, out float t)
+			{
 				u = v = w = t = 0;
 				Vector3 ab = b - a;
 				Vector3 ac = c - a;
@@ -157,8 +175,10 @@ namespace UnityEngine.VR.Utilities
 				return true;
 			}
 
-			public static bool IntersectRayAABB(Ray ray, Vector3 min, Vector3 max, float tMin, float tMax) {
-				for (int i = 0; i < 3; i++) {
+			public static bool IntersectRayAABB(Ray ray, Vector3 min, Vector3 max, float tMin, float tMax)
+			{
+				for (int i = 0; i < 3; i++)
+				{
 					float invD = 1.0f / ray.direction[i];
 					float t0 = (min[i] - ray.origin[i]) * invD;
 					float t1 = (max[i] - ray.origin[i]) * invD;
@@ -172,20 +192,24 @@ namespace UnityEngine.VR.Utilities
 				return true;
 			}
 
-			public static void Swap<T>(ref T a, ref T b) {
+			public static void Swap<T>(ref T a, ref T b)
+			{
 				T t = a;
 				a = b;
 				b = t;
 			}
 
-			public static bool TestTriangleAABB(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 min, Vector3 max) {
+			public static bool TestTriangleAABB(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 min, Vector3 max)
+			{
 				Bounds b = new Bounds();
 				b.min = min;
 				b.max = max;
 				return TestTriangleAABB(v0, v1, v2, b);
 			}
+
 			// From http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox3.txt (translated from C)
-			public static bool TestTriangleAABB(Vector3 v0, Vector3 v1, Vector3 v2, Bounds b) {
+			public static bool TestTriangleAABB(Vector3 v0, Vector3 v1, Vector3 v2, Bounds b)
+			{
 				/*    use separating axis theorem to test overlap between triangle and box */
 				/*    need to test for overlap in these directions: */
 				/*    1) the {x,y,z}-directions (actually, since we use the AABB of the triangle */
@@ -212,21 +236,45 @@ namespace UnityEngine.VR.Utilities
 				//AXISTEST_X01(e0[Z], e0[Y], fez, fey);
 				p0 = e0.z * v0.y - e0.y * v0.z;
 				p2 = e0.z * v2.y - e0.y * v2.z;
-				if (p0 < p2) { min = p0; max = p2; } else { min = p2; max = p0; }
+				if (p0 < p2)
+				{
+					min = p0;
+					max = p2;
+				} else
+				{
+					min = p2;
+					max = p0;
+				}
 				rad = fez * b.extents.y + fey * b.extents.z;
 				if (min > rad || max < -rad) return false;
 
 				//AXISTEST_Y02(e0[Z], e0[X], fez, fex);
 				p0 = -e0.z * v0.x + e0.x * v0.z;
 				p2 = -e0.z * v2.x + e0.x * v2.z;
-				if (p0 < p2) { min = p0; max = p2; } else { min = p2; max = p0; }
+				if (p0 < p2)
+				{
+					min = p0;
+					max = p2;
+				} else
+				{
+					min = p2;
+					max = p0;
+				}
 				rad = fez * b.extents.x + fex * b.extents.z;
 				if (min > rad || max < -rad) return false;
 
 				//AXISTEST_Z12(e0[Y], e0[X], fey, fex);
 				p1 = e0.y * v1.x - e0.x * v1.y;
 				p2 = e0.y * v2.x - e0.x * v2.y;
-				if (p2 < p1) { min = p2; max = p1; } else { min = p1; max = p2; }
+				if (p2 < p1)
+				{
+					min = p2;
+					max = p1;
+				} else
+				{
+					min = p1;
+					max = p2;
+				}
 				rad = fey * b.extents.x + fex * b.extents.y;
 				if (min > rad || max < -rad) return false;
 
@@ -236,21 +284,45 @@ namespace UnityEngine.VR.Utilities
 				//AXISTEST_X01(e1[Z], e1[Y], fez, fey);
 				p0 = e1.z * v0.y - e1.y * v0.z;
 				p2 = e1.z * v2.y - e1.y * v2.z;
-				if (p0 < p2) { min = p0; max = p2; } else { min = p2; max = p0; }
+				if (p0 < p2)
+				{
+					min = p0;
+					max = p2;
+				} else
+				{
+					min = p2;
+					max = p0;
+				}
 				rad = fez * b.extents.y + fey * b.extents.z;
 				if (min > rad || max < -rad) return false;
 
 				//AXISTEST_Y02(e1[Z], e1[X], fez, fex);
 				p0 = -e1.z * v0.x + e1.x * v0.z;
 				p2 = -e1.z * v2.x + e1.x * v2.z;
-				if (p0 < p2) { min = p0; max = p2; } else { min = p2; max = p0; }
+				if (p0 < p2)
+				{
+					min = p0;
+					max = p2;
+				} else
+				{
+					min = p2;
+					max = p0;
+				}
 				rad = fez * b.extents.x + fex * b.extents.z;
 				if (min > rad || max < -rad) return false;
 
 				//AXISTEST_Z0(e1[Y], e1[X], fey, fex);
 				p0 = e1.y * v0.x - e1.x * v0.y;
 				p1 = e1.y * v1.x - e1.x * v1.y;
-				if (p0 < p1) { min = p0; max = p1; } else { min = p1; max = p0; }
+				if (p0 < p1)
+				{
+					min = p0;
+					max = p1;
+				} else
+				{
+					min = p1;
+					max = p0;
+				}
 				rad = fey * b.extents.x + fex * b.extents.y;
 				if (min > rad || max < -rad) return false;
 
@@ -261,7 +333,15 @@ namespace UnityEngine.VR.Utilities
 				//AXISTEST_X2(e2[Z], e2[Y], fez, fey);             
 				p0 = e2.z * v0.y - e2.y * v0.z;
 				p1 = e2.z * v1.y - e2.y * v1.z;
-				if (p0 < p1) { min = p0; max = p1; } else { min = p1; max = p0; }
+				if (p0 < p1)
+				{
+					min = p0;
+					max = p1;
+				} else
+				{
+					min = p1;
+					max = p0;
+				}
 
 				rad = fez * b.extents.y + fey * b.extents.z;
 				if (min > rad || max < -rad) return false;
@@ -269,14 +349,30 @@ namespace UnityEngine.VR.Utilities
 				//AXISTEST_Y1(e2[Z], e2[X], fez, fex); 
 				p0 = -e2.z * v0.x + e2.x * v0.z;
 				p1 = -e2.z * v1.x + e2.x * v1.z;
-				if (p0 < p1) { min = p0; max = p1; } else { min = p1; max = p0; }
+				if (p0 < p1)
+				{
+					min = p0;
+					max = p1;
+				} else
+				{
+					min = p1;
+					max = p0;
+				}
 				rad = fez * b.extents.x + fex * b.extents.z;
 				if (min > rad || max < -rad) return false;
 
 				//AXISTEST_Z12(e2[Y], e2[X], fey, fex);        
 				p1 = e2.y * v1.x - e2.x * v1.y;
 				p2 = e2.y * v2.x - e2.x * v2.y;
-				if (p2 < p1) { min = p2; max = p1; } else { min = p1; max = p2; }
+				if (p2 < p1)
+				{
+					min = p2;
+					max = p1;
+				} else
+				{
+					min = p1;
+					max = p2;
+				}
 				rad = fey * b.extents.x + fex * b.extents.y;
 				if (min > rad || max < -rad) return false;
 
@@ -319,30 +415,34 @@ namespace UnityEngine.VR.Utilities
 				Vector3 normal = Vector3.Cross(e0, e1);
 				// -NJMP- (line removed here)
 
-				if (!PlaneBoxOverlap(normal, v0, b.extents)) return false;    // -NJMP-
+				if (!PlaneBoxOverlap(normal, v0, b.extents)) return false; // -NJMP-
 
-				return true;   /* box and triangle overlaps */
+				return true; /* box and triangle overlaps */
 			}
 
 			// From http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox3.txt (translated from C)
-			public static bool PlaneBoxOverlap(Vector3 normal, Vector3 vert, Vector3 maxBox) {
+			public static bool PlaneBoxOverlap(Vector3 normal, Vector3 vert, Vector3 maxBox)
+			{
 				int q;
 				Vector3 vmin = Vector3.zero;
 				Vector3 vmax = Vector3.zero;
 				float v;
 
-				for (q = 0; q <= 2; q++) {
-					v = vert[q];                    // -NJMP-  
-					if (normal[q] > 0.0f) {
-						vmin[q] = -maxBox[q] - v;   // -NJMP-  
-						vmax[q] = maxBox[q] - v;    // -NJMP-  
-					} else {
-						vmin[q] = maxBox[q] - v;    // -NJMP-  
-						vmax[q] = -maxBox[q] - v;   // -NJMP-  
+				for (q = 0; q <= 2; q++)
+				{
+					v = vert[q]; // -NJMP-  
+					if (normal[q] > 0.0f)
+					{
+						vmin[q] = -maxBox[q] - v; // -NJMP-  
+						vmax[q] = maxBox[q] - v; // -NJMP-  
+					} else
+					{
+						vmin[q] = maxBox[q] - v; // -NJMP-  
+						vmax[q] = -maxBox[q] - v; // -NJMP-  
 					}
 				}
 				if (Vector3.Dot(normal, vmin) > 0.0f) return false; // -NJMP-
-				if (Vector3.Dot(normal, vmax) >= 0.0f) return true;    // -NJMP-
+				if (Vector3.Dot(normal, vmax) >= 0.0f) return true; // -NJMP-
 
 				return false;
 			}

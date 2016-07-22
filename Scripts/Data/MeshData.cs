@@ -20,9 +20,6 @@ public class MeshData : ISerializable
     public readonly Dictionary<IntVector3, List<IntVector3>> triBuckets = new Dictionary<IntVector3, List<IntVector3>>();
     public bool processed { get; private set; }
 
-#if UNITY_EDITOR
-    public bool expanded, bucketsExpanded;          //State variables for foldouts
-#endif
     public string name;                             //For debug
 
     const int k_maxTrisPerFrame = 1000000;
@@ -252,7 +249,8 @@ public class MeshData : ISerializable
                     progress[fullPath].running = true;
                 }
 				//Process mesh, putting triangles into buckets
-                foreach (var e in meshData.Setup()) {                                               
+	            var enumerator = meshData.Setup().GetEnumerator();
+                while(enumerator.MoveNext()) {                                               
                     lock (progress) {
                         if (!progress.ContainsKey(fullPath))	//If the progress object was removed (canceled) kill the thread
                             return;

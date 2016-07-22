@@ -8,86 +8,93 @@ using Debug = UnityEngine.Debug;
 					 
 public class SpatialHasher : MonoBehaviour
 {
-    public float cellSize = 1f;
-
-    //public IntersectionTester[] testers;
-    //public Transform[] testTransforms;                 
-    //public Material selectedMaterial;
-    public Material coneMaterial;
-
-    public int coneSegments = 4;
-    public float coneRadius = 0.03f;
-    public float coneHeight = 0.05f;
-
-    public bool hasObjects
-    {
-        get { return intersectedObjects.Count > 0; }
-    }
+	[SerializeField]
+	float m_CellSize = 1f;
+	[SerializeField]
+	private Color m_TesterColor = Color.yellow;
+	[SerializeField]
+	int m_ConeSegments = 4;
+	[SerializeField]
+	float m_ConeRadius = 0.03f;
+	[SerializeField]
+	float m_ConeHeight = 0.05f;
             
-    const float k_MinCellSize = 0.1f;                                
+    const float kMinCellSize = 0.1f;                                
     
-    //Vector3 bucket represents center of cube with side-length cellSize
-    readonly Dictionary<IntVector3, List<SpatialObject>> spatialDictionary = new Dictionary<IntVector3, List<SpatialObject>>();
-    readonly List<SpatialObject> spatialObjects = new List<SpatialObject>();
-    readonly Dictionary<IntersectionTester, SpatialObject> intersectedObjects = new Dictionary<IntersectionTester, SpatialObject>();
-    public IntersectionTester[] testers = new IntersectionTester[0];
-    float lastCellSize;
+    //Vector3 bucket represents center of cube with side-length m_CellSize
+    readonly Dictionary<IntVector3, List<SpatialObject>>	m_SpatialDictionary = new Dictionary<IntVector3, List<SpatialObject>>();
+    readonly List<SpatialObject>							m_SpatialObjects = new List<SpatialObject>();
+    readonly Dictionary<IntersectionTester, SpatialObject>	m_IntersectedObjects = new Dictionary<IntersectionTester, SpatialObject>();
+    IntersectionTester[]									m_Testers = new IntersectionTester[0];
+    float m_LastCellSize;
+	bool m_Changes;
 
-    public static float maxDeltaTime = 0.015f;
-              
-    static bool started;            //Because onEnable is called twice when entering play mode
-    static bool updateStarted;
-	private Mesh cone;
-	private Ray[] coneRays;			   
+	static int s_ProcessedObjectCount;
+	static float s_FrameStartTime;
+	static float s_MaxDeltaTime = 0.015f;
+	Mesh m_ConeMesh;
+	Ray[] m_ConeRays;
+
+	public static float maxDeltaTime
+	{
+		get { return s_MaxDeltaTime; }
+	}
+	public static float frameStartTime {
+		get { return s_FrameStartTime; }
+	}						 
+	
+	public bool hasObjects {
+		get { return m_IntersectedObjects.Count > 0; }
+	}	   
+	public IntersectionTester[] testers {				//This exists for the purpose of the inspector--could be removed
+		get { return m_Testers; }
+	}
+#if UNITY_EDITOR						
+	public List<SpatialObject> spatialObjects {
+		get { return m_SpatialObjects; }
+	}										   
+	public int spatialCellCount
+	{
+		get { return m_SpatialDictionary.Count; }
+	}
+
+	public int intersectedObjectCount
+	{
+		get { return m_IntersectedObjects.Count; }
+	}
+
+#endif
 
 	void Awake()
 	{
-		FullReset();
+		Setup();
 		StopAllCoroutines();
 		StartCoroutine(SetupObjects());
 	}
-    public void FullReset() {
-		cone = IntersectionTester.GenerateConeMesh(coneSegments, coneRadius, coneHeight, out coneRays);
+    void Setup() {
+		m_ConeMesh = IntersectionTester.GenerateConeMesh(m_ConeSegments, m_ConeRadius, m_ConeHeight, out m_ConeRays);
 		ResetWorld();
-    }
+    } 
 
-#if UNITY_EDITOR
-    public List<SpatialObject> GetSpatialObjects()
-    {
-        return spatialObjects;
-    }                                                    
-    public void OnInspectorGUI()
-    {
-        GUILayout.Label("Spatial Objects: " + spatialObjects.Count);
-        GUILayout.Label("Spatial Cells: " + spatialDictionary.Count);
-        GUILayout.Label("Intersected Objects: " + intersectedObjects.Count);
-        if (GUILayout.Button("Reset Objects"))
-            ResetWorld();
-        if (GUILayout.Button("Reset Object Cache"))
-        {
-            MeshData.ClearCache();
-            ResetWorld();
-        }                           
-    }
-#endif	
-    //TODO: don't use procedural meshes for the testers? As it stands, they are created/destroyed every time you run --MTS
+    //TODO: don't use procedural meshes for the m_Testers? As it stands, they are created/destroyed every time you run --MTS
     public void AddTester(Transform trans)
     {								 
-        intersectedObjects.Clear();               		
+        m_IntersectedObjects.Clear();               		
         GameObject g = new GameObject("pointer");
         MeshRenderer renderer = g.AddComponent<MeshRenderer>();
-        renderer.sharedMaterial = coneMaterial;
-        MeshFilter filter = g.AddComponent<MeshFilter>();
+        renderer.sharedMaterial = new Material(Shader.Find("Standard"));
+	    renderer.sharedMaterial.color = m_TesterColor;
+		MeshFilter filter = g.AddComponent<MeshFilter>();
         g.transform.SetParent(trans, false);
-        filter.sharedMesh = cone;
-		testers = new List<IntersectionTester>(testers) { new IntersectionTester (renderer, coneRays) }.ToArray();
+        filter.sharedMesh = m_ConeMesh;
+		m_Testers = new List<IntersectionTester>(m_Testers) { new IntersectionTester (renderer, m_ConeRays) }.ToArray();
     }
 
-    void ResetWorld()
+    public void ResetWorld()
     {                                          
-        spatialObjects.Clear();
-        spatialDictionary.Clear();
-        lastCellSize = cellSize;
+        m_SpatialObjects.Clear();
+        m_SpatialDictionary.Clear();
+        m_LastCellSize = m_CellSize;
         MeshFilter[] meshes = FindObjectsOfType<MeshFilter>();
         foreach (var meshFilter in meshes)
         {                
@@ -101,19 +108,20 @@ public class SpatialHasher : MonoBehaviour
                     AddObject(render);
             }
         }   
-        spatialObjects.Sort((a, b) => a.sceneObject.bounds.size.magnitude.CompareTo(b.sceneObject.bounds.size.magnitude) );             
+        m_SpatialObjects.Sort((a, b) => a.sceneObject.bounds.size.magnitude.CompareTo(b.sceneObject.bounds.size.magnitude) );             
     }                               
 
     void OnIntersection(IntersectionTester IntersectionTester, SpatialObject obj)
     {   
+		//TODO: Bring back intersection logic--need to figure out how we want to store and consume the current state
         //SpatialObject old;
-        //if (intersectedObjects.TryGetValue(IntersectionTester, out old))
+        //if (m_IntersectedObjects.TryGetValue(IntersectionTester, out old))
         //{
         //    old.sceneObject.sharedMaterials = IntersectionTester.oldMaterials;
         //}
         //IntersectionTester.oldMaterials = obj.sceneObject.sharedMaterials;
         ////If we've already intersected, use the stored material
-        //foreach (var intersectedObject in intersectedObjects)
+        //foreach (var intersectedObject in m_IntersectedObjects)
         //{
         //    if (intersectedObject.Value == obj)
         //    {
@@ -121,7 +129,7 @@ public class SpatialHasher : MonoBehaviour
         //        break;
         //    }
         //}
-        //intersectedObjects[IntersectionTester] = obj;
+        //m_IntersectedObjects[IntersectionTester] = obj;
         //Material[] selectedMaterials = new Material[obj.sceneObject.sharedMaterials.Length];
         //for (int i = 0; i < selectedMaterials.Length; i++)
         //    selectedMaterials[i] = selectedMaterial;
@@ -129,39 +137,35 @@ public class SpatialHasher : MonoBehaviour
 		Debug.Log("intersect");
     }
     void OnIntersectionExit(IntersectionTester IntersectionTester, SpatialObject obj) {
-        obj.sceneObject.sharedMaterials = IntersectionTester.oldMaterials;
-        intersectedObjects.Remove(IntersectionTester);
+		//TODO: Bring back intersection logic--this will currently not be called
+        //obj.sceneObject.sharedMaterials = IntersectionTester.oldMaterials;
+        //m_IntersectedObjects.Remove(IntersectionTester);
     }
-
-    bool changes;
-    public static float frameStartTime;
-    public static int minProcess = 400;
-    public static int processCount;
    
     void Update()
     {
-        frameStartTime = Time.realtimeSinceStartup;
-        processCount = 0;
-        if (cellSize < k_MinCellSize)
-            cellSize = k_MinCellSize;
-        if (cellSize != lastCellSize)                                        
+        s_FrameStartTime = Time.realtimeSinceStartup;
+        SpatialObject.processCount = 0;
+        if (m_CellSize < kMinCellSize)
+            m_CellSize = kMinCellSize;
+        if (m_CellSize != m_LastCellSize)                                        
         {
             ResetWorld();
         }                   
-        lastCellSize = cellSize;
+        m_LastCellSize = m_CellSize;
        
-        if (testers == null)
+        if (m_Testers == null)
             return;         
-        foreach (var IntersectionTester in testers)
+        foreach (var IntersectionTester in m_Testers)
         {                         
             if (!IntersectionTester.active)
                 continue;           
-            if (changes || IntersectionTester.renderer.transform.hasChanged)
+            if (m_Changes || IntersectionTester.renderer.transform.hasChanged)
             {
                 bool detected = false;
-                var globalBucket = IntersectionTester.GetCell(cellSize);
+                var globalBucket = IntersectionTester.GetCell(m_CellSize);
                 List<SpatialObject> intersections = null;
-                if (spatialDictionary.TryGetValue(globalBucket, out intersections))
+                if (m_SpatialDictionary.TryGetValue(globalBucket, out intersections))
                 {                                                             
                     //Sort list to try and hit closer object first
                     intersections.Sort((a, b) => (a.sceneObject.bounds.center - IntersectionTester.renderer.bounds.center).magnitude.CompareTo((b.sceneObject.bounds.center - IntersectionTester.renderer.bounds.center).magnitude));
@@ -187,7 +191,7 @@ public class SpatialHasher : MonoBehaviour
                 if (!detected)
                 {                                                                              
                     SpatialObject intersectedObject;                                                
-                    if (intersectedObjects.TryGetValue(IntersectionTester, out intersectedObject))
+                    if (m_IntersectedObjects.TryGetValue(IntersectionTester, out intersectedObject))
                     {                 
                         OnIntersectionExit(IntersectionTester, intersectedObject);
                     }
@@ -195,25 +199,22 @@ public class SpatialHasher : MonoBehaviour
             }
             IntersectionTester.renderer.transform.hasChanged = false;
         }
-        changes = false;
+        m_Changes = false;
     }
-
-    public static int objCount = 0;
-    int bucketCount = 0;
-    int bucketTotal = 0;
     void OnGUI()
     {
-        GUILayout.Label(objCount + " / " + spatialObjects.Count);
-        GUILayout.Label(bucketCount + " / " + bucketTotal);
+        GUILayout.Label(s_ProcessedObjectCount + " / " + m_SpatialObjects.Count);
     }
 
     IEnumerator SetupObjects() {
-        foreach (var obj in spatialObjects) {                                  
-            foreach (var e in obj.SpatializeNew(cellSize, spatialDictionary)) {
+        foreach (var obj in m_SpatialObjects)
+        {
+	        var enumerator = obj.SpatializeNew(m_CellSize, m_SpatialDictionary).GetEnumerator();
+			while(enumerator.MoveNext()) {
                 yield return null;
-                changes = true;
+                m_Changes = true;
             }                                                                                  
-            objCount++;                                                                        
+            s_ProcessedObjectCount++;                                                                        
         }													
         StartCoroutine(UpdateDynamicObjects());
     }
@@ -223,21 +224,22 @@ public class SpatialHasher : MonoBehaviour
         while (true)
         {
             bool newFrame = false;
-            List<SpatialObject> tmp = new List<SpatialObject>(spatialObjects);
-            objCount = 0;
+            List<SpatialObject> tmp = new List<SpatialObject>(m_SpatialObjects);
+            s_ProcessedObjectCount = 0;
             foreach (var obj in tmp)
             {
-                objCount++;
+                s_ProcessedObjectCount++;
                 if(obj.tooBig)
                     continue;
                 if (obj.sceneObject.transform.hasChanged)
-                {                                                               
-                    foreach (var e in obj.Spatialize(cellSize, spatialDictionary))
+                {
+	                var enumerator = obj.Spatialize(m_CellSize, m_SpatialDictionary).GetEnumerator();
+					while(enumerator.MoveNext())
                     {
                         yield return null;
                         newFrame = true;
                     }             
-                    changes = true;
+                    m_Changes = true;
                 }
             }
 			if (!newFrame)
@@ -248,13 +250,13 @@ public class SpatialHasher : MonoBehaviour
     public void AddObject(Renderer obj)
     {                             
         obj.transform.hasChanged = true;
-        spatialObjects.Add(new SpatialObject(obj));
+        m_SpatialObjects.Add(new SpatialObject(obj));
     }   
 
     public void RemoveObject(Renderer obj)
     {
         SpatialObject spatial = null;
-        foreach (var spatialObject in spatialObjects)
+        foreach (var spatialObject in m_SpatialObjects)
         {
             spatial = spatialObject;
         }
@@ -263,7 +265,7 @@ public class SpatialHasher : MonoBehaviour
     }
 
     public void RemoveObject(SpatialObject obj) {         
-        spatialObjects.Remove(obj);
+        m_SpatialObjects.Remove(obj);
         List<IntVector3> removeBuckets = obj.GetRemoveBuckets();
         obj.ClearBuckets();
         RemoveFromDictionary(obj, removeBuckets);
@@ -272,26 +274,26 @@ public class SpatialHasher : MonoBehaviour
     {   
         foreach (var bucket in removeBuckets) {
             List<SpatialObject> contents;
-            if (spatialDictionary.TryGetValue(bucket, out contents)) {
+            if (m_SpatialDictionary.TryGetValue(bucket, out contents)) {
                 contents.Remove(obj);
                 if (contents.Count == 0)
-                    spatialDictionary.Remove(bucket);
+                    m_SpatialDictionary.Remove(bucket);
             }
         }
     }
     public IntersectionTester GetLeftTester() {
-        if (testers.Length > 0)
-            return testers[0];
+        if (m_Testers.Length > 0)
+            return m_Testers[0];
         return null;
     }
     public IntersectionTester GetRightTester() {
-        if (testers.Length > 1)
-            return testers[1];
+        if (m_Testers.Length > 1)
+            return m_Testers[1];
         return null;
     }
     public SpatialObject GetIntersectedObjectForTester(IntersectionTester IntersectionTester) {
         SpatialObject obj;
-        intersectedObjects.TryGetValue(IntersectionTester, out obj);
+        m_IntersectedObjects.TryGetValue(IntersectionTester, out obj);
         return obj;
     }
 
@@ -321,9 +323,9 @@ public class SpatialHasher : MonoBehaviour
     }
     public void UnGrabObject(IntersectionTester IntersectionTester)
     {
-        if (!spatialObjects.Contains(IntersectionTester.grabbed))
+        if (!m_SpatialObjects.Contains(IntersectionTester.grabbed))
         {
-            spatialObjects.Add(IntersectionTester.grabbed);
+            m_SpatialObjects.Add(IntersectionTester.grabbed);
             //IntersectionTester.grabbed.sceneObject.transform.hasChanged = true;     
             StartCoroutine(UnGrabReAdd(IntersectionTester.grabbed));
         }
@@ -333,7 +335,8 @@ public class SpatialHasher : MonoBehaviour
 
     IEnumerator UnGrabReAdd(SpatialObject obj)
     {
-        foreach (var e in obj.SpatializeNew(cellSize, spatialDictionary))
+	    var enumerator = obj.SpatializeNew(m_CellSize, m_SpatialDictionary).GetEnumerator();
+		while(enumerator.MoveNext())
         {
             yield return null;
         }
