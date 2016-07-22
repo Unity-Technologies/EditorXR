@@ -1,7 +1,8 @@
 ﻿using Mono.Simd;
 using UnityEngine;
-	 
-public class IntersectionTester {
+
+public class IntersectionTester
+{
 	public Renderer renderer { get; private set; }
 	public Ray[] rays { get; private set; }
 	//public Material[] oldMaterials;				//Part of old intersection logic
@@ -16,15 +17,19 @@ public class IntersectionTester {
 
 	private bool m_Active = true;
 
-	public IntersectionTester(Renderer renderer, Ray[] rays) {
+	public IntersectionTester(Renderer renderer, Ray[] rays)
+	{
 		this.renderer = renderer;
 		this.rays = rays;
 	}
-	public Vector4i GetCell(float cellSize) {
+
+	public Vector4i GetCell(float cellSize)
+	{
 		return SpatialHasher.SnapToGrid(renderer.bounds.center + Vector3.one * cellSize * 0.5f, cellSize);
 	}
 
-	public static Mesh GenerateConeMesh(int segments, float radius, float height, out Ray[] rays) {
+	public static Mesh GenerateConeMesh(int segments, float radius, float height, out Ray[] rays)
+	{
 		Mesh cone = new Mesh();
 		//For hard edges, three verts at each bottom corner, and one at the top per segment
 		Vector3[] vertices = new Vector3[(segments + 1) * 4];
@@ -35,9 +40,10 @@ public class IntersectionTester {
 		Vector3 top = Vector3.forward * height;
 		rays[0] = new Ray(top, Vector3.forward);
 		int stride = segments + 1;
-		for (int j = 0; j <= segments; j++) {
-			Vector3 radial = Quaternion.AngleAxis((float)j / segments * 360, Vector3.forward) * Vector3.up;
-			Vector3 nextRadial = Quaternion.AngleAxis((float)(j + 1) / segments * 360, Vector3.forward) * Vector3.up;
+		for (int j = 0; j <= segments; j++)
+		{
+			Vector3 radial = Quaternion.AngleAxis((float) j / segments * 360, Vector3.forward) * Vector3.up;
+			Vector3 nextRadial = Quaternion.AngleAxis((float) (j + 1) / segments * 360, Vector3.forward) * Vector3.up;
 			if (j + 1 >= segments)
 				nextRadial = Vector3.up;
 			Vector3 normal = new Vector3(0, radius, height).normalized;
@@ -59,7 +65,8 @@ public class IntersectionTester {
 			triangles[j * 3 + 2] = j + stride * 3;
 
 			//Base triangles
-			if (j < segments - 2) {
+			if (j < segments - 2)
+			{
 				triangles[j * 3 + stride * 3] = 0;
 				triangles[j * 3 + stride * 3 + 1] = j + 2;
 				triangles[j * 3 + stride * 3 + 2] = j + 1;

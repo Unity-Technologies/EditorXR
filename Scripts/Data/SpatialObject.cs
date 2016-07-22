@@ -18,7 +18,7 @@ public class SpatialObject
 
 	private IntVector3 m_LastLowerLeft;
 	private IntVector3 m_LastUpperRight;
-					  
+
 	private MeshData m_MeshData;
 	private IntVector3 m_PositionOffset;
 
