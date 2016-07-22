@@ -2,18 +2,19 @@
 using UnityEngine;
 	 
 public class IntersectionTester {
-	public readonly Renderer renderer;
-	public readonly Ray[] rays;
-	public Material[] oldMaterials;
-	public SpatialObject grabbed;
-	public Transform oldParent;
+	public Renderer renderer { get; private set; }
+	public Ray[] rays { get; private set; }
+	//public Material[] oldMaterials;				//Part of old intersection logic
+	public SpatialObject grabbed { get; set; }
+	public Transform oldParent { get; set; }
 
 	public bool active
 	{
-		get { return _active && renderer.gameObject.activeInHierarchy; }
-		set { _active = value; }
+		get { return m_Active && renderer.gameObject.activeInHierarchy; }
+		set { m_Active = value; }
 	}
-	bool _active = true;
+
+	private bool m_Active = true;
 
 	public IntersectionTester(Renderer renderer, Ray[] rays) {
 		this.renderer = renderer;

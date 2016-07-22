@@ -7,12 +7,20 @@ using IntVector3 = Mono.Simd.Vector4i;
 
 public class SpatialObject
 {
-	static int s_ProcessCount;
-	const int k_MinProcess = 400;
-											 
-	IntVector3 m_LastLowerLeft, m_LastUpperRight;
-
+	public bool tooBig { get; private set; }
 	public Renderer sceneObject { get; private set; } //The object we are tracking
+
+	private const int k_MinProcess = 400;
+	private const int k_MaxBuckets = 10000;
+	private static int s_ProcessCount;
+
+	private readonly List<IntVector3> m_Buckets = new List<IntVector3>(); //Buckets that the object currently occupies.
+
+	private IntVector3 m_LastLowerLeft;
+	private IntVector3 m_LastUpperRight;
+					  
+	private MeshData m_MeshData;
+	private IntVector3 m_PositionOffset;
 
 	public static int processCount
 	{
@@ -21,44 +29,37 @@ public class SpatialObject
 
 	public Vector3[] vertices
 	{
-		get { return meshData.vertices; }
+		get { return m_MeshData.vertices; }
 	}
 
 	public float cellSize
 	{
-		get { return meshData.cellSize; }
+		get { return m_MeshData.cellSize; }
 	}
 
 	public Dictionary<IntVector3, List<IntVector3>> triBuckets
 	{
-		get { return meshData.triBuckets; }
+		get { return m_MeshData.triBuckets; }
 	}
 
 	public bool processed
 	{
-		get { return meshData.processed; }
+		get { return m_MeshData.processed; }
 	}
 
 	public string name
 	{
 		get
 		{
-			string name = meshData.name;
-			if (meshData.processed)
-				name += " - buckets: " + triBuckets.Count;
+			string name = m_MeshData.name;
+			if (m_MeshData.processed)
+				name += " - m_Buckets: " + triBuckets.Count;
 			else
 				name += " - processing...";
 			return name;
 		}
 
 	}
-
-	const int maxBuckets = 10000;
-	public bool tooBig;
-
-	MeshData meshData;
-	IntVector3 positionOffset;
-	readonly List<IntVector3> buckets = new List<IntVector3>(); //Buckets that the object currently occupies.
 
 	public SpatialObject(Renderer sceneObject)
 	{
@@ -71,7 +72,7 @@ public class SpatialObject
 		MeshFilter filter = sceneObject.GetComponent<MeshFilter>();
 		if (filter)
 		{
-			meshData = MeshData.GetMeshData(filter.sharedMesh);
+			m_MeshData = MeshData.GetMeshData(filter.sharedMesh);
 		} else
 		{
 			throw new ArgumentException("SpatialObject renderers require an attached MeshFilter on " + filter);
@@ -80,19 +81,19 @@ public class SpatialObject
 
 	public IEnumerable Spatialize(float cellSize, Dictionary<IntVector3, List<SpatialObject>> spatialDictionary)
 	{
-		IntVector3 lowerLeft = SpatialHasher.SnapToGrid(sceneObject.bounds.center - (sceneObject.bounds.extents - Vector3.one * cellSize * 0.5f), cellSize) - positionOffset;
-		IntVector3 upperRight = SpatialHasher.SnapToGrid(sceneObject.bounds.center + (sceneObject.bounds.extents + Vector3.one * cellSize * 0.5f), cellSize) - positionOffset;
+		IntVector3 lowerLeft = SpatialHasher.SnapToGrid(sceneObject.bounds.center - (sceneObject.bounds.extents - Vector3.one * cellSize * 0.5f), cellSize) - m_PositionOffset;
+		IntVector3 upperRight = SpatialHasher.SnapToGrid(sceneObject.bounds.center + (sceneObject.bounds.extents + Vector3.one * cellSize * 0.5f), cellSize) - m_PositionOffset;
 
 		if (m_LastLowerLeft == lowerLeft && m_LastUpperRight == upperRight)
 			yield break;
-		//Optimization to only add/remove to buckets that changed. Replaces hashset                           
+		//Optimization to only add/remove to m_Buckets that changed. Replaces hashset                           
 		List<IntVector3> removeBuckets = GetRemoveBuckets();
-		buckets.Clear();
-		positionOffset = SpatialHasher.SnapToGrid(sceneObject.transform.position + Vector3.one * cellSize * 0.5f, cellSize);
+		m_Buckets.Clear();
+		m_PositionOffset = SpatialHasher.SnapToGrid(sceneObject.transform.position + Vector3.one * cellSize * 0.5f, cellSize);
 
 		m_LastLowerLeft = lowerLeft;
 		m_LastUpperRight = upperRight;
-		buckets.Capacity = (upperRight.X - lowerLeft.X) * (upperRight.Y - lowerLeft.Y) * (upperRight.Z - lowerLeft.Z);
+		m_Buckets.Capacity = (upperRight.X - lowerLeft.X) * (upperRight.Y - lowerLeft.Y) * (upperRight.Z - lowerLeft.Z);
 		for (int x = lowerLeft.X; x <= upperRight.X; x++)
 		{
 			for (int y = lowerLeft.Y; y <= upperRight.Y; y++)
@@ -100,8 +101,8 @@ public class SpatialObject
 				for (int z = lowerLeft.Z; z <= upperRight.Z; z++)
 				{
 					IntVector3 bucket = new IntVector3(x, y, z, 0);
-					buckets.Add(bucket);
-					IntVector3 worldBucket = bucket + positionOffset;
+					m_Buckets.Add(bucket);
+					IntVector3 worldBucket = bucket + m_PositionOffset;
 					if (!removeBuckets.Remove(worldBucket))
 					{
 						List<SpatialObject> contents;
@@ -139,13 +140,13 @@ public class SpatialObject
 
 	public IEnumerable SpatializeNew(float cellSize, Dictionary<IntVector3, List<SpatialObject>> spatialDictionary)
 	{
-		//Optimization to only add/remove to buckets that changed. Replaces hashset                           
-		buckets.Clear();
-		positionOffset = SpatialHasher.SnapToGrid(sceneObject.transform.position + Vector3.one * cellSize * 0.5f, cellSize);
-		IntVector3 lowerLeft = SpatialHasher.SnapToGrid(sceneObject.bounds.center - (sceneObject.bounds.extents - Vector3.one * cellSize * 0.5f), cellSize) - positionOffset;
-		IntVector3 upperRight = SpatialHasher.SnapToGrid(sceneObject.bounds.center + (sceneObject.bounds.extents + Vector3.one * cellSize * 0.5f), cellSize) - positionOffset;
-		buckets.Capacity = (upperRight.X - lowerLeft.X) * (upperRight.Y - lowerLeft.Y) * (upperRight.Z - lowerLeft.Z);
-		if (buckets.Capacity > maxBuckets)
+		//Optimization to only add/remove to m_Buckets that changed. Replaces hashset                           
+		m_Buckets.Clear();
+		m_PositionOffset = SpatialHasher.SnapToGrid(sceneObject.transform.position + Vector3.one * cellSize * 0.5f, cellSize);
+		IntVector3 lowerLeft = SpatialHasher.SnapToGrid(sceneObject.bounds.center - (sceneObject.bounds.extents - Vector3.one * cellSize * 0.5f), cellSize) - m_PositionOffset;
+		IntVector3 upperRight = SpatialHasher.SnapToGrid(sceneObject.bounds.center + (sceneObject.bounds.extents + Vector3.one * cellSize * 0.5f), cellSize) - m_PositionOffset;
+		m_Buckets.Capacity = (upperRight.X - lowerLeft.X) * (upperRight.Y - lowerLeft.Y) * (upperRight.Z - lowerLeft.Z);
+		if (m_Buckets.Capacity > k_MaxBuckets)
 		{
 			tooBig = true;
 			yield break;
@@ -157,8 +158,8 @@ public class SpatialObject
 				for (int z = lowerLeft.Z; z <= upperRight.Z; z++)
 				{
 					IntVector3 bucket = new IntVector3(x, y, z, 0);
-					buckets.Add(bucket);
-					IntVector3 worldBucket = bucket + positionOffset;
+					m_Buckets.Add(bucket);
+					IntVector3 worldBucket = bucket + m_PositionOffset;
 					List<SpatialObject> contents;
 					if (!spatialDictionary.TryGetValue(worldBucket, out contents))
 					{
@@ -178,11 +179,11 @@ public class SpatialObject
 
 	public List<IntVector3> GetRemoveBuckets()
 	{
-		return new List<IntVector3>(buckets.Select(bucket => bucket + positionOffset));
+		return new List<IntVector3>(m_Buckets.Select(bucket => bucket + m_PositionOffset));
 	}
 
 	public void ClearBuckets()
 	{
-		buckets.Clear();
+		m_Buckets.Clear();
 	}
 }

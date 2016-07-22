@@ -7,7 +7,7 @@ namespace UnityEngine.VR.Utilities
 	{
 		public static class Intersection
 		{
-			const float k_RayMax = 1000;
+			private const float k_RayMax = 1000;
 
 			public static bool TestObject(SpatialObject obj, IntersectionTester tester)
 			{

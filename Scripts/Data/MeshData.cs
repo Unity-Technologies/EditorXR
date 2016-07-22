@@ -13,29 +13,40 @@ using UnityEngine.VR.Utilities;
 
 [Serializable]
 public class MeshData : ISerializable
-{
-	const int k_DataVersion = 0;
+{	
     public Vector3[] vertices { get; private set; }
     public float cellSize { get; private set; }
-    public readonly Dictionary<IntVector3, List<IntVector3>> triBuckets = new Dictionary<IntVector3, List<IntVector3>>();
-    public bool processed { get; private set; }
 
-    public string name;                             //For debug
+	public bool processed { get; private set; }
 
-    const int k_maxTrisPerFrame = 1000000;
-    const float k_minCellSize = 0.05f;
+	public string name
+	{
+		get { return m_MeshName; }
+	}
 
-    static readonly Dictionary<Mesh, MeshData> meshDatas = new Dictionary<Mesh, MeshData>();
-    int[] triangles;        //This gets freed after setup
-    IEnumerator resume;
-    int triProcessed;
-    long totalTriProcessed;
-    long triTotal = 1;
+	public Dictionary<IntVector3, List<IntVector3>> triBuckets
+	{
+		get { return m_TriBuckets; }
+	} 														   
 
-    MeshData(Mesh mesh) {
-        vertices = mesh.vertices;
-        triangles = mesh.triangles;
-    }
+	private const int k_DataVersion = 0;
+
+	private const int k_maxTrisPerFrame = 1000000;
+	private const float k_minCellSize = 0.05f;
+
+	private static readonly Dictionary<Mesh, MeshData> s_MeshDataDictionary = new Dictionary<Mesh, MeshData>();
+	private readonly Dictionary<IntVector3, List<IntVector3>> m_TriBuckets = new Dictionary<IntVector3, List<IntVector3>>();
+
+	private string m_MeshName;									 
+	private IEnumerator m_SetupResume;
+	private int m_TrisProcessed;
+	private long m_TotalTrisProcessed;
+	private long m_TotalTris = 1;
+
+	MeshData(Mesh mesh) {
+        vertices = mesh.vertices;	   
+		m_MeshName = mesh.name;
+	}
 
     protected MeshData(SerializationInfo info, StreamingContext context)
     {
@@ -49,7 +60,7 @@ public class MeshData : ISerializable
         List<SerialKVP> tmpBuckets = (List<SerialKVP>)info.GetValue("triBuckets", typeof(List<SerialKVP>));
         foreach (var tmpBucket in tmpBuckets) {
             List<IntVector3> tris = new List<IntVector3>(tmpBucket.Value.Count);
-            triBuckets[tmpBucket.Key] = tris;
+            m_TriBuckets[tmpBucket.Key] = tris;
             tris.AddRange(tmpBucket.Value.Select(tri => (IntVector3) tri));
         }                                                 
     }
@@ -73,7 +84,7 @@ public class MeshData : ISerializable
 #if UNITY_EDITOR
     public static Dictionary<Mesh, MeshData> GetMeshDataDictionary()
     {
-	    return meshDatas;
+	    return s_MeshDataDictionary;
     } 
     public static string SerializedMeshPath(Mesh mesh)
     {
@@ -104,7 +115,7 @@ public class MeshData : ISerializable
     public static MeshData GetMeshData(Mesh mesh)
     {                   
         MeshData result;
-        if (meshDatas.TryGetValue(mesh, out result))
+        if (s_MeshDataDictionary.TryGetValue(mesh, out result))
         {                         
             return result;
         }
@@ -114,7 +125,7 @@ public class MeshData : ISerializable
             using (var file = File.Open(path,FileMode.Open))
             {
                 result = (MeshData)new BinaryFormatter().Deserialize(file);
-                result.name = mesh.name;
+	            result.m_MeshName = mesh.name;
                 result.vertices = mesh.vertices;
                 result.processed = true;
             }
@@ -122,14 +133,14 @@ public class MeshData : ISerializable
         {
             result = ProcessMesh(mesh);
         }
-        meshDatas[mesh] = result;
+        s_MeshDataDictionary[mesh] = result;
         return result;
     }
 
-    public IEnumerable Setup() {
+    public IEnumerable Setup(int[] triangles) {
         if (processed)
             yield break;
-        if (resume == null) {
+        if (m_SetupResume == null) {
             //NB: picking an object cell size is tough. Right now we assume unifrom distribution of vertices, which is obviously not consistent
             //cellSize = (Mathf.Min(sceneObject.bounds.size.x, sceneObject.bounds.size.y, sceneObject.bounds.size.z) / (vertices.Length / 3)) * k_cellSizeFactor;
             Vector3 size = Vector3.zero;
@@ -151,21 +162,20 @@ public class MeshData : ISerializable
             if (cellSize < k_minCellSize * maxSideLength)
                 cellSize = k_minCellSize * maxSideLength;
 
-            resume = SpatializeLocal(cellSize, size * 0.5f, triangles);
+            m_SetupResume = SpatializeLocal(cellSize, size * 0.5f, triangles);
             yield return null;
         }
-        while (resume.MoveNext()) {
+        while (m_SetupResume.MoveNext()) {
             yield return null;
         }                                  
         processed = true;
-        triangles = null;
     }
 
     IEnumerator SpatializeLocal(float cellSize, Vector3 extents, int[] triangles) {
         IntVector3 lowerLeft = SpatialHasher.SnapToGrid(-extents - Vector3.one * cellSize * 0.5f, cellSize);
         IntVector3 upperRight = SpatialHasher.SnapToGrid(extents + Vector3.one * cellSize * 0.5f, cellSize);
         IntVector3 diff = upperRight - lowerLeft + IntVector3.Identity;
-        triTotal = diff.X * diff.Y * diff.Z * (long)triangles.Length / 3;
+        m_TotalTris = diff.X * diff.Y * diff.Z * (long)triangles.Length / 3;
         for (int x = lowerLeft.X; x <= upperRight.X; x++) {
             for (int y = lowerLeft.Y; y <= upperRight.Y; y++) {
                 for (int z = lowerLeft.Z; z <= upperRight.Z; z++) {
@@ -176,12 +186,11 @@ public class MeshData : ISerializable
                         Vector3 a = vertices[triA];
                         Vector3 b = vertices[triB];
                         Vector3 c = vertices[triC];
-                                                
-                        triProcessed++;
-                        totalTriProcessed++;
-                        if (triProcessed++ > k_maxTrisPerFrame)
+                                                	  
+                        m_TotalTrisProcessed++;
+                        if (m_TrisProcessed++ > k_maxTrisPerFrame)
                         {
-                            triProcessed = 0;
+                            m_TrisProcessed = 0;
                             yield return null;
                         }
                         IntVector3 currMin = new IntVector3(x, y, z, 0);
@@ -189,9 +198,9 @@ public class MeshData : ISerializable
                         box.max = box.min + Vector3.one * cellSize;          
                         if (U.Intersection.TestTriangleAABB(a, b, c, box)) {
                             List<IntVector3> tris;
-                            if (!triBuckets.TryGetValue(currMin, out tris)) {
+                            if (!m_TriBuckets.TryGetValue(currMin, out tris)) {
                                 tris = new List<IntVector3>();
-                                triBuckets[currMin] = tris;
+                                m_TriBuckets[currMin] = tris;
                             }
                             tris.Add(new IntVector3(triA, triB, triC, 0));
                         }
@@ -228,7 +237,8 @@ public class MeshData : ISerializable
 	public static MeshData ProcessMesh(Mesh mesh) {
         string fullPath = SerializedMeshPath(mesh);
         MeshData meshData = new MeshData(mesh);
-        MeshDataProgress prog = new MeshDataProgress();
+		int[] triangles = mesh.triangles;
+		MeshDataProgress prog = new MeshDataProgress();
         lock (progress) {
             progress[fullPath] = prog;
         }
@@ -249,12 +259,12 @@ public class MeshData : ISerializable
                     progress[fullPath].running = true;
                 }
 				//Process mesh, putting triangles into buckets
-	            var enumerator = meshData.Setup().GetEnumerator();
+	            var enumerator = meshData.Setup(triangles).GetEnumerator();
                 while(enumerator.MoveNext()) {                                               
                     lock (progress) {
                         if (!progress.ContainsKey(fullPath))	//If the progress object was removed (canceled) kill the thread
                             return;
-                        progress[fullPath].progress = (float)meshData.totalTriProcessed / meshData.triTotal;
+                        progress[fullPath].progress = (float)meshData.m_TotalTrisProcessed / meshData.m_TotalTris;
                     }                         
                     Thread.Sleep(10);         
                 }                                                     
@@ -291,8 +301,11 @@ public class MeshData : ISerializable
         info.AddValue("cellSize", cellSize);                       
 		info.AddValue("dataVersion", k_DataVersion);
     }
+	public static void ClearCache() {
+		s_MeshDataDictionary.Clear();
+	}
 
-    [Serializable]
+	[Serializable]
     class SerialIV3 {   
         public int x, y, z;
 
@@ -308,11 +321,6 @@ public class MeshData : ISerializable
     {
         public SerialIV3 Key;
         public List<SerialIV3> Value;
-    }
-
-    public static void ClearCache()
-    {
-        meshDatas.Clear();
     }
 }
 

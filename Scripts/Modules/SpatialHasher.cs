@@ -156,19 +156,19 @@ public class SpatialHasher : MonoBehaviour
        
         if (m_Testers == null)
             return;         
-        foreach (var IntersectionTester in m_Testers)
+        foreach (var tester in m_Testers)
         {                         
-            if (!IntersectionTester.active)
+            if (!tester.active)
                 continue;           
-            if (m_Changes || IntersectionTester.renderer.transform.hasChanged)
+            if (m_Changes || tester.renderer.transform.hasChanged)
             {
                 bool detected = false;
-                var globalBucket = IntersectionTester.GetCell(m_CellSize);
+                var globalBucket = tester.GetCell(m_CellSize);
                 List<SpatialObject> intersections = null;
                 if (m_SpatialDictionary.TryGetValue(globalBucket, out intersections))
                 {                                                             
                     //Sort list to try and hit closer object first
-                    intersections.Sort((a, b) => (a.sceneObject.bounds.center - IntersectionTester.renderer.bounds.center).magnitude.CompareTo((b.sceneObject.bounds.center - IntersectionTester.renderer.bounds.center).magnitude));
+                    intersections.Sort((a, b) => (a.sceneObject.bounds.center - tester.renderer.bounds.center).magnitude.CompareTo((b.sceneObject.bounds.center - tester.renderer.bounds.center).magnitude));
                     foreach (var obj in intersections)
                     {                         
                         //Early-outs:
@@ -177,12 +177,12 @@ public class SpatialHasher : MonoBehaviour
                         if (!obj.processed || obj.sceneObject.transform.hasChanged)
                             continue;    
                         //Bounds check                                                                     
-                        if (!obj.sceneObject.bounds.Intersects(IntersectionTester.renderer.bounds))
+                        if (!obj.sceneObject.bounds.Intersects(tester.renderer.bounds))
                             continue;
-	                    if (U.Intersection.TestObject(obj, IntersectionTester))
+	                    if (U.Intersection.TestObject(obj, tester))
 	                    {
 		                    detected = true;
-							OnIntersection(IntersectionTester, obj);
+							OnIntersection(tester, obj);
 						}
                         if(detected)
                             break;
@@ -191,13 +191,13 @@ public class SpatialHasher : MonoBehaviour
                 if (!detected)
                 {                                                                              
                     SpatialObject intersectedObject;                                                
-                    if (m_IntersectedObjects.TryGetValue(IntersectionTester, out intersectedObject))
+                    if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
                     {                 
-                        OnIntersectionExit(IntersectionTester, intersectedObject);
+                        OnIntersectionExit(tester, intersectedObject);
                     }
                 }
             }
-            IntersectionTester.renderer.transform.hasChanged = false;
+            tester.renderer.transform.hasChanged = false;
         }
         m_Changes = false;
     }
@@ -250,8 +250,18 @@ public class SpatialHasher : MonoBehaviour
     public void AddObject(Renderer obj)
     {                             
         obj.transform.hasChanged = true;
-        m_SpatialObjects.Add(new SpatialObject(obj));
-    }   
+	    StartCoroutine(AddNewObject(new SpatialObject(obj)));
+    }
+
+	IEnumerator AddNewObject(SpatialObject obj)
+	{				  
+		m_SpatialObjects.Add(obj);
+		var enumerator = obj.SpatializeNew(m_CellSize, m_SpatialDictionary).GetEnumerator();
+		while (enumerator.MoveNext()) {
+			yield return null;
+			m_Changes = true;
+		}
+	}
 
     public void RemoveObject(Renderer obj)
     {
