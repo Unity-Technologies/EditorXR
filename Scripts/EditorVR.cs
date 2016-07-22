@@ -9,6 +9,7 @@ using UnityEngine.InputNew;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Modules;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;

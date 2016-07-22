@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Mono.Simd;
+using UnityEngine.VR.Data;
 
 namespace UnityEngine.VR.Utilities
 {
