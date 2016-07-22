@@ -7,7 +7,6 @@ using UnityEngine.VR.Proxies;
 
 public class RaycastModule : MonoBehaviour
 {
-	
 	private Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
 
 	private GameObject[] m_IgnoreList;

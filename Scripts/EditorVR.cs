@@ -116,6 +116,14 @@ public class EditorVR : MonoBehaviour
 			HashSet<InputDevice> devices;
 			var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
 			AddToolToDeviceData(tool, devices);
+
+			foreach (var deviceData in m_DeviceData)
+			{
+				if (deviceData.Key.TagIndex == -1)
+					continue;
+				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+				AddToolToDeviceData(tool, devices);
+			}
 		};
 	}
 
@@ -254,8 +262,6 @@ public class EditorVR : MonoBehaviour
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_InputModule.eventCamera = m_EventCamera;
-		//m_InputModule.EventCamera.clearFlags = CameraClearFlags.Nothing;
-		//m_InputModule.EventCamera.cullingMask = 0;
 
 		foreach (var proxy in m_AllProxies)
 		{
@@ -317,7 +323,7 @@ public class EditorVR : MonoBehaviour
 
 		foreach (DeviceData deviceData in m_DeviceData.Values)
 		{
-			foreach (ITool tool in deviceData.tools.Reverse())
+			foreach (ITool tool in deviceData.tools)
 			{
 				IStandardActionMap standardActionMap = tool as IStandardActionMap;
 				if (standardActionMap != null)

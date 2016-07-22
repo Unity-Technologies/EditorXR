@@ -10,8 +10,10 @@ using UnityEngine.InputNew;
 
 public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
 {
-	private float m_DoubleClickIntervalMax = 0.3f;
-	private float m_DoubleClickIntervalMin = 0.15f;
+	private const float kDoubleClickIntervalMax = 0.3f;
+	private const float kDoubleClickIntervalMin = 0.15f;
+
+	private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>();
 
 	private GameObject m_CurrentOver;
 	private DateTime m_LastSelectTime;
@@ -37,23 +39,33 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 
 	void Update()
 	{
+		if (rayOrigin == null)
+			return;
+
+		// Handle parent button press
 		if (m_SelectionInput.parent.wasJustPressed)
 		{
 			var go = Selection.activeGameObject;
-			if (go.transform.parent != null)
-				Selection.activeGameObject = go.transform.parent.gameObject;
+			if (go != null && go.transform.parent != null)
+			{
+				s_SelectedObjects.Remove(go);
+				s_SelectedObjects.Add(go.transform.parent.gameObject);
+				Selection.objects = s_SelectedObjects.ToArray();
+			}
 		}
 
 		var newOver = getFirstGameObject(rayOrigin);
 
-		if (newOver != null)// If gameObject is within a prefab and not the current prefab, choose prefab root
+		if (newOver != null)
 		{
+			// If gameObject is within a prefab and not the current prefab, choose prefab root
 			var newPrefabRoot = PrefabUtility.FindPrefabRoot(newOver);
 			if (newPrefabRoot != s_CurrentPrefabRoot)
 				newOver = newPrefabRoot;
 		}
 
-		if (newOver != m_CurrentOver) // Handle changing highlight
+		// Handle changing highlight
+		if (newOver != m_CurrentOver)
 		{
 			if(m_CurrentOver != null)
 				setHighlight(m_CurrentOver, false);
@@ -64,25 +76,53 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 
 		m_CurrentOver = newOver;
 
-		if (m_SelectionInput.select.wasJustPressed) // Handle select button press
+		// Handle select button press
+		if (m_SelectionInput.select.wasJustPressed) 
 		{
 			// Detect double click
 			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
 			m_LastSelectTime = DateTime.Now;
-			if (timeSinceLastSelect < m_DoubleClickIntervalMax && timeSinceLastSelect > m_DoubleClickIntervalMin)
+			if (timeSinceLastSelect < kDoubleClickIntervalMax && timeSinceLastSelect > kDoubleClickIntervalMin)
+			{
 				s_CurrentPrefabRoot = m_CurrentOver;
+				s_SelectedObjects.Remove(s_CurrentPrefabRoot);
+			}
+			else
+			{
+				// Reset current prefab if selecting outside of it
+				if (PrefabUtility.FindPrefabRoot(m_CurrentOver) != s_CurrentPrefabRoot)
+					s_CurrentPrefabRoot = null;
 
-			// Reset current prefab if selecting outside of it
-			if (PrefabUtility.FindPrefabRoot(m_CurrentOver) != s_CurrentPrefabRoot)
-				s_CurrentPrefabRoot = null;
-
-			Selection.activeGameObject = m_CurrentOver;
+				// Multi-Select
+				if (m_SelectionInput.multiselect.isHeld)
+				{
+					if (s_SelectedObjects.Contains(m_CurrentOver)) // Remove from selection
+					{
+						s_SelectedObjects.Remove(m_CurrentOver);
+					}
+					else
+					{
+						s_SelectedObjects.Add(m_CurrentOver); // Add to selection
+						Selection.activeGameObject = m_CurrentOver;
+					}
+				}
+				else
+				{
+					s_SelectedObjects.Clear();
+					Selection.activeGameObject = m_CurrentOver;
+					s_SelectedObjects.Add(m_CurrentOver);
+				}
+			}
+			Selection.objects = s_SelectedObjects.ToArray();
 		}
 	}
 
-	void OnDestroy()
+	void OnDisable()
 	{
-		if(m_CurrentOver != null)
+		if (m_CurrentOver != null)
+		{
 			setHighlight(m_CurrentOver, false);
+			m_CurrentOver = null;
+		}
 	}
 }
