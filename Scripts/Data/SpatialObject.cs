@@ -34,7 +34,7 @@ namespace UnityEngine.VR.Data
 			get { return m_MeshData.vertices; }
 		}
 
-		public float cellSize
+		public float meshCellSize
 		{
 			get { return m_MeshData.cellSize; }
 		}
@@ -81,17 +81,17 @@ namespace UnityEngine.VR.Data
 			}
 		}
 
-		public IEnumerable Spatialize(float cellSize, Dictionary<IntVector3, List<SpatialObject>> spatialDictionary)
+		public IEnumerable UpdatePosition(SpatialHash hash)
 		{
-			IntVector3 lowerLeft = SpatialHasher.SnapToGrid(sceneObject.bounds.center - (sceneObject.bounds.extents - Vector3.one * cellSize * 0.5f), cellSize) - m_PositionOffset;
-			IntVector3 upperRight = SpatialHasher.SnapToGrid(sceneObject.bounds.center + (sceneObject.bounds.extents + Vector3.one * cellSize * 0.5f), cellSize) - m_PositionOffset;
+			IntVector3 lowerLeft = hash.SnapToGrid(sceneObject.bounds.center - (sceneObject.bounds.extents - Vector3.one * hash.cellSize * 0.5f)) - m_PositionOffset;
+			IntVector3 upperRight = hash.SnapToGrid(sceneObject.bounds.center + (sceneObject.bounds.extents + Vector3.one * hash.cellSize * 0.5f)) - m_PositionOffset;
 
 			if (m_LastLowerLeft == lowerLeft && m_LastUpperRight == upperRight)
 				yield break;
 			//Optimization to only add/remove to m_Buckets that changed. Replaces hashset                           
 			List<IntVector3> removeBuckets = GetRemoveBuckets();
 			m_Buckets.Clear();
-			m_PositionOffset = SpatialHasher.SnapToGrid(sceneObject.transform.position + Vector3.one * cellSize * 0.5f, cellSize);
+			m_PositionOffset = hash.SnapToGrid(sceneObject.transform.position + Vector3.one * hash.cellSize * 0.5f);
 
 			m_LastLowerLeft = lowerLeft;
 			m_LastUpperRight = upperRight;
@@ -106,32 +106,16 @@ namespace UnityEngine.VR.Data
 						m_Buckets.Add(bucket);
 						IntVector3 worldBucket = bucket + m_PositionOffset;
 						if (!removeBuckets.Remove(worldBucket))
-						{
-							List<SpatialObject> contents;
-							if (!spatialDictionary.TryGetValue(worldBucket, out contents))
-							{
-								contents = new List<SpatialObject>();
-								spatialDictionary[worldBucket] = contents;
-							}
-							contents.Add(this);
-						}
-						if (s_ProcessCount++ > k_MinProcess && Time.realtimeSinceStartup - SpatialHasher.frameStartTime > SpatialHasher.maxDeltaTime)
-						{
+							hash.AddObjectToBucket(worldBucket, this);
+						if (s_ProcessCount++ > k_MinProcess && Time.realtimeSinceStartup - SpatialHashUpdateModule.frameStartTime > SpatialHashUpdateModule.maxDeltaTime)
 							yield return null;
-						}
 					}
 				}
 			}
 			foreach (var bucket in removeBuckets)
 			{
-				List<SpatialObject> contents;
-				if (spatialDictionary.TryGetValue(bucket, out contents))
-				{
-					contents.Remove(this);
-					if (contents.Count == 0)
-						spatialDictionary.Remove(bucket);
-				}
-				if (s_ProcessCount++ > k_MinProcess && Time.realtimeSinceStartup - SpatialHasher.frameStartTime > SpatialHasher.maxDeltaTime)
+				hash.RemoveObjectFromBucket(bucket, this);
+				if (s_ProcessCount++ > k_MinProcess && Time.realtimeSinceStartup - SpatialHashUpdateModule.frameStartTime > SpatialHashUpdateModule.maxDeltaTime)
 				{
 					yield return null;
 				}
@@ -140,13 +124,13 @@ namespace UnityEngine.VR.Data
 			yield return null;
 		}
 
-		public IEnumerable SpatializeNew(float cellSize, Dictionary<IntVector3, List<SpatialObject>> spatialDictionary)
+		public IEnumerable AddToHash(SpatialHash hash)
 		{
 			//Optimization to only add/remove to m_Buckets that changed. Replaces hashset                           
 			m_Buckets.Clear();
-			m_PositionOffset = SpatialHasher.SnapToGrid(sceneObject.transform.position + Vector3.one * cellSize * 0.5f, cellSize);
-			IntVector3 lowerLeft = SpatialHasher.SnapToGrid(sceneObject.bounds.center - (sceneObject.bounds.extents - Vector3.one * cellSize * 0.5f), cellSize) - m_PositionOffset;
-			IntVector3 upperRight = SpatialHasher.SnapToGrid(sceneObject.bounds.center + (sceneObject.bounds.extents + Vector3.one * cellSize * 0.5f), cellSize) - m_PositionOffset;
+			m_PositionOffset = hash.SnapToGrid(sceneObject.transform.position + Vector3.one * hash.cellSize * 0.5f);
+			IntVector3 lowerLeft = hash.SnapToGrid(sceneObject.bounds.center - (sceneObject.bounds.extents - Vector3.one * hash.cellSize * 0.5f)) - m_PositionOffset;
+			IntVector3 upperRight = hash.SnapToGrid(sceneObject.bounds.center + (sceneObject.bounds.extents + Vector3.one * hash.cellSize * 0.5f)) - m_PositionOffset;
 			m_Buckets.Capacity = (upperRight.X - lowerLeft.X) * (upperRight.Y - lowerLeft.Y) * (upperRight.Z - lowerLeft.Z);
 			if (m_Buckets.Capacity > k_MaxBuckets)
 			{
@@ -162,14 +146,8 @@ namespace UnityEngine.VR.Data
 						IntVector3 bucket = new IntVector3(x, y, z, 0);
 						m_Buckets.Add(bucket);
 						IntVector3 worldBucket = bucket + m_PositionOffset;
-						List<SpatialObject> contents;
-						if (!spatialDictionary.TryGetValue(worldBucket, out contents))
-						{
-							contents = new List<SpatialObject>();
-							spatialDictionary[worldBucket] = contents;
-						}
-						contents.Add(this);
-						if (s_ProcessCount++ > k_MinProcess && Time.realtimeSinceStartup - SpatialHasher.frameStartTime > SpatialHasher.maxDeltaTime)
+						hash.AddObjectToBucket(worldBucket, this);
+						if (s_ProcessCount++ > k_MinProcess && Time.realtimeSinceStartup - SpatialHashUpdateModule.frameStartTime > SpatialHashUpdateModule.maxDeltaTime)
 						{
 							yield return null;
 						}

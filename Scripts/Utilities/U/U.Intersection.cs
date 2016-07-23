@@ -45,8 +45,8 @@ namespace UnityEngine.VR.Utilities
 				HashSet<Vector4i> tested = new HashSet<Vector4i>();
 				foreach (var triBucket in obj.triBuckets)
 				{
-					Vector3 min = triBucket.Key.mul(obj.cellSize);
-					Vector3 max = min + Vector3.one * obj.cellSize;
+					Vector3 min = triBucket.Key.mul(obj.meshCellSize);
+					Vector3 max = min + Vector3.one * obj.meshCellSize;
 					if (IntersectRayAABB(ray, min, max, 0, k_RayMax))
 					{
 						foreach (var tri in triBucket.Value)

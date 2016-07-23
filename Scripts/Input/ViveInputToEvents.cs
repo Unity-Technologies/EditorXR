@@ -29,8 +29,8 @@ public class ViveInputToEvents : MonoBehaviour
 			if (steamDeviceIndex == -1)
 			{
 				steamDeviceIndex = SteamVR_Controller.GetDeviceIndex(hand == VRInputDevice.Handedness.Left
-					 ? SteamVR_Controller.DeviceRelation.Leftmost
-					 : SteamVR_Controller.DeviceRelation.Rightmost);
+					? SteamVR_Controller.DeviceRelation.Leftmost
+					: SteamVR_Controller.DeviceRelation.Rightmost);
 
 				if (steamDeviceIndex == -1)
 					continue;
@@ -38,12 +38,12 @@ public class ViveInputToEvents : MonoBehaviour
 				active = true;
 
 				if (hand == VRInputDevice.Handedness.Left)
-					steamDeviceIndices[(int)hand] = steamDeviceIndex;
-				else if(steamDeviceIndex != steamDeviceIndices[(int)VRInputDevice.Handedness.Left]) // Do not assign device to right hand if it is same device as left hand
-					steamDeviceIndices[(int)hand] = steamDeviceIndex;
+					steamDeviceIndices[(int) hand] = steamDeviceIndex;
+				else if (steamDeviceIndex != steamDeviceIndices[(int) VRInputDevice.Handedness.Left]) // Do not assign device to right hand if it is same device as left hand
+					steamDeviceIndices[(int) hand] = steamDeviceIndex;
 				else
 					continue;
-			}
+			} else active = true;
 
 			int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
 			SendButtonEvents(steamDeviceIndex, deviceIndex);

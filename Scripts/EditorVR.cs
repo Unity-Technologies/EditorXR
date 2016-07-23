@@ -36,7 +36,8 @@ public class EditorVR : MonoBehaviour
 
 	private EventSystem m_EventSystem;
 	private MultipleRayInputModule m_InputModule;
-	private SpatialHasher m_SpatialHasher;
+	private SpatialHashUpdateModule m_SpatialHashUpdateModule;
+	private IntersectionModule m_IntersectionModule;
 	private Camera m_EventCamera;
 
 	private PlayerHandle m_PlayerHandle;
@@ -71,7 +72,7 @@ public class EditorVR : MonoBehaviour
 		CreateAllProxies();
 		CreateDeviceDataForInputDevices();
 		CreateEventSystem();
-		CreateSpatialHasher();
+		CreateSpatialSystem();
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
 		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
@@ -246,9 +247,10 @@ public class EditorVR : MonoBehaviour
 		UpdatePlayerHandleMaps();
 	}
 
-	private void CreateSpatialHasher() {
+	private void CreateSpatialSystem() {
 		// Create event system, input module, and event camera
-		m_SpatialHasher = U.Object.AddComponent<SpatialHasher>(gameObject);
+		m_SpatialHashUpdateModule = U.Object.AddComponent<SpatialHashUpdateModule>(gameObject);
+		m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
 
 		foreach (var proxy in m_AllProxies) {
 			foreach (var rayOriginBase in proxy.rayOrigins) {
@@ -259,7 +261,7 @@ public class EditorVR : MonoBehaviour
 						if (m_DeviceData.TryGetValue(device, out deviceData)) {
 
 							// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-							m_SpatialHasher.AddTester(rayOriginBase.Value);
+							m_IntersectionModule.AddTester(rayOriginBase.Value);
 						}
 						break;
 					}

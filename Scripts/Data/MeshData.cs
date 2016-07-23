@@ -59,7 +59,7 @@ namespace UnityEngine.VR.Data
 			{
 				Debug.LogWarning("Mesh data serialized with wrong version: " + dataVersion);
 			}
-			cellSize = info.GetSingle("cellSize");
+			cellSize = info.GetSingle("meshCellSize");
 			List<SerialKVP> tmpBuckets = (List<SerialKVP>) info.GetValue("triBuckets", typeof (List<SerialKVP>));
 			foreach (var tmpBucket in tmpBuckets)
 			{
@@ -156,28 +156,28 @@ namespace UnityEngine.VR.Data
 			if (m_SetupResume == null)
 			{
 				//NB: picking an object cell size is tough. Right now we assume unifrom distribution of vertices, which is obviously not consistent
-				//cellSize = (Mathf.Min(sceneObject.bounds.size.x, sceneObject.bounds.size.y, sceneObject.bounds.size.z) / (vertices.Length / 3)) * k_cellSizeFactor;
-				Vector3 size = Vector3.zero;
+				//meshCellSize = (Mathf.Min(sceneObject.bounds.size.x, sceneObject.bounds.size.y, sceneObject.bounds.size.z) / (vertices.Length / 3)) * k_cellSizeFactor;
+				Vector3 extents = Vector3.zero;
 				foreach (var vector3 in vertices)
 				{
 					Vector3 abs = new Vector3(
 						Mathf.Abs(vector3.x),
 						Mathf.Abs(vector3.y),
 						Mathf.Abs(vector3.z));
-					if (abs.x > size.x)
-						size.x = abs.x;
-					if (abs.y > size.y)
-						size.y = abs.y;
-					if (abs.z > size.z)
-						size.z = abs.z;
+					if (abs.x > extents.x)
+						extents.x = abs.x;
+					if (abs.y > extents.y)
+						extents.y = abs.y;
+					if (abs.z > extents.z)
+						extents.z = abs.z;
 				}
-				size *= 2;
+				Vector3 size = extents * 2;
 				float maxSideLength = Mathf.Max(size.x, size.y, size.z);
 				cellSize = Mathf.Pow(maxSideLength / vertices.Length, 0.333333f);
 				if (cellSize < k_minCellSize * maxSideLength)
 					cellSize = k_minCellSize * maxSideLength;
 
-				m_SetupResume = SpatializeLocal(cellSize, size * 0.5f, triangles);
+				m_SetupResume = SpatializeLocal(cellSize, extents, triangles);
 				yield return null;
 			}
 			while (m_SetupResume.MoveNext())
@@ -189,8 +189,8 @@ namespace UnityEngine.VR.Data
 
 		IEnumerator SpatializeLocal(float cellSize, Vector3 extents, int[] triangles)
 		{
-			IntVector3 lowerLeft = SpatialHasher.SnapToGrid(-extents - Vector3.one * cellSize * 0.5f, cellSize);
-			IntVector3 upperRight = SpatialHasher.SnapToGrid(extents + Vector3.one * cellSize * 0.5f, cellSize);
+			IntVector3 lowerLeft = SpatialHash.SnapToGrid(-extents - Vector3.one * cellSize * 0.5f, cellSize);
+			IntVector3 upperRight = SpatialHash.SnapToGrid(extents + Vector3.one * cellSize * 0.5f, cellSize);
 			IntVector3 diff = upperRight - lowerLeft + IntVector3.Identity;
 			m_TotalTris = diff.X * diff.Y * diff.Z * (long) triangles.Length / 3;
 			for (int x = lowerLeft.X; x <= upperRight.X; x++)
@@ -334,7 +334,7 @@ namespace UnityEngine.VR.Data
 				newBucket.AddRange(triBucket.Value.Select(tri => (SerialIV3) tri));
 			}
 			info.AddValue("triBuckets", tmpBuckets);
-			info.AddValue("cellSize", cellSize);
+			info.AddValue("meshCellSize", cellSize);
 			info.AddValue("dataVersion", k_DataVersion);
 		}
 

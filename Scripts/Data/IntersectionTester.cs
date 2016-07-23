@@ -25,9 +25,9 @@ namespace UnityEngine.VR.Data
 			this.rays = rays;
 		}
 
-		public Vector4i GetCell(float cellSize)
+		public Vector4i GetCell(SpatialHash hash)
 		{
-			return SpatialHasher.SnapToGrid(renderer.bounds.center + Vector3.one * cellSize * 0.5f, cellSize);
+			return hash.SnapToGrid(renderer.bounds.center + Vector3.one * hash.cellSize * 0.5f);
 		}
 
 		public static Mesh GenerateConeMesh(int segments, float radius, float height, out Ray[] rays)
