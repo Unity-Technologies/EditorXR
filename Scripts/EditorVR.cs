@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.VR.Modules;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -19,6 +20,7 @@ public class EditorVR : MonoBehaviour
 {
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
+	private const float kDefaultRayLength = 100f;
 	[SerializeField]
 	private ActionMap m_MenuActionMap;
 	[SerializeField]
@@ -28,7 +30,8 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
 	[SerializeField]
-	private VRLineRenderer m_PointerRayPrefab;
+	private DefaultProxyRay m_ProxyRayPrefab;
+	private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
 	private TrackedObject m_TrackedObjectInput;
 	private Default m_DefaultActionInput;
@@ -71,9 +74,11 @@ public class EditorVR : MonoBehaviour
 		CreateAllProxies();
 		CreateDeviceDataForInputDevices();
 		CreateEventSystem();
+
 		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
+
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
 		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
@@ -149,6 +154,27 @@ public class EditorVR : MonoBehaviour
 		if (Event.current.type == EventType.MouseMove)
 		{
 			m_PixelRaycastModule.UpdateRaycasts(m_AllProxies, m_EventCamera);
+			foreach (var proxy in m_AllProxies) // Set ray lengths based on renderer bounds
+			{
+				if (!proxy.active)
+					continue;
+				foreach (var rayOrigin in proxy.rayOrigins.Values)
+				{
+					var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+					var distance = kDefaultRayLength;
+					if (go != null)
+					{
+						var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+						var newDist = distance;
+						foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+						{
+							if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
+								distance = Mathf.Min(distance, newDist);
+						}
+					}
+					m_DefaultRays[rayOrigin].SetLength(distance);
+				}
+			}
 		}
 	}
 
@@ -242,9 +268,10 @@ public class EditorVR : MonoBehaviour
 			proxy.trackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
 			foreach (var rayOriginBase in proxy.rayOrigins)
 			{
-				var rayTransform = U.Object.InstantiateAndSetActive(m_PointerRayPrefab.gameObject, rayOriginBase.Value).transform;
+				var rayTransform = U.Object.InstantiateAndSetActive(m_ProxyRayPrefab.gameObject, rayOriginBase.Value).transform;
 				rayTransform.position = rayOriginBase.Value.position;
 				rayTransform.rotation = rayOriginBase.Value.rotation;
+				m_DefaultRays.Add(rayOriginBase.Value, rayTransform.GetComponent<DefaultProxyRay>());
 			}
 			m_AllProxies.Add(proxy);
 		}
