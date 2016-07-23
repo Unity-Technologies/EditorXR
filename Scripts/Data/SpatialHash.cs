@@ -7,18 +7,18 @@ namespace UnityEngine.VR.Data
 	public class SpatialHash
 	{
 		public bool cellSizeChanged { get; private set; }
-		float m_CellSize = 1f;
+		private float m_CellSize = 1f;
 		private float m_LastCellSize;
 		private bool m_Changes;
 		private const float kMinCellSize = 0.1f;
 
 		//Vector3 bucket represents center of cube with side-length m_CellSize
-		readonly Dictionary<Vector4i, List<SpatialObject>> m_SpatialDictionary = new Dictionary<Vector4i, List<SpatialObject>>();
-		readonly List<SpatialObject> m_AllObjects = new List<SpatialObject>();
+		private readonly Dictionary<Vector4i, List<SpatialObject>> m_SpatialDictionary = new Dictionary<Vector4i, List<SpatialObject>>();
+		private readonly List<SpatialObject> m_AllObjects = new List<SpatialObject>();
 
 		public bool changes
 		{
-			get { return false; }
+			get { return m_Changes; }
 		}
 
 		public float cellSize
@@ -81,6 +81,7 @@ namespace UnityEngine.VR.Data
 			return m_SpatialDictionary.TryGetValue(globalBucket, out intersections);
 		}
 
+		//Note: I want this to be private, but SpatialObject needs access to it
 		internal void AddObjectToBucket(Vector4i worldBucket, SpatialObject spatialObject)
 		{
 			List<SpatialObject> contents;
@@ -98,36 +99,42 @@ namespace UnityEngine.VR.Data
 			return spatialObject.AddToHash(this);
 		}
 
-		public void RemoveObject(Renderer obj) {
+		public void RemoveObject(Renderer obj)
+		{
 			SpatialObject spatial = null;
-			foreach (var spatialObject in m_AllObjects) {
+			foreach (var spatialObject in m_AllObjects)
+			{
 				spatial = spatialObject;
 			}
 			if (spatial != null)
 				RemoveObject(spatial);
 		}
 
-		public void RemoveObject(SpatialObject obj) {
+		public void RemoveObject(SpatialObject obj)
+		{
 			m_AllObjects.Remove(obj);
 			List<Vector4i> removeBuckets = obj.GetRemoveBuckets();
 			obj.ClearBuckets();
 			RemoveObjectFromBuckets(removeBuckets, obj);
 		}
 
-		internal void RemoveObjectFromBuckets(ICollection<Vector4i> buckets, SpatialObject spatialObject) {
+		private void RemoveObjectFromBuckets(ICollection<Vector4i> buckets, SpatialObject spatialObject)
+		{
 			foreach (var bucket in buckets)
 			{
 				RemoveObjectFromBucket(bucket, spatialObject);
 			}
 		}
-		internal void RemoveObjectFromBucket(Vector4i bucket, SpatialObject spatialObject) {
+
+		internal void RemoveObjectFromBucket(Vector4i bucket, SpatialObject spatialObject)
+		{
 			List<SpatialObject> contents;
-			if (m_SpatialDictionary.TryGetValue(bucket, out contents)) {
+			if (m_SpatialDictionary.TryGetValue(bucket, out contents))
+			{
 				contents.Remove(spatialObject);
 				if (contents.Count == 0)
 					m_SpatialDictionary.Remove(bucket);
 			}
 		}
-
 	}
 }

@@ -1,5 +1,4 @@
 ﻿using Mono.Simd;
-using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Data
 {
@@ -7,17 +6,16 @@ namespace UnityEngine.VR.Data
 	{
 		public Renderer renderer { get; private set; }
 		public Ray[] rays { get; private set; }
-		//public Material[] oldMaterials;				//Part of old intersection logic
 		public SpatialObject grabbed { get; set; }
 		public Transform oldParent { get; set; }
+
+		private bool m_Active = true;
 
 		public bool active
 		{
 			get { return m_Active && renderer.gameObject.activeInHierarchy; }
 			set { m_Active = value; }
 		}
-
-		private bool m_Active = true;
 
 		public IntersectionTester(Renderer renderer, Ray[] rays)
 		{

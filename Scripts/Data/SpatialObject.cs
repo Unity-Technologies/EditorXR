@@ -88,7 +88,7 @@ namespace UnityEngine.VR.Data
 
 			if (m_LastLowerLeft == lowerLeft && m_LastUpperRight == upperRight)
 				yield break;
-			//Optimization to only add/remove to m_Buckets that changed. Replaces hashset                           
+			//Optimization to only add/remove to m_Buckets that changed. Replaces hashset
 			List<IntVector3> removeBuckets = GetRemoveBuckets();
 			m_Buckets.Clear();
 			m_PositionOffset = hash.SnapToGrid(sceneObject.transform.position + Vector3.one * hash.cellSize * 0.5f);

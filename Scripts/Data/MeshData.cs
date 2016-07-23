@@ -8,7 +8,6 @@ using System.Threading;
 using UnityEditor;
 using IntVector3 = Mono.Simd.Vector4i;
 using System.Runtime.Serialization.Formatters.Binary;
-using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Data
