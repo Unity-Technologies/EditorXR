@@ -154,27 +154,7 @@ public class EditorVR : MonoBehaviour
 		if (Event.current.type == EventType.MouseMove)
 		{
 			m_PixelRaycastModule.UpdateRaycasts(m_AllProxies, m_EventCamera);
-			foreach (var proxy in m_AllProxies) // Set ray lengths based on renderer bounds
-			{
-				if (!proxy.active)
-					continue;
-				foreach (var rayOrigin in proxy.rayOrigins.Values)
-				{
-					var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
-					var distance = kDefaultRayLength;
-					if (go != null)
-					{
-						var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-						var newDist = distance;
-						foreach (var renderer in go.GetComponentsInChildren<Renderer>())
-						{
-							if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
-								distance = Mathf.Min(distance, newDist);
-						}
-					}
-					m_DefaultRays[rayOrigin].SetLength(distance);
-				}
-			}
+			UpdateDefaultProxyRays();
 		}
 	}
 
@@ -274,6 +254,32 @@ public class EditorVR : MonoBehaviour
 				m_DefaultRays.Add(rayOriginBase.Value, rayTransform.GetComponent<DefaultProxyRay>());
 			}
 			m_AllProxies.Add(proxy);
+		}
+	}
+
+	private void UpdateDefaultProxyRays()
+	{
+		// Set ray lengths based on renderer bounds
+		foreach (var proxy in m_AllProxies) 
+		{
+			if (!proxy.active)
+				continue;
+			foreach (var rayOrigin in proxy.rayOrigins.Values)
+			{
+				var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+				var distance = kDefaultRayLength;
+				if (go != null)
+				{
+					var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+					var newDist = distance;
+					foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+					{
+						if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
+							distance = Mathf.Min(distance, newDist);
+					}
+				}
+				m_DefaultRays[rayOrigin].SetLength(distance);
+			}
 		}
 	}
 

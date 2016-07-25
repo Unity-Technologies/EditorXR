@@ -46,9 +46,7 @@ public class HighlightModule : MonoBehaviour
 				m_HighlightCounts[go]--;
 
 			if (m_HighlightCounts[go] == 0)
-			{
 				m_HighlightCounts.Remove(go);
-			}
 		}
 	}
 }

@@ -96,13 +96,16 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 				// Multi-Select
 				if (m_SelectionInput.multiSelect.isHeld)
 				{
-					if (s_SelectedObjects.Contains(m_HoverGameObject)) // Remove from selection
+					
+					if (s_SelectedObjects.Contains(m_HoverGameObject))
 					{
+						// Already selected, so remove from selection
 						s_SelectedObjects.Remove(m_HoverGameObject);
 					}
 					else
 					{
-						s_SelectedObjects.Add(m_HoverGameObject); // Add to selection
+						// Add to selection
+						s_SelectedObjects.Add(m_HoverGameObject); 
 						Selection.activeGameObject = m_HoverGameObject;
 					}
 				}
