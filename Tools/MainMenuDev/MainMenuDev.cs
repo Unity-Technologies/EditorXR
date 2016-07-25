@@ -14,6 +14,8 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 		get; set;
 	}
 
+	public VRLineRenderer[] VrLineRenderers { get; set; }
+
 	public Func<GameObject, GameObject> InstantiateUI
 	{
 		private get; set;

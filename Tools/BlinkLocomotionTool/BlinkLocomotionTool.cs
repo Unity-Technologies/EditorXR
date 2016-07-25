@@ -1,209 +1,348 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
 
-public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, IRay, IStandardActionMap
+[ExecuteInEditMode]
+public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay, ICustomActionMap
 {
-    public Transform RayOrigin { get; set; }
+    #region Enums
+    public enum BlinkMode
+	{
+		Move = 0,
+		Fade = 1
+	}
 
-    // TODO: 
-    // TrackedObjectInput should probably be coming from an interface / setter in EditorVR. 
-    // My intention is to use TrackedObjectInput to be able to preview where the user's hands will be when the blink is executed. 
-    // Normally we'd use a ray transform to get the hand position, but in this case it's a one-handed tool (so only gets the one ray), 
-    // but we want to have the option to visualize both hands. 
-    public TrackedObject TrackedObjectInput { get; set; }
+	private enum State
+	{
+		Inactive = 0,
+		TransitioningIn = 1,
+		TransitioningOut = 2,
+        Moving = 3
+	}
+    #endregion
 
-    public Standard StandardInput { get; set; }
-
-    public Transform ViewerPivot
-    {
-        set
-        {
-            // TODO:
-            // We need a separate transform reference for body, with its origin at the ground / feet,
-            // so we can move the avatar to a spot on the ground (without moving their *head* into the ground!). 
-            // For the time being, I'm just setting BodyOrigin to the ViewerPivot.
-            m_ViewerPivot = value;
-            m_BodyOrigin = value;
-        }
-    }
+    #region Properties
+	public ActionMap ActionMap { get { return m_BlinkActionMap; } }
     
-    private Transform m_ViewerPivot;
+    public ActionMapInput ActionMapInput
+    {
+        get { return m_BlinkLocomotionInput; }
+        set { m_BlinkLocomotionInput = (BlinkLocomotion) value; }
+    }
 
-    private Plane m_DefaultGroundPlane;
+    public BlinkMode blinkMode { get { return m_BlinkMode; } set { value = m_BlinkMode; } }
 
-    private Transform m_BodyOrigin;
+    public List<VRLineRenderer> defaultProxyLineRenderers { get { return m_DefaultProxyLineRenderers; } set { m_DefaultProxyLineRenderers = value; } }
 
-    [Header("Settings")]
-    [Tooltip("Total fade time (fade in / fade out each take half this amount)")]
-    [SerializeField]
-    private float m_FadeTime = 0.5f;
-    [SerializeField]
-    private bool m_ShowHands = true;
-    [SerializeField]
-    private bool m_DoSmoothing = true;
-    [Tooltip("Lerp amount. Closer to 0 = smoother, closer to 1 = faster.")]
-    [Range(0f, 1f)]
-    [SerializeField]
-    private float m_IndicatorSmoothing = 0.2f;
-    [Header("References")]
+    public Transform RayOrigin { get { return m_RayOrigin; } set { m_RayOrigin = value; } }
+
+	public Transform ViewerPivot { set { m_ViewerPivot = value; } }
+    #endregion
+
+    #region Public Fields
+    public List<VRLineRenderer> m_DefaultProxyLineRenderers;
+    #endregion
+
+    #region Private Serialized Fields
     [SerializeField]
     private ActionMap m_BlinkActionMap;
     [SerializeField]
-    private GameObject m_BlinkArcRendererPrefab;
-    [Tooltip("UI plane that will be instantiated in front of the user's vision and provide the fade color.")]
+    private GameObject m_BlinkVisualsPrefab;
     [SerializeField]
-    private GameObject m_FadeImagePrefab;
-    [Header("Prefabs")]
+    private bool m_DoSmoothing = true;
+	[SerializeField]
+	private bool m_EnableFadeMode = false; // TODO: return fade support to the tool after locomotion is in
+    [SerializeField] [Tooltip("UI plane that will be instantiated in front of the user's vision and provide the fade color.")]
+	private GameObject m_FadeImagePrefab;
+    [SerializeField] [Tooltip("Total fade time (fade in / fade out each take half this amount)")]
+	private float m_FadeTime = 0.5f;
+	[SerializeField] [Range(0f, 1f)] [Tooltip("Lerp amount. Closer to 0 = smoother, closer to 1 = faster.")]
+	private float m_IndicatorSmoothing = 0.2f;
     [SerializeField]
-    private GameObject m_AvatarBaseIndicatorPrefab;
-    [SerializeField]
-    private GameObject m_AvatarHeadIndicatorPrefab;
-    [SerializeField]
-    private GameObject m_AvatarLeftControllerIndicatorPrefab; // TODO: We probably want this to just be fetched from the proxy / avatar rig.
-    [SerializeField]
-    private GameObject m_AvatarRightControllerIndicatorPrefab;
+    private VRLineRenderer m_CustomPointerRayPrefab;
+    #endregion
 
-    private Transform m_TrackingCenter;
-    private Transform m_FootIndicator;
-    private Transform m_HeadIndicator;
-    private Transform m_LeftControllerIndicator;
-    private Transform m_RightControllerIndicator;
+    #region Private Fields
+    private GameObject m_BlinkArcGO;
+	private BlinkVisuals m_BlinkVisuals;
+	private BlinkLocomotion m_BlinkLocomotionInput;
+    private BlinkMode m_BlinkMode = BlinkMode.Move;
     private RaycastHit m_BlinkTargetHit;
-    private RaycastHit m_HitBelowHead;
-    private bool m_WasOnGround;
-    private float m_StartingElevation;
+    private Plane m_DefaultGroundPlane;
     private Image m_FadeImage;
     private GameObject m_FadeImageGO;
-    private GameObject m_BlinkArcGO;
-    
+    private readonly Color m_FadeInColor = Color.black;
+	private readonly Color m_FadeOutColor = new Color(0f, 0f, 0f, 0f);
+    private float m_InitialDefaultLineRendererWidth;
+    private readonly Color m_InvalidTargetColor = new Color(1f, 0.25f, 0.25f, 0.125f);
+    private float m_MovementSpeed = 8f;
+    private Vector3 m_OriginalTipScale;
+	private Transform[] m_PointerTips;
+	private Transform m_RayOrigin;
+	private Transform m_RoomScale;
+    private float m_StartingElevation;
+	private State m_State = State.Inactive;
+    private Transform m_TrackingCenter;
+	private Transform m_ViewerPivot;
+    #endregion
+
+    #region Initialization & LifeCycle
     void Start()
     {
+        Debug.LogWarning("<color=yellow>TODO: Remove all FADE functionality/references/etc, support only movement to destination point.</color>");
+        Debug.LogWarning("<color=orange>TODO: Fix multiple BlinkVisuals bein created at root of hierarchy when spawning Blink!</color>");
+        Debug.Log("TODO: Optimization pass on blink.");
+        Debug.Log("TODO: Perform Unity-style code formatting/cleanups");
         // Creating a default plane to raycast against, so that the user can blink around without having to create a ground first. 
-        m_DefaultGroundPlane = new Plane(Vector3.up, Vector3.zero);
-        
+        m_DefaultGroundPlane = new Plane(Vector3.up, 0);
         m_FadeTime = m_FadeTime / 2f; // Fade in/out are each half of the total.
         m_ViewerPivot = transform; // TODO: remove, just to get compiling and testing
-        m_StartingElevation = m_ViewerPivot.position.y;
-        m_TrackingCenter = new GameObject("Tracking Center Indicator").transform;
-        m_FootIndicator = Instantiate(m_AvatarBaseIndicatorPrefab).transform;
-        m_HeadIndicator = Instantiate(m_AvatarHeadIndicatorPrefab).transform;
-        // Parent other indicators to the trackingCenter xform so that we don't have to position (and smooth) each of them;
-        // we can just adjust local position for head height etc.
-        m_FootIndicator.parent = m_TrackingCenter; 
-        m_HeadIndicator.parent = m_TrackingCenter;
-        if (m_ShowHands)
-        {
-            m_LeftControllerIndicator = Instantiate(m_AvatarLeftControllerIndicatorPrefab).transform;
-            m_RightControllerIndicator = Instantiate(m_AvatarRightControllerIndicatorPrefab).transform;
-            m_LeftControllerIndicator.parent = m_TrackingCenter;
-            m_RightControllerIndicator.parent = m_TrackingCenter;
-            m_LeftControllerIndicator.localPosition = m_RightControllerIndicator.localPosition = Vector3.zero;
-        }
-        m_HeadIndicator.localPosition = Vector3.zero;
-        HideIndicator();
-
-        m_BlinkArcGO = Instantiate(m_BlinkArcRendererPrefab);
-        m_BlinkArcGO.transform.parent = RayOrigin;
+	    m_StartingElevation = m_ViewerPivot.position.y;
+		m_TrackingCenter = U.Object.CreateEmptyGameObject("Blink Tracking Center Indicator", m_ViewerPivot).transform;
+		
+        m_BlinkArcGO = U.Object.InstantiateAndSetActive(m_BlinkVisualsPrefab);
+		m_BlinkVisuals = m_BlinkArcGO.GetComponentInChildren<BlinkVisuals>();
+		m_BlinkVisuals.ValidTargetFound += ValidTargetFound;
+		m_BlinkArcGO.transform.parent = RayOrigin;
         m_BlinkArcGO.transform.localPosition = Vector3.zero;
-        m_BlinkArcGO.SetActive(false);
+		m_BlinkArcGO.transform.localRotation = Quaternion.identity;
+        
+        m_FadeImageGO = U.Object.InstantiateAndSetActive(m_FadeImagePrefab);
+        m_FadeImageGO.transform.SetParent(m_ViewerPivot.transform);
+        m_FadeImageGO.transform.position = Vector3.zero + m_ViewerPivot.forward * 0.1f;
+        m_FadeImage = m_FadeImageGO.GetComponentInChildren<Image>();
+	    m_FadeImage.color = m_FadeOutColor; // set initial color to fully transparent black
+		m_FadeImage.gameObject.SetActive(false);
+		m_PointerTips = transform.GetComponentsInChildren<Transform>().Where( x => x.gameObject.name == "Tip").ToArray();
+		m_OriginalTipScale = m_PointerTips[0].localScale;
 
-        // Create the UI element that does the fading. 
-        // TODO: 
-        // This should probably be a static piece of the avatar rig rather than created by this tool.
-        // We should also look into alternate methods for doing fades - maybe using the SDK-specific 
-        // fades for platforms that support it, and fall back to a method like this for those that don't.
-        m_FadeImageGO = Instantiate(m_FadeImagePrefab);
-        m_FadeImageGO.transform.position = m_ViewerPivot.position + m_ViewerPivot.forward * 0.1f;
-        m_FadeImageGO.transform.parent = m_ViewerPivot;
-        m_FadeImage = m_FadeImagePrefab.GetComponent<Image>();
+        m_InitialDefaultLineRendererWidth = m_CustomPointerRayPrefab.WidthStart;
     }
+
+	private void OnDisable()
+	{
+		if (m_BlinkVisuals)
+			m_BlinkVisuals.ValidTargetFound -= ValidTargetFound;
+
+		m_State = State.Inactive;
+	}
     
-    // Clean up objects when the tool is deactivated -- assuming that removing a tool from its stack destroys the component.
-    // TODO: Pool these objects, rather than creating and destroying them with the tool.
     void OnDestroy()
     {
-        Destroy(m_TrackingCenter.gameObject);
-        Destroy(m_BlinkArcGO);
-        Destroy(m_FadeImageGO);
+        if (m_FadeImageGO != null)
+            GameObject.DestroyImmediate(m_FadeImageGO);
+
+        // Re-enable the default VRLineRenderers from the proxy
+        if (defaultProxyLineRenderers != null && defaultProxyLineRenderers.Count > 0)
+            foreach (var vrLineRenderer in defaultProxyLineRenderers)
+                vrLineRenderer.SetWidth(m_InitialDefaultLineRendererWidth, m_InitialDefaultLineRendererWidth);
     }
+    #endregion
+
+    #region Interface Implementation
+    public void ShowDefaultProxyRays()
+    {
+        if (defaultProxyLineRenderers != null && defaultProxyLineRenderers.Count > 0)
+            foreach (var vrLineRenderer in defaultProxyLineRenderers)
+                vrLineRenderer.gameObject.SetActive(true);
+    }
+
+    public void HideDefaultProxyRays()
+    {
+        Debug.LogWarning("<color=yellow>FINISH IMPLEMENTING HIDING OF DEFAULT PROXY RAYS, and ENABLING(for anim) THE TOOL's Custom proxy rays!</color>");
+        //if (defaultProxyLineRenderers != null && defaultProxyLineRenderers.Count > 0)
+        //    foreach (var vrLineRenderer in defaultProxyLineRenderers)
+        //        vrLineRenderer.gameObject.SetActive(false);
+    }
+    #endregion
 
     void Update()
     {
-        if (StandardInput.action.wasJustPressed)
+        if (m_State == State.Moving)
+            return;
+
+        if (m_EnableFadeMode)
+            return; // TODO: refactor fade mode after locomotion is in and working
+
+        if (m_BlinkLocomotionInput.blink.wasJustPressed)
         {
-            m_BlinkArcGO.SetActive(true);
-        }
-        else if (StandardInput.action.isHeld)
+            HideCustomRay();
+            m_BlinkVisuals.ShowVisuals();
+		}
+        else if (m_BlinkLocomotionInput.blink.isHeld)
         {
             Ray ray = new Ray(RayOrigin.position, RayOrigin.forward);
             float rayDistance;
             if (m_DefaultGroundPlane.Raycast(ray, out rayDistance))
             {
-                Vector3 offset = m_BodyOrigin.position - m_HitBelowHead.point;
-                offset.y = m_StartingElevation - (m_ViewerPivot.position.y - m_HitBelowHead.point.y);
+                Vector3 offset = m_ViewerPivot.position;
+                offset.y = m_StartingElevation - m_ViewerPivot.position.y;
                 m_TrackingCenter.position = m_BlinkTargetHit.point;
-                m_FootIndicator.localPosition = m_HitBelowHead.point;
-                m_HeadIndicator.localPosition = m_ViewerPivot.position - m_HitBelowHead.point;
-                m_HeadIndicator.rotation = m_ViewerPivot.rotation;
-                if (m_ShowHands)
-                {
-                    m_LeftControllerIndicator.localPosition = TrackedObjectInput.leftPosition.vector3 - m_HitBelowHead.point;
-                    m_LeftControllerIndicator.rotation = TrackedObjectInput.leftRotation.quaternion;
-                    m_RightControllerIndicator.localPosition = TrackedObjectInput.rightPosition.vector3 - m_HitBelowHead.point;
-                    m_RightControllerIndicator.rotation = TrackedObjectInput.rightRotation.quaternion;
-                }
                 if (m_DoSmoothing)
-                {
-                    m_TrackingCenter.position = !m_WasOnGround
-                        ? m_BlinkTargetHit.point
-                        : Vector3.Lerp(m_TrackingCenter.position, m_BlinkTargetHit.point, m_IndicatorSmoothing);
-                }
+                    m_TrackingCenter.position = Vector3.Lerp(m_TrackingCenter.position, m_BlinkTargetHit.point, m_IndicatorSmoothing);
                 else
-                {
                     m_TrackingCenter.position = m_BlinkTargetHit.point;
-                }
-                m_WasOnGround = true;
-
-            }
-            else
-            {
-                m_WasOnGround = false;
-                HideIndicator();
             }
         }
-        else if (StandardInput.action.wasJustReleased)
+        else if (m_BlinkLocomotionInput.blink.wasJustReleased && m_State != State.Moving)
         {
-            m_BlinkArcGO.SetActive(false);
-            if (m_WasOnGround)
-            {
-                StartCoroutine(FadeAndTeleport());
-            }
+			m_BlinkVisuals.HideVisuals();
+
+            if (m_State == State.TransitioningIn)
+                ShowCustomRay();
         }
     }
-    
-    // TODO: Fade should be a common/U method, perhaps with a delegate to execute during the blackout.
-    private IEnumerator FadeAndTeleport()
+	
+	/// <summary>
+	/// Method called when a valid target location is found
+	/// </summary>
+	/// <param name="targetPosition">Target location at which to position the player</param>
+	private void ValidTargetFound(Vector3 targetPosition)
+	{
+	    if (m_State != State.Moving)
+	    {
+	        switch (m_BlinkMode)
+	        {
+	            case BlinkMode.Move:
+	                StartCoroutine(MoveTowardTarget(targetPosition));
+	                break;
+	            case BlinkMode.Fade:
+	                StartCoroutine(FadeAndTeleport());
+	                break;
+	        }
+	    }
+	}
+
+    private IEnumerator MoveTowardTarget(Vector3 targetPosition)
     {
+        m_State = State.Moving;
+        m_BlinkVisuals.HideVisuals(false);
+        ShowCustomRay();
+
+        targetPosition = new Vector3(targetPosition.x, m_ViewerPivot.position.y, targetPosition.z);
+        while ((m_ViewerPivot.position - targetPosition).magnitude > 0.1f)
+        {
+            m_ViewerPivot.position = Vector3.Lerp(m_ViewerPivot.position, targetPosition, Time.unscaledDeltaTime * m_MovementSpeed);
+            yield return null;
+        }
+        
+        //yield return new WaitForSeconds(0.5f);
+
+        m_State = State.Inactive;
+    }
+	
+	private IEnumerator FadeAndTeleport()
+    {
+	    bool validTarget = m_BlinkVisuals.validTarget;
+	    Color fadeInColor = validTarget ? m_FadeInColor : m_InvalidTargetColor;
+	    float easeDivider = validTarget ? 3f : 2f;
+
+		Debug.LogWarning("Fading Blink overlay!");
         m_FadeImage.gameObject.SetActive(true);
-        m_FadeImage.CrossFadeAlpha(0, 0, false);
-        m_FadeImage.CrossFadeAlpha(1, m_FadeTime, false);
-        yield return new WaitForSeconds(m_FadeTime);
-        Vector3 pos = m_TrackingCenter.position + (m_BodyOrigin.position - m_ViewerPivot.position);
-        pos.y = m_StartingElevation;
-        m_BodyOrigin.position = pos;
-        m_WasOnGround = false;
-        HideIndicator();
-        m_FadeImage.CrossFadeAlpha(0, m_FadeTime, false);
-        yield return new WaitForSeconds(m_FadeTime);
+	    
+		float fadeAmount = 0f;
+	    while (fadeAmount < 1)
+	    {
+		    fadeAmount = U.Math.Ease(fadeAmount, 1f, easeDivider, 0.05f);
+		    m_FadeImage.color = Color.Lerp(m_FadeOutColor, fadeInColor, fadeAmount);
+		    yield return null;
+	    }
+
+	    fadeAmount = 1f;
+		m_FadeImage.color = Color.Lerp(m_FadeOutColor, fadeInColor, fadeAmount);
+		
+	    if (validTarget)
+	    {
+			Vector3 pos = m_TrackingCenter.position + m_ViewerPivot.position;
+		    pos = m_BlinkVisuals.locatorPosition;
+		    pos.y = 1.7f; // m_StartingElevation;  TODO: set back to starting elevation later
+            m_ViewerPivot.position = pos;
+	    }
+
+	    easeDivider *= 2;
+
+        ShowCustomRay();
+
+        while (fadeAmount > 0)
+		{
+			fadeAmount = U.Math.Ease(fadeAmount, 0f, easeDivider, 0.05f);
+			m_FadeImage.color = Color.Lerp(m_FadeOutColor, fadeInColor, fadeAmount);
+			yield return null;
+		}
+
         m_FadeImage.gameObject.SetActive(false);
     }
 
-    private void HideIndicator()
+    #region Custom Pointer Rays Control
+    public void ShowCustomRay()
     {
-        m_TrackingCenter.position = Vector3.down * 10000;
+        StartCoroutine(ShowCustomPointerRays());
     }
+
+    public void HideCustomRay()
+    {
+        StartCoroutine(HideCustomPointerRays());
+    }
+
+	private IEnumerator HideCustomPointerRays()
+	{
+        if (m_State != State.Moving)
+		    m_State = State.TransitioningIn;
+
+		foreach (var tip in m_PointerTips)
+			tip.localScale = Vector3.zero;
+
+        // cache current width for smooth animation to target value without snapping
+        float currentWidth = defaultProxyLineRenderers[0].WidthStart;
+		while ((m_State == State.TransitioningIn || m_State == State.Moving) && currentWidth > 0)
+		{
+			foreach (var pointerRayRenderer in defaultProxyLineRenderers)
+			{
+				currentWidth = U.Math.Ease(currentWidth, 0f, 3, 0.0005f);
+				pointerRayRenderer.SetWidth(currentWidth, currentWidth);
+			}
+			yield return null;
+		}
+
+        if (m_State == State.TransitioningIn || m_State == State.Moving)
+            foreach (var pointerRayRenderer in defaultProxyLineRenderers)
+                pointerRayRenderer.SetWidth(0, 0);
+    }
+
+	private IEnumerator ShowCustomPointerRays()
+	{
+        if (m_State != State.Moving)
+            m_State = State.TransitioningOut;
+
+        float currentWidth = defaultProxyLineRenderers[0].WidthStart;
+		
+		foreach (var tip in m_PointerTips)
+			tip.localScale = m_OriginalTipScale;
+
+		while ((m_State == State.TransitioningOut || m_State == State.Moving) && currentWidth < m_InitialDefaultLineRendererWidth)
+		{
+			currentWidth = U.Math.Ease(currentWidth, m_InitialDefaultLineRendererWidth, 5, 0.0005f);
+			foreach (var pointerRayRenderer in defaultProxyLineRenderers)
+				pointerRayRenderer.SetWidth(currentWidth, currentWidth);
+
+			yield return null;
+		}
+
+        // only set the value if another transition hasn't begun
+	    if (m_State == State.TransitioningOut)
+	    {
+	        m_State = State.Inactive;
+            foreach (var pointerRayRenderer in defaultProxyLineRenderers)
+                pointerRayRenderer.SetWidth(m_InitialDefaultLineRendererWidth, m_InitialDefaultLineRendererWidth);
+        }
+        else if (m_State == State.Inactive)
+            foreach (var pointerRayRenderer in defaultProxyLineRenderers)
+                pointerRayRenderer.SetWidth(m_InitialDefaultLineRendererWidth, m_InitialDefaultLineRendererWidth);
+    }
+    #endregion
 }

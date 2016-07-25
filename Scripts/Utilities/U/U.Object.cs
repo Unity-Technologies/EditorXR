@@ -37,6 +37,9 @@
 
             public static GameObject InstantiateAndSetActive(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true)
             {
+                if (prefab != null)
+                {
+                    ;}
                 GameObject go = UObject.Instantiate(prefab);
                 go.transform.SetParent(parent, worldPositionStays);
                 go.SetActive(true);

@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
+using UnityEngine.VR;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -63,8 +64,13 @@ public class EditorVR : MonoBehaviour
 	private void Awake()
     {
         VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
-        VRView.viewerPivot.localPosition = Vector3.zero; // HACK reset pivot to match steam origin
-        InitializePlayerHandle();
+	    if (VRSettings.loadedDeviceName == "OpenVR")
+	    {
+	        VRView.viewerPivot.localPosition = Vector3.zero;
+	            // HACK reset pivot to match steam origin.  TODO: only perform this if SteamVR is currently active.
+	        Debug.LogError("<color=green>" + VRSettings.loadedDeviceName + "</color>");
+	    }
+	    InitializePlayerHandle();
         CreateDefaultActionMapInputs();
         CreateAllProxies();
         CreateDeviceDataForInputDevices();
@@ -89,7 +95,7 @@ public class EditorVR : MonoBehaviour
 	}
 
 	private IEnumerator Start()
-	{
+	{   
 		// Delay until at least one proxy initializes
 		bool proxyActive = false;
 		while (!proxyActive)
@@ -107,20 +113,16 @@ public class EditorVR : MonoBehaviour
 		}
 
 		// HACK: U.AddComponent doesn't work properly from an IEnumerator (missing default references when spawned), so currently
-		// it's necessary to spawn the tools in a separate non-IEnumerator context.
 		EditorApplication.delayCall += () =>
 		{
-		    HashSet<InputDevice> devices;
-            var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
-            AddToolToDeviceData(tool, devices);
-
-			// HACK
-			tool = SpawnTool(typeof(BlinkLocomotionToolEVR), out devices);
-			AddToolToDeviceData(tool, devices);
-
-			// HACK
-			VRView.viewerPivot.localPosition = new Vector3(0f, 1.7f, 0f); // HACK: just here to initially offset the height of the cam & input for devices without positional head tracking (hydra).  Oculus & Vive testing soon.  Remove later
-		};
+            // Spawn Blink Locomotion Tool on both hands
+		    foreach (var device in m_DeviceData.Keys)
+		    {
+                HashSet<InputDevice> devices;
+		        var blinkTool = SpawnTool(typeof(BlinkLocomotionTool), out devices, device);
+                AddToolToDeviceData(blinkTool, devices);
+		    }
+        };
 	}
 
 	private void OnDestroy()
@@ -151,7 +153,7 @@ public class EditorVR : MonoBehaviour
 					EditorApplication.delayCall += () =>
 					{
 						SpawnMainMenu(typeof(MainMenuDev), device);
-					};
+                    };
 				}
 			}
 		}
@@ -203,12 +205,12 @@ public class EditorVR : MonoBehaviour
         foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
         {
             IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
-		    proxy.TrackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
+            proxy.TrackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
             foreach (var rayOriginBase in proxy.RayOrigins)
             {
                 var rayTransform = U.Object.InstantiateAndSetActive(m_PointerRayPrefab.gameObject, rayOriginBase.Value).transform;
-                rayTransform.position = rayOriginBase.Value.position;
-                rayTransform.rotation = rayOriginBase.Value.rotation;
+                rayTransform.localPosition = Vector3.zero;
+                rayTransform.localRotation = Quaternion.identity;
             }
 			m_AllProxies.Add(proxy);
         }
@@ -354,43 +356,35 @@ public class EditorVR : MonoBehaviour
 			usedDevices.UnionWith(customMap.ActionMapInput.GetCurrentlyUsedDevices());
 			U.Input.CollectSerializableTypesFromActionMapInput(customMap.ActionMapInput, ref serializableTypes);
 		}
-		 
-		#region Temp Code Hack
-		var blinkLocomotionTool = tool as BlinkLocomotionToolEVR; // TODO: remove if not needed
-		if (blinkLocomotionTool != null)
-		{
-			blinkLocomotionTool.ViewerPivot = VRView.viewerPivot; // HACK: Setup proper pivot handling
-			
-			foreach (var proxy in m_AllProxies)
-			{
-				if (proxy.Active) //proxy.Active)
-				{
-					// TODO: setup proper tag handling
-					
-					var tag = "Left"; // TODO: remove, just making 0 for testing
-					Node node;// = Node.LeftHand;
-					if (m_TagToNode.TryGetValue(tag, out node))
-					{
-						Transform rayOrigin;
-						if (proxy.RayOrigins.TryGetValue(node, out rayOrigin))
-						{
-							blinkLocomotionTool.RayOrigin = rayOrigin;
-							break;
-						}
-					}
-				}
-			}
-		}
-		#endregion
-		
-		ConnectInterfaces(tool, device);        	
+
+		ConnectInterfaces(tool, device);
 		return tool;
 	}
 
 	private void AddToolToDeviceData(ITool tool, HashSet<InputDevice> devices)
 	{
-		foreach (var dev in devices)
-			AddToolToStack(dev, tool);
+	    foreach (var dev in devices)
+	        AddToolToStack(dev, tool);
+
+        // ICustomRay-specific proxy ray setting
+        var iCustomRay = tool as ICustomRay;
+	    if (iCustomRay != null)
+	    {
+	        var proxyVRLineRenderers = new List<VRLineRenderer>();
+            foreach (var proxy in m_AllProxies)
+	        {
+                // TODO: Currently only add for active proxy.  Future, add support for updating the collection when new proxies become active.
+                if (proxy != null && proxy.Active && proxy.RayOrigins != null && proxy.RayOrigins.Values.Any())
+	                foreach (var rayOrigin in proxy.RayOrigins)
+	                    proxyVRLineRenderers.Add(rayOrigin.Value.GetComponentInChildren<VRLineRenderer>());
+	        }
+	        if (proxyVRLineRenderers.Count > 0)
+	        {
+	            iCustomRay.defaultProxyLineRenderers = proxyVRLineRenderers;
+                // TODO: Implement ShowDefaultProxyRays() when the tool is removed from the stack
+                iCustomRay.HideDefaultProxyRays();
+	        }
+	    }
 	}
 
 	private void SpawnMainMenu(Type type, InputDevice device)
@@ -408,7 +402,7 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void ConnectInterfaces(object obj, InputDevice device = null)
+    private void ConnectInterfaces(object obj, InputDevice device = null)
 	{
 		if (device != null)
 		{
@@ -444,7 +438,7 @@ public class EditorVR : MonoBehaviour
 		var instantiateUITool = obj as IInstantiateUI;
 		if (instantiateUITool != null)
 			instantiateUITool.InstantiateUI = InstantiateUI;
-	}
+    }
 
 	private InputDevice GetInputDeviceForTool(ITool tool)
 	{

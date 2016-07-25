@@ -16,7 +16,9 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
         get; set;
     }
 
-    public Func<GameObject, GameObject> InstantiateUI
+	public VRLineRenderer[] VrLineRenderers { get; set; }
+
+	public Func<GameObject, GameObject> InstantiateUI
     {
         private get; set;
     }

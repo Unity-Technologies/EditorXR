@@ -6,5 +6,4 @@ public class Standard : ActionMapInput {
 	public Standard (ActionMap actionMap) : base (actionMap) { }
 	
 	public ButtonInputControl @action { get { return (ButtonInputControl)this[0]; } }
-	public ButtonInputControl @blink { get { return (ButtonInputControl)this[1]; } }
 }

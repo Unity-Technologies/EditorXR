@@ -91,22 +91,26 @@ namespace UnityEngine.VR.Proxies
 
                 CurrentPoint[i] = GetRayIntersection(i); // Check all currently running raycasters
 
-                HandlePointerExitAndEnter(PointEvents[i], CurrentPoint[i]); // Send enter and exit events
+                if (PointEvents != null && i < PointEvents.Count && PointEvents[i] != null)
+                {
+                    HandlePointerExitAndEnter(PointEvents[i], CurrentPoint[i]); // Send enter and exit events
 
-                // Activate actionmap input only if pointer is interacting with something
-                m_RaycastSources[i].actionMapInput.active = CurrentPoint[i] != null || CurrentPressed[i] != null || CurrentDragging[i] != null;
-                if (!m_RaycastSources[i].actionMapInput.active)
-                    continue;
+                    // Activate actionmap input only if pointer is interacting with something
+                    m_RaycastSources[i].actionMapInput.active = CurrentPoint[i] != null || CurrentPressed[i] != null ||
+                                                                CurrentDragging[i] != null;
+                    if (!m_RaycastSources[i].actionMapInput.active)
+                        continue;
 
-                //Send select pressed and released events
-                if (m_RaycastSources[i].actionMapInput.select.wasJustPressed)
-                    OnSelectPressed(i);
+                    //Send select pressed and released events
+                    if (m_RaycastSources[i].actionMapInput.select.wasJustPressed)
+                        OnSelectPressed(i);
 
-                if (m_RaycastSources[i].actionMapInput.select.wasJustReleased)
-                    OnSelectReleased(i);
+                    if (m_RaycastSources[i].actionMapInput.select.wasJustReleased)
+                        OnSelectReleased(i);
 
-                if (CurrentDragging[i] != null)
-                    ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteEvents.dragHandler);
+                    if (CurrentDragging[i] != null)
+                        ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteEvents.dragHandler);
+                }
             }
         }
 
@@ -190,15 +194,17 @@ namespace UnityEngine.VR.Proxies
             else
                 PointEvents[i].Reset();
 
-            PointEvents[i].delta = Vector2.zero;
-            PointEvents[i].position = m_EventCamera.pixelRect.center;
-            PointEvents[i].scrollDelta = Vector2.zero;
+            if (PointEvents != null && i < PointEvents.Count && PointEvents[i] != null)
+            {
+                PointEvents[i].delta = Vector2.zero;
+                PointEvents[i].position = m_EventCamera.pixelRect.center;
+                PointEvents[i].scrollDelta = Vector2.zero;
 
-            List<RaycastResult> results = new List<RaycastResult>();
-            eventSystem.RaycastAll(PointEvents[i], results);
-            PointEvents[i].pointerCurrentRaycast = FindFirstRaycast(results);
-            hit = PointEvents[i].pointerCurrentRaycast.gameObject;
-
+                List<RaycastResult> results = new List<RaycastResult>();
+                eventSystem.RaycastAll(PointEvents[i], results);
+                PointEvents[i].pointerCurrentRaycast = FindFirstRaycast(results);
+                hit = PointEvents[i].pointerCurrentRaycast.gameObject;
+            }
             m_RaycastResultCache.Clear();
             return hit;
         }

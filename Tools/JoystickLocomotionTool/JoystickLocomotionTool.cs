@@ -21,14 +21,14 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustom
 
 	public Transform ViewerPivot
 	{
-		set { m_ViewerPivot = value; }
+		set { m_ViewerPivot = value;}
 	}
 
 	[Header("Settings")]
 	[SerializeField]
 	private float m_MoveSpeed = 1f;
 	[SerializeField]
-	private float m_TurnSpeed = 30f;
+	private float m_TurnSpeed = 60f;
 
 	[Header("References")]
 	[SerializeField]
