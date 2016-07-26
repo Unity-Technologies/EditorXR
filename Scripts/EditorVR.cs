@@ -115,24 +115,7 @@ public class EditorVR : MonoBehaviour
 
 			yield return null;
 		}
-		// HACK: U.AddComponent doesn't work properly from an IEnumerator (missing default references when spawned), so currently
-		// it's necessary to spawn the tools in a separate non-IEnumerator context.
-		EditorApplication.delayCall += () =>
-		{
-			HashSet<InputDevice> devices;
-			var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
-			AddToolToDeviceData(tool, devices);
-
-			// Spawn selection tools by default 
-			foreach (var deviceData in m_DeviceData)
-			{
-				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
-				if (deviceData.Key.TagIndex == -1)
-					continue;
-				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
-				AddToolToDeviceData(tool, devices);
-			}
-		};
+		SpawnDefaultTools();
 	}
 
 	private void OnEnable()
@@ -240,6 +223,28 @@ public class EditorVR : MonoBehaviour
 		UpdatePlayerHandleMaps();
 	}
 
+	private void SpawnDefaultTools()
+	{
+		// HACK: U.AddComponent doesn't work properly from an IEnumerator (missing default references when spawned), so currently
+		// it's necessary to spawn the tools in a separate non-IEnumerator context.
+		EditorApplication.delayCall += () =>
+		{
+			HashSet<InputDevice> devices;
+			var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
+			AddToolToDeviceData(tool, devices);
+
+			// Spawn selection tools by default 
+			foreach (var deviceData in m_DeviceData)
+			{
+				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
+				if (deviceData.Key.TagIndex == -1)
+					continue;
+				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+				AddToolToDeviceData(tool, devices);
+			}
+		};
+	}
+
 	private void CreateAllProxies()
 	{
 		foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
@@ -289,6 +294,7 @@ public class EditorVR : MonoBehaviour
 		m_EventSystem = U.Object.AddComponent<EventSystem>(gameObject);
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+		m_EventCamera.enabled = false;
 		m_InputModule.eventCamera = m_EventCamera;
 
 		foreach (var proxy in m_AllProxies)

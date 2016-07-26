@@ -18,7 +18,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 	private GameObject m_HoverGameObject;
 	private DateTime m_LastSelectTime;
 
-	private static GameObject s_CurrentPrefabRoot;
+	private static GameObject s_CurrentPrefabOpened; // The prefab (if any) that was double clicked, whose individual pieces can be selected
 
 	public ActionMap actionMap { get { return m_ActionMap; } }
 	[SerializeField]
@@ -55,12 +55,12 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 		}
 
 		var newHoverGameObject = getFirstGameObject(rayOrigin);
-
+		var newPrefabRoot = newHoverGameObject;
 		if (newHoverGameObject != null)
 		{
 			// If gameObject is within a prefab and not the current prefab, choose prefab root
-			var newPrefabRoot = PrefabUtility.FindPrefabRoot(newHoverGameObject);
-			if (newPrefabRoot != s_CurrentPrefabRoot)
+			newPrefabRoot = PrefabUtility.FindPrefabRoot(newHoverGameObject);
+			if (newPrefabRoot != s_CurrentPrefabOpened)
 				newHoverGameObject = newPrefabRoot;
 		}
 
@@ -84,14 +84,14 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 			m_LastSelectTime = DateTime.Now;
 			if (timeSinceLastSelect < kDoubleClickIntervalMax && timeSinceLastSelect > kDoubleClickIntervalMin)
 			{
-				s_CurrentPrefabRoot = m_HoverGameObject;
-				s_SelectedObjects.Remove(s_CurrentPrefabRoot);
+				s_CurrentPrefabOpened = m_HoverGameObject;
+				s_SelectedObjects.Remove(s_CurrentPrefabOpened);
 			}
 			else
 			{
 				// Reset current prefab if selecting outside of it
-				if (PrefabUtility.FindPrefabRoot(m_HoverGameObject) != s_CurrentPrefabRoot)
-					s_CurrentPrefabRoot = null;
+				if (newPrefabRoot != s_CurrentPrefabOpened)
+					s_CurrentPrefabOpened = null;
 
 				// Multi-Select
 				if (m_SelectionInput.multiSelect.isHeld)
