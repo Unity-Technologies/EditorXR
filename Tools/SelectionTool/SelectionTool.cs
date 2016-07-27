@@ -18,7 +18,8 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 	private GameObject m_HoverGameObject;
 	private DateTime m_LastSelectTime;
 
-	private static GameObject s_CurrentPrefabOpened; // The prefab (if any) that was double clicked, whose individual pieces can be selected
+	// The prefab (if any) that was double clicked, whose individual pieces can be selected
+	private static GameObject s_CurrentPrefabOpened; 
 
 	public ActionMap actionMap { get { return m_ActionMap; } }
 	[SerializeField]
