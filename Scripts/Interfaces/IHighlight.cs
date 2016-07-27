@@ -8,6 +8,5 @@ namespace UnityEngine.VR.Tools
 	public interface IHighlight
 	{
 		Action<GameObject, bool> setHighlight { set; }
-
 	}
 }

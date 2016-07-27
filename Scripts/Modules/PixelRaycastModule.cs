@@ -15,6 +15,11 @@ namespace UnityEditor.VR.Modules
 
 		public Transform ignoreRoot { get; set; }
 
+		/// <summary>
+		/// Must be called from OnGUI. Does raycast from all ray origins in the given proxies that are active.
+		/// </summary>
+		/// <param name="proxies"></param> List of proxies to raycast from
+		/// <param name="camera"></param> Camera to use for pixel based raycast (will be moved to the proxies' ray origins
 		public void UpdateRaycasts(List<IProxy> proxies, Camera camera)
 		{
 			UpdateIgnoreList();
