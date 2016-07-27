@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine.VR.Utilities;
 using UnityEngine;
 using UnityEngine.Events;
@@ -36,6 +37,27 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 		}
 		m_MenuCanvas.transform.SetParent(rayOrigin, false);
 		CreateToolButtons();
+		CreateWorkstationButtons();
+	}
+
+	private void CreateWorkstationButtons()
+	{
+		var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
+		newButton.name = "Workspace";
+		var text = newButton.GetComponentInChildren<Text>();
+		text.text = "Workspace";
+		var button = newButton.GetComponent<Button>();
+		button.onClick.RemoveAllListeners();
+		button.onClick.AddListener(() =>
+		{
+			//HACK: Delay call for serialization bug
+			EditorApplication.delayCall += () => {
+				//HACK: GameObject.Find to get EVR reference. How should we do this?
+				Workspace.ShowWorkstation<DummyWorkspace>(GameObject.Find("EditorVR").transform);
+				U.Object.Destroy(this);
+			};
+		});
+		button.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
 	}
 
 	void OnDestroy()

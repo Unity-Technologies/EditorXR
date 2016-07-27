@@ -30,11 +30,6 @@
 				return obj;
 			}
 
-			public static GameObject ClonePrefabByName(string resource, GameObject parent = null)
-			{
-				return ClonePrefab(Resources.Load<GameObject>(resource), parent);
-			}
-
 			public static GameObject InstantiateAndSetActive(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true)
 			{
 				GameObject go = UObject.Instantiate(prefab);

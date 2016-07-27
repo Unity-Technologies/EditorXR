@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
+using UnityEngine.VR;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -36,6 +37,8 @@ public class EditorVR : MonoBehaviour
 	private EventSystem m_EventSystem;
 	private MultipleRayInputModule m_InputModule;
 	private Camera m_EventCamera;
+	//HACK: static event camera for workspaces
+	public static Camera eventCamera;
 
 	private PlayerHandle m_PlayerHandle;
 
@@ -213,6 +216,8 @@ public class EditorVR : MonoBehaviour
 		m_EventSystem = U.Object.AddComponent<EventSystem>(gameObject);
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+		//HACK: static event camera for workspaces
+		eventCamera = m_EventCamera;
 		m_InputModule.eventCamera = m_EventCamera;
 		m_InputModule.eventCamera.clearFlags = CameraClearFlags.Nothing;
 		m_InputModule.eventCamera.cullingMask = 0;
