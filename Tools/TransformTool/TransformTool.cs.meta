@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 882053426a5f76d46b5505d9a20be912
+timeCreated: 1469645480
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_ManipulatorPrefab: {fileID: 1000011913104750, guid: 0804da10bb8715440968093948851bb9,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

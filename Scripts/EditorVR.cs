@@ -113,6 +113,9 @@ public class EditorVR : MonoBehaviour
 			HashSet<InputDevice> devices;
 			var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
 			AddToolToDeviceData(tool, devices);
+
+			tool = SpawnTool(typeof(TransformTool), out devices);
+			AddToolToDeviceData(tool, devices);
 		};
 	}
 
@@ -214,8 +217,8 @@ public class EditorVR : MonoBehaviour
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_InputModule.eventCamera = m_EventCamera;
-		m_InputModule.eventCamera.clearFlags = CameraClearFlags.Nothing;
-		m_InputModule.eventCamera.cullingMask = 0;
+		//m_InputModule.eventCamera.clearFlags = CameraClearFlags.Nothing;
+		//m_InputModule.eventCamera.cullingMask = 0;
 
 		foreach (var proxy in m_AllProxies)
 		{

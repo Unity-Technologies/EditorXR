@@ -89,4 +89,4 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_EventMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 32

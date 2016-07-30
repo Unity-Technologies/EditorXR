@@ -32,7 +32,12 @@ namespace UnityEngine.VR.Proxies
 
 		[SerializeField]
 		private ActionMap m_UIActionMap;
+		private int UILayer = -1;
 
+		void Awake()
+		{
+			UILayer = LayerMask.NameToLayer("UI");
+		}
 		private class RaycastSource
 		{
 			public IProxy proxy; // Needed for checking if proxy is active
@@ -65,6 +70,11 @@ namespace UnityEngine.VR.Proxies
 				Debug.LogError("Failed to get ray origin transform for node " + node + " from proxy " + proxy);
 		}
 
+		public Transform GetRayOrigin(int index)
+		{
+			return m_RaycastSources[index].rayOrigin;
+		}
+
 		public override void Process()
 		{
 			ExecuteUpdateOnSelectedObject();
@@ -85,6 +95,7 @@ namespace UnityEngine.VR.Proxies
 				while (i >= PointEvents.Count)
 					PointEvents.Add(new PointerEventData(base.eventSystem));
 
+				PointEvents[i].pointerId = i;
 				if (!m_RaycastSources[i].proxy.active)
 					continue;
 
@@ -93,7 +104,9 @@ namespace UnityEngine.VR.Proxies
 				HandlePointerExitAndEnter(PointEvents[i], CurrentPoint[i]); // Send enter and exit events
 
 				// Activate actionmap input only if pointer is interacting with something
-				m_RaycastSources[i].actionMapInput.active = CurrentPoint[i] != null || CurrentPressed[i] != null || CurrentDragging[i] != null;
+				m_RaycastSources[i].actionMapInput.active = (CurrentPoint[i] != null && CurrentPoint[i].layer == UILayer) || 
+															CurrentPressed[i] != null ||
+															CurrentDragging[i] != null;
 				if (!m_RaycastSources[i].actionMapInput.active)
 					continue;
 
