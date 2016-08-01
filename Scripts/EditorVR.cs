@@ -64,12 +64,11 @@ public class EditorVR : MonoBehaviour
 	private void Awake()
     {
         VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
-	    if (VRSettings.loadedDeviceName == "OpenVR")
-	    {
-	        VRView.viewerPivot.localPosition = Vector3.zero;
-	            // HACK reset pivot to match steam origin.  TODO: only perform this if SteamVR is currently active.
-	        Debug.LogError("<color=green>" + VRSettings.loadedDeviceName + "</color>");
-	    }
+		if (VRSettings.loadedDeviceName == "OpenVR")
+		{
+			// Steam's reference position should be at the feet and not at the head as we do with Oculus
+			VRView.viewerPivot.localPosition = Vector3.zero;
+		}
 	    InitializePlayerHandle();
         CreateDefaultActionMapInputs();
         CreateAllProxies();
