@@ -14,6 +14,7 @@ using UnityEngine.VR.Utilities;
 using UnityEditor;
 using UnityEditor.VR;
 #endif
+using Menu = UnityEngine.InputNew.Menu;
 
 [InitializeOnLoad]
 public class EditorVR : MonoBehaviour

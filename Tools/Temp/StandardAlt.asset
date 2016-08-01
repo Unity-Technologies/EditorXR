@@ -17,17 +17,18 @@ MonoBehaviour:
   - {fileID: 114000014012956414}
   m_ControlSchemes:
   - m_Name: VRInputDevice
-    m_DeviceSlots:
-    - m_Key: 1
-      m_Type:
-        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-          Culture=neutral, PublicKeyToken=null
+    m_SerializableDeviceTypes:
+    - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
       - controlIndex: 21
-        deviceKey: 1
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: -1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -36,7 +37,10 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 2
-        deviceKey: 1
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: -1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -44,6 +48,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
   m_MapTypeName: StandardAlt, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_CustomNamespace: 
 --- !u!114 &114000013893770434
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -63,6 +68,7 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Action
     defaultValue: 0
 --- !u!114 &114000014012956414
@@ -84,5 +90,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
     name: Tesy Ping pong
     defaultValue: 0
