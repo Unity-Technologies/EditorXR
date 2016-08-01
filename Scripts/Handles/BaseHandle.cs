@@ -3,16 +3,16 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.VR.Proxies;
 
-public abstract class BaseDraggable : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class BaseHandle : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
 	[SerializeField]
 	protected Material m_DebugMaterial;
 
-	public delegate void DragEventCallback(Vector3 delta);
+	public delegate void DragEventCallback(BaseHandle handle, Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion));
 
-	public event DragEventCallback onBeginDrag;
-	public event DragEventCallback onDrag;
-	public event DragEventCallback onEndDrag;
+	public event DragEventCallback onHandleBeginDrag;
+	public event DragEventCallback onHandleDrag;
+	public event DragEventCallback onHandleEndDrag;
 
 	protected Transform m_RayOrigin;
 	protected Collider m_Collider;
@@ -39,21 +39,21 @@ public abstract class BaseDraggable : MonoBehaviour, IBeginDragHandler, IDragHan
 		m_Collider.enabled = true;
 	}
 
-	protected virtual void RaiseBeginDrag()
+	protected virtual void OnHandleBeginDrag()
 	{
-		if (onBeginDrag != null)
-			onBeginDrag(Vector3.zero);
+		if (onHandleBeginDrag != null)
+			onHandleBeginDrag(this);
 	}
 
-	protected virtual void RaiseDrag(Vector3 delta)
+	protected virtual void OnHandleDrag(Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion))
 	{
-		if (onDrag != null)
-			onDrag(delta);
+		if (onHandleDrag != null)
+			onHandleDrag(this, deltaPosition, deltaRotation);
 	}
 
-	protected virtual void RaiseEndDrag()
+	protected virtual void OnHandleEndDrag()
 	{
-		if (onEndDrag != null)
-			onEndDrag(Vector3.zero);
+		if (onHandleEndDrag != null)
+			onHandleEndDrag(this);
 	}
 }

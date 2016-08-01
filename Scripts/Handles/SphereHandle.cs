@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.VR.Proxies;
 
-public class SphereDraggable : BaseDraggable
+public class SphereHandle : BaseHandle
 {
 	[SerializeField]
 	private Mesh m_InvertedSphereMesh;
@@ -38,7 +38,7 @@ public class SphereDraggable : BaseDraggable
 		m_Collider.enabled = false;
 		m_InvertedSphereCollider.gameObject.layer = LayerMask.NameToLayer("UI");
 
-		RaiseBeginDrag();
+		OnHandleBeginDrag();
 	}
 
 	
@@ -54,7 +54,7 @@ public class SphereDraggable : BaseDraggable
 
 		m_InvertedSphereCollider.transform.position = m_RayOrigin.position;
 
-		RaiseDrag(delta);
+		OnHandleDrag(delta);
 	}
 
 	public override void OnEndDrag(PointerEventData eventData)
@@ -64,7 +64,7 @@ public class SphereDraggable : BaseDraggable
 		if (m_InvertedSphereCollider != null)
 			DestroyImmediate(m_InvertedSphereCollider.gameObject);
 
-		RaiseEndDrag();
+		OnHandleEndDrag();
 	}
 
 	void OnDestroy()

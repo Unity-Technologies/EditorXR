@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Runtime.InteropServices;
 using UnityEngine.EventSystems;
+using UnityEngine.VR.Proxies;
 
-public class RadialDraggable : BaseDraggable
+public class PlaneHandle : BaseHandle
 {
 	private Collider m_PlaneCollider;
 	private Vector3 m_LastPosition;
@@ -20,31 +20,35 @@ public class RadialDraggable : BaseDraggable
 		m_PlaneCollider.transform.SetParent(eventData.pressEventCamera.transform.parent);
 		m_PlaneCollider.transform.localScale = Vector3.one*1000f;
 		m_PlaneCollider.transform.position = transform.position;
-		m_PlaneCollider.transform.forward = m_RayOrigin.forward;
+		m_PlaneCollider.transform.rotation = transform.rotation;
 
 		//m_PlaneCollider.GetComponent<Renderer>().enabled = false;
 		m_PlaneCollider.GetComponent<Renderer>().sharedMaterial = m_DebugMaterial;
 		m_Collider.enabled = false;
 		m_PlaneCollider.gameObject.layer = LayerMask.NameToLayer("UI");
 
-		RaiseBeginDrag();
+		OnHandleBeginDrag();
 	}
 
 	public override void OnDrag(PointerEventData eventData)
 	{
-		m_PlaneCollider.transform.forward = m_RayOrigin.forward;
-
 		Vector3 worldPosition = m_LastPosition;
 		RaycastHit hit;
 		if (m_PlaneCollider.Raycast(new Ray(m_RayOrigin.position, m_RayOrigin.forward), out hit, Mathf.Infinity))
 			worldPosition = hit.point;
 
-		var delta = new Vector3(0, Vector3.Angle(transform.InverseTransformPoint(m_LastPosition),
-			transform.InverseTransformPoint(worldPosition)), 0);
-
+		var delta = worldPosition - m_LastPosition;
 		m_LastPosition = worldPosition;
 
-		RaiseDrag(delta);
+		// Flip raycast blocking plane
+		if (Vector3.Dot(m_PlaneCollider.transform.forward, m_RayOrigin.forward) < 0)
+			m_PlaneCollider.transform.Rotate(m_PlaneCollider.transform.up, 180.0f);
+
+		delta = transform.InverseTransformVector(delta);
+		delta.z = 0;
+		delta = transform.TransformVector(delta);
+
+		OnHandleDrag(delta);
 	}
 
 	public override void OnEndDrag(PointerEventData eventData)
@@ -54,7 +58,7 @@ public class RadialDraggable : BaseDraggable
 		if (m_PlaneCollider != null)
 			DestroyImmediate(m_PlaneCollider.gameObject);
 
-		RaiseEndDrag();
+		OnHandleEndDrag();
 	}
 
 	void OnDestroy()
@@ -62,6 +66,4 @@ public class RadialDraggable : BaseDraggable
 		if (m_PlaneCollider != null)
 			DestroyImmediate(m_PlaneCollider.gameObject);
 	}
-
-
 }

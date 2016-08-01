@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.VR.Tools;
 using UnityEditor;
+using UnityEditor.VR;
 using UnityEngine.VR.Utilities;
 
 public class TransformTool : MonoBehaviour, ITool
@@ -51,6 +52,7 @@ public class TransformTool : MonoBehaviour, ITool
 				}
 			}
 			m_CurrentManipulator.transform.position = Selection.activeGameObject.transform.position;
+			m_CurrentManipulator.transform.rotation = Quaternion.identity;
 			m_TargetPosition = m_CurrentManipulator.transform.position;
 			m_TargetRotation = m_CurrentManipulator.transform.rotation;
 		}
@@ -64,14 +66,12 @@ public class TransformTool : MonoBehaviour, ITool
 			m_CurrentManipulator.transform.position = Vector3.Lerp(m_CurrentManipulator.transform.position,
 				m_TargetPosition, 0.2f);
 			Selection.activeGameObject.transform.position = m_CurrentManipulator.transform.position;
-			//Selection.activeGameObject.transform.position = Vector3.Lerp(Selection.activeGameObject.transform.position,
-			//	m_CurrentManipulator.transform.position, 0.3f);
 
-			//m_CurrentManipulator.transform.rotation = Quaternion.Slerp(m_CurrentManipulator.transform.rotation,
-			//	m_TargetRotation, 0.2f);
 			Selection.activeGameObject.transform.rotation = Quaternion.Slerp(Selection.activeGameObject.transform.rotation,
 				m_TargetRotation, 0.2f);
 
+			//m_CurrentManipulator.transform.localScale = Vector3.one * 0.2f *
+			//											Vector3.Distance(VRView.viewerCamera.transform.position, m_CurrentManipulator.transform.position);
 
 		}
 	}

@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.EventSystems;
 
-public class LinearDraggable : BaseDraggable
+public class LinearHandle : BaseHandle
 {
 	private const float kMaxDragDistance = 100f;
 	private Collider m_PlaneCollider;
@@ -30,7 +30,7 @@ public class LinearDraggable : BaseDraggable
 		m_Collider.enabled = false;
 		m_PlaneCollider.gameObject.layer = LayerMask.NameToLayer("UI");
 
-		RaiseBeginDrag();
+		OnHandleBeginDrag();
 	}
 
 	public override void OnDrag(PointerEventData eventData)
@@ -52,7 +52,7 @@ public class LinearDraggable : BaseDraggable
 		delta.y = 0;
 		delta = transform.TransformVector(delta);
 
-		RaiseDrag(delta);
+		OnHandleDrag(delta);
 	}
 
 	public override void OnEndDrag(PointerEventData eventData)
@@ -62,7 +62,7 @@ public class LinearDraggable : BaseDraggable
 		if (m_PlaneCollider != null)
 			DestroyImmediate(m_PlaneCollider.gameObject);
 
-		RaiseEndDrag();
+		OnHandleEndDrag();
 	}
 
 	void OnDestroy()
