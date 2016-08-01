@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: aab8fcc587f237c4cb48fb7bc8a59909
+timeCreated: 1468963749
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_ActionMap: {fileID: 11400000, guid: 9bdc23bc93bcec343934b99348f0ecf4, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

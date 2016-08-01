@@ -139,4 +139,4 @@ Material:
       second: {r: 1, g: 0, b: 100, a: 1}
     - first:
         name: _lineSettings
-      second: {r: 0, g: 0.447, b: 0.5019608, a: 1}
+      second: {r: 0.343, g: 0.727, b: 0.247, a: 1}

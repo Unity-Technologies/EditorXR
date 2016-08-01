@@ -6,44 +6,43 @@ using UnityEngine.VR.Utilities;
 
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateUI
 {
-    public Standard StandardInput
-    {
-        get; set;
-    }
+	[SerializeField]
+	private Canvas CanvasPrefab;
+	private Canvas m_ToolCanvas;
 
-    public Transform RayOrigin
-    {
-        get; set;
-    }
+	public Standard standardInput
+	{
+		get; set;
+	}
 
 	public VRLineRenderer[] VrLineRenderers { get; set; }
 
-	public Func<GameObject, GameObject> InstantiateUI
-    {
-        private get; set;
-    }
+	public Transform rayOrigin
+	{
+		get; set;
+	}
 
-    [SerializeField]
-    private Canvas CanvasPrefab;
-    private Canvas m_ToolCanvas;
+	public Func<GameObject, GameObject> instantiateUI
+	{
+		private get; set;
+	}
 
-    void OnDestroy()
-    {
-        if (m_ToolCanvas != null)
-            U.Object.Destroy(m_ToolCanvas.gameObject);
-    }
-
-    void Update()
-    {
-        if (StandardInput.action.wasJustPressed)
-        {
-                if (m_ToolCanvas == null)
-                {
-                    var go = InstantiateUI(CanvasPrefab.gameObject);
-                    m_ToolCanvas = go.GetComponent<Canvas>();
-                }
-                m_ToolCanvas.transform.position = RayOrigin.position + RayOrigin.forward*5f;
-                m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - VRView.viewerCamera.transform.position);            
-        }
-    }
+	void Update()
+	{
+		if (standardInput.action.wasJustPressed)
+		{
+				if (m_ToolCanvas == null)
+				{
+					var go = instantiateUI(CanvasPrefab.gameObject);
+					m_ToolCanvas = go.GetComponent<Canvas>();
+				}
+				m_ToolCanvas.transform.position = rayOrigin.position + rayOrigin.forward*5f;
+				m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - VRView.viewerCamera.transform.position);            
+		}
+	}
+	void OnDestroy()
+	{
+		if (m_ToolCanvas != null)
+			U.Object.Destroy(m_ToolCanvas.gameObject);
+	}
 }

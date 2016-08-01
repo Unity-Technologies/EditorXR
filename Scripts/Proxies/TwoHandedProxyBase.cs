@@ -4,36 +4,8 @@ using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
 {
-    public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
+	public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
 	{
-		public virtual TrackedObject TrackedObjectInput { protected get; set; }
-
-		public virtual bool Active
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		protected Dictionary<Node, Transform> m_RayOrigins;
-		public virtual Dictionary<Node, Transform> RayOrigins
-		{
-			get
-			{
-				return m_RayOrigins;
-			}
-		}
-
-		public virtual bool Hidden
-		{
-			set
-			{
-				var renderers = GetComponentsInChildren<Renderer>();
-				foreach (var r in renderers)
-					r.enabled = !value;
-			}
-		}
 
 		[SerializeField]
 		protected GameObject m_LeftHandProxyPrefab;
@@ -46,6 +18,33 @@ namespace UnityEngine.VR.Proxies
 		protected Transform m_RightHand;
 		protected Transform m_LeftHandRayOrigin;
 		protected Transform m_RightHandRayOrigin;
+
+		public virtual Dictionary<Node, Transform> rayOrigins
+		{
+			get { return m_RayOrigins; }
+		}
+
+		protected Dictionary<Node, Transform> m_RayOrigins;
+
+		public virtual TrackedObject trackedObjectInput { protected get; set; }
+
+		public virtual bool active
+		{
+			get
+			{
+				return true;
+			}
+		}
+
+		public virtual bool hidden
+		{
+			set
+			{
+				var renderers = GetComponentsInChildren<Renderer>();
+				foreach (var r in renderers)
+					r.enabled = !value;
+			}
+		}
 
 		public virtual void Awake()
 		{
@@ -64,17 +63,17 @@ namespace UnityEngine.VR.Proxies
 		public virtual void Start()
 		{			
 			// In standalone play-mode usage, attempt to get the TrackedObjectInput 
-			if (TrackedObjectInput == null && m_PlayerInput)
-				TrackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
+			if (trackedObjectInput == null && m_PlayerInput)
+				trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 		}
 
 		public virtual void Update()
 		{
-			m_LeftHand.localPosition = TrackedObjectInput.leftPosition.vector3;
-			m_LeftHand.localRotation = TrackedObjectInput.leftRotation.quaternion;
+			m_LeftHand.localPosition = trackedObjectInput.leftPosition.vector3;
+			m_LeftHand.localRotation = trackedObjectInput.leftRotation.quaternion;
 
-			m_RightHand.localPosition = TrackedObjectInput.rightPosition.vector3;
-			m_RightHand.localRotation = TrackedObjectInput.rightRotation.quaternion;
+			m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
+			m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
 		}
 	}
 }

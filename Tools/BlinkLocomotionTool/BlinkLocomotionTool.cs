@@ -10,7 +10,6 @@ using UnityEngine.VR.Utilities;
 [ExecuteInEditMode]
 public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay, ICustomActionMap
 {
-    #region Enums
     public enum BlinkMode
 	{
 		Move = 0,
@@ -24,12 +23,10 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 		TransitioningOut = 2,
         Moving = 3
 	}
-    #endregion
 
-    #region Properties
-	public ActionMap ActionMap { get { return m_BlinkActionMap; } }
+    public ActionMap actionMap { get { return m_BlinkActionMap; } }
     
-    public ActionMapInput ActionMapInput
+    public ActionMapInput actionMapInput
     {
         get { return m_BlinkLocomotionInput; }
         set { m_BlinkLocomotionInput = (BlinkLocomotion) value; }
@@ -39,16 +36,12 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 
     public List<VRLineRenderer> defaultProxyLineRenderers { get { return m_DefaultProxyLineRenderers; } set { m_DefaultProxyLineRenderers = value; } }
 
-    public Transform RayOrigin { get { return m_RayOrigin; } set { m_RayOrigin = value; } }
+    public Transform rayOrigin { get { return m_RayOrigin; } set { m_RayOrigin = value; } }
 
-	public Transform ViewerPivot { set { m_ViewerPivot = value; } }
-    #endregion
+	public Transform viewerPivot { set { m_ViewerPivot = value; } }
 
-    #region Public Fields
-    public List<VRLineRenderer> m_DefaultProxyLineRenderers;
-    #endregion
-
-    #region Private Serialized Fields
+	public List<VRLineRenderer> m_DefaultProxyLineRenderers;
+    
     [SerializeField]
     private ActionMap m_BlinkActionMap;
     [SerializeField]
@@ -65,10 +58,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 	private float m_IndicatorSmoothing = 0.2f;
     [SerializeField]
     private VRLineRenderer m_CustomPointerRayPrefab;
-    #endregion
 
-    #region Private Fields
-    private GameObject m_BlinkArcGO;
+	private GameObject m_BlinkArcGO;
 	private BlinkVisuals m_BlinkVisuals;
 	private BlinkLocomotion m_BlinkLocomotionInput;
     private BlinkMode m_BlinkMode = BlinkMode.Move;
@@ -89,10 +80,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 	private State m_State = State.Inactive;
     private Transform m_TrackingCenter;
 	private Transform m_ViewerPivot;
-    #endregion
 
-    #region Initialization & LifeCycle
-    void Start()
+	void Start()
     {
         Debug.LogWarning("<color=yellow>TODO: Remove all FADE functionality/references/etc, support only movement to destination point.</color>");
         Debug.LogWarning("<color=orange>TODO: Fix multiple BlinkVisuals bein created at root of hierarchy when spawning Blink!</color>");
@@ -108,7 +97,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
         m_BlinkArcGO = U.Object.InstantiateAndSetActive(m_BlinkVisualsPrefab);
 		m_BlinkVisuals = m_BlinkArcGO.GetComponentInChildren<BlinkVisuals>();
 		m_BlinkVisuals.ValidTargetFound += ValidTargetFound;
-		m_BlinkArcGO.transform.parent = RayOrigin;
+		m_BlinkArcGO.transform.parent = rayOrigin;
         m_BlinkArcGO.transform.localPosition = Vector3.zero;
 		m_BlinkArcGO.transform.localRotation = Quaternion.identity;
         
@@ -142,9 +131,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
             foreach (var vrLineRenderer in defaultProxyLineRenderers)
                 vrLineRenderer.SetWidth(m_InitialDefaultLineRendererWidth, m_InitialDefaultLineRendererWidth);
     }
-    #endregion
 
-    #region Interface Implementation
     public void ShowDefaultProxyRays()
     {
         if (defaultProxyLineRenderers != null && defaultProxyLineRenderers.Count > 0)
@@ -159,7 +146,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
         //    foreach (var vrLineRenderer in defaultProxyLineRenderers)
         //        vrLineRenderer.gameObject.SetActive(false);
     }
-    #endregion
 
     void Update()
     {
@@ -176,7 +162,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 		}
         else if (m_BlinkLocomotionInput.blink.isHeld)
         {
-            Ray ray = new Ray(RayOrigin.position, RayOrigin.forward);
+            Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
             float rayDistance;
             if (m_DefaultGroundPlane.Raycast(ray, out rayDistance))
             {
@@ -278,7 +264,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
         m_FadeImage.gameObject.SetActive(false);
     }
 
-    #region Custom Pointer Rays Control
     public void ShowCustomRay()
     {
         StartCoroutine(ShowCustomPointerRays());
@@ -344,5 +329,4 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
             foreach (var pointerRayRenderer in defaultProxyLineRenderers)
                 pointerRayRenderer.SetWidth(m_InitialDefaultLineRendererWidth, m_InitialDefaultLineRendererWidth);
     }
-    #endregion
 }
