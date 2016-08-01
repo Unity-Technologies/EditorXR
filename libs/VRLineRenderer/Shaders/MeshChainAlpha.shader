@@ -30,7 +30,7 @@ Shader "VRLineRenderer/MeshChain - Alpha Blended"
 			BlendOp Min
 			Cull Off
 			Lighting Off
-			ZWrite Off
+			ZWrite On
 			ColorMask A
 			Offset 0, -.1
 

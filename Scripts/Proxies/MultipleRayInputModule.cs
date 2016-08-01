@@ -82,6 +82,8 @@ namespace UnityEngine.VR.Proxies
 					CurrentPressed.Add(null);
 				while (i >= CurrentDragging.Count)
 					CurrentDragging.Add(null);
+				while (i >= PointEvents.Count)
+					PointEvents.Add(new PointerEventData(base.eventSystem));
 
 				if (!m_RaycastSources[i].proxy.active)
 					continue;
@@ -182,11 +184,7 @@ namespace UnityEngine.VR.Proxies
 			m_EventCamera.transform.position = m_RaycastSources[i].rayOrigin.position;
 			m_EventCamera.transform.rotation = m_RaycastSources[i].rayOrigin.rotation;
 
-			if (i >= PointEvents.Count)
-				PointEvents.Add(new PointerEventData(base.eventSystem));
-			else
-				PointEvents[i].Reset();
-
+			PointEvents[i].Reset();
 			PointEvents[i].delta = Vector2.zero;
 			PointEvents[i].position = m_EventCamera.pixelRect.center;
 			PointEvents[i].scrollDelta = Vector2.zero;

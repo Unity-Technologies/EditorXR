@@ -42,6 +42,7 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustom
 	{
 		if (m_JoystickLocomotionInput == null && m_PlayerInput)
 			m_JoystickLocomotionInput = m_PlayerInput.GetActions<JoystickLocomotion>();
+	
 	}
 
 	void Update()
