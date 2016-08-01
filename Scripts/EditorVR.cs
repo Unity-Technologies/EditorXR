@@ -75,7 +75,10 @@ public class EditorVR : MonoBehaviour
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
 		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
-		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);		
+		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);
+
+		//HACK: Create a workspace at start to work around Vive input issues
+		Workspace.ShowWorkspace<ChessboardWorkspace>(transform);	
 	}
 
 	private void CreateDeviceDataForInputDevices()
