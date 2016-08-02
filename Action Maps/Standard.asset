@@ -34,6 +34,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
   m_MapTypeName: Standard, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_CustomNamespace: 
 --- !u!114 &114000013893770434
 MonoBehaviour:
   m_ObjectHideFlags: 0

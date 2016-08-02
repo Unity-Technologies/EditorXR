@@ -34,6 +34,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
   m_MapTypeName: UIActions, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_CustomNamespace: 
 --- !u!114 &114000012573131854
 MonoBehaviour:
   m_ObjectHideFlags: 0

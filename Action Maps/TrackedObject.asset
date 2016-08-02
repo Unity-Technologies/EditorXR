@@ -209,6 +209,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
   m_MapTypeName: TrackedObject, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
+  m_CustomNamespace: 
 --- !u!114 &114000010189177792
 MonoBehaviour:
   m_ObjectHideFlags: 0

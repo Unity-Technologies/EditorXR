@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.VR.Modules;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -13,12 +14,14 @@ using UnityEngine.VR.Utilities;
 using UnityEditor;
 using UnityEditor.VR;
 #endif
+using Menu = UnityEngine.InputNew.Menu;
 
 [InitializeOnLoad]
 public class EditorVR : MonoBehaviour
 {
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
+	private const float kDefaultRayLength = 100f;
 	[SerializeField]
 	private ActionMap m_MenuActionMap;
 	[SerializeField]
@@ -28,14 +31,16 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
 	[SerializeField]
-	private VRLineRenderer m_PointerRayPrefab;
+	private DefaultProxyRay m_ProxyRayPrefab;
+	private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
 	private TrackedObject m_TrackedObjectInput;
 	private Default m_DefaultActionInput;
 
-	private EventSystem m_EventSystem;
 	private MultipleRayInputModule m_InputModule;
 	private Camera m_EventCamera;
+	private PixelRaycastModule m_PixelRaycastModule;
+	private HighlightModule m_HighlightModule;
 
 	private PlayerHandle m_PlayerHandle;
 
@@ -52,8 +57,6 @@ public class EditorVR : MonoBehaviour
 	private List<IProxy> m_AllProxies = new List<IProxy>();
 	private IEnumerable<Type> m_AllTools;
 
-	private Dictionary<Type, List<ActionMap>> m_ToolActionMaps;
-
 	private Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 	{
 		{ "Left", Node.LeftHand },
@@ -69,10 +72,16 @@ public class EditorVR : MonoBehaviour
 		CreateAllProxies();
 		CreateDeviceDataForInputDevices();
 		CreateEventSystem();
+
+		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
+		m_PixelRaycastModule.ignoreRoot = transform;
+		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
+
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
-		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
-		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
-		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);		
+		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
+		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
+		// then only show it in that hand's menu.
+		// CollectToolActionMaps(m_AllTools);		
 	}
 
 	private void CreateDeviceDataForInputDevices()
@@ -105,15 +114,30 @@ public class EditorVR : MonoBehaviour
 
 			yield return null;
 		}
+		SpawnDefaultTools();
+	}
 
-		// HACK: U.AddComponent doesn't work properly from an IEnumerator (missing default references when spawned), so currently
-		// it's necessary to spawn the tools in a separate non-IEnumerator context.
-		EditorApplication.delayCall += () =>
+	private void OnEnable()
+	{
+#if UNITY_EDITOR
+		VRView.onGUIDelegate += OnSceneGUI;
+#endif
+	}
+
+	private void OnDisable()
+	{
+#if UNITY_EDITOR
+		VRView.onGUIDelegate -= OnSceneGUI;
+#endif
+	}
+
+	private void OnSceneGUI(EditorWindow obj)
+	{
+		if (Event.current.type == EventType.MouseMove)
 		{
-			HashSet<InputDevice> devices;
-			var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
-			AddToolToDeviceData(tool, devices);
-		};
+			m_PixelRaycastModule.UpdateRaycasts(m_AllProxies, m_EventCamera);
+			UpdateDefaultProxyRays();
+		}
 	}
 
 	private void OnDestroy()
@@ -148,9 +172,16 @@ public class EditorVR : MonoBehaviour
 				}
 			}
 		}
+
+#if UNITY_EDITOR
+		// HACK: Send a "mouse moved" event, so scene picking can occur for the controller
+		Event e = new Event();
+		e.type = EventType.MouseMove;
+		VRView.activeView.SendEvent(e);
+#endif
 	}
 
-    private void InitializePlayerHandle()
+	private void InitializePlayerHandle()
 	{
 		m_PlayerHandle = PlayerHandleManager.GetNewPlayerHandle();
 		m_PlayerHandle.global = true;
@@ -191,6 +222,28 @@ public class EditorVR : MonoBehaviour
 		UpdatePlayerHandleMaps();
 	}
 
+	private void SpawnDefaultTools()
+	{
+		// HACK: U.AddComponent doesn't work properly from an IEnumerator (missing default references when spawned), so currently
+		// it's necessary to spawn the tools in a separate non-IEnumerator context.
+		EditorApplication.delayCall += () =>
+		{
+			HashSet<InputDevice> devices;
+			var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
+			AddToolToDeviceData(tool, devices);
+
+			// Spawn selection tools by default 
+			foreach (var deviceData in m_DeviceData)
+			{
+				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
+				if (deviceData.Key.tagIndex == -1)
+					continue;
+				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+				AddToolToDeviceData(tool, devices);
+			}
+		};
+	}
+
 	private void CreateAllProxies()
 	{
 		foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
@@ -199,23 +252,49 @@ public class EditorVR : MonoBehaviour
 			proxy.trackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
 			foreach (var rayOriginBase in proxy.rayOrigins)
 			{
-				var rayTransform = U.Object.InstantiateAndSetActive(m_PointerRayPrefab.gameObject, rayOriginBase.Value).transform;
+				var rayTransform = U.Object.InstantiateAndSetActive(m_ProxyRayPrefab.gameObject, rayOriginBase.Value).transform;
 				rayTransform.position = rayOriginBase.Value.position;
 				rayTransform.rotation = rayOriginBase.Value.rotation;
+				m_DefaultRays.Add(rayOriginBase.Value, rayTransform.GetComponent<DefaultProxyRay>());
 			}
 			m_AllProxies.Add(proxy);
+		}
+	}
+
+	private void UpdateDefaultProxyRays()
+	{
+		// Set ray lengths based on renderer bounds
+		foreach (var proxy in m_AllProxies) 
+		{
+			if (!proxy.active)
+				continue;
+			foreach (var rayOrigin in proxy.rayOrigins.Values)
+			{
+				var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+				var distance = kDefaultRayLength;
+				if (go != null)
+				{
+					var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+					var newDist = distance;
+					foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+					{
+						if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
+							distance = Mathf.Min(distance, newDist);
+					}
+				}
+				m_DefaultRays[rayOrigin].SetLength(distance);
+			}
 		}
 	}
 
 	private void CreateEventSystem()
 	{
 		// Create event system, input module, and event camera
-		m_EventSystem = U.Object.AddComponent<EventSystem>(gameObject);
+		U.Object.AddComponent<EventSystem>(gameObject);
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+		m_EventCamera.enabled = false;
 		m_InputModule.eventCamera = m_EventCamera;
-		m_InputModule.eventCamera.clearFlags = CameraClearFlags.Nothing;
-		m_InputModule.eventCamera.cullingMask = 0;
 
 		foreach (var proxy in m_AllProxies)
 		{
@@ -285,7 +364,7 @@ public class EditorVR : MonoBehaviour
 
 		foreach (DeviceData deviceData in m_DeviceData.Values)
 		{
-			foreach (ITool tool in deviceData.tools.Reverse())
+			foreach (ITool tool in deviceData.tools)
 			{
 				IStandardActionMap standardActionMap = tool as IStandardActionMap;
 				if (standardActionMap != null)
@@ -414,6 +493,15 @@ public class EditorVR : MonoBehaviour
 		var instantiateUITool = obj as IInstantiateUI;
 		if (instantiateUITool != null)
 			instantiateUITool.instantiateUI = InstantiateUI;
+
+		var raycasterComponent = obj as IRaycaster;
+		if (raycasterComponent != null)
+			raycasterComponent.getFirstGameObject = m_PixelRaycastModule.GetFirstGameObject;
+		
+		var highlightComponent = obj as IHighlight;
+		if (highlightComponent != null)
+			highlightComponent.setHighlight = m_HighlightModule.SetHighlight;
+
 	}
 
 	private InputDevice GetInputDeviceForTool(ITool tool)

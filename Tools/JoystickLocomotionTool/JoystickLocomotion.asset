@@ -60,6 +60,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
   m_MapTypeName: JoystickLocomotion, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
+  m_CustomNamespace: 
 --- !u!114 &114000010230225506
 MonoBehaviour:
   m_ObjectHideFlags: 0
