@@ -525,6 +525,8 @@ MonoBehaviour:
   - 0
   - 0
   - 0
+  - 0
+  - 0
   clipRect: {fileID: 224000012146066746}
   rendererCullingMask:
     serializedVersion: 2

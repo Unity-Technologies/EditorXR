@@ -5,7 +5,7 @@
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 		_ClipCenter("Clip Center", Vector) = (0,0,0,1)
-		_ClipDistance("Clip Distance", Float) = 1.0
+		//_ClipDistance("Clip Distance", Float) = 1.0
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
@@ -25,22 +25,26 @@
 			float3 worldPos;
 		};
 
-		static const uint _PlaneCount = 4;
+		static const uint _PlaneCount = 6;
 		static const half4 _PlaneNormals[_PlaneCount] = {
 			half4(-1, 0, 0, 0),
 			half4(0, 0, 1, 0),
 			half4(1, 0, 0, 0),
-			half4(0, 0, -1, 0)
+			half4(0, 0, -1, 0),
+			half4(0, -1, 0, 0),
+			half4(0, 1, 0, 0)
 		};
 		static const fixed4 white = fixed4(1, 1, 1, 1);
 
 		float4 _ClipCenter;
-		half _ClipDistance;
+		//half _ClipDistance;
 		//half _ClipDistance[_PlaneCount];
 		half _ClipDistance0;
 		half _ClipDistance1;
 		half _ClipDistance2;
 		half _ClipDistance3;
+		half _ClipDistance4;
+		half _ClipDistance5;
 		half _Glossiness;
 		half _Metallic;
 		fixed4 _Color;
@@ -53,6 +57,8 @@
 			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[1] * _ClipDistance1), (float3)_PlaneNormals[1]));
 			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[2] * _ClipDistance2), (float3)_PlaneNormals[2]));
 			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[3] * _ClipDistance3), (float3)_PlaneNormals[3]));
+			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[4] * _ClipDistance4), (float3)_PlaneNormals[4]));
+			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[5] * _ClipDistance5), (float3)_PlaneNormals[5]));
 
 			// Some materials don't have colors set, so default them to white
 			if (dot(_Color, white) <= 0)

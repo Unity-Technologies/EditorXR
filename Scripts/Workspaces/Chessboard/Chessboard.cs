@@ -1,11 +1,9 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.VR.Utilities;
 
 //Q: Should combine with ChessboardWorkspace?
 public class Chessboard : MonoBehaviour
 {
-	const float k_UIScale = 500;			//Set this to whatever your height/width is in the prefab
 	public Matrix4x4 Matrix
 	{
 		get
@@ -22,13 +20,14 @@ public class Chessboard : MonoBehaviour
 	public RectTransform clipRect = null;
 	public LayerMask rendererCullingMask = -1;
 
-	private static readonly int kPlaneCount = 4;
+	private const float k_UIScale = 500;            //Set this to whatever your height/width is in the prefab
+	private static readonly int kPlaneCount = 6;
 
 	[SerializeField]
 	private Transform boundsCube;
 
 	private ChessboardRenderer miniRenderer = null;
-	private float m_YBounds;
+	private float m_YBounds = 1;
 
 	internal void SetBounds(Bounds bounds)
 	{
@@ -36,6 +35,7 @@ public class Chessboard : MonoBehaviour
 		clipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, bounds.size.z * k_UIScale);
 		boundsCube.transform.localScale = bounds.size;
 		boundsCube.transform.localPosition = Vector3.up * bounds.extents.y;
+		m_YBounds = bounds.size.y;
 	}
 
 	public void MoveForward()
@@ -65,6 +65,8 @@ public class Chessboard : MonoBehaviour
 			new Vector3(0, 0, 1),
 			new Vector3(1, 0, 0),
 			new Vector3(0, 0, -1),
+			new Vector3(0, 1, 0),
+			new Vector3(0, -1, 0),
 		};
 
 		for (int i = 0; i < kPlaneCount; i++)
@@ -83,6 +85,7 @@ public class Chessboard : MonoBehaviour
 			GameObject go = new GameObject("MiniWorldClipCenter");
 			go.hideFlags = HideFlags.DontSave;
 			clipCenter = go.transform;
+			SetBounds(new Bounds(Vector3.zero, Vector3.one));
 		}
 
 		Camera main = U.Camera.GetMainCamera();
@@ -109,11 +112,11 @@ public class Chessboard : MonoBehaviour
 	private void LateUpdate()
 	{
 		// Adjust clip distances, which are in world coordinates to match with the UI clip rect
-		Vector3[] fourCorners = new Vector3[kPlaneCount]; // Clock-wise from bottom-left corner
+		Vector3[] fourCorners = new Vector3[4]; // Clock-wise from bottom-left corner
 		clipRect.GetWorldCorners(fourCorners);
 
 		Vector3 center = transform.InverseTransformPoint(clipRect.position);
-		for (int i = 0; i < kPlaneCount; i++)
+		for (int i = 0; i < 4; i++)
 			fourCorners[i] = transform.InverseTransformPoint(fourCorners[i]);
 
 		// Clip distances are distance of the plane from the center location in each direction
@@ -121,5 +124,7 @@ public class Chessboard : MonoBehaviour
 		clipDistances[1] = Mathf.Abs((fourCorners[1] - center).z);
 		clipDistances[2] = Mathf.Abs((fourCorners[2] - center).x);
 		clipDistances[3] = Mathf.Abs((fourCorners[3] - center).z);
+		clipDistances[4] = m_YBounds - center.y;
+		clipDistances[5] = 0;							 
 	}
 }

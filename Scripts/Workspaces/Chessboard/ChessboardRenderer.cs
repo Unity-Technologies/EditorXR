@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.VR;
+﻿using UnityEngine;	 
 using UnityEngine.VR.Utilities;
 
 public class ChessboardRenderer : MonoBehaviour
@@ -54,7 +52,7 @@ public class ChessboardRenderer : MonoBehaviour
 				{
 					Shader.SetGlobalVector("_ClipCenter", miniWorld.clipCenter.position);
 					//Shader.SetGlobalFloat("_ClipDistance", miniWorld.clipDistance);
-					for (int i = 0; i < 4; i++)
+					for (int i = 0; i < 6; i++)
 						Shader.SetGlobalFloat("_ClipDistance" + i.ToString(), miniWorld.clipDistances[i]);
 				}
 				miniCamera.RenderWithShader(shader, string.Empty);

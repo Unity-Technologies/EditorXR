@@ -54,7 +54,8 @@ public abstract class Workspace : MonoBehaviour
 #if DEBUGDRAW
 	void OnDrawGizmos()
 	{
-		Gizmos.DrawWireCube(bounds.center, bounds.size);
+		Gizmos.matrix = sceneContainer.transform.localToWorldMatrix;
+		Gizmos.DrawWireCube(Vector3.up * bounds.size.y, bounds.size * 2);
 	}
 #endif
 	//Q: Should we allow SetBounds to change position?
