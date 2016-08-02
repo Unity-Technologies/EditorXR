@@ -347,7 +347,10 @@ public class EditorVR : MonoBehaviour
 		// It's possible that there are no suitable control schemes for the device that is being initialized, 
 		// so ActionMapInput can't be marked active
 		if (actionMapInput.TryInitializeWithDevices(devices))
+		{
+			actionMapInput.autoReinitialize = false;
 			actionMapInput.active = true;
+		}
 		return actionMapInput;
 	}
 
