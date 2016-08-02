@@ -33,21 +33,22 @@ MonoBehaviour:
   - {fileID: 114000011465318430}
   m_ControlSchemes:
   - m_Name: TrackedObjects
-    m_SerializableDeviceTypes:
-    - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
+    m_DeviceSlots:
+    - m_Key: 1
+      m_Type:
+        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
       m_TagIndex: 0
-    - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
+    - m_Key: 2
+      m_Type:
+        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
       m_TagIndex: 1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
       - controlIndex: 10
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -56,10 +57,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 11
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -68,10 +66,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 12
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -87,10 +82,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 10
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -99,10 +91,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 11
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -111,10 +100,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 12
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -130,10 +116,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 13
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -142,10 +125,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 14
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -154,10 +134,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 15
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -166,10 +143,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 16
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -185,10 +159,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 13
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -197,10 +168,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 14
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -209,10 +177,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 15
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -221,10 +186,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 16
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -267,7 +229,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Right Position.X
     defaultValue: 0
 --- !u!114 &114000010499948952
@@ -289,7 +250,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Right Position.Z
     defaultValue: 0
 --- !u!114 &114000011150845918
@@ -311,7 +271,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.Vector3InputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Right Position
     defaultValue: 0
 --- !u!114 &114000011399545658
@@ -333,7 +292,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.QuaternionInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Left Rotation
     defaultValue: 0
 --- !u!114 &114000011465318430
@@ -355,7 +313,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.QuaternionInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Right Rotation
     defaultValue: 0
 --- !u!114 &114000011632217576
@@ -377,7 +334,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Left Rotation.W
     defaultValue: 0
 --- !u!114 &114000012061762406
@@ -399,7 +355,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Left Rotation.Y
     defaultValue: 0
 --- !u!114 &114000012296404806
@@ -421,7 +376,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Right Position.Y
     defaultValue: 0
 --- !u!114 &114000012306099208
@@ -443,7 +397,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Right Rotation.X
     defaultValue: 0
 --- !u!114 &114000012382641376
@@ -465,7 +418,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Right Rotation.Y
     defaultValue: 0
 --- !u!114 &114000012637430000
@@ -487,7 +439,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Right Rotation.Z
     defaultValue: 0
 --- !u!114 &114000012697452144
@@ -509,7 +460,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Left Position.X
     defaultValue: 0
 --- !u!114 &114000013037932804
@@ -531,7 +481,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Left Position.Y
     defaultValue: 0
 --- !u!114 &114000013194096026
@@ -553,7 +502,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.Vector3InputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Left Position
     defaultValue: 0
 --- !u!114 &114000013195994428
@@ -575,7 +523,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Left Rotation.Z
     defaultValue: 0
 --- !u!114 &114000013828770450
@@ -597,7 +544,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Right Rotation.W
     defaultValue: 0
 --- !u!114 &114000014064690054
@@ -619,7 +565,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Left Position.Z
     defaultValue: 0
 --- !u!114 &114000014192652546
@@ -641,6 +586,5 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Left Rotation.X
     defaultValue: 0

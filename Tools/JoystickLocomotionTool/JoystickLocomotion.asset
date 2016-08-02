@@ -18,21 +18,22 @@ MonoBehaviour:
   - {fileID: 114000010321248940}
   m_ControlSchemes:
   - m_Name: Sixense
-    m_SerializableDeviceTypes:
-    - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
+    m_DeviceSlots:
+    - m_Key: 1
+      m_Type:
+        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
       m_TagIndex: 0
-    - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
+    - m_Key: 2
+      m_Type:
+        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
       m_TagIndex: 1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
       - controlIndex: 1
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -41,10 +42,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 0
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -53,10 +51,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 0
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -85,7 +80,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Move Right
     defaultValue: 0
 --- !u!114 &114000010321248940
@@ -107,7 +101,6 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Yaw
     defaultValue: 0
 --- !u!114 &114000011114386886
@@ -129,6 +122,5 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Move Forward
     defaultValue: 0
