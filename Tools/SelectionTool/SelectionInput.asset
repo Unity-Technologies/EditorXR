@@ -67,6 +67,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
   m_MapTypeName: SelectionInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
+  m_CustomNamespace: 
 --- !u!114 &114000010095369560
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -87,7 +88,7 @@ MonoBehaviour:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1
-    name: Multiselect
+    name: MultiSelect
     defaultValue: 0
 --- !u!114 &114000011870887724
 MonoBehaviour:

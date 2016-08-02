@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.VR.Utilities;
 
-public class MiniWorld : MonoBehaviour
+public class Chessboard : MonoBehaviour
 {
 	public Matrix4x4 Matrix
 	{
@@ -21,7 +21,7 @@ public class MiniWorld : MonoBehaviour
 
 	private static readonly int kPlaneCount = 4;
 
-	private MiniRenderer miniRenderer = null;
+	private ChessboardRenderer miniRenderer = null;
 
 	public void MoveForward()
 	{
@@ -71,7 +71,7 @@ public class MiniWorld : MonoBehaviour
 		}
 
 		Camera main = U.Camera.GetMainCamera();
-		miniRenderer = main.gameObject.AddComponent<MiniRenderer>();
+		miniRenderer = main.gameObject.AddComponent<ChessboardRenderer>();
 		miniRenderer.miniWorld = this;
 		miniRenderer.cullingMask = rendererCullingMask;
 		if (U.Object.IsEditModeActive(this))

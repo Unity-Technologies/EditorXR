@@ -3,9 +3,9 @@ using System.Collections;
 using UnityEngine.VR;
 using UnityEngine.VR.Utilities;
 
-public class MiniRenderer : MonoBehaviour
+public class ChessboardRenderer : MonoBehaviour
 {
-	public MiniWorld miniWorld = null;
+	public Chessboard miniWorld = null;
 	public LayerMask cullingMask = -1;
 
 	private Camera mainCamera = null;

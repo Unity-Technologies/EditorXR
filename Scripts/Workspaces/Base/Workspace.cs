@@ -9,7 +9,7 @@ public abstract class Workspace : MonoBehaviour
 	[SerializeField]
 	private GameObject basePrefab;
 
-	protected GameObject contents;	//Parent for this workspace's gameObjects
+	protected GameObject sceneContainer;    //Parent for this workspace's gameObjects		
 
 	//TODO: discuss/design starting transform
 	private static readonly Vector3 s_StartPosition = new Vector3(0,-0.5f,1);
@@ -44,7 +44,7 @@ public abstract class Workspace : MonoBehaviour
 		baseObject.transform.localPosition = Vector3.zero;
 		baseObject.transform.localRotation = Quaternion.identity;
 		//baseObject.transform.localScale = Vector3.one;
-		contents = handle.contents;
+		sceneContainer = handle.sceneContainer;	  
 		foreach (Canvas canvas in GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = EditorVR.eventCamera;
 	}
