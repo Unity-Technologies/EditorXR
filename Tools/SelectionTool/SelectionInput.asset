@@ -9,30 +9,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
-  m_Name: JoystickLocomotion
+  m_Name: SelectionInput
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Actions:
-  - {fileID: 114000011114386886}
-  - {fileID: 114000010230225506}
-  - {fileID: 114000010321248940}
+  - {fileID: 114000011870887724}
+  - {fileID: 114000012695177122}
+  - {fileID: 114000010095369560}
   m_ControlSchemes:
   - m_Name: Sixense
     m_SerializableDeviceTypes:
     - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: 0
-    - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      m_TagIndex: 1
+      m_TagIndex: -1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
-      - controlIndex: 1
+      - controlIndex: 2
         deviceType:
           m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
             Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+          m_TagIndex: -1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -40,11 +37,11 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 0
+      - controlIndex: 17
         deviceType:
           m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
             Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 0
+          m_TagIndex: -1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -52,21 +49,25 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 0
+      - controlIndex: 21
         deviceType:
           m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
             Culture=neutral, PublicKeyToken=null
-          m_TagIndex: 1
+          m_TagIndex: -1
+      - controlIndex: 3
+        deviceType:
+          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          m_TagIndex: -1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
       sensitivity: 1000
       snap: 1
       primaryIsButtonAxis: 0
-  m_MapTypeName: JoystickLocomotion, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+  m_MapTypeName: SelectionInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
-  m_CustomNamespace: 
---- !u!114 &114000010230225506
+--- !u!114 &114000010095369560
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -75,29 +76,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Move Right
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 1
-  m_ControlData:
-    componentControlIndices: 
-    controlType:
-      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
-    name: Move Right
-    defaultValue: 0
---- !u!114 &114000010321248940
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Yaw
+  m_Name: SelectionInput
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
@@ -105,12 +84,12 @@ MonoBehaviour:
   m_ControlData:
     componentControlIndices: 
     controlType:
-      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1
-    name: Yaw
+    name: Multiselect
     defaultValue: 0
---- !u!114 &114000011114386886
+--- !u!114 &114000011870887724
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -119,7 +98,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Move Forward
+  m_Name: SelectionInput
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
@@ -127,8 +106,30 @@ MonoBehaviour:
   m_ControlData:
     componentControlIndices: 
     controlType:
-      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1
-    name: Move Forward
+    name: Select
+    defaultValue: 0
+--- !u!114 &114000012695177122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: SelectionInput
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 1
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
+    name: Parent
     defaultValue: 0

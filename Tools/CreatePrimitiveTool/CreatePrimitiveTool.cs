@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using UnityEngine.InputNew;
 
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateUI
 {

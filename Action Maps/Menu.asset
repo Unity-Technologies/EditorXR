@@ -40,6 +40,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
   m_MapTypeName: Menu, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_CustomNamespace: 
 --- !u!114 &114000013407218016
 MonoBehaviour:
   m_ObjectHideFlags: 0

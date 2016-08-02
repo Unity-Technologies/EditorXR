@@ -20,7 +20,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000012635754194}
   - 20: {fileID: 20000012271368486}
-  - 114: {fileID: 114000011506078894}
   m_Layer: 0
   m_Name: EventRaycastCamera
   m_TagString: Untagged
@@ -59,8 +58,8 @@ Camera:
     height: 1
   near clip plane: 0.01
   far clip plane: 1000
-  field of view: 60
-  orthographic: 1
+  field of view: 1
+  orthographic: 0
   orthographic size: 0.08
   m_Depth: 0
   m_CullingMask:
@@ -71,22 +70,7 @@ Camera:
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
-  m_OcclusionCulling: 1
+  m_OcclusionCulling: 0
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
   m_StereoMirrorMode: 0
---- !u!114 &114000011506078894
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000011216369544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -768656878, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_EventMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
