@@ -150,7 +150,15 @@
 				}
 				return new List<Type>();
 			}
-			
+			public static IEnumerable<Type> GetExtensionsOfClass(Type type) {
+				if (type.IsClass) {
+					return AppDomain.CurrentDomain.GetAssemblies()
+						.SelectMany(s => s.GetTypes())
+						.Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
+				}
+				return new List<Type>();
+			}
+
 			public static void Destroy(UObject o, float t = 0f)
 			{
 				if (Application.isPlaying)

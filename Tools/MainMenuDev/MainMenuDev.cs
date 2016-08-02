@@ -37,27 +37,29 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 		}
 		m_MenuCanvas.transform.SetParent(rayOrigin, false);
 		CreateToolButtons();
-		CreateWorkstationButtons();
+		CreateWorkspaceButtons();
 	}
 
-	private void CreateWorkstationButtons()
+	private void CreateWorkspaceButtons()
 	{
-		var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
-		newButton.name = "Workspace";
-		var text = newButton.GetComponentInChildren<Text>();
-		text.text = "Workspace";
-		var button = newButton.GetComponent<Button>();
-		button.onClick.RemoveAllListeners();
-		button.onClick.AddListener(() =>
-		{
-			//HACK: Delay call for serialization bug
-			EditorApplication.delayCall += () => {
-				//HACK: GameObject.Find to get EVR reference. How should we do this?
-				Workspace.ShowWorkstation<DummyWorkspace>(GameObject.Find("EditorVR").transform);
-				U.Object.Destroy(this);
-			};
-		});
-		button.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
+		foreach (Type t in U.Object.GetExtensionsOfClass(typeof(Workspace))) {
+			var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
+			//TODO: prettify name
+			newButton.name = t.Name;
+			var text = newButton.GetComponentInChildren<Text>();
+			text.text = t.Name;
+			var button = newButton.GetComponent<Button>();
+			button.onClick.RemoveAllListeners();
+			button.onClick.AddListener(() => {
+				//HACK: Delay call for serialization bug
+				EditorApplication.delayCall += () => {
+					//HACK: GameObject.Find to get EVR reference. How should we do this?  
+					Workspace.ShowWorkspace<DummyWorkspace>(GameObject.Find("EditorVR").transform);
+					U.Object.Destroy(this);
+				};
+			});
+			button.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
+		}
 	}
 
 	void OnDestroy()
