@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.VR.Utilities;
 
+//Q: Should combine with ChessboardWorkspace?
 public class Chessboard : MonoBehaviour
 {
+	const float k_UIScale = 500;			//Set this to whatever your height/width is in the prefab
 	public Matrix4x4 Matrix
 	{
 		get
@@ -21,7 +24,19 @@ public class Chessboard : MonoBehaviour
 
 	private static readonly int kPlaneCount = 4;
 
+	[SerializeField]
+	private Transform boundsCube;
+
 	private ChessboardRenderer miniRenderer = null;
+	private float m_YBounds;
+
+	internal void SetBounds(Bounds bounds)
+	{
+		clipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x * k_UIScale);
+		clipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, bounds.size.z * k_UIScale);
+		boundsCube.transform.localScale = bounds.size;
+		boundsCube.transform.localPosition = Vector3.up * bounds.extents.y;
+	}
 
 	public void MoveForward()
 	{

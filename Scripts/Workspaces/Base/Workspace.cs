@@ -1,11 +1,13 @@
-﻿using System;
+﻿#define DEBUGDRAW
+
+using System;
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.VR.Utilities;
 
 public abstract class Workspace : MonoBehaviour
 {
+	public Bounds bounds { get; private set; }
 	[SerializeField]
 	private GameObject basePrefab;
 
@@ -47,7 +49,24 @@ public abstract class Workspace : MonoBehaviour
 		sceneContainer = handle.sceneContainer;	  
 		foreach (Canvas canvas in GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = EditorVR.eventCamera;
+		bounds = new Bounds(sceneContainer.transform.position, sceneContainer.transform.lossyScale);
 	}
+#if DEBUGDRAW
+	void OnDrawGizmos()
+	{
+		Gizmos.DrawWireCube(bounds.center, bounds.size);
+	}
+#endif
+	//Q: Should we allow SetBounds to change position?
+	public void SetBounds(Bounds b)
+	{
+		if (!b.Equals(bounds)){		 
+			b.center = bounds.center;
+			bounds = b;
+			OnBoundsChanged();
+		}
+	}
+	protected abstract void OnBoundsChanged();
 
 	public void OnBaseClick()
 	{

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.VR.Utilities;
 
 public class DummyWorkspace : Workspace
@@ -13,5 +14,9 @@ public class DummyWorkspace : Workspace
 		content.transform.localPosition = Vector3.zero;
 		content.transform.localRotation = Quaternion.identity;
 		content.transform.localScale = Vector3.one;
+	}
+
+	protected override void OnBoundsChanged()
+	{											 
 	}
 }
