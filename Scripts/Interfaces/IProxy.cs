@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using UnityEngine.InputNew;
 using System.Collections.Generic;
 
 namespace UnityEngine.VR.Proxies

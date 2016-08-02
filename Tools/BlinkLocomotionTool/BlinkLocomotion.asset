@@ -16,18 +16,17 @@ MonoBehaviour:
   - {fileID: 114000011114386886}
   m_ControlSchemes:
   - m_Name: BlinkLocomotion
-    m_SerializableDeviceTypes:
-    - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
+    m_DeviceSlots:
+    - m_Key: 1
+      m_Type:
+        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
       - controlIndex: 2
-        deviceType:
-          m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
-          m_TagIndex: -1
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -36,6 +35,7 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
   m_MapTypeName: BlinkLocomotion, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
+  m_CustomNamespace: 
 --- !u!114 &114000011114386886
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -55,6 +55,5 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
     name: Blink
     defaultValue: 0
