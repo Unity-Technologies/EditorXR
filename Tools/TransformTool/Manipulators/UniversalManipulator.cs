@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.VR.Tools;
 using System;
 using System.Collections.Generic;
+using UnityEditor.VR;
 
 public class UniversalManipulator : MonoBehaviour, IManipulator
 {
@@ -15,6 +16,9 @@ public class UniversalManipulator : MonoBehaviour, IManipulator
 	private BaseHandle m_TranslateHandleY;
 	[SerializeField]
 	private BaseHandle m_TranslateHandleZ;
+
+	[SerializeField]
+	private Transform m_PlaneHandlesParent;
 
 	[SerializeField]
 	private BaseHandle m_TranslateHandleXY;
@@ -31,7 +35,7 @@ public class UniversalManipulator : MonoBehaviour, IManipulator
 	private BaseHandle m_RotateHandleZ;
 
 	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
-
+	private bool m_Dragging = false;
 	public Action<Vector3> translate { private get; set; }
 	public Action<Quaternion> rotate { private get; set; }
 
@@ -94,6 +98,22 @@ public class UniversalManipulator : MonoBehaviour, IManipulator
 		}
 	}
 
+	void Update()
+	{
+		var viewerPosition = VRView.viewerCamera.transform.position;
+		if (!m_Dragging)
+		{
+			foreach (Transform t in m_PlaneHandlesParent)
+			{
+				var localPos = t.localPosition;
+				localPos.x = Mathf.Abs(localPos.x) * (transform.position.x < viewerPosition.x ? 1 : -1);
+				localPos.y = Mathf.Abs(localPos.y) * (transform.position.y < viewerPosition.y ? 1 : -1);
+				localPos.z = Mathf.Abs(localPos.z) * (transform.position.z < viewerPosition.z ? 1 : -1);
+				t.localPosition = localPos;
+			}
+		}
+	}
+
 	private void TranslateHandleOnDrag(BaseHandle handle, Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion))
 	{
 		translate(deltaPosition);
@@ -108,16 +128,18 @@ public class UniversalManipulator : MonoBehaviour, IManipulator
 	{
 		SetAllHandlesActive(false);
 		handle.gameObject.SetActive(true);
+		m_Dragging = true;
 	}
 
 	private void HandleOnEndDrag(BaseHandle handle, Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion))
 	{
 		SetAllHandlesActive(true);
+		m_Dragging = false;
 	}
 
 	private void SetAllHandlesActive(bool active)
 	{
-		foreach(var handle in m_AllHandles)
+		foreach (var handle in m_AllHandles)
 			handle.gameObject.SetActive(active);
 	}
 }

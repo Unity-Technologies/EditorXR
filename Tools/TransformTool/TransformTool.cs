@@ -18,10 +18,6 @@ public class TransformTool : MonoBehaviour, ITool
 	private Vector3 m_TargetPosition;
 	private Quaternion m_TargetRotation;
 
-	void Awake()
-	{
-	}
-
 	void OnEnable()
 	{
 		Selection.selectionChanged += OnSelectionChanged;
@@ -36,7 +32,7 @@ public class TransformTool : MonoBehaviour, ITool
 	{
 		if (Selection.activeGameObject == null)
 		{
-
+			m_CurrentManipulator.SetActive(false);
 		}
 		else
 		{
@@ -48,15 +44,14 @@ public class TransformTool : MonoBehaviour, ITool
 				{
 					manip.translate = Translate;
 					manip.rotate = Rotate;
-
 				}
 			}
+			m_CurrentManipulator.SetActive(true);
 			m_CurrentManipulator.transform.position = Selection.activeGameObject.transform.position;
 			m_CurrentManipulator.transform.rotation = Quaternion.identity;
-			m_TargetPosition = m_CurrentManipulator.transform.position;
-			m_TargetRotation = m_CurrentManipulator.transform.rotation;
+			m_TargetPosition = GetSelectionCenter();
+			m_TargetRotation = Selection.activeGameObject.transform.rotation; //TODO change intial rotation if transforming local / world
 		}
-
 	}
 
 	void Update()
@@ -70,20 +65,34 @@ public class TransformTool : MonoBehaviour, ITool
 			Selection.activeGameObject.transform.rotation = Quaternion.Slerp(Selection.activeGameObject.transform.rotation,
 				m_TargetRotation, 0.2f);
 
-			//m_CurrentManipulator.transform.localScale = Vector3.one * 0.2f *
-			//											Vector3.Distance(VRView.viewerCamera.transform.position, m_CurrentManipulator.transform.position);
-
+			UpdateManipulatorSize();
 		}
 	}
 
 	private void Translate(Vector3 delta)
 	{
 		m_TargetPosition += delta;
-		//m_CurrentManipulator.transform.Translate(delta);
 	}
 
 	private void Rotate(Quaternion delta)
 	{
-		m_TargetRotation = delta*m_TargetRotation;
+		m_TargetRotation = delta * m_TargetRotation;
+	}
+
+	private Vector3 GetSelectionCenter()
+	{
+		//TODO get center of all selected objects
+		return Selection.activeGameObject.transform.position;
+	}
+
+	private void GetSelectionBounds()
+	{
+		//TODO calculate bounds of selection
+	}
+	private void UpdateManipulatorSize()
+	{
+		var distance = Vector3.Distance(VRView.viewerCamera.transform.position, m_CurrentManipulator.transform.position);
+		//TODO resize manipulator based on distance
+											
 	}
 }

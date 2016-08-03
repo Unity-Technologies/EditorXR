@@ -1,12 +1,40 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.EventSystems;
+using UnityEngine.VR.Proxies;
 
 public class LinearHandle : BaseHandle
 {
-	private const float kMaxDragDistance = 100f;
+	private const float kMaxDragDistance = 1000f;
 	private Collider m_PlaneCollider;
 	private Vector3 m_LastPosition;
+
+	[SerializeField]
+	private Transform m_HandleTip;
+
+	void Update()
+	{
+		if (m_HandleTip != null)
+		{
+			if (m_Hovering || m_Dragging) // Reposition handle tip based on current raycast position when hovering or dragging
+			{
+				m_HandleTip.gameObject.SetActive(true);
+				var eventData = ((MultipleRayInputModule)EventSystem.current.currentInputModule).GetPointerEventData(m_RayOrigin);
+				if (eventData != null)
+					m_HandleTip.position =
+						transform.TransformPoint(new Vector3(0, 0,
+							transform.InverseTransformPoint(eventData.pointerCurrentRaycast.worldPosition).z));
+			}
+			else
+				m_HandleTip.gameObject.SetActive(false);
+		}
+	}
+
+	void OnDisable()
+	{
+		if (m_HandleTip != null)
+			m_HandleTip.gameObject.SetActive(false);
+	}
 
 	public override void OnBeginDrag(PointerEventData eventData)
 	{
@@ -25,9 +53,7 @@ public class LinearHandle : BaseHandle
 		forward.z = 0;
 		m_PlaneCollider.transform.forward = transform.TransformVector(forward);
 
-		//m_PlaneCollider.GetComponent<Renderer>().enabled = false;
-		m_PlaneCollider.GetComponent<Renderer>().sharedMaterial = m_DebugMaterial;
-		m_Collider.enabled = false;
+		m_PlaneCollider.GetComponent<Renderer>().enabled = false;
 		m_PlaneCollider.gameObject.layer = LayerMask.NameToLayer("UI");
 
 		OnHandleBeginDrag();
@@ -46,7 +72,7 @@ public class LinearHandle : BaseHandle
 		var forward = transform.InverseTransformVector(m_RayOrigin.forward);
 		forward.z = 0;
 		m_PlaneCollider.transform.forward = transform.TransformVector(forward);
-				
+
 		delta = transform.InverseTransformVector(delta);
 		delta.x = 0;
 		delta.y = 0;

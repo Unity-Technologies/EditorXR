@@ -13,6 +13,7 @@ namespace UnityEngine.VR.Proxies
 		public Camera EventCameraPrefab; // Camera to be instantiated and assigned to EventCamera property
 
 		private readonly List<RaycastSource> m_RaycastSources = new List<RaycastSource>();
+		private Dictionary<Transform, int> m_RayOriginToPointerID = new Dictionary<Transform, int>();
 		private List<PointerEventData> PointEvents = new List<PointerEventData>();
 		private List<GameObject> CurrentPoint = new List<GameObject>();
 		private List<GameObject> CurrentPressed = new List<GameObject>();
@@ -65,7 +66,10 @@ namespace UnityEngine.VR.Proxies
 			actions.active = false;
 			Transform rayOrigin = null;
 			if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
+			{
+				m_RayOriginToPointerID.Add(rayOrigin, m_RaycastSources.Count);
 				m_RaycastSources.Add(new RaycastSource(proxy, node, rayOrigin, actions));
+			}
 			else
 				Debug.LogError("Failed to get ray origin transform for node " + node + " from proxy " + proxy);
 		}
@@ -73,6 +77,15 @@ namespace UnityEngine.VR.Proxies
 		public Transform GetRayOrigin(int index)
 		{
 			return m_RaycastSources[index].rayOrigin;
+		}
+
+		public PointerEventData GetPointerEventData(Transform rayOrigin)
+		{
+			int id;
+			if(m_RayOriginToPointerID.TryGetValue(rayOrigin, out id))
+				return PointEvents[id];
+
+			return null;
 		}
 
 		public override void Process()
@@ -119,7 +132,10 @@ namespace UnityEngine.VR.Proxies
 
 				if (CurrentDragging[i] != null)
 					ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteEvents.dragHandler);
+
+				m_PointerData[i] = PointEvents[i];
 			}
+
 		}
 
 		private void OnSelectPressed(int i)

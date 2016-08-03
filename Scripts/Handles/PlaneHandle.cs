@@ -5,8 +5,17 @@ using UnityEngine.VR.Proxies;
 
 public class PlaneHandle : BaseHandle
 {
+	[SerializeField]
+	private Material m_PlaneMaterial;
 	private Collider m_PlaneCollider;
+	private Collider m_Collider;
 	private Vector3 m_LastPosition;
+
+	protected override void Awake()
+	{
+		base.Awake();
+		m_Collider = GetComponent<Collider>();
+	}
 
 	public override void OnBeginDrag(PointerEventData eventData)
 	{
@@ -22,8 +31,7 @@ public class PlaneHandle : BaseHandle
 		m_PlaneCollider.transform.position = transform.position;
 		m_PlaneCollider.transform.rotation = transform.rotation;
 
-		//m_PlaneCollider.GetComponent<Renderer>().enabled = false;
-		m_PlaneCollider.GetComponent<Renderer>().sharedMaterial = m_DebugMaterial;
+		m_PlaneCollider.GetComponent<Renderer>().sharedMaterial = m_PlaneMaterial;
 		m_Collider.enabled = false;
 		m_PlaneCollider.gameObject.layer = LayerMask.NameToLayer("UI");
 
@@ -32,6 +40,10 @@ public class PlaneHandle : BaseHandle
 
 	public override void OnDrag(PointerEventData eventData)
 	{
+		// Flip raycast blocking plane
+		if (Vector3.Dot(m_PlaneCollider.transform.forward, m_RayOrigin.forward) < 0f)
+			m_PlaneCollider.transform.forward = -m_PlaneCollider.transform.forward;
+
 		Vector3 worldPosition = m_LastPosition;
 		RaycastHit hit;
 		if (m_PlaneCollider.Raycast(new Ray(m_RayOrigin.position, m_RayOrigin.forward), out hit, Mathf.Infinity))
@@ -39,10 +51,6 @@ public class PlaneHandle : BaseHandle
 
 		var delta = worldPosition - m_LastPosition;
 		m_LastPosition = worldPosition;
-
-		// Flip raycast blocking plane
-		if (Vector3.Dot(m_PlaneCollider.transform.forward, m_RayOrigin.forward) < 0)
-			m_PlaneCollider.transform.Rotate(m_PlaneCollider.transform.up, 180.0f);
 
 		delta = transform.InverseTransformVector(delta);
 		delta.z = 0;
@@ -54,6 +62,7 @@ public class PlaneHandle : BaseHandle
 	public override void OnEndDrag(PointerEventData eventData)
 	{
 		base.OnEndDrag(eventData);
+		m_Collider.enabled = true;
 
 		if (m_PlaneCollider != null)
 			DestroyImmediate(m_PlaneCollider.gameObject);
