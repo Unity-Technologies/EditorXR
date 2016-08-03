@@ -8,11 +8,11 @@ using UnityEngine.VR.Utilities;
 public abstract class Workspace : MonoBehaviour
 {
 	public Bounds bounds { get; private set; }
-	private const float handleMargin = 0.2f;
-	[SerializeField]
-	private GameObject basePrefab;
-
 	protected WorkspaceHandle handle;
+
+	private const float k_HandleMargin = 0.2f;	//Amount of space (in UI units) between handle and content bounds
+	[SerializeField]
+	private GameObject m_BasePrefab;
 
 	//TODO: discuss/design starting transform
 	private static readonly Vector3 s_StartPosition = new Vector3(0,-0.15f,0.8f);
@@ -20,9 +20,9 @@ public abstract class Workspace : MonoBehaviour
 	private static readonly Vector3 s_InitBounds = new Vector3(0.8f, 0.6f, 0.6f);
 
 	//TODO: decide how to track existing workspaces
-	static readonly Dictionary<Type, List<Workspace>> s_ExistingTypes = new Dictionary<Type, List<Workspace>>(); 
+	private static readonly Dictionary<Type, List<Workspace>> s_ExistingTypes = new Dictionary<Type, List<Workspace>>(); 
 
-	//TODO: Refactor this function to not use parent
+	//TODO: Refactor this function to not use parent, how should we get a parent transform?
 	public static void ShowWorkspace<T>(Transform parent) where T: Workspace {
 		ShowWorkspace(typeof(T), parent);
 	}
@@ -51,11 +51,11 @@ public abstract class Workspace : MonoBehaviour
 	{
 		transform.position = s_StartPosition;
 		transform.rotation = s_StartRotation;
-		GameObject baseObject = U.Object.ClonePrefab(basePrefab.gameObject, gameObject);
+		GameObject baseObject = U.Object.ClonePrefab(m_BasePrefab.gameObject, gameObject);
 		handle = baseObject.GetComponent<WorkspaceHandle>();
 		handle.owner = this;
 		//TODO: ASSERT if handleRect is null
-		//Question: use SetParent(transform, false)?
+		//Q: use SetParent(transform, false)?
 		baseObject.transform.localPosition = Vector3.zero;
 		baseObject.transform.localRotation = Quaternion.identity;
 		//baseObject.transform.localScale = Vector3.one;   
@@ -77,8 +77,8 @@ public abstract class Workspace : MonoBehaviour
 		{
 			b.center = bounds.center;
 			bounds = b;
-			handle.handle.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, b.size.x + handleMargin);
-			handle.handle.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, b.size.z + handleMargin);
+			handle.handle.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, b.size.x + k_HandleMargin);
+			handle.handle.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, b.size.z + k_HandleMargin);
 			OnBoundsChanged();
 		}
 	}

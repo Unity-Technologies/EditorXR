@@ -5,32 +5,32 @@ public class ChessboardWorkspace : Workspace
 {
 	//HACK: dummy input for bounds change
 	[SerializeField]
-	private Renderer dummyBounds;
+	private Renderer m_DummyBounds;
 	//NOTE: since pretty much all workspaces will want a prefab, should this go in the base class?
 	[SerializeField]
-	private GameObject contentPrefab;
+	private GameObject m_ContentPrefab;
 
-	private Chessboard chessboard;
+	private Chessboard m_Chessboard;
 
 	public override void Awake()
 	{
 		base.Awake();
-		GameObject content = U.Object.ClonePrefab(contentPrefab, handle.sceneContainer);
+		GameObject content = U.Object.ClonePrefab(m_ContentPrefab, handle.sceneContainer);
 		content.transform.localPosition = Vector3.zero;
 		content.transform.localRotation = Quaternion.identity;
 		content.transform.localScale = Vector3.one;
-		chessboard = GetComponentInChildren<Chessboard>();
+		m_Chessboard = GetComponentInChildren<Chessboard>();
 		SetBounds(bounds);
 		//TODO: ASSERT if chessboard is false		   
 	}
 	void Update()
 	{
-		if (dummyBounds)
-			SetBounds(dummyBounds.bounds);
+		if (m_DummyBounds)
+			SetBounds(m_DummyBounds.bounds);
 	}
 
 	protected override void OnBoundsChanged()
 	{
-		chessboard.SetBounds(bounds);
+		m_Chessboard.SetBounds(bounds);
 	}
 }

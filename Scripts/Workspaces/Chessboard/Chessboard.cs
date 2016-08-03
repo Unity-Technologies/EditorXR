@@ -4,7 +4,7 @@ using UnityEngine.VR.Utilities;
 //Q: Should combine with ChessboardWorkspace?
 public class Chessboard : MonoBehaviour
 {
-	public Matrix4x4 Matrix
+	public Matrix4x4 matrix
 	{
 		get
 		{		
@@ -14,49 +14,51 @@ public class Chessboard : MonoBehaviour
 		}
 	}
 
-	public Transform clipCenter = null;
-	public float[] clipDistances = new float[kPlaneCount];
-	public RectTransform clipRect = null;
-	public LayerMask rendererCullingMask = -1;
+	public Transform clipCenter { get; private set; }
+	public readonly float[] clipDistances = new float[k_PlaneCount];         //Remove readonly if you want to see clip distances in inspector
 
-	private const int kPlaneCount = 6;
-	private const float translationScale = 0.1f;
+	private static readonly LayerMask s_RendererCullingMask = -1;
+	private const int k_PlaneCount = 6;
+	private const float k_TranslationScale = 0.1f;
 
 	[SerializeField]
-	private Transform boundsCube;
+	private RectTransform m_ClipRect = null;
+	[SerializeField]
+	private Transform m_BoundsCube;
 
-	private ChessboardRenderer miniRenderer = null;
+	private ChessboardRenderer m_ChessboardRenderer = null;
 	private float m_YBounds = 1;
-
-	internal void SetBounds(Bounds bounds)
-	{
-		clipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x);
-		clipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, bounds.size.z);
-		boundsCube.transform.localScale = bounds.size;
-		boundsCube.transform.localPosition = Vector3.up * bounds.extents.y;
-		m_YBounds = bounds.size.y;
-	}
 
 	public void MoveForward()
 	{
-		clipCenter.Translate(Vector3.forward * translationScale);
+		clipCenter.Translate(Vector3.forward * k_TranslationScale);
 	}
 
 	public void MoveBackward()
 	{
-		clipCenter.Translate(Vector3.back * translationScale);
+		clipCenter.Translate(Vector3.back * k_TranslationScale);
 	}
 
 	public void MoveLeft()
 	{
-		clipCenter.Translate(Vector3.left * translationScale);
+		clipCenter.Translate(Vector3.left * k_TranslationScale);
 	}
 
 	public void MoveRight()
 	{
-		clipCenter.Translate(Vector3.right * translationScale);
+		clipCenter.Translate(Vector3.right * k_TranslationScale);
 	}
 
+	internal void SetBounds(Bounds bounds)
+	{
+		m_ClipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x);
+		m_ClipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, bounds.size.z);
+		m_BoundsCube.transform.localScale = bounds.size;
+		m_BoundsCube.transform.localPosition = Vector3.up * bounds.extents.y;
+		m_YBounds = bounds.size.y;
+	}
+
+	//Q: Is this still needed?
 	public bool ClipPlanesContain(Vector3 worldPosition)
 	{
 		Vector3[] planeNormals = new Vector3[]{
@@ -68,7 +70,7 @@ public class Chessboard : MonoBehaviour
 			new Vector3(0, -1, 0),
 		};
 
-		for (int i = 0; i < kPlaneCount; i++)
+		for (int i = 0; i < k_PlaneCount; i++)
 		{
 			if (Vector3.Dot(worldPosition - (clipCenter.position - planeNormals[i] * clipDistances[i]), planeNormals[i]) < 0f)
 				return false;
@@ -87,11 +89,11 @@ public class Chessboard : MonoBehaviour
 		}
 
 		Camera main = U.Camera.GetMainCamera();
-		miniRenderer = main.gameObject.AddComponent<ChessboardRenderer>();
-		miniRenderer.miniWorld = this;
-		miniRenderer.cullingMask = rendererCullingMask;
+		m_ChessboardRenderer = main.gameObject.AddComponent<ChessboardRenderer>();
+		m_ChessboardRenderer.miniWorld = this;
+		m_ChessboardRenderer.cullingMask = s_RendererCullingMask;
 		if (U.Object.IsEditModeActive(this))
-			miniRenderer.runInEditMode = true;
+			m_ChessboardRenderer.runInEditMode = true;
 
 		// Sync with where camera is initially
 		Transform pivot = U.Camera.GetViewerPivot();
@@ -103,17 +105,17 @@ public class Chessboard : MonoBehaviour
 		if ((clipCenter.hideFlags & HideFlags.DontSave) != 0)
 			U.Object.Destroy(clipCenter.gameObject);
 
-		if (miniRenderer)
-			U.Object.Destroy(miniRenderer);
+		if (m_ChessboardRenderer)
+			U.Object.Destroy(m_ChessboardRenderer);
 	}
 
 	private void LateUpdate()
 	{
 		// Adjust clip distances, which are in world coordinates to match with the UI clip rect
 		Vector3[] fourCorners = new Vector3[4]; // Clock-wise from bottom-left corner
-		clipRect.GetWorldCorners(fourCorners);
+		m_ClipRect.GetWorldCorners(fourCorners);
 
-		Vector3 center = transform.InverseTransformPoint(clipRect.position);
+		Vector3 center = transform.InverseTransformPoint(m_ClipRect.position);
 		for (int i = 0; i < 4; i++)
 			fourCorners[i] = transform.InverseTransformPoint(fourCorners[i]);
 

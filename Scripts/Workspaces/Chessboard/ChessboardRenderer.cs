@@ -3,49 +3,49 @@ using UnityEngine.VR.Utilities;
 
 public class ChessboardRenderer : MonoBehaviour
 {
-	public Chessboard miniWorld = null;
-	public LayerMask cullingMask = -1;
+	public Chessboard miniWorld { private get; set; }
+	public LayerMask cullingMask { private get; set; }
 
-	private Camera mainCamera = null;
-	private Camera miniCamera = null;
-	private bool renderingMiniWorlds = false;
+	private Camera m_MainCamera = null;
+	private Camera m_MiniCamera = null;
+	private bool m_RenderingMiniWorlds = false;
 
 	private void OnEnable()
 	{
 		GameObject go = new GameObject("MiniWorldCamera", typeof(Camera));
 		go.hideFlags = HideFlags.DontSave;
-		miniCamera = go.GetComponent<Camera>();
+		m_MiniCamera = go.GetComponent<Camera>();
 		go.SetActive(false);
-		renderingMiniWorlds = false;
+		m_RenderingMiniWorlds = false;
 	}
 
 	private void OnDisable()
 	{
-		U.Object.Destroy(miniCamera.gameObject);
+		U.Object.Destroy(m_MiniCamera.gameObject);
 	}
 
 	private void OnPreRender()
 	{
-		if (!mainCamera)
-			mainCamera = U.Camera.GetMainCamera();
+		if (!m_MainCamera)
+			m_MainCamera = U.Camera.GetMainCamera();
 
-		mainCamera.cullingMask &= ~LayerMask.GetMask("MiniWorldOnly");
+		m_MainCamera.cullingMask &= ~LayerMask.GetMask("MiniWorldOnly");
 	}
 
 	private void OnPostRender()
 	{
-		if (!renderingMiniWorlds)
+		if (!m_RenderingMiniWorlds)
 		{
 			// If we ever support multiple mini-worlds, then we could collect them all and render them in one loop here
-			renderingMiniWorlds = true;
+			m_RenderingMiniWorlds = true;
 
-			if (mainCamera && miniWorld && miniWorld.clipCenter)
+			if (m_MainCamera && miniWorld && miniWorld.clipCenter)
 			{
-				miniCamera.CopyFrom(mainCamera);
+				m_MiniCamera.CopyFrom(m_MainCamera);
 
-				miniCamera.cullingMask = cullingMask;
-				miniCamera.clearFlags = CameraClearFlags.Nothing;
-				miniCamera.worldToCameraMatrix = mainCamera.worldToCameraMatrix * miniWorld.Matrix;
+				m_MiniCamera.cullingMask = cullingMask;
+				m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
+				m_MiniCamera.worldToCameraMatrix = m_MainCamera.worldToCameraMatrix * miniWorld.matrix;
 				Shader shader = Shader.Find("Custom/Custom Clip Planes");
 				//mainCamera.SetReplacementShader(shader, null);
 				if (miniWorld.clipCenter)
@@ -55,10 +55,10 @@ public class ChessboardRenderer : MonoBehaviour
 					for (int i = 0; i < 6; i++)
 						Shader.SetGlobalFloat("_ClipDistance" + i.ToString(), miniWorld.clipDistances[i]);
 				}
-				miniCamera.RenderWithShader(shader, string.Empty);
+				m_MiniCamera.RenderWithShader(shader, string.Empty);
 			}
 
-			renderingMiniWorlds = false;
+			m_RenderingMiniWorlds = false;
 		}
 	}
 }

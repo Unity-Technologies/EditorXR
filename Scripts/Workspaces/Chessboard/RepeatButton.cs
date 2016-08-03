@@ -4,12 +4,13 @@ using UnityEngine.UI;
 
 public class RepeatButton : MonoBehaviour
 {
-    public Button button = null;
-    public bool Repeat { get; set; }
+	public bool repeat { private get; set; }
+	[SerializeField]
+    private Button m_Button = null;
 
     void Update()
     {
-        if (Repeat)
-            button.onClick.Invoke();
+        if (repeat)
+            m_Button.onClick.Invoke();
     }
 }

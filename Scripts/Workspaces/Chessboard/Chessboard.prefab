@@ -82,8 +82,8 @@ GameObject:
   - 222: {fileID: 222000011929167030}
   - 114: {fileID: 114000012583507708}
   - 114: {fileID: 114000010820437378}
-  - 114: {fileID: 114000013565397136}
   - 114: {fileID: 114000014254666354}
+  - 114: {fileID: 114000013565397136}
   m_Layer: 5
   m_Name: BottomButton
   m_TagString: Untagged
@@ -230,7 +230,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  button: {fileID: 114000013063977974}
+  m_Button: {fileID: 114000013063977974}
 --- !u!114 &114000010031737022
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -305,7 +305,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 114000011075874164}
-          m_MethodName: set_Repeat
+          m_MethodName: set_repeat
           m_Mode: 6
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -322,7 +322,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 114000011075874164}
-          m_MethodName: set_Repeat
+          m_MethodName: set_repeat
           m_Mode: 6
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -453,7 +453,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  button: {fileID: 114000010834736360}
+  m_Button: {fileID: 114000010834736360}
 --- !u!114 &114000011600165426
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -519,19 +519,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  clipCenter: {fileID: 0}
-  clipDistances:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  clipRect: {fileID: 224000012146066746}
-  rendererCullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  boundsCube: {fileID: 4000010347897696}
+  m_ClipRect: {fileID: 224000012146066746}
+  m_BoundsCube: {fileID: 4000010347897696}
 --- !u!114 &114000012583507708
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -572,7 +561,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  button: {fileID: 114000011600165426}
+  m_Button: {fileID: 114000011600165426}
 --- !u!114 &114000013063977974
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -644,7 +633,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 114000010031692016}
-          m_MethodName: set_Repeat
+          m_MethodName: set_repeat
           m_Mode: 6
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -661,7 +650,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 114000010031692016}
-          m_MethodName: set_Repeat
+          m_MethodName: set_repeat
           m_Mode: 6
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -748,7 +737,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 114000014254666354}
-          m_MethodName: set_Repeat
+          m_MethodName: set_repeat
           m_Mode: 6
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -765,7 +754,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 114000014254666354}
-          m_MethodName: set_Repeat
+          m_MethodName: set_repeat
           m_Mode: 6
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -796,7 +785,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 114000012965631848}
-          m_MethodName: set_Repeat
+          m_MethodName: set_repeat
           m_Mode: 6
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -813,7 +802,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 114000012965631848}
-          m_MethodName: set_Repeat
+          m_MethodName: set_repeat
           m_Mode: 6
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -838,7 +827,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  button: {fileID: 114000010820437378}
+  m_Button: {fileID: 114000010820437378}
 --- !u!222 &222000011148408520
 CanvasRenderer:
   m_ObjectHideFlags: 1
