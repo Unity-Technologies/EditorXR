@@ -20,7 +20,6 @@ public class Chessboard : MonoBehaviour
 	public RectTransform clipRect = null;
 	public LayerMask rendererCullingMask = -1;
 
-	private const float k_UIScale = 500;            //Set this to whatever your height/width is in the prefab
 	private static readonly int kPlaneCount = 6;
 
 	[SerializeField]
@@ -31,8 +30,8 @@ public class Chessboard : MonoBehaviour
 
 	internal void SetBounds(Bounds bounds)
 	{
-		clipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x * k_UIScale);
-		clipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, bounds.size.z * k_UIScale);
+		clipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x);
+		clipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, bounds.size.z);
 		boundsCube.transform.localScale = bounds.size;
 		boundsCube.transform.localPosition = Vector3.up * bounds.extents.y;
 		m_YBounds = bounds.size.y;
@@ -85,7 +84,6 @@ public class Chessboard : MonoBehaviour
 			GameObject go = new GameObject("MiniWorldClipCenter");
 			go.hideFlags = HideFlags.DontSave;
 			clipCenter = go.transform;
-			SetBounds(new Bounds(Vector3.zero, Vector3.one));
 		}
 
 		Camera main = U.Camera.GetMainCamera();
@@ -125,6 +123,6 @@ public class Chessboard : MonoBehaviour
 		clipDistances[2] = Mathf.Abs((fourCorners[2] - center).x);
 		clipDistances[3] = Mathf.Abs((fourCorners[3] - center).z);
 		clipDistances[4] = m_YBounds - center.y;
-		clipDistances[5] = 0;							 
+		clipDistances[5] = 0;
 	}
 }

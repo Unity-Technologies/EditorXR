@@ -9,6 +9,7 @@ public class WorkspaceHandle : MonoBehaviour
 	//Q: Is this "link up the chain" OK?
 	public Workspace owner;
 	public GameObject sceneContainer;
+	public RectTransform handle;
 
 	public void OnHandleClick()
 	{
