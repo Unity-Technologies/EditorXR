@@ -7,6 +7,7 @@ using System.Collections;
 using UnityEditor.VR.Helpers;
 using System.Reflection;
 using Object = UnityEngine.Object;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEditor.VR
 {
@@ -136,6 +137,8 @@ namespace UnityEditor.VR
 			m_Camera = cameraGO.GetComponent<Camera>();
 			m_Camera.enabled = false;
 			m_Camera.cameraType = CameraType.VR;
+
+			U.Object.AddComponent<VivePoseUpdater>(cameraGO);
 
 			GameObject pivotGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCameraPivot", EditorVR.kDefaultHideFlags, typeof(EditorMonoBehaviour));
 			m_CameraPivot = pivotGO.transform;

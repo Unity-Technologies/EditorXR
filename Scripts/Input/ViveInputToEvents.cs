@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;	 
 using UnityEngine;
-using UnityEngine.InputNew;
-using UnityEngine.VR;
+using UnityEngine.InputNew;			  
+using UnityEngine.VR.Utilities;
 using Valve.VR;
 
 public class ViveInputToEvents : MonoBehaviour
@@ -18,8 +15,17 @@ public class ViveInputToEvents : MonoBehaviour
 
 	public bool active { get; private set; }
 
+	private VivePoseUpdater poseUpdater;
+
 	public void Update()
 	{
+		if (!poseUpdater)
+		{
+			poseUpdater = U.Camera.GetMainCamera().GetComponent<VivePoseUpdater>();
+			if (poseUpdater)
+				poseUpdater.eventBridge = this;
+		}
+
 		active = false;
 
 		for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++)
@@ -37,7 +43,7 @@ public class ViveInputToEvents : MonoBehaviour
 
 				if (hand == VRInputDevice.Handedness.Left)
 					steamDeviceIndices[(int)hand] = steamDeviceIndex;
-				else if(steamDeviceIndex != steamDeviceIndices[(int)VRInputDevice.Handedness.Left]) // Do not assign device to right hand if it is same device as left hand
+				else if (steamDeviceIndex != steamDeviceIndices[(int)VRInputDevice.Handedness.Left]) // Do not assign device to right hand if it is same device as left hand
 					steamDeviceIndices[(int)hand] = steamDeviceIndex;
 				else
 					continue;
@@ -48,8 +54,8 @@ public class ViveInputToEvents : MonoBehaviour
 			int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
 			SendButtonEvents(steamDeviceIndex, deviceIndex);
 			SendAxisEvents(steamDeviceIndex, deviceIndex);
-			SendTrackingEvents(steamDeviceIndex, deviceIndex);
-		}
+			//SendTrackingEvents(steamDeviceIndex, deviceIndex);
+		} 
 	}
 
 	public const int controllerCount = 10;
@@ -105,22 +111,62 @@ public class ViveInputToEvents : MonoBehaviour
 		}
 	}
 
-	private void SendTrackingEvents(int steamDeviceIndex, int deviceIndex)
+	public void OnNewPoses(TrackedDevicePose_t[] poses)
 	{
-		var inputEvent = InputSystem.CreateEvent<VREvent>();
-		inputEvent.deviceType = typeof(VRInputDevice);
-		inputEvent.deviceIndex = deviceIndex;
-		var pose = new SteamVR_Utils.RigidTransform(SteamVR_Controller.Input(steamDeviceIndex).GetPose().mDeviceToAbsoluteTracking);
-		inputEvent.localPosition = pose.pos;
-		inputEvent.localRotation = pose.rot;
+		for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++)
+		{
+			//TODO: Extract the following into a function which determines steamDeviceIndex and deviceIndex
+			var steamDeviceIndex = steamDeviceIndices[(int)hand];
 
-		if (inputEvent.localPosition == m_LastPositionValues[steamDeviceIndex] &&
-			inputEvent.localRotation == m_LastRotationValues[steamDeviceIndex])
-			return;
+			if (steamDeviceIndex == -1)
+			{
+				steamDeviceIndex = SteamVR_Controller.GetDeviceIndex(hand == VRInputDevice.Handedness.Left
+					 ? SteamVR_Controller.DeviceRelation.Leftmost
+					 : SteamVR_Controller.DeviceRelation.Rightmost);
 
-		m_LastPositionValues[steamDeviceIndex] = inputEvent.localPosition;
-		m_LastRotationValues[steamDeviceIndex] = inputEvent.localRotation;
+				if (steamDeviceIndex == -1)
+					continue;
 
-		InputSystem.QueueEvent(inputEvent);
+				if (hand == VRInputDevice.Handedness.Left)
+					steamDeviceIndices[(int)hand] = steamDeviceIndex;
+				else if (steamDeviceIndex != steamDeviceIndices[(int)VRInputDevice.Handedness.Left]) // Do not assign device to right hand if it is same device as left hand
+					steamDeviceIndices[(int)hand] = steamDeviceIndex;
+				else
+					continue;
+			}
+
+			int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4;
+
+			//From SteamVR_TrackedObject.OnNewPose				  
+			if (poses.Length <= steamDeviceIndex)
+				return;
+
+			if (!poses[steamDeviceIndex].bDeviceIsConnected)
+				return;
+
+			if (!poses[steamDeviceIndex].bPoseIsValid)
+				return;
+
+			var pose = new SteamVR_Utils.RigidTransform(poses[steamDeviceIndex].mDeviceToAbsoluteTracking);
+			//End SteamVR
+
+			var inputEvent = InputSystem.CreateEvent<VREvent>();
+			inputEvent.deviceType = typeof(VRInputDevice);
+			inputEvent.deviceIndex = deviceIndex;
+
+			inputEvent.localPosition = pose.pos;
+			inputEvent.localRotation = pose.rot;
+
+			//NB: This never seems to happen
+			//if (inputEvent.localPosition == m_LastPositionValues[steamDeviceIndex] &&
+			//	inputEvent.localRotation == m_LastRotationValues[steamDeviceIndex])
+			//	return;
+
+			m_LastPositionValues[steamDeviceIndex] = inputEvent.localPosition;
+			m_LastRotationValues[steamDeviceIndex] = inputEvent.localRotation;
+
+			InputSystem.QueueEvent(inputEvent);
+		}
+
 	}
 }
