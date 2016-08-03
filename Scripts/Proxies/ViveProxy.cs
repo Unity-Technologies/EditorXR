@@ -27,6 +27,7 @@ namespace UnityEngine.VR.Proxies
 		{
 			base.Start();
 			SteamVR_Render.instance.transform.parent = gameObject.transform;
+			U.Object.AddComponent<VivePoseUpdater>(U.Camera.GetMainCamera().gameObject);
 			m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(); // TODO: AddComponent at runtime and remove it from the prefab (requires the steam device model loading to work properly in editor)            
 			m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>();
 		}

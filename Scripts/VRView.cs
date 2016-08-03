@@ -138,8 +138,6 @@ namespace UnityEditor.VR
 			m_Camera.enabled = false;
 			m_Camera.cameraType = CameraType.VR;
 
-			U.Object.AddComponent<VivePoseUpdater>(cameraGO);
-
 			GameObject pivotGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCameraPivot", EditorVR.kDefaultHideFlags, typeof(EditorMonoBehaviour));
 			m_CameraPivot = pivotGO.transform;
 			m_Camera.transform.parent = m_CameraPivot;
