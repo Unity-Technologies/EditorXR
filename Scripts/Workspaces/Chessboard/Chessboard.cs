@@ -7,10 +7,9 @@ public class Chessboard : MonoBehaviour
 	public Matrix4x4 Matrix
 	{
 		get
-		{
-			Vector3 centerOffset = clipCenter.position;
-			centerOffset.y = 0f; // we only need to offset in x/z, so the center of the miniworld is in sync with the clipcenter
-			Matrix4x4 clipOffsetMatrix = Matrix4x4.TRS(centerOffset, Quaternion.identity, Vector3.one);
+		{		
+			//Q: use rotation?
+			Matrix4x4 clipOffsetMatrix = Matrix4x4.TRS(clipCenter.position, Quaternion.identity, clipCenter.lossyScale);
 			return transform.localToWorldMatrix * clipOffsetMatrix.inverse;
 		}
 	}
@@ -20,7 +19,8 @@ public class Chessboard : MonoBehaviour
 	public RectTransform clipRect = null;
 	public LayerMask rendererCullingMask = -1;
 
-	private static readonly int kPlaneCount = 6;
+	private const int kPlaneCount = 6;
+	private const float translationScale = 0.1f;
 
 	[SerializeField]
 	private Transform boundsCube;
@@ -39,22 +39,22 @@ public class Chessboard : MonoBehaviour
 
 	public void MoveForward()
 	{
-		clipCenter.Translate(Vector3.forward);
+		clipCenter.Translate(Vector3.forward * translationScale);
 	}
 
 	public void MoveBackward()
 	{
-		clipCenter.Translate(Vector3.back);
+		clipCenter.Translate(Vector3.back * translationScale);
 	}
 
 	public void MoveLeft()
 	{
-		clipCenter.Translate(Vector3.left);
+		clipCenter.Translate(Vector3.left * translationScale);
 	}
 
 	public void MoveRight()
 	{
-		clipCenter.Translate(Vector3.right);
+		clipCenter.Translate(Vector3.right * translationScale);
 	}
 
 	public bool ClipPlanesContain(Vector3 worldPosition)
@@ -118,11 +118,11 @@ public class Chessboard : MonoBehaviour
 			fourCorners[i] = transform.InverseTransformPoint(fourCorners[i]);
 
 		// Clip distances are distance of the plane from the center location in each direction
-		clipDistances[0] = Mathf.Abs((fourCorners[0] - center).x);
-		clipDistances[1] = Mathf.Abs((fourCorners[1] - center).z);
-		clipDistances[2] = Mathf.Abs((fourCorners[2] - center).x);
-		clipDistances[3] = Mathf.Abs((fourCorners[3] - center).z);
-		clipDistances[4] = m_YBounds - center.y;
+		clipDistances[0] = Mathf.Abs((fourCorners[0] - center).x) * clipCenter.lossyScale.x;
+		clipDistances[1] = Mathf.Abs((fourCorners[1] - center).z) * clipCenter.lossyScale.z;
+		clipDistances[2] = Mathf.Abs((fourCorners[2] - center).x) * clipCenter.lossyScale.x;
+		clipDistances[3] = Mathf.Abs((fourCorners[3] - center).z) * clipCenter.lossyScale.z;
+		clipDistances[4] = (m_YBounds - center.y) * clipCenter.lossyScale.y * 0.5f;
 		clipDistances[5] = 0;
 	}
 }

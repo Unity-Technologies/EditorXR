@@ -54,7 +54,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 				//HACK: Delay call for serialization bug
 				EditorApplication.delayCall += () => {
 					//HACK: GameObject.Find to get EVR reference. How should we do this?  
-					Workspace.ShowWorkspace<DummyWorkspace>(GameObject.Find("EditorVR").transform);
+					Workspace.ShowWorkspace(t, GameObject.Find("EditorVR").transform);
 					U.Object.Destroy(this);
 				};
 			});

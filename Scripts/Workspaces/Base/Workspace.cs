@@ -15,7 +15,7 @@ public abstract class Workspace : MonoBehaviour
 	protected WorkspaceHandle handle;
 
 	//TODO: discuss/design starting transform
-	private static readonly Vector3 s_StartPosition = new Vector3(0,-0.5f,1);
+	private static readonly Vector3 s_StartPosition = new Vector3(0,-0.15f,0.8f);
 	private static readonly Quaternion s_StartRotation = Quaternion.AngleAxis(-25, Vector3.right);
 	private static readonly Vector3 s_InitBounds = new Vector3(0.8f, 0.6f, 0.6f);
 
@@ -24,9 +24,13 @@ public abstract class Workspace : MonoBehaviour
 
 	//TODO: Refactor this function to not use parent
 	public static void ShowWorkspace<T>(Transform parent) where T: Workspace {
-		if (!s_ExistingTypes.ContainsKey(typeof(T)))
+		ShowWorkspace(typeof(T), parent);
+	}
+	public static void ShowWorkspace(Type t, Transform parent)
+	{
+		if (!s_ExistingTypes.ContainsKey(t))
 		{
-			s_ExistingTypes[typeof (T)] = new List<Workspace>{CreateWorkspace<T>(parent)};
+			s_ExistingTypes[t] = new List<Workspace> { CreateWorkspace(t, parent) };
 		}
 	}
 	public static T CreateNewWorkspace<T>(Transform parent) where T : Workspace {
@@ -34,7 +38,13 @@ public abstract class Workspace : MonoBehaviour
 	}
 
 	static T CreateWorkspace<T>(Transform parent) where T : Workspace {
-		return U.Object.CreateGameObjectWithComponent<T>(parent);
+		return (T)CreateWorkspace(typeof(T), parent);
+	}
+	static Workspace CreateWorkspace(Type t, Transform parent)
+	{
+		//TODO: ASSERT if t isn't assignable to Workspace
+		//Q: Is the cast necessary here? Could we return a Component instead?
+		return (Workspace)U.Object.CreateGameObjectWithComponent(t, parent);
 	}
 
 	public virtual void Awake()
