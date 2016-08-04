@@ -122,10 +122,10 @@ Transform:
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.01, z: 0}
   m_LocalScale: {x: 1.5466889, y: 0.9587882, z: 1.5466901}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000012679276312}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4000010958140338
 Transform:
   m_ObjectHideFlags: 1
@@ -135,10 +135,10 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.4726565, y: 1.4726562, z: 1.4726562}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000012679276312}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4000010985936092
 Transform:
   m_ObjectHideFlags: 1
@@ -148,11 +148,11 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -5.77}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 4000012679276312}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4000011536291192
 Transform:
   m_ObjectHideFlags: 1
@@ -162,10 +162,10 @@ Transform:
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000012679276312}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4000012679276312
 Transform:
   m_ObjectHideFlags: 1
@@ -175,6 +175,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 4000010593314914}
   - {fileID: 4000010958140338}
@@ -182,7 +183,6 @@ Transform:
   - {fileID: 4000011536291192}
   m_Father: {fileID: 4000010985936092}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4000012691536342
 Transform:
   m_ObjectHideFlags: 1
@@ -192,10 +192,10 @@ Transform:
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 2, y: 1, z: 2}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000012679276312}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &23000011375832772
 MeshRenderer:
   m_ObjectHideFlags: 1
@@ -454,15 +454,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  invalidLocationColor: {r: 1, g: 0.3882353, b: 0.3882353, a: 1}
-  layerMask:
+  m_InvalidLocationColor: {r: 1, g: 0.3882353, b: 0.3882353, a: 1}
+  m_LayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  lineSegmentCount: 48
-  maxArc: 0.85
-  radius: 0.1
-  range: 18
-  validLocationColor: {r: 0.50855184, g: 1, b: 0.491, a: 1}
+  m_LineSegmentCount: 48
+  m_MaxArc: 0.85
+  m_Radius: 0.1
+  m_Range: 18
+  m_ValidLocationColor: {r: 0.50855184, g: 1, b: 0.491, a: 1}
   m_LineRenderer: {fileID: 114000013148279206}
   m_LocatorRoot: {fileID: 4000012679276312}
   m_MotionIndicatorSphere: {fileID: 1000013707663658}

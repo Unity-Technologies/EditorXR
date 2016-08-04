@@ -1,24 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 namespace UnityEngine.VR.Tools
 {
-    public interface ICustomRay : IRay
-    {
-        /// <summary>
-        /// The default DefaultVrLineRenderers to show/hide
-        /// </summary>
-        List<VRLineRenderer> defaultProxyLineRenderers { get; set; }
-        
-        /// <summary>
-        /// Method handling the enabling & showing of the default proxy ray
-        /// </summary>
-        void ShowDefaultProxyRays();
+	public interface ICustomRay : IRay
+	{
+		/// <summary>
+		/// Method handling the enabling & showing of the default proxy ray
+		/// </summary>
+		Action showDefaultRay { set; }
 
-        /// <summary>
-        /// Method handling the disabling & hiding of the default proxy ray
-        /// </summary>
-        void HideDefaultProxyRays();
+		/// <summary>
+		/// Method handling the disabling & hiding of the default proxy ray
+		/// </summary>
+		Action hideDefaultRay { set; }
 
-        //TODO: Handle the disabling of the RayOrigin preventing further raycasting
-    }
+		//TODO: Handle the disabling of the RayOrigin preventing further raycasting
+	}
 }

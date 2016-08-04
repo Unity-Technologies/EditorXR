@@ -16,8 +16,6 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 		get; set;
 	}
 
-	public VRLineRenderer[] VrLineRenderers { get; set; }
-
 	public Transform rayOrigin
 	{
 		get; set;

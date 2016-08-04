@@ -103,7 +103,7 @@ public class EditorVR : MonoBehaviour
 	}
 
 	private IEnumerator Start()
-	{   
+	{
 		// Delay until at least one proxy initializes
 		bool proxyActive = false;
 		while (!proxyActive)
@@ -173,7 +173,7 @@ public class EditorVR : MonoBehaviour
 					EditorApplication.delayCall += () =>
 					{
 						SpawnMainMenu(typeof(MainMenuDev), device);
-                    };
+					};
 				}
 			}
 		}
@@ -195,7 +195,7 @@ public class EditorVR : MonoBehaviour
 	private Dictionary<Type, List<ActionMap>> CollectToolActionMaps(IEnumerable<Type> toolTypes)
 	{
 		var toolMaps = new Dictionary<Type, List<ActionMap>>();
-		
+
 		foreach (var t in toolTypes)
 		{
 			if (!t.IsSubclassOf(typeof(MonoBehaviour)))
@@ -234,16 +234,18 @@ public class EditorVR : MonoBehaviour
 		EditorApplication.delayCall += () =>
 		{
 			HashSet<InputDevice> devices;
-			var tool = SpawnTool(typeof(BlinkLocomotionTool), out devices);
-			AddToolToDeviceData(tool, devices);
 
-			// Spawn selection tools by default 
+			// Spawn default tools
 			foreach (var deviceData in m_DeviceData)
 			{
 				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
 				if (deviceData.Key.tagIndex == -1)
 					continue;
-				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+
+				var tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+				AddToolToDeviceData(tool, devices);
+
+				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 			}
 		};
@@ -269,10 +271,11 @@ public class EditorVR : MonoBehaviour
 	private void UpdateDefaultProxyRays()
 	{
 		// Set ray lengths based on renderer bounds
-		foreach (var proxy in m_AllProxies) 
+		foreach (var proxy in m_AllProxies)
 		{
 			if (!proxy.active)
 				continue;
+
 			foreach (var rayOrigin in proxy.rayOrigins.Values)
 			{
 				var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
@@ -307,7 +310,8 @@ public class EditorVR : MonoBehaviour
 			{
 				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
 				{
-					if (device.tagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.tagIndex]] == rayOriginBase.Key)
+					var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
+                    if (device.tagIndex != -1 && m_TagToNode[tags[device.tagIndex]] == rayOriginBase.Key)
 					{
 						DeviceData deviceData;
 						if (m_DeviceData.TryGetValue(device, out deviceData))
@@ -342,7 +346,7 @@ public class EditorVR : MonoBehaviour
 			return null;
 
 		var devices = device == null ? m_PlayerHandle.GetApplicableDevices() : new InputDevice[] { device };
-		
+
 		var actionMapInput = ActionMapInput.Create(map);
 		// It's possible that there are no suitable control schemes for the device that is being initialized, 
 		// so ActionMapInput can't be marked active
@@ -444,28 +448,8 @@ public class EditorVR : MonoBehaviour
 
 	private void AddToolToDeviceData(ITool tool, HashSet<InputDevice> devices)
 	{
-	    foreach (var dev in devices)
-	        AddToolToStack(dev, tool);
-
-        // ICustomRay-specific proxy ray setting
-        var iCustomRay = tool as ICustomRay;
-	    if (iCustomRay != null)
-	    {
-	        var proxyVRLineRenderers = new List<VRLineRenderer>();
-            foreach (var proxy in m_AllProxies)
-	        {
-                // TODO: Currently only add for active proxy.  Future, add support for updating the collection when new proxies become active.
-                if (proxy != null && proxy.active && proxy.rayOrigins != null && proxy.rayOrigins.Values.Any())
-	                foreach (var rayOrigin in proxy.rayOrigins)
-	                    proxyVRLineRenderers.Add(rayOrigin.Value.GetComponentInChildren<VRLineRenderer>());
-	        }
-	        if (proxyVRLineRenderers.Count > 0)
-	        {
-	            iCustomRay.defaultProxyLineRenderers = proxyVRLineRenderers;
-                // TODO: Implement ShowDefaultProxyRays() when the tool is removed from the stack
-                iCustomRay.HideDefaultProxyRays();
-	        }
-	    }
+		foreach (var dev in devices)
+			AddToolToStack(dev, tool);
 	}
 
 	private void SpawnMainMenu(Type type, InputDevice device)
@@ -483,7 +467,7 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-    private void ConnectInterfaces(object obj, InputDevice device = null)
+	private void ConnectInterfaces(object obj, InputDevice device = null)
 	{
 		if (device != null)
 		{
@@ -507,6 +491,16 @@ public class EditorVR : MonoBehaviour
 						if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
 						{
 							ray.rayOrigin = rayOrigin;
+
+							// Specific proxy ray setting
+							var customRay = obj as ICustomRay;
+							if (customRay != null)
+							{
+								DefaultProxyRay dfr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+								customRay.showDefaultRay = dfr.Show;
+								customRay.hideDefaultRay = dfr.Hide;
+							}
+
 							break;
 						}
 					}
@@ -525,12 +519,11 @@ public class EditorVR : MonoBehaviour
 		var raycasterComponent = obj as IRaycaster;
 		if (raycasterComponent != null)
 			raycasterComponent.getFirstGameObject = m_PixelRaycastModule.GetFirstGameObject;
-		
+
 		var highlightComponent = obj as IHighlight;
 		if (highlightComponent != null)
 			highlightComponent.setHighlight = m_HighlightModule.SetHighlight;
-
-    }
+	}
 
 	private InputDevice GetInputDeviceForTool(ITool tool)
 	{
@@ -584,7 +577,7 @@ public class EditorVR : MonoBehaviour
 		foreach (var deviceData in m_DeviceData.Values)
 		{
 			// Remove the tool if it is the current tool on this device tool stack
-			if (deviceData.currentTool == tool) 
+			if (deviceData.currentTool == tool)
 			{
 				if (deviceData.tools.Peek() != deviceData.currentTool)
 				{
@@ -621,7 +614,7 @@ public class EditorVR : MonoBehaviour
 					untaggedDevicesFound++;
 			}
 		}
-			
+
 		if (nonMatchingTagIndices > 0 && matchingTagIndices == 0)
 		{
 			LogError(string.Format("The action map {0} contains a specific device tag, but is being spawned on the wrong device tag", actionMap));
@@ -629,7 +622,7 @@ public class EditorVR : MonoBehaviour
 		}
 
 		if (taggedDevicesFound > 0 && untaggedDevicesFound != 0)
-		{			
+		{
 			LogError(string.Format("The action map {0} contains both a specific device tag and an unspecified tag, which is not supported", actionMap.name));
 			return false;
 		}

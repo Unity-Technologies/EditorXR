@@ -17,8 +17,6 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 	private RectTransform m_Layout;
 	private GameObject m_ButtonTemplate;
 
-	public VRLineRenderer[] VrLineRenderers { get; set; }
-
 	public Transform rayOrigin { get; set; }
 
 	public List<Type> menuTools { private get; set; }

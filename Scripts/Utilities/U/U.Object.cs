@@ -22,19 +22,6 @@
 		/// </summary>
 		public class Object
 		{
-			public static GameObject ClonePrefab(GameObject prefab, GameObject parent = null)
-			{
-				GameObject obj = InstantiateAndSetActive(prefab);
-				if (parent != null) SetParent(obj, parent);
-				obj.transform.localPosition = new Vector3();
-				return obj;
-			}
-
-			public static GameObject ClonePrefabByName(string resource, GameObject parent = null)
-			{
-				return ClonePrefab(Resources.Load<GameObject>(resource), parent);
-			}
-
 			public static GameObject InstantiateAndSetActive(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true)
 			{
 				GameObject go = UnityObject.Instantiate(prefab);
@@ -48,21 +35,6 @@
 				}
 #endif
 				return go;
-			}
-
-			public static void SetParent(GameObject obj, GameObject parent)
-			{
-				obj.transform.parent = parent.transform;
-			}
-
-			public static void Show(GameObject obj)
-			{
-				obj.SetActive(true);
-			}
-
-			public static void Hide(GameObject obj)
-			{
-				obj.SetActive(false);
 			}
 
 			public static void RemoveAllChildren(GameObject obj)
@@ -90,8 +62,6 @@
 					name = "Empty";
 #if UNITY_EDITOR
 				empty = EditorUtility.CreateGameObjectWithHideFlags(name, EditorVR.kDefaultHideFlags);
-				if (!Application.isPlaying)
-					SetRunInEditModeRecursively(empty.transform.gameObject, true);
 #else
                 empty = new GameObject(name);
 #endif
