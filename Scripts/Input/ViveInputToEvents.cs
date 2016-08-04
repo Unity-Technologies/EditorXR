@@ -1,7 +1,6 @@
-﻿using System;	 
+﻿using System; 
 using UnityEngine;
-using UnityEngine.InputNew;			  
-using UnityEngine.VR.Utilities;
+using UnityEngine.InputNew;
 using Valve.VR;
 
 public class ViveInputToEvents : MonoBehaviour
@@ -53,6 +52,7 @@ public class ViveInputToEvents : MonoBehaviour
 			int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
 			SendButtonEvents(steamDeviceIndex, deviceIndex);
 			SendAxisEvents(steamDeviceIndex, deviceIndex);
+			//TODO: ASSERT if poses is null
 			SendTrackingEvents(steamDeviceIndex, deviceIndex, poses);
 		}
 

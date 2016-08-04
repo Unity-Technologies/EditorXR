@@ -7,7 +7,6 @@ using System.Collections;
 using UnityEditor.VR.Helpers;
 using System.Reflection;
 using Object = UnityEngine.Object;
-using UnityEngine.VR.Utilities;
 
 namespace UnityEditor.VR
 {
