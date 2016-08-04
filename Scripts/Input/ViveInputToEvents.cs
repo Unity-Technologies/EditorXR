@@ -52,7 +52,6 @@ public class ViveInputToEvents : MonoBehaviour
 			int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
 			SendButtonEvents(steamDeviceIndex, deviceIndex);
 			SendAxisEvents(steamDeviceIndex, deviceIndex);
-			//TODO: ASSERT if poses is null
 			SendTrackingEvents(steamDeviceIndex, deviceIndex, poses);
 		}
 
