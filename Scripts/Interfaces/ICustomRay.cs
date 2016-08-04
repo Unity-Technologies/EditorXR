@@ -13,7 +13,5 @@ namespace UnityEngine.VR.Tools
 		/// Method handling the disabling & hiding of the default proxy ray
 		/// </summary>
 		Action hideDefaultRay { set; }
-
-		//TODO: Handle the disabling of the RayOrigin preventing further raycasting
 	}
 }

@@ -22,7 +22,7 @@ public class BlinkVisuals : MonoBehaviour
 	[SerializeField]
 	private float m_Radius = 0.5f;
 	[SerializeField]
-	private float m_Range = 5f; // todo make this work for horizontal aiming
+	private float m_Range = 5f;
 	[SerializeField]
 	private Color m_ValidLocationColor;
 
@@ -42,7 +42,9 @@ public class BlinkVisuals : MonoBehaviour
 	[SerializeField]
 	private MeshRenderer m_TubeRenderer;
 
-	private float m_ArcEndHeight = -2f;
+	private readonly Vector3 kGroundOffset = Vector3.one * 0.01f; // Used to offset the room scale visuals to avoid z-fighting
+	private readonly string m_TintColor = "_TintColor";
+
 	private float m_CurveLengthEstimate;
 	private Vector3? m_DetachedWorldArcPosition = null;
 	private Vector3 m_FinalPosition;
@@ -52,18 +54,16 @@ public class BlinkVisuals : MonoBehaviour
 	private float m_MotionSphereOffset;
 	private Transform[] m_MotionSpheres;
 	private Vector3 m_MotionSphereOriginalScale;
-	private float m_MotionSphereSpeed = 0.125f;
 	private float m_MovementMagnitudeDelta;
 	private Vector3 m_MovementVelocityDelta;
 	private bool m_OutOfMaxRange;
-	private Vector3 m_Point0, m_Point1, m_Point2, m_Point3;
+	private Vector3[] m_BezierControlPoints = new Vector3[4]; // Cubic
 	private Transform m_RingTransform;
 	private Vector3 m_RingTransformOriginalScale;
-	private Vector3 m_RoomscaleLazyPosition;
+	private Vector3 m_RoomScaleLazyPosition;
 	private Transform m_RoomScaleTransform;
 	private Vector3[] m_SegmentPositions;
 	private State m_State = State.Inactive;
-	private readonly string m_TintColor = "_TintColor";
 	private Transform m_ToolPoint;
 	private Transform m_Transform;
 	private Transform m_TubeTransform;
@@ -105,7 +105,7 @@ public class BlinkVisuals : MonoBehaviour
 		m_MotionSphereOffset = 0.0f;
 
 		m_RoomScaleTransform = m_RoomScaleRenderer.transform;
-		m_RoomScaleTransform.parent = locatorRoot;
+		m_RoomScaleTransform.parent = m_LocatorRoot;
 		m_RoomScaleTransform.localPosition = Vector3.zero;
 		m_RoomScaleTransform.localRotation = Quaternion.identity;
 
@@ -122,7 +122,8 @@ public class BlinkVisuals : MonoBehaviour
 	{
 		if (m_State != State.Inactive)
 		{
-			m_MotionSphereOffset = (m_MotionSphereOffset + (UnityEngine.Time.unscaledDeltaTime * m_MotionSphereSpeed)) % (1.0f / (float)m_MotionSphereCount);
+			const float kMotionSphereSpeed = 0.125f;
+			m_MotionSphereOffset = (m_MotionSphereOffset + (Time.unscaledDeltaTime * kMotionSphereSpeed)) % (1.0f / (float)m_MotionSphereCount);
 
 			if (m_LastPosition != m_Transform.position || m_LastRotation != m_Transform.rotation)
 			{
@@ -132,10 +133,15 @@ public class BlinkVisuals : MonoBehaviour
 			}
 			DrawMotionSpheres();
 
-			m_RoomScaleTransform.position = Vector3.SmoothDamp(m_RoomscaleLazyPosition, m_LocatorRoot.position, ref m_MovementVelocityDelta, 0.35f, 100f, Time.unscaledDeltaTime * 4);
-			m_RoomscaleLazyPosition = m_RoomScaleTransform.position;
+			const float kSmoothTime = 0.0875f;
+			const float kMaxSpeed = 100f;
+			m_RoomScaleTransform.position = Vector3.SmoothDamp(m_RoomScaleLazyPosition, m_LocatorRoot.position, ref m_MovementVelocityDelta, kSmoothTime, kMaxSpeed, Time.unscaledDeltaTime);
+			// Since the room scale visuals are parented under the locator root it is necessary to cache the position each frame before the locator root gets updated
+			m_RoomScaleLazyPosition = m_RoomScaleTransform.position;
 			m_MovementMagnitudeDelta = (m_RoomScaleTransform.position - m_LocatorRoot.position).magnitude;
-			m_TubeTransform.localScale = Vector3.Lerp(m_TubeTransformHiddenScale, m_TubeTransformOriginalScale, 1f / (m_MovementMagnitudeDelta * 6f));
+
+			const float kTubeHiddenDistanceThreshold = 6f;
+			m_TubeTransform.localScale = Vector3.Lerp(m_TubeTransformOriginalScale, m_TubeTransformHiddenScale, m_MovementMagnitudeDelta / kTubeHiddenDistanceThreshold);
 		}
 		else if (m_OutOfMaxRange && Mathf.Abs(pointerStrength) < m_MaxArc)
 		{
@@ -148,7 +154,7 @@ public class BlinkVisuals : MonoBehaviour
 	{
 		if (m_State == State.Inactive || m_State == State.TransitioningOut)
 		{
-			m_RoomscaleLazyPosition = m_RoomScaleTransform.position;
+			m_RoomScaleLazyPosition = m_RoomScaleTransform.position;
 
 			for (int i = 0; i < m_MotionSphereCount; ++i)
 				m_MotionSpheres[i].gameObject.SetActive(true);
@@ -168,58 +174,62 @@ public class BlinkVisuals : MonoBehaviour
 	private IEnumerator AnimateShowVisuals()
 	{
 		m_State = State.TransitioningIn;
-		m_RoomScaleTransform.position = m_FinalPosition + Vector3.up * 0.01f;
+		m_RoomScaleTransform.position = m_FinalPosition + kGroundOffset;
 		ShowLine();
-		float scale = 0f;
-		float tubeScale = m_TubeTransform.localScale.x;
 
 		for (int i = 0; i < m_MotionSphereCount; ++i)
 		{
 			m_MotionSpheres[i].localScale = m_MotionSphereOriginalScale;
 		}
 
+		const float kTargetScale = 1f;
+		const float kTargetSnapThreshold = 0.05f;
+		const float kEaseStepping = 8f;
+
+		float scale = 0f;
+		float tubeScale = m_TubeTransform.localScale.x;
 		while (m_State == State.TransitioningIn && scale < 1)
 		{
 			m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
-			locatorRoot.localScale = Vector3.one * scale;
+			m_LocatorRoot.localScale = Vector3.one * scale;
 			m_LineRenderer.SetWidth(scale, scale);
-			scale = UnityEngine.VR.Utilities.U.Math.Ease(scale, 1f, 8, 0.05f);
+			scale = U.Math.Ease(scale, kTargetScale, kEaseStepping, kTargetSnapThreshold);
 			yield return null;
 		}
 
 		if (m_State == State.TransitioningIn)
-		{
-			// HARD SET of values if still in this state
-			//foreach (var pointerRayRenderer in DefaultVrLineRenderers)
-			//pointerRayRenderer.SetWidth(0, 0);
-		}
+			m_LineRenderer.SetWidth(kTargetScale, kTargetScale);
 	}
 
 	private IEnumerator AnimateHideVisuals()
 	{
 		m_State = State.TransitioningOut;
 		m_DetachedWorldArcPosition = m_LocatorRoot.position;
+
+		const float kTargetScale = 0f;
+		const float kTargetSnapThreshold = 0.0005f;
+		const float kEaseStepping = 8f;
+
 		float scale = 1f;
 		float tubeScale = m_TubeTransform.localScale.x;
-
 		while (m_State == State.TransitioningOut && scale > 0.0001f)
 		{
-			SetColors(Color.Lerp(validTarget == true ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1 - scale));
+			SetColors(Color.Lerp(validTarget == true ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
 			m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
 			m_LineRenderer.SetWidth(scale, scale);
-			scale = UnityEngine.VR.Utilities.U.Math.Ease(scale, 0f, 8, 0.0005f);
+			scale = U.Math.Ease(scale, kTargetScale, kEaseStepping, kTargetSnapThreshold);
 			m_RingTransform.localScale = Vector3.Lerp(m_RingTransform.localScale, m_RingTransformOriginalScale, scale);
 			yield return null;
 		}
 
 		m_DetachedWorldArcPosition = null;
 
-		// set value if no additional transition hasn begun
+		// set value if no additional transition has begun
 		if (m_State == State.TransitioningOut)
 		{
 			m_RingTransform.localScale = m_RingTransformOriginalScale;
 			m_State = State.Inactive;
-			m_LineRenderer.SetWidth(0f, 0f);
+			m_LineRenderer.SetWidth(kTargetScale, kTargetScale);
 			ShowLine(false);
 
 			for (int i = 0; i < m_MotionSphereCount; ++i)
@@ -227,29 +237,9 @@ public class BlinkVisuals : MonoBehaviour
 		}
 	}
 
-	Vector3 CalculateBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
-	{
-		var u = 1f - t;
-		var tt = t * t;
-		var uu = u * u;
-		var uuu = uu * u;
-		var ttt = tt * t;
-
-		//first term
-		var p = uuu * p0;
-		//second term
-		p += 3f * uu * t * p1;
-		//third term
-		p += 3f * u * tt * p2;
-		//fourth term
-		p += ttt * p3;
-
-		return p;
-	}
-
 	public void DrawArc()
 	{
-		locatorRoot.rotation = Quaternion.identity;
+		m_LocatorRoot.rotation = Quaternion.identity;
 
 		// prevent rendering line when pointing to high or low
 		if (Mathf.Abs(pointerStrength) > m_MaxArc)
@@ -261,19 +251,19 @@ public class BlinkVisuals : MonoBehaviour
 		}
 
 		// start point
-		m_Point0 = m_ToolPoint.position;
+		m_BezierControlPoints[0] = m_ToolPoint.position;
 		// first handle -- determines how steep the first part will be
-		var handle0 = m_ToolPoint.position + m_ToolPoint.forward * pointerStrength * m_Range;
-		m_Point1 = handle0;
+		m_BezierControlPoints[1] = m_ToolPoint.position + m_ToolPoint.forward * pointerStrength * m_Range;
 
-		m_FinalPosition = new Vector3(handle0.x, m_ArcEndHeight, handle0.z);
+		const float kArcEndHeight = -2f;
+		m_FinalPosition = new Vector3(m_BezierControlPoints[1].x, kArcEndHeight, m_BezierControlPoints[1].z);
 		// end point
-		m_Point3 = m_FinalPosition;
+		m_BezierControlPoints[3] = m_FinalPosition;
 		// second handle -- determines how steep the intersection with the ground will be
-		m_Point2 = m_FinalPosition;
+		m_BezierControlPoints[2] = m_FinalPosition;
 
 		// set the position of the locator
-		locatorRoot.position = m_DetachedWorldArcPosition == null ? m_FinalPosition + Vector3.up * 0.01f : (Vector3)m_DetachedWorldArcPosition;
+		m_LocatorRoot.position = m_DetachedWorldArcPosition == null ? m_FinalPosition + kGroundOffset : (Vector3)m_DetachedWorldArcPosition;
 
 		m_ValidTarget = false;
 
@@ -281,7 +271,7 @@ public class BlinkVisuals : MonoBehaviour
 		var colliders = Physics.OverlapSphere(m_FinalPosition, m_Radius, m_LayerMask.value);
 		m_ValidTarget = colliders != null && colliders.Length > 0;
 
-		SetColors(validTarget ? m_ValidLocationColor : m_InvalidLocationColor);
+		SetColors(m_ValidTarget ? m_ValidLocationColor : m_InvalidLocationColor);
 
 		// calculate and send points to the line renderer
 		m_SegmentPositions = new Vector3[m_LineSegmentCount];
@@ -289,14 +279,14 @@ public class BlinkVisuals : MonoBehaviour
 		for (int i = 0; i < m_LineSegmentCount; i++)
 		{
 			var t = i / (float)Mathf.Max((m_LineSegmentCount - 1), 1);
-			var q = CalculateBezierPoint(t, m_Point0, m_Point1, m_Point2, m_Point3);
+			var q = U.Math.CalculateCubicBezierPoint(t, m_BezierControlPoints);
 			m_SegmentPositions[i] = q;
 		}
 		m_LineRenderer.SetPositions(m_SegmentPositions);
 
 		// The curve length will be somewhere between a straight line between the points 
 		// and a path that directly follows the control points.  So we estimate this by just averaging the two.
-		m_CurveLengthEstimate = ((m_Point3 - m_Point0).magnitude + ((m_Point1 - m_Point0).magnitude + (m_Point1 - m_Point2).magnitude)) * 0.5f;
+		m_CurveLengthEstimate = ((m_BezierControlPoints[3] - m_BezierControlPoints[0]).magnitude + ((m_BezierControlPoints[1] - m_BezierControlPoints[0]).magnitude + (m_BezierControlPoints[1] - m_BezierControlPoints[2]).magnitude)) * 0.5f;
 	}
 
 	public void DrawMotionSpheres()
@@ -305,7 +295,7 @@ public class BlinkVisuals : MonoBehaviour
 		for (int i = 0; i < m_MotionSphereCount; ++i)
 		{
 			var t = (i / (float)m_MotionSphereCount) + m_MotionSphereOffset;
-			m_MotionSpheres[i].position = CalculateBezierPoint(t, m_Point0, m_Point1, m_Point2, m_Point3);
+			m_MotionSpheres[i].position = U.Math.CalculateCubicBezierPoint(t, m_BezierControlPoints);
 			float validTargetEase = m_State == State.TransitioningIn ? (m_ValidTarget == true ? m_MotionSphereOriginalScale.x : 0.05f) : 0f;
 			validTargetEase = U.Math.Ease(m_MotionSpheres[i].localScale.x, validTargetEase, 16, 0.0005f) * Mathf.Min((m_Transform.position - m_MotionSpheres[i].position).magnitude * 4, 1f);
 			m_MotionSpheres[i].localScale = Vector3.one * validTargetEase;
@@ -318,18 +308,18 @@ public class BlinkVisuals : MonoBehaviour
 				var lengthEstimate = (m_CurveLengthEstimate * t);
 
 				// We compare that to how long our distance actually is
-				var correctionFactor = lengthEstimate / (m_MotionSpheres[i].position - m_Point0).magnitude;
+				var correctionFactor = lengthEstimate / (m_MotionSpheres[i].position - m_BezierControlPoints[0]).magnitude;
 
 				// We then scale our time value by this correction factor
 				var correctedTime = Mathf.Clamp01(t * correctionFactor);
-				m_MotionSpheres[i].position = CalculateBezierPoint(correctedTime, m_Point0, m_Point1, m_Point2, m_Point3);
+				m_MotionSpheres[i].position = U.Math.CalculateCubicBezierPoint(correctedTime, m_BezierControlPoints);
 			}
 		}
 	}
 
 	public void ShowLine(bool show = true)
 	{
-		locatorRoot.gameObject.SetActive(show);
+		m_LocatorRoot.gameObject.SetActive(show);
 		m_LineRendererMeshRenderer.enabled = show;
 
 		if (!show)
