@@ -88,7 +88,8 @@ public class EditorVR : MonoBehaviour
 		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
 		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);
 
-		//HACK: Create a workspace at start to work around Vive input issues
+		//Create default workspace(s)
+		//This will evolve into the "custom layout" feature, but for now we just start with some default workspaces open
 		Workspace.ShowWorkspace<ChessboardWorkspace>(transform);	
 	}
 
