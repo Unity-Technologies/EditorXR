@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 
@@ -45,6 +46,7 @@ namespace UnityEngine.VR.Proxies
 			public Node node;
 			public Transform rayOrigin;
 			public UIActions actionMapInput;
+			public int TagIndex;
 
 			public RaycastSource(IProxy proxy, Node node, Transform rayOrigin, UIActions actionMapInput)
 			{
@@ -109,6 +111,7 @@ namespace UnityEngine.VR.Proxies
 					PointEvents.Add(new PointerEventData(base.eventSystem));
 
 				PointEvents[i].pointerId = i;
+
 				if (!m_RaycastSources[i].proxy.active)
 					continue;
 
@@ -120,10 +123,16 @@ namespace UnityEngine.VR.Proxies
 				m_RaycastSources[i].actionMapInput.active = (CurrentPoint[i] != null && CurrentPoint[i].layer == UILayer) || 
 															CurrentPressed[i] != null ||
 															CurrentDragging[i] != null;
+
 				if (!m_RaycastSources[i].actionMapInput.active)
 					continue;
 
-				//Send select pressed and released events
+				if (CurrentPoint[i] != null) // Send scroll events
+				{
+					PointEvents[i].scrollDelta = new Vector2(0f, m_RaycastSources[i].actionMapInput.verticalScroll.value);
+					ExecuteEvents.ExecuteHierarchy(CurrentPoint[i], PointEvents[i], ExecuteEvents.scrollHandler);
+				}
+				// Send select pressed and released events
 				if (m_RaycastSources[i].actionMapInput.select.wasJustPressed)
 					OnSelectPressed(i);
 

@@ -1,12 +1,17 @@
 fileFormatVersion: 2
 guid: 882053426a5f76d46b5505d9a20be912
-timeCreated: 1469645480
+timeCreated: 1470419714
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
-  - m_ManipulatorPrefab: {fileID: 1000011913104750, guid: 0804da10bb8715440968093948851bb9,
+  - m_StandardManipulatorPrefab: {fileID: 1000013053252988, guid: 29783bde356a0044180058ec328b8f43,
       type: 2}
+  - m_ScaleManipulatorPrefab: {fileID: 1000011603037920, guid: ac3ea0b5d31a9d84580ef5c806d6862e,
+      type: 2}
+  - m_DirectManipulatorPrefab: {fileID: 1000014088868178, guid: 2c9cb3514c0379a418a813f8418d1dc3,
+      type: 2}
+  - m_ActionMap: {fileID: 11400000, guid: 56fffa69d4e55f2428bcc0a2bb0732f4, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

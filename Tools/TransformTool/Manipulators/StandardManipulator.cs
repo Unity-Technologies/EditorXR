@@ -4,8 +4,10 @@ using UnityEngine.VR.Tools;
 using System;
 using System.Collections.Generic;
 using UnityEditor.VR;
+using UnityEngine.VR;
+using UnityEngine.VR.Proxies;
 
-public class UniversalManipulator : MonoBehaviour, IManipulator
+public class StandardManipulator : MonoBehaviour, IManipulator
 {
 	[SerializeField]
 	private BaseHandle m_GrabHandle;
@@ -36,8 +38,10 @@ public class UniversalManipulator : MonoBehaviour, IManipulator
 
 	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 	private bool m_Dragging = false;
+	public bool dragging { get {  return m_Dragging; } }
 	public Action<Vector3> translate { private get; set; }
 	public Action<Quaternion> rotate { private get; set; }
+	public Action<Vector3> scale { private get; set; }
 
 	void Awake()
 	{

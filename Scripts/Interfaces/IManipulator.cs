@@ -8,5 +8,7 @@ namespace UnityEngine.VR.Tools
 	{
 		Action<Vector3> translate { set; }
 		Action<Quaternion> rotate { set; }
+		Action<Vector3> scale { set; }
+		bool dragging { get; }
 	}
 }

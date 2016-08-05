@@ -9,26 +9,29 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
-  m_Name: UIActions
+  m_Name: TransformInput
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Actions:
-  - {fileID: 114000012573131854}
-  - {fileID: 114000010783367338}
+  - {fileID: 114000012769690772}
+  - {fileID: 114000013128415956}
   m_ControlSchemes:
-  - m_Name: VRInput
+  - m_Name: VRInputDevice
     m_SerializableDeviceTypes:
     - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
+      m_TagIndex: 0
+    - m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: 1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
-      - controlIndex: 2
+      - controlIndex: 17
         deviceType:
           m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
             Culture=neutral, PublicKeyToken=null
-          m_TagIndex: -1
+          m_TagIndex: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -36,19 +39,20 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 1
+      - controlIndex: 18
         deviceType:
           m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
             Culture=neutral, PublicKeyToken=null
-          m_TagIndex: -1
+          m_TagIndex: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
       sensitivity: 1000
       snap: 1
       primaryIsButtonAxis: 0
-  m_MapTypeName: UIActions, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
---- !u!114 &114000010783367338
+  m_MapTypeName: TransformInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+--- !u!114 &114000012769690772
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -57,29 +61,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: VerticalScroll
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 1
-  m_ControlData:
-    componentControlIndices: 
-    controlType:
-      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
-    name: VerticalScroll
-    defaultValue: 0
---- !u!114 &114000012573131854
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: UIActions
+  m_Name: TransformInput
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
@@ -90,5 +72,27 @@ MonoBehaviour:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1
-    name: Select
+    name: PivotMode
+    defaultValue: 0
+--- !u!114 &114000013128415956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: TransformInput
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 1
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
+    name: ManipulatorType
     defaultValue: 0

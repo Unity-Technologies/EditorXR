@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.VR.Proxies;
 using System;
+using UnityEngine.VR;
 
 public class BaseHandle : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
@@ -17,7 +18,9 @@ public class BaseHandle : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 	protected Renderer m_Renderer;
 	protected bool m_Hovering = false;
 	protected bool m_Dragging = false;
-
+	protected Node m_Node;
+	protected Vector3 m_StartDragPosition;
+	public Vector3 startDragPosition { get { return m_StartDragPosition;} }
 	protected virtual void Awake()
 	{
 		m_Renderer = GetComponent<Renderer>();
@@ -28,6 +31,7 @@ public class BaseHandle : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 		// Get ray origin transform from InputModule and pointerID because the event camera moves between multiple transforms
 		m_RayOrigin = ((MultipleRayInputModule)EventSystem.current.currentInputModule).GetRayOrigin(eventData.pointerId);
 		m_Dragging = true;
+		m_StartDragPosition = eventData.pointerCurrentRaycast.worldPosition;
 	}
 
 	public virtual void OnDrag(PointerEventData eventData)

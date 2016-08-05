@@ -8,7 +8,6 @@ public class RadialHandle : BaseHandle
 	private Collider m_PlaneCollider;
 	private Vector3 m_LastPosition;
 	private Vector3 m_LastDragForward;
-	private Vector3 m_StartDragPosition;
 	[SerializeField]
 	private float m_TurnSpeed;
 
@@ -57,7 +56,6 @@ public class RadialHandle : BaseHandle
 
 		m_LastPosition = eventData.pointerCurrentRaycast.worldPosition;
 		m_LastDragForward = m_RayOrigin.forward;
-		m_StartDragPosition = eventData.pointerCurrentRaycast.worldPosition;
 
 		if (m_PlaneCollider != null)
 			DestroyImmediate(m_PlaneCollider.gameObject);
@@ -66,7 +64,7 @@ public class RadialHandle : BaseHandle
 		m_PlaneCollider.transform.SetParent(eventData.pressEventCamera.transform.parent);
 		m_PlaneCollider.transform.localScale = Vector3.one*5000f;
 		m_PlaneCollider.transform.position = transform.position;
-		m_PlaneCollider.transform.forward = -transform.up;
+		m_PlaneCollider.transform.forward = m_RayOrigin.forward;
 		
 		m_PlaneCollider.GetComponent<Renderer>().enabled = false;
 		m_Collider.enabled = false;
@@ -79,8 +77,6 @@ public class RadialHandle : BaseHandle
 
 	public override void OnDrag(PointerEventData eventData)
 	{
-		//m_PlaneCollider.transform.forward = m_RayOrigin.forward;
-
 		// Flip raycast blocking plane
 		if (Vector3.Dot(m_PlaneCollider.transform.forward, m_RayOrigin.forward) < 0f)
 			m_PlaneCollider.transform.forward = -m_PlaneCollider.transform.forward;
