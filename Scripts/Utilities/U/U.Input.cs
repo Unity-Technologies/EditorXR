@@ -22,12 +22,12 @@
 				{
 					foreach (var scheme in map.controlSchemes)
 					{
-						foreach (var deviceType in scheme.serializableDeviceTypes)
+						foreach (var deviceSlot in scheme.deviceSlots)
 						{
 							foreach (var systemDevice in systemDevices)
 							{
-								if (systemDevice.GetType() == deviceType.value &&
-									(deviceType.TagIndex == -1 || deviceType.TagIndex == systemDevice.TagIndex))
+								if (systemDevice.GetType() == deviceSlot.type.value &&
+									(deviceSlot.tagIndex == -1 || deviceSlot.tagIndex == systemDevice.tagIndex))
 								{
 									inputDevices.Add(systemDevice);
 								}
@@ -38,11 +38,11 @@
 				return inputDevices;
 			}
 
-			public static void CollectSerializableTypesFromActionMapInput(ActionMapInput actionMapInput, ref HashSet<SerializableType> types)
+			public static void CollectDeviceSlotsFromActionMapInput(ActionMapInput actionMapInput, ref HashSet<DeviceSlot> deviceSlots)
 			{
-				foreach (var deviceType in actionMapInput.controlScheme.serializableDeviceTypes)
+				foreach (var deviceSlot in actionMapInput.controlScheme.deviceSlots)
 				{
-					types.Add(deviceType);
+					deviceSlots.Add(deviceSlot);
 				}
 			}
 		}
