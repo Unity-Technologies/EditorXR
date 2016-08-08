@@ -150,8 +150,11 @@
 				}
 				return new List<Type>();
 			}
-			public static IEnumerable<Type> GetExtensionsOfClass(Type type) {
-				if (type.IsClass) {
+
+			public static IEnumerable<Type> GetExtensionsOfClass(Type type)
+			{
+				if (type.IsClass)
+				{
 					return AppDomain.CurrentDomain.GetAssemblies()
 						.SelectMany(s => s.GetTypes())
 						.Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
