@@ -121,7 +121,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			yield return null;
-		}					 
+		}
 		SpawnDefaultTools();
 	}
 
@@ -401,10 +401,6 @@ public class EditorVR : MonoBehaviour
 		Debug.LogError(string.Format("EVR: {0}", error));
 	}
 
-	/*
-	 * Tool Functions
-	 */
-
 	/// <summary>
 	/// Spawn a tool on a tool stack for a specific device (e.g. right hand).
 	/// </summary>
@@ -470,7 +466,8 @@ public class EditorVR : MonoBehaviour
 			m_DeviceData[device].mainMenu = mainMenu;
 			ConnectInterfaces(mainMenu, device);
 		}
-	}	
+	}
+
 	private void ConnectInterfaces(object obj, InputDevice device = null)
 	{
 		if (device != null)
@@ -634,23 +631,18 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	/*
-	 * Workspace Functions
-	 */
-
 	private void CreateDefaultWorkspaces()
 	{
-		//Create default workspace(s)
-		//This will evolve into the "custom layout" feature, but for now we just start with some default workspaces open
 		CreateWorkspace<ChessboardWorkspace>();
-		//TODO: Add Project and Inspector as they are implemented
 	}
+
 	private void CreateWorkspace<T>() where T : Workspace
 	{
 		CreateWorkspace(typeof(T));
 	}
+
 	private void CreateWorkspace(Type t)
-	{	
+	{
 		Vector3 position = VRView.viewerPivot.position + s_WorkspaceDefaultOffset;
 		Quaternion rotation = s_WorkspaceDefaultTilt;
 		//Test front
