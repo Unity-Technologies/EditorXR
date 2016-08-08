@@ -667,12 +667,24 @@ public class EditorVR : MonoBehaviour
 				if (Physics.CheckBox(position, Workspace.defaultBounds, rotation))
 				{
 					int count = 0;
-					position = VRView.viewerPivot.position + s_WorkspaceDefaultOffset + Vector3.left * (Workspace.defaultBounds.x + Workspace.handleMargin);
+					Vector3 startPosition = VRView.viewerPivot.position + s_WorkspaceDefaultOffset;
+					Vector3 posOffset = Vector3.left * (Workspace.defaultBounds.x + Workspace.handleMargin);
+					position = startPosition + posOffset;
 					rotation = s_WorkspaceDefaultTilt;
+					bool rightSide = false;
 					//"stack" in front 
-					while (Physics.CheckBox(position, Workspace.defaultBounds, rotation) && count++ < 10)
+					while (Physics.CheckBox(position, Workspace.defaultBounds, rotation) && count++ < 20)
 					{
-						position += Vector3.left * (Workspace.defaultBounds.x + Workspace.handleMargin);
+						if (rightSide)
+						{
+							posOffset += Vector3.left*(Workspace.defaultBounds.x + Workspace.handleMargin);
+							position = startPosition + posOffset;
+						}
+						else
+						{
+							position = startPosition - posOffset;
+						}
+						rightSide = !rightSide;
 					}
 				}
 			}
