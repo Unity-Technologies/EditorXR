@@ -4,6 +4,7 @@ using UnityEngine.VR.Utilities;
 //Q: Should combine with ChessboardWorkspace?
 public class MiniWorld : MonoBehaviour
 {
+	public readonly float[] clipDistances = new float[k_PlaneCount];         //Remove readonly if you want to see clip distances in inspector
 	public Matrix4x4 matrix
 	{
 		get
@@ -15,7 +16,6 @@ public class MiniWorld : MonoBehaviour
 	}
 
 	public Transform clipCenter { get; private set; }
-	public readonly float[] clipDistances = new float[k_PlaneCount];         //Remove readonly if you want to see clip distances in inspector
 
 	private static readonly LayerMask s_RendererCullingMask = -1;
 	private const int k_PlaneCount = 6;
