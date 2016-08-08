@@ -20,7 +20,7 @@ public class ChessboardWorkspace : Workspace
 		content.transform.localRotation = Quaternion.identity;
 		content.transform.localScale = Vector3.one;
 		m_Chessboard = GetComponentInChildren<Chessboard>();
-		SetBounds(bounds);
+		OnBoundsChanged();
 		//TODO: ASSERT if chessboard is false		   
 	}
 	void Update()

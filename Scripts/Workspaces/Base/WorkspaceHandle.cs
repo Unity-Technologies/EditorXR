@@ -10,7 +10,16 @@ public class WorkspaceHandle : MonoBehaviour
 	public Workspace owner;
 	public GameObject sceneContainer;
 	public RectTransform handle;
+	[SerializeField]
+	private Transform m_BoundsCube;
 
+	public void SetBounds(Bounds bounds)
+	{
+		handle.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x + Workspace.handleMargin);
+		handle.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, bounds.size.z + Workspace.handleMargin);
+		m_BoundsCube.transform.localScale = bounds.size;
+		m_BoundsCube.transform.localPosition = Vector3.up * bounds.extents.y;
+	}
 	public void OnHandleClick()
 	{
 		Debug.Log("click");

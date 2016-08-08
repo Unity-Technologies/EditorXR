@@ -23,8 +23,6 @@ public class Chessboard : MonoBehaviour
 
 	[SerializeField]
 	private RectTransform m_ClipRect = null;
-	[SerializeField]
-	private Transform m_BoundsCube;
 
 	private ChessboardRenderer m_ChessboardRenderer = null;
 	private float m_YBounds = 1;
@@ -53,8 +51,6 @@ public class Chessboard : MonoBehaviour
 	{
 		m_ClipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x);
 		m_ClipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, bounds.size.z);
-		m_BoundsCube.transform.localScale = bounds.size;
-		m_BoundsCube.transform.localPosition = Vector3.up * bounds.extents.y;
 		m_YBounds = bounds.size.y;
 	}
 

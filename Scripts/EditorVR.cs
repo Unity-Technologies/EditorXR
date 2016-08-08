@@ -65,6 +65,9 @@ public class EditorVR : MonoBehaviour
 		{ "Right", Node.RightHand }
 	};
 
+	private static readonly Vector3 s_WorkspaceDefaultOffset = new Vector3(0, -0.15f, 1f);
+	private static readonly Quaternion s_WorkspaceDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
+
 	private void Awake()
 	{
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
@@ -647,12 +650,39 @@ public class EditorVR : MonoBehaviour
 		CreateWorkspace(typeof(T));
 	}
 	private void CreateWorkspace(Type t)
-	{								  										 
+	{	
+		Vector3 position = VRView.viewerPivot.position + s_WorkspaceDefaultOffset;
+		Quaternion rotation = s_WorkspaceDefaultTilt;
+		//Test front
+		if (Physics.CheckBox(position, Workspace.defaultBounds, rotation))
+		{							   
+			position = VRView.viewerPivot.position + Quaternion.AngleAxis(90, Vector3.up) * s_WorkspaceDefaultOffset;
+			rotation = Quaternion.AngleAxis(90, Vector3.up) * s_WorkspaceDefaultTilt;
+			//Test left
+			if (Physics.CheckBox(position, Workspace.defaultBounds, rotation))
+			{
+				position = VRView.viewerPivot.position + Quaternion.AngleAxis(-90, Vector3.up) * s_WorkspaceDefaultOffset;
+				rotation = Quaternion.AngleAxis(-90, Vector3.up) * s_WorkspaceDefaultTilt;
+				//Test right
+				if (Physics.CheckBox(position, Workspace.defaultBounds, rotation))
+				{
+					int count = 0;
+					position = VRView.viewerPivot.position + s_WorkspaceDefaultOffset + Vector3.left * (Workspace.defaultBounds.x + Workspace.handleMargin);
+					rotation = s_WorkspaceDefaultTilt;
+					//"stack" in front 
+					while (Physics.CheckBox(position, Workspace.defaultBounds, rotation) && count++ < 10)
+					{
+						position += Vector3.left * (Workspace.defaultBounds.x + Workspace.handleMargin);
+					}
+				}
+			}
+		}
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, transform);
 		workspace.instantiateUI = InstantiateUI;
-		workspace.transform.position = VRView.viewerPivot.position; 
+		workspace.transform.position = position;
+		workspace.transform.rotation = rotation;
 		workspace.Setup();
-	}
+	}						   
 
 #if UNITY_EDITOR
 	private static EditorVR s_Instance;
