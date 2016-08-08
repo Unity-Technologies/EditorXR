@@ -26,11 +26,11 @@ public class ChessboardWorkspace : Workspace
 	void Update()
 	{
 		if (m_DummyBounds)
-			SetBounds(m_DummyBounds.bounds);
+			contentBounds = m_DummyBounds.bounds;
 	}
 
 	protected override void OnBoundsChanged()
 	{
-		m_Chessboard.SetBounds(bounds);
+		m_Chessboard.SetBounds(contentBounds);
 	}
 }

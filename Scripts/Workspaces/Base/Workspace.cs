@@ -7,22 +7,37 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 {
 	public static readonly Vector3 defaultBounds = new Vector3(0.6f, 0.4f, 0.4f);
 	//Amount of space (in World units) between handle and content bounds
-	public const float handleMargin = 0.2f;
+	public const float handleMargin = 0.25f;
 	public const float contentHeight = 0.075f;
 	/// <summary>
 	/// Bounding box for workspace content. 
 	/// </summary>
-	public Bounds bounds { get; private set; }
+	public Bounds contentBounds {
+		get { return m_ContentBounds; }
+		set
+		{
+			if (!value.Equals(contentBounds))
+			{
+				value.center = contentBounds.center;
+				contentBounds = value;
+				handle.SetBounds(contentBounds);
+				OnBoundsChanged();
+			}
+		}
+	}
 
+	/// <summary>
+	/// Bounding box for entire workspace, including UI handles
+	/// </summary>
 	public Bounds outerBounds
 	{
 		get
 		{
-			return new Bounds(bounds.center + Vector3.down * contentHeight * 0.5f,
+			return new Bounds(contentBounds.center + Vector3.down * contentHeight * 0.5f,
 				new Vector3(
-					bounds.size.x + handleMargin,
-					bounds.size.y + contentHeight,
-					bounds.size.z + handleMargin
+					contentBounds.size.x + handleMargin,
+					contentBounds.size.y + contentHeight,
+					contentBounds.size.z + handleMargin
 					));
 		}
 	}
@@ -32,6 +47,8 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 	
 	[SerializeField]
 	private GameObject m_BasePrefab;
+
+	private Bounds m_ContentBounds;
 
 	public virtual void Setup()
 	{															   
@@ -43,20 +60,11 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 		baseObject.transform.localPosition = Vector3.zero;
 		baseObject.transform.localRotation = Quaternion.identity;
 		//baseObject.transform.localScale = Vector3.one;   
-		bounds = new Bounds(Vector3.up * defaultBounds.y * 0.5f, defaultBounds);
-		handle.SetBounds(bounds);
-	}											
+		//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
+		m_ContentBounds = new Bounds(Vector3.up * defaultBounds.y * 0.5f, defaultBounds);
+		handle.SetBounds(contentBounds);
+	}	
 
-	public void SetBounds(Bounds b)
-	{
-		if (!b.Equals(bounds))
-		{
-			b.center = bounds.center;
-			bounds = b;
-			handle.SetBounds(bounds);
-			OnBoundsChanged();
-		}
-	}
 	protected abstract void OnBoundsChanged();
 
 	public void OnBaseClick()
