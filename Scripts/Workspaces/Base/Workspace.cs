@@ -43,7 +43,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 	}
 
 	public Func<GameObject, GameObject> instantiateUI { private get; set; }
-	protected WorkspaceHandle handle;
+	protected WorkspaceUI handle;
 	
 	[SerializeField]
 	private GameObject m_BasePrefab;
@@ -51,28 +51,29 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 	private Bounds m_ContentBounds;
 
 	public virtual void Setup()
-	{															   
+	{
 		GameObject baseObject = instantiateUI(m_BasePrefab);
 		baseObject.transform.SetParent(transform);
-		handle = baseObject.GetComponent<WorkspaceHandle>();
-		handle.owner = this;
-		handle.sceneContainer.transform.localPosition = Vector3.up * contentHeight;	   
+		handle = baseObject.GetComponent<WorkspaceUI>();
+		handle.OnHandleClick = OnHandleClick;
+		handle.OnCloseClick = Close;
+		handle.sceneContainer.transform.localPosition = Vector3.up*contentHeight;
 		baseObject.transform.localPosition = Vector3.zero;
 		baseObject.transform.localRotation = Quaternion.identity;
 		//baseObject.transform.localScale = Vector3.one;   
 		//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-		m_ContentBounds = new Bounds(Vector3.up * defaultBounds.y * 0.5f, defaultBounds);
+		m_ContentBounds = new Bounds(Vector3.up*defaultBounds.y*0.5f, defaultBounds);
 		handle.SetBounds(contentBounds);
-	}	
+	}
 
 	protected abstract void OnBoundsChanged();
 
-	public void OnBaseClick()
+	public virtual void OnHandleClick()
 	{
 		Debug.Log("click");
 	}
 
-	public void Close()
+	public virtual void Close()
 	{
 		U.Object.Destroy(gameObject);
 	} 

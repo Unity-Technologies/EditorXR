@@ -76,7 +76,6 @@ GameObject:
   - 224: {fileID: 224000010098391608}
   - 222: {fileID: 222000010887689400}
   - 114: {fileID: 114000013390965270}
-  - 65: {fileID: 65000010505378070}
   - 114: {fileID: 114000010477186396}
   m_Layer: 5
   m_Name: Handle
@@ -166,18 +165,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011769002686}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!65 &65000010505378070
-BoxCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012129160926}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.8, y: 0.8, z: 0.01}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!65 &65000012320378212
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -231,7 +218,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114000014286123538}
-        m_MethodName: OnHandleClick
+        m_MethodName: HandleClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -357,7 +344,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114000014286123538}
-        m_MethodName: Close
+        m_MethodName: CloseClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -437,7 +424,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  owner: {fileID: 0}
   sceneContainer: {fileID: 1000013475109388}
   handle: {fileID: 224000010098391608}
   m_BoundsCube: {fileID: 4000013757845182}
