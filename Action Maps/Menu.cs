@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputNew;
 
 // GENERATED FILE - DO NOT EDIT MANUALLY
 namespace UnityEngine.InputNew

@@ -21,7 +21,9 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 	public Transform rayOrigin { get; set; }
 
 	public List<Type> menuTools { private get; set; }
+	public List<Type> menuWorkspaces { private get; set; }
 	public Func<IMainMenu, Type, bool> selectTool { private get; set; }
+	public Action<Type> selectWorkspace { private get; set; }
 
 	public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
@@ -40,28 +42,6 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 		CreateWorkspaceButtons();
 	}
 
-	private void CreateWorkspaceButtons()
-	{
-		foreach (Type t in U.Object.GetExtensionsOfClass(typeof(Workspace))) {
-			var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
-			//TODO: prettify name
-			newButton.name = t.Name;
-			var text = newButton.GetComponentInChildren<Text>();
-			text.text = t.Name;
-			var button = newButton.GetComponent<Button>();
-			button.onClick.RemoveAllListeners();
-			button.onClick.AddListener(() => {
-				//HACK: Delay call for serialization bug
-				EditorApplication.delayCall += () => {
-					//HACK: GameObject.Find to get EVR reference. How should we do this?  
-					Workspace.ShowWorkspace(t, GameObject.Find("EditorVR").transform);
-					U.Object.Destroy(this);
-				};
-			});
-			button.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
-		}
-	}
-
 	void OnDestroy()
 	{
 		if (m_MenuCanvas != null)
@@ -77,17 +57,43 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 			var text = newButton.GetComponentInChildren<Text>();
 			text.text = menuTool.Name;
 			var button = newButton.GetComponent<Button>();
-			AddButtonListener(button, menuTool);
+			AddToolButtonListener(button, menuTool);
 		}
 	}
 
-	private void AddButtonListener(Button b, Type t)
+	private void AddToolButtonListener(Button b, Type t)
 	{
 		b.onClick.RemoveAllListeners();
 		b.onClick.AddListener(() =>
 		{
 			if (selectTool(this, t))
 				U.Object.Destroy(this);
+		});
+		b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
+	}
+	private void CreateWorkspaceButtons()
+	{
+		foreach (var menuWorkspace in menuWorkspaces)
+		{
+			var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
+			newButton.name = ObjectNames.NicifyVariableName(menuWorkspace.Name);
+			var text = newButton.GetComponentInChildren<Text>();
+			text.text = newButton.name;
+			var button = newButton.GetComponent<Button>();
+			AddWorkspaceButtonListener(button, menuWorkspace);								   
+		}
+	}
+	private void AddWorkspaceButtonListener(Button b, Type t)
+	{
+		b.onClick.RemoveAllListeners();
+		b.onClick.AddListener(() =>
+		{
+			//HACK: Workspace.m_BasePrefab is coming up null when we call CreateWorkspace from this context.
+			EditorApplication.delayCall += () =>
+			{
+				selectWorkspace(t);
+				U.Object.Destroy(this); //Q: Why destroy "this" and not "gameobject"?
+			};
 		});
 		b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
 	}

@@ -42,8 +42,6 @@ public class EditorVR : MonoBehaviour
 	private Camera m_EventCamera;
 	private PixelRaycastModule m_PixelRaycastModule;
 	private HighlightModule m_HighlightModule;
-	//HACK: static event camera for workspaces
-	public static Camera eventCamera;
 
 	private PlayerHandle m_PlayerHandle;
 
@@ -59,6 +57,7 @@ public class EditorVR : MonoBehaviour
 	private Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
 	private List<IProxy> m_AllProxies = new List<IProxy>();
 	private IEnumerable<Type> m_AllTools;
+	private IEnumerable<Type> m_AllWorkspaces;
 
 	private Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 	{
@@ -81,13 +80,11 @@ public class EditorVR : MonoBehaviour
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
+		m_AllWorkspaces = U.Object.GetExtensionsOfClass(typeof(Workspace));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
 		// then only show it in that hand's menu.
 		// CollectToolActionMaps(m_AllTools);		
-		//Create default workspace(s)
-		//This will evolve into the "custom layout" feature, but for now we just start with some default workspaces open
-		Workspace.ShowWorkspace<ChessboardWorkspace>(transform);	
 	}
 
 	private void CreateDeviceDataForInputDevices()
@@ -105,6 +102,8 @@ public class EditorVR : MonoBehaviour
 
 	private IEnumerator Start()
 	{
+		//Workspaces don't need to wait until devices are active
+		CreateDefaultWorkspaces();
 		// Delay until at least one proxy initializes
 		bool proxyActive = false;
 		while (!proxyActive)
@@ -119,7 +118,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			yield return null;
-		}
+		}					 
 		SpawnDefaultTools();
 	}
 
@@ -299,9 +298,7 @@ public class EditorVR : MonoBehaviour
 		U.Object.AddComponent<EventSystem>(gameObject);
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
-		m_EventCamera.enabled = false;
-		//HACK: static event camera for workspaces
-		eventCamera = m_EventCamera;
+		m_EventCamera.enabled = false;			  
 		m_InputModule.eventCamera = m_EventCamera;
 
 		foreach (var proxy in m_AllProxies)
@@ -401,6 +398,10 @@ public class EditorVR : MonoBehaviour
 		Debug.LogError(string.Format("EVR: {0}", error));
 	}
 
+	/*
+	 * Tool Functions
+	 */
+
 	/// <summary>
 	/// Spawn a tool on a tool stack for a specific device (e.g. right hand).
 	/// </summary>
@@ -460,12 +461,13 @@ public class EditorVR : MonoBehaviour
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_AllTools.ToList();
+			mainMenu.menuWorkspaces = m_AllWorkspaces.ToList();
 			mainMenu.selectTool = SelectTool;
+			mainMenu.selectWorkspace = CreateWorkspace;
 			m_DeviceData[device].mainMenu = mainMenu;
 			ConnectInterfaces(mainMenu, device);
 		}
-	}
-
+	}	
 	private void ConnectInterfaces(object obj, InputDevice device = null)
 	{
 		if (device != null)
@@ -627,6 +629,29 @@ public class EditorVR : MonoBehaviour
 			m_DeviceData[device].tools.Push(tool);
 			UpdatePlayerHandleMaps();
 		}
+	}
+
+	/*
+	 * Workspace Functions
+	 */
+
+	private void CreateDefaultWorkspaces()
+	{
+		//Create default workspace(s)
+		//This will evolve into the "custom layout" feature, but for now we just start with some default workspaces open
+		CreateWorkspace<ChessboardWorkspace>();
+		//TODO: Add Project and Inspector as they are implemented
+	}
+	private void CreateWorkspace<T>() where T : Workspace
+	{
+		CreateWorkspace(typeof(T));
+	}
+	private void CreateWorkspace(Type t)
+	{								  										 
+		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, transform);
+		workspace.instantiateUI = InstantiateUI;
+		workspace.transform.position = VRView.viewerPivot.position; 
+		workspace.Setup();
 	}
 
 #if UNITY_EDITOR

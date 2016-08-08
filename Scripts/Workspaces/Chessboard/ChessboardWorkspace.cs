@@ -12,9 +12,9 @@ public class ChessboardWorkspace : Workspace
 
 	private Chessboard m_Chessboard;
 
-	public override void Awake()
+	public override void Setup()
 	{
-		base.Awake();
+		base.Setup();					
 		GameObject content = U.Object.ClonePrefab(m_ContentPrefab, handle.sceneContainer);
 		content.transform.localPosition = Vector3.zero;
 		content.transform.localRotation = Quaternion.identity;

@@ -5,9 +5,10 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.VR.Utilities;
 
-public abstract class Workspace : MonoBehaviour
+public abstract class Workspace : MonoBehaviour, IInstantiateUI
 {
 	public Bounds bounds { get; private set; }
+	public Func<GameObject, GameObject> instantiateUI { private get; set; }
 	protected WorkspaceHandle handle;
 
 	private const float k_HandleMargin = 0.2f;	//Amount of space (in UI units) between handle and content bounds
@@ -19,39 +20,12 @@ public abstract class Workspace : MonoBehaviour
 	private static readonly Quaternion s_StartRotation = Quaternion.AngleAxis(-25, Vector3.right);
 	private static readonly Vector3 s_InitBounds = new Vector3(0.8f, 0.6f, 0.6f);
 
-	//TODO: decide how to track existing workspaces
-	private static readonly Dictionary<Type, List<Workspace>> s_ExistingTypes = new Dictionary<Type, List<Workspace>>(); 
-
-	//TODO: Refactor this function to not use parent, how should we get a parent transform?
-	public static void ShowWorkspace<T>(Transform parent) where T: Workspace {
-		ShowWorkspace(typeof(T), parent);
-	}
-	public static void ShowWorkspace(Type t, Transform parent)
-	{
-		if (!s_ExistingTypes.ContainsKey(t))
-		{
-			s_ExistingTypes[t] = new List<Workspace> { CreateWorkspace(t, parent) };
-		}
-	}
-	public static T CreateNewWorkspace<T>(Transform parent) where T : Workspace {
-		return CreateWorkspace<T>(parent);
-	}
-
-	static T CreateWorkspace<T>(Transform parent) where T : Workspace {
-		return (T)CreateWorkspace(typeof(T), parent);
-	}
-	static Workspace CreateWorkspace(Type t, Transform parent)
-	{
-		//TODO: ASSERT if t isn't assignable to Workspace
-		//Q: Is the cast necessary here? Could we return a Component instead?
-		return (Workspace)U.Object.CreateGameObjectWithComponent(t, parent);
-	}
-
-	public virtual void Awake()
-	{
-		transform.position = s_StartPosition;
+	public virtual void Setup()
+	{							
+		transform.position += transform.rotation * s_StartPosition;
 		transform.rotation = s_StartRotation;
-		GameObject baseObject = U.Object.ClonePrefab(m_BasePrefab.gameObject, gameObject);
+		GameObject baseObject = instantiateUI(m_BasePrefab);
+		baseObject.transform.SetParent(transform);
 		handle = baseObject.GetComponent<WorkspaceHandle>();
 		handle.owner = this;
 		//TODO: ASSERT if handleRect is null
@@ -59,8 +33,6 @@ public abstract class Workspace : MonoBehaviour
 		baseObject.transform.localPosition = Vector3.zero;
 		baseObject.transform.localRotation = Quaternion.identity;
 		//baseObject.transform.localScale = Vector3.one;   
-		foreach (Canvas canvas in GetComponentsInChildren<Canvas>())
-			canvas.worldCamera = EditorVR.eventCamera;
 		bounds = new Bounds(handle.sceneContainer.transform.position, s_InitBounds);
 	}
 #if DEBUGDRAW
@@ -92,12 +64,5 @@ public abstract class Workspace : MonoBehaviour
 	public void Close()
 	{
 		U.Object.Destroy(gameObject);
-	}
-
-	void OnDestroy()
-	{
-		if (s_ExistingTypes[GetType()].Remove(this)) {
-			s_ExistingTypes.Remove(GetType());
-		}
-	}
+	} 
 }
