@@ -5,7 +5,6 @@
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 		_ClipCenter("Clip Center", Vector) = (0,0,0,1)
-		//_ClipDistance("Clip Distance", Float) = 1.0
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
@@ -37,8 +36,6 @@
 		static const fixed4 white = fixed4(1, 1, 1, 1);
 
 		float4 _ClipCenter;
-		//half _ClipDistance;
-		//half _ClipDistance[_PlaneCount];
 		half _ClipDistance0;
 		half _ClipDistance1;
 		half _ClipDistance2;
