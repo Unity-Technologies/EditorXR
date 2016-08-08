@@ -20,6 +20,10 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 	[SerializeField]
 	private GameObject m_BlinkVisualsPrefab;
 
+	// It doesn't make sense to be able to activate another blink tool when you already have one active, since you can't
+	// blink to two locations at the same time;
+	private static BlinkLocomotionTool s_ActiveTool;
+
 	private GameObject m_BlinkVisualsGO;
 	private BlinkVisuals m_BlinkVisuals;
 
@@ -55,6 +59,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 	private void OnDisable()
 	{
 		m_State = State.Inactive;
+		if (s_ActiveTool == this)
+			s_ActiveTool = null;
 	}
 
 	private void OnDestroy()
@@ -64,15 +70,16 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 
 	private void Update()
 	{
-		if (m_State == State.Moving)
+		if (m_State == State.Moving || (s_ActiveTool != null && s_ActiveTool != this))
 			return;
 
 		if (m_BlinkLocomotionInput.blink.wasJustPressed)
 		{
+			s_ActiveTool = this;
 			hideDefaultRay();
 			m_BlinkVisuals.ShowVisuals();
 		}
-		else if (m_BlinkLocomotionInput.blink.wasJustReleased && m_State != State.Moving)
+		else if (m_BlinkLocomotionInput.blink.wasJustReleased)
 		{
 			m_BlinkVisuals.HideVisuals();
 			showDefaultRay();
@@ -93,5 +100,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 		}
 
 		m_State = State.Inactive;
+		s_ActiveTool = null;
 	}
 }
