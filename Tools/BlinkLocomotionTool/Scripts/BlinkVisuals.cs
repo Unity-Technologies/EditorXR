@@ -43,7 +43,7 @@ public class BlinkVisuals : MonoBehaviour
 	private MeshRenderer m_TubeRenderer;
 
 	private readonly Vector3 kGroundOffset = Vector3.one * 0.01f; // Used to offset the room scale visuals to avoid z-fighting
-	private readonly string m_TintColor = "_TintColor";
+	private readonly string kTintColor = "_TintColor";
 
 	private float m_CurveLengthEstimate;
 	private Vector3? m_DetachedWorldArcPosition = null;
@@ -324,7 +324,7 @@ public class BlinkVisuals : MonoBehaviour
 
 		if (!show)
 		{
-			m_RoomScaleRenderer.sharedMaterial.SetColor(m_TintColor, Color.clear);
+			m_RoomScaleRenderer.sharedMaterial.SetColor(kTintColor, Color.clear);
 
 			for (int i = 0; i < m_MotionSphereCount; ++i)
 				m_MotionSpheres[i].localScale = Vector3.zero;
@@ -336,6 +336,6 @@ public class BlinkVisuals : MonoBehaviour
 		m_LineRenderer.SetColors(color, color);
 		m_MotionSpheres[0].GetComponent<MeshRenderer>().sharedMaterial.color = color;
 		// Set the color for all object sharind the blink material
-		m_RoomScaleRenderer.sharedMaterial.SetColor(m_TintColor, color);
+		m_RoomScaleRenderer.sharedMaterial.SetColor(kTintColor, color);
 	}
 }
