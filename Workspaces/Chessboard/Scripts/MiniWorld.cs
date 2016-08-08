@@ -120,7 +120,7 @@ public class MiniWorld : MonoBehaviour
 		clipDistances[1] = Mathf.Abs((fourCorners[1] - center).z) * clipCenter.lossyScale.z;
 		clipDistances[2] = Mathf.Abs((fourCorners[2] - center).x) * clipCenter.lossyScale.x;
 		clipDistances[3] = Mathf.Abs((fourCorners[3] - center).z) * clipCenter.lossyScale.z;
-		clipDistances[4] = (m_YBounds - center.y) * clipCenter.lossyScale.y * 0.5f;
+		clipDistances[4] = (m_YBounds - center.y) * clipCenter.lossyScale.y;
 		clipDistances[5] = 0;
 	}
 }
