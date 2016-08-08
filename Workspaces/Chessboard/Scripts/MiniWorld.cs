@@ -2,7 +2,7 @@
 using UnityEngine.VR.Utilities;
 
 //Q: Should combine with ChessboardWorkspace?
-public class Chessboard : MonoBehaviour
+public class MiniWorld : MonoBehaviour
 {
 	public Matrix4x4 matrix
 	{
@@ -24,7 +24,7 @@ public class Chessboard : MonoBehaviour
 	[SerializeField]
 	private RectTransform m_ClipRect = null;
 
-	private ChessboardRenderer m_ChessboardRenderer = null;
+	private MiniWorldRenderer m_MiniWorldRenderer = null;
 	private float m_YBounds = 1;
 
 	public void MoveForward()
@@ -85,11 +85,11 @@ public class Chessboard : MonoBehaviour
 		}
 
 		Camera main = U.Camera.GetMainCamera();
-		m_ChessboardRenderer = main.gameObject.AddComponent<ChessboardRenderer>();
-		m_ChessboardRenderer.miniWorld = this;
-		m_ChessboardRenderer.cullingMask = s_RendererCullingMask;
+		m_MiniWorldRenderer = main.gameObject.AddComponent<MiniWorldRenderer>();
+		m_MiniWorldRenderer.miniWorld = this;
+		m_MiniWorldRenderer.cullingMask = s_RendererCullingMask;
 		if (U.Object.IsEditModeActive(this))
-			m_ChessboardRenderer.runInEditMode = true;
+			m_MiniWorldRenderer.runInEditMode = true;
 
 		// Sync with where camera is initially
 		Transform pivot = U.Camera.GetViewerPivot();
@@ -101,8 +101,8 @@ public class Chessboard : MonoBehaviour
 		if ((clipCenter.hideFlags & HideFlags.DontSave) != 0)
 			U.Object.Destroy(clipCenter.gameObject);
 
-		if (m_ChessboardRenderer)
-			U.Object.Destroy(m_ChessboardRenderer);
+		if (m_MiniWorldRenderer)
+			U.Object.Destroy(m_MiniWorldRenderer);
 	}
 
 	private void LateUpdate()

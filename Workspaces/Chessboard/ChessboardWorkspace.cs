@@ -10,7 +10,7 @@ public class ChessboardWorkspace : Workspace
 	[SerializeField]
 	private GameObject m_ContentPrefab;
 
-	private Chessboard m_Chessboard;
+	private MiniWorld m_MiniWorld;
 
 	public override void Setup()
 	{
@@ -19,7 +19,7 @@ public class ChessboardWorkspace : Workspace
 		content.transform.localPosition = Vector3.zero;
 		content.transform.localRotation = Quaternion.identity;
 		content.transform.localScale = Vector3.one;
-		m_Chessboard = GetComponentInChildren<Chessboard>();
+		m_MiniWorld = GetComponentInChildren<MiniWorld>();
 		OnBoundsChanged();
 		//TODO: ASSERT if chessboard is false		   
 	}
@@ -31,6 +31,6 @@ public class ChessboardWorkspace : Workspace
 
 	protected override void OnBoundsChanged()
 	{
-		m_Chessboard.SetBounds(contentBounds);
+		m_MiniWorld.SetBounds(contentBounds);
 	}
 }
