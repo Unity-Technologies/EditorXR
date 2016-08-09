@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 403957a6dcd8bfe4a905881513f309b0
+timeCreated: 1469433121
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_BlinkActionMap: {fileID: 11400000, guid: 233e21336472f454bb9de757639a9ec0, type: 2}
+  - m_BlinkVisualsPrefab: {fileID: 1000010640839482, guid: 1a8cb71dcb1ec2e4c8dc0b3158762bcb,
+      type: 2}
+  - m_FadeImagePrefab: {fileID: 1000013165945872, guid: 2baf83b8b6f7d124198dfecd428e3fcf,
+      type: 2}
+  - m_CustomPointerRayPrefab: {fileID: 114000010982492852, guid: 6c037b4595ca1ab4c921efeac9524073,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
