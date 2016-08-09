@@ -12,6 +12,7 @@ public class ChessboardWorkspace : Workspace
 	private GameObject m_ContentPrefab;
 
 	private MiniWorld m_MiniWorld;
+	private ChessboardUI m_ChessboardUI;
 
 	public override void Setup()
 	{
@@ -21,6 +22,7 @@ public class ChessboardWorkspace : Workspace
 		content.transform.localRotation = Quaternion.identity;
 		content.transform.localScale = Vector3.one;
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
+		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
 		OnBoundsChanged();
 	}
 
@@ -32,6 +34,9 @@ public class ChessboardWorkspace : Workspace
 
 	protected override void OnBoundsChanged()
 	{
+		m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
 		m_MiniWorld.SetBounds(contentBounds);
+		m_ChessboardUI.grid.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, contentBounds.size.x);
+		m_ChessboardUI.grid.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, contentBounds.size.z);
 	}
 }

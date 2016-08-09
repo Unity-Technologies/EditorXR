@@ -4,7 +4,6 @@
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
-		_ClipCenter("Clip Center", Vector) = (0,0,0,1)
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
@@ -36,12 +35,7 @@
 		static const fixed4 white = fixed4(1, 1, 1, 1);
 
 		float4 _ClipCenter;
-		half _ClipDistance0;
-		half _ClipDistance1;
-		half _ClipDistance2;
-		half _ClipDistance3;
-		half _ClipDistance4;
-		half _ClipDistance5;
+		float4 _ClipExtents;
 		half _Glossiness;
 		half _Metallic;
 		fixed4 _Color;
@@ -50,12 +44,12 @@
 
 		void surf (Input IN, inout SurfaceOutput o) {
 			// Clip against planes equidistant from the clip center point
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[0] * _ClipDistance0), (float3)_PlaneNormals[0]));
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[1] * _ClipDistance1), (float3)_PlaneNormals[1]));
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[2] * _ClipDistance2), (float3)_PlaneNormals[2]));
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[3] * _ClipDistance3), (float3)_PlaneNormals[3]));
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[4] * _ClipDistance4), (float3)_PlaneNormals[4]));
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[5] * _ClipDistance5), (float3)_PlaneNormals[5]));
+			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[0] * _ClipExtents.x), (float3)_PlaneNormals[0]));
+			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[1] * _ClipExtents.z), (float3)_PlaneNormals[1]));
+			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[2] * _ClipExtents.x), (float3)_PlaneNormals[2]));
+			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[3] * _ClipExtents.z), (float3)_PlaneNormals[3]));
+			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[4] * _ClipExtents.y), (float3)_PlaneNormals[4]));
+			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[5] * _ClipExtents.y), (float3)_PlaneNormals[5]));
 
 			// Some materials don't have colors set, so default them to white
 			if (dot(_Color, white) <= 0)

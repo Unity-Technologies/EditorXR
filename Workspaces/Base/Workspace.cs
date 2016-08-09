@@ -27,7 +27,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 			if (!value.Equals(contentBounds))
 			{
 				value.center = contentBounds.center;
-				contentBounds = value;
+				m_ContentBounds = value;
 				handle.SetBounds(contentBounds);
 				OnBoundsChanged();
 			}
@@ -66,8 +66,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 		handle.OnCloseClick = Close;
 		handle.sceneContainer.transform.localPosition = Vector3.up * kContentHeight;
 		baseObject.transform.localPosition = Vector3.zero;
-		baseObject.transform.localRotation = Quaternion.identity;
-		//baseObject.transform.localScale = Vector3.one;   
+		baseObject.transform.localRotation = Quaternion.identity;  
 		//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
 		handle.SetBounds(contentBounds);

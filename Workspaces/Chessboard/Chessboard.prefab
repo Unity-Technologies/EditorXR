@@ -100,6 +100,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000010512691356}
   - 114: {fileID: 114000012262627604}
+  - 114: {fileID: 114000012428583066}
   m_Layer: 0
   m_Name: Chessboard
   m_TagString: Untagged
@@ -439,7 +440,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_ClipRect: {fileID: 224000012146066746}
+--- !u!114 &114000012428583066
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012496997414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c18c651b194fa245afb5c88589d4195, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  grid: {fileID: 224000012146066746}
 --- !u!114 &114000012583507708
 MonoBehaviour:
   m_ObjectHideFlags: 1

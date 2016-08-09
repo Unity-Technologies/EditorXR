@@ -8,82 +8,71 @@ public class MiniWorld : MonoBehaviour
 
 	public Matrix4x4 matrix
 	{
-		get
-		{
-			//Q: use rotation?
-			Matrix4x4 clipOffsetMatrix = Matrix4x4.TRS(clipCenter.position, Quaternion.identity, Vector3.one);
-			return transform.localToWorldMatrix * clipOffsetMatrix.inverse;
-		}
+		get { return transform.localToWorldMatrix * clipBox.transform.worldToLocalMatrix; }
 	}
 
-	public Transform clipCenter { get; private set; }
+	public ClipBox clipBox { get; private set; }
 
 	private static readonly LayerMask s_RendererCullingMask = -1;
 	private const int kPlaneCount = 6;
 	private const float kTranslationScale = 0.1f;
 
-	[SerializeField]
-	private RectTransform m_ClipRect;
-
 	private MiniWorldRenderer m_MiniWorldRenderer;
-	private float m_YBounds = 1;
 
 	public void MoveForward()
 	{
-		clipCenter.Translate(Vector3.forward * kTranslationScale);
+		clipBox.transform.Translate(Vector3.forward * kTranslationScale);
 	}
 
 	public void MoveBackward()
 	{
-		clipCenter.Translate(Vector3.back * kTranslationScale);
+		clipBox.transform.Translate(Vector3.back * kTranslationScale);
 	}
 
 	public void MoveLeft()
 	{
-		clipCenter.Translate(Vector3.left * kTranslationScale);
+		clipBox.transform.Translate(Vector3.left * kTranslationScale);
 	}
 
 	public void MoveRight()
 	{
-		clipCenter.Translate(Vector3.right * kTranslationScale);
+		clipBox.transform.Translate(Vector3.right * kTranslationScale);
 	}
 
 	internal void SetBounds(Bounds bounds)
-	{
-		m_ClipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x);
-		m_ClipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, bounds.size.z);
-		m_YBounds = bounds.size.y;
+	{											  
+		clipBox.localBounds = bounds;
 	}
 
 	//Q: Is this still needed?
-	public bool ClipPlanesContain(Vector3 worldPosition)
-	{
-		Vector3[] planeNormals = new Vector3[]
-		{
-			new Vector3(-1, 0, 0),
-			new Vector3(0, 0, 1),
-			new Vector3(1, 0, 0),
-			new Vector3(0, 0, -1),
-			new Vector3(0, 1, 0),
-			new Vector3(0, -1, 0),
-		};
+	//public bool ClipPlanesContain(Vector3 worldPosition)
+	//{
+	//	Vector3[] planeNormals = new Vector3[]
+	//	{
+	//		new Vector3(-1, 0, 0),
+	//		new Vector3(0, 0, 1),
+	//		new Vector3(1, 0, 0),
+	//		new Vector3(0, 0, -1),
+	//		new Vector3(0, 1, 0),
+	//		new Vector3(0, -1, 0),
+	//	};
 
-		for (int i = 0; i < kPlaneCount; i++)
-		{
-			if (Vector3.Dot(worldPosition - (clipCenter.position - planeNormals[i] * clipDistances[i]), planeNormals[i]) < 0f)
-				return false;
-		}
+	//	for (int i = 0; i < kPlaneCount; i++)
+	//	{
+	//		if (Vector3.Dot(worldPosition - (clipBox.position - planeNormals[i] * clipDistances[i]), planeNormals[i]) < 0f)
+	//			return false;
+	//	}
 
-		return true;
-	}
+	//	return true;
+	//}
 
 	private void OnEnable()
 	{
-		if (!clipCenter)
+		if (!clipBox)
 		{
 			GameObject go = new GameObject("MiniWorldClipCenter");
 			go.hideFlags = HideFlags.DontSave;
-			clipCenter = go.transform;
+			clipBox = go.AddComponent<ClipBox>();
 		}
 
 		Camera main = U.Camera.GetMainCamera();
@@ -95,34 +84,15 @@ public class MiniWorld : MonoBehaviour
 
 		// Sync with where camera is initially
 		Transform pivot = U.Camera.GetViewerPivot();
-		clipCenter.transform.position = pivot.transform.position;
+		clipBox.transform.position = pivot.transform.position;
 	}
 
 	private void OnDisable()
 	{
-		if ((clipCenter.hideFlags & HideFlags.DontSave) != 0)
-			U.Object.Destroy(clipCenter.gameObject);
+		if ((clipBox.hideFlags & HideFlags.DontSave) != 0)
+			U.Object.Destroy(clipBox.gameObject);
 
 		if (m_MiniWorldRenderer)
 			U.Object.Destroy(m_MiniWorldRenderer);
-	}
-
-	private void LateUpdate()
-	{
-		// Adjust clip distances, which are in world coordinates to match with the UI clip rect
-		Vector3[] fourCorners = new Vector3[4]; // Clock-wise from bottom-left corner
-		m_ClipRect.GetWorldCorners(fourCorners);
-
-		Vector3 center = transform.InverseTransformPoint(m_ClipRect.position);
-		for (int i = 0; i < 4; i++)
-			fourCorners[i] = transform.InverseTransformPoint(fourCorners[i]);
-
-		// Clip distances are distance of the plane from the center location in each direction
-		clipDistances[0] = Mathf.Abs((fourCorners[0] - center).x);
-		clipDistances[1] = Mathf.Abs((fourCorners[1] - center).z);
-		clipDistances[2] = Mathf.Abs((fourCorners[2] - center).x);
-		clipDistances[3] = Mathf.Abs((fourCorners[3] - center).z);
-		clipDistances[4] = m_YBounds - center.y;
-		clipDistances[5] = 0;
 	}
 }
