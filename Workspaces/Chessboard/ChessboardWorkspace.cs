@@ -30,6 +30,16 @@ public class ChessboardWorkspace : Workspace
 	{
 		if (m_DummyBounds)
 			contentBounds = m_DummyBounds.bounds;
+		float clipHeight = m_MiniWorld.clipBox.transform.position.y / m_MiniWorld.clipBox.transform.localScale.y;
+		if (Mathf.Abs(clipHeight) < contentBounds.extents.y)
+		{
+			m_ChessboardUI.grid.gameObject.SetActive(true);
+			m_ChessboardUI.grid.transform.localPosition = Vector3.down * clipHeight;
+		}
+		else
+		{
+			m_ChessboardUI.grid.gameObject.SetActive(false);
+		}
 	}
 
 	protected override void OnBoundsChanged()
