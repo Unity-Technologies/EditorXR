@@ -31,7 +31,7 @@ public class BlinkVisuals : MonoBehaviour
 	[SerializeField]
 	private Transform m_LocatorRoot;
 	[SerializeField]
-	public GameObject m_MotionIndicatorSphere;
+	private GameObject m_MotionIndicatorSphere;
 	[SerializeField]
 	private int m_MotionSphereCount = 10;
 	[SerializeField]
@@ -46,7 +46,7 @@ public class BlinkVisuals : MonoBehaviour
 	private readonly string kTintColor = "_TintColor";
 
 	private float m_CurveLengthEstimate;
-	private Vector3? m_DetachedWorldArcPosition = null;
+	private Vector3? m_DetachedWorldArcPosition;
 	private Vector3 m_FinalPosition;
 	private Vector3 m_LastPosition;
 	private Quaternion m_LastRotation;
@@ -57,7 +57,7 @@ public class BlinkVisuals : MonoBehaviour
 	private float m_MovementMagnitudeDelta;
 	private Vector3 m_MovementVelocityDelta;
 	private bool m_OutOfMaxRange;
-	private Vector3[] m_BezierControlPoints = new Vector3[4]; // Cubic
+	private readonly Vector3[] m_BezierControlPoints = new Vector3[4]; // Cubic
 	private Transform m_RingTransform;
 	private Vector3 m_RingTransformOriginalScale;
 	private Vector3 m_RoomScaleLazyPosition;
@@ -69,7 +69,7 @@ public class BlinkVisuals : MonoBehaviour
 	private Transform m_TubeTransform;
 	private Vector3 m_TubeTransformHiddenScale;
 	private Vector3 m_TubeTransformOriginalScale;
-	private bool m_ValidTarget = false;
+	private bool m_ValidTarget;
 
 	public Vector3 locatorPosition { get { return locatorRoot.position; } }
 	public Transform locatorRoot { get { return m_LocatorRoot; } }
