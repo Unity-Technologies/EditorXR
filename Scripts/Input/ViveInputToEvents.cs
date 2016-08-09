@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System; 
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR;
 using Valve.VR;
 
 public class ViveInputToEvents : MonoBehaviour
@@ -21,6 +17,14 @@ public class ViveInputToEvents : MonoBehaviour
 	public void Update()
 	{
 		active = false;
+		TrackedDevicePose_t[] poses = null;
+		var compositor = OpenVR.Compositor;
+		if (compositor != null)
+		{
+			var render = SteamVR_Render.instance;
+			compositor.GetLastPoses(render.poses, render.gamePoses);
+			poses = render.poses;
+		}
 
 		for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++)
 		{
@@ -35,21 +39,22 @@ public class ViveInputToEvents : MonoBehaviour
 				if (steamDeviceIndex == -1)
 					continue;
 
-				active = true;
-
 				if (hand == VRInputDevice.Handedness.Left)
-					steamDeviceIndices[(int) hand] = steamDeviceIndex;
-				else if (steamDeviceIndex != steamDeviceIndices[(int) VRInputDevice.Handedness.Left]) // Do not assign device to right hand if it is same device as left hand
-					steamDeviceIndices[(int) hand] = steamDeviceIndex;
+					steamDeviceIndices[(int)hand] = steamDeviceIndex;
+				else if (steamDeviceIndex != steamDeviceIndices[(int)VRInputDevice.Handedness.Left]) // Do not assign device to right hand if it is same device as left hand
+					steamDeviceIndices[(int)hand] = steamDeviceIndex;
 				else
 					continue;
-			} else active = true;
+			}
+			active = true;
+
 
 			int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
 			SendButtonEvents(steamDeviceIndex, deviceIndex);
 			SendAxisEvents(steamDeviceIndex, deviceIndex);
-			SendTrackingEvents(steamDeviceIndex, deviceIndex);
+			SendTrackingEvents(steamDeviceIndex, deviceIndex, poses);
 		}
+
 	}
 
 	public const int controllerCount = 10;
@@ -105,12 +110,12 @@ public class ViveInputToEvents : MonoBehaviour
 		}
 	}
 
-	private void SendTrackingEvents(int steamDeviceIndex, int deviceIndex)
+	private void SendTrackingEvents(int steamDeviceIndex, int deviceIndex, TrackedDevicePose_t[] poses)
 	{
 		var inputEvent = InputSystem.CreateEvent<VREvent>();
 		inputEvent.deviceType = typeof(VRInputDevice);
 		inputEvent.deviceIndex = deviceIndex;
-		var pose = new SteamVR_Utils.RigidTransform(SteamVR_Controller.Input(steamDeviceIndex).GetPose().mDeviceToAbsoluteTracking);
+		var pose = new SteamVR_Utils.RigidTransform(poses[steamDeviceIndex].mDeviceToAbsoluteTracking);
 		inputEvent.localPosition = pose.pos;
 		inputEvent.localRotation = pose.rot;
 

@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 
-namespace UnityEngine.VR.Proxies {
-	public class MultipleRayInputModule : PointerInputModule {
+namespace UnityEngine.VR.Proxies
+{
+	public class MultipleRayInputModule : PointerInputModule
+	{
 		[SerializeField]
 		public Camera EventCameraPrefab; // Camera to be instantiated and assigned to EventCamera property
 
@@ -16,26 +18,30 @@ namespace UnityEngine.VR.Proxies {
 		private List<GameObject> CurrentPressed = new List<GameObject>();
 		private List<GameObject> CurrentDragging = new List<GameObject>();
 
-		public Camera eventCamera {
+		public Camera eventCamera
+		{
 			get { return m_EventCamera; }
 			set { m_EventCamera = value; }
 		}
 		private Camera m_EventCamera;
 
-		public ActionMap actionMap {
+		public ActionMap actionMap
+		{
 			get { return m_UIActionMap; }
 		}
 
 		[SerializeField]
 		private ActionMap m_UIActionMap;
 
-		private class RaycastSource {
+		private class RaycastSource
+		{
 			public IProxy proxy; // Needed for checking if proxy is active
 			public Node node;
 			public Transform rayOrigin;
 			public UIActions actionMapInput;
 
-			public RaycastSource(IProxy proxy, Node node, Transform rayOrigin, UIActions actionMapInput) {
+			public RaycastSource(IProxy proxy, Node node, Transform rayOrigin, UIActions actionMapInput)
+			{
 				this.proxy = proxy;
 				this.node = node;
 				this.rayOrigin = rayOrigin;
@@ -43,9 +49,11 @@ namespace UnityEngine.VR.Proxies {
 			}
 		}
 
-		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput) {
-			UIActions actions = (UIActions)actionMapInput;
-			if (actions == null) {
+		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput)
+		{
+			UIActions actions = (UIActions) actionMapInput;
+			if (actions == null)
+			{
 				Debug.LogError("Cannot add actionMapInput to InputModule that is not of type UIActions.");
 				return;
 			}
@@ -57,14 +65,16 @@ namespace UnityEngine.VR.Proxies {
 				Debug.LogError("Failed to get ray origin transform for node " + node + " from proxy " + proxy);
 		}
 
-		public override void Process() {
+		public override void Process()
+		{
 			ExecuteUpdateOnSelectedObject();
 
 			if (m_EventCamera == null)
 				return;
 
 			//Process events for all different transforms in RayOrigins
-			for (int i = 0; i < m_RaycastSources.Count; i++) {
+			for (int i = 0; i < m_RaycastSources.Count; i++)
+			{
 				// Expand lists if needed
 				while (i >= CurrentPoint.Count)
 					CurrentPoint.Add(null);
@@ -74,7 +84,6 @@ namespace UnityEngine.VR.Proxies {
 					CurrentDragging.Add(null);
 				while (i >= PointEvents.Count)
 					PointEvents.Add(new PointerEventData(base.eventSystem));
-
 
 				if (!m_RaycastSources[i].proxy.active)
 					continue;
@@ -100,7 +109,8 @@ namespace UnityEngine.VR.Proxies {
 			}
 		}
 
-		private void OnSelectPressed(int i) {
+		private void OnSelectPressed(int i)
+		{
 			Deselect();
 
 			PointEvents[i].pressPosition = PointEvents[i].position;
@@ -115,7 +125,8 @@ namespace UnityEngine.VR.Proxies {
 				if (newPressed == null) // Gameobject does not have pointerDownHandler in hierarchy, but may still have click handler
 					newPressed = ExecuteEvents.GetEventHandler<IPointerClickHandler>(CurrentPressed[i]);
 
-				if (newPressed != null) {
+				if (newPressed != null)
+				{
 					CurrentPressed[i] = newPressed; // Set current pressed to gameObject that handles the pointerDown event, not the root object
 					PointEvents[i].pointerPress = newPressed;
 					Select(CurrentPressed[i]);
@@ -127,11 +138,13 @@ namespace UnityEngine.VR.Proxies {
 			}
 		}
 
-		private void OnSelectReleased(int i) {
+		private void OnSelectReleased(int i)
+		{
 			if (CurrentPressed[i])
 				ExecuteEvents.Execute(CurrentPressed[i], PointEvents[i], ExecuteEvents.pointerUpHandler);
 
-			if (CurrentDragging[i]) {
+			if (CurrentDragging[i])
+			{
 				ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteEvents.endDragHandler);
 				if (CurrentPoint[i] != null)
 					ExecuteEvents.ExecuteHierarchy(CurrentPoint[i], PointEvents[i], ExecuteEvents.dropHandler);
@@ -150,12 +163,14 @@ namespace UnityEngine.VR.Proxies {
 			CurrentPressed[i] = null;
 		}
 
-		public void Deselect() {
+		public void Deselect()
+		{
 			if (base.eventSystem.currentSelectedGameObject)
 				base.eventSystem.SetSelectedGameObject(null);
 		}
 
-		private void Select(GameObject go) {
+		private void Select(GameObject go)
+		{
 			Deselect();
 
 			if (ExecuteEvents.GetEventHandler<ISelectHandler>(go))
@@ -169,7 +184,6 @@ namespace UnityEngine.VR.Proxies {
 			m_EventCamera.transform.rotation = m_RaycastSources[i].rayOrigin.rotation;
 
 			PointEvents[i].Reset();
-
 			PointEvents[i].delta = Vector2.zero;
 			PointEvents[i].position = m_EventCamera.pixelRect.center;
 			PointEvents[i].scrollDelta = Vector2.zero;
@@ -183,7 +197,8 @@ namespace UnityEngine.VR.Proxies {
 			return hit;
 		}
 
-		private bool ExecuteUpdateOnSelectedObject() {
+		private bool ExecuteUpdateOnSelectedObject()
+		{
 			if (base.eventSystem.currentSelectedGameObject == null)
 				return false;
 
