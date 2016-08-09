@@ -682,7 +682,7 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, transform);
-		workspace.instantiateUI = InstantiateUI;
+		ConnectInterfaces(workspace);			
 		workspace.transform.position = position;
 		workspace.transform.rotation = rotation;
 		workspace.Setup();
