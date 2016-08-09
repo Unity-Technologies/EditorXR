@@ -198,7 +198,7 @@ public class EditorVR : MonoBehaviour
 	private Dictionary<Type, List<ActionMap>> CollectToolActionMaps(IEnumerable<Type> toolTypes)
 	{
 		var toolMaps = new Dictionary<Type, List<ActionMap>>();
-		
+
 		foreach (var t in toolTypes)
 		{
 			if (!t.IsSubclassOf(typeof(MonoBehaviour)))
@@ -272,7 +272,7 @@ public class EditorVR : MonoBehaviour
 	private void UpdateDefaultProxyRays()
 	{
 		// Set ray lengths based on renderer bounds
-		foreach (var proxy in m_AllProxies) 
+		foreach (var proxy in m_AllProxies)
 		{
 			if (!proxy.active)
 				continue;
@@ -301,7 +301,7 @@ public class EditorVR : MonoBehaviour
 		U.Object.AddComponent<EventSystem>(gameObject);
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
-		m_EventCamera.enabled = false;			  
+		m_EventCamera.enabled = false;
 		m_InputModule.eventCamera = m_EventCamera;
 
 		foreach (var proxy in m_AllProxies)
@@ -345,7 +345,7 @@ public class EditorVR : MonoBehaviour
 			return null;
 
 		var devices = device == null ? m_PlayerHandle.GetApplicableDevices() : new InputDevice[] { device };
-		
+
 		var actionMapInput = ActionMapInput.Create(map);
 		// It's possible that there are no suitable control schemes for the device that is being initialized, 
 		// so ActionMapInput can't be marked active
@@ -510,7 +510,7 @@ public class EditorVR : MonoBehaviour
 		var raycasterComponent = obj as IRaycaster;
 		if (raycasterComponent != null)
 			raycasterComponent.getFirstGameObject = m_PixelRaycastModule.GetFirstGameObject;
-		
+
 		var highlightComponent = obj as IHighlight;
 		if (highlightComponent != null)
 			highlightComponent.setHighlight = m_HighlightModule.SetHighlight;
@@ -569,7 +569,7 @@ public class EditorVR : MonoBehaviour
 		foreach (var deviceData in m_DeviceData.Values)
 		{
 			// Remove the tool if it is the current tool on this device tool stack
-			if (deviceData.currentTool == tool) 
+			if (deviceData.currentTool == tool)
 			{
 				if (deviceData.tools.Peek() != deviceData.currentTool)
 				{
@@ -606,7 +606,7 @@ public class EditorVR : MonoBehaviour
 					untaggedDevicesFound++;
 			}
 		}
-			
+
 		if (nonMatchingTagIndices > 0 && matchingTagIndices == 0)
 		{
 			LogError(string.Format("The action map {0} contains a specific device tag, but is being spawned on the wrong device tag", actionMap));
@@ -614,7 +614,7 @@ public class EditorVR : MonoBehaviour
 		}
 
 		if (taggedDevicesFound > 0 && untaggedDevicesFound != 0)
-		{			
+		{
 			LogError(string.Format("The action map {0} contains both a specific device tag and an unspecified tag, which is not supported", actionMap.name));
 			return false;
 		}
@@ -646,30 +646,30 @@ public class EditorVR : MonoBehaviour
 		Vector3 position = VRView.viewerPivot.position + s_WorkspaceDefaultOffset;
 		Quaternion rotation = s_WorkspaceDefaultTilt;
 		//Test front
-		if (Physics.CheckBox(position, Workspace.defaultBounds, rotation))
-		{							   
+		if (Physics.CheckBox(position, Workspace.kDefaultBounds, rotation))
+		{
 			position = VRView.viewerPivot.position + Quaternion.AngleAxis(90, Vector3.up) * s_WorkspaceDefaultOffset;
 			rotation = Quaternion.AngleAxis(90, Vector3.up) * s_WorkspaceDefaultTilt;
 			//Test left
-			if (Physics.CheckBox(position, Workspace.defaultBounds, rotation))
+			if (Physics.CheckBox(position, Workspace.kDefaultBounds, rotation))
 			{
 				position = VRView.viewerPivot.position + Quaternion.AngleAxis(-90, Vector3.up) * s_WorkspaceDefaultOffset;
 				rotation = Quaternion.AngleAxis(-90, Vector3.up) * s_WorkspaceDefaultTilt;
 				//Test right
-				if (Physics.CheckBox(position, Workspace.defaultBounds, rotation))
+				if (Physics.CheckBox(position, Workspace.kDefaultBounds, rotation))
 				{
 					int count = 0;
 					Vector3 startPosition = VRView.viewerPivot.position + s_WorkspaceDefaultOffset;
-					Vector3 posOffset = Vector3.left * (Workspace.defaultBounds.x + Workspace.handleMargin);
+					Vector3 posOffset = Vector3.left * (Workspace.kDefaultBounds.x + Workspace.kHandleMargin);
 					position = startPosition + posOffset;
 					rotation = s_WorkspaceDefaultTilt;
 					bool rightSide = false;
 					//"stack" in front 
-					while (Physics.CheckBox(position, Workspace.defaultBounds, rotation) && count++ < 20)
+					while (Physics.CheckBox(position, Workspace.kDefaultBounds, rotation) && count++ < 20)
 					{
 						if (rightSide)
 						{
-							posOffset += Vector3.left*(Workspace.defaultBounds.x + Workspace.handleMargin);
+							posOffset += Vector3.left * (Workspace.kDefaultBounds.x + Workspace.kHandleMargin);
 							position = startPosition + posOffset;
 						}
 						else
@@ -682,11 +682,11 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, transform);
-		ConnectInterfaces(workspace);			
+		ConnectInterfaces(workspace);
 		workspace.transform.position = position;
 		workspace.transform.rotation = rotation;
 		workspace.Setup();
-	}						   
+	}
 
 #if UNITY_EDITOR
 	private static EditorVR s_Instance;
@@ -697,6 +697,7 @@ public class EditorVR : MonoBehaviour
 	{
 		VRView.GetWindow<VRView>("EditorVR", true);
 	}
+
 	[MenuItem("Window/EditorVR", true)]
 	public static bool ShouldShowEditorVR()
 	{
