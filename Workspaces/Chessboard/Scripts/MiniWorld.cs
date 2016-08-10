@@ -6,10 +6,28 @@ public class MiniWorld : MonoBehaviour
 {
 	public Matrix4x4 matrix
 	{
-		get { return transform.localToWorldMatrix * clipBox.transform.worldToLocalMatrix; }
+		get { return transform.localToWorldMatrix * referenceTransform.worldToLocalMatrix; }
 	}
 
-	public ClipBox clipBox { get; private set; }
+	public Transform referenceTransform { get; private set; }
+	public Bounds referenceBounds
+	{
+		get
+		{
+			return new Bounds(referenceTransform.position, Vector3.Scale(referenceTransform.localScale, m_LocalBoundsSize));
+		}
+		set
+		{
+			referenceTransform.position = value.center;
+			m_LocalBoundsSize = Vector3.Scale(Inverse(referenceTransform.localScale), value.size);
+		}
+	}
+	public Bounds localReferenceBounds
+	{
+		get { return new Bounds(Vector3.zero, m_LocalBoundsSize); }
+		set { m_LocalBoundsSize = value.size; }
+	}
+	private Vector3 m_LocalBoundsSize = Vector3.one;
 
 	private static readonly LayerMask s_RendererCullingMask = -1;
 	private const float kTranslationScale = 0.1f;
@@ -18,27 +36,27 @@ public class MiniWorld : MonoBehaviour
 
 	public void MoveForward()
 	{
-		clipBox.transform.Translate(Vector3.forward * kTranslationScale);
+		referenceTransform.Translate(Vector3.forward * kTranslationScale);
 	}
 
 	public void MoveBackward()
 	{
-		clipBox.transform.Translate(Vector3.back * kTranslationScale);
+		referenceTransform.Translate(Vector3.back * kTranslationScale);
 	}
 
 	public void MoveLeft()
 	{
-		clipBox.transform.Translate(Vector3.left * kTranslationScale);
+		referenceTransform.Translate(Vector3.left * kTranslationScale);
 	}
 
 	public void MoveRight()
 	{
-		clipBox.transform.Translate(Vector3.right * kTranslationScale);
+		referenceTransform.Translate(Vector3.right * kTranslationScale);
 	}
 
 	internal void SetBounds(Bounds bounds)
 	{											  
-		clipBox.localBounds = bounds;
+		localReferenceBounds = bounds;
 	}
 
 	//Q: Is this still needed?
@@ -65,12 +83,8 @@ public class MiniWorld : MonoBehaviour
 
 	private void OnEnable()
 	{
-		if (!clipBox)
-		{
-			GameObject go = new GameObject("MiniWorldClipCenter");
-			go.hideFlags = HideFlags.DontSave;
-			clipBox = go.AddComponent<ClipBox>();
-		}
+		if (!referenceTransform)
+			referenceTransform = new GameObject("MiniWorldReference") { hideFlags = HideFlags.DontSave }.transform;
 
 		Camera main = U.Camera.GetMainCamera();
 		m_MiniWorldRenderer = main.gameObject.AddComponent<MiniWorldRenderer>();
@@ -81,15 +95,20 @@ public class MiniWorld : MonoBehaviour
 
 		// Sync with where camera is initially
 		Transform pivot = U.Camera.GetViewerPivot();
-		clipBox.transform.position = pivot.transform.position;
+		referenceTransform.position = pivot.transform.position;
 	}
 
 	private void OnDisable()
 	{
-		if ((clipBox.hideFlags & HideFlags.DontSave) != 0)
-			U.Object.Destroy(clipBox.gameObject);
+		if ((referenceTransform.hideFlags & HideFlags.DontSave) != 0)
+			U.Object.Destroy(referenceTransform.gameObject);
 
 		if (m_MiniWorldRenderer)
 			U.Object.Destroy(m_MiniWorldRenderer);
+	}
+	//TODO: Add this function to U.Math after Spatial Hash merge
+	static Vector3 Inverse(Vector3 vec)
+	{
+		return new Vector3(1 / vec.x, 1 / vec.y, 1 / vec.z);
 	}
 }

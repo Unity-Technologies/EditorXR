@@ -39,7 +39,7 @@ public class MiniWorldRenderer : MonoBehaviour
 			// If we ever support multiple mini-worlds, then we could collect them all and render them in one loop here
 			m_RenderingMiniWorlds = true;
 
-			if (m_MainCamera && miniWorld && miniWorld.clipBox)
+			if (m_MainCamera && miniWorld)
 			{
 				m_MiniCamera.CopyFrom(m_MainCamera);
 
@@ -47,8 +47,8 @@ public class MiniWorldRenderer : MonoBehaviour
 				m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
 				m_MiniCamera.worldToCameraMatrix = m_MainCamera.worldToCameraMatrix * miniWorld.matrix;
 				Shader shader = Shader.Find("Custom/Custom Clip Planes");							 
-				Shader.SetGlobalVector("_ClipCenter", miniWorld.clipBox.bounds.center);
-				Shader.SetGlobalVector("_ClipExtents", miniWorld.clipBox.bounds.extents);
+				Shader.SetGlobalVector("_ClipCenter", miniWorld.referenceBounds.center);
+				Shader.SetGlobalVector("_ClipExtents", miniWorld.referenceBounds.extents);
 				m_MiniCamera.RenderWithShader(shader, string.Empty);
 			}
 
