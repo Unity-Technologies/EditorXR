@@ -21,7 +21,7 @@ public class ChessboardWorkspace : Workspace
 	public override void Setup()
 	{
 		base.Setup();
-		GameObject content = U.Object.ClonePrefab(m_ContentPrefab, handle.sceneContainer);
+		GameObject content = U.Object.ClonePrefab(m_ContentPrefab, m_WorkspaceUI.sceneContainer);
 		content.transform.localPosition = Vector3.zero;
 		content.transform.localRotation = Quaternion.identity;
 		content.transform.localScale = Vector3.one;
