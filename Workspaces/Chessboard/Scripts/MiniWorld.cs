@@ -19,7 +19,7 @@ public class MiniWorld : MonoBehaviour
 		set
 		{
 			referenceTransform.position = value.center;
-			m_LocalBoundsSize = Vector3.Scale(Inverse(referenceTransform.localScale), value.size);
+			m_LocalBoundsSize = Vector3.Scale(referenceTransform.localScale.Inverse(), value.size);
 		}
 	}
 	public Bounds localReferenceBounds
@@ -105,10 +105,5 @@ public class MiniWorld : MonoBehaviour
 
 		if (m_MiniWorldRenderer)
 			U.Object.Destroy(m_MiniWorldRenderer);
-	}
-	//TODO: Add this function to U.Math after Spatial Hash merge
-	static Vector3 Inverse(Vector3 vec)
-	{
-		return new Vector3(1 / vec.x, 1 / vec.y, 1 / vec.z);
 	}
 }

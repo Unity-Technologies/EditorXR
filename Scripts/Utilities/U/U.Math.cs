@@ -5,12 +5,12 @@
 	/// <summary>
 	/// EditorVR Utilities
 	/// </summary>
-	public partial class U
+	public static partial class U
 	{
 		/// <summary>
 		/// Math related EditorVR utilities
 		/// </summary>
-		public class Math
+		public static class Math
 		{
 			// snaps value to a unit. unit can be any number.
 			// for example, with a unit of 0.2, 0.41 -> 0.4, and 0.52 -> 0.6
@@ -31,8 +31,8 @@
 			public static Vector3 SnapValuesToUnit(Vector3 values, float unit)
 			{
 				return new Vector3(SnapValueToUnit(values.x, unit),
-									SnapValueToUnit(values.y, unit),
-									SnapValueToUnit(values.z, unit));
+					SnapValueToUnit(values.y, unit),
+					SnapValueToUnit(values.z, unit));
 			}
 
 			// calculates easing
@@ -159,7 +159,10 @@
 
 				return p;
 			}
-
+		}
+		public static Vector3 Inverse(this Vector3 vec)
+		{
+			return new Vector3(1 / vec.x, 1 / vec.y, 1 / vec.z);
 		}
 	}
 }
