@@ -22,16 +22,6 @@
 			float2 uv_MainTex;
 			float3 worldPos;
 		};
-
-		static const uint _PlaneCount = 6;
-		static const half4 _PlaneNormals[_PlaneCount] = {
-			half4(-1, 0, 0, 0),
-			half4(0, 0, 1, 0),
-			half4(1, 0, 0, 0),
-			half4(0, 0, -1, 0),
-			half4(0, -1, 0, 0),
-			half4(0, 1, 0, 0)
-		};
 		static const fixed4 white = fixed4(1, 1, 1, 1);
 
 		float4 _ClipCenter;
@@ -43,13 +33,10 @@
 		fixed4 LightingNoLighting(SurfaceOutput s, fixed3 lightDir, fixed atten) { return fixed4(0, 0, 0, 0); }
 
 		void surf (Input IN, inout SurfaceOutput o) {
-			// Clip against planes equidistant from the clip center point
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[0] * _ClipExtents.x), (float3)_PlaneNormals[0]));
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[1] * _ClipExtents.z), (float3)_PlaneNormals[1]));
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[2] * _ClipExtents.x), (float3)_PlaneNormals[2]));
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[3] * _ClipExtents.z), (float3)_PlaneNormals[3]));
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[4] * _ClipExtents.y), (float3)_PlaneNormals[4]));
-			clip(dot(IN.worldPos - (float3)(_ClipCenter - _PlaneNormals[5] * _ClipExtents.y), (float3)_PlaneNormals[5]));
+			// Clip if position is outside of clip bounds
+			float3 diff = abs(IN.worldPos - _ClipCenter);
+			if (diff.x > _ClipExtents.x || diff.y > _ClipExtents.y || diff.z > _ClipExtents.z)
+				discard;
 
 			// Some materials don't have colors set, so default them to white
 			if (dot(_Color, white) <= 0)
