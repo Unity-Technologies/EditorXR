@@ -65,8 +65,11 @@ public class EditorVR : MonoBehaviour
 		{ "Right", Node.RightHand }
 	};
 
-	private static readonly Vector3 s_WorkspaceDefaultOffset = new Vector3(0, -0.15f, 1f);
-	private static readonly Quaternion s_WorkspaceDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
+	private static readonly Vector3 kWorkspaceDefaultOffset = new Vector3(0, -0.15f, 1f);
+	private static readonly Quaternion kWorkspaceDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
+	private const float kWorkspaceAnglePadding = 25f;
+	private const float kWorkspaceYPadding = 0.35f;
+	private const int kWorkspaceLoopOverrun = 20;
 
 	private void Awake()
 	{
@@ -643,44 +646,33 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateWorkspace(Type t)
 	{
-		Vector3 position = VRView.viewerPivot.position + s_WorkspaceDefaultOffset;
-		Quaternion rotation = s_WorkspaceDefaultTilt;
-		//Test front
-		if (Physics.CheckBox(position, Workspace.kDefaultBounds, rotation))
+		Vector3 position = VRView.viewerPivot.position + kWorkspaceDefaultOffset;
+		Quaternion rotation = kWorkspaceDefaultTilt;
+		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
+			(kWorkspaceDefaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg	//Calculate arc length at front of workspace															   
+		    + kWorkspaceAnglePadding;															//Need some extra padding because workspaces are tilted
+		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;					//Need padding in Y as well
+		float currRotation = arcLength;
+		float currHeight = 0;
+		int count = 0;
+		int direction = 1;
+		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
+		while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kWorkspaceLoopOverrun)
 		{
-			position = VRView.viewerPivot.position + Quaternion.AngleAxis(90, Vector3.up) * s_WorkspaceDefaultOffset;
-			rotation = Quaternion.AngleAxis(90, Vector3.up) * s_WorkspaceDefaultTilt;
-			//Test left
-			if (Physics.CheckBox(position, Workspace.kDefaultBounds, rotation))
+			Quaternion oClock = Quaternion.AngleAxis(currRotation * direction, Vector3.up);
+			position = VRView.viewerPivot.position + oClock * kWorkspaceDefaultOffset + Vector3.up * currHeight;
+			rotation = oClock * kWorkspaceDefaultTilt;
+			if (direction < 0)
+				currRotation += arcLength;
+			direction *= -1;
+			if (currRotation > 180)
 			{
-				position = VRView.viewerPivot.position + Quaternion.AngleAxis(-90, Vector3.up) * s_WorkspaceDefaultOffset;
-				rotation = Quaternion.AngleAxis(-90, Vector3.up) * s_WorkspaceDefaultTilt;
-				//Test right
-				if (Physics.CheckBox(position, Workspace.kDefaultBounds, rotation))
-				{
-					int count = 0;
-					Vector3 startPosition = VRView.viewerPivot.position + s_WorkspaceDefaultOffset;
-					Vector3 posOffset = Vector3.left * (Workspace.kDefaultBounds.x + Workspace.kHandleMargin);
-					position = startPosition + posOffset;
-					rotation = s_WorkspaceDefaultTilt;
-					bool rightSide = false;
-					//"stack" in front 
-					while (Physics.CheckBox(position, Workspace.kDefaultBounds, rotation) && count++ < 20)
-					{
-						if (rightSide)
-						{
-							posOffset += Vector3.left * (Workspace.kDefaultBounds.x + Workspace.kHandleMargin);
-							position = startPosition + posOffset;
-						}
-						else
-						{
-							position = startPosition - posOffset;
-						}
-						rightSide = !rightSide;
-					}
-				}
+				direction = -1;
+				currRotation = 0;
+				currHeight += heightOffset;
 			}
 		}
+
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, transform);
 		ConnectInterfaces(workspace);
 		workspace.transform.position = position;
