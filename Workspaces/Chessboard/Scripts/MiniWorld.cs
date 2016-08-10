@@ -9,7 +9,12 @@ public class MiniWorld : MonoBehaviour
 		get { return transform.localToWorldMatrix * referenceTransform.worldToLocalMatrix; }
 	}
 
-	public Transform referenceTransform { get; private set; }
+	public Transform referenceTransform
+	{
+		get { return m_ReferenceTransform; }
+		set { m_ReferenceTransform = value; }
+	}
+
 	public Bounds referenceBounds
 	{
 		get
@@ -27,6 +32,8 @@ public class MiniWorld : MonoBehaviour
 		get { return new Bounds(Vector3.zero, m_LocalBoundsSize); }
 		set { m_LocalBoundsSize = value.size; }
 	}
+	[SerializeField]
+	private Transform m_ReferenceTransform;
 	private Vector3 m_LocalBoundsSize = Vector3.one;
 
 	private static readonly LayerMask s_RendererCullingMask = -1;
