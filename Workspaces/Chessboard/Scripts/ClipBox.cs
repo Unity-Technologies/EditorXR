@@ -20,13 +20,7 @@ public class ClipBox : MonoBehaviour {
 	}
 	private Vector3 m_LocalBoundsSize = Vector3.one;
 
-	void OnDrawGizmos()
-	{
-		Gizmos.matrix = transform.localToWorldMatrix;
-		Gizmos.DrawWireCube(localBounds.center, localBounds.size);
-	}
-
-	//TOOD: Add this function to U.Math after Spatial Hash merge
+	//TODO: Add this function to U.Math after Spatial Hash merge
 	static Vector3 Inverse(Vector3 vec)
 	{
 		return new Vector3(1 / vec.x, 1 / vec.y, 1 / vec.z);
