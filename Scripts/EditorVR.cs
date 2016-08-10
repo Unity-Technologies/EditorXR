@@ -685,6 +685,7 @@ public class EditorVR : MonoBehaviour
 		ConnectInterfaces(workspace);
 		workspace.transform.position = position;
 		workspace.transform.rotation = rotation;
+		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
 	}
 
