@@ -74,7 +74,11 @@ public class EditorVR : MonoBehaviour
 	private void Awake()
 	{
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
-		VRView.viewerPivot.localPosition = Vector3.zero; // HACK reset pivot to match steam origin
+		if (VRSettings.loadedDeviceName == "OpenVR")
+		{
+			// Steam's reference position should be at the feet and not at the head as we do with Oculus
+			VRView.viewerPivot.localPosition = Vector3.zero;
+		}
 		InitializePlayerHandle();
 		CreateDefaultActionMapInputs();
 		CreateAllProxies();
@@ -240,16 +244,18 @@ public class EditorVR : MonoBehaviour
 		EditorApplication.delayCall += () =>
 		{
 			HashSet<InputDevice> devices;
-			var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
-			AddToolToDeviceData(tool, devices);
 
-			// Spawn selection tools by default 
+			// Spawn default tools
 			foreach (var deviceData in m_DeviceData)
 			{
 				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
 				if (deviceData.Key.tagIndex == -1)
 					continue;
-				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+
+				var tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+				AddToolToDeviceData(tool, devices);
+
+				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 			}
 		};
@@ -279,6 +285,7 @@ public class EditorVR : MonoBehaviour
 		{
 			if (!proxy.active)
 				continue;
+
 			foreach (var rayOrigin in proxy.rayOrigins.Values)
 			{
 				var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
@@ -313,7 +320,8 @@ public class EditorVR : MonoBehaviour
 			{
 				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
 				{
-					if (device.tagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.tagIndex]] == rayOriginBase.Key)
+					var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
+                    if (device.tagIndex != -1 && m_TagToNode[tags[device.tagIndex]] == rayOriginBase.Key)
 					{
 						DeviceData deviceData;
 						if (m_DeviceData.TryGetValue(device, out deviceData))
@@ -495,6 +503,16 @@ public class EditorVR : MonoBehaviour
 						if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
 						{
 							ray.rayOrigin = rayOrigin;
+
+							// Specific proxy ray setting
+							var customRay = obj as ICustomRay;
+							if (customRay != null)
+							{
+								DefaultProxyRay dfr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+								customRay.showDefaultRay = dfr.Show;
+								customRay.hideDefaultRay = dfr.Hide;
+							}
+
 							break;
 						}
 					}
@@ -517,7 +535,6 @@ public class EditorVR : MonoBehaviour
 		var highlightComponent = obj as IHighlight;
 		if (highlightComponent != null)
 			highlightComponent.setHighlight = m_HighlightModule.SetHighlight;
-
 	}
 
 	private InputDevice GetInputDeviceForTool(ITool tool)

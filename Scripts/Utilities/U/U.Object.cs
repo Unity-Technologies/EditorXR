@@ -5,8 +5,8 @@
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
-	using UMaterial = UnityEngine.Material;
-	using UObject = UnityEngine.Object;
+	using UnityMaterial = UnityEngine.Material;
+	using UnityObject = UnityEngine.Object;
 #if UNITY_EDITOR
 	using UnityEditor;
 	using UnityEditor.VR;
@@ -22,17 +22,9 @@
 		/// </summary>
 		public class Object
 		{
-			public static GameObject ClonePrefab(GameObject prefab, GameObject parent = null)
-			{
-				GameObject obj = InstantiateAndSetActive(prefab);
-				if (parent != null) SetParent(obj, parent);
-				obj.transform.localPosition = new Vector3();
-				return obj;
-			}
-
 			public static GameObject InstantiateAndSetActive(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true)
 			{
-				GameObject go = UObject.Instantiate(prefab);
+				GameObject go = UnityObject.Instantiate(prefab);
 				go.transform.SetParent(parent, worldPositionStays);
 				go.SetActive(true);
 #if UNITY_EDITOR
@@ -45,31 +37,38 @@
 				return go;
 			}
 
-			public static void SetParent(GameObject obj, GameObject parent)
-			{
-				obj.transform.parent = parent.transform;
-			}
-
-			public static void Show(GameObject obj)
-			{
-				obj.SetActive(true);
-			}
-
-			public static void Hide(GameObject obj)
-			{
-				obj.SetActive(false);
-			}
-
 			public static void RemoveAllChildren(GameObject obj)
 			{
 				var children = new List<GameObject>();
 				foreach (Transform child in obj.transform) children.Add(child.gameObject);
-				foreach (GameObject child in children) UObject.Destroy(child);
+				foreach (GameObject child in children) UnityObject.Destroy(child);
 			}
 
 			public static bool IsInLayer(GameObject o, string s)
 			{
 				return o.layer == LayerMask.NameToLayer(s);
+			}
+
+			/// <summary>
+			/// Create an empty VR GameObject.
+			/// </summary>
+			/// <param name="name">Name of the new GameObject</param>
+			/// <param name="parent">Transform to parent new object under</param>
+			/// <returns>The newly created empty GameObject</returns>
+			public static GameObject CreateEmptyGameObject(String name = null, Transform parent = null)
+			{
+				GameObject empty = null;
+				if (String.IsNullOrEmpty(name))
+					name = "Empty";
+#if UNITY_EDITOR
+				empty = EditorUtility.CreateGameObjectWithHideFlags(name, EditorVR.kDefaultHideFlags);
+#else
+                empty = new GameObject(name);
+#endif
+				empty.transform.parent = parent;
+				empty.transform.localPosition = Vector3.zero;  // If parent is defined, assume local position for a new GameObject should be cleared
+
+				return empty;
 			}
 
 			public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : MonoBehaviour
@@ -162,7 +161,7 @@
 				return new List<Type>();
 			}
 
-			public static void Destroy(UObject o, float t = 0f)
+			public static void Destroy(UnityObject o, float t = 0f)
 			{
 				if (Application.isPlaying)
 				{
@@ -172,7 +171,7 @@
 				else
 				{
 					if (Mathf.Approximately(t, 0f))
-						UObject.DestroyImmediate(o);
+						UnityObject.DestroyImmediate(o);
 					else
 					{
 						VRView.StartCoroutine(DestroyInSeconds(o, t));
@@ -181,16 +180,16 @@
 #endif
 			}
 
-			private static IEnumerator DestroyInSeconds(UObject o, float t)
+			private static IEnumerator DestroyInSeconds(UnityObject o, float t)
 			{
 				float startTime = Time.realtimeSinceStartup;
 				while (Time.realtimeSinceStartup <= startTime + t)
 					yield return null;
 
-				UObject.DestroyImmediate(o);
+				UnityObject.DestroyImmediate(o);
 			}
 			
-			public static GameObject SpawnGhostWireframe(GameObject obj, UMaterial ghostMaterial, bool enableRenderers = true)
+			public static GameObject SpawnGhostWireframe(GameObject obj, UnityMaterial ghostMaterial, bool enableRenderers = true)
 			{
 				// spawn ghost
 				GameObject ghostObj = InstantiateAndSetActive(obj, obj.transform.parent);
@@ -214,11 +213,11 @@
 			}
 
 			// generates wireframe if contains a renderer 
-			private static void GenerateWireframe(Renderer r, UMaterial ghostMaterial)
+			private static void GenerateWireframe(Renderer r, UnityMaterial ghostMaterial)
 			{
 				if (r)
 				{
-					UMaterial[] materials = r.sharedMaterials;
+					UnityMaterial[] materials = r.sharedMaterials;
 					for (int i = 0; i < materials.Length; i++)
 						materials[i] = ghostMaterial;
 					r.sharedMaterials = materials;
