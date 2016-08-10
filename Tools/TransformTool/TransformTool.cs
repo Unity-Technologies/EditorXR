@@ -105,12 +105,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 				SwitchPivotRotation();
 
 			if (m_TransformInput.manipulatorType.wasJustPressed)
-			{
-				// Go to the next manipulator type in the list
-				m_CurrentManipulatorIndex = (m_CurrentManipulatorIndex + 1) % m_AllManipulatorPrefabs.Count;
-				CreateManipulator(m_AllManipulatorPrefabs[m_CurrentManipulatorIndex]);
-				MoveManipulatorToSelection();
-			}
+				SwitchManipulator();
 
 			if (m_Manipulator != null && !m_Manipulator.dragging)
 			{
@@ -234,5 +229,13 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 		m_PivotRotation = m_PivotRotation == PivotRotation.Global ? PivotRotation.Local : PivotRotation.Global;
 		MoveManipulatorToSelection();
 		return m_PivotRotation;
+	}
+
+	public void SwitchManipulator()
+	{
+		// Go to the next manipulator type in the list
+		m_CurrentManipulatorIndex = (m_CurrentManipulatorIndex + 1) % m_AllManipulatorPrefabs.Count;
+		CreateManipulator(m_AllManipulatorPrefabs[m_CurrentManipulatorIndex]);
+		MoveManipulatorToSelection();
 	}
 }
