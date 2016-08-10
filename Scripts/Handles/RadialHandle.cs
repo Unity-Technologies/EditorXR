@@ -1,19 +1,17 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Runtime.InteropServices;
 using UnityEngine.EventSystems;
+using UnityEngine.VR.Proxies;
 
 public class RadialHandle : BaseHandle
 {
-	private Collider m_PlaneCollider;
-	private Vector3 m_LastPosition;
-	private Vector3 m_LastDragForward;
 	[SerializeField]
 	private float m_TurnSpeed;
-
 	[SerializeField]
 	private Transform m_HandleTip;
 
+	private Collider m_PlaneCollider;
+	private Vector3 m_LastPosition;
+	private Vector3 m_LastDragForward;
 	private Collider m_Collider;
 	private Vector3 m_DragTangent;
 
@@ -31,7 +29,7 @@ public class RadialHandle : BaseHandle
 
 			if (m_Hovering && !m_Dragging) // Reposition handle tip based on current raycast position when hovering or dragging
 			{
-				var eventData = ((UnityEngine.VR.Proxies.MultipleRayInputModule)EventSystem.current.currentInputModule).GetPointerEventData(m_RayOrigin);
+				var eventData = ((MultipleRayInputModule)EventSystem.current.currentInputModule).GetPointerEventData(m_RayOrigin); // Get the current hover position from InputModule using ray origin
 				if (eventData != null)
 				{
 					var newLocalPos = transform.InverseTransformPoint(eventData.pointerCurrentRaycast.worldPosition);
@@ -114,5 +112,4 @@ public class RadialHandle : BaseHandle
 		if (m_PlaneCollider != null)
 			DestroyImmediate(m_PlaneCollider.gameObject);
 	}
-
 }

@@ -7,7 +7,6 @@ using UnityEngine.VR;
 
 public class BaseHandle : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
-
 	public delegate void DragEventCallback(BaseHandle handle, Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion));
 
 	public event DragEventCallback onHandleBeginDrag;
@@ -21,6 +20,7 @@ public class BaseHandle : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 	protected Node m_Node;
 	protected Vector3 m_StartDragPosition;
 	public Vector3 startDragPosition { get { return m_StartDragPosition;} }
+
 	protected virtual void Awake()
 	{
 		m_Renderer = GetComponent<Renderer>();

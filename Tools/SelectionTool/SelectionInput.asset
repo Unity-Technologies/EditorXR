@@ -37,7 +37,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 17
+      - controlIndex: 18
         deviceType:
           m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
             Culture=neutral, PublicKeyToken=null
@@ -87,7 +87,7 @@ MonoBehaviour:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1
-    name: Multiselect
+    name: MultiSelect
     defaultValue: 0
 --- !u!114 &114000011870887724
 MonoBehaviour:

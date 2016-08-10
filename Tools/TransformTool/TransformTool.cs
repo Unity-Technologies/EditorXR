@@ -1,55 +1,44 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using UnityEngine.VR.Tools;
 using UnityEditor;
 using UnityEditor.VR;
 using UnityEngine.VR.Utilities;
-using System;
 using UnityEngine.InputNew;
 
 public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 {
 	[SerializeField]
 	private GameObject m_StandardManipulatorPrefab;
-
 	[SerializeField]
 	private GameObject m_ScaleManipulatorPrefab;
-
-	[SerializeField]
-	private GameObject m_DirectManipulatorPrefab;
-
 	[SerializeField]
 	private const float kBaseManipulatorSize = .3f;
-
 	[SerializeField]
 	private const float kLazyFollowSpeed = 8f;
+	[SerializeField]
+	private ActionMap m_ActionMap;
 
-
-	private List<GameObject> m_AllManipulatorPrefabs = new List<GameObject>();
+	private readonly List<GameObject> m_AllManipulatorPrefabs = new List<GameObject>();
 	private GameObject m_CurrentManipulatorGameObject;
 	private int m_CurrentManipulatorIndex;
 	private IManipulator m_Manipulator;
 	private Vector3 m_TargetPosition;
 	private Quaternion m_TargetRotation;
 	private Vector3 m_TargetScale;
-
 	private Bounds? m_SelectionBounds;
 	private Transform[] m_SelectionTransforms;
-	private Dictionary<Transform, Vector3> m_PositionOffsets = new Dictionary<Transform, Vector3>();
-	private Dictionary<Transform, Vector3> m_ScaleOffsets = new Dictionary<Transform, Vector3>();
-	private Dictionary<Transform, Quaternion> m_RotationOffsets = new Dictionary<Transform, Quaternion>();
+	private readonly Dictionary<Transform, Vector3> m_PositionOffsets = new Dictionary<Transform, Vector3>();
+	private readonly Dictionary<Transform, Vector3> m_ScaleOffsets = new Dictionary<Transform, Vector3>();
+	private readonly Dictionary<Transform, Quaternion> m_RotationOffsets = new Dictionary<Transform, Quaternion>();
 
-
-	private PivotRotation m_PivotRotation = PivotRotation.Global;
+	private PivotRotation m_PivotRotation = PivotRotation.Local;
+	private PivotMode m_PivotMode = PivotMode.Pivot;
 
 	public ActionMap actionMap
 	{
 		get { return m_ActionMap; }
 	}
-	[SerializeField]
-	private ActionMap m_ActionMap;
 
 	public ActionMapInput actionMapInput
 	{
@@ -63,16 +52,19 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 			m_TransformInput = (TransformInput)value;
 		}
 	}
-
 	private TransformInput m_TransformInput;
 
 	void Awake()
 	{
-		m_AllManipulatorPrefabs.Add(m_StandardManipulatorPrefab);
-		m_AllManipulatorPrefabs.Add(m_ScaleManipulatorPrefab);
-		m_AllManipulatorPrefabs.Add(m_DirectManipulatorPrefab);
+		// Add standard and scale manipulator prefabs to a list (because you cannot add asset references directly to a serialized list)
+		if(m_StandardManipulatorPrefab != null)
+			m_AllManipulatorPrefabs.Add(m_StandardManipulatorPrefab);
+		if(m_ScaleManipulatorPrefab != null)
+			m_AllManipulatorPrefabs.Add(m_ScaleManipulatorPrefab);
+
 		m_CurrentManipulatorIndex = 0;
 	}
+
 	void OnEnable()
 	{
 		Selection.selectionChanged += OnSelectionChanged;
@@ -98,38 +90,45 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 				CreateManipulator(m_AllManipulatorPrefabs[m_CurrentManipulatorIndex]);
 
 			MoveManipulatorToSelection();
-			//TODO change intial rotation if transforming local / world
 		}
-
 	}
 
 	void Update()
 	{
-
-		if (m_TransformInput.pivotMode.wasJustPressed)
-			m_PivotRotation = m_PivotRotation == PivotRotation.Global ? PivotRotation.Local : PivotRotation.Global;
-
-		if (m_TransformInput.manipulatorType.wasJustPressed)
-		{
-			m_CurrentManipulatorIndex = (m_CurrentManipulatorIndex + 1) % m_AllManipulatorPrefabs.Count;
-			CreateManipulator(m_AllManipulatorPrefabs[m_CurrentManipulatorIndex]);
-			MoveManipulatorToSelection();
-		}
-		if (m_Manipulator != null && !m_Manipulator.dragging)
-			UpdateManipulatorSize();
-
 		if (m_SelectionTransforms != null && m_SelectionTransforms.Length > 0)
 		{
+			if (m_TransformInput.pivotMode.wasJustPressed)
+				SwitchPivotMode();
+
+			if (m_TransformInput.pivotRotation.wasJustPressed)
+				SwitchPivotRotation();
+
+			if (m_TransformInput.manipulatorType.wasJustPressed)
+			{
+				// Go to the next manipulator type in the list
+				m_CurrentManipulatorIndex = (m_CurrentManipulatorIndex + 1) % m_AllManipulatorPrefabs.Count;
+				CreateManipulator(m_AllManipulatorPrefabs[m_CurrentManipulatorIndex]);
+				MoveManipulatorToSelection();
+			}
+
+			if (m_Manipulator != null && !m_Manipulator.dragging)
+			{
+				UpdateManipulatorSize();
+				MoveManipulatorToSelection();
+			}
+
 			m_CurrentManipulatorGameObject.transform.position = Vector3.Lerp(m_CurrentManipulatorGameObject.transform.position,
 				m_TargetPosition, kLazyFollowSpeed * Time.unscaledDeltaTime);
+			if(m_PivotRotation == PivotRotation.Local)
+				m_CurrentManipulatorGameObject.transform.rotation = Quaternion.Slerp(m_CurrentManipulatorGameObject.transform.rotation, m_TargetRotation, kLazyFollowSpeed * Time.unscaledDeltaTime);
 
 			foreach (var t in m_SelectionTransforms)
 			{
 				t.position = m_CurrentManipulatorGameObject.transform.position + m_PositionOffsets[t];
 				t.rotation = Quaternion.Slerp(t.rotation,
 					m_TargetRotation * m_RotationOffsets[t], kLazyFollowSpeed * Time.unscaledDeltaTime);
-
-				t.localScale = Vector3.Lerp(t.localScale, new Vector3 (m_TargetScale.x * m_ScaleOffsets[t].x, m_TargetScale.y * m_ScaleOffsets[t].y , m_TargetScale.z * m_ScaleOffsets[t].z), kLazyFollowSpeed * Time.unscaledDeltaTime);
+				t.localScale = Vector3.Lerp(t.localScale, Vector3.Scale(m_TargetScale, m_ScaleOffsets[t]),
+					kLazyFollowSpeed * Time.unscaledDeltaTime);
 			}
 		}
 	}
@@ -149,7 +148,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 		m_TargetScale += delta;
 	}
 
-
 	private void UpdateSelectionBounds()
 	{
 		Bounds newBounds = default(Bounds);
@@ -161,8 +159,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 				continue;
 			foreach (var r in renderers)
 			{
-				if (Mathf.Approximately(r.bounds.extents.sqrMagnitude, 0f)) // Particle systems have renderer components where extents and center are (0,0,0)
+				if (Mathf.Approximately(r.bounds.extents.sqrMagnitude, 0f)) // Necessary because Particle Systems have renderer components with center and extents (0,0,0)
 					continue;
+
 				if (!boundsInitialized)
 				{
 					newBounds = r.bounds;
@@ -200,24 +199,40 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 
 	private void MoveManipulatorToSelection()
 	{
+		if (m_SelectionTransforms.Length <= 0)
+			return;
+
 		UpdateSelectionBounds();
 		m_CurrentManipulatorGameObject.SetActive(true);
-		m_CurrentManipulatorGameObject.transform.position = m_SelectionBounds.Value.center;
-		m_CurrentManipulatorGameObject.transform.rotation = Quaternion.identity;
+		m_CurrentManipulatorGameObject.transform.position = (m_PivotMode == PivotMode.Pivot) ? m_SelectionTransforms[0].position : m_SelectionBounds.Value.center;
+		m_CurrentManipulatorGameObject.transform.rotation = (m_PivotRotation == PivotRotation.Global) ? Quaternion.identity : m_SelectionTransforms[0].rotation;
 		m_TargetPosition = m_CurrentManipulatorGameObject.transform.position;
-		m_TargetRotation = m_CurrentManipulatorGameObject.transform.rotation = Quaternion.identity;
+		m_TargetRotation = m_CurrentManipulatorGameObject.transform.rotation;
 		m_TargetScale = Vector3.one;
 		
-		// Save the initial rotation and position relative to selection center
+		// Save the initial position, rotation, and scale realtive to the manipulator
 		m_PositionOffsets.Clear();
 		m_RotationOffsets.Clear();
 		m_ScaleOffsets.Clear();
 		foreach (var t in m_SelectionTransforms)
 		{
-			m_PositionOffsets.Add(t, t.position - m_SelectionBounds.Value.center);
+			m_PositionOffsets.Add(t, t.position - m_CurrentManipulatorGameObject.transform.position);
 			m_ScaleOffsets.Add(t, t.localScale);
-			m_RotationOffsets.Add(t, t.rotation);
+			m_RotationOffsets.Add(t, Quaternion.Inverse(m_CurrentManipulatorGameObject.transform.rotation) * t.rotation);
 		}
+	}
 
+	public PivotMode SwitchPivotMode()
+	{
+		m_PivotMode = m_PivotMode == PivotMode.Pivot ?  PivotMode.Center :  PivotMode.Pivot;
+		MoveManipulatorToSelection();
+		return m_PivotMode;
+	}
+
+	public PivotRotation SwitchPivotRotation()
+	{
+		m_PivotRotation = m_PivotRotation == PivotRotation.Global ? PivotRotation.Local : PivotRotation.Global;
+		MoveManipulatorToSelection();
+		return m_PivotRotation;
 	}
 }

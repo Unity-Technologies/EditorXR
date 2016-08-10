@@ -1,11 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.VR.Tools;
 using System;
 using System.Collections.Generic;
 using UnityEditor.VR;
-using UnityEngine.VR;
-using UnityEngine.VR.Proxies;
 
 public class StandardManipulator : MonoBehaviour, IManipulator
 {
@@ -21,7 +18,6 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 
 	[SerializeField]
 	private Transform m_PlaneHandlesParent;
-
 	[SerializeField]
 	private BaseHandle m_TranslateHandleXY;
 	[SerializeField]

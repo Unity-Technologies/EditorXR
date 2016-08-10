@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.EventSystems;
-using UnityEngine.VR.Proxies;
 
 public class DirectHandle : SphereHandle
 {

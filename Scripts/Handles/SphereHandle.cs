@@ -1,19 +1,14 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.VR.Proxies;
-using System;
 
 public class SphereHandle : BaseHandle, IScrollHandler
 {
 	[SerializeField]
 	private Mesh m_InvertedSphereMesh;
 
-	[SerializeField]
-	private float kInitialScrollRate = 1.5f;
-
-	[SerializeField]
-	private float m_ScrollAcceleration = .8f;
+	private float kInitialScrollRate = 2f;
+	private float m_ScrollAcceleration = 14f;
 	private float m_ScrollRate;
 
 	private Vector3 m_LastPosition;
@@ -31,17 +26,17 @@ public class SphereHandle : BaseHandle, IScrollHandler
 			DestroyImmediate(m_InvertedSphereCollider.gameObject);
 
 		var invertedSphere = new GameObject();
+		invertedSphere.name = "InvertedSphereCollider";
 		invertedSphere.transform.SetParent(transform);
 		m_InvertedSphereCollider = invertedSphere.AddComponent<MeshCollider>();
 		m_InvertedSphereCollider.sharedMesh = m_InvertedSphereMesh;
 		m_InvertedSphereCollider.gameObject.layer = LayerMask.NameToLayer("UI");
 		m_CurrentRadius = eventData.pointerCurrentRaycast.distance;
-		m_ScrollRate = 0f;
+		m_ScrollRate = kInitialScrollRate;
 		UpdateScale();
 		OnHandleBeginDrag();
 	}
 
-	
 	public override void OnDrag(PointerEventData eventData)
 	{
 		base.OnDrag(eventData);
@@ -92,11 +87,11 @@ public class SphereHandle : BaseHandle, IScrollHandler
 	{
 		if (m_Dragging)
 		{
-			if (Mathf.Abs(eventData.scrollDelta.y) > 0.9)
-				m_ScrollRate += eventData.scrollDelta.y * m_ScrollAcceleration* Time.unscaledDeltaTime;
-
-			if(Mathf.Abs(eventData.scrollDelta.y) < 0.1)
+			if (Mathf.Abs(eventData.scrollDelta.y) > 0.5f)
+				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y) * m_ScrollAcceleration * Time.unscaledDeltaTime;
+			else
 				m_ScrollRate = kInitialScrollRate;
+
 			ChangeRadius(m_ScrollRate * eventData.scrollDelta.y * Time.unscaledDeltaTime);
 		}
 	}

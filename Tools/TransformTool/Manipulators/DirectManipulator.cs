@@ -1,11 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.VR.Tools;
 using System;
 using System.Collections.Generic;
-using UnityEditor.VR;
-using UnityEngine.VR;
-using UnityEngine.VR.Proxies;
 
 public class DirectManipulator : MonoBehaviour, IManipulator
 {

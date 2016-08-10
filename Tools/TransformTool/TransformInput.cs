@@ -7,4 +7,5 @@ public class TransformInput : ActionMapInput {
 	
 	public ButtonInputControl @pivotMode { get { return (ButtonInputControl)this[0]; } }
 	public ButtonInputControl @manipulatorType { get { return (ButtonInputControl)this[1]; } }
+	public ButtonInputControl @pivotRotation { get { return (ButtonInputControl)this[2]; } }
 }

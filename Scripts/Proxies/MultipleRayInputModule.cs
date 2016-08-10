@@ -127,11 +127,6 @@ namespace UnityEngine.VR.Proxies
 				if (!m_RaycastSources[i].actionMapInput.active)
 					continue;
 
-				if (CurrentPoint[i] != null) // Send scroll events
-				{
-					PointEvents[i].scrollDelta = new Vector2(0f, m_RaycastSources[i].actionMapInput.verticalScroll.value);
-					ExecuteEvents.ExecuteHierarchy(CurrentPoint[i], PointEvents[i], ExecuteEvents.scrollHandler);
-				}
 				// Send select pressed and released events
 				if (m_RaycastSources[i].actionMapInput.select.wasJustPressed)
 					OnSelectPressed(i);
@@ -141,6 +136,13 @@ namespace UnityEngine.VR.Proxies
 
 				if (CurrentDragging[i] != null)
 					ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteEvents.dragHandler);
+
+				// Send scroll events
+				if (CurrentPressed[i] != null)
+				{
+					PointEvents[i].scrollDelta = new Vector2(0f, m_RaycastSources[i].actionMapInput.verticalScroll.value);
+					ExecuteEvents.ExecuteHierarchy(CurrentPoint[i], PointEvents[i], ExecuteEvents.scrollHandler);
+				}
 
 				m_PointerData[i] = PointEvents[i];
 			}
