@@ -3,7 +3,9 @@ using UnityEngine.VR.Utilities;
 
 public class ChessboardWorkspace : Workspace
 {
-	private const float kGridScale = 10f; //Scale grid cells because workspace is <1m wide by default
+	private const float kGridScale = 1f;						//Scale grid cells because workspace is smaller than world
+	private const float kClipBoxYOffset = 0.1333333f;		//1/3 of initial initial Y bounds (0.4)
+	private const float kClipBoxInitScale = 25;					//We want to see a big region by default
 	//HACK: dummy input for bounds change
 	[SerializeField]
 	private Renderer m_DummyBounds;
@@ -24,6 +26,8 @@ public class ChessboardWorkspace : Workspace
 		content.transform.localRotation = Quaternion.identity;
 		content.transform.localScale = Vector3.one;
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
+		m_MiniWorld.clipBox.transform.position = Vector3.up * kClipBoxYOffset;
+		m_MiniWorld.clipBox.transform.localScale = Vector3.one * kClipBoxInitScale;
 		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
 		m_GridMaterial = m_ChessboardUI.grid.sharedMaterial;
 		OnBoundsChanged();
