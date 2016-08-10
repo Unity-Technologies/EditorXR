@@ -666,27 +666,32 @@ public class EditorVR : MonoBehaviour
 		Vector3 position = VRView.viewerPivot.position + kWorkspaceDefaultOffset;
 		Quaternion rotation = kWorkspaceDefaultTilt;
 		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
-			(kWorkspaceDefaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg	//Calculate arc length at front of workspace															   
+			(kWorkspaceDefaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg	//Calculate arc length at front of workspace
 		    + kWorkspaceAnglePadding;															//Need some extra padding because workspaces are tilted
 		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;					//Need padding in Y as well
-		float currRotation = arcLength;
-		float currHeight = 0;
+		float currentRotation = arcLength;
+		float currentHeight = 0;
 		int count = 0;
 		int direction = 1;
 		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
+		//While the current position is occupied, try a new one
 		while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kWorkspaceLoopOverrun)
 		{
-			Quaternion oClock = Quaternion.AngleAxis(currRotation * direction, Vector3.up);
-			position = VRView.viewerPivot.position + oClock * kWorkspaceDefaultOffset + Vector3.up * currHeight;
-			rotation = oClock * kWorkspaceDefaultTilt;
+			//The next position will be rotated by currentRotation, as if the hands of a clock
+			Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
+			position = VRView.viewerPivot.position + rotateAroundY * kWorkspaceDefaultOffset + Vector3.up * currentHeight;
+			rotation = rotateAroundY * kWorkspaceDefaultTilt;
+			//Every other iteration, rotate a little further
 			if (direction < 0)
-				currRotation += arcLength;
+				currentRotation += arcLength;
+			//Switch directions every iteration (left, right, left, right)
 			direction *= -1;
-			if (currRotation > 180)
+			//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
+			if (currentRotation > 180)
 			{
 				direction = -1;
-				currRotation = 0;
-				currHeight += heightOffset;
+				currentRotation = 0;
+				currentHeight += heightOffset;
 			}
 		}
 
