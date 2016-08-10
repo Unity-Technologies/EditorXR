@@ -2,5 +2,5 @@
 
 public class ChessboardUI : MonoBehaviour
 {
-	public RectTransform grid;
+	public Renderer grid;
 }
