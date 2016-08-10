@@ -21,10 +21,7 @@ public class ChessboardWorkspace : Workspace
 	public override void Setup()
 	{
 		base.Setup();
-		GameObject content = U.Object.ClonePrefab(m_ContentPrefab, m_WorkspaceUI.sceneContainer);
-		content.transform.localPosition = Vector3.zero;
-		content.transform.localRotation = Quaternion.identity;
-		content.transform.localScale = Vector3.one;
+		GameObject content = U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspaceUI.sceneContainer.transform, false);
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
 		m_MiniWorld.clipBox.transform.position = Vector3.up * kClipBoxYOffset;
 		m_MiniWorld.clipBox.transform.localScale = Vector3.one * kClipBoxInitScale;
