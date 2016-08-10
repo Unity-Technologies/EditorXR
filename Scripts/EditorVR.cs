@@ -15,6 +15,7 @@ using UnityEngine.VR.Utilities;
 using UnityEditor;
 using UnityEditor.VR;
 #endif
+using Menu = UnityEngine.InputNew.Menu;
 
 [InitializeOnLoad]
 public class EditorVR : MonoBehaviour
@@ -37,7 +38,6 @@ public class EditorVR : MonoBehaviour
 	private TrackedObject m_TrackedObjectInput;
 	private Default m_DefaultActionInput;
 
-	private EventSystem m_EventSystem;
 	private MultipleRayInputModule m_InputModule;
 	private Camera m_EventCamera;
 	private PixelRaycastModule m_PixelRaycastModule;
@@ -58,8 +58,6 @@ public class EditorVR : MonoBehaviour
 	private List<IProxy> m_AllProxies = new List<IProxy>();
 	private IEnumerable<Type> m_AllTools;
 
-	private Dictionary<Type, List<ActionMap>> m_ToolActionMaps;
-
 	private Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 	{
 		{ "Left", Node.LeftHand },
@@ -69,7 +67,11 @@ public class EditorVR : MonoBehaviour
 	private void Awake()
 	{
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
-		VRView.viewerPivot.localPosition = Vector3.zero; // HACK reset pivot to match steam origin
+		if (VRSettings.loadedDeviceName == "OpenVR")
+		{
+			// Steam's reference position should be at the feet and not at the head as we do with Oculus
+			VRView.viewerPivot.localPosition = Vector3.zero;
+		}
 		InitializePlayerHandle();
 		CreateDefaultActionMapInputs();
 		CreateAllProxies();
@@ -81,9 +83,10 @@ public class EditorVR : MonoBehaviour
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
-		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  This is why we're collecting all the action maps
-		//		Additionally, if the action map only has a single hand specified, then only show it in that hand's menu.
-		m_ToolActionMaps = CollectToolActionMaps(m_AllTools);		
+		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
+		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
+		// then only show it in that hand's menu.
+		// CollectToolActionMaps(m_AllTools);		
 	}
 
 	private void CreateDeviceDataForInputDevices()
@@ -93,7 +96,7 @@ public class EditorVR : MonoBehaviour
 			var deviceData = new DeviceData
 			{
 				tools = new Stack<ITool>(),
-				menuInput = (Menu)CreateActionMapInput(CloneActionMapForDevice(m_MenuActionMap, device))
+				menuInput = (Menu)CreateActionMapInput(m_MenuActionMap, device)
 			};
 			m_DeviceData.Add(device, deviceData);
 		}
@@ -192,7 +195,7 @@ public class EditorVR : MonoBehaviour
 	private Dictionary<Type, List<ActionMap>> CollectToolActionMaps(IEnumerable<Type> toolTypes)
 	{
 		var toolMaps = new Dictionary<Type, List<ActionMap>>();
-		
+
 		foreach (var t in toolTypes)
 		{
 			if (!t.IsSubclassOf(typeof(MonoBehaviour)))
@@ -218,8 +221,8 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultActionMapInputs()
 	{
-		m_TrackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap);
-		m_DefaultActionInput = (Default)CreateActionMapInput(m_DefaultActionMap);
+		m_TrackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap, null);
+		m_DefaultActionInput = (Default)CreateActionMapInput(m_DefaultActionMap, null);
 
 		UpdatePlayerHandleMaps();
 	}
@@ -230,22 +233,23 @@ public class EditorVR : MonoBehaviour
 		// it's necessary to spawn the tools in a separate non-IEnumerator context.
 		EditorApplication.delayCall += () =>
 		{
+			// Spawn default tools
 			HashSet<InputDevice> devices;
-			var tool = SpawnTool(typeof(JoystickLocomotionTool), out devices);
-			AddToolToDeviceData(tool, devices);
-
-			tool = SpawnTool(typeof(TransformTool), out devices);
-			AddToolToDeviceData(tool, devices);
-
-			// Spawn selection tools by default 
+			ITool tool;
 			foreach (var deviceData in m_DeviceData)
 			{
 				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
-				if (deviceData.Key.TagIndex == -1)
+				if (deviceData.Key.tagIndex == -1)
 					continue;
+
 				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
+
+				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
+				AddToolToDeviceData(tool, devices);
 			}
+			tool = SpawnTool(typeof(TransformTool), out devices);
+			AddToolToDeviceData(tool, devices);
 		};
 	}
 
@@ -269,10 +273,11 @@ public class EditorVR : MonoBehaviour
 	private void UpdateDefaultProxyRays()
 	{
 		// Set ray lengths based on renderer bounds
-		foreach (var proxy in m_AllProxies) 
+		foreach (var proxy in m_AllProxies)
 		{
 			if (!proxy.active)
 				continue;
+
 			foreach (var rayOrigin in proxy.rayOrigins.Values)
 			{
 				var distance = kDefaultRayLength;
@@ -305,7 +310,7 @@ public class EditorVR : MonoBehaviour
 	private void CreateEventSystem()
 	{
 		// Create event system, input module, and event camera
-		m_EventSystem = U.Object.AddComponent<EventSystem>(gameObject);
+		U.Object.AddComponent<EventSystem>(gameObject);
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
@@ -316,14 +321,15 @@ public class EditorVR : MonoBehaviour
 			{
 				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
 				{
-					if (device.TagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.TagIndex]] == rayOriginBase.Key)
+					var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
+                    if (device.tagIndex != -1 && m_TagToNode[tags[device.tagIndex]] == rayOriginBase.Key)
 					{
 						DeviceData deviceData;
 						if (m_DeviceData.TryGetValue(device, out deviceData))
 						{
 							// Create ui action map input for device.
 							if (deviceData.uiInput == null)
-								deviceData.uiInput = CreateActionMapInput(CloneActionMapForDevice(m_InputModule.actionMap, device));
+								deviceData.uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
 
 							// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 							m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, deviceData.uiInput);
@@ -344,11 +350,22 @@ public class EditorVR : MonoBehaviour
 		return go;
 	}
 
-	private ActionMapInput CreateActionMapInput(ActionMap map)
+	private ActionMapInput CreateActionMapInput(ActionMap map, InputDevice device)
 	{
+		// Check for improper use of action maps first
+		if (device != null && !IsValidActionMapForDevice(map, device))
+			return null;
+
+		var devices = device == null ? m_PlayerHandle.GetApplicableDevices() : new InputDevice[] { device };
+
 		var actionMapInput = ActionMapInput.Create(map);
-		actionMapInput.TryInitializeWithDevices(m_PlayerHandle.GetApplicableDevices());
-		actionMapInput.active = true;
+		// It's possible that there are no suitable control schemes for the device that is being initialized, 
+		// so ActionMapInput can't be marked active
+		if (actionMapInput.TryInitializeWithDevices(devices))
+		{
+			actionMapInput.autoReinitialize = false;
+			actionMapInput.active = true;
+		}
 		return actionMapInput;
 	}
 
@@ -397,13 +414,12 @@ public class EditorVR : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Spawn a tool on a tool stack (e.g. right hand). In some cases, a tool may be device tag agnostic (e.g. right or
-	/// left hand), so in those cases we map the source bindings of the action map input to the correct device tag.
+	/// Spawn a tool on a tool stack for a specific device (e.g. right hand).
 	/// </summary>
 	/// <param name="toolType">The tool to spawn</param>
-	/// <param name="device">The input device whose tool stack the tool should be spawned on 
-	/// (optional). If not specified, then it uses the action map to determine which devices the tool should be spawned
-	/// on.</param>
+	/// <param name="usedDevices">A list of the used devices coming from the action map</param>
+	/// <param name="device">The input device whose tool stack the tool should be spawned on (optional). If not 
+	/// specified, then it uses the action map to determine which devices the tool should be spawned on.</param>
 	/// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
 	private ITool SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device = null)
 	{
@@ -411,30 +427,30 @@ public class EditorVR : MonoBehaviour
 		if (!typeof(ITool).IsAssignableFrom(toolType))
 			return null;
 
-		var serializableTypes = new HashSet<SerializableType>();
+		var deviceSlots = new HashSet<DeviceSlot>();
 		var tool = U.Object.AddComponent(toolType, gameObject) as ITool;
 		var standardMap = tool as IStandardActionMap;
 		if (standardMap != null)
 		{
 			var actionMap = m_StandardToolActionMap;
-			if (device != null)
-				actionMap = CloneActionMapForDevice(actionMap, device);
+			//if (device != null)
+			//	actionMap = CloneActionMapForDevice(actionMap, device);
 
-			standardMap.standardInput = (Standard)CreateActionMapInput(actionMap);
+			standardMap.standardInput = (Standard)CreateActionMapInput(actionMap, device);
 			usedDevices.UnionWith(standardMap.standardInput.GetCurrentlyUsedDevices());
-			U.Input.CollectSerializableTypesFromActionMapInput(standardMap.standardInput, ref serializableTypes);
+			U.Input.CollectDeviceSlotsFromActionMapInput(standardMap.standardInput, ref deviceSlots);
 		}
 
 		var customMap = tool as ICustomActionMap;
 		if (customMap != null)
 		{
 			var actionMap = customMap.actionMap;
-			if (device != null)
-				actionMap = CloneActionMapForDevice(actionMap, device);
+			//if (device != null)
+			//	actionMap = CloneActionMapForDevice(actionMap, device);
 
-			customMap.actionMapInput = CreateActionMapInput(actionMap);
+			customMap.actionMapInput = CreateActionMapInput(actionMap, device);
 			usedDevices.UnionWith(customMap.actionMapInput.GetCurrentlyUsedDevices());
-			U.Input.CollectSerializableTypesFromActionMapInput(customMap.actionMapInput, ref serializableTypes);
+			U.Input.CollectDeviceSlotsFromActionMapInput(customMap.actionMapInput, ref deviceSlots);
 		}
 
 		ConnectInterfaces(tool, device);
@@ -475,10 +491,10 @@ public class EditorVR : MonoBehaviour
 						continue;
 
 					var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
-					if (device.TagIndex == -1)
+					if (device.tagIndex == -1)
 						continue;
 
-					var tag = tags[device.TagIndex];
+					var tag = tags[device.tagIndex];
 					Node node;
 					if (m_TagToNode.TryGetValue(tag, out node))
 					{
@@ -486,6 +502,16 @@ public class EditorVR : MonoBehaviour
 						if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
 						{
 							ray.rayOrigin = rayOrigin;
+
+							// Specific proxy ray setting
+							var customRay = obj as ICustomRay;
+							if (customRay != null)
+							{
+								DefaultProxyRay dfr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+								customRay.showDefaultRay = dfr.Show;
+								customRay.hideDefaultRay = dfr.Hide;
+							}
+
 							break;
 						}
 					}
@@ -504,11 +530,10 @@ public class EditorVR : MonoBehaviour
 		var raycasterComponent = obj as IRaycaster;
 		if (raycasterComponent != null)
 			raycasterComponent.getFirstGameObject = m_PixelRaycastModule.GetFirstGameObject;
-		
+
 		var highlightComponent = obj as IHighlight;
 		if (highlightComponent != null)
 			highlightComponent.setHighlight = m_HighlightModule.SetHighlight;
-
 	}
 
 	private InputDevice GetInputDeviceForTool(ITool tool)
@@ -563,7 +588,7 @@ public class EditorVR : MonoBehaviour
 		foreach (var deviceData in m_DeviceData.Values)
 		{
 			// Remove the tool if it is the current tool on this device tool stack
-			if (deviceData.currentTool == tool) 
+			if (deviceData.currentTool == tool)
 			{
 				if (deviceData.tools.Peek() != deviceData.currentTool)
 				{
@@ -577,16 +602,7 @@ public class EditorVR : MonoBehaviour
 		U.Object.Destroy(tool as MonoBehaviour);
 	}
 
-	private ActionMap CloneActionMapForDevice(ActionMap actionMap, InputDevice device)
-	{
-		var cloneMap = ScriptableObject.CreateInstance<ActionMap>();
-		EditorUtility.CopySerialized(actionMap, cloneMap);
-		UpdateActionMapForDevice(cloneMap, device);
-
-		return cloneMap;
-	}
-
-	private void UpdateActionMapForDevice(ActionMap actionMap, InputDevice device)
+	private bool IsValidActionMapForDevice(ActionMap actionMap, InputDevice device)
 	{
 		var untaggedDevicesFound = 0;
 		var taggedDevicesFound = 0;
@@ -595,12 +611,12 @@ public class EditorVR : MonoBehaviour
 
 		foreach (var scheme in actionMap.controlSchemes)
 		{
-			foreach (var serializableDeviceType in scheme.serializableDeviceTypes)
+			foreach (var serializableDeviceType in scheme.deviceSlots)
 			{
-				if (serializableDeviceType.TagIndex != -1)
+				if (serializableDeviceType.tagIndex != -1)
 				{
 					taggedDevicesFound++;
-					if (serializableDeviceType.TagIndex != device.TagIndex)
+					if (serializableDeviceType.tagIndex != device.tagIndex)
 						nonMatchingTagIndices++;
 					else
 						matchingTagIndices++;
@@ -610,30 +626,19 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
-		if (nonMatchingTagIndices > 0 && matchingTagIndices == 0) // There is no specified tag that matches the current device, but there is one that does not match
+		if (nonMatchingTagIndices > 0 && matchingTagIndices == 0)
+		{
 			LogError(string.Format("The action map {0} contains a specific device tag, but is being spawned on the wrong device tag", actionMap));
+			return false;
+		}
 
 		if (taggedDevicesFound > 0 && untaggedDevicesFound != 0)
-			LogError(string.Format("The action map {0} contains both a specific device tag and an unspecified tag, which is not supported", actionMap.name));
-
-		// Update all device tags and bindings tagged with no tag (index -1)
-		foreach (var scheme in actionMap.controlSchemes)
 		{
-			foreach (var serializableDeviceType in scheme.serializableDeviceTypes)
-			{
-				if (serializableDeviceType.TagIndex == -1)
-					serializableDeviceType.TagIndex = device.TagIndex;
-			}
-
-			foreach (var binding in scheme.bindings)
-			{
-				foreach (var source in binding.sources)
-				{
-					if (source.deviceType.value == device.GetType() && source.deviceType.TagIndex == -1)
-						source.deviceType.TagIndex = device.TagIndex;
-				}
-			}
+			LogError(string.Format("The action map {0} contains both a specific device tag and an unspecified tag, which is not supported", actionMap.name));
+			return false;
 		}
+
+		return true;
 	}
 
 	private void AddToolToStack(InputDevice device, ITool tool)
