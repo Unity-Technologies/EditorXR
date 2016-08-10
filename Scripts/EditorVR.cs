@@ -667,7 +667,7 @@ public class EditorVR : MonoBehaviour
 		Quaternion rotation = kWorkspaceDefaultTilt;
 		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
 			(kWorkspaceDefaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg	//Calculate arc length at front of workspace
-		    + kWorkspaceAnglePadding;															//Need some extra padding because workspaces are tilted
+			+ kWorkspaceAnglePadding;															//Need some extra padding because workspaces are tilted
 		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;					//Need padding in Y as well
 		float currentRotation = arcLength;
 		float currentHeight = 0;
