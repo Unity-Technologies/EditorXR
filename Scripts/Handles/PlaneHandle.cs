@@ -1,12 +1,11 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.EventSystems;
-using UnityEngine.VR.Proxies;
 
 public class PlaneHandle : BaseHandle
 {
 	[SerializeField]
 	private Material m_PlaneMaterial;
+	private const float kPlaneScale = 1000f;
 	private Collider m_PlaneCollider;
 	private Collider m_Collider;
 	private Vector3 m_LastPosition;
@@ -27,7 +26,7 @@ public class PlaneHandle : BaseHandle
 
 		m_PlaneCollider = GameObject.CreatePrimitive(PrimitiveType.Quad).GetComponent<Collider>();
 		m_PlaneCollider.transform.SetParent(eventData.pressEventCamera.transform.parent);
-		m_PlaneCollider.transform.localScale = Vector3.one*1000f;
+		m_PlaneCollider.transform.localScale = Vector3.one * kPlaneScale;
 		m_PlaneCollider.transform.position = transform.position;
 		m_PlaneCollider.transform.rotation = transform.rotation;
 
@@ -44,7 +43,7 @@ public class PlaneHandle : BaseHandle
 		if (Vector3.Dot(m_PlaneCollider.transform.forward, m_RayOrigin.forward) < 0f)
 			m_PlaneCollider.transform.forward = -m_PlaneCollider.transform.forward;
 
-		Vector3 worldPosition = m_LastPosition;
+		var worldPosition = m_LastPosition;
 		RaycastHit hit;
 		if (m_PlaneCollider.Raycast(new Ray(m_RayOrigin.position, m_RayOrigin.forward), out hit, Mathf.Infinity))
 			worldPosition = hit.point;

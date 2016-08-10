@@ -7,8 +7,8 @@ public class SphereHandle : BaseHandle, IScrollHandler
 	[SerializeField]
 	private Mesh m_InvertedSphereMesh;
 
-	private float kInitialScrollRate = 2f;
-	private float m_ScrollAcceleration = 14f;
+	private const float kInitialScrollRate = 2f;
+	private const float kScrollAcceleration = 14f;
 	private float m_ScrollRate;
 
 	private Vector3 m_LastPosition;
@@ -25,8 +25,7 @@ public class SphereHandle : BaseHandle, IScrollHandler
 		if (m_InvertedSphereCollider != null)
 			DestroyImmediate(m_InvertedSphereCollider.gameObject);
 
-		var invertedSphere = new GameObject();
-		invertedSphere.name = "InvertedSphereCollider";
+		var invertedSphere = new GameObject {name = "InvertedSphereCollider"};
 		invertedSphere.transform.SetParent(transform);
 		m_InvertedSphereCollider = invertedSphere.AddComponent<MeshCollider>();
 		m_InvertedSphereCollider.sharedMesh = m_InvertedSphereMesh;
@@ -41,6 +40,8 @@ public class SphereHandle : BaseHandle, IScrollHandler
 	{
 		base.OnDrag(eventData);
 		var worldPosition = m_LastPosition;
+		m_InvertedSphereCollider.transform.position = m_RayOrigin.position;
+
 		RaycastHit hit;
 		if (m_InvertedSphereCollider.Raycast(new Ray(m_RayOrigin.position, m_RayOrigin.forward), out hit, Mathf.Infinity))
 			worldPosition = hit.point;
@@ -48,7 +49,6 @@ public class SphereHandle : BaseHandle, IScrollHandler
 		var delta = worldPosition - m_LastPosition;
 		m_LastPosition = worldPosition;
 
-		m_InvertedSphereCollider.transform.position = m_RayOrigin.position;
 		OnHandleDrag(delta);
 	}
 
@@ -70,6 +70,7 @@ public class SphereHandle : BaseHandle, IScrollHandler
 
 	private void UpdateScale()
 	{
+		// Update the sphere's local scale to a fixed radius by inverting the parent's lossy scale
 		var inverseParentScale = new Vector3(1 / m_InvertedSphereCollider.transform.parent.lossyScale.x,
 			1 / m_InvertedSphereCollider.transform.parent.lossyScale.y, 1 / m_InvertedSphereCollider.transform.parent.lossyScale.z);
 
@@ -85,14 +86,15 @@ public class SphereHandle : BaseHandle, IScrollHandler
 
 	public void OnScroll(PointerEventData eventData)
 	{
-		if (m_Dragging)
-		{
-			if (Mathf.Abs(eventData.scrollDelta.y) > 0.5f)
-				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y) * m_ScrollAcceleration * Time.unscaledDeltaTime;
-			else
-				m_ScrollRate = kInitialScrollRate;
+		if (!m_Dragging)
+			return;
 
-			ChangeRadius(m_ScrollRate * eventData.scrollDelta.y * Time.unscaledDeltaTime);
-		}
+		// Scolling changes the radius of the sphere while dragging, and accelerates
+		if (Mathf.Abs(eventData.scrollDelta.y) > 0.5f) 
+			m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y) * kScrollAcceleration * Time.unscaledDeltaTime;
+		else
+			m_ScrollRate = kInitialScrollRate;
+
+		ChangeRadius(m_ScrollRate * eventData.scrollDelta.y * Time.unscaledDeltaTime);
 	}
 }

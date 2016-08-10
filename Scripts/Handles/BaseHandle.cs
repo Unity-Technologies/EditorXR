@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.VR.Proxies;
-using System;
 using UnityEngine.VR;
 
 public class BaseHandle : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
@@ -15,10 +13,11 @@ public class BaseHandle : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
 	protected Transform m_RayOrigin;
 	protected Renderer m_Renderer;
-	protected bool m_Hovering = false;
-	protected bool m_Dragging = false;
+	protected bool m_Hovering;
+	protected bool m_Dragging;
 	protected Node m_Node;
 	protected Vector3 m_StartDragPosition;
+
 	public Vector3 startDragPosition { get { return m_StartDragPosition;} }
 
 	protected virtual void Awake()

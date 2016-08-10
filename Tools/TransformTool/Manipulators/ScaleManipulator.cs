@@ -1,13 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.VR.Tools;
 using System;
 using System.Collections.Generic;
-using System.Security.Policy;
-using UnityEditor.VR;
-using UnityEngine.VR;
-using UnityEngine.VR.Proxies;
-using UnityEditor;
 
 public class ScaleManipulator : MonoBehaviour, IManipulator
 {
@@ -20,7 +14,7 @@ public class ScaleManipulator : MonoBehaviour, IManipulator
 	[SerializeField]
 	private BaseHandle m_HandleZ;
 
-	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
+	private readonly List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 	private bool m_Dragging = false;
 
 	public bool dragging { get { return m_Dragging; } }

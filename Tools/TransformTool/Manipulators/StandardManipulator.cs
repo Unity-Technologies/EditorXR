@@ -32,7 +32,7 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 	[SerializeField]
 	private BaseHandle m_RotateHandleZ;
 
-	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
+	private readonly List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 	private bool m_Dragging = false;
 	public bool dragging { get {  return m_Dragging; } }
 	public Action<Vector3> translate { private get; set; }
@@ -100,9 +100,9 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 
 	void Update()
 	{
-		var viewerPosition = VRView.viewerCamera.transform.position;
 		if (!m_Dragging)
 		{
+			var viewerPosition = VRView.viewerCamera.transform.position;
 			foreach (Transform t in m_PlaneHandlesParent)
 			{
 				var localPos = t.localPosition;

@@ -23,14 +23,15 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 	private GameObject m_CurrentManipulatorGameObject;
 	private int m_CurrentManipulatorIndex;
 	private IManipulator m_Manipulator;
+
+	private Transform[] m_SelectionTransforms;
+	private Bounds m_SelectionBounds;
 	private Vector3 m_TargetPosition;
 	private Quaternion m_TargetRotation;
 	private Vector3 m_TargetScale;
-	private Bounds? m_SelectionBounds;
-	private Transform[] m_SelectionTransforms;
 	private readonly Dictionary<Transform, Vector3> m_PositionOffsets = new Dictionary<Transform, Vector3>();
-	private readonly Dictionary<Transform, Vector3> m_ScaleOffsets = new Dictionary<Transform, Vector3>();
 	private readonly Dictionary<Transform, Quaternion> m_RotationOffsets = new Dictionary<Transform, Quaternion>();
+	private readonly Dictionary<Transform, Vector3> m_ScaleOffsets = new Dictionary<Transform, Vector3>();
 
 	private PivotRotation m_PivotRotation = PivotRotation.Local;
 	private PivotMode m_PivotMode = PivotMode.Pivot;
@@ -97,10 +98,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 	{
 		if (m_SelectionTransforms != null && m_SelectionTransforms.Length > 0)
 		{
-			if (m_TransformInput.pivotMode.wasJustPressed)
+			if (m_TransformInput.pivotMode.wasJustPressed) // Switching center vs pivot
 				SwitchPivotMode();
 
-			if (m_TransformInput.pivotRotation.wasJustPressed)
+			if (m_TransformInput.pivotRotation.wasJustPressed) // Switching global vs local
 				SwitchPivotRotation();
 
 			if (m_TransformInput.manipulatorType.wasJustPressed)
@@ -119,7 +120,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 
 			m_CurrentManipulatorGameObject.transform.position = Vector3.Lerp(m_CurrentManipulatorGameObject.transform.position,
 				m_TargetPosition, kLazyFollowSpeed * Time.unscaledDeltaTime);
-			if(m_PivotRotation == PivotRotation.Local)
+
+			if(m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 				m_CurrentManipulatorGameObject.transform.rotation = Quaternion.Slerp(m_CurrentManipulatorGameObject.transform.rotation, m_TargetRotation, kLazyFollowSpeed * Time.unscaledDeltaTime);
 
 			foreach (var t in m_SelectionTransforms)
@@ -150,8 +152,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 
 	private void UpdateSelectionBounds()
 	{
-		Bounds newBounds = default(Bounds);
-		bool boundsInitialized = false;
+		var newBounds = default(Bounds); // By default centered at (0,0,0)
+		var boundsInitialized = false;
 		foreach (var selectedObj in m_SelectionTransforms)
 		{
 			var renderers = selectedObj.GetComponentsInChildren<Renderer>();
@@ -162,13 +164,13 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 				if (Mathf.Approximately(r.bounds.extents.sqrMagnitude, 0f)) // Necessary because Particle Systems have renderer components with center and extents (0,0,0)
 					continue;
 
-				if (!boundsInitialized)
+				if (boundsInitialized) // Only use encapsulate after the first renderer, otherwise bounds will always encapsulate point (0,0,0)
+					newBounds.Encapsulate(r.bounds);
+				else
 				{
 					newBounds = r.bounds;
 					boundsInitialized = true;
 				}
-				else
-					newBounds.Encapsulate(r.bounds);
 			}
 		}
 		m_SelectionBounds = newBounds;
@@ -176,8 +178,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 
 	private void UpdateManipulatorSize()
 	{
-		if (m_SelectionBounds == null)
-			return;
 		var distance = Vector3.Distance(VRView.viewerCamera.transform.position, m_CurrentManipulatorGameObject.transform.position);
 		m_CurrentManipulatorGameObject.transform.localScale = Vector3.one * distance * kBaseManipulatorSize;
 	}
@@ -204,7 +204,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 
 		UpdateSelectionBounds();
 		m_CurrentManipulatorGameObject.SetActive(true);
-		m_CurrentManipulatorGameObject.transform.position = (m_PivotMode == PivotMode.Pivot) ? m_SelectionTransforms[0].position : m_SelectionBounds.Value.center;
+		m_CurrentManipulatorGameObject.transform.position = (m_PivotMode == PivotMode.Pivot) ? m_SelectionTransforms[0].position : m_SelectionBounds.center;
 		m_CurrentManipulatorGameObject.transform.rotation = (m_PivotRotation == PivotRotation.Global) ? Quaternion.identity : m_SelectionTransforms[0].rotation;
 		m_TargetPosition = m_CurrentManipulatorGameObject.transform.position;
 		m_TargetRotation = m_CurrentManipulatorGameObject.transform.rotation;

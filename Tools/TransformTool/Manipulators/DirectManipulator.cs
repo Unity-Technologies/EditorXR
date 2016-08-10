@@ -19,6 +19,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		m_AllHandles.Add(m_GrabHandle);
 	}
+
 	void OnEnable()
 	{
 		m_GrabHandle.onHandleDrag += TranslateHandleOnDrag;
