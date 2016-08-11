@@ -95,6 +95,7 @@ namespace UnityEngine.VR.Data
 
 		public IEnumerable AddObject(SpatialObject spatialObject)
 		{
+			//Debug.Log("Adding object " + spatialObject.name);
 			m_AllObjects.Add(spatialObject);
 			return spatialObject.AddToHash(this);
 		}

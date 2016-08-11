@@ -89,8 +89,11 @@ namespace UnityEngine.VR.Modules
 				return;
 			if (m_Testers == null)
 				return;
+			int i = 0;
 			foreach (var tester in m_Testers)
 			{
+				Color color = i%2 == 0 ? Color.red : Color.green;
+				i++;
 				if (!tester.active)
 					continue;
 				if (m_SpatialHash.changes || tester.renderer.transform.hasChanged)
@@ -107,12 +110,12 @@ namespace UnityEngine.VR.Modules
 							//Early-outs:
 							// No mesh data
 							// Not updated yet
-							if (!obj.processed || obj.sceneObject.transform.hasChanged)
+							if (obj.sceneObject.transform.hasChanged)
 								continue;
 							//Bounds check                                                                     
 							if (!obj.sceneObject.bounds.Intersects(tester.renderer.bounds))
 								continue;
-							if (U.Intersection.TestObject(obj, tester))
+							if (U.Intersection.TestObject(obj, color, tester))
 							{
 								detected = true;
 								SpatialObject oldObject;
@@ -172,7 +175,7 @@ namespace UnityEngine.VR.Modules
 		void OnIntersectionStay(IntersectionTester tester, SpatialObject obj)
 		{
 			m_IntersectedObjects[tester] = obj;
-			Debug.Log("Stayed " + obj);
+			//Debug.Log("Stayed " + obj);
 		}
 
 		void OnIntersectionExit(IntersectionTester tester, SpatialObject obj)

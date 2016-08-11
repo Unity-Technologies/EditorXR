@@ -77,8 +77,7 @@ public class EditorVR : MonoBehaviour
 		CreateAllProxies();
 		CreateDeviceDataForInputDevices();
 		CreateEventSystem();
-		CreateSpatialSystem();
-
+		
 		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
@@ -120,6 +119,8 @@ public class EditorVR : MonoBehaviour
 
 			yield return null;
 		}
+
+		CreateSpatialSystem();
 		SpawnDefaultTools();
 	}
 
@@ -336,18 +337,23 @@ public class EditorVR : MonoBehaviour
 		m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
 		m_IntersectionModule.Setup(m_SpatialHash);
 
-		foreach (var proxy in m_AllProxies) {
-			foreach (var rayOriginBase in proxy.rayOrigins) {
-				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
+		foreach (var proxy in m_AllProxies)
+		{
+			if (proxy.active)
+			{				
+				foreach (var rayOriginBase in proxy.rayOrigins)
 				{
-					if (device.tagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.tagIndex]] == rayOriginBase.Key) {
-						DeviceData deviceData;
-						if (m_DeviceData.TryGetValue(device, out deviceData)) {
+					foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
+					{
+						if (device.tagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.tagIndex]] == rayOriginBase.Key) {
+							DeviceData deviceData;
+							if (m_DeviceData.TryGetValue(device, out deviceData)) {
 
-							// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-							m_IntersectionModule.AddTester(rayOriginBase.Value);
+								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+								m_IntersectionModule.AddTester(rayOriginBase.Value);
+							}
+							break;
 						}
-						break;
 					}
 				}
 			}

@@ -10,7 +10,7 @@ namespace UnityEngine.VR.Utilities
 		{
 			private const float k_RayMax = 1000;
 
-			public static bool TestObject(SpatialObject obj, IntersectionTester tester)
+			public static bool TestObject(SpatialObject obj, Color color, IntersectionTester tester)
 			{
 				Vector3 objInvScale = InvertVector3(obj.sceneObject.transform.lossyScale);
 				Quaternion objInvRotation = Quaternion.Inverse(obj.sceneObject.transform.rotation);
@@ -19,89 +19,75 @@ namespace UnityEngine.VR.Utilities
 				{
 					Ray ray = tester.rays[j];
 					//Transform to object space
-					ray.origin = Vector3.Scale(
-						objInvRotation * (tester.renderer.transform.position - obj.sceneObject.transform.position)
-						+ Vector3.Scale(objInvRotation * tester.renderer.transform.rotation * ray.origin, tester.renderer.transform.lossyScale), objInvScale);
-					ray.direction = objInvRotation * tester.renderer.transform.rotation * ray.direction;
-					int hitCount1 = TestRay(obj, ray);
-					if (hitCount1 % 2 == 0)
-						continue;
-					ray.direction *= -1;
-					int hitCount2 = TestRay(obj, ray);
-					if (hitCount1 % 2 == 1 && hitCount2 % 2 == 1)
-					{
+					ray.origin = tester.renderer.transform.TransformPoint(ray.origin);
+					ray.direction = tester.renderer.transform.TransformDirection(ray.direction);
+					//Debug.DrawRay(ray.origin, ray.direction * 0.5f, Color.black);
+					if (TestRay(obj, color, ray) == 1)
 						return true;
-					}
+					//ray.origin = Vector3.Scale(
+					//	objInvRotation * (tester.renderer.transform.position - obj.sceneObject.transform.position)
+					//	+ Vector3.Scale(objInvRotation * tester.renderer.transform.rotation * ray.origin, tester.renderer.transform.lossyScale), objInvScale);
+					//ray.direction = objInvRotation * tester.renderer.transform.rotation * ray.direction;
+					//int hitCount1 = TestRay(obj, color, ray);
+					//if (hitCount1 % 2 == 0)
+					//	continue;
+					//ray.direction *= -1;
+					//int hitCount2 = TestRay(obj, color, ray);
+					//if (hitCount1 % 2 == 1 && hitCount2 % 2 == 1)
+					//{
+					//	return true;
+					//}
 				}
 				return false;
 			}
 
-			public static int TestRay(SpatialObject obj, Ray ray)
+			private static GameObject collisionTester;
+
+			public static int TestRay(SpatialObject obj, Color color, Ray ray)
 			{
-				Vector3 q = ray.origin + ray.direction * k_RayMax;
 				int hitCount = 0;
-				//Keep track of what triangles we've already tested
-				//TODO: Test hashset vs list
-				Profiler.BeginSample("Bucket approach");
-				HashSet<IntVector3> tested = new HashSet<IntVector3>();
-				foreach (var triBucket in obj.triBuckets)
+				if (!collisionTester)
 				{
-					Vector3 min = (Vector3)triBucket.Key * obj.meshCellSize;
-					Vector3 max = min + Vector3.one * obj.meshCellSize;
-					Profiler.BeginSample("Intersection");
-					if (IntersectRayAABB(ray, min, max, 0, k_RayMax))
-					{
-						foreach (var tri in triBucket.Value)
-						{
-							if (tested.Add(tri))
-							{
-								Profiler.BeginSample("Triangle Test");
-								Vector3 a = obj.vertices[tri.x];
-								Vector3 b = obj.vertices[tri.y];
-								Vector3 c = obj.vertices[tri.z];
-								float u, v, w, t;
-								if (IntersectSegmentTriangle(ray.origin, q, a, b, c, out u, out v, out w, out t))
-								{
-									hitCount++;
-								}
-								//Test back face
-								if (IntersectSegmentTriangle(ray.origin, q, a, c, b, out u, out v, out w, out t))
-								{
-									hitCount++;
-								}
-								Profiler.EndSample();
-							}
-						}
-					}
-					Profiler.EndSample();
+					collisionTester = new GameObject("CollisionTester", typeof(MeshCollider));
+				}
+				var mf = obj.sceneObject.GetComponent<MeshFilter>();
+				MeshCollider collider = collisionTester.GetComponent<MeshCollider>();
+
+				Profiler.BeginSample("Collision Tester");
+				collider.sharedMesh = mf.sharedMesh;
+				//Debug.DrawRay(ray.origin, ray.direction, color);
+				ray.origin = mf.transform.InverseTransformPoint(ray.origin);
+				ray.direction = mf.transform.InverseTransformDirection(ray.direction);
+				//Debug.DrawRay(ray.origin, ray.direction, color);
+
+				float maxDistance = collider.bounds.size.magnitude;
+				Ray forwardRay = new Ray(ray.origin, ray.direction);
+				forwardRay.origin = forwardRay.GetPoint(-maxDistance);
+				Debug.DrawRay(forwardRay.origin, forwardRay.direction, color);
+				RaycastHit hitInfo;
+				Vector3 forwardHit = Vector3.zero;
+				if (collider.Raycast(forwardRay, out hitInfo, maxDistance * 2f))
+				{
+					forwardHit = hitInfo.point;
+				}
+
+				// Shoot a ray behind, too
+				Vector3 behindHit = Vector3.zero;
+				Ray behindRay = new Ray(ray.origin, -ray.direction);
+				ray.origin = ray.GetPoint(-maxDistance);
+				Debug.DrawRay(behindRay.origin, behindRay.direction, color * 0.5f);
+				if (collider.Raycast(behindRay, out hitInfo, maxDistance * 2f))
+				{
+					behindHit = hitInfo.point;
+				}
+
+				float projection = Vector3.Dot(forwardHit - behindHit, ray.origin - behindHit);
+				if (projection >= 0f && projection <= 1f)
+				{
+					return 1;
 				}
 				Profiler.EndSample();
-
-				//Profiler.BeginSample("Direct approach");
-				//var mf = obj.sceneObject.GetComponent<MeshFilter>();
-				//var tris = mf.sharedMesh.triangles;
-				//var verts = mf.sharedMesh.vertices;
-				//int directHitCount = 0;
-				//for (int i = 0; i < tris.Length; i += 3)
-				//{
-				//	Vector3 a = verts[tris[i]];
-				//	Vector3 b = verts[tris[i + 1]];
-				//	Vector3 c = verts[tris[i + 2]];
-				//	float u, v, w, t;
-				//	if (IntersectSegmentTriangle(ray.origin, q, a, b, c, out u, out v, out w, out t))
-				//	{
-				//		directHitCount++;
-				//	}
-				//	//Test back face
-				//	if (IntersectSegmentTriangle(ray.origin, q, a, c, b, out u, out v, out w, out t))
-				//	{
-				//		directHitCount++;
-				//	}
-				//}
-				//Profiler.EndSample();
-
-				//Assert.AreEqual(directHitCount, hitCount);
-				return hitCount;
+				return 0;
 			}
 
 			public static Vector3 InvertVector3(Vector3 vec)

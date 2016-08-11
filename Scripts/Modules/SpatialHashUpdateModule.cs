@@ -59,7 +59,7 @@ namespace UnityEngine.VR.Modules
 				//TODO: Exclude certain objects?
 				if (meshFilter.GetComponentInParent<EditorVR>())
 					continue;
-				if (meshFilter.sharedMesh && MeshData.ValidMesh(meshFilter.sharedMesh))
+				if (meshFilter.sharedMesh)
 				{
 					Renderer render = meshFilter.GetComponent<Renderer>();
 					if (render)

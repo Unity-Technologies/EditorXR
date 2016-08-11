@@ -20,7 +20,7 @@ namespace UnityEngine.VR.Data
 		private IntVector3 m_LastLowerLeft;
 		private IntVector3 m_LastUpperRight;
 
-		private MeshData m_MeshData;
+		private Mesh m_Mesh;
 		private IntVector3 m_PositionOffset;
 
 		public static int processCount
@@ -30,34 +30,14 @@ namespace UnityEngine.VR.Data
 
 		public Vector3[] vertices
 		{
-			get { return m_MeshData.vertices; }
-		}
-
-		public float meshCellSize
-		{
-			get { return m_MeshData.cellSize; }
-		}
-
-		public Dictionary<IntVector3, List<IntVector3>> triBuckets
-		{
-			get { return m_MeshData.triBuckets; }
-		}
-
-		public bool processed
-		{
-			get { return m_MeshData.processed; }
+			get { return m_Mesh.vertices; }
 		}
 
 		public string name
 		{
 			get
 			{
-				string name = m_MeshData.name;
-				if (m_MeshData.processed)
-					name += " - m_Buckets: " + triBuckets.Count;
-				else
-					name += " - processing...";
-				return name;
+				return m_Mesh.name;
 			}
 
 		}
@@ -73,7 +53,7 @@ namespace UnityEngine.VR.Data
 			MeshFilter filter = sceneObject.GetComponent<MeshFilter>();
 			if (filter)
 			{
-				m_MeshData = MeshData.GetMeshData(filter.sharedMesh);
+				m_Mesh = filter.sharedMesh;
 			} else
 			{
 				throw new ArgumentException("SpatialObject renderers require an attached MeshFilter on " + filter);
