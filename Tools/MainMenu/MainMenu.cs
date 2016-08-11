@@ -259,7 +259,7 @@ namespace UnityEngine.VR.Tools
                     buttons.Add(mainMenuButton);
                     AddButtonListener(mainMenuButton.button, menuTool);
 
-                    var customMenuAttribute = (EVRMenuItemAttribute)menuTool.GetCustomAttributes(typeof(EVRMenuItemAttribute), false).FirstOrDefault();
+                    var customMenuAttribute = (VRMenuItemAttribute)menuTool.GetCustomAttributes(typeof(VRMenuItemAttribute), false).FirstOrDefault();
                     if (customMenuAttribute != null)
                     {
                         var found = m_MenuFaceToButtons.Where(x => x.Key == customMenuAttribute.SectionName).Any();
@@ -463,12 +463,12 @@ namespace UnityEngine.VR.Tools
     /// <summary>
     /// Attribute used to tag items (tools, actions, etc) that can be added to menus
     /// </summary>
-    public class EVRMenuItemAttribute : System.Attribute
+    public class VRMenuItemAttribute : System.Attribute
     {
         public string SectionName;
         public string Description;
 
-        public EVRMenuItemAttribute(string sectionName, string description)
+        public VRMenuItemAttribute(string sectionName, string description)
         {
             SectionName = sectionName;
             Description = description;
