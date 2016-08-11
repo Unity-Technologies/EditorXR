@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputNew;
 
 // GENERATED FILE - DO NOT EDIT MANUALLY
 namespace UnityEngine.InputNew
@@ -7,5 +8,6 @@ namespace UnityEngine.InputNew
 		public Menu (ActionMap actionMap) : base (actionMap) { }
 		
 		public ButtonInputControl @show { get { return (ButtonInputControl)this[0]; } }
+		public AxisInputControl @rotate { get { return (AxisInputControl)this[1]; } }
 	}
 }

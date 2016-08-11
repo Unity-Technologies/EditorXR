@@ -14,6 +14,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Actions:
   - {fileID: 114000013407218016}
+  - {fileID: 114000011099735542}
   m_ControlSchemes:
   - m_Name: Sixense
     m_DeviceSlots:
@@ -21,11 +22,25 @@ MonoBehaviour:
       m_Type:
         m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_TagIndex: -1
+      m_TagIndex: 0
+    - m_Key: 2
+      m_Type:
+        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
+      m_TagIndex: 1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
-      - controlIndex: 27
+      - controlIndex: 22
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 0
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -35,6 +50,27 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
   m_MapTypeName: Menu, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_CustomNamespace: 
+--- !u!114 &114000011099735542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Rotate
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 1
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Rotate
+    defaultValue: 0
 --- !u!114 &114000013407218016
 MonoBehaviour:
   m_ObjectHideFlags: 0
