@@ -327,10 +327,10 @@ namespace UnityEngine.VR.Data
 			List<SerialKVP> tmpBuckets = new List<SerialKVP>();
 			foreach (var triBucket in triBuckets)
 			{
-				var newBucket = new List<SerialIV3>(triBucket.Value.Count);
+				var newBucket = new List<IntVector3>(triBucket.Value.Count);
 				var kvp = new SerialKVP {Key = triBucket.Key, Value = newBucket};
 				tmpBuckets.Add(kvp);
-				newBucket.AddRange(triBucket.Value.Select(tri => (SerialIV3) tri));
+				newBucket.AddRange(triBucket.Value);
 			}
 			info.AddValue("triBuckets", tmpBuckets);
 			info.AddValue("meshCellSize", cellSize);
@@ -343,26 +343,10 @@ namespace UnityEngine.VR.Data
 		}
 
 		[Serializable]
-		class SerialIV3
-		{
-			public int x, y, z;
-
-			public static implicit operator SerialIV3(IntVector3 vec)
-			{
-				return new SerialIV3 {x = vec.x, y = vec.y, z = vec.z};
-			}
-
-			public static implicit operator IntVector3(SerialIV3 vec)
-			{
-				return new IntVector3(vec.x, vec.y, vec.z);
-			}
-		}
-
-		[Serializable]
 		class SerialKVP
 		{
-			public SerialIV3 Key;
-			public List<SerialIV3> Value;
+			public IntVector3 Key;
+			public List<IntVector3> Value;
 		}
 	}
 
