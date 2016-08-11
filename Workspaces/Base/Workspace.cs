@@ -33,6 +33,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 			}
 		}
 	}
+	[SerializeField]
 	private Bounds m_ContentBounds;
 
 	/// <summary>
@@ -71,6 +72,14 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
 		m_WorkspaceUI.SetBounds(contentBounds);
 	}
+#if UNITY_EDITOR
+	public virtual void Update()
+	{		
+		//HACK: Update bounds in case they are changed in the inspector--remove once resize handles are in
+		m_WorkspaceUI.SetBounds(contentBounds);
+		OnBoundsChanged();
+	}
+#endif
 
 	protected abstract void OnBoundsChanged();
 

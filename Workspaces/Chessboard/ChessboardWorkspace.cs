@@ -6,9 +6,6 @@ public class ChessboardWorkspace : Workspace
 	private const float kGridScale = 1f;						//Scale grid cells because workspace is smaller than world
 	private const float kClipBoxYOffset = 0.1333333f;		//1/3 of initial initial Y bounds (0.4)
 	private const float kClipBoxInitScale = 25;					//We want to see a big region by default
-	//HACK: dummy input for bounds change
-	[SerializeField]
-	private Renderer m_DummyBounds;
 
 	//NOTE: since pretty much all workspaces will want a prefab, should this go in the base class?
 	[SerializeField]
@@ -30,40 +27,34 @@ public class ChessboardWorkspace : Workspace
 		OnBoundsChanged();
 	}
 
-	void Update()
+	public override void Update()
 	{
-		if (m_DummyBounds)
-			contentBounds = m_DummyBounds.bounds;
-
-		if (m_MiniWorld.referenceTransform.hasChanged)
+		base.Update();
+		float clipHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
+		if (Mathf.Abs(clipHeight) < contentBounds.extents.y)
 		{
-			float clipHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
-			if (Mathf.Abs(clipHeight) < contentBounds.extents.y)
-			{
-				m_ChessboardUI.grid.gameObject.SetActive(true);
-				m_ChessboardUI.grid.transform.localPosition = Vector3.down * clipHeight;
-			}
-			else
-			{
-				m_ChessboardUI.grid.gameObject.SetActive(false);
-			}
-
-			//Update grid material if ClipBox has moved
-			m_GridMaterial.mainTextureScale = new Vector2(
-				contentBounds.size.x * m_MiniWorld.referenceTransform.localScale.x,
-				contentBounds.size.z * m_MiniWorld.referenceTransform.localScale.x) * kGridScale;
-			m_GridMaterial.mainTextureOffset =
-				Vector2.one * 0.5f //Center grid
-				+ new Vector2(m_GridMaterial.mainTextureScale.x % 2, m_GridMaterial.mainTextureScale.y % 2) * -0.5f //Scaling offset
-				+ new Vector2(m_MiniWorld.referenceTransform.position.x, m_MiniWorld.referenceTransform.position.z) * kGridScale; //Translation offset
+			m_ChessboardUI.grid.gameObject.SetActive(true);
+			m_ChessboardUI.grid.transform.localPosition = Vector3.down * clipHeight;
 		}
-		m_MiniWorld.referenceTransform.hasChanged = false;
+		else
+		{
+			m_ChessboardUI.grid.gameObject.SetActive(false);
+		}
+
+		//Update grid material if ClipBox has moved
+		m_GridMaterial.mainTextureScale = new Vector2(
+			m_MiniWorld.referenceTransform.localScale.x * contentBounds.size.x,
+			m_MiniWorld.referenceTransform.localScale.z * contentBounds.size.z) * kGridScale;
+		m_GridMaterial.mainTextureOffset =
+			Vector2.one * 0.5f //Center grid
+			+ new Vector2(m_GridMaterial.mainTextureScale.x % 2, m_GridMaterial.mainTextureScale.y % 2) * -0.5f //Scaling offset
+			+ new Vector2(m_MiniWorld.referenceTransform.position.x, m_MiniWorld.referenceTransform.position.z) * kGridScale; //Translation offset
 	}
 
 	protected override void OnBoundsChanged()
 	{
 		m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
 		m_MiniWorld.SetBounds(contentBounds);
-		m_ChessboardUI.grid.transform.localScale = contentBounds.size;
+		m_ChessboardUI.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
 	}
 }
