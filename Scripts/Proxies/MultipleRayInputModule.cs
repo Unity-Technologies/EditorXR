@@ -84,8 +84,11 @@ namespace UnityEngine.VR.Proxies
 		public PointerEventData GetPointerEventData(Transform rayOrigin)
 		{
 			int id;
-			if(m_RayOriginToPointerID.TryGetValue(rayOrigin, out id))
-				return PointEvents[id];
+			if (m_RayOriginToPointerID.TryGetValue(rayOrigin, out id))
+			{
+				if(id >= 0 && id < PointEvents.Count)
+					return PointEvents[id];
+			}
 
 			return null;
 		}
