@@ -3,16 +3,25 @@ using UnityEngine.VR.Utilities;
 
 //Q: Should combine with ChessboardWorkspace?
 public class MiniWorld : MonoBehaviour
-{
-	public Matrix4x4 matrix
-	{
-		get { return transform.localToWorldMatrix * referenceTransform.worldToLocalMatrix; }
-	}
+{	
+	private Vector3 m_LocalBoundsSize = Vector3.one;
+
+	private static readonly LayerMask s_RendererCullingMask = -1;
+	private const float kTranslationScale = 0.1f;
+
+	private MiniWorldRenderer m_MiniWorldRenderer;
 
 	public Transform referenceTransform
 	{
 		get { return m_ReferenceTransform; }
 		set { m_ReferenceTransform = value; }
+	}
+	[SerializeField]
+	private Transform m_ReferenceTransform;
+
+	public Matrix4x4 matrix
+	{
+		get { return transform.localToWorldMatrix * referenceTransform.worldToLocalMatrix; }
 	}
 
 	public Bounds referenceBounds
@@ -32,14 +41,6 @@ public class MiniWorld : MonoBehaviour
 		get { return new Bounds(Vector3.zero, m_LocalBoundsSize); }
 		set { m_LocalBoundsSize = value.size; }
 	}
-	[SerializeField]
-	private Transform m_ReferenceTransform;
-	private Vector3 m_LocalBoundsSize = Vector3.one;
-
-	private static readonly LayerMask s_RendererCullingMask = -1;
-	private const float kTranslationScale = 0.1f;
-
-	private MiniWorldRenderer m_MiniWorldRenderer;
 
 	public void MoveForward()
 	{
