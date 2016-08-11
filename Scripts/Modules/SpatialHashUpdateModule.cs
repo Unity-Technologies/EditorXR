@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Mono.Simd;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.VR.Data;
@@ -134,19 +133,5 @@ namespace UnityEngine.VR.Modules
 				yield return null;
 			}
 		}
-	}
-}
-
-//TODO: Put in Extensions class
-public static class Vector4iEx
-{
-	public static Vector3 mul(this Vector4i vec, float val)
-	{
-		return new Vector3(vec.X * val, vec.Y * val, vec.Z * val);
-	}
-
-	public static Vector3 ToVector3(this Vector4i vec)
-	{
-		return new Vector3(vec.X, vec.Y, vec.Z);
 	}
 }

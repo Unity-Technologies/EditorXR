@@ -3,7 +3,6 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.VR.Modules;
-using IntVector3 = Mono.Simd.Vector4i;
 
 namespace UnityEngine.VR.Data
 {
@@ -95,14 +94,14 @@ namespace UnityEngine.VR.Data
 
 			m_LastLowerLeft = lowerLeft;
 			m_LastUpperRight = upperRight;
-			m_Buckets.Capacity = (upperRight.X - lowerLeft.X) * (upperRight.Y - lowerLeft.Y) * (upperRight.Z - lowerLeft.Z);
-			for (int x = lowerLeft.X; x <= upperRight.X; x++)
+			m_Buckets.Capacity = (upperRight.x - lowerLeft.x) * (upperRight.y - lowerLeft.y) * (upperRight.z - lowerLeft.z);
+			for (int x = lowerLeft.x; x <= upperRight.x; x++)
 			{
-				for (int y = lowerLeft.Y; y <= upperRight.Y; y++)
+				for (int y = lowerLeft.y; y <= upperRight.y; y++)
 				{
-					for (int z = lowerLeft.Z; z <= upperRight.Z; z++)
+					for (int z = lowerLeft.z; z <= upperRight.z; z++)
 					{
-						IntVector3 bucket = new IntVector3(x, y, z, 0);
+						IntVector3 bucket = new IntVector3(x, y, z);
 						m_Buckets.Add(bucket);
 						IntVector3 worldBucket = bucket + m_PositionOffset;
 						if (!removeBuckets.Remove(worldBucket))
@@ -131,19 +130,19 @@ namespace UnityEngine.VR.Data
 			m_PositionOffset = hash.SnapToGrid(sceneObject.transform.position + Vector3.one * hash.cellSize * 0.5f);
 			IntVector3 lowerLeft = hash.SnapToGrid(sceneObject.bounds.center - (sceneObject.bounds.extents - Vector3.one * hash.cellSize * 0.5f)) - m_PositionOffset;
 			IntVector3 upperRight = hash.SnapToGrid(sceneObject.bounds.center + (sceneObject.bounds.extents + Vector3.one * hash.cellSize * 0.5f)) - m_PositionOffset;
-			m_Buckets.Capacity = (upperRight.X - lowerLeft.X) * (upperRight.Y - lowerLeft.Y) * (upperRight.Z - lowerLeft.Z);
+			m_Buckets.Capacity = (upperRight.x - lowerLeft.x) * (upperRight.y - lowerLeft.y) * (upperRight.z - lowerLeft.z);
 			if (m_Buckets.Capacity > k_MaxBuckets)
 			{
 				tooBig = true;
 				yield break;
 			}
-			for (int x = lowerLeft.X; x <= upperRight.X; x++)
+			for (int x = lowerLeft.x; x <= upperRight.x; x++)
 			{
-				for (int y = lowerLeft.Y; y <= upperRight.Y; y++)
+				for (int y = lowerLeft.y; y <= upperRight.y; y++)
 				{
-					for (int z = lowerLeft.Z; z <= upperRight.Z; z++)
+					for (int z = lowerLeft.z; z <= upperRight.z; z++)
 					{
-						IntVector3 bucket = new IntVector3(x, y, z, 0);
+						IntVector3 bucket = new IntVector3(x, y, z);
 						m_Buckets.Add(bucket);
 						IntVector3 worldBucket = bucket + m_PositionOffset;
 						hash.AddObjectToBucket(worldBucket, this);

@@ -6,7 +6,6 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Threading;
 using UnityEditor;
-using IntVector3 = Mono.Simd.Vector4i;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine.VR.Utilities;
 
@@ -190,13 +189,13 @@ namespace UnityEngine.VR.Data
 		{
 			IntVector3 lowerLeft = SpatialHash.SnapToGrid(-extents - Vector3.one * cellSize * 0.5f, cellSize);
 			IntVector3 upperRight = SpatialHash.SnapToGrid(extents + Vector3.one * cellSize * 0.5f, cellSize);
-			IntVector3 diff = upperRight - lowerLeft + IntVector3.Identity;
-			m_TotalTris = diff.X * diff.Y * diff.Z * (long) triangles.Length / 3;
-			for (int x = lowerLeft.X; x <= upperRight.X; x++)
+			IntVector3 diff = upperRight - lowerLeft + IntVector3.one;
+			m_TotalTris = diff.x * diff.y * diff.z * (long) triangles.Length / 3;
+			for (int x = lowerLeft.x; x <= upperRight.x; x++)
 			{
-				for (int y = lowerLeft.Y; y <= upperRight.Y; y++)
+				for (int y = lowerLeft.y; y <= upperRight.y; y++)
 				{
-					for (int z = lowerLeft.Z; z <= upperRight.Z; z++)
+					for (int z = lowerLeft.z; z <= upperRight.z; z++)
 					{
 						for (int i = 0; i < triangles.Length; i += 3)
 						{
@@ -213,18 +212,19 @@ namespace UnityEngine.VR.Data
 								m_TrisProcessed = 0;
 								yield return null;
 							}
-							IntVector3 currMin = new IntVector3(x, y, z, 0);
-							Bounds box = new Bounds {min = currMin.mul(cellSize)};
+							Vector3 currMin = new Vector3(x, y, z);
+							Bounds box = new Bounds {min = currMin * cellSize};
 							box.max = box.min + Vector3.one * cellSize;
 							if (U.Intersection.TestTriangleAABB(a, b, c, box))
 							{
 								List<IntVector3> tris;
-								if (!m_TriBuckets.TryGetValue(currMin, out tris))
+								IntVector3 key = (IntVector3)currMin;
+								if (!m_TriBuckets.TryGetValue(key, out tris))
 								{
 									tris = new List<IntVector3>();
-									m_TriBuckets[currMin] = tris;
+									m_TriBuckets[key] = tris;
 								}
-								tris.Add(new IntVector3(triA, triB, triC, 0));
+								tris.Add(new IntVector3(triA, triB, triC));
 							}
 						}
 					}
@@ -349,12 +349,12 @@ namespace UnityEngine.VR.Data
 
 			public static implicit operator SerialIV3(IntVector3 vec)
 			{
-				return new SerialIV3 {x = vec.X, y = vec.Y, z = vec.Z};
+				return new SerialIV3 {x = vec.x, y = vec.y, z = vec.z};
 			}
 
 			public static implicit operator IntVector3(SerialIV3 vec)
 			{
-				return new IntVector3(vec.x, vec.y, vec.z, 0);
+				return new IntVector3(vec.x, vec.y, vec.z);
 			}
 		}
 

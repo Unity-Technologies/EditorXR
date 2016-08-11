@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Data;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -39,6 +40,7 @@ public class EditorVR : MonoBehaviour
 	private Default m_DefaultActionInput;
 
 	private MultipleRayInputModule m_InputModule;
+	private SpatialHash m_SpatialHash;
 	private SpatialHashUpdateModule m_SpatialHashUpdateModule;
 	private IntersectionModule m_IntersectionModule;
 	private Camera m_EventCamera;
@@ -328,8 +330,11 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateSpatialSystem() {
 		// Create event system, input module, and event camera
+		m_SpatialHash = new SpatialHash();
 		m_SpatialHashUpdateModule = U.Object.AddComponent<SpatialHashUpdateModule>(gameObject);
+		m_SpatialHashUpdateModule.Setup(m_SpatialHash);
 		m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
+		m_IntersectionModule.Setup(m_SpatialHash);
 
 		foreach (var proxy in m_AllProxies) {
 			foreach (var rayOriginBase in proxy.rayOrigins) {

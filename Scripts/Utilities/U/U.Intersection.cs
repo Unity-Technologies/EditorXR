@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Mono.Simd;
+using UnityEngine.Assertions;
 using UnityEngine.VR.Data;
 
 namespace UnityEngine.VR.Utilities
@@ -42,20 +42,23 @@ namespace UnityEngine.VR.Utilities
 				int hitCount = 0;
 				//Keep track of what triangles we've already tested
 				//TODO: Test hashset vs list
-				HashSet<Vector4i> tested = new HashSet<Vector4i>();
+				Profiler.BeginSample("Bucket approach");
+				HashSet<IntVector3> tested = new HashSet<IntVector3>();
 				foreach (var triBucket in obj.triBuckets)
 				{
-					Vector3 min = triBucket.Key.mul(obj.meshCellSize);
+					Vector3 min = (Vector3)triBucket.Key * obj.meshCellSize;
 					Vector3 max = min + Vector3.one * obj.meshCellSize;
+					Profiler.BeginSample("Intersection");
 					if (IntersectRayAABB(ray, min, max, 0, k_RayMax))
 					{
 						foreach (var tri in triBucket.Value)
 						{
 							if (tested.Add(tri))
 							{
-								Vector3 a = obj.vertices[tri.X];
-								Vector3 b = obj.vertices[tri.Y];
-								Vector3 c = obj.vertices[tri.Z];
+								Profiler.BeginSample("Triangle Test");
+								Vector3 a = obj.vertices[tri.x];
+								Vector3 b = obj.vertices[tri.y];
+								Vector3 c = obj.vertices[tri.z];
 								float u, v, w, t;
 								if (IntersectSegmentTriangle(ray.origin, q, a, b, c, out u, out v, out w, out t))
 								{
@@ -66,10 +69,38 @@ namespace UnityEngine.VR.Utilities
 								{
 									hitCount++;
 								}
+								Profiler.EndSample();
 							}
 						}
 					}
+					Profiler.EndSample();
 				}
+				Profiler.EndSample();
+
+				//Profiler.BeginSample("Direct approach");
+				//var mf = obj.sceneObject.GetComponent<MeshFilter>();
+				//var tris = mf.sharedMesh.triangles;
+				//var verts = mf.sharedMesh.vertices;
+				//int directHitCount = 0;
+				//for (int i = 0; i < tris.Length; i += 3)
+				//{
+				//	Vector3 a = verts[tris[i]];
+				//	Vector3 b = verts[tris[i + 1]];
+				//	Vector3 c = verts[tris[i + 2]];
+				//	float u, v, w, t;
+				//	if (IntersectSegmentTriangle(ray.origin, q, a, b, c, out u, out v, out w, out t))
+				//	{
+				//		directHitCount++;
+				//	}
+				//	//Test back face
+				//	if (IntersectSegmentTriangle(ray.origin, q, a, c, b, out u, out v, out w, out t))
+				//	{
+				//		directHitCount++;
+				//	}
+				//}
+				//Profiler.EndSample();
+
+				//Assert.AreEqual(directHitCount, hitCount);
 				return hitCount;
 			}
 

@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Mono.Simd;
 
 namespace UnityEngine.VR.Data
 {
@@ -13,7 +12,7 @@ namespace UnityEngine.VR.Data
 		private const float kMinCellSize = 0.1f;
 
 		//Vector3 bucket represents center of cube with side-length m_CellSize
-		private readonly Dictionary<Vector4i, List<SpatialObject>> m_SpatialDictionary = new Dictionary<Vector4i, List<SpatialObject>>();
+		private readonly Dictionary<IntVector3, List<SpatialObject>> m_SpatialDictionary = new Dictionary<IntVector3, List<SpatialObject>>();
 		private readonly List<SpatialObject> m_AllObjects = new List<SpatialObject>();
 
 		public bool changes
@@ -60,29 +59,29 @@ namespace UnityEngine.VR.Data
 			m_LastCellSize = m_CellSize;
 		}
 
-		public Vector4i SnapToGrid(Vector3 vec)
+		public IntVector3 SnapToGrid(Vector3 vec)
 		{
 			return SnapToGrid(vec, m_CellSize);
 		}
 
-		public static Vector4i SnapToGrid(Vector3 vec, float cellSize)
+		public static IntVector3 SnapToGrid(Vector3 vec, float cellSize)
 		{
-			Vector4i iVec = new Vector4i
+			IntVector3 iVec = new IntVector3()
 			{
-				X = Mathf.RoundToInt(vec.x / cellSize),
-				Y = Mathf.RoundToInt(vec.y / cellSize),
-				Z = Mathf.RoundToInt(vec.z / cellSize)
+				x = Mathf.RoundToInt(vec.x / cellSize),
+				y = Mathf.RoundToInt(vec.y / cellSize),
+				z = Mathf.RoundToInt(vec.z / cellSize)
 			};
 			return iVec;
 		}
 
-		public bool GetIntersections(Vector4i globalBucket, out List<SpatialObject> intersections)
+		public bool GetIntersections(IntVector3 globalBucket, out List<SpatialObject> intersections)
 		{
 			return m_SpatialDictionary.TryGetValue(globalBucket, out intersections);
 		}
 
 		//Note: I want this to be private, but SpatialObject needs access to it
-		internal void AddObjectToBucket(Vector4i worldBucket, SpatialObject spatialObject)
+		internal void AddObjectToBucket(IntVector3 worldBucket, SpatialObject spatialObject)
 		{
 			List<SpatialObject> contents;
 			if (!m_SpatialDictionary.TryGetValue(worldBucket, out contents))
@@ -96,6 +95,7 @@ namespace UnityEngine.VR.Data
 
 		public IEnumerable AddObject(SpatialObject spatialObject)
 		{
+			m_AllObjects.Add(spatialObject);
 			return spatialObject.AddToHash(this);
 		}
 
@@ -113,12 +113,12 @@ namespace UnityEngine.VR.Data
 		public void RemoveObject(SpatialObject obj)
 		{
 			m_AllObjects.Remove(obj);
-			List<Vector4i> removeBuckets = obj.GetRemoveBuckets();
+			List<IntVector3> removeBuckets = obj.GetRemoveBuckets();
 			obj.ClearBuckets();
 			RemoveObjectFromBuckets(removeBuckets, obj);
 		}
 
-		private void RemoveObjectFromBuckets(ICollection<Vector4i> buckets, SpatialObject spatialObject)
+		private void RemoveObjectFromBuckets(ICollection<IntVector3> buckets, SpatialObject spatialObject)
 		{
 			foreach (var bucket in buckets)
 			{
@@ -126,7 +126,7 @@ namespace UnityEngine.VR.Data
 			}
 		}
 
-		internal void RemoveObjectFromBucket(Vector4i bucket, SpatialObject spatialObject)
+		internal void RemoveObjectFromBucket(IntVector3 bucket, SpatialObject spatialObject)
 		{
 			List<SpatialObject> contents;
 			if (m_SpatialDictionary.TryGetValue(bucket, out contents))

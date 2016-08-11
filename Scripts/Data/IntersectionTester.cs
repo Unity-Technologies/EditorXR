@@ -1,6 +1,4 @@
-﻿using Mono.Simd;
-
-namespace UnityEngine.VR.Data
+﻿namespace UnityEngine.VR.Data
 {
 	public class IntersectionTester
 	{
@@ -23,7 +21,7 @@ namespace UnityEngine.VR.Data
 			this.rays = rays;
 		}
 
-		public Vector4i GetCell(SpatialHash hash)
+		public IntVector3 GetCell(SpatialHash hash)
 		{
 			return hash.SnapToGrid(renderer.bounds.center + Vector3.one * hash.cellSize * 0.5f);
 		}
