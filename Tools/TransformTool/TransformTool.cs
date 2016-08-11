@@ -15,7 +15,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 	[SerializeField]
 	private const float kBaseManipulatorSize = .3f;
 	[SerializeField]
-	private const float kLazyFollowSpeed = 8f;
+	private const float kLazyFollowTranslate = 8f;
+	[SerializeField]
+	private const float kLazyFollowRotate = 12f;
 	[SerializeField]
 	private ActionMap m_ActionMap;
 
@@ -29,6 +31,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 	private Vector3 m_TargetPosition;
 	private Quaternion m_TargetRotation;
 	private Vector3 m_TargetScale;
+	private Quaternion m_PositionOffsetRotation;
+	private Quaternion m_StartRotation;
 	private readonly Dictionary<Transform, Vector3> m_PositionOffsets = new Dictionary<Transform, Vector3>();
 	private readonly Dictionary<Transform, Quaternion> m_RotationOffsets = new Dictionary<Transform, Quaternion>();
 	private readonly Dictionary<Transform, Vector3> m_ScaleOffsets = new Dictionary<Transform, Vector3>();
@@ -114,18 +118,27 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 			}
 
 			m_CurrentManipulatorGameObject.transform.position = Vector3.Lerp(m_CurrentManipulatorGameObject.transform.position,
-				m_TargetPosition, kLazyFollowSpeed * Time.unscaledDeltaTime);
+				m_TargetPosition, kLazyFollowTranslate * Time.unscaledDeltaTime);
 
 			if(m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
-				m_CurrentManipulatorGameObject.transform.rotation = Quaternion.Slerp(m_CurrentManipulatorGameObject.transform.rotation, m_TargetRotation, kLazyFollowSpeed * Time.unscaledDeltaTime);
+				m_CurrentManipulatorGameObject.transform.rotation = Quaternion.Slerp(m_CurrentManipulatorGameObject.transform.rotation, m_TargetRotation, kLazyFollowRotate * Time.unscaledDeltaTime);
 
 			foreach (var t in m_SelectionTransforms)
 			{
-				t.position = m_CurrentManipulatorGameObject.transform.position + m_PositionOffsets[t];
 				t.rotation = Quaternion.Slerp(t.rotation,
-					m_TargetRotation * m_RotationOffsets[t], kLazyFollowSpeed * Time.unscaledDeltaTime);
+					m_TargetRotation * m_RotationOffsets[t], kLazyFollowRotate * Time.unscaledDeltaTime);
+
+				if (m_PivotMode == PivotMode.Center) // Rotate the position offset from the manipulator when rotating around center
+				{
+					m_PositionOffsetRotation = Quaternion.Slerp(m_PositionOffsetRotation, m_TargetRotation * Quaternion.Inverse(m_StartRotation),
+						kLazyFollowRotate * Time.unscaledDeltaTime);
+					t.position = m_CurrentManipulatorGameObject.transform.position + m_PositionOffsetRotation * m_PositionOffsets[t];
+				}
+				else
+					t.position = m_CurrentManipulatorGameObject.transform.position + m_PositionOffsets[t];
+				
 				t.localScale = Vector3.Lerp(t.localScale, Vector3.Scale(m_TargetScale, m_ScaleOffsets[t]),
-					kLazyFollowSpeed * Time.unscaledDeltaTime);
+					kLazyFollowTranslate * Time.unscaledDeltaTime);
 			}
 		}
 	}
@@ -203,6 +216,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 		m_CurrentManipulatorGameObject.transform.rotation = (m_PivotRotation == PivotRotation.Global) ? Quaternion.identity : m_SelectionTransforms[0].rotation;
 		m_TargetPosition = m_CurrentManipulatorGameObject.transform.position;
 		m_TargetRotation = m_CurrentManipulatorGameObject.transform.rotation;
+		m_StartRotation = m_TargetRotation;
+		m_PositionOffsetRotation = Quaternion.identity;
 		m_TargetScale = Vector3.one;
 		
 		// Save the initial position, rotation, and scale realtive to the manipulator
