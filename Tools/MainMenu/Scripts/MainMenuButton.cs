@@ -38,7 +38,6 @@ namespace UnityEngine.VR.Tools
 
         private void OnButtonClicked()
         {
-            // TODO: Support for sub-menus UX/Anim responding to Buttons being clicked for actions/tools
             Action m_ButtonActionHandler = ButtonClicked;
             if (m_ButtonActionHandler != null)
                 m_ButtonActionHandler();

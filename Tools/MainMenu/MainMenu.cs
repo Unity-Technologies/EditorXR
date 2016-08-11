@@ -304,15 +304,9 @@ namespace UnityEngine.VR.Tools
             b.onClick.AddListener(() =>
             {
                 if (m_VisibilityState == VisibilityState.Visible && selectTool(this, t))
-                    StartCoroutine(AnimateHide(3f)); // TODO: hiding should only occur in proper context
+                    StartCoroutine(AnimateHide(3f));
             });
-            b.onClick.AddListener(OnButtonClicked);
             b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
-        }
-
-        private void OnButtonClicked()
-        {
-            // perform a disabling of the menu for a short period of time, preventing input for a short duration, and handling any additional actions that should occur when a button is clicked
         }
 
         private IEnumerator SnapToFace()
