@@ -1,9 +1,6 @@
-﻿using UnityEngine;
-using System.Collections;
-
-namespace UnityEngine.VR.Tools
+﻿namespace UnityEngine.VR.Tools
 {
-	public interface IRay
+    public interface IRay
 	{
 		Transform rayOrigin
 		{

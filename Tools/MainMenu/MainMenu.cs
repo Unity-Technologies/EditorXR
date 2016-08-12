@@ -41,8 +41,6 @@ namespace UnityEngine.VR.Tools
         [SerializeField]
         private MeshRenderer m_InputOuterBorder;
         [SerializeField]
-        private ColorScheme m_MenuColorScheme;
-        [SerializeField]
         private Transform[] m_MenuFaceContainers;
         [SerializeField]
         private Transform m_MenuFacePositionTarget;
@@ -123,7 +121,6 @@ namespace UnityEngine.VR.Tools
             Assert.IsNotNull(m_InputHighlightLeft, "m_InputHighlightLeft is not assigned!");
             Assert.IsNotNull(m_InputHighlightRight, "m_InputHighlightRight is not assigned!");
             Assert.IsNotNull(m_InputOuterBorder, "m_InputOuterBorder is not assigned!");
-            Assert.IsNotNull(m_MenuColorScheme, "m_MenuColorScheme is not assigned!");
             Assert.IsNotNull(m_MenuFaceContainers, "m_MenuFaceContainers is not assigned!");
             Assert.IsNotNull(m_MenuFacePositionTarget, "m_MenuFacePositionTarget is not assigned!");
             Assert.IsNotNull(m_MenuFacePrefab, "m_MenuFacePrefab is not assigned!");
@@ -134,8 +131,8 @@ namespace UnityEngine.VR.Tools
             name = "MainMenu";
             m_Transform = transform;
             m_InputOuterBorderMaterial = m_InputOuterBorder.material;
-            m_InputOuterBorderMaterial.SetColor(kInputHighlightTopProperty, Color.black);
-            m_InputOuterBorderMaterial.SetColor(kInputHighlightBottomProperty, m_MenuColorScheme.gradientPairs[0].ColorB);
+            m_InputOuterBorderMaterial.SetColor(kInputHighlightTopProperty, UnityBrandColorScheme.Dark);
+            m_InputOuterBorderMaterial.SetColor(kInputHighlightBottomProperty, UnityBrandColorScheme.Light);
             m_InputHighlightLeftMaterial = m_InputHighlightLeft.material;
             m_InputHighlightRightMaterial = m_InputHighlightRight.material;
             m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
@@ -295,7 +292,7 @@ namespace UnityEngine.VR.Tools
             foreach (var faceNameToButtons in m_MenuFaceToButtons)
             {
                 // TODO: Add support for 5+ menu faces (swapping face content, cycling through the gradients, etc)
-                m_MenuFaces[position].SetFaceData(faceNameToButtons.Key, faceNameToButtons.Value, m_MenuColorScheme.gradientPairs[position]);
+                m_MenuFaces[position].SetFaceData(faceNameToButtons.Key, faceNameToButtons.Value, UnityBrandColorScheme.gradients[position]);
                 ++position;
             }
         }

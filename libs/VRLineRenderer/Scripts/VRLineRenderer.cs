@@ -10,6 +10,9 @@
 [ExecuteInEditMode]
 public class VRLineRenderer : MonoBehaviour
 {
+	public float widthStart { get { return m_WidthStart; } }
+	public float widthEnd { get { return m_WidthEnd; } }
+
 	// Stored Line Data
 	[SerializeField]
 	protected Vector3[] m_Positions;

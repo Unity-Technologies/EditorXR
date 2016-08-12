@@ -42,7 +42,7 @@ namespace UnityEngine.VR.Tools
 
         private readonly float m_BorderScaleMultiplier = 1.0135f;
         private readonly string kBottomGradientProperty = "_ColorBottom";
-        private readonly ColorScheme.GradientPair kEmptyGradient = new ColorScheme.GradientPair(Color.white, Color.white);
+        private readonly UnityBrandColorScheme.GradientPair kEmptyGradient = new UnityBrandColorScheme.GradientPair(Color.white, Color.white);
         private readonly string kTopGradientProperty = "_ColorTop";
 
         private void Awake()
@@ -65,7 +65,7 @@ namespace UnityEngine.VR.Tools
             SetGradientColors();
         }
 
-        public void SetFaceData(string faceName, List<Transform> buttons, ColorScheme.GradientPair gradientPair)
+        public void SetFaceData(string faceName, List<Transform> buttons, UnityBrandColorScheme.GradientPair gradientPair)
         {
             if (m_MenuButtons != null && m_MenuButtons.Any())
                 foreach (var button in m_MenuButtons)
@@ -86,7 +86,7 @@ namespace UnityEngine.VR.Tools
             SetGradientColors(gradientPair);
         }
 
-        private void SetGradientColors(ColorScheme.GradientPair gradientPair = null)
+        private void SetGradientColors(UnityBrandColorScheme.GradientPair gradientPair = null)
         {
             gradientPair = gradientPair ?? kEmptyGradient;
             m_BorderOutlineMaterial.SetColor(kTopGradientProperty, gradientPair.ColorA);
