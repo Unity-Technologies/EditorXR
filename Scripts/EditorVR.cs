@@ -243,21 +243,23 @@ public class EditorVR : MonoBehaviour
 		// it's necessary to spawn the tools in a separate non-IEnumerator context.
 		EditorApplication.delayCall += () =>
 		{
-			HashSet<InputDevice> devices;
-
 			// Spawn default tools
+			HashSet<InputDevice> devices;
+			ITool tool;
 			foreach (var deviceData in m_DeviceData)
 			{
 				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
 				if (deviceData.Key.tagIndex == -1)
 					continue;
 
-				var tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 
 				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 			}
+			tool = SpawnTool(typeof(TransformTool), out devices);
+			AddToolToDeviceData(tool, devices);
 		};
 	}
 
@@ -288,16 +290,26 @@ public class EditorVR : MonoBehaviour
 
 			foreach (var rayOrigin in proxy.rayOrigins.Values)
 			{
-				var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
 				var distance = kDefaultRayLength;
-				if (go != null)
+				var UIEventData = m_InputModule.GetPointerEventData(rayOrigin);
+				if (UIEventData != null && UIEventData.pointerCurrentRaycast.isValid)
 				{
-					var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-					var newDist = distance;
-					foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+					// Set ray length to distance to UI objects
+					distance = UIEventData.pointerCurrentRaycast.distance;
+				}
+				else
+				{
+					// If not hitting UI, then check pixel raycast and approximate bounds to set distance
+					var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+					if (go != null)
 					{
-						if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
-							distance = Mathf.Min(distance, newDist);
+						var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+						var newDist = distance;
+						foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+						{
+							if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
+								distance = Mathf.Min(distance, newDist);
+						}
 					}
 				}
 				m_DefaultRays[rayOrigin].SetLength(distance);
@@ -313,7 +325,6 @@ public class EditorVR : MonoBehaviour
 		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
 		m_InputModule.eventCamera = m_EventCamera;
-
 		foreach (var proxy in m_AllProxies)
 		{
 			foreach (var rayOriginBase in proxy.rayOrigins)
