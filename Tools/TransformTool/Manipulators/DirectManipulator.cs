@@ -1,7 +1,8 @@
-﻿using UnityEngine;
-using UnityEngine.VR.Tools;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.VR.Handles;
+using UnityEngine.VR.Tools;
 
 public class DirectManipulator : MonoBehaviour, IManipulator
 {
@@ -41,19 +42,19 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 		}
 	}
 
-	private void TranslateHandleOnDrag(BaseHandle handle, Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion))
+	private void TranslateHandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
-		translate(deltaPosition);
+		translate(eventData.deltaPosition);
 	}
 
-	private void HandleOnBeginDrag(BaseHandle handle, Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion))
+	private void HandleOnBeginDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
 		SetAllHandlesActive(false);
 		handle.gameObject.SetActive(true);
 		m_Dragging = true;
 	}
 
-	private void HandleOnEndDrag(BaseHandle handle, Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion))
+	private void HandleOnEndDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
 		SetAllHandlesActive(true);
 		m_Dragging = false;

@@ -1,77 +1,79 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class PlaneHandle : BaseHandle
+namespace UnityEngine.VR.Handles
 {
-	[SerializeField]
-	private Material m_PlaneMaterial;
-	private const float kPlaneScale = 1000f;
-	private Collider m_PlaneCollider;
-	private Collider m_Collider;
-	private Vector3 m_LastPosition;
-
-	protected override void Awake()
+	public class PlaneHandle : BaseHandle
 	{
-		base.Awake();
-		m_Collider = GetComponent<Collider>();
-	}
+		[SerializeField] private Material m_PlaneMaterial;
+		private const float kPlaneScale = 1000f;
+		private Collider m_PlaneCollider;
+		private Collider m_Collider;
+		private Vector3 m_LastPosition;
 
-	public override void OnBeginDrag(PointerEventData eventData)
-	{
-		base.OnBeginDrag(eventData);
+		protected override void Awake()
+		{
+			base.Awake();
+			m_Collider = GetComponent<Collider>();
+		}
 
-		m_LastPosition = eventData.pointerCurrentRaycast.worldPosition;
-		if (m_PlaneCollider != null)
-			DestroyImmediate(m_PlaneCollider.gameObject);
+		public override void OnBeginDrag(PointerEventData eventData)
+		{
+			base.OnBeginDrag(eventData);
 
-		m_PlaneCollider = GameObject.CreatePrimitive(PrimitiveType.Quad).GetComponent<Collider>();
-		m_PlaneCollider.transform.SetParent(eventData.pressEventCamera.transform.parent);
-		m_PlaneCollider.transform.localScale = Vector3.one * kPlaneScale;
-		m_PlaneCollider.transform.position = transform.position;
-		m_PlaneCollider.transform.rotation = transform.rotation;
+			m_LastPosition = eventData.pointerCurrentRaycast.worldPosition;
+			if (m_PlaneCollider != null)
+				DestroyImmediate(m_PlaneCollider.gameObject);
 
-		m_PlaneCollider.GetComponent<Renderer>().sharedMaterial = m_PlaneMaterial;
-		m_Collider.enabled = false;
-		m_PlaneCollider.gameObject.layer = LayerMask.NameToLayer("UI");
+			m_PlaneCollider = GameObject.CreatePrimitive(PrimitiveType.Quad).GetComponent<Collider>();
+			m_PlaneCollider.transform.SetParent(eventData.pressEventCamera.transform.parent);
+			m_PlaneCollider.transform.localScale = Vector3.one*kPlaneScale;
+			m_PlaneCollider.transform.position = transform.position;
+			m_PlaneCollider.transform.rotation = transform.rotation;
 
-		OnHandleBeginDrag();
-	}
+			m_PlaneCollider.GetComponent<Renderer>().sharedMaterial = m_PlaneMaterial;
+			m_Collider.enabled = false;
+			m_PlaneCollider.gameObject.layer = LayerMask.NameToLayer("UI");
 
-	public override void OnDrag(PointerEventData eventData)
-	{
-		// Flip raycast blocking plane
-		if (Vector3.Dot(m_PlaneCollider.transform.forward, m_RayOrigin.forward) < 0f)
-			m_PlaneCollider.transform.forward = -m_PlaneCollider.transform.forward;
+			OnHandleBeginDrag();
+		}
 
-		var worldPosition = m_LastPosition;
-		RaycastHit hit;
-		if (m_PlaneCollider.Raycast(new Ray(m_RayOrigin.position, m_RayOrigin.forward), out hit, Mathf.Infinity))
-			worldPosition = hit.point;
+		public override void OnDrag(PointerEventData eventData)
+		{
+			// Flip raycast blocking plane
+			if (Vector3.Dot(m_PlaneCollider.transform.forward, m_RayOrigin.forward) < 0f)
+				m_PlaneCollider.transform.forward = -m_PlaneCollider.transform.forward;
 
-		var delta = worldPosition - m_LastPosition;
-		m_LastPosition = worldPosition;
+			var worldPosition = m_LastPosition;
+			RaycastHit hit;
+			if (m_PlaneCollider.Raycast(new Ray(m_RayOrigin.position, m_RayOrigin.forward), out hit, Mathf.Infinity))
+				worldPosition = hit.point;
 
-		delta = transform.InverseTransformVector(delta);
-		delta.z = 0;
-		delta = transform.TransformVector(delta);
+			var delta = worldPosition - m_LastPosition;
+			m_LastPosition = worldPosition;
 
-		OnHandleDrag(delta);
-	}
+			delta = transform.InverseTransformVector(delta);
+			delta.z = 0;
+			delta = transform.TransformVector(delta);
 
-	public override void OnEndDrag(PointerEventData eventData)
-	{
-		base.OnEndDrag(eventData);
-		m_Collider.enabled = true;
+			OnHandleDrag(new HandleDragEventData(delta));
+		}
 
-		if (m_PlaneCollider != null)
-			DestroyImmediate(m_PlaneCollider.gameObject);
+		public override void OnEndDrag(PointerEventData eventData)
+		{
+			base.OnEndDrag(eventData);
+			m_Collider.enabled = true;
 
-		OnHandleEndDrag();
-	}
+			if (m_PlaneCollider != null)
+				DestroyImmediate(m_PlaneCollider.gameObject);
 
-	void OnDestroy()
-	{
-		if (m_PlaneCollider != null)
-			DestroyImmediate(m_PlaneCollider.gameObject);
+			OnHandleEndDrag();
+		}
+
+		void OnDestroy()
+		{
+			if (m_PlaneCollider != null)
+				DestroyImmediate(m_PlaneCollider.gameObject);
+		}
 	}
 }
