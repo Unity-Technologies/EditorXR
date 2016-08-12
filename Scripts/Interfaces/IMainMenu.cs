@@ -12,15 +12,5 @@ namespace UnityEngine.VR.Tools
         Transform menuOrigin { get; set; }
         List<Type> menuTools { set; }
         Func<IMainMenu, Type, bool> selectTool { set; }
-
-        /// <summary>
-        /// Allow external enabling of the MainMenu
-        /// </summary>
-        void Enable();
-
-        /// <summary>
-        /// Allow external disabling of the MainMenu
-        /// </summary>
-        void Disable();
     }
 }

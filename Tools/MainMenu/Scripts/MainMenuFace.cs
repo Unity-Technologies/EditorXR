@@ -95,17 +95,17 @@ namespace UnityEngine.VR.Tools
             m_TitleIconMaterial.SetColor(kBottomGradientProperty, gradientPair.ColorB);
         }
 
-        public void ShowContent()
+        public void Show()
         {
-            StartCoroutine(AnimateShowContent());
+            StartCoroutine(AnimateShow());
         }
 
-        public void HideContent()
+        public void Hide()
         {
-            StartCoroutine(AnimateShowContent(VisualState.Hiding));
+            StartCoroutine(AnimateShow(VisualState.Hiding));
         }
 
-        private IEnumerator AnimateShowContent(VisualState targetVisualState = VisualState.Showing)
+        private IEnumerator AnimateShow(VisualState targetVisualState = VisualState.Showing)
         {
             m_CanvasGroup.interactable = false;
             m_VisualState = targetVisualState;
@@ -126,6 +126,8 @@ namespace UnityEngine.VR.Tools
                 m_CanvasGroup.interactable = true;
                 m_CanvasGroup.alpha = 1f;
             }
+            else if (m_VisualState == VisualState.Hiding)
+                m_TitleIcon.SetBlendShapeWeight(0, 0);
         }
 
         public void BeginRotationVisuals()
@@ -147,10 +149,12 @@ namespace UnityEngine.VR.Tools
             float currentBlendShapeWeight = m_TitleIcon.GetBlendShapeWeight(0);
             float targetWeight = rotationState == RotationState.RotationBegin ? 100f : 0f;
             float easeDivider = rotationState == RotationState.RotationBegin ? 4f : 8f;
+            const float kSnapValue = 0.001f;
+            const float kLerpEmphasisWeight = 0.2f;
             while (m_RotationState == rotationState && !Mathf.Approximately(currentBlendShapeWeight, targetWeight))
             {
-                currentBlendShapeWeight = U.Math.Ease(currentBlendShapeWeight, targetWeight, easeDivider, 0.001f);
-                currentBorderLocalScale = Vector3.Lerp(currentBorderLocalScale, targetBorderLocalScale, currentBlendShapeWeight * 0.2f);
+                currentBlendShapeWeight = U.Math.Ease(currentBlendShapeWeight, targetWeight, easeDivider, kSnapValue);
+                currentBorderLocalScale = Vector3.Lerp(currentBorderLocalScale, targetBorderLocalScale, currentBlendShapeWeight * kLerpEmphasisWeight);
                 m_BorderOutlineTransform.localScale = currentBorderLocalScale;
                 m_TitleIcon.SetBlendShapeWeight(0, currentBlendShapeWeight);
                 yield return null;

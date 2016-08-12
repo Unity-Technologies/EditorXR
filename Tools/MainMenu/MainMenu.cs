@@ -54,7 +54,8 @@ namespace UnityEngine.VR.Tools
         private SkinnedMeshRenderer m_MenuFrameRenderer;
         [SerializeField]
         private Transform m_MenuInputVisuals;
-        
+
+        private float m_DeltaWait;
         private Material m_InputHighlightLeftMaterial;
         private Material m_InputHighlightRightMaterial;
         private Material m_InputOuterBorderMaterial;
@@ -143,7 +144,7 @@ namespace UnityEngine.VR.Tools
             m_MenuFacesColor = m_MenuFacesMaterial.color;
         }
 
-        private void Start()
+        private IEnumerator Start()
         {
             m_MenuFaces = new List<MainMenuFace>();
             for (int faceCount = 0; faceCount < s_FaceCount; ++faceCount)
@@ -167,6 +168,17 @@ namespace UnityEngine.VR.Tools
 
             menuOrigin.localScale = Vector3.zero;
             menuInputOrigin.localScale = Vector3.zero;
+
+            // HACK: Get around WaitForSeconds not working in EVR
+            while (m_DeltaWait < 3)
+            {
+                m_DeltaWait += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            m_DeltaWait = 0f;
+
+            StartCoroutine(AnimateShow());
         }
 
         private void Update()
@@ -222,16 +234,6 @@ namespace UnityEngine.VR.Tools
                 if (m_RotationState == RotationState.Rotating)
                     StartCoroutine(SnapToFace());
             }
-        }
-
-        public void Disable()
-        {
-            StartCoroutine(AnimateHide());
-        }
-
-        public void Enable()
-        {
-            StartCoroutine(AnimateShow());
         }
 
         private void OnDestroy()
@@ -304,7 +306,7 @@ namespace UnityEngine.VR.Tools
             b.onClick.AddListener(() =>
             {
                 if (m_VisibilityState == VisibilityState.Visible && selectTool(this, t))
-                    StartCoroutine(AnimateHide(3f));
+                    TestForHideCondition();
             });
             b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
         }
@@ -349,7 +351,7 @@ namespace UnityEngine.VR.Tools
             m_VisibilityState = VisibilityState.TransitioningIn;
 
             foreach (var face in m_MenuFaces)
-                face.ShowContent();
+                face.Show();
 
             StartCoroutine(AnimateFrameReveal());
 
@@ -375,21 +377,22 @@ namespace UnityEngine.VR.Tools
             }
         }
 
-        private IEnumerator AnimateHide(float restartPauseDuration = 0f)
+        private IEnumerator AnimateHide()
         {
             m_VisibilityState = VisibilityState.TransitioningOut;
 
             foreach (var face in m_MenuFaces)
-                face.HideContent();
+                face.Hide();
 
             StartCoroutine(AnimateFrameReveal(m_VisibilityState));
 
             const float kTargetScale = 0f;
             const float kTargetSnapThreshold = 0.0005f;
             const float kEaseStepping = 1.1f;
+            const float kScaleThreshold = 0.0001f;
             float scale = menuOrigin.localScale.x;
 
-            while (m_VisibilityState == VisibilityState.TransitioningOut && scale > 0.0001f)
+            while (m_VisibilityState == VisibilityState.TransitioningOut && scale > kScaleThreshold)
             {
                 menuOrigin.localScale = Vector3.one * scale;
                 menuInputOrigin.localScale = m_MenuInputOriginOriginalLocalScale * scale;
@@ -402,12 +405,6 @@ namespace UnityEngine.VR.Tools
                 m_VisibilityState = VisibilityState.Hidden;
                 menuOrigin.localScale = Vector3.zero;
                 menuInputOrigin.localScale = Vector3.zero;
-
-                if (restartPauseDuration > 0)
-                {
-                    yield return new WaitForSeconds(restartPauseDuration);
-                    StartCoroutine(AnimateShow());
-                }
             }
         }
 
@@ -434,14 +431,15 @@ namespace UnityEngine.VR.Tools
             float easeDivider = visibiityState == VisibilityState.TransitioningIn ? 3f : 1.5f;
             const float zeroStartBlendShapePadding = 20f;
             float currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(1);
-            currentBlendShapeWeight = currentBlendShapeWeight > 0 ? currentBlendShapeWeight : zeroStartBlendShapePadding;
             float targetWeight = visibiityState == VisibilityState.TransitioningIn ? 0f : 100f;
             const float kSnapValue = 0.001f;
+            const float kLerpEmphasisWeight = 0.25f;
+            currentBlendShapeWeight = currentBlendShapeWeight > 0 ? currentBlendShapeWeight : zeroStartBlendShapePadding;
             while (m_VisibilityState != VisibilityState.Hidden && !Mathf.Approximately(currentBlendShapeWeight, targetWeight))
             {
                 currentBlendShapeWeight = U.Math.Ease(currentBlendShapeWeight, targetWeight, easeDivider, kSnapValue);
                 m_MenuFrameRenderer.SetBlendShapeWeight(1, currentBlendShapeWeight * currentBlendShapeWeight);
-                m_MenuFacesMaterial.color = Color.Lerp(m_MenuFacesColor, kMenuFacesHiddenColor, currentBlendShapeWeight * 0.25f);
+                m_MenuFacesMaterial.color = Color.Lerp(m_MenuFacesColor, kMenuFacesHiddenColor, currentBlendShapeWeight * kLerpEmphasisWeight);
                 yield return null;
             }
 
@@ -450,6 +448,14 @@ namespace UnityEngine.VR.Tools
                 m_MenuFrameRenderer.SetBlendShapeWeight(1, targetWeight);
                 m_MenuFacesMaterial.color = targetWeight > 0 ? m_MenuFacesColor : kMenuFacesHiddenColor;
             }
+
+            if (m_VisibilityState == VisibilityState.Hidden)
+                m_MenuFrameRenderer.SetBlendShapeWeight(0, 0);
+        }
+
+        private void TestForHideCondition()
+        {
+            // TODO: Implement testing for automatic hiding cases.  The Scene-loading Action will be one case.
         }
     }
 
