@@ -134,7 +134,7 @@ namespace UnityEngine.VR.Tools
             name = "MainMenu";
             m_Transform = transform;
             m_InputOuterBorderMaterial = m_InputOuterBorder.material;
-            m_InputOuterBorderMaterial.SetColor(kInputHighlightTopProperty, UnityBrandColorScheme.Dark);
+            m_InputOuterBorderMaterial.SetColor(kInputHighlightTopProperty, UnityBrandColorScheme.Light);
             m_InputOuterBorderMaterial.SetColor(kInputHighlightBottomProperty, UnityBrandColorScheme.Light);
             m_InputHighlightLeftMaterial = m_InputHighlightLeft.material;
             m_InputHighlightRightMaterial = m_InputHighlightRight.material;
@@ -222,9 +222,9 @@ namespace UnityEngine.VR.Tools
 
                 float direction = m_MenuActionInput.rotate.rawValue;
                 m_RotationRate = m_RotationRate < kRotationRateMax ? m_RotationRate += Time.unscaledDeltaTime * 250 : kRotationRateMax;
-                m_MenuFaceRotationOrigin.Rotate(Vector3.up, direction * m_RotationRate * Time.unscaledDeltaTime);
-                m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, direction < 0 ? Color.white: Color.clear);
-                m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, direction > 0 ? Color.white: Color.clear);
+                m_MenuFaceRotationOrigin.Rotate(Vector3.up, -direction * m_RotationRate * Time.unscaledDeltaTime);
+                m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, direction > 0 ? Color.white: Color.clear);
+                m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, direction < 0 ? Color.white: Color.clear);
             }
             else {
                 m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
