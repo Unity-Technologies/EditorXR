@@ -11,7 +11,7 @@ using UnityEngine.VR.Utilities;
 namespace UnityEngine.VR.Tools
 {
     [ExecuteInEditMode]
-    public class MainMenu : MonoBehaviour, IMainMenu, IRay
+    public class MainMenu : MonoBehaviour, IMainMenu, ICustomRay
     {
         private enum RotationState
         {
@@ -109,8 +109,11 @@ namespace UnityEngine.VR.Tools
             }
         }
 
+        public Action hideDefaultRay { get; set; }
+        public Action showDefaultRay { get; set; }
+        public Transform rayOrigin { private get; set; }
+
         public List<Type> menuTools { private get; set; }
-        public Transform rayOrigin { get; set; }
         public Func<IMainMenu, Type, bool> selectTool { private get; set; }
 
         private void Awake()
@@ -237,6 +240,8 @@ namespace UnityEngine.VR.Tools
         {
             foreach (var face in m_MenuFaces)
                 GameObject.DestroyImmediate(face.gameObject);
+
+            showDefaultRay();
         }
 
         private void CreateToolButtons()
@@ -347,6 +352,8 @@ namespace UnityEngine.VR.Tools
         {
             m_VisibilityState = VisibilityState.TransitioningIn;
 
+            hideDefaultRay();
+
             foreach (var face in m_MenuFaces)
                 face.Show();
 
@@ -377,6 +384,8 @@ namespace UnityEngine.VR.Tools
         private IEnumerator AnimateHide()
         {
             m_VisibilityState = VisibilityState.TransitioningOut;
+
+            showDefaultRay();
 
             foreach (var face in m_MenuFaces)
                 face.Hide();
