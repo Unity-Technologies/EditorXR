@@ -4,7 +4,7 @@ public class WorkspaceUI : MonoBehaviour
 {
 	public Action OnHandleClick { private get; set; }
 	public Action OnCloseClick { private get; set; }
-	public GameObject sceneContainer;
+	public Transform sceneContainer;
 	public SkinnedMeshRenderer tray;
 	public RectTransform frontPanel;
 
