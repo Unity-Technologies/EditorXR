@@ -42,7 +42,7 @@ namespace UnityEngine.VR.Tools
 
         private readonly float m_BorderScaleMultiplier = 1.0135f;
         private readonly string kBottomGradientProperty = "_ColorBottom";
-        private readonly UnityBrandColorScheme.GradientPair kEmptyGradient = new UnityBrandColorScheme.GradientPair(Color.white, Color.white);
+        private readonly UnityBrandColorScheme.GradientPair kEmptyGradient = new UnityBrandColorScheme.GradientPair(UnityBrandColorScheme.Light, UnityBrandColorScheme.Darker);
         private readonly string kTopGradientProperty = "_ColorTop";
 
         private void Awake()
