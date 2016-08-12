@@ -562,7 +562,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 0c9e596eccf3f44448fe4e96f5e933b9, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -620,7 +620,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 0c9e596eccf3f44448fe4e96f5e933b9, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -649,7 +649,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 71c916efa13a31342959211901f10358, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -740,7 +740,6 @@ MonoBehaviour:
   m_InputHighlightLeft: {fileID: 23000010683416884}
   m_InputHighlightRight: {fileID: 23000010639222950}
   m_InputOuterBorder: {fileID: 23000011077685494}
-  m_MenuColorScheme: {fileID: 11400000, guid: 2b69b5c3a55352d42b240fffb86e45b4, type: 2}
   m_MenuFaceContainers:
   - {fileID: 4000010549452114}
   - {fileID: 4000010678221566}
