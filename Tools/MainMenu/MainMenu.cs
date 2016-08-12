@@ -167,7 +167,7 @@ namespace UnityEngine.VR.Tools
             menuInputOrigin.localScale = Vector3.zero;
 
             // HACK: Get around WaitForSeconds not working in EVR
-            while (m_DeltaWait < 3)
+            while (m_DeltaWait < 2)
             {
                 m_DeltaWait += Time.unscaledDeltaTime;
                 yield return null;
@@ -217,11 +217,11 @@ namespace UnityEngine.VR.Tools
                     StartCoroutine(AnimateFrameRotationShapeChange(RotationState.Rotating));
                 }
 
-                float direction = m_MenuActionInput.rotate.rawValue > 0 ? -1 : 1;
+                float direction = m_MenuActionInput.rotate.rawValue;
                 m_RotationRate = m_RotationRate < kRotationRateMax ? m_RotationRate += Time.unscaledDeltaTime * 250 : kRotationRateMax;
                 m_MenuFaceRotationOrigin.Rotate(Vector3.up, direction * m_RotationRate * Time.unscaledDeltaTime);
-                m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, direction == -1 ? Color.white: Color.clear);
-                m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, direction == 1 ? Color.white: Color.clear);
+                m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, direction < 0 ? Color.white: Color.clear);
+                m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, direction > 0 ? Color.white: Color.clear);
             }
             else {
                 m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
