@@ -8,6 +8,7 @@ using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -291,6 +292,10 @@ public class EditorVR : MonoBehaviour
 			foreach (var rayOrigin in proxy.rayOrigins.Values)
 			{
 				var distance = kDefaultRayLength;
+
+				// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
+				// object, so visually show the ray terminating there instead of the object; UI is already given
+				// priority on the input side)
 				var UIEventData = m_InputModule.GetPointerEventData(rayOrigin);
 				if (UIEventData != null && UIEventData.pointerCurrentRaycast.isValid)
 				{
@@ -332,7 +337,7 @@ public class EditorVR : MonoBehaviour
 				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
 				{
 					var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
-                    if (device.tagIndex != -1 && m_TagToNode[tags[device.tagIndex]] == rayOriginBase.Key)
+					if (device.tagIndex != -1 && m_TagToNode[tags[device.tagIndex]] == rayOriginBase.Key)
 					{
 						DeviceData deviceData;
 						if (m_DeviceData.TryGetValue(device, out deviceData))

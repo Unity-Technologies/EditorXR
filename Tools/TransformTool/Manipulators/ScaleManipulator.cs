@@ -1,7 +1,8 @@
-﻿using UnityEngine;
-using UnityEngine.VR.Tools;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.VR.Handles;
+using UnityEngine.VR.Tools;
 
 public class ScaleManipulator : MonoBehaviour, IManipulator
 {
@@ -55,25 +56,25 @@ public class ScaleManipulator : MonoBehaviour, IManipulator
 		}
 	}
 
-	private void LinearScaleHandleOnDrag(BaseHandle handle, Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion))
+	private void LinearScaleHandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
-		float delta = handle.transform.InverseTransformVector(deltaPosition).z / handle.transform.InverseTransformPoint(handle.startDragPosition).z;
+		float delta = handle.transform.InverseTransformVector(eventData.deltaPosition).z / handle.transform.InverseTransformPoint(handle.startDragPosition).z;
 		scale(delta * transform.InverseTransformVector(handle.transform.forward));
 	}
 
-	private void UniformScaleHandleOnDrag(BaseHandle handle, Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion))
+	private void UniformScaleHandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
-		scale(Vector3.one * deltaPosition.y);
+		scale(Vector3.one * eventData.deltaPosition.y);
 	}
 
-	private void HandleOnBeginDrag(BaseHandle handle, Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion))
+	private void HandleOnBeginDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
 		SetAllHandlesActive(false);
 		handle.gameObject.SetActive(true);
 		m_Dragging = true;
 	}
 
-	private void HandleOnEndDrag(BaseHandle handle, Vector3 deltaPosition = default(Vector3), Quaternion deltaRotation = default(Quaternion))
+	private void HandleOnEndDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
 		SetAllHandlesActive(true);
 		m_Dragging = false;

@@ -1,29 +1,30 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class DirectHandle : SphereHandle
+namespace UnityEngine.VR.Handles
 {
-	[SerializeField]
-	private float m_PointerLength = .06f;
-
-	public override void OnBeginDrag(PointerEventData eventData)
+	public class DirectHandle : SphereHandle
 	{
-		if(!eventData.pointerPressRaycast.isValid || eventData.pointerCurrentRaycast.distance > m_PointerLength)
-			return;
-		base.OnBeginDrag(eventData);
-	}
+		[SerializeField] private float m_PointerLength = .06f;
 
-	public override void OnDrag(PointerEventData eventData)
-	{
-		if(!eventData.pointerPressRaycast.isValid || eventData.pointerPressRaycast.distance > m_PointerLength)
-			return;
-		base.OnDrag(eventData);
-	}
+		public override void OnBeginDrag(PointerEventData eventData)
+		{
+			if (!eventData.pointerPressRaycast.isValid || eventData.pointerCurrentRaycast.distance > m_PointerLength)
+				return;
+			base.OnBeginDrag(eventData);
+		}
 
-	public override void OnEndDrag(PointerEventData eventData)
-	{
-		if(!eventData.pointerPressRaycast.isValid || eventData.pointerPressRaycast.distance > m_PointerLength)
-			return;
-		base.OnEndDrag(eventData);
+		public override void OnDrag(PointerEventData eventData)
+		{
+			if (!eventData.pointerPressRaycast.isValid || eventData.pointerPressRaycast.distance > m_PointerLength)
+				return;
+		}
+
+		public override void OnEndDrag(PointerEventData eventData)
+		{
+			if (!eventData.pointerPressRaycast.isValid || eventData.pointerPressRaycast.distance > m_PointerLength)
+				return;
+			base.OnEndDrag(eventData);
+		}
 	}
 }

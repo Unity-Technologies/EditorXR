@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Proxies;
 
-namespace UnityEngine.VR.Proxies
+namespace UnityEngine.VR.Modules
 {
 	public class MultipleRayInputModule : PointerInputModule
 	{
@@ -36,17 +37,18 @@ namespace UnityEngine.VR.Proxies
 		private ActionMap m_UIActionMap;
 		private int UILayer = -1;
 
-		void Awake()
+		protected override void Awake()
 		{
+			base.Awake();
 			UILayer = LayerMask.NameToLayer("UI");
 		}
+
 		private class RaycastSource
 		{
 			public IProxy proxy; // Needed for checking if proxy is active
 			public Node node;
 			public Transform rayOrigin;
 			public UIActions actionMapInput;
-			public int TagIndex;
 
 			public RaycastSource(IProxy proxy, Node node, Transform rayOrigin, UIActions actionMapInput)
 			{
