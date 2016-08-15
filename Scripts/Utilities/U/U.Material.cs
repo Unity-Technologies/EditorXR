@@ -36,10 +36,14 @@
 
 			public static Color HexToColor(string hex)
 			{
-				byte r = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+                hex = hex.Replace("0x", "");
+                hex = hex.Replace("#", "");
+                byte r = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
 				byte g = byte.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
 				byte b = byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
-				return new Color32(r, g, b, 255);
+			    byte a = hex.Length == 8 ? byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber) : (byte)255;
+
+                return new Color32(r, g, b, a);
 			}
 
 			public static Color RandomColor()
