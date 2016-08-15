@@ -55,11 +55,11 @@ namespace UnityEngine.VR.Tools
 
             m_CanvasGroup.alpha = 0f;
             m_CanvasGroup.interactable = false;
-            m_BorderOutlineMaterial = m_BorderOutline.material;
+            m_BorderOutlineMaterial = U.Material.GetMaterialClone(m_BorderOutline);
             m_BorderOutlineTransform = m_BorderOutline.transform;
             m_BorderOutlineOriginalLocalScale = m_BorderOutlineTransform.localScale;
             m_FaceTitle.text = "Not Set";
-            m_TitleIconMaterial = m_TitleIcon.material;
+            m_TitleIconMaterial = U.Material.GetMaterialClone(m_TitleIcon);
             m_VisualState = VisualState.Hiding;
 
             SetGradientColors();
