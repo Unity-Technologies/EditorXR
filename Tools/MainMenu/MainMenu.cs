@@ -111,7 +111,7 @@ namespace UnityEngine.VR.Tools
 
         public Action hideDefaultRay { get; set; }
         public Action showDefaultRay { get; set; }
-        public Transform rayOrigin { private get; set; }
+        public Transform rayOrigin { get; set; }
 
         public List<Type> menuTools { private get; set; }
         public Func<IMainMenu, Type, bool> selectTool { private get; set; }
@@ -133,14 +133,14 @@ namespace UnityEngine.VR.Tools
 
             name = "MainMenu";
             m_Transform = transform;
-            m_InputOuterBorderMaterial = m_InputOuterBorder.material;
+            m_InputOuterBorderMaterial = U.Material.GetMaterialClone(m_InputOuterBorder);
             m_InputOuterBorderMaterial.SetColor(kInputHighlightTopProperty, UnityBrandColorScheme.Light);
             m_InputOuterBorderMaterial.SetColor(kInputHighlightBottomProperty, UnityBrandColorScheme.Light);
-            m_InputHighlightLeftMaterial = m_InputHighlightLeft.material;
-            m_InputHighlightRightMaterial = m_InputHighlightRight.material;
+            m_InputHighlightLeftMaterial = U.Material.GetMaterialClone(m_InputHighlightLeft);
+            m_InputHighlightRightMaterial = U.Material.GetMaterialClone(m_InputHighlightRight);
             m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
             m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
-            m_MenuFacesMaterial = m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>().material;
+            m_MenuFacesMaterial = U.Material.GetMaterialClone(m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>());
             m_MenuFacesColor = m_MenuFacesMaterial.color;
         }
 
@@ -169,8 +169,8 @@ namespace UnityEngine.VR.Tools
             menuOrigin.localScale = Vector3.zero;
             menuInputOrigin.localScale = Vector3.zero;
 
-            // HACK: Get around WaitForSeconds not working in EVR
-            while (m_DeltaWait < 2)
+            // HACK: Get around WaitForSeconds not working in EVR; Wait to present main menu
+            while (m_DeltaWait < 1)
             {
                 m_DeltaWait += Time.unscaledDeltaTime;
                 yield return null;
@@ -296,8 +296,7 @@ namespace UnityEngine.VR.Tools
             int position = 0;
             foreach (var faceNameToButtons in m_MenuFaceToButtons)
             {
-                // TODO: Add support for 5+ menu faces (swapping face content, cycling through the gradients, etc)
-                m_MenuFaces[position].SetFaceData(faceNameToButtons.Key, faceNameToButtons.Value, UnityBrandColorScheme.gradients[position]);
+                m_MenuFaces[position].SetFaceData(faceNameToButtons.Key, faceNameToButtons.Value, UnityBrandColorScheme.GetRandomGradient());
                 ++position;
             }
         }
@@ -327,8 +326,8 @@ namespace UnityEngine.VR.Tools
             // Snap if not already aligned
             if (Mathf.Abs(m_MenuFaceRotationOrigin.localRotation.eulerAngles.y % 90) > 1f)
             {
-                float smoothTransitionIntoSnap = 0f;
-                const float kTargetSnapSpeed = 3f;
+                float smoothTransitionIntoSnap = 0.5f;
+                const float kTargetSnapSpeed = 4f;
                 const float kTargetSnapThreshold = 0.0005f;
                 const float kEaseStepping = 1f;
 
@@ -352,12 +351,11 @@ namespace UnityEngine.VR.Tools
         {
             m_VisibilityState = VisibilityState.TransitioningIn;
 
-            hideDefaultRay();
-
             foreach (var face in m_MenuFaces)
                 face.Show();
 
             StartCoroutine(AnimateFrameReveal());
+            hideDefaultRay();
 
             const float kTargetScale = 1f;
             const float kTargetSnapThreshold = 0.0005f;
@@ -385,12 +383,11 @@ namespace UnityEngine.VR.Tools
         {
             m_VisibilityState = VisibilityState.TransitioningOut;
 
-            showDefaultRay();
-
             foreach (var face in m_MenuFaces)
                 face.Hide();
 
             StartCoroutine(AnimateFrameReveal(m_VisibilityState));
+            showDefaultRay();
 
             const float kTargetScale = 0f;
             const float kTargetSnapThreshold = 0.0005f;
