@@ -4,43 +4,43 @@ using UnityEngine.UI;
 
 namespace UnityEngine.VR.Tools
 {
-    public class MainMenuButton : MonoBehaviour
-    {
-        [SerializeField]
-        private Button m_Button;
-        [SerializeField]
-        private Text m_ButtonDescription;
-        [SerializeField]
-        private Text m_ButtonTitle;
+	public class MainMenuButton : MonoBehaviour
+	{
+		[SerializeField]
+		private Button m_Button;
+		[SerializeField]
+		private Text m_ButtonDescription;
+		[SerializeField]
+		private Text m_ButtonTitle;
 
-        public Button button { get { return m_Button; } }
-        public Action ButtonClicked;
+		public Button button { get { return m_Button; } }
+		public Action ButtonClicked;
 
-        private void Awake()
-        {
-            Assert.IsNotNull(m_Button, "m_Button is not assigned!");
-            Assert.IsNotNull(m_ButtonDescription, "m_ButtonDescription is not assigned!");
-            Assert.IsNotNull(m_ButtonTitle, "m_ButtonTitle is not assigned!");
+		private void Awake()
+		{
+			Assert.IsNotNull(m_Button, "m_Button is not assigned!");
+			Assert.IsNotNull(m_ButtonDescription, "m_ButtonDescription is not assigned!");
+			Assert.IsNotNull(m_ButtonTitle, "m_ButtonTitle is not assigned!");
 
-            m_Button.onClick.AddListener(OnButtonClicked);
-        }
+			m_Button.onClick.AddListener(OnButtonClicked);
+		}
 
-        private void OnDestroy()
-        {
-            m_Button.onClick.RemoveListener(OnButtonClicked);
-        }
+		private void OnDestroy()
+		{
+			m_Button.onClick.RemoveListener(OnButtonClicked);
+		}
 
-        public void SetData(string name, string description)
-        {
-            m_ButtonTitle.text = name;
-            m_ButtonDescription.text = description;
-        }
+		public void SetData(string name, string description)
+		{
+			m_ButtonTitle.text = name;
+			m_ButtonDescription.text = description;
+		}
 
-        private void OnButtonClicked()
-        {
-            Action m_ButtonActionHandler = ButtonClicked;
-            if (m_ButtonActionHandler != null)
-                m_ButtonActionHandler();
-        }
-    }
+		private void OnButtonClicked()
+		{
+			Action m_ButtonActionHandler = ButtonClicked;
+			if (m_ButtonActionHandler != null)
+				m_ButtonActionHandler();
+		}
+	}
 }
