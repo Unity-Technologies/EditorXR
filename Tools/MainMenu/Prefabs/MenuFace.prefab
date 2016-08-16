@@ -2310,8 +2310,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Button: {fileID: 114000012445734682}
-  m_ButtonTitle: {fileID: 114000013321565994}
   m_ButtonDescription: {fileID: 114000013821111340}
+  m_ButtonTitle: {fileID: 114000013321565994}
 --- !u!114 &114000011256045786
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2970,10 +2970,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_BorderOutline: {fileID: 23000012074004932}
   m_CanvasGroup: {fileID: 225000011820790320}
   m_FaceTitle: {fileID: 114000013940025958}
   m_GridTransform: {fileID: 224000010096992902}
-  m_BorderOutline: {fileID: 23000012074004932}
   m_TitleIcon: {fileID: 137000010769614414}
 --- !u!114 &114000012579959756
 MonoBehaviour:
@@ -3753,7 +3753,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_IgnoreReversedGraphics: 0
+  m_IgnoreReversedGraphics: 1
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
