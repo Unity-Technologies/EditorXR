@@ -103,15 +103,29 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 	{
 		Vector3 dragVector = rayOrigin.position - dragStart;
 		Debug.DrawLine(transform.position, transform.position + transform.right * 10);
+		Bounds tmpBounds = contentBounds;
+		Vector3 positionOffset = Vector3.zero;
 		switch (direction)
 		{
 			case Direction.LEFT:
-				Bounds b = contentBounds;
-				b.size = boundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
-				contentBounds = b;
-				transform.position = positionStart + Vector3.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
+				tmpBounds.size = boundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
+				positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
+				break;
+			case Direction.FRONT:
+				tmpBounds.size = boundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
+				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
+				break;
+			case Direction.RIGHT:
+				tmpBounds.size = boundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
+				positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
+				break;
+			case Direction.BACK:
+				tmpBounds.size = boundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
+				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 				break;
 		}
+		contentBounds = tmpBounds;
+		transform.position = positionStart + positionOffset;
 	}
 
 	public virtual void Close()

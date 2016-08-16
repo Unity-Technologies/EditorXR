@@ -20,11 +20,23 @@ public class WorkspaceUI : MonoBehaviour
 		//Because BlendShapes cap at 100, our workspace maxes out at 100m wide
 		tray.SetBlendShapeWeight(0, bounds.size.x + Workspace.kHandleMargin);
 		tray.SetBlendShapeWeight(1, bounds.size.z + Workspace.kHandleMargin);
+
+		//Resize handles
 		float handleScale = leftHandle.localScale.x;
 		leftHandle.localPosition = new Vector3(-bounds.extents.x - Workspace.kHandleMargin + handleScale, leftHandle.localPosition.y, 0);
 		leftHandle.localScale = new Vector3(handleScale, handleScale, bounds.size.z + Workspace.kHandleMargin);
+		frontHandle.localPosition = new Vector3(0, frontHandle.localPosition.y, -bounds.extents.z - Workspace.kHandleMargin + handleScale);
+		frontHandle.localScale = new Vector3(bounds.size.x + Workspace.kHandleMargin, handleScale, handleScale);
+		rightHandle.localPosition = new Vector3(bounds.extents.x + Workspace.kHandleMargin - handleScale, rightHandle.localPosition.y, 0);
+		rightHandle.localScale = new Vector3(handleScale, handleScale, bounds.size.z + Workspace.kHandleMargin);
+		backHandle.localPosition = new Vector3(0, backHandle.localPosition.y, bounds.extents.z + Workspace.kHandleMargin - handleScale);
+		backHandle.localScale = new Vector3(bounds.size.x + Workspace.kHandleMargin, handleScale, handleScale);
+
+		//Resize bounds cube
 		m_BoundsCube.transform.localScale = bounds.size;
 		m_BoundsCube.transform.localPosition = Vector3.up * bounds.extents.y;
+		
+		//Resize front panel
 		frontPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x + Workspace.kHandleMargin);
 		frontPanel.localPosition = new Vector3(0, frontPanel.localPosition.y, -bounds.extents.z - Workspace.kHandleMargin + kPanelOffset);
 	}

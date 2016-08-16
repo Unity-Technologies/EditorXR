@@ -73,11 +73,17 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 				{
 					case SelectionHelper.SelectionMode.DIRECT:
 						if (distance >= directRayLength)
+						{
 							m_SelectionHelper = null;
+							newHoverGameObject = null;
+						}
 						break;
 					case SelectionHelper.SelectionMode.REMOTE:
 						if (distance < directRayLength)
+						{
 							m_SelectionHelper = null;
+							newHoverGameObject = null;
+						}
 						break;
 				}
 			}
