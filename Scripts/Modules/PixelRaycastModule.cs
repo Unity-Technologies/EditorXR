@@ -1,15 +1,13 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
-using UnityEditor.VR;
+using System.Linq;
 using UnityEngine.VR.Proxies;
 
 namespace UnityEditor.VR.Modules
 {
 	public class PixelRaycastModule : MonoBehaviour
 	{
-		private Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
+		private readonly Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
 
 		private GameObject[] m_IgnoreList;
 
@@ -46,9 +44,9 @@ namespace UnityEditor.VR.Modules
 		private void UpdateIgnoreList()
 		{
 			var children = ignoreRoot.GetComponentsInChildren<Transform>();
-			m_IgnoreList = new GameObject[children.Length];
-			for (int i = 0; i < children.Length; i++)
-				m_IgnoreList[i] = children[i].gameObject;
+			var ignoreList = new List<GameObject>(children.Length);
+			ignoreList.AddRange(from t in children where !t.GetComponent<SelectionHelper>() select t.gameObject);
+			m_IgnoreList = ignoreList.ToArray();
 		}
 
 		private GameObject Raycast(Ray ray, Camera camera)
@@ -61,7 +59,7 @@ namespace UnityEditor.VR.Modules
 			camera.targetTexture = RenderTexture.GetTemporary(Screen.width, Screen.height);
 			Camera.SetupCurrent(camera);
 
-			// TODO populate ignore list and use it to prevent raycasts from returning editor vr's gameobjects
+			//TODO: use PickGameObjects and ignore SelectionHelpers in Direct mode that are too far away
 			var go = HandleUtility.PickGameObject(camera.pixelRect.center, false, m_IgnoreList);
 
 			Camera.SetupCurrent(restoreCamera);

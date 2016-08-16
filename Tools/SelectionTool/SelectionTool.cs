@@ -32,7 +32,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 	}
 	private SelectionInput m_SelectionInput;
 
-	public Func<Transform, GameObject> getFirstGameObject { private get; set; }
+	public SelectionRayCast getFirstGameObject { private get; set; }
 
 	public Transform rayOrigin { private get; set; }
 
@@ -55,10 +55,40 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 			}
 		}
 
-		var newHoverGameObject = getFirstGameObject(rayOrigin);
+		float distance;
+		float directRayLength;
+		var newHoverGameObject = getFirstGameObject(rayOrigin, out distance, out directRayLength);
 		var newPrefabRoot = newHoverGameObject;
+
 		if (newHoverGameObject != null)
 		{
+			// If gameObject has a SelectionHelper, check selection mode, then check selectionTarget
+			var selectionHelper = newHoverGameObject.GetComponent<SelectionHelper>();
+			if (selectionHelper)
+			{
+				switch (selectionHelper.selectionMode)
+				{
+					case SelectionHelper.SelectionMode.DIRECT:
+						if (distance <= directRayLength)
+						{
+							if (selectionHelper.selectionTarget)
+								newHoverGameObject = selectionHelper.selectionTarget;
+						}
+						else
+							newHoverGameObject = null;
+						break;
+					case SelectionHelper.SelectionMode.REMOTE:
+						if (distance > directRayLength)
+						{
+							if (selectionHelper.selectionTarget)
+								newHoverGameObject = selectionHelper.selectionTarget;
+						} else
+							newHoverGameObject = null;
+						break;
+				}
+			}
+		}
+		if(newHoverGameObject != null) {
 			// If gameObject is within a prefab and not the current prefab, choose prefab root
 			newPrefabRoot = PrefabUtility.FindPrefabRoot(newHoverGameObject);
 			if (newPrefabRoot != s_CurrentPrefabOpened)

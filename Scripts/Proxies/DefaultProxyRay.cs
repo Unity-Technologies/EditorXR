@@ -11,6 +11,9 @@ public class DefaultProxyRay : MonoBehaviour
 	private GameObject m_Tip;
 
 	[SerializeField]
+	private MeshFilter m_Cone;
+
+	[SerializeField]
 	private float m_LineWidth;
 
 	private enum State
@@ -23,6 +26,25 @@ public class DefaultProxyRay : MonoBehaviour
 	private State m_State;
 	private Vector3 m_TipStartScale;
 	private Coroutine m_Transitioning;
+
+	public float length
+	{
+		get { return m_length; }
+		set
+		{
+			if (m_State != State.Visible)
+				return;
+
+			m_length = value;
+			m_LineRenderer.transform.localScale = Vector3.one * m_length;
+			m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth * m_length);
+			m_Tip.transform.position = transform.position + transform.forward * m_length;
+			m_Tip.transform.localScale = m_length * m_TipStartScale;
+		}
+	}
+	private float m_length;
+
+	public float directRayLength { get; private set; }
 
 	public void Hide()
 	{
@@ -46,21 +68,11 @@ public class DefaultProxyRay : MonoBehaviour
 		}
 	}
 
-	public void SetLength(float length)
-	{
-		if (m_State != State.Visible)
-			return;
-
-		m_LineRenderer.transform.localScale = Vector3.one * length;
-		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth*length);
-		m_Tip.transform.position = transform.position + transform.forward * length;
-		m_Tip.transform.localScale = length * m_TipStartScale;
-	}
-
 	private void Start()
 	{
 		m_TipStartScale = m_Tip.transform.localScale;
 		m_State = State.Visible;
+		directRayLength = m_Cone.sharedMesh.bounds.size.z * m_Cone.transform.lossyScale.z;
 	}
 
 	private IEnumerator HideRay()

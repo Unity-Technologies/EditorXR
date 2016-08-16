@@ -160,6 +160,7 @@ GameObject:
   - 222: {fileID: 222000011460320898}
   - 114: {fileID: 114000013703583414}
   - 114: {fileID: 114000011978749392}
+  - 114: {fileID: 114000011022495242}
   m_Layer: 0
   m_Name: Grab button
   m_TagString: Untagged
@@ -270,6 +271,20 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114000011022495242
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013488864180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ad9896be347ce44f9a01012959b5ecb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  selectionMode: 0
+  selectionTarget: {fileID: 1000011022840156}
 --- !u!114 &114000011346188294
 MonoBehaviour:
   m_ObjectHideFlags: 1
