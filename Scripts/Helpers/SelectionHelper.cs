@@ -11,4 +11,5 @@ public class SelectionHelper : MonoBehaviour
 
 	public SelectionMode selectionMode;
 	public GameObject selectionTarget;
+	public bool directTransformOnly;
 }

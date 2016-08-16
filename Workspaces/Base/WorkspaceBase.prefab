@@ -285,6 +285,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   selectionMode: 0
   selectionTarget: {fileID: 1000011022840156}
+  directTransformOnly: 1
 --- !u!114 &114000011346188294
 MonoBehaviour:
   m_ObjectHideFlags: 1

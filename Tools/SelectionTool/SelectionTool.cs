@@ -38,6 +38,8 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
+	private Transform m_DirectTransformOldParent;
+
 	void Update()
 	{
 		if (rayOrigin == null)
@@ -59,11 +61,12 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 		float directRayLength;
 		var newHoverGameObject = getFirstGameObject(rayOrigin, out distance, out directRayLength);
 		var newPrefabRoot = newHoverGameObject;
+		SelectionHelper selectionHelper = null;
 
 		if (newHoverGameObject != null)
 		{
+			selectionHelper = newHoverGameObject.GetComponent<SelectionHelper>();
 			// If gameObject has a SelectionHelper, check selection mode, then check selectionTarget
-			var selectionHelper = newHoverGameObject.GetComponent<SelectionHelper>();
 			if (selectionHelper)
 			{
 				switch (selectionHelper.selectionMode)
@@ -110,6 +113,12 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 		// Handle select button press
 		if (m_SelectionInput.select.wasJustPressed) 
 		{
+			if (m_HoverGameObject && selectionHelper && selectionHelper.directTransformOnly)
+			{
+				m_DirectTransformOldParent = m_HoverGameObject.transform.parent;
+				m_HoverGameObject.transform.parent = rayOrigin;
+				return;
+			}
 			// Detect double click
 			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
 			m_LastSelectTime = DateTime.Now;
@@ -148,6 +157,11 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 				}
 			}
 			Selection.objects = s_SelectedObjects.ToArray();
+		}
+		if (m_SelectionInput.select.wasJustReleased)
+		{
+			if (m_HoverGameObject && selectionHelper && selectionHelper.directTransformOnly)
+				m_HoverGameObject.transform.parent = m_DirectTransformOldParent;
 		}
 	}
 

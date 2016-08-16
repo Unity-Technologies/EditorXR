@@ -27,6 +27,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 	private IManipulator m_Manipulator;
 
 	private Transform[] m_SelectionTransforms;
+	private Transform[] m_SelectedForDirectTransforms;
 	private Bounds m_SelectionBounds;
 	private Vector3 m_TargetPosition;
 	private Quaternion m_TargetRotation;
