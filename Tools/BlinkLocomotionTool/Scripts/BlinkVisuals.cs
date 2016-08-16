@@ -70,6 +70,7 @@ public class BlinkVisuals : MonoBehaviour
 	private Vector3 m_TubeTransformHiddenScale;
 	private Vector3 m_TubeTransformOriginalScale;
 	private bool m_ValidTarget;
+	private bool m_EndVisualDisplay;
 
 	public Vector3 locatorPosition { get { return locatorRoot.position; } }
 	public Transform locatorRoot { get { return m_LocatorRoot; } }
@@ -143,7 +144,7 @@ public class BlinkVisuals : MonoBehaviour
 			const float kTubeHiddenDistanceThreshold = 6f;
 			m_TubeTransform.localScale = Vector3.Lerp(m_TubeTransformOriginalScale, m_TubeTransformHiddenScale, m_MovementMagnitudeDelta / kTubeHiddenDistanceThreshold);
 		}
-		else if (m_OutOfMaxRange && Mathf.Abs(pointerStrength) < m_MaxArc)
+		else if (!m_EndVisualDisplay && m_OutOfMaxRange && Mathf.Abs(pointerStrength) < m_MaxArc)
 		{
 			m_OutOfMaxRange = false;
 			ShowVisuals();
@@ -158,7 +159,8 @@ public class BlinkVisuals : MonoBehaviour
 
 			for (int i = 0; i < m_MotionSphereCount; ++i)
 				m_MotionSpheres[i].gameObject.SetActive(true);
-
+			
+			m_EndVisualDisplay = false;
 			StartCoroutine(AnimateShowVisuals());
 		}
 	}
@@ -166,7 +168,11 @@ public class BlinkVisuals : MonoBehaviour
 	public void HideVisuals()
 	{
 		if (m_State != State.Inactive)
+		{
+			StopAllCoroutines();
+			m_EndVisualDisplay = true;
 			StartCoroutine(AnimateHideVisuals());
+		}
 
 		m_OutOfMaxRange = false;
 	}
