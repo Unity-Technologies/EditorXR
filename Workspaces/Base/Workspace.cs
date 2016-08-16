@@ -4,6 +4,7 @@ using UnityEngine.VR.Utilities;
 
 public abstract class Workspace : MonoBehaviour, IInstantiateUI
 {
+	public enum Direction { LEFT, FRONT, RIGHT, BACK}
 	public static readonly Vector3 kDefaultBounds = new Vector3(0.6f, 0.4f, 0.4f);
 
 	/// <summary>
@@ -58,12 +59,17 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 	[SerializeField]
 	private GameObject m_BasePrefab;
 
+	private Vector3 dragStart;
+	private Vector3 positionStart;
+	private Vector3 boundSizeStart;
+
 	public virtual void Setup()
 	{
 		GameObject baseObject = instantiateUI(m_BasePrefab);
 		baseObject.transform.SetParent(transform);
 		m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
-		m_WorkspaceUI.OnHandleClick = OnHandleClick;
+		m_WorkspaceUI.OnHandleDragStart = OnHandleDragStart;
+		m_WorkspaceUI.OnHandleDrag = OnHandleDrag;
 		m_WorkspaceUI.OnCloseClick = Close;
 		m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.up * kContentHeight;
 		baseObject.transform.localPosition = Vector3.zero;
@@ -71,6 +77,9 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 		//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
 		m_WorkspaceUI.SetBounds(contentBounds);
+
+		//Set grab handle selection target to this transform
+		m_WorkspaceUI.grabHandle.selectionTarget = gameObject;
 	}
 #if UNITY_EDITOR
 	public virtual void Update()
@@ -83,9 +92,26 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 
 	protected abstract void OnBoundsChanged();
 
-	public virtual void OnHandleClick()
+	public virtual void OnHandleDragStart(Transform handle, Transform rayOrigin)
 	{
-		Debug.Log("click");
+		positionStart = transform.position;
+		dragStart = rayOrigin.position;
+		boundSizeStart = contentBounds.size;
+	}
+
+	public virtual void OnHandleDrag(Transform rayOrigin, Direction direction)
+	{
+		Vector3 dragVector = rayOrigin.position - dragStart;
+		Debug.DrawLine(transform.position, transform.position + transform.right * 10);
+		switch (direction)
+		{
+			case Direction.LEFT:
+				Bounds b = contentBounds;
+				b.size = boundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
+				contentBounds = b;
+				transform.position = positionStart + Vector3.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
+				break;
+		}
 	}
 
 	public virtual void Close()

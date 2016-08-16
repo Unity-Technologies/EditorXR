@@ -2,11 +2,14 @@
 using UnityEngine;
 public class WorkspaceUI : MonoBehaviour
 {
-	public Action OnHandleClick { private get; set; }
 	public Action OnCloseClick { private get; set; }
+	public Action<Transform, Transform> OnHandleDragStart { private get; set; }
+	public Action<Transform, Workspace.Direction> OnHandleDrag { private get; set; }
 	public Transform sceneContainer;
 	public SkinnedMeshRenderer tray;
 	public RectTransform frontPanel;
+	public Transform leftHandle, frontHandle, rightHandle, backHandle;
+	public SelectionHelper grabHandle;
 
 	private const float kPanelOffset = 0.1f; //The panel needs to be pulled back slightly
 	[SerializeField]
@@ -17,15 +20,29 @@ public class WorkspaceUI : MonoBehaviour
 		//Because BlendShapes cap at 100, our workspace maxes out at 100m wide
 		tray.SetBlendShapeWeight(0, bounds.size.x + Workspace.kHandleMargin);
 		tray.SetBlendShapeWeight(1, bounds.size.z + Workspace.kHandleMargin);
+		float handleScale = leftHandle.localScale.x;
+		leftHandle.localPosition = new Vector3(-bounds.extents.x - Workspace.kHandleMargin + handleScale, leftHandle.localPosition.y, 0);
+		leftHandle.localScale = new Vector3(handleScale, handleScale, bounds.size.z + Workspace.kHandleMargin);
 		m_BoundsCube.transform.localScale = bounds.size;
 		m_BoundsCube.transform.localPosition = Vector3.up * bounds.extents.y;
 		frontPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x + Workspace.kHandleMargin);
 		frontPanel.localPosition = new Vector3(0, frontPanel.localPosition.y, -bounds.extents.z - Workspace.kHandleMargin + kPanelOffset);
 	}
 
-	public void HandleClick()
+	public void HandleDragStart(Transform handle, Transform rayOrigin)
 	{
-		OnHandleClick();
+		OnHandleDragStart(handle, rayOrigin);
+	}
+	public void HandleDrag(Transform handle, Transform rayOrigin)
+	{
+		Workspace.Direction direction = Workspace.Direction.LEFT;
+		if(handle == frontHandle)
+			direction = Workspace.Direction.FRONT;
+		if (handle == rightHandle)
+			direction = Workspace.Direction.RIGHT;
+		if (handle == backHandle)
+			direction = Workspace.Direction.BACK;
+		OnHandleDrag(rayOrigin, direction);
 	}
 
 	public void CloseClick()
