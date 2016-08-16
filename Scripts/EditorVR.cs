@@ -286,11 +286,11 @@ public class EditorVR : MonoBehaviour
 				// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
 				// object, so visually show the ray terminating there instead of the object; UI is already given
 				// priority on the input side)
-				var UIEventData = m_InputModule.GetPointerEventData(rayOrigin);
-				if (UIEventData != null && UIEventData.pointerCurrentRaycast.isValid)
+				var uiEventData = m_InputModule.GetPointerEventData(rayOrigin);
+				if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
 				{
 					// Set ray length to distance to UI objects
-					distance = UIEventData.pointerCurrentRaycast.distance;
+					distance = uiEventData.pointerCurrentRaycast.distance;
 				}
 				else
 				{

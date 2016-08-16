@@ -4,7 +4,7 @@ using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Handles
 {
-	public class SphereHandle : BaseHandle, IScrollHandler
+	public class SphereHandle : BaseHandle, IRayDragHandler, IScrollHandler
 	{
 		[SerializeField] private Mesh m_InvertedSphereMesh;
 
@@ -16,11 +16,10 @@ namespace UnityEngine.VR.Handles
 		private MeshCollider m_InvertedSphereCollider;
 		private float m_CurrentRadius = 0f;
 
-		public override void OnBeginDrag(PointerEventData eventData)
+		public override void OnBeginDrag(RayEventData eventData)
 		{
 			base.OnBeginDrag(eventData);
-			// Get ray origin transform from InputModule and pointerID because the event camera moves between multiple transforms
-			m_RayOrigin = ((MultipleRayInputModule) EventSystem.current.currentInputModule).GetRayOrigin(eventData.pointerId);
+			m_RayOrigin = eventData.rayOrigin;
 			m_LastPosition = eventData.pointerCurrentRaycast.worldPosition;
 
 			if (m_InvertedSphereCollider != null)
@@ -37,7 +36,7 @@ namespace UnityEngine.VR.Handles
 			OnHandleBeginDrag();
 		}
 
-		public override void OnDrag(PointerEventData eventData)
+		public void OnDrag(RayEventData eventData)
 		{
 			var worldPosition = m_LastPosition;
 			m_InvertedSphereCollider.transform.position = m_RayOrigin.position;
@@ -52,7 +51,7 @@ namespace UnityEngine.VR.Handles
 			OnHandleDrag(new HandleDragEventData(delta));
 		}
 
-		public override void OnEndDrag(PointerEventData eventData)
+		public override void OnEndDrag(RayEventData eventData)
 		{
 			base.OnEndDrag(eventData);
 

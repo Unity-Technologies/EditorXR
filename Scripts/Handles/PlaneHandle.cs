@@ -1,9 +1,9 @@
-﻿using UnityEngine;
-using UnityEngine.EventSystems;
+﻿using UnityEngine.EventSystems;
+using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Handles
 {
-	public class PlaneHandle : BaseHandle
+	public class PlaneHandle : BaseHandle, IRayDragHandler
 	{
 		[SerializeField] private Material m_PlaneMaterial;
 		private const float kPlaneScale = 1000f;
@@ -11,13 +11,12 @@ namespace UnityEngine.VR.Handles
 		private Collider m_Collider;
 		private Vector3 m_LastPosition;
 
-		protected override void Awake()
+		protected void Awake()
 		{
-			base.Awake();
 			m_Collider = GetComponent<Collider>();
 		}
 
-		public override void OnBeginDrag(PointerEventData eventData)
+		public override void OnBeginDrag(RayEventData eventData)
 		{
 			base.OnBeginDrag(eventData);
 
@@ -38,7 +37,7 @@ namespace UnityEngine.VR.Handles
 			OnHandleBeginDrag();
 		}
 
-		public override void OnDrag(PointerEventData eventData)
+		public void OnDrag(RayEventData eventData)
 		{
 			// Flip raycast blocking plane
 			if (Vector3.Dot(m_PlaneCollider.transform.forward, m_RayOrigin.forward) < 0f)
@@ -59,7 +58,7 @@ namespace UnityEngine.VR.Handles
 			OnHandleDrag(new HandleDragEventData(delta));
 		}
 
-		public override void OnEndDrag(PointerEventData eventData)
+		public override void OnEndDrag(RayEventData eventData)
 		{
 			base.OnEndDrag(eventData);
 			m_Collider.enabled = true;

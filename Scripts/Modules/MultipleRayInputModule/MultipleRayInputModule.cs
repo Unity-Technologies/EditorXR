@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Proxies;
@@ -16,7 +17,7 @@ namespace UnityEngine.VR.Modules
 
 		private readonly List<RaycastSource> m_RaycastSources = new List<RaycastSource>();
 		private Dictionary<Transform, int> m_RayOriginToPointerID = new Dictionary<Transform, int>();
-		private List<PointerEventData> PointEvents = new List<PointerEventData>();
+		private List<RayEventData> PointEvents = new List<RayEventData>();
 		private List<GameObject> CurrentPoint = new List<GameObject>();
 		private List<GameObject> CurrentPressed = new List<GameObject>();
 		private List<GameObject> CurrentDragging = new List<GameObject>();
@@ -46,14 +47,12 @@ namespace UnityEngine.VR.Modules
 		private class RaycastSource
 		{
 			public IProxy proxy; // Needed for checking if proxy is active
-			public Node node;
 			public Transform rayOrigin;
 			public UIActions actionMapInput;
 
-			public RaycastSource(IProxy proxy, Node node, Transform rayOrigin, UIActions actionMapInput)
+			public RaycastSource(IProxy proxy, Transform rayOrigin, UIActions actionMapInput)
 			{
 				this.proxy = proxy;
-				this.node = node;
 				this.rayOrigin = rayOrigin;
 				this.actionMapInput = actionMapInput;
 			}
@@ -72,13 +71,13 @@ namespace UnityEngine.VR.Modules
 			if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
 			{
 				m_RayOriginToPointerID.Add(rayOrigin, m_RaycastSources.Count);
-				m_RaycastSources.Add(new RaycastSource(proxy, node, rayOrigin, actions));
+				m_RaycastSources.Add(new RaycastSource(proxy, rayOrigin, actions));
 			}
 			else
 				Debug.LogError("Failed to get ray origin transform for node " + node + " from proxy " + proxy);
 		}
 
-		public Transform GetRayOrigin(int index)
+		private Transform GetRayOrigin(int index)
 		{
 			return m_RaycastSources[index].rayOrigin;
 		}
@@ -88,7 +87,7 @@ namespace UnityEngine.VR.Modules
 			int id;
 			if (m_RayOriginToPointerID.TryGetValue(rayOrigin, out id))
 			{
-				if(id >= 0 && id < PointEvents.Count)
+				if (id >= 0 && id < PointEvents.Count)
 					return PointEvents[id];
 			}
 
@@ -113,7 +112,7 @@ namespace UnityEngine.VR.Modules
 				while (i >= CurrentDragging.Count)
 					CurrentDragging.Add(null);
 				while (i >= PointEvents.Count)
-					PointEvents.Add(new PointerEventData(base.eventSystem));
+					PointEvents.Add(new RayEventData(base.eventSystem));
 
 				PointEvents[i].pointerId = i;
 
@@ -121,6 +120,9 @@ namespace UnityEngine.VR.Modules
 					continue;
 
 				CurrentPoint[i] = GetRayIntersection(i); // Check all currently running raycasters
+
+				var rayEventData = PointEvents[i] as RayEventData;
+				rayEventData.rayOrigin = GetRayOrigin(i);
 
 				HandlePointerExitAndEnter(PointEvents[i], CurrentPoint[i]); // Send enter and exit events
 
@@ -140,7 +142,10 @@ namespace UnityEngine.VR.Modules
 					OnSelectReleased(i);
 
 				if (CurrentDragging[i] != null)
+				{
 					ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteEvents.dragHandler);
+					ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteRayEvents.dragHandler);
+				}
 
 				// Send scroll events
 				if (CurrentPressed[i] != null)
@@ -151,7 +156,78 @@ namespace UnityEngine.VR.Modules
 
 				m_PointerData[i] = PointEvents[i];
 			}
+		}
 
+		private RayEventData CloneEventData(RayEventData eventData)
+		{			
+			RayEventData clone = new RayEventData(base.eventSystem);
+			clone.rayOrigin = eventData.rayOrigin;
+			clone.hovered = new List<GameObject>(eventData.hovered);
+			clone.pointerEnter = eventData.pointerEnter;
+			clone.pointerCurrentRaycast = eventData.pointerCurrentRaycast;
+
+			return clone;
+		}
+
+		protected void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget)
+		{
+			// Cache properties before executing base method, so we can complete additional ray events later
+			var cachedEventData = CloneEventData(eventData);
+
+			// This will modify the event data (new target will be set)
+			base.HandlePointerExitAndEnter(eventData, newEnterTarget);
+
+			if (newEnterTarget == null || cachedEventData.pointerEnter == null)
+			{
+				for (var i = 0; i < cachedEventData.hovered.Count; ++i)
+					ExecuteEvents.Execute(cachedEventData.hovered[i], eventData, ExecuteRayEvents.rayExitHandler);
+
+				if (newEnterTarget == null)
+					return;
+			}
+
+			Transform t = null;
+
+			// if we have not changed hover target
+			if (cachedEventData.pointerEnter == newEnterTarget && newEnterTarget)
+			{
+				t = newEnterTarget.transform;
+				while (t != null)
+				{
+					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
+					t = t.parent;
+				}
+				return;
+			}
+
+			GameObject commonRoot = FindCommonRoot(cachedEventData.pointerEnter, newEnterTarget);
+			
+			// and we already an entered object from last time
+			if (cachedEventData.pointerEnter != null)
+			{
+				// send exit handler call to all elements in the chain
+				// until we reach the new target, or null!
+				t = cachedEventData.pointerEnter.transform;
+
+				while (t != null)
+				{
+					// if we reach the common root break out!
+					if (commonRoot != null && commonRoot.transform == t)
+						break;
+
+					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayExitHandler);
+					t = t.parent;
+				}
+			}
+
+			// now issue the enter call up to but not including the common root
+			cachedEventData.pointerEnter = newEnterTarget;
+			t = newEnterTarget.transform;
+			while (t != null && t.gameObject != commonRoot)
+			{
+				ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
+				t = t.parent;
+			}
 		}
 
 		private void OnSelectPressed(int i)
@@ -178,6 +254,7 @@ namespace UnityEngine.VR.Modules
 					PointEvents[i].eligibleForClick = true;
 				}
 				ExecuteEvents.Execute(CurrentPressed[i], PointEvents[i], ExecuteEvents.beginDragHandler);
+				ExecuteEvents.Execute(CurrentPressed[i], PointEvents[i], ExecuteRayEvents.beginDragHandler);
 				PointEvents[i].pointerDrag = CurrentPressed[i];
 				CurrentDragging[i] = CurrentPressed[i];
 			}
@@ -191,6 +268,8 @@ namespace UnityEngine.VR.Modules
 			if (CurrentDragging[i])
 			{
 				ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteEvents.endDragHandler);
+				ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteRayEvents.endDragHandler);
+
 				if (CurrentPoint[i] != null)
 					ExecuteEvents.ExecuteHierarchy(CurrentPoint[i], PointEvents[i], ExecuteEvents.dropHandler);
 
