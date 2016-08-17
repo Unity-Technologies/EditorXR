@@ -1,17 +1,40 @@
 fileFormatVersion: 2
-guid: 7b2713b18a01c2347a01908639ed6772
-timeCreated: 1469742028
+guid: cdace0cf368873c4796b9f9ade156c53
+timeCreated: 1470159491
 licenseType: Pro
 ModelImporter:
   serializedVersion: 19
   fileIDToRecycleName:
-    100000: //RootNode
-    400000: //RootNode
-    2300000: //RootNode
-    3300000: //RootNode
-    4300000: Sphere
+    100000: HandleCone
+    100002: LinearHandle
+    100004: LinearHandleCollider
+    100006: RadialHandle
+    100008: RadialHandleCollider
+    100010: //RootNode
+    400000: HandleCone
+    400002: LinearHandle
+    400004: LinearHandleCollider
+    400006: RadialHandle
+    400008: RadialHandleCollider
+    400010: //RootNode
+    2300000: HandleCone
+    2300002: LinearHandle
+    2300004: LinearHandleCollider
+    2300006: RadialHandle
+    2300008: RadialHandleCollider
+    3300000: HandleCone
+    3300002: LinearHandle
+    3300004: LinearHandleCollider
+    3300006: RadialHandle
+    3300008: RadialHandleCollider
+    4300000: HandleCone
+    4300002: LinearHandleCollider
+    4300004: LinearHandle
+    4300006: RadialHandleCollider
+    4300008: RadialHandle
+    9500000: //RootNode
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
   animations:
@@ -68,7 +91,7 @@ ModelImporter:
     rootMotionBoneName: 
     hasTranslationDoF: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 0
+  animationType: 2
   humanoidOversampling: 1
   additionalBone: 0
   userData: 

@@ -1,102 +1,108 @@
-﻿using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.VR.Modules;
+﻿using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Handles
 {
-	public class LinearHandle : BaseHandle
+	public class LinearHandle : BaseHandle, IRayDragHandler, IRayHoverHandler
 	{
-		private const float kMaxDragDistance = 1000f;
-		private Collider m_PlaneCollider;
-		private Vector3 m_LastPosition;
-
 		[SerializeField]
 		private Transform m_HandleTip;
 
-		void Update()
-		{
-			if (m_HandleTip != null)
-			{
-				if (m_Hovering || m_Dragging) // Reposition handle tip based on current raycast position when hovering or dragging
-				{
-					m_HandleTip.gameObject.SetActive(true);
-					var eventData = ((MultipleRayInputModule) EventSystem.current.currentInputModule).GetPointerEventData(m_RayOrigin);
-					if (eventData != null)
-						m_HandleTip.position =
-							transform.TransformPoint(new Vector3(0, 0,
-								transform.InverseTransformPoint(eventData.pointerCurrentRaycast.worldPosition).z));
-				}
-				else
-					m_HandleTip.gameObject.SetActive(false);
-			}
-		}
+		private const float kMaxDragDistance = 1000f;
 
-		void OnDisable()
+		private Plane m_Plane;
+		private Vector3 m_LastPosition;
+
+		private void OnDisable()
 		{
 			if (m_HandleTip != null)
 				m_HandleTip.gameObject.SetActive(false);
 		}
 
-		public override void OnBeginDrag(PointerEventData eventData)
+		public void OnRayHover(RayEventData eventData)
+		{
+			UpdateHandleTip(eventData);
+		}
+
+		public override void OnRayEnter(RayEventData eventData)
+		{
+			base.OnRayEnter(eventData);
+			UpdateHandleTip(eventData);
+		}
+
+		public override void OnRayExit(RayEventData eventData)
+		{
+			base.OnRayExit(eventData);
+			UpdateHandleTip(eventData);
+		}
+
+		private void UpdateHandleTip(RayEventData eventData)
+		{
+			if (m_HandleTip != null)
+			{
+				m_HandleTip.gameObject.SetActive(m_Hovering || m_Dragging);
+
+				if (m_Hovering || m_Dragging) // Reposition handle tip based on current raycast position when hovering or dragging
+				{
+					if (eventData != null)
+						m_HandleTip.position =
+							transform.TransformPoint(new Vector3(0, 0,
+								transform.InverseTransformPoint(eventData.pointerCurrentRaycast.worldPosition).z));
+				}
+			}
+		}
+
+		public override void OnBeginDrag(RayEventData eventData)
 		{
 			base.OnBeginDrag(eventData);
 
 			m_LastPosition = eventData.pointerCurrentRaycast.worldPosition;
-			if (m_PlaneCollider != null)
-				DestroyImmediate(m_PlaneCollider.gameObject);
 
-			m_PlaneCollider = GameObject.CreatePrimitive(PrimitiveType.Quad).GetComponent<Collider>();
-			m_PlaneCollider.transform.SetParent(eventData.pressEventCamera.transform.parent);
-			m_PlaneCollider.transform.localScale = Vector3.one*kMaxDragDistance;
-			m_PlaneCollider.transform.position = transform.position;
+			// Create a plane through the axis that rotates to avoid being parallel to the ray, so that you can prevent
+			// intersections at infinity
+			var forward = transform.InverseTransformVector(eventData.rayOrigin.forward);
+			forward.z = 0;			
+			m_Plane.SetNormalAndPosition(transform.TransformVector(forward), transform.position);
 
-			var forward = transform.InverseTransformVector(m_RayOrigin.forward);
-			forward.z = 0;
-			m_PlaneCollider.transform.forward = transform.TransformVector(forward);
-
-			m_PlaneCollider.GetComponent<Renderer>().enabled = false;
-			m_PlaneCollider.gameObject.layer = LayerMask.NameToLayer("UI");
+			UpdateHandleTip(eventData);
 
 			OnHandleBeginDrag();
 		}
 
-		public override void OnDrag(PointerEventData eventData)
+		public void OnDrag(RayEventData eventData)
 		{
+			Transform rayOrigin = eventData.rayOrigin;
 			Vector3 worldPosition = m_LastPosition;
-			RaycastHit hit;
-			if (m_PlaneCollider.Raycast(new Ray(m_RayOrigin.position, m_RayOrigin.forward), out hit, Mathf.Infinity))
-				//TODO cache collider
-				worldPosition = hit.point;
+
+			// Continue to rotate plane, so that the ray direction isn't parallel to the plane
+			var forward = transform.InverseTransformVector(rayOrigin.forward);
+			forward.z = 0;
+			m_Plane.normal = transform.TransformVector(forward);
+
+			float distance = 0f;
+			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
+			if (m_Plane.Raycast(ray, out distance))
+				worldPosition = ray.GetPoint(Mathf.Min(Mathf.Abs(distance), kMaxDragDistance));
 
 			var delta = worldPosition - m_LastPosition;
 			m_LastPosition = worldPosition;
-
-			var forward = transform.InverseTransformVector(m_RayOrigin.forward);
-			forward.z = 0;
-			m_PlaneCollider.transform.forward = transform.TransformVector(forward);
 
 			delta = transform.InverseTransformVector(delta);
 			delta.x = 0;
 			delta.y = 0;
 			delta = transform.TransformVector(delta);
 
+			UpdateHandleTip(eventData);
+
 			OnHandleDrag(new HandleDragEventData(delta));
 		}
 
-		public override void OnEndDrag(PointerEventData eventData)
+		public override void OnEndDrag(RayEventData eventData)
 		{
 			base.OnEndDrag(eventData);
 
-			if (m_PlaneCollider != null)
-				DestroyImmediate(m_PlaneCollider.gameObject);
+			UpdateHandleTip(eventData);
 
 			OnHandleEndDrag();
-		}
-
-		void OnDestroy()
-		{
-			if (m_PlaneCollider != null)
-				DestroyImmediate(m_PlaneCollider.gameObject);
 		}
 	}
 }

@@ -34,6 +34,9 @@ public class EditorVR : MonoBehaviour
 	private ActionMap m_StandardToolActionMap;
 	[SerializeField]
 	private DefaultProxyRay m_ProxyRayPrefab;
+	[SerializeField]
+	private Camera m_EventCameraPrefab;
+
 	private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
 	private TrackedObject m_TrackedObjectInput;
@@ -296,11 +299,11 @@ public class EditorVR : MonoBehaviour
 				// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
 				// object, so visually show the ray terminating there instead of the object; UI is already given
 				// priority on the input side)
-				var UIEventData = m_InputModule.GetPointerEventData(rayOrigin);
-				if (UIEventData != null && UIEventData.pointerCurrentRaycast.isValid)
+				var uiEventData = m_InputModule.GetPointerEventData(rayOrigin);
+				if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
 				{
 					// Set ray length to distance to UI objects
-					distance = UIEventData.pointerCurrentRaycast.distance;
+					distance = uiEventData.pointerCurrentRaycast.distance;
 				}
 				else
 				{
@@ -327,7 +330,8 @@ public class EditorVR : MonoBehaviour
 		// Create event system, input module, and event camera
 		U.Object.AddComponent<EventSystem>(gameObject);
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
-		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+		m_InputModule.getPointerLength = GetPointerLength;
+		m_EventCamera = U.Object.InstantiateAndSetActive(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
 		m_InputModule.eventCamera = m_EventCamera;
 		foreach (var proxy in m_AllProxies)
@@ -551,6 +555,18 @@ public class EditorVR : MonoBehaviour
 		var highlightComponent = obj as IHighlight;
 		if (highlightComponent != null)
 			highlightComponent.setHighlight = m_HighlightModule.SetHighlight;
+	}
+
+	private float GetPointerLength(Transform rayOrigin)
+	{
+		float length = 0f;
+		DefaultProxyRay dpr;
+		if (m_DefaultRays.TryGetValue(rayOrigin, out dpr))
+		{
+			length = dpr.pointerLength;
+		}
+
+		return length;
 	}
 
 	private GameObject RayCastWithDistance(Transform rayOrigin, out float distance, out float directRayLength)

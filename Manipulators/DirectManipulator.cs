@@ -7,38 +7,32 @@ using UnityEngine.VR.Tools;
 public class DirectManipulator : MonoBehaviour, IManipulator
 {
 	[SerializeField]
-	private BaseHandle m_GrabHandle;
-
 	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
-	private bool m_Dragging = false;
+
 	public bool dragging { get {  return m_Dragging; } }
+	private bool m_Dragging;
+
 	public Action<Vector3> translate { private get; set; }
 	public Action<Quaternion> rotate { private get; set; }
 	public Action<Vector3> scale { private get; set; }
 
-	void Awake()
-	{
-		m_AllHandles.Add(m_GrabHandle);
-	}
-
 	void OnEnable()
 	{
-		m_GrabHandle.onHandleDrag += TranslateHandleOnDrag;
-		foreach (var handle in m_AllHandles)
+		foreach (var h in m_AllHandles)
 		{
-			handle.onHandleBeginDrag += HandleOnBeginDrag;
-			handle.onHandleEndDrag += HandleOnEndDrag;
+			h.onHandleDrag += TranslateHandleOnDrag;
+			h.onHandleBeginDrag += HandleOnBeginDrag;
+			h.onHandleEndDrag += HandleOnEndDrag;
 		}
 	}
 
 	void OnDisable()
 	{
-		m_GrabHandle.onHandleDrag -= TranslateHandleOnDrag;
-
-		foreach (var handle in m_AllHandles)
+		foreach (var h in m_AllHandles)
 		{
-			handle.onHandleBeginDrag -= HandleOnBeginDrag;
-			handle.onHandleEndDrag -= HandleOnEndDrag;
+			h.onHandleDrag -= TranslateHandleOnDrag;
+			h.onHandleBeginDrag -= HandleOnBeginDrag;
+			h.onHandleEndDrag -= HandleOnEndDrag;
 		}
 	}
 
@@ -49,20 +43,17 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 
 	private void HandleOnBeginDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
-		SetAllHandlesActive(false);
-		handle.gameObject.SetActive(true);
+		foreach (var h in m_AllHandles)
+			h.gameObject.SetActive(h == handle);
+
 		m_Dragging = true;
 	}
 
 	private void HandleOnEndDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
-		SetAllHandlesActive(true);
-		m_Dragging = false;
-	}
+		foreach (var h in m_AllHandles)
+			h.gameObject.SetActive(true);
 
-	private void SetAllHandlesActive(bool active)
-	{
-		foreach (var handle in m_AllHandles)
-			handle.gameObject.SetActive(active);
+		m_Dragging = false;
 	}
 }

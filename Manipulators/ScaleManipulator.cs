@@ -9,39 +9,34 @@ public class ScaleManipulator : MonoBehaviour, IManipulator
 	[SerializeField]
 	private BaseHandle m_UniformHandle;
 	[SerializeField]
-	private BaseHandle m_HandleX;
-	[SerializeField]
-	private BaseHandle m_HandleY;
-	[SerializeField]
-	private BaseHandle m_HandleZ;
-
+	private List<BaseHandle> m_AxesHandles;
+	
 	private readonly List<BaseHandle> m_AllHandles = new List<BaseHandle>();
-	private bool m_Dragging = false;
 
 	public bool dragging { get { return m_Dragging; } }
+	private bool m_Dragging;
+
 	public Action<Vector3> translate { private get; set; }
 	public Action<Quaternion> rotate { private get; set; }
 	public Action<Vector3> scale { private get; set; }
 
-
 	void Awake()
 	{
 		m_AllHandles.Add(m_UniformHandle);
-		m_AllHandles.Add(m_HandleX);
-		m_AllHandles.Add(m_HandleY);
-		m_AllHandles.Add(m_HandleZ);
+		m_AllHandles.AddRange(m_AxesHandles);
 	}
+
 	void OnEnable()
 	{
 		m_UniformHandle.onHandleDrag += UniformScaleHandleOnDrag;
-		m_HandleX.onHandleDrag += LinearScaleHandleOnDrag;
-		m_HandleY.onHandleDrag += LinearScaleHandleOnDrag;
-		m_HandleZ.onHandleDrag += LinearScaleHandleOnDrag;
 
-		foreach (var handle in m_AllHandles)
+		foreach (var h in m_AxesHandles)
+			h.onHandleDrag += LinearScaleHandleOnDrag;
+
+		foreach (var h in m_AllHandles)
 		{
-			handle.onHandleBeginDrag += HandleOnBeginDrag;
-			handle.onHandleEndDrag += HandleOnEndDrag;
+			h.onHandleBeginDrag += HandleOnBeginDrag;
+			h.onHandleEndDrag += HandleOnEndDrag;
 		}
 	}
 
@@ -49,10 +44,13 @@ public class ScaleManipulator : MonoBehaviour, IManipulator
 	{
 		m_UniformHandle.onHandleDrag -= UniformScaleHandleOnDrag;
 
-		foreach (var handle in m_AllHandles)
+		foreach (var h in m_AxesHandles)
+			h.onHandleDrag -= LinearScaleHandleOnDrag;
+
+		foreach (var h in m_AllHandles)
 		{
-			handle.onHandleBeginDrag -= HandleOnBeginDrag;
-			handle.onHandleEndDrag -= HandleOnEndDrag;
+			h.onHandleBeginDrag -= HandleOnBeginDrag;
+			h.onHandleEndDrag -= HandleOnEndDrag;
 		}
 	}
 
@@ -69,20 +67,17 @@ public class ScaleManipulator : MonoBehaviour, IManipulator
 
 	private void HandleOnBeginDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
-		SetAllHandlesActive(false);
-		handle.gameObject.SetActive(true);
+		foreach (var h in m_AllHandles)
+			h.gameObject.SetActive(h == handle);
+
 		m_Dragging = true;
 	}
 
 	private void HandleOnEndDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
-		SetAllHandlesActive(true);
-		m_Dragging = false;
-	}
+		foreach (var h in m_AllHandles)
+			h.gameObject.SetActive(true);
 
-	private void SetAllHandlesActive(bool active)
-	{
-		foreach (var handle in m_AllHandles)
-			handle.gameObject.SetActive(active);
+		m_Dragging = false;
 	}
 }
