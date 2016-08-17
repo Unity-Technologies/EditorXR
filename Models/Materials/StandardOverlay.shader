@@ -65,6 +65,7 @@ Shader "StandardOverlay"
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
 			ZTest Off
+			Offset 0, -1
 
 			CGPROGRAM
 			#pragma target 3.0
@@ -100,6 +101,7 @@ Shader "StandardOverlay"
 			Fog { Color (0,0,0,0) } // in additive pass fog should be black
 			ZWrite Off
 			ZTest LEqual
+			Offset 0, -1
 
 			CGPROGRAM
 			#pragma target 3.0

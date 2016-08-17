@@ -1,26 +1,16 @@
 ﻿using System;
-using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Proxies;
 
 namespace UnityEngine.VR.Modules
 {
-	public class MultipleRayInputModule : PointerInputModule
+	public class MultipleRayInputModule : BaseInputModule
 	{
-		[SerializeField]
-		public Camera EventCameraPrefab; // Camera to be instantiated and assigned to EventCamera property
+		private readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
 
-		private readonly List<RaycastSource> m_RaycastSources = new List<RaycastSource>();
-		private Dictionary<Transform, int> m_RayOriginToPointerID = new Dictionary<Transform, int>();
-		private List<RayEventData> PointEvents = new List<RayEventData>();
-		private List<GameObject> CurrentPoint = new List<GameObject>();
-		private List<GameObject> CurrentPressed = new List<GameObject>();
-		private List<GameObject> CurrentDragging = new List<GameObject>();
+		public Func<Transform, float> getPointerLength;
 
 		public Camera eventCamera
 		{
@@ -49,6 +39,11 @@ namespace UnityEngine.VR.Modules
 			public IProxy proxy; // Needed for checking if proxy is active
 			public Transform rayOrigin;
 			public UIActions actionMapInput;
+			public RayEventData eventData;
+			public GameObject hoveredObject;
+			public GameObject pressedObject;
+			public GameObject draggedObject;
+
 
 			public RaycastSource(IProxy proxy, Transform rayOrigin, UIActions actionMapInput)
 			{
@@ -70,27 +65,18 @@ namespace UnityEngine.VR.Modules
 			Transform rayOrigin = null;
 			if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
 			{
-				m_RayOriginToPointerID.Add(rayOrigin, m_RaycastSources.Count);
-				m_RaycastSources.Add(new RaycastSource(proxy, rayOrigin, actions));
+				m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, actions));
 			}
 			else
 				Debug.LogError("Failed to get ray origin transform for node " + node + " from proxy " + proxy);
 		}
 
-		private Transform GetRayOrigin(int index)
+		public RayEventData GetPointerEventData(Transform rayOrigin)
 		{
-			return m_RaycastSources[index].rayOrigin;
-		}
-
-		public PointerEventData GetPointerEventData(Transform rayOrigin)
-		{
-			int id;
-			if (m_RayOriginToPointerID.TryGetValue(rayOrigin, out id))
-			{
-				if (id >= 0 && id < PointEvents.Count)
-					return PointEvents[id];
-			}
-
+			RaycastSource source;
+			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
+				return source.eventData;
+			
 			return null;
 		}
 
@@ -102,59 +88,50 @@ namespace UnityEngine.VR.Modules
 				return;
 
 			//Process events for all different transforms in RayOrigins
-			for (int i = 0; i < m_RaycastSources.Count; i++)
-			{
-				// Expand lists if needed
-				while (i >= CurrentPoint.Count)
-					CurrentPoint.Add(null);
-				while (i >= CurrentPressed.Count)
-					CurrentPressed.Add(null);
-				while (i >= CurrentDragging.Count)
-					CurrentDragging.Add(null);
-				while (i >= PointEvents.Count)
-					PointEvents.Add(new RayEventData(base.eventSystem));
-
-				PointEvents[i].pointerId = i;
-
-				if (!m_RaycastSources[i].proxy.active)
+			foreach (var source in m_RaycastSources.Values)
+			{				
+				if (!source.proxy.active)
 					continue;
 
-				CurrentPoint[i] = GetRayIntersection(i); // Check all currently running raycasters
+				if (source.eventData == null)
+					source.eventData = new RayEventData(base.eventSystem);
+				source.hoveredObject = GetRayIntersection(source); // Check all currently running raycasters
 
-				var rayEventData = PointEvents[i] as RayEventData;
-				rayEventData.rayOrigin = GetRayOrigin(i);
+				var eventData = source.eventData;
+				eventData.rayOrigin = source.rayOrigin;
+				eventData.pointerLength = getPointerLength(eventData.rayOrigin);
 
-				HandlePointerExitAndEnter(PointEvents[i], CurrentPoint[i]); // Send enter and exit events
+				HandlePointerExitAndEnter(eventData, source.hoveredObject); // Send enter and exit events
 
 				// Activate actionmap input only if pointer is interacting with something
-				m_RaycastSources[i].actionMapInput.active = (CurrentPoint[i] != null && CurrentPoint[i].layer == UILayer) || 
-															CurrentPressed[i] != null ||
-															CurrentDragging[i] != null;
+				var hoveredObject = source.hoveredObject;
+				var pressedObject = source.pressedObject;
+				var draggedObject = source.draggedObject;
+				source.actionMapInput.active = (hoveredObject != null && hoveredObject.layer == UILayer) 
+												|| pressedObject != null || draggedObject != null;
 
-				if (!m_RaycastSources[i].actionMapInput.active)
+				if (!source.actionMapInput.active)
 					continue;
 
 				// Send select pressed and released events
-				if (m_RaycastSources[i].actionMapInput.select.wasJustPressed)
-					OnSelectPressed(i);
+				if (source.actionMapInput.select.wasJustPressed)
+					OnSelectPressed(source);
 
-				if (m_RaycastSources[i].actionMapInput.select.wasJustReleased)
-					OnSelectReleased(i);
+				if (source.actionMapInput.select.wasJustReleased)
+					OnSelectReleased(source);
 
-				if (CurrentDragging[i] != null)
+				if (source.draggedObject != null)
 				{
-					ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteEvents.dragHandler);
-					ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteRayEvents.dragHandler);
+					ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.dragHandler);
+					ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.dragHandler);
 				}
 
 				// Send scroll events
-				if (CurrentPressed[i] != null)
+				if (source.pressedObject != null)
 				{
-					PointEvents[i].scrollDelta = new Vector2(0f, m_RaycastSources[i].actionMapInput.verticalScroll.value);
-					ExecuteEvents.ExecuteHierarchy(CurrentPoint[i], PointEvents[i], ExecuteEvents.scrollHandler);
+					eventData.scrollDelta = new Vector2(0f, source.actionMapInput.verticalScroll.value);
+					ExecuteEvents.ExecuteHierarchy(hoveredObject, eventData, ExecuteEvents.scrollHandler);
 				}
-
-				m_PointerData[i] = PointEvents[i];
 			}
 		}
 
@@ -230,61 +207,68 @@ namespace UnityEngine.VR.Modules
 			}
 		}
 
-		private void OnSelectPressed(int i)
+		private void OnSelectPressed(RaycastSource source)
 		{
 			Deselect();
 
-			PointEvents[i].pressPosition = PointEvents[i].position;
-			PointEvents[i].pointerPressRaycast = PointEvents[i].pointerCurrentRaycast;
-			PointEvents[i].pointerPress = CurrentPoint[i];
+			var eventData = source.eventData;
+			var hoveredObject = source.hoveredObject;
+			eventData.pressPosition = eventData.position;
+			eventData.pointerPressRaycast = eventData.pointerCurrentRaycast;
+			eventData.pointerPress = hoveredObject;
 
-			if (CurrentPoint[i] != null) // Pressed when pointer is over something
+			if (hoveredObject != null) // Pressed when pointer is over something
 			{
-				CurrentPressed[i] = CurrentPoint[i];
-				GameObject newPressed = ExecuteEvents.ExecuteHierarchy(CurrentPressed[i], PointEvents[i], ExecuteEvents.pointerDownHandler);
+				source.pressedObject = hoveredObject;
+				GameObject newPressed = ExecuteEvents.ExecuteHierarchy(source.pressedObject, eventData, ExecuteEvents.pointerDownHandler);
 
 				if (newPressed == null) // Gameobject does not have pointerDownHandler in hierarchy, but may still have click handler
-					newPressed = ExecuteEvents.GetEventHandler<IPointerClickHandler>(CurrentPressed[i]);
+					newPressed = ExecuteEvents.GetEventHandler<IPointerClickHandler>(source.pressedObject);
 
 				if (newPressed != null)
 				{
-					CurrentPressed[i] = newPressed; // Set current pressed to gameObject that handles the pointerDown event, not the root object
-					PointEvents[i].pointerPress = newPressed;
-					Select(CurrentPressed[i]);
-					PointEvents[i].eligibleForClick = true;
+					source.pressedObject = newPressed; // Set current pressed to gameObject that handles the pointerDown event, not the root object
+					eventData.pointerPress = newPressed;
+					Select(source.pressedObject);
+					eventData.eligibleForClick = true;
 				}
-				ExecuteEvents.Execute(CurrentPressed[i], PointEvents[i], ExecuteEvents.beginDragHandler);
-				ExecuteEvents.Execute(CurrentPressed[i], PointEvents[i], ExecuteRayEvents.beginDragHandler);
-				PointEvents[i].pointerDrag = CurrentPressed[i];
-				CurrentDragging[i] = CurrentPressed[i];
+				var pressedObject = source.pressedObject;
+				ExecuteEvents.Execute(pressedObject, eventData, ExecuteEvents.beginDragHandler);
+				ExecuteEvents.Execute(pressedObject, eventData, ExecuteRayEvents.beginDragHandler);
+				eventData.pointerDrag = pressedObject;
+				source.draggedObject = pressedObject;
 			}
 		}
 
-		private void OnSelectReleased(int i)
+		private void OnSelectReleased(RaycastSource source)
 		{
-			if (CurrentPressed[i])
-				ExecuteEvents.Execute(CurrentPressed[i], PointEvents[i], ExecuteEvents.pointerUpHandler);
+			var eventData = source.eventData;
+			var hoveredObject = source.hoveredObject;
+			
+			if (source.pressedObject)
+				ExecuteEvents.Execute(source.pressedObject, eventData, ExecuteEvents.pointerUpHandler);
 
-			if (CurrentDragging[i])
+			if (source.draggedObject)
 			{
-				ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteEvents.endDragHandler);
-				ExecuteEvents.Execute(CurrentDragging[i], PointEvents[i], ExecuteRayEvents.endDragHandler);
+				var draggedObject = source.draggedObject;
+				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.endDragHandler);
+				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.endDragHandler);
 
-				if (CurrentPoint[i] != null)
-					ExecuteEvents.ExecuteHierarchy(CurrentPoint[i], PointEvents[i], ExecuteEvents.dropHandler);
+				if (hoveredObject != null)
+					ExecuteEvents.ExecuteHierarchy(hoveredObject, eventData, ExecuteEvents.dropHandler);
 
-				PointEvents[i].pointerDrag = null;
-				CurrentDragging[i] = null;
+				eventData.pointerDrag = null;
+				source.draggedObject = null;
 			}
 
-			var clickHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(CurrentPoint[i]);
-			if (CurrentPressed[i] == clickHandler && PointEvents[i].eligibleForClick)
-				ExecuteEvents.Execute(clickHandler, PointEvents[i], ExecuteEvents.pointerClickHandler);
+			var clickHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(hoveredObject);
+			if (source.pressedObject == clickHandler && eventData.eligibleForClick)
+				ExecuteEvents.Execute(clickHandler, eventData, ExecuteEvents.pointerClickHandler);
 
-			PointEvents[i].rawPointerPress = null;
-			PointEvents[i].pointerPress = null;
-			PointEvents[i].eligibleForClick = false;
-			CurrentPressed[i] = null;
+			eventData.rawPointerPress = null;
+			eventData.pointerPress = null;
+			eventData.eligibleForClick = false;
+			source.pressedObject = null;
 		}
 
 		public void Deselect()
@@ -301,22 +285,23 @@ namespace UnityEngine.VR.Modules
 				base.eventSystem.SetSelectedGameObject(go);
 		}
 
-		private GameObject GetRayIntersection(int i)
+		private GameObject GetRayIntersection(RaycastSource source)
 		{
 			GameObject hit = null;
 			// Move camera to position and rotation for the ray origin
-			m_EventCamera.transform.position = m_RaycastSources[i].rayOrigin.position;
-			m_EventCamera.transform.rotation = m_RaycastSources[i].rayOrigin.rotation;
+			m_EventCamera.transform.position = source.rayOrigin.position;
+			m_EventCamera.transform.rotation = source.rayOrigin.rotation;
 
-			PointEvents[i].Reset();
-			PointEvents[i].delta = Vector2.zero;
-			PointEvents[i].position = m_EventCamera.pixelRect.center;
-			PointEvents[i].scrollDelta = Vector2.zero;
+			RayEventData eventData = source.eventData;
+			eventData.Reset();
+			eventData.delta = Vector2.zero;
+			eventData.position = m_EventCamera.pixelRect.center;
+			eventData.scrollDelta = Vector2.zero;
 
 			List<RaycastResult> results = new List<RaycastResult>();
-			eventSystem.RaycastAll(PointEvents[i], results);
-			PointEvents[i].pointerCurrentRaycast = FindFirstRaycast(results);
-			hit = PointEvents[i].pointerCurrentRaycast.gameObject;
+			eventSystem.RaycastAll(eventData, results);
+			eventData.pointerCurrentRaycast = FindFirstRaycast(results);
+			hit = eventData.pointerCurrentRaycast.gameObject;
 
 			m_RaycastResultCache.Clear();
 			return hit;

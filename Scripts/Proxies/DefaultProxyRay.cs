@@ -13,6 +13,9 @@ public class DefaultProxyRay : MonoBehaviour
 	[SerializeField]
 	private float m_LineWidth;
 
+	[SerializeField]
+	private MeshFilter m_Cone;
+
 	private enum State
 	{
 		Visible,
@@ -23,6 +26,17 @@ public class DefaultProxyRay : MonoBehaviour
 	private State m_State;
 	private Vector3 m_TipStartScale;
 	private Coroutine m_Transitioning;
+
+	/// <summary>
+	/// The length of the direct selection pointer
+	/// </summary>
+	public float pointerLength
+	{
+		get
+		{
+			return (m_Cone.transform.TransformPoint(m_Cone.sharedMesh.bounds.size.z * Vector3.forward) - m_Cone.transform.position).magnitude;
+		}
+	}
 
 	public void Hide()
 	{

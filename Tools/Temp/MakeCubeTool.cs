@@ -1,14 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
 
 public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay
 {	
-	
-	[SerializeField]
-	private GameObject m_TestPrefab;
-
 	public Standard standardInput
 	{
 		get; set;
@@ -20,7 +15,7 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay
 	{
 		if (standardInput.action.wasJustPressed)
 		{
-			Transform cube = U.Object.InstantiateAndSetActive(m_TestPrefab).transform;
+			Transform cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
 			if (rayOrigin)
 			{
 				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
