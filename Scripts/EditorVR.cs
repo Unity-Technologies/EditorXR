@@ -8,6 +8,7 @@ using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -33,6 +34,9 @@ public class EditorVR : MonoBehaviour
 	private ActionMap m_StandardToolActionMap;
 	[SerializeField]
 	private DefaultProxyRay m_ProxyRayPrefab;
+	[SerializeField]
+	private Camera m_EventCameraPrefab;
+
 	private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
 	private TrackedObject m_TrackedObjectInput;
@@ -233,21 +237,23 @@ public class EditorVR : MonoBehaviour
 		// it's necessary to spawn the tools in a separate non-IEnumerator context.
 		EditorApplication.delayCall += () =>
 		{
-			HashSet<InputDevice> devices;
-
 			// Spawn default tools
+			HashSet<InputDevice> devices;
+			ITool tool;
 			foreach (var deviceData in m_DeviceData)
 			{
 				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
 				if (deviceData.Key.tagIndex == -1)
 					continue;
 
-				var tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 
 				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 			}
+			tool = SpawnTool(typeof(TransformTool), out devices);
+			AddToolToDeviceData(tool, devices);
 		};
 	}
 
@@ -278,16 +284,30 @@ public class EditorVR : MonoBehaviour
 
 			foreach (var rayOrigin in proxy.rayOrigins.Values)
 			{
-				var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
 				var distance = kDefaultRayLength;
-				if (go != null)
+
+				// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
+				// object, so visually show the ray terminating there instead of the object; UI is already given
+				// priority on the input side)
+				var uiEventData = m_InputModule.GetPointerEventData(rayOrigin);
+				if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
 				{
-					var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-					var newDist = distance;
-					foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+					// Set ray length to distance to UI objects
+					distance = uiEventData.pointerCurrentRaycast.distance;
+				}
+				else
+				{
+					// If not hitting UI, then check pixel raycast and approximate bounds to set distance
+					var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+					if (go != null)
 					{
-						if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
-							distance = Mathf.Min(distance, newDist);
+						var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+						var newDist = distance;
+						foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+						{
+							if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
+								distance = Mathf.Min(distance, newDist);
+						}
 					}
 				}
 				m_DefaultRays[rayOrigin].SetLength(distance);
@@ -300,10 +320,10 @@ public class EditorVR : MonoBehaviour
 		// Create event system, input module, and event camera
 		U.Object.AddComponent<EventSystem>(gameObject);
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
-		m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+		m_InputModule.getPointerLength = GetPointerLength;
+		m_EventCamera = U.Object.InstantiateAndSetActive(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
 		m_InputModule.eventCamera = m_EventCamera;
-
 		foreach (var proxy in m_AllProxies)
 		{
 			foreach (var rayOriginBase in proxy.rayOrigins)
@@ -311,7 +331,7 @@ public class EditorVR : MonoBehaviour
 				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
 				{
 					var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
-                    if (device.tagIndex != -1 && m_TagToNode[tags[device.tagIndex]] == rayOriginBase.Key)
+					if (device.tagIndex != -1 && m_TagToNode[tags[device.tagIndex]] == rayOriginBase.Key)
 					{
 						DeviceData deviceData;
 						if (m_DeviceData.TryGetValue(device, out deviceData))
@@ -523,6 +543,18 @@ public class EditorVR : MonoBehaviour
 		var highlightComponent = obj as IHighlight;
 		if (highlightComponent != null)
 			highlightComponent.setHighlight = m_HighlightModule.SetHighlight;
+	}
+
+	private float GetPointerLength(Transform rayOrigin)
+	{
+		float length = 0f;
+		DefaultProxyRay dpr;
+		if (m_DefaultRays.TryGetValue(rayOrigin, out dpr))
+		{
+			length = dpr.pointerLength;
+		}
+
+		return length;
 	}
 
 	private InputDevice GetInputDeviceForTool(ITool tool)
