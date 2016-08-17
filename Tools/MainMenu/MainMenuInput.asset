@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
-  m_Name: MainMenuActionMap
+  m_Name: MainMenuInput
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Actions:
@@ -43,7 +43,7 @@ MonoBehaviour:
       sensitivity: 1000
       snap: 1
       primaryIsButtonAxis: 0
-  m_MapTypeName: MainMenuActionMap, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+  m_MapTypeName: MainMenuInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   m_CustomNamespace: 
 --- !u!114 &114000011099735542
