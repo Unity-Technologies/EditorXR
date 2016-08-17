@@ -32,7 +32,7 @@ public class EditorVR : MonoBehaviour
     [SerializeField]
     private ActionMap m_StandardToolActionMap;
     [SerializeField]
-    private ActionMap m_MainMenuActionMap;
+    private ActionMap m_MainMenuInput;
     [SerializeField]
     private MainMenu m_MainMenuPrefab;
     [SerializeField]
@@ -42,7 +42,7 @@ public class EditorVR : MonoBehaviour
     private TrackedObject m_TrackedObjectInput;
     private Default m_DefaultActionInput;
     private Menu m_MenuActionInput;
-    private MainMenuActionMap m_MainMenuActionInput;
+    private MainMenuInput m_MainMenuActionInput;
 
     private MultipleRayInputModule m_InputModule;
     private Camera m_EventCamera;
@@ -55,7 +55,7 @@ public class EditorVR : MonoBehaviour
     {
         public Stack<ITool> tools;
         public ActionMapInput uiInput;
-        public MainMenuActionMap mainMenuActionMapInput;
+        public MainMenuInput mainMenuInputInput;
         public IMainMenu mainMenu;
         public ITool currentTool;
     }
@@ -104,7 +104,7 @@ public class EditorVR : MonoBehaviour
             {
                 tools = new Stack<ITool>()
             };
-            deviceData.mainMenuActionMapInput = (MainMenuActionMap)CreateActionMapInput(m_MainMenuActionMap, device);
+            deviceData.mainMenuInputInput = (MainMenuInput)CreateActionMapInput(m_MainMenuInput, device);
             m_DeviceData.Add(device, deviceData);
         }
     }
@@ -378,8 +378,8 @@ public class EditorVR : MonoBehaviour
                 }
             }
 
-            if (deviceData.mainMenu != null && deviceData.mainMenu.mainMenuActionInput != null)
-                maps.Add(deviceData.mainMenu.mainMenuActionInput);
+            if (deviceData.mainMenu != null && deviceData.mainMenu.mainMenuInput != null)
+                maps.Add(deviceData.mainMenu.mainMenuInput);
         }
 
         maps.Add(m_MenuActionInput);
@@ -448,7 +448,7 @@ public class EditorVR : MonoBehaviour
         
         IMainMenu mainMenu = U.Object.InstantiateAndSetActive(m_MainMenuPrefab.gameObject, transform).GetComponent<IMainMenu>();
         mainMenu.eventCamera = m_EventCamera;
-        mainMenu.mainMenuActionInput = m_DeviceData[device].mainMenuActionMapInput;
+        mainMenu.mainMenuInput = m_DeviceData[device].mainMenuInputInput;
         mainMenu.menuTools = m_AllTools.ToList();
         mainMenu.selectTool = SelectTool;
         mainMenu.tagIndex = device.tagIndex;

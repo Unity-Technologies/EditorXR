@@ -14,7 +14,7 @@ namespace UnityEngine.VR.Tools
 		/// <summary>
 		/// The action map input used to drive the menu
 		/// </summary>
-		MainMenuActionMap mainMenuActionInput { get; set; }
+		MainMenuInput mainMenuInput { get; set; }
 
 		/// <summary>
 		/// The transform under which the menu input object should be parented, inheriting position, scale, and rotation

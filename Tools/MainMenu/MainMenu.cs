@@ -57,7 +57,7 @@ namespace UnityEngine.VR.Tools
 		private Material m_InputHighlightLeftMaterial;
 		private Material m_InputHighlightRightMaterial;
 		private Material m_InputOuterBorderMaterial;
-		private MainMenuActionMap m_MainMenuActionInput;
+		private MainMenuInput m_MainMenuActionInput;
 		private List<MainMenuFace> m_MenuFaces;
 		private Material m_MenuFacesMaterial;
 		private Color m_MenuFacesColor;
@@ -80,7 +80,7 @@ namespace UnityEngine.VR.Tools
 
 		private static readonly int s_FaceCount = 4;
 		
-		public MainMenuActionMap mainMenuActionInput
+		public MainMenuInput mainMenuInput
 		{
 			get { return m_MainMenuActionInput; }
 			set { m_MainMenuActionInput = value; }

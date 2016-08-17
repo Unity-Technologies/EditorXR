@@ -24,7 +24,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
     public Func<int, Type, bool> selectTool { private get; set; }
     public Transform menuOrigin { get; set; }
     public Transform menuInputOrigin { get; set; }
-    public MainMenuActionMap mainMenuActionInput  { get; set; }
+    public MainMenuInput mainMenuInput  { get; set; }
     public int tagIndex { get; set; }
     public Camera eventCamera { get; set; }
     public Func<GameObject, GameObject> instantiateUI { private get; set; }
