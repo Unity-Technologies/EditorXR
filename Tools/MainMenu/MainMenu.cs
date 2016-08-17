@@ -17,7 +17,8 @@ namespace UnityEngine.VR.Tools
 		{
 			AtRest,
 			Rotating,
-			Snapping
+			Snapping,
+			FlickSnapping
 		}
 
 		private enum VisibilityState
@@ -57,7 +58,7 @@ namespace UnityEngine.VR.Tools
 		private Material m_InputHighlightLeftMaterial;
 		private Material m_InputHighlightRightMaterial;
 		private Material m_InputOuterBorderMaterial;
-		private MainMenuInput m_MainMenuActionInput;
+		private MainMenuInput m_MainMenuInput;
 		private List<MainMenuFace> m_MenuFaces;
 		private Material m_MenuFacesMaterial;
 		private Color m_MenuFacesColor;
@@ -70,8 +71,13 @@ namespace UnityEngine.VR.Tools
 		private RotationState m_RotationState;
 		private Transform m_Transform;
 		private VisibilityState m_VisibilityState;
+		private float m_InputDirection;
+		private float m_InputFlickStartTime;
+		private float m_InputFlickRate;
 
-		private readonly float kRotationRateMax = 200f;
+		private const float kFaceRotationSnapAngle = 90;
+		private const float kRotationRateMax = 200f;
+
 		private readonly string kUncategorizedFaceName = "Uncategorized";
 		private readonly string kInputHighlightColorProperty = "_Color";
 		private readonly string kInputHighlightTopProperty = "_ColorTop";
@@ -82,8 +88,8 @@ namespace UnityEngine.VR.Tools
 		
 		public MainMenuInput mainMenuInput
 		{
-			get { return m_MainMenuActionInput; }
-			set { m_MainMenuActionInput = value; }
+			get { return m_MainMenuInput; }
+			set { m_MainMenuInput = value; }
 		}
 
 		public Transform menuInputOrigin
@@ -113,13 +119,11 @@ namespace UnityEngine.VR.Tools
 		}
 		
 		public Camera eventCamera { get; set; }
-
 		public Action hideDefaultRay { get; set; }
 		public Action showDefaultRay { get; set; }
 		public Action<object> lockRay { get; set; }
 		public Action<object> unlockRay { get; set; }
 		public Transform rayOrigin { get; set; }
-
 		public List<Type> menuTools { private get; set; }
 		public Func<int, Type, bool> selectTool { private get; set; }
 		public int tagIndex { get; set; }
@@ -157,7 +161,8 @@ namespace UnityEngine.VR.Tools
 			m_MenuFaces = new List<MainMenuFace>();
 			for (int faceCount = 0; faceCount < s_FaceCount; ++faceCount)
 			{
-				var faceTransform = Utilities.U.Object.InstantiateAndSetActive(m_MenuFacePrefab.gameObject).transform;
+				// Add faces to the menu
+				var faceTransform = U.Object.InstantiateAndSetActive(m_MenuFacePrefab.gameObject).transform;
 				faceTransform.SetParent(m_MenuFaceContainers[faceCount]);
 				faceTransform.localRotation = Quaternion.identity;
 				faceTransform.localScale = Vector3.one;
@@ -172,7 +177,7 @@ namespace UnityEngine.VR.Tools
 			if (menuTools != null && menuTools.Any())
 				CreateToolButtons();
 			else
-				Debug.LogError("Menu Tools was not found in the project. Could not create menu contents!");
+				Debug.LogError("Menu Tools were not found in the project. Could not create menu contents!");
 
 			menuOrigin.localScale = Vector3.zero;
 			menuInputOrigin.localScale = Vector3.zero;
@@ -180,13 +185,13 @@ namespace UnityEngine.VR.Tools
 
 		private void Update()
 		{
-			if (m_MainMenuActionInput == null)
+			if (m_MainMenuInput == null)
 				return;
 			
 			if (m_VisibilityState == VisibilityState.TransitioningIn || m_VisibilityState == VisibilityState.TransitioningOut)
 				return;
 
-			if (m_MainMenuActionInput.show.wasJustPressed)
+			if (m_MainMenuInput.show.wasJustPressed)
 			{
 				switch (m_VisibilityState)
 				{
@@ -196,16 +201,13 @@ namespace UnityEngine.VR.Tools
 					case VisibilityState.Visible:
 						StartCoroutine(AnimateHide());
 						return;
-					case VisibilityState.TransitioningIn: // TODO: remove, the return happens before this switch
-					case VisibilityState.TransitioningOut:
-						return;
 				}
 			}
 
 			if (m_VisibilityState == VisibilityState.Hidden)
 				return;
 
-			if (!Mathf.Approximately(0f, m_MainMenuActionInput.rotate.rawValue))
+			if (!Mathf.Approximately(0f, m_MainMenuInput.rotate.rawValue) && m_RotationState != RotationState.FlickSnapping)
 			{
 				if (m_RotationState != RotationState.Rotating)
 				{
@@ -213,23 +215,39 @@ namespace UnityEngine.VR.Tools
 						face.BeginRotationVisuals();
 
 					m_RotationState = RotationState.Rotating;
+					m_InputFlickStartTime = Time.realtimeSinceStartup;
+					m_InputFlickRate = 0f;
 
 					StartCoroutine(AnimateFrameRotationShapeChange(RotationState.Rotating));
 				}
 
-				float direction = m_MainMenuActionInput.rotate.rawValue;
-				m_RotationRate = m_RotationRate < kRotationRateMax ? m_RotationRate += Time.unscaledDeltaTime * 250 : kRotationRateMax;
-				m_MenuFaceRotationOrigin.Rotate(Vector3.up, -direction * m_RotationRate * Time.unscaledDeltaTime);
-				m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, direction > 0 ? Color.white: Color.clear);
-				m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, direction < 0 ? Color.white: Color.clear);
+				const float rotationSpeed = 250;
+				m_InputDirection = m_MainMenuInput.rotate.rawValue;
+				m_InputFlickRate = Mathf.Max(m_InputFlickRate, Mathf.Abs(m_InputDirection)); // cache the larger x axis delta of input rotation
+				m_RotationRate = m_RotationRate < kRotationRateMax ? m_RotationRate += Time.unscaledDeltaTime * rotationSpeed : kRotationRateMax;
+				m_MenuFaceRotationOrigin.Rotate(Vector3.up, -m_InputDirection * m_RotationRate * Time.unscaledDeltaTime);
+				m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, m_InputDirection > 0 ? Color.white: Color.clear);
+				m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, m_InputDirection < 0 ? Color.white: Color.clear);
 			}
 			else {
 				m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
 				m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
-				m_RotationRate = m_RotationRate > 0 ? m_RotationRate -= Time.unscaledDeltaTime : 0f;
+				m_RotationRate = m_RotationRate > 0 ? m_RotationRate -= Time.unscaledDeltaTime : 0f;  // Allow for the smooth resumption of rotation if rotation is resumed before snapping is stopped
 
-				if (m_RotationState == RotationState.Rotating)
-					StartCoroutine(SnapToFace());
+				if (m_RotationState == RotationState.Rotating) // snap to face if a manual rotation was occurring
+				{
+					float flickToFaceDirection = 0;
+					const float kFlickDeltaThreshold = 0.5f;
+					const float kFlickDurationThreshold = 0.3f;
+					if (Mathf.Abs(m_InputFlickRate) > kFlickDeltaThreshold && Time.realtimeSinceStartup - m_InputFlickStartTime < kFlickDurationThreshold) // perform a quick single face rotation if a quick flick of the input axis occurred
+						flickToFaceDirection = m_InputDirection;
+
+					m_InputFlickRate = 100;
+					m_InputFlickStartTime = 0;
+					m_InputDirection = 0;
+
+					StartCoroutine(SnapToFace(flickToFaceDirection));
+				}
 			}
 		}
 
@@ -251,10 +269,10 @@ namespace UnityEngine.VR.Tools
 		{
 			m_MenuFaceToButtons = new Dictionary<string, List<Transform>>();
 			List<Transform> uncategorizedTransforms = new List<Transform>();
-			m_MenuFaceToButtons.Add(kUncategorizedFaceName, uncategorizedTransforms);
-
 			List<MainMenuButton> buttons = new List<MainMenuButton>();
 
+			m_MenuFaceToButtons.Add(kUncategorizedFaceName, uncategorizedTransforms);
+			
 			foreach (var menuTool in menuTools)
 			{
 				if (menuTool != null)
@@ -315,38 +333,39 @@ namespace UnityEngine.VR.Tools
 			b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
 		}
 
-		private IEnumerator SnapToFace()
+		private IEnumerator SnapToFace(float flickDirection)
 		{
 			// when the user releases their input while rotating the menu, snap to the nearest face
-			m_RotationState = RotationState.Snapping;
+			flickDirection = Mathf.RoundToInt(flickDirection);
+			m_RotationState = flickDirection != 0 ? RotationState.FlickSnapping : RotationState.Snapping;
 			StartCoroutine(AnimateFrameRotationShapeChange(m_RotationState));
 
 			foreach (var face in m_MenuFaces)
 				face.EndRotationVisuals();
-			
-			m_RotationRate = 0f;
 
-			// Snap if not already aligned
-			if (Mathf.Abs(m_MenuFaceRotationOrigin.localRotation.eulerAngles.y % 90) > 1f)
+			const float kAngleThresholdForSnap = 1f;
+			if (flickDirection != 0 || Mathf.Abs(m_MenuFaceRotationOrigin.localRotation.eulerAngles.y % kFaceRotationSnapAngle) > kAngleThresholdForSnap) // Snap if not already aligned
 			{
 				float smoothTransitionIntoSnap = 0.5f;
-				const float kTargetSnapSpeed = 4f;
+				float targetSnapSpeed = flickDirection == 0 ? 5f : 10f; // If flicking, given UX intention, move faster to intended face
+
 				const float kTargetSnapThreshold = 0.0005f;
 				const float kEaseStepping = 1f;
 
 				Vector3 roundedRotation = m_MenuFaceRotationOrigin.localRotation.eulerAngles;
-				roundedRotation.y = Mathf.Round(roundedRotation.y / 90) * 90;
-				
-				while (m_RotationState == RotationState.Snapping && Mathf.Abs(m_MenuFaceRotationOrigin.localRotation.eulerAngles.y - roundedRotation.y) > 1f)
+				roundedRotation.y = Mathf.Round((roundedRotation.y - (kFaceRotationSnapAngle * flickDirection)) / kFaceRotationSnapAngle) * kFaceRotationSnapAngle; // set new target rotation, add any potential flick rotation
+				while ((m_RotationState == RotationState.Snapping || m_RotationState == RotationState.FlickSnapping) && Mathf.Abs(m_MenuFaceRotationOrigin.localRotation.eulerAngles.y - roundedRotation.y) > 1f)
 				{
-					smoothTransitionIntoSnap = U.Math.Ease(smoothTransitionIntoSnap, kTargetSnapSpeed, kEaseStepping, kTargetSnapThreshold);
+					smoothTransitionIntoSnap = U.Math.Ease(smoothTransitionIntoSnap, targetSnapSpeed, kEaseStepping, kTargetSnapThreshold);
 					float angle = Mathf.LerpAngle(m_MenuFaceRotationOrigin.localRotation.eulerAngles.y, roundedRotation.y, Time.unscaledDeltaTime * smoothTransitionIntoSnap);
 					m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, angle, 0));
 					yield return null;
 				}
 			}
 
-			m_RotationState = RotationState.AtRest;
+			if (m_RotationState == RotationState.Snapping || m_RotationState == RotationState.FlickSnapping)
+				m_RotationState = RotationState.AtRest;
+
 			m_RotationRate = 0f;
 		}
 
@@ -367,7 +386,7 @@ namespace UnityEngine.VR.Tools
 
 			float scale = 0f;
 
-			while (m_VisibilityState == VisibilityState.TransitioningIn && scale < 1)
+			while (m_VisibilityState == VisibilityState.TransitioningIn && scale < kTargetScale)
 			{
 				menuOrigin.localScale = Vector3.one * scale;
 				menuInputOrigin.localScale = m_MenuInputOriginOriginalLocalScale * scale;
@@ -413,12 +432,17 @@ namespace UnityEngine.VR.Tools
 				m_VisibilityState = VisibilityState.Hidden;
 				menuOrigin.localScale = Vector3.zero;
 				menuInputOrigin.localScale = Vector3.zero;
+				
+				float roundedRotation = m_MenuFaceRotationOrigin.localRotation.eulerAngles.y;
+				roundedRotation = Mathf.Round((roundedRotation) / kFaceRotationSnapAngle) * kFaceRotationSnapAngle; // calculate intended target rotation
+				m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, roundedRotation, 0)); // set intended target rotation
+				m_RotationState = RotationState.AtRest;
 			}
 		}
 
 		private IEnumerator AnimateFrameRotationShapeChange(RotationState rotationState)
 		{
-			float easeDivider = rotationState == RotationState.Rotating ? 8f : 6f;
+			float easeDivider = rotationState == RotationState.Rotating ? 8f : 6f; // slower when rotating, faster when snapping
 			float currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
 			float targetWeight = rotationState == RotationState.Rotating ? 100f : 0f;
 			const float kSnapValue = 0.001f;
@@ -436,8 +460,8 @@ namespace UnityEngine.VR.Tools
 		private IEnumerator AnimateFrameReveal(VisibilityState visibiityState = VisibilityState.TransitioningIn)
 		{
 			m_MenuFrameRenderer.SetBlendShapeWeight(1, 100f);
-			float easeDivider = visibiityState == VisibilityState.TransitioningIn ? 3f : 1.5f;
-			const float zeroStartBlendShapePadding = 20f;
+			float easeDivider = visibiityState == VisibilityState.TransitioningIn ? 3f : 1.5f; // slower if transitioning in
+			const float zeroStartBlendShapePadding = 20f; // start the blendShape at a point slightly above the full hidden value for better visibility
 			float currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(1);
 			float targetWeight = visibiityState == VisibilityState.TransitioningIn ? 0f : 100f;
 			const float kSnapValue = 0.001f;

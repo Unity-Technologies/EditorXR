@@ -97,6 +97,7 @@ namespace UnityEngine.VR.Tools
 
 		public void Show()
 		{
+			m_BorderOutlineTransform.localScale = m_BorderOutlineOriginalLocalScale;
 			StartCoroutine(AnimateShow());
 		}
 
@@ -109,7 +110,7 @@ namespace UnityEngine.VR.Tools
 		{
 			m_CanvasGroup.interactable = false;
 			m_VisualState = targetVisualState;
-			
+
 			float easeDivider = targetVisualState == VisualState.Showing ? 14f : 2f;
 			float startingOpacity = m_CanvasGroup.alpha;
 			float targetOpacity = targetVisualState == VisualState.Showing ? 1f : 0f;
