@@ -17,16 +17,16 @@ namespace UnityEngine.VR.Proxies
         protected Transform m_RightHand;
         protected Transform m_LeftHandRayOrigin;
         protected Transform m_RightHandRayOrigin;
-        private readonly string kRayOriginName = "RayOrigin";
-        protected readonly string kMenuOriginName = "MenuOrigin";
+
+		protected readonly string kMenuOriginName = "MenuOrigin";
         protected readonly string MenuInputOriginName = "MenuInputOrigin";
+
+        private readonly string kRayOriginName = "RayOrigin";
         
         public virtual Dictionary<Node, Transform> rayOrigins
         {
             get { return m_RayOrigins; }
         }
-
-        protected Dictionary<Node, Transform> m_RayOrigins;
 
         public virtual TrackedObject trackedObjectInput { protected get; set; }
 
@@ -48,9 +48,10 @@ namespace UnityEngine.VR.Proxies
             }
         }
 
-        public Transform menuInputOrigin { get; set; }
-        public Transform menuOrigin { get; set; }
-
+        public Dictionary<Node, Transform> menuInputOrigins { get; set; }
+        public Dictionary<Node, Transform> menuOrigins { get; set; }
+        protected Dictionary<Node, Transform> m_RayOrigins;
+		
         public virtual void Awake()
         {
             m_LeftHand = U.Object.InstantiateAndSetActive(m_LeftHandProxyPrefab, transform).transform;
@@ -59,9 +60,23 @@ namespace UnityEngine.VR.Proxies
             m_RightHandRayOrigin = m_RightHand.FindChild(kRayOriginName);
 
             // The menu target transform should only be on the left hand by default, unless specificed otherwise
-            menuOrigin = m_LeftHand.FindChild(kMenuOriginName) ?? m_RightHand.FindChild(kMenuOriginName);
-            if (menuOrigin != null)
-                menuInputOrigin = m_LeftHand.FindChild(MenuInputOriginName) ?? m_RightHand.FindChild(MenuInputOriginName);
+            menuOrigins = new Dictionary<Node, Transform>();
+            menuInputOrigins = new Dictionary<Node, Transform>();
+            var leftHandMenuOrigin = m_LeftHand.FindChild(kMenuOriginName);
+            var rightHandMenuOrigin = m_RightHand.FindChild(kMenuOriginName);
+            var leftHandMenuInputOrigin = leftHandMenuOrigin != null ? m_LeftHand.FindChild(MenuInputOriginName) : null;
+            var rightHandMenuInputOrigin = rightHandMenuOrigin != null ? m_RightHand.FindChild(MenuInputOriginName) : null;
+            if (leftHandMenuInputOrigin != null)
+            {
+                menuOrigins.Add(Node.LeftHand, leftHandMenuOrigin);
+                menuInputOrigins.Add(Node.LeftHand, leftHandMenuInputOrigin);
+            }
+
+            if (rightHandMenuInputOrigin != null)
+            {
+                menuOrigins.Add(Node.RightHand, rightHandMenuOrigin);
+                menuInputOrigins.Add(Node.RightHand, rightHandMenuInputOrigin);
+            }
             
             m_RayOrigins = new Dictionary<Node, Transform>
             {

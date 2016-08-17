@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.VR.Utilities;
 
 public class DefaultProxyRay : MonoBehaviour
@@ -23,25 +23,49 @@ public class DefaultProxyRay : MonoBehaviour
 	private State m_State;
 	private Vector3 m_TipStartScale;
 	private Coroutine m_Transitioning;
+	private bool m_LockRay;
+	private object m_LockRayObject;
+	
+	public void LockRay(object lockCaller)
+	{
+		// Mandate that a single locker caller is allowed to lock the ray
+		// If the reference to the lockRayCaller is deleted, and the ray was not properly
+		// unlocked by the original locking caller allow locking by another object
+		if (m_LockRayObject == null)
+		{
+			m_LockRay = true;
+			m_LockRayObject = lockCaller;
+		}
+	}
+
+	public void UnlockRay(object unlockCaller)
+	{
+		// Only allow unlocking if the original lock caller is null or there is no locker caller set
+		if (m_LockRayObject == unlockCaller || m_LockRayObject == null)
+		{
+			m_LockRay = false;
+			m_LockRayObject = null;
+		}
+	}
 
 	public void Hide()
 	{
-		if (isActiveAndEnabled)
+		if (isActiveAndEnabled && m_LockRay == false)
 		{
 			if (m_State == State.Transitioning)
 				StopAllCoroutines();
-
+			
 			StartCoroutine(HideRay());
 		}
 	}
 
 	public void Show()
 	{
-		if (isActiveAndEnabled)
+		if (isActiveAndEnabled && m_LockRay == false)
 		{
 			if (m_State == State.Transitioning)
 				StopAllCoroutines();
-
+			
 			StartCoroutine(ShowRay());
 		}
 	}
@@ -84,11 +108,9 @@ public class DefaultProxyRay : MonoBehaviour
 	private IEnumerator ShowRay()
 	{
 		m_State = State.Transitioning;
-
-		float currentWidth = m_LineRenderer.widthStart;
-
 		m_Tip.transform.localScale = m_TipStartScale;
 
+		float currentWidth = m_LineRenderer.widthStart;
 		while (currentWidth < m_LineWidth)
 		{
 			currentWidth = U.Math.Ease(currentWidth, m_LineWidth, 5, 0.0005f);

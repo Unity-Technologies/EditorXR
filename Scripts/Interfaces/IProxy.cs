@@ -25,12 +25,12 @@ namespace UnityEngine.VR.Proxies
             set;
         }
 
-        Transform menuOrigin
+        Dictionary<Node, Transform> menuInputOrigins
         {
             get; set;
         }
 
-        Transform menuInputOrigin
+        Dictionary<Node, Transform> menuOrigins
         {
             get; set;
         }

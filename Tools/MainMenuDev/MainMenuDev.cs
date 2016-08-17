@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
+using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 
 [ExecuteInEditMode]
@@ -20,10 +21,11 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 
     public Transform rayOrigin { get; set; }
     public List<Type> menuTools { private get; set; }
-    public Func<IMainMenu, Type, bool> selectTool { private get; set; }
+    public Func<int, Type, bool> selectTool { private get; set; }
     public Transform menuOrigin { get; set; }
     public Transform menuInputOrigin { get; set; }
-    public Menu menuActionInput  { get; set; }
+    public MainMenuActionMap mainMenuActionInput  { get; set; }
+    public int tagIndex { get; set; }
     public Camera eventCamera { get; set; }
     public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
@@ -65,7 +67,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
         b.onClick.RemoveAllListeners();
         b.onClick.AddListener(() =>
         {
-            if (selectTool(this, t))
+            if (selectTool(tagIndex, t))
                 U.Object.Destroy(this);
         });
         b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
