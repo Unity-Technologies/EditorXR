@@ -33,17 +33,23 @@ public class ChessboardWorkspace : Workspace
 	{
 		base.Setup();
 		U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspacePrefab.sceneContainer, false);
+		//Set up MiniWorld
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
 		m_MiniWorld.referenceTransform.position = Vector3.up * kClipBoxYOffset;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * kClipBoxInitScale;
 		m_ChessboardPrefab = GetComponentInChildren<ChessboardPrefab>();
 		m_GridMaterial = m_ChessboardPrefab.grid.sharedMaterial;
 
-		//Control box shouldn't move with miniWorld
+		//Set up ControlBox
+		//ControlBox shouldn't move with miniWorld
 		var controlBox = m_ChessboardPrefab.controlBox;
 		controlBox.parent = m_WorkspacePrefab.sceneContainer;
 		controlBox.localPosition = Vector3.down * controlBox.localScale.y * 0.5f;
+		m_ChessboardPrefab.OnControlDragStart = ControlDragStart;
+		m_ChessboardPrefab.OnControlDrag = ControlDrag;
+		m_ChessboardPrefab.OnControlDragEnd = ControlDragEnd;
 
+		//Set up UI
 		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspacePrefab.frontPanel, false);
 		var chessboardUI = UI.GetComponentInChildren<ChessboardUI>();
 		chessboardUI.OnZoomSlider = OnZoomSlider;
@@ -105,7 +111,7 @@ public class ChessboardWorkspace : Workspace
 			case 1:
 				//Translate
 				var controlData = m_ControlDatas[rayOrigin];
-				m_MiniWorld.referenceTransform.position = controlData.referenceTransformStart + (rayOrigin.transform.position - controlData.rayOriginStart);
+				m_MiniWorld.referenceTransform.position = controlData.referenceTransformStart + Vector3.Scale(controlData.rayOriginStart - rayOrigin.transform.position, m_MiniWorld.referenceTransform.localScale);
 				break;
 			case 2:
 				//Translate/Scale

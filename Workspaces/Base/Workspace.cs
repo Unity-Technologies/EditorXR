@@ -62,6 +62,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 	private Vector3 dragStart;
 	private Vector3 positionStart;
 	private Vector3 boundSizeStart;
+	private bool m_Dragging;
 
 	public virtual void Setup()
 	{
@@ -89,35 +90,43 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 		positionStart = transform.position;
 		dragStart = rayOrigin.position;
 		boundSizeStart = contentBounds.size;
+		m_Dragging = true;
 	}
 
 	public virtual void OnHandleDrag(Transform rayOrigin, Direction direction)
 	{
-		Vector3 dragVector = rayOrigin.position - dragStart;
-		Debug.DrawLine(transform.position, transform.position + transform.right * 10);
-		Bounds tmpBounds = contentBounds;
-		Vector3 positionOffset = Vector3.zero;
-		switch (direction)
+		if (m_Dragging)
 		{
-			case Direction.LEFT:
-				tmpBounds.size = boundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
-				positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
-				break;
-			case Direction.FRONT:
-				tmpBounds.size = boundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
-				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
-				break;
-			case Direction.RIGHT:
-				tmpBounds.size = boundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
-				positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
-				break;
-			case Direction.BACK:
-				tmpBounds.size = boundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
-				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
-				break;
+			Vector3 dragVector = rayOrigin.position - dragStart;
+			Bounds tmpBounds = contentBounds;
+			Vector3 positionOffset = Vector3.zero;
+			switch (direction)
+			{
+				case Direction.LEFT:
+					tmpBounds.size = boundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
+					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
+					break;
+				case Direction.FRONT:
+					tmpBounds.size = boundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
+					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
+					break;
+				case Direction.RIGHT:
+					tmpBounds.size = boundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
+					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
+					break;
+				case Direction.BACK:
+					tmpBounds.size = boundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
+					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
+					break;
+			}
+			contentBounds = tmpBounds;
+			transform.position = positionStart + positionOffset;
 		}
-		contentBounds = tmpBounds;
-		transform.position = positionStart + positionOffset;
+	}
+
+	public virtual void OnHandleDragEnd(Transform rayOrigin, Direction direction)
+	{
+		m_Dragging = false;
 	}
 
 	public virtual void Close()
