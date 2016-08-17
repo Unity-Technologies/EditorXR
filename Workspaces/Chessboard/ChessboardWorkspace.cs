@@ -32,7 +32,7 @@ public class ChessboardWorkspace : Workspace
 	public override void Setup()
 	{
 		base.Setup();
-		U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+		U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspacePrefab.sceneContainer, false);
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
 		m_MiniWorld.referenceTransform.position = Vector3.up * kClipBoxYOffset;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * kClipBoxInitScale;
@@ -41,10 +41,10 @@ public class ChessboardWorkspace : Workspace
 
 		//Control box shouldn't move with miniWorld
 		var controlBox = m_ChessboardPrefab.controlBox;
-		controlBox.parent = m_WorkspaceUI.sceneContainer;
+		controlBox.parent = m_WorkspacePrefab.sceneContainer;
 		controlBox.localPosition = Vector3.down * controlBox.localScale.y * 0.5f;
 
-		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
+		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspacePrefab.frontPanel, false);
 		var chessboardUI = UI.GetComponentInChildren<ChessboardUI>();
 		chessboardUI.OnZoomSlider = OnZoomSlider;
 		chessboardUI.zoomSlider.maxValue = kMaxScale;
@@ -53,10 +53,8 @@ public class ChessboardWorkspace : Workspace
 		OnBoundsChanged();
 	}
 
-	public override void Update()
+	private void Update()
 	{
-		base.Update();
-
 		//Set grid height, deactivate if out of bounds
 		float gridHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
 		if (Mathf.Abs(gridHeight) < contentBounds.extents.y)

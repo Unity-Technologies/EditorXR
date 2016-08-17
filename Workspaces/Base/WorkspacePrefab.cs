@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
-public class WorkspaceUI : MonoBehaviour
+public class WorkspacePrefab : MonoBehaviour
 {
 	public Action OnCloseClick { private get; set; }
 	public Action<Transform, Transform> OnHandleDragStart { private get; set; }
