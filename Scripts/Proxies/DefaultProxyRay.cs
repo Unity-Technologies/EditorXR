@@ -72,7 +72,7 @@ public class DefaultProxyRay : MonoBehaviour
 	{
 		m_TipStartScale = m_Tip.transform.localScale;
 		m_State = State.Visible;
-		directRayLength = m_Cone.sharedMesh.bounds.size.z * m_Cone.transform.lossyScale.z;
+		directRayLength = (m_Cone.transform.TransformPoint(m_Cone.sharedMesh.bounds.size.z * Vector3.forward) - m_Cone.transform.position).magnitude;
 	}
 
 	private IEnumerator HideRay()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 public class WorkspaceUI : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class WorkspaceUI : MonoBehaviour
 	public SelectionHelper grabHandle;
 
 	private const float kPanelOffset = 0.1f; //The panel needs to be pulled back slightly
+
 	[SerializeField]
 	private Transform m_BoundsCube;
 
@@ -55,6 +57,16 @@ public class WorkspaceUI : MonoBehaviour
 		if (handle == backHandle)
 			direction = Workspace.Direction.BACK;
 		OnHandleDrag(rayOrigin, direction);
+	}
+
+	public void ControlDragStart(Transform controlBox, Transform rayOrigin)
+	{
+		
+	}
+
+	public void ControlDrag(Transform controlBox, Transform rayOrigin)
+	{
+
 	}
 
 	public void CloseClick()
