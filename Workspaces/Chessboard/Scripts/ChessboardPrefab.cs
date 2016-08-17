@@ -6,31 +6,24 @@ public class ChessboardPrefab : MonoBehaviour
 {
 	public Renderer grid;
 	public Action<Transform, Transform> OnControlDragStart { private get; set; }
-	public Action<Transform, Workspace.Direction> OnControlDrag { private get; set; }
-	public Action<Transform, Workspace.Direction> OnControlEnd { private get; set; }
-
-	private readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform,Vector3>();
+	public Action<Transform, Transform> OnControlDrag { private get; set; }
+	public Action<Transform, Transform> OnControlDragEnd { private get; set; }
 
 	public void ControlDragStart(Transform controlBox, Transform rayOrigin)
 	{
-		m_DragStarts[rayOrigin] = rayOrigin.position;
+		if (OnControlDragStart != null)
+			OnControlDragStart(controlBox, rayOrigin);
 	}
 
 	public void ControlDrag(Transform controlBox, Transform rayOrigin)
 	{
-		switch (m_DragStarts.Count)
-		{
-			case 1:
-				//Translate
-				break;
-			case 2:
-				//Scale
-				break;
-		}
+		if (OnControlDrag != null)
+			OnControlDrag(controlBox, rayOrigin);
 	}
 
 	public void ControlDragEnd(Transform controlBox, Transform rayOrigin)
 	{
-		m_DragStarts.Remove(rayOrigin);
+		if (OnControlDragEnd != null)
+			OnControlDragEnd(controlBox, rayOrigin);
 	}
 }

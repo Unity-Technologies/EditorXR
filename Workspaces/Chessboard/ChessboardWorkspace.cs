@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.VR.Utilities;
 
 public class ChessboardWorkspace : Workspace
@@ -18,6 +19,15 @@ public class ChessboardWorkspace : Workspace
 	private MiniWorld m_MiniWorld;
 	private ChessboardPrefab m_ChessboardPrefab;
 	private Material m_GridMaterial;
+	
+	private readonly Dictionary<Transform, ControlData> m_ControlDatas = new Dictionary<Transform, ControlData>();
+
+	private class ControlData
+	{
+		public Vector3 rayOriginStart;
+		public Vector3 referenceTransformStart;
+		public int order;
+	}
 
 	public override void Setup()
 	{
@@ -72,5 +82,30 @@ public class ChessboardWorkspace : Workspace
 	private void OnZoomSlider(float value)
 	{
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
+	}
+
+	public void ControlDragStart(Transform controlBox, Transform rayOrigin)
+	{
+		m_ControlDatas[rayOrigin] = new ControlData { rayOriginStart = rayOrigin.position, referenceTransformStart = m_MiniWorld.referenceTransform.position , order = m_ControlDatas.Count };
+	}
+
+	public void ControlDrag(Transform controlBox, Transform rayOrigin)
+	{
+		switch (m_ControlDatas.Count)
+		{
+			case 1:
+				//Translate
+				var controlData = m_ControlDatas[rayOrigin];
+				m_MiniWorld.referenceTransform.position = controlData.referenceTransformStart + (rayOrigin.transform.position - controlData.rayOriginStart);
+				break;
+			case 2:
+				//Translate/Scale
+				break;
+		}
+	}
+
+	public void ControlDragEnd(Transform controlBox, Transform rayOrigin)
+	{
+		m_ControlDatas.Remove(rayOrigin);
 	}
 }
