@@ -4,14 +4,15 @@ namespace UnityEngine.VR.Handles
 {
 	public class LinearHandle : BaseHandle, IRayDragHandler, IRayHoverHandler
 	{
-		private const float kMaxDragDistance = 1000f;
-		private Collider m_PlaneCollider;
-		private Vector3 m_LastPosition;
-
 		[SerializeField]
 		private Transform m_HandleTip;
 
-		void OnDisable()
+		private const float kMaxDragDistance = 1000f;
+
+		private Plane m_Plane;
+		private Vector3 m_LastPosition;
+
+		private void OnDisable()
 		{
 			if (m_HandleTip != null)
 				m_HandleTip.gameObject.SetActive(false);
@@ -55,20 +56,12 @@ namespace UnityEngine.VR.Handles
 			base.OnBeginDrag(eventData);
 
 			m_LastPosition = eventData.pointerCurrentRaycast.worldPosition;
-			if (m_PlaneCollider != null)
-				DestroyImmediate(m_PlaneCollider.gameObject);
 
-			m_PlaneCollider = GameObject.CreatePrimitive(PrimitiveType.Quad).GetComponent<Collider>();
-			m_PlaneCollider.transform.SetParent(eventData.pressEventCamera.transform.parent);
-			m_PlaneCollider.transform.localScale = Vector3.one*kMaxDragDistance;
-			m_PlaneCollider.transform.position = transform.position;
-
-			var forward = transform.InverseTransformVector(m_RayOrigin.forward);
-			forward.z = 0;
-			m_PlaneCollider.transform.forward = transform.TransformVector(forward);
-
-			m_PlaneCollider.GetComponent<Renderer>().enabled = false;
-			m_PlaneCollider.gameObject.layer = LayerMask.NameToLayer("UI");
+			// Create a plane through the axis that rotates to avoid being parallel to the ray, so that you can prevent
+			// intersections at infinity
+			var forward = transform.InverseTransformVector(eventData.rayOrigin.forward);
+			forward.z = 0;			
+			m_Plane.SetNormalAndPosition(transform.TransformVector(forward), transform.position);
 
 			UpdateHandleTip(eventData);
 
@@ -77,18 +70,21 @@ namespace UnityEngine.VR.Handles
 
 		public void OnDrag(RayEventData eventData)
 		{
+			Transform rayOrigin = eventData.rayOrigin;
 			Vector3 worldPosition = m_LastPosition;
-			RaycastHit hit;
-			if (m_PlaneCollider.Raycast(new Ray(m_RayOrigin.position, m_RayOrigin.forward), out hit, Mathf.Infinity))
-				//TODO cache collider
-				worldPosition = hit.point;
+
+			// Continue to rotate plane, so that the ray direction isn't parallel to the plane
+			var forward = transform.InverseTransformVector(rayOrigin.forward);
+			forward.z = 0;
+			m_Plane.normal = transform.TransformVector(forward);
+
+			float distance = 0f;
+			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
+			if (m_Plane.Raycast(ray, out distance))
+				worldPosition = ray.GetPoint(Mathf.Min(Mathf.Abs(distance), kMaxDragDistance));
 
 			var delta = worldPosition - m_LastPosition;
 			m_LastPosition = worldPosition;
-
-			var forward = transform.InverseTransformVector(m_RayOrigin.forward);
-			forward.z = 0;
-			m_PlaneCollider.transform.forward = transform.TransformVector(forward);
 
 			delta = transform.InverseTransformVector(delta);
 			delta.x = 0;
@@ -104,18 +100,9 @@ namespace UnityEngine.VR.Handles
 		{
 			base.OnEndDrag(eventData);
 
-			if (m_PlaneCollider != null)
-				DestroyImmediate(m_PlaneCollider.gameObject);
-
 			UpdateHandleTip(eventData);
 
 			OnHandleEndDrag();
-		}
-
-		void OnDestroy()
-		{
-			if (m_PlaneCollider != null)
-				DestroyImmediate(m_PlaneCollider.gameObject);
 		}
 	}
 }

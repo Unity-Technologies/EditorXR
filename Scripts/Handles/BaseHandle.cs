@@ -14,7 +14,6 @@ namespace UnityEngine.VR.Handles
 		public event DragEventCallback onHandleDrag;
 		public event DragEventCallback onHandleEndDrag;
 
-		protected Transform m_RayOrigin;
 		protected bool m_Hovering;
 		protected bool m_Dragging;
 
@@ -22,7 +21,6 @@ namespace UnityEngine.VR.Handles
 
 		public virtual void OnBeginDrag(RayEventData eventData)
 		{
-			m_RayOrigin = eventData.rayOrigin;
 			m_Dragging = true;
 			startDragPosition = eventData.pointerCurrentRaycast.worldPosition;
 		}
@@ -34,9 +32,6 @@ namespace UnityEngine.VR.Handles
 
 		public virtual void OnRayEnter(RayEventData eventData)
 		{
-			if (!m_Dragging)
-				m_RayOrigin = eventData.rayOrigin;
-
 			m_Hovering = true;
 		}
 
