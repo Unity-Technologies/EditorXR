@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.VR.Utilities;
 
 public class ChessboardWorkspace : Workspace
@@ -19,14 +18,16 @@ public class ChessboardWorkspace : Workspace
 	private MiniWorld m_MiniWorld;
 	private ChessboardPrefab m_ChessboardPrefab;
 	private Material m_GridMaterial;
-	
-	private readonly Dictionary<Transform, ControlData> m_ControlDatas = new Dictionary<Transform, ControlData>();
+
+	private readonly ControlData[] m_ControlDatas = new ControlData[2];
+	private float m_ScaleStartDistance;
 
 	private class ControlData
 	{
+		public Transform rayOrigin;
 		public Vector3 rayOriginStart;
-		public Vector3 referenceTransformStart;
-		public int order;
+		public Vector3 referenceTransformStartPosition;
+		public Vector3 referenceTransformStartScale;
 	}
 
 	public override void Setup()
@@ -101,26 +102,54 @@ public class ChessboardWorkspace : Workspace
 
 	public void ControlDragStart(Transform controlBox, Transform rayOrigin)
 	{
-		m_ControlDatas[rayOrigin] = new ControlData { rayOriginStart = rayOrigin.position, referenceTransformStart = m_MiniWorld.referenceTransform.position , order = m_ControlDatas.Count };
+		if (m_ControlDatas[0] != null && m_ControlDatas[1] == null)
+		{
+			m_ScaleStartDistance = (m_ControlDatas[0].rayOrigin.position - rayOrigin.position).magnitude;
+		}
+		for (var i = 0; i < m_ControlDatas.Length; i++)
+		{
+			if (m_ControlDatas[i] == null)
+			{
+				m_ControlDatas[i] = new ControlData
+				{
+					rayOrigin = rayOrigin,
+					rayOriginStart = rayOrigin.position,
+					referenceTransformStartPosition = m_MiniWorld.referenceTransform.position,
+					referenceTransformStartScale = m_MiniWorld.referenceTransform.localScale
+				};
+				break;
+			}
+		}
 	}
 
 	public void ControlDrag(Transform controlBox, Transform rayOrigin)
 	{
-		switch (m_ControlDatas.Count)
+		var controlData = m_ControlDatas[0];
+		if (controlData != null)
 		{
-			case 1:
+			if (m_ControlDatas[1] == null)
+			{
 				//Translate
-				var controlData = m_ControlDatas[rayOrigin];
-				m_MiniWorld.referenceTransform.position = controlData.referenceTransformStart + Vector3.Scale(controlData.rayOriginStart - rayOrigin.transform.position, m_MiniWorld.referenceTransform.localScale);
-				break;
-			case 2:
+				m_MiniWorld.referenceTransform.position = controlData.referenceTransformStartPosition + Vector3.Scale(controlData.rayOriginStart - rayOrigin.transform.position, m_MiniWorld.referenceTransform.localScale);
+			}
+			else
+			{
 				//Translate/Scale
-				break;
+				if (m_ControlDatas[0].rayOrigin.Equals(rayOrigin))
+				{
+					m_MiniWorld.referenceTransform.position = controlData.referenceTransformStartPosition + Vector3.Scale(controlData.rayOriginStart - rayOrigin.transform.position, m_MiniWorld.referenceTransform.localScale);
+
+					ControlData otherControl = m_ControlDatas[1];
+					m_MiniWorld.referenceTransform.localScale = otherControl.referenceTransformStartScale * (m_ScaleStartDistance / (otherControl.rayOrigin.position - rayOrigin.position).magnitude);
+				}
+			}
 		}
 	}
 
 	public void ControlDragEnd(Transform controlBox, Transform rayOrigin)
 	{
-		m_ControlDatas.Remove(rayOrigin);
+		for(var i = 0; i < m_ControlDatas.Length; i++)
+			if (m_ControlDatas[i] != null && m_ControlDatas[i].rayOrigin.Equals(rayOrigin))
+				m_ControlDatas[i] = null;
 	}
 }
