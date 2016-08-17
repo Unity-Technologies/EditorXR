@@ -5,6 +5,7 @@ using UnityEngine;
 public class ChessboardPrefab : MonoBehaviour
 {
 	public Renderer grid;
+	public Transform controlBox;
 	public Action<Transform, Transform> OnControlDragStart { private get; set; }
 	public Action<Transform, Transform> OnControlDrag { private get; set; }
 	public Action<Transform, Transform> OnControlDragEnd { private get; set; }

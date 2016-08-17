@@ -39,6 +39,11 @@ public class ChessboardWorkspace : Workspace
 		m_ChessboardPrefab = GetComponentInChildren<ChessboardPrefab>();
 		m_GridMaterial = m_ChessboardPrefab.grid.sharedMaterial;
 
+		//Control box shouldn't move with miniWorld
+		var controlBox = m_ChessboardPrefab.controlBox;
+		controlBox.parent = m_WorkspaceUI.sceneContainer;
+		controlBox.localPosition = Vector3.down * controlBox.localScale.y * 0.5f;
+
 		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
 		var chessboardUI = UI.GetComponentInChildren<ChessboardUI>();
 		chessboardUI.OnZoomSlider = OnZoomSlider;
@@ -51,11 +56,13 @@ public class ChessboardWorkspace : Workspace
 	public override void Update()
 	{
 		base.Update();
-		float clipHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
-		if (Mathf.Abs(clipHeight) < contentBounds.extents.y)
+
+		//Set grid height, deactivate if out of bounds
+		float gridHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
+		if (Mathf.Abs(gridHeight) < contentBounds.extents.y)
 		{
 			m_ChessboardPrefab.grid.gameObject.SetActive(true);
-			m_ChessboardPrefab.grid.transform.localPosition = Vector3.down * clipHeight;
+			m_ChessboardPrefab.grid.transform.localPosition = Vector3.down * gridHeight;
 		}
 		else
 		{
@@ -76,7 +83,11 @@ public class ChessboardWorkspace : Workspace
 	{
 		m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
 		m_MiniWorld.SetBounds(contentBounds);
+
 		m_ChessboardPrefab.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
+
+		var controlBox = m_ChessboardPrefab.controlBox;
+		controlBox.transform.localScale = new Vector3(contentBounds.size.x, controlBox.localScale.y, contentBounds.size.z);
 	}
 
 	private void OnZoomSlider(float value)
