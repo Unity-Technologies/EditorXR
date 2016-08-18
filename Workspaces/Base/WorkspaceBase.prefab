@@ -129,7 +129,7 @@ GameObject:
   - 33: {fileID: 33000011484965296}
   - 65: {fileID: 65000012320378212}
   - 23: {fileID: 23000014091191188}
-  - 114: {fileID: 114000011806195108}
+  - 114: {fileID: 114000013195114936}
   m_Layer: 5
   m_Name: Bounds
   m_TagString: Untagged
@@ -698,18 +698,6 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 25
---- !u!114 &114000011806195108
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000011769002686}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 465385486b2fd05489e7b6ab3b254dff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
 --- !u!114 &114000011978749392
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -916,6 +904,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_HandleTip: {fileID: 0}
+--- !u!114 &114000013195114936
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011769002686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
 --- !u!114 &114000013703583414
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1006,6 +1006,7 @@ MonoBehaviour:
   sceneContainer: {fileID: 224000012777721742}
   frontPanel: {fileID: 224000012325241496}
   directManipulator: {fileID: 114000011527944526}
+  vacuumHandle: {fileID: 114000013195114936}
   leftHandle: {fileID: 114000011439710426}
   frontHandle: {fileID: 114000013760903596}
   rightHandle: {fileID: 114000010511962596}

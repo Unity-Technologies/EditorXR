@@ -6,7 +6,11 @@ public class WorkspaceSceneObjects : MonoBehaviour
 {
 	public Transform sceneContainer;
 	public RectTransform frontPanel;
+
 	public DirectManipulator directManipulator;
+
+	public BaseHandle vacuumHandle;
+
 	public LinearHandle leftHandle;
 	public LinearHandle frontHandle;
 	public LinearHandle rightHandle;

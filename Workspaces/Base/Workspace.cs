@@ -95,7 +95,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 		m_WorkspaceSceneObjects.directManipulator.target = transform;
 
-		m_WorkspaceSceneObjects.GetComponentInChildren<DoubleClickHandle>().onDoubleClick += OnDoubleClick;
+		m_WorkspaceSceneObjects.vacuumHandle.onDoubleClick += OnDoubleClick;
 
 		var handles = new BaseHandle[]
 		{
@@ -174,7 +174,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		setHighlight(handle.gameObject, false);
 	}
 
-	private void OnDoubleClick(BaseHandle handle)
+	private void OnDoubleClick(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		StartCoroutine(VacuumToViewer());
 	}
@@ -184,11 +184,14 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		float startTime = Time.realtimeSinceStartup;
 		Vector3 startPosition = transform.position;
 		Quaternion startRotation = transform.rotation;
+
 		Transform camera = U.Camera.GetMainCamera().transform;
 		Vector3 destPosition = camera.position + camera.rotation * kDefaultOffset;
+
 		Vector3 cameraYawVector = camera.forward;
 		cameraYawVector.y = 0;
 		Quaternion destRotation = Quaternion.LookRotation(cameraYawVector, Vector3.up) * kDefaultTilt;
+
 		while (Time.realtimeSinceStartup < startTime + m_VacuumTime)
 		{
 			transform.position = Vector3.Lerp(startPosition, destPosition, (Time.realtimeSinceStartup - startTime) / m_VacuumTime);

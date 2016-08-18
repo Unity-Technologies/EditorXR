@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Utilities;
 
 public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
 {
@@ -80,7 +81,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 			// Detect double click
 			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
 			m_LastSelectTime = DateTime.Now;
-			if (DoubleClickHandle.DoubleClick(timeSinceLastSelect))
+			if (U.Input.DoubleClick(timeSinceLastSelect))
 			{
 				s_CurrentPrefabOpened = m_HoverGameObject;
 				s_SelectedObjects.Remove(s_CurrentPrefabOpened);
