@@ -79,13 +79,14 @@
 					{
 						material.SetColor("_EmissionColor", col);
 						obj.GetComponent<Renderer>().sharedMaterial = material;
-					} else
+					}
+					else
 					{
 						U.Object.Destroy(material);
 					}
 				}
-
 			}
+
 			public static Color GetObjectEmissionColor(GameObject obj)
 			{
 				Renderer r = obj.GetComponent<Renderer>();
