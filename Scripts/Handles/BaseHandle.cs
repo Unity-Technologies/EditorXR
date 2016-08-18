@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEngine.EventSystems;
 using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Handles

@@ -68,9 +68,6 @@ public class EditorVR : MonoBehaviour
 		{ "Left", Node.LeftHand },
 		{ "Right", Node.RightHand }
 	};
-
-	private static readonly Vector3 kWorkspaceDefaultOffset = new Vector3(0, -0.15f, 1f);
-	private static readonly Quaternion kWorkspaceDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
 	private const float kWorkspaceAnglePadding = 25f;
 	private const float kWorkspaceYPadding = 0.35f;
 	private const int kWorkspaceLoopOverrun = 20;
@@ -695,10 +692,13 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateWorkspace(Type t)
 	{
-		Vector3 position = VRView.viewerPivot.position + kWorkspaceDefaultOffset;
-		Quaternion rotation = kWorkspaceDefaultTilt;
+		var defaultOffset = Workspace.kDefaultOffset;
+		var defaultTilt = Workspace.kDefaultTilt;
+		var viewerPivot = U.Camera.GetViewerPivot();
+		Vector3 position = viewerPivot.position + defaultOffset;
+		Quaternion rotation = defaultTilt;
 		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
-			(kWorkspaceDefaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg	//Calculate arc length at front of workspace
+			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg	//Calculate arc length at front of workspace
 			+ kWorkspaceAnglePadding;															//Need some extra padding because workspaces are tilted
 		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;					//Need padding in Y as well
 		float currentRotation = arcLength;
@@ -711,8 +711,8 @@ public class EditorVR : MonoBehaviour
 		{
 			//The next position will be rotated by currentRotation, as if the hands of a clock
 			Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-			position = VRView.viewerPivot.position + rotateAroundY * kWorkspaceDefaultOffset + Vector3.up * currentHeight;
-			rotation = rotateAroundY * kWorkspaceDefaultTilt;
+			position = viewerPivot.position + rotateAroundY * defaultOffset + Vector3.up * currentHeight;
+			rotation = rotateAroundY * defaultTilt;
 			//Every other iteration, rotate a little further
 			if (direction < 0)
 				currentRotation += arcLength;

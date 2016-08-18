@@ -130,21 +130,17 @@ public class ChessboardWorkspace : Workspace
 		var controlData = m_ControlDatas[0];
 		if (controlData != null)
 		{
-			if (m_ControlDatas[1] == null)
+			if (m_ControlDatas[1] == null)	//Translate
 			{
-				//Translate
 				m_MiniWorld.referenceTransform.position = controlData.referenceTransformStartPosition + Vector3.Scale(controlData.rayOriginStart - eventData.rayOrigin.transform.position, m_MiniWorld.referenceTransform.localScale);
 			}
-			else
+			//If we have two controllers set and this is the event for the first one
+			else if (m_ControlDatas[0].rayOrigin.Equals(eventData.rayOrigin)) //Translate/Scale
 			{
-				//Translate/Scale
-				if (m_ControlDatas[0].rayOrigin.Equals(eventData.rayOrigin))
-				{
-					m_MiniWorld.referenceTransform.position = controlData.referenceTransformStartPosition + Vector3.Scale(controlData.rayOriginStart - eventData.rayOrigin.transform.position, m_MiniWorld.referenceTransform.localScale);
+				m_MiniWorld.referenceTransform.position = controlData.referenceTransformStartPosition + Vector3.Scale(controlData.rayOriginStart - eventData.rayOrigin.transform.position, m_MiniWorld.referenceTransform.localScale);
 
-					ControlData otherControl = m_ControlDatas[1];
-					m_MiniWorld.referenceTransform.localScale = otherControl.referenceTransformStartScale * (m_ScaleStartDistance / (otherControl.rayOrigin.position - eventData.rayOrigin.position).magnitude);
-				}
+				ControlData otherControl = m_ControlDatas[1];
+				m_MiniWorld.referenceTransform.localScale = otherControl.referenceTransformStartScale * (m_ScaleStartDistance / (otherControl.rayOrigin.position - eventData.rayOrigin.position).magnitude);
 			}
 		}
 	}

@@ -10,8 +10,6 @@ using UnityEngine.InputNew;
 
 public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
 {
-	private const float kDoubleClickIntervalMax = 0.3f;
-	private const float kDoubleClickIntervalMin = 0.15f;
 
 	private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
@@ -84,7 +82,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 			// Detect double click
 			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
 			m_LastSelectTime = DateTime.Now;
-			if (timeSinceLastSelect < kDoubleClickIntervalMax && timeSinceLastSelect > kDoubleClickIntervalMin)
+			if (DoubleClickHandle.DoubleClick(timeSinceLastSelect))
 			{
 				s_CurrentPrefabOpened = m_HoverGameObject;
 				s_SelectedObjects.Remove(s_CurrentPrefabOpened);

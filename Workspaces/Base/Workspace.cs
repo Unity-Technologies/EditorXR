@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Handles;
@@ -7,6 +8,9 @@ using UnityEngine.VR.Utilities;
 
 public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 {
+	public static readonly Vector3 kDefaultOffset = new Vector3(0, -0.15f, 1f);
+	public static readonly Quaternion kDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
+
 	public enum Direction { LEFT, FRONT, RIGHT, BACK}
 	public static readonly Vector3 kDefaultBounds = new Vector3(0.6f, 0.4f, 0.4f);
 
@@ -40,6 +44,9 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	[SerializeField]
 	private Bounds m_ContentBounds;
 
+	[SerializeField]
+	private float m_VacuumTime = 0.75f;
+
 	/// <summary>
 	/// Bounding box for entire workspace, including UI handles
 	/// </summary>
@@ -47,13 +54,19 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	{
 		get
 		{
-			return new Bounds(contentBounds.center + Vector3.down * kContentHeight * 0.5f,
+			return new Bounds(contentBounds.center + Vector3.down * kContentHeight * 0.5f + Vector3.back * kHandleMargin,
 				new Vector3(
 					contentBounds.size.x + kHandleMargin,
 					contentBounds.size.y + kContentHeight,
 					contentBounds.size.z + kHandleMargin
 					));
 		}
+	}
+
+	void OnDrawGizmos()
+	{
+		Gizmos.matrix = transform.localToWorldMatrix;
+		Gizmos.DrawWireCube(outerBounds.center, outerBounds.size);
 	}
 
 	public Func<GameObject, GameObject> instantiateUI { private get; set; }
@@ -67,6 +80,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	private Vector3 positionStart;
 	private Vector3 boundSizeStart;
 	private bool m_Dragging;
+	
 
 	public Action<GameObject, bool> setHighlight { get; set; }
 
@@ -74,6 +88,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	{
 		GameObject baseObject = instantiateUI(m_BasePrefab);
 		baseObject.transform.SetParent(transform);
+		
 		m_WorkspacePrefab = baseObject.GetComponent<WorkspacePrefab>();
 		m_WorkspacePrefab.OnCloseClick = Close;
 		m_WorkspacePrefab.sceneContainer.transform.localPosition = Vector3.up * kContentHeight;
@@ -85,6 +100,8 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 		m_WorkspacePrefab.translateHandle.onHandleBeginDrag += OnTransformDragStart;
 		m_WorkspacePrefab.translateHandle.onHandleEndDrag += OnTransformDragEnd;
+
+		m_WorkspacePrefab.GetComponentInChildren<DoubleClickHandle>().onDoubleClick += OnDoubleClick;
 
 		var handles = new List<BaseHandle>(4);
 		handles.Add(m_WorkspacePrefab.leftHandle);
@@ -169,6 +186,31 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	public virtual void OnHandleHoverExit(BaseHandle handle)
 	{
 		setHighlight(handle.gameObject, false);
+	}
+
+	private void OnDoubleClick(BaseHandle handle)
+	{
+		StartCoroutine(VacuumToViewer());
+	}
+
+	private IEnumerator VacuumToViewer()
+	{				   
+		float startTime = Time.realtimeSinceStartup;
+		Vector3 startPosition = transform.position;
+		Quaternion startRotation = transform.rotation;
+		Transform camera = U.Camera.GetMainCamera().transform;
+		Vector3 destPosition = camera.position + camera.rotation * kDefaultOffset;
+		Vector3 cameraYawVector = camera.forward;
+		cameraYawVector.y = 0;
+		Quaternion destRotation = Quaternion.LookRotation(cameraYawVector, Vector3.up) * kDefaultTilt;
+		while (Time.realtimeSinceStartup < startTime + m_VacuumTime)
+		{
+			transform.position = Vector3.Lerp(startPosition, destPosition, (Time.realtimeSinceStartup - startTime) / m_VacuumTime);
+			transform.rotation = Quaternion.Lerp(startRotation, destRotation, (Time.realtimeSinceStartup - startTime) / m_VacuumTime);
+			yield return null;
+		}
+		transform.position = destPosition;
+		transform.rotation = destRotation;
 	}
 
 	public virtual void Close()

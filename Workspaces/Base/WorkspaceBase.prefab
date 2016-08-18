@@ -92,6 +92,7 @@ GameObject:
   - 114: {fileID: 114000011658765658}
   - 114: {fileID: 114000011346188294}
   - 114: {fileID: 114000014286123538}
+  - 65: {fileID: 65000010921988650}
   m_Layer: 5
   m_Name: WorkspaceBase
   m_TagString: Untagged
@@ -129,6 +130,7 @@ GameObject:
   - 33: {fileID: 33000011484965296}
   - 65: {fileID: 65000012320378212}
   - 23: {fileID: 23000014091191188}
+  - 114: {fileID: 114000011806195108}
   m_Layer: 5
   m_Name: Bounds
   m_TagString: Untagged
@@ -340,8 +342,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
-  m_Materials:
-  - {fileID: 2100000, guid: ab2778bf83fb3cd448543cc69992031e, type: 2}
+  m_Materials: []
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -369,8 +370,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
-  m_Materials:
-  - {fileID: 2100000, guid: ab2778bf83fb3cd448543cc69992031e, type: 2}
+  m_Materials: []
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -398,8 +398,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
-  m_Materials:
-  - {fileID: 2100000, guid: ab2778bf83fb3cd448543cc69992031e, type: 2}
+  m_Materials: []
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -427,8 +426,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
-  m_Materials:
-  - {fileID: 2100000, guid: ab2778bf83fb3cd448543cc69992031e, type: 2}
+  m_Materials: []
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -544,6 +542,18 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.1543, y: 0.08, z: 0.001}
   m_Center: {x: 0.07715, y: 0, z: 0}
+--- !u!65 &65000010921988650
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011022840156}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 0.6748898, z: 0.83652943}
+  m_Center: {x: 0, y: 0.21291625, z: -0.17321715}
 --- !u!65 &65000011744806066
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -685,6 +695,18 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 25
+--- !u!114 &114000011806195108
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011769002686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 465385486b2fd05489e7b6ab3b254dff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
 --- !u!114 &114000011978749392
 MonoBehaviour:
   m_ObjectHideFlags: 1
