@@ -14,15 +14,12 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	public enum Direction { LEFT, FRONT, RIGHT, BACK}
 	public static readonly Vector3 kDefaultBounds = new Vector3(0.6f, 0.4f, 0.4f);
 
-	/// <summary>
-	/// Amount of space (in World units) between handle and content bounds in X and Z
-	/// </summary>
-	public const float kHandleMargin = 0.25f;
-
-	/// <summary>
-	/// Amount of height (in World units) between handle and content bounds
-	/// </summary>
-	public const float kContentHeight = 0.075f;
+	public const float kHandleMargin = 0.25f;	// Amount of space (in World units) between handle and content bounds in X and Z
+	public const float kContentHeight = 0.075f;	// Amount of height (in World units) between tray and content bounds
+	//Extra space for tray model
+	public const float kExtraHeight = 0.15f;
+	public const float kExtraWidth = 0.15f;
+	public const float kExtraDepth = 0.2f;
 
 	/// <summary>
 	/// Bounding box for workspace content. 
@@ -34,8 +31,15 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		{
 			if (!value.Equals(contentBounds))
 			{
-				value.center = contentBounds.center;
-				m_ContentBounds = value;
+				Vector3 size = value.size;
+				if (size.x < kDefaultBounds.x)
+					size.x = kDefaultBounds.x;
+				if (size.y < kDefaultBounds.y)
+					size.y = kDefaultBounds.y;
+				if (size.z < kDefaultBounds.z)
+					size.z = kDefaultBounds.z;
+				value.size = size;
+				m_ContentBounds.size = size;		//Only set size, ignore center.
 				m_WorkspacePrefab.SetBounds(contentBounds);
 				OnBoundsChanged();
 			}
@@ -54,11 +58,11 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	{
 		get
 		{
-			return new Bounds(contentBounds.center + Vector3.down * kContentHeight * 0.5f + Vector3.back * kHandleMargin,
+			return new Bounds(contentBounds.center + Vector3.down * kContentHeight * 0.5f,
 				new Vector3(
-					contentBounds.size.x + kHandleMargin,
-					contentBounds.size.y + kContentHeight,
-					contentBounds.size.z + kHandleMargin
+					contentBounds.size.x + kExtraWidth + kHandleMargin,
+					contentBounds.size.y + kExtraHeight + kContentHeight,
+					contentBounds.size.z + kExtraDepth + kHandleMargin
 					));
 		}
 	}
@@ -169,7 +173,8 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 			}
 			contentBounds = tmpBounds;
-			transform.position = positionStart + positionOffset;
+			if(contentBounds.size == tmpBounds.size) //Don't reposition if we hit minimum bounds
+				transform.position = positionStart + positionOffset;
 		}
 	}
 
