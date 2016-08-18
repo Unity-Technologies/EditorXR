@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 
-[UnityEngine.VR.Tools.VRMenuItem("Transform", "Select items in the scene")]
+[UnityEngine.VR.Tools.VRMenuItem("Selection", "Transform", "Select items in the scene")]
 public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
 {
 	private const float kDoubleClickIntervalMax = 0.3f;

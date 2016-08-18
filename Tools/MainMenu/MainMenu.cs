@@ -28,7 +28,7 @@ namespace UnityEngine.VR.Tools
 			TransitioningIn,
 			TransitioningOut
 		}
-		
+
 		[SerializeField]
 		private MainMenuButton m_ButtonTemplatePrefab;
 		[SerializeField]
@@ -62,7 +62,7 @@ namespace UnityEngine.VR.Tools
 		private List<MainMenuFace> m_MenuFaces;
 		private Material m_MenuFacesMaterial;
 		private Color m_MenuFacesColor;
-		private Dictionary<string, List<Transform>> m_MenuFaceToButtons;
+		private Dictionary<string, List<Transform>> m_FaceToButtons;
 		private Menu m_MenuInput;
 		private Transform m_MenuInputOrigin;
 		private Vector3 m_MenuInputOriginOriginalLocalScale;
@@ -74,6 +74,7 @@ namespace UnityEngine.VR.Tools
 		private float m_InputDirection;
 		private float m_InputFlickStartTime;
 		private float m_InputFlickRate;
+		private List<Transform> m_UncategorizedButtons;
 
 		private const float kFaceRotationSnapAngle = 90;
 		private const float kRotationRateMax = 200f;
@@ -85,7 +86,7 @@ namespace UnityEngine.VR.Tools
 		private readonly Color kMenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
 
 		private static readonly int s_FaceCount = 4;
-		
+
 		public MainMenuInput mainMenuInput
 		{
 			get { return m_MainMenuInput; }
@@ -117,7 +118,7 @@ namespace UnityEngine.VR.Tools
 				m_Transform.localScale = Vector3.one;
 			}
 		}
-		
+
 		public Camera eventCamera { get; set; }
 		public Action hideDefaultRay { get; set; }
 		public Action showDefaultRay { get; set; }
@@ -127,7 +128,7 @@ namespace UnityEngine.VR.Tools
 		public List<Type> menuTools { private get; set; }
 		public Func<int, Type, bool> selectTool { private get; set; }
 		public int tagIndex { get; set; }
-		
+
 		private void Awake()
 		{
 			Assert.IsNotNull(m_ButtonTemplatePrefab, "m_ButtonTemplatePrefab is not assigned!");
@@ -173,11 +174,13 @@ namespace UnityEngine.VR.Tools
 
 			foreach (Canvas canvas in m_Transform.GetComponentsInChildren<Canvas>())
 				canvas.worldCamera = eventCamera;
-			
+
 			if (menuTools != null && menuTools.Any())
-				CreateToolButtons();
+				CreateToolButtons(menuTools);
 			else
 				Debug.LogError("Menu Tools were not found in the project. Could not create menu contents!");
+
+			SetupMenuFaces();
 
 			menuOrigin.localScale = Vector3.zero;
 			menuInputOrigin.localScale = Vector3.zero;
@@ -187,7 +190,7 @@ namespace UnityEngine.VR.Tools
 		{
 			if (m_MainMenuInput == null)
 				return;
-			
+
 			if (m_VisibilityState == VisibilityState.TransitioningIn || m_VisibilityState == VisibilityState.TransitioningOut)
 				return;
 
@@ -226,10 +229,11 @@ namespace UnityEngine.VR.Tools
 				m_InputFlickRate = Mathf.Max(m_InputFlickRate, Mathf.Abs(m_InputDirection)); // cache the larger x axis delta of input rotation
 				m_RotationRate = m_RotationRate < kRotationRateMax ? m_RotationRate += Time.unscaledDeltaTime * rotationSpeed : kRotationRateMax;
 				m_MenuFaceRotationOrigin.Rotate(Vector3.up, -m_InputDirection * m_RotationRate * Time.unscaledDeltaTime);
-				m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, m_InputDirection > 0 ? Color.white: Color.clear);
-				m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, m_InputDirection < 0 ? Color.white: Color.clear);
+				m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, m_InputDirection > 0 ? Color.white : Color.clear);
+				m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, m_InputDirection < 0 ? Color.white : Color.clear);
 			}
-			else {
+			else
+			{
 				m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
 				m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
 				m_RotationRate = m_RotationRate > 0 ? m_RotationRate -= Time.unscaledDeltaTime : 0f;  // Allow for the smooth resumption of rotation if rotation is resumed before snapping is stopped
@@ -265,33 +269,37 @@ namespace UnityEngine.VR.Tools
 			showDefaultRay();
 		}
 
-		private void CreateToolButtons()
+		private void CreateToolButtons(List<Type> buttonDataSources)
 		{
-			m_MenuFaceToButtons = new Dictionary<string, List<Transform>>();
-			List<Transform> uncategorizedTransforms = new List<Transform>();
+			if (m_FaceToButtons == null)
+			{
+				m_FaceToButtons = new Dictionary<string, List<Transform>>();
+				m_UncategorizedButtons = new List<Transform>();
+				m_FaceToButtons.Add(kUncategorizedFaceName, m_UncategorizedButtons);
+			}
+
 			List<MainMenuButton> buttons = new List<MainMenuButton>();
 
-			m_MenuFaceToButtons.Add(kUncategorizedFaceName, uncategorizedTransforms);
-			
-			foreach (var menuTool in menuTools)
+			foreach (var source in buttonDataSources)
 			{
-				if (menuTool != null)
+				if (source != null)
 				{
 					var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplatePrefab.gameObject);
-					newButton.name = menuTool.Name;
+					newButton.name = source.Name;
 					MainMenuButton mainMenuButton = newButton.GetComponent<MainMenuButton>();
-					mainMenuButton.SetData(menuTool.Name, "Demo description text here");
 					buttons.Add(mainMenuButton);
-					AddButtonListener(mainMenuButton.button, menuTool);
+					AddButtonListener(mainMenuButton.button, source);
 
-					var customMenuAttribute = (VRMenuItemAttribute)menuTool.GetCustomAttributes(typeof(VRMenuItemAttribute), false).FirstOrDefault();
+					var customMenuAttribute = (VRMenuItemAttribute)source.GetCustomAttributes(typeof(VRMenuItemAttribute), false).FirstOrDefault();
 					if (customMenuAttribute != null)
 					{
-						var found = m_MenuFaceToButtons.Where(x => x.Key == customMenuAttribute.SectionName).Any();
+						mainMenuButton.SetData(customMenuAttribute.Name, customMenuAttribute.Description);
+
+						var found = m_FaceToButtons.Any(x => x.Key == customMenuAttribute.SectionName);
 
 						if (found)
 						{
-							var kvp = m_MenuFaceToButtons.Where(x => x.Key == customMenuAttribute.SectionName).First();
+							var kvp = m_FaceToButtons.First(x => x.Key == customMenuAttribute.SectionName);
 							if (!String.IsNullOrEmpty(kvp.Key))
 								kvp.Value.Add(newButton.transform);
 						}
@@ -299,23 +307,24 @@ namespace UnityEngine.VR.Tools
 						{
 							List<Transform> buttonTransforms = new List<Transform>();
 							buttonTransforms.Add(newButton.transform);
-							m_MenuFaceToButtons.Add(customMenuAttribute.SectionName, buttonTransforms);
+							m_FaceToButtons.Add(customMenuAttribute.SectionName, buttonTransforms);
 						}
 					}
 					else
-						uncategorizedTransforms.Add(newButton.transform);
+					{
+						m_UncategorizedButtons.Add(newButton.transform);
+						mainMenuButton.SetData(source.Name, string.Empty);
+					}
 				}
 				else
 					Debug.LogError("Null menuTool found when creating Menu's tool buttons!");
 			}
-
-			SetupMenuFaces();
 		}
 
 		private void SetupMenuFaces()
 		{
 			int position = 0;
-			foreach (var faceNameToButtons in m_MenuFaceToButtons)
+			foreach (var faceNameToButtons in m_FaceToButtons)
 			{
 				m_MenuFaces[position].SetFaceData(faceNameToButtons.Key, faceNameToButtons.Value, UnityBrandColorScheme.GetRandomGradient());
 				++position;
@@ -432,7 +441,7 @@ namespace UnityEngine.VR.Tools
 				m_VisibilityState = VisibilityState.Hidden;
 				menuOrigin.localScale = Vector3.zero;
 				menuInputOrigin.localScale = Vector3.zero;
-				
+
 				float roundedRotation = m_MenuFaceRotationOrigin.localRotation.eulerAngles.y;
 				roundedRotation = Mathf.Round((roundedRotation) / kFaceRotationSnapAngle) * kFaceRotationSnapAngle; // calculate intended target rotation
 				m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, roundedRotation, 0)); // set intended target rotation
