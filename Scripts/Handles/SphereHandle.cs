@@ -24,7 +24,7 @@ namespace UnityEngine.VR.Handles
 			m_LastPosition = ray.GetPoint(m_CurrentRadius);
 			m_LastRotation = eventData.rayOrigin.rotation;
 			m_ScrollRate = kInitialScrollRate;
-			OnHandleBeginDrag();
+			OnHandleBeginDrag(new HandleDragEventData(eventData.rayOrigin));
 		}
 
 		public void OnDrag(RayEventData eventData)
@@ -40,14 +40,14 @@ namespace UnityEngine.VR.Handles
 			var deltaRot = Quaternion.Inverse(m_LastRotation) * eventData.rayOrigin.rotation;
 			m_LastRotation = eventData.rayOrigin.rotation;
 
-			OnHandleDrag(new HandleDragEventData(deltaPos, deltaRot));
+			OnHandleDrag(new HandleDragEventData(deltaPos, deltaRot, eventData.rayOrigin));
 		}
 
 		public override void OnEndDrag(RayEventData eventData)
 		{
 			base.OnEndDrag(eventData);
 
-			OnHandleEndDrag();
+			OnHandleEndDrag(new HandleDragEventData(eventData.rayOrigin));
 		}
 
 		public void ChangeRadius(float delta)

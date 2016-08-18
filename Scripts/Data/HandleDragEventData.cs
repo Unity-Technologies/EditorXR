@@ -9,9 +9,11 @@ namespace UnityEngine.VR.Handles
 	{
 		public Vector3 deltaPosition;
 		public Quaternion deltaRotation;
+		public Transform rayOrigin;
 
-		public HandleDragEventData(Vector3 deltaPos, Quaternion deltaRot)
+		public HandleDragEventData(Vector3 deltaPos, Quaternion deltaRot, Transform rayOrigin = null)
 		{
+			this.rayOrigin = rayOrigin;
 			deltaPosition = deltaPos;
 			deltaRotation = deltaRot;
 		}
@@ -20,12 +22,20 @@ namespace UnityEngine.VR.Handles
 		{
 			deltaPosition = deltaPos;
 			deltaRotation = Quaternion.identity;
+			rayOrigin = null;
 		}
 
 		public HandleDragEventData(Quaternion deltaRot)
 		{
 			deltaPosition = Vector3.zero;
 			deltaRotation = deltaRot;
+			rayOrigin = null;
+		}
+		public HandleDragEventData(Transform rayOrigin)
+		{
+			deltaPosition = Vector3.zero;
+			deltaRotation = Quaternion.identity;
+			this.rayOrigin = rayOrigin;
 		}
 	}
 }

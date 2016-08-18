@@ -40,10 +40,10 @@ namespace UnityEngine.VR.Handles
 			m_Hovering = false;
 		}
 
-		protected virtual void OnHandleBeginDrag()
+		protected virtual void OnHandleBeginDrag(HandleDragEventData eventData = default(HandleDragEventData))
 		{
 			if (onHandleBeginDrag != null)
-				onHandleBeginDrag(this);
+				onHandleBeginDrag(this, eventData);
 		}
 
 		protected virtual void OnHandleDrag(HandleDragEventData eventData)
@@ -52,10 +52,10 @@ namespace UnityEngine.VR.Handles
 				onHandleDrag(this, eventData);
 		}
 
-		protected virtual void OnHandleEndDrag()
+		protected virtual void OnHandleEndDrag(HandleDragEventData eventData = default(HandleDragEventData))
 		{
 			if (onHandleEndDrag != null)
-				onHandleEndDrag(this);
+				onHandleEndDrag(this, eventData);
 		}
 	}
 }

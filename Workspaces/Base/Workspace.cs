@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 
 public abstract class Workspace : MonoBehaviour, IInstantiateUI
@@ -59,6 +60,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 	[SerializeField]
 	private GameObject m_BasePrefab;
 
+	private Transform m_LastParent;
 	private Vector3 dragStart;
 	private Vector3 positionStart;
 	private Vector3 boundSizeStart;
@@ -79,23 +81,21 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
 		m_WorkspacePrefab.SetBounds(contentBounds);
 
-		m_WorkspacePrefab.translateManipulator.translate = Translate;
-		m_WorkspacePrefab.translateManipulator.rotate = Rotate;
+		m_WorkspacePrefab.translateHandle.onHandleBeginDrag += OnTransformDragStart;
+		m_WorkspacePrefab.translateHandle.onHandleEndDrag += OnTransformDragEnd;
 	}
 
 	protected abstract void OnBoundsChanged();
 
-	public virtual void Translate(Vector3 delta)
+	public virtual void OnTransformDragStart(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		transform.position += delta;
+		m_LastParent = transform.parent;
+		transform.parent = eventData.rayOrigin;
 	}
 
-	public virtual void Rotate(Quaternion delta)
+	public virtual void OnTransformDragEnd(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		float angle;
-		Vector3 axis;
-		delta.ToAngleAxis(out angle, out axis);
-		transform.RotateAround(m_WorkspacePrefab.translateManipulator.intersectionPoint, axis, angle);
+		transform.parent = m_LastParent;
 	}
 
 	public virtual void OnHandleDragStart(Transform handle, Transform rayOrigin)
