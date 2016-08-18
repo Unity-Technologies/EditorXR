@@ -79,13 +79,13 @@ namespace UnityEngine.VR.Tools
 		private const float kFaceRotationSnapAngle = 90;
 		private const float kRotationRateMax = 200f;
 
+		private static readonly int s_FaceCount = 4;
+
 		private readonly string kUncategorizedFaceName = "Uncategorized";
 		private readonly string kInputHighlightColorProperty = "_Color";
 		private readonly string kInputHighlightTopProperty = "_ColorTop";
 		private readonly string kInputHighlightBottomProperty = "_ColorBottom";
 		private readonly Color kMenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
-
-		private static readonly int s_FaceCount = 4;
 
 		public MainMenuInput mainMenuInput
 		{
@@ -147,8 +147,8 @@ namespace UnityEngine.VR.Tools
 			name = "MainMenu";
 			m_Transform = transform;
 			m_InputOuterBorderMaterial = U.Material.GetMaterialClone(m_InputOuterBorder);
-			m_InputOuterBorderMaterial.SetColor(kInputHighlightTopProperty, UnityBrandColorScheme.Light);
-			m_InputOuterBorderMaterial.SetColor(kInputHighlightBottomProperty, UnityBrandColorScheme.Light);
+			m_InputOuterBorderMaterial.SetColor(kInputHighlightTopProperty, UnityBrandColorScheme.light);
+			m_InputOuterBorderMaterial.SetColor(kInputHighlightBottomProperty, UnityBrandColorScheme.light);
 			m_InputHighlightLeftMaterial = U.Material.GetMaterialClone(m_InputHighlightLeft);
 			m_InputHighlightRightMaterial = U.Material.GetMaterialClone(m_InputHighlightRight);
 			m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
@@ -454,7 +454,7 @@ namespace UnityEngine.VR.Tools
 			float easeDivider = rotationState == RotationState.Rotating ? 8f : 6f; // slower when rotating, faster when snapping
 			float currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
 			float targetWeight = rotationState == RotationState.Rotating ? 100f : 0f;
-			const float kSnapValue = 0.001f;
+			const float kSnapValue = 0.001f; 
 			while (m_RotationState == rotationState && !Mathf.Approximately(currentBlendShapeWeight, targetWeight))
 			{
 				currentBlendShapeWeight = U.Math.Ease(currentBlendShapeWeight, targetWeight, easeDivider, kSnapValue);

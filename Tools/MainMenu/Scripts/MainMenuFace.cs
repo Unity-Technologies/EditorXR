@@ -9,18 +9,6 @@ namespace UnityEngine.VR.Tools
 {
 	public class MainMenuFace : MonoBehaviour
 	{
-		private enum RotationState
-		{
-			RotationBegin,
-			RotationEnd
-		}
-
-		private enum VisualState
-		{
-			Hiding,
-			Showing
-		}
-		
 		[SerializeField]
 		private MeshRenderer m_BorderOutline;
 		[SerializeField]
@@ -32,6 +20,18 @@ namespace UnityEngine.VR.Tools
 		[SerializeField]
 		private SkinnedMeshRenderer m_TitleIcon;
 
+		private enum RotationState
+		{
+			RotationBegin,
+			RotationEnd
+		}
+
+		private enum VisualState
+		{
+			Hiding,
+			Showing
+		}
+
 		private Material m_BorderOutlineMaterial;
 		private Vector3 m_BorderOutlineOriginalLocalScale;
 		private Transform m_BorderOutlineTransform;
@@ -42,7 +42,7 @@ namespace UnityEngine.VR.Tools
 
 		private readonly float m_BorderScaleMultiplier = 1.0135f;
 		private readonly string kBottomGradientProperty = "_ColorBottom";
-		private readonly UnityBrandColorScheme.GradientPair kEmptyGradient = new UnityBrandColorScheme.GradientPair(UnityBrandColorScheme.Light, UnityBrandColorScheme.Darker);
+		private readonly UnityBrandColorScheme.GradientPair kEmptyGradient = new UnityBrandColorScheme.GradientPair(UnityBrandColorScheme.light, UnityBrandColorScheme.darker);
 		private readonly string kTopGradientProperty = "_ColorTop";
 
 		private void Awake()
@@ -62,7 +62,7 @@ namespace UnityEngine.VR.Tools
 			m_TitleIconMaterial = U.Material.GetMaterialClone(m_TitleIcon);
 			m_VisualState = VisualState.Hiding;
 
-			SetGradientColors();
+			SetGradientColors(kEmptyGradient);
 		}
 
 		public void SetFaceData(string faceName, List<Transform> buttons, UnityBrandColorScheme.GradientPair gradientPair)
@@ -86,9 +86,8 @@ namespace UnityEngine.VR.Tools
 			SetGradientColors(gradientPair);
 		}
 
-		private void SetGradientColors(UnityBrandColorScheme.GradientPair gradientPair = null)
+		private void SetGradientColors(UnityBrandColorScheme.GradientPair gradientPair)
 		{
-			gradientPair = gradientPair ?? kEmptyGradient;
 			m_BorderOutlineMaterial.SetColor(kTopGradientProperty, gradientPair.ColorA);
 			m_BorderOutlineMaterial.SetColor(kBottomGradientProperty, gradientPair.ColorB);
 			m_TitleIconMaterial.SetColor(kTopGradientProperty, gradientPair.ColorA);

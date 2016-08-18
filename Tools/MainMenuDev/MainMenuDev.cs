@@ -72,6 +72,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
         });
         b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
     }
+
     public void Disable()
     {
         throw new NotImplementedException();

@@ -18,11 +18,12 @@ namespace UnityEngine.VR.Proxies
         protected Transform m_LeftHandRayOrigin;
         protected Transform m_RightHandRayOrigin;
 
-		protected readonly string kMenuOriginName = "MenuOrigin";
+        protected readonly string kMenuOriginName = "MenuOrigin";
         protected readonly string MenuInputOriginName = "MenuInputOrigin";
 
         private readonly string kRayOriginName = "RayOrigin";
         
+        protected Dictionary<Node, Transform> m_RayOrigins;
         public virtual Dictionary<Node, Transform> rayOrigins
         {
             get { return m_RayOrigins; }
@@ -50,8 +51,7 @@ namespace UnityEngine.VR.Proxies
 
         public Dictionary<Node, Transform> menuInputOrigins { get; set; }
         public Dictionary<Node, Transform> menuOrigins { get; set; }
-        protected Dictionary<Node, Transform> m_RayOrigins;
-		
+        
         public virtual void Awake()
         {
             m_LeftHand = U.Object.InstantiateAndSetActive(m_LeftHandProxyPrefab, transform).transform;

@@ -33,10 +33,10 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
 	[SerializeField]
-    private ActionMap m_MainMenuInput;
-    [SerializeField]
-    private MainMenu m_MainMenuPrefab;
-    [SerializeField]
+	private ActionMap m_MainMenuInput;
+	[SerializeField]
+	private MainMenu m_MainMenuPrefab;
+	[SerializeField]
 	private DefaultProxyRay m_ProxyRayPrefab;
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
@@ -45,8 +45,8 @@ public class EditorVR : MonoBehaviour
 
 	private TrackedObject m_TrackedObjectInput;
 	private Default m_DefaultActionInput;
-    private Menu m_MenuActionInput;
-    private MainMenuInput m_MainMenuActionInput;
+	private Menu m_MenuActionInput;
+	private MainMenuInput m_MainMenuActionInput;
 
 	private MultipleRayInputModule m_InputModule;
 	private Camera m_EventCamera;
@@ -59,7 +59,7 @@ public class EditorVR : MonoBehaviour
 	{
 		public Stack<ITool> tools;
 		public ActionMapInput uiInput;
-        public MainMenuInput mainMenuInputInput;
+		public MainMenuInput mainMenuInputInput;
 		public IMainMenu mainMenu;
 		public ITool currentTool;
 	}
@@ -93,7 +93,7 @@ public class EditorVR : MonoBehaviour
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
-        
+		
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
 		// then only show it in that hand's menu.
@@ -106,9 +106,9 @@ public class EditorVR : MonoBehaviour
 		{
 			var deviceData = new DeviceData
 			{
-                tools = new Stack<ITool>()
+				tools = new Stack<ITool>()
 			};
-            deviceData.mainMenuInputInput = (MainMenuInput)CreateActionMapInput(m_MainMenuInput, device);
+			deviceData.mainMenuInputInput = (MainMenuInput)CreateActionMapInput(m_MainMenuInput, device);
 			m_DeviceData.Add(device, deviceData);
 		}
 	}
@@ -211,7 +211,7 @@ public class EditorVR : MonoBehaviour
 	{
 		m_TrackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap, null);
 		m_DefaultActionInput = (Default)CreateActionMapInput(m_DefaultActionMap, null);
-        m_MenuActionInput = (Menu)CreateActionMapInput(m_MenuActionMap, null);
+		m_MenuActionInput = (Menu)CreateActionMapInput(m_MenuActionMap, null);
 
 		UpdatePlayerHandleMaps();
 	}
@@ -236,8 +236,8 @@ public class EditorVR : MonoBehaviour
 
 				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
-                
-                SpawnMainMenu(typeof(MainMenu), deviceData.Key);
+				
+				SpawnMainMenu(typeof(MainMenu), deviceData.Key);
 			}
 			tool = SpawnTool(typeof(TransformTool), out devices);
 			AddToolToDeviceData(tool, devices);
@@ -318,7 +318,7 @@ public class EditorVR : MonoBehaviour
 				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
 				{
 					var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
-                    if (device.tagIndex != -1 && m_TagToNode[tags[device.tagIndex]] == rayOriginBase.Key)
+					if (device.tagIndex != -1 && m_TagToNode[tags[device.tagIndex]] == rayOriginBase.Key)
 					{
 						DeviceData deviceData;
 						if (m_DeviceData.TryGetValue(device, out deviceData))
@@ -398,11 +398,11 @@ public class EditorVR : MonoBehaviour
 				}
 			}
 
-            if (deviceData.mainMenu != null && deviceData.mainMenu.mainMenuInput != null)
-                maps.Add(deviceData.mainMenu.mainMenuInput);
+			if (deviceData.mainMenu != null && deviceData.mainMenu.mainMenuInput != null)
+				maps.Add(deviceData.mainMenu.mainMenuInput);
 		}
 
-        maps.Add(m_MenuActionInput);
+		maps.Add(m_MenuActionInput);
 		maps.Add(m_DefaultActionInput);
 	}
 
@@ -466,16 +466,16 @@ public class EditorVR : MonoBehaviour
 		if (!typeof(IMainMenu).IsAssignableFrom(type))
 			return;
 
-        IMainMenu mainMenu = U.Object.InstantiateAndSetActive(m_MainMenuPrefab.gameObject, transform).GetComponent<IMainMenu>();
-        mainMenu.eventCamera = m_EventCamera;
-        mainMenu.mainMenuInput = m_DeviceData[device].mainMenuInputInput;
-			mainMenu.menuTools = m_AllTools.ToList();
-			mainMenu.selectTool = SelectTool;
-        mainMenu.tagIndex = device.tagIndex;
+		IMainMenu mainMenu = U.Object.InstantiateAndSetActive(m_MainMenuPrefab.gameObject, transform).GetComponent<IMainMenu>();
+		mainMenu.eventCamera = m_EventCamera;
+		mainMenu.mainMenuInput = m_DeviceData[device].mainMenuInputInput;
+		mainMenu.menuTools = m_AllTools.ToList();
+		mainMenu.selectTool = SelectTool;
+		mainMenu.tagIndex = device.tagIndex;
 
-			m_DeviceData[device].mainMenu = mainMenu;
-			ConnectInterfaces(mainMenu, device);
-        UpdatePlayerHandleMaps();
+		m_DeviceData[device].mainMenu = mainMenu;
+		ConnectInterfaces(mainMenu, device);
+		UpdatePlayerHandleMaps();
 	}
 
 	private void ConnectInterfaces(object obj, InputDevice device = null)
@@ -504,11 +504,11 @@ public class EditorVR : MonoBehaviour
 							ray.rayOrigin = rayOrigin;
 
 							// Specific proxy ray setting
-	                        DefaultProxyRay dfr = null;
+							DefaultProxyRay dfr = null;
 							var customRay = obj as ICustomRay;
 							if (customRay != null)
 							{
-                                dfr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+								dfr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 								customRay.showDefaultRay = dfr.Show;
 								customRay.hideDefaultRay = dfr.Hide;
 							}
@@ -527,36 +527,36 @@ public class EditorVR : MonoBehaviour
 				}
 			}
 
-            var mainMenu = obj as IMainMenu;
-            if (mainMenu != null)
-            {
-                foreach (var proxy in m_AllProxies)
-                {
-                    if (!proxy.active)
-                        continue;
+			var mainMenu = obj as IMainMenu;
+			if (mainMenu != null)
+			{
+				foreach (var proxy in m_AllProxies)
+				{
+					if (!proxy.active)
+						continue;
 
-                    var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
-                    if (device.tagIndex == -1)
-                        continue;
+					var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
+					if (device.tagIndex == -1)
+						continue;
 
-                    var tag = tags[device.tagIndex];
-                    Node node;
-                    if (m_TagToNode.TryGetValue(tag, out node))
-                    {
-                        Transform mainMenuOrigin;
-                        if (proxy.menuOrigins.TryGetValue(node, out mainMenuOrigin))
-                        {
-                            mainMenu.menuOrigin = mainMenuOrigin;
-                            Transform mainMenuInputOrigin;
-                            if (proxy.menuInputOrigins.TryGetValue(node, out mainMenuInputOrigin))
-                                mainMenu.menuInputOrigin = mainMenuInputOrigin;
+					var tag = tags[device.tagIndex];
+					Node node;
+					if (m_TagToNode.TryGetValue(tag, out node))
+					{
+						Transform mainMenuOrigin;
+						if (proxy.menuOrigins.TryGetValue(node, out mainMenuOrigin))
+						{
+							mainMenu.menuOrigin = mainMenuOrigin;
+							Transform mainMenuInputOrigin;
+							if (proxy.menuInputOrigins.TryGetValue(node, out mainMenuInputOrigin))
+								mainMenu.menuInputOrigin = mainMenuInputOrigin;
 
-                            break;
-                        }
-                    }
-                }
+							break;
+						}
+					}
+				}
 		}
-        }
+		}
 
 		var locomotionComponent = obj as ILocomotion;
 		if (locomotionComponent != null)
@@ -600,17 +600,17 @@ public class EditorVR : MonoBehaviour
 		return null;
 	}
 
-    private bool SelectTool(int menuDeviceTagIndex, Type tool)
+	private bool SelectTool(int menuDeviceTagIndex, Type tool)
 	{
-        InputDevice deviceToAssignTool = null;
+		InputDevice deviceToAssignTool = null;
 		foreach (var kvp in m_DeviceData)
 		{
-            int deviceTagIndex = kvp.Key.tagIndex;
-            if (deviceTagIndex != -1 && deviceTagIndex != menuDeviceTagIndex) // set the new tool on the opposite hand
-                deviceToAssignTool = kvp.Key;
+			int deviceTagIndex = kvp.Key.tagIndex;
+			if (deviceTagIndex != -1 && deviceTagIndex != menuDeviceTagIndex) // set the new tool on the opposite hand
+				deviceToAssignTool = kvp.Key;
 		}
 
-        if (deviceToAssignTool == null)
+		if (deviceToAssignTool == null)
 			return false;
 
 		// HACK to workaround missing serialized fields coming from the MonoScript
@@ -618,7 +618,7 @@ public class EditorVR : MonoBehaviour
 		{
 			// Spawn tool and collect all devices that this tool will need
 			HashSet<InputDevice> usedDevices;
-            var newTool = SpawnTool(tool, out usedDevices, deviceToAssignTool);
+			var newTool = SpawnTool(tool, out usedDevices, deviceToAssignTool);
 
 			foreach (var dev in usedDevices)
 			{
@@ -732,7 +732,7 @@ public class EditorVR : MonoBehaviour
 	private static void InitializeInputManager()
 	{
 		// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-        // In edit mode we need to handle lifecycle explicitly
+		// In edit mode we need to handle lifecycle explicitly
 		InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
 		foreach (var m in managers)
 		{
