@@ -4,7 +4,6 @@ using UnityEngine.VR.Utilities;
 
 public class ChessboardWorkspace : Workspace
 {
-	private const float kGridScale = 1f;						//Scale grid cells because workspace is smaller than world
 	private const float kClipBoxYOffset = 0.1333333f;			//1/3 of initial initial Y bounds (0.4)
 	private const float kClipBoxInitScale = 25;					//We want to see a big region by default
 	private const float kMinScale = 0.1f;
@@ -80,11 +79,11 @@ public class ChessboardWorkspace : Workspace
 		//Update grid material if ClipBox has moved
 		m_GridMaterial.mainTextureScale = new Vector2(
 			m_MiniWorld.referenceTransform.localScale.x * contentBounds.size.x,
-			m_MiniWorld.referenceTransform.localScale.z * contentBounds.size.z) * kGridScale;
+			m_MiniWorld.referenceTransform.localScale.z * contentBounds.size.z);
 		m_GridMaterial.mainTextureOffset =
 			Vector2.one * 0.5f //Center grid
 			+ new Vector2(m_GridMaterial.mainTextureScale.x % 2, m_GridMaterial.mainTextureScale.y % 2) * -0.5f //Scaling offset
-			+ new Vector2(m_MiniWorld.referenceTransform.position.x, m_MiniWorld.referenceTransform.position.z) * kGridScale; //Translation offset
+			+ new Vector2(m_MiniWorld.referenceTransform.position.x, m_MiniWorld.referenceTransform.position.z); //Translation offset
 	}
 
 	protected override void OnBoundsChanged()

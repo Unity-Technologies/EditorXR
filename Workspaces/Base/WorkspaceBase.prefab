@@ -92,7 +92,6 @@ GameObject:
   - 114: {fileID: 114000011658765658}
   - 114: {fileID: 114000011346188294}
   - 114: {fileID: 114000014286123538}
-  - 65: {fileID: 65000010921988650}
   m_Layer: 5
   m_Name: WorkspaceBase
   m_TagString: Untagged
@@ -542,18 +541,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.1543, y: 0.08, z: 0.001}
   m_Center: {x: 0.07715, y: 0, z: 0}
---- !u!65 &65000010921988650
-BoxCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000011022840156}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 0.6748898, z: 0.83652943}
-  m_Center: {x: 0, y: 0.21291625, z: -0.17321715}
 --- !u!65 &65000011744806066
 BoxCollider:
   m_ObjectHideFlags: 1
