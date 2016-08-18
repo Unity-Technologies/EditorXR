@@ -21,7 +21,8 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 
     public Transform rayOrigin { get; set; }
     public List<Type> menuTools { private get; set; }
-    public Func<int, Type, bool> selectTool { private get; set; }
+	public List<Type> menuActions { private get; set; }
+	public Func<int, Type, bool> selectTool { private get; set; }
     public Transform menuOrigin { get; set; }
     public Transform menuInputOrigin { get; set; }
     public MainMenuInput mainMenuInput  { get; set; }

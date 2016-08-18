@@ -63,6 +63,7 @@ public class EditorVR : MonoBehaviour
     private Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
     private List<IProxy> m_AllProxies = new List<IProxy>();
     private IEnumerable<Type> m_AllTools;
+    private IEnumerable<Type> m_AllActions;
 
     private Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
     {
@@ -89,7 +90,8 @@ public class EditorVR : MonoBehaviour
         m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 
         m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
-        
+        m_AllActions = U.Object.GetImplementationsOfInterface(typeof(IAction));
+
         // TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
         // This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
         // then only show it in that hand's menu.
@@ -450,6 +452,7 @@ public class EditorVR : MonoBehaviour
         mainMenu.eventCamera = m_EventCamera;
         mainMenu.mainMenuInput = m_DeviceData[device].mainMenuInputInput;
         mainMenu.menuTools = m_AllTools.ToList();
+        mainMenu.menuActions = m_AllActions.ToList();
         mainMenu.selectTool = SelectTool;
         mainMenu.tagIndex = device.tagIndex;
 
