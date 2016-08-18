@@ -8,8 +8,8 @@ public class WorkspacePrefab : MonoBehaviour
 	public Transform sceneContainer;
 	public SkinnedMeshRenderer tray;
 	public RectTransform frontPanel;
+	public DirectManipulator translateManipulator;
 	public Transform leftHandle, frontHandle, rightHandle, backHandle;
-	public SelectionHelper grabHandle;
 
 	private const float kPanelOffset = 0.1f; //The panel needs to be pulled back slightly
 

@@ -320,7 +320,7 @@ public class EditorVR : MonoBehaviour
 						}
 					}
 				}
-				m_DefaultRays[rayOrigin].length = distance;
+				m_DefaultRays[rayOrigin].SetLength(distance);
 			}
 		}
 	}
@@ -550,7 +550,7 @@ public class EditorVR : MonoBehaviour
 
 		var raycasterComponent = obj as IRaycaster;
 		if (raycasterComponent != null)
-			raycasterComponent.getFirstGameObject = RayCastWithDistance;
+			raycasterComponent.getFirstGameObject = m_PixelRaycastModule.GetFirstGameObject;
 
 		var highlightComponent = obj as IHighlight;
 		if (highlightComponent != null)
@@ -567,19 +567,6 @@ public class EditorVR : MonoBehaviour
 		}
 
 		return length;
-	}
-
-	private GameObject RayCastWithDistance(Transform rayOrigin, out float distance, out float directRayLength)
-	{
-		distance = 0;
-		directRayLength = 0;
-		DefaultProxyRay ray;
-		if (m_DefaultRays.TryGetValue(rayOrigin, out ray))
-		{
-			directRayLength = ray.directRayLength;
-			distance = ray.length;
-		}
-		return m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
 	}
 
 	private InputDevice GetInputDeviceForTool(ITool tool)

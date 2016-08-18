@@ -79,11 +79,24 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
 		m_WorkspacePrefab.SetBounds(contentBounds);
 
-		//Set grab handle selection target to this transform
-		m_WorkspacePrefab.grabHandle.selectionTarget = gameObject;
+		m_WorkspacePrefab.translateManipulator.translate = Translate;
+		m_WorkspacePrefab.translateManipulator.rotate = Rotate;
 	}
 
 	protected abstract void OnBoundsChanged();
+
+	public virtual void Translate(Vector3 delta)
+	{
+		transform.position += delta;
+	}
+
+	public virtual void Rotate(Quaternion delta)
+	{
+		float angle;
+		Vector3 axis;
+		delta.ToAngleAxis(out angle, out axis);
+		transform.RotateAround(m_WorkspacePrefab.translateManipulator.intersectionPoint, axis, angle);
+	}
 
 	public virtual void OnHandleDragStart(Transform handle, Transform rayOrigin)
 	{

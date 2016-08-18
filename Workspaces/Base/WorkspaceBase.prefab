@@ -37,7 +37,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000011687496624}
   - 137: {fileID: 137000012547310740}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Tray
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -110,7 +110,7 @@ GameObject:
   - 33: {fileID: 33000014135142390}
   - 23: {fileID: 23000014090063102}
   - 114: {fileID: 114000011587023770}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: BackHandle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -128,7 +128,7 @@ GameObject:
   - 33: {fileID: 33000011484965296}
   - 65: {fileID: 65000012320378212}
   - 23: {fileID: 23000014091191188}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Bounds
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -146,7 +146,7 @@ GameObject:
   - 33: {fileID: 33000012393826694}
   - 23: {fileID: 23000013021996902}
   - 114: {fileID: 114000011328577798}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: FrontHandle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -163,7 +163,7 @@ GameObject:
   - 224: {fileID: 224000012325241496}
   - 222: {fileID: 222000014176439984}
   - 114: {fileID: 114000012504286002}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: FrontPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -181,7 +181,7 @@ GameObject:
   - 33: {fileID: 33000012839492618}
   - 23: {fileID: 23000011251402978}
   - 114: {fileID: 114000011752436656}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: RightHandle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -199,7 +199,7 @@ GameObject:
   - 33: {fileID: 33000012530850374}
   - 23: {fileID: 23000010481794644}
   - 114: {fileID: 114000013478573746}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: LeftHandle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -232,8 +232,10 @@ GameObject:
   - 222: {fileID: 222000011460320898}
   - 114: {fileID: 114000013703583414}
   - 114: {fileID: 114000011978749392}
-  - 114: {fileID: 114000011022495242}
-  m_Layer: 0
+  - 114: {fileID: 114000012528077262}
+  - 114: {fileID: 114000010058967728}
+  - 65: {fileID: 65000010669663118}
+  m_Layer: 5
   m_Name: Grab button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -503,6 +505,18 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011632499242}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!65 &65000010669663118
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013488864180}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.1543, y: 0.08, z: 0.001}
+  m_Center: {x: 0.07715, y: 0, z: 0}
 --- !u!65 &65000012320378212
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -515,6 +529,18 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &114000010058967728
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013488864180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10f0223e36df2474eadcf31d368c62a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
 --- !u!114 &114000010224824294
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -543,36 +569,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
---- !u!114 &114000011022495242
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013488864180}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ad9896be347ce44f9a01012959b5ecb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  selectionMode: 0
-  transformMode: 0
-  selectionTarget: {fileID: 1000011022840156}
-  onSelect:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: SelectionHelper+SelectionEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  onHeld:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: SelectionHelper+SelectionEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  onRelease:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: SelectionHelper+SelectionEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
 --- !u!114 &114000011328577798
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -908,6 +904,20 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114000012528077262
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013488864180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14ee7a591bb7fbb49a0d755d7b58fcb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_AllHandles:
+  - {fileID: 114000010058967728}
 --- !u!114 &114000012802331334
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1090,11 +1100,11 @@ MonoBehaviour:
   sceneContainer: {fileID: 224000012777721742}
   tray: {fileID: 137000012547310740}
   frontPanel: {fileID: 224000012325241496}
+  translateManipulator: {fileID: 114000012528077262}
   leftHandle: {fileID: 4000014081935550}
   frontHandle: {fileID: 4000010817710752}
   rightHandle: {fileID: 4000010687023290}
   backHandle: {fileID: 4000012318367122}
-  grabHandle: {fileID: 114000011022495242}
   m_BoundsCube: {fileID: 4000013757845182}
 --- !u!137 &137000012547310740
 SkinnedMeshRenderer:

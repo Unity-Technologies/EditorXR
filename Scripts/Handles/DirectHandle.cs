@@ -15,6 +15,7 @@ namespace UnityEngine.VR.Handles
 		{
 			if (!eventData.pointerPressRaycast.isValid || eventData.pointerPressRaycast.distance > eventData.pointerLength)
 				return;
+			base.OnDrag(eventData);
 		}
 
 		public override void OnEndDrag(RayEventData eventData)

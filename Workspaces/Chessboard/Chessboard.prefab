@@ -22,7 +22,7 @@ GameObject:
   - 33: {fileID: 33000014063987388}
   - 23: {fileID: 23000013548613226}
   - 114: {fileID: 114000011045684258}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ControlBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   - 33: {fileID: 33000010688538882}
   - 64: {fileID: 64000011409640670}
   - 23: {fileID: 23000012195076526}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Quad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -57,7 +57,7 @@ GameObject:
   - 4: {fileID: 4000010512691356}
   - 114: {fileID: 114000012262627604}
   - 114: {fileID: 114000012428583066}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Chessboard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -278,3 +278,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   grid: {fileID: 23000012195076526}
+  controlBox: {fileID: 4000010528056068}

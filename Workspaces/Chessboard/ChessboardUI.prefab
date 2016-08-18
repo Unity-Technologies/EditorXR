@@ -39,7 +39,7 @@ GameObject:
   - 224: {fileID: 224000011316470142}
   - 222: {fileID: 222000014127676510}
   - 114: {fileID: 114000013356391994}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54,7 +54,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 224000012182060204}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Handle Slide Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -104,7 +104,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000011151911262}
   - 114: {fileID: 114000010619701612}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ChessboardUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -121,7 +121,7 @@ GameObject:
   - 224: {fileID: 224000012920482118}
   - 222: {fileID: 222000010962774830}
   - 114: {fileID: 114000014217297154}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -155,7 +155,7 @@ GameObject:
   - 224: {fileID: 224000012166200290}
   - 222: {fileID: 222000012975676046}
   - 114: {fileID: 114000014172967306}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -172,7 +172,7 @@ GameObject:
   - 224: {fileID: 224000013658181984}
   - 222: {fileID: 222000013021018402}
   - 114: {fileID: 114000010644544506}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -206,7 +206,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000012610495734}
   - 114: {fileID: 114000011682301028}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Slider
   m_TagString: Untagged
   m_Icon: {fileID: 0}

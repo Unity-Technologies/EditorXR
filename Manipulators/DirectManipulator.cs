@@ -10,9 +10,12 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 
 	public bool dragging { get {  return m_Dragging; } }
+
+	public Vector3 intersectionPoint { get; private set; }
+
 	private bool m_Dragging;
 
-	public Action<Vector3> translate { private get; set; }
+	public Action<Vector3>translate { private get; set; }
 	public Action<Quaternion> rotate { private get; set; }
 	public Action<Vector3> scale { private get; set; }
 
@@ -39,6 +42,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	private void TranslateHandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
 		translate(eventData.deltaPosition);
+		rotate(eventData.deltaRotation);
 	}
 
 	private void HandleOnBeginDrag(BaseHandle handle, HandleDragEventData eventData)

@@ -4,7 +4,7 @@ using System.Collections;
 
 namespace UnityEngine.VR.Tools
 {
-	public delegate GameObject SelectionRayCast(Transform rayOrigin, out float distance, out float directRayLength);
+	public delegate GameObject SelectionRayCast(Transform rayOrigin);
 	public interface IRaycaster
 	{
 		SelectionRayCast getFirstGameObject { set; }

@@ -43,10 +43,14 @@ namespace UnityEditor.VR.Modules
 
 		private void UpdateIgnoreList()
 		{
+			//var children = ignoreRoot.GetComponentsInChildren<Transform>();
+			//var ignoreList = new List<GameObject>(children.Length);
+			//ignoreList.AddRange(from t in children where !t.GetComponent<DirectManipulator>() select t.gameObject);
+			//m_IgnoreList = ignoreList.ToArray();
 			var children = ignoreRoot.GetComponentsInChildren<Transform>();
-			var ignoreList = new List<GameObject>(children.Length);
-			ignoreList.AddRange(from t in children where !t.GetComponent<SelectionHelper>() select t.gameObject);
-			m_IgnoreList = ignoreList.ToArray();
+			m_IgnoreList = new GameObject[children.Length];
+			for (int i = 0; i < children.Length; i++)
+				m_IgnoreList[i] = children[i].gameObject;
 		}
 
 		private GameObject Raycast(Ray ray, Camera camera)

@@ -57,37 +57,34 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 				Selection.objects = s_SelectedObjects.ToArray();
 			}
 		}
-
-		float distance;
-		float directRayLength;
-		var newHoverGameObject = getFirstGameObject(rayOrigin, out distance, out directRayLength);
+		var newHoverGameObject = getFirstGameObject(rayOrigin);
 		var newPrefabRoot = newHoverGameObject;
 
-		if (newHoverGameObject != null && m_SelectionHelper == null)
-		{
-			m_SelectionHelper = newHoverGameObject.GetComponent<SelectionHelper>();
-			// If gameObject has a SelectionHelper, check selection mode, then check selectionTarget
-			if (m_SelectionHelper)
-			{
-				switch (m_SelectionHelper.selectionMode)
-				{
-					case SelectionHelper.SelectionMode.DIRECT:
-						if (distance >= directRayLength)
-						{
-							m_SelectionHelper = null;
-							newHoverGameObject = null;
-						}
-						break;
-					case SelectionHelper.SelectionMode.REMOTE:
-						if (distance < directRayLength)
-						{
-							m_SelectionHelper = null;
-							newHoverGameObject = null;
-						}
-						break;
-				}
-			}
-		}
+		//if (newHoverGameObject != null && m_SelectionHelper == null)
+		//{
+		//	m_SelectionHelper = newHoverGameObject.GetComponent<SelectionHelper>();
+		//	// If gameObject has a SelectionHelper, check selection mode, then check selectionTarget
+		//	if (m_SelectionHelper)
+		//	{
+		//		switch (m_SelectionHelper.selectionMode)
+		//		{
+		//			case SelectionHelper.SelectionMode.DIRECT:
+		//				if (distance >= directRayLength)
+		//				{
+		//					m_SelectionHelper = null;
+		//					newHoverGameObject = null;
+		//				}
+		//				break;
+		//			case SelectionHelper.SelectionMode.REMOTE:
+		//				if (distance < directRayLength)
+		//				{
+		//					m_SelectionHelper = null;
+		//					newHoverGameObject = null;
+		//				}
+		//				break;
+		//		}
+		//	}
+		//}
 		if(newHoverGameObject != null) {
 			// If gameObject is within a prefab and not the current prefab, choose prefab root
 			newPrefabRoot = PrefabUtility.FindPrefabRoot(newHoverGameObject);
