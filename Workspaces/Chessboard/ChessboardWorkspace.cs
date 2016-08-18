@@ -22,15 +22,15 @@ public class ChessboardWorkspace : Workspace
 	private MiniWorld m_MiniWorld;
 	private Material m_GridMaterial;
 
-	private readonly ControlData[] m_ControlDatas = new ControlData[2];
+	private readonly RayData[] m_RayData = new RayData[2];
 	private float m_ScaleStartDistance;
 
-	private class ControlData
+	private class RayData
 	{
 		public Transform rayOrigin;
 		public Vector3 rayOriginStart;
-		public Vector3 referenceTransformStartPosition;
-		public Vector3 referenceTransformStartScale;
+		public Vector3 refTransformStartPosition;
+		public Vector3 refTransformStartScale;
 	}
 
 	public override void Setup()
@@ -109,51 +109,55 @@ public class ChessboardWorkspace : Workspace
 
 	private void ControlDragStart(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		if (m_ControlDatas[0] != null && m_ControlDatas[1] == null)
+		if (m_RayData[0] != null && m_RayData[1] == null) //On introduction of second ray
 		{
-			m_ScaleStartDistance = (m_ControlDatas[0].rayOrigin.position - eventData.rayOrigin.position).magnitude;
+			m_ScaleStartDistance = (m_RayData[0].rayOrigin.position - eventData.rayOrigin.position).magnitude;
 		}
-		for (var i = 0; i < m_ControlDatas.Length; i++)
+		for (var i = 0; i < m_RayData.Length; i++)
 		{
-			if (m_ControlDatas[i] == null)
+			if (m_RayData[i] != null) continue;
+
+			m_RayData[i] = new RayData
 			{
-				m_ControlDatas[i] = new ControlData
-				{
-					rayOrigin = eventData.rayOrigin,
-					rayOriginStart = eventData.rayOrigin.position,
-					referenceTransformStartPosition = m_MiniWorld.referenceTransform.position,
-					referenceTransformStartScale = m_MiniWorld.referenceTransform.localScale
-				};
-				break;
-			}
+				rayOrigin = eventData.rayOrigin,
+				rayOriginStart = eventData.rayOrigin.position,
+				refTransformStartPosition = m_MiniWorld.referenceTransform.position,
+				refTransformStartScale = m_MiniWorld.referenceTransform.localScale
+			};
+			break;
 		}
 	}
 
 	private void ControlDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		var controlData = m_ControlDatas[0];
-		if (controlData != null)
+		var rayData = m_RayData[0];
+		if (rayData != null)
 		{
-			if (m_ControlDatas[1] == null)	//Translate
+			var refTransform = m_MiniWorld.referenceTransform;
+			var rayOrigin = eventData.rayOrigin;
+			if (m_RayData[1] == null)	//Translate
 			{
-				m_MiniWorld.referenceTransform.position = controlData.referenceTransformStartPosition + Vector3.Scale(controlData.rayOriginStart - eventData.rayOrigin.transform.position, m_MiniWorld.referenceTransform.localScale);
+				refTransform.position = rayData.refTransformStartPosition 
+										+ Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, refTransform.localScale);
 			}
-			//If we have two controllers set and this is the event for the first one
-			else if (m_ControlDatas[0].rayOrigin.Equals(eventData.rayOrigin)) //Translate/Scale
+			//If we have two rays set and this is the event for the first one
+			else if (m_RayData[0].rayOrigin.Equals(rayOrigin)) //Translate/Scale
 			{
-				m_MiniWorld.referenceTransform.position = controlData.referenceTransformStartPosition + Vector3.Scale(controlData.rayOriginStart - eventData.rayOrigin.transform.position, m_MiniWorld.referenceTransform.localScale);
+				refTransform.position = rayData.refTransformStartPosition 
+										+ Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, refTransform.localScale);
 
-				ControlData otherControl = m_ControlDatas[1];
-				m_MiniWorld.referenceTransform.localScale = otherControl.referenceTransformStartScale * (m_ScaleStartDistance / (otherControl.rayOrigin.position - eventData.rayOrigin.position).magnitude);
+				var otherRay = m_RayData[1];
+				refTransform.localScale = otherRay.refTransformStartScale * (m_ScaleStartDistance 
+										/ (otherRay.rayOrigin.position - rayOrigin.position).magnitude);
 			}
 		}
 	}
 
 	private void ControlDragEnd(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		for(var i = 0; i < m_ControlDatas.Length; i++)
-			if (m_ControlDatas[i] != null && m_ControlDatas[i].rayOrigin.Equals(eventData.rayOrigin))
-				m_ControlDatas[i] = null;
+		for(var i = 0; i < m_RayData.Length; i++)
+			if (m_RayData[i] != null && m_RayData[i].rayOrigin.Equals(eventData.rayOrigin))
+				m_RayData[i] = null;
 	}
 
 	private void ControlHoverEnter(BaseHandle handle)
