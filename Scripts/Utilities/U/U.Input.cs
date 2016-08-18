@@ -6,12 +6,12 @@
 	/// <summary>
 	/// EditorVR Utilities
 	/// </summary>
-	public static partial class U
+	public partial class U
 	{
 		/// <summary>
 		/// Input related EditorVR utilities
 		/// </summary>
-		public static class Input
+		public class Input
 		{
 			public static HashSet<InputDevice> CollectInputDevicesFromActionMaps(List<ActionMap> maps)
 			{

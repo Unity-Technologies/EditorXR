@@ -256,7 +256,6 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_LineRenderer: {fileID: 114000010982492852}
   m_Tip: {fileID: 1000012922463866}
-  m_Cone: {fileID: 33000010516254212}
   m_LineWidth: 0.02
   m_Cone: {fileID: 33000010516254212}
 --- !u!114 &114000010982492852

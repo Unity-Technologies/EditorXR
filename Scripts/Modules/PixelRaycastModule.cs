@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine.VR.Proxies;
 
 namespace UnityEditor.VR.Modules
@@ -43,10 +42,6 @@ namespace UnityEditor.VR.Modules
 
 		private void UpdateIgnoreList()
 		{
-			//var children = ignoreRoot.GetComponentsInChildren<Transform>();
-			//var ignoreList = new List<GameObject>(children.Length);
-			//ignoreList.AddRange(from t in children where !t.GetComponent<DirectManipulator>() select t.gameObject);
-			//m_IgnoreList = ignoreList.ToArray();
 			var children = ignoreRoot.GetComponentsInChildren<Transform>();
 			m_IgnoreList = new GameObject[children.Length];
 			for (int i = 0; i < children.Length; i++)
@@ -63,7 +58,6 @@ namespace UnityEditor.VR.Modules
 			camera.targetTexture = RenderTexture.GetTemporary(Screen.width, Screen.height);
 			Camera.SetupCurrent(camera);
 
-			//TODO: use PickGameObjects and ignore SelectionHelpers in Direct mode that are too far away
 			var go = HandleUtility.PickGameObject(camera.pixelRect.center, false, m_IgnoreList);
 
 			Camera.SetupCurrent(restoreCamera);

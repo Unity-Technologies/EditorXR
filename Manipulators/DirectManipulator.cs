@@ -10,7 +10,6 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 
 	public bool dragging { get {  return m_Dragging; } }
-
 	private bool m_Dragging;
 
 	public Action<Vector3> translate { private get; set; }

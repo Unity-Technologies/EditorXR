@@ -36,14 +36,10 @@
 
 			public static Color HexToColor(string hex)
 			{
-                hex = hex.Replace("0x", "");
-                hex = hex.Replace("#", "");
-                byte r = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+				byte r = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
 				byte g = byte.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
 				byte b = byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
-			    byte a = hex.Length == 8 ? byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber) : (byte)255;
-
-                return new Color32(r, g, b, a);
+				return new Color32(r, g, b, 255);
 			}
 
 			public static Color RandomColor()
@@ -83,8 +79,7 @@
 					{
 						material.SetColor("_EmissionColor", col);
 						obj.GetComponent<Renderer>().sharedMaterial = material;
-					}
-					else
+					} else
 					{
 						U.Object.Destroy(material);
 					}

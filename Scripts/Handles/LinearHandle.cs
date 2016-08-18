@@ -93,7 +93,7 @@ namespace UnityEngine.VR.Handles
 
 			UpdateHandleTip(eventData);
 
-			OnHandleDrag(new HandleDragEventData(delta, Quaternion.identity, rayOrigin));
+			OnHandleDrag(new HandleDragEventData(delta, rayOrigin));
 		}
 
 		public override void OnEndDrag(RayEventData eventData)

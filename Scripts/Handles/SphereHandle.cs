@@ -10,8 +10,7 @@ namespace UnityEngine.VR.Handles
 		
 		private float m_ScrollRate;
 		private Vector3 m_LastPosition;
-		private Quaternion m_LastRotation;
-		private float m_CurrentRadius = 0f;
+		private float m_CurrentRadius;
 
 		public override void OnBeginDrag(RayEventData eventData)
 		{
@@ -23,7 +22,6 @@ namespace UnityEngine.VR.Handles
 
 			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
 			m_LastPosition = ray.GetPoint(m_CurrentRadius);
-			m_LastRotation = rayOrigin.rotation;
 			m_ScrollRate = kInitialScrollRate;
 			OnHandleBeginDrag(new HandleDragEventData(rayOrigin));
 		}
@@ -38,10 +36,7 @@ namespace UnityEngine.VR.Handles
 			var deltaPos = worldPosition - m_LastPosition;
 			m_LastPosition = worldPosition;
 
-			var deltaRot = Quaternion.Inverse(m_LastRotation) * rayOrigin.rotation;
-			m_LastRotation = rayOrigin.rotation;
-
-			OnHandleDrag(new HandleDragEventData(deltaPos, deltaRot, rayOrigin));
+			OnHandleDrag(new HandleDragEventData(deltaPos, rayOrigin));
 		}
 
 		public override void OnEndDrag(RayEventData eventData)
