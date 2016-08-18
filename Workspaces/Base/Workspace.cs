@@ -93,8 +93,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
 		m_WorkspaceSceneObjects.SetBounds(contentBounds);
 
-		m_WorkspaceSceneObjects.translateHandle.onHandleBeginDrag += OnTransformDragStart;
-		m_WorkspaceSceneObjects.translateHandle.onHandleEndDrag += OnTransformDragEnd;
+		m_WorkspaceSceneObjects.directManipulator.target = transform;
 
 		m_WorkspaceSceneObjects.GetComponentInChildren<DoubleClickHandle>().onDoubleClick += OnDoubleClick;
 
@@ -118,17 +117,6 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	}
 
 	protected abstract void OnBoundsChanged();
-
-	public virtual void OnTransformDragStart(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
-	{
-		m_LastParent = transform.parent;
-		transform.parent = eventData.rayOrigin;
-	}
-
-	public virtual void OnTransformDragEnd(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
-	{
-		transform.parent = m_LastParent;
-	}
 
 	public virtual void OnHandleDragStart(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
