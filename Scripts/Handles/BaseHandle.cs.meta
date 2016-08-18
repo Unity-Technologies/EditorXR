@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 4fb8f7696afa96048aa938286d04f96c
+timeCreated: 1469752606
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_InvertedSphereMesh: {fileID: 4300000, guid: 7b2713b18a01c2347a01908639ed6772,
+      type: 3}
+  - m_DebugMaterial: {fileID: 2100000, guid: ba05492e511837b4389be90497ab3526, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
