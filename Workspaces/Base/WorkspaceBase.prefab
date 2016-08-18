@@ -988,13 +988,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   sceneContainer: {fileID: 224000012777721742}
-  tray: {fileID: 137000012547310740}
   frontPanel: {fileID: 224000012325241496}
   translateHandle: {fileID: 114000010058967728}
   leftHandle: {fileID: 114000011439710426}
   frontHandle: {fileID: 114000013760903596}
   rightHandle: {fileID: 114000010511962596}
   backHandle: {fileID: 114000013184367326}
+  m_Tray: {fileID: 137000012547310740}
   m_BoundsCube: {fileID: 4000013757845182}
 --- !u!137 &137000012547310740
 SkinnedMeshRenderer:
