@@ -45,7 +45,7 @@ public class MiniWorldRenderer : MonoBehaviour
 
 				m_MiniCamera.cullingMask = cullingMask;
 				m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
-				m_MiniCamera.worldToCameraMatrix = m_MainCamera.worldToCameraMatrix * miniWorld.matrix;
+				m_MiniCamera.worldToCameraMatrix = m_MainCamera.worldToCameraMatrix * miniWorld.miniToReferenceMatrix;
 				Shader shader = Shader.Find("Custom/Custom Clip Planes");							 
 				Shader.SetGlobalVector("_ClipCenter", miniWorld.referenceBounds.center);
 				Shader.SetGlobalVector("_ClipExtents", miniWorld.referenceBounds.extents);

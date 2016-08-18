@@ -1,25 +1,28 @@
 ﻿using UnityEngine;
 using UnityEngine.VR.Utilities;
 
-//Q: Should combine with ChessboardWorkspace?
 public class MiniWorld : MonoBehaviour
-{	
-	private Vector3 m_LocalBoundsSize = Vector3.one;
-
+{
 	private static readonly LayerMask s_RendererCullingMask = -1;
-	private const float kTranslationScale = 0.1f;
+
+	private Vector3 m_LocalBoundsSize = Vector3.one;
 
 	private MiniWorldRenderer m_MiniWorldRenderer;
 
+	/// <summary>
+	/// RefernceTransform defines world space within the MiniWorld. When scaled up, a larger area is represented,
+	/// thus the objects in the MiniWorld get smaller.
+	/// </summary>
 	public Transform referenceTransform
 	{
 		get { return m_ReferenceTransform; }
 		set { m_ReferenceTransform = value; }
 	}
+
 	[SerializeField]
 	private Transform m_ReferenceTransform;
 
-	public Matrix4x4 matrix
+	public Matrix4x4 miniToReferenceMatrix
 	{
 		get { return transform.localToWorldMatrix * referenceTransform.worldToLocalMatrix; }
 	}
@@ -36,72 +39,22 @@ public class MiniWorld : MonoBehaviour
 			m_LocalBoundsSize = Vector3.Scale(referenceTransform.localScale.Inverse(), value.size);
 		}
 	}
-	public Bounds localReferenceBounds
+
+	public Bounds localBounds
 	{
 		get { return new Bounds(Vector3.zero, m_LocalBoundsSize); }
 		set { m_LocalBoundsSize = value.size; }
 	}
-
-	public void MoveForward()
-	{
-		referenceTransform.Translate(Vector3.forward * kTranslationScale);
-	}
-
-	public void MoveBackward()
-	{
-		referenceTransform.Translate(Vector3.back * kTranslationScale);
-	}
-
-	public void MoveLeft()
-	{
-		referenceTransform.Translate(Vector3.left * kTranslationScale);
-	}
-
-	public void MoveRight()
-	{
-		referenceTransform.Translate(Vector3.right * kTranslationScale);
-	}
-
-	internal void SetBounds(Bounds bounds)
-	{											  
-		localReferenceBounds = bounds;
-	}
-
-	//Q: Is this still needed?
-	//public bool ClipPlanesContain(Vector3 worldPosition)
-	//{
-	//	Vector3[] planeNormals = new Vector3[]
-	//	{
-	//		new Vector3(-1, 0, 0),
-	//		new Vector3(0, 0, 1),
-	//		new Vector3(1, 0, 0),
-	//		new Vector3(0, 0, -1),
-	//		new Vector3(0, 1, 0),
-	//		new Vector3(0, -1, 0),
-	//	};
-
-	//	for (int i = 0; i < kPlaneCount; i++)
-	//	{
-	//		if (Vector3.Dot(worldPosition - (clipBox.position - planeNormals[i] * clipDistances[i]), planeNormals[i]) < 0f)
-	//			return false;
-	//	}
-
-	//	return true;
-	//}
 
 	private void OnEnable()
 	{
 		if (!referenceTransform)
 			referenceTransform = new GameObject("MiniWorldReference") { hideFlags = HideFlags.DontSave }.transform;
 
-		Camera main = U.Camera.GetMainCamera();
-		m_MiniWorldRenderer = main.gameObject.AddComponent<MiniWorldRenderer>();
+		m_MiniWorldRenderer = U.Object.AddComponent<MiniWorldRenderer>(U.Camera.GetMainCamera().gameObject);
 		m_MiniWorldRenderer.miniWorld = this;
 		m_MiniWorldRenderer.cullingMask = s_RendererCullingMask;
-		if (U.Object.IsEditModeActive(this))
-			m_MiniWorldRenderer.runInEditMode = true;
 
-		// Sync with where camera is initially
 		Transform pivot = U.Camera.GetViewerPivot();
 		referenceTransform.position = pivot.transform.position;
 	}

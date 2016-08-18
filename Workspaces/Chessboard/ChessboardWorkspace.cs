@@ -94,7 +94,7 @@ public class ChessboardWorkspace : Workspace
 	protected override void OnBoundsChanged()
 	{
 		m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
-		m_MiniWorld.SetBounds(contentBounds);
+		m_MiniWorld.localBounds = contentBounds;
 
 		m_ChessboardSceneObjects.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
 
