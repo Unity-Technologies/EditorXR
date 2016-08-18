@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.VR.Handles;
 
-public class WorkspacePrefab : MonoBehaviour
+public class WorkspaceSceneObjects : MonoBehaviour
 {
 	public Transform sceneContainer;
 	public RectTransform frontPanel;

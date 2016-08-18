@@ -37,7 +37,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 					size.z = kDefaultBounds.z;
 				value.size = size;
 				m_ContentBounds.size = size; //Only set size, ignore center.
-				m_WorkspacePrefab.SetBounds(contentBounds);
+				m_WorkspaceSceneObjects.SetBounds(contentBounds);
 				OnBoundsChanged();
 			}
 		}
@@ -49,7 +49,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	[SerializeField]
 	private float m_VacuumTime = 0.75f;
 
-	protected WorkspacePrefab m_WorkspacePrefab;
+	protected WorkspaceSceneObjects m_WorkspaceSceneObjects;
 
 	[SerializeField]
 	private GameObject m_BasePrefab;
@@ -85,25 +85,25 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		GameObject baseObject = instantiateUI(m_BasePrefab);
 		baseObject.transform.SetParent(transform, false);
 		
-		m_WorkspacePrefab = baseObject.GetComponent<WorkspacePrefab>();
-		m_WorkspacePrefab.OnCloseClick = Close;
-		m_WorkspacePrefab.sceneContainer.transform.localPosition = Vector3.up * kContentHeight;  
+		m_WorkspaceSceneObjects = baseObject.GetComponent<WorkspaceSceneObjects>();
+		m_WorkspaceSceneObjects.OnCloseClick = Close;
+		m_WorkspaceSceneObjects.sceneContainer.transform.localPosition = Vector3.up * kContentHeight;  
 
 		//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
-		m_WorkspacePrefab.SetBounds(contentBounds);
+		m_WorkspaceSceneObjects.SetBounds(contentBounds);
 
-		m_WorkspacePrefab.translateHandle.onHandleBeginDrag += OnTransformDragStart;
-		m_WorkspacePrefab.translateHandle.onHandleEndDrag += OnTransformDragEnd;
+		m_WorkspaceSceneObjects.translateHandle.onHandleBeginDrag += OnTransformDragStart;
+		m_WorkspaceSceneObjects.translateHandle.onHandleEndDrag += OnTransformDragEnd;
 
-		m_WorkspacePrefab.GetComponentInChildren<DoubleClickHandle>().onDoubleClick += OnDoubleClick;
+		m_WorkspaceSceneObjects.GetComponentInChildren<DoubleClickHandle>().onDoubleClick += OnDoubleClick;
 
 		var handles = new BaseHandle[]
 		{
-			m_WorkspacePrefab.leftHandle,
-			m_WorkspacePrefab.frontHandle,
-			m_WorkspacePrefab.backHandle,
-			m_WorkspacePrefab.rightHandle
+			m_WorkspaceSceneObjects.leftHandle,
+			m_WorkspaceSceneObjects.frontHandle,
+			m_WorkspaceSceneObjects.backHandle,
+			m_WorkspaceSceneObjects.rightHandle
 		};
 
 		foreach (var handle in handles)
@@ -145,22 +145,22 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			Vector3 dragVector = eventData.rayOrigin.position - m_DragStart;
 			Bounds tmpBounds = contentBounds;
 			Vector3 positionOffset = Vector3.zero;
-			if (handle.Equals(m_WorkspacePrefab.leftHandle))
+			if (handle.Equals(m_WorkspaceSceneObjects.leftHandle))
 			{
 				tmpBounds.size = m_BoundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
 				positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
 			}
-			if (handle.Equals(m_WorkspacePrefab.frontHandle))
+			if (handle.Equals(m_WorkspaceSceneObjects.frontHandle))
 			{
 				tmpBounds.size = m_BoundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
 				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 			}
-			if (handle.Equals(m_WorkspacePrefab.rightHandle))
+			if (handle.Equals(m_WorkspaceSceneObjects.rightHandle))
 			{
 				tmpBounds.size = m_BoundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
 				positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
 			}
-			if (handle.Equals(m_WorkspacePrefab.backHandle))
+			if (handle.Equals(m_WorkspaceSceneObjects.backHandle))
 			{
 				tmpBounds.size = m_BoundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
 				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;

@@ -4,19 +4,22 @@ using UnityEngine.VR.Utilities;
 
 public class ChessboardWorkspace : Workspace
 {
-	private const float kClipBoxYOffset = 0.1333333f;			//1/3 of initial initial Y bounds (0.4)
-	private const float kClipBoxInitScale = 25;					//We want to see a big region by default
+	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 3; //1/3 of initial initial Y bounds
+	private const float kInitReferenceScale = 25; //We want to see a big region by default
+
+	//Scale slider min/max (maps to referenceTransform unifrom scale)
 	private const float kMinScale = 0.1f;
 	private const float kMaxScale = 35;
 
 	//NOTE: since pretty much all workspaces will want a prefab, should this go in the base class?
 	[SerializeField]
 	private GameObject m_ContentPrefab;
+
 	[SerializeField]
 	private GameObject m_UIPrefab;
 
+	private ChessboardSceneObjects m_ChessboardSceneObjects;
 	private MiniWorld m_MiniWorld;
-	private ChessboardPrefab m_ChessboardPrefab;
 	private Material m_GridMaterial;
 
 	private readonly ControlData[] m_ControlDatas = new ControlData[2];
@@ -33,18 +36,19 @@ public class ChessboardWorkspace : Workspace
 	public override void Setup()
 	{
 		base.Setup();
-		U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspacePrefab.sceneContainer, false);
+		U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspaceSceneObjects.sceneContainer, false);
+		m_ChessboardSceneObjects = GetComponentInChildren<ChessboardSceneObjects>();
+		m_GridMaterial = m_ChessboardSceneObjects.grid.sharedMaterial;
+
 		//Set up MiniWorld
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
-		m_MiniWorld.referenceTransform.position = Vector3.up * kClipBoxYOffset;
-		m_MiniWorld.referenceTransform.localScale = Vector3.one * kClipBoxInitScale;
-		m_ChessboardPrefab = GetComponentInChildren<ChessboardPrefab>();
-		m_GridMaterial = m_ChessboardPrefab.grid.sharedMaterial;
+		m_MiniWorld.referenceTransform.position = Vector3.up * kInitReferenceYOffset;
+		m_MiniWorld.referenceTransform.localScale = Vector3.one * kInitReferenceScale;
 
 		//Set up ControlBox
 		//ControlBox shouldn't move with miniWorld
-		var controlBox = m_ChessboardPrefab.controlBox;
-		controlBox.transform.parent = m_WorkspacePrefab.sceneContainer;
+		var controlBox = m_ChessboardSceneObjects.controlBox;
+		controlBox.transform.parent = m_WorkspaceSceneObjects.sceneContainer;
 		controlBox.transform.localPosition = Vector3.down * controlBox.transform.localScale.y * 0.5f;
 		controlBox.onHandleBeginDrag += ControlDragStart;
 		controlBox.onHandleDrag += ControlDrag;
@@ -53,12 +57,12 @@ public class ChessboardWorkspace : Workspace
 		controlBox.onHoverExit += ControlHoverExit;
 
 		//Set up UI
-		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspacePrefab.frontPanel, false);
+		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceSceneObjects.frontPanel, false);
 		var chessboardUI = UI.GetComponentInChildren<ChessboardUI>();
 		chessboardUI.OnZoomSlider = OnZoomSlider;
 		chessboardUI.zoomSlider.maxValue = kMaxScale;
 		chessboardUI.zoomSlider.minValue = kMinScale;
-		chessboardUI.zoomSlider.value = kClipBoxInitScale;
+		chessboardUI.zoomSlider.value = kInitReferenceScale;
 		OnBoundsChanged();
 	}
 
@@ -66,14 +70,15 @@ public class ChessboardWorkspace : Workspace
 	{
 		//Set grid height, deactivate if out of bounds
 		float gridHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
+		var grid = m_ChessboardSceneObjects.grid;
 		if (Mathf.Abs(gridHeight) < contentBounds.extents.y)
 		{
-			m_ChessboardPrefab.grid.gameObject.SetActive(true);
-			m_ChessboardPrefab.grid.transform.localPosition = Vector3.down * gridHeight;
+			grid.gameObject.SetActive(true);
+			grid.transform.localPosition = Vector3.down * gridHeight;
 		}
 		else
 		{
-			m_ChessboardPrefab.grid.gameObject.SetActive(false);
+			grid.gameObject.SetActive(false);
 		}
 
 		//Update grid material if ClipBox has moved
@@ -91,9 +96,9 @@ public class ChessboardWorkspace : Workspace
 		m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
 		m_MiniWorld.SetBounds(contentBounds);
 
-		m_ChessboardPrefab.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
+		m_ChessboardSceneObjects.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
 
-		var controlBox = m_ChessboardPrefab.controlBox;
+		var controlBox = m_ChessboardSceneObjects.controlBox;
 		controlBox.transform.localScale = new Vector3(contentBounds.size.x, controlBox.transform.localScale.y, contentBounds.size.z);
 	}
 
