@@ -260,11 +260,11 @@ namespace UnityEngine.VR.Utilities
 			var randomPositionB = s_ColorRandom.Next(s_ColorSwatchRange);
 
 			// Return a new random colorA that is not the same as the previous A or B
-			while (s_RandomGradientPairColorAPosition == randomPositionA  || s_RandomGradientPairColorBPosition == randomPositionB)
+			while (s_RandomGradientPairColorAPosition == randomPositionA)
 				randomPositionA = s_ColorRandom.Next(s_ColorSwatchRange);
 
 			// Mandate that the second color in the gradient is not the first color
-			while (randomPositionA == randomPositionB || s_RandomGradientPairColorBPosition == randomPositionB)
+			while (randomPositionA == randomPositionB || s_RandomGradientPairColorBPosition == randomPositionB || randomPositionB == s_RandomGradientPairColorAPosition)
 				randomPositionB = s_ColorRandom.Next(s_ColorSwatchRange);
 
 			var colorA = s_ColorSwatches[randomPositionA];
