@@ -236,7 +236,8 @@ namespace UnityEngine.VR.Tools
 				m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, m_InputDirection > 0 ? Color.white: Color.clear);
 				m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, m_InputDirection < 0 ? Color.white: Color.clear);
 			}
-			else {
+			else
+			{
 				m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
 				m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
 				m_RotationRate = m_RotationRate > 0 ? m_RotationRate -= Time.unscaledDeltaTime : 0f;  // Allow for the smooth resumption of rotation if rotation is resumed before snapping is stopped
@@ -245,7 +246,7 @@ namespace UnityEngine.VR.Tools
 				{
 					float flickToFaceDirection = 0;
 					const float kFlickDeltaThreshold = 0.5f;
-					const float kFlickDurationThreshold = 0.3f;
+					const float kFlickDurationThreshold = 0.4f;
 					if (Mathf.Abs(m_InputFlickRate) > kFlickDeltaThreshold && Time.realtimeSinceStartup - m_InputFlickStartTime < kFlickDurationThreshold) // perform a quick single face rotation if a quick flick of the input axis occurred
 						flickToFaceDirection = m_InputDirection;
 
@@ -275,7 +276,7 @@ namespace UnityEngine.VR.Tools
 		private void CreateToolButtons(List<Type> buttonDataSources)
 		{
 			if (m_FaceToButtons == null)
-			{
+		{
 				m_FaceToButtons = new Dictionary<string, List<Transform>>();
 				m_UncategorizedButtons = new List<Transform>();
 				m_FaceToButtons.Add(kUncategorizedFaceName, m_UncategorizedButtons);
@@ -298,11 +299,11 @@ namespace UnityEngine.VR.Tools
 					{
 						mainMenuButton.SetData(customMenuAttribute.Name, customMenuAttribute.Description);
 
-						var found = m_FaceToButtons.Where(x => x.Key == customMenuAttribute.SectionName).Any();
+						var found = m_FaceToButtons.Any(x => x.Key == customMenuAttribute.SectionName);
 
 						if (found)
 						{
-							var kvp = m_FaceToButtons.Where(x => x.Key == customMenuAttribute.SectionName).First();
+							var kvp = m_FaceToButtons.First(x => x.Key == customMenuAttribute.SectionName);
 							if (!String.IsNullOrEmpty(kvp.Key))
 								kvp.Value.Add(newButton.transform);
 						}

@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: MenuInputHighlightGradient
+  m_Name: MenuInputHighlight
   m_Shader: {fileID: 4800000, guid: 269bee83d6b662e489c098a4f0d9af32, type: 3}
   m_ShaderKeywords: _ALPHABLEND_ON _EMISSION _GLOSSYREFLECTIONS_OFF
   m_LightmapFlags: 1

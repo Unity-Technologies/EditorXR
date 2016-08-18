@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Proxies
+﻿namespace UnityEngine.VR
 {
 	public enum Node
 	{

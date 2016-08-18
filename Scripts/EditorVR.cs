@@ -8,6 +8,7 @@ using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -37,6 +38,9 @@ public class EditorVR : MonoBehaviour
     private MainMenu m_MainMenuPrefab;
     [SerializeField]
     private DefaultProxyRay m_ProxyRayPrefab;
+	[SerializeField]
+	private Camera m_EventCameraPrefab;
+
     private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
     private TrackedObject m_TrackedObjectInput;
@@ -91,7 +95,7 @@ public class EditorVR : MonoBehaviour
 
         m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
         m_AllActions = U.Object.GetImplementationsOfInterface(typeof(IAction));
-
+        
         // TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
         // This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
         // then only show it in that hand's menu.
@@ -220,16 +224,16 @@ public class EditorVR : MonoBehaviour
         // it's necessary to spawn the tools in a separate non-IEnumerator context.
         EditorApplication.delayCall += () =>
         {
+			// Spawn default tools
             HashSet<InputDevice> devices;
-
-            // Spawn default tools
+			ITool tool;
             foreach (var deviceData in m_DeviceData)
             {
                 // Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
                 if (deviceData.Key.tagIndex == -1)
                     continue;
 
-                var tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
                 AddToolToDeviceData(tool, devices);
 
                 tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
@@ -237,6 +241,8 @@ public class EditorVR : MonoBehaviour
                 
                 SpawnMainMenu(typeof(MainMenu), deviceData.Key);
             }
+			tool = SpawnTool(typeof(TransformTool), out devices);
+			AddToolToDeviceData(tool, devices);
         };
     }
 
@@ -267,8 +273,21 @@ public class EditorVR : MonoBehaviour
 
             foreach (var rayOrigin in proxy.rayOrigins.Values)
             {
+				var distance = kDefaultRayLength;
+
+				// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
+				// object, so visually show the ray terminating there instead of the object; UI is already given
+				// priority on the input side)
+				var uiEventData = m_InputModule.GetPointerEventData(rayOrigin);
+				if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
+				{
+					// Set ray length to distance to UI objects
+					distance = uiEventData.pointerCurrentRaycast.distance;
+				}
+				else
+				{
+					// If not hitting UI, then check pixel raycast and approximate bounds to set distance
                 var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
-                var distance = kDefaultRayLength;
                 if (go != null)
                 {
                     var ray = new Ray(rayOrigin.position, rayOrigin.forward);
@@ -279,6 +298,7 @@ public class EditorVR : MonoBehaviour
                             distance = Mathf.Min(distance, newDist);
                     }
                 }
+				}
                 m_DefaultRays[rayOrigin].SetLength(distance);
             }
         }
@@ -289,10 +309,10 @@ public class EditorVR : MonoBehaviour
         // Create event system, input module, and event camera
         U.Object.AddComponent<EventSystem>(gameObject);
         m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
-        m_EventCamera = U.Object.InstantiateAndSetActive(m_InputModule.EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+		m_InputModule.getPointerLength = GetPointerLength;
+		m_EventCamera = U.Object.InstantiateAndSetActive(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
         m_EventCamera.enabled = false;
         m_InputModule.eventCamera = m_EventCamera;
-
         foreach (var proxy in m_AllProxies)
         {
             foreach (var rayOriginBase in proxy.rayOrigins)
@@ -557,6 +577,18 @@ public class EditorVR : MonoBehaviour
         if (highlightComponent != null)
             highlightComponent.setHighlight = m_HighlightModule.SetHighlight;
     }
+
+	private float GetPointerLength(Transform rayOrigin)
+	{
+		float length = 0f;
+		DefaultProxyRay dpr;
+		if (m_DefaultRays.TryGetValue(rayOrigin, out dpr))
+		{
+			length = dpr.pointerLength;
+		}
+
+		return length;
+	}
 
     private InputDevice GetInputDeviceForTool(ITool tool)
     {
