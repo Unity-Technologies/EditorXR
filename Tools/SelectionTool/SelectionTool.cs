@@ -10,7 +10,6 @@ using UnityEngine.InputNew;
 
 public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
 {
-
 	private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
 	private GameObject m_HoverGameObject;
@@ -30,13 +29,11 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 	}
 	private SelectionInput m_SelectionInput;
 
-	public SelectionRayCast getFirstGameObject { private get; set; }
+	public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 
 	public Transform rayOrigin { private get; set; }
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
-
-	private Transform m_DirectTransformOldParent;
 
 	void Update()
 	{
@@ -57,7 +54,8 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 		var newHoverGameObject = getFirstGameObject(rayOrigin);
 		var newPrefabRoot = newHoverGameObject;
 
-		if(newHoverGameObject != null) {
+		if(newHoverGameObject != null)
+		{
 			// If gameObject is within a prefab and not the current prefab, choose prefab root
 			newPrefabRoot = PrefabUtility.FindPrefabRoot(newHoverGameObject);
 			if (newPrefabRoot != s_CurrentPrefabOpened)
@@ -77,7 +75,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 		m_HoverGameObject = newHoverGameObject;
 
 		// Handle select button press
-		if (m_SelectionInput.select.wasJustPressed)
+		if (m_SelectionInput.select.wasJustPressed) 
 		{
 			// Detect double click
 			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
@@ -96,7 +94,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 				// Multi-Select
 				if (m_SelectionInput.multiSelect.isHeld)
 				{
-
+					
 					if (s_SelectedObjects.Contains(m_HoverGameObject))
 					{
 						// Already selected, so remove from selection
@@ -105,7 +103,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 					else
 					{
 						// Add to selection
-						s_SelectedObjects.Add(m_HoverGameObject);
+						s_SelectedObjects.Add(m_HoverGameObject); 
 						Selection.activeGameObject = m_HoverGameObject;
 					}
 				}

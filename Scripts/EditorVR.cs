@@ -24,6 +24,11 @@ public class EditorVR : MonoBehaviour
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
 	private const float kDefaultRayLength = 100f;
+
+	private const float kWorkspaceAnglePadding = 25f;
+	private const float kWorkspaceYPadding = 0.35f;
+	private const int   kWorkspaceLoopOverrun = 20;
+
 	[SerializeField]
 	private ActionMap m_MenuActionMap;
 	[SerializeField]
@@ -68,9 +73,6 @@ public class EditorVR : MonoBehaviour
 		{ "Left", Node.LeftHand },
 		{ "Right", Node.RightHand }
 	};
-	private const float kWorkspaceAnglePadding = 25f;
-	private const float kWorkspaceYPadding = 0.35f;
-	private const int kWorkspaceLoopOverrun = 20;
 
 	private void Awake()
 	{

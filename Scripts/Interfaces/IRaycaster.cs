@@ -4,9 +4,8 @@ using System.Collections;
 
 namespace UnityEngine.VR.Tools
 {
-	public delegate GameObject SelectionRayCast(Transform rayOrigin);
 	public interface IRaycaster
 	{
-		SelectionRayCast getFirstGameObject { set; }
+		Func<Transform, GameObject> getFirstGameObject { set; }
 	}
 }

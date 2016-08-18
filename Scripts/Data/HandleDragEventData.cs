@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-namespace UnityEngine.VR.Handles
+﻿namespace UnityEngine.VR.Handles
 {
 	/// <summary>
 	/// Event data for BaseHandle.DragEventCallback
@@ -11,31 +9,31 @@ namespace UnityEngine.VR.Handles
 		public Quaternion deltaRotation;
 		public Transform rayOrigin;
 
-		public HandleDragEventData(Vector3 deltaPos, Quaternion deltaRot, Transform rayOrigin = null)
+		public HandleDragEventData(Vector3 deltaPos, Quaternion deltaRot, Transform rayOrigin)
 		{
 			this.rayOrigin = rayOrigin;
 			deltaPosition = deltaPos;
 			deltaRotation = deltaRot;
 		}
 
-		public HandleDragEventData(Vector3 deltaPos)
+		public HandleDragEventData(Vector3 deltaPos, Transform rayOrigin)
 		{
+			this.rayOrigin = rayOrigin;
 			deltaPosition = deltaPos;
 			deltaRotation = Quaternion.identity;
-			rayOrigin = null;
 		}
 
-		public HandleDragEventData(Quaternion deltaRot)
+		public HandleDragEventData(Quaternion deltaRot, Transform rayOrigin)
 		{
+			this.rayOrigin = rayOrigin;
 			deltaPosition = Vector3.zero;
 			deltaRotation = deltaRot;
-			rayOrigin = null;
 		}
 		public HandleDragEventData(Transform rayOrigin)
 		{
+			this.rayOrigin = rayOrigin;
 			deltaPosition = Vector3.zero;
 			deltaRotation = Quaternion.identity;
-			this.rayOrigin = rayOrigin;
 		}
 	}
 }

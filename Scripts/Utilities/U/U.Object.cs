@@ -15,12 +15,12 @@
 	/// <summary>
 	/// EditorVR Utilities
 	/// </summary>
-	public static partial class U
+	public partial class U
 	{
 		/// <summary>
 		/// Object related EditorVR utilities
 		/// </summary>
-		public static class Object
+		public class Object
 		{
 			public static GameObject InstantiateAndSetActive(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true)
 			{

@@ -8,12 +8,12 @@
 	/// <summary>
 	/// EditorVR Utilities
 	/// </summary>
-	public static partial class U
+	public partial class U
 	{
 		/// <summary>
 		/// Camera related EditorVR utilities
 		/// </summary>
-		public static class Camera
+		public class Camera
 		{
 			public static float DistanceToCamera(GameObject obj)
 			{

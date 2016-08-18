@@ -80,7 +80,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 			var text = newButton.GetComponentInChildren<Text>();
 			text.text = newButton.name;
 			var button = newButton.GetComponent<Button>();
-			AddWorkspaceButtonListener(button, menuWorkspace);								   
+			AddWorkspaceButtonListener(button, menuWorkspace);
 		}
 	}
 	private void AddWorkspaceButtonListener(Button b, Type t)
@@ -92,7 +92,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 			EditorApplication.delayCall += () =>
 			{
 				selectWorkspace(t);
-				U.Object.Destroy(this); //Q: Why destroy "this" and not "gameobject"?
+				U.Object.Destroy(this);
 			};
 		});
 		b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);

@@ -99,7 +99,7 @@ namespace UnityEngine.VR.Handles
 			if (m_HandleTip != null)
 				m_HandleTip.RotateAround(transform.position, transform.up, angle);
 
-			OnHandleDrag(new HandleDragEventData(delta));
+			OnHandleDrag(new HandleDragEventData(delta, rayOrigin));
 		}
 
 		public override void OnEndDrag(RayEventData eventData)

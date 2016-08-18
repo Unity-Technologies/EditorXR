@@ -42,7 +42,7 @@ namespace UnityEngine.VR.Handles
 			delta.z = 0;
 			delta = transform.TransformVector(delta);
 
-			OnHandleDrag(new HandleDragEventData(delta));
+			OnHandleDrag(new HandleDragEventData(delta, rayOrigin));
 		}
 
 		public override void OnEndDrag(RayEventData eventData)

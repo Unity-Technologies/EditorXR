@@ -8,7 +8,6 @@ namespace UnityEngine.VR.Handles
 	/// </summary>
 	public abstract class BaseHandle : MonoBehaviour, IRayBeginDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler
 	{
-		//Q: Why not an Action?
 		public delegate void DragEventCallback(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData));
 
 		public event DragEventCallback onHandleBeginDrag;

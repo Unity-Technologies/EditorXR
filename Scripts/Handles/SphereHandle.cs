@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.EventSystems;
+﻿using UnityEngine.EventSystems;
 using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Handles
@@ -20,27 +19,29 @@ namespace UnityEngine.VR.Handles
 
 			m_CurrentRadius = eventData.pointerCurrentRaycast.distance;
 
-			Ray ray = new Ray(eventData.rayOrigin.position, eventData.rayOrigin.forward);
+			var rayOrigin = eventData.rayOrigin;
+
+			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
 			m_LastPosition = ray.GetPoint(m_CurrentRadius);
-			m_LastRotation = eventData.rayOrigin.rotation;
+			m_LastRotation = rayOrigin.rotation;
 			m_ScrollRate = kInitialScrollRate;
-			OnHandleBeginDrag(new HandleDragEventData(eventData.rayOrigin));
+			OnHandleBeginDrag(new HandleDragEventData(rayOrigin));
 		}
 
 		public void OnDrag(RayEventData eventData)
 		{
-			var worldPosition = m_LastPosition;
+			var rayOrigin = eventData.rayOrigin;
 
-			Ray ray = new Ray(eventData.rayOrigin.position, eventData.rayOrigin.forward);
-			worldPosition = ray.GetPoint(m_CurrentRadius);
+			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
+			var worldPosition = ray.GetPoint(m_CurrentRadius);
 
 			var deltaPos = worldPosition - m_LastPosition;
 			m_LastPosition = worldPosition;
 
-			var deltaRot = Quaternion.Inverse(m_LastRotation) * eventData.rayOrigin.rotation;
-			m_LastRotation = eventData.rayOrigin.rotation;
+			var deltaRot = Quaternion.Inverse(m_LastRotation) * rayOrigin.rotation;
+			m_LastRotation = rayOrigin.rotation;
 
-			OnHandleDrag(new HandleDragEventData(deltaPos, deltaRot, eventData.rayOrigin));
+			OnHandleDrag(new HandleDragEventData(deltaPos, deltaRot, rayOrigin));
 		}
 
 		public override void OnEndDrag(RayEventData eventData)
