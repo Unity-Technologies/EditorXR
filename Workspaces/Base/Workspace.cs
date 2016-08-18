@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public abstract class Workspace : MonoBehaviour, IInstantiateUI
+public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 {
 	public enum Direction { LEFT, FRONT, RIGHT, BACK}
 	public static readonly Vector3 kDefaultBounds = new Vector3(0.6f, 0.4f, 0.4f);
@@ -66,13 +68,13 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 	private Vector3 boundSizeStart;
 	private bool m_Dragging;
 
+	public Action<GameObject, bool> setHighlight { get; set; }
+
 	public virtual void Setup()
 	{
 		GameObject baseObject = instantiateUI(m_BasePrefab);
 		baseObject.transform.SetParent(transform);
 		m_WorkspacePrefab = baseObject.GetComponent<WorkspacePrefab>();
-		m_WorkspacePrefab.OnHandleDragStart = OnHandleDragStart;
-		m_WorkspacePrefab.OnHandleDrag = OnHandleDrag;
 		m_WorkspacePrefab.OnCloseClick = Close;
 		m_WorkspacePrefab.sceneContainer.transform.localPosition = Vector3.up * kContentHeight;
 		baseObject.transform.localPosition = Vector3.zero;
@@ -83,6 +85,22 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 
 		m_WorkspacePrefab.translateHandle.onHandleBeginDrag += OnTransformDragStart;
 		m_WorkspacePrefab.translateHandle.onHandleEndDrag += OnTransformDragEnd;
+
+		var handles = new List<BaseHandle>(4);
+		handles.Add(m_WorkspacePrefab.leftHandle);
+		handles.Add(m_WorkspacePrefab.frontHandle);
+		handles.Add(m_WorkspacePrefab.backHandle);
+		handles.Add(m_WorkspacePrefab.rightHandle);
+
+		foreach (var handle in handles)
+		{
+			handle.onHandleBeginDrag += OnHandleDragStart;
+			handle.onHandleDrag += OnHandleDrag;
+			handle.onHandleEndDrag += OnHandleDragEnd;
+			
+			handle.onHoverEnter += OnHandleHoverEnter;
+			handle.onHoverExit += OnHandleHoverExit;
+		}
 	}
 
 	protected abstract void OnBoundsChanged();
@@ -98,48 +116,59 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI
 		transform.parent = m_LastParent;
 	}
 
-	public virtual void OnHandleDragStart(Transform handle, Transform rayOrigin)
+	public virtual void OnHandleDragStart(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		positionStart = transform.position;
-		dragStart = rayOrigin.position;
+		dragStart = eventData.rayOrigin.position;
 		boundSizeStart = contentBounds.size;
 		m_Dragging = true;
 	}
 
-	public virtual void OnHandleDrag(Transform rayOrigin, Direction direction)
+	public virtual void OnHandleDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		if (m_Dragging)
 		{
-			Vector3 dragVector = rayOrigin.position - dragStart;
+			Vector3 dragVector = eventData.rayOrigin.position - dragStart;
 			Bounds tmpBounds = contentBounds;
 			Vector3 positionOffset = Vector3.zero;
-			switch (direction)
+			if (handle.Equals(m_WorkspacePrefab.leftHandle))
 			{
-				case Direction.LEFT:
-					tmpBounds.size = boundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
-					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
-					break;
-				case Direction.FRONT:
-					tmpBounds.size = boundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
-					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
-					break;
-				case Direction.RIGHT:
-					tmpBounds.size = boundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
-					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
-					break;
-				case Direction.BACK:
-					tmpBounds.size = boundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
-					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
-					break;
+				tmpBounds.size = boundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
+				positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
+			}
+			if (handle.Equals(m_WorkspacePrefab.frontHandle))
+			{
+				tmpBounds.size = boundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
+				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
+			}
+			if (handle.Equals(m_WorkspacePrefab.rightHandle))
+			{
+				tmpBounds.size = boundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
+				positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
+			}
+			if (handle.Equals(m_WorkspacePrefab.backHandle))
+			{
+				tmpBounds.size = boundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
+				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 			}
 			contentBounds = tmpBounds;
 			transform.position = positionStart + positionOffset;
 		}
 	}
 
-	public virtual void OnHandleDragEnd(Transform rayOrigin, Direction direction)
+	public virtual void OnHandleDragEnd(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		m_Dragging = false;
+	}
+
+	public virtual void OnHandleHoverEnter(BaseHandle handle)
+	{
+		setHighlight(handle.gameObject, true);
+	}
+
+	public virtual void OnHandleHoverExit(BaseHandle handle)
+	{
+		setHighlight(handle.gameObject, false);
 	}
 
 	public virtual void Close()

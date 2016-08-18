@@ -65,7 +65,7 @@ namespace UnityEngine.VR.Handles
 
 			UpdateHandleTip(eventData);
 
-			OnHandleBeginDrag();
+			OnHandleBeginDrag(new HandleDragEventData(eventData.rayOrigin));
 		}
 
 		public void OnDrag(RayEventData eventData)
@@ -93,7 +93,7 @@ namespace UnityEngine.VR.Handles
 
 			UpdateHandleTip(eventData);
 
-			OnHandleDrag(new HandleDragEventData(delta));
+			OnHandleDrag(new HandleDragEventData(delta, Quaternion.identity, rayOrigin));
 		}
 
 		public override void OnEndDrag(RayEventData eventData)
@@ -102,7 +102,7 @@ namespace UnityEngine.VR.Handles
 
 			UpdateHandleTip(eventData);
 
-			OnHandleEndDrag();
+			OnHandleEndDrag(new HandleDragEventData(eventData.rayOrigin));
 		}
 	}
 }

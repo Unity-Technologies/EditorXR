@@ -16,7 +16,6 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 	private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
 	private GameObject m_HoverGameObject;
-	private SelectionHelper m_SelectionHelper;
 	private DateTime m_LastSelectTime;
 
 	// The prefab (if any) that was double clicked, whose individual pieces can be selected
@@ -60,31 +59,6 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 		var newHoverGameObject = getFirstGameObject(rayOrigin);
 		var newPrefabRoot = newHoverGameObject;
 
-		//if (newHoverGameObject != null && m_SelectionHelper == null)
-		//{
-		//	m_SelectionHelper = newHoverGameObject.GetComponent<SelectionHelper>();
-		//	// If gameObject has a SelectionHelper, check selection mode, then check selectionTarget
-		//	if (m_SelectionHelper)
-		//	{
-		//		switch (m_SelectionHelper.selectionMode)
-		//		{
-		//			case SelectionHelper.SelectionMode.DIRECT:
-		//				if (distance >= directRayLength)
-		//				{
-		//					m_SelectionHelper = null;
-		//					newHoverGameObject = null;
-		//				}
-		//				break;
-		//			case SelectionHelper.SelectionMode.REMOTE:
-		//				if (distance < directRayLength)
-		//				{
-		//					m_SelectionHelper = null;
-		//					newHoverGameObject = null;
-		//				}
-		//				break;
-		//		}
-		//	}
-		//}
 		if(newHoverGameObject != null) {
 			// If gameObject is within a prefab and not the current prefab, choose prefab root
 			newPrefabRoot = PrefabUtility.FindPrefabRoot(newHoverGameObject);
@@ -105,83 +79,47 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 		m_HoverGameObject = newHoverGameObject;
 
 		// Handle select button press
-		if (m_SelectionInput.select.wasJustPressed) 
+		if (m_SelectionInput.select.wasJustPressed)
 		{
-			if (m_SelectionHelper)
+			// Detect double click
+			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
+			m_LastSelectTime = DateTime.Now;
+			if (timeSinceLastSelect < kDoubleClickIntervalMax && timeSinceLastSelect > kDoubleClickIntervalMin)
 			{
-				if (m_SelectionHelper.transformMode == SelectionHelper.TransformMode.DIRECT)
-				{
-					m_DirectTransformOldParent = m_SelectionHelper.selectionTarget.transform.parent;
-					m_SelectionHelper.selectionTarget.transform.parent = rayOrigin;
-				}
-				if (m_SelectionHelper.transformMode == SelectionHelper.TransformMode.CUSTOM)
-				{
-					if (m_SelectionHelper.onSelect != null)
-						m_SelectionHelper.onSelect.Invoke(m_SelectionHelper.transform, rayOrigin);
-				}
+				s_CurrentPrefabOpened = m_HoverGameObject;
+				s_SelectedObjects.Remove(s_CurrentPrefabOpened);
 			}
 			else
 			{
-				// Detect double click
-				var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
-				m_LastSelectTime = DateTime.Now;
-				if (timeSinceLastSelect < kDoubleClickIntervalMax && timeSinceLastSelect > kDoubleClickIntervalMin)
-				{
-					s_CurrentPrefabOpened = m_HoverGameObject;
-					s_SelectedObjects.Remove(s_CurrentPrefabOpened);
-				}
-				else
-				{
-					// Reset current prefab if selecting outside of it
-					if (newPrefabRoot != s_CurrentPrefabOpened)
-						s_CurrentPrefabOpened = null;
+				// Reset current prefab if selecting outside of it
+				if (newPrefabRoot != s_CurrentPrefabOpened)
+					s_CurrentPrefabOpened = null;
 
-					// Multi-Select
-					if (m_SelectionInput.multiSelect.isHeld)
+				// Multi-Select
+				if (m_SelectionInput.multiSelect.isHeld)
+				{
+
+					if (s_SelectedObjects.Contains(m_HoverGameObject))
 					{
-
-						if (s_SelectedObjects.Contains(m_HoverGameObject))
-						{
-							// Already selected, so remove from selection
-							s_SelectedObjects.Remove(m_HoverGameObject);
-						}
-						else
-						{
-							// Add to selection
-							s_SelectedObjects.Add(m_HoverGameObject);
-							Selection.activeGameObject = m_HoverGameObject;
-						}
+						// Already selected, so remove from selection
+						s_SelectedObjects.Remove(m_HoverGameObject);
 					}
 					else
 					{
-						s_SelectedObjects.Clear();
-						Selection.activeGameObject = m_HoverGameObject;
+						// Add to selection
 						s_SelectedObjects.Add(m_HoverGameObject);
+						Selection.activeGameObject = m_HoverGameObject;
 					}
 				}
-				Selection.objects = s_SelectedObjects.ToArray();
+				else
+				{
+					s_SelectedObjects.Clear();
+					Selection.activeGameObject = m_HoverGameObject;
+					s_SelectedObjects.Add(m_HoverGameObject);
+				}
 			}
+			Selection.objects = s_SelectedObjects.ToArray();
 		}
-		if (m_SelectionInput.select.wasJustReleased)
-		{
-			if (m_SelectionHelper && m_SelectionHelper.transformMode == SelectionHelper.TransformMode.CUSTOM)
-			{
-				if (m_SelectionHelper.onRelease != null)
-					m_SelectionHelper.onRelease.Invoke(m_SelectionHelper.transform, rayOrigin);
-			}
-			if (m_SelectionHelper && m_SelectionHelper.transformMode == SelectionHelper.TransformMode.DIRECT)
-				m_SelectionHelper.selectionTarget.transform.parent = m_DirectTransformOldParent;
-		}
-		if (m_SelectionInput.select.isHeld)
-		{
-			if (m_SelectionHelper && m_SelectionHelper.transformMode == SelectionHelper.TransformMode.CUSTOM)
-			{
-				if (m_SelectionHelper.onHeld != null)
-					m_SelectionHelper.onHeld.Invoke(m_SelectionHelper.transform, rayOrigin);
-			}
-		}
-		else
-			m_SelectionHelper = null;
 	}
 
 	void OnDisable()

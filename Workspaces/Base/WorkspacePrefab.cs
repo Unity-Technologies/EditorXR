@@ -5,13 +5,11 @@ using UnityEngine.VR.Handles;
 public class WorkspacePrefab : MonoBehaviour
 {
 	public Action OnCloseClick { private get; set; }
-	public Action<Transform, Transform> OnHandleDragStart { private get; set; }
-	public Action<Transform, Workspace.Direction> OnHandleDrag { private get; set; }
 	public Transform sceneContainer;
 	public SkinnedMeshRenderer tray;
 	public RectTransform frontPanel;
 	public DirectHandle translateHandle;
-	public Transform leftHandle, frontHandle, rightHandle, backHandle;
+	public LinearHandle leftHandle, frontHandle, rightHandle, backHandle;
 
 	private const float kPanelOffset = 0.1f; //The panel needs to be pulled back slightly
 
@@ -25,15 +23,15 @@ public class WorkspacePrefab : MonoBehaviour
 		tray.SetBlendShapeWeight(1, bounds.size.z + Workspace.kHandleMargin);
 
 		//Resize handles
-		float handleScale = leftHandle.localScale.x;
-		leftHandle.localPosition = new Vector3(-bounds.extents.x - Workspace.kHandleMargin + handleScale, leftHandle.localPosition.y, 0);
-		leftHandle.localScale = new Vector3(handleScale, handleScale, bounds.size.z + Workspace.kHandleMargin);
-		frontHandle.localPosition = new Vector3(0, frontHandle.localPosition.y, -bounds.extents.z - Workspace.kHandleMargin + handleScale);
-		frontHandle.localScale = new Vector3(bounds.size.x + Workspace.kHandleMargin, handleScale, handleScale);
-		rightHandle.localPosition = new Vector3(bounds.extents.x + Workspace.kHandleMargin - handleScale, rightHandle.localPosition.y, 0);
-		rightHandle.localScale = new Vector3(handleScale, handleScale, bounds.size.z + Workspace.kHandleMargin);
-		backHandle.localPosition = new Vector3(0, backHandle.localPosition.y, bounds.extents.z + Workspace.kHandleMargin - handleScale);
-		backHandle.localScale = new Vector3(bounds.size.x + Workspace.kHandleMargin, handleScale, handleScale);
+		float handleScale = leftHandle.transform.localScale.z;
+		leftHandle.transform.localPosition = new Vector3(-bounds.extents.x - Workspace.kHandleMargin + handleScale, leftHandle.transform.localPosition.y, 0);
+		leftHandle.transform.localScale = new Vector3(bounds.size.z + Workspace.kHandleMargin, handleScale, handleScale);
+		frontHandle.transform.localPosition = new Vector3(0, frontHandle.transform.localPosition.y, -bounds.extents.z - Workspace.kHandleMargin + handleScale);
+		frontHandle.transform.localScale = new Vector3(bounds.size.x + Workspace.kHandleMargin, handleScale, handleScale);
+		rightHandle.transform.localPosition = new Vector3(bounds.extents.x + Workspace.kHandleMargin - handleScale, rightHandle.transform.localPosition.y, 0);
+		rightHandle.transform.localScale = new Vector3(bounds.size.z + Workspace.kHandleMargin, handleScale, handleScale);
+		backHandle.transform.localPosition = new Vector3(0, backHandle.transform.localPosition.y, bounds.extents.z + Workspace.kHandleMargin - handleScale);
+		backHandle.transform.localScale = new Vector3(bounds.size.x + Workspace.kHandleMargin, handleScale, handleScale);
 
 		//Resize bounds cube
 		m_BoundsCube.transform.localScale = bounds.size;
@@ -42,32 +40,6 @@ public class WorkspacePrefab : MonoBehaviour
 		//Resize front panel
 		frontPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x + Workspace.kHandleMargin);
 		frontPanel.localPosition = new Vector3(0, frontPanel.localPosition.y, -bounds.extents.z - Workspace.kHandleMargin + kPanelOffset);
-	}
-
-	public void HandleDragStart(Transform handle, Transform rayOrigin)
-	{
-		OnHandleDragStart(handle, rayOrigin);
-	}
-	public void HandleDrag(Transform handle, Transform rayOrigin)
-	{
-		Workspace.Direction direction = Workspace.Direction.LEFT;
-		if(handle == frontHandle)
-			direction = Workspace.Direction.FRONT;
-		if (handle == rightHandle)
-			direction = Workspace.Direction.RIGHT;
-		if (handle == backHandle)
-			direction = Workspace.Direction.BACK;
-		OnHandleDrag(rayOrigin, direction);
-	}
-
-	public void ControlDragStart(Transform controlBox, Transform rayOrigin)
-	{
-		
-	}
-
-	public void ControlDrag(Transform controlBox, Transform rayOrigin)
-	{
-
 	}
 
 	public void CloseClick()

@@ -1,4 +1,5 @@
-﻿using UnityEngine.EventSystems;
+﻿using System;
+using UnityEngine.EventSystems;
 using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Handles
@@ -8,11 +9,15 @@ namespace UnityEngine.VR.Handles
 	/// </summary>
 	public abstract class BaseHandle : MonoBehaviour, IRayBeginDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler
 	{
+		//Q: Why not an Action?
 		public delegate void DragEventCallback(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData));
 
 		public event DragEventCallback onHandleBeginDrag;
 		public event DragEventCallback onHandleDrag;
 		public event DragEventCallback onHandleEndDrag;
+
+		public event Action<BaseHandle> onHoverEnter;
+		public event Action<BaseHandle> onHoverExit;
 
 		protected bool m_Hovering;
 		protected bool m_Dragging;
@@ -33,11 +38,15 @@ namespace UnityEngine.VR.Handles
 		public virtual void OnRayEnter(RayEventData eventData)
 		{
 			m_Hovering = true;
+			if (onHoverEnter != null)
+				onHoverEnter(this);
 		}
 
 		public virtual void OnRayExit(RayEventData eventData)
 		{
 			m_Hovering = false;
+			if (onHoverExit != null)
+				onHoverExit(this);
 		}
 
 		protected virtual void OnHandleBeginDrag(HandleDragEventData eventData = default(HandleDragEventData))
