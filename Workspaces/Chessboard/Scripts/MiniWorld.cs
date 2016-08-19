@@ -12,7 +12,7 @@ public class MiniWorld : MonoBehaviour
 		set
 		{
 			m_RendererCullingMask = value;
-			if (m_MiniWorldRenderer != null)
+			if (m_MiniWorldRenderer)
 				m_MiniWorldRenderer.cullingMask = m_RendererCullingMask;
 		}
 	}
