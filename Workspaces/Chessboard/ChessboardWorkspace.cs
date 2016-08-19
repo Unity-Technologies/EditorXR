@@ -35,7 +35,7 @@ public class ChessboardWorkspace : Workspace
 	public override void Setup()
 	{
 		base.Setup();
-		U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspaceSceneObjects.sceneContainer, false);
+		U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
 		m_GridMaterial = U.Material.GetMaterialClone(m_ChessboardUI.grid);
 
@@ -47,7 +47,7 @@ public class ChessboardWorkspace : Workspace
 		//Set up ControlBox
 		//ControlBox shouldn't move with miniWorld
 		var controlBox = m_ChessboardUI.controlBox;
-		controlBox.transform.parent = m_WorkspaceSceneObjects.sceneContainer;
+		controlBox.transform.parent = m_WorkspaceUI.sceneContainer;
 		controlBox.transform.localPosition = Vector3.down * controlBox.transform.localScale.y * 0.5f;
 		controlBox.onHandleBeginDrag += OnControlBeginDrag;
 		controlBox.onHandleDrag += OnControlDrag;
@@ -56,7 +56,7 @@ public class ChessboardWorkspace : Workspace
 		controlBox.onHoverExit += OnControlHoverExit;
 
 		//Set up UI
-		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceSceneObjects.frontPanel, false);
+		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
 		var zoomSliderUI = UI.GetComponentInChildren<ZoomSliderUI>();
 		zoomSliderUI.sliding = Sliding;
 		zoomSliderUI.zoomSlider.maxValue = kMaxScale;
