@@ -51,7 +51,7 @@
 
 			public static bool DoubleClick(float timeSinceLastClick)
 			{
-				return timeSinceLastClick < kDoubleClickIntervalMax && timeSinceLastClick > kDoubleClickIntervalMin;
+				return timeSinceLastClick <= kDoubleClickIntervalMax && timeSinceLastClick >= kDoubleClickIntervalMin;
 			}
 		}
 	}
