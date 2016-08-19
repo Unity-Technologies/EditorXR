@@ -673,7 +673,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  target: {fileID: 0}
+  m_Target: {fileID: 0}
   m_AllHandles:
   - {fileID: 114000010058967728}
 --- !u!114 &114000011658765658
@@ -1003,14 +1003,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  sceneContainer: {fileID: 224000012777721742}
-  frontPanel: {fileID: 224000012325241496}
-  directManipulator: {fileID: 114000011527944526}
-  vacuumHandle: {fileID: 114000013195114936}
-  leftHandle: {fileID: 114000011439710426}
-  frontHandle: {fileID: 114000013760903596}
-  rightHandle: {fileID: 114000010511962596}
-  backHandle: {fileID: 114000013184367326}
+  m_SceneContainer: {fileID: 224000012777721742}
+  m_FrontPanel: {fileID: 224000012325241496}
+  m_DirectManipulator: {fileID: 114000011527944526}
+  m_VacuumHandle: {fileID: 114000013195114936}
+  m_LeftHandle: {fileID: 114000011439710426}
+  m_FrontHandle: {fileID: 114000013760903596}
+  m_RightHandle: {fileID: 114000010511962596}
+  m_BackHandle: {fileID: 114000013184367326}
   m_Tray: {fileID: 137000012547310740}
   m_BoundsCube: {fileID: 4000013757845182}
 --- !u!137 &137000012547310740

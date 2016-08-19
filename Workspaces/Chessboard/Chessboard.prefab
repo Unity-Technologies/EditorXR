@@ -226,8 +226,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  grid: {fileID: 23000012195076526}
-  controlBox: {fileID: 114000012728322760}
+  m_Grid: {fileID: 23000012195076526}
+  m_ControlBox: {fileID: 114000012728322760}
 --- !u!114 &114000012728322760
 MonoBehaviour:
   m_ObjectHideFlags: 1

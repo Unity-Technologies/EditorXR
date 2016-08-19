@@ -4,7 +4,8 @@ using UnityEngine.UI;
 
 public class ChessboardUI : MonoBehaviour
 {
-	public Slider zoomSlider;
+	public Slider zoomSlider { get { return m_ZoomSlider; } }
+	public Slider m_ZoomSlider;
 	public Action<float> OnZoomSlider { private get; set; }
 
 	public void ZoomSlider(float value)

@@ -270,7 +270,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  zoomSlider: {fileID: 114000011682301028}
+  m_ZoomSlider: {fileID: 114000011682301028}
 --- !u!114 &114000010644544506
 MonoBehaviour:
   m_ObjectHideFlags: 1
