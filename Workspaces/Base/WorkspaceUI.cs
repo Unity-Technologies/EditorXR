@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.VR.Handles;
 
-public class WorkspaceSceneObjects : MonoBehaviour
+public class WorkspaceUI : MonoBehaviour
 {
 	private const float kPanelOffset = 0.1f; //The panel needs to be pulled back slightly
 

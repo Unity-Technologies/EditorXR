@@ -1,15 +1,13 @@
-﻿using System;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
+using UnityEngine.VR.Handles;
 
 public class ChessboardUI : MonoBehaviour
 {
-	public Slider zoomSlider { get { return m_ZoomSlider; } }
-	public Slider m_ZoomSlider;
-	public Action<float> OnZoomSlider { private get; set; }
+	public Renderer grid { get { return m_Grid; } }
+	[SerializeField]
+	private Renderer m_Grid;
 
-	public void ZoomSlider(float value)
-	{
-		OnZoomSlider(value);
-	}
+	public DirectHandle controlBox { get { return m_ControlBox; } }
+	[SerializeField]
+	private DirectHandle m_ControlBox;
 }

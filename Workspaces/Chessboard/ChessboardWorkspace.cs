@@ -11,14 +11,13 @@ public class ChessboardWorkspace : Workspace
 	private const float kMinScale = 0.1f;
 	private const float kMaxScale = 35;
 
-	//NOTE: since pretty much all workspaces will want a prefab, should this go in the base class?
 	[SerializeField]
 	private GameObject m_ContentPrefab;
 
 	[SerializeField]
 	private GameObject m_UIPrefab;
 
-	private ChessboardSceneObjects m_ChessboardSceneObjects;
+	private ChessboardUI m_ChessboardUI;
 	private MiniWorld m_MiniWorld;
 	private Material m_GridMaterial;
 
@@ -37,8 +36,8 @@ public class ChessboardWorkspace : Workspace
 	{
 		base.Setup();
 		U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspaceSceneObjects.sceneContainer, false);
-		m_ChessboardSceneObjects = GetComponentInChildren<ChessboardSceneObjects>();
-		m_GridMaterial = m_ChessboardSceneObjects.grid.sharedMaterial;
+		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
+		m_GridMaterial = m_ChessboardUI.grid.sharedMaterial;
 
 		//Set up MiniWorld
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
@@ -47,7 +46,7 @@ public class ChessboardWorkspace : Workspace
 
 		//Set up ControlBox
 		//ControlBox shouldn't move with miniWorld
-		var controlBox = m_ChessboardSceneObjects.controlBox;
+		var controlBox = m_ChessboardUI.controlBox;
 		controlBox.transform.parent = m_WorkspaceSceneObjects.sceneContainer;
 		controlBox.transform.localPosition = Vector3.down * controlBox.transform.localScale.y * 0.5f;
 		controlBox.onHandleBeginDrag += OnControlBeginDrag;
@@ -58,11 +57,11 @@ public class ChessboardWorkspace : Workspace
 
 		//Set up UI
 		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceSceneObjects.frontPanel, false);
-		var chessboardUI = UI.GetComponentInChildren<ChessboardUI>();
-		chessboardUI.OnZoomSlider = OnZoomSlider;
-		chessboardUI.zoomSlider.maxValue = kMaxScale;
-		chessboardUI.zoomSlider.minValue = kMinScale;
-		chessboardUI.zoomSlider.value = kInitReferenceScale;
+		var zoomSliderUI = UI.GetComponentInChildren<ZoomSliderUI>();
+		zoomSliderUI.OnZoomSlider = OnZoomSlider;
+		zoomSliderUI.zoomSlider.maxValue = kMaxScale;
+		zoomSliderUI.zoomSlider.minValue = kMinScale;
+		zoomSliderUI.zoomSlider.value = kInitReferenceScale;
 		OnBoundsChanged();
 	}
 
@@ -70,7 +69,7 @@ public class ChessboardWorkspace : Workspace
 	{
 		//Set grid height, deactivate if out of bounds
 		float gridHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
-		var grid = m_ChessboardSceneObjects.grid;
+		var grid = m_ChessboardUI.grid;
 		if (Mathf.Abs(gridHeight) < contentBounds.extents.y)
 		{
 			grid.gameObject.SetActive(true);
@@ -96,9 +95,9 @@ public class ChessboardWorkspace : Workspace
 		m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
 		m_MiniWorld.localBounds = contentBounds;
 
-		m_ChessboardSceneObjects.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
+		m_ChessboardUI.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
 
-		var controlBox = m_ChessboardSceneObjects.controlBox;
+		var controlBox = m_ChessboardUI.controlBox;
 		controlBox.transform.localScale = new Vector3(contentBounds.size.x, controlBox.transform.localScale.y, contentBounds.size.z);
 	}
 

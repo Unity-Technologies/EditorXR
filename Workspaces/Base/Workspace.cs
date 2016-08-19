@@ -49,7 +49,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	[SerializeField]
 	private float m_VacuumTime = 0.75f;
 
-	protected WorkspaceSceneObjects m_WorkspaceSceneObjects;
+	protected WorkspaceUI m_WorkspaceSceneObjects;
 
 	[SerializeField]
 	private GameObject m_BasePrefab;
@@ -85,7 +85,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		GameObject baseObject = instantiateUI(m_BasePrefab);
 		baseObject.transform.SetParent(transform, false);
 		
-		m_WorkspaceSceneObjects = baseObject.GetComponent<WorkspaceSceneObjects>();
+		m_WorkspaceSceneObjects = baseObject.GetComponent<WorkspaceUI>();
 		m_WorkspaceSceneObjects.OnCloseClick = Close;
 		m_WorkspaceSceneObjects.sceneContainer.transform.localPosition = Vector3.up * kContentHeight;  
 

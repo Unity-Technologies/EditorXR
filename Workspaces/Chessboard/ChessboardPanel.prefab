@@ -105,7 +105,7 @@ GameObject:
   - 224: {fileID: 224000011151911262}
   - 114: {fileID: 114000010619701612}
   m_Layer: 5
-  m_Name: ChessboardUI
+  m_Name: ChessboardPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
