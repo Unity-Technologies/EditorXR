@@ -37,7 +37,7 @@ public class ChessboardWorkspace : Workspace
 		base.Setup();
 		U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspaceSceneObjects.sceneContainer, false);
 		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
-		m_GridMaterial = m_ChessboardUI.grid.sharedMaterial;
+		m_GridMaterial = U.Material.GetMaterialClone(m_ChessboardUI.grid);
 
 		//Set up MiniWorld
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
@@ -167,5 +167,10 @@ public class ChessboardWorkspace : Workspace
 	private void OnControlHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		setHighlight(handle.gameObject, false);
+	}
+
+	private void OnDestroy()
+	{
+		U.Object.Destroy(m_GridMaterial);
 	}
 }
