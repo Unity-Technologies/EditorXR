@@ -125,8 +125,6 @@ public class ChessboardWorkspace : Workspace
 
 	private void OnControlDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		//if (m_RayData.Count == 0)
-		//	return;
 		var rayData = m_RayData[0];
 		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) //We only want one event per frame
 			return;
