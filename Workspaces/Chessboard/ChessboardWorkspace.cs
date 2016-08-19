@@ -50,11 +50,11 @@ public class ChessboardWorkspace : Workspace
 		var controlBox = m_ChessboardSceneObjects.controlBox;
 		controlBox.transform.parent = m_WorkspaceSceneObjects.sceneContainer;
 		controlBox.transform.localPosition = Vector3.down * controlBox.transform.localScale.y * 0.5f;
-		controlBox.onHandleBeginDrag += ControlDragStart;
-		controlBox.onHandleDrag += ControlDrag;
-		controlBox.onHandleEndDrag += ControlDragEnd;
-		controlBox.onHoverEnter += ControlHoverEnter;
-		controlBox.onHoverExit += ControlHoverExit;
+		controlBox.onHandleBeginDrag += OnControlBeginDrag;
+		controlBox.onHandleDrag += OnControlDrag;
+		controlBox.onHandleEndDrag += OnControlEndDrag;
+		controlBox.onHoverEnter += OnControlHoverEnter;
+		controlBox.onHoverExit += OnControlHoverExit;
 
 		//Set up UI
 		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceSceneObjects.frontPanel, false);
@@ -107,7 +107,7 @@ public class ChessboardWorkspace : Workspace
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
 	}
 
-	private void ControlDragStart(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void OnControlBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		if (m_RayData[0] != null && m_RayData[1] == null) //On introduction of second ray
 		{
@@ -128,7 +128,7 @@ public class ChessboardWorkspace : Workspace
 		}
 	}
 
-	private void ControlDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void OnControlDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		var rayData = m_RayData[0];
 		if (rayData != null)
@@ -153,19 +153,19 @@ public class ChessboardWorkspace : Workspace
 		}
 	}
 
-	private void ControlDragEnd(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void OnControlEndDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		for(var i = 0; i < m_RayData.Length; i++)
 			if (m_RayData[i] != null && m_RayData[i].rayOrigin.Equals(eventData.rayOrigin))
 				m_RayData[i] = null;
 	}
 
-	private void ControlHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void OnControlHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		setHighlight(handle.gameObject, true);
 	}
 
-	private void ControlHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void OnControlHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		setHighlight(handle.gameObject, false);
 	}

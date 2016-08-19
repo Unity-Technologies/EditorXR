@@ -107,9 +107,9 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 		foreach (var handle in handles)
 		{
-			handle.onHandleBeginDrag += OnHandleDragStart;
+			handle.onHandleBeginDrag += OnHandleBeginDrag;
 			handle.onHandleDrag += OnHandleDrag;
-			handle.onHandleEndDrag += OnHandleDragEnd;
+			handle.onHandleEndDrag += OnHandleEndDrag;
 			
 			handle.onHoverEnter += OnHandleHoverEnter;
 			handle.onHoverExit += OnHandleHoverExit;
@@ -118,7 +118,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	protected abstract void OnBoundsChanged();
 
-	public virtual void OnHandleDragStart(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	public virtual void OnHandleBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		m_PositionStart = transform.position;
 		m_DragStart = eventData.rayOrigin.position;
@@ -131,35 +131,35 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		if (m_Dragging)
 		{
 			Vector3 dragVector = eventData.rayOrigin.position - m_DragStart;
-			Bounds tmpBounds = contentBounds;
+			Bounds bounds = contentBounds;
 			Vector3 positionOffset = Vector3.zero;
 			if (handle.Equals(m_WorkspaceSceneObjects.leftHandle))
 			{
-				tmpBounds.size = m_BoundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
+				bounds.size = m_BoundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
 				positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
 			}
 			if (handle.Equals(m_WorkspaceSceneObjects.frontHandle))
 			{
-				tmpBounds.size = m_BoundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
+				bounds.size = m_BoundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
 				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 			}
 			if (handle.Equals(m_WorkspaceSceneObjects.rightHandle))
 			{
-				tmpBounds.size = m_BoundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
+				bounds.size = m_BoundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
 				positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
 			}
 			if (handle.Equals(m_WorkspaceSceneObjects.backHandle))
 			{
-				tmpBounds.size = m_BoundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
+				bounds.size = m_BoundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
 				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 			}
-			contentBounds = tmpBounds;
-			if(contentBounds.size == tmpBounds.size) //Don't reposition if we hit minimum bounds
+			contentBounds = bounds;
+			if(contentBounds.size == bounds.size) //Don't reposition if we hit minimum bounds
 				transform.position = m_PositionStart + positionOffset;
 		}
 	}
 
-	public virtual void OnHandleDragEnd(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	public virtual void OnHandleEndDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		m_Dragging = false;
 	}
