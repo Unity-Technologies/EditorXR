@@ -7,7 +7,7 @@ public class ChessboardUI : MonoBehaviour
 	[SerializeField]
 	private Renderer m_Grid;
 
-	public DirectHandle controlBox { get { return m_ControlBox; } }
+	public DirectHandle panZoomHandle { get { return m_PanZoomHandle; } }
 	[SerializeField]
-	private DirectHandle m_ControlBox;
+	private DirectHandle m_PanZoomHandle;
 }

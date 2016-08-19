@@ -46,7 +46,7 @@ public class ChessboardWorkspace : Workspace
 
 		//Set up ControlBox
 		//ControlBox shouldn't move with miniWorld
-		var controlBox = m_ChessboardUI.controlBox;
+		var controlBox = m_ChessboardUI.panZoomHandle;
 		controlBox.transform.parent = m_WorkspaceUI.sceneContainer;
 		controlBox.transform.localPosition = Vector3.down * controlBox.transform.localScale.y * 0.5f;
 		controlBox.onHandleBeginDrag += OnControlBeginDrag;
@@ -97,7 +97,7 @@ public class ChessboardWorkspace : Workspace
 
 		m_ChessboardUI.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
 
-		var controlBox = m_ChessboardUI.controlBox;
+		var controlBox = m_ChessboardUI.panZoomHandle;
 		controlBox.transform.localScale = new Vector3(contentBounds.size.x, controlBox.transform.localScale.y, contentBounds.size.z);
 	}
 
