@@ -8,6 +8,6 @@ namespace UnityEngine.VR.Tools
 		List<Type> menuTools { set; }
 		List<Type> menuWorkspaces { set; }
 		Func<IMainMenu, Type, bool> selectTool { set; }
-		Action<Type> selectWorkspace { set; }
+		Action<Type> createWorkspace { set; }
 	}
 }

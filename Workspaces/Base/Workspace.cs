@@ -164,12 +164,12 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		m_Dragging = false;
 	}
 
-	public virtual void OnHandleHoverEnter(BaseHandle handle)
+	public virtual void OnHandleHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		setHighlight(handle.gameObject, true);
 	}
 
-	public virtual void OnHandleHoverExit(BaseHandle handle)
+	public virtual void OnHandleHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		setHighlight(handle.gameObject, false);
 	}

@@ -10,7 +10,6 @@ using UnityEngine.VR.Tools;
 [ExecuteInEditMode]
 public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 {
-
 	[SerializeField]
 	private Canvas m_MainMenuPrefab;
 	private Canvas m_MenuCanvas;
@@ -23,7 +22,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 	public List<Type> menuTools { private get; set; }
 	public List<Type> menuWorkspaces { private get; set; }
 	public Func<IMainMenu, Type, bool> selectTool { private get; set; }
-	public Action<Type> selectWorkspace { private get; set; }
+	public Action<Type> createWorkspace { private get; set; }
 
 	public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
@@ -71,6 +70,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 		});
 		b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
 	}
+
 	private void CreateWorkspaceButtons()
 	{
 		foreach (var menuWorkspace in menuWorkspaces)
@@ -83,6 +83,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 			AddWorkspaceButtonListener(button, menuWorkspace);
 		}
 	}
+
 	private void AddWorkspaceButtonListener(Button b, Type t)
 	{
 		b.onClick.RemoveAllListeners();
@@ -91,7 +92,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 			//HACK: Workspace.m_BasePrefab is coming up null when we call CreateWorkspace from this context.
 			EditorApplication.delayCall += () =>
 			{
-				selectWorkspace(t);
+				createWorkspace(t);
 				U.Object.Destroy(this);
 			};
 		});

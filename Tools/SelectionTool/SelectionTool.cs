@@ -55,7 +55,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 		var newHoverGameObject = getFirstGameObject(rayOrigin);
 		var newPrefabRoot = newHoverGameObject;
 
-		if(newHoverGameObject != null)
+		if (newHoverGameObject != null)
 		{
 			// If gameObject is within a prefab and not the current prefab, choose prefab root
 			newPrefabRoot = PrefabUtility.FindPrefabRoot(newHoverGameObject);

@@ -27,7 +27,7 @@ public class EditorVR : MonoBehaviour
 
 	private const float kWorkspaceAnglePadding = 25f;
 	private const float kWorkspaceYPadding = 0.35f;
-	private const int   kWorkspaceLoopOverrun = 20;
+	private const int   kMaxWorkspacePlacementAttempts = 20;
 
 	[SerializeField]
 	private ActionMap m_MenuActionMap;
@@ -492,7 +492,7 @@ public class EditorVR : MonoBehaviour
 			mainMenu.menuTools = m_AllTools.ToList();
 			mainMenu.menuWorkspaces = m_AllWorkspaces.ToList();
 			mainMenu.selectTool = SelectTool;
-			mainMenu.selectWorkspace = CreateWorkspace;
+			mainMenu.createWorkspace = CreateWorkspace;
 			m_DeviceData[device].mainMenu = mainMenu;
 			ConnectInterfaces(mainMenu, device);
 		}
@@ -696,30 +696,38 @@ public class EditorVR : MonoBehaviour
 	{
 		var defaultOffset = Workspace.kDefaultOffset;
 		var defaultTilt = Workspace.kDefaultTilt;
+
 		var viewerPivot = U.Camera.GetViewerPivot();
 		Vector3 position = viewerPivot.position + defaultOffset;
+
 		Quaternion rotation = defaultTilt;
 		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
-			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg	//Calculate arc length at front of workspace
-			+ kWorkspaceAnglePadding;															//Need some extra padding because workspaces are tilted
-		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;					//Need padding in Y as well
+			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
+			+ kWorkspaceAnglePadding;													//Need some extra padding because workspaces are tilted
+		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;			//Need padding in Y as well
+
 		float currentRotation = arcLength;
 		float currentHeight = 0;
+
 		int count = 0;
 		int direction = 1;
 		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
+		
 		//While the current position is occupied, try a new one
-		while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kWorkspaceLoopOverrun)
+		while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts)
 		{
 			//The next position will be rotated by currentRotation, as if the hands of a clock
 			Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
 			position = viewerPivot.position + rotateAroundY * defaultOffset + Vector3.up * currentHeight;
 			rotation = rotateAroundY * defaultTilt;
+			
 			//Every other iteration, rotate a little further
 			if (direction < 0)
 				currentRotation += arcLength;
+			
 			//Switch directions every iteration (left, right, left, right)
 			direction *= -1;
+			
 			//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
 			if (currentRotation > 180)
 			{
@@ -733,6 +741,7 @@ public class EditorVR : MonoBehaviour
 		ConnectInterfaces(workspace);
 		workspace.transform.position = position;
 		workspace.transform.rotation = rotation;
+		
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
 	}

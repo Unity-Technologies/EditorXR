@@ -160,12 +160,12 @@ public class ChessboardWorkspace : Workspace
 				m_RayData[i] = null;
 	}
 
-	private void ControlHoverEnter(BaseHandle handle)
+	private void ControlHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		setHighlight(handle.gameObject, true);
 	}
 
-	private void ControlHoverExit(BaseHandle handle)
+	private void ControlHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		setHighlight(handle.gameObject, false);
 	}

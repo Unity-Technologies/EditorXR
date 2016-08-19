@@ -9,31 +9,31 @@
 		public Quaternion deltaRotation;
 		public Transform rayOrigin;
 
-		public HandleDragEventData(Vector3 deltaPos, Quaternion deltaRot, Transform rayOrigin)
+		public HandleDragEventData(Vector3 deltaPosition, Quaternion deltaRotation, Transform rayOrigin)
 		{
 			this.rayOrigin = rayOrigin;
-			deltaPosition = deltaPos;
-			deltaRotation = deltaRot;
+			this.deltaPosition = deltaPosition;
+			this.deltaRotation = deltaRotation;
 		}
 
-		public HandleDragEventData(Vector3 deltaPos, Transform rayOrigin)
+		public HandleDragEventData(Vector3 deltaPosition, Transform rayOrigin)
 		{
 			this.rayOrigin = rayOrigin;
-			deltaPosition = deltaPos;
-			deltaRotation = Quaternion.identity;
+			this.deltaPosition = deltaPosition;
+			this.deltaRotation = Quaternion.identity;
 		}
 
-		public HandleDragEventData(Quaternion deltaRot, Transform rayOrigin)
+		public HandleDragEventData(Quaternion deltaRotation, Transform rayOrigin)
 		{
 			this.rayOrigin = rayOrigin;
-			deltaPosition = Vector3.zero;
-			deltaRotation = deltaRot;
+			this.deltaPosition = Vector3.zero;
+			this.deltaRotation = deltaRotation;
 		}
 		public HandleDragEventData(Transform rayOrigin)
 		{
 			this.rayOrigin = rayOrigin;
-			deltaPosition = Vector3.zero;
-			deltaRotation = Quaternion.identity;
+			this.deltaPosition = Vector3.zero;
+			this.deltaRotation = Quaternion.identity;
 		}
 	}
 }

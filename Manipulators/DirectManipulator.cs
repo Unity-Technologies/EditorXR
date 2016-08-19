@@ -6,7 +6,9 @@ using UnityEngine.VR.Tools;
 
 public class DirectManipulator : MonoBehaviour, IManipulator
 {
-	public Transform target;
+	public Transform target { set { m_Target = value; } }
+	[SerializeField]
+	private Transform m_Target;
 	[SerializeField]
 	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 
@@ -24,7 +26,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		foreach (var h in m_AllHandles)
 		{
-			h.onHandleDrag += TranslateHandleOnDrag;
+			h.onHandleDrag += HandleOnDrag;
 			h.onHandleBeginDrag += HandleOnBeginDrag;
 			h.onHandleEndDrag += HandleOnEndDrag;
 		}
@@ -34,17 +36,15 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		foreach (var h in m_AllHandles)
 		{
-			h.onHandleDrag -= TranslateHandleOnDrag;
+			h.onHandleDrag -= HandleOnDrag;
 			h.onHandleBeginDrag -= HandleOnBeginDrag;
 			h.onHandleEndDrag -= HandleOnEndDrag;
 		}
 	}
 
-	private void TranslateHandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void HandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
 	{
-		Transform target = transform;
-		if (this.target)
-			target = this.target;
+		Transform target = m_Target ?? transform;
 
 		var rayOrigin = eventData.rayOrigin;
 		target.position = rayOrigin.position + rayOrigin.rotation * m_PositionOffset;
@@ -57,9 +57,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 			h.gameObject.SetActive(h == handle);
 		m_Dragging = true;
 
-		Transform target = transform;
-		if (this.target)
-			target = this.target;
+		Transform target = m_Target ?? transform;
 
 		var rayOrigin = eventData.rayOrigin;
 		var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);

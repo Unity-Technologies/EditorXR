@@ -9,16 +9,14 @@ namespace UnityEngine.VR.Handles
 	/// </summary>
 	public class BaseHandle : MonoBehaviour, IRayBeginDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler
 	{
-		public delegate void DragEventCallback(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData));
+		public event Action<BaseHandle, HandleDragEventData> onHandleBeginDrag;
+		public event Action<BaseHandle, HandleDragEventData> onHandleDrag;
+		public event Action<BaseHandle, HandleDragEventData> onHandleEndDrag;
 
-		public event DragEventCallback onHandleBeginDrag;
-		public event DragEventCallback onHandleDrag;
-		public event DragEventCallback onHandleEndDrag;
+		public event Action<BaseHandle, HandleDragEventData> onDoubleClick;
 
-		public event DragEventCallback onDoubleClick;
-
-		public event Action<BaseHandle> onHoverEnter;
-		public event Action<BaseHandle> onHoverExit;
+		public event Action<BaseHandle, HandleDragEventData> onHoverEnter;
+		public event Action<BaseHandle, HandleDragEventData> onHoverExit;
 
 		protected bool m_Hovering;
 		protected bool m_Dragging;
@@ -37,7 +35,7 @@ namespace UnityEngine.VR.Handles
 			m_LastClickTime = DateTime.Now;
 			if (U.Input.DoubleClick(timeSinceLastClick))
 			{
-				OnDoubleClick();
+				OnDoubleClick(new HandleDragEventData(eventData.rayOrigin));
 			}
 		}
 
@@ -50,14 +48,14 @@ namespace UnityEngine.VR.Handles
 		{
 			m_Hovering = true;
 			if (onHoverEnter != null)
-				onHoverEnter(this);
+				onHoverEnter(this, new HandleDragEventData(eventData.rayOrigin));
 		}
 
 		public virtual void OnRayExit(RayEventData eventData)
 		{
 			m_Hovering = false;
 			if (onHoverExit != null)
-				onHoverExit(this);
+				onHoverExit(this, new HandleDragEventData(eventData.rayOrigin));
 		}
 
 		protected virtual void OnHandleBeginDrag(HandleDragEventData eventData = default(HandleDragEventData))
