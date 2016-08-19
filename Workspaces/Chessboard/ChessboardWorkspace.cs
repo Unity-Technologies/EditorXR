@@ -126,7 +126,7 @@ public class ChessboardWorkspace : Workspace
 	private void OnControlDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		var rayData = m_RayData[0];
-		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) //We only want one event per frame
+		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) // Do not execute for the second ray
 			return;
 		var referenceTransform = m_MiniWorld.referenceTransform;
 		var rayOrigin = eventData.rayOrigin;
