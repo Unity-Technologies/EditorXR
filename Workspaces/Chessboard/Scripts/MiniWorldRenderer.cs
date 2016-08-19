@@ -3,13 +3,12 @@ using UnityEngine.VR.Utilities;
 
 public class MiniWorldRenderer : MonoBehaviour
 {
-	private static readonly LayerMask s_RendererCullingMask = -1;
-
 	private Camera m_MainCamera;
 	private Camera m_MiniCamera;
 	private bool m_RenderingMiniWorlds;
 
 	public MiniWorld miniWorld { private get; set; }
+	public LayerMask cullingMask { private get; set; }
 
 	private void OnEnable()
 	{
@@ -44,7 +43,7 @@ public class MiniWorldRenderer : MonoBehaviour
 			{
 				m_MiniCamera.CopyFrom(m_MainCamera);
 
-				m_MiniCamera.cullingMask = s_RendererCullingMask;
+				m_MiniCamera.cullingMask = cullingMask;
 				m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
 				m_MiniCamera.worldToCameraMatrix = m_MainCamera.worldToCameraMatrix * miniWorld.miniToReferenceMatrix;
 				Shader shader = Shader.Find("Custom/Custom Clip Planes");
