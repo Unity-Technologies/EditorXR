@@ -3,7 +3,21 @@ using UnityEngine.VR.Utilities;
 
 public class MiniWorld : MonoBehaviour
 {
-	private static readonly LayerMask s_RendererCullingMask = -1;
+	public LayerMask rendererCullingMask
+	{
+		get
+		{
+			return m_RendererCullingMask;
+		}
+		set
+		{
+			m_RendererCullingMask = value;
+			if (m_MiniWorldRenderer != null)
+				m_MiniWorldRenderer.cullingMask = m_RendererCullingMask;
+		}
+	}
+	[SerializeField]
+	private LayerMask m_RendererCullingMask = -1;
 
 	private Vector3 m_LocalBoundsSize = Vector3.one;
 
@@ -53,7 +67,7 @@ public class MiniWorld : MonoBehaviour
 
 		m_MiniWorldRenderer = U.Object.AddComponent<MiniWorldRenderer>(U.Camera.GetMainCamera().gameObject);
 		m_MiniWorldRenderer.miniWorld = this;
-		m_MiniWorldRenderer.cullingMask = s_RendererCullingMask;
+		m_MiniWorldRenderer.cullingMask = m_RendererCullingMask;
 
 		Transform pivot = U.Camera.GetViewerPivot();
 		referenceTransform.position = pivot.transform.position;
