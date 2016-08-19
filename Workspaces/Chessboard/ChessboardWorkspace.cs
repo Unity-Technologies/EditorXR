@@ -58,7 +58,7 @@ public class ChessboardWorkspace : Workspace
 		//Set up UI
 		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceSceneObjects.frontPanel, false);
 		var zoomSliderUI = UI.GetComponentInChildren<ZoomSliderUI>();
-		zoomSliderUI.OnZoomSlider = OnZoomSlider;
+		zoomSliderUI.sliding = Sliding;
 		zoomSliderUI.zoomSlider.maxValue = kMaxScale;
 		zoomSliderUI.zoomSlider.minValue = kMinScale;
 		zoomSliderUI.zoomSlider.value = kInitReferenceScale;
@@ -101,7 +101,7 @@ public class ChessboardWorkspace : Workspace
 		controlBox.transform.localScale = new Vector3(contentBounds.size.x, controlBox.transform.localScale.y, contentBounds.size.z);
 	}
 
-	private void OnZoomSlider(float value)
+	private void Sliding(float value)
 	{
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
 	}
