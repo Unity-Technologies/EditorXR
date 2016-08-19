@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 
@@ -21,7 +22,7 @@ public class ChessboardWorkspace : Workspace
 	private MiniWorld m_MiniWorld;
 	private Material m_GridMaterial;
 
-	private readonly RayData[] m_RayData = new RayData[2];
+	private readonly List<RayData> m_RayData = new List<RayData>(2);
 	private float m_ScaleStartDistance;
 
 	private class RayData
@@ -46,14 +47,14 @@ public class ChessboardWorkspace : Workspace
 
 		//Set up ControlBox
 		//ControlBox shouldn't move with miniWorld
-		var controlBox = m_ChessboardUI.panZoomHandle;
-		controlBox.transform.parent = m_WorkspaceUI.sceneContainer;
-		controlBox.transform.localPosition = Vector3.down * controlBox.transform.localScale.y * 0.5f;
-		controlBox.onHandleBeginDrag += OnControlBeginDrag;
-		controlBox.onHandleDrag += OnControlDrag;
-		controlBox.onHandleEndDrag += OnControlEndDrag;
-		controlBox.onHoverEnter += OnControlHoverEnter;
-		controlBox.onHoverExit += OnControlHoverExit;
+		var panZoomHandle = m_ChessboardUI.panZoomHandle;
+		panZoomHandle.transform.parent = m_WorkspaceUI.sceneContainer;
+		panZoomHandle.transform.localPosition = Vector3.down * panZoomHandle.transform.localScale.y * 0.5f;
+		panZoomHandle.onHandleBeginDrag += OnControlBeginDrag;
+		panZoomHandle.onHandleDrag += OnControlDrag;
+		panZoomHandle.onHandleEndDrag += OnControlEndDrag;
+		panZoomHandle.onHoverEnter += OnControlHoverEnter;
+		panZoomHandle.onHoverExit += OnControlHoverExit;
 
 		//Set up UI
 		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
@@ -108,55 +109,44 @@ public class ChessboardWorkspace : Workspace
 
 	private void OnControlBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		if (m_RayData[0] != null && m_RayData[1] == null) //On introduction of second ray
+		if (m_RayData.Count == 1) //On introduction of second ray
 		{
 			m_ScaleStartDistance = (m_RayData[0].rayOrigin.position - eventData.rayOrigin.position).magnitude;
 		}
-		for (var i = 0; i < m_RayData.Length; i++)
-		{
-			if (m_RayData[i] != null) continue;
 
-			m_RayData[i] = new RayData
-			{
-				rayOrigin = eventData.rayOrigin,
-				rayOriginStart = eventData.rayOrigin.position,
-				refTransformStartPosition = m_MiniWorld.referenceTransform.position,
-				refTransformStartScale = m_MiniWorld.referenceTransform.localScale
-			};
-			break;
-		}
+		m_RayData.Add(new RayData
+		{
+			rayOrigin = eventData.rayOrigin,
+			rayOriginStart = eventData.rayOrigin.position,
+			refTransformStartPosition = m_MiniWorld.referenceTransform.position,
+			refTransformStartScale = m_MiniWorld.referenceTransform.localScale
+		});
 	}
 
 	private void OnControlDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
+		//if (m_RayData.Count == 0)
+		//	return;
 		var rayData = m_RayData[0];
-		if (rayData != null)
+		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) //We only want one event per frame
+			return;
+		var referenceTransform = m_MiniWorld.referenceTransform;
+		var rayOrigin = eventData.rayOrigin;
+		//Translate
+		referenceTransform.position = rayData.refTransformStartPosition
+									+ Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
+		//If we have two rays, also scale
+		if (m_RayData.Count > 1)
 		{
-			var referenceTransform = m_MiniWorld.referenceTransform;
-			var rayOrigin = eventData.rayOrigin;
-			if (m_RayData[1] == null)	//Translate
-			{
-				referenceTransform.position = rayData.refTransformStartPosition 
-										+ Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
-			}
-			//If we have two rays set and this is the event for the first one
-			else if (m_RayData[0].rayOrigin.Equals(rayOrigin)) //Translate/Scale
-			{
-				referenceTransform.position = rayData.refTransformStartPosition 
-										+ Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
-
-				var otherRay = m_RayData[1];
-				referenceTransform.localScale = otherRay.refTransformStartScale * (m_ScaleStartDistance 
+			var otherRay = m_RayData[1];
+			referenceTransform.localScale = otherRay.refTransformStartScale * (m_ScaleStartDistance
 										/ (otherRay.rayOrigin.position - rayOrigin.position).magnitude);
-			}
 		}
 	}
 
 	private void OnControlEndDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		for(var i = 0; i < m_RayData.Length; i++)
-			if (m_RayData[i] != null && m_RayData[i].rayOrigin.Equals(eventData.rayOrigin))
-				m_RayData[i] = null;
+		m_RayData.RemoveAll(rayData => rayData.rayOrigin.Equals(eventData.rayOrigin));
 	}
 
 	private void OnControlHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
