@@ -132,21 +132,21 @@ public class ChessboardWorkspace : Workspace
 		var rayData = m_RayData[0];
 		if (rayData != null)
 		{
-			var refTransform = m_MiniWorld.referenceTransform;
+			var referenceTransform = m_MiniWorld.referenceTransform;
 			var rayOrigin = eventData.rayOrigin;
 			if (m_RayData[1] == null)	//Translate
 			{
-				refTransform.position = rayData.refTransformStartPosition 
-										+ Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, refTransform.localScale);
+				referenceTransform.position = rayData.refTransformStartPosition 
+										+ Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
 			}
 			//If we have two rays set and this is the event for the first one
 			else if (m_RayData[0].rayOrigin.Equals(rayOrigin)) //Translate/Scale
 			{
-				refTransform.position = rayData.refTransformStartPosition 
-										+ Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, refTransform.localScale);
+				referenceTransform.position = rayData.refTransformStartPosition 
+										+ Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
 
 				var otherRay = m_RayData[1];
-				refTransform.localScale = otherRay.refTransformStartScale * (m_ScaleStartDistance 
+				referenceTransform.localScale = otherRay.refTransformStartScale * (m_ScaleStartDistance 
 										/ (otherRay.rayOrigin.position - rayOrigin.position).magnitude);
 			}
 		}
