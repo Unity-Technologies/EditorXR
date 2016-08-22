@@ -33,7 +33,7 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
 	[SerializeField]
-	private ActionMap m_MainMenuInput;
+	private ActionMap m_MainMenuActionMap;
 	[SerializeField]
 	private MainMenu m_MainMenuPrefab;
 	[SerializeField]
@@ -108,7 +108,7 @@ public class EditorVR : MonoBehaviour
 			{
 				tools = new Stack<ITool>()
 			};
-			deviceData.mainMenuInputInput = (MainMenuInput)CreateActionMapInput(m_MainMenuInput, device);
+			deviceData.mainMenuInputInput = (MainMenuInput)CreateActionMapInput(m_MainMenuActionMap, device);
 			m_DeviceData.Add(device, deviceData);
 		}
 	}
