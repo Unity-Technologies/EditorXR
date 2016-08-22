@@ -12,7 +12,6 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	public static readonly Quaternion	kDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
 	public const float kHandleMargin = 0.25f;	// Amount of space (in World units) between handle and content bounds in X and Z
-	public const float kContentHeight = 0.075f;	// Amount of height (in World units) between tray and content bounds
 
 	protected WorkspaceUI m_WorkspaceUI;
 
@@ -67,10 +66,10 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	{
 		get
 		{
-			return new Bounds(contentBounds.center + Vector3.down * kContentHeight * 0.5f,
+			return new Bounds(contentBounds.center,
 				new Vector3(
 					contentBounds.size.x + kExtraWidth + kHandleMargin,
-					contentBounds.size.y + kExtraHeight + kContentHeight,
+					contentBounds.size.y + kExtraHeight,
 					contentBounds.size.z + kExtraDepth + kHandleMargin
 					));
 		}
@@ -87,7 +86,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		
 		m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
 		m_WorkspaceUI.OnCloseClick = Close;
-		m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.up * kContentHeight;  
+		m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 		//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);

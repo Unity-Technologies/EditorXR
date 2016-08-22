@@ -5,7 +5,7 @@ using UnityEngine.VR.Utilities;
 
 public class ChessboardWorkspace : Workspace
 {
-	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 3; //Show more space above ground than below
+	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 6; //Show more space above ground than below
 	private const float kInitReferenceScale = 25; //We want to see a big region by default
 
 	//TODO: replace with dynamic values once spatial hash lands
@@ -43,7 +43,7 @@ public class ChessboardWorkspace : Workspace
 
 		//Set up MiniWorld
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
-		m_MiniWorld.referenceTransform.position = Vector3.up * kInitReferenceYOffset;
+		m_MiniWorld.referenceTransform.position = Vector3.up * kInitReferenceYOffset * kInitReferenceScale;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * kInitReferenceScale;
 
 		//Set up ControlBox
