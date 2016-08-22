@@ -5,11 +5,16 @@ namespace UnityEngine.VR.Actions
 	[VRMenuItem("Redo", "Actions", "Redo a previously undone action")]
 	public class Redo : MonoBehaviour, IAction
 	{
+		[SerializeField]
+		private Sprite m_Icon;
+
 		public Sprite icon { get; set; }
 
-		public void Execute()
+		public bool Execute()
 		{
 			Debug.LogError("Execute Action should redo here");
+			UnityEditor.Undo.PerformRedo();
+			return true;
 		}
 	}
 }

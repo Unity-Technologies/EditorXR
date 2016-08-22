@@ -5,11 +5,16 @@ namespace UnityEngine.VR.Actions
 	[VRMenuItem("Undo", "Actions", "Undo your previous action")]
 	public class Undo : MonoBehaviour, IAction
 	{
+		[SerializeField]
+		private Sprite m_Icon;
+
 		public Sprite icon { get; set; }
 
-		public void Execute()
+		public bool Execute()
 		{
 			Debug.LogError("Execute Action should undo here");
+			UnityEditor.Undo.PerformUndo();
+			return true;
 		}
 	}
 }

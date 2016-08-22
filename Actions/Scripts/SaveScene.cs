@@ -5,11 +5,16 @@ namespace UnityEngine.VR.Actions
 	[VRMenuItem("SaveScene", "Actions", "Save the scene")]
 	public class SaveScene : MonoBehaviour, IAction
 	{
+		[SerializeField]
+		private Sprite m_Icon;
+
 		public Sprite icon { get; set; }
 
-		public void Execute()
+		public bool Execute()
 		{
 			Debug.LogError("Execute Action should save a scehe here");
+
+			return true;
 		}
 	}
 }
