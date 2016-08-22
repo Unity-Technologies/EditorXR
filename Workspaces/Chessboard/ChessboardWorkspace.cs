@@ -133,9 +133,13 @@ public class ChessboardWorkspace : Workspace
 			return;
 		var referenceTransform = m_MiniWorld.referenceTransform;
 		var rayOrigin = eventData.rayOrigin;
+		
+		//Rotate translation by inverse workspace yaw
+		Quaternion yawRotation = Quaternion.AngleAxis(transform.rotation.eulerAngles.y, Vector3.down);
+		
 		//Translate
 		referenceTransform.position = rayData.refTransformStartPosition
-									+ Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
+									+ yawRotation * Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
 		//If we have two rays, also scale
 		if (m_RayData.Count > 1)
 		{
