@@ -31,15 +31,20 @@ namespace UnityEngine.VR.Tools
 		/// </summary>
 		List<Type> menuTools { set; }
 
-        /// <summary>
+		/// <summary>
 		/// The actions that will populate the menu
 		/// </summary>
-		List<Type> menuActions { set; }
+		List<IAction> menuActions { set; }
 
-        /// <summary>
-        /// Delegate used to test for selecting items in the Main Menu
-        /// </summary>
-        Func<int, Type, bool> selectTool { set; }
+		/// <summary>
+		/// Delegate used to test for selecting items in the Main Menu, and setting them on the other hand's device
+		/// </summary>
+		Func<int, Type, bool> selectTool { set; }
+
+		/// <summary>
+		/// Delegate used to perform actions
+		/// </summary>
+		Func<IAction, bool> performAction { set; }
 
 		/// <summary>
 		/// The device tag index that the menu is set on
