@@ -57,6 +57,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	private Vector3 m_PositionStart;
 	private Vector3 m_BoundSizeStart;
 	private bool m_Dragging;
+	private bool m_DragLocked;
 
 	/// <summary>
 	/// Bounding box for entire workspace, including UI handles
@@ -85,6 +86,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		
 		m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
 		m_WorkspaceUI.OnCloseClick = Close;
+		m_WorkspaceUI.OnLockClick = Lock;
 		m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 		//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
@@ -181,11 +183,15 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		StartCoroutine(VacuumToViewer());
 	}
 
-	private void Translate(Vector3 deltaPosition) {
+	private void Translate(Vector3 deltaPosition)
+	{
+		if (m_DragLocked) return;
 		transform.position += deltaPosition;
 	}
 
-	private void Rotate(Quaternion deltaRotation) {
+	private void Rotate(Quaternion deltaRotation)
+	{
+		if (m_DragLocked) return;
 		transform.rotation *= deltaRotation;
 	}
 
@@ -215,5 +221,10 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	public virtual void Close()
 	{
 		U.Object.Destroy(gameObject);
+	}
+
+	public virtual void Lock()
+	{
+		m_DragLocked = !m_DragLocked;
 	}
 }

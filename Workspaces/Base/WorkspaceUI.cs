@@ -45,6 +45,7 @@ public class WorkspaceUI : MonoBehaviour
 	private Transform m_BoundsCube;
 
 	public Action OnCloseClick { private get; set; }
+	public Action OnLockClick { private get; set; }
 
 	public void SetBounds(Bounds bounds)
 	{
@@ -79,5 +80,9 @@ public class WorkspaceUI : MonoBehaviour
 	public void CloseClick()
 	{
 		OnCloseClick();
+	}
+
+	public void LockClick() {
+		OnLockClick();
 	}
 }
