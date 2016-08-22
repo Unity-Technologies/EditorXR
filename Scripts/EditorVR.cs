@@ -285,17 +285,17 @@ public class EditorVR : MonoBehaviour
 				else
 				{
 					// If not hitting UI, then check pixel raycast and approximate bounds to set distance
-				var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
-				if (go != null)
-				{
-					var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-					var newDist = distance;
-					foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+					var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+					if (go != null)
 					{
-						if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
-							distance = Mathf.Min(distance, newDist);
+						var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+						var newDist = distance;
+						foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+						{
+							if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
+								distance = Mathf.Min(distance, newDist);
+						}
 					}
-				}
 				}
 				m_DefaultRays[rayOrigin].SetLength(distance);
 			}
