@@ -38,8 +38,8 @@ public class EditorVR : MonoBehaviour
     private MainMenu m_MainMenuPrefab;
     [SerializeField]
     private DefaultProxyRay m_ProxyRayPrefab;
-	[SerializeField]
-	private Camera m_EventCameraPrefab;
+    [SerializeField]
+    private Camera m_EventCameraPrefab;
 
     private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
@@ -67,7 +67,7 @@ public class EditorVR : MonoBehaviour
     private Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
     private List<IProxy> m_AllProxies = new List<IProxy>();
     private IEnumerable<Type> m_AllTools;
-    private IEnumerable<Type> m_AllActions;
+    private List<IAction> m_AllActions;
 
     private Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
     {
@@ -94,8 +94,12 @@ public class EditorVR : MonoBehaviour
         m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 
         m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
-        m_AllActions = U.Object.GetImplementationsOfInterface(typeof(IAction));
         
+        IEnumerable<Type> actionTypes = U.Object.GetImplementationsOfInterface(typeof(IAction));
+        m_AllActions = new List<IAction>();
+        foreach (Type actionType in actionTypes)
+            m_AllActions.Add(U.Object.AddComponent(actionType, gameObject) as IAction);
+
         // TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
         // This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
         // then only show it in that hand's menu.
@@ -224,16 +228,16 @@ public class EditorVR : MonoBehaviour
         // it's necessary to spawn the tools in a separate non-IEnumerator context.
         EditorApplication.delayCall += () =>
         {
-			// Spawn default tools
+            // Spawn default tools
             HashSet<InputDevice> devices;
-			ITool tool;
+            ITool tool;
             foreach (var deviceData in m_DeviceData)
             {
                 // Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
                 if (deviceData.Key.tagIndex == -1)
                     continue;
 
-				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+                tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
                 AddToolToDeviceData(tool, devices);
 
                 tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
@@ -241,8 +245,8 @@ public class EditorVR : MonoBehaviour
                 
                 SpawnMainMenu(typeof(MainMenu), deviceData.Key);
             }
-			tool = SpawnTool(typeof(TransformTool), out devices);
-			AddToolToDeviceData(tool, devices);
+            tool = SpawnTool(typeof(TransformTool), out devices);
+            AddToolToDeviceData(tool, devices);
         };
     }
 
@@ -273,20 +277,20 @@ public class EditorVR : MonoBehaviour
 
             foreach (var rayOrigin in proxy.rayOrigins.Values)
             {
-				var distance = kDefaultRayLength;
+                var distance = kDefaultRayLength;
 
-				// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
-				// object, so visually show the ray terminating there instead of the object; UI is already given
-				// priority on the input side)
-				var uiEventData = m_InputModule.GetPointerEventData(rayOrigin);
-				if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
-				{
-					// Set ray length to distance to UI objects
-					distance = uiEventData.pointerCurrentRaycast.distance;
-				}
-				else
-				{
-					// If not hitting UI, then check pixel raycast and approximate bounds to set distance
+                // Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
+                // object, so visually show the ray terminating there instead of the object; UI is already given
+                // priority on the input side)
+                var uiEventData = m_InputModule.GetPointerEventData(rayOrigin);
+                if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
+                {
+                    // Set ray length to distance to UI objects
+                    distance = uiEventData.pointerCurrentRaycast.distance;
+                }
+                else
+                {
+                    // If not hitting UI, then check pixel raycast and approximate bounds to set distance
                 var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
                 if (go != null)
                 {
@@ -298,7 +302,7 @@ public class EditorVR : MonoBehaviour
                             distance = Mathf.Min(distance, newDist);
                     }
                 }
-				}
+                }
                 m_DefaultRays[rayOrigin].SetLength(distance);
             }
         }
@@ -309,8 +313,8 @@ public class EditorVR : MonoBehaviour
         // Create event system, input module, and event camera
         U.Object.AddComponent<EventSystem>(gameObject);
         m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
-		m_InputModule.getPointerLength = GetPointerLength;
-		m_EventCamera = U.Object.InstantiateAndSetActive(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+        m_InputModule.getPointerLength = GetPointerLength;
+        m_EventCamera = U.Object.InstantiateAndSetActive(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
         m_EventCamera.enabled = false;
         m_InputModule.eventCamera = m_EventCamera;
         foreach (var proxy in m_AllProxies)
@@ -474,6 +478,7 @@ public class EditorVR : MonoBehaviour
         mainMenu.menuTools = m_AllTools.ToList();
         mainMenu.menuActions = m_AllActions.ToList();
         mainMenu.selectTool = SelectTool;
+        mainMenu.performAction = PerformAction;
         mainMenu.tagIndex = device.tagIndex;
 
         m_DeviceData[device].mainMenu = mainMenu;
@@ -506,9 +511,9 @@ public class EditorVR : MonoBehaviour
                         {
                             ray.rayOrigin = rayOrigin;
 
-							// Specific proxy ray setting
-	                        DefaultProxyRay dfr = null;
-							var customRay = obj as ICustomRay;
+                            // Specific proxy ray setting
+                            DefaultProxyRay dfr = null;
+                            var customRay = obj as ICustomRay;
                             if (customRay != null)
                             {
                                 dfr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
@@ -516,15 +521,15 @@ public class EditorVR : MonoBehaviour
                                 customRay.hideDefaultRay = dfr.Hide;
                             }
 
-							var lockableRay = obj as ILockableRay;
-							if (lockableRay != null)
-							{
-								dfr = dfr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-								lockableRay.lockRay = dfr.LockRay;
-								lockableRay.unlockRay = dfr.UnlockRay;
-							}
+                            var lockableRay = obj as ILockableRay;
+                            if (lockableRay != null)
+                            {
+                                dfr = dfr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+                                lockableRay.lockRay = dfr.LockRay;
+                                lockableRay.unlockRay = dfr.UnlockRay;
+                            }
 
-							break;
+                            break;
                         }
                     }
                 }
@@ -578,17 +583,17 @@ public class EditorVR : MonoBehaviour
             highlightComponent.setHighlight = m_HighlightModule.SetHighlight;
     }
 
-	private float GetPointerLength(Transform rayOrigin)
-	{
-		float length = 0f;
-		DefaultProxyRay dpr;
-		if (m_DefaultRays.TryGetValue(rayOrigin, out dpr))
-		{
-			length = dpr.pointerLength;
-		}
+    private float GetPointerLength(Transform rayOrigin)
+    {
+        float length = 0f;
+        DefaultProxyRay dpr;
+        if (m_DefaultRays.TryGetValue(rayOrigin, out dpr))
+        {
+            length = dpr.pointerLength;
+        }
 
-		return length;
-	}
+        return length;
+    }
 
     private InputDevice GetInputDeviceForTool(ITool tool)
     {
@@ -601,6 +606,14 @@ public class EditorVR : MonoBehaviour
             }
         }
         return null;
+    }
+
+    private bool PerformAction (IAction action)
+    {
+        if (action != null)
+            return action.Execute();
+        else
+            return false;
     }
 
     private bool SelectTool(int menuDeviceTagIndex, Type tool)
