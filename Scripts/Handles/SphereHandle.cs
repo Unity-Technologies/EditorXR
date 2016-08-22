@@ -17,9 +17,8 @@ namespace UnityEngine.VR.Handles
 			base.OnBeginDrag(eventData);
 
 			m_CurrentRadius = eventData.pointerCurrentRaycast.distance;
-
-			Ray ray = EventDataToRay(eventData);
-			m_LastPosition = ray.GetPoint(m_CurrentRadius);
+			
+			m_LastPosition = GetRayPoint(eventData);
 
 			m_ScrollRate = kInitialScrollRate;
 
@@ -28,8 +27,7 @@ namespace UnityEngine.VR.Handles
 
 		public void OnDrag(RayEventData eventData)
 		{
-			Ray ray = EventDataToRay(eventData);
-			var worldPosition = ray.GetPoint(m_CurrentRadius);
+			var worldPosition = GetRayPoint(eventData);
 
 			var deltaPos = worldPosition - m_LastPosition;
 			m_LastPosition = worldPosition;
@@ -64,10 +62,11 @@ namespace UnityEngine.VR.Handles
 			ChangeRadius(m_ScrollRate*eventData.scrollDelta.y*Time.unscaledDeltaTime);
 		}
 
-		private Ray EventDataToRay(RayEventData eventData)
+		private Vector3 GetRayPoint(RayEventData eventData)
 		{
 			var rayOrigin = eventData.rayOrigin;
-			return new Ray(rayOrigin.position, rayOrigin.forward);
+			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+			return ray.GetPoint(m_CurrentRadius);
 		}
 	}
 }
