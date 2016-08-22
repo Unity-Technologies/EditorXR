@@ -126,8 +126,9 @@ namespace UnityEngine.VR.Tools
 		public Action<object> unlockRay { get; set; }
 		public Transform rayOrigin { get; set; }
 		public List<Type> menuTools { private get; set; }
-		public List<Type> menuActions { private get; set; }
+		public List<IAction> menuActions { private get; set; }
 		public Func<int, Type, bool> selectTool { private get; set; }
+		public Func<IAction, bool> performAction { private get; set; }
 		public int tagIndex { get; set; }
 		
 		private void Awake()
@@ -273,7 +274,7 @@ namespace UnityEngine.VR.Tools
 			showDefaultRay();
 		}
 
-		private void CreateToolButtons(List<Type> buttonDataSources)
+		private void CreateToolButtons<T>(List<T> buttonDataSources)
 		{
 			if (m_FaceToButtons == null)
 		{
@@ -282,19 +283,19 @@ namespace UnityEngine.VR.Tools
 				m_FaceToButtons.Add(kUncategorizedFaceName, m_UncategorizedButtons);
 			}
 
-			List<MainMenuButton> buttons = new List<MainMenuButton>();
+			var isAction = buttonDataSources[0] as IAction != null;
 
 			foreach (var source in buttonDataSources)
 			{
 				if (source != null)
 				{
+					var sourceType = isAction ? source.GetType() : source as Type;
+					var sourceTypeName = isAction ? source.GetType().Name : sourceType.Name;
 					var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplatePrefab.gameObject);
-					newButton.name = source.Name;
+					newButton.name = sourceTypeName;
 					MainMenuButton mainMenuButton = newButton.GetComponent<MainMenuButton>();
-					buttons.Add(mainMenuButton);
 					AddButtonListener(mainMenuButton.button, source);
-
-					var customMenuAttribute = (VRMenuItemAttribute)source.GetCustomAttributes(typeof(VRMenuItemAttribute), false).FirstOrDefault();
+					var customMenuAttribute = (VRMenuItemAttribute)sourceType.GetCustomAttributes(typeof(VRMenuItemAttribute), false).FirstOrDefault();
 					if (customMenuAttribute != null)
 					{
 						mainMenuButton.SetData(customMenuAttribute.Name, customMenuAttribute.Description);
@@ -316,12 +317,13 @@ namespace UnityEngine.VR.Tools
 					}
 					else
 					{
+						// Setup uncategorized buttons
 						m_UncategorizedButtons.Add(newButton.transform);
-						mainMenuButton.SetData(source.Name, string.Empty);
+						mainMenuButton.SetData(sourceTypeName, string.Empty);
 					}
 				}
 				else
-					Debug.LogError("Null menuTool found when creating Menu's tool buttons!");
+					Debug.LogError("Null button data source found when creating Menu tool buttons!");
 			}
 		}
 
@@ -335,13 +337,29 @@ namespace UnityEngine.VR.Tools
 			}
 		}
 
-		private void AddButtonListener(Button b, Type t)
+		private void AddButtonListener(Button b, object t)
 		{
+			var toolType = t as Type;
+			Action toolSelected = () =>
+			{
+				Debug.LogError("<color=green>Tool selected in Main Menu!!</color>");
+				if (m_VisibilityState == VisibilityState.Visible && selectTool(tagIndex, toolType))
+					TestForHideCondition();
+			};
+
+			var action = t as IAction;
+			Action actionSelected = () =>
+			{
+				Debug.LogError("<color=green>Action selected in Main Menu!!</color>");
+				if (m_VisibilityState == VisibilityState.Visible && performAction(action))
+					Debug.LogError("<color=green>Successful action performed!</color>");
+			};
+
+			Action perform = action != null ? actionSelected : toolSelected;
 			b.onClick.RemoveAllListeners();
 			b.onClick.AddListener(() =>
 			{
-				if (m_VisibilityState == VisibilityState.Visible && selectTool(tagIndex, t))
-					TestForHideCondition();
+				perform();
 			});
 			b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
 		}
