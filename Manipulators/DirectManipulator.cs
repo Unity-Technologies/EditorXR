@@ -49,7 +49,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 
 		var rayOrigin = eventData.rayOrigin;
 		translate(target.position - rayOrigin.position + rayOrigin.rotation * m_PositionOffset);
-		target.rotation = rayOrigin.rotation * m_RotationOffset;
+		rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
 	}
 
 	private void HandleOnBeginDrag(BaseHandle handle, HandleDragEventData eventData)

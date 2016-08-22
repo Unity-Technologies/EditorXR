@@ -53,7 +53,6 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	[SerializeField]
 	private GameObject m_BasePrefab;
 
-	private Transform m_LastParent;
 	private Vector3 m_DragStart;
 	private Vector3 m_PositionStart;
 	private Vector3 m_BoundSizeStart;
@@ -92,7 +91,11 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
 		m_WorkspaceUI.SetBounds(contentBounds);
 
-		m_WorkspaceUI.directManipulator.target = transform;
+		//Set up DirectManipulaotr
+		var directManipulator = m_WorkspaceUI.directManipulator;
+		directManipulator.target = transform;
+		directManipulator.translate = Translate;
+		directManipulator.rotate = Rotate;
 
 		m_WorkspaceUI.vacuumHandle.onDoubleClick += OnDoubleClick;
 
@@ -176,6 +179,14 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	private void OnDoubleClick(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		StartCoroutine(VacuumToViewer());
+	}
+
+	private void Translate(Vector3 deltaPosition) {
+		transform.position += deltaPosition;
+	}
+
+	private void Rotate(Quaternion deltaRotation) {
+		transform.rotation *= deltaRotation;
 	}
 
 	private IEnumerator VacuumToViewer()

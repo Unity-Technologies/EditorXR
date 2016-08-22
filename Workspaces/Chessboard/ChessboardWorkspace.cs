@@ -47,8 +47,8 @@ public class ChessboardWorkspace : Workspace
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * kInitReferenceScale;
 
 		//Set up ControlBox
-		//ControlBox shouldn't move with miniWorld
 		var panZoomHandle = m_ChessboardUI.panZoomHandle;
+		//ControlBox shouldn't move with miniWorld
 		panZoomHandle.transform.parent = m_WorkspaceUI.sceneContainer;
 		panZoomHandle.transform.localPosition = Vector3.down * panZoomHandle.transform.localScale.y * 0.5f;
 		panZoomHandle.onHandleBeginDrag += OnControlBeginDrag;
@@ -64,6 +64,8 @@ public class ChessboardWorkspace : Workspace
 		zoomSliderUI.zoomSlider.maxValue = kMaxScale;
 		zoomSliderUI.zoomSlider.minValue = kMinScale;
 		zoomSliderUI.zoomSlider.value = kInitReferenceScale;
+
+		//Propagate initial bounds
 		OnBoundsChanged();
 	}
 
