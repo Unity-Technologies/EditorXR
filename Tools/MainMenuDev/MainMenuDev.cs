@@ -21,7 +21,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 
     public Transform rayOrigin { get; set; }
     public List<Type> menuTools { private get; set; }
-	public List<Type> menuActions { private get; set; }
+	public List<IAction> menuActions { private get; set; }
 	public Func<int, Type, bool> selectTool { private get; set; }
     public Transform menuOrigin { get; set; }
     public Transform menuInputOrigin { get; set; }
@@ -29,8 +29,9 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
     public int tagIndex { get; set; }
     public Camera eventCamera { get; set; }
     public Func<GameObject, GameObject> instantiateUI { private get; set; }
+	public Func<IAction, bool> performAction { private get; set; }
 
-    void Start()
+	void Start()
     {
         if (m_MenuCanvas == null)
         {
