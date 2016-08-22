@@ -48,7 +48,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 		Transform target = m_Target ?? transform;
 
 		var rayOrigin = eventData.rayOrigin;
-		translate(target.position - rayOrigin.position + rayOrigin.rotation * m_PositionOffset);
+		translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
 		rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
 	}
 
