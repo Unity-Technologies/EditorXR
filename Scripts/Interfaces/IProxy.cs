@@ -3,36 +3,36 @@ using System.Collections.Generic;
 
 namespace UnityEngine.VR.Proxies
 {
-    public interface IProxy
-    {
-        bool active
-        {
-            get;
-        }
+	public interface IProxy
+	{
+		bool active
+		{
+			get;
+		}
 
-        TrackedObject trackedObjectInput
-        {
-            set;
-        }
+		TrackedObject trackedObjectInput
+		{
+			set;
+		}
 
-        Dictionary<Node, Transform> rayOrigins
-        {
-            get;
-        }
+		Dictionary<Node, Transform> rayOrigins
+		{
+			get;
+		}
 
-        bool hidden
-        {
-            set;
-        }
+		bool hidden
+		{
+			set;
+		}
 
-        Dictionary<Node, Transform> menuInputOrigins
-        {
-            get; set;
-        }
+		Dictionary<Node, Transform> menuInputOrigins
+		{
+			get; set;
+		}
 
-        Dictionary<Node, Transform> menuOrigins
-        {
-            get; set;
-        }
-    }
+		Dictionary<Node, Transform> menuOrigins
+		{
+			get; set;
+		}
+	}
 }
