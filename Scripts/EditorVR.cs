@@ -504,21 +504,21 @@ public class EditorVR : MonoBehaviour
 							ray.rayOrigin = rayOrigin;
 
 							// Specific proxy ray setting
-							DefaultProxyRay dfr = null;
+							DefaultProxyRay dpr = null;
 							var customRay = obj as ICustomRay;
 							if (customRay != null)
 							{
-								dfr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-								customRay.showDefaultRay = dfr.Show;
-								customRay.hideDefaultRay = dfr.Hide;
+								dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+								customRay.showDefaultRay = dpr.Show;
+								customRay.hideDefaultRay = dpr.Hide;
 							}
 
 							var lockableRay = obj as ILockableRay;
 							if (lockableRay != null)
 							{
-								dfr = dfr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-								lockableRay.lockRay = dfr.LockRay;
-								lockableRay.unlockRay = dfr.UnlockRay;
+								dpr = dpr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+								lockableRay.lockRay = dpr.LockRay;
+								lockableRay.unlockRay = dpr.UnlockRay;
 							}
 
 							break;
