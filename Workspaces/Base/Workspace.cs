@@ -13,10 +13,13 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	public const float kHandleMargin = 0.25f;	// Amount of space (in World units) between handle and content bounds in X and Z
 	public const float kContentHeight = 0.075f;	// Amount of height (in World units) between tray and content bounds
+
+	protected WorkspaceUI m_WorkspaceUI;
+
 	//Extra space for tray model
-	public const float kExtraHeight = 0.15f;
-	public const float kExtraWidth = 0.15f;
-	public const float kExtraDepth = 0.2f;
+	private const float kExtraHeight = 0.15f;
+	private const float kExtraWidth = 0.15f;
+	private const float kExtraDepth = 0.2f;
 
 	/// <summary>
 	/// Bounding box for workspace content (ignores value.center) 
@@ -42,14 +45,11 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			}
 		}
 	}
-
 	[SerializeField]
 	private Bounds m_ContentBounds;
 
 	[SerializeField]
 	private float m_VacuumTime = 0.75f;
-
-	protected WorkspaceUI m_WorkspaceUI;
 
 	[SerializeField]
 	private GameObject m_BasePrefab;

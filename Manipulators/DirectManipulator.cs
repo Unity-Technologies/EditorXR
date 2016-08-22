@@ -9,6 +9,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	public Transform target { set { m_Target = value; } }
 	[SerializeField]
 	private Transform m_Target;
+
 	[SerializeField]
 	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 
@@ -17,7 +18,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 
 	private Vector3 m_PositionOffset;
 	private Quaternion m_RotationOffset;
-
+	
 	public Action<Vector3> translate { private get; set; }
 	public Action<Quaternion> rotate { private get; set; }
 	public Action<Vector3> scale { private get; set; }
@@ -47,7 +48,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 		Transform target = m_Target ?? transform;
 
 		var rayOrigin = eventData.rayOrigin;
-		target.position = rayOrigin.position + rayOrigin.rotation * m_PositionOffset;
+		translate(target.position - rayOrigin.position + rayOrigin.rotation * m_PositionOffset);
 		target.rotation = rayOrigin.rotation * m_RotationOffset;
 	}
 

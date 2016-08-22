@@ -29,6 +29,7 @@
 			this.deltaPosition = Vector3.zero;
 			this.deltaRotation = deltaRotation;
 		}
+
 		public HandleDragEventData(Transform rayOrigin)
 		{
 			this.rayOrigin = rayOrigin;

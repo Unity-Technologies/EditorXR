@@ -103,7 +103,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 224000011151911262}
-  - 114: {fileID: 114000010619701612}
+  - 114: {fileID: 114000011369596490}
   m_Layer: 5
   m_Name: ChessboardPanel
   m_TagString: Untagged
@@ -258,19 +258,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
---- !u!114 &114000010619701612
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000011177834630}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c931a6234b35e3147b3ce3c11a1d557b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_ZoomSlider: {fileID: 114000011682301028}
 --- !u!114 &114000010644544506
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -299,6 +286,19 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114000011369596490
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011177834630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74ab408b93085ca41ad9e2610063359a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ZoomSlider: {fileID: 114000011682301028}
 --- !u!114 &114000011402123474
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -380,7 +380,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 114000010619701612}
+      - m_Target: {fileID: 114000011369596490}
         m_MethodName: ZoomSlider
         m_Mode: 0
         m_Arguments:

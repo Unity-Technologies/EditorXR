@@ -117,6 +117,7 @@ public class EditorVR : MonoBehaviour
 	{
 		//Workspaces don't need to wait until devices are active
 		CreateDefaultWorkspaces();
+
 		// Delay until at least one proxy initializes
 		bool proxyActive = false;
 		while (!proxyActive)

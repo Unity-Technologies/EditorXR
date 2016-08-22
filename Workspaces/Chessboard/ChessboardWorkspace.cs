@@ -5,9 +5,10 @@ using UnityEngine.VR.Utilities;
 
 public class ChessboardWorkspace : Workspace
 {
-	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 3; //1/3 of initial initial Y bounds
+	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 3; //Show more space above ground than below
 	private const float kInitReferenceScale = 25; //We want to see a big region by default
 
+	//TODO: replace with dynamic values once spatial hash lands
 	//Scale slider min/max (maps to referenceTransform unifrom scale)
 	private const float kMinScale = 0.1f;
 	private const float kMaxScale = 35;
