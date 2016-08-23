@@ -1,7 +1,5 @@
 ﻿using System.IO;
-using System.Linq;
 using ListView;
-using UnityEngine;
 
 public class AssetData : ListViewItemNestedData<AssetData>
 {
@@ -13,15 +11,13 @@ public class AssetData : ListViewItemNestedData<AssetData>
 	{
 		template = kTemplateName;
 		m_Path = path;
-		FileAttributes attr = File.GetAttributes(path);
-		if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
-		{
-			children = GetAssetDataForPath(path);
-		}
+		AssetData[] subFolders = GetAssetDataForPath(path);
+		if (subFolders.Length > 0)
+			children = subFolders;
 	}
 
 	public static AssetData[] GetAssetDataForPath(string path) {
-		var paths = Directory.GetFileSystemEntries(path).Where(name => !name.EndsWith(".meta")).ToArray();
+		var paths = Directory.GetDirectories(path);
 		var files = new AssetData[paths.Length];
 		for (int i = 0; i < files.Length; i++) {
 			files[i] = new AssetData(paths[i]);
