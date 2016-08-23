@@ -50,6 +50,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	[SerializeField]
 	private float m_VacuumTime = 0.75f;
 
+	//This must be set on the script object which extends Workspace
 	[SerializeField]
 	private GameObject m_BasePrefab;
 

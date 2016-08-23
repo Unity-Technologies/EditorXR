@@ -99,7 +99,7 @@ public class EditorVR : MonoBehaviour
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
 		// then only show it in that hand's menu.
-		// CollectToolActionMaps(m_AllTools);		
+		// CollectToolActionMaps(m_AllTools);
 	}
 
 	private void CreateDeviceDataForInputDevices()
@@ -692,6 +692,7 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
+		CreateWorkspace<ProjectWorkspace>();
 		CreateWorkspace<ChessboardWorkspace>();
 	}
 
