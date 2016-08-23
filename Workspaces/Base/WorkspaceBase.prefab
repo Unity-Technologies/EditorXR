@@ -109,8 +109,8 @@ GameObject:
   - 4: {fileID: 4000012318367122}
   - 33: {fileID: 33000014135142390}
   - 23: {fileID: 23000014090063102}
-  - 114: {fileID: 114000013184367326}
   - 65: {fileID: 65000010172468278}
+  - 114: {fileID: 114000013854833486}
   m_Layer: 5
   m_Name: BackHandle
   m_TagString: Untagged
@@ -147,8 +147,8 @@ GameObject:
   - 4: {fileID: 4000010817710752}
   - 33: {fileID: 33000012393826694}
   - 23: {fileID: 23000013021996902}
-  - 114: {fileID: 114000013760903596}
   - 65: {fileID: 65000011744806066}
+  - 114: {fileID: 114000014067047110}
   m_Layer: 5
   m_Name: FrontHandle
   m_TagString: Untagged
@@ -186,8 +186,8 @@ GameObject:
   - 4: {fileID: 4000010687023290}
   - 33: {fileID: 33000012839492618}
   - 23: {fileID: 23000011251402978}
-  - 114: {fileID: 114000010511962596}
   - 65: {fileID: 65000010338821540}
+  - 114: {fileID: 114000012827231190}
   m_Layer: 5
   m_Name: RightHandle
   m_TagString: Untagged
@@ -205,8 +205,8 @@ GameObject:
   - 4: {fileID: 4000014081935550}
   - 33: {fileID: 33000012530850374}
   - 23: {fileID: 23000010481794644}
-  - 114: {fileID: 114000011439710426}
   - 65: {fileID: 65000013460546970}
+  - 114: {fileID: 114000010929740822}
   m_Layer: 5
   m_Name: LeftHandle
   m_TagString: Untagged
@@ -588,15 +588,15 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
---- !u!114 &114000010511962596
+--- !u!114 &114000010929740822
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012485639920}
+  m_GameObject: {fileID: 1000012772133944}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 410244f902f0bbc47a023d4a93ffeea9, type: 3}
+  m_Script: {fileID: 11500000, guid: 0a6150da69a5c98448fd00f9f9fad6d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -633,19 +633,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &114000011439710426
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012772133944}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 410244f902f0bbc47a023d4a93ffeea9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_HandleTip: {fileID: 0}
 --- !u!114 &114000011658765658
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -842,15 +829,15 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
---- !u!114 &114000013184367326
+--- !u!114 &114000012827231190
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000011632499242}
+  m_GameObject: {fileID: 1000012485639920}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 410244f902f0bbc47a023d4a93ffeea9, type: 3}
+  m_Script: {fileID: 11500000, guid: 0a6150da69a5c98448fd00f9f9fad6d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -867,7 +854,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
---- !u!114 &114000013760903596
+--- !u!114 &114000013854833486
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011632499242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a6150da69a5c98448fd00f9f9fad6d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_HandleTip: {fileID: 0}
+--- !u!114 &114000014067047110
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -875,7 +875,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000011943876404}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 410244f902f0bbc47a023d4a93ffeea9, type: 3}
+  m_Script: {fileID: 11500000, guid: 0a6150da69a5c98448fd00f9f9fad6d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -931,10 +931,10 @@ MonoBehaviour:
   m_DirectManipulator: {fileID: 114000011014117582}
   m_PanelCollider: {fileID: 65000013091105856}
   m_VacuumHandle: {fileID: 114000013195114936}
-  m_LeftHandle: {fileID: 114000011439710426}
-  m_FrontHandle: {fileID: 114000013760903596}
-  m_RightHandle: {fileID: 114000010511962596}
-  m_BackHandle: {fileID: 114000013184367326}
+  m_LeftHandle: {fileID: 114000010929740822}
+  m_FrontHandle: {fileID: 114000014067047110}
+  m_RightHandle: {fileID: 114000012827231190}
+  m_BackHandle: {fileID: 114000013854833486}
   m_Frame: {fileID: 137000012547310740}
   m_BoundsCube: {fileID: 4000013757845182}
 --- !u!137 &137000012547310740

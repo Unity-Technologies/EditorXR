@@ -26,21 +26,21 @@ public class WorkspaceUI : MonoBehaviour
 	[SerializeField]
 	private BaseHandle m_VacuumHandle;
 
-	public LinearHandle leftHandle { get { return m_LeftHandle; } }
+	public DirectLinearHandle leftHandle { get { return m_LeftHandle; } }
 	[SerializeField]
-	private LinearHandle m_LeftHandle;
+	private DirectLinearHandle m_LeftHandle;
 
-	public LinearHandle frontHandle { get { return m_FrontHandle; } }
+	public DirectLinearHandle frontHandle { get { return m_FrontHandle; } }
 	[SerializeField]
-	private LinearHandle m_FrontHandle;
+	private DirectLinearHandle m_FrontHandle;
 
-	public LinearHandle rightHandle { get { return m_RightHandle; } }
+	public DirectLinearHandle rightHandle { get { return m_RightHandle; } }
 	[SerializeField]
-	private LinearHandle m_RightHandle;
+	private DirectLinearHandle m_RightHandle;
 
-	public LinearHandle backHandle { get { return m_BackHandle; } }
+	public DirectLinearHandle backHandle { get { return m_BackHandle; } }
 	[SerializeField]
-	private LinearHandle m_BackHandle;
+	private DirectLinearHandle m_BackHandle;
 
 	[SerializeField]
 	private SkinnedMeshRenderer m_Frame;

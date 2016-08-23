@@ -18,7 +18,7 @@ namespace UnityEngine.VR.Handles
 				m_HandleTip.gameObject.SetActive(false);
 		}
 
-		public void OnRayHover(RayEventData eventData)
+		public virtual void OnRayHover(RayEventData eventData)
 		{
 			UpdateHandleTip(eventData);
 		}
