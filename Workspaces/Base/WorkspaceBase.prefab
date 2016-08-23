@@ -38,7 +38,7 @@ GameObject:
   - 4: {fileID: 4000011687496624}
   - 137: {fileID: 137000012547310740}
   m_Layer: 5
-  m_Name: Tray
+  m_Name: Frame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1022,7 +1022,7 @@ MonoBehaviour:
   m_FrontHandle: {fileID: 114000013760903596}
   m_RightHandle: {fileID: 114000010511962596}
   m_BackHandle: {fileID: 114000013184367326}
-  m_Tray: {fileID: 137000012547310740}
+  m_Frame: {fileID: 137000012547310740}
   m_BoundsCube: {fileID: 4000013757845182}
 --- !u!137 &137000012547310740
 SkinnedMeshRenderer:

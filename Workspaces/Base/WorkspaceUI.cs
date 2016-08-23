@@ -1,10 +1,11 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.VR.Handles;
 
 public class WorkspaceUI : MonoBehaviour
 {
-	private const float kPanelOffset = 0.1f; //The panel needs to be pulled back slightly
+	private const float kPanelOffset = 0f; //The panel needs to be pulled back slightly
 
 	public Transform sceneContainer { get { return m_SceneContainer; } }
 	[SerializeField]
@@ -38,8 +39,9 @@ public class WorkspaceUI : MonoBehaviour
 	[SerializeField]
 	private LinearHandle m_BackHandle;
 
+	[FormerlySerializedAs("m_Tray")]
 	[SerializeField]
-	private SkinnedMeshRenderer m_Tray;
+	private SkinnedMeshRenderer m_Frame;
 
 	[SerializeField]
 	private Transform m_BoundsCube;
@@ -50,31 +52,31 @@ public class WorkspaceUI : MonoBehaviour
 	public void SetBounds(Bounds bounds)
 	{
 		//Because BlendShapes cap at 100, our workspace maxes out at 100m wide
-		m_Tray.SetBlendShapeWeight(0, bounds.size.x + Workspace.kHandleMargin);
-		m_Tray.SetBlendShapeWeight(1, bounds.size.z + Workspace.kHandleMargin);
+		m_Frame.SetBlendShapeWeight(0, bounds.size.x + Workspace.kHandleMargin);
+		m_Frame.SetBlendShapeWeight(1, bounds.size.z + Workspace.kHandleMargin);
 
 		//Resize handles
 		float handleScale = leftHandle.transform.localScale.z;
 
-		m_LeftHandle.transform.localPosition = new Vector3(-bounds.extents.x - Workspace.kHandleMargin + handleScale, m_LeftHandle.transform.localPosition.y, 0);
-		m_LeftHandle.transform.localScale = new Vector3(bounds.size.z + Workspace.kHandleMargin, handleScale, handleScale);
+		m_LeftHandle.transform.localPosition = new Vector3(-bounds.extents.x + handleScale * 0.5f, m_LeftHandle.transform.localPosition.y, 0);
+		m_LeftHandle.transform.localScale = new Vector3(bounds.size.z, handleScale, handleScale);
 
-		m_FrontHandle.transform.localPosition = new Vector3(0, m_FrontHandle.transform.localPosition.y, -bounds.extents.z - Workspace.kHandleMargin + handleScale);
-		m_FrontHandle.transform.localScale = new Vector3(bounds.size.x + Workspace.kHandleMargin, handleScale, handleScale);
+		m_FrontHandle.transform.localPosition = new Vector3(0, m_FrontHandle.transform.localPosition.y, -bounds.extents.z - handleScale);
+		m_FrontHandle.transform.localScale = new Vector3(bounds.size.x, handleScale, handleScale);
 
-		m_RightHandle.transform.localPosition = new Vector3(bounds.extents.x + Workspace.kHandleMargin - handleScale, m_RightHandle.transform.localPosition.y, 0);
-		m_RightHandle.transform.localScale = new Vector3(bounds.size.z + Workspace.kHandleMargin, handleScale, handleScale);
+		m_RightHandle.transform.localPosition = new Vector3(bounds.extents.x - handleScale * 0.5f, m_RightHandle.transform.localPosition.y, 0);
+		m_RightHandle.transform.localScale = new Vector3(bounds.size.z, handleScale, handleScale);
 
-		m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandle.transform.localPosition.y, bounds.extents.z + Workspace.kHandleMargin - handleScale);
-		m_BackHandle.transform.localScale = new Vector3(bounds.size.x + Workspace.kHandleMargin, handleScale, handleScale);
+		m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandle.transform.localPosition.y, bounds.extents.z - handleScale);
+		m_BackHandle.transform.localScale = new Vector3(bounds.size.x, handleScale, handleScale);
 
 		//Resize bounds cube
 		m_BoundsCube.transform.localScale = bounds.size;
 		m_BoundsCube.transform.localPosition = Vector3.up * bounds.extents.y;
 
 		//Resize front panel
-		m_FrontPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x + Workspace.kHandleMargin);
-		m_FrontPanel.localPosition = new Vector3(0, m_FrontPanel.localPosition.y, -bounds.extents.z - Workspace.kHandleMargin + kPanelOffset);
+		m_FrontPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x);
+		m_FrontPanel.localPosition = new Vector3(0, m_FrontPanel.localPosition.y, -bounds.extents.z + kPanelOffset);
 	}
 
 	public void CloseClick()

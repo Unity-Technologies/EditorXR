@@ -11,11 +11,11 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	public static readonly Vector3		kDefaultOffset = new Vector3(0, -0.15f, 1f);
 	public static readonly Quaternion	kDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
-	public const float kHandleMargin = 0.25f;	// Amount of space (in World units) between handle and content bounds in X and Z
+	public const float kHandleMargin = -0.15f;	// Compensate for base size from frame model
 
 	protected WorkspaceUI m_WorkspaceUI;
 
-	//Extra space for tray model
+	//Extra space for frame model
 	private const float kExtraHeight = 0.15f;
 	private const float kExtraWidth = 0.15f;
 	private const float kExtraDepth = 0.2f;
@@ -132,7 +132,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	public virtual void OnHandleDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		if (m_Dragging)
+		if (m_Dragging && !m_DragLocked)
 		{
 			Vector3 dragVector = eventData.rayOrigin.position - m_DragStart;
 			Bounds bounds = contentBounds;
