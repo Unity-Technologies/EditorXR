@@ -68,6 +68,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 
 		m_CurrentManipulatorIndex = 0;
 		m_CurrentManipulator = m_AllManipulators[m_CurrentManipulatorIndex];
+
+		foreach(var manipulator in m_AllManipulators)
+			manipulator.SetActive(false);
 	}
 
 	void OnEnable()
