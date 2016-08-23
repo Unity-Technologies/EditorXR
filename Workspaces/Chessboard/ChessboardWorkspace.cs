@@ -22,6 +22,7 @@ public class ChessboardWorkspace : Workspace
 	private ChessboardUI m_ChessboardUI;
 	private MiniWorld m_MiniWorld;
 	private Material m_GridMaterial;
+	private ZoomSliderUI m_ZoomSliderUI;
 
 	private readonly List<RayData> m_RayData = new List<RayData>(2);
 	private float m_ScaleStartDistance;
@@ -59,11 +60,11 @@ public class ChessboardWorkspace : Workspace
 
 		//Set up UI
 		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
-		var zoomSliderUI = UI.GetComponentInChildren<ZoomSliderUI>();
-		zoomSliderUI.sliding = Sliding;
-		zoomSliderUI.zoomSlider.maxValue = kMaxScale;
-		zoomSliderUI.zoomSlider.minValue = kMinScale;
-		zoomSliderUI.zoomSlider.value = kInitReferenceScale;
+		m_ZoomSliderUI = UI.GetComponentInChildren<ZoomSliderUI>();
+		m_ZoomSliderUI.sliding = Sliding;
+		m_ZoomSliderUI.zoomSlider.maxValue = kMaxScale;
+		m_ZoomSliderUI.zoomSlider.minValue = kMinScale;
+		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
 
 		//Propagate initial bounds
 		OnBoundsChanged();
@@ -146,6 +147,8 @@ public class ChessboardWorkspace : Workspace
 			var otherRay = m_RayData[1];
 			referenceTransform.localScale = otherRay.refTransformStartScale * (m_ScaleStartDistance
 										/ (otherRay.rayOrigin.position - rayOrigin.position).magnitude);
+
+			m_ZoomSliderUI.zoomSlider.value = referenceTransform.localScale.x;
 		}
 	}
 

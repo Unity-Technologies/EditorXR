@@ -19,6 +19,9 @@ public class WorkspaceUI : MonoBehaviour
 	[SerializeField]
 	private DirectManipulator m_DirectManipulator;
 
+	[SerializeField]
+	private BoxCollider m_PanelCollider;
+
 	public BaseHandle vacuumHandle { get { return m_VacuumHandle; } }
 	[SerializeField]
 	private BaseHandle m_VacuumHandle;
@@ -39,7 +42,6 @@ public class WorkspaceUI : MonoBehaviour
 	[SerializeField]
 	private LinearHandle m_BackHandle;
 
-	[FormerlySerializedAs("m_Tray")]
 	[SerializeField]
 	private SkinnedMeshRenderer m_Frame;
 
@@ -77,6 +79,8 @@ public class WorkspaceUI : MonoBehaviour
 		//Resize front panel
 		m_FrontPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x);
 		m_FrontPanel.localPosition = new Vector3(0, m_FrontPanel.localPosition.y, -bounds.extents.z + kPanelOffset);
+
+		m_PanelCollider.size = new Vector3(bounds.size.x, m_PanelCollider.size.y, m_PanelCollider.size.z);
 	}
 
 	public void CloseClick()
