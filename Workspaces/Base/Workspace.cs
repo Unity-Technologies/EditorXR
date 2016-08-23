@@ -212,11 +212,13 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		Quaternion startRotation = transform.rotation;
 
 		Transform camera = U.Camera.GetMainCamera().transform;
-		Vector3 destPosition = camera.position + camera.rotation * kDefaultOffset;
-
-		Vector3 cameraYawVector = camera.forward;
+		var cameraYawVector = camera.forward;
 		cameraYawVector.y = 0;
-		Quaternion destRotation = Quaternion.LookRotation(cameraYawVector, Vector3.up) * kDefaultTilt;
+		var cameraYaw = Quaternion.LookRotation(cameraYawVector, Vector3.up);
+
+		Vector3 destPosition = camera.position + cameraYaw * kDefaultOffset;
+
+		Quaternion destRotation = cameraYaw * kDefaultTilt;
 
 		while (Time.realtimeSinceStartup < startTime + m_VacuumTime)
 		{
