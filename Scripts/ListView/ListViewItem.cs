@@ -30,8 +30,8 @@ namespace ListView
 
 	public class ListViewItemNestedData<ChildType> : ListViewItemData
 	{
-		public bool expanded;
-		public ChildType[] children;
+		public bool expanded { get; set; }
+		public ChildType[] children { get; protected set; }
 	}
 
 	[System.Serializable]

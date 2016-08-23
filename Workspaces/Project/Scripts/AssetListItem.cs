@@ -18,6 +18,14 @@ public class AssetListItem : ListViewItem<AssetData>
 	public override void Setup(AssetData data)
 	{
 		base.Setup(data);
-		m_Text.text = Path.GetFileName(data.path);
+		m_Text.text = Path.GetFileNameWithoutExtension(data.path);
+		if (data.children != null)
+		{
+			m_ExpandArrow.gameObject.SetActive(true);
+		}
+		else
+		{
+			m_ExpandArrow.gameObject.SetActive(false);
+		}
 	}
 }

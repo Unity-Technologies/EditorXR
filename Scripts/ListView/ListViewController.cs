@@ -133,22 +133,22 @@ namespace ListView
 		where DataType : ListViewItemData
 		where ItemType : ListViewItem<DataType>
 	{
-		[Tooltip("Source Data")]
-		public DataType[] data;
+		[SerializeField]
+		protected DataType[] m_Data;
 
 		protected override void UpdateItems()
 		{
-			for (int i = 0; i < data.Length; i++)
+			for (int i = 0; i < m_Data.Length; i++)
 			{
 				if (i + m_DataOffset < 0)
 				{
-					ExtremeLeft(data[i]);
+					ExtremeLeft(m_Data[i]);
 				} else if (i + m_DataOffset > m_NumItems)
 				{
-					ExtremeRight(data[i]);
+					ExtremeRight(m_Data[i]);
 				} else
 				{
-					ListMiddle(data[i], i);
+					ListMiddle(m_Data[i], i);
 				}
 			}
 		}
@@ -178,7 +178,7 @@ namespace ListView
 		{
 			if (data == null)
 			{
-				Debug.LogWarning("Tried to get item with null data");
+				Debug.LogWarning("Tried to get item with null m_Data");
 				return null;
 			}
 			if (!m_Templates.ContainsKey(data.template))

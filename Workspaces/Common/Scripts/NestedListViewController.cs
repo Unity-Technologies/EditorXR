@@ -4,10 +4,10 @@ public class NestedListViewController <DataType> : ListViewController<DataType, 
 
 	protected override void UpdateItems() {
 		int count = 0;
-		UpdateRecursively(data, ref count);
+		UpdateRecursively(m_Data, ref count);
 	}
 
-	void UpdateRecursively(DataType[] data, ref int count) {
+	protected virtual void UpdateRecursively(DataType[] data, ref int count) {
 		foreach (var item in data) {
 			if (count + m_DataOffset < 0) {
 				ExtremeLeft(item);
@@ -27,7 +27,7 @@ public class NestedListViewController <DataType> : ListViewController<DataType, 
 		}
 	}
 
-	void RecycleChildren(DataType data) {
+	protected void RecycleChildren(DataType data) {
 		foreach (var child in data.children) {
 			RecycleItem(child.template, child.item);
 			child.item = null;
