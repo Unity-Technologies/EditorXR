@@ -170,12 +170,14 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	public virtual void OnHandleHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		setHighlight(handle.gameObject, true);
+		if(!m_DragLocked)
+			setHighlight(handle.gameObject, true);
 	}
 
 	public virtual void OnHandleHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		setHighlight(handle.gameObject, false);
+		if (!m_DragLocked)
+			setHighlight(handle.gameObject, false);
 	}
 
 	private void OnDoubleClick(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
