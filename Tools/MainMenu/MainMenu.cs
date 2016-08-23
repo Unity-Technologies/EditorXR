@@ -362,13 +362,14 @@ namespace UnityEngine.VR.Tools
 				const float kEaseStepping = 1f;
 
 				Vector3 roundedRotation = m_MenuFaceRotationOrigin.localRotation.eulerAngles;
-				roundedRotation.y = Mathf.Round((roundedRotation.y - (kFaceRotationSnapAngle * flickDirection)) / kFaceRotationSnapAngle) * kFaceRotationSnapAngle; // set new target rotation, add any potential flick rotation
-				while ((m_RotationState == RotationState.Snapping || m_RotationState == RotationState.FlickSnapping) && Mathf.Abs(m_MenuFaceRotationOrigin.localRotation.eulerAngles.y - roundedRotation.y) > 1f)
+				float rotationDifference = Mathf.Abs(m_MenuFaceRotationOrigin.localRotation.eulerAngles.y - roundedRotation.y);
+				while ((m_RotationState == RotationState.Snapping || m_RotationState == RotationState.FlickSnapping) && (rotationDifference > 1f && rotationDifference < 360))
 				{
 					smoothTransitionIntoSnap = U.Math.Ease(smoothTransitionIntoSnap, targetSnapSpeed, kEaseStepping, kTargetSnapThreshold);
 					float angle = Mathf.LerpAngle(m_MenuFaceRotationOrigin.localRotation.eulerAngles.y, roundedRotation.y, Time.unscaledDeltaTime * smoothTransitionIntoSnap);
 					m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, angle, 0));
 					yield return null;
+					rotationDifference = Mathf.Abs(m_MenuFaceRotationOrigin.localRotation.eulerAngles.y - roundedRotation.y);
 				}
 			}
 
