@@ -28,6 +28,7 @@ public class EditorVR : MonoBehaviour
 	private const float kWorkspaceAnglePadding = 25f;
 	private const float kWorkspaceYPadding = 0.35f;
 	private const int   kMaxWorkspacePlacementAttempts = 20;
+	private const float   kWorkspaceVacuumEnableDistance = 1.5f; //Disable vacuum bounds if workspace is closer than 1.5 meters to player
 
 	[SerializeField]
 	private ActionMap m_MenuActionMap;
@@ -63,10 +64,11 @@ public class EditorVR : MonoBehaviour
 		public ITool currentTool;
 	}
 
-	private Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
-	private List<IProxy> m_AllProxies = new List<IProxy>();
+	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
+	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
 	private IEnumerable<Type> m_AllTools;
-	private IEnumerable<Type> m_AllWorkspaces;
+	private IEnumerable<Type> m_AllWorkspaceTypes;
+	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
 
 	private Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 	{
@@ -93,7 +95,7 @@ public class EditorVR : MonoBehaviour
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
-		m_AllWorkspaces = U.Object.GetExtensionsOfClass(typeof(Workspace));
+		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
 		// then only show it in that hand's menu.
@@ -191,6 +193,11 @@ public class EditorVR : MonoBehaviour
 				}
 			}
 		}
+
+		var camera = U.Camera.GetMainCamera();
+		//Enable/disable workspace vacuum bounds based on distance to camera
+		foreach (var workspace in m_AllWorkspaces)
+			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
 
 #if UNITY_EDITOR
 		// HACK: Send a "mouse moved" event, so scene picking can occur for the controller
@@ -491,7 +498,7 @@ public class EditorVR : MonoBehaviour
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_AllTools.ToList();
-			mainMenu.menuWorkspaces = m_AllWorkspaces.ToList();
+			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
 			mainMenu.selectTool = SelectTool;
 			mainMenu.createWorkspace = CreateWorkspace;
 			m_DeviceData[device].mainMenu = mainMenu;
@@ -739,12 +746,19 @@ public class EditorVR : MonoBehaviour
 		}
 
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, transform);
+		m_AllWorkspaces.Add(workspace);
+		workspace.OnClose = OnWorkspaceClose;
 		ConnectInterfaces(workspace);
 		workspace.transform.position = position;
 		workspace.transform.rotation = rotation;
 		
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
+	}
+
+	private void OnWorkspaceClose(Workspace workspace)
+	{
+		m_AllWorkspaces.Remove(workspace);
 	}
 
 #if UNITY_EDITOR

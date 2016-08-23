@@ -13,12 +13,12 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	public const float kHandleMargin = -0.15f;	// Compensate for base size from frame model
 
+	public Action<Workspace> OnClose { private get; set; }
+
 	protected WorkspaceUI m_WorkspaceUI;
 
 	//Extra space for frame model
 	private const float kExtraHeight = 0.15f;
-	private const float kExtraWidth = 0.15f;
-	private const float kExtraDepth = 0.2f;
 
 	/// <summary>
 	/// Bounding box for workspace content (ignores value.center) 
@@ -39,7 +39,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 					size.z = kDefaultBounds.z;
 				value.size = size;
 				m_ContentBounds.size = size; //Only set size, ignore center.
-				m_WorkspaceUI.SetBounds(contentBounds);
+				BoundsChanged();
 				OnBoundsChanged();
 			}
 		}
@@ -66,11 +66,11 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	{
 		get
 		{
-			return new Bounds(contentBounds.center,
+			return new Bounds(contentBounds.center + Vector3.down * kExtraHeight * 0.5f,
 				new Vector3(
-					contentBounds.size.x + kExtraWidth + kHandleMargin,
+					contentBounds.size.x,
 					contentBounds.size.y + kExtraHeight,
-					contentBounds.size.z + kExtraDepth + kHandleMargin
+					contentBounds.size.z
 					));
 		}
 	}
@@ -78,6 +78,14 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
 	public Action<GameObject, bool> setHighlight { get; set; }
+
+	public bool vacuumEnabled
+	{
+		set
+		{
+			m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value);
+		}
+	}
 
 	public virtual void Setup()
 	{
@@ -91,7 +99,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 		//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
-		m_WorkspaceUI.SetBounds(contentBounds);
+		BoundsChanged();
 
 		//Set up DirectManipulaotr
 		var directManipulator = m_WorkspaceUI.directManipulator;
@@ -100,6 +108,8 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		directManipulator.rotate = Rotate;
 
 		m_WorkspaceUI.vacuumHandle.onDoubleClick += OnDoubleClick;
+		m_WorkspaceUI.vacuumHandle.onHoverEnter += OnHandleHoverEnter;
+		m_WorkspaceUI.vacuumHandle.onHoverExit += OnHandleHoverExit;
 
 		var handles = new BaseHandle[]
 		{
@@ -119,8 +129,6 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			handle.onHoverExit += OnHandleHoverExit;
 		}
 	}
-
-	protected abstract void OnBoundsChanged();
 
 	public virtual void OnHandleBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
@@ -170,13 +178,13 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	public virtual void OnHandleHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		if(!m_DragLocked)
+		if(handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
 			setHighlight(handle.gameObject, true);
 	}
 
 	public virtual void OnHandleHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		if (!m_DragLocked)
+		if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
 			setHighlight(handle.gameObject, false);
 	}
 
@@ -216,12 +224,14 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			transform.rotation = Quaternion.Lerp(startRotation, destRotation, (Time.realtimeSinceStartup - startTime) / m_VacuumTime);
 			yield return null;
 		}
+		setHighlight(m_WorkspaceUI.vacuumHandle.gameObject, false);
 		transform.position = destPosition;
 		transform.rotation = destRotation;
 	}
 
 	public virtual void Close()
 	{
+		OnClose(this);
 		U.Object.Destroy(gameObject);
 	}
 
@@ -229,4 +239,13 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	{
 		m_DragLocked = !m_DragLocked;
 	}
+
+	private void BoundsChanged()
+	{
+		m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
+		m_WorkspaceUI.vacuumHandle.transform.localScale = outerBounds.size;
+		m_WorkspaceUI.SetBounds(contentBounds);
+	}
+
+	protected abstract void OnBoundsChanged();
 }
