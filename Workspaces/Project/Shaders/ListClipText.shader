@@ -1,6 +1,5 @@
 ﻿Shader "Custom/List Clip Text" {
 	Properties{
-		_Color("Tint", Color) = (1,1,1,1)
 		_MainTex("Albedo (RGB)", 2D) = "white" {}
 		_Glossiness("Smoothness", Range(0,1)) = 0.5
 		_Metallic("Metallic", Range(0,1)) = 0.0
@@ -23,17 +22,18 @@
 	struct Input {
 		float2 uv_MainTex;
 		float3 localPos;
+		half4 color;
 	};
 
 	float4x4 _ParentMatrix;
 	float4 _ClipExtents;
 	half _Glossiness;
 	half _Metallic;
-	fixed4 _Color;
 
 	void vert(inout appdata_full v, out Input o) {
 		UNITY_INITIALIZE_OUTPUT(Input, o);
 		o.localPos = mul(_ParentMatrix, mul(UNITY_MATRIX_M, v.vertex)).xyz;
+		o.color = v.color;
 	}
 
 	void surf(Input IN, inout SurfaceOutputStandard o) {
@@ -42,9 +42,8 @@
 		if (diff.x > _ClipExtents.x || diff.y > _ClipExtents.y || diff.z > _ClipExtents.z)
 			discard;
 
-		fixed4 c = tex2D(_MainTex, IN.uv_MainTex) *_Color;
-		o.Emission = c.rgb;
-		o.Alpha = c.a;
+		o.Emission = IN.color;
+		o.Alpha = tex2D(_MainTex, IN.uv_MainTex).a * IN.color.a;
 	}
 	ENDCG
 	}

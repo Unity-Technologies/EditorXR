@@ -1,9 +1,12 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using ListView;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
+using Object = UnityEngine.Object;
 
 public class AssetListItem : ListViewItem<AssetData>
 {

@@ -4,6 +4,7 @@ using UnityEngine.VR.Utilities;
 
 public class ProjectListViewController : NestedListViewController<AssetData>
 {
+	private const float kClipMargin = 0.001f; //Give the cubes a margin so that their sides don't get clipped
 	public AssetData[] data {set { m_Data = value;}}
 	public Bounds bounds { private get; set; }
 
@@ -41,17 +42,10 @@ public class ProjectListViewController : NestedListViewController<AssetData>
 		m_ExpandArrowMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
 
-	void OnDrawGizmos()
-	{
-		Gizmos.matrix = transform.localToWorldMatrix;
-		Gizmos.DrawWireCube(bounds.center, bounds.size);
-		Gizmos.DrawSphere(m_StartPosition, 0.01f);
-	}
-
 	protected override void Positioning(Transform t, int offset)
 	{
 		AssetListItem item = t.GetComponent<AssetListItem>();
-		item.Resize(bounds.size.x);
+		item.Resize(bounds.size.x - kClipMargin);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
 		t.localPosition = m_StartPosition + (offset * m_ItemSize.z + scrollOffset) * Vector3.back;
