@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.VR.Utilities;
 
-public class ProjectListViewController : NestedListViewController<AssetData>
+public class FolderListViewController : NestedListViewController<FolderData>
 {
 	private const float kClipMargin = 0.001f; //Give the cubes a margin so that their sides don't get clipped
 
@@ -11,13 +11,13 @@ public class ProjectListViewController : NestedListViewController<AssetData>
 
 	private Transform m_GrabbedObject;
 
-	public AssetData[] data { set { m_Data = value; } }
+	public FolderData[] listData { set { m_Data = value; } }
 	public Bounds bounds { private get; set; }
 
 	protected override void Setup()
 	{
 		base.Setup();
-		var item = templates[0].GetComponent<AssetListItem>();
+		var item = templates[0].GetComponent<FolderListItem>();
 		item.GetMaterials(out m_TextMaterial, out m_ExpandArrowMaterial);
 	}
 
@@ -47,7 +47,7 @@ public class ProjectListViewController : NestedListViewController<AssetData>
 
 	protected override void Positioning(Transform t, int offset)
 	{
-		AssetListItem item = t.GetComponent<AssetListItem>();
+		FolderListItem item = t.GetComponent<FolderListItem>();
 		item.Resize(bounds.size.x - kClipMargin);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
@@ -55,16 +55,11 @@ public class ProjectListViewController : NestedListViewController<AssetData>
 		t.localRotation = Quaternion.identity;
 	}
 
-	protected override ListViewItem<AssetData> GetItem(AssetData data)
+	protected override ListViewItem<FolderData> GetItem(FolderData listData)
 	{
-		var item = (AssetListItem)base.GetItem(data);
+		var item = (FolderListItem)base.GetItem(listData);
 		item.SwapMaterials(m_TextMaterial, m_ExpandArrowMaterial);
 		return item;
-	}
-
-	protected virtual void OnGrabDrag(Transform grabbed)
-	{
-		
 	}
 
 	private void OnDestroy()

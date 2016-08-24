@@ -2,30 +2,23 @@
 using ListView;
 using UnityEngine;
 
-public class AssetData : ListViewItemNestedData<AssetData>
+public class AssetData : ListViewItemData
 {
-	private const string kTemplateName = "AssetItem";
+	private const string kTemplateName = "AssetGridItem";
 	public string path {get { return m_Path;} }
 	private string m_Path;
 
-	public int treeDepth { get { return m_TreeDepth; } }
-	private int m_TreeDepth;
-
-	public AssetData(string path, int depth = 0)
+	public AssetData(string path)
 	{
 		template = kTemplateName;
 		m_Path = path;
-		m_TreeDepth = depth;
-		AssetData[] subFolders = GetAssetDataForPath(path, depth + 1);
-		if (subFolders.Length > 0)
-			children = subFolders;
 	}
 
-	public static AssetData[] GetAssetDataForPath(string path, int depth = 0) {
+	public static FolderData[] GetAssetDataForPath(string path) {
 		var paths = Directory.GetDirectories(path);
-		var files = new AssetData[paths.Length];
+		var files = new FolderData[paths.Length];
 		for (int i = 0; i < files.Length; i++) {
-			files[i] = new AssetData(paths[i], depth);
+			files[i] = new FolderData(paths[i]);
 		}
 		return files;
 	}

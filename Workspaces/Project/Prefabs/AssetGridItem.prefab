@@ -76,7 +76,7 @@ GameObject:
   - 4: {fileID: 4000011016866818}
   - 114: {fileID: 114000011808048258}
   m_Layer: 5
-  m_Name: AssetItem
+  m_Name: AssetGridItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
