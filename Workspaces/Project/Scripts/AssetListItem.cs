@@ -3,6 +3,7 @@ using ListView;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Utilities;
 
 public class AssetListItem : ListViewItem<AssetData>
 {
@@ -16,6 +17,9 @@ public class AssetListItem : ListViewItem<AssetData>
 
 	[SerializeField]
 	private DirectHandle m_ExpandArrow;
+
+	private Renderer m_CubeRenderer;
+	private bool m_Setup;
 
 	public override void Setup(AssetData data)
 	{
@@ -31,6 +35,20 @@ public class AssetListItem : ListViewItem<AssetData>
 		}
 	}
 
+	public void SwapMaterials(Material textMaterial, Material expandArrowMaterial)
+	{
+		if (!m_Setup)
+		{
+			//Cube material might change, so we always instance it
+			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
+			U.Material.GetMaterialClone(m_CubeRenderer);
+			m_Setup = true;
+		}
+
+		m_Text.material = textMaterial;
+		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
+	}
+
 	public void Resize(float width)
 	{
 		Vector3 cubeScale = m_Cube.transform.localScale;
@@ -44,5 +62,22 @@ public class AssetListItem : ListViewItem<AssetData>
 
 		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - kMargin * 2) * 1 / m_Text.transform.localScale.x);
 		m_Text.transform.localPosition = new Vector3(kMargin * 2 + arrowWidth - halfWidth, contentHeight, 0); //Text is next to arrow, with a margin
+	}
+
+	public void GetMaterials(out Material textMaterial, out Material expandArrowMaterial)
+	{
+		textMaterial = Object.Instantiate(m_Text.material);
+		expandArrowMaterial = Object.Instantiate(m_ExpandArrow.GetComponent<Renderer>().sharedMaterial);
+	}
+
+	public void Clip(Bounds bounds, Matrix4x4 parentMatrix)
+	{
+		m_CubeRenderer.sharedMaterial.SetMatrix("_ParentMatrix", parentMatrix);
+		m_CubeRenderer.sharedMaterial.SetVector("_ClipExtents",  bounds.extents);
+	}
+
+	private void OnDestroy()
+	{
+		U.Object.Destroy(m_CubeRenderer.sharedMaterial);
 	}
 }

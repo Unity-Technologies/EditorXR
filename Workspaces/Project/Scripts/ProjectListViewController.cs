@@ -1,9 +1,21 @@
-﻿using UnityEngine;
+﻿using ListView;
+using UnityEngine;
+using UnityEngine.VR.Utilities;
 
 public class ProjectListViewController : NestedListViewController<AssetData>
 {
 	public AssetData[] data {set { m_Data = value;}}
 	public Bounds bounds { private get; set; }
+
+	private Material m_TextMaterial;
+	private Material m_ExpandArrowMaterial;
+
+	protected override void Setup()
+	{
+		base.Setup();
+		var item = templates[0].GetComponent<AssetListItem>();
+		item.GetMaterials(out m_TextMaterial, out m_ExpandArrowMaterial);
+	}
 
 	protected override void ComputeConditions()
 	{
@@ -21,6 +33,12 @@ public class ProjectListViewController : NestedListViewController<AssetData>
 		m_DataOffset = (int)(scrollOffset / itemSize.z);
 		if (scrollOffset < 0)
 			m_DataOffset--;
+
+		var parentMatrix = transform.worldToLocalMatrix;
+		m_TextMaterial.SetMatrix("_ParentMatrix", parentMatrix);
+		m_TextMaterial.SetVector("_ClipExtents", bounds.extents);
+		m_ExpandArrowMaterial.SetMatrix("_ParentMatrix", parentMatrix);
+		m_ExpandArrowMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
 
 	void OnDrawGizmos()
@@ -32,9 +50,24 @@ public class ProjectListViewController : NestedListViewController<AssetData>
 
 	protected override void Positioning(Transform t, int offset)
 	{
-		t.GetComponent<AssetListItem>().Resize(bounds.size.x);
+		AssetListItem item = t.GetComponent<AssetListItem>();
+		item.Resize(bounds.size.x);
+		item.Clip(bounds, transform.worldToLocalMatrix);
 
 		t.localPosition = m_StartPosition + (offset * m_ItemSize.z + scrollOffset) * Vector3.back;
 		t.localRotation = Quaternion.identity;
+	}
+
+	protected override ListViewItem<AssetData> GetItem(AssetData data)
+	{
+		var item = (AssetListItem)base.GetItem(data);
+		item.SwapMaterials(m_TextMaterial, m_ExpandArrowMaterial);
+		return item;
+	}
+
+	private void OnDestroy()
+	{
+		U.Object.Destroy(m_TextMaterial);
+		U.Object.Destroy(m_ExpandArrowMaterial);
 	}
 }

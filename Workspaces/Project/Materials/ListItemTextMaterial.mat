@@ -6,8 +6,8 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: ListItemMaterial
-  m_Shader: {fileID: 4800000, guid: f8dbde0846f23ca438cbe142ff7cd494, type: 3}
+  m_Name: ListItemTextMaterial
+  m_Shader: {fileID: 4800000, guid: c0d62b0f6f8955744827ef9db62f4b73, type: 3}
   m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
@@ -124,7 +124,7 @@ Material:
       second: {r: 0, g: 0, b: 0, a: 0}
     - first:
         name: _ClipExtents
-      second: {r: 10.51, g: 13.34, b: 4.72, a: 0}
+      second: {r: 0.1166655, g: 0.1, b: 0.2, a: 0}
     - first:
         name: _Color
       second: {r: 0, g: 0, b: 0, a: 1}

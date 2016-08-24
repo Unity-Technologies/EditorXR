@@ -5,6 +5,7 @@ using UnityEngine.VR.Utilities;
 public class ProjectWorkspace : Workspace
 {
 	private const float kLeftPaneRatio = 0.33333f; //Size of left pane relative to workspace bounds
+	private const float kYBounds = 0.2f;
 
 	[SerializeField]
 	private GameObject m_ContentPrefab;
@@ -29,7 +30,7 @@ public class ProjectWorkspace : Workspace
 		var scrollHandle = m_ProjectUI.scrollHandle;
 		//ControlBox shouldn't move with miniWorld
 		scrollHandle.transform.parent = m_WorkspaceUI.sceneContainer;
-		scrollHandle.transform.localPosition = Vector3.down * scrollHandle.transform.localScale.y * 0.5f;
+		scrollHandle.transform.localPosition = Vector3.down * scrollHandle.transform.localScale.y;
 		scrollHandle.onHandleBeginDrag += OnScrollBeginDrag;
 		scrollHandle.onHandleDrag += OnScrollDrag;
 		scrollHandle.onHandleEndDrag += OnScrollEndDrag;
@@ -45,7 +46,7 @@ public class ProjectWorkspace : Workspace
 		Bounds bounds = contentBounds;
 		Vector3 size = bounds.size;
 		size.x *= kLeftPaneRatio;
-		size.y = 0;
+		size.y = kYBounds;
 		bounds.size = size;
 		bounds.center = Vector3.zero;
 		m_ProjectUI.listView.bounds = bounds;

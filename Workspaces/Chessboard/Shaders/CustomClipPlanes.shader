@@ -24,8 +24,8 @@
 		};
 		static const fixed4 white = fixed4(1, 1, 1, 1);
 
-		float4 _ClipCenter;
-		float4 _ClipExtents;
+		float4 _GlobalClipCenter;
+		float4 _GlobalClipExtents;
 		half _Glossiness;
 		half _Metallic;
 		fixed4 _Color;
@@ -34,8 +34,8 @@
 
 		void surf (Input IN, inout SurfaceOutput o) {
 			// Clip if position is outside of clip bounds
-			float3 diff = abs(IN.worldPos - _ClipCenter);
-			if (diff.x > _ClipExtents.x || diff.y > _ClipExtents.y || diff.z > _ClipExtents.z)
+			float3 diff = abs(IN.worldPos - _GlobalClipCenter);
+			if (diff.x > _GlobalClipExtents.x || diff.y > _GlobalClipExtents.y || diff.z > _GlobalClipExtents.z)
 				discard;
 
 			// Some materials don't have colors set, so default them to white
