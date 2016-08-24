@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using ListView;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
@@ -20,9 +21,15 @@ public class AssetListItem : ListViewItem<AssetData>
 	[SerializeField]
 	private DirectHandle m_ExpandArrow;
 
+	[SerializeField]
+	private Material m_NoClipCubeMaterial;
+
+	[SerializeField]
+	private Material m_NoClipExpandArrowMaterial;
+
 	private Renderer m_CubeRenderer;
 	private bool m_Setup;
-
+	
 	public override void Setup(AssetData data)
 	{
 		base.Setup(data);
@@ -33,6 +40,8 @@ public class AssetListItem : ListViewItem<AssetData>
 			U.Material.GetMaterialClone(m_CubeRenderer);
 
 			m_ExpandArrow.onHandleEndDrag += ToggleExpanded;
+			m_Cube.onHandleBeginDrag += Grab;
+
 			m_Setup = true;
 		}
 
@@ -87,8 +96,18 @@ public class AssetListItem : ListViewItem<AssetData>
 		data.expanded = !data.expanded;
 	}
 
+	private void Grab(BaseHandle baseHandle, HandleDragEventData eventData)
+	{
+		var clone = (GameObject)Instantiate(gameObject, transform.position, transform.rotation, eventData.rayOrigin);
+		var cloneItem = clone.GetComponent<AssetListItem>();
+		cloneItem.m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipCubeMaterial;
+		cloneItem.m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = m_NoClipExpandArrowMaterial;
+		cloneItem.m_Text.material = null;
+	}
+
 	private void OnDestroy()
 	{
-		U.Object.Destroy(m_CubeRenderer.sharedMaterial);
+		if(m_CubeRenderer)
+			U.Object.Destroy(m_CubeRenderer.sharedMaterial);
 	}
 }
