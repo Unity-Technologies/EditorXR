@@ -5,7 +5,7 @@ using UnityEngine.VR.Utilities;
 public class ProjectListViewController : NestedListViewController<AssetData>
 {
 	private const float kClipMargin = 0.001f; //Give the cubes a margin so that their sides don't get clipped
-	public AssetData[] data {set { m_Data = value;}}
+	public AssetData[] data {set { m_Data = value; } }
 	public Bounds bounds { private get; set; }
 
 	private Material m_TextMaterial;

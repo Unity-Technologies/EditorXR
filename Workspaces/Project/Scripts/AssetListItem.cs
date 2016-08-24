@@ -9,6 +9,7 @@ using Object = UnityEngine.Object;
 public class AssetListItem : ListViewItem<AssetData>
 {
 	private const float kMargin = 0.01f;
+	private const float kIndent = 0.02f;
 
 	[SerializeField]
 	private Text m_Text;
@@ -34,7 +35,8 @@ public class AssetListItem : ListViewItem<AssetData>
 			m_ExpandArrow.onHandleEndDrag += ToggleExpanded;
 			m_Setup = true;
 		}
-		m_Text.text = Path.GetFileNameWithoutExtension(data.path);
+
+		m_Text.text = Path.GetFileName(data.path);
 		if (data.children != null)
 		{
 			m_ExpandArrow.gameObject.SetActive(true);
@@ -57,13 +59,15 @@ public class AssetListItem : ListViewItem<AssetData>
 		cubeScale.x = width;
 		m_Cube.transform.localScale = cubeScale;
 
-		float arrowWidth = m_ExpandArrow.transform.localScale.x * 0.5f;
-		float contentHeight = m_ExpandArrow.transform.localPosition.y;
-		float halfWidth = width * 0.5f;
-		m_ExpandArrow.transform.localPosition = new Vector3(kMargin - halfWidth, contentHeight, 0);
+		var arrowWidth = m_ExpandArrow.transform.localScale.x * 0.5f;
+		var contentHeight = m_ExpandArrow.transform.localPosition.y;
+		var halfWidth = width * 0.5f;
+		var indent = kIndent * data.treeDepth;
+		var doubleMargin = kMargin * 2;
+		m_ExpandArrow.transform.localPosition = new Vector3(kMargin + indent - halfWidth, contentHeight, 0);
 
-		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - kMargin * 2) * 1 / m_Text.transform.localScale.x);
-		m_Text.transform.localPosition = new Vector3(kMargin * 2 + arrowWidth - halfWidth, contentHeight, 0); //Text is next to arrow, with a margin
+		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / m_Text.transform.localScale.x);
+		m_Text.transform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, contentHeight, 0); //Text is next to arrow, with a margin and indent
 	}
 
 	public void GetMaterials(out Material textMaterial, out Material expandArrowMaterial)
