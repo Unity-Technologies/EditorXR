@@ -65,6 +65,9 @@ namespace ListView
 			UpdateItems();
 		}
 
+		public void PreCompute() {
+			ComputeConditions();
+		}
 		protected virtual void ComputeConditions()
 		{
 			if (templates.Length > 0)

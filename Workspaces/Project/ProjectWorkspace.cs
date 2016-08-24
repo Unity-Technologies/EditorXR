@@ -4,7 +4,8 @@ using UnityEngine.VR.Utilities;
 
 public class ProjectWorkspace : Workspace
 {
-	private const float kLeftPaneRatio = 0.33333f; //Size of left pane relative to workspace bounds
+	private const float kLeftPaneRatio = 0.3333333f; //Size of left pane relative to workspace bounds
+	private const float kPaneMargin = 0.01f;
 	private const float kYBounds = 0.2f;
 
 	[SerializeField]
@@ -21,21 +22,37 @@ public class ProjectWorkspace : Workspace
 		var contentPrefab = U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
 #if UNITY_EDITOR
-		m_ProjectUI.listView.listData = FolderData.GetAssetDataForPath(Application.dataPath);
+		var folderData = new[]
+		{
+			new FolderData(Application.dataPath) {expanded = true},
+		};
+		m_ProjectUI.folderListView.listData = folderData;
+
+		//TEMP: use select method when it exists
+		if (folderData.Length > 0)
+		{
+			m_ProjectUI.assetListView.listData = folderData[0].assets;
+		}
 #else
 		Debug.LogWarning("Project workspace does not work in builds");
 		return;
 #endif
-		//Set Scroll Handle
-		var scrollHandle = m_ProjectUI.folderScrollHandle;
-		//ControlBox shouldn't move with miniWorld
-		scrollHandle.transform.parent = m_WorkspaceUI.sceneContainer;
-		scrollHandle.transform.localPosition = Vector3.down * scrollHandle.transform.localScale.y;
-		scrollHandle.onHandleBeginDrag += OnScrollBeginDrag;
-		scrollHandle.onHandleDrag += OnScrollDrag;
-		scrollHandle.onHandleEndDrag += OnScrollEndDrag;
-		scrollHandle.onHoverEnter += OnScrollHoverEnter;
-		scrollHandle.onHoverExit += OnScrollHoverExit;
+		var scrollHandles = new []
+		{
+			m_ProjectUI.folderScrollHandle,
+			m_ProjectUI.assetScrollHandle
+		};
+		foreach (var handle in scrollHandles)
+		{
+			//Scroll Handle shouldn't move on bounds change
+			handle.transform.parent = m_WorkspaceUI.sceneContainer;
+
+			handle.onHandleBeginDrag += OnScrollBeginDrag;
+			handle.onHandleDrag += OnScrollDrag;
+			handle.onHandleEndDrag += OnScrollEndDrag;
+			handle.onHoverEnter += OnScrollHoverEnter;
+			handle.onHoverExit += OnScrollHoverExit;
+		}
 
 		//Propagate initial bounds
 		OnBoundsChanged();
@@ -45,13 +62,28 @@ public class ProjectWorkspace : Workspace
 	{
 		Bounds bounds = contentBounds;
 		Vector3 size = bounds.size;
+		size.x -= kPaneMargin * 2;
 		size.x *= kLeftPaneRatio;
 		size.y = kYBounds;
 		bounds.size = size;
 		bounds.center = Vector3.zero;
-		m_ProjectUI.listView.bounds = bounds;
-		m_ProjectUI.listView.transform.localPosition = contentBounds.size.x * kLeftPaneRatio * Vector3.left;
-		m_ProjectUI.listView.range = contentBounds.size.z;
+		
+		var folderListView = m_ProjectUI.folderListView;
+		folderListView.PreCompute(); //Compute item size
+		folderListView.bounds = bounds;
+		folderListView.transform.localPosition = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f * Vector3.left + folderListView.itemSize.y * 0.5f * Vector3.up; ;
+		folderListView.range = contentBounds.size.z;
+
+		size = contentBounds.size;
+		size.x -= kPaneMargin * 2;
+		size.x *= 1 - kLeftPaneRatio;
+		bounds.size = size;
+
+		var assetListView = m_ProjectUI.assetListView;
+		assetListView.PreCompute(); //Compute item size
+		assetListView.bounds = bounds;
+		assetListView.transform.localPosition = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f * Vector3.right + assetListView.itemSize.y * 0.5f * Vector3.up;
+		assetListView.range = contentBounds.size.z;
 
 		var scrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
 		scrollHandleTransform.localScale = new Vector3(contentBounds.size.x, scrollHandleTransform.localScale.y, contentBounds.size.z);
@@ -60,22 +92,29 @@ public class ProjectWorkspace : Workspace
 	private void OnScrollBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		m_ScrollStart = eventData.rayOrigin.transform.position;
-		m_ScrollOffsetStart = m_ProjectUI.listView.scrollOffset;
+		if (handle == m_ProjectUI.folderScrollHandle)
+			m_ScrollOffsetStart = m_ProjectUI.folderListView.scrollOffset;
+		else if (handle == m_ProjectUI.assetScrollHandle)
+			m_ScrollOffsetStart = m_ProjectUI.assetListView.scrollOffset;
 	}
 
 	private void OnScrollDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		Scroll(eventData);
+		Scroll(handle, eventData);
 	}
 
 	private void OnScrollEndDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
-		Scroll(eventData);
+		Scroll(handle,eventData);
 	}
 
-	private void Scroll(HandleDragEventData eventData)
+	private void Scroll(BaseHandle handle, HandleDragEventData eventData)
 	{
-		m_ProjectUI.listView.scrollOffset = m_ScrollOffsetStart + Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
+		var scrollOffset = m_ScrollOffsetStart + Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
+		if (handle == m_ProjectUI.folderScrollHandle)
+			m_ProjectUI.folderListView.scrollOffset = scrollOffset;
+		else if(handle == m_ProjectUI.assetScrollHandle)
+			m_ProjectUI.assetListView.scrollOffset = scrollOffset;
 	}
 
 	private void OnScrollHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData)) {

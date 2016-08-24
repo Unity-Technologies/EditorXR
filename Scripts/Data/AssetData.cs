@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using ListView;
 using UnityEngine;
 
@@ -14,11 +15,11 @@ public class AssetData : ListViewItemData
 		m_Path = path;
 	}
 
-	public static FolderData[] GetAssetDataForPath(string path) {
-		var paths = Directory.GetDirectories(path);
-		var files = new FolderData[paths.Length];
+	public static AssetData[] GetAssetDataForPath(string path) {
+		var paths = Directory.GetFiles(path).Where(name => !name.EndsWith(".meta")).ToArray();
+		var files = new AssetData[paths.Length];
 		for (int i = 0; i < files.Length; i++) {
-			files[i] = new FolderData(paths[i]);
+			files[i] = new AssetData(paths[i]);
 		}
 		return files;
 	}

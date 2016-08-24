@@ -4,9 +4,13 @@ using UnityEngine.VR.Handles;
 
 public class ProjectUI : MonoBehaviour
 {
-	public FolderListViewController listView { get { return m_ListView; } }
+	public FolderListViewController folderListView { get { return m_FolderListView; } }
 	[SerializeField]
-	private FolderListViewController m_ListView;
+	private FolderListViewController m_FolderListView;
+
+	public AssetGridViewController assetListView { get { return m_AssetListView; } }
+	[SerializeField]
+	private AssetGridViewController m_AssetListView;
 
 	public DirectHandle folderScrollHandle { get { return m_FolderScrollHandle; } }
 	[SerializeField]

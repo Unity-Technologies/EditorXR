@@ -10,6 +10,8 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	private Transform m_GrabbedObject;
 
+	private int m_RowCount;
+
 	public AssetData[] listData { set { m_Data = value; } }
 	public Bounds bounds { private get; set; }
 
@@ -18,6 +20,8 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		base.Setup();
 		var item = templates[0].GetComponent<AssetGridItem>();
 		item.GetMaterials(out m_TextMaterial);
+
+		m_Data = new AssetData[0]; //Start with empty list to avoid null references
 	}
 
 	protected override void ComputeConditions()
@@ -26,12 +30,14 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 			//Use first template to get item size
 			m_ItemSize = GetObjectSize(templates[0]);
 		}
+
+		m_RowCount = (int) (bounds.size.x / m_ItemSize.x);
+
 		//Resize range to nearest multiple of item width
-		m_NumItems = Mathf.RoundToInt(range / m_ItemSize.z); //Number of cards that will fit
-		range = m_NumItems * m_ItemSize.z;
+		m_NumItems = m_RowCount * Mathf.RoundToInt(range / m_ItemSize.z); //Number of cards that will fit
 
 		//Get initial conditions. This procedure is done every frame in case the collider bounds change at runtime
-		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward;
+		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward + (bounds.extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
 
 		m_DataOffset = (int)(scrollOffset / itemSize.z);
 		if (scrollOffset < 0)
@@ -42,13 +48,22 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		m_TextMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
 
+	void OnDrawGizmos()
+	{
+		Gizmos.matrix = transform.localToWorldMatrix;
+		Gizmos.DrawWireCube(bounds.center, bounds.size);
+		Gizmos.DrawSphere(m_StartPosition, 0.05f);
+	}
+
 	protected override void Positioning(Transform t, int offset)
 	{
 		AssetGridItem item = t.GetComponent<AssetGridItem>();
-		item.Resize(bounds.size.x - kClipMargin);
+		//item.Resize(bounds.size.x - kClipMargin);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
-		t.localPosition = m_StartPosition + (offset * m_ItemSize.z + scrollOffset) * Vector3.back;
+		float zOffset = m_ItemSize.z * (offset / m_RowCount) + scrollOffset;
+		float xOffset = m_ItemSize.x * (offset % m_RowCount);
+		t.localPosition = m_StartPosition + (zOffset + scrollOffset) * Vector3.back + xOffset * Vector3.right;
 		t.localRotation = Quaternion.identity;
 	}
 
