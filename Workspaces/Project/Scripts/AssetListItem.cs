@@ -1,10 +1,8 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using ListView;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using Object = UnityEngine.Object;
 
@@ -27,6 +25,15 @@ public class AssetListItem : ListViewItem<AssetData>
 	public override void Setup(AssetData data)
 	{
 		base.Setup(data);
+		//First time setup
+		if (!m_Setup) {
+			//Cube material might change, so we always instance it
+			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
+			U.Material.GetMaterialClone(m_CubeRenderer);
+
+			m_ExpandArrow.onHandleEndDrag += ToggleExpanded;
+			m_Setup = true;
+		}
 		m_Text.text = Path.GetFileNameWithoutExtension(data.path);
 		if (data.children != null)
 		{
@@ -40,14 +47,6 @@ public class AssetListItem : ListViewItem<AssetData>
 
 	public void SwapMaterials(Material textMaterial, Material expandArrowMaterial)
 	{
-		if (!m_Setup)
-		{
-			//Cube material might change, so we always instance it
-			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
-			U.Material.GetMaterialClone(m_CubeRenderer);
-			m_Setup = true;
-		}
-
 		m_Text.material = textMaterial;
 		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
 	}
@@ -77,6 +76,11 @@ public class AssetListItem : ListViewItem<AssetData>
 	{
 		m_CubeRenderer.sharedMaterial.SetMatrix("_ParentMatrix", parentMatrix);
 		m_CubeRenderer.sharedMaterial.SetVector("_ClipExtents",  bounds.extents);
+	}
+
+	private void ToggleExpanded(BaseHandle baseHandle, HandleDragEventData handleDragEventData)
+	{
+		data.expanded = !data.expanded;
 	}
 
 	private void OnDestroy()
