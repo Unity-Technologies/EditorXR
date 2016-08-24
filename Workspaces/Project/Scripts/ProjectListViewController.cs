@@ -5,11 +5,14 @@ using UnityEngine.VR.Utilities;
 public class ProjectListViewController : NestedListViewController<AssetData>
 {
 	private const float kClipMargin = 0.001f; //Give the cubes a margin so that their sides don't get clipped
-	public AssetData[] data {set { m_Data = value; } }
-	public Bounds bounds { private get; set; }
 
 	private Material m_TextMaterial;
 	private Material m_ExpandArrowMaterial;
+
+	private Transform m_GrabbedObject;
+
+	public AssetData[] data { set { m_Data = value; } }
+	public Bounds bounds { private get; set; }
 
 	protected override void Setup()
 	{
@@ -57,6 +60,11 @@ public class ProjectListViewController : NestedListViewController<AssetData>
 		var item = (AssetListItem)base.GetItem(data);
 		item.SwapMaterials(m_TextMaterial, m_ExpandArrowMaterial);
 		return item;
+	}
+
+	protected virtual void OnGrabDrag(Transform grabbed)
+	{
+		
 	}
 
 	private void OnDestroy()

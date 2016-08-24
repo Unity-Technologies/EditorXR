@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections;
+using System.IO;
 using ListView;
 using UnityEditor;
 using UnityEngine;
@@ -11,6 +13,9 @@ public class AssetListItem : ListViewItem<AssetData>
 {
 	private const float kMargin = 0.01f;
 	private const float kIndent = 0.02f;
+
+	private const float kMagnetizeDuration = 0.75f;
+	private readonly Vector3 kGrabOffset = new Vector3(0, 0.02f, 0.03f);
 
 	[SerializeField]
 	private Text m_Text;
@@ -29,6 +34,9 @@ public class AssetListItem : ListViewItem<AssetData>
 
 	private Renderer m_CubeRenderer;
 	private bool m_Setup;
+
+	private Transform m_GrabbedObject;
+	private float m_GrabLerp;
 	
 	public override void Setup(AssetData data)
 	{
@@ -40,7 +48,9 @@ public class AssetListItem : ListViewItem<AssetData>
 			U.Material.GetMaterialClone(m_CubeRenderer);
 
 			m_ExpandArrow.onHandleEndDrag += ToggleExpanded;
-			m_Cube.onHandleBeginDrag += Grab;
+			m_Cube.onHandleBeginDrag += GrabBegin;
+			m_Cube.onHandleDrag += GrabDrag;
+			m_Cube.onHandleEndDrag += GrabEnd;
 
 			m_Setup = true;
 		}
@@ -96,13 +106,42 @@ public class AssetListItem : ListViewItem<AssetData>
 		data.expanded = !data.expanded;
 	}
 
-	private void Grab(BaseHandle baseHandle, HandleDragEventData eventData)
+	private void GrabBegin(BaseHandle baseHandle, HandleDragEventData eventData)
 	{
-		var clone = (GameObject)Instantiate(gameObject, transform.position, transform.rotation, eventData.rayOrigin);
+		var clone = (GameObject)Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<AssetListItem>();
 		cloneItem.m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipCubeMaterial;
 		cloneItem.m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = m_NoClipExpandArrowMaterial;
 		cloneItem.m_Text.material = null;
+
+		m_GrabbedObject = clone.transform;
+		m_GrabLerp = 0;
+		StartCoroutine(Magnetize());
+	}
+
+	private IEnumerator Magnetize()
+	{
+		var startTime = Time.realtimeSinceStartup;
+		var currTime = 0f;
+		while (currTime < kMagnetizeDuration)
+		{
+			currTime = Time.realtimeSinceStartup - startTime;
+			m_GrabLerp = currTime / kMagnetizeDuration;
+			yield return null;
+		}
+		m_GrabLerp = 1;
+	}
+
+	private void GrabDrag(BaseHandle baseHandle, HandleDragEventData eventData)
+	{
+		var rayTransform = eventData.rayOrigin.transform;
+		m_GrabbedObject.transform.position = Vector3.Lerp(m_GrabbedObject.transform.position, rayTransform.position + rayTransform.rotation * kGrabOffset, m_GrabLerp);
+		m_GrabbedObject.transform.rotation = Quaternion.Lerp(m_GrabbedObject.transform.rotation, rayTransform.rotation, m_GrabLerp);
+	}
+
+	private void GrabEnd(BaseHandle baseHandle, HandleDragEventData eventData)
+	{
+		U.Object.Destroy(m_GrabbedObject.gameObject);
 	}
 
 	private void OnDestroy()
