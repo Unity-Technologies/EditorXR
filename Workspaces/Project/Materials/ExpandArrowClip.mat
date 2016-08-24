@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: ExpandArrowMaterial 1
+  m_Name: ExpandArrowClip
   m_Shader: {fileID: 4800000, guid: a5a64d8408b14614aaa7678963846d1e, type: 3}
   m_ShaderKeywords: _ALPHABLEND_ON _EMISSION
   m_LightmapFlags: 1

@@ -137,7 +137,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 66d21d847da9fae44a46053afe8d825b, type: 2}
+  - {fileID: 2100000, guid: 12a15ace9ad7dd14a80ebb0712daed4b, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -166,7 +166,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba, type: 2}
+  - {fileID: 2100000, guid: 41165fc29d3ea90418665f906b7fa247, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -247,6 +247,10 @@ MonoBehaviour:
   m_Text: {fileID: 114000013632537286}
   m_Cube: {fileID: 114000010071736446}
   m_ExpandArrow: {fileID: 114000014161336684}
+  m_NoClipCubeMaterial: {fileID: 2100000, guid: 66d21d847da9fae44a46053afe8d825b,
+    type: 2}
+  m_NoClipExpandArrowMaterial: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba,
+    type: 2}
 --- !u!114 &114000013632537286
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -261,7 +265,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 2100000, guid: 583b7e0ffddb31c40b38c47bdfb60905, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
