@@ -60,6 +60,8 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	private bool m_Dragging;
 	private bool m_DragLocked;
 
+	public bool vacuuming { get; set; }
+
 	/// <summary>
 	/// Bounding box for entire workspace, including UI handles
 	/// </summary>
@@ -221,13 +223,16 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 		Quaternion destRotation = cameraYaw * kDefaultTilt;
 
+		vacuuming = true;
+		var vacuumObject = m_WorkspaceUI.vacuumHandle.gameObject;
+		setHighlight(vacuumObject, false);
+		vacuumObject.SetActive(false);
 		while (Time.realtimeSinceStartup < startTime + m_VacuumTime)
 		{
 			transform.position = Vector3.Lerp(startPosition, destPosition, (Time.realtimeSinceStartup - startTime) / m_VacuumTime);
 			transform.rotation = Quaternion.Lerp(startRotation, destRotation, (Time.realtimeSinceStartup - startTime) / m_VacuumTime);
 			yield return null;
 		}
-		setHighlight(m_WorkspaceUI.vacuumHandle.gameObject, false);
 		transform.position = destPosition;
 		transform.rotation = destRotation;
 	}

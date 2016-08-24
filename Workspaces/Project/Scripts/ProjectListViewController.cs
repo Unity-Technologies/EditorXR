@@ -7,8 +7,20 @@ public class ProjectListViewController : NestedListViewController<AssetData>
 
 	protected override void ComputeConditions()
 	{
-		base.ComputeConditions();
+		if (templates.Length > 0) {
+			//Use first template to get item size
+			m_ItemSize = GetObjectSize(templates[0]);
+		}
+		//Resize range to nearest multiple of item width
+		m_NumItems = Mathf.RoundToInt(range / m_ItemSize.z); //Number of cards that will fit
+		range = m_NumItems * m_ItemSize.z;
+
+		//Get initial conditions. This procedure is done every frame in case the collider bounds change at runtime
 		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward;
+
+		m_DataOffset = (int)(scrollOffset / itemSize.z);
+		if (scrollOffset < 0)
+			m_DataOffset--;
 	}
 
 	void OnDrawGizmos()

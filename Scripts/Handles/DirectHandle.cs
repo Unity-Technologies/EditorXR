@@ -2,6 +2,7 @@
 
 namespace UnityEngine.VR.Handles
 {
+	//NOTE: Handles must be in the UI layer to receive events
 	public class DirectHandle : SphereHandle, IRayDragHandler
 	{
 		private bool m_Hover;

@@ -9,12 +9,12 @@ public class NestedListViewController <DataType> : ListViewController<DataType, 
 
 	protected virtual void UpdateRecursively(DataType[] data, ref int count) {
 		foreach (var item in data) {
-			if (count + m_DataOffset < 0) {
+			if (count + m_DataOffset < -1) {
 				ExtremeLeft(item);
-			} else if (count + m_DataOffset > m_NumItems) {
+			} else if (count + m_DataOffset > m_NumItems - 1) {
 				ExtremeRight(item);
 			} else {
-				ListMiddle(item, count + m_DataOffset);
+				ListMiddle(item, count);
 			}
 			count++;
 			if (item.children != null) {

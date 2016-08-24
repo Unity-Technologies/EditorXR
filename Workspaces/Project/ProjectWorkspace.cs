@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 
 public class ProjectWorkspace : Workspace
@@ -10,6 +11,9 @@ public class ProjectWorkspace : Workspace
 
 	private ProjectUI m_ProjectUI;
 
+	private Vector3 m_ScrollStart;
+	private float m_ScrollOffsetStart;
+
 	public override void Setup()
 	{
 		base.Setup();
@@ -19,7 +23,18 @@ public class ProjectWorkspace : Workspace
 		m_ProjectUI.listView.data = AssetData.GetAssetDataForPath(Application.dataPath);
 #else
 		Debug.LogWarning("Project workspace does not work in builds");
+		return;
 #endif
+		//Set Scroll Handle
+		var scrollHandle = m_ProjectUI.scrollHandle;
+		//ControlBox shouldn't move with miniWorld
+		scrollHandle.transform.parent = m_WorkspaceUI.sceneContainer;
+		scrollHandle.transform.localPosition = Vector3.down * scrollHandle.transform.localScale.y * 0.5f;
+		scrollHandle.onHandleBeginDrag += OnScrollBeginDrag;
+		scrollHandle.onHandleDrag += OnScrollDrag;
+		scrollHandle.onHandleEndDrag += OnScrollEndDrag;
+		scrollHandle.onHoverEnter += OnScrollHoverEnter;
+		scrollHandle.onHoverExit += OnScrollHoverExit;
 
 		//Propagate initial bounds
 		OnBoundsChanged();
@@ -35,5 +50,38 @@ public class ProjectWorkspace : Workspace
 		bounds.center = Vector3.zero;
 		m_ProjectUI.listView.bounds = bounds;
 		m_ProjectUI.listView.transform.localPosition = contentBounds.size.x * kLeftPaneRatio * Vector3.left;
+		m_ProjectUI.listView.range = contentBounds.size.z;
+
+		var scrollHandleTransform = m_ProjectUI.scrollHandle.transform;
+		scrollHandleTransform.localScale = new Vector3(contentBounds.size.x, scrollHandleTransform.localScale.y, contentBounds.size.z);
+	}
+
+	private void OnScrollBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	{
+		m_ScrollStart = eventData.rayOrigin.transform.position;
+		m_ScrollOffsetStart = m_ProjectUI.listView.scrollOffset;
+	}
+
+	private void OnScrollDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	{
+		Scroll(eventData);
+	}
+
+	private void OnScrollEndDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	{
+		Scroll(eventData);
+	}
+
+	private void Scroll(HandleDragEventData eventData)
+	{
+		m_ProjectUI.listView.scrollOffset = m_ScrollOffsetStart + Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
+	}
+
+	private void OnScrollHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData)) {
+		setHighlight(handle.gameObject, true);
+	}
+
+	private void OnScrollHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData)) {
+		setHighlight(handle.gameObject, false);
 	}
 }

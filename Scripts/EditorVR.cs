@@ -197,7 +197,8 @@ public class EditorVR : MonoBehaviour
 		var camera = U.Camera.GetMainCamera();
 		//Enable/disable workspace vacuum bounds based on distance to camera
 		foreach (var workspace in m_AllWorkspaces)
-			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
+			if(!workspace.vacuuming)
+				workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
 
 #if UNITY_EDITOR
 		// HACK: Send a "mouse moved" event, so scene picking can occur for the controller
