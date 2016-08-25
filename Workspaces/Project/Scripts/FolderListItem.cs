@@ -70,21 +70,29 @@ public class FolderListItem : ListViewItem<FolderData>
 		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
 	}
 
-	public void Resize(float width)
+	public void UpdateTransforms(float width)
 	{
 		Vector3 cubeScale = m_Cube.transform.localScale;
 		cubeScale.x = width;
 		m_Cube.transform.localScale = cubeScale;
 
 		var arrowWidth = m_ExpandArrow.transform.localScale.x * 0.5f;
-		var contentHeight = m_ExpandArrow.transform.localPosition.y;
 		var halfWidth = width * 0.5f;
 		var indent = kIndent * data.treeDepth;
 		var doubleMargin = kMargin * 2;
-		m_ExpandArrow.transform.localPosition = new Vector3(kMargin + indent - halfWidth, contentHeight, 0);
+		m_ExpandArrow.transform.localPosition = new Vector3(kMargin + indent - halfWidth, m_ExpandArrow.transform.localPosition.y, 0);
 
 		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / m_Text.transform.localScale.x);
-		m_Text.transform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, contentHeight, 0); //Text is next to arrow, with a margin and indent
+		m_Text.transform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, m_Text.transform.localPosition.y, 0); //Text is next to arrow, with a margin and indent
+
+		var cameraTransform = U.Camera.GetMainCamera().transform;
+
+		Vector3 eyeVector3 = Quaternion.Inverse(transform.parent.rotation) * cameraTransform.forward;
+		eyeVector3.x = 0;
+		if(Vector3.Dot(eyeVector3, Vector3.forward) > 0)
+			m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.up);
+		else
+			m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.down);
 	}
 
 	public void GetMaterials(out Material textMaterial, out Material expandArrowMaterial)

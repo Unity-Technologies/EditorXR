@@ -67,26 +67,33 @@ public class ProjectWorkspace : Workspace
 		size.y = kYBounds;
 		bounds.size = size;
 		bounds.center = Vector3.zero;
-		
+
+		var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
+		var xOffset = (contentBounds.size.x - size.x + kPaneMargin) * -0.5f;
+		folderScrollHandleTransform.localPosition = new Vector3(xOffset, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
+		folderScrollHandleTransform.localScale = new Vector3(size.x, folderScrollHandleTransform.localScale.y, size.z);
+
 		var folderListView = m_ProjectUI.folderListView;
 		folderListView.PreCompute(); //Compute item size
 		folderListView.bounds = bounds;
-		folderListView.transform.localPosition = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f * Vector3.left + folderListView.itemSize.y * 0.5f * Vector3.up; ;
+		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0); ;
 		folderListView.range = contentBounds.size.z;
 
 		size = contentBounds.size;
 		size.x -= kPaneMargin * 2;
 		size.x *= 1 - kLeftPaneRatio;
 		bounds.size = size;
+		
+		var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
+		xOffset = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f;
+		assetScrollHandleTransform.localPosition = new Vector3(xOffset, -assetScrollHandleTransform.localScale.y * 0.5f);
+		assetScrollHandleTransform.localScale = new Vector3(size.x, assetScrollHandleTransform.localScale.y, size.z);
 
 		var assetListView = m_ProjectUI.assetListView;
 		assetListView.PreCompute(); //Compute item size
 		assetListView.bounds = bounds;
-		assetListView.transform.localPosition = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f * Vector3.right + assetListView.itemSize.y * 0.5f * Vector3.up;
+		assetListView.transform.localPosition = new Vector3(xOffset, assetListView.itemSize.y * 0.5f, 0);
 		assetListView.range = contentBounds.size.z;
-
-		var scrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
-		scrollHandleTransform.localScale = new Vector3(contentBounds.size.x, scrollHandleTransform.localScale.y, contentBounds.size.z);
 	}
 
 	private void OnScrollBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))

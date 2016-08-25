@@ -48,7 +48,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	protected override void Positioning(Transform t, int offset)
 	{
 		FolderListItem item = t.GetComponent<FolderListItem>();
-		item.Resize(bounds.size.x - kClipMargin);
+		item.UpdateTransforms(bounds.size.x - kClipMargin);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
 		t.localPosition = m_StartPosition + (offset * m_ItemSize.z + scrollOffset) * Vector3.back;

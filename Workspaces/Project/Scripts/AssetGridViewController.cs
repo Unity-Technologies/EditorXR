@@ -4,7 +4,7 @@ using UnityEngine.VR.Utilities;
 
 public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>
 {
-	private const float kClipMargin = 0.001f; //Give the cubes a margin so that their sides don't get clipped
+	private const float kClipMargin = 0.005f; //Give the cubes a margin so that their sides don't get clipped
 
 	private Material m_TextMaterial;
 
@@ -39,13 +39,16 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		//Get initial conditions. This procedure is done every frame in case the collider bounds change at runtime
 		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward + (bounds.extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
 
-		m_DataOffset = (int)(scrollOffset / itemSize.z);
+		m_DataOffset = (int)(scrollOffset / itemSize.z) * m_RowCount;
 		if (scrollOffset < 0)
 			m_DataOffset--;
 
+		//Extend clip bounds slightly in Z for extra text
+		var clipExtents = bounds.extents;
+		clipExtents.z += kClipMargin;
 		var parentMatrix = transform.worldToLocalMatrix;
 		m_TextMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_TextMaterial.SetVector("_ClipExtents", bounds.extents);
+		m_TextMaterial.SetVector("_ClipExtents", clipExtents);
 	}
 
 	void OnDrawGizmos()
@@ -58,7 +61,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	protected override void Positioning(Transform t, int offset)
 	{
 		AssetGridItem item = t.GetComponent<AssetGridItem>();
-		//item.Resize(bounds.size.x - kClipMargin);
+		item.UpdateTransforms(bounds.size.x - kClipMargin);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
 		float zOffset = m_ItemSize.z * (offset / m_RowCount) + scrollOffset;

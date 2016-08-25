@@ -56,18 +56,16 @@ public class AssetGridItem : ListViewItem<AssetData>
 		m_Text.material = textMaterial;
 	}
 
-	public void Resize(float width)
-	{
-		Vector3 cubeScale = m_Cube.transform.localScale;
-		cubeScale.x = width;
-		m_Cube.transform.localScale = cubeScale;
-		
-		var contentHeight = m_Cube.transform.localPosition.y;
-		var halfWidth = width * 0.5f;
-		var doubleMargin = kMargin * 2;
+	public void UpdateTransforms(float width) {
 
-		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin) * 1 / m_Text.transform.localScale.x);
-		m_Text.transform.localPosition = new Vector3(doubleMargin - halfWidth, contentHeight, 0); //Text is next to arrow, with a margin and indent
+		var cameraTransform = U.Camera.GetMainCamera().transform;
+
+		Vector3 eyeVector3 = Quaternion.Inverse(transform.parent.rotation) * cameraTransform.forward;
+		eyeVector3.x = 0;
+		if (Vector3.Dot(eyeVector3, Vector3.forward) > 0)
+			m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.up);
+		else
+			m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.down);
 	}
 
 	public void GetMaterials(out Material textMaterial)
