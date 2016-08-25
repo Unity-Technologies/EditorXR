@@ -2,7 +2,7 @@
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.VR.Menus
 {
 	public class MainMenuButton : MonoBehaviour
 	{

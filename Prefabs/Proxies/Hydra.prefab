@@ -56,6 +56,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 432966}
+  - 114: {fileID: 114000010981456888}
   m_Layer: 0
   m_Name: Hydra
   m_TagString: Untagged
@@ -402,7 +403,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000013379088616}
   m_Layer: 0
-  m_Name: MenuInputOrigin
+  m_Name: AltMenuOrigin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -573,6 +574,21 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011955735810}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &114000010981456888
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 150470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88cb44c52683f6648b7d436e9aa51bcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_RayOrigin: {fileID: 4000011673095590}
+  m_MenuOrigin: {fileID: 4000010144233392}
+  m_AlternateMenuOrigin: {fileID: 4000013379088616}
 --- !u!135 &135000012303166780
 SphereCollider:
   m_ObjectHideFlags: 1

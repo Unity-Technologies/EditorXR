@@ -7,7 +7,6 @@ namespace UnityEngine.InputNew
 	public class MainMenuInput : ActionMapInput {
 		public MainMenuInput (ActionMap actionMap) : base (actionMap) { }
 		
-		public ButtonInputControl @show { get { return (ButtonInputControl)this[0]; } }
-		public AxisInputControl @rotate { get { return (AxisInputControl)this[1]; } }
+		public AxisInputControl @rotate { get { return (AxisInputControl)this[0]; } }
 	}
 }

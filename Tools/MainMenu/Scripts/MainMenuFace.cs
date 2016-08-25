@@ -5,7 +5,7 @@ using UnityEngine.Assertions;
 using UnityEngine.UI;
 using UnityEngine.VR.Utilities;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.VR.Menus
 {
 	public class MainMenuFace : MonoBehaviour
 	{

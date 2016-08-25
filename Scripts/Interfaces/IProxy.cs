@@ -25,7 +25,7 @@ namespace UnityEngine.VR.Proxies
 			set;
 		}
 
-		Dictionary<Node, Transform> menuInputOrigins
+		Dictionary<Node, Transform> alternateMenuOrigins
 		{
 			get; set;
 		}

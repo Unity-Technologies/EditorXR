@@ -1,30 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine.InputNew;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.VR.Menus
 {
 	public interface IMainMenu
 	{
 		/// <summary>
-		/// The camera that handles UI events in the menu
+		/// The transform under which the menu should be parented
 		/// </summary>
-		Camera eventCamera { get; set; }
+		Transform menuOrigin { set; }
 
 		/// <summary>
-		/// The action map input used to drive the menu
+		/// The transform under which the alternate menu should be parented
 		/// </summary>
-		MainMenuInput mainMenuInput { get; set; }
-
-		/// <summary>
-		/// The transform under which the menu input object should be parented, inheriting position, scale, and rotation
-		/// </summary>
-		Transform menuInputOrigin { get; set; }
-
-		/// <summary>
-		/// The transform under which the menu should be parented, inheriting position and rotation
-		/// </summary>
-		Transform menuOrigin { get; set; }
+		Transform alternateMenuOrigin { set; }
 
 		/// <summary>
 		/// The menu tools that will populate the menu
@@ -34,11 +23,19 @@ namespace UnityEngine.VR.Tools
 		/// <summary>
 		/// Delegate used to test for selecting items in the Main Menu
 		/// </summary>
-		Func<int, Type, bool> selectTool { set; }
+		Func<Node, Type, bool> selectTool { set; }
 
 		/// <summary>
-		/// The device tag index that the menu is set on
+		/// The tracked node where this menu is spawned
 		/// </summary>
-		int tagIndex { get; set; }
+		Node? node { set; }
+
+		/// <summary>
+		/// Controls whether the menu is visible or not
+		/// </summary>
+		bool visible { get; set; }
+
+		// HACK: Awake/Start get called together in ExecuteInEditMode, so calling this method after is a workaround for order of operations
+		Action setup { get; }
 	}
 }

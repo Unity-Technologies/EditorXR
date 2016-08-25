@@ -15,13 +15,6 @@ namespace UnityEngine.VR.Proxies
 
 		protected Transform m_LeftHand;
 		protected Transform m_RightHand;
-		protected Transform m_LeftHandRayOrigin;
-		protected Transform m_RightHandRayOrigin;
-
-		protected readonly string kMenuOriginName = "MenuOrigin";
-		protected readonly string MenuInputOriginName = "MenuInputOrigin";
-
-		private readonly string kRayOriginName = "RayOrigin";
 		
 		protected Dictionary<Node, Transform> m_RayOrigins;
 		public virtual Dictionary<Node, Transform> rayOrigins
@@ -49,39 +42,51 @@ namespace UnityEngine.VR.Proxies
 			}
 		}
 
-		public Dictionary<Node, Transform> menuInputOrigins { get; set; }
 		public Dictionary<Node, Transform> menuOrigins { get; set; }
+		public Dictionary<Node, Transform> alternateMenuOrigins { get; set; }
 		
 		public virtual void Awake()
 		{
 			m_LeftHand = U.Object.InstantiateAndSetActive(m_LeftHandProxyPrefab, transform).transform;
 			m_RightHand = U.Object.InstantiateAndSetActive(m_RightHandProxyPrefab, transform).transform;
-			m_LeftHandRayOrigin = m_LeftHand.FindChild(kRayOriginName);
-			m_RightHandRayOrigin = m_RightHand.FindChild(kRayOriginName);
+			var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
+			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 
 			// The menu target transform should only be on the left hand by default, unless specificed otherwise
 			menuOrigins = new Dictionary<Node, Transform>();
-			menuInputOrigins = new Dictionary<Node, Transform>();
-			var leftHandMenuOrigin = m_LeftHand.FindChild(kMenuOriginName);
-			var rightHandMenuOrigin = m_RightHand.FindChild(kMenuOriginName);
-			var leftHandMenuInputOrigin = leftHandMenuOrigin != null ? m_LeftHand.FindChild(MenuInputOriginName) : null;
-			var rightHandMenuInputOrigin = rightHandMenuOrigin != null ? m_RightHand.FindChild(MenuInputOriginName) : null;
-			if (leftHandMenuInputOrigin != null)
+			alternateMenuOrigins = new Dictionary<Node, Transform>();
+			var leftHandMenuOrigin = leftProxyHelper.menuOrigin;
+			var rightHandMenuOrigin = rightProxyHelper.menuOrigin;
+			var leftHandAlternateMenu = leftProxyHelper.alternateMenuOrigin;
+			var rightHandAlternateMenu = rightProxyHelper.alternateMenuOrigin;
+			if (leftHandAlternateMenu != null)
 			{
 				menuOrigins.Add(Node.LeftHand, leftHandMenuOrigin);
-				menuInputOrigins.Add(Node.LeftHand, leftHandMenuInputOrigin);
+				alternateMenuOrigins.Add(Node.LeftHand, leftHandAlternateMenu);
 			}
 
-			if (rightHandMenuInputOrigin != null)
+			if (rightHandAlternateMenu != null)
 			{
 				menuOrigins.Add(Node.RightHand, rightHandMenuOrigin);
-				menuInputOrigins.Add(Node.RightHand, rightHandMenuInputOrigin);
+				alternateMenuOrigins.Add(Node.RightHand, rightHandAlternateMenu);
 			}
 			
 			m_RayOrigins = new Dictionary<Node, Transform>
 			{
-				{ Node.LeftHand, m_LeftHandRayOrigin },
-				{ Node.RightHand, m_RightHandRayOrigin }
+				{ Node.LeftHand, leftProxyHelper.rayOrigin },
+				{ Node.RightHand, rightProxyHelper.rayOrigin }
+			};
+
+			menuOrigins = new Dictionary<Node, Transform>()
+			{
+				{ Node.LeftHand, leftProxyHelper.menuOrigin },
+				{ Node.RightHand, rightProxyHelper.menuOrigin },
+			};
+
+			alternateMenuOrigins = new Dictionary<Node, Transform>()
+			{
+				{ Node.LeftHand, leftProxyHelper.alternateMenuOrigin },
+				{ Node.RightHand, rightProxyHelper.alternateMenuOrigin },
 			};
 		}
 
