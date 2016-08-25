@@ -1,17 +1,16 @@
 ﻿using System.IO;
 using ListView;
-using UnityEngine;
 
 public class FolderData : ListViewItemNestedData<FolderData>
 {
 	private const string kTemplateName = "FolderListItem";
-	public string path {get { return m_Path;} }
+	public string path { get { return m_Path; } }
 	private string m_Path;
 
 	public int treeDepth { get { return m_TreeDepth; } }
 	private int m_TreeDepth;
 
-	public AssetData[] assets { get {return m_Assets; } }
+	public AssetData[] assets { get { return m_Assets; } }
 	private AssetData[] m_Assets;
 
 	public FolderData(string path, int depth = 0)
@@ -27,10 +26,13 @@ public class FolderData : ListViewItemNestedData<FolderData>
 			m_Assets = assets;
 	}
 
-	public static FolderData[] GetFolderDataForPath(string path, int depth = 0) {
+	public static FolderData[] GetFolderDataForPath(string path, int depth = 0)
+	{
 		var paths = Directory.GetDirectories(path);
+		//var paths = AssetDatabase.GetSubFolders(path);
 		var files = new FolderData[paths.Length];
-		for (int i = 0; i < files.Length; i++) {
+		for (int i = 0; i < files.Length; i++)
+		{
 			files[i] = new FolderData(paths[i], depth);
 		}
 		return files;

@@ -82,8 +82,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	public Action<GameObject, bool> setHighlight { get; set; }
 
-	public bool vacuumEnabled
-	{
+	public bool vacuumEnabled {
 		set
 		{
 			m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value);

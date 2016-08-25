@@ -26,7 +26,8 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override void ComputeConditions()
 	{
-		if (templates.Length > 0) {
+		if (templates.Length > 0)
+		{
 			//Use first template to get item size
 			m_ItemSize = GetObjectSize(templates[0]);
 		}
@@ -39,7 +40,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		//Get initial conditions. This procedure is done every frame in case the collider bounds change at runtime
 		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward + (bounds.extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
 
-		m_DataOffset = (int)(scrollOffset / itemSize.z) * m_RowCount;
+		m_DataOffset = (int) (scrollOffset / itemSize.z) * m_RowCount;
 		if (scrollOffset < 0)
 			m_DataOffset--;
 
@@ -61,7 +62,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	protected override void Positioning(Transform t, int offset)
 	{
 		AssetGridItem item = t.GetComponent<AssetGridItem>();
-		item.UpdateTransforms(bounds.size.x - kClipMargin);
+		item.UpdateTransforms();
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
 		float zOffset = m_ItemSize.z * (offset / m_RowCount) + scrollOffset;
@@ -72,7 +73,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override AssetGridItem GetItem(AssetData listData)
 	{
-		var item = (AssetGridItem)base.GetItem(listData);
+		var item = (AssetGridItem) base.GetItem(listData);
 		item.SwapMaterials(m_TextMaterial);
 		return item;
 	}

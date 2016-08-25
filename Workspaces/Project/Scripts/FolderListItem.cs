@@ -31,16 +31,16 @@ public class FolderListItem : ListViewItem<FolderData>
 	private Material m_NoClipExpandArrowMaterial;
 
 	private Renderer m_CubeRenderer;
-	private bool m_Setup;
 
 	private Transform m_GrabbedObject;
 	private float m_GrabLerp;
-	
+
 	public override void Setup(FolderData listData)
 	{
 		base.Setup(listData);
 		//First time setup
-		if (!m_Setup) {
+		if (m_CubeRenderer == null)
+		{
 			//Cube material might change, so we always instance it
 			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
 			U.Material.GetMaterialClone(m_CubeRenderer);
@@ -49,19 +49,10 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_Cube.onHandleBeginDrag += GrabBegin;
 			m_Cube.onHandleDrag += GrabDrag;
 			m_Cube.onHandleEndDrag += GrabEnd;
-
-			m_Setup = true;
 		}
 
 		m_Text.text = Path.GetFileName(listData.path);
-		if (listData.children != null)
-		{
-			m_ExpandArrow.gameObject.SetActive(true);
-		}
-		else
-		{
-			m_ExpandArrow.gameObject.SetActive(false);
-		}
+		m_ExpandArrow.gameObject.SetActive(listData.children != null);
 	}
 
 	public void SwapMaterials(Material textMaterial, Material expandArrowMaterial)
@@ -83,16 +74,15 @@ public class FolderListItem : ListViewItem<FolderData>
 		m_ExpandArrow.transform.localPosition = new Vector3(kMargin + indent - halfWidth, m_ExpandArrow.transform.localPosition.y, 0);
 
 		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / m_Text.transform.localScale.x);
-		m_Text.transform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, m_Text.transform.localPosition.y, 0); //Text is next to arrow, with a margin and indent
+		//Text is next to arrow, with a margin and indent
+		m_Text.transform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, m_Text.transform.localPosition.y, 0);
 
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 
 		Vector3 eyeVector3 = Quaternion.Inverse(transform.parent.rotation) * cameraTransform.forward;
 		eyeVector3.x = 0;
-		if(Vector3.Dot(eyeVector3, Vector3.forward) > 0)
-			m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.up);
-		else
-			m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.down);
+		m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, 
+										Vector3.Dot(eyeVector3, Vector3.forward) > 0 ? Vector3.up : Vector3.down);
 	}
 
 	public void GetMaterials(out Material textMaterial, out Material expandArrowMaterial)
@@ -104,7 +94,7 @@ public class FolderListItem : ListViewItem<FolderData>
 	public void Clip(Bounds bounds, Matrix4x4 parentMatrix)
 	{
 		m_CubeRenderer.sharedMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_CubeRenderer.sharedMaterial.SetVector("_ClipExtents",  bounds.extents);
+		m_CubeRenderer.sharedMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
 
 	private void ToggleExpanded(BaseHandle baseHandle, HandleDragEventData handleDragEventData)
@@ -114,7 +104,7 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	private void GrabBegin(BaseHandle baseHandle, HandleDragEventData eventData)
 	{
-		var clone = (GameObject)Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
+		var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<FolderListItem>();
 		cloneItem.m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipCubeMaterial;
 		cloneItem.m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = m_NoClipExpandArrowMaterial;
@@ -152,7 +142,7 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	private void OnDestroy()
 	{
-		if(m_CubeRenderer)
+		if (m_CubeRenderer)
 			U.Object.Destroy(m_CubeRenderer.sharedMaterial);
 	}
 }

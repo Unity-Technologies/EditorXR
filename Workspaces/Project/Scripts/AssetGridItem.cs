@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.IO;
 using ListView;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
@@ -11,8 +9,6 @@ using Object = UnityEngine.Object;
 
 public class AssetGridItem : ListViewItem<AssetData>
 {
-	private const float kMargin = 0.01f;
-	private const float kIndent = 0.02f;
 
 	private const float kMagnetizeDuration = 0.75f;
 	private readonly Vector3 kGrabOffset = new Vector3(0, 0.02f, 0.03f);
@@ -31,16 +27,17 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 	private Transform m_GrabbedObject;
 	private float m_GrabLerp;
-	
+
 	public override void Setup(AssetData listData)
 	{
 		base.Setup(listData);
 		//First time setup
-		if (!m_Setup) {
+		if (!m_Setup)
+		{
 			//Cube material might change, so we always instance it
 			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
 			U.Material.GetMaterialClone(m_CubeRenderer);
-			
+
 			m_Cube.onHandleBeginDrag += GrabBegin;
 			m_Cube.onHandleDrag += GrabDrag;
 			m_Cube.onHandleEndDrag += GrabEnd;
@@ -56,8 +53,8 @@ public class AssetGridItem : ListViewItem<AssetData>
 		m_Text.material = textMaterial;
 	}
 
-	public void UpdateTransforms(float width) {
-
+	public void UpdateTransforms()
+	{
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 
 		Vector3 eyeVector3 = Quaternion.Inverse(transform.parent.rotation) * cameraTransform.forward;
@@ -76,12 +73,12 @@ public class AssetGridItem : ListViewItem<AssetData>
 	public void Clip(Bounds bounds, Matrix4x4 parentMatrix)
 	{
 		m_CubeRenderer.sharedMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_CubeRenderer.sharedMaterial.SetVector("_ClipExtents",  bounds.extents);
+		m_CubeRenderer.sharedMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
 
 	private void GrabBegin(BaseHandle baseHandle, HandleDragEventData eventData)
 	{
-		var clone = (GameObject)Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
+		var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<AssetGridItem>();
 		cloneItem.m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipCubeMaterial;
 		cloneItem.m_Text.material = null;
@@ -118,7 +115,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 	private void OnDestroy()
 	{
-		if(m_CubeRenderer)
+		if (m_CubeRenderer)
 			U.Object.Destroy(m_CubeRenderer.sharedMaterial);
 	}
 }

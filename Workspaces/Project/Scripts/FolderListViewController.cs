@@ -23,7 +23,8 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	protected override void ComputeConditions()
 	{
-		if (templates.Length > 0) {
+		if (templates.Length > 0)
+		{
 			//Use first template to get item size
 			m_ItemSize = GetObjectSize(templates[0]);
 		}
@@ -34,7 +35,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		//Get initial conditions. This procedure is done every frame in case the collider bounds change at runtime
 		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward;
 
-		m_DataOffset = (int)(scrollOffset / itemSize.z);
+		m_DataOffset = (int) (scrollOffset / itemSize.z);
 		if (scrollOffset < 0)
 			m_DataOffset--;
 
@@ -57,7 +58,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	protected override ListViewItem<FolderData> GetItem(FolderData listData)
 	{
-		var item = (FolderListItem)base.GetItem(listData);
+		var item = (FolderListItem) base.GetItem(listData);
 		item.SwapMaterials(m_TextMaterial, m_ExpandArrowMaterial);
 		return item;
 	}
