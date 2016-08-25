@@ -322,7 +322,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0.392}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -348,10 +348,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  scrollOffset: 0
-  padding: 0.01
-  range: 1
-  templates:
+  m_ScrollOffset: 0
+  m_Padding: 0.01
+  m_ScrollDamping: 15
+  m_MaxMomentum: 200
+  m_Templates:
   - {fileID: 1000014066556564, guid: 918c55469b1324d46b0c41586835ce87, type: 2}
 --- !u!114 &114000011690277160
 MonoBehaviour:
@@ -395,10 +396,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  scrollOffset: 0
-  padding: 0.01
-  range: 1
-  templates:
+  m_ScrollOffset: 0
+  m_Padding: 0.01
+  m_ScrollDamping: 15
+  m_MaxMomentum: 200
+  m_Templates:
   - {fileID: 1000014066556564, guid: 94a0fcdece43c184c88738ce9401f3d0, type: 2}
 --- !u!114 &114000013463570846
 MonoBehaviour:
@@ -414,7 +416,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0.392}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []

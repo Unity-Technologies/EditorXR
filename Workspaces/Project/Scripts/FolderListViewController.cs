@@ -17,24 +17,24 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	protected override void Setup()
 	{
 		base.Setup();
-		var item = templates[0].GetComponent<FolderListItem>();
+		var item = m_Templates[0].GetComponent<FolderListItem>();
 		item.GetMaterials(out m_TextMaterial, out m_ExpandArrowMaterial);
 	}
 
 	protected override void ComputeConditions()
 	{
-		if (templates.Length > 0)
+		if (m_Templates.Length > 0)
 		{
 			// Use first template to get item size
-			m_ItemSize = GetObjectSize(templates[0]);
+			m_ItemSize = GetObjectSize(m_Templates[0]);
 		}
 
-		m_NumItems = Mathf.RoundToInt(range / m_ItemSize.z);
+		m_NumItems = Mathf.RoundToInt(bounds.size.z / m_ItemSize.z);
 		
 		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward;
 
-		m_DataOffset = (int) (scrollOffset / itemSize.z);
-		if (scrollOffset < 0)
+		m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
+		if (m_ScrollOffset < 0)
 			m_DataOffset--;
 
 		var parentMatrix = transform.worldToLocalMatrix;
@@ -44,13 +44,13 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		m_ExpandArrowMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
 
-	protected override void Positioning(Transform t, int offset)
+	protected override void UpdateItem(Transform t, int offset)
 	{
 		FolderListItem item = t.GetComponent<FolderListItem>();
 		item.UpdateTransforms(bounds.size.x - kClipMargin);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
-		t.localPosition = m_StartPosition + (offset * m_ItemSize.z + scrollOffset) * Vector3.back;
+		t.localPosition = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.back;
 		t.localRotation = Quaternion.identity;
 	}
 

@@ -84,8 +84,7 @@ public class ProjectWorkspace : Workspace
 		var folderListView = m_ProjectUI.folderListView;
 		folderListView.PreCompute(); // Compute item size
 		folderListView.bounds = bounds;
-		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0); ;
-		folderListView.range = contentBounds.size.z;
+		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0);
 
 		var folderPanel = m_ProjectUI.folderPanel;
 		folderPanel.transform.localPosition = xOffset * Vector3.right;
@@ -107,7 +106,6 @@ public class ProjectWorkspace : Workspace
 		assetListView.PreCompute(); // Compute item size
 		assetListView.bounds = bounds;
 		assetListView.transform.localPosition = new Vector3(xOffset, assetListView.itemSize.y * 0.5f, 0);
-		assetListView.range = contentBounds.size.z;
 
 		var assetPanel = m_ProjectUI.assetPanel;
 		assetPanel.transform.localPosition = xOffset * Vector3.right;
@@ -119,9 +117,15 @@ public class ProjectWorkspace : Workspace
 	{
 		m_ScrollStart = eventData.rayOrigin.transform.position;
 		if (handle == m_ProjectUI.folderScrollHandle)
+		{
 			m_ScrollOffsetStart = m_ProjectUI.folderListView.scrollOffset;
+			m_ProjectUI.folderListView.OnBeginScrolling();
+		}
 		else if (handle == m_ProjectUI.assetScrollHandle)
+		{
 			m_ScrollOffsetStart = m_ProjectUI.assetListView.scrollOffset;
+			m_ProjectUI.assetListView.OnBeginScrolling();
+		}
 	}
 
 	private void OnScrollDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
@@ -132,6 +136,13 @@ public class ProjectWorkspace : Workspace
 	private void OnScrollEndDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
 	{
 		Scroll(handle,eventData);
+		if (handle == m_ProjectUI.folderScrollHandle) {
+			m_ScrollOffsetStart = m_ProjectUI.folderListView.scrollOffset;
+			m_ProjectUI.folderListView.OnEndScrolling();
+		} else if (handle == m_ProjectUI.assetScrollHandle) {
+			m_ScrollOffsetStart = m_ProjectUI.assetListView.scrollOffset;
+			m_ProjectUI.assetListView.OnEndScrolling();
+		}
 	}
 
 	private void Scroll(BaseHandle handle, HandleDragEventData eventData)

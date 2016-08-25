@@ -12,13 +12,14 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	private int m_RowCount;
 
+	float m_ScrollReturn = float.MaxValue;
+
 	public AssetData[] listData { set { m_Data = value; } }
-	public Bounds bounds { private get; set; }
 
 	protected override void Setup()
 	{
 		base.Setup();
-		var item = templates[0].GetComponent<AssetGridItem>();
+		var item = m_Templates[0].GetComponent<AssetGridItem>();
 		item.GetMaterials(out m_TextMaterial);
 
 		m_Data = new AssetData[0]; // Start with empty list to avoid null references
@@ -26,20 +27,20 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override void ComputeConditions()
 	{
-		if (templates.Length > 0)
+		if (m_Templates.Length > 0)
 		{
 			// Use first template to get item size
-			m_ItemSize = GetObjectSize(templates[0]);
+			m_ItemSize = GetObjectSize(m_Templates[0]);
 		}
 
 		m_RowCount = (int) (bounds.size.x / m_ItemSize.x);
 		
-		m_NumItems = m_RowCount * Mathf.RoundToInt(range / m_ItemSize.z);
+		m_NumItems = m_RowCount * Mathf.RoundToInt(bounds.size.z / m_ItemSize.z);
 		
 		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward + (bounds.extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
 
-		m_DataOffset = (int) (scrollOffset / itemSize.z) * m_RowCount;
-		if (scrollOffset < 0)
+		m_DataOffset = (int) (m_ScrollOffset / itemSize.z) * m_RowCount;
+		if (m_ScrollOffset < 0)
 			m_DataOffset--;
 
 		// Extend clip bounds slightly in Z for extra text
@@ -50,15 +51,15 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		m_TextMaterial.SetVector("_ClipExtents", clipExtents);
 	}
 
-	protected override void Positioning(Transform t, int offset)
+	protected override void UpdateItem(Transform t, int offset)
 	{
 		AssetGridItem item = t.GetComponent<AssetGridItem>();
 		item.UpdateTransforms();
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
-		float zOffset = m_ItemSize.z * (offset / m_RowCount) + scrollOffset;
+		float zOffset = m_ItemSize.z * (offset / m_RowCount) + m_ScrollOffset;
 		float xOffset = m_ItemSize.x * (offset % m_RowCount);
-		t.localPosition = m_StartPosition + (zOffset + scrollOffset) * Vector3.back + xOffset * Vector3.right;
+		t.localPosition = m_StartPosition + (zOffset + m_ScrollOffset) * Vector3.back + xOffset * Vector3.right;
 		t.localRotation = Quaternion.identity;
 	}
 
