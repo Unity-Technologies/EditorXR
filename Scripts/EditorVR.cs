@@ -195,7 +195,7 @@ public class EditorVR : MonoBehaviour
 		}
 
 		var camera = U.Camera.GetMainCamera();
-		//Enable/disable workspace vacuum bounds based on distance to camera
+		// Enable/disable workspace vacuum bounds based on distance to camera
 		foreach (var workspace in m_AllWorkspaces)
 			if (!workspace.vacuuming)
 				workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;

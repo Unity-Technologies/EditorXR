@@ -11,14 +11,13 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	public static readonly Vector3		kDefaultOffset = new Vector3(0, -0.15f, 1f);
 	public static readonly Quaternion	kDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
-	public const float kHandleMargin = -0.15f;	// Compensate for base size from frame model
+	public const float kHandleMargin = -0.15f; // Compensate for base size from frame model
 
 	public Action<Workspace> OnClose { private get; set; }
 
 	protected WorkspaceUI m_WorkspaceUI;
-
-	//Extra space for frame model
-	private const float kExtraHeight = 0.15f;
+	
+	private const float kExtraHeight = 0.15f; // Extra space for frame model
 
 	/// <summary>
 	/// Bounding box for workspace content (ignores value.center) 
@@ -31,14 +30,14 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			if (!value.Equals(contentBounds))
 			{
 				Vector3 size = value.size;
-				if (size.x < kDefaultBounds.x) //Use defaultBounds until we need separate values
+				if (size.x < kDefaultBounds.x) // Use defaultBounds until we need separate values
 					size.x = kDefaultBounds.x;
 				if (size.y < kDefaultBounds.y)
 					size.y = kDefaultBounds.y;
 				if (size.z < kDefaultBounds.z)
 					size.z = kDefaultBounds.z;
 				value.size = size;
-				m_ContentBounds.size = size; //Only set size, ignore center.
+				m_ContentBounds.size = size; // Only set size, ignore center.
 				BoundsChanged();
 				OnBoundsChanged();
 			}
@@ -50,7 +49,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	[SerializeField]
 	private float m_VacuumTime = 0.75f;
 
-	//This must be set on the script object which extends Workspace
+	// This must be set on the script object which extends Workspace
 	[SerializeField]
 	private GameObject m_BasePrefab;
 
@@ -99,11 +98,10 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		m_WorkspaceUI.OnLockClick = Lock;
 		m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
-		//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
+		// Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
 		BoundsChanged();
-
-		//Set up DirectManipulaotr
+		
 		var directManipulator = m_WorkspaceUI.directManipulator;
 		directManipulator.target = transform;
 		directManipulator.translate = Translate;
@@ -168,7 +166,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 			}
 			contentBounds = bounds;
-			if(contentBounds.size == bounds.size) //Don't reposition if we hit minimum bounds
+			if(contentBounds.size == bounds.size) // Don't reposition if we hit minimum bounds
 				transform.position = m_PositionStart + positionOffset;
 		}
 	}

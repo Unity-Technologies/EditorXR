@@ -30,7 +30,7 @@ public class ProjectWorkspace : Workspace
 		};
 		m_ProjectUI.folderListView.listData = folderData;
 
-		//TEMP: use select method when it exists
+		// TEMP: use select method when it exists
 		if (folderData.Length > 0)
 		{
 			m_ProjectUI.assetListView.listData = folderData[0].assets;
@@ -46,7 +46,7 @@ public class ProjectWorkspace : Workspace
 		};
 		foreach (var handle in scrollHandles)
 		{
-			//Scroll Handle shouldn't move on bounds change
+			// Scroll Handle shouldn't move on bounds change
 			handle.transform.parent = m_WorkspaceUI.sceneContainer;
 
 			handle.onHandleBeginDrag += OnScrollBeginDrag;
@@ -58,7 +58,7 @@ public class ProjectWorkspace : Workspace
 
 		m_WorkspaceUI.showBounds = false;
 
-		//Propagate initial bounds
+		// Propagate initial bounds
 		OnBoundsChanged();
 	}
 
@@ -82,7 +82,7 @@ public class ProjectWorkspace : Workspace
 		folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var folderListView = m_ProjectUI.folderListView;
-		folderListView.PreCompute(); //Compute item size
+		folderListView.PreCompute(); // Compute item size
 		folderListView.bounds = bounds;
 		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0); ;
 		folderListView.range = contentBounds.size.z;
@@ -104,7 +104,7 @@ public class ProjectWorkspace : Workspace
 		assetScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, assetScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var assetListView = m_ProjectUI.assetListView;
-		assetListView.PreCompute(); //Compute item size
+		assetListView.PreCompute(); // Compute item size
 		assetListView.bounds = bounds;
 		assetListView.transform.localPosition = new Vector3(xOffset, assetListView.itemSize.y * 0.5f, 0);
 		assetListView.range = contentBounds.size.z;

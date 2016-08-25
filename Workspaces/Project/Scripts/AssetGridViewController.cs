@@ -4,7 +4,7 @@ using UnityEngine.VR.Utilities;
 
 public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>
 {
-	private const float kClipMargin = 0.005f; //Give the cubes a margin so that their sides don't get clipped
+	private const float kClipMargin = 0.005f; // Give the cubes a margin so that their sides don't get clipped
 
 	private Material m_TextMaterial;
 
@@ -21,30 +21,28 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		var item = templates[0].GetComponent<AssetGridItem>();
 		item.GetMaterials(out m_TextMaterial);
 
-		m_Data = new AssetData[0]; //Start with empty list to avoid null references
+		m_Data = new AssetData[0]; // Start with empty list to avoid null references
 	}
 
 	protected override void ComputeConditions()
 	{
 		if (templates.Length > 0)
 		{
-			//Use first template to get item size
+			// Use first template to get item size
 			m_ItemSize = GetObjectSize(templates[0]);
 		}
 
 		m_RowCount = (int) (bounds.size.x / m_ItemSize.x);
-
-		//Resize range to nearest multiple of item width
-		m_NumItems = m_RowCount * Mathf.RoundToInt(range / m_ItemSize.z); //Number of cards that will fit
-
-		//Get initial conditions. This procedure is done every frame in case the collider bounds change at runtime
+		
+		m_NumItems = m_RowCount * Mathf.RoundToInt(range / m_ItemSize.z);
+		
 		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward + (bounds.extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
 
 		m_DataOffset = (int) (scrollOffset / itemSize.z) * m_RowCount;
 		if (scrollOffset < 0)
 			m_DataOffset--;
 
-		//Extend clip bounds slightly in Z for extra text
+		// Extend clip bounds slightly in Z for extra text
 		var clipExtents = bounds.extents;
 		clipExtents.z += kClipMargin;
 		var parentMatrix = transform.worldToLocalMatrix;

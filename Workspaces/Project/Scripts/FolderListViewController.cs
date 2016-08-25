@@ -4,7 +4,7 @@ using UnityEngine.VR.Utilities;
 
 public class FolderListViewController : NestedListViewController<FolderData>
 {
-	private const float kClipMargin = 0.001f; //Give the cubes a margin so that their sides don't get clipped
+	private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 	private Material m_TextMaterial;
 	private Material m_ExpandArrowMaterial;
@@ -25,14 +25,12 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	{
 		if (templates.Length > 0)
 		{
-			//Use first template to get item size
+			// Use first template to get item size
 			m_ItemSize = GetObjectSize(templates[0]);
 		}
-		//Resize range to nearest multiple of item width
-		m_NumItems = Mathf.RoundToInt(range / m_ItemSize.z); //Number of cards that will fit
-		range = m_NumItems * m_ItemSize.z;
 
-		//Get initial conditions. This procedure is done every frame in case the collider bounds change at runtime
+		m_NumItems = Mathf.RoundToInt(range / m_ItemSize.z);
+		
 		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward;
 
 		m_DataOffset = (int) (scrollOffset / itemSize.z);

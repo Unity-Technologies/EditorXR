@@ -29,7 +29,6 @@ public class FolderData : ListViewItemNestedData<FolderData>
 	public static FolderData[] GetFolderDataForPath(string path, int depth = 0)
 	{
 		var paths = Directory.GetDirectories(path);
-		//var paths = AssetDatabase.GetSubFolders(path);
 		var files = new FolderData[paths.Length];
 		for (int i = 0; i < files.Length; i++)
 		{

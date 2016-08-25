@@ -38,10 +38,10 @@ public class FolderListItem : ListViewItem<FolderData>
 	public override void Setup(FolderData listData)
 	{
 		base.Setup(listData);
-		//First time setup
+		// First time setup
 		if (m_CubeRenderer == null)
 		{
-			//Cube material might change, so we always instance it
+			// Cube material might change, so we always instance it
 			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
 			U.Material.GetMaterialClone(m_CubeRenderer);
 
@@ -74,7 +74,7 @@ public class FolderListItem : ListViewItem<FolderData>
 		m_ExpandArrow.transform.localPosition = new Vector3(kMargin + indent - halfWidth, m_ExpandArrow.transform.localPosition.y, 0);
 
 		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / m_Text.transform.localScale.x);
-		//Text is next to arrow, with a margin and indent
+		// Text is next to arrow, with a margin and indent
 		m_Text.transform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, m_Text.transform.localPosition.y, 0);
 
 		var cameraTransform = U.Camera.GetMainCamera().transform;

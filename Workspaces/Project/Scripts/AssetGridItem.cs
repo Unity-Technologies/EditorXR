@@ -31,10 +31,10 @@ public class AssetGridItem : ListViewItem<AssetData>
 	public override void Setup(AssetData listData)
 	{
 		base.Setup(listData);
-		//First time setup
+		// First time setup
 		if (!m_Setup)
 		{
-			//Cube material might change, so we always instance it
+			// Cube material might change, so we always instance it
 			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
 			U.Material.GetMaterialClone(m_CubeRenderer);
 
