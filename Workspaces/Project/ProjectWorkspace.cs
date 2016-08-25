@@ -6,6 +6,8 @@ public class ProjectWorkspace : Workspace
 {
 	private const float kLeftPaneRatio = 0.3333333f; //Size of left pane relative to workspace bounds
 	private const float kPaneMargin = 0.01f;
+	private const float kPanelMargin = 0.01f;
+	private const float kScrollMargin = 0.03f;
 	private const float kYBounds = 0.2f;
 
 	[SerializeField]
@@ -54,6 +56,8 @@ public class ProjectWorkspace : Workspace
 			handle.onHoverExit += OnScrollHoverExit;
 		}
 
+		m_WorkspaceUI.showBounds = false;
+
 		//Propagate initial bounds
 		OnBoundsChanged();
 	}
@@ -68,10 +72,14 @@ public class ProjectWorkspace : Workspace
 		bounds.size = size;
 		bounds.center = Vector3.zero;
 
-		var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
+		var halfScrollMargin = kScrollMargin * 0.5f;
+		var doubleScrollMargin = kScrollMargin * 2;
+
 		var xOffset = (contentBounds.size.x - size.x + kPaneMargin) * -0.5f;
-		folderScrollHandleTransform.localPosition = new Vector3(xOffset, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
-		folderScrollHandleTransform.localScale = new Vector3(size.x, folderScrollHandleTransform.localScale.y, size.z);
+
+		var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
+		folderScrollHandleTransform.localPosition = new Vector3(xOffset - halfScrollMargin, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
+		folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var folderListView = m_ProjectUI.folderListView;
 		folderListView.PreCompute(); //Compute item size
@@ -79,21 +87,32 @@ public class ProjectWorkspace : Workspace
 		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0); ;
 		folderListView.range = contentBounds.size.z;
 
+		var folderPanel = m_ProjectUI.folderPanel;
+		folderPanel.transform.localPosition = xOffset * Vector3.right;
+		folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + kPanelMargin);
+		folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
+
 		size = contentBounds.size;
 		size.x -= kPaneMargin * 2;
 		size.x *= 1 - kLeftPaneRatio;
 		bounds.size = size;
-		
-		var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
+
 		xOffset = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f;
-		assetScrollHandleTransform.localPosition = new Vector3(xOffset, -assetScrollHandleTransform.localScale.y * 0.5f);
-		assetScrollHandleTransform.localScale = new Vector3(size.x, assetScrollHandleTransform.localScale.y, size.z);
+
+		var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
+		assetScrollHandleTransform.localPosition = new Vector3(xOffset + halfScrollMargin, -assetScrollHandleTransform.localScale.y * 0.5f);
+		assetScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, assetScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var assetListView = m_ProjectUI.assetListView;
 		assetListView.PreCompute(); //Compute item size
 		assetListView.bounds = bounds;
 		assetListView.transform.localPosition = new Vector3(xOffset, assetListView.itemSize.y * 0.5f, 0);
 		assetListView.range = contentBounds.size.z;
+
+		var assetPanel = m_ProjectUI.assetPanel;
+		assetPanel.transform.localPosition = xOffset * Vector3.right;
+		assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + kPanelMargin);
+		assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
 	}
 
 	private void OnScrollBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))

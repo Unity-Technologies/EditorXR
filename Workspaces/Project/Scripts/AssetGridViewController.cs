@@ -52,13 +52,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		m_TextMaterial.SetVector("_ClipExtents", clipExtents);
 	}
 
-	void OnDrawGizmos()
-	{
-		Gizmos.matrix = transform.localToWorldMatrix;
-		Gizmos.DrawWireCube(bounds.center, bounds.size);
-		Gizmos.DrawSphere(m_StartPosition, 0.05f);
-	}
-
 	protected override void Positioning(Transform t, int offset)
 	{
 		AssetGridItem item = t.GetComponent<AssetGridItem>();

@@ -50,6 +50,7 @@ public class WorkspaceUI : MonoBehaviour
 
 	public Action OnCloseClick { private get; set; }
 	public Action OnLockClick { private get; set; }
+	public bool showBounds { set { m_BoundsCube.GetComponent<Renderer>().enabled = value; } }
 
 	public void SetBounds(Bounds bounds)
 	{
