@@ -10,9 +10,9 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	private Transform m_GrabbedObject;
 
-	private int m_RowCount;
+	private int m_NumPerRow;
 
-	float m_ScrollReturn = float.MaxValue;
+	protected override int dataLength { get { return Mathf.CeilToInt((float)base.dataLength / m_NumPerRow); } }
 
 	public AssetData[] listData { set { m_Data = value; } }
 
@@ -27,21 +27,23 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override void ComputeConditions()
 	{
-		if (m_Templates.Length > 0)
-		{
-			// Use first template to get item size
-			m_ItemSize = GetObjectSize(m_Templates[0]);
-		}
+		base.ComputeConditions();
 
-		m_RowCount = (int) (bounds.size.x / m_ItemSize.x);
-		
-		m_NumItems = m_RowCount * Mathf.RoundToInt(bounds.size.z / m_ItemSize.z);
-		
+		m_NumPerRow = (int) (bounds.size.x / m_ItemSize.x);
+
+		m_NumRows = Mathf.CeilToInt(bounds.size.z / m_ItemSize.z);
+
 		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward + (bounds.extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
 
-		m_DataOffset = (int) (m_ScrollOffset / itemSize.z) * m_RowCount;
+		m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
 		if (m_ScrollOffset < 0)
-			m_DataOffset--;
+			m_DataOffset --;
+
+		m_ScrollReturn = float.MaxValue;
+
+		// Snap back if list scrolled too far
+		if (-m_DataOffset >= dataLength)
+			m_ScrollReturn = (1 - dataLength) * itemSize.z;
 
 		// Extend clip bounds slightly in Z for extra text
 		var clipExtents = bounds.extents;
@@ -51,15 +53,34 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		m_TextMaterial.SetVector("_ClipExtents", clipExtents);
 	}
 
+	protected override void UpdateItems()
+	{
+		for (int i = 0; i < m_Data.Length; i++)
+		{
+			if (i / m_NumPerRow + m_DataOffset < -1)
+			{
+				CleanUpBeginning(m_Data[i]);
+			}
+			else if (i / m_NumPerRow + m_DataOffset > m_NumRows - 1)
+			{
+				CleanUpEnd(m_Data[i]);
+			}
+			else
+			{
+				UpdateVisibleItem(m_Data[i], i);
+			}
+		}
+	}
+
 	protected override void UpdateItem(Transform t, int offset)
 	{
 		AssetGridItem item = t.GetComponent<AssetGridItem>();
 		item.UpdateTransforms();
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
-		float zOffset = m_ItemSize.z * (offset / m_RowCount) + m_ScrollOffset;
-		float xOffset = m_ItemSize.x * (offset % m_RowCount);
-		t.localPosition = m_StartPosition + (zOffset + m_ScrollOffset) * Vector3.back + xOffset * Vector3.right;
+		var zOffset = m_ItemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
+		var xOffset = m_ItemSize.x * (offset % m_NumPerRow);
+		t.localPosition = m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right;
 		t.localRotation = Quaternion.identity;
 	}
 

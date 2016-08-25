@@ -82,8 +82,8 @@ public class ProjectWorkspace : Workspace
 		folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var folderListView = m_ProjectUI.folderListView;
-		folderListView.PreCompute(); // Compute item size
 		folderListView.bounds = bounds;
+		folderListView.PreCompute(); // Compute item size
 		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0);
 
 		var folderPanel = m_ProjectUI.folderPanel;
@@ -97,14 +97,14 @@ public class ProjectWorkspace : Workspace
 		bounds.size = size;
 
 		xOffset = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f;
-
+			
 		var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
 		assetScrollHandleTransform.localPosition = new Vector3(xOffset + halfScrollMargin, -assetScrollHandleTransform.localScale.y * 0.5f);
 		assetScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, assetScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var assetListView = m_ProjectUI.assetListView;
-		assetListView.PreCompute(); // Compute item size
 		assetListView.bounds = bounds;
+		assetListView.PreCompute(); // Compute item size
 		assetListView.transform.localPosition = new Vector3(xOffset, assetListView.itemSize.y * 0.5f, 0);
 
 		var assetPanel = m_ProjectUI.assetPanel;

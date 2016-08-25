@@ -12,7 +12,6 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	private Transform m_GrabbedObject;
 
 	public FolderData[] listData { set { m_Data = value; } }
-	public Bounds bounds { private get; set; }
 
 	protected override void Setup()
 	{
@@ -23,19 +22,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	protected override void ComputeConditions()
 	{
-		if (m_Templates.Length > 0)
-		{
-			// Use first template to get item size
-			m_ItemSize = GetObjectSize(m_Templates[0]);
-		}
-
-		m_NumItems = Mathf.RoundToInt(bounds.size.z / m_ItemSize.z);
-		
-		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward;
-
-		m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
-		if (m_ScrollOffset < 0)
-			m_DataOffset--;
+		base.ComputeConditions();
 
 		var parentMatrix = transform.worldToLocalMatrix;
 		m_TextMaterial.SetMatrix("_ParentMatrix", parentMatrix);

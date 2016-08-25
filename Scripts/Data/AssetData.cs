@@ -18,7 +18,7 @@ public class AssetData : ListViewItemData
 	{
 		var paths = Directory.GetFiles(path).Where(name => !name.EndsWith(".meta")).ToArray();
 		var files = new AssetData[paths.Length];
-		for (int i = 0; i < files.Length; i++)
+		for (int i = 0; i < paths.Length; i++)
 		{
 			files[i] = new AssetData(paths[i]);
 		}

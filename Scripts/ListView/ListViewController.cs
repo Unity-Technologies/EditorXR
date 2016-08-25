@@ -24,7 +24,7 @@ namespace ListView
 
 		[Tooltip("How quickly scroll momentum fade")]
 		[SerializeField]
-		public float m_ScrollDamping = 15f;
+		public float m_ScrollDamping = 5f;
 
 		[Tooltip("Maximum velocity for scroll momentum")]
 		[SerializeField]
@@ -35,7 +35,7 @@ namespace ListView
 		protected GameObject[] m_Templates;
 		
 		protected int m_DataOffset;
-		protected int m_NumItems;
+		protected int m_NumRows;
 		protected Vector3 m_StartPosition;
 		protected Vector3 m_ItemSize;
 		protected readonly Dictionary<string, ListViewItemTemplate> m_TemplateDictionary = new Dictionary<string, ListViewItemTemplate>();
@@ -89,7 +89,7 @@ namespace ListView
 				m_ItemSize = GetObjectSize(m_Templates[0]);
 			}
 
-			m_NumItems = Mathf.RoundToInt(bounds.size.z / m_ItemSize.z);
+			m_NumRows = Mathf.CeilToInt(bounds.size.z / m_ItemSize.z);
 
 			m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward;
 
@@ -98,51 +98,62 @@ namespace ListView
 				m_DataOffset--;
 
 			if (m_Scrolling) {
-				m_ScrollDelta = (m_ScrollOffset - m_LastScrollOffset) / Time.deltaTime;
+				// Compute current velocity
+				m_ScrollDelta = (m_ScrollOffset - m_LastScrollOffset) / Time.unscaledDeltaTime;
 				m_LastScrollOffset = m_ScrollOffset;
+				
+				// Clamp velocity to MaxMomentum
 				if (m_ScrollDelta > m_MaxMomentum)
 					m_ScrollDelta = m_MaxMomentum;
 				if (m_ScrollDelta < -m_MaxMomentum)
 					m_ScrollDelta = -m_MaxMomentum;
 			} else {
-				m_ScrollOffset += m_ScrollDelta * Time.deltaTime;
+				//Apply scrolling momentum
+				m_ScrollOffset += m_ScrollDelta * Time.unscaledDeltaTime;
+				if(m_ScrollReturn < float.MaxValue || m_ScrollOffset > 0)
+					OnEndScrolling();
 				if (m_ScrollDelta > 0) {
-					m_ScrollDelta -= m_ScrollDamping * Time.deltaTime;
+					m_ScrollDelta -= m_ScrollDamping * Time.unscaledDeltaTime;
 					if (m_ScrollDelta < 0) {
 						m_ScrollDelta = 0;
+						OnEndScrolling();
 					}
 				} else if (m_ScrollDelta < 0) {
-					m_ScrollDelta += m_ScrollDamping * Time.deltaTime;
+					m_ScrollDelta += m_ScrollDamping * Time.unscaledDeltaTime;
 					if (m_ScrollDelta > 0) {
 						m_ScrollDelta = 0;
+						OnEndScrolling();
 					}
 				}
 			}
-			if (m_DataOffset >= dataLength) {
-				m_ScrollReturn = m_ScrollOffset;
-			}
+
+			m_ScrollReturn = float.MaxValue;
+
+			// Snap back if list scrolled too far
+			if (dataLength > 0 && -m_DataOffset >= dataLength)
+				m_ScrollReturn = (1 - dataLength) * itemSize.z;
 		}
 
 		protected abstract void UpdateItems();
 
 		public virtual void ScrollNext()
 		{
-			m_ScrollOffset += m_ItemSize.x;
+			m_ScrollOffset += m_ItemSize.z;
 		}
 
 		public virtual void ScrollPrev()
 		{
-			m_ScrollOffset -= m_ItemSize.x;
+			m_ScrollOffset -= m_ItemSize.z;
 		}
 
 		public virtual void ScrollTo(int index)
 		{
-			m_ScrollOffset = index * itemSize.x;
+			m_ScrollOffset = index * itemSize.z;
 		}
 
 		protected virtual void UpdateItem(Transform t, int offset)
 		{
-			t.position = m_StartPosition + (offset * m_ItemSize.x + m_ScrollOffset) * Vector3.right;
+			t.position = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.right;
 		}
 
 		protected virtual Vector3 GetObjectSize(GameObject g)
@@ -198,10 +209,10 @@ namespace ListView
 		{
 			for (int i = 0; i < m_Data.Length; i++)
 			{
-				if (i + m_DataOffset < 0)
+				if (i + m_DataOffset < -1)
 				{
 					CleanUpBeginning(m_Data[i]);
-				} else if (i + m_DataOffset > m_NumItems)
+				} else if (i + m_DataOffset > m_NumRows - 1)
 				{
 					CleanUpEnd(m_Data[i]);
 				} else
