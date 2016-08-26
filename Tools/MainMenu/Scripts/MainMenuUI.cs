@@ -64,16 +64,16 @@ namespace UnityEngine.VR.Menus
 		private const float kRotationEpsilon = 1f;
 
 		private readonly string kUncategorizedFaceName = "Uncategorized";
-		private readonly string kInputHighlightColorProperty = "_Color";
-		private readonly string kInputHighlightTopProperty = "_ColorTop";
-		private readonly string kInputHighlightBottomProperty = "_ColorBottom";
+		private readonly string kRotationHighlightColorProperty = "_Color";
+		private readonly string kRotationHighlightTopProperty = "_ColorTop";
+		private readonly string kRotationHighlightBottomProperty = "_ColorBottom";
 		private readonly Color kMenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
 
 		private VisibilityState m_VisibilityState;
 		private RotationState m_RotationState;
-		private Material m_InputHighlightLeftMaterial;
-		private Material m_InputHighlightRightMaterial;
-		private Material m_InputOuterBorderMaterial;
+		private Material m_RotationHighlightLeftMaterial;
+		private Material m_RotationHighlightRightMaterial;
+		private Material m_OuterBorderMaterial;
 		private List<MainMenuFace> m_MenuFaces;
 		private Material m_MenuFacesMaterial;
 		private Color m_MenuFacesColor;
@@ -85,6 +85,19 @@ namespace UnityEngine.VR.Menus
 		private float m_RotationRate;
 		private float m_LastTargetRotation;
 		private Coroutine m_VisibilityCoroutine;
+
+		public Transform menuOrigin
+		{
+			get { return m_MenuOrigin; }
+			set
+			{
+				m_MenuOrigin = value;
+				transform.SetParent(menuOrigin);
+				transform.localPosition = Vector3.zero;
+				transform.localRotation = Quaternion.identity;
+				transform.localScale = Vector3.one;
+			}
+		}
 
 		public Transform alternateMenuOrigin
 		{
@@ -100,22 +113,10 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 
-		public Transform menuOrigin
-		{
-			get { return m_MenuOrigin; }
-			set
-			{
-				m_MenuOrigin = value;
-				transform.SetParent(menuOrigin);
-				transform.localPosition = Vector3.zero;
-				transform.localRotation = Quaternion.identity;
-				transform.localScale = Vector3.one;
-			}
-		}
-
 		public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
 		public float targetRotation { get; set; }
+
 		public int faceCount { get { return m_MenuFaces.Count; } }
 
 		public bool visible
@@ -165,13 +166,13 @@ namespace UnityEngine.VR.Menus
 
 		private void Awake()
 		{
-			m_InputOuterBorderMaterial = U.Material.GetMaterialClone(m_InputOuterBorder);
-			m_InputOuterBorderMaterial.SetColor(kInputHighlightTopProperty, UnityBrandColorScheme.light);
-			m_InputOuterBorderMaterial.SetColor(kInputHighlightBottomProperty, UnityBrandColorScheme.light);
-			m_InputHighlightLeftMaterial = U.Material.GetMaterialClone(m_InputHighlightLeft);
-			m_InputHighlightRightMaterial = U.Material.GetMaterialClone(m_InputHighlightRight);
-			m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
-			m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
+			m_OuterBorderMaterial = U.Material.GetMaterialClone(m_InputOuterBorder);
+			m_OuterBorderMaterial.SetColor(kRotationHighlightTopProperty, UnityBrandColorScheme.light);
+			m_OuterBorderMaterial.SetColor(kRotationHighlightBottomProperty, UnityBrandColorScheme.light);
+			m_RotationHighlightLeftMaterial = U.Material.GetMaterialClone(m_InputHighlightLeft);
+			m_RotationHighlightRightMaterial = U.Material.GetMaterialClone(m_InputHighlightRight);
+			m_RotationHighlightLeftMaterial.SetColor(kRotationHighlightColorProperty, Color.clear);
+			m_RotationHighlightRightMaterial.SetColor(kRotationHighlightColorProperty, Color.clear);
 			m_MenuFacesMaterial = U.Material.GetMaterialClone(m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>());
 			m_MenuFacesColor = m_MenuFacesMaterial.color;
 		}
@@ -237,8 +238,8 @@ namespace UnityEngine.VR.Menus
 			// Setting a target face takes precedence over manual rotation
 			if (faceIndex != targetFaceIndex)
 			{
-				m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
-				m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, Color.clear);
+				m_RotationHighlightLeftMaterial.SetColor(kRotationHighlightColorProperty, Color.clear);
+				m_RotationHighlightRightMaterial.SetColor(kRotationHighlightColorProperty, Color.clear);
 
 				var direction = (int)Mathf.Sign(Mathf.DeltaAngle(GetRotationForFaceIndex(faceIndex), GetRotationForFaceIndex(m_TargetFaceIndex)));
 				StartCoroutine(SnapToFace(faceIndex + direction, kDefaultSnapSpeed));
@@ -261,8 +262,8 @@ namespace UnityEngine.VR.Menus
 
 					int direction = (int) Mathf.Sign(deltaRotation);
 
-					m_InputHighlightLeftMaterial.SetColor(kInputHighlightColorProperty, direction > 0 ? Color.white : Color.clear);
-					m_InputHighlightRightMaterial.SetColor(kInputHighlightColorProperty, direction < 0 ? Color.white : Color.clear);
+					m_RotationHighlightLeftMaterial.SetColor(kRotationHighlightColorProperty, direction > 0 ? Color.white : Color.clear);
+					m_RotationHighlightRightMaterial.SetColor(kRotationHighlightColorProperty, direction < 0 ? Color.white : Color.clear);
 
 					const float kRotationRateMax = 10f;
 					const float kRotationSpeed = 15f;
@@ -332,17 +333,17 @@ namespace UnityEngine.VR.Menus
 
 		private int GetClosestFaceIndexForRotation(float rotation)
 		{
-			return Mathf.RoundToInt(rotation / 90f) % faceCount;
+			return Mathf.RoundToInt(rotation / kFaceRotationSnapAngle) % faceCount;
 		}
 
 		private int GetActualFaceIndexForRotation(float rotation)
 		{
-			return Mathf.FloorToInt(rotation / 90f) % faceCount;
+			return Mathf.FloorToInt(rotation / kFaceRotationSnapAngle) % faceCount;
 		}
 	
 		private float GetRotationForFaceIndex(int faceIndex)
 		{
-			return faceIndex * 90f;
+			return faceIndex * kFaceRotationSnapAngle;
 		}
 
 		private IEnumerator SnapToFace(int faceIndex, float snapSpeed)
@@ -388,7 +389,7 @@ namespace UnityEngine.VR.Menus
 			foreach (var face in m_MenuFaces)
 				face.Show();
 
-			StartCoroutine(AnimateFrameReveal());
+			StartCoroutine(AnimateFrameReveal(m_VisibilityState));
 
 			const float kTargetScale = 1f;
 			
@@ -436,9 +437,8 @@ namespace UnityEngine.VR.Menus
 			menuOrigin.localScale = Vector3.zero;
 			alternateMenuOrigin.localScale = Vector3.zero;
 
-			float roundedRotation = m_MenuFaceRotationOrigin.localRotation.eulerAngles.y;
-			roundedRotation = Mathf.Round((roundedRotation) / kFaceRotationSnapAngle) * kFaceRotationSnapAngle; // calculate intended target rotation
-			m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, roundedRotation, 0)); // set intended target rotation
+			float snapRotation = GetRotationForFaceIndex(GetClosestFaceIndexForRotation(currentRotation));
+			m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, snapRotation, 0)); // set intended target rotation
 			m_RotationState = RotationState.AtRest;
 
 			m_VisibilityCoroutine = null;
@@ -461,7 +461,7 @@ namespace UnityEngine.VR.Menus
 				m_MenuFrameRenderer.SetBlendShapeWeight(0, targetWeight);
 		}
 
-		private IEnumerator AnimateFrameReveal(VisibilityState visibilityState = VisibilityState.TransitioningIn)
+		private IEnumerator AnimateFrameReveal(VisibilityState visibilityState)
 		{
 			m_MenuFrameRenderer.SetBlendShapeWeight(1, 100f);
 			float smoothTime = visibilityState == VisibilityState.TransitioningIn ? 0.1875f : 0.09375f; // slower if transitioning in
