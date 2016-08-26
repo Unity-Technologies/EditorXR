@@ -137,13 +137,13 @@ namespace UnityEngine.VR.Utilities
 		[Serializable]
 		public struct GradientPair
 		{
-			public Color ColorA;
-			public Color ColorB;
+			public Color a;
+			public Color b;
 
-			public GradientPair(Color colorA, Color colorB)
+			public GradientPair(Color a, Color b)
 			{
-				ColorA = colorA;
-				ColorB = colorB;
+				this.a = a;
+				this.b = b;
 			}
 		}
 

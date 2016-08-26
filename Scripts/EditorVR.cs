@@ -547,7 +547,7 @@ public class EditorVR : MonoBehaviour
 								customRay.hideDefaultRay = dpr.Hide;
 							}
 
-							var lockableRay = obj as ILockableRay;
+							var lockableRay = obj as ILockRay;
 							if (lockableRay != null)
 							{
 								dpr = dpr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
@@ -761,7 +761,7 @@ public class EditorVR : MonoBehaviour
 	private static void InitializeInputManager()
 	{
 		// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-		// In edit mode we need to handle lifecycle explicitly
+		// in edit mode we need to handle lifecycle explicitly
 		InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
 		foreach (var m in managers)
 		{

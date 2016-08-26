@@ -30,15 +30,15 @@ public class DefaultProxyRay : MonoBehaviour
 	/// <summary>
 	/// The object that is set when LockRay is called while the ray is unlocked.
 	/// As long as this reference is set, and the ray is locked, only that object can unlock the ray.
-	/// If the object refernce becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
+	/// If the object reference becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
 	/// </summary>
 	private object m_LockRayObject;
 
 	public void LockRay(object lockCaller)
 	{
-		// Mandate that a single locker caller is allowed to lock the ray
-		// If the reference to the lockRayCaller is deleted, and the ray was not properly
-		// unlocked by the original locking caller allow locking by another object
+		// Allow the caller to lock the ray
+		// If the reference to the lockCaller is destroyed, and the ray was not properly
+		// unlocked by the original locking caller, then allow locking by another object
 		if (m_LockRayObject == null)
 			m_LockRayObject = lockCaller;
 	}
@@ -128,7 +128,7 @@ public class DefaultProxyRay : MonoBehaviour
 		float smoothVelocity = 0f;
 		while (currentWidth < m_LineWidth)
 		{
-			currentWidth = Mathf.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, Mathf.Infinity, 0.3125f, Time.unscaledDeltaTime);
+			currentWidth = Mathf.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, 0.3125f, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
 			yield return null;
 		}

@@ -7,8 +7,9 @@ public class BlinkVisuals : MonoBehaviour
 	private enum State
 	{
 		Inactive = 0,
-		TransitioningIn = 1,
-		TransitioningOut = 2
+		Active = 1,
+		TransitioningIn = 2,
+		TransitioningOut = 3
 	}
 
 	[SerializeField]
@@ -70,13 +71,14 @@ public class BlinkVisuals : MonoBehaviour
 	private Vector3 m_TubeTransformHiddenScale;
 	private Vector3 m_TubeTransformOriginalScale;
 	private bool m_ValidTarget;
-	private bool m_EndVisualDisplay;
 
 	public Vector3 locatorPosition { get { return locatorRoot.position; } }
 	public Transform locatorRoot { get { return m_LocatorRoot; } }
 	public bool validTarget { get { return m_ValidTarget; } }
 
 	private float pointerStrength { get { return (m_ToolPoint.forward.y + 1.0f) * 0.5f; } }
+
+	private bool visible { get { return m_State == State.TransitioningIn || m_State == State.Active;  } }
 
 	void Awake()
 	{
@@ -121,7 +123,7 @@ public class BlinkVisuals : MonoBehaviour
 
 	void Update()
 	{
-		if (m_State != State.Inactive)
+		if (visible)
 		{
 			const float kMotionSphereSpeed = 0.125f;
 			m_MotionSphereOffset = (m_MotionSphereOffset + (Time.unscaledDeltaTime * kMotionSphereSpeed)) % (1.0f / (float)m_MotionSphereCount);
@@ -142,7 +144,7 @@ public class BlinkVisuals : MonoBehaviour
 			const float kTubeHiddenDistanceThreshold = 6f;
 			m_TubeTransform.localScale = Vector3.Lerp(m_TubeTransformOriginalScale, m_TubeTransformHiddenScale, m_MovementMagnitudeDelta / kTubeHiddenDistanceThreshold);
 		}
-		else if (!m_EndVisualDisplay && m_OutOfMaxRange && Mathf.Abs(pointerStrength) < m_MaxArc)
+		else if (m_OutOfMaxRange && Mathf.Abs(pointerStrength) < m_MaxArc)
 		{
 			m_OutOfMaxRange = false;
 			ShowVisuals();
@@ -151,14 +153,14 @@ public class BlinkVisuals : MonoBehaviour
 
 	public void ShowVisuals()
 	{
+		enabled = true;
 		if (m_State == State.Inactive || m_State == State.TransitioningOut)
 		{
 			m_RoomScaleLazyPosition = m_RoomScaleTransform.position;
 
 			for (int i = 0; i < m_MotionSphereCount; ++i)
 				m_MotionSpheres[i].gameObject.SetActive(true);
-			
-			m_EndVisualDisplay = false;
+
 			StartCoroutine(AnimateShowVisuals());
 		}
 	}
@@ -168,11 +170,11 @@ public class BlinkVisuals : MonoBehaviour
 		if (m_State != State.Inactive)
 		{
 			StopAllCoroutines();
-			m_EndVisualDisplay = true;
 			StartCoroutine(AnimateHideVisuals());
 		}
 
 		m_OutOfMaxRange = false;
+		enabled = false;
 	}
 
 	private IEnumerator AnimateShowVisuals()
@@ -203,6 +205,8 @@ public class BlinkVisuals : MonoBehaviour
 
 		if (m_State == State.TransitioningIn)
 			m_LineRenderer.SetWidth(kTargetScale, kTargetScale);
+
+		m_State = State.Active;
 	}
 
 	private IEnumerator AnimateHideVisuals()
@@ -299,7 +303,7 @@ public class BlinkVisuals : MonoBehaviour
 		{
 			var t = (i / (float)m_MotionSphereCount) + m_MotionSphereOffset;
 			m_MotionSpheres[i].position = U.Math.CalculateCubicBezierPoint(t, m_BezierControlPoints);
-			float motionSphereScale = m_State == State.TransitioningIn ? (m_ValidTarget == true ? m_MotionSphereOriginalScale.x : 0.05f) : 0f;
+			float motionSphereScale = visible ? (m_ValidTarget == true ? m_MotionSphereOriginalScale.x : 0.05f) : 0f;
 			float smoothVelocity = 0f;
 			motionSphereScale = Mathf.SmoothDamp(m_MotionSpheres[i].localScale.x, motionSphereScale, ref smoothVelocity, 1f, Mathf.Infinity, Time.unscaledDeltaTime) * Mathf.Min((m_Transform.position - m_MotionSpheres[i].position).magnitude * 4, 1f);
 			m_MotionSpheres[i].localScale = Vector3.one * motionSphereScale;

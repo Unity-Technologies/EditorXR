@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Menus
 {
@@ -130,8 +131,7 @@ namespace UnityEngine.VR.Menus
 					case VisibilityState.Hidden:
 						if (value)
 						{
-							if (m_VisibilityCoroutine != null)
-								StopCoroutine(m_VisibilityCoroutine);
+							StopCoroutine(ref m_VisibilityCoroutine);
 							m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 						}
 						return;
@@ -139,8 +139,7 @@ namespace UnityEngine.VR.Menus
 					case VisibilityState.Visible:
 						if (!value)
 						{
-							if (m_VisibilityCoroutine != null)
-								StopCoroutine(m_VisibilityCoroutine);
+							StopCoroutine(ref m_VisibilityCoroutine);
 							m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 						}
 						return;
@@ -255,7 +254,7 @@ namespace UnityEngine.VR.Menus
 						m_RotationState = RotationState.Rotating;
 
 						foreach (var face in m_MenuFaces)
-							face.BeginRotationVisuals();
+							face.BeginVisuals();
 
 						StartCoroutine(AnimateFrameRotationShapeChange(RotationState.Rotating));
 					}
@@ -357,7 +356,7 @@ namespace UnityEngine.VR.Menus
 			StartCoroutine(AnimateFrameRotationShapeChange(m_RotationState));
 
 			foreach (var face in m_MenuFaces)
-				face.EndRotationVisuals();
+				face.EndVisuals();
 
 			float rotation = currentRotation;
 			float faceTargetRotation = GetRotationForFaceIndex(faceIndex);

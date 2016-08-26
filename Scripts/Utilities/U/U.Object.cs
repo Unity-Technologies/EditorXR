@@ -177,7 +177,7 @@
 
 				UnityObject.DestroyImmediate(o);
 			}
-			
+
 			public static GameObject SpawnGhostWireframe(GameObject obj, UnityMaterial ghostMaterial, bool enableRenderers = true)
 			{
 				// spawn ghost

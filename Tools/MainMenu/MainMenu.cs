@@ -11,7 +11,7 @@ using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockableRay
+	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay
 	{
 		public ActionMap actionMap
 		{
