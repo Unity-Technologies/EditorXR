@@ -2,12 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Assertions;
-using UnityEngine.Events;
-using UnityEngine.InputNew;
-using UnityEngine.Serialization;
+using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Menus
@@ -365,13 +361,11 @@ namespace UnityEngine.VR.Menus
 			float rotation = currentRotation;
 			float faceTargetRotation = GetRotationForFaceIndex(faceIndex);
 
+			float smoothVelocity = 0f;
 			float smoothSnapSpeed = 0.5f;
-			const float kTargetSnapThreshold = 0.0005f;
-			const float kEaseStepping = 1f;
-
 			while (Mathf.Abs(Mathf.DeltaAngle(rotation, faceTargetRotation)) > kRotationEpsilon)
 			{
-				smoothSnapSpeed = U.Math.Ease(smoothSnapSpeed, snapSpeed, kEaseStepping, kTargetSnapThreshold);
+				smoothSnapSpeed = Mathf.SmoothDamp(smoothSnapSpeed, snapSpeed, ref smoothVelocity, 0.0625f, Mathf.Infinity, Time.unscaledDeltaTime);
 				rotation = Mathf.LerpAngle(rotation, faceTargetRotation, Time.unscaledDeltaTime * smoothSnapSpeed);
 				m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, rotation, 0));
 				yield return null;
@@ -397,25 +391,20 @@ namespace UnityEngine.VR.Menus
 			StartCoroutine(AnimateFrameReveal());
 
 			const float kTargetScale = 1f;
-			const float kTargetSnapThreshold = 0.0005f;
-			const float kEaseStepping = 2f;
-
+			
 			float scale = 0f;
-
-			while (m_VisibilityState == VisibilityState.TransitioningIn && scale < kTargetScale)
+			float smoothVelocity = 0f;
+			while (!Mathf.Approximately(scale, kTargetScale))
 			{
 				menuOrigin.localScale = Vector3.one * scale;
 				alternateMenuOrigin.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
-				scale = U.Math.Ease(scale, kTargetScale, kEaseStepping, kTargetSnapThreshold);
+				scale = Mathf.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.125f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
-			if (m_VisibilityState == VisibilityState.TransitioningIn)
-			{
-				m_VisibilityState = VisibilityState.Visible;
-				menuOrigin.localScale = Vector3.one;
-				alternateMenuOrigin.localScale = m_AlternateMenuOriginOriginalLocalScale;
-			}
+			m_VisibilityState = VisibilityState.Visible;
+			menuOrigin.localScale = Vector3.one;
+			alternateMenuOrigin.localScale = m_AlternateMenuOriginOriginalLocalScale;
 
 			m_VisibilityCoroutine = null;
 		}
@@ -433,43 +422,37 @@ namespace UnityEngine.VR.Menus
 			StartCoroutine(AnimateFrameReveal(m_VisibilityState));
 
 			const float kTargetScale = 0f;
-			const float kTargetSnapThreshold = 0.0005f;
-			const float kEaseStepping = 1.1f;
-			const float kScaleThreshold = 0.0001f;
 			float scale = menuOrigin.localScale.x;
-
-			while (m_VisibilityState == VisibilityState.TransitioningOut && scale > kScaleThreshold)
+			float smoothVelocity = 0f;
+			while (!Mathf.Approximately(scale, kTargetScale))
 			{
 				menuOrigin.localScale = Vector3.one * scale;
 				alternateMenuOrigin.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
-				scale = U.Math.Ease(scale, kTargetScale, kEaseStepping, kTargetSnapThreshold);
+				scale = Mathf.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.06875f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
-			if (m_VisibilityState == VisibilityState.TransitioningOut)
-			{
-				m_VisibilityState = VisibilityState.Hidden;
-				menuOrigin.localScale = Vector3.zero;
-				alternateMenuOrigin.localScale = Vector3.zero;
+			m_VisibilityState = VisibilityState.Hidden;
+			menuOrigin.localScale = Vector3.zero;
+			alternateMenuOrigin.localScale = Vector3.zero;
 
-				float roundedRotation = m_MenuFaceRotationOrigin.localRotation.eulerAngles.y;
-				roundedRotation = Mathf.Round((roundedRotation) / kFaceRotationSnapAngle) * kFaceRotationSnapAngle; // calculate intended target rotation
-				m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, roundedRotation, 0)); // set intended target rotation
-				m_RotationState = RotationState.AtRest;
-			}
+			float roundedRotation = m_MenuFaceRotationOrigin.localRotation.eulerAngles.y;
+			roundedRotation = Mathf.Round((roundedRotation) / kFaceRotationSnapAngle) * kFaceRotationSnapAngle; // calculate intended target rotation
+			m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, roundedRotation, 0)); // set intended target rotation
+			m_RotationState = RotationState.AtRest;
 
 			m_VisibilityCoroutine = null;
 		}
 
 		private IEnumerator AnimateFrameRotationShapeChange(RotationState rotationState)
 		{
-			float easeDivider = rotationState == RotationState.Rotating ? 8f : 6f; // slower when rotating, faster when snapping
+			float smoothTime = rotationState == RotationState.Rotating ? 0.5f : 0.0375f; // slower when rotating, faster when snapping
 			float currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
 			float targetWeight = rotationState == RotationState.Rotating ? 100f : 0f;
-			const float kSnapValue = 0.001f;
+			float smoothVelocity = 0f;
 			while (m_RotationState == rotationState && !Mathf.Approximately(currentBlendShapeWeight, targetWeight))
 			{
-				currentBlendShapeWeight = U.Math.Ease(currentBlendShapeWeight, targetWeight, easeDivider, kSnapValue);
+				currentBlendShapeWeight = Mathf.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_MenuFrameRenderer.SetBlendShapeWeight(0, currentBlendShapeWeight);
 				yield return null;
 			}
@@ -478,25 +461,26 @@ namespace UnityEngine.VR.Menus
 				m_MenuFrameRenderer.SetBlendShapeWeight(0, targetWeight);
 		}
 
-		private IEnumerator AnimateFrameReveal(VisibilityState visibiityState = VisibilityState.TransitioningIn)
+		private IEnumerator AnimateFrameReveal(VisibilityState visibilityState = VisibilityState.TransitioningIn)
 		{
 			m_MenuFrameRenderer.SetBlendShapeWeight(1, 100f);
-			float easeDivider = visibiityState == VisibilityState.TransitioningIn ? 3f : 1.5f; // slower if transitioning in
+			float smoothTime = visibilityState == VisibilityState.TransitioningIn ? 0.1875f : 0.09375f; // slower if transitioning in
 			const float zeroStartBlendShapePadding = 20f; // start the blendShape at a point slightly above the full hidden value for better visibility
 			float currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(1);
-			float targetWeight = visibiityState == VisibilityState.TransitioningIn ? 0f : 100f;
-			const float kSnapValue = 0.001f;
+			float targetWeight = visibilityState == VisibilityState.TransitioningIn ? 0f : 100f;
+			float smoothVelocity = 0f;
 			const float kLerpEmphasisWeight = 0.25f;
 			currentBlendShapeWeight = currentBlendShapeWeight > 0 ? currentBlendShapeWeight : zeroStartBlendShapePadding;
+
 			while (m_VisibilityState != VisibilityState.Hidden && !Mathf.Approximately(currentBlendShapeWeight, targetWeight))
 			{
-				currentBlendShapeWeight = U.Math.Ease(currentBlendShapeWeight, targetWeight, easeDivider, kSnapValue);
+				currentBlendShapeWeight = Mathf.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_MenuFrameRenderer.SetBlendShapeWeight(1, currentBlendShapeWeight * currentBlendShapeWeight);
 				m_MenuFacesMaterial.color = Color.Lerp(m_MenuFacesColor, kMenuFacesHiddenColor, currentBlendShapeWeight * kLerpEmphasisWeight);
 				yield return null;
 			}
 
-			if (m_VisibilityState == visibiityState)
+			if (m_VisibilityState == visibilityState)
 			{
 				m_MenuFrameRenderer.SetBlendShapeWeight(1, targetWeight);
 				m_MenuFacesMaterial.color = targetWeight > 0 ? m_MenuFacesColor : kMenuFacesHiddenColor;

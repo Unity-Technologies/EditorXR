@@ -110,13 +110,13 @@ namespace UnityEngine.VR.Menus
 			m_CanvasGroup.interactable = false;
 			m_VisualState = targetVisualState;
 
-			float easeDivider = targetVisualState == VisualState.Showing ? 14f : 2f;
+			float smoothTime = targetVisualState == VisualState.Showing ? 0.35f : 0.125f;
 			float startingOpacity = m_CanvasGroup.alpha;
 			float targetOpacity = targetVisualState == VisualState.Showing ? 1f : 0f;
-			const float kSnapValue = 0.0001f;
+			float smoothVelocity = 0f;
 			while (m_VisualState == targetVisualState && !Mathf.Approximately(startingOpacity, targetOpacity))
 			{
-				startingOpacity = U.Math.Ease(startingOpacity, targetOpacity, easeDivider, kSnapValue);
+				startingOpacity = Mathf.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_CanvasGroup.alpha = startingOpacity * startingOpacity;
 				yield return null;
 			}
@@ -148,12 +148,12 @@ namespace UnityEngine.VR.Menus
 			m_RotationState = rotationState;
 			float currentBlendShapeWeight = m_TitleIcon.GetBlendShapeWeight(0);
 			float targetWeight = rotationState == RotationState.RotationBegin ? 100f : 0f;
-			float easeDivider = rotationState == RotationState.RotationBegin ? 4f : 8f;
-			const float kSnapValue = 0.001f;
+			float smoothTime = rotationState == RotationState.RotationBegin ? 0.25f : 0.5f;
 			const float kLerpEmphasisWeight = 0.2f;
+			float smoothVelocity = 0f;
 			while (m_RotationState == rotationState && !Mathf.Approximately(currentBlendShapeWeight, targetWeight))
 			{
-				currentBlendShapeWeight = U.Math.Ease(currentBlendShapeWeight, targetWeight, easeDivider, kSnapValue);
+				currentBlendShapeWeight = Mathf.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				currentBorderLocalScale = Vector3.Lerp(currentBorderLocalScale, targetBorderLocalScale, currentBlendShapeWeight * kLerpEmphasisWeight);
 				m_BorderOutlineTransform.localScale = currentBorderLocalScale;
 				m_TitleIcon.SetBlendShapeWeight(0, currentBlendShapeWeight);

@@ -109,7 +109,8 @@ public class DefaultProxyRay : MonoBehaviour
 		float currentWidth = m_LineRenderer.widthStart;
 		while (currentWidth > 0)
 		{
-			currentWidth = U.Math.Ease(currentWidth, 0f, 3, 0.0005f);
+			float smoothVelocity = 0f;
+			currentWidth = Mathf.SmoothDamp(currentWidth, 0f, ref smoothVelocity, 0.1875f, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
 			yield return null;
 		}
@@ -124,11 +125,11 @@ public class DefaultProxyRay : MonoBehaviour
 		m_Tip.transform.localScale = m_TipStartScale;
 
 		float currentWidth = m_LineRenderer.widthStart;
+		float smoothVelocity = 0f;
 		while (currentWidth < m_LineWidth)
 		{
-			currentWidth = U.Math.Ease(currentWidth, m_LineWidth, 5, 0.0005f);
+			currentWidth = Mathf.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, Mathf.Infinity, 0.3125f, Time.unscaledDeltaTime);
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
-
 			yield return null;
 		}
 
