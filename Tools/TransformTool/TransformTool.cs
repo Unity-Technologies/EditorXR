@@ -185,7 +185,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 
 	private GameObject CreateManipulator(GameObject prefab)
 	{
-		var go = U.Object.InstantiateAndSetActive(prefab, transform);
+		var go = U.Object.Instantiate(prefab, transform, active:false);
 		var manipulator = go.GetComponent<IManipulator>();
 		manipulator.translate = Translate;
 		manipulator.rotate = Rotate;

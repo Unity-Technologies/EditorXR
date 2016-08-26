@@ -22,11 +22,11 @@
 		/// </summary>
 		public class Object
 		{
-			public static GameObject InstantiateAndSetActive(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true)
+			public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true, bool active = true)
 			{
 				GameObject go = UnityObject.Instantiate(prefab);
 				go.transform.SetParent(parent, worldPositionStays);
-				go.SetActive(true);
+				go.SetActive(active);
 #if UNITY_EDITOR
 				if (!Application.isPlaying && runInEditMode)
 				{
@@ -63,7 +63,7 @@
 #if UNITY_EDITOR
 				empty = EditorUtility.CreateGameObjectWithHideFlags(name, EditorVR.kDefaultHideFlags);
 #else
-                empty = new GameObject(name);
+				empty = new GameObject(name);
 #endif
 				empty.transform.parent = parent;
 				empty.transform.localPosition = Vector3.zero;  // If parent is defined, assume local position for a new GameObject should be cleared
@@ -181,7 +181,7 @@
 			public static GameObject SpawnGhostWireframe(GameObject obj, UnityMaterial ghostMaterial, bool enableRenderers = true)
 			{
 				// spawn ghost
-				GameObject ghostObj = InstantiateAndSetActive(obj, obj.transform.parent);
+				GameObject ghostObj = Instantiate(obj, obj.transform.parent);
 				// generate wireframe for objects in tree containing renderers
 				Renderer[] children = ghostObj.GetComponentsInChildren<Renderer>();
 				foreach (Renderer r in children)

@@ -49,7 +49,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 
 	private void Start()
 	{
-		m_BlinkVisualsGO = U.Object.InstantiateAndSetActive(m_BlinkVisualsPrefab, rayOrigin);
+		m_BlinkVisualsGO = U.Object.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
 		m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
 		m_BlinkVisualsGO.transform.parent = rayOrigin;
 		m_BlinkVisualsGO.transform.localPosition = Vector3.zero;

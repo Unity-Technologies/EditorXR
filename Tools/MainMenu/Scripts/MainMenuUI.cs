@@ -292,7 +292,7 @@ namespace UnityEngine.VR.Menus
 
 		public void CreateToolButton(ButtonData buttonData, Action<Button> buttonCreationCallback)
 		{
-			var button = U.Object.InstantiateAndSetActive(m_ButtonTemplatePrefab.gameObject);
+			var button = U.Object.Instantiate(m_ButtonTemplatePrefab.gameObject);
 			button.name = buttonData.name;
 			MainMenuButton mainMenuButton = button.GetComponent<MainMenuButton>();
 			buttonCreationCallback(mainMenuButton.button);

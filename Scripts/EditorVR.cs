@@ -268,7 +268,7 @@ public class EditorVR : MonoBehaviour
 			proxy.trackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
 			foreach (var rayOriginBase in proxy.rayOrigins)
 			{
-				var rayTransform = U.Object.InstantiateAndSetActive(m_ProxyRayPrefab.gameObject, rayOriginBase.Value).transform;
+				var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginBase.Value).transform;
 				rayTransform.position = rayOriginBase.Value.position;
 				rayTransform.rotation = rayOriginBase.Value.rotation;
 				m_DefaultRays.Add(rayOriginBase.Value, rayTransform.GetComponent<DefaultProxyRay>());
@@ -324,7 +324,7 @@ public class EditorVR : MonoBehaviour
 		U.Object.AddComponent<EventSystem>(gameObject);
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_InputModule.getPointerLength = GetPointerLength;
-		m_EventCamera = U.Object.InstantiateAndSetActive(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+		m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
 		m_InputModule.eventCamera = m_EventCamera;
 		foreach (var proxy in m_AllProxies)
@@ -356,7 +356,7 @@ public class EditorVR : MonoBehaviour
 
 	private GameObject InstantiateUI(GameObject prefab)
 	{
-		var go = U.Object.InstantiateAndSetActive(prefab, transform);
+		var go = U.Object.Instantiate(prefab, transform);
 		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = m_EventCamera;
 		return go;

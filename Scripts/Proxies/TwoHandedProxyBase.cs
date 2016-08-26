@@ -47,8 +47,8 @@ namespace UnityEngine.VR.Proxies
 		
 		public virtual void Awake()
 		{
-			m_LeftHand = U.Object.InstantiateAndSetActive(m_LeftHandProxyPrefab, transform).transform;
-			m_RightHand = U.Object.InstantiateAndSetActive(m_RightHandProxyPrefab, transform).transform;
+			m_LeftHand = U.Object.Instantiate(m_LeftHandProxyPrefab, transform).transform;
+			m_RightHand = U.Object.Instantiate(m_RightHandProxyPrefab, transform).transform;
 			var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
 			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 
