@@ -13,6 +13,9 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	private int m_NumPerRow;
 
+	[SerializeField]
+	private float m_ScaleFactor = 0.75f;
+
 	protected override int dataLength { get { return Mathf.CeilToInt((float)base.dataLength / m_NumPerRow); } }
 
 	public AssetData[] listData { set { m_Data = value; } }
@@ -54,6 +57,11 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		m_TextMaterial.SetVector("_ClipExtents", clipExtents);
 	}
 
+	protected override Vector3 GetObjectSize(GameObject g)
+	{
+		return base.GetObjectSize(g) * m_ScaleFactor;
+	}
+
 	protected override void UpdateItems()
 	{
 		for (int i = 0; i < m_Data.Length; i++)
@@ -76,7 +84,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	protected override void UpdateItem(Transform t, int offset)
 	{
 		AssetGridItem item = t.GetComponent<AssetGridItem>();
-		item.UpdateTransforms();
+		item.UpdateTransforms(m_ScaleFactor);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
 		var zOffset = m_ItemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;

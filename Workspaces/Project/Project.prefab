@@ -320,7 +320,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 0a1040c7f6478ca49b885948cb289f5f, type: 2}
   m_Color: {r: 0, g: 0, b: 0, a: 0.392}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
@@ -397,11 +397,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ScrollOffset: 0
-  m_Padding: 0.01
+  m_Padding: 0.05
   m_ScrollDamping: 1
   m_MaxMomentum: 200
   m_Templates:
   - {fileID: 1000014066556564, guid: 94a0fcdece43c184c88738ce9401f3d0, type: 2}
+  m_ScaleFactor: 0.75
 --- !u!114 &114000013463570846
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -414,7 +415,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 0a1040c7f6478ca49b885948cb289f5f, type: 2}
   m_Color: {r: 0, g: 0, b: 0, a: 0.392}
   m_RaycastTarget: 0
   m_OnCullStateChanged:

@@ -7,7 +7,7 @@
 		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
 	}
 	SubShader {
-		Tags { "RenderType"="Opaque" "Queue" = "Transparent+1" }
+		Tags { "RenderType"="Opaque" "Queue" = "Transparent-1" }
 		LOD 200
 		
 		CGPROGRAM
@@ -41,9 +41,10 @@
 			if (diff.x > _ClipExtents.x || diff.y > _ClipExtents.y || diff.z > _ClipExtents.z)
 				discard;
 
-			fixed4 c = tex2D(_MainTex, IN.uv_MainTex) *_Color;
-			o.Emission = c.rgb;	
-			o.Alpha = c.a;
+			fixed4 c = tex2D(_MainTex, IN.uv_MainTex);
+			c *= _Color * c.a;
+			o.Emission = c.rgb;
+			o.Alpha = 1;
 		}
 		ENDCG
 	}

@@ -22,6 +22,9 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private DirectHandle m_Cube;
 
 	[SerializeField]
+	private RectTransform m_TextPanel;
+
+	[SerializeField]
 	private Material m_NoClipCubeMaterial;
 
 	private Renderer m_CubeRenderer;
@@ -53,6 +56,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 		var cachedIcon = AssetDatabase.GetCachedIcon(assetPath);
 		if (cachedIcon)
 		{
+			cachedIcon.wrapMode = TextureWrapMode.Clamp;
 			m_CubeRenderer.sharedMaterial.mainTexture = cachedIcon;
 		}
 	}
@@ -62,16 +66,18 @@ public class AssetGridItem : ListViewItem<AssetData>
 		m_Text.material = textMaterial;
 	}
 
-	public void UpdateTransforms()
+	public void UpdateTransforms(float scale)
 	{
+		transform.localScale = Vector3.one * scale;
+
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 
 		Vector3 eyeVector3 = Quaternion.Inverse(transform.parent.rotation) * cameraTransform.forward;
 		eyeVector3.x = 0;
 		if (Vector3.Dot(eyeVector3, Vector3.forward) > 0)
-			m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.up);
+			m_TextPanel.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.up);
 		else
-			m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.down);
+			m_TextPanel.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.down);
 	}
 
 	public void GetMaterials(out Material textMaterial)
