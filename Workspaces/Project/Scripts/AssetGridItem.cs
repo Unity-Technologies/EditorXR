@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.IO;
 using ListView;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
@@ -45,7 +47,14 @@ public class AssetGridItem : ListViewItem<AssetData>
 			m_Setup = true;
 		}
 
-		m_Text.text = Path.GetFileName(listData.path);
+		m_Text.text = Path.GetFileNameWithoutExtension(listData.path);
+
+		var assetPath = data.path.Substring(data.path.IndexOf("Assets"));
+		var cachedIcon = AssetDatabase.GetCachedIcon(assetPath);
+		if (cachedIcon)
+		{
+			m_CubeRenderer.sharedMaterial.mainTexture = cachedIcon;
+		}
 	}
 
 	public void SwapMaterials(Material textMaterial)

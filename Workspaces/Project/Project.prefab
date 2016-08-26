@@ -350,7 +350,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_ScrollOffset: 0
   m_Padding: 0.01
-  m_ScrollDamping: 15
+  m_ScrollDamping: 1
   m_MaxMomentum: 200
   m_Templates:
   - {fileID: 1000014066556564, guid: 918c55469b1324d46b0c41586835ce87, type: 2}
@@ -398,7 +398,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_ScrollOffset: 0
   m_Padding: 0.01
-  m_ScrollDamping: 15
+  m_ScrollDamping: 1
   m_MaxMomentum: 200
   m_Templates:
   - {fileID: 1000014066556564, guid: 94a0fcdece43c184c88738ce9401f3d0, type: 2}

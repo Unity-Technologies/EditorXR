@@ -1,4 +1,5 @@
 ﻿using ListView;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
 
@@ -86,7 +87,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override AssetGridItem GetItem(AssetData listData)
 	{
-		var item = (AssetGridItem) base.GetItem(listData);
+		var item = base.GetItem(listData);
 		item.SwapMaterials(m_TextMaterial);
 		return item;
 	}
