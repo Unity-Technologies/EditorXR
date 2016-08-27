@@ -1,4 +1,5 @@
-﻿using ListView;
+﻿using System;
+using ListView;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
 
@@ -12,6 +13,8 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	private Transform m_GrabbedObject;
 
 	public FolderData[] listData { set { m_Data = value; } }
+
+	public Action<FolderData> selectFolder;
 
 	protected override void Setup()
 	{
@@ -45,6 +48,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	{
 		var item = (FolderListItem) base.GetItem(listData);
 		item.SwapMaterials(m_TextMaterial, m_ExpandArrowMaterial);
+		item.selectFolder = selectFolder;
 		return item;
 	}
 

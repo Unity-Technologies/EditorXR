@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.IO;
 using ListView;
 using UnityEngine;
@@ -19,10 +20,10 @@ public class FolderListItem : ListViewItem<FolderData>
 	private Text m_Text;
 
 	[SerializeField]
-	private DirectHandle m_Cube;
+	private BaseHandle m_Cube;
 
 	[SerializeField]
-	private DirectHandle m_ExpandArrow;
+	private BaseHandle m_ExpandArrow;
 
 	[SerializeField]
 	private Material m_NoClipCubeMaterial;
@@ -34,6 +35,8 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	private Transform m_GrabbedObject;
 	private float m_GrabLerp;
+
+	public Action<FolderData> selectFolder;
 
 	public override void Setup(FolderData listData)
 	{
@@ -104,15 +107,23 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	private void GrabBegin(BaseHandle baseHandle, HandleDragEventData eventData)
 	{
-		var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
-		var cloneItem = clone.GetComponent<FolderListItem>();
-		cloneItem.m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipCubeMaterial;
-		cloneItem.m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = m_NoClipExpandArrowMaterial;
-		cloneItem.m_Text.material = null;
+		if (eventData.direct)
+		{
+			var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
+			var cloneItem = clone.GetComponent<FolderListItem>();
+			cloneItem.m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipCubeMaterial;
+			cloneItem.m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = m_NoClipExpandArrowMaterial;
+			cloneItem.m_Text.material = null;
 
-		m_GrabbedObject = clone.transform;
-		m_GrabLerp = 0;
-		StartCoroutine(Magnetize());
+			m_GrabbedObject = clone.transform;
+			m_GrabLerp = 0;
+			StartCoroutine(Magnetize());
+		}
+		else
+		{
+			var folderItem = baseHandle.GetComponentInParent<FolderListItem>();
+			selectFolder(folderItem.data);
+		}
 	}
 
 	private IEnumerator Magnetize()
@@ -130,14 +141,18 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	private void GrabDrag(BaseHandle baseHandle, HandleDragEventData eventData)
 	{
-		var rayTransform = eventData.rayOrigin.transform;
-		m_GrabbedObject.transform.position = Vector3.Lerp(m_GrabbedObject.transform.position, rayTransform.position + rayTransform.rotation * kGrabOffset, m_GrabLerp);
-		m_GrabbedObject.transform.rotation = Quaternion.Lerp(m_GrabbedObject.transform.rotation, rayTransform.rotation, m_GrabLerp);
+		if (m_GrabbedObject)
+		{
+			var rayTransform = eventData.rayOrigin.transform;
+			m_GrabbedObject.transform.position = Vector3.Lerp(m_GrabbedObject.transform.position, rayTransform.position + rayTransform.rotation * kGrabOffset, m_GrabLerp);
+			m_GrabbedObject.transform.rotation = Quaternion.Lerp(m_GrabbedObject.transform.rotation, rayTransform.rotation, m_GrabLerp);
+		}
 	}
 
 	private void GrabEnd(BaseHandle baseHandle, HandleDragEventData eventData)
 	{
-		U.Object.Destroy(m_GrabbedObject.gameObject);
+		if(m_GrabbedObject)
+			U.Object.Destroy(m_GrabbedObject.gameObject);
 	}
 
 	private void OnDestroy()

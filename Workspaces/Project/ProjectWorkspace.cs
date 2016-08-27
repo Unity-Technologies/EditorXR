@@ -108,6 +108,7 @@ public class ProjectWorkspace : Workspace
 		folderListView.bounds = bounds;
 		folderListView.PreCompute(); // Compute item size
 		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0);
+		folderListView.selectFolder = SelectFolder;
 
 		var folderPanel = m_ProjectUI.folderPanel;
 		folderPanel.transform.localPosition = xOffset * Vector3.right;
@@ -134,6 +135,11 @@ public class ProjectWorkspace : Workspace
 		assetPanel.transform.localPosition = xOffset * Vector3.right;
 		assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + kPanelMargin);
 		assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
+	}
+
+	private void SelectFolder(FolderData data)
+	{
+		m_ProjectUI.assetListView.listData = data.assets;
 	}
 
 	private void OnScrollBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))

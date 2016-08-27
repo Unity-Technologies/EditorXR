@@ -27,7 +27,20 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override int dataLength { get { return Mathf.CeilToInt((float)base.dataLength / m_NumPerRow); } }
 
-	public AssetData[] listData { set { m_Data = value; } }
+	public AssetData[] listData
+	{
+		set
+		{
+			if (m_Data != null)
+			{
+				foreach (var data in m_Data)
+				{
+					CleanUpBeginning(data);
+				}
+			}
+			m_Data = value;
+		}
+	}
 
 	public Func<string, bool> testFilter; 
 

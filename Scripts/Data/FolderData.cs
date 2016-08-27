@@ -22,9 +22,7 @@ public class FolderData : ListViewItemNestedData<FolderData>
 		FolderData[] subFolders = GetFolderDataForPath(path, depth + 1);
 		if (subFolders.Length > 0)
 			children = subFolders;
-		var assets = AssetData.GetAssetDataForPath(path);
-		if (assets.Length > 0)
-			m_Assets = assets;
+		m_Assets = AssetData.GetAssetDataForPath(path);
 	}
 
 	public static FolderData[] GetFolderDataForPath(string path, int depth = 0)

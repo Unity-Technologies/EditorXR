@@ -39,7 +39,7 @@ GameObject:
   - 33: {fileID: 33000011138105476}
   - 65: {fileID: 65000011169439572}
   - 23: {fileID: 23000010200333276}
-  - 114: {fileID: 114000010071736446}
+  - 114: {fileID: 114000014220381596}
   m_Layer: 5
   m_Name: Cube
   m_TagString: Untagged
@@ -58,7 +58,7 @@ GameObject:
   - 33: {fileID: 33000012403228438}
   - 23: {fileID: 23000013863219786}
   - 65: {fileID: 65000013022621304}
-  - 114: {fileID: 114000014161336684}
+  - 114: {fileID: 114000011118187708}
   m_Layer: 5
   m_Name: ExpandArrow
   m_TagString: Untagged
@@ -220,15 +220,15 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 0.002}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &114000010071736446
+--- !u!114 &114000011118187708
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013225245714}
+  m_GameObject: {fileID: 1000013287519124}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 10f0223e36df2474eadcf31d368c62a2, type: 3}
+  m_Script: {fileID: 11500000, guid: 9400c20ac2d94774aa14b17a6c9a4674, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -245,8 +245,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Text: {fileID: 114000013632537286}
-  m_Cube: {fileID: 114000010071736446}
-  m_ExpandArrow: {fileID: 114000014161336684}
+  m_Cube: {fileID: 114000014220381596}
+  m_ExpandArrow: {fileID: 114000011118187708}
   m_NoClipCubeMaterial: {fileID: 2100000, guid: 66d21d847da9fae44a46053afe8d825b,
     type: 2}
   m_NoClipExpandArrowMaterial: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba,
@@ -285,15 +285,15 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: Test Text
---- !u!114 &114000014161336684
+--- !u!114 &114000014220381596
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013287519124}
+  m_GameObject: {fileID: 1000013225245714}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 10f0223e36df2474eadcf31d368c62a2, type: 3}
+  m_Script: {fileID: 11500000, guid: 9400c20ac2d94774aa14b17a6c9a4674, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
