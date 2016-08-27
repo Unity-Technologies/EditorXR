@@ -10,8 +10,14 @@ public class ProjectWorkspace : Workspace
 	private const float kScrollMargin = 0.03f;
 	private const float kYBounds = 0.2f;
 
+	private const float kMinScale = 0.1f;
+	private const float kMaxScale = 2;
+
 	[SerializeField]
 	private GameObject m_ContentPrefab;
+
+	[SerializeField]
+	private GameObject m_SliderPrefab;
 
 	[SerializeField]
 	private GameObject m_FilterPrefab;
@@ -30,6 +36,13 @@ public class ProjectWorkspace : Workspace
 
 		var filterPrefab = U.Object.InstantiateAndSetActive(m_FilterPrefab, m_WorkspaceUI.frontPanel, false);
 		m_FilterUI = filterPrefab.GetComponent<FilterUI>();
+
+		var sliderPrefab = U.Object.InstantiateAndSetActive(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
+		var zoomSlider = sliderPrefab.GetComponent<ZoomSliderUI>();
+		zoomSlider.zoomSlider.minValue = kMinScale;
+		zoomSlider.zoomSlider.maxValue = kMaxScale;
+		zoomSlider.sliding = Scale;
+		zoomSlider.zoomSlider.value = m_ProjectUI.assetListView.scaleFactor;
 
 		m_ProjectUI.assetListView.testFilter = TestFilter;
 
@@ -170,6 +183,11 @@ public class ProjectWorkspace : Workspace
 
 	private void OnScrollHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData)) {
 		setHighlight(handle.gameObject, false);
+	}
+
+	private void Scale(float value)
+	{
+		m_ProjectUI.assetListView.scaleFactor = value;
 	}
 
 	private bool TestFilter(string type)

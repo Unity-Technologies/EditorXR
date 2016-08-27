@@ -14,6 +14,11 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	private int m_NumPerRow;
 
+	public float scaleFactor
+	{
+		get { return m_ScaleFactor; }
+		set { m_ScaleFactor = value; }
+	}
 	[SerializeField]
 	private float m_ScaleFactor = 0.75f;
 
