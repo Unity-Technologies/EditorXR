@@ -276,6 +276,8 @@ MonoBehaviour:
     type: 2}
   m_VisibilityLabelPrefab: {fileID: 1000013746654882, guid: b393279dc56d2e34695810f6f9011d3c,
     type: 2}
+  m_ActiveColor: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
+  m_DisableColor: {r: 0.50371873, g: 0.5137931, b: 0.5137931, a: 1}
 --- !u!114 &114000011232401330
 MonoBehaviour:
   m_ObjectHideFlags: 1

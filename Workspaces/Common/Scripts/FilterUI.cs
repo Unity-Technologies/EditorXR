@@ -51,6 +51,12 @@ public class FilterUI : MonoBehaviour {
 	[SerializeField]
 	private GameObject m_VisibilityLabelPrefab;
 
+	[SerializeField]
+	private Color m_ActiveColor;
+
+	[SerializeField]
+	private Color m_DisableColor;
+
 	private Button[] m_VisibilityButtons;
 	private Button[] m_VisibilityLabels;
 
@@ -78,7 +84,7 @@ public class FilterUI : MonoBehaviour {
 			{
 				OnFilterClick(label);
 			});
-			label.GetComponentInChildren<Text>().text = i == 0 ? "All/None" : kFilterTypes[i - 1];
+			label.GetComponentInChildren<Text>().text = i == 0 ? "All" : kFilterTypes[i - 1];
 		}
 	}
 
@@ -99,10 +105,28 @@ public class FilterUI : MonoBehaviour {
 	public void OnFilterClick(Button button)
 	{
 		for (int i = 0; i < m_VisibilityButtons.Length; i++)
+			if (button == m_VisibilityButtons[i] || button == m_VisibilityLabels[i])
+				m_SearchQuery = i == 0 ? string.Empty : "t:" + kFilterTypes[i - 1];
+
+		for (int i = 0; i < m_VisibilityButtons.Length; i++)
 		{
 			if (button == m_VisibilityButtons[i] || button == m_VisibilityLabels[i])
 			{
-				m_SearchQuery = i == 0 ? string.Empty : "t:" + kFilterTypes[i - 1];
+				m_VisibilityButtons[i].targetGraphic.color = m_ActiveColor;
+				m_VisibilityLabels[i].targetGraphic.color = m_ActiveColor;
+			}
+			else
+			{
+				if (m_SearchQuery.Contains("t:"))
+				{
+					m_VisibilityButtons[i].targetGraphic.color = m_DisableColor;
+					m_VisibilityLabels[i].targetGraphic.color = m_DisableColor;
+				}
+				else
+				{
+					m_VisibilityButtons[i].targetGraphic.color = m_ActiveColor;
+					m_VisibilityLabels[i].targetGraphic.color = m_ActiveColor;
+				}
 			}
 		}
 	}
