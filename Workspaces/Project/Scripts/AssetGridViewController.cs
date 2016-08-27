@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections;
 using ListView;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
 
 public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>
 {
 	private const float kClipMargin = 0.005f; // Give the cubes a margin so that their sides don't get clipped
+
+	private const float kRecycleDuration = 0.1f;
+	private const float kPositionFollow = 0.4f;
 
 	private Material m_TextMaterial;
 
@@ -81,11 +84,11 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 				continue;
 			}
 			//Debug.Log(m_Data[i].type);
-			if (count / m_NumPerRow + m_DataOffset < -1)
+			if (count / m_NumPerRow + m_DataOffset < 0)
 			{
 				CleanUpBeginning(m_Data[i]);
 			}
-			else if (count / m_NumPerRow + m_DataOffset > m_NumRows - 1)
+			else if (count / m_NumPerRow + m_DataOffset > m_NumRows - 2)
 			{
 				CleanUpEnd(m_Data[i]);
 			}
@@ -97,22 +100,84 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		}
 	}
 
-	protected override void UpdateItem(Transform t, int offset)
+	protected override void RecycleItem(string template, MonoBehaviour item)
+	{
+		if (item == null || template == null)
+			return;
+		StartCoroutine(AnimateOut(template, item));
+	}
+
+	private IEnumerator AnimateOut(string template, MonoBehaviour item)
+	{
+		float start = Time.realtimeSinceStartup;
+		//Quaternion startRot = item.transform.rotation;
+		//Vector3 startPos = item.transform.position;
+		float startScale = item.transform.localScale.x;
+		while (Time.realtimeSinceStartup - start < kRecycleDuration)
+		{
+			//item.transform.rotation = Quaternion.Lerp(startRot, destination.rotation, (Time.time - start) / kRecycleDuration);
+			//item.transform.position = Vector3.Lerp(startPos, destination.position, (Time.time - start) / kRecycleDuration);
+			var t = (Time.realtimeSinceStartup - start) / kRecycleDuration;
+			item.transform.localScale = Vector3.one * Mathf.Lerp(startScale, 0, t * t);
+			yield return null;
+		}
+		//item.transform.rotation = destination.rotation;
+		//item.transform.position = destination.position;
+		m_TemplateDictionary[template].pool.Add(item);
+		item.gameObject.SetActive(false);
+		item.transform.localScale = Vector3.one * startScale;
+	}
+
+	private IEnumerator AnimateIn(AssetData data)
+	{
+		float start = Time.realtimeSinceStartup;
+		//Quaternion startRot = item.transform.rotation;
+		//Vector3 startPos = item.transform.position;
+		float startScale = data.item.transform.localScale.x;
+		data.item.transform.localScale = Vector3.zero;
+		data.animating = true;
+		while (Time.realtimeSinceStartup - start < kRecycleDuration)
+		{
+			//item.transform.rotation = Quaternion.Lerp(startRot, destination.rotation, (Time.time - start) / kRecycleDuration);
+			//item.transform.position = Vector3.Lerp(startPos, destination.position, (Time.time - start) / kRecycleDuration);
+			if(!data.item.gameObject.activeSelf)
+				yield break;
+			var t = (Time.realtimeSinceStartup - start) / kRecycleDuration;
+			data.item.transform.localScale = Vector3.one * Mathf.Lerp(0, startScale, t * t);
+			yield return null;
+		}
+		//item.transform.rotation = destination.rotation;
+		//item.transform.position = destination.position;
+		data.animating = false;
+	}
+
+	protected override void UpdateVisibleItem(AssetData data, int offset)
+	{
+		if (data.item == null)
+		{
+			data.item = GetItem(data);
+		}
+		UpdateItem(data.item.transform, offset, data.animating);
+	}
+
+	private void UpdateItem(Transform t, int offset, bool animating)
 	{
 		AssetGridItem item = t.GetComponent<AssetGridItem>();
-		item.UpdateTransforms(m_ScaleFactor);
+		if(!animating)
+			item.UpdateTransforms(m_ScaleFactor);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
 		var zOffset = m_ItemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
 		var xOffset = m_ItemSize.x * (offset % m_NumPerRow);
-		t.localPosition = m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right;
+		t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, kPositionFollow);
 		t.localRotation = Quaternion.identity;
 	}
 
-	protected override AssetGridItem GetItem(AssetData listData)
+	protected override AssetGridItem GetItem(AssetData data)
 	{
-		var item = base.GetItem(listData);
+		var item = base.GetItem(data);
 		item.SwapMaterials(m_TextMaterial);
+		StartCoroutine(AnimateIn(data));
 		return item;
 	}
 

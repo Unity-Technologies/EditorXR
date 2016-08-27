@@ -15,6 +15,7 @@ public class AssetData : ListViewItemData
 	private string m_Type;
 
 	public string type { get { return m_Type; } }
+	public bool animating { get; set; }
 
 	public AssetData(string path)
 	{

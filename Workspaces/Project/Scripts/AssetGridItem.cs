@@ -87,7 +87,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 	public void Clip(Bounds bounds, Matrix4x4 parentMatrix)
 	{
 		m_CubeRenderer.sharedMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_CubeRenderer.sharedMaterial.SetVector("_ClipExtents", bounds.extents);
+		m_CubeRenderer.sharedMaterial.SetVector("_ClipExtents", bounds.extents * 5);
 	}
 
 	private void GrabBegin(BaseHandle baseHandle, HandleDragEventData eventData)
