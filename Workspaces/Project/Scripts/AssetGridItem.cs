@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.IO;
 using ListView;
 using UnityEditor;
@@ -52,7 +51,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 		m_Text.text = Path.GetFileNameWithoutExtension(listData.path);
 
-		var assetPath = data.path.Substring(data.path.IndexOf("Assets"));
+		var assetPath = AssetData.GetPathRelativeToAssets(data.path);
 		var cachedIcon = AssetDatabase.GetCachedIcon(assetPath);
 		if (cachedIcon)
 		{

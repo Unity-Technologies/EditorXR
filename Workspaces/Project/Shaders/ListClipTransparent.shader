@@ -7,7 +7,7 @@
 		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
 	}
 		SubShader{
-		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent+2" }
+		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent-1" }
 		LOD 200
 		ZWrite Off
 

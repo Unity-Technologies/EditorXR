@@ -7,7 +7,7 @@
 		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
 	}
 	SubShader {
-		Tags { "RenderType"="Opaque" "Queue" = "Transparent-1" }
+		Tags { "RenderType"="Opaque" "Queue" = "Transparent-2" }
 		LOD 200
 		
 		CGPROGRAM

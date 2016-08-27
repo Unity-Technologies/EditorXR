@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using ListView;
 
 public class FolderData : ListViewItemNestedData<FolderData>
@@ -28,11 +29,12 @@ public class FolderData : ListViewItemNestedData<FolderData>
 
 	public static FolderData[] GetFolderDataForPath(string path, int depth = 0)
 	{
-		var paths = Directory.GetDirectories(path);
-		var files = new FolderData[paths.Length];
+		//var dirs = new DirectoryInfo(path).GetDirectories().Where(dir => (dir.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden).ToArray();
+		var dirs = Directory.GetDirectories(path).Where(name => !Path.GetFileName(name).StartsWith(".")).ToArray();
+		var files = new FolderData[dirs.Length];
 		for (int i = 0; i < files.Length; i++)
 		{
-			files[i] = new FolderData(paths[i], depth);
+			files[i] = new FolderData(dirs[i], depth);
 		}
 		return files;
 	}

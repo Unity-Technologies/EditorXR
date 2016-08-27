@@ -30,6 +30,9 @@ public class ProjectWorkspace : Workspace
 
 		var filterPrefab = U.Object.InstantiateAndSetActive(m_FilterPrefab, m_WorkspaceUI.frontPanel, false);
 		m_FilterUI = filterPrefab.GetComponent<FilterUI>();
+
+		m_ProjectUI.assetListView.testFilter = TestFilter;
+
 #if UNITY_EDITOR
 		var folderData = new[]
 		{
@@ -167,5 +170,10 @@ public class ProjectWorkspace : Workspace
 
 	private void OnScrollHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData)) {
 		setHighlight(handle.gameObject, false);
+	}
+
+	private bool TestFilter(string type)
+	{
+		return FilterUI.TestFilter(m_FilterUI.searchQuery, type);
 	}
 }

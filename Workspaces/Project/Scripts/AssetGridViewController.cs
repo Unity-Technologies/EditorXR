@@ -1,4 +1,5 @@
-﻿using ListView;
+﻿using System;
+using ListView;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
@@ -19,6 +20,8 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	protected override int dataLength { get { return Mathf.CeilToInt((float)base.dataLength / m_NumPerRow); } }
 
 	public AssetData[] listData { set { m_Data = value; } }
+
+	public Func<string, bool> testFilter; 
 
 	protected override void Setup()
 	{
@@ -64,20 +67,28 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override void UpdateItems()
 	{
+		int count = 0;
 		for (int i = 0; i < m_Data.Length; i++)
 		{
-			if (i / m_NumPerRow + m_DataOffset < -1)
+			if (!testFilter(m_Data[i].type))
+			{
+				CleanUpBeginning(m_Data[i]);
+				continue;
+			}
+			//Debug.Log(m_Data[i].type);
+			if (count / m_NumPerRow + m_DataOffset < -1)
 			{
 				CleanUpBeginning(m_Data[i]);
 			}
-			else if (i / m_NumPerRow + m_DataOffset > m_NumRows - 1)
+			else if (count / m_NumPerRow + m_DataOffset > m_NumRows - 1)
 			{
 				CleanUpEnd(m_Data[i]);
 			}
 			else
 			{
-				UpdateVisibleItem(m_Data[i], i);
+				UpdateVisibleItem(m_Data[i], count);
 			}
+			count++;
 		}
 	}
 
