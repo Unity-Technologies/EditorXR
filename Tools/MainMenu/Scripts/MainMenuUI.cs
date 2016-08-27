@@ -290,12 +290,12 @@ namespace UnityEngine.VR.Menus
 				U.Object.Destroy(face.gameObject);
 		}
 
-		public void CreateToolButton(ButtonData buttonData, Action<Button> buttonCreationCallback)
+		public void CreateToolButton(ButtonData buttonData, Action<MainMenuButton> buttonCreationCallback)
 		{
 			var button = U.Object.Instantiate(m_ButtonTemplatePrefab.gameObject);
 			button.name = buttonData.name;
 			MainMenuButton mainMenuButton = button.GetComponent<MainMenuButton>();
-			buttonCreationCallback(mainMenuButton.button);
+			buttonCreationCallback(mainMenuButton);
 
 			if (buttonData.sectionName != null)
 			{

@@ -189,15 +189,15 @@ namespace UnityEngine.VR.Menus
 					buttonData.description = customMenuAttribute.description;
 				}
 
+				var toolType = type; // Local variable for proper closure
 				m_MainMenuUI.CreateToolButton(buttonData, (b) =>
 				{
-					b.onClick.RemoveAllListeners();
-					b.onClick.AddListener(() =>
+					b.button.onClick.RemoveAllListeners();
+					b.button.onClick.AddListener(() =>
 					{
-						if (visible)
-							selectTool(node.Value, type);
+						if (visible && b.node.HasValue)
+							selectTool(b.node.Value, toolType);
 					});
-					b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
 				});
 			}
 

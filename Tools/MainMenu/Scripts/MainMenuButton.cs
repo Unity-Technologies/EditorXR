@@ -1,19 +1,26 @@
 ﻿using System;
 using UnityEngine.UI;
+using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenuButton : MonoBehaviour
+	public class MainMenuButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
 	{
+		public Button button { get { return m_Button; } }
 		[SerializeField]
 		private Button m_Button;
+
 		[SerializeField]
 		private Text m_ButtonDescription;
 		[SerializeField]
 		private Text m_ButtonTitle;
 
-		public Button button { get { return m_Button; } }
 		public Action clicked;
+
+		/// <summary>
+		/// The node of the ray that hovering over the button
+		/// </summary>
+		public Node? node { get; private set; }
 
 		private void Awake()
 		{
@@ -35,6 +42,18 @@ namespace UnityEngine.VR.Menus
 		{
 			if (clicked != null)
 				clicked();
+		}
+
+		public void OnRayEnter(RayEventData eventData)
+		{
+			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
+			node = eventData.node;
+		}
+
+		public void OnRayExit(RayEventData eventData)
+		{
+			if (node == eventData.node)
+				node = null;
 		}
 	}
 }
