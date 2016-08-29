@@ -28,44 +28,44 @@ public class ScaleManipulator : MonoBehaviour, IManipulator
 
 	void OnEnable()
 	{
-		m_UniformHandle.onHandleDrag += UniformScaleHandleOnDrag;
+		m_UniformHandle.handleDrag += UniformScaleHandleDrag;
 
 		foreach (var h in m_AxesHandles)
-			h.onHandleDrag += LinearScaleHandleOnDrag;
+			h.handleDrag += LinearScaleHandleDrag;
 
 		foreach (var h in m_AllHandles)
 		{
-			h.onHandleBeginDrag += HandleOnBeginDrag;
-			h.onHandleEndDrag += HandleOnEndDrag;
+			h.handleDragging += HandleDragging;
+			h.handleDragged += HandleDragged;
 		}
 	}
 
 	void OnDisable()
 	{
-		m_UniformHandle.onHandleDrag -= UniformScaleHandleOnDrag;
+		m_UniformHandle.handleDrag -= UniformScaleHandleDrag;
 
 		foreach (var h in m_AxesHandles)
-			h.onHandleDrag -= LinearScaleHandleOnDrag;
+			h.handleDrag -= LinearScaleHandleDrag;
 
 		foreach (var h in m_AllHandles)
 		{
-			h.onHandleBeginDrag -= HandleOnBeginDrag;
-			h.onHandleEndDrag -= HandleOnEndDrag;
+			h.handleDragging -= HandleDragging;
+			h.handleDragged -= HandleDragged;
 		}
 	}
 
-	private void LinearScaleHandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void LinearScaleHandleDrag(BaseHandle handle, HandleEventData eventData)
 	{
 		float delta = handle.transform.InverseTransformVector(eventData.deltaPosition).z / handle.transform.InverseTransformPoint(handle.startDragPosition).z;
 		scale(delta * transform.InverseTransformVector(handle.transform.forward));
 	}
 
-	private void UniformScaleHandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void UniformScaleHandleDrag(BaseHandle handle, HandleEventData eventData)
 	{
 		scale(Vector3.one * eventData.deltaPosition.y);
 	}
 
-	private void HandleOnBeginDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void HandleDragging(BaseHandle handle, HandleEventData eventData)
 	{
 		foreach (var h in m_AllHandles)
 			h.gameObject.SetActive(h == handle);
@@ -73,7 +73,7 @@ public class ScaleManipulator : MonoBehaviour, IManipulator
 		m_Dragging = true;
 	}
 
-	private void HandleOnEndDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void HandleDragged(BaseHandle handle, HandleEventData eventData)
 	{
 		foreach (var h in m_AllHandles)
 			h.gameObject.SetActive(true);

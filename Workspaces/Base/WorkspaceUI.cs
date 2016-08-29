@@ -20,27 +20,27 @@ public class WorkspaceUI : MonoBehaviour
 	private DirectManipulator m_DirectManipulator;
 
 	[SerializeField]
-	private BoxCollider m_PanelCollider;
+	private BoxCollider m_GrabCollider;
 
 	public BaseHandle vacuumHandle { get { return m_VacuumHandle; } }
 	[SerializeField]
 	private BaseHandle m_VacuumHandle;
 
-	public DirectLinearHandle leftHandle { get { return m_LeftHandle; } }
+	public BaseHandle leftHandle { get { return m_LeftHandle; } }
 	[SerializeField]
-	private DirectLinearHandle m_LeftHandle;
+	private BaseHandle m_LeftHandle;
 
-	public DirectLinearHandle frontHandle { get { return m_FrontHandle; } }
+	public BaseHandle frontHandle { get { return m_FrontHandle; } }
 	[SerializeField]
-	private DirectLinearHandle m_FrontHandle;
+	private BaseHandle m_FrontHandle;
 
-	public DirectLinearHandle rightHandle { get { return m_RightHandle; } }
+	public BaseHandle rightHandle { get { return m_RightHandle; } }
 	[SerializeField]
-	private DirectLinearHandle m_RightHandle;
+	private BaseHandle m_RightHandle;
 
-	public DirectLinearHandle backHandle { get { return m_BackHandle; } }
+	public BaseHandle backHandle { get { return m_BackHandle; } }
 	[SerializeField]
-	private DirectLinearHandle m_BackHandle;
+	private BaseHandle m_BackHandle;
 
 	[SerializeField]
 	private SkinnedMeshRenderer m_Frame;
@@ -48,8 +48,8 @@ public class WorkspaceUI : MonoBehaviour
 	[SerializeField]
 	private Transform m_BoundsCube;
 
-	public Action OnCloseClick { private get; set; }
-	public Action OnLockClick { private get; set; }
+	public event Action closeClicked = delegate { };
+	public event Action lockClicked = delegate { };
 
 	public void SetBounds(Bounds bounds)
 	{
@@ -80,15 +80,15 @@ public class WorkspaceUI : MonoBehaviour
 		m_FrontPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x);
 		m_FrontPanel.localPosition = new Vector3(0, m_FrontPanel.localPosition.y, -bounds.extents.z + kPanelOffset);
 
-		m_PanelCollider.size = new Vector3(bounds.size.x, m_PanelCollider.size.y, m_PanelCollider.size.z);
+		m_GrabCollider.size = new Vector3(bounds.size.x, m_GrabCollider.size.y, m_GrabCollider.size.z);
 	}
 
 	public void CloseClick()
 	{
-		OnCloseClick();
+		closeClicked();
 	}
 
 	public void LockClick() {
-		OnLockClick();
+		lockClicked();
 	}
 }

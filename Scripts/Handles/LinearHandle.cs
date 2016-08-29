@@ -2,8 +2,15 @@
 
 namespace UnityEngine.VR.Handles
 {
-	public class LinearHandle : BaseHandle, IRayDragHandler, IRayHoverHandler
+	public class LinearHandle : BaseHandle
 	{
+		private class LinearHandleEventData : HandleEventData
+		{
+			public Vector3 raycastHitWorldPosition;
+
+			public LinearHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) { }
+		}
+
 		[SerializeField]
 		private Transform m_HandleTip;
 
@@ -18,24 +25,29 @@ namespace UnityEngine.VR.Handles
 				m_HandleTip.gameObject.SetActive(false);
 		}
 
-		public virtual void OnRayHover(RayEventData eventData)
+		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			UpdateHandleTip(eventData);
+			return new LinearHandleEventData(eventData.rayOrigin, DirectSelection(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
 		}
 
-		public override void OnRayEnter(RayEventData eventData)
+		protected override void OnHandleRayHover(HandleEventData eventData)
 		{
-			base.OnRayEnter(eventData);
-			UpdateHandleTip(eventData);
+			UpdateHandleTip(eventData as LinearHandleEventData);
 		}
 
-		public override void OnRayExit(RayEventData eventData)
+		protected override void OnHandleRayEnter(HandleEventData eventData)
 		{
-			base.OnRayExit(eventData);
-			UpdateHandleTip(eventData);
+			UpdateHandleTip(eventData as LinearHandleEventData);
+			base.OnHandleRayEnter(eventData);
 		}
 
-		private void UpdateHandleTip(RayEventData eventData)
+		protected override void OnHandleRayExit(HandleEventData eventData)
+		{
+			UpdateHandleTip(eventData as LinearHandleEventData);
+			base.OnHandleRayExit(eventData);
+		}
+
+		private void UpdateHandleTip(LinearHandleEventData eventData)
 		{
 			if (m_HandleTip != null)
 			{
@@ -46,16 +58,15 @@ namespace UnityEngine.VR.Handles
 					if (eventData != null)
 						m_HandleTip.position =
 							transform.TransformPoint(new Vector3(0, 0,
-								transform.InverseTransformPoint(eventData.pointerCurrentRaycast.worldPosition).z));
+								transform.InverseTransformPoint(eventData.raycastHitWorldPosition).z));
 				}
 			}
 		}
 
-		public override void OnBeginDrag(RayEventData eventData)
+		protected override void OnHandleBeginDrag(HandleEventData eventData)
 		{
-			base.OnBeginDrag(eventData);
-
-			m_LastPosition = eventData.pointerCurrentRaycast.worldPosition;
+			var linearEventData = eventData as LinearHandleEventData;
+			m_LastPosition = linearEventData.raycastHitWorldPosition;
 
 			// Create a plane through the axis that rotates to avoid being parallel to the ray, so that you can prevent
 			// intersections at infinity
@@ -63,12 +74,12 @@ namespace UnityEngine.VR.Handles
 			forward.z = 0;			
 			m_Plane.SetNormalAndPosition(transform.TransformVector(forward), transform.position);
 
-			UpdateHandleTip(eventData);
+			UpdateHandleTip(linearEventData);
 
-			OnHandleBeginDrag(new HandleDragEventData(eventData.rayOrigin));
+			base.OnHandleBeginDrag(eventData);
 		}
 
-		public void OnDrag(RayEventData eventData)
+		protected override void OnHandleDrag(HandleEventData eventData)
 		{
 			Transform rayOrigin = eventData.rayOrigin;
 			Vector3 worldPosition = m_LastPosition;
@@ -83,26 +94,25 @@ namespace UnityEngine.VR.Handles
 			if (m_Plane.Raycast(ray, out distance))
 				worldPosition = ray.GetPoint(Mathf.Min(Mathf.Abs(distance), kMaxDragDistance));
 
-			var delta = worldPosition - m_LastPosition;
+			var deltaPosition = worldPosition - m_LastPosition;
 			m_LastPosition = worldPosition;
 
-			delta = transform.InverseTransformVector(delta);
-			delta.x = 0;
-			delta.y = 0;
-			delta = transform.TransformVector(delta);
+			deltaPosition = transform.InverseTransformVector(deltaPosition);
+			deltaPosition.x = 0;
+			deltaPosition.y = 0;
+			deltaPosition = transform.TransformVector(deltaPosition);
+			eventData.deltaPosition = deltaPosition;
 
-			UpdateHandleTip(eventData);
+			UpdateHandleTip(eventData as LinearHandleEventData);
 
-			OnHandleDrag(new HandleDragEventData(delta, rayOrigin));
+			base.OnHandleDrag(eventData);
 		}
 
-		public override void OnEndDrag(RayEventData eventData)
+		protected override void OnHandleEndDrag(HandleEventData eventData)
 		{
-			base.OnEndDrag(eventData);
+			UpdateHandleTip(eventData as LinearHandleEventData);
 
-			UpdateHandleTip(eventData);
-
-			OnHandleEndDrag(new HandleDragEventData(eventData.rayOrigin));
+			base.OnHandleEndDrag(eventData);
 		}
 	}
 }

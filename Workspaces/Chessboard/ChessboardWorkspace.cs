@@ -5,8 +5,8 @@ using UnityEngine.VR.Utilities;
 
 public class ChessboardWorkspace : Workspace
 {
-	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 6; //Show more space above ground than below
-	private const float kInitReferenceScale = 25; //We want to see a big region by default
+	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 6f; //Show more space above ground than below
+	private const float kInitReferenceScale = 25f; //We want to see a big region by default
 
 	//TODO: replace with dynamic values once spatial hash lands
 	//Scale slider min/max (maps to referenceTransform unifrom scale)
@@ -52,11 +52,11 @@ public class ChessboardWorkspace : Workspace
 		//ControlBox shouldn't move with miniWorld
 		panZoomHandle.transform.parent = m_WorkspaceUI.sceneContainer;
 		panZoomHandle.transform.localPosition = Vector3.down * panZoomHandle.transform.localScale.y * 0.5f;
-		panZoomHandle.onHandleBeginDrag += OnControlBeginDrag;
-		panZoomHandle.onHandleDrag += OnControlDrag;
-		panZoomHandle.onHandleEndDrag += OnControlEndDrag;
-		panZoomHandle.onHoverEnter += OnControlHoverEnter;
-		panZoomHandle.onHoverExit += OnControlHoverExit;
+		panZoomHandle.handleDragging += ControlDragging;
+		panZoomHandle.handleDrag += ControlDrag;
+		panZoomHandle.handleDragged += ControlDragged;
+		panZoomHandle.hovering += OnControlHoverEnter;
+		panZoomHandle.hovered += OnControlHoverExit;
 
 		//Set up UI
 		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
@@ -111,7 +111,7 @@ public class ChessboardWorkspace : Workspace
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
 	}
 
-	private void OnControlBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void ControlDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		if (m_RayData.Count == 1) //On introduction of second ray
 		{
@@ -127,7 +127,7 @@ public class ChessboardWorkspace : Workspace
 		});
 	}
 
-	private void OnControlDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void ControlDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		var rayData = m_RayData[0];
 		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) // Do not execute for the second ray
@@ -152,17 +152,17 @@ public class ChessboardWorkspace : Workspace
 		}
 	}
 
-	private void OnControlEndDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void ControlDragged(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		m_RayData.RemoveAll(rayData => rayData.rayOrigin.Equals(eventData.rayOrigin));
 	}
 
-	private void OnControlHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void OnControlHoverEnter(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		setHighlight(handle.gameObject, true);
 	}
 
-	private void OnControlHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void OnControlHoverExit(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		setHighlight(handle.gameObject, false);
 	}

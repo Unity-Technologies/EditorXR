@@ -27,9 +27,9 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		foreach (var h in m_AllHandles)
 		{
-			h.onHandleDrag += HandleOnDrag;
-			h.onHandleBeginDrag += HandleOnBeginDrag;
-			h.onHandleEndDrag += HandleOnEndDrag;
+			h.handleDrag += HandleDrag;
+			h.handleDragging += HandleDragging;
+			h.handleDragged += HandleDragged;
 		}
 	}
 
@@ -37,13 +37,13 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		foreach (var h in m_AllHandles)
 		{
-			h.onHandleDrag -= HandleOnDrag;
-			h.onHandleBeginDrag -= HandleOnBeginDrag;
-			h.onHandleEndDrag -= HandleOnEndDrag;
+			h.handleDrag -= HandleDrag;
+			h.handleDragging -= HandleDragging;
+			h.handleDragged -= HandleDragged;
 		}
 	}
 
-	private void HandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void HandleDrag(BaseHandle handle, HandleEventData eventData)
 	{
 		Transform target = m_Target ?? transform;
 
@@ -52,7 +52,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 		rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
 	}
 
-	private void HandleOnBeginDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void HandleDragging(BaseHandle handle, HandleEventData eventData)
 	{
 		foreach (var h in m_AllHandles)
 			h.gameObject.SetActive(h == handle);
@@ -66,7 +66,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 		m_RotationOffset = inverseRotation * target.transform.rotation;
 	}
 
-	private void HandleOnEndDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void HandleDragged(BaseHandle handle, HandleEventData eventData)
 	{
 		foreach (var h in m_AllHandles)
 			h.gameObject.SetActive(true);

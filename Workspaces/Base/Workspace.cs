@@ -13,7 +13,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	public const float kHandleMargin = -0.15f;	// Compensate for base size from frame model
 
-	public Action<Workspace> OnClose { private get; set; }
+	public event Action<Workspace> closed = delegate {};
 
 	protected WorkspaceUI m_WorkspaceUI;
 
@@ -39,7 +39,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 					size.z = kDefaultBounds.z;
 				value.size = size;
 				m_ContentBounds.size = size; //Only set size, ignore center.
-				BoundsChanged();
+				UpdateBounds();
 				OnBoundsChanged();
 			}
 		}
@@ -93,13 +93,13 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		baseObject.transform.SetParent(transform, false);
 		
 		m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
-		m_WorkspaceUI.OnCloseClick = Close;
-		m_WorkspaceUI.OnLockClick = Lock;
+		m_WorkspaceUI.closeClicked += OnCloseClicked;
+		m_WorkspaceUI.lockClicked += OnLockClicked;
 		m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 		//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
 		m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
-		BoundsChanged();
+		UpdateBounds();
 
 		//Set up DirectManipulaotr
 		var directManipulator = m_WorkspaceUI.directManipulator;
@@ -107,9 +107,9 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		directManipulator.translate = Translate;
 		directManipulator.rotate = Rotate;
 
-		m_WorkspaceUI.vacuumHandle.onDoubleClick += OnDoubleClick;
-		m_WorkspaceUI.vacuumHandle.onHoverEnter += OnHandleHoverEnter;
-		m_WorkspaceUI.vacuumHandle.onHoverExit += OnHandleHoverExit;
+		m_WorkspaceUI.vacuumHandle.doubleClick += DoubleClick;
+		m_WorkspaceUI.vacuumHandle.hovering += OnHandleHoverEnter;
+		m_WorkspaceUI.vacuumHandle.hovered += OnHandleHoverExit;
 
 		var handles = new BaseHandle[]
 		{
@@ -121,16 +121,16 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 		foreach (var handle in handles)
 		{
-			handle.onHandleBeginDrag += OnHandleBeginDrag;
-			handle.onHandleDrag += OnHandleDrag;
-			handle.onHandleEndDrag += OnHandleEndDrag;
+			handle.handleDragging += HandleDragging;
+			handle.handleDrag += HandleDrag;
+			handle.handleDragged += HandleDragged;
 			
-			handle.onHoverEnter += OnHandleHoverEnter;
-			handle.onHoverExit += OnHandleHoverExit;
+			handle.hovering += OnHandleHoverEnter;
+			handle.hovered += OnHandleHoverExit;
 		}
 	}
 
-	public virtual void OnHandleBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	public virtual void HandleDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		m_PositionStart = transform.position;
 		m_DragStart = eventData.rayOrigin.position;
@@ -138,7 +138,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		m_Dragging = true;
 	}
 
-	public virtual void OnHandleDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	public virtual void HandleDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		if (m_Dragging && !m_DragLocked)
 		{
@@ -171,24 +171,24 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		}
 	}
 
-	public virtual void OnHandleEndDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	public virtual void HandleDragged(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		m_Dragging = false;
 	}
 
-	public virtual void OnHandleHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	public virtual void OnHandleHoverEnter(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if(handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
+		if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
 			setHighlight(handle.gameObject, true);
 	}
 
-	public virtual void OnHandleHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	public virtual void OnHandleHoverExit(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
 			setHighlight(handle.gameObject, false);
 	}
 
-	private void OnDoubleClick(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void DoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		StartCoroutine(VacuumToViewer());
 	}
@@ -231,18 +231,18 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		transform.rotation = destRotation;
 	}
 
-	public virtual void Close()
+	public virtual void OnCloseClicked()
 	{
-		OnClose(this);
+		closed(this);
 		U.Object.Destroy(gameObject);
 	}
 
-	public virtual void Lock()
+	public virtual void OnLockClicked()
 	{
 		m_DragLocked = !m_DragLocked;
 	}
 
-	private void BoundsChanged()
+	private void UpdateBounds()
 	{
 		m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
 		m_WorkspaceUI.vacuumHandle.transform.localScale = outerBounds.size;
