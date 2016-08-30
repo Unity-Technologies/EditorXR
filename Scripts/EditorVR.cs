@@ -27,8 +27,8 @@ public class EditorVR : MonoBehaviour
 
 	private const float kWorkspaceAnglePadding = 25f;
 	private const float kWorkspaceYPadding = 0.35f;
-	private const int   kMaxWorkspacePlacementAttempts = 20;
-	private const float   kWorkspaceVacuumEnableDistance = 1.5f; //Disable vacuum bounds if workspace is closer than 1.5 meters to player
+	private const int kMaxWorkspacePlacementAttempts = 20;
+	private const float kWorkspaceVacuumEnableDistance = 1.5f; //Disable vacuum bounds if workspace is closer than 1.5 meters to player
 
 	[SerializeField]
 	private ActionMap m_MenuActionMap;
@@ -749,7 +749,7 @@ public class EditorVR : MonoBehaviour
 
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, transform);
 		m_AllWorkspaces.Add(workspace);
-		workspace.OnClose = OnWorkspaceClose;
+		workspace.closed += OnWorkspaceClosed;
 		ConnectInterfaces(workspace);
 		workspace.transform.position = position;
 		workspace.transform.rotation = rotation;
@@ -758,7 +758,7 @@ public class EditorVR : MonoBehaviour
 		workspace.Setup();
 	}
 
-	private void OnWorkspaceClose(Workspace workspace)
+	private void OnWorkspaceClosed(Workspace workspace)
 	{
 		m_AllWorkspaces.Remove(workspace);
 	}

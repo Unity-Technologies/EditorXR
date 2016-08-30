@@ -541,6 +541,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_HandleTip: {fileID: 0}
 --- !u!114 &114000011147854508
 MonoBehaviour:
@@ -554,6 +555,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_HandleTip: {fileID: 4000011529957722}
 --- !u!114 &114000011988091676
 MonoBehaviour:
@@ -567,6 +569,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_HandleTip: {fileID: 4000012243801892}
 --- !u!114 &114000013052707070
 MonoBehaviour:
@@ -580,6 +583,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_HandleTip: {fileID: 4000012628356964}
 --- !u!114 &114000013616855498
 MonoBehaviour:

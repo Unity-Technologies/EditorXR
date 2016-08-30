@@ -27,9 +27,9 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		foreach (var h in m_AllHandles)
 		{
-			h.onHandleDrag += HandleOnDrag;
-			h.onHandleBeginDrag += HandleOnBeginDrag;
-			h.onHandleEndDrag += HandleOnEndDrag;
+			h.handleDrag += OnHandleDrag;
+			h.handleDragging += OnHandleDragging;
+			h.handleDragged += OnHandleDragged;
 		}
 	}
 
@@ -37,22 +37,13 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		foreach (var h in m_AllHandles)
 		{
-			h.onHandleDrag -= HandleOnDrag;
-			h.onHandleBeginDrag -= HandleOnBeginDrag;
-			h.onHandleEndDrag -= HandleOnEndDrag;
+			h.handleDrag -= OnHandleDrag;
+			h.handleDragging -= OnHandleDragging;
+			h.handleDragged -= OnHandleDragged;
 		}
 	}
 
-	private void HandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
-	{
-		Transform target = m_Target ?? transform;
-
-		var rayOrigin = eventData.rayOrigin;
-		translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
-		rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
-	}
-
-	private void HandleOnBeginDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
 	{
 		foreach (var h in m_AllHandles)
 			h.gameObject.SetActive(h == handle);
@@ -66,7 +57,16 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 		m_RotationOffset = inverseRotation * target.transform.rotation;
 	}
 
-	private void HandleOnEndDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void OnHandleDrag(BaseHandle handle, HandleEventData eventData)
+	{
+		Transform target = m_Target ?? transform;
+
+		var rayOrigin = eventData.rayOrigin;
+		translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
+		rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
+	}
+
+	private void OnHandleDragged(BaseHandle handle, HandleEventData eventData)
 	{
 		foreach (var h in m_AllHandles)
 			h.gameObject.SetActive(true);

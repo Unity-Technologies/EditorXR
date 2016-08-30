@@ -8,7 +8,7 @@ public class ZoomSliderUI : MonoBehaviour
 	[SerializeField]
 	private Slider m_ZoomSlider;
 
-	public Action<float> sliding { private get; set; }
+	public event Action<float> sliding = delegate { };
 
 	public void ZoomSlider(float value)
 	{
