@@ -44,7 +44,6 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			}
 		}
 	}
-
 	[SerializeField]
 	private Bounds m_ContentBounds;
 

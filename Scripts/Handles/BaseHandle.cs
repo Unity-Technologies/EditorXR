@@ -18,7 +18,6 @@ namespace UnityEngine.VR.Handles
 		}
 
 		public HandleFlags handleFlags { get { return m_HandleFlags; } set { m_HandleFlags = value; } }
-
 		[SerializeField]
 		[FlagsProperty]
 		private HandleFlags m_HandleFlags;
@@ -83,7 +82,7 @@ namespace UnityEngine.VR.Handles
 			startDragPosition = eventData.pointerCurrentRaycast.worldPosition;
 
 			//Double-click logic
-			var timeSinceLastClick = (float) (DateTime.Now - m_LastClickTime).TotalSeconds;
+			var timeSinceLastClick = (float)(DateTime.Now - m_LastClickTime).TotalSeconds;
 			m_LastClickTime = DateTime.Now;
 			if (U.Input.DoubleClick(timeSinceLastClick))
 			{

@@ -47,7 +47,7 @@ public class MiniWorld : MonoBehaviour
 	private void OnEnable()
 	{
 		if (!referenceTransform)
-			referenceTransform = new GameObject("MiniWorldReference") {hideFlags = HideFlags.DontSave}.transform;
+			referenceTransform = new GameObject("MiniWorldReference") { hideFlags = HideFlags.DontSave }.transform;
 
 		m_MiniWorldRenderer = U.Object.AddComponent<MiniWorldRenderer>(U.Camera.GetMainCamera().gameObject);
 		m_MiniWorldRenderer.miniWorld = this;

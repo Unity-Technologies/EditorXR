@@ -5,15 +5,13 @@ using UnityEngine.UI;
 public class ZoomSliderUI : MonoBehaviour
 {
 	public Slider zoomSlider { get { return m_ZoomSlider; } }
-
 	[SerializeField]
 	private Slider m_ZoomSlider;
 
-	public Action<float> sliding { private get; set; }
+	public event Action<float> sliding = delegate { };
 
 	public void ZoomSlider(float value)
 	{
-		if (sliding != null)
-			sliding(value);
+		sliding(value);
 	}
 }
