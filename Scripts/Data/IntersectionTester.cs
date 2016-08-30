@@ -4,7 +4,7 @@
 	{
 		public Renderer renderer { get; private set; }
 		public Ray[] rays { get; private set; }
-		public SpatialObject grabbed { get; set; }
+		public Renderer grabbed { get; set; }
 		public Transform oldParent { get; set; }
 
 		private bool m_Active = true;
@@ -19,11 +19,6 @@
 		{
 			this.renderer = renderer;
 			this.rays = rays;
-		}
-
-		public IntVector3 GetCell(SpatialHash hash)
-		{
-			return hash.SnapToGrid(renderer.bounds.center + Vector3.one * hash.cellSize * 0.5f);
 		}
 
 		public static Mesh GenerateConeMesh(int segments, float radius, float height, out Ray[] rays)

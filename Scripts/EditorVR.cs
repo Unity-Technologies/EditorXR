@@ -40,8 +40,8 @@ public class EditorVR : MonoBehaviour
 	private Default m_DefaultActionInput;
 
 	private MultipleRayInputModule m_InputModule;
-	private SpatialHash m_SpatialHash;
-	private SpatialHashUpdateModule m_SpatialHashUpdateModule;
+	private SpatialHash<Renderer> m_SpatialHash;
+	private SpatialHashModule m_SpatialHashModule;
 	private IntersectionModule m_IntersectionModule;
 	private Camera m_EventCamera;
 	private PixelRaycastModule m_PixelRaycastModule;
@@ -331,9 +331,9 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateSpatialSystem() {
 		// Create event system, input module, and event camera
-		m_SpatialHash = new SpatialHash();
-		m_SpatialHashUpdateModule = U.Object.AddComponent<SpatialHashUpdateModule>(gameObject);
-		m_SpatialHashUpdateModule.Setup(m_SpatialHash);
+		m_SpatialHash = new SpatialHash<Renderer>();
+		m_SpatialHashModule = U.Object.AddComponent<SpatialHashModule>(gameObject);
+		m_SpatialHashModule.Setup(m_SpatialHash);
 		m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
 		m_IntersectionModule.Setup(m_SpatialHash);
 

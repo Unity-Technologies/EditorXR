@@ -1,141 +1,42 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UnityEngine.VR.Data
 {
-	public class SpatialHash
+	public class SpatialHash<T>
 	{
-		public bool cellSizeChanged { get; private set; }
-		private float m_CellSize = 1f;
-		private float m_LastCellSize;
-		private bool m_Changes;
-		private const float kMinCellSize = 0.1f;
+		private readonly List<T> m_AllObjects = new List<T>();
+		private readonly BoundsOctree<T> m_Octree = new BoundsOctree<T>(100f, Vector3.zero, 0.5f, 1.2f);
 
-		//Vector3 bucket represents center of cube with side-length m_CellSize
-		private readonly Dictionary<IntVector3, List<SpatialObject>> m_SpatialDictionary = new Dictionary<IntVector3, List<SpatialObject>>();
-		private readonly List<SpatialObject> m_AllObjects = new List<SpatialObject>();
-
-		public bool changes
-		{
-			get { return m_Changes; }
-		}
-
-		public float cellSize
-		{
-			get { return m_CellSize; }
-		}
-
-		public List<SpatialObject> allObjects
+		public List<T> allObjects
 		{
 			get { return m_AllObjects; }
 		}
 
-#if UNITY_EDITOR
-		public int spatialCellCount
+		public void DrawGizmos()
 		{
-			get { return m_SpatialDictionary.Count; }
-		}
-#endif
-
-		public void SetCellSize(float cellSize)
-		{
-			m_CellSize = cellSize;
-			if (m_CellSize != m_LastCellSize)
-			{
-				if (m_CellSize < kMinCellSize)
-					m_CellSize = kMinCellSize;
-				if (m_CellSize != m_LastCellSize)
-				{
-					Clear();
-					cellSizeChanged = true;
-				}
-			}
+			m_Octree.DrawAllBounds(); // Draw node boundaries
+			m_Octree.DrawAllObjects(); // Draw object boundaries
+			m_Octree.DrawCollisionChecks(); // Draw the last *numCollisionsToSave* collision check boundaries
 		}
 
-		public void Clear()
+		public bool GetIntersections(Bounds bounds, out T[] intersections)
 		{
-			m_SpatialDictionary.Clear();
-			m_AllObjects.Clear();
-			m_LastCellSize = m_CellSize;
+			intersections = m_Octree.GetColliding(bounds);
+			return intersections.Length > 0;
 		}
 
-		public IntVector3 SnapToGrid(Vector3 vec)
+		public void AddObject(T obj, Bounds bounds)
 		{
-			return SnapToGrid(vec, m_CellSize);
+			m_AllObjects.Add(obj);
+			m_Octree.Add(obj, bounds);
 		}
 
-		public static IntVector3 SnapToGrid(Vector3 vec, float cellSize)
-		{
-			IntVector3 iVec = new IntVector3()
-			{
-				x = Mathf.RoundToInt(vec.x / cellSize),
-				y = Mathf.RoundToInt(vec.y / cellSize),
-				z = Mathf.RoundToInt(vec.z / cellSize)
-			};
-			return iVec;
-		}
-
-		public bool GetIntersections(IntVector3 globalBucket, out List<SpatialObject> intersections)
-		{
-			return m_SpatialDictionary.TryGetValue(globalBucket, out intersections);
-		}
-
-		//Note: I want this to be private, but SpatialObject needs access to it
-		internal void AddObjectToBucket(IntVector3 worldBucket, SpatialObject spatialObject)
-		{
-			List<SpatialObject> contents;
-			if (!m_SpatialDictionary.TryGetValue(worldBucket, out contents))
-			{
-				contents = new List<SpatialObject>();
-				m_SpatialDictionary[worldBucket] = contents;
-			}
-			contents.Add(spatialObject);
-			m_Changes = true;
-		}
-
-		public IEnumerable AddObject(SpatialObject spatialObject)
-		{
-			//Debug.Log("Adding object " + spatialObject.name);
-			m_AllObjects.Add(spatialObject);
-			return spatialObject.AddToHash(this);
-		}
-
-		public void RemoveObject(Renderer obj)
-		{
-			SpatialObject spatial = null;
-			foreach (var spatialObject in m_AllObjects)
-			{
-				spatial = spatialObject;
-			}
-			if (spatial != null)
-				RemoveObject(spatial);
-		}
-
-		public void RemoveObject(SpatialObject obj)
+		public void RemoveObject(T obj)
 		{
 			m_AllObjects.Remove(obj);
-			List<IntVector3> removeBuckets = obj.GetRemoveBuckets();
-			obj.ClearBuckets();
-			RemoveObjectFromBuckets(removeBuckets, obj);
-		}
-
-		private void RemoveObjectFromBuckets(ICollection<IntVector3> buckets, SpatialObject spatialObject)
-		{
-			foreach (var bucket in buckets)
-			{
-				RemoveObjectFromBucket(bucket, spatialObject);
-			}
-		}
-
-		internal void RemoveObjectFromBucket(IntVector3 bucket, SpatialObject spatialObject)
-		{
-			List<SpatialObject> contents;
-			if (m_SpatialDictionary.TryGetValue(bucket, out contents))
-			{
-				contents.Remove(spatialObject);
-				if (contents.Count == 0)
-					m_SpatialDictionary.Remove(bucket);
-			}
+			m_Octree.Remove(obj);
 		}
 	}
 }

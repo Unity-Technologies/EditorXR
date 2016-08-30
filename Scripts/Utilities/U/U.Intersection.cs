@@ -10,10 +10,10 @@ namespace UnityEngine.VR.Utilities
 		{
 			private const float k_RayMax = 1000;
 
-			public static bool TestObject(SpatialObject obj, Color color, IntersectionTester tester)
+			public static bool TestObject(Renderer obj, Color color, IntersectionTester tester)
 			{
-				Vector3 objInvScale = InvertVector3(obj.sceneObject.transform.lossyScale);
-				Quaternion objInvRotation = Quaternion.Inverse(obj.sceneObject.transform.rotation);
+				//Vector3 objInvScale = InvertVector3(obj.transform.lossyScale);
+				//Quaternion objInvRotation = Quaternion.Inverse(obj.sceneObject.transform.rotation);
 
 				for (int j = 0; j < tester.rays.Length; j++)
 				{
@@ -43,14 +43,14 @@ namespace UnityEngine.VR.Utilities
 
 			private static GameObject collisionTester;
 
-			public static int TestRay(SpatialObject obj, Color color, Ray ray)
+			public static int TestRay(Renderer obj, Color color, Ray ray)
 			{
 				int hitCount = 0;
 				if (!collisionTester)
 				{
 					collisionTester = new GameObject("CollisionTester", typeof(MeshCollider));
 				}
-				var mf = obj.sceneObject.GetComponent<MeshFilter>();
+				var mf = obj.GetComponent<MeshFilter>();
 				MeshCollider collider = collisionTester.GetComponent<MeshCollider>();
 
 				Profiler.BeginSample("Collision Tester");

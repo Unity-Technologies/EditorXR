@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Data;
 
@@ -21,10 +22,10 @@ namespace UnityEngine.VR.Modules
 		private Mesh m_ConeMesh;
 		private Ray[] m_ConeRays;
 
-		private readonly Dictionary<IntersectionTester, SpatialObject> m_IntersectedObjects = new Dictionary<IntersectionTester, SpatialObject>();
+		private readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		private IntersectionTester[] m_Testers = new IntersectionTester[0];
 
-		private SpatialHash m_SpatialHash;
+		private SpatialHash<Renderer> m_SpatialHash;
 
 		public bool hasObjects
 		{
@@ -47,29 +48,17 @@ namespace UnityEngine.VR.Modules
 			}
 		}
 
-		public List<SpatialObject> allObjects
+		public List<Renderer> allObjects
 		{
 			get
 			{
-				if (m_SpatialHash == null)
-					return null;
-				return m_SpatialHash.allObjects;
+				return m_SpatialHash == null ? null : m_SpatialHash.allObjects;
 			}
-		}
-
-		public int spatialCellCount
-		{
-			get { return m_SpatialHash.spatialCellCount; }
 		}
 
 		public int intersectedObjectCount
 		{
 			get { return m_IntersectedObjects.Count; }
-		}
-
-		public void ClearHash()
-		{
-			m_SpatialHash.Clear();
 		}
 #endif
 
@@ -78,7 +67,7 @@ namespace UnityEngine.VR.Modules
 			m_ConeMesh = IntersectionTester.GenerateConeMesh(m_ConeSegments, m_ConeRadius, m_ConeHeight, out m_ConeRays);
 		}
 
-		internal void Setup(SpatialHash hash)
+		internal void Setup(SpatialHash<Renderer> hash)
 		{
 			m_SpatialHash = hash;
 		}
@@ -89,36 +78,37 @@ namespace UnityEngine.VR.Modules
 				return;
 			if (m_Testers == null)
 				return;
+
 			int i = 0;
 			foreach (var tester in m_Testers)
 			{
-				Color color = i%2 == 0 ? Color.red : Color.green;
+				Color color = i % 2 == 0 ? Color.red : Color.green;
 				i++;
 				if (!tester.active)
 					continue;
-				if (m_SpatialHash.changes || tester.renderer.transform.hasChanged)
+				if (tester.renderer.transform.hasChanged)
 				{
 					bool detected = false;
-					var globalBucket = tester.GetCell(m_SpatialHash);
-					List<SpatialObject> intersections = null;
-					if (m_SpatialHash.GetIntersections(globalBucket, out intersections))
+					Renderer[] intersections;
+					if (m_SpatialHash.GetIntersections(tester.renderer.bounds, out intersections))
 					{
 						//Sort list to try and hit closer object first
-						intersections.Sort((a, b) => (a.sceneObject.bounds.center - tester.renderer.bounds.center).magnitude.CompareTo((b.sceneObject.bounds.center - tester.renderer.bounds.center).magnitude));
+						Array.Sort(intersections, (a, b) => (a.bounds.center - tester.renderer.bounds.center).magnitude.CompareTo((b.bounds.center - tester.renderer.bounds.center).magnitude));
+						//intersections.Sort((a, b) => (a.bounds.center - tester.renderer.bounds.center).magnitude.CompareTo((b.bounds.center - tester.renderer.bounds.center).magnitude));
 						foreach (var obj in intersections)
 						{
 							//Early-outs:
 							// No mesh data
 							// Not updated yet
-							if (obj.sceneObject.transform.hasChanged)
+							if (obj.transform.hasChanged)
 								continue;
 							//Bounds check                                                                     
-							if (!obj.sceneObject.bounds.Intersects(tester.renderer.bounds))
+							if (!obj.bounds.Intersects(tester.renderer.bounds))
 								continue;
 							if (U.Intersection.TestObject(obj, color, tester))
 							{
 								detected = true;
-								SpatialObject oldObject;
+								Renderer oldObject;
 								if (m_IntersectedObjects.TryGetValue(tester, out oldObject))
 								{
 									if (oldObject == obj)
@@ -140,7 +130,7 @@ namespace UnityEngine.VR.Modules
 					}
 					if (!detected)
 					{
-						SpatialObject intersectedObject;
+						Renderer intersectedObject;
 						if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
 						{
 							OnIntersectionExit(tester, intersectedObject);
@@ -166,19 +156,19 @@ namespace UnityEngine.VR.Modules
 		}
 
 		//TODO: add Enter,Stay,Exit events for other systems to subscribe to
-		void OnIntersectionEnter(IntersectionTester tester, SpatialObject obj)
+		void OnIntersectionEnter(IntersectionTester tester, Renderer obj)
 		{
 			m_IntersectedObjects[tester] = obj;
 			Debug.Log("Entered " + obj);
 		}
 
-		void OnIntersectionStay(IntersectionTester tester, SpatialObject obj)
+		void OnIntersectionStay(IntersectionTester tester, Renderer obj)
 		{
 			m_IntersectedObjects[tester] = obj;
 			//Debug.Log("Stayed " + obj);
 		}
 
-		void OnIntersectionExit(IntersectionTester tester, SpatialObject obj)
+		void OnIntersectionExit(IntersectionTester tester, Renderer obj)
 		{
 			m_IntersectedObjects.Remove(tester);
 			Debug.Log("Exited " + obj);
@@ -198,32 +188,32 @@ namespace UnityEngine.VR.Modules
 			return null;
 		}
 
-		public SpatialObject GetIntersectedObjectForTester(IntersectionTester IntersectionTester)
+		public Renderer GetIntersectedObjectForTester(IntersectionTester IntersectionTester)
 		{
-			SpatialObject obj;
+			Renderer obj;
 			m_IntersectedObjects.TryGetValue(IntersectionTester, out obj);
 			return obj;
 		}
 
-		public SpatialObject GrabObjectAndRemove(IntersectionTester tester)
+		public Renderer GrabObjectAndRemove(IntersectionTester tester)
 		{
-			SpatialObject obj = GetIntersectedObjectForTester(tester);
+			Renderer obj = GetIntersectedObjectForTester(tester);
 			tester.grabbed = obj;
 			m_SpatialHash.RemoveObject(obj);
 			return obj;
 		}
 
-		public SpatialObject GrabObjectAndDisableTester(IntersectionTester IntersectionTester)
+		public Renderer GrabObjectAndDisableTester(IntersectionTester IntersectionTester)
 		{
-			SpatialObject obj = GetIntersectedObjectForTester(IntersectionTester);
+			Renderer obj = GetIntersectedObjectForTester(IntersectionTester);
 			IntersectionTester.grabbed = obj;
 			IntersectionTester.active = false;
 			return obj;
 		}
 
-		public SpatialObject GrabObjectAndRemoveAndDisableTester(IntersectionTester IntersectionTester)
+		public Renderer GrabObjectAndRemoveAndDisableTester(IntersectionTester IntersectionTester)
 		{
-			SpatialObject obj = GetIntersectedObjectForTester(IntersectionTester);
+			Renderer obj = GetIntersectedObjectForTester(IntersectionTester);
 			if (obj != null)
 			{
 				IntersectionTester.grabbed = obj;
@@ -235,7 +225,7 @@ namespace UnityEngine.VR.Modules
 
 		public void UnGrabObject(IntersectionTester tester)
 		{
-			m_SpatialHash.AddObject(tester.grabbed);
+			m_SpatialHash.AddObject(tester.grabbed, tester.grabbed.bounds);
 			tester.grabbed = null;
 			tester.active = true;
 		}
