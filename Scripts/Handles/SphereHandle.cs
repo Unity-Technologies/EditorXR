@@ -55,7 +55,7 @@ namespace UnityEngine.VR.Handles
 
 		public void OnScroll(PointerEventData eventData)
 		{
-			if (!m_Dragging)
+			if (m_DragCounts < 1)
 				return;
 
 			// Scolling changes the radius of the sphere while dragging, and accelerates
