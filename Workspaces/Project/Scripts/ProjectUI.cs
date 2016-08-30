@@ -7,9 +7,9 @@ public class ProjectUI : MonoBehaviour
 	[SerializeField]
 	private FolderListViewController m_FolderListView;
 
-	public DirectHandle folderScrollHandle { get { return m_FolderScrollHandle; } }
+	public BaseHandle folderScrollHandle { get { return m_FolderScrollHandle; } }
 	[SerializeField]
-	private DirectHandle m_FolderScrollHandle;
+	private BaseHandle m_FolderScrollHandle;
 
 	public RectTransform folderPanel { get { return m_FolderPanel; } }
 	[SerializeField]
@@ -19,9 +19,9 @@ public class ProjectUI : MonoBehaviour
 	[SerializeField]
 	private AssetGridViewController m_AssetListView;
 
-	public DirectHandle assetScrollHandle { get { return m_AssetScrollHandle; } }
+	public BaseHandle assetScrollHandle { get { return m_AssetScrollHandle; } }
 	[SerializeField]
-	private DirectHandle m_AssetScrollHandle;
+	private BaseHandle m_AssetScrollHandle;
 
 	public RectTransform assetPanel { get { return m_AssetPanel; } }
 	[SerializeField]

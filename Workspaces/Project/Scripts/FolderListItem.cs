@@ -48,10 +48,10 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
 			U.Material.GetMaterialClone(m_CubeRenderer);
 
-			m_ExpandArrow.onHandleEndDrag += ToggleExpanded;
-			m_Cube.onHandleBeginDrag += GrabBegin;
-			m_Cube.onHandleDrag += GrabDrag;
-			m_Cube.onHandleEndDrag += GrabEnd;
+			m_ExpandArrow.handleDragged += ToggleExpanded;
+			m_Cube.handleDragging += GrabBegin;
+			m_Cube.handleDrag += GrabDrag;
+			m_Cube.handleDragged += GrabEnd;
 		}
 
 		m_Text.text = Path.GetFileName(listData.path);
@@ -100,12 +100,12 @@ public class FolderListItem : ListViewItem<FolderData>
 		m_CubeRenderer.sharedMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
 
-	private void ToggleExpanded(BaseHandle baseHandle, HandleDragEventData handleDragEventData)
+	private void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
 	{
 		data.expanded = !data.expanded;
 	}
 
-	private void GrabBegin(BaseHandle baseHandle, HandleDragEventData eventData)
+	private void GrabBegin(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		if (eventData.direct)
 		{
@@ -139,7 +139,7 @@ public class FolderListItem : ListViewItem<FolderData>
 		m_GrabLerp = 1;
 	}
 
-	private void GrabDrag(BaseHandle baseHandle, HandleDragEventData eventData)
+	private void GrabDrag(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		if (m_GrabbedObject)
 		{
@@ -149,7 +149,7 @@ public class FolderListItem : ListViewItem<FolderData>
 		}
 	}
 
-	private void GrabEnd(BaseHandle baseHandle, HandleDragEventData eventData)
+	private void GrabEnd(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		if(m_GrabbedObject)
 			U.Object.Destroy(m_GrabbedObject.gameObject);

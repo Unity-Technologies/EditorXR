@@ -20,7 +20,7 @@ namespace UnityEngine.VR.Handles
 		public HandleFlags handleFlags { get { return m_HandleFlags; } set { m_HandleFlags = value; } }
 		[SerializeField]
 		[FlagsProperty]
-		private HandleFlags m_HandleFlags;
+		private HandleFlags m_HandleFlags = HandleFlags.Ray | HandleFlags.Direct;
 
 		public event Action<BaseHandle, HandleEventData> handleDragging = delegate { };
 		public event Action<BaseHandle, HandleEventData> handleDrag = delegate { };

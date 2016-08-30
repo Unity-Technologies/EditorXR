@@ -42,7 +42,7 @@ public class ProjectWorkspace : Workspace
 		zoomSlider.zoomSlider.minValue = kMinScale;
 		zoomSlider.zoomSlider.maxValue = kMaxScale;
 		zoomSlider.zoomSlider.value = m_ProjectUI.assetListView.scaleFactor;
-		zoomSlider.sliding = Scale;
+		zoomSlider.sliding += Scale;
 
 		m_ProjectUI.assetListView.testFilter = TestFilter;
 
@@ -72,11 +72,11 @@ public class ProjectWorkspace : Workspace
 			// Scroll Handle shouldn't move on bounds change
 			handle.transform.parent = m_WorkspaceUI.sceneContainer;
 
-			handle.onHandleBeginDrag += OnScrollBeginDrag;
-			handle.onHandleDrag += OnScrollDrag;
-			handle.onHandleEndDrag += OnScrollEndDrag;
-			handle.onHoverEnter += OnScrollHoverEnter;
-			handle.onHoverExit += OnScrollHoverExit;
+			handle.handleDragging += OnScrollBeginDrag;
+			handle.handleDrag += OnScrollDrag;
+			handle.handleDragged += OnScrollEndDrag;
+			handle.hovering += OnScrollHoverEnter;
+			handle.hovered += OnScrollHoverExit;
 		}
 
 		m_WorkspaceUI.showBounds = false;
@@ -142,7 +142,7 @@ public class ProjectWorkspace : Workspace
 		m_ProjectUI.assetListView.listData = data.assets;
 	}
 
-	private void OnScrollBeginDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void OnScrollBeginDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		m_ScrollStart = eventData.rayOrigin.transform.position;
 		if (handle == m_ProjectUI.folderScrollHandle)
@@ -157,12 +157,12 @@ public class ProjectWorkspace : Workspace
 		}
 	}
 
-	private void OnScrollDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void OnScrollDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		Scroll(handle, eventData);
 	}
 
-	private void OnScrollEndDrag(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData))
+	private void OnScrollEndDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		Scroll(handle,eventData);
 		if (handle == m_ProjectUI.folderScrollHandle) {
@@ -174,7 +174,7 @@ public class ProjectWorkspace : Workspace
 		}
 	}
 
-	private void Scroll(BaseHandle handle, HandleDragEventData eventData)
+	private void Scroll(BaseHandle handle, HandleEventData eventData)
 	{
 		var scrollOffset = m_ScrollOffsetStart + Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
 		if (handle == m_ProjectUI.folderScrollHandle)
@@ -183,11 +183,11 @@ public class ProjectWorkspace : Workspace
 			m_ProjectUI.assetListView.scrollOffset = scrollOffset;
 	}
 
-	private void OnScrollHoverEnter(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData)) {
+	private void OnScrollHoverEnter(BaseHandle handle, HandleEventData eventData = default(HandleEventData)) {
 		setHighlight(handle.gameObject, true);
 	}
 
-	private void OnScrollHoverExit(BaseHandle handle, HandleDragEventData eventData = default(HandleDragEventData)) {
+	private void OnScrollHoverExit(BaseHandle handle, HandleEventData eventData = default(HandleEventData)) {
 		setHighlight(handle.gameObject, false);
 	}
 

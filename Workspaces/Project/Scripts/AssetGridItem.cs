@@ -18,7 +18,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private Text m_Text;
 
 	[SerializeField]
-	private DirectHandle m_Handle;
+	private BaseHandle m_Handle;
 
 	[SerializeField]
 	private RectTransform m_TextPanel;
@@ -47,12 +47,12 @@ public class AssetGridItem : ListViewItem<AssetData>
 			U.Material.GetMaterialClone(m_Cube);
 			InstantiatePreview();
 
-			m_Handle.onHandleBeginDrag += GrabBegin;
-			m_Handle.onHandleDrag += GrabDrag;
-			m_Handle.onHandleEndDrag += GrabEnd;
+			m_Handle.handleDragging += GrabBegin;
+			m_Handle.handleDrag += GrabDrag;
+			m_Handle.handleDragged += GrabEnd;
 
-			m_Handle.onHoverEnter += OnBeginHover;
-			m_Handle.onHoverExit += OnEndHover;
+			m_Handle.hovering += OnBeginHover;
+			m_Handle.hovered += OnEndHover;
 
 			m_Setup = true;
 		}
@@ -149,7 +149,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 		m_Cube.sharedMaterial.SetVector("_ClipExtents", bounds.extents * 5);
 	}
 
-	private void GrabBegin(BaseHandle baseHandle, HandleDragEventData eventData)
+	private void GrabBegin(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<AssetGridItem>();
@@ -179,25 +179,25 @@ public class AssetGridItem : ListViewItem<AssetData>
 		m_GrabLerp = 1;
 	}
 
-	private void GrabDrag(BaseHandle baseHandle, HandleDragEventData eventData)
+	private void GrabDrag(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var rayTransform = eventData.rayOrigin.transform;
 		m_GrabbedObject.transform.position = Vector3.Lerp(m_GrabbedObject.transform.position, rayTransform.position + rayTransform.rotation * kGrabOffset, m_GrabLerp);
 		m_GrabbedObject.transform.rotation = Quaternion.Lerp(m_GrabbedObject.transform.rotation, rayTransform.rotation, m_GrabLerp);
 	}
 
-	private void GrabEnd(BaseHandle baseHandle, HandleDragEventData eventData)
+	private void GrabEnd(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		U.Object.Destroy(m_GrabbedObject.gameObject);
 	}
 
-	private void OnBeginHover(BaseHandle baseHandle, HandleDragEventData eventData)
+	private void OnBeginHover(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		StopAllCoroutines();
 		StartCoroutine(AnimatePreview(false));
 	}
 
-	private void OnEndHover(BaseHandle baseHandle, HandleDragEventData eventData)
+	private void OnEndHover(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		StopAllCoroutines();
 		StartCoroutine(AnimatePreview(true));
