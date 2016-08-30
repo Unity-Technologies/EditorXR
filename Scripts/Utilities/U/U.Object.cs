@@ -63,10 +63,10 @@
 #if UNITY_EDITOR
 				empty = EditorUtility.CreateGameObjectWithHideFlags(name, EditorVR.kDefaultHideFlags);
 #else
-                empty = new GameObject(name);
+				empty = new GameObject(name);
 #endif
 				empty.transform.parent = parent;
-				empty.transform.localPosition = Vector3.zero;  // If parent is defined, assume local position for a new GameObject should be cleared
+				empty.transform.localPosition = Vector3.zero;
 
 				return empty;
 			}
@@ -86,6 +86,7 @@
 				Component component = new GameObject(type.Name).AddComponent(type);
 #endif
 				component.transform.parent = parent;
+
 				return component;
 			}
 
