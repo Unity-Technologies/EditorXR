@@ -23,7 +23,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		set { m_ScaleFactor = value; }
 	}
 	[SerializeField]
-	private float m_ScaleFactor = 0.75f;
+	private float m_ScaleFactor = 0.1f;
 
 	protected override int dataLength { get { return Mathf.CeilToInt((float)base.dataLength / m_NumPerRow); } }
 
@@ -83,7 +83,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override Vector3 GetObjectSize(GameObject g)
 	{
-		return base.GetObjectSize(g) * m_ScaleFactor;
+		return g.GetComponent<BoxCollider>().size * m_ScaleFactor;
 	}
 
 	protected override void UpdateItems()
@@ -91,12 +91,16 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		int count = 0;
 		for (int i = 0; i < m_Data.Length; i++)
 		{
-			if (!testFilter(m_Data[i].type))
+			if (m_NumPerRow == 0) // If the list is too narrow, display nothing
 			{
 				CleanUpBeginning(m_Data[i]);
 				continue;
 			}
-			//Debug.Log(m_Data[i].type);
+			if (!testFilter(m_Data[i].type)) // If this item doesn't match the filter, move on to the next item; do not count
+			{
+				CleanUpBeginning(m_Data[i]);
+				continue;
+			}
 			if (count / m_NumPerRow + m_DataOffset < 0)
 			{
 				CleanUpBeginning(m_Data[i]);

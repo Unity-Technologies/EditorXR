@@ -17,6 +17,19 @@ public class AssetData : ListViewItemData
 	public string type { get { return m_Type; } }
 	public bool animating { get; set; }
 
+	public GameObject preview
+	{
+		get
+		{
+			if (!m_FetchedPreview)
+				m_PreviewObject = AssetDatabase.LoadAssetAtPath(GetPathRelativeToAssets(m_Path), typeof (UnityEngine.Object)) as GameObject;
+			m_FetchedPreview = true;
+			return m_PreviewObject;
+		}
+	}
+	private GameObject m_PreviewObject;
+	private bool m_FetchedPreview;
+
 	public AssetData(string path)
 	{
 		template = kTemplateName;

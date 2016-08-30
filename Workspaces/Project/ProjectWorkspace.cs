@@ -10,8 +10,8 @@ public class ProjectWorkspace : Workspace
 	private const float kScrollMargin = 0.03f;
 	private const float kYBounds = 0.2f;
 
-	private const float kMinScale = 0.1f;
-	private const float kMaxScale = 2;
+	private const float kMinScale = 0.05f;
+	private const float kMaxScale = 0.5f;
 
 	[SerializeField]
 	private GameObject m_ContentPrefab;
@@ -41,8 +41,8 @@ public class ProjectWorkspace : Workspace
 		var zoomSlider = sliderPrefab.GetComponent<ZoomSliderUI>();
 		zoomSlider.zoomSlider.minValue = kMinScale;
 		zoomSlider.zoomSlider.maxValue = kMaxScale;
-		zoomSlider.sliding = Scale;
 		zoomSlider.zoomSlider.value = m_ProjectUI.assetListView.scaleFactor;
+		zoomSlider.sliding = Scale;
 
 		m_ProjectUI.assetListView.testFilter = TestFilter;
 

@@ -12,6 +12,7 @@ public class ZoomSliderUI : MonoBehaviour
 
 	public void ZoomSlider(float value)
 	{
-		sliding(value);
+		if(sliding != null)
+			sliding(value);
 	}
 }

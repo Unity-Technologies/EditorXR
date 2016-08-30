@@ -32,7 +32,7 @@ namespace UnityEngine.VR.Handles
 		{
 			m_Dragging = true;
 			startDragPosition = eventData.pointerCurrentRaycast.worldPosition;
-			m_IsDirect = eventData.pointerPressRaycast.isValid && eventData.pointerCurrentRaycast.distance < eventData.pointerLength;
+			//m_IsDirect = eventData.pointerPressRaycast.isValid && ;
 
 			//Double-click logic
 			var timeSinceLastClick = (float)(DateTime.Now - m_LastClickTime).TotalSeconds;
@@ -120,6 +120,11 @@ namespace UnityEngine.VR.Handles
 				eventData.direct = m_IsDirect;
 				onDoubleClick(this, eventData);
 			}
+		}
+
+		protected virtual bool IsDirect(RayEventData eventData)
+		{
+			return eventData.pointerCurrentRaycast.distance < eventData.pointerLength;
 		}
 	}
 }
