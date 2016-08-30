@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.VR.Handles;
 
 public class WorkspaceUI : MonoBehaviour

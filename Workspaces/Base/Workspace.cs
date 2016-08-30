@@ -7,13 +7,13 @@ using UnityEngine.VR.Utilities;
 
 public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 {
-	public static readonly Vector3		kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
-	public static readonly Vector3		kDefaultOffset = new Vector3(0, -0.15f, 1f);
-	public static readonly Quaternion	kDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
+	public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
+	public static readonly Vector3 kDefaultOffset = new Vector3(0, -0.15f, 1f);
+	public static readonly Quaternion kDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
-	public const float kHandleMargin = -0.15f;	// Compensate for base size from frame model
+	public const float kHandleMargin = -0.15f; // Compensate for base size from frame model
 
-	public event Action<Workspace> closed = delegate {};
+	public event Action<Workspace> closed = delegate { };
 
 	protected WorkspaceUI m_WorkspaceUI;
 
@@ -44,6 +44,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			}
 		}
 	}
+
 	[SerializeField]
 	private Bounds m_ContentBounds;
 
@@ -79,19 +80,13 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	public Action<GameObject, bool> setHighlight { get; set; }
 
-	public bool vacuumEnabled
-	{
-		set
-		{
-			m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value);
-		}
-	}
+	public bool vacuumEnabled { set { m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value); } }
 
 	public virtual void Setup()
 	{
 		GameObject baseObject = instantiateUI(m_BasePrefab);
 		baseObject.transform.SetParent(transform, false);
-		
+
 		m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
 		m_WorkspaceUI.closeClicked += OnCloseClicked;
 		m_WorkspaceUI.lockClicked += OnLockClicked;
@@ -124,7 +119,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			handle.handleDragging += HandleDragging;
 			handle.handleDrag += HandleDrag;
 			handle.handleDragged += HandleDragged;
-			
+
 			handle.hovering += OnHandleHoverEnter;
 			handle.hovered += OnHandleHoverExit;
 		}
@@ -166,7 +161,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 				positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 			}
 			contentBounds = bounds;
-			if(contentBounds.size == bounds.size) //Don't reposition if we hit minimum bounds
+			if (contentBounds.size == bounds.size) //Don't reposition if we hit minimum bounds
 				transform.position = m_PositionStart + positionOffset;
 		}
 	}
@@ -228,7 +223,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			transform.rotation = Quaternion.Lerp(startRotation, destRotation, (Time.realtimeSinceStartup - startTime) / m_VacuumTime);
 			yield return null;
 		}
-		//setHighlight(m_WorkspaceUI.vacuumHandle.gameObject, false);
+
 		transform.position = destPosition;
 		transform.rotation = destRotation;
 	}

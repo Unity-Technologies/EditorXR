@@ -1,7 +1,6 @@
-﻿	using System;
-using UnityEngine;
-	using UnityEngine.EventSystems;
-	using UnityEngine.VR.Modules;
+﻿using System;
+using UnityEngine.EventSystems;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Handles
@@ -19,11 +18,12 @@ namespace UnityEngine.VR.Handles
 		}
 
 		public HandleFlags handleFlags { get { return m_HandleFlags; } set { m_HandleFlags = value; } }
+
 		[SerializeField]
 		[FlagsProperty]
 		private HandleFlags m_HandleFlags;
 
-		public event Action<BaseHandle, HandleEventData> handleDragging = delegate {};
+		public event Action<BaseHandle, HandleEventData> handleDragging = delegate { };
 		public event Action<BaseHandle, HandleEventData> handleDrag = delegate { };
 		public event Action<BaseHandle, HandleEventData> handleDragged = delegate { };
 
@@ -78,12 +78,12 @@ namespace UnityEngine.VR.Handles
 			var handleEventData = GetHandleEventData(eventData);
 			if (!ValidEvent(handleEventData))
 				return;
-			
+
 			m_Dragging = true;
 			startDragPosition = eventData.pointerCurrentRaycast.worldPosition;
 
 			//Double-click logic
-			var timeSinceLastClick = (float)(DateTime.Now - m_LastClickTime).TotalSeconds;
+			var timeSinceLastClick = (float) (DateTime.Now - m_LastClickTime).TotalSeconds;
 			m_LastClickTime = DateTime.Now;
 			if (U.Input.DoubleClick(timeSinceLastClick))
 			{

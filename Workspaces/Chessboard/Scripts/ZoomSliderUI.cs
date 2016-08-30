@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class ZoomSliderUI : MonoBehaviour
 {
 	public Slider zoomSlider { get { return m_ZoomSlider; } }
+
 	[SerializeField]
 	private Slider m_ZoomSlider;
 
@@ -12,6 +13,7 @@ public class ZoomSliderUI : MonoBehaviour
 
 	public void ZoomSlider(float value)
 	{
-		sliding(value);
+		if (sliding != null)
+			sliding(value);
 	}
 }

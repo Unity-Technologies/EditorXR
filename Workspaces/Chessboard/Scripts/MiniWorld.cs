@@ -5,10 +5,7 @@ public class MiniWorld : MonoBehaviour
 {
 	public LayerMask rendererCullingMask
 	{
-		get
-		{
-			return m_RendererCullingMask;
-		}
+		get { return m_RendererCullingMask; }
 		set
 		{
 			m_RendererCullingMask = value;
@@ -16,6 +13,7 @@ public class MiniWorld : MonoBehaviour
 				m_MiniWorldRenderer.cullingMask = m_RendererCullingMask;
 		}
 	}
+
 	[SerializeField]
 	private LayerMask m_RendererCullingMask = -1;
 
@@ -27,26 +25,16 @@ public class MiniWorld : MonoBehaviour
 	/// RefernceTransform defines world space within the MiniWorld. When scaled up, a larger area is represented,
 	/// thus the objects in the MiniWorld get smaller.
 	/// </summary>
-	public Transform referenceTransform
-	{
-		get { return m_ReferenceTransform; }
-		set { m_ReferenceTransform = value; }
-	}
+	public Transform referenceTransform { get { return m_ReferenceTransform; } set { m_ReferenceTransform = value; } }
 
 	[SerializeField]
 	private Transform m_ReferenceTransform;
 
-	public Matrix4x4 miniToReferenceMatrix
-	{
-		get { return transform.localToWorldMatrix * referenceTransform.worldToLocalMatrix; }
-	}
+	public Matrix4x4 miniToReferenceMatrix { get { return transform.localToWorldMatrix * referenceTransform.worldToLocalMatrix; } }
 
 	public Bounds referenceBounds
 	{
-		get
-		{
-			return new Bounds(referenceTransform.position, Vector3.Scale(referenceTransform.localScale, m_LocalBoundsSize));
-		}
+		get { return new Bounds(referenceTransform.position, Vector3.Scale(referenceTransform.localScale, m_LocalBoundsSize)); }
 		set
 		{
 			referenceTransform.position = value.center;
@@ -54,16 +42,12 @@ public class MiniWorld : MonoBehaviour
 		}
 	}
 
-	public Bounds localBounds
-	{
-		get { return new Bounds(Vector3.zero, m_LocalBoundsSize); }
-		set { m_LocalBoundsSize = value.size; }
-	}
+	public Bounds localBounds { get { return new Bounds(Vector3.zero, m_LocalBoundsSize); } set { m_LocalBoundsSize = value.size; } }
 
 	private void OnEnable()
 	{
 		if (!referenceTransform)
-			referenceTransform = new GameObject("MiniWorldReference") { hideFlags = HideFlags.DontSave }.transform;
+			referenceTransform = new GameObject("MiniWorldReference") {hideFlags = HideFlags.DontSave}.transform;
 
 		m_MiniWorldRenderer = U.Object.AddComponent<MiniWorldRenderer>(U.Camera.GetMainCamera().gameObject);
 		m_MiniWorldRenderer.miniWorld = this;
