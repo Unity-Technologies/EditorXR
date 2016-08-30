@@ -58,6 +58,8 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		base.ComputeConditions();
 
 		m_NumPerRow = (int) (bounds.size.x / m_ItemSize.x);
+		if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
+			return;
 
 		m_NumRows = Mathf.CeilToInt(bounds.size.z / m_ItemSize.z);
 
@@ -83,36 +85,33 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override Vector3 GetObjectSize(GameObject g)
 	{
-		return g.GetComponent<BoxCollider>().size * m_ScaleFactor;
+		return g.GetComponent<BoxCollider>().size * m_ScaleFactor + Vector3.one * m_Padding;
 	}
 
 	protected override void UpdateItems()
 	{
 		int count = 0;
-		for (int i = 0; i < m_Data.Length; i++)
+		foreach (var data in m_Data)
 		{
 			if (m_NumPerRow == 0) // If the list is too narrow, display nothing
 			{
-				CleanUpBeginning(m_Data[i]);
+				CleanUpBeginning(data);
 				continue;
 			}
-			if (!testFilter(m_Data[i].type)) // If this item doesn't match the filter, move on to the next item; do not count
+
+			if (!testFilter(data.type)) // If this item doesn't match the filter, move on to the next item; do not count
 			{
-				CleanUpBeginning(m_Data[i]);
+				CleanUpBeginning(data);
 				continue;
 			}
+
 			if (count / m_NumPerRow + m_DataOffset < 0)
-			{
-				CleanUpBeginning(m_Data[i]);
-			}
+				CleanUpBeginning(data);
 			else if (count / m_NumPerRow + m_DataOffset > m_NumRows - 2)
-			{
-				CleanUpEnd(m_Data[i]);
-			}
+				CleanUpEnd(data);
 			else
-			{
-				UpdateVisibleItem(m_Data[i], count);
-			}
+				UpdateVisibleItem(data, count);
+
 			count++;
 		}
 	}
@@ -148,23 +147,20 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	private IEnumerator AnimateIn(AssetData data)
 	{
 		float start = Time.realtimeSinceStartup;
-		//Quaternion startRot = item.transform.rotation;
-		//Vector3 startPos = item.transform.position;
 		float startScale = data.item.transform.localScale.x;
 		data.item.transform.localScale = Vector3.zero;
 		data.animating = true;
+		var item = data.item;
+
 		while (Time.realtimeSinceStartup - start < kRecycleDuration)
 		{
-			//item.transform.rotation = Quaternion.Lerp(startRot, destination.rotation, (Time.time - start) / kRecycleDuration);
-			//item.transform.position = Vector3.Lerp(startPos, destination.position, (Time.time - start) / kRecycleDuration);
-			if(!data.item.gameObject.activeSelf)
+			if(!item || !item.gameObject.activeSelf)
 				yield break;
+
 			var t = (Time.realtimeSinceStartup - start) / kRecycleDuration;
 			data.item.transform.localScale = Vector3.one * Mathf.Lerp(0, startScale, t * t);
 			yield return null;
 		}
-		//item.transform.rotation = destination.rotation;
-		//item.transform.position = destination.position;
 		data.animating = false;
 	}
 

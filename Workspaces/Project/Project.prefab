@@ -404,7 +404,7 @@ MonoBehaviour:
   m_MaxMomentum: 200
   m_Templates:
   - {fileID: 1000014066556564, guid: 94a0fcdece43c184c88738ce9401f3d0, type: 2}
-  m_ScaleFactor: 0.75
+  m_ScaleFactor: 0.075
 --- !u!114 &114000013463570846
 MonoBehaviour:
   m_ObjectHideFlags: 1

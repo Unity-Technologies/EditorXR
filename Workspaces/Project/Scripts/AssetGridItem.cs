@@ -10,8 +10,8 @@ using Object = UnityEngine.Object;
 
 public class AssetGridItem : ListViewItem<AssetData>
 {
-	private const float kMagnetizeDuration = 0.75f;
-	private const float kPreviewDuration = 0.25f;
+	private const float kMagnetizeDuration = 0.5f;
+	private const float kPreviewDuration = 0.1f;
 	private readonly Vector3 kGrabOffset = new Vector3(0, 0.02f, 0.03f);
 
 	[SerializeField]
@@ -21,7 +21,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private BaseHandle m_Handle;
 
 	[SerializeField]
-	private RectTransform m_TextPanel;
+	private Image m_TextPanel;
 
 	[SerializeField]
 	private Material m_NoClipCubeMaterial;
@@ -35,7 +35,6 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private float m_GrabLerp;
 	private float m_PreviewFade;
 	private Transform m_PreviewObject;
-	private float m_PreviewMaxScale;
 
 	public override void Setup(AssetData listData)
 	{
@@ -71,6 +70,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 	public void SwapMaterials(Material textMaterial)
 	{
 		m_Text.material = textMaterial;
+		m_TextPanel.material = textMaterial;
 	}
 
 	public void UpdateTransforms(float scale)
@@ -105,7 +105,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 			else
 			{
 				m_Cube.gameObject.SetActive(true);
-				m_Cube.gameObject.SetActive(true);
+				m_PreviewObject.gameObject.SetActive(true);
 				m_Cube.transform.localScale = Vector3.one * (1 - m_PreviewFade);
 				m_PreviewObject.transform.localScale = Vector3.one * m_PreviewFade;
 			}
@@ -133,9 +133,10 @@ public class AssetGridItem : ListViewItem<AssetData>
 		{
 			totalBounds.Encapsulate(renderer.bounds);
 		}
-		m_PreviewMaxScale = 1 / Mathf.Max(totalBounds.size.x, totalBounds.size.y, totalBounds.size.z);
 
 		m_PreviewObject.SetParent(transform, false);
+
+		m_PreviewObject.localScale = Vector3.one / Mathf.Max(totalBounds.size.x, totalBounds.size.y, totalBounds.size.z);
 	}
 
 	public void GetMaterials(out Material textMaterial)
@@ -160,6 +161,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 		m_GrabMaterial = U.Material.GetMaterialClone(cubeRenderer.GetComponent<Renderer>());
 		m_GrabMaterial.mainTexture = m_Cube.sharedMaterial.mainTexture;
 		cloneItem.m_Text.material = null;
+		cloneItem.m_TextPanel.material = null;
 
 		m_GrabbedObject = clone.transform;
 		m_GrabLerp = 0;
@@ -193,14 +195,20 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 	private void OnBeginHover(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		StopAllCoroutines();
-		StartCoroutine(AnimatePreview(false));
+		if (gameObject.activeInHierarchy)
+		{
+			StopAllCoroutines();
+			StartCoroutine(AnimatePreview(false));
+		}
 	}
 
 	private void OnEndHover(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		StopAllCoroutines();
-		StartCoroutine(AnimatePreview(true));
+		if (gameObject.activeInHierarchy)
+		{
+			StopAllCoroutines();
+			StartCoroutine(AnimatePreview(true));
+		}
 	}
 
 	private IEnumerator AnimatePreview(bool @out)

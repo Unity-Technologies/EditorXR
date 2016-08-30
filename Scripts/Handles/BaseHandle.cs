@@ -150,7 +150,7 @@ namespace UnityEngine.VR.Handles
 		public void OnRayExit(RayEventData eventData)
 		{
 			var handleEventData = GetHandleEventData(eventData);
-			if (!ValidEvent(handleEventData))
+			if (!m_Hovering && !ValidEvent(handleEventData))
 				return;
 
 			if (m_Hovering)

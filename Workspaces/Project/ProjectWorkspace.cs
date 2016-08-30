@@ -10,8 +10,8 @@ public class ProjectWorkspace : Workspace
 	private const float kScrollMargin = 0.03f;
 	private const float kYBounds = 0.2f;
 
-	private const float kMinScale = 0.05f;
-	private const float kMaxScale = 0.5f;
+	private const float kMinScale = 0.03f;
+	private const float kMaxScale = 0.2f;
 
 	[SerializeField]
 	private GameObject m_ContentPrefab;
@@ -129,7 +129,7 @@ public class ProjectWorkspace : Workspace
 		var assetListView = m_ProjectUI.assetListView;
 		assetListView.bounds = bounds;
 		assetListView.PreCompute(); // Compute item size
-		assetListView.transform.localPosition = new Vector3(xOffset, assetListView.itemSize.y * 0.5f, 0);
+		assetListView.transform.localPosition = Vector3.right * xOffset;
 
 		var assetPanel = m_ProjectUI.assetPanel;
 		assetPanel.transform.localPosition = xOffset * Vector3.right;

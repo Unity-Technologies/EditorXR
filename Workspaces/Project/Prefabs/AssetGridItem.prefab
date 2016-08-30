@@ -87,7 +87,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010981419404}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
@@ -155,7 +155,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!114 &114000011311085786
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -182,10 +182,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000014066556564}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 10f0223e36df2474eadcf31d368c62a2, type: 3}
+  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -2
 --- !u!114 &114000012861929906
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -276,7 +277,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.37600002, y: 0.657}
+  m_AnchoredPosition: {x: -0.37600002, y: 1.148}
   m_SizeDelta: {x: 1, y: 0.365}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!224 &224000013671661884
