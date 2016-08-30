@@ -73,8 +73,8 @@ namespace UnityEngine.VR.Menus
 		public Transform rayOrigin { private get; set; }
 		public Action hideDefaultRay { private get; set; }
 		public Action showDefaultRay { private get; set; }
-		public Action<object> lockRay { private get; set; }
-		public Action<object> unlockRay { private get; set; }
+		public Func<object, bool> lockRay { private get; set; }
+		public Func<object, bool> unlockRay { private get; set; }
 		public List<Type> menuTools { private get; set; }
 		public Func<Node, Type, bool> selectTool { private get; set; }
 		public Node? node { private get; set; }

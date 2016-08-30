@@ -17,7 +17,6 @@ using UnityEngine.VR.Utilities;
 using UnityEditor;
 using UnityEditor.VR;
 #endif
-using Menu = UnityEngine.InputNew.Menu;
 
 [InitializeOnLoad]
 public class EditorVR : MonoBehaviour
@@ -26,7 +25,7 @@ public class EditorVR : MonoBehaviour
 
 	private const float kDefaultRayLength = 100f;
 	[SerializeField]
-	private ActionMap m_MenuActionMap;
+	private ActionMap m_ShowMenuActionMap;
 	[SerializeField]
 	private ActionMap m_DefaultActionMap;
 	[SerializeField]
@@ -53,7 +52,7 @@ public class EditorVR : MonoBehaviour
 	private class DeviceData
 	{
 		public Stack<ITool> tools;
-		public Menu menuInput;
+		public ShowMenu showMenuInput;
 		public ActionMapInput uiInput;
 		public IMainMenu mainMenu;
 		public ITool currentTool;
@@ -102,7 +101,7 @@ public class EditorVR : MonoBehaviour
 			var deviceData = new DeviceData
 			{
 				tools = new Stack<ITool>(),
-				menuInput = (Menu)CreateActionMapInput(m_MenuActionMap, device)
+				showMenuInput = (ShowMenu)CreateActionMapInput(m_ShowMenuActionMap, device)
 			};
 			m_DeviceData.Add(device, deviceData);
 		}
@@ -163,7 +162,7 @@ public class EditorVR : MonoBehaviour
 
 		foreach (var kvp in m_DeviceData)
 		{
-			if (kvp.Value.menuInput.show.wasJustPressed)
+			if (kvp.Value.showMenuInput.show.wasJustPressed)
 			{
 				var device = kvp.Key;
 				var mainMenu = m_DeviceData[device].mainMenu;
@@ -388,7 +387,7 @@ public class EditorVR : MonoBehaviour
 
 		foreach (DeviceData deviceData in m_DeviceData.Values)
 		{
-			maps.Add(deviceData.menuInput);
+			maps.Add(deviceData.showMenuInput);
 
 			if (deviceData.mainMenu != null)
 				AddActionMapInputs(deviceData.mainMenu, maps);

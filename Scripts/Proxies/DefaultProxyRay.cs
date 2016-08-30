@@ -34,20 +34,30 @@ public class DefaultProxyRay : MonoBehaviour
 	/// </summary>
 	private object m_LockRayObject;
 
-	public void LockRay(object lockCaller)
+	public bool LockRay(object lockCaller)
 	{
 		// Allow the caller to lock the ray
 		// If the reference to the lockCaller is destroyed, and the ray was not properly
 		// unlocked by the original locking caller, then allow locking by another object
 		if (m_LockRayObject == null)
+		{
 			m_LockRayObject = lockCaller;
+			return true;
+		}
+
+		return false;
 	}
 
-	public void UnlockRay(object unlockCaller)
+	public bool UnlockRay(object unlockCaller)
 	{
 		// Only allow unlocking if the original lock caller is null or there is no locker caller set
 		if (m_LockRayObject == unlockCaller)
+		{
 			m_LockRayObject = null;
+			return true;
+		}
+
+		return false;
 	}
 
 	/// <summary>
