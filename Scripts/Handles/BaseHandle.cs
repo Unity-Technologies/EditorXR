@@ -1,6 +1,7 @@
-﻿using System;
+﻿	using System;
 using UnityEngine;
-using UnityEngine.VR.Modules;
+	using UnityEngine.EventSystems;
+	using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Handles
@@ -38,14 +39,27 @@ namespace UnityEngine.VR.Handles
 
 		public Vector3 startDragPosition { get; protected set; }
 
-		protected virtual HandleEventData GetHandleEventData(RayEventData eventData)
+		private void OnDisable()
 		{
-			return new HandleEventData(eventData.rayOrigin, DirectSelection(eventData));
+			if (m_Hovering || m_Dragging)
+			{
+				var eventData = GetHandleEventData(new RayEventData(EventSystem.current));
+				if (m_Hovering)
+					OnHandleRayExit(eventData);
+
+				if (m_Dragging)
+					OnHandleEndDrag(eventData);
+			}
 		}
 
-		protected virtual bool DirectSelection(RayEventData eventData)
+		protected virtual HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return eventData.pointerCurrentRaycast.distance > eventData.pointerLength;
+			return new HandleEventData(eventData.rayOrigin, IsDirectSelection(eventData));
+		}
+
+		protected virtual bool IsDirectSelection(RayEventData eventData)
+		{
+			return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength;
 		}
 
 		protected virtual bool ValidEvent(HandleEventData eventData)
@@ -64,7 +78,7 @@ namespace UnityEngine.VR.Handles
 			var handleEventData = GetHandleEventData(eventData);
 			if (!ValidEvent(handleEventData))
 				return;
-
+			
 			m_Dragging = true;
 			startDragPosition = eventData.pointerCurrentRaycast.worldPosition;
 
@@ -81,11 +95,8 @@ namespace UnityEngine.VR.Handles
 
 		public void OnDrag(RayEventData eventData)
 		{
-			var handleEventData = GetHandleEventData(eventData);
-			if (!ValidEvent(handleEventData) || !m_Hovering)
-				return;
-
-			OnHandleDrag(handleEventData);
+			if (m_Dragging)
+				OnHandleDrag(GetHandleEventData(eventData));
 		}
 
 		public void OnEndDrag(RayEventData eventData)
@@ -94,8 +105,11 @@ namespace UnityEngine.VR.Handles
 			if (!ValidEvent(handleEventData))
 				return;
 
-			m_Dragging = false;
-			OnHandleEndDrag(GetHandleEventData(eventData));
+			if (m_Dragging)
+			{
+				m_Dragging = false;
+				OnHandleEndDrag(GetHandleEventData(eventData));
+			}
 		}
 
 		public void OnRayEnter(RayEventData eventData)
@@ -114,7 +128,7 @@ namespace UnityEngine.VR.Handles
 
 			// Direct selection has special handling for enter/exit since those events may not have been called
 			// because the pointer wasn't close enough to the handle
-			if ((handleFlags & HandleFlags.Direct) != 0)
+			if (handleFlags == HandleFlags.Direct)
 			{
 				if (m_Hovering && !handleEventData.direct)
 				{
@@ -130,10 +144,8 @@ namespace UnityEngine.VR.Handles
 				}
 			}
 
-			if (!ValidEvent(handleEventData) || !m_Hovering)
-				return;
-
-			OnHandleRayHover(GetHandleEventData(eventData));
+			if (m_Hovering)
+				OnHandleRayHover(GetHandleEventData(eventData));
 		}
 
 		public void OnRayExit(RayEventData eventData)
@@ -142,8 +154,11 @@ namespace UnityEngine.VR.Handles
 			if (!ValidEvent(handleEventData))
 				return;
 
-			m_Hovering = false;
-			OnHandleRayExit(GetHandleEventData(eventData));
+			if (m_Hovering)
+			{
+				m_Hovering = false;
+				OnHandleRayExit(GetHandleEventData(eventData));
+			}
 		}
 
 		/// <summary>

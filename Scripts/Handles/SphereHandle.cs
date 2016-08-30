@@ -21,7 +21,7 @@ namespace UnityEngine.VR.Handles
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new SphereHandleEventData(eventData.rayOrigin, DirectSelection(eventData)) { raycastHitDistance = eventData.pointerCurrentRaycast.distance };
+			return new SphereHandleEventData(eventData.rayOrigin, IsDirectSelection(eventData)) { raycastHitDistance = eventData.pointerCurrentRaycast.distance };
 		}
 
 		protected override void OnHandleBeginDrag(HandleEventData eventData)

@@ -107,7 +107,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		directManipulator.translate = Translate;
 		directManipulator.rotate = Rotate;
 
-		m_WorkspaceUI.vacuumHandle.doubleClick += DoubleClick;
+		m_WorkspaceUI.vacuumHandle.doubleClick += OnDoubleClick;
 		m_WorkspaceUI.vacuumHandle.hovering += OnHandleHoverEnter;
 		m_WorkspaceUI.vacuumHandle.hovered += OnHandleHoverExit;
 
@@ -188,20 +188,22 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			setHighlight(handle.gameObject, false);
 	}
 
-	private void DoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	private void OnDoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		StartCoroutine(VacuumToViewer());
 	}
 
 	private void Translate(Vector3 deltaPosition)
 	{
-		if (m_DragLocked) return;
+		if (m_DragLocked)
+			return;
 		transform.position += deltaPosition;
 	}
 
 	private void Rotate(Quaternion deltaRotation)
 	{
-		if (m_DragLocked) return;
+		if (m_DragLocked)
+			return;
 		transform.rotation *= deltaRotation;
 	}
 
@@ -226,7 +228,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			transform.rotation = Quaternion.Lerp(startRotation, destRotation, (Time.realtimeSinceStartup - startTime) / m_VacuumTime);
 			yield return null;
 		}
-		setHighlight(m_WorkspaceUI.vacuumHandle.gameObject, false);
+		//setHighlight(m_WorkspaceUI.vacuumHandle.gameObject, false);
 		transform.position = destPosition;
 		transform.rotation = destRotation;
 	}

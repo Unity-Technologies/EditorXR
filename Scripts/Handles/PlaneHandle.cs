@@ -22,7 +22,7 @@ namespace UnityEngine.VR.Handles
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new PlaneHandleEventData(eventData.rayOrigin, DirectSelection(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
+			return new PlaneHandleEventData(eventData.rayOrigin, IsDirectSelection(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
 		}
 
 		protected override void OnHandleBeginDrag(HandleEventData eventData)
