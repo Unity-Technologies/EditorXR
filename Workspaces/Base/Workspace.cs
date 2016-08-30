@@ -192,6 +192,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	{
 		if (m_DragLocked)
 			return;
+
 		transform.position += deltaPosition;
 	}
 
@@ -199,6 +200,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	{
 		if (m_DragLocked)
 			return;
+
 		transform.rotation *= deltaRotation;
 	}
 

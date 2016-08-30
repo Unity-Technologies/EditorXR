@@ -85,12 +85,12 @@ namespace UnityEngine.VR.Handles
 			Vector3 worldPosition = m_LastPosition;
 
 			// Continue to rotate plane, so that the ray direction isn't parallel to the plane
-			var forward = Quaternion.Inverse(transform.rotation) * (eventData.rayOrigin.position - transform.position);
+			var forward = Quaternion.Inverse(transform.rotation) * (rayOrigin.position - transform.position);
 			forward.z = 0;
 			m_Plane.SetNormalAndPosition(transform.rotation * forward.normalized, transform.position);
 
 			float distance = 0f;
-			Ray ray = GetRay(eventData);
+			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
 			if (m_Plane.Raycast(ray, out distance))
 				worldPosition = ray.GetPoint(Mathf.Min(distance, kMaxDragDistance));
 
@@ -109,11 +109,6 @@ namespace UnityEngine.VR.Handles
 			UpdateHandleTip(linearEventData);
 
 			base.OnHandleDrag(eventData);
-		}
-
-		private static Ray GetRay(HandleEventData eventData)
-		{
-			return new Ray(eventData.rayOrigin.position, eventData.rayOrigin.forward);
 		}
 
 		protected override void OnHandleEndDrag(HandleEventData eventData)
