@@ -142,6 +142,7 @@ namespace UnityEngine.VR.Modules
 			clone.hovered = new List<GameObject>(eventData.hovered);
 			clone.pointerEnter = eventData.pointerEnter;
 			clone.pointerCurrentRaycast = eventData.pointerCurrentRaycast;
+			clone.pointerLength = eventData.pointerLength;
 
 			return clone;
 		}

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
   m_Name: Menu
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_RunInEditMode: 0
   m_Actions:
   - {fileID: 114000013407218016}
@@ -34,7 +34,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
   m_MapTypeName: Menu, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_CustomNamespace: 
+  m_CustomNamespace:
 --- !u!114 &114000013407218016
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45,12 +45,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: Show
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 0
   m_ControlData:
-    componentControlIndices: 
+    componentControlIndices:
     controlType:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null

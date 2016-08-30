@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine.VR.Utilities;
 using UnityEngine;
 using UnityEngine.Events;
@@ -9,7 +10,6 @@ using UnityEngine.VR.Tools;
 [ExecuteInEditMode]
 public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 {
-
 	[SerializeField]
 	private Canvas m_MainMenuPrefab;
 	private Canvas m_MenuCanvas;
@@ -20,7 +20,9 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 	public Transform rayOrigin { get; set; }
 
 	public List<Type> menuTools { private get; set; }
+	public List<Type> menuWorkspaces { private get; set; }
 	public Func<IMainMenu, Type, bool> selectTool { private get; set; }
+	public Action<Type> createWorkspace { private get; set; }
 
 	public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
@@ -36,6 +38,7 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 		}
 		m_MenuCanvas.transform.SetParent(rayOrigin, false);
 		CreateToolButtons();
+		CreateWorkspaceButtons();
 	}
 
 	void OnDestroy()
@@ -53,17 +56,45 @@ public class MainMenuDev : MonoBehaviour, IRay, IInstantiateUI, IMainMenu
 			var text = newButton.GetComponentInChildren<Text>();
 			text.text = menuTool.Name;
 			var button = newButton.GetComponent<Button>();
-			AddButtonListener(button, menuTool);
+			AddToolButtonListener(button, menuTool);
 		}
 	}
 
-	private void AddButtonListener(Button b, Type t)
+	private void AddToolButtonListener(Button b, Type t)
 	{
 		b.onClick.RemoveAllListeners();
 		b.onClick.AddListener(() =>
 		{
 			if (selectTool(this, t))
 				U.Object.Destroy(this);
+		});
+		b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
+	}
+
+	private void CreateWorkspaceButtons()
+	{
+		foreach (var menuWorkspace in menuWorkspaces)
+		{
+			var newButton = U.Object.InstantiateAndSetActive(m_ButtonTemplate, m_Layout, false);
+			newButton.name = ObjectNames.NicifyVariableName(menuWorkspace.Name);
+			var text = newButton.GetComponentInChildren<Text>();
+			text.text = newButton.name;
+			var button = newButton.GetComponent<Button>();
+			AddWorkspaceButtonListener(button, menuWorkspace);
+		}
+	}
+
+	private void AddWorkspaceButtonListener(Button b, Type t)
+	{
+		b.onClick.RemoveAllListeners();
+		b.onClick.AddListener(() =>
+		{
+			//HACK: Workspace.m_BasePrefab is coming up null when we call CreateWorkspace from this context.
+			EditorApplication.delayCall += () =>
+			{
+				createWorkspace(t);
+				U.Object.Destroy(this);
+			};
 		});
 		b.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
 	}

@@ -24,6 +24,12 @@ public class EditorVR : MonoBehaviour
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
 	private const float kDefaultRayLength = 100f;
+
+	private const float kWorkspaceAnglePadding = 25f;
+	private const float kWorkspaceYPadding = 0.35f;
+	private const int kMaxWorkspacePlacementAttempts = 20;
+	private const float kWorkspaceVacuumEnableDistance = 1.5f; //Disable vacuum bounds if workspace is closer than 1.5 meters to player
+
 	[SerializeField]
 	private ActionMap m_MenuActionMap;
 	[SerializeField]
@@ -58,9 +64,11 @@ public class EditorVR : MonoBehaviour
 		public ITool currentTool;
 	}
 
-	private Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
-	private List<IProxy> m_AllProxies = new List<IProxy>();
+	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
+	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
 	private IEnumerable<Type> m_AllTools;
+	private IEnumerable<Type> m_AllWorkspaceTypes;
+	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
 
 	private Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 	{
@@ -87,6 +95,7 @@ public class EditorVR : MonoBehaviour
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
+		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace));
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
 		// then only show it in that hand's menu.
@@ -108,6 +117,9 @@ public class EditorVR : MonoBehaviour
 
 	private IEnumerator Start()
 	{
+		//Workspaces don't need to wait until devices are active
+		CreateDefaultWorkspaces();
+
 		// Delay until at least one proxy initializes
 		bool proxyActive = false;
 		while (!proxyActive)
@@ -181,6 +193,11 @@ public class EditorVR : MonoBehaviour
 				}
 			}
 		}
+
+		var camera = U.Camera.GetMainCamera();
+		//Enable/disable workspace vacuum bounds based on distance to camera
+		foreach (var workspace in m_AllWorkspaces)
+			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
 
 #if UNITY_EDITOR
 		// HACK: Send a "mouse moved" event, so scene picking can occur for the controller
@@ -481,7 +498,9 @@ public class EditorVR : MonoBehaviour
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_AllTools.ToList();
+			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
 			mainMenu.selectTool = SelectTool;
+			mainMenu.createWorkspace = CreateWorkspace;
 			m_DeviceData[device].mainMenu = mainMenu;
 			ConnectInterfaces(mainMenu, device);
 		}
@@ -671,6 +690,77 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
+	private void CreateDefaultWorkspaces()
+	{
+		CreateWorkspace<ChessboardWorkspace>();
+	}
+
+	private void CreateWorkspace<T>() where T : Workspace
+	{
+		CreateWorkspace(typeof(T));
+	}
+
+	private void CreateWorkspace(Type t)
+	{
+		var defaultOffset = Workspace.kDefaultOffset;
+		var defaultTilt = Workspace.kDefaultTilt;
+
+		var viewerPivot = U.Camera.GetViewerPivot();
+		Vector3 position = viewerPivot.position + defaultOffset;
+
+		Quaternion rotation = defaultTilt;
+		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
+			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
+			+ kWorkspaceAnglePadding;													//Need some extra padding because workspaces are tilted
+		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;			//Need padding in Y as well
+
+		float currentRotation = arcLength;
+		float currentHeight = 0;
+
+		int count = 0;
+		int direction = 1;
+		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
+		
+		//While the current position is occupied, try a new one
+		while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts)
+		{
+			//The next position will be rotated by currentRotation, as if the hands of a clock
+			Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
+			position = viewerPivot.position + rotateAroundY * defaultOffset + Vector3.up * currentHeight;
+			rotation = rotateAroundY * defaultTilt;
+			
+			//Every other iteration, rotate a little further
+			if (direction < 0)
+				currentRotation += arcLength;
+			
+			//Switch directions every iteration (left, right, left, right)
+			direction *= -1;
+			
+			//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
+			if (currentRotation > 180)
+			{
+				direction = -1;
+				currentRotation = 0;
+				currentHeight += heightOffset;
+			}
+		}
+
+		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, transform);
+		m_AllWorkspaces.Add(workspace);
+		workspace.closed += OnWorkspaceClosed;
+		ConnectInterfaces(workspace);
+		workspace.transform.position = position;
+		workspace.transform.rotation = rotation;
+		
+		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
+		workspace.Setup();
+	}
+
+	private void OnWorkspaceClosed(Workspace workspace)
+	{
+		m_AllWorkspaces.Remove(workspace);
+	}
+
 #if UNITY_EDITOR
 	private static EditorVR s_Instance;
 	private static InputManager s_InputManager;
@@ -680,6 +770,7 @@ public class EditorVR : MonoBehaviour
 	{
 		VRView.GetWindow<VRView>("EditorVR", true);
 	}
+
 	[MenuItem("Window/EditorVR", true)]
 	public static bool ShouldShowEditorVR()
 	{

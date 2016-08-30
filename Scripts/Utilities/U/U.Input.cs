@@ -13,6 +13,9 @@
 		/// </summary>
 		public class Input
 		{
+			private const float kDoubleClickIntervalMax = 0.3f;
+			private const float kDoubleClickIntervalMin = 0.15f;
+
 			public static HashSet<InputDevice> CollectInputDevicesFromActionMaps(List<ActionMap> maps)
 			{
 				var inputDevices = new HashSet<InputDevice>();
@@ -44,6 +47,11 @@
 				{
 					deviceSlots.Add(deviceSlot);
 				}
+			}
+
+			public static bool DoubleClick(float timeSinceLastClick)
+			{
+				return timeSinceLastClick <= kDoubleClickIntervalMax && timeSinceLastClick >= kDoubleClickIntervalMin;
 			}
 		}
 	}

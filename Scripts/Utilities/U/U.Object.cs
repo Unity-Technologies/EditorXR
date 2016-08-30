@@ -63,10 +63,10 @@
 #if UNITY_EDITOR
 				empty = EditorUtility.CreateGameObjectWithHideFlags(name, EditorVR.kDefaultHideFlags);
 #else
-                empty = new GameObject(name);
+				empty = new GameObject(name);
 #endif
 				empty.transform.parent = parent;
-				empty.transform.localPosition = Vector3.zero;  // If parent is defined, assume local position for a new GameObject should be cleared
+				empty.transform.localPosition = Vector3.zero;
 
 				return empty;
 			}
@@ -86,6 +86,7 @@
 				Component component = new GameObject(type.Name).AddComponent(type);
 #endif
 				component.transform.parent = parent;
+
 				return component;
 			}
 
@@ -149,7 +150,18 @@
 				}
 				return new List<Type>();
 			}
-			
+
+			public static IEnumerable<Type> GetExtensionsOfClass(Type type)
+			{
+				if (type.IsClass)
+				{
+					return AppDomain.CurrentDomain.GetAssemblies()
+						.SelectMany(s => s.GetTypes())
+						.Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
+				}
+				return new List<Type>();
+			}
+
 			public static void Destroy(UnityObject o, float t = 0f)
 			{
 				if (Application.isPlaying)

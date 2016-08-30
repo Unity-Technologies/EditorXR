@@ -1245,6 +1245,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_PlaneMaterial: {fileID: 2100000, guid: faae2cd60c5292c48a46def9df717604, type: 2}
 --- !u!114 &114000011169532704
 MonoBehaviour:
@@ -1258,6 +1259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_PlaneMaterial: {fileID: 2100000, guid: faae2cd60c5292c48a46def9df717604, type: 2}
 --- !u!114 &114000011250465190
 MonoBehaviour:
@@ -1271,6 +1273,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_HandleTip: {fileID: 4000014115655252}
 --- !u!114 &114000011261594914
 MonoBehaviour:
@@ -1284,6 +1287,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_HandleTip: {fileID: 4000013116023314}
 --- !u!114 &114000011660595710
 MonoBehaviour:
@@ -1297,6 +1301,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_HandleTip: {fileID: 4000012695962256}
 --- !u!114 &114000012004783302
 MonoBehaviour:
@@ -1310,6 +1315,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_TurnSpeed: 4
   m_HandleTip: {fileID: 4000010934639446}
 --- !u!114 &114000012043475194
@@ -1324,6 +1330,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_TurnSpeed: 4
   m_HandleTip: {fileID: 4000010059661420}
 --- !u!114 &114000012656813054
@@ -1338,6 +1345,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_PlaneMaterial: {fileID: 2100000, guid: faae2cd60c5292c48a46def9df717604, type: 2}
 --- !u!114 &114000012657926048
 MonoBehaviour:
@@ -1375,6 +1383,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
   m_TurnSpeed: 4
   m_HandleTip: {fileID: 4000012613258266}
 --- !u!114 &114000013220464894
@@ -1389,6 +1398,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_HandleFlags: -1
 --- !u!135 &135000012924084782
 SphereCollider:
   m_ObjectHideFlags: 1
