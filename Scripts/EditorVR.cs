@@ -746,7 +746,7 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
-		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, transform);
+		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
 		m_AllWorkspaces.Add(workspace);
 		workspace.closed += OnWorkspaceClosed;
 		ConnectInterfaces(workspace);

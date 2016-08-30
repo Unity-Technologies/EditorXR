@@ -44,7 +44,6 @@ public class AssetGridItem : ListViewItem<AssetData>
 		{
 			// Cube material might change, so we always instance it
 			U.Material.GetMaterialClone(m_Cube);
-			InstantiatePreview();
 
 			m_Handle.handleDragging += GrabBegin;
 			m_Handle.handleDrag += GrabDrag;
@@ -55,6 +54,8 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 			m_Setup = true;
 		}
+
+		InstantiatePreview();
 
 		m_Text.text = Path.GetFileNameWithoutExtension(listData.path);
 
@@ -114,6 +115,8 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 	private void InstantiatePreview()
 	{
+		if(m_PreviewObject)
+			U.Object.Destroy(m_PreviewObject.gameObject);
 		if (!data.preview)
 			return;
 		m_PreviewObject = Instantiate(data.preview).transform;
