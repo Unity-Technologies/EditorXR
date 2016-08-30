@@ -3,8 +3,15 @@ using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Handles
 {
-	public class PlaneHandle : BaseHandle, IRayDragHandler
+	public class PlaneHandle : BaseHandle
 	{
+		private class PlaneHandleEventData : HandleEventData
+		{
+			public Vector3 raycastHitWorldPosition;
+
+			public PlaneHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) { }
+		}
+
 		[SerializeField]
 		private Material m_PlaneMaterial;
 
@@ -13,18 +20,22 @@ namespace UnityEngine.VR.Handles
 		private Plane m_Plane;
 		private Vector3 m_LastPosition;
 
-		public override void OnBeginDrag(RayEventData eventData)
+		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			base.OnBeginDrag(eventData);
+			return new PlaneHandleEventData(eventData.rayOrigin, IsDirectSelection(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
+		}
 
-			m_LastPosition = eventData.pointerCurrentRaycast.worldPosition;
+		protected override void OnHandleBeginDrag(HandleEventData eventData)
+		{
+			var planeEventData = eventData as PlaneHandleEventData;
+			m_LastPosition = planeEventData.raycastHitWorldPosition;
 
 			m_Plane.SetNormalAndPosition(transform.forward, transform.position);
 
-			OnHandleBeginDrag();
+			base.OnHandleBeginDrag(eventData);
 		}
 
-		public void OnDrag(RayEventData eventData)
+		protected override void OnHandleDrag(HandleEventData eventData)
 		{
 			Transform rayOrigin = eventData.rayOrigin;
 
@@ -35,21 +46,15 @@ namespace UnityEngine.VR.Handles
 			if (m_Plane.Raycast(ray, out distance))
 				worldPosition = ray.GetPoint(Mathf.Min(Mathf.Abs(distance), kMaxDragDistance));
 
-			var delta = worldPosition - m_LastPosition;
+			var deltaPosition = worldPosition - m_LastPosition;
 			m_LastPosition = worldPosition;
 
-			delta = transform.InverseTransformVector(delta);
-			delta.z = 0;
-			delta = transform.TransformVector(delta);
+			deltaPosition = transform.InverseTransformVector(deltaPosition);
+			deltaPosition.z = 0;
+			deltaPosition = transform.TransformVector(deltaPosition);
+			eventData.deltaPosition = deltaPosition;
 
-			OnHandleDrag(new HandleDragEventData(delta));
-		}
-
-		public override void OnEndDrag(RayEventData eventData)
-		{
-			base.OnEndDrag(eventData);
-			
-			OnHandleEndDrag();
+			base.OnHandleDrag(eventData);
 		}
 	}
 }

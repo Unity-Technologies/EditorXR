@@ -77,6 +77,8 @@ namespace UnityEngine.VR.Menus
 		public Func<object, bool> unlockRay { private get; set; }
 		public List<Type> menuTools { private get; set; }
 		public Func<Node, Type, bool> selectTool { private get; set; }
+		public List<Type> menuWorkspaces { private get; set; }
+		public Action<Type> createWorkspace { private get; set; }
 		public Node? node { private get; set; }
 		public Action setup { get { return Setup; } }
 

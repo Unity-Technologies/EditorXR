@@ -21,9 +21,19 @@ namespace UnityEngine.VR.Menus
 		List<Type> menuTools { set; }
 
 		/// <summary>
-		/// Delegate used to test for selecting items in the Main Menu
+		/// Delegate used select tools from the Main Menu
 		/// </summary>
 		Func<Node, Type, bool> selectTool { set; }
+
+		/// <summary>
+		/// The workspaces that are selectable from the menu
+		/// </summary>
+		List<Type> menuWorkspaces { set; }
+
+		/// <summary>
+		/// Delegated used for creating a workspace selected from the Main Menu
+		/// </summary>
+		Action<Type> createWorkspace { set; }
 
 		/// <summary>
 		/// The tracked node where this menu is spawned
