@@ -35,6 +35,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private float m_GrabLerp;
 	private float m_PreviewFade;
 	private Transform m_PreviewObject;
+	private float m_PreviewScale;
 
 	public override void Setup(AssetData listData)
 	{
@@ -101,14 +102,14 @@ public class AssetGridItem : ListViewItem<AssetData>
 			{
 				m_PreviewObject.gameObject.SetActive(true);
 				m_Cube.gameObject.SetActive(false);
-				m_PreviewObject.transform.localScale = Vector3.one;
+				m_PreviewObject.transform.localScale = Vector3.one * m_PreviewScale;
 			}
 			else
 			{
 				m_Cube.gameObject.SetActive(true);
 				m_PreviewObject.gameObject.SetActive(true);
 				m_Cube.transform.localScale = Vector3.one * (1 - m_PreviewFade);
-				m_PreviewObject.transform.localScale = Vector3.one * m_PreviewFade;
+				m_PreviewObject.transform.localScale = Vector3.one * m_PreviewFade * m_PreviewScale;
 			}
 		}
 	}
@@ -139,7 +140,8 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 		m_PreviewObject.SetParent(transform, false);
 
-		m_PreviewObject.localScale = Vector3.one / Mathf.Max(totalBounds.size.x, totalBounds.size.y, totalBounds.size.z);
+		m_PreviewScale = 1 / Mathf.Max(totalBounds.size.x, totalBounds.size.y, totalBounds.size.z);
+		m_PreviewObject.localPosition = Vector3.up * 0.5f;
 	}
 
 	public void GetMaterials(out Material textMaterial)
