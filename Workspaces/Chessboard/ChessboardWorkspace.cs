@@ -23,7 +23,6 @@ public class ChessboardWorkspace : Workspace
 	private GameObject m_FilterPrefab;
 
 	private ChessboardUI m_ChessboardUI;
-	private FilterUI m_FilterUI;
 	private MiniWorld m_MiniWorld;
 	private Material m_GridMaterial;
 	private ZoomSliderUI m_ZoomSliderUI;
@@ -70,8 +69,7 @@ public class ChessboardWorkspace : Workspace
 		m_ZoomSliderUI.zoomSlider.minValue = kMinScale;
 		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
 
-		var filterPrefab = U.Object.InstantiateAndSetActive(m_FilterPrefab, m_WorkspaceUI.frontPanel, false);
-		m_FilterUI = filterPrefab.GetComponent<FilterUI>();
+		 U.Object.InstantiateAndSetActive(m_FilterPrefab, m_WorkspaceUI.frontPanel, false);
 
 		// Propagate initial bounds
 		OnBoundsChanged();

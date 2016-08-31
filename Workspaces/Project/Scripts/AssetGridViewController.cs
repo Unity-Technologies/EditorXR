@@ -8,7 +8,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 {
 	private const float kClipMargin = 0.005f; // Give the cubes a margin so that their sides don't get clipped
 
-	private const float kRecycleDuration = 0.1f;
+	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
 
 	private Material m_TextMaterial;
@@ -31,7 +31,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	{
 		set
 		{
-			if (m_Data != null)
+			if (m_Data != null) // Clear out visuals for old data
 			{
 				foreach (var data in m_Data)
 				{
@@ -50,6 +50,8 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		var item = m_Templates[0].GetComponent<AssetGridItem>();
 		item.GetMaterials(out m_TextMaterial);
 
+		m_ScrollOffset = m_ScaleFactor;
+
 		m_Data = new AssetData[0]; // Start with empty list to avoid null references
 	}
 
@@ -61,9 +63,9 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
 			return;
 
-		m_NumRows = Mathf.CeilToInt(bounds.size.z / m_ItemSize.z);
+		m_NumRows = (int)(bounds.size.z / m_ItemSize.z);
 
-		m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward + (bounds.extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
+		m_StartPosition = bounds.extents.z * Vector3.forward + (bounds.extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
 
 		m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
 		if (m_ScrollOffset < 0)
@@ -95,20 +97,20 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		{
 			if (m_NumPerRow == 0) // If the list is too narrow, display nothing
 			{
-				CleanUpBeginning(data);
+				RecycleGridItem(data);
 				continue;
 			}
 
 			if (!testFilter(data.type)) // If this item doesn't match the filter, move on to the next item; do not count
 			{
-				CleanUpBeginning(data);
+				RecycleGridItem(data);
 				continue;
 			}
 
 			if (count / m_NumPerRow + m_DataOffset < 0)
-				CleanUpBeginning(data);
-			else if (count / m_NumPerRow + m_DataOffset > m_NumRows - 2)
-				CleanUpEnd(data);
+				RecycleGridItem(data);
+			else if (count / m_NumPerRow + m_DataOffset > m_NumRows - 1)
+				RecycleGridItem(data);
 			else
 				UpdateVisibleItem(data, count);
 
@@ -116,52 +118,56 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		}
 	}
 
-	protected override void RecycleItem(string template, MonoBehaviour item)
+	protected void RecycleGridItem(AssetData data)
 	{
-		if (item == null || template == null)
+		if (!data.item)
 			return;
-		StartCoroutine(AnimateOut(template, item));
+		StartCoroutine(Transition(data, true));
 	}
 
-	private IEnumerator AnimateOut(string template, MonoBehaviour item)
+	private IEnumerator Transition(AssetData data, bool @out)
 	{
 		float start = Time.realtimeSinceStartup;
-		//Quaternion startRot = item.transform.rotation;
-		//Vector3 startPos = item.transform.position;
-		float startScale = item.transform.localScale.x;
-		while (Time.realtimeSinceStartup - start < kRecycleDuration)
-		{
-			//item.transform.rotation = Quaternion.Lerp(startRot, destination.rotation, (Time.time - start) / kRecycleDuration);
-			//item.transform.position = Vector3.Lerp(startPos, destination.position, (Time.time - start) / kRecycleDuration);
-			var t = (Time.realtimeSinceStartup - start) / kRecycleDuration;
-			item.transform.localScale = Vector3.one * Mathf.Lerp(startScale, 0, t * t);
-			yield return null;
-		}
-		//item.transform.rotation = destination.rotation;
-		//item.transform.position = destination.position;
-		m_TemplateDictionary[template].pool.Add(item);
-		item.gameObject.SetActive(false);
-		item.transform.localScale = Vector3.one * startScale;
-	}
+		var currTime = 0f;
+		bool cancel = false;
 
-	private IEnumerator AnimateIn(AssetData data)
-	{
-		float start = Time.realtimeSinceStartup;
-		float startScale = data.item.transform.localScale.x;
-		data.item.transform.localScale = Vector3.zero;
-		data.animating = true;
 		var item = data.item;
+		data.animating = true;
 
-		while (Time.realtimeSinceStartup - start < kRecycleDuration)
+		var startVal = 0;
+		var endVal = 1;
+		if (@out)
 		{
-			if(!item || !item.gameObject.activeSelf)
-				yield break;
+			data.item = null;
+			startVal = 1;
+			endVal = 0;
+		}
 
-			var t = (Time.realtimeSinceStartup - start) / kRecycleDuration;
-			item.transform.localScale = Vector3.one * Mathf.Lerp(0, startScale, t * t);
+		float lastScale = startVal * m_ScaleFactor;
+		item.transform.localScale = Vector3.one * lastScale;
+		while (currTime < kTransitionDuration)
+		{
+			if (!Mathf.Approximately(item.transform.localScale.x, lastScale))
+			{
+				cancel = true;
+				break;
+			}
+			currTime = Time.realtimeSinceStartup - start;
+			var t = currTime / kTransitionDuration;
+			item.transform.localScale = Vector3.one * Mathf.Lerp(startVal, endVal, t * t) * m_ScaleFactor;
+			lastScale = item.transform.localScale.x;
 			yield return null;
 		}
-		data.animating = false;
+		if (!cancel)
+		{
+			if (@out)
+			{
+				m_TemplateDictionary[data.template].pool.Add(item);
+				item.gameObject.SetActive(false);
+			}
+			item.transform.localScale = Vector3.one * m_ScaleFactor * endVal;
+			data.animating = false;
+		}
 	}
 
 	protected override void UpdateVisibleItem(AssetData data, int offset)
@@ -170,16 +176,33 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		{
 			data.item = GetItem(data);
 		}
-		UpdateItem(data.item.transform, offset, data.animating);
+		UpdateGridItem(data, offset);
 	}
 
-	private void UpdateItem(Transform t, int offset, bool animating)
+	public override void OnEndScrolling()
 	{
-		AssetGridItem item = t.GetComponent<AssetGridItem>();
-		if(!animating)
+		m_Scrolling = false;
+		if (m_ScrollOffset > m_ScaleFactor)
+		{
+			m_ScrollOffset = m_ScaleFactor;
+			m_ScrollDelta = 0;
+		}
+		if (m_ScrollReturn < float.MaxValue)
+		{
+			m_ScrollOffset = m_ScrollReturn;
+			m_ScrollReturn = float.MaxValue;
+			m_ScrollDelta = 0;
+		}
+	}
+
+	private void UpdateGridItem(AssetData data, int offset)
+	{
+		var item = data.item as AssetGridItem;
+		if(!data.animating)
 			item.UpdateTransforms(m_ScaleFactor);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
+		Transform t = item.transform;
 		var zOffset = m_ItemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
 		var xOffset = m_ItemSize.x * (offset % m_NumPerRow);
 		t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, kPositionFollow);
@@ -190,7 +213,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	{
 		var item = base.GetItem(data);
 		item.SwapMaterials(m_TextMaterial);
-		StartCoroutine(AnimateIn(data));
+		StartCoroutine(Transition(data, false));
 		return item;
 	}
 

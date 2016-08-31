@@ -100,10 +100,6 @@ namespace UnityEngine.VR.Handles
 
 		public void OnEndDrag(RayEventData eventData)
 		{
-			var handleEventData = GetHandleEventData(eventData);
-			if (!ValidEvent(handleEventData))
-				return;
-
 			if (m_Dragging)
 			{
 				m_Dragging = false;

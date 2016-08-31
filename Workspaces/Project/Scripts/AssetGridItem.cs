@@ -37,6 +37,8 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private Transform m_PreviewObject;
 	private float m_PreviewScale;
 
+	private Coroutine m_TransitionCoroutine;
+
 	public override void Setup(AssetData listData)
 	{
 		base.Setup(listData);
@@ -120,9 +122,11 @@ public class AssetGridItem : ListViewItem<AssetData>
 			U.Object.Destroy(m_PreviewObject.gameObject);
 		if (!data.preview)
 			return;
+
 		m_PreviewObject = Instantiate(data.preview).transform;
 		m_PreviewObject.position = Vector3.zero;
 		m_PreviewObject.rotation = Quaternion.identity;
+
 		var totalBounds = new Bounds();
 		var renderers = m_PreviewObject.GetComponentsInChildren<Renderer>(true);
 
@@ -134,14 +138,15 @@ public class AssetGridItem : ListViewItem<AssetData>
 		}
 		//Normalize scale to 1
 		foreach (var renderer in renderers)
-		{
 			totalBounds.Encapsulate(renderer.bounds);
-		}
 
 		m_PreviewObject.SetParent(transform, false);
 
 		m_PreviewScale = 1 / Mathf.Max(totalBounds.size.x, totalBounds.size.y, totalBounds.size.z);
 		m_PreviewObject.localPosition = Vector3.up * 0.5f;
+
+		m_PreviewObject.gameObject.SetActive(false);
+		m_PreviewObject.localScale = Vector3.zero;
 	}
 
 	public void GetMaterials(out Material textMaterial)
@@ -202,8 +207,9 @@ public class AssetGridItem : ListViewItem<AssetData>
 	{
 		if (gameObject.activeInHierarchy)
 		{
-			StopAllCoroutines();
-			StartCoroutine(AnimatePreview(false));
+			if(m_TransitionCoroutine != null)
+				StopCoroutine(m_TransitionCoroutine);
+			m_TransitionCoroutine = StartCoroutine(AnimatePreview(false));
 		}
 	}
 
@@ -211,8 +217,9 @@ public class AssetGridItem : ListViewItem<AssetData>
 	{
 		if (gameObject.activeInHierarchy)
 		{
-			StopAllCoroutines();
-			StartCoroutine(AnimatePreview(true));
+			if (m_TransitionCoroutine != null)
+				StopCoroutine(m_TransitionCoroutine);
+			m_TransitionCoroutine = StartCoroutine(AnimatePreview(true));
 		}
 	}
 

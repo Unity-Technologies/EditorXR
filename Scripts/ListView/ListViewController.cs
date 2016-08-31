@@ -9,11 +9,8 @@ namespace ListView
 
 	public abstract class ListViewControllerBase : MonoBehaviour
 	{
-		public float scrollOffset
-		{
-			get { return m_ScrollOffset; }
-			set { m_ScrollOffset = value; }
-		}
+		public float scrollOffset { get { return m_ScrollOffset; } set { m_ScrollOffset = value; } }
+
 		[Tooltip("Distance (in meters) we have scrolled from initial position")]
 		[SerializeField]
 		protected float m_ScrollOffset;
@@ -33,7 +30,7 @@ namespace ListView
 		[Tooltip("Item temlate prefabs (at least one is required)")]
 		[SerializeField]
 		protected GameObject[] m_Templates;
-		
+
 		protected int m_DataOffset;
 		protected int m_NumRows;
 		protected Vector3 m_StartPosition;
@@ -79,12 +76,15 @@ namespace ListView
 			UpdateItems();
 		}
 
-		public void PreCompute() {
+		public void PreCompute()
+		{
 			ComputeConditions();
 		}
+
 		protected virtual void ComputeConditions()
 		{
-			if (m_Templates.Length > 0) {
+			if (m_Templates.Length > 0)
+			{
 				// Use first template to get item size
 				m_ItemSize = GetObjectSize(m_Templates[0]);
 			}
@@ -93,34 +93,42 @@ namespace ListView
 
 			m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward;
 
-			m_DataOffset = (int)(m_ScrollOffset / itemSize.z);
+			m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
 			if (m_ScrollOffset < 0)
 				m_DataOffset--;
 
-			if (m_Scrolling) {
+			if (m_Scrolling)
+			{
 				// Compute current velocity
 				m_ScrollDelta = (m_ScrollOffset - m_LastScrollOffset) / Time.unscaledDeltaTime;
 				m_LastScrollOffset = m_ScrollOffset;
-				
+
 				// Clamp velocity to MaxMomentum
 				if (m_ScrollDelta > m_MaxMomentum)
 					m_ScrollDelta = m_MaxMomentum;
 				if (m_ScrollDelta < -m_MaxMomentum)
 					m_ScrollDelta = -m_MaxMomentum;
-			} else {
+			}
+			else
+			{
 				//Apply scrolling momentum
 				m_ScrollOffset += m_ScrollDelta * Time.unscaledDeltaTime;
-				if(m_ScrollReturn < float.MaxValue || m_ScrollOffset > 0)
+				if (m_ScrollReturn < float.MaxValue || m_ScrollOffset > 0)
 					OnEndScrolling();
-				if (m_ScrollDelta > 0) {
+				if (m_ScrollDelta > 0)
+				{
 					m_ScrollDelta -= m_ScrollDamping * Time.unscaledDeltaTime;
-					if (m_ScrollDelta < 0) {
+					if (m_ScrollDelta < 0)
+					{
 						m_ScrollDelta = 0;
 						OnEndScrolling();
 					}
-				} else if (m_ScrollDelta < 0) {
+				}
+				else if (m_ScrollDelta < 0)
+				{
 					m_ScrollDelta += m_ScrollDamping * Time.unscaledDeltaTime;
-					if (m_ScrollDelta > 0) {
+					if (m_ScrollDelta > 0)
+					{
 						m_ScrollDelta = 0;
 						OnEndScrolling();
 					}
@@ -178,17 +186,21 @@ namespace ListView
 			item.gameObject.SetActive(false);
 		}
 
-		public virtual void OnBeginScrolling() {
+		public virtual void OnBeginScrolling()
+		{
 			m_Scrolling = true;
 		}
 
-		public virtual void OnEndScrolling() {
+		public virtual void OnEndScrolling()
+		{
 			m_Scrolling = false;
-			if (m_ScrollOffset > 0) {
+			if (m_ScrollOffset > 0)
+			{
 				m_ScrollOffset = 0;
 				m_ScrollDelta = 0;
 			}
-			if (m_ScrollReturn < float.MaxValue) {
+			if (m_ScrollReturn < float.MaxValue)
+			{
 				m_ScrollOffset = m_ScrollReturn;
 				m_ScrollReturn = float.MaxValue;
 				m_ScrollDelta = 0;
@@ -237,9 +249,7 @@ namespace ListView
 		protected virtual void UpdateVisibleItem(DataType data, int offset)
 		{
 			if (data.item == null)
-			{
 				data.item = GetItem(data);
-			}
 			UpdateItem(data.item.transform, offset);
 		}
 
