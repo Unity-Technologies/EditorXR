@@ -102,7 +102,15 @@ public class ViveInputToEvents : MonoBehaviour
 				var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 				inputEvent.deviceType = typeof(VRInputDevice);
 				inputEvent.deviceIndex = deviceIndex;
-				inputEvent.controlIndex = axisCount + (int)button;
+
+				// HACK Swap Action 1 & Left Thumbstick buttons for Vive to match intended UI Input source ID's
+				int buttonId = (int)button;
+				if (buttonId == 32) // Check for Action 1 ID
+					buttonId = 12; // Swap with Left Thumbstick button ID
+				else if (buttonId == 12) // Check for Left Thumbstick button ID
+					buttonId = 32; // Swap with Action 1 ID
+
+				inputEvent.controlIndex = axisCount + buttonId;
 				inputEvent.value = isDown ? 1.0f : 0.0f;
 
 				InputSystem.QueueEvent(inputEvent);
