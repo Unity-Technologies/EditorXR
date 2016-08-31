@@ -35,16 +35,6 @@
 									SnapValueToUnit(values.z, unit));
 			}
 
-			// calculates easing
-			// if snap is zero, no snapping is applied
-			public static float Ease(float from, float to, float steps, float targetSnapThreshold)
-			{
-				from += (to - from) / steps;
-				if (!Mathf.Approximately(targetSnapThreshold, 0f) && Mathf.Abs(from - to) < targetSnapThreshold)
-					from = to;
-				return from;
-			}
-
 			// Like map in Processing.
 			// E1 and S1 must be different, else it will break
 			// val, in a, in b, out a, out b

@@ -38,7 +38,7 @@ public class ChessboardWorkspace : Workspace
 	public override void Setup()
 	{
 		base.Setup();
-		U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+		U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
 		m_GridMaterial = U.Material.GetMaterialClone(m_ChessboardUI.grid);
 
@@ -59,7 +59,7 @@ public class ChessboardWorkspace : Workspace
 		panZoomHandle.hovered += OnControlHoverExit;
 
 		// Set up UI
-		var UI = U.Object.InstantiateAndSetActive(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
+		var UI = U.Object.Instantiate(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
 		m_ZoomSliderUI = UI.GetComponentInChildren<ZoomSliderUI>();
 		m_ZoomSliderUI.sliding += OnSliding;
 		m_ZoomSliderUI.zoomSlider.maxValue = kMaxScale;
