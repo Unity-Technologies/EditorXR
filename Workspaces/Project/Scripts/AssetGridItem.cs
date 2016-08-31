@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using ListView;
 using UnityEditor;
@@ -12,6 +13,10 @@ public class AssetGridItem : ListViewItem<AssetData>
 {
 	private const float kMagnetizeDuration = 0.5f;
 	private const float kPreviewDuration = 0.1f;
+	private const float kGrowDuration = 0.5f;
+
+	private const float kInstantiateFOVDifference = 0f;
+
 	//TODO: replace with a GrabOrigin transform once menu PR lands
 	private readonly Vector3 kGrabPositionOffset = new Vector3(0f, 0.02f, 0.03f);
 	private readonly Quaternion kGrabRotationOffset = Quaternion.AngleAxis(30f, Vector3.left);
@@ -31,13 +36,17 @@ public class AssetGridItem : ListViewItem<AssetData>
 	[SerializeField]
 	private Renderer m_Cube;
 
+	[SerializeField] // Serialized so that this remains set after cloning
+	private Transform m_PreviewObject;
+
 	private bool m_Setup;
 	private Transform m_GrabbedObject;
 	private Material m_GrabMaterial;
 	private float m_GrabLerp;
 	private float m_PreviewFade;
-	private Transform m_PreviewObject;
-	private float m_PreviewScale;
+	private Vector3 m_PreviewPrefabScale;
+	private Vector3 m_PreviewTargetScale;
+	private Bounds? m_PreviewTotalBounds;
 
 	private Coroutine m_TransitionCoroutine;
 
@@ -86,7 +95,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 
 		//Rotate text toward camera
-		Vector3 eyeVector3 = Quaternion.Inverse(transform.parent.rotation) * cameraTransform.forward;
+		var eyeVector3 = Quaternion.Inverse(transform.parent.rotation) * cameraTransform.forward;
 		eyeVector3.x = 0;
 		if (Vector3.Dot(eyeVector3, Vector3.forward) > 0)
 			m_TextPanel.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.up);
@@ -106,14 +115,14 @@ public class AssetGridItem : ListViewItem<AssetData>
 			{
 				m_PreviewObject.gameObject.SetActive(true);
 				m_Cube.gameObject.SetActive(false);
-				m_PreviewObject.transform.localScale = Vector3.one * m_PreviewScale;
+				m_PreviewObject.transform.localScale = m_PreviewTargetScale;
 			}
 			else
 			{
 				m_Cube.gameObject.SetActive(true);
 				m_PreviewObject.gameObject.SetActive(true);
 				m_Cube.transform.localScale = Vector3.one * (1 - m_PreviewFade);
-				m_PreviewObject.transform.localScale = Vector3.one * m_PreviewFade * m_PreviewScale;
+				m_PreviewObject.transform.localScale = Vector3.Lerp(Vector3.zero, m_PreviewTargetScale, m_PreviewFade);
 			}
 		}
 	}
@@ -129,22 +138,21 @@ public class AssetGridItem : ListViewItem<AssetData>
 		m_PreviewObject.position = Vector3.zero;
 		m_PreviewObject.rotation = Quaternion.identity;
 
-		var totalBounds = new Bounds();
-		var renderers = m_PreviewObject.GetComponentsInChildren<Renderer>(true);
+		m_PreviewPrefabScale = m_PreviewObject.localScale;
+
+		//Normalize total scale to 1
+		m_PreviewTotalBounds = GetTotalBounds(m_PreviewObject);
 
 		//Don't show a preview if there are no renderers
-		if (renderers.Length == 0)
+		if (m_PreviewTotalBounds == null)
 		{
 			U.Object.Destroy(m_PreviewObject.gameObject);
 			return;
 		}
-		//Normalize scale to 1
-		foreach (var renderer in renderers)
-			totalBounds.Encapsulate(renderer.bounds);
 
 		m_PreviewObject.SetParent(transform, false);
 
-		m_PreviewScale = 1 / Mathf.Max(totalBounds.size.x, totalBounds.size.y, totalBounds.size.z);
+		m_PreviewTargetScale = m_PreviewPrefabScale * (1 / m_PreviewTotalBounds.Value.size.Max());
 		m_PreviewObject.localPosition = Vector3.up * 0.5f;
 
 		m_PreviewObject.gameObject.SetActive(false);
@@ -179,7 +187,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 		{
 			m_Cube.gameObject.SetActive(false);
 			cloneItem.m_PreviewObject.gameObject.SetActive(true);
-			cloneItem.m_PreviewObject.transform.localScale = Vector3.one;
+			cloneItem.m_PreviewObject.transform.localScale = m_PreviewTargetScale;
 		}
 
 		m_GrabbedObject = clone.transform;
@@ -209,7 +217,42 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 	private void GrabEnd(BaseHandle baseHandle, HandleEventData eventData)
 	{
+		var gridItem = m_GrabbedObject.GetComponent<AssetGridItem>();
+		if (gridItem.m_PreviewObject)
+			StartCoroutine(GrowObject(gridItem.m_PreviewObject));
 		U.Object.Destroy(m_GrabbedObject.gameObject);
+	}
+
+	private IEnumerator GrowObject(Transform obj)
+	{
+		float start = Time.realtimeSinceStartup;
+		var currTime = 0f;
+
+		obj.parent = null;
+		var startScale = obj.localScale;
+		var startPosition = obj.position;
+
+		//var destinationPosition = obj.position;
+		var camera = U.Camera.GetMainCamera();
+		var camPosition = camera.transform.position;
+		var forward = obj.position - camPosition;
+		forward.y = 0;
+		var perspective = camera.fieldOfView * 0.5f + kInstantiateFOVDifference;
+		var distance = m_PreviewTotalBounds.Value.size.magnitude / Mathf.Tan(perspective);
+		var destinationPosition = obj.position;
+		if(distance > forward.magnitude)
+			destinationPosition = camPosition + forward.normalized * distance;
+
+		while (currTime < kGrowDuration)
+		{
+			currTime = Time.realtimeSinceStartup - start;
+			var t = currTime / kGrowDuration;
+			var tSquared = t * t;
+			obj.localScale = Vector3.Lerp(startScale, m_PreviewPrefabScale, tSquared);
+			obj.position = Vector3.Lerp(startPosition, destinationPosition, tSquared);
+			yield return null;
+		}
+		obj.localScale = m_PreviewPrefabScale;
 	}
 
 	private void OnBeginHover(BaseHandle baseHandle, HandleEventData eventData)
@@ -255,5 +298,23 @@ public class AssetGridItem : ListViewItem<AssetData>
 		U.Object.Destroy(m_Cube.sharedMaterial);
 		if(m_GrabMaterial)
 			U.Object.Destroy(m_GrabMaterial);
+	}
+
+	private static Bounds? GetTotalBounds(Transform t)
+	{
+		Bounds? bounds = null;
+		var renderers = t.GetComponentsInChildren<Renderer>(true);
+		foreach (var renderer in renderers)
+		{
+			if (bounds == null)
+				bounds = renderer.bounds;
+			else
+			{
+				Bounds b = bounds.Value;
+				b.Encapsulate(renderer.bounds);
+				bounds = b;
+			}
+		}
+		return bounds;
 	}
 }

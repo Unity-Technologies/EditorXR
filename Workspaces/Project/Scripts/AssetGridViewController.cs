@@ -17,15 +17,12 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	private int m_NumPerRow;
 
-	public float scaleFactor
-	{
-		get { return m_ScaleFactor; }
-		set { m_ScaleFactor = value; }
-	}
+	public float scaleFactor { get { return m_ScaleFactor; } set { m_ScaleFactor = value; } }
+
 	[SerializeField]
 	private float m_ScaleFactor = 0.1f;
 
-	protected override int dataLength { get { return Mathf.CeilToInt((float)base.dataLength / m_NumPerRow); } }
+	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
 
 	public AssetData[] listData
 	{
@@ -42,7 +39,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		}
 	}
 
-	public Func<string, bool> testFilter; 
+	public Func<string, bool> testFilter;
 
 	protected override void Setup()
 	{
@@ -63,7 +60,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
 			return;
 
-		m_NumRows = (int)(bounds.size.z / m_ItemSize.z);
+		m_NumRows = (int) (bounds.size.z / m_ItemSize.z);
 
 		m_StartPosition = bounds.extents.z * Vector3.forward + (bounds.extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
 
@@ -92,7 +89,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override void UpdateItems()
 	{
-		int count = 0;
+		var count = 0;
 		foreach (var data in m_Data)
 		{
 			if (m_NumPerRow == 0) // If the list is too narrow, display nothing
@@ -127,9 +124,9 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	private IEnumerator Transition(AssetData data, bool @out)
 	{
-		float start = Time.realtimeSinceStartup;
+		var startTime = Time.realtimeSinceStartup;
 		var currTime = 0f;
-		bool cancel = false;
+		var cancel = false;
 
 		var item = data.item;
 		data.animating = true;
@@ -143,7 +140,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 			endVal = 0;
 		}
 
-		float lastScale = startVal * m_ScaleFactor;
+		var lastScale = startVal * m_ScaleFactor;
 		item.transform.localScale = Vector3.one * lastScale;
 		while (currTime < kTransitionDuration)
 		{
@@ -152,7 +149,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 				cancel = true;
 				break;
 			}
-			currTime = Time.realtimeSinceStartup - start;
+			currTime = Time.realtimeSinceStartup - startTime;
 			var t = currTime / kTransitionDuration;
 			item.transform.localScale = Vector3.one * Mathf.Lerp(startVal, endVal, t * t) * m_ScaleFactor;
 			lastScale = item.transform.localScale.x;
@@ -173,9 +170,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	protected override void UpdateVisibleItem(AssetData data, int offset)
 	{
 		if (data.item == null)
-		{
 			data.item = GetItem(data);
-		}
 		UpdateGridItem(data, offset);
 	}
 
@@ -198,11 +193,11 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	private void UpdateGridItem(AssetData data, int offset)
 	{
 		var item = data.item as AssetGridItem;
-		if(!data.animating)
+		if (!data.animating)
 			item.UpdateTransforms(m_ScaleFactor);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
-		Transform t = item.transform;
+		var t = item.transform;
 		var zOffset = m_ItemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
 		var xOffset = m_ItemSize.x * (offset % m_NumPerRow);
 		t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, kPositionFollow);
@@ -213,6 +208,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	{
 		var item = base.GetItem(data);
 		item.SwapMaterials(m_TextMaterial);
+		item.transform.localPosition = Vector3.zero;
 		StartCoroutine(Transition(data, false));
 		return item;
 	}
