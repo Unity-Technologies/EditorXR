@@ -99,7 +99,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000014066556564}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -154,7 +154,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 1.1, y: 1.1, z: 1.1}
   m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!114 &114000011311085786
 MonoBehaviour:
@@ -170,7 +170,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Text: {fileID: 114000013632537286}
   m_Handle: {fileID: 114000011913880262}
-  m_TextPanel: {fileID: 224000012746254088}
+  m_TextPanel: {fileID: 114000012861929906}
   m_NoClipCubeMaterial: {fileID: 2100000, guid: 66d21d847da9fae44a46053afe8d825b,
     type: 2}
   m_Cube: {fileID: 23000013864279834}
@@ -186,7 +186,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -2
+  m_HandleFlags: 2
 --- !u!114 &114000012861929906
 MonoBehaviour:
   m_ObjectHideFlags: 1

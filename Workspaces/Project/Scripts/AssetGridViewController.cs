@@ -158,7 +158,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 				yield break;
 
 			var t = (Time.realtimeSinceStartup - start) / kRecycleDuration;
-			data.item.transform.localScale = Vector3.one * Mathf.Lerp(0, startScale, t * t);
+			item.transform.localScale = Vector3.one * Mathf.Lerp(0, startScale, t * t);
 			yield return null;
 		}
 		data.animating = false;
