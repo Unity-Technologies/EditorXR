@@ -166,7 +166,7 @@
 			{
 				if (Application.isPlaying)
 				{
-					Object.Destroy(o, t);
+					UnityObject.Destroy(o, t);
 				}
 #if UNITY_EDITOR
 				else

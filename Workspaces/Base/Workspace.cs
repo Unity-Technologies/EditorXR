@@ -16,9 +16,9 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	public event Action<Workspace> closed = delegate { };
 
 	protected WorkspaceUI m_WorkspaceUI;
-
-	//Extra space for frame model
-	private const float kExtraHeight = 0.15f;
+	
+	public static readonly Vector3 kMinBounds = new Vector3(0.7f, 0.4f, 0.1f);
+	private const float kExtraHeight = 0.15f; //Extra space for frame model
 
 	/// <summary>
 	/// Bounding box for workspace content (ignores value.center) 
@@ -31,20 +31,16 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			if (!value.Equals(contentBounds))
 			{
 				Vector3 size = value.size;
-				if (size.x < kDefaultBounds.x) //Use defaultBounds until we need separate values
-					size.x = kDefaultBounds.x;
-				if (size.y < kDefaultBounds.y)
-					size.y = kDefaultBounds.y;
-				if (size.z < kDefaultBounds.z)
-					size.z = kDefaultBounds.z;
-				value.size = size;
+				size.x = Mathf.Max(size.x, kMinBounds.x);
+				size.y = Mathf.Max(size.y, kMinBounds.y);
+				size.z = Mathf.Max(size.z, kMinBounds.z);
+				
 				m_ContentBounds.size = size; //Only set size, ignore center.
 				UpdateBounds();
 				OnBoundsChanged();
 			}
 		}
 	}
-	[SerializeField]
 	private Bounds m_ContentBounds;
 
 	[SerializeField]
@@ -75,7 +71,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		}
 	}
 
-	public Func<GameObject, GameObject> instantiateUI { private get; set; }
+	public Func<GameObject, GameObject> instantiateUI { protected get; set; }
 
 	public Action<GameObject, bool> setHighlight { get; set; }
 
