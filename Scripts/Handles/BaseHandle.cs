@@ -33,8 +33,10 @@ namespace UnityEngine.VR.Handles
 		public event Action<BaseHandle, HandleEventData> hover = delegate { };
 		public event Action<BaseHandle, HandleEventData> hovered = delegate { };
 
-		protected readonly List<Transform> m_HoverSources = new List<Transform>(2);
-		protected readonly List<Transform> m_DragSources = new List<Transform>(2);
+		private const int kDefaultCapacity = 2; // i.e. 2 controllers
+
+		protected readonly List<Transform> m_HoverSources = new List<Transform>(kDefaultCapacity);
+		protected readonly List<Transform> m_DragSources = new List<Transform>(kDefaultCapacity);
 		protected DateTime m_LastClickTime;
 
 		public Vector3 startDragPosition { get; protected set; }
