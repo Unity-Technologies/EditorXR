@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
@@ -32,29 +33,24 @@ namespace UnityEngine.VR.Handles
 		public event Action<BaseHandle, HandleEventData> hover = delegate { };
 		public event Action<BaseHandle, HandleEventData> hovered = delegate { };
 
-		protected int m_HoverCounts;
-		protected int m_DragCounts;
+		protected readonly List<Transform> m_HoverSources = new List<Transform>(2);
+		protected readonly List<Transform> m_DragSources = new List<Transform>(2);
 		protected DateTime m_LastClickTime;
 
 		public Vector3 startDragPosition { get; protected set; }
 
 		private void OnDisable()
 		{
-			Debug.Log("disable " + Print());
-			if (m_HoverCounts > 0 || m_DragCounts > 0)
+			if (m_HoverSources.Count > 0 || m_DragSources.Count > 0)
 			{
 				var eventData = GetHandleEventData(new RayEventData(EventSystem.current));
-				while (m_HoverCounts > 0)
-				{
+				for(int i = 0; i < m_HoverSources.Count; i++)
 					OnHandleRayExit(eventData);
-					m_HoverCounts--;
-				}
+				m_HoverSources.Clear();
 
-				while (m_DragCounts > 0)
-				{
+				for (int i = 0; i < m_DragSources.Count; i++)
 					OnHandleEndDrag(eventData);
-					m_DragCounts--;
-				}
+				m_DragSources.Clear();
 			}
 		}
 
@@ -85,7 +81,7 @@ namespace UnityEngine.VR.Handles
 			if (!ValidEvent(handleEventData))
 				return;
 
-			m_DragCounts++;
+			m_DragSources.Add(eventData.rayOrigin);
 			startDragPosition = eventData.pointerCurrentRaycast.worldPosition;
 
 			//Double-click logic
@@ -101,21 +97,14 @@ namespace UnityEngine.VR.Handles
 
 		public void OnDrag(RayEventData eventData)
 		{
-			if (m_DragCounts > 0)
+			if (m_DragSources.Count > 0)
 				OnHandleDrag(GetHandleEventData(eventData));
 		}
 
 		public void OnEndDrag(RayEventData eventData)
 		{
-			var handleEventData = GetHandleEventData(eventData);
-			if (!ValidEvent(handleEventData))
-				return;
-
-			if (m_DragCounts > 0)
-			{
-				m_DragCounts--;
+			if (m_DragSources.Remove(eventData.rayOrigin))
 				OnHandleEndDrag(GetHandleEventData(eventData));
-			}
 		}
 
 		public void OnRayEnter(RayEventData eventData)
@@ -124,7 +113,7 @@ namespace UnityEngine.VR.Handles
 			if (!ValidEvent(handleEventData))
 				return;
 
-			m_HoverCounts++;
+			m_HoverSources.Add(eventData.rayOrigin);
 			OnHandleRayEnter(handleEventData);
 		}
 
@@ -136,35 +125,27 @@ namespace UnityEngine.VR.Handles
 			// because the pointer wasn't close enough to the handle
 			if (handleFlags == HandleFlags.Direct)
 			{
-				if (m_HoverCounts > 0 && !handleEventData.direct)
+				if (!handleEventData.direct && m_HoverSources.Remove(eventData.rayOrigin))
 				{
-					m_HoverCounts--;
 					OnHandleRayExit(handleEventData);
 					return;
 				}
 
-				if (m_HoverCounts < 1 && handleEventData.direct)
+				if (handleEventData.direct && !m_HoverSources.Contains(eventData.rayOrigin))
 				{
-					m_HoverCounts++;
+					m_HoverSources.Add(eventData.rayOrigin);
 					OnHandleRayEnter(handleEventData);
 				}
 			}
 
-			if (m_HoverCounts > 0)
+			if (m_HoverSources.Count > 0)
 				OnHandleRayHover(GetHandleEventData(eventData));
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			var handleEventData = GetHandleEventData(eventData);
-			if (m_HoverCounts < 1 && !ValidEvent(handleEventData))
-				return;
-
-			if (m_HoverCounts > 0)
-			{
-				m_HoverCounts--;
+			if (m_HoverSources.Remove(eventData.rayOrigin))
 				OnHandleRayExit(GetHandleEventData(eventData));
-			}
 		}
 
 		/// <summary>
@@ -221,11 +202,6 @@ namespace UnityEngine.VR.Handles
 		protected virtual void OnDoubleClick(HandleEventData eventData)
 		{
 			doubleClick(this, eventData);
-		}
-
-		public string Print()
-		{
-			return name + " h: " + m_HoverCounts + " d: " + m_DragCounts;
 		}
 	}
 }

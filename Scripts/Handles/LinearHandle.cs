@@ -51,9 +51,9 @@ namespace UnityEngine.VR.Handles
 		{
 			if (m_HandleTip != null)
 			{
-				m_HandleTip.gameObject.SetActive(m_HoverCounts > 0 || m_DragCounts > 0);
+				m_HandleTip.gameObject.SetActive(m_HoverSources.Count > 0 || m_DragSources.Count > 0);
 
-				if (m_HoverCounts > 0 || m_DragCounts > 0) // Reposition handle tip based on current raycast position when hovering or dragging
+				if (m_HoverSources.Count > 0 || m_DragSources.Count > 0) // Reposition handle tip based on current raycast position when hovering or dragging
 				{
 					if (eventData != null)
 						m_HandleTip.position =
