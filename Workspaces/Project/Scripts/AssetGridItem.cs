@@ -12,7 +12,9 @@ public class AssetGridItem : ListViewItem<AssetData>
 {
 	private const float kMagnetizeDuration = 0.5f;
 	private const float kPreviewDuration = 0.1f;
-	private readonly Vector3 kGrabOffset = new Vector3(0, 0.02f, 0.03f);
+	//TODO: replace with a GrabOrigin transform once menu PR lands
+	private readonly Vector3 kGrabPositionOffset = new Vector3(0f, 0.02f, 0.03f);
+	private readonly Quaternion kGrabRotationOffset = Quaternion.AngleAxis(30f, Vector3.left);
 
 	[SerializeField]
 	private Text m_Text;
@@ -166,12 +168,19 @@ public class AssetGridItem : ListViewItem<AssetData>
 		var cloneItem = clone.GetComponent<AssetGridItem>();
 		if(m_GrabMaterial)
 			U.Object.Destroy(m_GrabMaterial);
+
 		var cubeRenderer = cloneItem.m_Cube.GetComponent<Renderer>();
 		cubeRenderer.sharedMaterial = m_NoClipCubeMaterial;
 		m_GrabMaterial = U.Material.GetMaterialClone(cubeRenderer.GetComponent<Renderer>());
 		m_GrabMaterial.mainTexture = m_Cube.sharedMaterial.mainTexture;
-		cloneItem.m_Text.material = null;
-		cloneItem.m_TextPanel.material = null;
+		m_GrabMaterial.color = Color.white;
+
+		if (cloneItem.m_PreviewObject)
+		{
+			m_Cube.gameObject.SetActive(false);
+			cloneItem.m_PreviewObject.gameObject.SetActive(true);
+			cloneItem.m_PreviewObject.transform.localScale = Vector3.one;
+		}
 
 		m_GrabbedObject = clone.transform;
 		m_GrabLerp = 0;
@@ -194,8 +203,8 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private void GrabDrag(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var rayTransform = eventData.rayOrigin.transform;
-		m_GrabbedObject.transform.position = Vector3.Lerp(m_GrabbedObject.transform.position, rayTransform.position + rayTransform.rotation * kGrabOffset, m_GrabLerp);
-		m_GrabbedObject.transform.rotation = Quaternion.Lerp(m_GrabbedObject.transform.rotation, rayTransform.rotation, m_GrabLerp);
+		m_GrabbedObject.transform.position = Vector3.Lerp(m_GrabbedObject.transform.position, rayTransform.position + rayTransform.rotation * kGrabPositionOffset, m_GrabLerp);
+		m_GrabbedObject.transform.rotation = Quaternion.Lerp(m_GrabbedObject.transform.rotation, rayTransform.rotation * kGrabRotationOffset, m_GrabLerp);
 	}
 
 	private void GrabEnd(BaseHandle baseHandle, HandleEventData eventData)
