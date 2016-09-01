@@ -69,7 +69,7 @@ public class ChessboardWorkspace : Workspace
 		m_ZoomSliderUI.zoomSlider.minValue = kMinScale;
 		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
 
-		 U.Object.InstantiateAndSetActive(m_FilterPrefab, m_WorkspaceUI.frontPanel, false);
+		 U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false);
 
 		// Propagate initial bounds
 		OnBoundsChanged();

@@ -72,13 +72,13 @@ public class FilterUI : MonoBehaviour {
 		m_VisibilityLabels = new Button[kFilterTypes.Length + 1];
 		for (int i = 0; i < kFilterTypes.Length + 1; i++)
 		{
-			var button = U.Object.InstantiateAndSetActive(m_VisibilityButtonPrefab, m_VisibilityPanel, false).GetComponent<Button>();
+			var button = U.Object.Instantiate(m_VisibilityButtonPrefab, m_VisibilityPanel, false).GetComponent<Button>();
 			m_VisibilityButtons[i] = button;
 			button.onClick.AddListener(() =>
 			{
 				OnFilterClick(button);
 			});
-			var label = U.Object.InstantiateAndSetActive(m_VisibilityLabelPrefab, m_TypePanel, false).GetComponentInChildren<Button>();
+			var label = U.Object.Instantiate(m_VisibilityLabelPrefab, m_TypePanel, false).GetComponentInChildren<Button>();
 			m_VisibilityLabels[i] = label;
 			label.onClick.AddListener(() =>
 			{

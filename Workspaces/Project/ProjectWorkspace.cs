@@ -31,13 +31,13 @@ public class ProjectWorkspace : Workspace
 	public override void Setup()
 	{
 		base.Setup();
-		var contentPrefab = U.Object.InstantiateAndSetActive(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
 
-		var filterPrefab = U.Object.InstantiateAndSetActive(m_FilterPrefab, m_WorkspaceUI.frontPanel, false);
+		var filterPrefab = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false);
 		m_FilterUI = filterPrefab.GetComponent<FilterUI>();
 
-		var sliderPrefab = U.Object.InstantiateAndSetActive(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
+		var sliderPrefab = U.Object.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
 		var zoomSlider = sliderPrefab.GetComponent<ZoomSliderUI>();
 		zoomSlider.zoomSlider.minValue = kMinScale;
 		zoomSlider.zoomSlider.maxValue = kMaxScale;
