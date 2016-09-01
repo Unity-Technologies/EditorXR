@@ -67,7 +67,7 @@ GameObject:
   - 33: {fileID: 33000010856247110}
   - 23: {fileID: 23000010366415572}
   m_Layer: 0
-  m_Name: MenuInputArrowRight
+  m_Name: ArrowRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -84,7 +84,7 @@ GameObject:
   - 33: {fileID: 33000012479808066}
   - 23: {fileID: 23000010639558788}
   m_Layer: 0
-  m_Name: MenuInputBase
+  m_Name: Base
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -116,7 +116,7 @@ GameObject:
   - 33: {fileID: 33000011639686412}
   - 23: {fileID: 23000010509858054}
   m_Layer: 0
-  m_Name: MenuInputArrowLeft
+  m_Name: ArrowLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -133,7 +133,7 @@ GameObject:
   - 33: {fileID: 33000014249786684}
   - 23: {fileID: 23000010639222950}
   m_Layer: 0
-  m_Name: MenuInputRight
+  m_Name: Right
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -148,7 +148,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000011669247742}
   m_Layer: 0
-  m_Name: MenuInputVisuals
+  m_Name: AltMenuVisuals
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -197,7 +197,7 @@ GameObject:
   - 33: {fileID: 33000014148908198}
   - 23: {fileID: 23000011077685494}
   m_Layer: 0
-  m_Name: MenuInputBaseOuter
+  m_Name: BaseOuter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -214,7 +214,7 @@ GameObject:
   - 33: {fileID: 33000013420853366}
   - 23: {fileID: 23000010683416884}
   m_Layer: 0
-  m_Name: MenuInputLeft
+  m_Name: Left
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -729,7 +729,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000014083153210}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52a6f827905e5da45b04e9ad17c95d45, type: 3}
+  m_Script: {fileID: 11500000, guid: e42a33a060806cc4d9f35476fbc32b84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -750,7 +750,7 @@ MonoBehaviour:
     type: 2}
   m_MenuFaceRotationOrigin: {fileID: 4000012948932736}
   m_MenuFrameRenderer: {fileID: 137000013719920994}
-  m_MenuInputVisuals: {fileID: 4000011669247742}
+  m_AlternateMenu: {fileID: 4000011669247742}
 --- !u!137 &137000013719920994
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1

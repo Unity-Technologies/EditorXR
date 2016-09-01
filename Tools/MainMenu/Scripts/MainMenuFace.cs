@@ -2,28 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Extensions;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.VR.Menus
 {
 	public class MainMenuFace : MonoBehaviour, IPointerEnterHandler
 	{
-		private enum RotationState
-		{
-			RotationBegin,
-			RotationEnd
-		}
-
-		private enum VisualState
-		{
-			Hiding,
-			Showing
-		}
-		
 		private enum SnapState
 		{
 			AtRest,
@@ -53,20 +41,19 @@ namespace UnityEngine.VR.Tools
 		private RectTransform m_GridTransform;
 		private float m_GridTopPosition;
 		private List<Transform> m_MenuButtons;
-		private RotationState m_RotationState;
 		private Material m_TitleIconMaterial;
-		private VisualState m_VisualState;
+		private Coroutine m_VisibilityCoroutine;
+		private Coroutine m_RotationVisualsCoroutine;
+
+		private const float kBorderScaleMultiplier = 1.0135f;
+		private const string kBottomGradientProperty = "_ColorBottom";
+		private const string kTopGradientProperty = "_ColorTop";
+		private readonly UnityBrandColorScheme.GradientPair kEmptyGradient = new UnityBrandColorScheme.GradientPair(UnityBrandColorScheme.light, UnityBrandColorScheme.darker);
+
 		private SnapState m_SnapState;
 		private RectTransform m_ButtonScrollTarget;
 		private float m_TopTargetPosition;
-
-		//CLEANUP
-		private float m_GridOriginalLocalY;
-
-		private readonly float m_BorderScaleMultiplier = 1.0135f;
-		private readonly string kBottomGradientProperty = "_ColorBottom";
-		private readonly UnityBrandColorScheme.GradientPair kEmptyGradient = new UnityBrandColorScheme.GradientPair(UnityBrandColorScheme.Light, UnityBrandColorScheme.Darker);
-		private readonly string kTopGradientProperty = "_ColorTop";
+		private float m_GridOriginalLocalY; // TODO cleanup
 
 		private void Awake()
 		{
@@ -77,12 +64,11 @@ namespace UnityEngine.VR.Tools
 			m_BorderOutlineOriginalLocalScale = m_BorderOutlineTransform.localScale;
 			m_FaceTitle.text = "Not Set";
 			m_TitleIconMaterial = U.Material.GetMaterialClone(m_TitleIcon);
-			m_VisualState = VisualState.Hiding;
 			m_GridTransform = m_GridLayoutGroup.transform as RectTransform;
 			m_GridTopPosition = m_GridTransform.anchoredPosition.y;
 			m_GridOriginalLocalY = m_GridTransform.localPosition.y;
 
-			SetGradientColors();
+			SetGradientColors(kEmptyGradient);
 		}
 
 		public void SetFaceData(string faceName, List<Transform> buttons, UnityBrandColorScheme.GradientPair gradientPair)
@@ -112,86 +98,94 @@ namespace UnityEngine.VR.Tools
 			SetGradientColors(gradientPair);
 		}
 
-		private void SetGradientColors(UnityBrandColorScheme.GradientPair gradientPair = null)
+		private void SetGradientColors(UnityBrandColorScheme.GradientPair gradientPair)
 		{
-			gradientPair = gradientPair ?? kEmptyGradient;
-			m_BorderOutlineMaterial.SetColor(kTopGradientProperty, gradientPair.ColorA);
-			m_BorderOutlineMaterial.SetColor(kBottomGradientProperty, gradientPair.ColorB);
-			m_TitleIconMaterial.SetColor(kTopGradientProperty, gradientPair.ColorA);
-			m_TitleIconMaterial.SetColor(kBottomGradientProperty, gradientPair.ColorB);
+			m_BorderOutlineMaterial.SetColor(kTopGradientProperty, gradientPair.a);
+			m_BorderOutlineMaterial.SetColor(kBottomGradientProperty, gradientPair.b);
+			m_TitleIconMaterial.SetColor(kTopGradientProperty, gradientPair.a);
+			m_TitleIconMaterial.SetColor(kBottomGradientProperty, gradientPair.b);
 		}
 
 		public void Show()
 		{
 			m_BorderOutlineTransform.localScale = m_BorderOutlineOriginalLocalScale;
-			StartCoroutine(AnimateShow());
+			StopCoroutine(ref m_VisibilityCoroutine);
+			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(true));
 		}
 
 		public void Hide()
 		{
-			StartCoroutine(AnimateShow(VisualState.Hiding));
+			StopCoroutine(ref m_VisibilityCoroutine);
+			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(false));
 		}
 
-		private IEnumerator AnimateShow(VisualState targetVisualState = VisualState.Showing)
+		private IEnumerator AnimateVisibility(bool show)
 		{
-			m_CanvasGroup.interactable = false;
-			m_VisualState = targetVisualState;
+			if (m_VisibilityCoroutine != null)
+				yield break;
 
-			float easeDivider = targetVisualState == VisualState.Showing ? 14f : 2f;
+			m_CanvasGroup.interactable = false;
+
+			float smoothTime = show ? 0.35f : 0.125f;
 			float startingOpacity = m_CanvasGroup.alpha;
-			float targetOpacity = targetVisualState == VisualState.Showing ? 1f : 0f;
-			const float kSnapValue = 0.0001f;
-			while (m_VisualState == targetVisualState && !Mathf.Approximately(startingOpacity, targetOpacity))
+			float targetOpacity = show ? 1f : 0f;
+			float smoothVelocity = 0f;
+			while (!Mathf.Approximately(startingOpacity, targetOpacity))
 			{
-				startingOpacity = U.Math.Ease(startingOpacity, targetOpacity, easeDivider, kSnapValue);
+				startingOpacity = Mathf.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_CanvasGroup.alpha = startingOpacity * startingOpacity;
 				yield return null;
 			}
 
-			if (m_VisualState == VisualState.Showing)
+			if (show)
 			{
 				m_CanvasGroup.interactable = true;
 				m_CanvasGroup.alpha = 1f;
 			}
-			else if (m_VisualState == VisualState.Hiding)
+			else
 				m_TitleIcon.SetBlendShapeWeight(0, 0);
+
+			m_VisibilityCoroutine = null;
 		}
 
-		public void BeginRotationVisuals()
+		public void BeginVisuals()
 		{
-			StartCoroutine(AnimateRotationVisuals(RotationState.RotationBegin));
+			StopCoroutine(ref m_RotationVisualsCoroutine);
+			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(true));
 		}
 
-		public void EndRotationVisuals()
+		public void EndVisuals()
 		{
-			StartCoroutine(AnimateRotationVisuals(RotationState.RotationEnd));
+			StopCoroutine(ref m_RotationVisualsCoroutine);
+			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(false));
 		}
 
-		private IEnumerator AnimateRotationVisuals(RotationState rotationState)
+		private IEnumerator AnimateVisuals(bool focus)
 		{
-			Vector3 targetBorderLocalScale = rotationState == RotationState.RotationBegin ? m_BorderOutlineOriginalLocalScale * m_BorderScaleMultiplier : m_BorderOutlineOriginalLocalScale;
+			if (m_RotationVisualsCoroutine != null)
+				yield break;
+
+			Vector3 targetBorderLocalScale = focus ? m_BorderOutlineOriginalLocalScale * kBorderScaleMultiplier : m_BorderOutlineOriginalLocalScale;
 			Vector3 currentBorderLocalScale = m_BorderOutlineTransform.localScale;
 
-			m_RotationState = rotationState;
 			float currentBlendShapeWeight = m_TitleIcon.GetBlendShapeWeight(0);
-			float targetWeight = rotationState == RotationState.RotationBegin ? 100f : 0f;
-			float easeDivider = rotationState == RotationState.RotationBegin ? 4f : 8f;
-			const float kSnapValue = 0.001f;
+			float targetWeight = focus ? 100f : 0f;
+			float smoothTime = focus ? 0.25f : 0.5f;
 			const float kLerpEmphasisWeight = 0.2f;
-			while (m_RotationState == rotationState && !Mathf.Approximately(currentBlendShapeWeight, targetWeight))
+			float smoothVelocity = 0f;
+			while (!Mathf.Approximately(currentBlendShapeWeight, targetWeight))
 			{
-				currentBlendShapeWeight = U.Math.Ease(currentBlendShapeWeight, targetWeight, easeDivider, kSnapValue);
+				currentBlendShapeWeight = Mathf.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				currentBorderLocalScale = Vector3.Lerp(currentBorderLocalScale, targetBorderLocalScale, currentBlendShapeWeight * kLerpEmphasisWeight);
 				m_BorderOutlineTransform.localScale = currentBorderLocalScale;
 				m_TitleIcon.SetBlendShapeWeight(0, currentBlendShapeWeight);
 				yield return null;
 			}
 
-			if (m_RotationState == rotationState)
-			{
 				m_TitleIcon.SetBlendShapeWeight(0, targetWeight);
 				m_BorderOutlineTransform.localScale = targetBorderLocalScale;
-			}
+
+			m_RotationVisualsCoroutine = null;
 		}
 
 		private void OnButtonHighlighted(PointerEventData eventData)

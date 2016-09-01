@@ -27,13 +27,13 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 		foreach (var h in m_AllHandles)
 		{
 			if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
-				h.onHandleDrag += TranslateHandleOnDrag;
+				h.handleDrag += TranslateHandleDrag;
 
 			if (h is RadialHandle)
-				h.onHandleDrag += RotateHandleOnDrag;
+				h.handleDrag += RotateHandleDrag;
 
-			h.onHandleBeginDrag += HandleOnBeginDrag;
-			h.onHandleEndDrag += HandleOnEndDrag;
+			h.handleDragging += HandleDragging;
+			h.handleDragged += HandleDragged;
 		}
 	}
 
@@ -42,13 +42,13 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 		foreach (var h in m_AllHandles)
 		{
 			if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
-				h.onHandleDrag -= TranslateHandleOnDrag;
+				h.handleDrag -= TranslateHandleDrag;
 
 			if (h is RadialHandle)
-				h.onHandleDrag -= RotateHandleOnDrag;
+				h.handleDrag -= RotateHandleDrag;
 
-			h.onHandleBeginDrag -= HandleOnBeginDrag;
-			h.onHandleEndDrag -= HandleOnEndDrag;
+			h.handleDragging -= HandleDragging;
+			h.handleDragged -= HandleDragged;
 		}
 	}
 
@@ -69,17 +69,17 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 		}
 	}
 
-	private void TranslateHandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void TranslateHandleDrag(BaseHandle handle, HandleEventData eventData)
 	{
 		translate(eventData.deltaPosition);
 	}
 
-	private void RotateHandleOnDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void RotateHandleDrag(BaseHandle handle, HandleEventData eventData)
 	{
 		rotate(eventData.deltaRotation);
 	}
 
-	private void HandleOnBeginDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void HandleDragging(BaseHandle handle, HandleEventData eventData)
 	{
 		foreach (var h in m_AllHandles)
 			h.gameObject.SetActive(h == handle);
@@ -87,7 +87,7 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 		m_Dragging = true;
 	}
 
-	private void HandleOnEndDrag(BaseHandle handle, HandleDragEventData eventData)
+	private void HandleDragged(BaseHandle handle, HandleEventData eventData)
 	{
 		foreach (var h in m_AllHandles)
 			h.gameObject.SetActive(true);

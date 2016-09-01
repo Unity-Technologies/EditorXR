@@ -2,7 +2,7 @@
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 
-[VRMenuItem("Cube", "Create", "Create cubes in the scene")]
+[MainMenuItem("Cube", "Create", "Create cubes in the scene")]
 public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay
 {	
 	public Transform rayOrigin { get; set; }

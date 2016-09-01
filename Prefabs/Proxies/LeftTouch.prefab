@@ -24,7 +24,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 436998}
-  - 114: {fileID: 11404734}
+  - 114: {fileID: 114000013861093962}
   m_Layer: 0
   m_Name: LeftTouch
   m_TagString: Untagged
@@ -609,20 +609,6 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
---- !u!114 &11404734
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 118082}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16ffcca048798414db7f4ee20f78491a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_controllerMask: 1
-  m_animator: {fileID: 9567726}
 --- !u!137 &13758356
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1
@@ -988,7 +974,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000010810114962}
   m_Layer: 0
-  m_Name: MenuInputOrigin
+  m_Name: AltMenuOrigin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1063,3 +1049,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 436998}
   m_RootOrder: 2
+--- !u!114 &114000013861093962
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 118082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88cb44c52683f6648b7d436e9aa51bcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_RayOrigin: {fileID: 4000011600309478}
+  m_MenuOrigin: {fileID: 4000012197213606}
+  m_AlternateMenuOrigin: {fileID: 4000010810114962}

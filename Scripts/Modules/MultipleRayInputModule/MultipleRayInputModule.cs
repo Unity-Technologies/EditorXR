@@ -38,6 +38,7 @@ namespace UnityEngine.VR.Modules
 		{
 			public IProxy proxy; // Needed for checking if proxy is active
 			public Transform rayOrigin;
+			public Node node;
 			public UIActions actionMapInput;
 			public RayEventData eventData;
 			public GameObject hoveredObject;
@@ -45,10 +46,11 @@ namespace UnityEngine.VR.Modules
 			public GameObject draggedObject;
 
 
-			public RaycastSource(IProxy proxy, Transform rayOrigin, UIActions actionMapInput)
+			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput)
 			{
 				this.proxy = proxy;
 				this.rayOrigin = rayOrigin;
+				this.node = node;
 				this.actionMapInput = actionMapInput;
 			}
 		}
@@ -65,7 +67,7 @@ namespace UnityEngine.VR.Modules
 			Transform rayOrigin = null;
 			if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
 			{
-				m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, actions));
+				m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions));
 			}
 			else
 				Debug.LogError("Failed to get ray origin transform for node " + node + " from proxy " + proxy);
@@ -98,6 +100,7 @@ namespace UnityEngine.VR.Modules
 				source.hoveredObject = GetRayIntersection(source); // Check all currently running raycasters
 
 				var eventData = source.eventData;
+				eventData.node = source.node;
 				eventData.rayOrigin = source.rayOrigin;
 				eventData.pointerLength = getPointerLength(eventData.rayOrigin);
 
@@ -139,9 +142,11 @@ namespace UnityEngine.VR.Modules
 		{			
 			RayEventData clone = new RayEventData(base.eventSystem);
 			clone.rayOrigin = eventData.rayOrigin;
+			clone.node = eventData.node;
 			clone.hovered = new List<GameObject>(eventData.hovered);
 			clone.pointerEnter = eventData.pointerEnter;
 			clone.pointerCurrentRaycast = eventData.pointerCurrentRaycast;
+			clone.pointerLength = eventData.pointerLength;
 
 			return clone;
 		}

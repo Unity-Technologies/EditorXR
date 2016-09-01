@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 
-[VRMenuItem("Sphere", "Create", "Create spheres in the scene")]
+[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
 [ExecuteInEditMode]
 public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay
 {	

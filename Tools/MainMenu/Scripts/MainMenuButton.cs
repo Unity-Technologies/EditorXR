@@ -1,30 +1,31 @@
 ﻿using System;
-using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.VR.Menus
 {
 	public class MainMenuButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IRayHoverHandler
 	{
+		public Button button { get { return m_Button; } }
 		[SerializeField]
 		private Button m_Button;
+
 		[SerializeField]
 		private Text m_ButtonDescription;
 		[SerializeField]
 		private Text m_ButtonTitle;
 
-		public Button button { get { return m_Button; } }
-		public Action ButtonClicked;
 		public Action<Transform> ButtonEntered;
+		public Action clicked;
+
+		/// <summary>
+		/// The node of the ray that is hovering over the button
+		/// </summary>
+		public Node? node { get; private set; }
 
 		private void Awake()
 		{
-			Assert.IsNotNull(m_Button, "m_Button is not assigned!");
-			Assert.IsNotNull(m_ButtonDescription, "m_ButtonDescription is not assigned!");
-			Assert.IsNotNull(m_ButtonTitle, "m_ButtonTitle is not assigned!");
-
 			m_Button.onClick.AddListener(OnButtonClicked);
 		}
 
@@ -41,9 +42,8 @@ namespace UnityEngine.VR.Tools
 
 		private void OnButtonClicked()
 		{
-			Action m_ButtonActionHandler = ButtonClicked;
-			if (m_ButtonActionHandler != null)
-				m_ButtonActionHandler();
+			if (clicked != null)
+				clicked();
 		}
 
 		public void OnPointerEnter(PointerEventData eventData)
@@ -62,6 +62,18 @@ namespace UnityEngine.VR.Tools
 			Action<Transform> ButtonEnteredHandler = ButtonEntered;
 			if (ButtonEnteredHandler != null)
 				ButtonEnteredHandler(transform);
+		}
+
+		public void OnRayEnter(RayEventData eventData)
+		{
+			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
+			node = eventData.node;
+		}
+
+		public void OnRayExit(RayEventData eventData)
+		{
+			if (node == eventData.node)
+				node = null;
 		}
 	}
 }

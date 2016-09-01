@@ -1,46 +1,50 @@
-﻿using UnityEngine;
-using UnityEngine.EventSystems;
+﻿using UnityEngine.EventSystems;
 using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Handles
 {
-	public class SphereHandle : BaseHandle, IRayDragHandler, IScrollHandler
+	public class SphereHandle : BaseHandle, IScrollHandler
 	{
+		private class SphereHandleEventData : HandleEventData
+		{
+			public float raycastHitDistance;
+
+			public SphereHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) {}
+		}
+
 		private const float kInitialScrollRate = 2f;
 		private const float kScrollAcceleration = 14f;
 		
 		private float m_ScrollRate;
 		private Vector3 m_LastPosition;
-		private float m_CurrentRadius = 0f;
+		private float m_CurrentRadius;
 
-		public override void OnBeginDrag(RayEventData eventData)
+		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			base.OnBeginDrag(eventData);
-			m_LastPosition = eventData.pointerCurrentRaycast.worldPosition;
-
-			m_CurrentRadius = eventData.pointerCurrentRaycast.distance;
-			m_ScrollRate = kInitialScrollRate;
-			OnHandleBeginDrag();
+			return new SphereHandleEventData(eventData.rayOrigin, IsDirectSelection(eventData)) { raycastHitDistance = eventData.pointerCurrentRaycast.distance };
 		}
 
-		public void OnDrag(RayEventData eventData)
+		protected override void OnHandleBeginDrag(HandleEventData eventData)
 		{
-			var worldPosition = m_LastPosition;
+			var sphereEventData = eventData as SphereHandleEventData;
 
-			Ray ray = new Ray(eventData.rayOrigin.position, eventData.rayOrigin.forward);
-			worldPosition = ray.GetPoint(m_CurrentRadius);
+			m_CurrentRadius = sphereEventData.raycastHitDistance;
 
-			var delta = worldPosition - m_LastPosition;
+			m_LastPosition = GetRayPoint(eventData);
+
+			m_ScrollRate = kInitialScrollRate;
+
+			base.OnHandleBeginDrag(eventData);
+		}
+
+		protected override void OnHandleDrag(HandleEventData eventData)
+		{
+			var worldPosition = GetRayPoint(eventData);
+
+			eventData.deltaPosition = worldPosition - m_LastPosition;
 			m_LastPosition = worldPosition;
 
-			OnHandleDrag(new HandleDragEventData(delta));
-		}
-
-		public override void OnEndDrag(RayEventData eventData)
-		{
-			base.OnEndDrag(eventData);
-
-			OnHandleEndDrag();
+			base.OnHandleDrag(eventData);
 		}
 
 		public void ChangeRadius(float delta)
@@ -51,7 +55,7 @@ namespace UnityEngine.VR.Handles
 
 		public void OnScroll(PointerEventData eventData)
 		{
-			if (!m_Dragging)
+			if (m_DragSources.Count == 0)
 				return;
 
 			// Scolling changes the radius of the sphere while dragging, and accelerates
@@ -61,6 +65,13 @@ namespace UnityEngine.VR.Handles
 				m_ScrollRate = kInitialScrollRate;
 
 			ChangeRadius(m_ScrollRate*eventData.scrollDelta.y*Time.unscaledDeltaTime);
+		}
+
+		private Vector3 GetRayPoint(HandleEventData eventData)
+		{
+			var rayOrigin = eventData.rayOrigin;
+			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+			return ray.GetPoint(m_CurrentRadius);
 		}
 	}
 }
