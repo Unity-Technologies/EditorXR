@@ -15,6 +15,8 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private const float kPreviewDuration = 0.1f;
 	private const float kGrowDuration = 0.5f;
 
+	private const float kRotateSpeed = 50f;
+
 	private const float kInstantiateFOVDifference = 20f;
 
 	//TODO: replace with a GrabOrigin transform once menu PR lands
@@ -31,17 +33,19 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private Image m_TextPanel;
 
 	[SerializeField]
-	private Material m_NoClipCubeMaterial;
-
-	[SerializeField]
 	private Renderer m_Cube;
 
+	[SerializeField]
+	private Renderer m_Sphere;
+
+	[HideInInspector]
 	[SerializeField] // Serialized so that this remains set after cloning
 	private Transform m_PreviewObject;
 
+	private Transform m_Icon;
+
 	private bool m_Setup;
 	private Transform m_GrabbedObject;
-	private Material m_GrabMaterial;
 	private float m_GrabLerp;
 	private float m_PreviewFade;
 	private Vector3 m_PreviewPrefabScale;
@@ -49,6 +53,16 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private Bounds? m_PreviewTotalBounds;
 
 	private Coroutine m_TransitionCoroutine;
+
+	private Transform icon
+	{
+		get
+		{
+			if (m_Icon)
+				return m_Icon;
+			return m_Cube.transform;
+		}
+	}
 
 	public override void Setup(AssetData listData)
 	{
@@ -73,19 +87,36 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 		m_Text.text = Path.GetFileNameWithoutExtension(listData.path);
 
-		var assetPath = AssetData.GetPathRelativeToAssets(data.path);
-		var cachedIcon = AssetDatabase.GetCachedIcon(assetPath);
-		if (cachedIcon)
+		switch (data.type)
 		{
-			cachedIcon.wrapMode = TextureWrapMode.Clamp;
-			m_Cube.sharedMaterial.mainTexture = cachedIcon;
+			case "Material":
+				icon.gameObject.SetActive(false);
+				var material = data.GetAsset() as Material;
+				if (material)
+					m_Sphere.sharedMaterial = material;
+				break;
+			case "Texture":
+				icon.gameObject.SetActive(false);
+				var texture = data.GetAsset() as Texture;
+				if (texture)
+				{
+					m_Sphere.sharedMaterial = new Material(Shader.Find("Standard"));
+					m_Sphere.sharedMaterial.mainTexture = texture;
+				}
+				break;
+			default:
+				m_Sphere.gameObject.SetActive(false);
+				if (m_Icon == null)
+				{
+					var cachedIcon = data.GetCachedIcon();
+					if (cachedIcon)
+					{
+						cachedIcon.wrapMode = TextureWrapMode.Clamp;
+						m_Cube.sharedMaterial.mainTexture = cachedIcon;
+					}
+				}
+				break;
 		}
-	}
-
-	public void SwapMaterials(Material textMaterial)
-	{
-		m_Text.material = textMaterial;
-		m_TextPanel.material = textMaterial;
 	}
 
 	public void UpdateTransforms(float scale)
@@ -108,22 +139,27 @@ public class AssetGridItem : ListViewItem<AssetData>
 			if (m_PreviewFade == 0)
 			{
 				m_PreviewObject.gameObject.SetActive(false);
-				m_Cube.gameObject.SetActive(true);
-				m_Cube.transform.localScale = Vector3.one;
+				icon.gameObject.SetActive(true);
+				icon.localScale = Vector3.one;
 			}
 			else if (m_PreviewFade == 1)
 			{
 				m_PreviewObject.gameObject.SetActive(true);
-				m_Cube.gameObject.SetActive(false);
+				icon.gameObject.SetActive(false);
 				m_PreviewObject.transform.localScale = m_PreviewTargetScale;
 			}
 			else
 			{
-				m_Cube.gameObject.SetActive(true);
+				icon.gameObject.SetActive(true);
 				m_PreviewObject.gameObject.SetActive(true);
-				m_Cube.transform.localScale = Vector3.one * (1 - m_PreviewFade);
+				icon.localScale = Vector3.one * (1 - m_PreviewFade);
 				m_PreviewObject.transform.localScale = Vector3.Lerp(Vector3.zero, m_PreviewTargetScale, m_PreviewFade);
 			}
+		}
+
+		if (m_Sphere.gameObject.activeInHierarchy)
+		{
+			m_Sphere.transform.Rotate(Vector3.up, kRotateSpeed * Time.unscaledDeltaTime, Space.Self);
 		}
 	}
 
@@ -159,33 +195,14 @@ public class AssetGridItem : ListViewItem<AssetData>
 		m_PreviewObject.localScale = Vector3.zero;
 	}
 
-	public void GetMaterials(out Material textMaterial)
-	{
-		textMaterial = Object.Instantiate(m_Text.material);
-	}
-
-	public void Clip(Bounds bounds, Matrix4x4 parentMatrix)
-	{
-		m_Cube.sharedMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_Cube.sharedMaterial.SetVector("_ClipExtents", bounds.extents * 5);
-	}
-
 	private void GrabBegin(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<AssetGridItem>();
-		if(m_GrabMaterial)
-			U.Object.Destroy(m_GrabMaterial);
-
-		var cubeRenderer = cloneItem.m_Cube.GetComponent<Renderer>();
-		cubeRenderer.sharedMaterial = m_NoClipCubeMaterial;
-		m_GrabMaterial = U.Material.GetMaterialClone(cubeRenderer.GetComponent<Renderer>());
-		m_GrabMaterial.mainTexture = m_Cube.sharedMaterial.mainTexture;
-		m_GrabMaterial.color = Color.white;
 
 		if (cloneItem.m_PreviewObject)
 		{
-			m_Cube.gameObject.SetActive(false);
+			cloneItem.m_Cube.gameObject.SetActive(false);
 			cloneItem.m_PreviewObject.gameObject.SetActive(true);
 			cloneItem.m_PreviewObject.transform.localScale = m_PreviewTargetScale;
 		}
@@ -313,8 +330,6 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private void OnDestroy()
 	{
 		U.Object.Destroy(m_Cube.sharedMaterial);
-		if(m_GrabMaterial)
-			U.Object.Destroy(m_GrabMaterial);
 	}
 
 	private static Bounds? GetTotalBounds(Transform t)
@@ -333,5 +348,14 @@ public class AssetGridItem : ListViewItem<AssetData>
 			}
 		}
 		return bounds;
+	}
+
+	public void SetIcon(GameObject icon)
+	{
+		m_Icon = U.Object.Instantiate(icon, transform, false).transform;
+		m_Icon.localPosition = Vector3.up * 0.5f;
+		m_Icon.localRotation = Quaternion.AngleAxis(90, Vector3.down);
+		m_Icon.localScale = Vector3.one;
+		m_Cube.gameObject.SetActive(false);
 	}
 }

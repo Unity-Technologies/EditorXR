@@ -57,6 +57,11 @@ public class AssetData : ListViewItemData
 		return AssetDatabase.LoadAssetAtPath(GetPathRelativeToAssets(m_Path), typeof(UnityEngine.Object));
 	}
 
+	public Texture GetCachedIcon()
+	{
+		return AssetDatabase.GetCachedIcon(GetPathRelativeToAssets(path));
+	}
+
 	public static string GetTypeForAssetPath(string path)
 	{
 		var importer = AssetImporter.GetAtPath(GetPathRelativeToAssets(path));

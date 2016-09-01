@@ -276,7 +276,7 @@ namespace ListView
 			} else
 			{
 				item = Instantiate(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
-				item.transform.parent = transform;
+				item.transform.SetParent(transform, false);
 				item.Setup(data);
 			}
 			return item;

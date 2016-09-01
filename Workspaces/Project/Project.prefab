@@ -405,6 +405,22 @@ MonoBehaviour:
   m_Templates:
   - {fileID: 1000014066556564, guid: 94a0fcdece43c184c88738ce9401f3d0, type: 2}
   m_ScaleFactor: 0.075
+  m_IconTypes:
+  - Scene
+  - Animator
+  - Prefab
+  - Script
+  - Font
+  - AudioMixer
+  - Shader
+  m_Icons:
+  - {fileID: 100000, guid: 4f59d2c28d92b4a0486ef9a7530a7236, type: 3}
+  - {fileID: 100000, guid: 8073bfb3d9b79403482bdea7a0f428d2, type: 3}
+  - {fileID: 100000, guid: 380f1c54ead27452eac63ccdeeb4b131, type: 3}
+  - {fileID: 100000, guid: 871514b9fd86846c7a7ae790635ca784, type: 3}
+  - {fileID: 100000, guid: 2ac4c08b612cc4a6fb8c2779f3ba4fc7, type: 3}
+  - {fileID: 100000, guid: 15e396cb94d3f4b7cbeab308bafe112a, type: 3}
+  - {fileID: 100000, guid: 871514b9fd86846c7a7ae790635ca784, type: 3}
 --- !u!114 &114000013463570846
 MonoBehaviour:
   m_ObjectHideFlags: 1

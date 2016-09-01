@@ -2,7 +2,7 @@
 using System.Collections;
 using ListView;
 using UnityEngine;
-using UnityEngine.VR.Utilities;
+using System.Collections.Generic;
 
 public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>
 {
@@ -10,8 +10,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
-
-	private Material m_TextMaterial;
 
 	private Transform m_GrabbedObject;
 
@@ -22,6 +20,13 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	[SerializeField]
 	private float m_ScaleFactor = 0.1f;
 
+	[SerializeField]
+	private string[] m_IconTypes;
+
+	[SerializeField]
+	private GameObject[] m_Icons;
+
+	protected readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
 	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
 
 	public AssetData[] listData
@@ -44,12 +49,15 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	protected override void Setup()
 	{
 		base.Setup();
-		var item = m_Templates[0].GetComponent<AssetGridItem>();
-		item.GetMaterials(out m_TextMaterial);
 
 		m_ScrollOffset = m_ScaleFactor;
 
 		m_Data = new AssetData[0]; // Start with empty list to avoid null references
+
+		for (int i = 0; i < m_IconTypes.Length; i++)
+		{
+			m_IconDictionary[m_IconTypes[i]] = m_Icons[i];
+		}
 	}
 
 	protected override void ComputeConditions()
@@ -73,13 +81,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		// Snap back if list scrolled too far
 		if (-m_DataOffset >= dataLength)
 			m_ScrollReturn = (1 - dataLength) * itemSize.z;
-
-		// Extend clip bounds slightly in Z for extra text
-		var clipExtents = bounds.extents;
-		clipExtents.z += kClipMargin;
-		var parentMatrix = transform.worldToLocalMatrix;
-		m_TextMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_TextMaterial.SetVector("_ClipExtents", clipExtents);
 	}
 
 	protected override Vector3 GetObjectSize(GameObject g)
@@ -195,7 +196,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		var item = data.item as AssetGridItem;
 		if (!data.animating)
 			item.UpdateTransforms(m_ScaleFactor);
-		item.Clip(bounds, transform.worldToLocalMatrix);
 
 		var t = item.transform;
 		var zOffset = m_ItemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
@@ -207,14 +207,13 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	protected override AssetGridItem GetItem(AssetData data)
 	{
 		var item = base.GetItem(data);
-		item.SwapMaterials(m_TextMaterial);
 		item.transform.localPosition = Vector3.zero;
 		StartCoroutine(Transition(data, false));
-		return item;
-	}
 
-	private void OnDestroy()
-	{
-		U.Object.Destroy(m_TextMaterial);
+		GameObject icon = null;
+		if(m_IconDictionary.TryGetValue(data.type, out icon))
+			item.SetIcon(icon);
+
+		return item;
 	}
 }
