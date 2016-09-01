@@ -14,6 +14,8 @@ public class FolderData : ListViewItemNestedData<FolderData>
 	public AssetData[] assets { get { return m_Assets; } }
 	private AssetData[] m_Assets;
 
+	public bool selected { get; set; }
+
 	public FolderData(string path, int depth = 0)
 	{
 		template = kTemplateName;
@@ -35,5 +37,13 @@ public class FolderData : ListViewItemNestedData<FolderData>
 			files[i] = new FolderData(dirs[i], depth);
 		}
 		return files;
+	}
+
+	public void ClearSelected()
+	{
+		selected = false;
+		if(children != null)
+			foreach (var child in children)
+				child.ClearSelected();
 	}
 }

@@ -236,6 +236,8 @@ MonoBehaviour:
     type: 2}
   m_NoClipExpandArrowMaterial: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba,
     type: 2}
+  m_HoverColor: {r: 0.20344828, g: 0.20344828, b: 0.20344828, a: 0}
+  m_SelectedColor: {r: 0.36896548, g: 0.36896548, b: 0.36896548, a: 0}
 --- !u!114 &114000013632537286
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -304,7 +306,7 @@ RectTransform:
   - {fileID: 224000013671661884}
   - {fileID: 4000013634378948}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 0
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}

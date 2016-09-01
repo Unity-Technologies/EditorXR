@@ -6,8 +6,6 @@ using System.Collections.Generic;
 
 public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>
 {
-	private const float kClipMargin = 0.005f; // Give the cubes a margin so that their sides don't get clipped
-
 	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
 
@@ -40,6 +38,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 					CleanUpBeginning(data);
 				}
 			}
+			m_ScrollOffset = m_ScaleFactor; // Reset scroll value to start
 			m_Data = value;
 		}
 	}
@@ -49,8 +48,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	protected override void Setup()
 	{
 		base.Setup();
-
-		m_ScrollOffset = m_ScaleFactor;
 
 		m_Data = new AssetData[0]; // Start with empty list to avoid null references
 
@@ -210,9 +207,8 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		item.transform.localPosition = Vector3.zero;
 		StartCoroutine(Transition(data, false));
 
-		GameObject icon = null;
-		if(m_IconDictionary.TryGetValue(data.type, out icon))
-			item.SetIcon(icon);
+		GameObject icon;
+		item.SetIcon(m_IconDictionary.TryGetValue(data.type, out icon) ? icon : null);
 
 		return item;
 	}

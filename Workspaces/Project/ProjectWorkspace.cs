@@ -52,12 +52,9 @@ public class ProjectWorkspace : Workspace
 			new FolderData(Application.dataPath) {expanded = true},
 		};
 		m_ProjectUI.folderListView.listData = folderData;
-
-		// TEMP: use select method when it exists
+		
 		if (folderData.Length > 0)
-		{
-			m_ProjectUI.assetListView.listData = folderData[0].assets;
-		}
+			SelectFolder(folderData[0]);
 #else
 		Debug.LogWarning("Project workspace does not work in builds");
 		return;
@@ -139,6 +136,9 @@ public class ProjectWorkspace : Workspace
 
 	private void SelectFolder(FolderData data)
 	{
+		foreach (var folderData in m_ProjectUI.folderListView.listData)
+			folderData.ClearSelected();
+		data.selected = true;
 		m_ProjectUI.assetListView.listData = data.assets;
 	}
 

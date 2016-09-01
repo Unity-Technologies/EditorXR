@@ -28,7 +28,7 @@ public class EditorVR : MonoBehaviour
 	private const float kWorkspaceAnglePadding = 25f;
 	private const float kWorkspaceYPadding = 0.35f;
 	private const int kMaxWorkspacePlacementAttempts = 20;
-	private const float kWorkspaceVacuumEnableDistance = 1.5f; //Disable vacuum bounds if workspace is closer than 1.5 meters to player
+	private const float kWorkspaceVacuumEnableDistance = 1f; // Disable vacuum bounds if workspace is close to player
 
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
@@ -43,7 +43,7 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
 
-	private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
+	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
 	private TrackedObject m_TrackedObjectInput;
 	private Default m_DefaultActionInput;

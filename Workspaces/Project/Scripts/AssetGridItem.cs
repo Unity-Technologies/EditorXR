@@ -86,37 +86,6 @@ public class AssetGridItem : ListViewItem<AssetData>
 		InstantiatePreview();
 
 		m_Text.text = Path.GetFileNameWithoutExtension(listData.path);
-
-		switch (data.type)
-		{
-			case "Material":
-				icon.gameObject.SetActive(false);
-				var material = data.GetAsset() as Material;
-				if (material)
-					m_Sphere.sharedMaterial = material;
-				break;
-			case "Texture":
-				icon.gameObject.SetActive(false);
-				var texture = data.GetAsset() as Texture;
-				if (texture)
-				{
-					m_Sphere.sharedMaterial = new Material(Shader.Find("Standard"));
-					m_Sphere.sharedMaterial.mainTexture = texture;
-				}
-				break;
-			default:
-				m_Sphere.gameObject.SetActive(false);
-				if (m_Icon == null)
-				{
-					var cachedIcon = data.GetCachedIcon();
-					if (cachedIcon)
-					{
-						cachedIcon.wrapMode = TextureWrapMode.Clamp;
-						m_Cube.sharedMaterial.mainTexture = cachedIcon;
-					}
-				}
-				break;
-		}
 	}
 
 	public void UpdateTransforms(float scale)
@@ -249,6 +218,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 					break;
 			}
 		}
+		gridItem.m_Cube.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
 		U.Object.Destroy(m_GrabbedObject.gameObject);
 	}
 
@@ -350,12 +320,50 @@ public class AssetGridItem : ListViewItem<AssetData>
 		return bounds;
 	}
 
-	public void SetIcon(GameObject icon)
+	public void SetIcon(GameObject iconModel)
 	{
-		m_Icon = U.Object.Instantiate(icon, transform, false).transform;
-		m_Icon.localPosition = Vector3.up * 0.5f;
-		m_Icon.localRotation = Quaternion.AngleAxis(90, Vector3.down);
-		m_Icon.localScale = Vector3.one;
-		m_Cube.gameObject.SetActive(false);
+		if(m_Icon)
+			U.Object.Destroy(m_Icon.gameObject);
+		if (iconModel)
+		{
+			m_Icon = U.Object.Instantiate(iconModel, transform, false).transform;
+			m_Icon.localPosition = Vector3.up * 0.5f;
+			m_Icon.localRotation = Quaternion.AngleAxis(90, Vector3.down);
+			m_Icon.localScale = Vector3.one;
+			m_Cube.gameObject.SetActive(false);
+		}
+
+		switch (data.type)
+		{
+			case "Material":
+				m_Sphere.gameObject.SetActive(true);
+				icon.gameObject.SetActive(false);
+				var material = data.GetAsset() as Material;
+				if (material)
+					m_Sphere.sharedMaterial = material;
+				break;
+			case "Texture":
+				m_Sphere.gameObject.SetActive(true);
+				icon.gameObject.SetActive(false);
+				var texture = data.GetAsset() as Texture;
+				if (texture)
+					m_Sphere.sharedMaterial = new Material(Shader.Find("Standard")) { mainTexture = texture };
+				break;
+			default:
+				m_Sphere.gameObject.SetActive(false);
+				icon.gameObject.SetActive(true);
+				if (m_Icon == null)
+				{
+					var cachedIcon = data.GetCachedIcon();
+					if (cachedIcon)
+					{
+						cachedIcon.wrapMode = TextureWrapMode.Clamp;
+						m_Cube.sharedMaterial.mainTexture = cachedIcon;
+					}
+					else
+						m_Cube.sharedMaterial.mainTexture = null;
+				}
+				break;
+		}
 	}
 }

@@ -31,6 +31,16 @@ public class FolderListItem : ListViewItem<FolderData>
 	[SerializeField]
 	private Material m_NoClipExpandArrowMaterial;
 
+	[SerializeField]
+	private Color m_HoverColor;
+
+	[SerializeField]
+	private Color m_SelectedColor;
+
+	private Color m_NormalColor;
+
+	private bool m_Hovering;
+
 	private Renderer m_CubeRenderer;
 
 	private Transform m_GrabbedObject;
@@ -46,16 +56,21 @@ public class FolderListItem : ListViewItem<FolderData>
 		{
 			// Cube material might change, so we always instance it
 			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
+			m_NormalColor = m_CubeRenderer.sharedMaterial.color;
 			U.Material.GetMaterialClone(m_CubeRenderer);
 
 			m_ExpandArrow.handleDragged += ToggleExpanded;
 			m_Cube.handleDragging += GrabBegin;
 			m_Cube.handleDrag += GrabDrag;
 			m_Cube.handleDragged += GrabEnd;
+
+			m_Cube.hovering += HoverBegin;
+			m_Cube.hovered += HoverEnd;
 		}
 
 		m_Text.text = Path.GetFileName(listData.path);
 		m_ExpandArrow.gameObject.SetActive(listData.children != null);
+		m_Hovering = false;
 	}
 
 	public void SwapMaterials(Material textMaterial, Material expandArrowMaterial)
@@ -86,6 +101,13 @@ public class FolderListItem : ListViewItem<FolderData>
 		eyeVector3.x = 0;
 		m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, 
 										Vector3.Dot(eyeVector3, Vector3.forward) > 0 ? Vector3.up : Vector3.down);
+
+		if(data.selected)
+			m_CubeRenderer.sharedMaterial.color = m_SelectedColor;
+		else if(m_Hovering)
+			m_CubeRenderer.sharedMaterial.color = m_HoverColor;
+		else
+			m_CubeRenderer.sharedMaterial.color = m_NormalColor;
 	}
 
 	public void GetMaterials(out Material textMaterial, out Material expandArrowMaterial)
@@ -153,6 +175,16 @@ public class FolderListItem : ListViewItem<FolderData>
 	{
 		if(m_GrabbedObject)
 			U.Object.Destroy(m_GrabbedObject.gameObject);
+	}
+
+	private void HoverBegin(BaseHandle baseHandle, HandleEventData eventData)
+	{
+		m_Hovering = true;
+	}
+
+	private void HoverEnd(BaseHandle baseHandle, HandleEventData eventData)
+	{
+		m_Hovering = false;
 	}
 
 	private void OnDestroy()
