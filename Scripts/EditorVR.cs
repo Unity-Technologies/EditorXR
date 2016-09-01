@@ -476,7 +476,7 @@ public class EditorVR : MonoBehaviour
         mainMenu.eventCamera = m_EventCamera;
         mainMenu.mainMenuInput = m_DeviceData[device].mainMenuInputInput;
         mainMenu.menuTools = m_AllTools.ToList();
-        mainMenu.menuActions = m_AllActions.ToList();
+        mainMenu.menuActions = m_AllActions;
         mainMenu.selectTool = SelectTool;
         mainMenu.performAction = PerformAction;
         mainMenu.tagIndex = device.tagIndex;
@@ -581,6 +581,10 @@ public class EditorVR : MonoBehaviour
         var highlightComponent = obj as IHighlight;
         if (highlightComponent != null)
             highlightComponent.setHighlight = m_HighlightModule.SetHighlight;
+
+        var actionsComponent = obj as IUsesActions;
+        if (actionsComponent != null)
+            actionsComponent.actions = m_AllActions;
     }
 
     private float GetPointerLength(Transform rayOrigin)
