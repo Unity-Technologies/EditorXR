@@ -219,11 +219,27 @@ public class AssetGridItem : ListViewItem<AssetData>
 	{
 		var gridItem = m_GrabbedObject.GetComponent<AssetGridItem>();
 		if (gridItem.m_PreviewObject)
-			StartCoroutine(GrowObject(gridItem.m_PreviewObject));
+			StartCoroutine(PlaceObjectWithBounds(gridItem.m_PreviewObject));
+		else
+		{
+			switch (data.type)
+			{
+				case "Prefab":
+					PlaceObject(gridItem.transform.position, gridItem.transform.rotation);
+					break;
+				case "Model":
+					PlaceObject(gridItem.transform.position, gridItem.transform.rotation);
+					break;
+			}
+		}
 		U.Object.Destroy(m_GrabbedObject.gameObject);
 	}
 
-	private IEnumerator GrowObject(Transform obj)
+	private void PlaceObject(Vector3 position, Quaternion rotation)
+	{
+		Instantiate(data.GetAsset(), position, rotation);
+	}
+	private IEnumerator PlaceObjectWithBounds(Transform obj)
 	{
 		float start = Time.realtimeSinceStartup;
 		var currTime = 0f;
@@ -253,6 +269,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 			yield return null;
 		}
 		obj.localScale = m_PreviewPrefabScale;
+		Selection.activeGameObject = obj.gameObject;
 	}
 
 	private void OnBeginHover(BaseHandle baseHandle, HandleEventData eventData)

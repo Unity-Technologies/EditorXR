@@ -1,11 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using ListView;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Utilities;
+using Object = UnityEngine.Object;
 
 public class AssetData : ListViewItemData
 {
@@ -22,7 +20,7 @@ public class AssetData : ListViewItemData
 		get
 		{
 			if (!m_FetchedPreview)
-				m_PreviewObject = AssetDatabase.LoadAssetAtPath(GetPathRelativeToAssets(m_Path), typeof (UnityEngine.Object)) as GameObject;
+				m_PreviewObject = GetAsset() as GameObject;
 			m_FetchedPreview = true;
 			return m_PreviewObject;
 		}
@@ -52,6 +50,11 @@ public class AssetData : ListViewItemData
 			files[i] = new AssetData(paths[i].FullName);
 		}
 		return files;
+	}
+
+	public Object GetAsset()
+	{
+		return AssetDatabase.LoadAssetAtPath(GetPathRelativeToAssets(m_Path), typeof(UnityEngine.Object));
 	}
 
 	public static string GetTypeForAssetPath(string path)
