@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.VR.Utilities;
 
 public class DefaultProxyRay : MonoBehaviour
@@ -26,6 +26,39 @@ public class DefaultProxyRay : MonoBehaviour
 	private State m_State;
 	private Vector3 m_TipStartScale;
 	private Coroutine m_Transitioning;
+	
+	/// <summary>
+	/// The object that is set when LockRay is called while the ray is unlocked.
+	/// As long as this reference is set, and the ray is locked, only that object can unlock the ray.
+	/// If the object reference becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
+	/// </summary>
+	private object m_LockRayObject;
+
+	public bool LockRay(object lockCaller)
+	{
+		// Allow the caller to lock the ray
+		// If the reference to the lockCaller is destroyed, and the ray was not properly
+		// unlocked by the original locking caller, then allow locking by another object
+		if (m_LockRayObject == null)
+		{
+			m_LockRayObject = lockCaller;
+			return true;
+		}
+
+		return false;
+	}
+
+	public bool UnlockRay(object unlockCaller)
+	{
+		// Only allow unlocking if the original lock caller is null or there is no locker caller set
+		if (m_LockRayObject == unlockCaller)
+		{
+			m_LockRayObject = null;
+			return true;
+		}
+
+		return false;
+	}
 
 	/// <summary>
 	/// The length of the direct selection pointer
@@ -40,22 +73,22 @@ public class DefaultProxyRay : MonoBehaviour
 
 	public void Hide()
 	{
-		if (isActiveAndEnabled)
+		if (isActiveAndEnabled && m_LockRayObject == null)
 		{
 			if (m_State == State.Transitioning)
 				StopAllCoroutines();
-
+			
 			StartCoroutine(HideRay());
 		}
 	}
 
 	public void Show()
 	{
-		if (isActiveAndEnabled)
+		if (isActiveAndEnabled && m_LockRayObject == null)
 		{
 			if (m_State == State.Transitioning)
 				StopAllCoroutines();
-
+			
 			StartCoroutine(ShowRay());
 		}
 	}
@@ -86,7 +119,8 @@ public class DefaultProxyRay : MonoBehaviour
 		float currentWidth = m_LineRenderer.widthStart;
 		while (currentWidth > 0)
 		{
-			currentWidth = U.Math.Ease(currentWidth, 0f, 3, 0.0005f);
+			float smoothVelocity = 0f;
+			currentWidth = Mathf.SmoothDamp(currentWidth, 0f, ref smoothVelocity, 0.1875f, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
 			yield return null;
 		}
@@ -98,16 +132,14 @@ public class DefaultProxyRay : MonoBehaviour
 	private IEnumerator ShowRay()
 	{
 		m_State = State.Transitioning;
-
-		float currentWidth = m_LineRenderer.widthStart;
-
 		m_Tip.transform.localScale = m_TipStartScale;
 
+		float currentWidth = m_LineRenderer.widthStart;
+		float smoothVelocity = 0f;
 		while (currentWidth < m_LineWidth)
 		{
-			currentWidth = U.Math.Ease(currentWidth, m_LineWidth, 5, 0.0005f);
+			currentWidth = Mathf.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, 0.3125f, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
-
 			yield return null;
 		}
 
