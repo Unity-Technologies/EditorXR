@@ -1,10 +1,12 @@
 ﻿using System;
 using UnityEngine.Assertions;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Tools
 {
-	public class MainMenuButton : MonoBehaviour
+	public class MainMenuButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IRayHoverHandler
 	{
 		[SerializeField]
 		private Button m_Button;
@@ -15,6 +17,7 @@ namespace UnityEngine.VR.Tools
 
 		public Button button { get { return m_Button; } }
 		public Action ButtonClicked;
+		public Action<Transform> ButtonEntered;
 
 		private void Awake()
 		{
@@ -41,6 +44,24 @@ namespace UnityEngine.VR.Tools
 			Action m_ButtonActionHandler = ButtonClicked;
 			if (m_ButtonActionHandler != null)
 				m_ButtonActionHandler();
+		}
+
+		public void OnPointerEnter(PointerEventData eventData)
+		{
+			//Debug.LogError("<color=green>OnPointerEnter called on MainMenuButton</color>");
+ 		}
+
+		public void OnPointerExit(PointerEventData eventData)
+		{
+			Debug.LogError("<color=green>OnPointerExit called on MainMenuButton</color>");
+		}
+
+		public void OnRayHover(RayEventData eventData)
+		{
+			Debug.LogError("<color=green>OnPointerEnter called on MainMenuButton</color>");
+			Action<Transform> ButtonEnteredHandler = ButtonEntered;
+			if (ButtonEnteredHandler != null)
+				ButtonEnteredHandler(transform);
 		}
 	}
 }
