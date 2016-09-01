@@ -15,7 +15,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private const float kPreviewDuration = 0.1f;
 	private const float kGrowDuration = 0.5f;
 
-	private const float kInstantiateFOVDifference = 0f;
+	private const float kInstantiateFOVDifference = 20f;
 
 	//TODO: replace with a GrabOrigin transform once menu PR lands
 	private readonly Vector3 kGrabPositionOffset = new Vector3(0f, 0.02f, 0.03f);
@@ -238,7 +238,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 		var forward = obj.position - camPosition;
 		forward.y = 0;
 		var perspective = camera.fieldOfView * 0.5f + kInstantiateFOVDifference;
-		var distance = m_PreviewTotalBounds.Value.size.magnitude / Mathf.Tan(perspective);
+		var distance = m_PreviewTotalBounds.Value.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
 		var destinationPosition = obj.position;
 		if(distance > forward.magnitude)
 			destinationPosition = camPosition + forward.normalized * distance;
