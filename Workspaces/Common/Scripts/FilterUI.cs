@@ -33,22 +33,16 @@ public class FilterUI : MonoBehaviour {
 	private Text m_DescriptionText;
 
 	[SerializeField]
-	private RectTransform m_VisibilityButton;
+	private GameObject m_VisibilityButton;
 
 	[SerializeField]
-	private RectTransform m_SummaryButton;
+	private GameObject m_SummaryButton;
 
 	[SerializeField]
-	private RectTransform m_VisibilityPanel;
+	private RectTransform m_ButtonList;
 
 	[SerializeField]
-	private RectTransform m_TypePanel;
-
-	[SerializeField]
-	private GameObject m_VisibilityButtonPrefab;
-
-	[SerializeField]
-	private GameObject m_VisibilityLabelPrefab;
+	private GameObject m_ButtonPrefab;
 
 	[SerializeField]
 	private Color m_ActiveColor;
@@ -56,8 +50,7 @@ public class FilterUI : MonoBehaviour {
 	[SerializeField]
 	private Color m_DisableColor;
 
-	private Button[] m_VisibilityButtons;
-	private Button[] m_VisibilityLabels;
+	private FilterButtonUI[] m_VisibilityButtons;
 
 	public string searchQuery { get { return m_SearchQuery; } }
 	private string m_SearchQuery = string.Empty;
@@ -65,69 +58,51 @@ public class FilterUI : MonoBehaviour {
 	private void Start()
 	{
 		//Make the list panel a child of the main panel so it stays aligned right
-		m_ListPanel.transform.SetParent(transform.parent, false);
+		m_ListPanel.SetParent(transform.parent, false);
 
-		m_VisibilityButtons = new Button[kFilterTypes.Length + 1];
-		m_VisibilityLabels = new Button[kFilterTypes.Length + 1];
+		m_VisibilityButtons = new FilterButtonUI[kFilterTypes.Length + 1];
 		for (int i = 0; i < kFilterTypes.Length + 1; i++)
 		{
-			var button = U.Object.Instantiate(m_VisibilityButtonPrefab, m_VisibilityPanel, false).GetComponent<Button>();
+			var button = U.Object.Instantiate(m_ButtonPrefab, m_ButtonList, false).GetComponent<FilterButtonUI>();
 			m_VisibilityButtons[i] = button;
-			button.onClick.AddListener(() =>
+			button.button.onClick.AddListener(() =>
 			{
 				OnFilterClick(button);
 			});
-			var label = U.Object.Instantiate(m_VisibilityLabelPrefab, m_TypePanel, false).GetComponentInChildren<Button>();
-			m_VisibilityLabels[i] = label;
-			label.onClick.AddListener(() =>
-			{
-				OnFilterClick(label);
-			});
-			label.GetComponentInChildren<Text>().text = i == 0 ? "All" : kFilterTypes[i - 1];
+			button.text.text = i == 0 ? "All" : kFilterTypes[i - 1];
 		}
 	}
 
 	public void ShowList()
 	{
 		m_ListPanel.gameObject.SetActive(true);
-		m_VisibilityButton.gameObject.SetActive(false);
-		m_SummaryButton.gameObject.SetActive(false);
+		m_VisibilityButton.SetActive(false);
+		m_SummaryButton.SetActive(false);
 	}
 
 	public void HideList()
 	{
 		m_ListPanel.gameObject.SetActive(false);
-		m_VisibilityButton.gameObject.SetActive(true);
-		m_SummaryButton.gameObject.SetActive(true);
+		m_VisibilityButton.SetActive(true);
+		m_SummaryButton.SetActive(true);
 	}
 
-	public void OnFilterClick(Button button)
+	public void OnFilterClick(FilterButtonUI clickedButton)
 	{
 		for (int i = 0; i < m_VisibilityButtons.Length; i++)
-			if (button == m_VisibilityButtons[i] || button == m_VisibilityLabels[i])
+			if (clickedButton == m_VisibilityButtons[i])
 				m_SearchQuery = i == 0 ? string.Empty : "t:" + kFilterTypes[i - 1];
 
-		for (int i = 0; i < m_VisibilityButtons.Length; i++)
+		foreach (FilterButtonUI button in m_VisibilityButtons)
 		{
-			if (button == m_VisibilityButtons[i] || button == m_VisibilityLabels[i])
-			{
-				m_VisibilityButtons[i].targetGraphic.color = m_ActiveColor;
-				m_VisibilityLabels[i].targetGraphic.color = m_ActiveColor;
-			}
+			if (button == clickedButton)
+				button.color = m_ActiveColor;
 			else
-			{
-				if (m_SearchQuery.Contains("t:"))
-				{
-					m_VisibilityButtons[i].targetGraphic.color = m_DisableColor;
-					m_VisibilityLabels[i].targetGraphic.color = m_DisableColor;
-				}
-				else
-				{
-					m_VisibilityButtons[i].targetGraphic.color = m_ActiveColor;
-					m_VisibilityLabels[i].targetGraphic.color = m_ActiveColor;
-				}
-			}
+				button.color = m_SearchQuery.Contains("t:") ? m_DisableColor : m_ActiveColor;
 		}
+
+		m_SummaryText.text = clickedButton.text.text + "s";
+		m_DescriptionText.text = "Only " + m_SummaryText.text + " are visible";
 	}
 
 	public static bool TestFilter(string query, string type)

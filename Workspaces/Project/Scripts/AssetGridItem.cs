@@ -85,7 +85,8 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 		InstantiatePreview();
 
-		m_Text.text = Path.GetFileNameWithoutExtension(listData.path);
+		m_Text.text = listData.name;
+		m_PreviewFade = 0;
 	}
 
 	public void UpdateTransforms(float scale)
@@ -127,9 +128,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 		}
 
 		if (m_Sphere.gameObject.activeInHierarchy)
-		{
 			m_Sphere.transform.Rotate(Vector3.up, kRotateSpeed * Time.unscaledDeltaTime, Space.Self);
-		}
 	}
 
 	private void InstantiatePreview()
@@ -342,6 +341,8 @@ public class AssetGridItem : ListViewItem<AssetData>
 				if (material)
 					m_Sphere.sharedMaterial = material;
 				break;
+			case "Texture2D":
+				goto case "Texture";
 			case "Texture":
 				m_Sphere.gameObject.SetActive(true);
 				icon.gameObject.SetActive(false);

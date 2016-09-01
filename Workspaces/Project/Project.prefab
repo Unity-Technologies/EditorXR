@@ -407,13 +407,13 @@ MonoBehaviour:
   m_ScaleFactor: 0.075
   m_IconTypes:
   - Scene
-  - AnimationController
-  - Prefab
+  - AnimatorController
+  - Model
   - Script
   - Font
   - AudioMixer
   - Shader
-  - Model
+  - Prefab
   m_Icons:
   - {fileID: 100000, guid: 4f59d2c28d92b4a0486ef9a7530a7236, type: 3}
   - {fileID: 100000, guid: 8073bfb3d9b79403482bdea7a0f428d2, type: 3}

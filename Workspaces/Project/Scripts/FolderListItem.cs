@@ -14,6 +14,7 @@ public class FolderListItem : ListViewItem<FolderData>
 	private const float kIndent = 0.02f;
 
 	private const float kMagnetizeDuration = 0.75f;
+	private const float kExpandArrowRotateSpeed = 0.4f;
 	private readonly Vector3 kGrabOffset = new Vector3(0, 0.02f, 0.03f);
 
 	[SerializeField]
@@ -102,7 +103,13 @@ public class FolderListItem : ListViewItem<FolderData>
 		m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, 
 										Vector3.Dot(eyeVector3, Vector3.forward) > 0 ? Vector3.up : Vector3.down);
 
-		if(data.selected)
+		// Rotate arrow for expand state
+		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
+											Quaternion.AngleAxis(90f, Vector3.right) * (data.expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
+											kExpandArrowRotateSpeed);
+
+		// Set selected/hover/normal color
+		if (data.selected)
 			m_CubeRenderer.sharedMaterial.color = m_SelectedColor;
 		else if(m_Hovering)
 			m_CubeRenderer.sharedMaterial.color = m_HoverColor;

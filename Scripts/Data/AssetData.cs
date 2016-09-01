@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Collections.Generic;
+using System.Reflection;
 using ListView;
 using UnityEditor;
 using UnityEngine;
@@ -8,12 +8,16 @@ using Object = UnityEngine.Object;
 public class AssetData : ListViewItemData
 {
 	private const string kTemplateName = "AssetGridItem";
-	public string path { get { return m_Path; } }
-	private string m_Path;
-	private string m_Type;
 
 	public string type { get { return m_Type; } }
+	private readonly string m_Type;
+	private readonly int m_InstanceID;
+	private readonly Texture2D m_Icon;
+
+	public string name { get; private set; }
 	public bool animating { get; set; }
+
+	private static readonly MethodInfo m_GetMainAssetInstanceID;
 
 	public GameObject preview
 	{
@@ -25,78 +29,79 @@ public class AssetData : ListViewItemData
 			return m_PreviewObject;
 		}
 	}
+
+	
 	private GameObject m_PreviewObject;
 	private bool m_FetchedPreview;
 
-	public AssetData(string path)
+	//HACK: Use static constructor to access internal method
+	static AssetData()
 	{
-		template = kTemplateName;
-		m_Path = path;
-		m_Type = GetTypeForAssetPath(path);
+		m_GetMainAssetInstanceID = typeof(AssetDatabase).GetMethod("GetMainAssetInstanceID", BindingFlags.NonPublic | BindingFlags.Static);
 	}
 
-	public static string GetPathRelativeToAssets(string path)
+	private AssetData(HierarchyProperty hp)
 	{
-		return path.Substring(path.IndexOf("Assets"));
+		template = kTemplateName;
+		m_InstanceID = hp.instanceID;
+		m_Icon = hp.icon;
+		name = hp.name;
+		var type = hp.pptrValue.GetType().Name;
+		switch (type)
+		{
+			case "GameObject":
+				switch (PrefabUtility.GetPrefabType(GetAsset()))
+				{
+					case PrefabType.ModelPrefab:
+						m_Type = "Model";
+						break;
+					default:
+						m_Type = "Prefab";
+						break;
+				}
+				break;
+			case "MonoScript":
+				m_Type = "Script";
+				break;
+			case "SceneAsset":
+				m_Type = "Scene";
+				break;
+			case "AudioMixerController":
+				m_Type = "AudioMixer";
+				break;
+			default:
+				m_Type = type;
+				break;
+		}
 	}
 
 	public static AssetData[] GetAssetDataForPath(string path)
 	{
-		var paths = new DirectoryInfo(path).GetFiles()
-					.Where(file => !file.Name.EndsWith(".meta") && !file.Name.StartsWith(".") && (file.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden).ToArray();
-		var files = new AssetData[paths.Length];
-		for (int i = 0; i < paths.Length; i++)
+		var hp = new HierarchyProperty(HierarchyType.Assets);
+		var folderInstanceID = (int)m_GetMainAssetInstanceID.Invoke(null, new object[] { GetPathRelativeToAssets(path) });
+		var assets = new List<AssetData>();
+		if (hp.Find(folderInstanceID, null))
 		{
-			files[i] = new AssetData(paths[i].FullName);
+			int folderDepth = hp.depth + 1;
+			while (hp.NextWithDepthCheck(null, folderDepth))
+				if(!hp.isFolder && hp.depth == folderDepth) // Do not show folders or child components
+					assets.Add(new AssetData(hp));
 		}
-		return files;
+		return assets.ToArray();
+	}
+
+	private static string GetPathRelativeToAssets(string path)
+	{
+		return path.Substring(path.IndexOf("Assets"));
 	}
 
 	public Object GetAsset()
 	{
-		return AssetDatabase.LoadAssetAtPath(GetPathRelativeToAssets(m_Path), typeof(UnityEngine.Object));
+		return EditorUtility.InstanceIDToObject(m_InstanceID);
 	}
 
 	public Texture GetCachedIcon()
 	{
-		return AssetDatabase.GetCachedIcon(GetPathRelativeToAssets(path));
-	}
-
-	public static string GetTypeForAssetPath(string path)
-	{
-		var importer = AssetImporter.GetAtPath(GetPathRelativeToAssets(path));
-		if (importer != null)
-		{
-			var importerType = importer.GetType().Name.Replace("Importer", string.Empty);
-			var extension = Path.GetExtension(path).ToLower();
-			switch (importerType)
-			{
-				case "Asset":
-					switch (extension)
-					{
-						case ".mat":
-							return "Material";
-						case ".anim":
-							return "AnimationClip";
-						case ".prefab":
-							return "Prefab";
-						case ".txt":
-							return "Text";
-						case ".controller":
-							return "AnimationController";
-						case ".unity":
-							return "Scene";
-						case ".mixer":
-							return "AudioMixer";
-					}
-					break;
-				case "Mono":
-					return "Script";
-				case "TrueTypeFont":
-					return "Font";
-			}
-			return importerType;
-		}
-		return "Unknown";
+		return m_Icon;
 	}
 }
