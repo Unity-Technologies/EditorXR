@@ -4,7 +4,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Tools
 {
-	public interface IMainMenu
+	public interface IMainMenu : IMenuOrigins
 	{
 		/// <summary>
 		/// The camera that handles UI events in the menu
@@ -15,16 +15,6 @@ namespace UnityEngine.VR.Tools
 		/// The action map input used to drive the menu
 		/// </summary>
 		MainMenuInput mainMenuInput { get; set; }
-
-		/// <summary>
-		/// The transform under which the menu input object should be parented, inheriting position, scale, and rotation
-		/// </summary>
-		Transform menuInputOrigin { get; set; }
-
-		/// <summary>
-		/// The transform under which the menu should be parented, inheriting position and rotation
-		/// </summary>
-		Transform menuOrigin { get; set; }
 
 		/// <summary>
 		/// The menu tools that will populate the menu
