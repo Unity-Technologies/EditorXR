@@ -204,7 +204,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	protected override AssetGridItem GetItem(AssetData data)
 	{
 		var item = base.GetItem(data);
-		item.transform.localPosition = Vector3.zero;
+		item.transform.localPosition = m_StartPosition;
 		StartCoroutine(Transition(data, false));
 
 		GameObject icon;

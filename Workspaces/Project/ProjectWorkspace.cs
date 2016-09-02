@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
@@ -49,14 +50,8 @@ public class ProjectWorkspace : Workspace
 		m_ProjectUI.assetListView.testFilter = TestFilter;
 
 #if UNITY_EDITOR
-		var assetTypes = new HashSet<string>();
-		var folderData = new []{ new FolderData(Application.dataPath, assetTypes) { expanded = true } };
-		m_ProjectUI.folderListView.listData = folderData;
-		
-		if (folderData.Length > 0)
-			SelectFolder(folderData[0]);
-
-		m_FilterUI.filterTypes = assetTypes.ToList();
+		EditorApplication.projectWindowChanged += SetupFolderList;
+		SetupFolderList();
 #else
 		Debug.LogWarning("Project workspace does not work in builds");
 		return;
@@ -202,4 +197,23 @@ public class ProjectWorkspace : Workspace
 	{
 		return FilterUI.TestFilter(m_FilterUI.searchQuery, type);
 	}
+
+#if UNITY_EDITOR
+	private void SetupFolderList()
+	{
+		var assetTypes = new HashSet<string>();
+		var folderData = new[] { new FolderData(Application.dataPath, assetTypes) { expanded = true } };
+		m_ProjectUI.folderListView.listData = folderData;
+
+		if (folderData.Length > 0)
+			SelectFolder(folderData[0]);
+
+		m_FilterUI.filterTypes = assetTypes.ToList();
+	}
+
+	private void OnDestroy()
+	{
+		EditorApplication.projectWindowChanged -= SetupFolderList;
+	}
+#endif
 }
