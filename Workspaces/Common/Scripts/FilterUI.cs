@@ -1,29 +1,9 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Utilities;
 
 public class FilterUI : MonoBehaviour {
-	private static readonly string[] kFilterTypes = {
-		"AnimationClip",
-		"AudioClip",
-		"AudioMixer",
-		"Font",
-		"GUISkin",
-		"Material",
-		"Mesh",
-		"Model",
-		"PhysicMaterial",
-		"Prefab",
-		"Scene",
-		"Script",
-		"Shader",
-		"Sprite",
-		"Texture"
-	};
-
-	[SerializeField]
-	private RectTransform m_ListPanel;
-
 	public Text summaryText { get { return m_SummaryText; } }
 	[SerializeField]
 	private Text m_SummaryText;
@@ -52,37 +32,45 @@ public class FilterUI : MonoBehaviour {
 
 	private FilterButtonUI[] m_VisibilityButtons;
 
-	public string searchQuery { get { return m_SearchQuery; } }
-	private string m_SearchQuery = string.Empty;
-
-	private void Start()
+	public List<string> filterTypes
 	{
-		//Make the list panel a child of the main panel so it stays aligned right
-		m_ListPanel.SetParent(transform.parent, false);
-
-		m_VisibilityButtons = new FilterButtonUI[kFilterTypes.Length + 1];
-		for (int i = 0; i < kFilterTypes.Length + 1; i++)
+		set
 		{
-			var button = U.Object.Instantiate(m_ButtonPrefab, m_ButtonList, false).GetComponent<FilterButtonUI>();
-			m_VisibilityButtons[i] = button;
-			button.button.onClick.AddListener(() =>
+			if (m_VisibilityButtons != null)
+				foreach (var button in m_VisibilityButtons)
+					U.Object.Destroy(button.gameObject);
+			m_FilterTypes = value;
+			m_FilterTypes.Sort();
+			m_FilterTypes.Insert(0, "All");
+			m_VisibilityButtons = new FilterButtonUI[m_FilterTypes.Count];
+			for (int i = 0; i < m_VisibilityButtons.Length; i++)
 			{
-				OnFilterClick(button);
-			});
-			button.text.text = i == 0 ? "All" : kFilterTypes[i - 1];
+				var button = U.Object.Instantiate(m_ButtonPrefab, m_ButtonList, false).GetComponent<FilterButtonUI>();
+				m_VisibilityButtons[i] = button;
+				button.button.onClick.AddListener(() =>
+				{
+					OnFilterClick(button);
+				});
+				button.text.text = m_FilterTypes[i];
+			}
 		}
 	}
 
+	private List<string> m_FilterTypes;
+
+	public string searchQuery { get { return m_SearchQuery; } }
+	private string m_SearchQuery = string.Empty;
+
 	public void ShowList()
 	{
-		m_ListPanel.gameObject.SetActive(true);
+		m_ButtonList.gameObject.SetActive(true);
 		m_VisibilityButton.SetActive(false);
 		m_SummaryButton.SetActive(false);
 	}
 
 	public void HideList()
 	{
-		m_ListPanel.gameObject.SetActive(false);
+		m_ButtonList.gameObject.SetActive(false);
 		m_VisibilityButton.SetActive(true);
 		m_SummaryButton.SetActive(true);
 	}
@@ -91,7 +79,7 @@ public class FilterUI : MonoBehaviour {
 	{
 		for (int i = 0; i < m_VisibilityButtons.Length; i++)
 			if (clickedButton == m_VisibilityButtons[i])
-				m_SearchQuery = i == 0 ? string.Empty : "t:" + kFilterTypes[i - 1];
+				m_SearchQuery = i == 0 ? string.Empty : "t:" + m_FilterTypes[i];
 
 		foreach (FilterButtonUI button in m_VisibilityButtons)
 		{

@@ -40,7 +40,7 @@ public class AssetData : ListViewItemData
 		m_GetMainAssetInstanceID = typeof(AssetDatabase).GetMethod("GetMainAssetInstanceID", BindingFlags.NonPublic | BindingFlags.Static);
 	}
 
-	private AssetData(HierarchyProperty hp)
+	private AssetData(HierarchyProperty hp, HashSet<string> assetTypes)
 	{
 		template = kTemplateName;
 		m_InstanceID = hp.instanceID;
@@ -73,9 +73,10 @@ public class AssetData : ListViewItemData
 				m_Type = type;
 				break;
 		}
+		assetTypes.Add(m_Type);
 	}
 
-	public static AssetData[] GetAssetDataForPath(string path)
+	public static AssetData[] GetAssetDataForPath(string path, HashSet<string> assetTypes)
 	{
 		var hp = new HierarchyProperty(HierarchyType.Assets);
 		var folderInstanceID = (int)m_GetMainAssetInstanceID.Invoke(null, new object[] { GetPathRelativeToAssets(path) });
@@ -85,7 +86,7 @@ public class AssetData : ListViewItemData
 			int folderDepth = hp.depth + 1;
 			while (hp.NextWithDepthCheck(null, folderDepth))
 				if(!hp.isFolder && hp.depth == folderDepth) // Do not show folders or child components
-					assets.Add(new AssetData(hp));
+					assets.Add(new AssetData(hp, assetTypes));
 		}
 		return assets.ToArray();
 	}

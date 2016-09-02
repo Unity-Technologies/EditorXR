@@ -269,7 +269,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
+  m_TargetGraphic: {fileID: 114000012094917522}
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
@@ -368,7 +368,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0.05, y: 0.03}
+  m_SizeDelta: {x: 0.0524, y: 0.03}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!224 &224000011224263792
 RectTransform:
@@ -403,10 +403,10 @@ RectTransform:
   - {fileID: 224000013482272966}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0.23, y: 0.03}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224000013482272966
 RectTransform:
@@ -422,8 +422,8 @@ RectTransform:
   - {fileID: 224000010255316478}
   m_Father: {fileID: 224000013187928610}
   m_RootOrder: 1
-  m_AnchorMin: {x: 1, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -0.000000029802322}
-  m_SizeDelta: {x: 0.1302, y: 0.03}
+  m_SizeDelta: {x: -0.0671, y: 0.03}
   m_Pivot: {x: 1, y: 0.5}
