@@ -1,13 +1,10 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using ListView;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
-using Object = UnityEngine.Object;
 
 public class AssetGridItem : ListViewItem<AssetData>
 {
@@ -93,15 +90,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 	{
 		transform.localScale = Vector3.one * scale;
 
-		var cameraTransform = U.Camera.GetMainCamera().transform;
-
-		//Rotate text toward camera
-		var eyeVector3 = Quaternion.Inverse(transform.parent.rotation) * cameraTransform.forward;
-		eyeVector3.x = 0;
-		if (Vector3.Dot(eyeVector3, Vector3.forward) > 0)
-			m_TextPanel.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.up);
-		else
-			m_TextPanel.transform.localRotation = Quaternion.LookRotation(eyeVector3, Vector3.down);
+		m_TextPanel.transform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
 
 		//Handle preview fade
 		if (m_PreviewObject)
@@ -133,7 +122,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 	private void InstantiatePreview()
 	{
-		if(m_PreviewObject)
+		if (m_PreviewObject)
 			U.Object.Destroy(m_PreviewObject.gameObject);
 		if (!data.preview)
 			return;
@@ -225,6 +214,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 	{
 		Instantiate(data.GetAsset(), position, rotation);
 	}
+
 	private IEnumerator PlaceObjectWithBounds(Transform obj)
 	{
 		float start = Time.realtimeSinceStartup;
@@ -242,7 +232,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 		var perspective = camera.fieldOfView * 0.5f + kInstantiateFOVDifference;
 		var distance = m_PreviewTotalBounds.Value.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
 		var destinationPosition = obj.position;
-		if(distance > forward.magnitude)
+		if (distance > forward.magnitude)
 			destinationPosition = camPosition + forward.normalized * distance;
 
 		while (currTime < kGrowDuration)
@@ -262,7 +252,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 	{
 		if (gameObject.activeInHierarchy)
 		{
-			if(m_TransitionCoroutine != null)
+			if (m_TransitionCoroutine != null)
 				StopCoroutine(m_TransitionCoroutine);
 			m_TransitionCoroutine = StartCoroutine(AnimatePreview(false));
 		}
@@ -321,7 +311,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 	public void SetIcon(GameObject iconModel)
 	{
-		if(m_Icon)
+		if (m_Icon)
 			U.Object.Destroy(m_Icon.gameObject);
 		if (iconModel)
 		{
@@ -348,7 +338,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 				icon.gameObject.SetActive(false);
 				var texture = data.GetAsset() as Texture;
 				if (texture)
-					m_Sphere.sharedMaterial = new Material(Shader.Find("Standard")) { mainTexture = texture };
+					m_Sphere.sharedMaterial = new Material(Shader.Find("Standard")) {mainTexture = texture};
 				break;
 			default:
 				m_Sphere.gameObject.SetActive(false);

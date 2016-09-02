@@ -8,9 +8,10 @@ public class FilterButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 	private const float kNormalAlpha = 0.95f;
 
 	public Button button { get { return m_Button; } }
+
 	[SerializeField]
 	private Button m_Button;
-	
+
 	[SerializeField]
 	private Image m_EyePanel;
 
@@ -21,6 +22,7 @@ public class FilterButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 	private Image m_TextPanel;
 
 	public Text text { get { return m_Text; } }
+
 	[SerializeField]
 	private Text m_Text;
 

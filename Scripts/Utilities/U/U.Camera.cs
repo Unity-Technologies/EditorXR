@@ -61,6 +61,13 @@
 #endif
 				return pivot;
 			}
+
+			public static Quaternion LocalRotateTowardCamera(Quaternion parentRotation)
+			{
+				Vector3 camVector = Quaternion.Inverse(parentRotation) * GetMainCamera().transform.forward;
+				camVector.x = 0;
+				return Quaternion.LookRotation(camVector, Vector3.Dot(camVector, Vector3.forward) > 0 ? Vector3.up : Vector3.down);
+			}
 		}
 	}
 }

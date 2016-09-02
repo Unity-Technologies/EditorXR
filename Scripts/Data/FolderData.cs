@@ -43,7 +43,7 @@ public class FolderData : ListViewItemNestedData<FolderData>
 	public void ClearSelected()
 	{
 		selected = false;
-		if(children != null)
+		if (children != null)
 			foreach (var child in children)
 				child.ClearSelected();
 	}

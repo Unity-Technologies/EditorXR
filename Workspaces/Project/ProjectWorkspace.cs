@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Workspaces;
 
 public class ProjectWorkspace : Workspace
 {

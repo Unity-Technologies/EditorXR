@@ -30,7 +30,7 @@ public class AssetData : ListViewItemData
 		}
 	}
 
-	
+
 	private GameObject m_PreviewObject;
 	private bool m_FetchedPreview;
 
@@ -79,13 +79,13 @@ public class AssetData : ListViewItemData
 	public static AssetData[] GetAssetDataForPath(string path, HashSet<string> assetTypes)
 	{
 		var hp = new HierarchyProperty(HierarchyType.Assets);
-		var folderInstanceID = (int)m_GetMainAssetInstanceID.Invoke(null, new object[] { GetPathRelativeToAssets(path) });
+		var folderInstanceID = (int) m_GetMainAssetInstanceID.Invoke(null, new object[] {GetPathRelativeToAssets(path)});
 		var assets = new List<AssetData>();
 		if (hp.Find(folderInstanceID, null))
 		{
 			int folderDepth = hp.depth + 1;
 			while (hp.NextWithDepthCheck(null, folderDepth))
-				if(!hp.isFolder && hp.depth == folderDepth) // Do not show folders or child components
+				if (!hp.isFolder && hp.depth == folderDepth) // Do not show folders or child components
 					assets.Add(new AssetData(hp, assetTypes));
 		}
 		return assets.ToArray();

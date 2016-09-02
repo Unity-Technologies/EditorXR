@@ -12,7 +12,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	private Transform m_GrabbedObject;
 
-	public FolderData[] listData { get { return m_Data; } set { m_Data = value; }}
+	public FolderData[] listData { get { return m_Data; } set { m_Data = value; } }
 
 	public Action<FolderData> selectFolder;
 

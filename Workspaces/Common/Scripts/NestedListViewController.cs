@@ -1,57 +1,58 @@
-﻿using ListView;
-
-public class NestedListViewController<DataType> : ListViewController<DataType, ListViewItem<DataType>> where DataType : ListViewItemNestedData<DataType>
+﻿namespace ListView
 {
-	protected override int dataLength { get { return m_VisibleDataLength; } }
-
-	protected int m_VisibleDataLength;
-
-	protected override void UpdateItems()
+	public class NestedListViewController<DataType> : ListViewController<DataType, ListViewItem<DataType>> where DataType : ListViewItemNestedData<DataType>
 	{
-		int count = 0;
-		UpdateRecursively(m_Data, ref count);
-		m_VisibleDataLength = count;
-	}
+		protected override int dataLength { get { return m_ExpandedDataLength; } }
 
-	protected virtual void UpdateRecursively(DataType[] data, ref int count)
-	{
-		foreach (var item in data)
+		protected int m_ExpandedDataLength;
+
+		protected override void UpdateItems()
 		{
-			if (count + m_DataOffset < -1)
+			int count = 0;
+			UpdateRecursively(m_Data, ref count);
+			m_ExpandedDataLength = count;
+		}
+
+		protected virtual void UpdateRecursively(DataType[] data, ref int count)
+		{
+			foreach (var item in data)
 			{
-				CleanUpBeginning(item);
-			}
-			else if (count + m_DataOffset > m_NumRows - 1)
-			{
-				CleanUpEnd(item);
-			}
-			else
-			{
-				UpdateVisibleItem(item, count);
-			}
-			count++;
-			if (item.children != null)
-			{
-				if (item.expanded)
+				if (count + m_DataOffset < -1)
 				{
-					UpdateRecursively(item.children, ref count);
+					CleanUpBeginning(item);
+				}
+				else if (count + m_DataOffset > m_NumRows - 1)
+				{
+					CleanUpEnd(item);
 				}
 				else
 				{
-					RecycleChildren(item);
+					UpdateVisibleItem(item, count);
+				}
+				count++;
+				if (item.children != null)
+				{
+					if (item.expanded)
+					{
+						UpdateRecursively(item.children, ref count);
+					}
+					else
+					{
+						RecycleChildren(item);
+					}
 				}
 			}
 		}
-	}
 
-	protected void RecycleChildren(DataType data)
-	{
-		foreach (var child in data.children)
+		protected void RecycleChildren(DataType data)
 		{
-			RecycleItem(child.template, child.item);
-			child.item = null;
-			if (child.children != null)
-				RecycleChildren(child);
+			foreach (var child in data.children)
+			{
+				RecycleItem(child.template, child.item);
+				child.item = null;
+				if (child.children != null)
+					RecycleChildren(child);
+			}
 		}
 	}
 }

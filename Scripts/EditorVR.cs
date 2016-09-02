@@ -13,6 +13,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Workspaces;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;

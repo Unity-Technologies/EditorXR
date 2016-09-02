@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Workspaces;
 
 public class ChessboardWorkspace : Workspace
 {
@@ -68,8 +69,6 @@ public class ChessboardWorkspace : Workspace
 		m_ZoomSliderUI.zoomSlider.maxValue = kMaxScale;
 		m_ZoomSliderUI.zoomSlider.minValue = kMinScale;
 		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
-
-		 U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false);
 
 		// Propagate initial bounds
 		OnBoundsChanged();

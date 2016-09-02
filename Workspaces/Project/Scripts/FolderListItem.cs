@@ -1,21 +1,17 @@
 ﻿using System;
-using System.Collections;
 using System.IO;
 using ListView;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
-using Object = UnityEngine.Object;
 
 public class FolderListItem : ListViewItem<FolderData>
 {
 	private const float kMargin = 0.01f;
 	private const float kIndent = 0.02f;
 
-	private const float kMagnetizeDuration = 0.75f;
 	private const float kExpandArrowRotateSpeed = 0.4f;
-	private readonly Vector3 kGrabOffset = new Vector3(0, 0.02f, 0.03f);
 
 	[SerializeField]
 	private Text m_Text;
@@ -87,26 +83,21 @@ public class FolderListItem : ListViewItem<FolderData>
 		var doubleMargin = kMargin * 2;
 		m_ExpandArrow.transform.localPosition = new Vector3(kMargin + indent - halfWidth, m_ExpandArrow.transform.localPosition.y, 0);
 
+		// Text is next to arrow, with a margin and indent, rotated toward camera
 		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / m_Text.transform.localScale.x);
-		// Text is next to arrow, with a margin and indent
 		m_Text.transform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, m_Text.transform.localPosition.y, 0);
 
-		var cameraTransform = U.Camera.GetMainCamera().transform;
-
-		Vector3 eyeVector3 = Quaternion.Inverse(transform.parent.rotation) * cameraTransform.forward;
-		eyeVector3.x = 0;
-		m_Text.transform.localRotation = Quaternion.LookRotation(eyeVector3, 
-										Vector3.Dot(eyeVector3, Vector3.forward) > 0 ? Vector3.up : Vector3.down);
+		m_Text.transform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
 
 		// Rotate arrow for expand state
 		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-											Quaternion.AngleAxis(90f, Vector3.right) * (data.expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
-											kExpandArrowRotateSpeed);
+												Quaternion.AngleAxis(90f, Vector3.right) * (data.expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
+												kExpandArrowRotateSpeed);
 
 		// Set selected/hover/normal color
 		if (data.selected)
 			m_CubeRenderer.sharedMaterial.color = m_SelectedColor;
-		else if(m_Hovering)
+		else if (m_Hovering)
 			m_CubeRenderer.sharedMaterial.color = m_HoverColor;
 		else
 			m_CubeRenderer.sharedMaterial.color = m_NormalColor;
@@ -114,8 +105,8 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	public void GetMaterials(out Material textMaterial, out Material expandArrowMaterial)
 	{
-		textMaterial = Object.Instantiate(m_Text.material);
-		expandArrowMaterial = Object.Instantiate(m_ExpandArrow.GetComponent<Renderer>().sharedMaterial);
+		textMaterial = Instantiate(m_Text.material);
+		expandArrowMaterial = Instantiate(m_ExpandArrow.GetComponent<Renderer>().sharedMaterial);
 	}
 
 	public void Clip(Bounds bounds, Matrix4x4 parentMatrix)

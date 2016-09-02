@@ -18,11 +18,6 @@ namespace UnityEngine.VR.Handles
 			Direct = 1 << 1
 		}
 
-		public HandleFlags handleFlags { get { return m_HandleFlags; } set { m_HandleFlags = value; } }
-		[SerializeField]
-		[FlagsProperty]
-		private HandleFlags m_HandleFlags;
-
 		public event Action<BaseHandle, HandleEventData> handleDragging = delegate { };
 		public event Action<BaseHandle, HandleEventData> handleDrag = delegate { };
 		public event Action<BaseHandle, HandleEventData> handleDragged = delegate { };
@@ -32,6 +27,11 @@ namespace UnityEngine.VR.Handles
 		public event Action<BaseHandle, HandleEventData> hovering = delegate { };
 		public event Action<BaseHandle, HandleEventData> hover = delegate { };
 		public event Action<BaseHandle, HandleEventData> hovered = delegate { };
+
+		public HandleFlags handleFlags { get { return m_HandleFlags; } set { m_HandleFlags = value; } }
+		[SerializeField]
+		[FlagsProperty]
+		private HandleFlags m_HandleFlags = HandleFlags.Ray | HandleFlags.Direct;
 
 		private const int kDefaultCapacity = 2; // i.e. 2 controllers
 
@@ -46,7 +46,7 @@ namespace UnityEngine.VR.Handles
 			if (m_HoverSources.Count > 0 || m_DragSources.Count > 0)
 			{
 				var eventData = GetHandleEventData(new RayEventData(EventSystem.current));
-				for(int i = 0; i < m_HoverSources.Count; i++)
+				for (int i = 0; i < m_HoverSources.Count; i++)
 					OnHandleRayExit(eventData);
 				m_HoverSources.Clear();
 
@@ -87,7 +87,7 @@ namespace UnityEngine.VR.Handles
 			startDragPosition = eventData.pointerCurrentRaycast.worldPosition;
 
 			//Double-click logic
-			var timeSinceLastClick = (float)(DateTime.Now - m_LastClickTime).TotalSeconds;
+			var timeSinceLastClick = (float) (DateTime.Now - m_LastClickTime).TotalSeconds;
 			m_LastClickTime = DateTime.Now;
 			if (U.Input.DoubleClick(timeSinceLastClick))
 			{
