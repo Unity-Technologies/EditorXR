@@ -58,6 +58,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	private Vector3 m_BoundSizeStart;
 	private bool m_Dragging;
 	private bool m_DragLocked;
+	private bool m_Vacuuming;
 
 	/// <summary>
 	/// Bounding box for entire workspace, including UI handles
@@ -184,7 +185,8 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	private void OnDoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		StartCoroutine(VacuumToViewer());
+		if(!m_Vacuuming)
+			StartCoroutine(VacuumToViewer());
 	}
 
 	private void Translate(Vector3 deltaPosition)
@@ -205,6 +207,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	private IEnumerator VacuumToViewer()
 	{
+		m_Vacuuming = true;
 		float startTime = Time.realtimeSinceStartup;
 		Vector3 startPosition = transform.position;
 		Quaternion startRotation = transform.rotation;
@@ -227,6 +230,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 		transform.position = destPosition;
 		transform.rotation = destRotation;
+		m_Vacuuming = false;
 	}
 
 	public virtual void OnCloseClicked()

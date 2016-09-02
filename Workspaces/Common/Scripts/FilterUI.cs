@@ -3,7 +3,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Utilities;
 
-public class FilterUI : MonoBehaviour {
+public class FilterUI : MonoBehaviour
+{
+	private const string allText = "All";
+
 	public Text summaryText { get { return m_SummaryText; } }
 	[SerializeField]
 	private Text m_SummaryText;
@@ -41,7 +44,7 @@ public class FilterUI : MonoBehaviour {
 					U.Object.Destroy(button.gameObject);
 			m_FilterTypes = value;
 			m_FilterTypes.Sort();
-			m_FilterTypes.Insert(0, "All");
+			m_FilterTypes.Insert(0, allText);
 			m_VisibilityButtons = new FilterButtonUI[m_FilterTypes.Count];
 			for (int i = 0; i < m_VisibilityButtons.Length; i++)
 			{
@@ -89,8 +92,16 @@ public class FilterUI : MonoBehaviour {
 				button.color = m_SearchQuery.Contains("t:") ? m_DisableColor : m_ActiveColor;
 		}
 
-		m_SummaryText.text = clickedButton.text.text + "s";
-		m_DescriptionText.text = "Only " + m_SummaryText.text + " are visible";
+		if (clickedButton.text.text.Equals(allText))
+		{
+			m_SummaryText.text = clickedButton.text.text;
+			m_DescriptionText.text = "All objects are visible";
+		}
+		else
+		{
+			m_SummaryText.text = clickedButton.text.text + "s";
+			m_DescriptionText.text = "Only " + m_SummaryText.text + " are visible";
+		}
 	}
 
 	public static bool TestFilter(string query, string type)
