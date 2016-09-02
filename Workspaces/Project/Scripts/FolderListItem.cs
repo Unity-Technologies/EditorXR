@@ -44,9 +44,6 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	private Renderer m_CubeRenderer;
 
-	private Transform m_GrabbedObject;
-	private float m_GrabLerp;
-
 	public Action<FolderData> selectFolder;
 
 	public override void Setup(FolderData listData)
@@ -61,9 +58,7 @@ public class FolderListItem : ListViewItem<FolderData>
 			U.Material.GetMaterialClone(m_CubeRenderer);
 
 			m_ExpandArrow.handleDragged += ToggleExpanded;
-			m_Cube.handleDragging += GrabBegin;
-			m_Cube.handleDrag += GrabDrag;
-			m_Cube.handleDragged += GrabEnd;
+			m_Cube.handleDragging += SelectFolder;
 
 			m_Cube.hovering += HoverBegin;
 			m_Cube.hovered += HoverEnd;
@@ -134,54 +129,10 @@ public class FolderListItem : ListViewItem<FolderData>
 		data.expanded = !data.expanded;
 	}
 
-	private void GrabBegin(BaseHandle baseHandle, HandleEventData eventData)
+	private void SelectFolder(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		if (eventData.direct)
-		{
-			var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
-			var cloneItem = clone.GetComponent<FolderListItem>();
-			cloneItem.m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipCubeMaterial;
-			cloneItem.m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = m_NoClipExpandArrowMaterial;
-			cloneItem.m_Text.material = null;
-
-			m_GrabbedObject = clone.transform;
-			m_GrabLerp = 0;
-			StartCoroutine(Magnetize());
-		}
-		else
-		{
-			var folderItem = baseHandle.GetComponentInParent<FolderListItem>();
-			selectFolder(folderItem.data);
-		}
-	}
-
-	private IEnumerator Magnetize()
-	{
-		var startTime = Time.realtimeSinceStartup;
-		var currTime = 0f;
-		while (currTime < kMagnetizeDuration)
-		{
-			currTime = Time.realtimeSinceStartup - startTime;
-			m_GrabLerp = currTime / kMagnetizeDuration;
-			yield return null;
-		}
-		m_GrabLerp = 1;
-	}
-
-	private void GrabDrag(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		if (m_GrabbedObject)
-		{
-			var rayTransform = eventData.rayOrigin.transform;
-			m_GrabbedObject.transform.position = Vector3.Lerp(m_GrabbedObject.transform.position, rayTransform.position + rayTransform.rotation * kGrabOffset, m_GrabLerp);
-			m_GrabbedObject.transform.rotation = Quaternion.Lerp(m_GrabbedObject.transform.rotation, rayTransform.rotation, m_GrabLerp);
-		}
-	}
-
-	private void GrabEnd(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		if(m_GrabbedObject)
-			U.Object.Destroy(m_GrabbedObject.gameObject);
+		var folderItem = baseHandle.GetComponentInParent<FolderListItem>();
+		selectFolder(folderItem.data);
 	}
 
 	private void HoverBegin(BaseHandle baseHandle, HandleEventData eventData)

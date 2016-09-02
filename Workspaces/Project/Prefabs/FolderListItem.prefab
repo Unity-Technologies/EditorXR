@@ -216,7 +216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_HandleFlags: -2
 --- !u!114 &114000011808048258
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -284,7 +284,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_HandleFlags: -2
 --- !u!222 &222000012560431470
 CanvasRenderer:
   m_ObjectHideFlags: 1
