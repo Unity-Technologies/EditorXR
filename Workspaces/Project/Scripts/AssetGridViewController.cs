@@ -73,11 +73,11 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		if (m_ScrollOffset < 0)
 			m_DataOffset --;
 
-		m_ScrollReturn = float.MaxValue;
 
 		// Snap back if list scrolled too far
+		m_ScrollReturn = float.MaxValue;
 		if (-m_DataOffset >= dataLength)
-			m_ScrollReturn = (1 - dataLength) * itemSize.z;
+			m_ScrollReturn = (1 - dataLength) * itemSize.z + m_ScaleFactor;
 	}
 
 	protected override Vector3 GetObjectSize(GameObject g)
