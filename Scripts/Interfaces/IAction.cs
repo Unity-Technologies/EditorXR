@@ -1,6 +1,4 @@
-﻿using UnityEngine.UI;
-
-namespace UnityEngine.VR.Tools
+﻿namespace UnityEngine.VR.Actions
 {
 	public interface IAction
 	{
