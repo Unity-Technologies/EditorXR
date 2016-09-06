@@ -6,13 +6,14 @@ using UnityEngine.Assertions;
 using UnityEngine.Events;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
+using UnityEngine.VR.Actions;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay
-{
+	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins, IUsesActions
+	{
 		public ActionMap actionMap
 	{
 			get
@@ -82,26 +83,29 @@ namespace UnityEngine.VR.Menus
 		public Node? node { private get; set; }
 		public Action setup { get { return Setup; } }
 
+		public List<IAction> actions { private get; set; }
+		public Func<IAction, bool> performAction { get; set; }
+
 		public bool visible
 		{
 			get { return m_MainMenuUI.visible; }
 			set
 			{
 				if (m_MainMenuUI.visible != value)
-		{
+				{
 					m_MainMenuUI.visible = value;
 					if (value)
-			{
+					{
 						hideDefaultRay();
 						lockRay(this);
-			}
-			else
-			{
+					}
+					else
+					{
 						unlockRay(this);
 						showDefaultRay();
+					}
 				}
 			}
-		}
 		}
 
 		public void Setup()
@@ -177,7 +181,7 @@ namespace UnityEngine.VR.Menus
 		}
 
 		private void CreateToolButtons(List<Type> toolTypes)
-			{
+		{
 			foreach (var type in toolTypes)
 			{
 				var buttonData = new MainMenuUI.ButtonData();
@@ -185,18 +189,18 @@ namespace UnityEngine.VR.Menus
 
 				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
 				if (customMenuAttribute != null)
-		{
+				{
 					buttonData.name = customMenuAttribute.name;
 					buttonData.sectionName = customMenuAttribute.sectionName;
 					buttonData.description = customMenuAttribute.description;
-			}
+				}
 
 				var toolType = type; // Local variable for proper closure
 				m_MainMenuUI.CreateToolButton(buttonData, (b) =>
-		{
+				{
 					b.button.onClick.RemoveAllListeners();
 					b.button.onClick.AddListener(() =>
-			{
+				{
 						if (visible && b.node.HasValue)
 							selectTool(b.node.Value, toolType);
 					});
