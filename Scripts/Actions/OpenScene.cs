@@ -2,7 +2,7 @@
 
 namespace UnityEngine.VR.Actions
 {
-	[VRMenuItem("OpenScene", "Actions", "Open a saved scene")]
+	[ActionItemAttribute("OpenScene", "ActionIcons/OpenSceneIcon", "Scene")]
 	public class OpenScene : MonoBehaviour, IAction
 	{
 		[SerializeField]

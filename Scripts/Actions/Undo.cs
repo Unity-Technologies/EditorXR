@@ -2,7 +2,7 @@
 
 namespace UnityEngine.VR.Actions
 {
-	[VRMenuItem("Undo", "Actions", "Undo your previous action")]
+	[ActionItemAttribute("Undo", "ActionIcons/UndoIcon")]
 	public class Undo : MonoBehaviour, IAction
 	{
 		[SerializeField]

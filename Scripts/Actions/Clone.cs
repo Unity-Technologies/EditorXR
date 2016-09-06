@@ -3,7 +3,7 @@ using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Actions
 {
-	[VRMenuItem("Clone", "Actions", "Clone selected Object")]
+	[ActionItemAttribute("Clone", "ActionIcons/CloneIcon")]
 	public class Clone : MonoBehaviour, IAction
 	{
 		[SerializeField]

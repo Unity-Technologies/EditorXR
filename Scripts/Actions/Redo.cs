@@ -1,8 +1,6 @@
-﻿using UnityEngine.VR.Tools;
-
-namespace UnityEngine.VR.Actions
+﻿namespace UnityEngine.VR.Actions
 {
-	[VRMenuItem("Redo", "Actions", "Redo a previously undone action")]
+	[ActionItemAttribute("Redo", "ActionIcons/RedoIcon")]
 	public class Redo : MonoBehaviour, IAction
 	{
 		[SerializeField]

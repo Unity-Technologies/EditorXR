@@ -3,7 +3,7 @@ using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Actions
 {
-	[VRMenuItem("Delete", "Actions", "Delete selected object")]
+	[ActionItemAttribute("Delete", "ActionIcons/DeleteIcon")]
 	public class Delete : MonoBehaviour, IAction
 	{
 		[SerializeField]

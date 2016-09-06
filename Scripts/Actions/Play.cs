@@ -1,8 +1,6 @@
-﻿using UnityEngine.VR.Tools;
-
-namespace UnityEngine.VR.Actions
+﻿namespace UnityEngine.VR.Actions
 {
-	[VRMenuItem("Play", "Actions", "Enable Play-Mode")]
+	[ActionItemAttribute("Play", "ActionIcons/PlayIcon")]
 	public class Play : MonoBehaviour, IAction
 	{
 		[SerializeField]
