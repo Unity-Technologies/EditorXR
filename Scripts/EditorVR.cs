@@ -8,6 +8,7 @@ using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
+using UnityEngine.VR.Actions;
 using UnityEngine.VR.Menus;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
@@ -67,7 +68,7 @@ public class EditorVR : MonoBehaviour
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
 	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
 	private IEnumerable<Type> m_AllTools;
-    private List<IAction> m_AllActions;
+	private List<IAction> m_AllActions;
 	private IEnumerable<Type> m_AllWorkspaceTypes;
 	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
 
@@ -97,11 +98,26 @@ public class EditorVR : MonoBehaviour
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace));
-        
-        IEnumerable<Type> actionTypes = U.Object.GetImplementationsOfInterface(typeof(IAction));
-        m_AllActions = new List<IAction>();
-        foreach (Type actionType in actionTypes)
-            m_AllActions.Add(U.Object.AddComponent(actionType, gameObject) as IAction);
+
+		IEnumerable<Type> actionTypes = U.Object.GetImplementationsOfInterface(typeof(IAction));
+		m_AllActions = new List<IAction>();
+		foreach (Type actionType in actionTypes)
+		{
+			var action = U.Object.AddComponent(actionType, gameObject) as IAction;
+
+			var customActionAttribute = (ActionItemAttribute)actionType.GetCustomAttributes(typeof(ActionItemAttribute), false).FirstOrDefault();
+			if (customActionAttribute != null && !String.IsNullOrEmpty(customActionAttribute.iconResourcePath))
+				action.icon = Resources.Load<Sprite>(customActionAttribute.iconResourcePath);
+			else
+				action.icon = Resources.Load<Sprite>(ActionItemAttribute.missingIconResourcePath);
+
+			if (action.icon != null)
+				Debug.LogWarning("Action Icon name: " + action.icon.name);
+			else
+				Debug.LogError("action icon was null for : " + action.ToString());
+
+			m_AllActions.Add(action);
+		}
 
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
@@ -276,7 +292,7 @@ public class EditorVR : MonoBehaviour
 				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 			}
-                
+				
 			tool = SpawnTool(typeof(TransformTool), out devices);
 			AddToolToDeviceData(tool, devices);
 		};
@@ -537,7 +553,7 @@ public class EditorVR : MonoBehaviour
 
 	private void ConnectInterfaces(object obj, InputDevice device = null)
 	{
-		var mainMenu = obj as IMainMenu;
+		var menuOrigins = obj as IMenuOrigins;
 
 		if (device != null)
 		{
@@ -578,25 +594,25 @@ public class EditorVR : MonoBehaviour
 							}
 
 							continueSearching = false;
-					}
+						}
 
-            if (mainMenu != null)
-            {
-                        Transform mainMenuOrigin;
+						if (menuOrigins != null)
+						{
+							Transform mainMenuOrigin;
 							if (proxy.menuOrigins.TryGetValue(node.Value, out mainMenuOrigin))
-                        {
-                            mainMenu.menuOrigin = mainMenuOrigin;
+							{
+								menuOrigins.menuOrigin = mainMenuOrigin;
 								Transform alternateMenuOrigin;
 								if (proxy.alternateMenuOrigins.TryGetValue(node.Value, out alternateMenuOrigin))
-									mainMenu.alternateMenuOrigin = alternateMenuOrigin;
+									menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
 							}
 						}
 
 						if (!continueSearching)
-                            break;
-                        }
-                    }
-                }
+							break;
+					}
+				}
+			}
 		}
 
 		var locomotion = obj as ILocomotion;
@@ -615,18 +631,22 @@ public class EditorVR : MonoBehaviour
 		if (highlight != null)
 			highlight.setHighlight = m_HighlightModule.SetHighlight;
 
-        var actionsComponent = obj as IUsesActions;
-        if (actionsComponent != null)
-            actionsComponent.actions = m_AllActions;
-
-		if (mainMenu != null)
+		var actionsComponent = obj as IUsesActions;
+		if (actionsComponent != null)
 		{
-			mainMenu.menuTools = m_AllTools.ToList();
-			mainMenu.selectTool = SelectTool;
-			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
-			mainMenu.createWorkspace = CreateWorkspace;
-			mainMenu.node = GetDeviceNode(device);
-			mainMenu.setup();
+			actionsComponent.actions = m_AllActions;
+			actionsComponent.performAction = PerformAction;
+		}
+
+		var mainMenuComponent = obj as IMainMenu;
+		if (mainMenuComponent != null)
+		{
+			mainMenuComponent.menuTools = m_AllTools.ToList();
+			mainMenuComponent.selectTool = SelectTool;
+			mainMenuComponent.menuWorkspaces = m_AllWorkspaceTypes.ToList();
+			mainMenuComponent.createWorkspace = CreateWorkspace;
+			mainMenuComponent.node = GetDeviceNode(device);
+			mainMenuComponent.setup();
 		}
 	}
 
@@ -655,28 +675,32 @@ public class EditorVR : MonoBehaviour
 		return null;
 	}
 
-    private bool PerformAction (IAction action)
-    {
-        if (action != null)
-            return action.Execute();
-        else
-            return false;
-    }
+	private bool PerformAction (IAction action)
+	{
+		Debug.LogWarning("Performing Actions in EditorVR");
+		if (action != null)
+		{
+			Debug.LogError("<color=green>Performing Action : </color>" + action.ToString());
+			return action.Execute();
+		}
+		else
+			return false;
+	}
 
 	private bool SelectTool(Node targetNode, Type tool)
 	{
-        InputDevice deviceToAssignTool = null;
+		InputDevice deviceToAssignTool = null;
 		foreach (var kvp in m_DeviceData)
 		{
 			Node? node = GetDeviceNode(kvp.Key);
 			if (node.HasValue && node.Value == targetNode)
 			{
-                deviceToAssignTool = kvp.Key;
+				deviceToAssignTool = kvp.Key;
 				break;
 		}
 		}
 
-        if (deviceToAssignTool == null)
+		if (deviceToAssignTool == null)
 			return false;
 
 		// HACK to workaround missing serialized fields coming from the MonoScript
@@ -684,7 +708,7 @@ public class EditorVR : MonoBehaviour
 		{
 			// Spawn tool and collect all devices that this tool will need
 			HashSet<InputDevice> usedDevices;
-            var newTool = SpawnTool(tool, out usedDevices, deviceToAssignTool);
+			var newTool = SpawnTool(tool, out usedDevices, deviceToAssignTool);
 
 			foreach (var dev in usedDevices)
 			{
