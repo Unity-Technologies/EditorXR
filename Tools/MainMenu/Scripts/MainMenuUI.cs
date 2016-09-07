@@ -46,6 +46,9 @@ namespace UnityEngine.VR.Menus
 		[SerializeField] private SkinnedMeshRenderer m_MenuFrameRenderer;
 		[SerializeField] private Transform m_AlternateMenu;
 
+		[SerializeField]
+		private Transform m_ShowHideUI;
+
 		public int targetFaceIndex
 		{
 			get { return m_TargetFaceIndex; }
@@ -97,6 +100,7 @@ namespace UnityEngine.VR.Menus
 				transform.localPosition = Vector3.zero;
 				transform.localRotation = Quaternion.identity;
 				transform.localScale = Vector3.one;
+				m_ShowHideUI.SetParent(m_MenuOrigin); // Now that the desired world position is set, change parent to the menu origin, so no unintended transform actions are performed when showing/hiding
 			}
 		}
 
