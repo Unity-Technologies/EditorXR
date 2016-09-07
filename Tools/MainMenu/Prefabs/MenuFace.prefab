@@ -372,7 +372,7 @@ GameObject:
   - 33: {fileID: 33000011761534160}
   - 137: {fileID: 137000010769614414}
   m_Layer: 0
-  m_Name: MenuFaceTitleGradientShape
+  m_Name: TitleIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -847,7 +847,7 @@ GameObject:
   - 33: {fileID: 33000014220048304}
   - 23: {fileID: 23000012074004932}
   m_Layer: 0
-  m_Name: MenuFacesGradientBorder
+  m_Name: BorderOutline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1178,7 +1178,7 @@ GameObject:
   - 222: {fileID: 222000010078248208}
   - 114: {fileID: 114000013940025958}
   m_Layer: 5
-  m_Name: PanelTitleText
+  m_Name: TitleText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2088,9 +2088,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Button: {fileID: 114000012941162486}
-  m_ButtonDescription: {fileID: 114000014191490650}
-  m_ButtonTitle: {fileID: 114000012833150744}
+  m_Button: {fileID: 0}
+  m_ButtonDescription: {fileID: 0}
+  m_ButtonTitle: {fileID: 0}
 --- !u!114 &114000011193762864
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2321,9 +2321,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Button: {fileID: 114000012577314670}
-  m_ButtonDescription: {fileID: 114000010083411552}
-  m_ButtonTitle: {fileID: 114000010740454050}
+  m_Button: {fileID: 0}
+  m_ButtonDescription: {fileID: 0}
+  m_ButtonTitle: {fileID: 0}
 --- !u!114 &114000011570157028
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2420,9 +2420,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Button: {fileID: 114000013914022912}
-  m_ButtonDescription: {fileID: 114000014256457170}
-  m_ButtonTitle: {fileID: 114000013888020486}
+  m_Button: {fileID: 0}
+  m_ButtonDescription: {fileID: 0}
+  m_ButtonTitle: {fileID: 0}
 --- !u!114 &114000011674655670
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2435,9 +2435,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Button: {fileID: 114000012588341826}
-  m_ButtonDescription: {fileID: 114000013412541136}
-  m_ButtonTitle: {fileID: 114000012911922074}
+  m_Button: {fileID: 0}
+  m_ButtonDescription: {fileID: 0}
+  m_ButtonTitle: {fileID: 0}
 --- !u!114 &114000011718759426
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2661,9 +2661,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Button: {fileID: 114000011263701018}
-  m_ButtonDescription: {fileID: 114000010588358148}
-  m_ButtonTitle: {fileID: 114000012844487992}
+  m_Button: {fileID: 0}
+  m_ButtonDescription: {fileID: 0}
+  m_ButtonTitle: {fileID: 0}
 --- !u!114 &114000012037538528
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2981,7 +2981,7 @@ MonoBehaviour:
   m_GridLayoutGroup: {fileID: 114000014048498192}
   m_ScrollRect: {fileID: 114000011741281716}
   m_TitleIcon: {fileID: 137000010769614414}
-  m_ScrollDetectionButton: {fileID: 114000010700571530}
+  m_ScrollDetectionButton: {fileID: 0}
   m_MaskRectTransform: {fileID: 224000010431111768}
 --- !u!114 &114000012577314670
 MonoBehaviour:
@@ -3226,9 +3226,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Button: {fileID: 114000010291052680}
-  m_ButtonDescription: {fileID: 114000010632217894}
-  m_ButtonTitle: {fileID: 114000012333617100}
+  m_Button: {fileID: 0}
+  m_ButtonDescription: {fileID: 0}
+  m_ButtonTitle: {fileID: 0}
 --- !u!114 &114000012833150744
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3639,9 +3639,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Button: {fileID: 114000014229767578}
-  m_ButtonDescription: {fileID: 114000012000275034}
-  m_ButtonTitle: {fileID: 114000013792766732}
+  m_Button: {fileID: 0}
+  m_ButtonDescription: {fileID: 0}
+  m_ButtonTitle: {fileID: 0}
 --- !u!114 &114000013586093412
 MonoBehaviour:
   m_ObjectHideFlags: 1
