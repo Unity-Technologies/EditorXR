@@ -41,8 +41,8 @@ namespace UnityEngine.VR.Tools
 		public Transform rayOrigin { private get; set; }
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
-		
-		public List<IAction> actions { get; set; }
+
+		public List<IAction> actions { set { m_RadialMenu.allActions = value; } }
 
 		public Transform menuOrigin { get; set; }
 
@@ -63,26 +63,23 @@ namespace UnityEngine.VR.Tools
 
 		public Func<IAction, bool> performAction
 		{
-			get { return m_PerformAction; }
 			set
 			{
-				m_PerformAction = value;
-
 				if (m_RadialMenu != null)
 					m_RadialMenu.performAction = value;
+				else
+					Debug.LogError("Cannot set PerformAction in Radial Menu");
 			}
 		}
-		private Func<IAction, bool> m_PerformAction;
 
 		public Func<GameObject, GameObject> instantiateUI
 		{
 			set
 			{
 				m_RadialMenu = value(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenu>();
-				m_RadialMenu.allActions = actions;
 				m_RadialMenu.instantiateUI = value;
-				m_RadialMenu.performAction = performAction;
 				m_RadialMenu.alternateMenuOrigin = m_AlternateMenuOrigin;
+				m_RadialMenu.Setup();
 			}
 		}
 
@@ -90,6 +87,13 @@ namespace UnityEngine.VR.Tools
 		{
 			if (rayOrigin == null)
 				return;
+
+			//  TODO: Add rotational thumbstick-based selection of radial menu items
+			//if (m_SelectionInput.navigateRadialMenu.isEnabled)
+				//Debug.LogError("<color=yellow>Navigate Radial Menu ENABLED here</color>");
+
+			//if (m_SelectionInput.navigateRadialMenu.rawValue != 0)
+				//Debug.LogError("<color=yellow>Navigate Radial Menu Raw Value here : </color>" + m_SelectionInput.navigateRadialMenu.rawValue);
 
 			// Change activeGameObject selection to its parent transform when parent button is pressed 
 			if (m_SelectionInput.parent.wasJustPressed)
