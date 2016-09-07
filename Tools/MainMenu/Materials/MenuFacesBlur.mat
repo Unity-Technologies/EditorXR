@@ -77,6 +77,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - first:
+        name: _Blur
+      second: 1.69
+    - first:
         name: _BumpAmt
       second: 128
     - first:
@@ -100,6 +103,9 @@ Material:
     - first:
         name: _GlossyReflections
       second: 1
+    - first:
+        name: _Height
+      second: 0.5
     - first:
         name: _InvFade
       second: 1
@@ -136,7 +142,7 @@ Material:
     m_Colors:
     - first:
         name: _Color
-      second: {r: 0.36029398, g: 0.36029398, b: 0.36029398, a: 0.666}
+      second: {r: 0.722, g: 0.722, b: 0.722, a: 1}
     - first:
         name: _EmisColor
       second: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 0}
