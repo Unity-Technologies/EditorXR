@@ -246,7 +246,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		m_WorkspaceUI.SetBounds(contentBounds);
 	}
 
-	private void OnDestroy()
+	protected virtual void OnDestroy()
 	{
 		destroyed(this);
 	}
