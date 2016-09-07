@@ -93,7 +93,7 @@ Material:
       second: 0
     - first:
         name: _Expand
-      second: 0
+      second: 1
     - first:
         name: _GlossMapScale
       second: 0.539
@@ -139,10 +139,10 @@ Material:
       second: {r: 1, g: 1, b: 1, a: 1}
     - first:
         name: _ColorBottom
-      second: {r: 0.011764706, g: 0.6627451, b: 0.95686275, a: 1}
+      second: {r: 0, g: 0.7372549, b: 0.83137256, a: 1}
     - first:
         name: _ColorTop
-      second: {r: 0, g: 0.7372549, b: 0.83137256, a: 1}
+      second: {r: 0, g: 0.5882353, b: 0.53333336, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 1, g: 1, b: 1, a: 1}
