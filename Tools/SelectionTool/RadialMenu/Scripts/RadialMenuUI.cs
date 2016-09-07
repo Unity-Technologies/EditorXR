@@ -107,6 +107,8 @@ namespace UnityEngine.VR.Menus
 
 		public void Setup()
 		{
+			Debug.LogError("Setting up RadialMenu UI");
+
 			m_RadialMenuSlots = new List<RadialMenuSlot>();
 
 			for (int i = 0; i < m_SlotCount; ++i)
@@ -123,6 +125,7 @@ namespace UnityEngine.VR.Menus
 				menuSlot.localPosition = Vector3.zero;
 				menuSlot.localRotation = Quaternion.identity;
 				menuSlot.localScale = Vector3.one;
+				slotController.orderIndex = i;
 			}
 			SetupRadialSlotPositions();
 		}
@@ -144,41 +147,41 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 
-		private void Show(List<IAction> menuActions)
-		{
-			// if list count is zero, hide
-			// if greather, and the icons are not the same, then hide then show with new icons
-			// if the same, dont hide, just stay showing
-			Debug.LogError("Show called in RadialMenuVisuals");
+		//private void Show(List<IAction> menuActions)
+		//{
+		//	// if list count is zero, hide
+		//	// if greather, and the icons are not the same, then hide then show with new icons
+		//	// if the same, dont hide, just stay showing
+		//	Debug.LogError("Show called in RadialMenuVisuals");
 
-			// BLOCK INPUT WHILE SHOWING OR HIDING!!!!!
+		//	// BLOCK INPUT WHILE SHOWING OR HIDING!!!!!
 
-			/*
-			b.button.onClick.RemoveAllListeners();
-			b.button.onClick.AddListener(() =>
-			{
-				if (visible && b.node.HasValue)
-					selectTool(b.node.Value, toolType);
-			});
-			*/
+		//	/*
+		//	b.button.onClick.RemoveAllListeners();
+		//	b.button.onClick.AddListener(() =>
+		//	{
+		//		if (visible && b.node.HasValue)
+		//			selectTool(b.node.Value, toolType);
+		//	});
+		//	*/
 
-			if (menuActions != null && menuActions.Count > 0)
-			{
-				for (int i = 0; i < menuActions.Count; ++i)
-				{
-					m_RadialMenuSlots[i].iconSprite = menuActions[i].icon;
-					m_RadialMenuSlots[i].button.onClick.RemoveAllListeners();
-					m_RadialMenuSlots[i].button.onClick.AddListener(() =>
-					{
-						performAction(menuActions[i]);
-					});
-				}
+		//	if (menuActions != null && menuActions.Count > 0)
+		//	{
+		//		for (int i = 0; i < menuActions.Count; ++i)
+		//		{
+		//			m_RadialMenuSlots[i].iconSprite = menuActions[i].icon;
+		//			m_RadialMenuSlots[i].button.onClick.RemoveAllListeners();
+		//			m_RadialMenuSlots[i].button.onClick.AddListener(() =>
+		//			{
+		//				performAction(menuActions[i]);
+		//			});
+		//		}
 
-				StartCoroutine(AnimateShow());
-			}
-			else
-				StartCoroutine(AnimateHide());
-		}
+		//		StartCoroutine(AnimateShow());
+		//	}
+		//	else
+		//		StartCoroutine(AnimateHide());
+		//}
 
 		private void Hide()
 		{
@@ -187,13 +190,20 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator AnimateShow()
 		{
+			Debug.LogError("<color=orange>AnimateShow called in RadialMenuUI</color>");
+
 			for (int i = 0; i < m_Actions.Count; ++i)
 			{
-				m_RadialMenuSlots[i].iconSprite = m_Actions[i].icon;
-				m_RadialMenuSlots[i].button.onClick.RemoveAllListeners();
-				m_RadialMenuSlots[i].button.onClick.AddListener(() =>
+				UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair gradientPair = UnityEngine.VR.Utilities.UnityBrandColorScheme.GetRandomGradient();
+				var iaction = m_Actions[i];
+				var slot = m_RadialMenuSlots[i];
+				slot.gradientPair = gradientPair;
+				slot.iconSprite = m_Actions[i].icon;
+
+				slot.button.onClick.RemoveAllListeners();
+				slot.button.onClick.AddListener(() =>
 				{
-					performAction(m_Actions[i]);
+					performAction(iaction);
 				});
 			}
 			
@@ -209,13 +219,12 @@ namespace UnityEngine.VR.Menus
 
 			while (revealAmount < 1)
 			{
-				revealAmount += Time.unscaledDeltaTime * 4;
+				revealAmount += Time.unscaledDeltaTime * 5;
 
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
 					m_RadialMenuSlots[i].enabled = true;
-					m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation,
-					m_RadialMenuSlots[i].visibleLocalRotation, revealAmount);
+					m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, revealAmount * revealAmount);
 				}
 
 				yield return null;
@@ -234,6 +243,8 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator AnimateHide()
 		{
+			Debug.LogError("AnimateHide called in RadialMenuUI");
+
 			m_SlotsMask.fillAmount = 1f;
 			//yield return new WaitForSeconds(1f);
 
@@ -241,16 +252,12 @@ namespace UnityEngine.VR.Menus
 			Quaternion hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 
 			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
-				m_RadialMenuSlots[i].enabled = true;
-
-			
-			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				m_RadialMenuSlots[i].enabled = false;
 
 			revealAmount = 1;
 			while (revealAmount > 0)
 			{
-				revealAmount -= Time.unscaledDeltaTime * 3;
+				revealAmount -= Time.unscaledDeltaTime * 5;
 
 				//m_SlotsMask.fillAmount = Mathf.Lerp(1f, m_SlotsMask.fillAmount, revealAmount * revealAmount);
 

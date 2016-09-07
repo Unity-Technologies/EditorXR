@@ -48,6 +48,7 @@ namespace UnityEngine.VR.Menus
 
 		public void Setup()
 		{
+			Debug.LogError("Setting up RadialMenu");
 			//m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
 			m_RadialMenuUI.instantiateUI = instantiateUI;
 			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
@@ -84,13 +85,13 @@ namespace UnityEngine.VR.Menus
 				Debug.LogError("<color=green>Show Radial Menu UI here - objects are selected</color>");
 
 				currentlyApplicableActions = new List<IAction>();
-				return;
+
 				//TODO support context filtering of actions, only set the currently active and applicable buttons in the UI
-				foreach (var action in allActions)
-				{
-					if (UnityEngine.Random.Range(0, 2) > 0)
-						currentlyApplicableActions.Add(action);
-				}
+				//foreach (var action in actions)
+				//{
+				//	if (UnityEngine.Random.Range(0, 2) > 0)
+				//		currentlyApplicableActions.Add(action);
+				//}
 
 				//TODO delete
 				currentlyApplicableActions = allActions;
