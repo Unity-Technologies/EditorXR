@@ -13,28 +13,12 @@ public class FolderData : ListViewItemNestedData<FolderData>
 
 	public bool selected { get; set; }
 
-	public FolderData(HashSet<string> assetTypes, HierarchyProperty hp = null)
+	public FolderData(string name, FolderData[] children, AssetData[] assets)
 	{
 		template = kTemplateName;
-		if (hp == null)
-		{
-			hp = new HierarchyProperty(HierarchyType.Assets);
-			hp.SetSearchFilter("t:object", 0);
-		}
-		m_Name = hp.name;
-		var depth = hp.depth;
-		var folderList = new List<FolderData>();
-		var assetList = new List<AssetData>();
-		while (hp.Next(null) && hp.depth > depth)
-		{
-			if (hp.isFolder)
-				folderList.Add(new FolderData(assetTypes, hp));
-			else if(hp.depth == depth + 1) // Ignore sub-assets (mixer children, terrain splats, etc.)
-				assetList.Add(new AssetData(assetTypes, hp));
-		}
-
-		children = folderList.ToArray();
-		m_Assets = assetList.ToArray();
+		m_Name = name;
+		this.children = children;
+		m_Assets = assets;
 	}
 
 	public void ClearSelected()

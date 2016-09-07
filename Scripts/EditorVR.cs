@@ -53,6 +53,7 @@ public class EditorVR : MonoBehaviour
 	private Camera m_EventCamera;
 	private PixelRaycastModule m_PixelRaycastModule;
 	private HighlightModule m_HighlightModule;
+	private ObjectPlacementModule m_ObjectPlacementModule;
 
 	private PlayerHandle m_PlayerHandle;
 
@@ -94,6 +95,7 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
+		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace));
@@ -609,6 +611,10 @@ public class EditorVR : MonoBehaviour
 		var highlight = obj as IHighlight;
 		if (highlight != null)
 			highlight.setHighlight = m_HighlightModule.SetHighlight;
+
+		var placeObjects = obj as IPlaceObjects;
+		if (placeObjects != null)
+			placeObjects.placeObject = m_ObjectPlacementModule.PlaceObject;
 
 		if (mainMenu != null)
 		{

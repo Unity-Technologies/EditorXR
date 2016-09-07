@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using ListView;
 using UnityEditor;
 using UnityEngine;
@@ -6,15 +7,12 @@ using UnityEngine.UI;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 
-public class AssetGridItem : ListViewItem<AssetData>
+public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 {
 	private const float kMagnetizeDuration = 0.5f;
 	private const float kPreviewDuration = 0.1f;
-	private const float kGrowDuration = 0.5f;
 
 	private const float kRotateSpeed = 50f;
-
-	private const float kInstantiateFOVDifference = 20f;
 
 	//TODO: replace with a GrabOrigin transform once menu PR lands
 	private readonly Vector3 kGrabPositionOffset = new Vector3(0f, 0.02f, 0.03f);
@@ -47,7 +45,6 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private float m_PreviewFade;
 	private Vector3 m_PreviewPrefabScale;
 	private Vector3 m_PreviewTargetScale;
-	private Bounds? m_PreviewTotalBounds;
 
 	private Coroutine m_TransitionCoroutine;
 
@@ -60,6 +57,8 @@ public class AssetGridItem : ListViewItem<AssetData>
 			return m_Cube.transform;
 		}
 	}
+	
+	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public override void Setup(AssetData listData)
 	{
@@ -134,10 +133,10 @@ public class AssetGridItem : ListViewItem<AssetData>
 		m_PreviewPrefabScale = m_PreviewObject.localScale;
 
 		//Normalize total scale to 1
-		m_PreviewTotalBounds = GetTotalBounds(m_PreviewObject);
+		var previewTotalBounds = U.Object.GetTotalBounds(m_PreviewObject);
 
 		//Don't show a preview if there are no renderers
-		if (m_PreviewTotalBounds == null)
+		if (previewTotalBounds == null)
 		{
 			U.Object.Destroy(m_PreviewObject.gameObject);
 			return;
@@ -145,7 +144,7 @@ public class AssetGridItem : ListViewItem<AssetData>
 
 		m_PreviewObject.SetParent(transform, false);
 
-		m_PreviewTargetScale = m_PreviewPrefabScale * (1 / m_PreviewTotalBounds.Value.size.Max());
+		m_PreviewTargetScale = m_PreviewPrefabScale * (1 / previewTotalBounds.Value.size.Max());
 		m_PreviewObject.localPosition = Vector3.up * 0.5f;
 
 		m_PreviewObject.gameObject.SetActive(false);
@@ -193,59 +192,21 @@ public class AssetGridItem : ListViewItem<AssetData>
 	{
 		var gridItem = m_GrabbedObject.GetComponent<AssetGridItem>();
 		if (gridItem.m_PreviewObject)
-			StartCoroutine(PlaceObjectWithBounds(gridItem.m_PreviewObject));
+			placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
 		else
 		{
 			switch (data.type)
 			{
 				case "Prefab":
-					PlaceObject(gridItem.transform.position, gridItem.transform.rotation);
+					Instantiate(data.GetAsset(), gridItem.transform.position, gridItem.transform.rotation);
 					break;
 				case "Model":
-					PlaceObject(gridItem.transform.position, gridItem.transform.rotation);
+					Instantiate(data.GetAsset(), gridItem.transform.position, gridItem.transform.rotation);
 					break;
 			}
 		}
 		gridItem.m_Cube.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
 		U.Object.Destroy(m_GrabbedObject.gameObject);
-	}
-
-	private void PlaceObject(Vector3 position, Quaternion rotation)
-	{
-		Instantiate(data.GetAsset(), position, rotation);
-	}
-
-	private IEnumerator PlaceObjectWithBounds(Transform obj)
-	{
-		float start = Time.realtimeSinceStartup;
-		var currTime = 0f;
-
-		obj.parent = null;
-		var startScale = obj.localScale;
-		var startPosition = obj.position;
-
-		//var destinationPosition = obj.position;
-		var camera = U.Camera.GetMainCamera();
-		var camPosition = camera.transform.position;
-		var forward = obj.position - camPosition;
-		forward.y = 0;
-		var perspective = camera.fieldOfView * 0.5f + kInstantiateFOVDifference;
-		var distance = m_PreviewTotalBounds.Value.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
-		var destinationPosition = obj.position;
-		if (distance > forward.magnitude)
-			destinationPosition = camPosition + forward.normalized * distance;
-
-		while (currTime < kGrowDuration)
-		{
-			currTime = Time.realtimeSinceStartup - start;
-			var t = currTime / kGrowDuration;
-			var tSquared = t * t;
-			obj.localScale = Vector3.Lerp(startScale, m_PreviewPrefabScale, tSquared);
-			obj.position = Vector3.Lerp(startPosition, destinationPosition, tSquared);
-			yield return null;
-		}
-		obj.localScale = m_PreviewPrefabScale;
-		Selection.activeGameObject = obj.gameObject;
 	}
 
 	private void OnBeginHover(BaseHandle baseHandle, HandleEventData eventData)
@@ -289,24 +250,6 @@ public class AssetGridItem : ListViewItem<AssetData>
 	private void OnDestroy()
 	{
 		U.Object.Destroy(m_Cube.sharedMaterial);
-	}
-
-	private static Bounds? GetTotalBounds(Transform t)
-	{
-		Bounds? bounds = null;
-		var renderers = t.GetComponentsInChildren<Renderer>(true);
-		foreach (var renderer in renderers)
-		{
-			if (bounds == null)
-				bounds = renderer.bounds;
-			else
-			{
-				Bounds b = bounds.Value;
-				b.Encapsulate(renderer.bounds);
-				bounds = b;
-			}
-		}
-		return bounds;
 	}
 
 	public void SetIcon(GameObject iconModel)

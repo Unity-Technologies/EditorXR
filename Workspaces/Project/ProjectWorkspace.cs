@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ProjectWorkspace : Workspace
+public class ProjectWorkspace : Workspace, IPlaceObjects
 {
 	private const float kLeftPaneRatio = 0.3333333f; //Size of left pane relative to workspace bounds
 	private const float kPaneMargin = 0.01f;
@@ -31,6 +32,8 @@ public class ProjectWorkspace : Workspace
 
 	private Vector3 m_ScrollStart;
 	private float m_ScrollOffsetStart;
+
+	public Action<Transform, Vector3> placeObject { get; set; }
 
 	public override void Setup()
 	{
@@ -125,6 +128,7 @@ public class ProjectWorkspace : Workspace
 		assetListView.bounds = bounds;
 		assetListView.PreCompute(); // Compute item size
 		assetListView.transform.localPosition = Vector3.right * xOffset;
+		assetListView.placeObject = placeObject;
 
 		var assetPanel = m_ProjectUI.assetPanel;
 		assetPanel.transform.localPosition = xOffset * Vector3.right;
@@ -203,13 +207,64 @@ public class ProjectWorkspace : Workspace
 	private void SetupFolderList()
 	{
 		var assetTypes = new HashSet<string>();
-		var folderData = new[] { new FolderData(assetTypes) { expanded = true } };
-		m_ProjectUI.folderListView.listData = folderData;
-
-		if (folderData.Length > 0)
-			SelectFolder(folderData[0]);
+		var rootFolder = CreateFolderData(assetTypes);
+		rootFolder.expanded = true;
+		m_ProjectUI.folderListView.listData = new[] { rootFolder };
+		
+		SelectFolder(rootFolder);
 
 		m_FilterUI.filterTypes = assetTypes.ToList();
+	}
+
+	private FolderData CreateFolderData(HashSet<string> assetTypes, HierarchyProperty hp = null)
+	{
+		if (hp == null)
+		{
+			hp = new HierarchyProperty(HierarchyType.Assets);
+			hp.SetSearchFilter("t:object", 0);
+		}
+		var name = hp.name;
+		var depth = hp.depth;
+		var folderList = new List<FolderData>();
+		var assetList = new List<AssetData>();
+		while (hp.Next(null) && hp.depth > depth)
+		{
+			if (hp.isFolder)
+				folderList.Add(CreateFolderData(assetTypes, hp));
+			else if (hp.depth == depth + 1) // Ignore sub-assets (mixer children, terrain splats, etc.)
+				assetList.Add(CreateAssetData(assetTypes, hp));
+		}
+		return new FolderData(name, folderList.Count > 0 ? folderList.ToArray(): null, assetList.Count > 0 ? assetList.ToArray() : null);
+	}
+
+	private AssetData CreateAssetData(HashSet<string> assetTypes, HierarchyProperty hp)
+	{
+		var type = hp.pptrValue.GetType().Name;
+		switch (type)
+		{
+			case "GameObject":
+				switch (PrefabUtility.GetPrefabType(EditorUtility.InstanceIDToObject(hp.instanceID)))
+				{
+					case PrefabType.ModelPrefab:
+						type = "Model";
+						break;
+					default:
+						type = "Prefab";
+						break;
+				}
+				break;
+			case "MonoScript":
+				type = "Script";
+				break;
+			case "SceneAsset":
+				type = "Scene";
+				break;
+			case "AudioMixerController":
+				type = "AudioMixer";
+				break;
+		}
+		assetTypes.Add(type);
+		return new AssetData(hp.name, hp.instanceID, hp.icon, type);
 	}
 
 	private void OnDestroy()

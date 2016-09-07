@@ -30,40 +30,13 @@ public class AssetData : ListViewItemData
 	private GameObject m_PreviewObject;
 	private bool m_FetchedPreview;
 
-	public AssetData(HashSet<string> assetTypes, HierarchyProperty hp)
+	public AssetData(string name, int instanceID, Texture2D icon, string type)
 	{
 		template = kTemplateName;
-		m_InstanceID = hp.instanceID;
-		m_Icon = hp.icon;
-		name = hp.name;
-		var type = hp.pptrValue.GetType().Name;
-		switch (type)
-		{
-			case "GameObject":
-				switch (PrefabUtility.GetPrefabType(GetAsset()))
-				{
-					case PrefabType.ModelPrefab:
-						m_Type = "Model";
-						break;
-					default:
-						m_Type = "Prefab";
-						break;
-				}
-				break;
-			case "MonoScript":
-				m_Type = "Script";
-				break;
-			case "SceneAsset":
-				m_Type = "Scene";
-				break;
-			case "AudioMixerController":
-				m_Type = "AudioMixer";
-				break;
-			default:
-				m_Type = type;
-				break;
-		}
-		assetTypes.Add(m_Type);
+		this.name = name;
+		m_InstanceID = instanceID;
+		m_Icon = icon;
+		m_Type = type;
 	}
 
 	public Object GetAsset()
