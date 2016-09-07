@@ -200,8 +200,8 @@ namespace UnityEngine.VR.Menus
 				m_MenuFaces.Add(face);
 			}
 
-			menuOrigin.localScale = Vector3.zero;
-			alternateMenuOrigin.localScale = Vector3.zero;
+			transform.localScale = Vector3.zero;
+			m_AlternateMenu.localScale = Vector3.zero;
 		}
 
 		private void Update()
@@ -396,15 +396,15 @@ namespace UnityEngine.VR.Menus
 			float smoothVelocity = 0f;
 			while (!Mathf.Approximately(scale, kTargetScale))
 			{
-				menuOrigin.localScale = Vector3.one * scale;
-				alternateMenuOrigin.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
+				transform.localScale = Vector3.one * scale;
+				m_AlternateMenu.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
 				scale = Mathf.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.125f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
 			m_VisibilityState = VisibilityState.Visible;
-			menuOrigin.localScale = Vector3.one;
-			alternateMenuOrigin.localScale = m_AlternateMenuOriginOriginalLocalScale;
+			transform.localScale = Vector3.one;
+			m_AlternateMenu.localScale = m_AlternateMenuOriginOriginalLocalScale;
 
 			m_VisibilityCoroutine = null;
 		}
@@ -422,19 +422,19 @@ namespace UnityEngine.VR.Menus
 			StartCoroutine(AnimateFrameReveal(m_VisibilityState));
 
 			const float kTargetScale = 0f;
-			float scale = menuOrigin.localScale.x;
+			float scale = transform.localScale.x;
 			float smoothVelocity = 0f;
 			while (!Mathf.Approximately(scale, kTargetScale))
 			{
-				menuOrigin.localScale = Vector3.one * scale;
-				alternateMenuOrigin.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
+				transform.localScale = Vector3.one * scale;
+				m_AlternateMenu.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
 				scale = Mathf.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.06875f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
 			m_VisibilityState = VisibilityState.Hidden;
-			menuOrigin.localScale = Vector3.zero;
-			alternateMenuOrigin.localScale = Vector3.zero;
+			transform.localScale = Vector3.zero;
+			m_AlternateMenu.localScale = Vector3.zero;
 
 			float snapRotation = GetRotationForFaceIndex(GetClosestFaceIndexForRotation(currentRotation));
 			m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, snapRotation, 0)); // set intended target rotation
