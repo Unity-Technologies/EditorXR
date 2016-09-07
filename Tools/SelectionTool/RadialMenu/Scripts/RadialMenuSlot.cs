@@ -20,12 +20,21 @@ namespace UnityEngine.VR.Menus
 		[SerializeField]
 		private Button m_Button;
 
+		[SerializeField]
+		private MeshRenderer m_BorderRenderer;
+
 		private Transform m_parentTransform;
 		private Vector3 m_IconDirection;
+		private Material m_BorderRendererMaterial;
 
-		private Material m_Material;
+		private Material m_InsetMaterial;
 		private Vector3 m_VisibleMenuInsetLocalScale;
 		private Vector3 m_HiddenMenuInsetLocalScale;
+
+		private Coroutine m_FadeInCoroutine;
+		private Coroutine m_FadeOutCoroutine;
+
+		public int orderIndex { get; set; }
 
 		public Button button { get { return m_Button; } }
 
@@ -45,23 +54,45 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 
+		public UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair gradientPair
+		{
+			set
+			{
+				//m_InsetMaterial.SetColor("_ColorTop", value.a);
+				//m_InsetMaterial.SetColor("_ColorBottom", value.b);
+				m_BorderRendererMaterial.SetColor("_ColorTop", value.a);
+				m_BorderRendererMaterial.SetColor("_ColorBottom", value.b);
+			}
+		}
+
 		private void Awake()
 		{
 			m_HiddenLocalRotation = transform.localRotation;
-			m_Material = m_InsetMeshRenderer.sharedMaterial;
+			m_InsetMaterial = m_InsetMeshRenderer.sharedMaterial;
 			m_VisibleMenuInsetLocalScale = m_MenuInset.localScale;
 			m_HiddenMenuInsetLocalScale = new Vector3(m_VisibleMenuInsetLocalScale.x, 0f, m_VisibleMenuInsetLocalScale.z);
+			m_BorderRendererMaterial = m_BorderRenderer.sharedMaterial;
 		}
 
 		private void OnEnable()
 		{
 			m_MenuInset.localScale = m_HiddenMenuInsetLocalScale;
-			StartCoroutine(FadeSlotOpacityIn());
+
+			if (m_FadeInCoroutine != null)
+				StopCoroutine(m_FadeInCoroutine);
+
+			m_FadeInCoroutine = StartCoroutine(FadeSlotOpacityIn());
 		}
 
 		private void OnDisable()
 		{
-			//StartCoroutine(FadeSlotOpacityOut());
+			if (gameObject.activeInHierarchy)
+			{
+				if (m_FadeOutCoroutine != null)
+					StopCoroutine(m_FadeOutCoroutine);
+
+				m_FadeOutCoroutine = StartCoroutine(FadeSlotOpacityOut());
+			}
 		}
 
 		private void OnTransformParentChanged()
@@ -79,35 +110,68 @@ namespace UnityEngine.VR.Menus
 		private IEnumerator FadeSlotOpacityIn()
 		{
 			m_CanvasGroup.interactable = false;
-			m_Material.SetFloat("_Alpha", 0);
-			m_MenuInset.localScale = m_HiddenMenuInsetLocalScale;
+			m_CanvasGroup.alpha = 0;
+			m_InsetMaterial.SetFloat("_Alpha", 0);
+			m_BorderRendererMaterial.SetFloat("_Expand", 0);
+			m_MenuInset.localScale = m_HiddenMenuInsetLocalScale ;
+			transform.localScale = new Vector3(1f, 0f, 1f); //Vector3.one * 0.75f;
+			Vector3 hiddenScale = transform.localScale;
 
 			float opacity = 0;
+			float positionWait = orderIndex * 0.05f;
 			while (opacity < 1)
 			{
-				opacity += Time.unscaledDeltaTime / 2f;
-				m_Material.SetFloat("_Alpha", opacity);
-				m_MenuInset.localScale = Vector3.Lerp(m_HiddenMenuInsetLocalScale, m_VisibleMenuInsetLocalScale, opacity);
+				//if (orderIndex == 0)
+				//transform.localScale = new Vector3(opacity, 1f, 1f);
+				opacity += Time.unscaledDeltaTime / positionWait;
+				float opacityShaped = Mathf.Pow(opacity, opacity);
+
+				transform.localScale = Vector3.Lerp(hiddenScale, Vector3.one, opacity);
+				m_CanvasGroup.alpha = opacityShaped;
+				m_BorderRendererMaterial.SetFloat("_Expand", 1 - opacityShaped);
+				m_InsetMaterial.SetFloat("_Alpha", opacityShaped);
+				m_MenuInset.localScale = Vector3.Lerp(m_HiddenMenuInsetLocalScale, m_VisibleMenuInsetLocalScale, opacityShaped);
 				//m_CanvasGroup.alpha = opacity;
 				yield return null;
 			}
 
+			m_CanvasGroup.alpha = 1;
+			m_BorderRendererMaterial.SetFloat("_Expand", 0);
+			m_InsetMaterial.SetFloat("_Alpha", 1);
+			m_MenuInset.localScale = m_VisibleMenuInsetLocalScale;
 			m_CanvasGroup.interactable = true;
+			transform.localScale = Vector3.one;
+
+			m_FadeInCoroutine = null;
 		}
 
 		private IEnumerator FadeSlotOpacityOut()
 		{
 			m_CanvasGroup.interactable = false;
 
-			float opacity = m_Material.GetFloat("_Alpha");
+			float opacity = m_InsetMaterial.GetFloat("_Alpha");;
 			while (opacity > 0)
 			{
 				opacity -= Time.unscaledDeltaTime * 1.5f;
-				m_Material.SetFloat("_Alpha", opacity);
-				m_MenuInset.localScale = Vector3.Lerp(m_HiddenMenuInsetLocalScale, m_VisibleMenuInsetLocalScale, opacity * opacity);
+				float opacityShaped = Mathf.Pow(opacity, opacity);
+				//if (orderIndex == 0)
+					transform.localScale = Vector3.one * opacity * opacityShaped;
+
+				m_CanvasGroup.alpha = opacityShaped;
+				m_BorderRendererMaterial.SetFloat("_Expand", opacityShaped);
+				m_InsetMaterial.SetFloat("_Alpha", opacityShaped);
+				m_MenuInset.localScale = Vector3.Lerp(m_HiddenMenuInsetLocalScale, m_VisibleMenuInsetLocalScale, opacityShaped);
 				//m_CanvasGroup.alpha = opacity;
 				yield return null;
 			}
+
+			m_CanvasGroup.alpha = 0;
+			m_BorderRendererMaterial.SetFloat("_Expand", 1);
+			m_InsetMaterial.SetFloat("_Alpha", 0);
+			m_MenuInset.localScale = m_HiddenMenuInsetLocalScale;
+			transform.localScale = Vector3.zero;
+
+			m_FadeOutCoroutine = null;
 		}
 	}
 }
