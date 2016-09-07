@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using ListView;
 using UnityEngine;
 using UnityEngine.UI;
@@ -59,8 +58,8 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_Cube.hovering += HoverBegin;
 			m_Cube.hovered += HoverEnd;
 		}
-
-		m_Text.text = Path.GetFileName(listData.path);
+		
+		m_Text.text = listData.name;
 		m_ExpandArrow.gameObject.SetActive(listData.children != null);
 		m_Hovering = false;
 	}
@@ -71,7 +70,7 @@ public class FolderListItem : ListViewItem<FolderData>
 		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
 	}
 
-	public void UpdateTransforms(float width)
+	public void UpdateTransforms(float width, int depth)
 	{
 		Vector3 cubeScale = m_Cube.transform.localScale;
 		cubeScale.x = width;
@@ -79,7 +78,7 @@ public class FolderListItem : ListViewItem<FolderData>
 
 		var arrowWidth = m_ExpandArrow.transform.localScale.x * 0.5f;
 		var halfWidth = width * 0.5f;
-		var indent = kIndent * data.treeDepth;
+		var indent = kIndent * depth;
 		var doubleMargin = kMargin * 2;
 		m_ExpandArrow.transform.localPosition = new Vector3(kMargin + indent - halfWidth, m_ExpandArrow.transform.localPosition.y, 0);
 

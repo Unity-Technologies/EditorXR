@@ -203,7 +203,7 @@ public class ProjectWorkspace : Workspace
 	private void SetupFolderList()
 	{
 		var assetTypes = new HashSet<string>();
-		var folderData = new[] { new FolderData(Application.dataPath, assetTypes) { expanded = true } };
+		var folderData = new[] { new FolderData(assetTypes) { expanded = true } };
 		m_ProjectUI.folderListView.listData = folderData;
 
 		if (folderData.Length > 0)

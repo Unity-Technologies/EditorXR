@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
 using ListView;
 using UnityEditor;
 using UnityEngine;
@@ -17,8 +16,6 @@ public class AssetData : ListViewItemData
 	public string name { get; private set; }
 	public bool animating { get; set; }
 
-	private static readonly MethodInfo m_GetMainAssetInstanceID;
-
 	public GameObject preview
 	{
 		get
@@ -30,17 +27,10 @@ public class AssetData : ListViewItemData
 		}
 	}
 
-
 	private GameObject m_PreviewObject;
 	private bool m_FetchedPreview;
 
-	//HACK: Use static constructor to access internal method
-	static AssetData()
-	{
-		m_GetMainAssetInstanceID = typeof(AssetDatabase).GetMethod("GetMainAssetInstanceID", BindingFlags.NonPublic | BindingFlags.Static);
-	}
-
-	private AssetData(HierarchyProperty hp, HashSet<string> assetTypes)
+	public AssetData(HashSet<string> assetTypes, HierarchyProperty hp)
 	{
 		template = kTemplateName;
 		m_InstanceID = hp.instanceID;
@@ -74,26 +64,6 @@ public class AssetData : ListViewItemData
 				break;
 		}
 		assetTypes.Add(m_Type);
-	}
-
-	public static AssetData[] GetAssetDataForPath(string path, HashSet<string> assetTypes)
-	{
-		var hp = new HierarchyProperty(HierarchyType.Assets);
-		var folderInstanceID = (int) m_GetMainAssetInstanceID.Invoke(null, new object[] {GetPathRelativeToAssets(path)});
-		var assets = new List<AssetData>();
-		if (hp.Find(folderInstanceID, null))
-		{
-			int folderDepth = hp.depth + 1;
-			while (hp.NextWithDepthCheck(null, folderDepth))
-				if (!hp.isFolder && hp.depth == folderDepth) // Do not show folders or child components
-					assets.Add(new AssetData(hp, assetTypes));
-		}
-		return assets.ToArray();
-	}
-
-	private static string GetPathRelativeToAssets(string path)
-	{
-		return path.Substring(path.IndexOf("Assets"));
 	}
 
 	public Object GetAsset()

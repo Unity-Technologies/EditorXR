@@ -34,14 +34,16 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		m_ExpandArrowMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
 
-	protected override void UpdateItem(Transform t, int offset)
+	protected override void UpdateItemRecursive(FolderData data, int offset, int depth)
 	{
-		FolderListItem item = t.GetComponent<FolderListItem>();
-		item.UpdateTransforms(bounds.size.x - kClipMargin);
+		if (data.item == null)
+			data.item = GetItem(data);
+		var item = (FolderListItem) data.item;
+		item.UpdateTransforms(bounds.size.x - kClipMargin, depth);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
-		t.localPosition = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.back;
-		t.localRotation = Quaternion.identity;
+		item.transform.localPosition = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.back;
+		item.transform.localRotation = Quaternion.identity;
 	}
 
 	protected override ListViewItem<FolderData> GetItem(FolderData listData)

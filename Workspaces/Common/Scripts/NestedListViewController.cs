@@ -13,35 +13,30 @@
 			m_ExpandedDataLength = count;
 		}
 
-		protected virtual void UpdateRecursively(DataType[] data, ref int count)
+		protected virtual void UpdateRecursively(DataType[] data, ref int count, int depth = 0)
 		{
 			foreach (var item in data)
 			{
 				if (count + m_DataOffset < -1)
-				{
 					CleanUpBeginning(item);
-				}
 				else if (count + m_DataOffset > m_NumRows - 1)
-				{
 					CleanUpEnd(item);
-				}
 				else
-				{
-					UpdateVisibleItem(item, count);
-				}
+					UpdateItemRecursive(item, count, depth);
 				count++;
 				if (item.children != null)
 				{
 					if (item.expanded)
-					{
-						UpdateRecursively(item.children, ref count);
-					}
+						UpdateRecursively(item.children, ref count, depth + 1);
 					else
-					{
 						RecycleChildren(item);
-					}
 				}
 			}
+		}
+
+		protected virtual void UpdateItemRecursive(DataType data, int count, int depth)
+		{
+			UpdateVisibleItem(data, count);
 		}
 
 		protected void RecycleChildren(DataType data)

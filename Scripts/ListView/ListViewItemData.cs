@@ -4,7 +4,7 @@ namespace ListView
 {
 	public class ListViewItemData
 	{
-		public string template;
-		public MonoBehaviour item;
+		public string template { get; protected set; }
+		public MonoBehaviour item { get; set; }
 	}
 }
