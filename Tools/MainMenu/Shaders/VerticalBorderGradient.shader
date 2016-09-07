@@ -8,7 +8,7 @@
 
 	SubShader
 	{
-		Tags { "Queue"="Geometry" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" }
+		Tags { "Queue"="Geometry-2" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" }
 		ZWrite Off
 
 		Pass
