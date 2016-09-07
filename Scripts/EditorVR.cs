@@ -806,7 +806,7 @@ public class EditorVR : MonoBehaviour
 
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, transform);
 		m_AllWorkspaces.Add(workspace);
-		workspace.closed += OnWorkspaceClosed;
+		workspace.destroyed += OnWorkspaceDestroyed;
 		ConnectInterfaces(workspace);
 		workspace.transform.position = position;
 		workspace.transform.rotation = rotation;
@@ -815,7 +815,7 @@ public class EditorVR : MonoBehaviour
 		workspace.Setup();
 	}
 
-	private void OnWorkspaceClosed(Workspace workspace)
+	private void OnWorkspaceDestroyed(Workspace workspace)
 	{
 		m_AllWorkspaces.Remove(workspace);
 	}
