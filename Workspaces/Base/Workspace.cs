@@ -14,12 +14,16 @@ namespace UnityEngine.VR.Workspaces
 
 		public const float kHandleMargin = -0.15f; // Compensate for base size from frame model
 
-		public event Action<Workspace> closed = delegate { };
+	public event Action<Workspace> destroyed = delegate { };
 
 		protected WorkspaceUI m_WorkspaceUI;
+	
+	public static readonly Vector3 kMinBounds = new Vector3(0.7f, 0.4f, 0.1f);
+	private const float kExtraHeight = 0.15f; //Extra space for frame model
 
-		//Extra space for frame model
-		private const float kExtraHeight = 0.15f;
+	public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
+	[SerializeField]
+	private Vector3 m_MinBounds = kMinBounds;
 
 		/// <summary>
 		/// Bounding box for workspace content (ignores value.center) 
@@ -32,13 +36,10 @@ namespace UnityEngine.VR.Workspaces
 				if (!value.Equals(contentBounds))
 				{
 					Vector3 size = value.size;
-					if (size.x < kDefaultBounds.x) //Use defaultBounds until we need separate values
-						size.x = kDefaultBounds.x;
-					if (size.y < kDefaultBounds.y)
-						size.y = kDefaultBounds.y;
-					if (size.z < kDefaultBounds.z)
-						size.z = kDefaultBounds.z;
-					value.size = size;
+				size.x = Mathf.Max(size.x, minBounds.x);
+				size.y = Mathf.Max(size.y, minBounds.y);
+				size.z = Mathf.Max(size.z, minBounds.z);
+				
 					m_ContentBounds.size = size; //Only set size, ignore center.
 					UpdateBounds();
 					OnBoundsChanged();
@@ -46,7 +47,6 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		[SerializeField]
 		private Bounds m_ContentBounds;
 
 		[SerializeField]
@@ -78,7 +78,7 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		public Func<GameObject, GameObject> instantiateUI { private get; set; }
+	public Func<GameObject, GameObject> instantiateUI { protected get; set; }
 
 		public Action<GameObject, bool> setHighlight { get; set; }
 
@@ -237,7 +237,6 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnCloseClicked()
 		{
-			closed(this);
 			U.Object.Destroy(gameObject);
 		}
 
@@ -251,6 +250,11 @@ namespace UnityEngine.VR.Workspaces
 			m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
 			m_WorkspaceUI.vacuumHandle.transform.localScale = outerBounds.size;
 			m_WorkspaceUI.SetBounds(contentBounds);
+	}
+
+	protected virtual void OnDestroy()
+	{
+		destroyed(this);
 		}
 
 		protected abstract void OnBoundsChanged();

@@ -5,12 +5,12 @@
 	/// <summary>
 	/// EditorVR Utilities
 	/// </summary>
-	public partial class U
+	public static partial class U
 	{
 		/// <summary>
 		/// Math related EditorVR utilities
 		/// </summary>
-		public class Math
+		public static class Math
 		{
 			// snaps value to a unit. unit can be any number.
 			// for example, with a unit of 0.2, 0.41 -> 0.4, and 0.52 -> 0.6
