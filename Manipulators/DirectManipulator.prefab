@@ -135,7 +135,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Target: {fileID: 0}
-  m_AllHandles: []
+  m_AllHandles:
+  - {fileID: 114000011817799922}
 --- !u!135 &135000011193895782
 SphereCollider:
   m_ObjectHideFlags: 1

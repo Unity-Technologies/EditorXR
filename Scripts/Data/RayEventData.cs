@@ -11,6 +11,11 @@ namespace UnityEngine.VR.Modules
 		public Transform rayOrigin { get; set; }
 
 		/// <summary>
+		/// The node associated with the ray
+		/// </summary>
+		public Node node { get; set; }
+
+		/// <summary>
 		/// The length of the direct selection pointer
 		/// </summary>
 		public float pointerLength { get; set; }
