@@ -20,6 +20,10 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 	public static readonly Vector3 kMinBounds = new Vector3(0.7f, 0.4f, 0.1f);
 	private const float kExtraHeight = 0.15f; //Extra space for frame model
 
+	public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
+	[SerializeField]
+	private Vector3 m_MinBounds = kMinBounds;
+
 	/// <summary>
 	/// Bounding box for workspace content (ignores value.center) 
 	/// </summary>
@@ -31,9 +35,9 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 			if (!value.Equals(contentBounds))
 			{
 				Vector3 size = value.size;
-				size.x = Mathf.Max(size.x, kMinBounds.x);
-				size.y = Mathf.Max(size.y, kMinBounds.y);
-				size.z = Mathf.Max(size.z, kMinBounds.z);
+				size.x = Mathf.Max(size.x, minBounds.x);
+				size.y = Mathf.Max(size.y, minBounds.y);
+				size.z = Mathf.Max(size.z, minBounds.z);
 				
 				m_ContentBounds.size = size; //Only set size, ignore center.
 				UpdateBounds();
