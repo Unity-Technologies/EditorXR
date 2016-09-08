@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.VR.Utilities;
 
-public class MiniWorld : MonoBehaviour, IMiniWorld
+public class MiniWorld : MonoBehaviour
 {
 	public LayerMask rendererCullingMask
 	{
@@ -43,11 +43,6 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 	}
 
 	public Bounds localBounds { get { return new Bounds(Vector3.zero, m_LocalBoundsSize); } set { m_LocalBoundsSize = value.size; } }
-
-	public bool IsContainedWithin(Vector3 position)
-	{
-		return localBounds.Contains(transform.InverseTransformPoint(position));
-	}
 
 	private void OnEnable()
 	{

@@ -78,14 +78,6 @@ public class EditorVR : MonoBehaviour
 		{ "Right", Node.RightHand }
 	};
 
-	private class MiniWorldRay
-	{
-		public Transform originalRayOrigin;
-		public IMiniWorld miniWorld;
-	}
-
-	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
-
 	private void Awake()
 	{
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
@@ -211,7 +203,6 @@ public class EditorVR : MonoBehaviour
 		foreach (var workspace in m_AllWorkspaces)
 			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
 
-		UpdateMiniWorldRays();
 #if UNITY_EDITOR
 		// HACK: Send a "mouse moved" event, so scene picking can occur for the controller
 		Event e = new Event();
@@ -830,68 +821,11 @@ public class EditorVR : MonoBehaviour
 		
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
-
-		if (t == typeof(ChessboardWorkspace))
-		{
-			foreach (var proxy in m_AllProxies)
-			{
-				foreach (var rayOriginBase in proxy.rayOrigins)
-				{
-					foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
-					{
-						var node = GetDeviceNode(device);
-						if (node.HasValue && node.Value == rayOriginBase.Key)
-						{
-							DeviceData deviceData;
-							if (m_DeviceData.TryGetValue(device, out deviceData))
-							{
-								// Create fake rayOrigin
-								var fakeRayOrigin = new GameObject("FakeRayOrigin").transform;
-								fakeRayOrigin.parent = workspace.transform;
-
-								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-								m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, deviceData.uiInput, fakeRayOrigin);
-								m_MiniWorldRays.Add(fakeRayOrigin, new MiniWorldRay()
-								{
-									miniWorld = workspace as ChessboardWorkspace,
-									originalRayOrigin = rayOriginBase.Value
-								});
-							}
-							break;
-						}
-					}
-				}
-			}
-		}
 	}
 
 	private void OnWorkspaceClosed(Workspace workspace)
 	{
 		m_AllWorkspaces.Remove(workspace);
-
-		var chessboard = workspace as ChessboardWorkspace;
-		if (chessboard)
-		{
-			foreach (var ray in m_MiniWorldRays)
-			{
-				if (ray.Value.miniWorld.Equals(chessboard))
-				{
-					m_InputModule.RemoveRaycastSource(ray.Key);
-				}
-			}
-		}
-	}
-
-	private void UpdateMiniWorldRays()
-	{
-		foreach (var ray in m_MiniWorldRays)
-		{
-			Debug.Log(ray.Key, ray.Value.originalRayOrigin);
-			ray.Key.position = ray.Value.miniWorld.referenceTransform.position + ray.Value.originalRayOrigin.position;
-			ray.Key.rotation = ray.Value.miniWorld.referenceTransform.rotation * ray.Value.originalRayOrigin.rotation;
-
-			m_InputModule.SetRaycastSourceActive(ray.Key, ray.Value.miniWorld.IsContainedWithin(ray.Key.position));
-		}
 	}
 
 #if UNITY_EDITOR
