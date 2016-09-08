@@ -40,7 +40,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 	}
 
 	public Transform referenceTransform { get { return m_MiniWorld.referenceTransform; } }
-
+	public Transform miniWorldTransform { get { return m_MiniWorld.miniWorldTransform; } }
 	public bool IsContainedWithin(Vector3 position) { return m_MiniWorld.IsContainedWithin(position); }
 
 	public override void Setup()

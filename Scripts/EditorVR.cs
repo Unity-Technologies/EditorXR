@@ -82,6 +82,7 @@ public class EditorVR : MonoBehaviour
 	{
 		public Transform originalRayOrigin;
 		public IMiniWorld miniWorld;
+		public IProxy proxy;
 	}
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
@@ -846,7 +847,8 @@ public class EditorVR : MonoBehaviour
 							if (m_DeviceData.TryGetValue(device, out deviceData))
 							{
 								// Create fake rayOrigin
-								var fakeRayOrigin = new GameObject("FakeRayOrigin").transform;
+								//var fakeRayOrigin = new GameObject("FakeRayOrigin").transform;
+								var fakeRayOrigin = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
 								fakeRayOrigin.parent = workspace.transform;
 
 								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
@@ -854,7 +856,8 @@ public class EditorVR : MonoBehaviour
 								m_MiniWorldRays.Add(fakeRayOrigin, new MiniWorldRay()
 								{
 									miniWorld = workspace as ChessboardWorkspace,
-									originalRayOrigin = rayOriginBase.Value
+									originalRayOrigin = rayOriginBase.Value,
+									proxy = proxy
 								});
 							}
 							break;
@@ -886,11 +889,25 @@ public class EditorVR : MonoBehaviour
 	{
 		foreach (var ray in m_MiniWorldRays)
 		{
-			Debug.Log(ray.Key, ray.Value.originalRayOrigin);
-			ray.Key.position = ray.Value.miniWorld.referenceTransform.position + ray.Value.originalRayOrigin.position;
-			ray.Key.rotation = ray.Value.miniWorld.referenceTransform.rotation * ray.Value.originalRayOrigin.rotation;
+			var fakeRayOrigin = ray.Key;
+			if (!ray.Value.proxy.active)
+			{
+				fakeRayOrigin.gameObject.SetActive(false);
 
-			m_InputModule.SetRaycastSourceActive(ray.Key, ray.Value.miniWorld.IsContainedWithin(ray.Key.position));
+				m_InputModule.SetRaycastSourceActive(fakeRayOrigin, false);
+				continue;
+			}
+			
+			var miniWorld = ray.Value.miniWorld;
+			var originalRayOrigin = ray.Value.originalRayOrigin;
+			var referenceTransform = miniWorld.referenceTransform;
+			fakeRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
+			fakeRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
+			fakeRayOrigin.localScale = Vector3.Scale(Vector3.one * 0.02f, miniWorld.referenceTransform.localScale);
+
+			fakeRayOrigin.gameObject.SetActive(miniWorld.IsContainedWithin(originalRayOrigin.position));
+
+			m_InputModule.SetRaycastSourceActive(fakeRayOrigin, miniWorld.IsContainedWithin(originalRayOrigin.position));
 		}
 	}
 

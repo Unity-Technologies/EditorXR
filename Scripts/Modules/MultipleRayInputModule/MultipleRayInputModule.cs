@@ -44,7 +44,7 @@ namespace UnityEngine.VR.Modules
 			public GameObject hoveredObject;
 			public GameObject pressedObject;
 			public GameObject draggedObject;
-			public bool active;
+			public bool active = true;
 
 			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput)
 			{

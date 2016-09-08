@@ -21,6 +21,7 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 
 	private MiniWorldRenderer m_MiniWorldRenderer;
 
+	public Transform miniWorldTransform { get { return transform; } }
 	/// <summary>
 	/// RefernceTransform defines world space within the MiniWorld. When scaled up, a larger area is represented,
 	/// thus the objects in the MiniWorld get smaller.
@@ -46,7 +47,14 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 
 	public bool IsContainedWithin(Vector3 position)
 	{
+		Debug.DrawLine(Vector3.zero, position);
+		Debug.DrawLine(Vector3.zero, transform.InverseTransformPoint(position), Color.red);
 		return localBounds.Contains(transform.InverseTransformPoint(position));
+	}
+
+	void OnDrawGizmos()
+	{
+		Gizmos.DrawWireCube(localBounds.center, localBounds.size);
 	}
 
 	private void OnEnable()
