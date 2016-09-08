@@ -11,17 +11,10 @@ namespace UnityEngine.VR.Handles
 	/// </summary>
 	public class BaseHandle : MonoBehaviour, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler
 	{
-		[Flags]
-		public enum HandleFlags
-		{
-			Ray = 1 << 0,
-			Direct = 1 << 1
-		}
-
 		public HandleFlags handleFlags { get { return m_HandleFlags; } set { m_HandleFlags = value; } }
 		[SerializeField]
 		[FlagsProperty]
-		private HandleFlags m_HandleFlags;
+		private HandleFlags m_HandleFlags = HandleFlags.Ray | HandleFlags.Direct;
 
 		public event Action<BaseHandle, HandleEventData> handleDragging = delegate { };
 		public event Action<BaseHandle, HandleEventData> handleDrag = delegate { };
@@ -58,12 +51,7 @@ namespace UnityEngine.VR.Handles
 
 		protected virtual HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new HandleEventData(eventData.rayOrigin, IsDirectSelection(eventData));
-		}
-
-		protected virtual bool IsDirectSelection(RayEventData eventData)
-		{
-			return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength;
+			return new HandleEventData(eventData.rayOrigin, U.Input.IsDirectEvent(eventData));
 		}
 
 		protected virtual bool ValidEvent(HandleEventData eventData)

@@ -1,7 +1,18 @@
-﻿namespace UnityEngine.VR.Utilities
+﻿using System;
+using UnityEngine.VR.Handles;
+using UnityEngine.VR.Modules;
+
+namespace UnityEngine.VR.Utilities
 {
 	using System.Collections.Generic;
 	using UnityEngine.InputNew;
+
+	[Flags]
+	public enum HandleFlags
+	{
+		Ray = 1 << 0,
+		Direct = 1 << 1
+	}
 
 	/// <summary>
 	/// EditorVR Utilities
@@ -52,6 +63,22 @@
 			public static bool DoubleClick(float timeSinceLastClick)
 			{
 				return timeSinceLastClick <= kDoubleClickIntervalMax && timeSinceLastClick >= kDoubleClickIntervalMin;
+			}
+
+			public static bool IsDirectEvent(RayEventData eventData)
+			{
+				return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength;
+			}
+
+			public static bool IsValidEvent(RayEventData eventData, HandleFlags handleFlags)
+			{
+				if ((handleFlags & HandleFlags.Direct) != 0 && IsDirectEvent(eventData))
+					return true;
+
+				if ((handleFlags & HandleFlags.Ray) != 0)
+					return true;
+
+				return false;
 			}
 		}
 	}
