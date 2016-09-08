@@ -600,7 +600,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: -2
 --- !u!114 &114000011014117582
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -667,7 +667,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: -2
 --- !u!114 &114000011990078262
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -721,7 +721,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_HandleFlags: -2
+  m_SelectionFlags: -2
 --- !u!114 &114000012144030156
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -734,7 +734,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: -1
 --- !u!114 &114000012171468040
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -844,7 +844,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_HandleFlags: -2
+  m_SelectionFlags: -2
 --- !u!114 &114000012827231190
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -857,7 +857,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: -2
 --- !u!114 &114000013854833486
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -870,7 +870,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: -2
 --- !u!114 &114000014067047110
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -883,7 +883,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: -2
 --- !u!114 &114000014215938886
 MonoBehaviour:
   m_ObjectHideFlags: 1
