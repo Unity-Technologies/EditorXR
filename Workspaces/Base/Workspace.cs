@@ -13,7 +13,7 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	public const float kHandleMargin = -0.15f; // Compensate for base size from frame model
 
-	public event Action<Workspace> closed = delegate { };
+	public event Action<Workspace> destroyed = delegate { };
 
 	protected WorkspaceUI m_WorkspaceUI;
 
@@ -231,7 +231,6 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 
 	public virtual void OnCloseClicked()
 	{
-		closed(this);
 		U.Object.Destroy(gameObject);
 	}
 
@@ -245,6 +244,11 @@ public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
 		m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
 		m_WorkspaceUI.vacuumHandle.transform.localScale = outerBounds.size;
 		m_WorkspaceUI.SetBounds(contentBounds);
+	}
+
+	protected virtual void OnDestroy()
+	{
+		destroyed(this);
 	}
 
 	protected abstract void OnBoundsChanged();
