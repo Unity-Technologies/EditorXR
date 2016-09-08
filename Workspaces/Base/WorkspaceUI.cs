@@ -4,6 +4,9 @@ using UnityEngine.VR.Handles;
 
 public class WorkspaceUI : MonoBehaviour
 {
+	public event Action closeClicked = delegate { };
+	public event Action lockClicked = delegate { };
+
 	private const float kPanelOffset = 0f; //The panel needs to be pulled back slightly
 
 	public Transform sceneContainer { get { return m_SceneContainer; } }
@@ -43,9 +46,6 @@ public class WorkspaceUI : MonoBehaviour
 
 	[SerializeField]
 	private SkinnedMeshRenderer m_Frame;
-
-	public event Action closeClicked = delegate { };
-	public event Action lockClicked = delegate { };
 
 	public void SetBounds(Bounds bounds)
 	{
