@@ -51,12 +51,12 @@ namespace UnityEngine.VR.Handles
 
 		protected virtual HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new HandleEventData(eventData.rayOrigin, U.Input.IsDirectEvent(eventData));
+			return new HandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData));
 		}
 
 		public void OnBeginDrag(RayEventData eventData)
 		{
-			if (!U.Input.IsValidEvent(eventData, selectionFlags))
+			if (!U.UI.IsValidEvent(eventData, selectionFlags))
 				return;
 
 			m_DragSources.Add(eventData.rayOrigin);
@@ -67,7 +67,7 @@ namespace UnityEngine.VR.Handles
 			//Double-click logic
 			var timeSinceLastClick = (float)(DateTime.Now - m_LastClickTime).TotalSeconds;
 			m_LastClickTime = DateTime.Now;
-			if (U.Input.DoubleClick(timeSinceLastClick))
+			if (U.UI.DoubleClick(timeSinceLastClick))
 			{
 				OnDoubleClick(handleEventData);
 			}
@@ -89,7 +89,7 @@ namespace UnityEngine.VR.Handles
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			if (!U.Input.IsValidEvent(eventData, selectionFlags))
+			if (!U.UI.IsValidEvent(eventData, selectionFlags))
 				return;
 
 			m_HoverSources.Add(eventData.rayOrigin);

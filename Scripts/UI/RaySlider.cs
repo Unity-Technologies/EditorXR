@@ -4,19 +4,12 @@ using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class RayButton : Button {
+public class RaySlider : Slider {
 	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 	[SerializeField]
 	[FlagsProperty]
 	private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
-
-	public override void OnPointerClick(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if(rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			base.OnPointerClick(eventData);
-	}
-
+	
 	public override void OnPointerEnter(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
@@ -45,12 +38,11 @@ public class RayButton : Button {
 			base.OnPointerUp(eventData);
 	}
 
-	public override void OnSubmit(BaseEventData eventData)
+	public override void OnDrag(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		Debug.Log(rayEventData);
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			base.OnSubmit(eventData);
+			base.OnDrag(eventData);
 	}
 
 	public override void OnSelect(BaseEventData eventData)

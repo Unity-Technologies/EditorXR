@@ -1,6 +1,4 @@
-﻿using UnityEngine.VR.Modules;
-
-namespace UnityEngine.VR.Utilities
+﻿namespace UnityEngine.VR.Utilities
 {
 	using System.Collections.Generic;
 	using UnityEngine.InputNew;
@@ -15,9 +13,6 @@ namespace UnityEngine.VR.Utilities
 		/// </summary>
 		public static class Input
 		{
-			private const float kDoubleClickIntervalMax = 0.3f;
-			private const float kDoubleClickIntervalMin = 0.15f;
-
 			public static HashSet<InputDevice> CollectInputDevicesFromActionMaps(List<ActionMap> maps)
 			{
 				var inputDevices = new HashSet<InputDevice>();
@@ -49,27 +44,6 @@ namespace UnityEngine.VR.Utilities
 				{
 					deviceSlots.Add(deviceSlot);
 				}
-			}
-
-			public static bool DoubleClick(float timeSinceLastClick)
-			{
-				return timeSinceLastClick <= kDoubleClickIntervalMax && timeSinceLastClick >= kDoubleClickIntervalMin;
-			}
-
-			public static bool IsDirectEvent(RayEventData eventData)
-			{
-				return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength;
-			}
-
-			public static bool IsValidEvent(RayEventData eventData, SelectionFlags selectionFlags)
-			{
-				if ((selectionFlags & SelectionFlags.Direct) != 0 && IsDirectEvent(eventData))
-					return true;
-
-				if ((selectionFlags & SelectionFlags.Ray) != 0)
-					return true;
-
-				return false;
 			}
 		}
 	}

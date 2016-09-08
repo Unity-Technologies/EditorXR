@@ -1,8 +1,8 @@
 ﻿using UnityEditor;
 using UnityEditor.UI;
 
-[CustomEditor(typeof(RayButton))]
-public class RayButtonEditor : ButtonEditor {
+[CustomEditor(typeof(RaySlider))]
+public class RaySliderEditor : SliderEditor {
 	public override void OnInspectorGUI()
 	{
 		serializedObject.Update();
