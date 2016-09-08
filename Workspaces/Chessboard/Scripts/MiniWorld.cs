@@ -47,14 +47,7 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 
 	public bool IsContainedWithin(Vector3 position)
 	{
-		Debug.DrawLine(Vector3.zero, position);
-		Debug.DrawLine(Vector3.zero, transform.InverseTransformPoint(position), Color.red);
 		return localBounds.Contains(transform.InverseTransformPoint(position));
-	}
-
-	void OnDrawGizmos()
-	{
-		Gizmos.DrawWireCube(localBounds.center, localBounds.size);
 	}
 
 	private void OnEnable()

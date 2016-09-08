@@ -847,8 +847,7 @@ public class EditorVR : MonoBehaviour
 							if (m_DeviceData.TryGetValue(device, out deviceData))
 							{
 								// Create fake rayOrigin
-								//var fakeRayOrigin = new GameObject("FakeRayOrigin").transform;
-								var fakeRayOrigin = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
+								var fakeRayOrigin = new GameObject("FakeRayOrigin").transform;
 								fakeRayOrigin.parent = workspace.transform;
 
 								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
@@ -891,21 +890,13 @@ public class EditorVR : MonoBehaviour
 		{
 			var fakeRayOrigin = ray.Key;
 			if (!ray.Value.proxy.active)
-			{
-				fakeRayOrigin.gameObject.SetActive(false);
-
-				m_InputModule.SetRaycastSourceActive(fakeRayOrigin, false);
 				continue;
-			}
 			
 			var miniWorld = ray.Value.miniWorld;
 			var originalRayOrigin = ray.Value.originalRayOrigin;
 			var referenceTransform = miniWorld.referenceTransform;
 			fakeRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
 			fakeRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
-			fakeRayOrigin.localScale = Vector3.Scale(Vector3.one * 0.02f, miniWorld.referenceTransform.localScale);
-
-			fakeRayOrigin.gameObject.SetActive(miniWorld.IsContainedWithin(originalRayOrigin.position));
 
 			m_InputModule.SetRaycastSourceActive(fakeRayOrigin, miniWorld.IsContainedWithin(originalRayOrigin.position));
 		}
