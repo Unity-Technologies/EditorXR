@@ -2,10 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Extensions;
+using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {
@@ -131,7 +130,7 @@ namespace UnityEngine.VR.Menus
 					case VisibilityState.Hidden:
 						if (value)
 						{
-							StopCoroutine(ref m_VisibilityCoroutine);
+							this.StopCoroutine(ref m_VisibilityCoroutine);
 							m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 						}
 						return;
@@ -139,7 +138,7 @@ namespace UnityEngine.VR.Menus
 					case VisibilityState.Visible:
 						if (!value)
 						{
-							StopCoroutine(ref m_VisibilityCoroutine);
+							this.StopCoroutine(ref m_VisibilityCoroutine);
 							m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 						}
 						return;

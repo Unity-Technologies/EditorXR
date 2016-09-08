@@ -4,6 +4,9 @@ using UnityEngine.VR.Handles;
 
 public class WorkspaceUI : MonoBehaviour
 {
+	public event Action closeClicked = delegate { };
+	public event Action lockClicked = delegate { };
+
 	private const float kPanelOffset = 0f; //The panel needs to be pulled back slightly
 
 	public Transform sceneContainer { get { return m_SceneContainer; } }
@@ -44,12 +47,6 @@ public class WorkspaceUI : MonoBehaviour
 	[SerializeField]
 	private SkinnedMeshRenderer m_Frame;
 
-	[SerializeField]
-	private Transform m_BoundsCube;
-
-	public event Action closeClicked = delegate { };
-	public event Action lockClicked = delegate { };
-
 	public void SetBounds(Bounds bounds)
 	{
 		//Because BlendShapes cap at 100, our workspace maxes out at 100m wide
@@ -70,10 +67,6 @@ public class WorkspaceUI : MonoBehaviour
 
 		m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandle.transform.localPosition.y, bounds.extents.z - handleScale);
 		m_BackHandle.transform.localScale = new Vector3(bounds.size.x, handleScale, handleScale);
-
-		//Resize bounds cube
-		m_BoundsCube.transform.localScale = bounds.size;
-		m_BoundsCube.transform.localPosition = Vector3.up * bounds.extents.y;
 
 		//Resize front panel
 		m_FrontPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x);

@@ -1,9 +1,7 @@
 using System;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
 
 public class NumericInputButton : MonoBehaviour
 {
