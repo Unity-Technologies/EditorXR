@@ -1,18 +1,9 @@
-﻿using System;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
+﻿using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Utilities
 {
 	using System.Collections.Generic;
 	using UnityEngine.InputNew;
-
-	[Flags]
-	public enum HandleFlags
-	{
-		Ray = 1 << 0,
-		Direct = 1 << 1
-	}
 
 	/// <summary>
 	/// EditorVR Utilities
@@ -70,12 +61,12 @@ namespace UnityEngine.VR.Utilities
 				return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength;
 			}
 
-			public static bool IsValidEvent(RayEventData eventData, HandleFlags handleFlags)
+			public static bool IsValidEvent(RayEventData eventData, SelectionFlags selectionFlags)
 			{
-				if ((handleFlags & HandleFlags.Direct) != 0 && IsDirectEvent(eventData))
+				if ((selectionFlags & SelectionFlags.Direct) != 0 && IsDirectEvent(eventData))
 					return true;
 
-				if ((handleFlags & HandleFlags.Ray) != 0)
+				if ((selectionFlags & SelectionFlags.Ray) != 0)
 					return true;
 
 				return false;

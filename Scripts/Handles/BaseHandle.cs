@@ -11,10 +11,10 @@ namespace UnityEngine.VR.Handles
 	/// </summary>
 	public class BaseHandle : MonoBehaviour, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler
 	{
-		public HandleFlags handleFlags { get { return m_HandleFlags; } set { m_HandleFlags = value; } }
+		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]
 		[FlagsProperty]
-		private HandleFlags m_HandleFlags = HandleFlags.Ray | HandleFlags.Direct;
+		private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
 		public event Action<BaseHandle, HandleEventData> handleDragging = delegate { };
 		public event Action<BaseHandle, HandleEventData> handleDrag = delegate { };
@@ -54,25 +54,15 @@ namespace UnityEngine.VR.Handles
 			return new HandleEventData(eventData.rayOrigin, U.Input.IsDirectEvent(eventData));
 		}
 
-		protected virtual bool ValidEvent(HandleEventData eventData)
-		{
-			if ((handleFlags & HandleFlags.Direct) != 0 && eventData.direct)
-				return true;
-
-			if ((handleFlags & HandleFlags.Ray) != 0)
-				return true;
-
-			return false;
-		}
-
 		public void OnBeginDrag(RayEventData eventData)
 		{
-			var handleEventData = GetHandleEventData(eventData);
-			if (!ValidEvent(handleEventData))
+			if (!U.Input.IsValidEvent(eventData, selectionFlags))
 				return;
 
 			m_DragSources.Add(eventData.rayOrigin);
 			startDragPosition = eventData.pointerCurrentRaycast.worldPosition;
+
+			var handleEventData = GetHandleEventData(eventData);
 
 			//Double-click logic
 			var timeSinceLastClick = (float)(DateTime.Now - m_LastClickTime).TotalSeconds;
@@ -99,12 +89,11 @@ namespace UnityEngine.VR.Handles
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			var handleEventData = GetHandleEventData(eventData);
-			if (!ValidEvent(handleEventData))
+			if (!U.Input.IsValidEvent(eventData, selectionFlags))
 				return;
 
 			m_HoverSources.Add(eventData.rayOrigin);
-			OnHandleRayEnter(handleEventData);
+			OnHandleRayEnter(GetHandleEventData(eventData));
 		}
 
 		public void OnRayHover(RayEventData eventData)
@@ -113,7 +102,7 @@ namespace UnityEngine.VR.Handles
 
 			// Direct selection has special handling for enter/exit since those events may not have been called
 			// because the pointer wasn't close enough to the handle
-			if (handleFlags == HandleFlags.Direct)
+			if (selectionFlags == SelectionFlags.Direct)
 			{
 				if (!handleEventData.direct && m_HoverSources.Remove(eventData.rayOrigin))
 				{

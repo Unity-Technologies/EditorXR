@@ -1,48 +1,47 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
 public class RayButton : Button {
-	public HandleFlags handleFlags { get { return m_HandleFlags; } set { m_HandleFlags = value; } }
+	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 	[SerializeField]
 	[FlagsProperty]
-	private HandleFlags m_HandleFlags = HandleFlags.Ray | HandleFlags.Direct;
+	private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
 	public override void OnPointerClick(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		if(rayEventData == null || U.Input.IsValidEvent(rayEventData, handleFlags))
+		if(rayEventData == null || U.Input.IsValidEvent(rayEventData, selectionFlags))
 			base.OnPointerClick(eventData);
 	}
 
 	public override void OnPointerEnter(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.Input.IsValidEvent(rayEventData, handleFlags))
+		if (rayEventData == null || U.Input.IsValidEvent(rayEventData, selectionFlags))
 			base.OnPointerEnter(eventData);
 	}
 
 	public override void OnPointerExit(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.Input.IsValidEvent(rayEventData, handleFlags))
+		if (rayEventData == null || U.Input.IsValidEvent(rayEventData, selectionFlags))
 			base.OnPointerExit(eventData);
 	}
 
 	public override void OnPointerDown(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.Input.IsValidEvent(rayEventData, handleFlags))
+		if (rayEventData == null || U.Input.IsValidEvent(rayEventData, selectionFlags))
 			base.OnPointerDown(eventData);
 	}
 
 	public override void OnPointerUp(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.Input.IsValidEvent(rayEventData, handleFlags))
+		if (rayEventData == null || U.Input.IsValidEvent(rayEventData, selectionFlags))
 			base.OnPointerUp(eventData);
 	}
 
@@ -50,7 +49,7 @@ public class RayButton : Button {
 	{
 		var rayEventData = eventData as RayEventData;
 		Debug.Log(rayEventData);
-		if (rayEventData == null || U.Input.IsValidEvent(rayEventData, handleFlags))
+		if (rayEventData == null || U.Input.IsValidEvent(rayEventData, selectionFlags))
 			base.OnSubmit(eventData);
 	}
 
