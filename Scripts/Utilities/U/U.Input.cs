@@ -6,12 +6,12 @@
 	/// <summary>
 	/// EditorVR Utilities
 	/// </summary>
-	public partial class U
+	public static partial class U
 	{
 		/// <summary>
 		/// Input related EditorVR utilities
 		/// </summary>
-		public class Input
+		public static class Input
 		{
 			private const float kDoubleClickIntervalMax = 0.3f;
 			private const float kDoubleClickIntervalMin = 0.15f;

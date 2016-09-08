@@ -21,8 +21,6 @@ public class ConsoleWorkspace : Workspace
 		bounds.size = size;
 		contentBounds = bounds;
 
-		m_WorkspaceUI.boundsVisible = false;
-
 		m_ConsoleWindow.localScale = size;
 	}
 
