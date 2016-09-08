@@ -44,7 +44,7 @@ namespace UnityEngine.VR.Modules
 			public GameObject hoveredObject;
 			public GameObject pressedObject;
 			public GameObject draggedObject;
-			public bool active;
+
 
 			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput)
 			{
@@ -55,7 +55,7 @@ namespace UnityEngine.VR.Modules
 			}
 		}
 
-		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin = null)
+		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput)
 		{
 			UIActions actions = (UIActions) actionMapInput;
 			if (actions == null)
@@ -64,30 +64,13 @@ namespace UnityEngine.VR.Modules
 				return;
 			}
 			actions.active = false;
-			if (rayOrigin != null)
-			{
-				m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions));
-			}
-			else if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
+			Transform rayOrigin = null;
+			if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
 			{
 				m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions));
 			}
 			else
 				Debug.LogError("Failed to get ray origin transform for node " + node + " from proxy " + proxy);
-		}
-
-		public void RemoveRaycastSource(Transform rayOrigin)
-		{
-			m_RaycastSources.Remove(rayOrigin);
-		}
-
-		public void SetRaycastSourceActive(Transform rayOrigin, bool active)
-		{
-			RaycastSource source;
-			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
-				source.active = active;
-			else
-				Debug.LogError("Failed to get ray origin transform for " + rayOrigin);
 		}
 
 		public RayEventData GetPointerEventData(Transform rayOrigin)
@@ -109,7 +92,7 @@ namespace UnityEngine.VR.Modules
 			//Process events for all different transforms in RayOrigins
 			foreach (var source in m_RaycastSources.Values)
 			{				
-				if (!source.active || !source.proxy.active)
+				if (!source.proxy.active)
 					continue;
 
 				if (source.eventData == null)
