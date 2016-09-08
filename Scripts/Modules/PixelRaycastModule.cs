@@ -17,17 +17,10 @@ namespace UnityEditor.VR.Modules
 		/// </summary>
 		/// <param name="proxies"></param> List of proxies to raycast from
 		/// <param name="camera"></param> Camera to use for pixel based raycast (will be moved to the proxies' ray origins
-		public void UpdateRaycasts(List<IProxy> proxies, Camera camera)
+		public void UpdateRaycast(Transform rayOrigin, Camera camera)
 		{
 			UpdateIgnoreList();
-			foreach (var proxy in proxies)
-			{
-				if (proxy.active)
-				{
-					foreach (var rayOrigin in proxy.rayOrigins.Values)
-						m_RaycastGameObjects[rayOrigin] = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera);
-				}
-			}
+			m_RaycastGameObjects[rayOrigin] = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera);
 		}
 
 		public GameObject GetFirstGameObject(Transform rayOrigin)

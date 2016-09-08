@@ -44,7 +44,6 @@ namespace UnityEngine.VR.Modules
 			public GameObject hoveredObject;
 			public GameObject pressedObject;
 			public GameObject draggedObject;
-			public bool active = true;
 
 			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput)
 			{
@@ -81,15 +80,6 @@ namespace UnityEngine.VR.Modules
 			m_RaycastSources.Remove(rayOrigin);
 		}
 
-		public void SetRaycastSourceActive(Transform rayOrigin, bool active)
-		{
-			RaycastSource source;
-			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
-				source.active = active;
-			else
-				Debug.LogError("Failed to get ray origin transform for " + rayOrigin);
-		}
-
 		public RayEventData GetPointerEventData(Transform rayOrigin)
 		{
 			RaycastSource source;
@@ -109,7 +99,7 @@ namespace UnityEngine.VR.Modules
 			//Process events for all different transforms in RayOrigins
 			foreach (var source in m_RaycastSources.Values)
 			{				
-				if (!source.active || !source.proxy.active)
+				if (!source.rayOrigin.gameObject.activeSelf || !source.proxy.active)
 					continue;
 
 				if (source.eventData == null)
@@ -322,6 +312,7 @@ namespace UnityEngine.VR.Modules
 
 			List<RaycastResult> results = new List<RaycastResult>();
 			eventSystem.RaycastAll(eventData, results);
+
 			eventData.pointerCurrentRaycast = FindFirstRaycast(results);
 			hit = eventData.pointerCurrentRaycast.gameObject;
 

@@ -86,6 +86,7 @@ public class EditorVR : MonoBehaviour
 	}
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
+	private readonly List<Transform> m_FakeRayOrigins = new List<Transform>();
 
 	private void Awake()
 	{
@@ -169,7 +170,15 @@ public class EditorVR : MonoBehaviour
 	{
 		if (Event.current.type == EventType.MouseMove)
 		{
-			m_PixelRaycastModule.UpdateRaycasts(m_AllProxies, m_EventCamera);
+			foreach (var proxy in m_AllProxies)
+			{
+				if(!proxy.active)
+					continue;
+				foreach (var rayOrigin in proxy.rayOrigins.Values)
+					m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera);
+				foreach (var fakeRayOrigin in m_MiniWorldRays.Keys)
+					m_PixelRaycastModule.UpdateRaycast(fakeRayOrigin, m_EventCamera);
+			}
 			UpdateDefaultProxyRays();
 		}
 	}
@@ -616,7 +625,7 @@ public class EditorVR : MonoBehaviour
 
 		var raycaster = obj as IRaycaster;
 		if (raycaster != null)
-			raycaster.getFirstGameObject = m_PixelRaycastModule.GetFirstGameObject;
+			raycaster.getFirstGameObject = GetFirstGameObject;
 
 		var highlight = obj as IHighlight;
 		if (highlight != null)
@@ -851,6 +860,8 @@ public class EditorVR : MonoBehaviour
 								var fakeRayOrigin = new GameObject("FakeRayOrigin").transform;
 								fakeRayOrigin.parent = workspace.transform;
 
+								m_FakeRayOrigins.Add(fakeRayOrigin);
+
 								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 								m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, deviceData.uiInput, fakeRayOrigin);
 								m_MiniWorldRays.Add(fakeRayOrigin, new MiniWorldRay()
@@ -879,6 +890,7 @@ public class EditorVR : MonoBehaviour
 			{
 				if (ray.Value.miniWorld.Equals(chessboard))
 				{
+					m_FakeRayOrigins.Remove(ray.Key);
 					m_InputModule.RemoveRaycastSource(ray.Key);
 				}
 			}
@@ -891,16 +903,36 @@ public class EditorVR : MonoBehaviour
 		{
 			var fakeRayOrigin = ray.Key;
 			if (!ray.Value.proxy.active)
+			{
+				fakeRayOrigin.gameObject.SetActive(false);
 				continue;
-			
+			}
+
 			var miniWorld = ray.Value.miniWorld;
 			var originalRayOrigin = ray.Value.originalRayOrigin;
 			var referenceTransform = miniWorld.referenceTransform;
 			fakeRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
 			fakeRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
 
-			m_InputModule.SetRaycastSourceActive(fakeRayOrigin, miniWorld.IsContainedWithin(originalRayOrigin.position));
+			var isContained = miniWorld.IsContainedWithin(originalRayOrigin.position);
+			fakeRayOrigin.gameObject.SetActive(isContained);
 		}
+	}
+
+	private GameObject GetFirstGameObject(Transform rayOrigin)
+	{
+		var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+		if (!go)
+		{
+			foreach (var miniWorldRay in m_MiniWorldRays)
+			{
+				if(miniWorldRay.Value.originalRayOrigin.Equals(rayOrigin))
+					go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRay.Key);
+				if (go)
+					break;
+			}
+		}
+		return go;
 	}
 
 #if UNITY_EDITOR
