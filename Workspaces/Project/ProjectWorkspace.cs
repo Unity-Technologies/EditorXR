@@ -60,7 +60,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 		Debug.LogWarning("Project workspace does not work in builds");
 		return;
 #endif
-		var scrollHandles = new []
+		var scrollHandles = new[]
 		{
 			m_ProjectUI.folderScrollHandle,
 			m_ProjectUI.assetScrollHandle
@@ -76,8 +76,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 			handle.hovering += OnScrollHoverEnter;
 			handle.hovered += OnScrollHoverExit;
 		}
-
-		m_WorkspaceUI.showBounds = false;
 
 		// Propagate initial bounds
 		OnBoundsChanged();
@@ -119,7 +117,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 		bounds.size = size;
 
 		xOffset = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f;
-			
+
 		var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
 		assetScrollHandleTransform.localPosition = new Vector3(xOffset + halfScrollMargin, -assetScrollHandleTransform.localScale.y * 0.5f);
 		assetScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, assetScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
@@ -166,11 +164,14 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 
 	private void OnScrollEndDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		Scroll(handle,eventData);
-		if (handle == m_ProjectUI.folderScrollHandle) {
+		Scroll(handle, eventData);
+		if (handle == m_ProjectUI.folderScrollHandle)
+		{
 			m_ScrollOffsetStart = m_ProjectUI.folderListView.scrollOffset;
 			m_ProjectUI.folderListView.OnEndScrolling();
-		} else if (handle == m_ProjectUI.assetScrollHandle) {
+		}
+		else if (handle == m_ProjectUI.assetScrollHandle)
+		{
 			m_ScrollOffsetStart = m_ProjectUI.assetListView.scrollOffset;
 			m_ProjectUI.assetListView.OnEndScrolling();
 		}
@@ -181,15 +182,17 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 		var scrollOffset = m_ScrollOffsetStart + Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
 		if (handle == m_ProjectUI.folderScrollHandle)
 			m_ProjectUI.folderListView.scrollOffset = scrollOffset;
-		else if(handle == m_ProjectUI.assetScrollHandle)
+		else if (handle == m_ProjectUI.assetScrollHandle)
 			m_ProjectUI.assetListView.scrollOffset = scrollOffset;
 	}
 
-	private void OnScrollHoverEnter(BaseHandle handle, HandleEventData eventData = default(HandleEventData)) {
+	private void OnScrollHoverEnter(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	{
 		setHighlight(handle.gameObject, true);
 	}
 
-	private void OnScrollHoverExit(BaseHandle handle, HandleEventData eventData = default(HandleEventData)) {
+	private void OnScrollHoverExit(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	{
 		setHighlight(handle.gameObject, false);
 	}
 
@@ -209,8 +212,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 		var assetTypes = new HashSet<string>();
 		var rootFolder = CreateFolderData(assetTypes);
 		rootFolder.expanded = true;
-		m_ProjectUI.folderListView.listData = new[] { rootFolder };
-		
+		m_ProjectUI.folderListView.listData = new[] {rootFolder};
+
 		SelectFolder(rootFolder);
 
 		m_FilterUI.filterTypes = assetTypes.ToList();
@@ -234,7 +237,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 			else if (hp.depth == depth + 1) // Ignore sub-assets (mixer children, terrain splats, etc.)
 				assetList.Add(CreateAssetData(assetTypes, hp));
 		}
-		return new FolderData(name, folderList.Count > 0 ? folderList.ToArray(): null, assetList.Count > 0 ? assetList.ToArray() : null);
+		return new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.Count > 0 ? assetList.ToArray() : null);
 	}
 
 	private AssetData CreateAssetData(HashSet<string> assetTypes, HierarchyProperty hp)
@@ -267,7 +270,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 		return new AssetData(hp.name, hp.instanceID, hp.icon, type);
 	}
 
-	private void OnDestroy()
+	protected override void OnDestroy()
 	{
 		EditorApplication.projectWindowChanged -= SetupFolderList;
 	}
