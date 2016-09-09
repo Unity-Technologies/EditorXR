@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.VR.Proxies;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEditor.VR.Modules
 {
@@ -17,10 +17,20 @@ namespace UnityEditor.VR.Modules
 		/// </summary>
 		/// <param name="proxies"></param> List of proxies to raycast from
 		/// <param name="camera"></param> Camera to use for pixel based raycast (will be moved to the proxies' ray origins
-		public void UpdateRaycast(Transform rayOrigin, Camera camera)
+		public GameObject UpdateRaycast(Transform rayOrigin, Camera camera, float pointerLength = 0f)
 		{
 			UpdateIgnoreList();
-			m_RaycastGameObjects[rayOrigin] = rayOrigin.gameObject.activeSelf ? Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera) : null;
+			float distance = 0;
+			GameObject result = null;
+			result = rayOrigin.gameObject.activeSelf ? Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera, out distance) : null;
+
+			if (pointerLength > 0 && rayOrigin.gameObject.activeSelf)
+			{
+				if (pointerLength > 0 && distance > pointerLength)
+					result = null;
+			}
+			m_RaycastGameObjects[rayOrigin] = result;
+			return result;
 		}
 
 		public GameObject GetFirstGameObject(Transform rayOrigin)
@@ -41,7 +51,7 @@ namespace UnityEditor.VR.Modules
 				m_IgnoreList[i] = children[i].gameObject;
 		}
 
-		private GameObject Raycast(Ray ray, Camera camera)
+		private GameObject Raycast(Ray ray, Camera camera, out float distance)
 		{
 			camera.transform.position = ray.origin;
 			camera.transform.forward = ray.direction;
@@ -52,6 +62,16 @@ namespace UnityEditor.VR.Modules
 			Camera.SetupCurrent(camera);
 
 			var go = HandleUtility.PickGameObject(camera.pixelRect.center, false, m_IgnoreList);
+			distance = float.MaxValue;
+			if (go)
+			{
+				foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+				{
+					var newDist = 0f;
+					if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
+						distance = Mathf.Min(distance, newDist);
+				}
+			}
 
 			Camera.SetupCurrent(restoreCamera);
 			RenderTexture.ReleaseTemporary(camera.targetTexture);

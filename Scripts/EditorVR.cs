@@ -80,13 +80,16 @@ public class EditorVR : MonoBehaviour
 
 	private class MiniWorldRay
 	{
+		public Transform fakeRayOrigin;
 		public Transform originalRayOrigin;
 		public IMiniWorld miniWorld;
 		public IProxy proxy;
 		public ActionMapInput uiInput;
+		public GameObject hoverObject;
+		public GameObject selectedObject;
 	}
 
-	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
+	private readonly List<MiniWorldRay> m_MiniWorldRays = new List<MiniWorldRay>();
 	private readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>(); 
 
 	private void Awake()
@@ -177,8 +180,18 @@ public class EditorVR : MonoBehaviour
 					continue;
 				foreach (var rayOrigin in proxy.rayOrigins.Values)
 					m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera);
-				foreach (var fakeRayOrigin in m_MiniWorldRays.Keys)
-					m_PixelRaycastModule.UpdateRaycast(fakeRayOrigin, m_EventCamera);
+				foreach (var miniWorldRay in m_MiniWorldRays)
+				{
+					miniWorldRay.hoverObject = m_PixelRaycastModule.UpdateRaycast(miniWorldRay.fakeRayOrigin, m_EventCamera, GetMiniWorldPointerLength(miniWorldRay));
+					if(Selection.gameObjects.Contains(miniWorldRay.hoverObject))
+					{
+						miniWorldRay.selectedObject = miniWorldRay.hoverObject;
+					}
+					else if(miniWorldRay.hoverObject)
+					{
+						miniWorldRay.selectedObject = null;
+					}
+				}
 			}
 			UpdateDefaultProxyRays();
 		}
@@ -437,7 +450,7 @@ public class EditorVR : MonoBehaviour
 				maps.Add(deviceData.uiInput);
 		}
 
-		maps.AddRange(m_MiniWorldRays.Values.Select(miniWorldRay => miniWorldRay.uiInput));
+		maps.AddRange(m_MiniWorldRays.Select(miniWorldRay => miniWorldRay.uiInput));
 
 		maps.Add(m_TrackedObjectInput);
 
@@ -661,6 +674,14 @@ public class EditorVR : MonoBehaviour
 		return length;
 	}
 
+	private float GetMiniWorldPointerLength(MiniWorldRay ray)
+	{
+		var length = GetPointerLength(ray.originalRayOrigin);
+		//Assume uniform scale, no rotation
+		length *= Vector3.Scale(ray.miniWorld.referenceTransform.localScale, ray.miniWorld.miniWorldTransform.lossyScale).x;
+		return length;
+	}
+
 	private InputDevice GetInputDeviceForTool(ITool tool)
 	{
 		foreach (var kvp in m_DeviceData)
@@ -870,10 +891,11 @@ public class EditorVR : MonoBehaviour
 								m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
 								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 								m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, uiInput, fakeRayOrigin);
-								m_MiniWorldRays.Add(fakeRayOrigin, new MiniWorldRay()
+								m_MiniWorldRays.Add(new MiniWorldRay()
 								{
-									miniWorld = miniWorld,
+									fakeRayOrigin = fakeRayOrigin,
 									originalRayOrigin = rayOriginBase.Value,
+									miniWorld = miniWorld,
 									proxy = proxy,
 									uiInput = uiInput
 								});
@@ -896,12 +918,12 @@ public class EditorVR : MonoBehaviour
 			return;
 
 		m_MiniWorlds.Remove(miniWorld);
-		var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_MiniWorldRays);
-		foreach (var ray in miniWorldRaysCopy.Where(ray => ray.Value.miniWorld.Equals(miniWorld)))
+		var miniWorldRaysCopy = new List<MiniWorldRay>(m_MiniWorldRays);
+		foreach (var ray in miniWorldRaysCopy.Where(ray => ray.miniWorld.Equals(miniWorld)))
 		{
-			m_PlayerHandle.maps.Remove(ray.Value.uiInput);
-			m_InputModule.RemoveRaycastSource(ray.Key);
-			m_MiniWorldRays.Remove(ray.Key);
+			m_PlayerHandle.maps.Remove(ray.uiInput);
+			m_InputModule.RemoveRaycastSource(ray.fakeRayOrigin);
+			m_MiniWorldRays.Remove(ray);
 		}
 	}
 
@@ -909,21 +931,50 @@ public class EditorVR : MonoBehaviour
 	{
 		foreach (var ray in m_MiniWorldRays)
 		{
-			var fakeRayOrigin = ray.Key;
-			if (!ray.Value.proxy.active)
+			var fakeRayOrigin = ray.fakeRayOrigin;
+			if (!ray.proxy.active)
 			{
 				fakeRayOrigin.gameObject.SetActive(false);
 				continue;
 			}
 
-			var miniWorld = ray.Value.miniWorld;
-			var originalRayOrigin = ray.Value.originalRayOrigin;
+			var miniWorld = ray.miniWorld;
+			var originalRayOrigin = ray.originalRayOrigin;
 			var referenceTransform = miniWorld.referenceTransform;
 			fakeRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
 			fakeRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
 
-			var isContained = miniWorld.IsContainedWithin(originalRayOrigin.position);
+			var pointerLength = GetPointerLength(originalRayOrigin);
+			var isContained = miniWorld.IsContainedWithin(originalRayOrigin.position + originalRayOrigin.forward * pointerLength);
 			fakeRayOrigin.gameObject.SetActive(isContained);
+
+			if (ray.selectedObject)
+			{
+				if (!ray.fakeRayOrigin.gameObject.activeSelf)
+				{
+					Selection.objects = new UnityEngine.Object[0];
+					var selectedObject = ray.selectedObject;
+					var currRay = ray;
+					EditorApplication.delayCall += () =>
+					{
+						if (!currRay.originalRayOrigin)
+							return;
+						selectedObject.transform.position = currRay.originalRayOrigin.position;
+						selectedObject.transform.localScale = Vector3.one;
+						var totalBounds = U.Object.GetTotalBounds(selectedObject.transform);
+						if (totalBounds != null)
+						{
+							selectedObject.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.Max());
+						}
+						var uiInput = (UIActions) currRay.uiInput;
+						uiInput.active = true;
+						if (uiInput.select.wasJustReleased)
+						{
+							currRay.selectedObject = null;
+						}
+					};
+				}
+			}
 		}
 	}
 
@@ -934,8 +985,8 @@ public class EditorVR : MonoBehaviour
 		{
 			foreach (var miniWorldRay in m_MiniWorldRays)
 			{
-				if(miniWorldRay.Value.originalRayOrigin.Equals(rayOrigin))
-					go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRay.Key);
+				if(miniWorldRay.originalRayOrigin.Equals(rayOrigin))
+					go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRay.fakeRayOrigin);
 				if (go)
 					break;
 			}
