@@ -86,7 +86,7 @@ public class EditorVR : MonoBehaviour
 	}
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
-	private readonly List<Transform> m_FakeRayOrigins = new List<Transform>();
+	private readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>(); 
 
 	private void Awake()
 	{
@@ -633,7 +633,7 @@ public class EditorVR : MonoBehaviour
 
 		var placeObjects = obj as IPlaceObjects;
 		if (placeObjects != null)
-			placeObjects.placeObject = m_ObjectPlacementModule.PlaceObject;
+			placeObjects.placeObject = PlaceObject;
 
 		if (mainMenu != null)
 		{
@@ -842,8 +842,11 @@ public class EditorVR : MonoBehaviour
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
 
-		if (t == typeof(ChessboardWorkspace))
+		var miniWorld = workspace as IMiniWorld;
+		if (miniWorld != null)
 		{
+			m_MiniWorlds.Add(miniWorld);
+
 			foreach (var proxy in m_AllProxies)
 			{
 				foreach (var rayOriginBase in proxy.rayOrigins)
@@ -860,13 +863,11 @@ public class EditorVR : MonoBehaviour
 								var fakeRayOrigin = new GameObject("FakeRayOrigin").transform;
 								fakeRayOrigin.parent = workspace.transform;
 
-								m_FakeRayOrigins.Add(fakeRayOrigin);
-
 								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 								m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, deviceData.uiInput, fakeRayOrigin);
 								m_MiniWorldRays.Add(fakeRayOrigin, new MiniWorldRay()
 								{
-									miniWorld = workspace as ChessboardWorkspace,
+									miniWorld = miniWorld,
 									originalRayOrigin = rayOriginBase.Value,
 									proxy = proxy
 								});
@@ -883,18 +884,13 @@ public class EditorVR : MonoBehaviour
 	{
 		m_AllWorkspaces.Remove(workspace);
 
-		var chessboard = workspace as ChessboardWorkspace;
-		if (chessboard)
-		{
-			foreach (var ray in m_MiniWorldRays)
-			{
-				if (ray.Value.miniWorld.Equals(chessboard))
-				{
-					m_FakeRayOrigins.Remove(ray.Key);
-					m_InputModule.RemoveRaycastSource(ray.Key);
-				}
-			}
-		}
+		var miniWorld = workspace as IMiniWorld;
+		if (miniWorld == null)
+			return;
+
+		m_MiniWorlds.Remove(miniWorld);
+		foreach (var ray in m_MiniWorldRays.Where(ray => ray.Value.miniWorld.Equals(miniWorld)))
+			m_InputModule.RemoveRaycastSource(ray.Key);
 	}
 
 	private void UpdateMiniWorldRays()
@@ -933,6 +929,25 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 		return go;
+	}
+
+	private void PlaceObject(Transform obj, Vector3 targetScale)
+	{
+		var inMiniWorld = false;
+		foreach (var miniWorld in m_MiniWorlds)
+		{
+			if (miniWorld.IsContainedWithin(obj.position))
+			{
+				inMiniWorld = true;
+				var referenceTransform = miniWorld.referenceTransform;
+				obj.transform.parent = null;
+				obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
+				obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
+				obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
+			}
+		}
+		if(!inMiniWorld)
+			m_ObjectPlacementModule.PlaceObject(obj, targetScale);
 	}
 
 #if UNITY_EDITOR
