@@ -20,7 +20,7 @@ namespace UnityEditor.VR.Modules
 		public void UpdateRaycast(Transform rayOrigin, Camera camera)
 		{
 			UpdateIgnoreList();
-			m_RaycastGameObjects[rayOrigin] = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera);
+			m_RaycastGameObjects[rayOrigin] = rayOrigin.gameObject.activeSelf ? Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera) : null;
 		}
 
 		public GameObject GetFirstGameObject(Transform rayOrigin)
