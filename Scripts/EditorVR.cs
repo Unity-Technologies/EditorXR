@@ -83,6 +83,7 @@ public class EditorVR : MonoBehaviour
 		public Transform originalRayOrigin;
 		public IMiniWorld miniWorld;
 		public IProxy proxy;
+		public ActionMapInput uiInput;
 	}
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
@@ -435,6 +436,8 @@ public class EditorVR : MonoBehaviour
 			if (deviceData.uiInput != null)
 				maps.Add(deviceData.uiInput);
 		}
+
+		maps.AddRange(m_MiniWorldRays.Values.Select(miniWorldRay => miniWorldRay.uiInput));
 
 		maps.Add(m_TrackedObjectInput);
 
@@ -863,13 +866,16 @@ public class EditorVR : MonoBehaviour
 								var fakeRayOrigin = new GameObject("FakeRayOrigin").transform;
 								fakeRayOrigin.parent = workspace.transform;
 
+								var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+								m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
 								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-								m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, deviceData.uiInput, fakeRayOrigin);
+								m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, uiInput, fakeRayOrigin);
 								m_MiniWorldRays.Add(fakeRayOrigin, new MiniWorldRay()
 								{
 									miniWorld = miniWorld,
 									originalRayOrigin = rayOriginBase.Value,
-									proxy = proxy
+									proxy = proxy,
+									uiInput = uiInput
 								});
 							}
 							break;
@@ -884,13 +890,19 @@ public class EditorVR : MonoBehaviour
 	{
 		m_AllWorkspaces.Remove(workspace);
 
+		//Clean up MiniWorldRays
 		var miniWorld = workspace as IMiniWorld;
 		if (miniWorld == null)
 			return;
 
 		m_MiniWorlds.Remove(miniWorld);
-		foreach (var ray in m_MiniWorldRays.Where(ray => ray.Value.miniWorld.Equals(miniWorld)))
+		var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_MiniWorldRays);
+		foreach (var ray in miniWorldRaysCopy.Where(ray => ray.Value.miniWorld.Equals(miniWorld)))
+		{
+			m_PlayerHandle.maps.Remove(ray.Value.uiInput);
 			m_InputModule.RemoveRaycastSource(ray.Key);
+			m_MiniWorldRays.Remove(ray.Key);
+		}
 	}
 
 	private void UpdateMiniWorldRays()

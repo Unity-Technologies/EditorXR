@@ -90,11 +90,9 @@ namespace UnityEngine.VR.Modules
 			if (m_EventCamera == null)
 				return;
 
-			Dictionary<ActionMapInput, bool> activations = new Dictionary<ActionMapInput, bool>();
-
 			//Process events for all different transforms in RayOrigins
 			foreach (var source in m_RaycastSources.Values)
-			{				
+			{
 				if (!(source.rayOrigin.gameObject.activeSelf || source.draggedObject) || !source.proxy.active)
 					continue;
 
@@ -108,17 +106,12 @@ namespace UnityEngine.VR.Modules
 				eventData.pointerLength = getPointerLength(eventData.rayOrigin);
 
 				HandlePointerExitAndEnter(eventData, source.hoveredObject); // Send enter and exit events
-				
-				// Add an entry for this ActionMapInput so it can be deactivated if we aren't interacting
-				if (!activations.ContainsKey(source.actionMapInput))
-					activations[source.actionMapInput] = false;
+
+				source.actionMapInput.active = source.hasObject;
 				
 				// Proceed only if pointer is interacting with something
-				if (!source.hasObject)
+				if (!source.actionMapInput.active)
 					continue;
-
-				// If pointer is interacting, activate input
-				activations[source.actionMapInput] = true;
 
 				var draggedObject = source.draggedObject;
 
@@ -142,9 +135,6 @@ namespace UnityEngine.VR.Modules
 					ExecuteEvents.ExecuteHierarchy(source.hoveredObject, eventData, ExecuteEvents.scrollHandler);
 				}
 			}
-			
-			foreach (var actionMap in activations)
-				actionMap.Key.active = actionMap.Value;
 		}
 
 		private RayEventData CloneEventData(RayEventData eventData)
