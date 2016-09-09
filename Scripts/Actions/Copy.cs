@@ -3,7 +3,7 @@ using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Actions
 {
-	[ActionItemAttribute("Copy", "ActionIcons/CopyIcon")]
+	[ActionItem("Copy", "ActionIcons/CopyIcon")]
 	[ExecuteInEditMode]
 	public class Copy : MonoBehaviour, IAction
 	{

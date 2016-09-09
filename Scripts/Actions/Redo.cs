@@ -1,6 +1,6 @@
 ﻿namespace UnityEngine.VR.Actions
 {
-	[ActionItemAttribute("Redo", "ActionIcons/RedoIcon")]
+	[ActionItem("Redo", "ActionIcons/RedoIcon")]
 	public class Redo : MonoBehaviour, IAction
 	{
 		[SerializeField]

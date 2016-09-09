@@ -2,7 +2,7 @@
 
 namespace UnityEngine.VR.Actions
 {
-	[ActionItemAttribute("SaveScene", "ActionIcons/SaveSceneIcon", "Scene")]
+	[ActionItem("SaveScene", "ActionIcons/SaveSceneIcon", "Scene")]
 	public class SaveScene : MonoBehaviour, IAction
 	{
 		[SerializeField]

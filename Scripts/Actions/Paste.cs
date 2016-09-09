@@ -2,7 +2,7 @@
 
 namespace UnityEngine.VR.Actions
 {
-	[ActionItemAttribute("Paste", "ActionIcons/PasteIcon")]
+	[ActionItem("Paste", "ActionIcons/PasteIcon")]
 	[ExecuteInEditMode]
 	public class Paste : MonoBehaviour, IAction
 	{

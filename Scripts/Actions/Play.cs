@@ -1,6 +1,6 @@
 ﻿namespace UnityEngine.VR.Actions
 {
-	[ActionItemAttribute("Play", "ActionIcons/PlayIcon")]
+	[ActionItem("Play", "ActionIcons/PlayIcon")]
 	public class Play : MonoBehaviour, IAction
 	{
 		[SerializeField]
