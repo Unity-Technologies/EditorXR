@@ -1,61 +1,112 @@
 using System;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.VR.Tools;
+using UnityEngine.VR.Modules;
+using UnityEngine.VR.Utilities;
 
-public class NumericInputField : InputField, IInstantiateUI
+public class NumericInputField : InputField
 {
-
-	[Tooltip( "The prefab for the keyboard" )]
+	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 	[SerializeField]
-	private GameObject m_KeyboardPrefab;
+	[FlagsProperty]
+	private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
-	private GameObject m_Keyboard;
-	private Text m_Text;
+	public Func<NumericKeyboardUI> keyboard;
+	private NumericKeyboardUI m_Keyboard;
+
 	private string m_String;
+	private bool m_Open;
 
-	public Func<GameObject, GameObject> instantiateUI { get; set; }
-
-	public override void OnSelect(BaseEventData eventData)
+	public override void OnPointerClick( PointerEventData eventData )
 	{
-		base.OnSelect(eventData);
-
-		// Instantiate keyboard here
-		if ( m_Keyboard == null )
+		var rayEventData = eventData as RayEventData;
+		if ( rayEventData == null || U.UI.IsValidEvent( rayEventData, selectionFlags ) )
 		{
-			m_Keyboard = instantiateUI( m_KeyboardPrefab );
-			m_Text = m_Keyboard.GetComponentInChildren<Text>();
-			foreach ( var button in m_Keyboard.GetComponentsInChildren<NumericInputButton>() )
-			{
-				button.OnPressAction = OnKeyPress;
-			}
-			var b = m_Keyboard.GetComponentInChildren<Button>();
-			b.onClick.RemoveAllListeners();
-			b.onClick.AddListener( () =>
-			{
-				m_String = "";
-				m_Text.text = m_String;
-			} );
-			b.onClick.SetPersistentListenerState( 0, UnityEventCallState.EditorAndRuntime );
+			base.OnPointerClick( eventData );
+
+			if ( m_Open )
+				Close();
+			else
+				Open();
 		}
+	}
+
+	public override void OnPointerEnter( PointerEventData eventData )
+	{
+		var rayEventData = eventData as RayEventData;
+		if ( rayEventData == null || U.UI.IsValidEvent( rayEventData, selectionFlags ) )
+			base.OnPointerEnter( eventData );
+	}
+
+	public override void OnPointerExit( PointerEventData eventData )
+	{
+		var rayEventData = eventData as RayEventData;
+		if ( rayEventData == null || U.UI.IsValidEvent( rayEventData, selectionFlags ) )
+			base.OnPointerExit( eventData );
+	}
+
+	public override void OnPointerDown( PointerEventData eventData )
+	{
+		var rayEventData = eventData as RayEventData;
+		if ( rayEventData == null || U.UI.IsValidEvent( rayEventData, selectionFlags ) )
+			base.OnPointerDown( eventData );
+	}
+
+	public override void OnPointerUp( PointerEventData eventData )
+	{
+		var rayEventData = eventData as RayEventData;
+		if ( rayEventData == null || U.UI.IsValidEvent( rayEventData, selectionFlags ) )
+			base.OnPointerUp( eventData );
+	}
+
+	public override void OnSubmit( BaseEventData eventData )
+	{
+		var rayEventData = eventData as RayEventData;
+		Debug.Log( rayEventData );
+		if ( rayEventData == null || U.UI.IsValidEvent( rayEventData, selectionFlags ) )
+			base.OnSubmit( eventData );
+
+		Close();
+	}
+
+	public override void OnSelect( BaseEventData eventData )
+	{
+		//
+	}
+
+	void Open()
+	{
+		m_Open = true;
+
+		m_String = text;
+
+		m_Keyboard = keyboard();
+		// Instantiate keyboard here
+		if ( m_Keyboard != null )
+		{
+			m_Keyboard.gameObject.SetActive( true );
+			m_Keyboard.transform.SetParent( transform, false );
+			m_Keyboard.transform.localPosition = Vector3.up * 0.1f;
+			m_Keyboard.transform.localRotation = Quaternion.identity;
+
+			//			foreach (var VARIABLE in m_Keyboard.)
+			//			{
+			//				
+			//			}
+		}
+	}
+
+	void Close()
+	{
+		m_Open = true;
+
+		m_Keyboard.gameObject.SetActive( true );
 	}
 
 	void OnKeyPress( string str )
 	{
 		m_String += str;
-		m_Text.text = m_String;
+		text = m_String;
 	}
-
-	void Submit()
-	{
-
-	}
-
-	bool IsValidString()
-	{
-		return false;
-	}
-
 }

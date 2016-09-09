@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +42,9 @@ public class EditorVR : MonoBehaviour
 	private DefaultProxyRay m_ProxyRayPrefab;
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
+	[SerializeField]
+	private NumericKeyboardUI m_NumericKeyboardPrefab;
+	private NumericKeyboardUI m_NumericKeyboard;
 
 	private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
@@ -375,7 +378,17 @@ public class EditorVR : MonoBehaviour
 		var go = U.Object.Instantiate(prefab, transform);
 		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = m_EventCamera;
+		foreach ( NumericInputField field in go.GetComponentsInChildren<NumericInputField>() )
+			field.keyboard = SpawnKeyboard;
 		return go;
+	}
+
+	private NumericKeyboardUI SpawnKeyboard()
+	{
+		// Check if the prefab has already been instantiated
+		if ( m_NumericKeyboard == null )
+			m_NumericKeyboard = U.Object.Instantiate( m_NumericKeyboardPrefab.gameObject, transform ).GetComponent<NumericKeyboardUI>();
+		return m_NumericKeyboard;
 	}
 
 	private ActionMapInput CreateActionMapInput(ActionMap map, InputDevice device)
