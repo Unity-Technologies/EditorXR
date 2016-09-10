@@ -1,22 +1,18 @@
 ﻿using System;
 using System.Collections;
 using ListView;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 
-public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
+public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPreview
 {
 	private const float kMagnetizeDuration = 0.5f;
 	private const float kPreviewDuration = 0.1f;
 
 	private const float kRotateSpeed = 50f;
-
-	//TODO: replace with a GrabOrigin transform once menu PR lands
-	private readonly Vector3 kGrabPositionOffset = new Vector3(0f, 0.02f, 0.03f);
-	private readonly Quaternion kGrabRotationOffset = Quaternion.AngleAxis(30f, Vector3.left);
+	
 
 	[SerializeField]
 	private Text m_Text;
@@ -59,6 +55,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 	}
 	
 	public Action<Transform, Vector3> placeObject { private get; set; }
+	public ObjectPlacementModule.PositionPreviewDelegate positionPreview { private get; set; }
 
 	public override void Setup(AssetData listData)
 	{
@@ -183,9 +180,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 
 	private void GrabDrag(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		var rayTransform = eventData.rayOrigin.transform;
-		m_GrabbedObject.transform.position = Vector3.Lerp(m_GrabbedObject.transform.position, rayTransform.position + rayTransform.rotation * kGrabPositionOffset, m_GrabLerp);
-		m_GrabbedObject.transform.rotation = Quaternion.Lerp(m_GrabbedObject.transform.rotation, rayTransform.rotation * kGrabRotationOffset, m_GrabLerp);
+		positionPreview(m_GrabbedObject.transform, eventData.rayOrigin, m_GrabLerp);
 	}
 
 	private void GrabEnd(BaseHandle baseHandle, HandleEventData eventData)

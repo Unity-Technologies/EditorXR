@@ -4,7 +4,7 @@ using ListView;
 using UnityEngine;
 using System.Collections.Generic;
 
-public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects
+public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPositionPreview
 {
 	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
@@ -25,6 +25,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	private GameObject[] m_Icons;
 
 	public Action<Transform, Vector3> placeObject { private get; set; }
+	public ObjectPlacementModule.PositionPreviewDelegate positionPreview { private get; set; }
 	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
 	private readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
 
@@ -207,6 +208,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		var item = base.GetItem(data);
 		item.transform.localPosition = m_StartPosition;
 		item.placeObject = placeObject;
+		item.positionPreview = positionPreview;
 		StartCoroutine(Transition(data, false));
 
 		GameObject icon;

@@ -80,17 +80,18 @@ public class EditorVR : MonoBehaviour
 
 	private class MiniWorldRay
 	{
-		public Transform fakeRayOrigin;
 		public Transform originalRayOrigin;
 		public IMiniWorld miniWorld;
 		public IProxy proxy;
 		public ActionMapInput uiInput;
-		public GameObject hoverObject;
 		public GameObject selectedObject;
+		public Vector3 originalScale;
 	}
 
-	private readonly List<MiniWorldRay> m_MiniWorldRays = new List<MiniWorldRay>();
-	private readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>(); 
+	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
+	private readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>();
+
+	private ITransformTool m_TransformTool;
 
 	private void Awake()
 	{
@@ -174,6 +175,7 @@ public class EditorVR : MonoBehaviour
 	{
 		if (Event.current.type == EventType.MouseMove)
 		{
+			var miniWorldHover = false;
 			foreach (var proxy in m_AllProxies)
 			{
 				if(!proxy.active)
@@ -182,17 +184,20 @@ public class EditorVR : MonoBehaviour
 					m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera);
 				foreach (var miniWorldRay in m_MiniWorldRays)
 				{
-					miniWorldRay.hoverObject = m_PixelRaycastModule.UpdateRaycast(miniWorldRay.fakeRayOrigin, m_EventCamera, GetMiniWorldPointerLength(miniWorldRay));
-					if(Selection.gameObjects.Contains(miniWorldRay.hoverObject))
+					var hoverObject = m_PixelRaycastModule.UpdateRaycast(miniWorldRay.Key, m_EventCamera, GetPointerLength(miniWorldRay.Key));
+					if (hoverObject)
 					{
-						miniWorldRay.selectedObject = miniWorldRay.hoverObject;
-					}
-					else if(miniWorldRay.hoverObject)
-					{
-						miniWorldRay.selectedObject = null;
+						miniWorldHover = true;
+						if (miniWorldRay.Value.selectedObject == null && Selection.gameObjects.Contains(hoverObject))
+						{
+							miniWorldRay.Value.originalScale = hoverObject.transform.localScale;
+							miniWorldRay.Value.selectedObject = hoverObject;
+						}
 					}
 				}
 			}
+			if(m_TransformTool != null)
+				m_TransformTool.mode = miniWorldHover ? TransformMode.Direct : TransformMode.Standard;
 			UpdateDefaultProxyRays();
 		}
 	}
@@ -308,6 +313,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			tool = SpawnTool(typeof(TransformTool), out devices);
+			m_TransformTool = tool as ITransformTool;
 			AddToolToDeviceData(tool, devices);
 		};
 	}
@@ -450,7 +456,7 @@ public class EditorVR : MonoBehaviour
 				maps.Add(deviceData.uiInput);
 		}
 
-		maps.AddRange(m_MiniWorldRays.Select(miniWorldRay => miniWorldRay.uiInput));
+		maps.AddRange(m_MiniWorldRays.Select(miniWorldRay => miniWorldRay.Value.uiInput));
 
 		maps.Add(m_TrackedObjectInput);
 
@@ -651,6 +657,10 @@ public class EditorVR : MonoBehaviour
 		if (placeObjects != null)
 			placeObjects.placeObject = PlaceObject;
 
+		var positionPreview = obj as IPositionPreview;
+		if (positionPreview != null)
+			positionPreview.positionPreview = m_ObjectPlacementModule.PositionPreview;
+
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_AllTools.ToList();
@@ -665,20 +675,19 @@ public class EditorVR : MonoBehaviour
 	private float GetPointerLength(Transform rayOrigin)
 	{
 		float length = 0f;
+		MiniWorldRay ray;
+		if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
+		{
+			rayOrigin = ray.originalRayOrigin;
+		}
 		DefaultProxyRay dpr;
 		if (m_DefaultRays.TryGetValue(rayOrigin, out dpr))
 		{
 			length = dpr.pointerLength;
+			if (ray != null)
+				length *= Vector3.Scale(ray.miniWorld.referenceTransform.localScale, ray.miniWorld.miniWorldTransform.lossyScale).x; // Assume uniform scale, no rotation
 		}
 
-		return length;
-	}
-
-	private float GetMiniWorldPointerLength(MiniWorldRay ray)
-	{
-		var length = GetPointerLength(ray.originalRayOrigin);
-		//Assume uniform scale, no rotation
-		length *= Vector3.Scale(ray.miniWorld.referenceTransform.localScale, ray.miniWorld.miniWorldTransform.lossyScale).x;
 		return length;
 	}
 
@@ -891,14 +900,13 @@ public class EditorVR : MonoBehaviour
 								m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
 								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 								m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, uiInput, fakeRayOrigin);
-								m_MiniWorldRays.Add(new MiniWorldRay()
+								m_MiniWorldRays[fakeRayOrigin] = new MiniWorldRay()
 								{
-									fakeRayOrigin = fakeRayOrigin,
 									originalRayOrigin = rayOriginBase.Value,
 									miniWorld = miniWorld,
 									proxy = proxy,
 									uiInput = uiInput
-								});
+								};
 							}
 							break;
 						}
@@ -918,12 +926,12 @@ public class EditorVR : MonoBehaviour
 			return;
 
 		m_MiniWorlds.Remove(miniWorld);
-		var miniWorldRaysCopy = new List<MiniWorldRay>(m_MiniWorldRays);
-		foreach (var ray in miniWorldRaysCopy.Where(ray => ray.miniWorld.Equals(miniWorld)))
+		var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_MiniWorldRays);
+		foreach (var ray in miniWorldRaysCopy.Where(ray => ray.Value.miniWorld.Equals(miniWorld)))
 		{
-			m_PlayerHandle.maps.Remove(ray.uiInput);
-			m_InputModule.RemoveRaycastSource(ray.fakeRayOrigin);
-			m_MiniWorldRays.Remove(ray);
+			m_PlayerHandle.maps.Remove(ray.Value.uiInput);
+			m_InputModule.RemoveRaycastSource(ray.Key);
+			m_MiniWorldRays.Remove(ray.Key);
 		}
 	}
 
@@ -931,15 +939,15 @@ public class EditorVR : MonoBehaviour
 	{
 		foreach (var ray in m_MiniWorldRays)
 		{
-			var fakeRayOrigin = ray.fakeRayOrigin;
-			if (!ray.proxy.active)
+			var fakeRayOrigin = ray.Key;
+			if (!ray.Value.proxy.active)
 			{
 				fakeRayOrigin.gameObject.SetActive(false);
 				continue;
 			}
 
-			var miniWorld = ray.miniWorld;
-			var originalRayOrigin = ray.originalRayOrigin;
+			var miniWorld = ray.Value.miniWorld;
+			var originalRayOrigin = ray.Value.originalRayOrigin;
 			var referenceTransform = miniWorld.referenceTransform;
 			fakeRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
 			fakeRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
@@ -948,31 +956,30 @@ public class EditorVR : MonoBehaviour
 			var isContained = miniWorld.IsContainedWithin(originalRayOrigin.position + originalRayOrigin.forward * pointerLength);
 			fakeRayOrigin.gameObject.SetActive(isContained);
 
-			if (ray.selectedObject)
+			if (ray.Value.selectedObject)
 			{
-				if (!ray.fakeRayOrigin.gameObject.activeSelf)
+				if (!ray.Key.gameObject.activeSelf)
 				{
 					Selection.objects = new UnityEngine.Object[0];
-					var selectedObject = ray.selectedObject;
-					var currRay = ray;
-					EditorApplication.delayCall += () =>
+					var selectedObjectTransform = ray.Value.selectedObject.transform;
+					if (!ray.Value.originalRayOrigin)
+						return;
+					
+					m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, ray.Value.originalRayOrigin);
+
+					selectedObjectTransform.transform.localScale = Vector3.one;
+					var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);
+					if (totalBounds != null)
 					{
-						if (!currRay.originalRayOrigin)
-							return;
-						selectedObject.transform.position = currRay.originalRayOrigin.position;
-						selectedObject.transform.localScale = Vector3.one;
-						var totalBounds = U.Object.GetTotalBounds(selectedObject.transform);
-						if (totalBounds != null)
-						{
-							selectedObject.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.Max());
-						}
-						var uiInput = (UIActions) currRay.uiInput;
-						uiInput.active = true;
-						if (uiInput.select.wasJustReleased)
-						{
-							currRay.selectedObject = null;
-						}
-					};
+						selectedObjectTransform.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.Max());
+					}
+					var uiInput = (UIActions) ray.Value.uiInput;
+					uiInput.active = true;
+					if (uiInput.select.wasJustReleased)
+					{
+						PlaceObject(ray.Value.selectedObject.transform, ray.Value.originalScale);
+						ray.Value.selectedObject = null;
+					}
 				}
 			}
 		}
@@ -985,8 +992,8 @@ public class EditorVR : MonoBehaviour
 		{
 			foreach (var miniWorldRay in m_MiniWorldRays)
 			{
-				if(miniWorldRay.originalRayOrigin.Equals(rayOrigin))
-					go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRay.fakeRayOrigin);
+				if(miniWorldRay.Value.originalRayOrigin.Equals(rayOrigin))
+					go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRay.Key);
 				if (go)
 					break;
 			}
