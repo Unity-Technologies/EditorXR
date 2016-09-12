@@ -5,8 +5,8 @@ namespace UnityEngine.VR.Workspaces
 {
 	public class WorkspaceUI : MonoBehaviour
 	{
-	public event Action closeClicked = delegate { };
-	public event Action lockClicked = delegate { };
+		public event Action closeClicked = delegate { };
+		public event Action lockClicked = delegate { };
 
 		private const float kPanelOffset = 0f; // The panel needs to be pulled back slightly
 
@@ -47,8 +47,6 @@ namespace UnityEngine.VR.Workspaces
 
 		[SerializeField]
 		private SkinnedMeshRenderer m_Frame;
-
-		public bool showBounds { set { m_BoundsCube.GetComponent<Renderer>().enabled = value; } }
 
 		public void SetBounds(Bounds bounds)
 		{

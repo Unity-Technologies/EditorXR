@@ -77,8 +77,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 			handle.hovered += OnScrollHoverExit;
 		}
 
-		m_WorkspaceUI.showBounds = false;
-
 		// Propagate initial bounds
 		OnBoundsChanged();
 	}
@@ -272,9 +270,11 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 		return new AssetData(hp.name, hp.instanceID, hp.icon, type);
 	}
 
-	private void OnDestroy()
+
+	protected override void OnDestroy()
 	{
 		EditorApplication.projectWindowChanged -= SetupFolderList;
+		base.OnDestroy();
 	}
 #endif
 }
