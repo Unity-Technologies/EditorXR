@@ -7,12 +7,11 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Utilities;
 
+[UnityEngine.VR.Tools.MainMenuItem("Selection", "Transform", "Select items in the scene")]
 public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
 {
-	private const float kDoubleClickIntervalMax = 0.3f;
-	private const float kDoubleClickIntervalMin = 0.15f;
-
 	private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
 	private GameObject m_HoverGameObject;
@@ -54,9 +53,9 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 				Selection.objects = s_SelectedObjects.ToArray();
 			}
 		}
-
 		var newHoverGameObject = getFirstGameObject(rayOrigin);
 		var newPrefabRoot = newHoverGameObject;
+
 		if (newHoverGameObject != null)
 		{
 			// If gameObject is within a prefab and not the current prefab, choose prefab root
@@ -83,7 +82,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 			// Detect double click
 			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
 			m_LastSelectTime = DateTime.Now;
-			if (timeSinceLastSelect < kDoubleClickIntervalMax && timeSinceLastSelect > kDoubleClickIntervalMin)
+			if (U.Input.DoubleClick(timeSinceLastSelect))
 			{
 				s_CurrentPrefabOpened = m_HoverGameObject;
 				s_SelectedObjects.Remove(s_CurrentPrefabOpened);

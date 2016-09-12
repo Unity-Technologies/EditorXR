@@ -1,11 +1,9 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
+﻿using System;
 
-public interface IInstantiateUI {
-
-	Func<GameObject, GameObject> instantiateUI
+namespace UnityEngine.VR.Tools
+{
+	public interface IInstantiateUI
 	{
-		set;
+		Func<GameObject, GameObject> instantiateUI { set; }
 	}
 }

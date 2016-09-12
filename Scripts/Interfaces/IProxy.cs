@@ -24,5 +24,15 @@ namespace UnityEngine.VR.Proxies
 		{
 			set;
 		}
+
+		Dictionary<Node, Transform> menuOrigins
+		{
+			get; set;
+		}
+
+		Dictionary<Node, Transform> alternateMenuOrigins
+		{
+			get; set;
+		}
 	}
 }
