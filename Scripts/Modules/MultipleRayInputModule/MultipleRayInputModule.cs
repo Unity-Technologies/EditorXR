@@ -12,6 +12,9 @@ namespace UnityEngine.VR.Modules
 
 		public Func<Transform, float> getPointerLength;
 
+		private Vector3 m_LastRayOriginPosition;
+		private Quaternion m_LastRayOriginRotation;
+
 		public Camera eventCamera
 		{
 			get { return m_EventCamera; }
@@ -218,6 +221,10 @@ namespace UnityEngine.VR.Modules
 
 			var eventData = source.eventData;
 			var hoveredObject = source.hoveredObject;
+			eventData.delta = Vector2.zero;
+			eventData.positionDelta = Vector3.zero;
+			eventData.rotationDelta = Quaternion.identity;
+			eventData.dragging = false;
 			eventData.pressPosition = eventData.position;
 			eventData.pointerPressRaycast = eventData.pointerCurrentRaycast;
 			eventData.pointerPress = hoveredObject;
@@ -268,11 +275,19 @@ namespace UnityEngine.VR.Modules
 
 			var clickHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(hoveredObject);
 			if (source.pressedObject == clickHandler && eventData.eligibleForClick)
+			{
 				ExecuteEvents.Execute(clickHandler, eventData, ExecuteEvents.pointerClickHandler);
+			}
+			else if (eventData.pointerDrag != null && eventData.dragging)
+			{
+				ExecuteEvents.ExecuteHierarchy(clickHandler, eventData, ExecuteEvents.dropHandler);
+			}
 
 			eventData.rawPointerPress = null;
 			eventData.pointerPress = null;
 			eventData.eligibleForClick = false;
+			eventData.dragging = false;
+			eventData.pointerDrag = null;
 			source.pressedObject = null;
 		}
 

@@ -85,7 +85,6 @@ public class NumericInputField : InputField
 	public override void OnSubmit(BaseEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		Debug.Log(rayEventData);
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 			base.OnSubmit(eventData);
 	}
@@ -98,7 +97,6 @@ public class NumericInputField : InputField
 	public override void OnBeginDrag(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		Debug.Log(rayEventData);
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 			base.OnBeginDrag(eventData);
 	}
@@ -106,8 +104,7 @@ public class NumericInputField : InputField
 	public override void OnDrag(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		Debug.Log(rayEventData);
-		if ( rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags) )
+		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
 			base.OnDrag(eventData);
 			DragNumericValue(rayEventData);
@@ -130,6 +127,24 @@ public class NumericInputField : InputField
 		num += rayEventData.delta.x / 100f;
 		m_Text = num.ToString();
 	}
+
+//	void UpdateLinearMapping(RayEventData rayEventData)
+//	{
+//		var direction = transform.right;
+//		float length = direction.magnitude;
+//		direction.Normalize();
+//
+//		var displacement = rayEventData.delta.x
+//
+//		float pull = Mathf.Clamp01(Vector3.Dot(displacement, direction) / length);
+//
+//		linearMapping.value = pull;
+//
+//		if (repositionGameObject)
+//		{
+//			transform.position = Vector3.Lerp(startPosition.position, endPosition.position, pull);
+//		}
+//	}
 
 	void Open()
 	{

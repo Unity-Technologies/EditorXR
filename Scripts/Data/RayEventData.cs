@@ -16,6 +16,10 @@ namespace UnityEngine.VR.Modules
 		/// </summary>
 		public Node node { get; set; }
 
+		public Vector3 positionDelta { get; set; }
+
+		public Quaternion rotationDelta { get; set; }
+
 		/// <summary>
 		/// The length of the direct selection pointer
 		/// </summary>
