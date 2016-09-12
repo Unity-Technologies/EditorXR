@@ -43,8 +43,8 @@
 			}
 
 			/// <summary>
-			/// Special version of EditorGUI.MaskField which ensures that only the chosen bits are set. Existing MaskFiled has a bug
-			/// whereby the first bit of the value may or may not be set depending on how the UI was used.
+			/// Special version of EditorGUI.MaskField which ensures that only the chosen bits are set. We need this version of the
+			/// function to check explicitly whether only a single bit was set.
 			/// </summary>
 			/// <returns></returns>
 			public static int MaskField(Rect position, GUIContent label, int mask, string[] displayedOptions, Type propertyType)
