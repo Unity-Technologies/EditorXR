@@ -157,6 +157,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		if (cloneItem.m_PreviewObject)
 		{
 			cloneItem.m_Cube.gameObject.SetActive(false);
+			cloneItem.m_Icon.gameObject.SetActive(false);
 			cloneItem.m_PreviewObject.gameObject.SetActive(true);
 			cloneItem.m_PreviewObject.transform.localScale = m_PreviewTargetScale;
 
