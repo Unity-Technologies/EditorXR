@@ -13,7 +13,7 @@ public class NumericInputField : InputField
 	private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
 	public Func<NumericKeyboardUI> keyboard;
-	private NumericKeyboardUI m_Keyboard;
+	private NumericKeyboardUI m_NumericKeyboard;
 
 	private string m_String;
 	private bool m_Open;
@@ -21,11 +21,15 @@ public class NumericInputField : InputField
 	protected override void OnEnable()
 	{
 		onEndEdit.AddListener(Close);
+
+		base.OnEnable();
 	}
 
 	protected override void OnDisable()
 	{
 		onEndEdit.RemoveListener(Close);
+
+		base.OnDisable();
 	}
 
 	/*
@@ -106,7 +110,7 @@ public class NumericInputField : InputField
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
-			base.OnDrag(eventData);
+//			base.OnDrag(eventData);
 			DragNumericValue(rayEventData);
 		}
 	}
@@ -154,16 +158,16 @@ public class NumericInputField : InputField
 
 		m_String = m_Text;
 
-		m_Keyboard = keyboard();
+		m_NumericKeyboard = keyboard();
 		// Instantiate keyboard here
-		if (m_Keyboard != null)
+		if (m_NumericKeyboard != null)
 		{
-			m_Keyboard.gameObject.SetActive(true);
-			m_Keyboard.transform.SetParent(transform, false);
-			m_Keyboard.transform.localPosition = Vector3.up * 0.1f;
-			m_Keyboard.transform.localRotation = Quaternion.identity;
+			m_NumericKeyboard.gameObject.SetActive(true);
+			m_NumericKeyboard.transform.SetParent(transform, false);
+			m_NumericKeyboard.transform.localPosition = Vector3.up * 0.1f;
+			m_NumericKeyboard.transform.localRotation = Quaternion.identity;
 
-			m_Keyboard.Setup(new char[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'}, OnKeyPress);
+			m_NumericKeyboard.Setup(new char[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'}, OnKeyPress);
 		}
 	}
 
@@ -171,10 +175,10 @@ public class NumericInputField : InputField
 	{
 		m_Open = false;
 
-		if (m_Keyboard == null) return;
+		if (m_NumericKeyboard == null) return;
 
-		m_Keyboard.gameObject.SetActive(true);
-		m_Keyboard = null;
+		m_NumericKeyboard.gameObject.SetActive(true);
+		m_NumericKeyboard = null;
 	}
 
 	void OnKeyPress(char keyChar)
