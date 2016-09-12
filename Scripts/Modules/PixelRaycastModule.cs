@@ -1,15 +1,12 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
-using UnityEditor.VR;
 using UnityEngine.VR.Proxies;
 
 namespace UnityEditor.VR.Modules
 {
 	public class PixelRaycastModule : MonoBehaviour
 	{
-		private Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
+		private readonly Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
 
 		private GameObject[] m_IgnoreList;
 
@@ -53,6 +50,7 @@ namespace UnityEditor.VR.Modules
 
 		private GameObject Raycast(Ray ray, Camera camera)
 		{
+#if UNITY_EDITOR
 			camera.transform.position = ray.origin;
 			camera.transform.forward = ray.direction;
 
@@ -61,7 +59,6 @@ namespace UnityEditor.VR.Modules
 			camera.targetTexture = RenderTexture.GetTemporary(Screen.width, Screen.height);
 			Camera.SetupCurrent(camera);
 
-			// TODO populate ignore list and use it to prevent raycasts from returning editor vr's gameobjects
 			var go = HandleUtility.PickGameObject(camera.pixelRect.center, false, m_IgnoreList);
 
 			Camera.SetupCurrent(restoreCamera);
@@ -69,6 +66,9 @@ namespace UnityEditor.VR.Modules
 			camera.targetTexture = null;
 
 			return go;
+#else
+			return null;
+#endif
 		}
 	}
 }

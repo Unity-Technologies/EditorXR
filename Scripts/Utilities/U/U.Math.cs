@@ -31,17 +31,8 @@
 			public static Vector3 SnapValuesToUnit(Vector3 values, float unit)
 			{
 				return new Vector3(SnapValueToUnit(values.x, unit),
-								   SnapValueToUnit(values.y, unit),
-								   SnapValueToUnit(values.z, unit));
-			}
-
-			// calculates easing
-			// if snap is zero, no snapping is applied
-			public static float Ease(float val, float valEnd, float easeDivider, float snap)
-			{
-				val += (valEnd - val) / easeDivider;
-				if (snap != 0 && Mathf.Abs(val - valEnd) < snap) val = valEnd;
-				return val;
+									SnapValueToUnit(values.y, unit),
+									SnapValueToUnit(values.z, unit));
 			}
 
 			// Like map in Processing.
@@ -135,6 +126,30 @@
 				float t = Vector3.Dot(linePointToPoint, lineVec);
 				return linePoint + lineVec * t;
 			}
+
+			public static Vector3 CalculateCubicBezierPoint(float t, Vector3[] points)
+			{
+				if (points.Length != 4)
+					return Vector3.zero;
+
+				var u = 1f - t;
+				var tt = t * t;
+				var uu = u * u;
+				var uuu = uu * u;
+				var ttt = tt * t;
+
+				//first term
+				var p = uuu * points[0];
+				//second term
+				p += 3f * uu * t * points[1];
+				//third term
+				p += 3f * u * tt * points[2];
+				//fourth term
+				p += ttt * points[3];
+
+				return p;
+			}
+
 		}
 	}
 }

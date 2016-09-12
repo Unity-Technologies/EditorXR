@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 52a6f827905e5da45b04e9ad17c95d45
+timeCreated: 1472080625
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_MainMenuActionMap: {fileID: 11400000, guid: 5b2451b50b5b2ff4fb3c3d8cda77aa65,
+      type: 2}
+  - m_MainMenuPrefab: {fileID: 114000011808682746, guid: b7d63888e7ed4654ba750593eaa5f75c,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
