@@ -95,6 +95,42 @@ public class NumericInputField : InputField
 		//
 	}
 
+	public override void OnBeginDrag(PointerEventData eventData)
+	{
+		var rayEventData = eventData as RayEventData;
+		Debug.Log(rayEventData);
+		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+			base.OnBeginDrag(eventData);
+	}
+
+	public override void OnDrag(PointerEventData eventData)
+	{
+		var rayEventData = eventData as RayEventData;
+		Debug.Log(rayEventData);
+		if ( rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags) )
+		{
+			base.OnDrag(eventData);
+			DragNumericValue(rayEventData);
+		}
+	}
+
+	public override void OnEndDrag(PointerEventData eventData)
+	{
+		var rayEventData = eventData as RayEventData;
+		Debug.Log(rayEventData);
+		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+			base.OnEndDrag(eventData);
+	}
+
+	void DragNumericValue(RayEventData rayEventData)
+	{
+		float num;
+		if (!float.TryParse(m_Text, out num))
+			num = 0f;
+		num += rayEventData.delta.x / 100f;
+		m_Text = num.ToString();
+	}
+
 	void Open()
 	{
 		if (m_Open) return;

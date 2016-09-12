@@ -11,6 +11,7 @@ public class RayButton : Button {
 	[FlagsProperty]
 	private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
+	private OnEnterEvent m_OnEnter = new OnEnterEvent();
 	public OnEnterEvent onEnter { get; set; }
 
 	public class OnEnterEvent : UnityEvent { }
