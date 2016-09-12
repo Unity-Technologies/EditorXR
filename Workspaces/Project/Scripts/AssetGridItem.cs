@@ -198,10 +198,10 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 			switch (data.type)
 			{
 				case "Prefab":
-					Instantiate(data.GetAsset(), gridItem.transform.position, gridItem.transform.rotation);
+					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
 					break;
 				case "Model":
-					Instantiate(data.GetAsset(), gridItem.transform.position, gridItem.transform.rotation);
+					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
 					break;
 			}
 		}
@@ -270,7 +270,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 			case "Material":
 				m_Sphere.gameObject.SetActive(true);
 				icon.gameObject.SetActive(false);
-				var material = data.GetAsset() as Material;
+				var material = data.asset as Material;
 				if (material)
 					m_Sphere.sharedMaterial = material;
 				break;
@@ -279,7 +279,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 			case "Texture":
 				m_Sphere.gameObject.SetActive(true);
 				icon.gameObject.SetActive(false);
-				var texture = data.GetAsset() as Texture;
+				var texture = data.asset as Texture;
 				if (texture)
 					m_Sphere.sharedMaterial = new Material(Shader.Find("Standard")) {mainTexture = texture};
 				break;
