@@ -103,6 +103,8 @@ public class ChessboardWorkspace : Workspace
 	{
 		m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
 		m_MiniWorld.localBounds = contentBounds;
+		
+		m_ChessboardUI.boundsCube.transform.localScale = contentBounds.size;
 
 		m_ChessboardUI.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
 
@@ -171,8 +173,9 @@ public class ChessboardWorkspace : Workspace
 		setHighlight(handle.gameObject, false);
 	}
 
-	private void OnDestroy()
+	protected override void OnDestroy()
 	{
 		U.Object.Destroy(m_GridMaterial);
+		base.OnDestroy();
 	}
 }

@@ -8,12 +8,12 @@
 	/// <summary>
 	/// EditorVR Utilities
 	/// </summary>
-	public partial class U
+	public static partial class U
 	{
 		/// <summary>
 		/// Material related EditorVR utilities
 		/// </summary>
-		public class Material
+		public static class Material
 		{
 			/// <summary>
 			/// Get a material clone; IMPORTANT: Make sure to call U.Destroy() on this material when done!
