@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
@@ -9,6 +10,10 @@ public class RayButton : Button {
 	[SerializeField]
 	[FlagsProperty]
 	private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
+
+	public OnEnterEvent onEnter { get; set; }
+
+	public class OnEnterEvent : UnityEvent { }
 
 	public override void OnPointerClick(PointerEventData eventData)
 	{
@@ -21,7 +26,12 @@ public class RayButton : Button {
 	{
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		{
 			base.OnPointerEnter(eventData);
+
+			if (onEnter != null)
+				onEnter.Invoke();
+		}
 	}
 
 	public override void OnPointerExit(PointerEventData eventData)

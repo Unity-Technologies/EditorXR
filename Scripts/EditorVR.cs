@@ -377,17 +377,20 @@ public class EditorVR : MonoBehaviour
 	{
 		var go = U.Object.Instantiate(prefab, transform);
 		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
+		{
 			canvas.worldCamera = m_EventCamera;
-		foreach ( NumericInputField field in go.GetComponentsInChildren<NumericInputField>() )
-			field.keyboard = SpawnKeyboard;
+
+			foreach (NumericInputField inputField in canvas.GetComponentsInChildren<NumericInputField>())
+				inputField.keyboard = SpawnKeyboard;
+		}
 		return go;
 	}
 
 	private NumericKeyboardUI SpawnKeyboard()
 	{
 		// Check if the prefab has already been instantiated
-		if ( m_NumericKeyboard == null )
-			m_NumericKeyboard = U.Object.Instantiate( m_NumericKeyboardPrefab.gameObject, transform ).GetComponent<NumericKeyboardUI>();
+		if (m_NumericKeyboard == null)
+			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, transform ).GetComponent<NumericKeyboardUI>();
 		return m_NumericKeyboard;
 	}
 
