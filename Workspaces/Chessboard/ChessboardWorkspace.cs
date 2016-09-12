@@ -56,11 +56,11 @@ public class ChessboardWorkspace : Workspace
 		// ControlBox shouldn't move with miniWorld
 		panZoomHandle.transform.parent = m_WorkspaceUI.sceneContainer;
 		panZoomHandle.transform.localPosition = Vector3.down * panZoomHandle.transform.localScale.y * 0.5f;
-		panZoomHandle.dragStarted += ControlDragging;
-		panZoomHandle.dragging += ControlDrag;
-		panZoomHandle.dragEnded += ControlDragged;
-		panZoomHandle.hovering += OnControlHoverEnter;
-		panZoomHandle.hovered += OnControlHoverExit;
+		panZoomHandle.dragStarted += OnControlDragStarted;
+		panZoomHandle.dragging += OnControlDragging;
+		panZoomHandle.dragEnded += OnControlDragEnded;
+		panZoomHandle.hoverStarted += OnControlHoverStarted;
+		panZoomHandle.hoverEnded += OnControlHoverEnded;
 
 		// Set up UI
 		var UI = U.Object.Instantiate(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
@@ -117,7 +117,7 @@ public class ChessboardWorkspace : Workspace
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
 	}
 
-	private void ControlDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	private void OnControlDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		if (m_RayData.Count == 1) // On introduction of second ray
 		{
@@ -133,7 +133,7 @@ public class ChessboardWorkspace : Workspace
 		});
 	}
 
-	private void ControlDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	private void OnControlDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		var rayData = m_RayData[0];
 		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) // Do not execute for the second ray
@@ -158,17 +158,17 @@ public class ChessboardWorkspace : Workspace
 		}
 	}
 
-	private void ControlDragged(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	private void OnControlDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		m_RayData.RemoveAll(rayData => rayData.rayOrigin.Equals(eventData.rayOrigin));
 	}
 
-	private void OnControlHoverEnter(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	private void OnControlHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		setHighlight(handle.gameObject, true);
 	}
 
-	private void OnControlHoverExit(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	private void OnControlHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		setHighlight(handle.gameObject, false);
 	}

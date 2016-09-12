@@ -71,8 +71,8 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			m_Handle.dragging += OnGrabDragging;
 			m_Handle.dragEnded += OnGrabEnded;
 
-			m_Handle.hovering += OnHoverStarted;
-			m_Handle.hovered += OnHoverEnded;
+			m_Handle.hoverStarted += OnHoverStarted;
+			m_Handle.hoverEnded += OnHoverEnded;
 
 			m_Setup = true;
 		}
