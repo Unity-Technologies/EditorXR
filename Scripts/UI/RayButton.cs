@@ -5,7 +5,8 @@ using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class RayButton : Button {
+public class RayButton : Button
+{
 	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 	[SerializeField]
 	[FlagsProperty]
@@ -19,7 +20,7 @@ public class RayButton : Button {
 	public override void OnPointerClick(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		if(rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 			base.OnPointerClick(eventData);
 	}
 
@@ -59,7 +60,6 @@ public class RayButton : Button {
 	public override void OnSubmit(BaseEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		Debug.Log(rayEventData);
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 			base.OnSubmit(eventData);
 	}
