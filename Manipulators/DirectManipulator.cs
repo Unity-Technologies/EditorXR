@@ -8,17 +8,17 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 {
 	public Transform target { set { m_Target = value; } }
 	[SerializeField]
-	private Transform m_Target;
+	private Transform m_Target = null;
 
 	[SerializeField]
 	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 
-	public bool dragging { get {  return m_Dragging; } }
+	public bool dragging { get { return m_Dragging; } }
 	private bool m_Dragging;
 
 	private Vector3 m_PositionOffset;
 	private Quaternion m_RotationOffset;
-	
+
 	public Action<Vector3> translate { private get; set; }
 	public Action<Quaternion> rotate { private get; set; }
 	public Action<Vector3> scale { private get; set; }
@@ -49,7 +49,9 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 			h.gameObject.SetActive(h == handle);
 		m_Dragging = true;
 
-		Transform target = m_Target ?? transform;
+		var target = m_Target;
+		if (m_Target == null)
+			target = transform;
 
 		var rayOrigin = eventData.rayOrigin;
 		var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
@@ -59,7 +61,11 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 
 	private void OnHandleDrag(BaseHandle handle, HandleEventData eventData)
 	{
-		Transform target = m_Target ?? transform;
+		//var target = m_Target ?? transform; // MS: This implementation led to an UnassignedReferenceException 
+		// because target ends up == m_Target, which is not null by ?? check
+		var target = m_Target;
+		if (target == null)
+			target = transform;
 
 		var rayOrigin = eventData.rayOrigin;
 		translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
@@ -68,8 +74,9 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 
 	private void OnHandleDragged(BaseHandle handle, HandleEventData eventData)
 	{
-		foreach (var h in m_AllHandles)
-			h.gameObject.SetActive(true);
+		if (gameObject.activeSelf)
+			foreach (var h in m_AllHandles)
+				h.gameObject.SetActive(true);
 
 		m_Dragging = false;
 	}

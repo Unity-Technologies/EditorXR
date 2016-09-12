@@ -1,4 +1,7 @@
-﻿public interface IPositionPreview
+﻿using UnityEngine;
+
+public delegate void PositionPreviewDelegate(Transform preview, Transform rayOrigin, float t = 1f);
+public interface IPositionPreview
 {
-	ObjectPlacementModule.PositionPreviewDelegate positionPreview { set; }
+	PositionPreviewDelegate positionPreview { set; }
 }

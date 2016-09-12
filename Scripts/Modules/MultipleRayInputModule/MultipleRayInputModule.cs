@@ -36,6 +36,7 @@ namespace UnityEngine.VR.Modules
 			public GameObject hoveredObject;
 			public GameObject pressedObject;
 			public GameObject draggedObject;
+			public bool dragging;
 
 			public bool hasObject { get { return (hoveredObject != null && hoveredObject.layer == UILayer) || pressedObject != null || draggedObject != null; } }
 
@@ -83,6 +84,13 @@ namespace UnityEngine.VR.Modules
 			return null;
 		}
 
+		public void SetRaycastSourceDragging(Transform rayOrigin, bool dragging)
+		{
+			RaycastSource source;
+			if(m_RaycastSources.TryGetValue(rayOrigin, out source))
+				source.dragging = dragging;
+		}
+
 		public override void Process()
 		{
 			ExecuteUpdateOnSelectedObject();
@@ -107,7 +115,7 @@ namespace UnityEngine.VR.Modules
 
 				HandlePointerExitAndEnter(eventData, source.hoveredObject); // Send enter and exit events
 
-				source.actionMapInput.active = source.hasObject;
+				source.actionMapInput.active = source.hasObject || source.dragging;
 				
 				// Proceed only if pointer is interacting with something
 				if (!source.actionMapInput.active)

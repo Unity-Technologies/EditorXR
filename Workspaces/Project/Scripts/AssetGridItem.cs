@@ -55,7 +55,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	}
 	
 	public Action<Transform, Vector3> placeObject { private get; set; }
-	public ObjectPlacementModule.PositionPreviewDelegate positionPreview { private get; set; }
+	public PositionPreviewDelegate positionPreview { private get; set; }
 
 	public override void Setup(AssetData listData)
 	{

@@ -153,7 +153,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	private void Rotate(Quaternion delta)
 	{
-		m_TargetRotation = delta * m_TargetRotation;
+		m_TargetRotation *= delta;
 	}
 
 	private void Scale(Vector3 delta)
@@ -180,14 +180,31 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			}
 		}
 
-		m_SelectionBounds = newBounds ?? default(Bounds);
+		if (newBounds == null)
+		{
+			var bounds = new Bounds();
+			bounds.size = Vector3.one;
+			foreach (var selectedObj in m_SelectionTransforms)
+				bounds.center += selectedObj.transform.position / m_SelectionTransforms.Length;
+			newBounds = bounds;
+		}
+
+		m_SelectionBounds = newBounds.Value;
 	}
 
 	private void UpdateManipulatorSize()
 	{
-		var camera = U.Camera.GetMainCamera();
-		var distance = Vector3.Distance(camera.transform.position, m_CurrentManipulator.transform.position);
-		m_CurrentManipulator.transform.localScale = Vector3.one * distance * kBaseManipulatorSize;
+		switch (mode)
+		{
+			case TransformMode.Direct:
+				m_CurrentManipulator.transform.localScale = Vector3.one * m_SelectionBounds.size.Max();
+				break;
+			default:
+				var camera = U.Camera.GetMainCamera();
+				var distance = Vector3.Distance(camera.transform.position, m_CurrentManipulator.transform.position);
+				m_CurrentManipulator.transform.localScale = Vector3.one * distance * kBaseManipulatorSize;
+				break;
+		}
 	}
 
 	private GameObject CreateManipulator(GameObject prefab)

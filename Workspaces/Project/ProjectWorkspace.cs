@@ -7,7 +7,7 @@ using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ProjectWorkspace : Workspace, IPlaceObjects
+public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 {
 	private const float kLeftPaneRatio = 0.3333333f; //Size of left pane relative to workspace bounds
 	private const float kPaneMargin = 0.01f;
@@ -33,7 +33,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 	private Vector3 m_ScrollStart;
 	private float m_ScrollOffsetStart;
 
-	public Action<Transform, Vector3> placeObject { get; set; }
+	public Action<Transform, Vector3> placeObject { private get; set; }
+	public PositionPreviewDelegate positionPreview { private get; set; }
 
 	public override void Setup()
 	{
@@ -127,6 +128,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 		assetListView.PreCompute(); // Compute item size
 		assetListView.transform.localPosition = Vector3.right * xOffset;
 		assetListView.placeObject = placeObject;
+		assetListView.positionPreview = positionPreview;
 
 		var assetPanel = m_ProjectUI.assetPanel;
 		assetPanel.transform.localPosition = xOffset * Vector3.right;

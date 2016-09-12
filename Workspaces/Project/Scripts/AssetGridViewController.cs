@@ -25,7 +25,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	private GameObject[] m_Icons;
 
 	public Action<Transform, Vector3> placeObject { private get; set; }
-	public ObjectPlacementModule.PositionPreviewDelegate positionPreview { private get; set; }
+	public PositionPreviewDelegate positionPreview { private get; set; }
 	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
 	private readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
 
