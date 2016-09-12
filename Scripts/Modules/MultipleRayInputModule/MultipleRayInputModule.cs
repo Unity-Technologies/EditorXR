@@ -252,7 +252,7 @@ namespace UnityEngine.VR.Modules
 					eventData.eligibleForClick = true;
 				}
 				var pressedObject = source.pressedObject;
-				
+
 				ExecuteEvents.Execute(pressedObject, eventData, ExecuteEvents.beginDragHandler);
 				ExecuteEvents.Execute(pressedObject, eventData, ExecuteRayEvents.beginDragHandler);
 				eventData.pointerDrag = pressedObject;
@@ -320,7 +320,6 @@ namespace UnityEngine.VR.Modules
 
 			List<RaycastResult> results = new List<RaycastResult>();
 			eventSystem.RaycastAll(eventData, results);
-
 			eventData.pointerCurrentRaycast = FindFirstRaycast(results);
 			hit = eventData.pointerCurrentRaycast.gameObject;
 

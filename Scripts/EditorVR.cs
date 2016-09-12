@@ -72,7 +72,7 @@ public class EditorVR : MonoBehaviour
 	private IEnumerable<Type> m_AllWorkspaceTypes;
 	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
 
-	private Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
+	private readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 	{
 		{ "Left", Node.LeftHand },
 		{ "Right", Node.RightHand }
@@ -137,7 +137,7 @@ public class EditorVR : MonoBehaviour
 
 	private IEnumerator Start()
 	{
-		//Workspaces don't need to wait until devices are active
+		// Workspaces don't need to wait until devices are active
 		CreateDefaultWorkspaces();
 
 		// Delay until at least one proxy initializes
@@ -157,6 +157,7 @@ public class EditorVR : MonoBehaviour
 		}
 		SpawnDefaultTools();
 
+		// In case we have anything selected at start, set up manipulators, inspector, etc.
 		EditorApplication.delayCall += () =>
 		{
 			Selection.selectionChanged.Invoke();
@@ -182,21 +183,28 @@ public class EditorVR : MonoBehaviour
 		if (Event.current.type == EventType.MouseMove)
 		{
 			var miniWorldHover = false;
+
 			foreach (var proxy in m_AllProxies)
 			{
 				if(!proxy.active)
 					continue;
+
 				foreach (var rayOrigin in proxy.rayOrigins.Values)
 					m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera);
+
 				foreach (var miniWorldRay in m_MiniWorldRays)
 				{
 					miniWorldRay.Value.hoverObject = m_PixelRaycastModule.UpdateRaycast(miniWorldRay.Key, m_EventCamera, GetPointerLength(miniWorldRay.Key));
+
 					if (miniWorldRay.Value.hoverObject)
 						miniWorldHover = true;
 				}
 			}
-			if(m_TransformTool != null)
+
+			// If any active miniWorldRay hovers over a selected object, switch to the DirectManipulator
+			if (m_TransformTool != null)
 				m_TransformTool.mode = miniWorldHover ? TransformMode.Direct : TransformMode.Standard;
+
 			UpdateDefaultProxyRays();
 		}
 	}

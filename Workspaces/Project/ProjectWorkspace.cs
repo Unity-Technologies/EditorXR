@@ -135,7 +135,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		assetListView.bounds = bounds;
 		assetListView.PreCompute(); // Compute item size
 		assetListView.transform.localPosition = Vector3.right * xOffset;
-		assetListView.positionPreview = positionPreview;
 
 		var assetPanel = m_ProjectUI.assetPanel;
 		assetPanel.transform.localPosition = xOffset * Vector3.right;
@@ -221,7 +220,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		var assetTypes = new HashSet<string>();
 		var rootFolder = CreateFolderData(assetTypes);
 		rootFolder.expanded = true;
-		m_ProjectUI.folderListView.listData = new[] {rootFolder};
+		m_ProjectUI.folderListView.listData = new[] { rootFolder };
 
 		SelectFolder(rootFolder);
 

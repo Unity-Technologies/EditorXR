@@ -8,7 +8,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 {
 	public Transform target { set { m_Target = value; } }
 	[SerializeField]
-	private Transform m_Target = null;
+	private Transform m_Target;
 
 	[SerializeField]
 	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
