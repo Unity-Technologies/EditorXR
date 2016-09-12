@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using ListView;
-using UnityEditor;
+﻿using ListView;
 
 public class FolderData : ListViewItemNestedData<FolderData>
 {

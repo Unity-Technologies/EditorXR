@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ListView;
+﻿using ListView;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;

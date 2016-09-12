@@ -3,7 +3,8 @@ using System.Collections;
 using UnityEditor;
 using UnityEngine.VR.Utilities;
 
-public class ObjectPlacementModule : MonoBehaviour {
+public class ObjectPlacementModule : MonoBehaviour
+{
 	private const float kInstantiateFOVDifference = 20f;
 
 	private const float kGrowDuration = 0.5f;
