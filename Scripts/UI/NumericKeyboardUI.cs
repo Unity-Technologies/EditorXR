@@ -5,25 +5,12 @@ using UnityEngine.VR.Handles;
 public class NumericKeyboardUI : MonoBehaviour
 {
 	[SerializeField]
-	private BaseHandle[] m_NumericButtons;
-	[SerializeField]
-	private BaseHandle m_EnterButton;
-	[SerializeField]
-	private BaseHandle m_DeleteButton;
-	[SerializeField]
-	private BaseHandle m_MultiplyButton;
-	[SerializeField]
-	private BaseHandle m_DivideButton;
-	[SerializeField]
-	private BaseHandle m_DecimelButton;
+	private NumericInputButton[] m_NumericButtons;
 
-	void OnEnable()
-	{
-//		m_EnterButton.on;
-	}
+	public NumericInputButton[] numericButtons { get; private set; }
 
-	public void KeyPressed(string str)
+	void Start()
 	{
-		
+		numericButtons = GetComponentsInChildren<NumericInputButton>();
 	}
 }

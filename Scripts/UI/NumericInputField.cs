@@ -90,17 +90,16 @@ public class NumericInputField : InputField
 			m_Keyboard.transform.localPosition = Vector3.up * 0.1f;
 			m_Keyboard.transform.localRotation = Quaternion.identity;
 
-			//			foreach (var VARIABLE in m_Keyboard.)
-			//			{
-			//				
-			//			}
+			foreach (var button in m_Keyboard.numericButtons )
+			{
+				button.OnPressAction = OnKeyPress;
+			}
 		}
 	}
 
 	void Close()
 	{
 		m_Open = true;
-
 		m_Keyboard.gameObject.SetActive( true );
 	}
 
