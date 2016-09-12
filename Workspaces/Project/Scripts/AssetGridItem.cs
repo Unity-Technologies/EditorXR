@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using ListView;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
@@ -90,7 +89,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 
 		m_TextPanel.transform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
 
-		//Handle preview fade
+		// Handle preview fade
 		if (m_PreviewObject)
 		{
 			if (m_PreviewFade == 0)
@@ -131,10 +130,10 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 
 		m_PreviewPrefabScale = m_PreviewObject.localScale;
 
-		//Normalize total scale to 1
+		// Normalize total scale to 1
 		var previewTotalBounds = U.Object.GetTotalBounds(m_PreviewObject);
 
-		//Don't show a preview if there are no renderers
+		// Don't show a preview if there are no renderers
 		if (previewTotalBounds == null)
 		{
 			U.Object.Destroy(m_PreviewObject.gameObject);
@@ -160,6 +159,9 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			cloneItem.m_Cube.gameObject.SetActive(false);
 			cloneItem.m_PreviewObject.gameObject.SetActive(true);
 			cloneItem.m_PreviewObject.transform.localScale = m_PreviewTargetScale;
+
+			// Destroy label
+			U.Object.Destroy(cloneItem.m_TextPanel.gameObject);
 		}
 
 		m_GrabbedObject = clone.transform;
