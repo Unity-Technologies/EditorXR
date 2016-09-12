@@ -156,6 +156,11 @@ public class EditorVR : MonoBehaviour
 			yield return null;
 		}
 		SpawnDefaultTools();
+
+		EditorApplication.delayCall += () =>
+		{
+			Selection.selectionChanged.Invoke();
+		};
 	}
 
 	private void OnEnable()
