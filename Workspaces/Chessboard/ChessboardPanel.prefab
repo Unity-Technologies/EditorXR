@@ -341,7 +341,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000013694561318}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -113659843, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 7e49dc4fd0bb33b4fa11f2c1853c7526, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -393,6 +393,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.UI.Slider+SliderEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  m_SelectionFlags: 2
 --- !u!114 &114000012756649732
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -513,7 +514,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000010280661778}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1392445389, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: c75e541e7d7e17f40b6aae5dd949e157, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -547,6 +548,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  m_SelectionFlags: 2
 --- !u!114 &114000013785628244
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -555,7 +557,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000013325458682}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1392445389, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: c75e541e7d7e17f40b6aae5dd949e157, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -589,6 +591,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  m_SelectionFlags: 2
 --- !u!114 &114000013935960710
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -1,12 +1,12 @@
-﻿using System;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
+using UnityEngine.VR.Utilities;
 
 [CustomPropertyDrawer(typeof(FlagsPropertyAttribute))]
 public class FlagsPropertyDrawer : PropertyDrawer
 {
 	public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 	{
-		property.intValue = EditorGUI.MaskField(position, label, property.intValue, property.enumNames);
+		property.intValue = U.UI.MaskField(position, label, property.intValue, property.enumNames, U.UI.SerializedPropertyToType(property));
 	}
 }

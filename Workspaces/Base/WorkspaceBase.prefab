@@ -600,7 +600,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: 2
 --- !u!114 &114000011014117582
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -667,7 +667,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: 2
 --- !u!114 &114000011990078262
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -676,7 +676,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000010500455582}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1392445389, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: c75e541e7d7e17f40b6aae5dd949e157, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -689,9 +689,9 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_HighlightedColor: {r: 0.73448277, g: 0.73448277, b: 0.73448277, a: 1}
+    m_PressedColor: {r: 0.5344828, g: 0.5344828, b: 0.5344828, a: 1}
+    m_DisabledColor: {r: 0.2724138, g: 0.2724138, b: 0.2724138, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -721,6 +721,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  m_SelectionFlags: 2
 --- !u!114 &114000012144030156
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -733,7 +734,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
 --- !u!114 &114000012171468040
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -798,7 +799,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000010313247428}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1392445389, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: c75e541e7d7e17f40b6aae5dd949e157, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -843,6 +844,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  m_SelectionFlags: 2
 --- !u!114 &114000012827231190
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -855,7 +857,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: 2
 --- !u!114 &114000013854833486
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -868,7 +870,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: 2
 --- !u!114 &114000014067047110
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -881,7 +883,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: 2
 --- !u!114 &114000014215938886
 MonoBehaviour:
   m_ObjectHideFlags: 1
