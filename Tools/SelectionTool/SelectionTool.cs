@@ -82,7 +82,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 			// Detect double click
 			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
 			m_LastSelectTime = DateTime.Now;
-			if (U.Input.DoubleClick(timeSinceLastSelect))
+			if (U.UI.DoubleClick(timeSinceLastSelect))
 			{
 				s_CurrentPrefabOpened = m_HoverGameObject;
 				s_SelectedObjects.Remove(s_CurrentPrefabOpened);

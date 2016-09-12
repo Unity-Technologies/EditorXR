@@ -60,9 +60,9 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		// ControlBox shouldn't move with miniWorld
 		panZoomHandle.transform.parent = m_WorkspaceUI.sceneContainer;
 		panZoomHandle.transform.localPosition = Vector3.down * panZoomHandle.transform.localScale.y * 0.5f;
-		panZoomHandle.handleDragging += ControlDragging;
-		panZoomHandle.handleDrag += ControlDrag;
-		panZoomHandle.handleDragged += ControlDragged;
+		panZoomHandle.dragStarted += ControlDragging;
+		panZoomHandle.dragging += ControlDrag;
+		panZoomHandle.dragEnded += ControlDragged;
 		panZoomHandle.hovering += OnControlHoverEnter;
 		panZoomHandle.hovered += OnControlHoverExit;
 

@@ -5,7 +5,7 @@ using UnityEngine.VR.Utilities;
 
 public class FilterUI : MonoBehaviour
 {
-	private const string allText = "All";
+	private const string kAllText = "All";
 
 	public Text summaryText { get { return m_SummaryText; } }
 	[SerializeField]
@@ -39,21 +39,28 @@ public class FilterUI : MonoBehaviour
 	{
 		set
 		{
+			// Clean up old buttons
 			if (m_VisibilityButtons != null)
 				foreach (var button in m_VisibilityButtons)
 					U.Object.Destroy(button.gameObject);
+
+
 			m_FilterTypes = value;
 			m_FilterTypes.Sort();
-			m_FilterTypes.Insert(0, allText);
+			m_FilterTypes.Insert(0, kAllText);
+
+			// Generate new button list
 			m_VisibilityButtons = new FilterButtonUI[m_FilterTypes.Count];
 			for (int i = 0; i < m_VisibilityButtons.Length; i++)
 			{
 				var button = U.Object.Instantiate(m_ButtonPrefab, m_ButtonList, false).GetComponent<FilterButtonUI>();
 				m_VisibilityButtons[i] = button;
+
 				button.button.onClick.AddListener(() =>
 				{
 					OnFilterClick(button);
 				});
+
 				button.text.text = m_FilterTypes[i];
 			}
 		}
@@ -64,18 +71,20 @@ public class FilterUI : MonoBehaviour
 	public string searchQuery { get { return m_SearchQuery; } }
 	private string m_SearchQuery = string.Empty;
 
-	public void ShowList()
+	public void SetListVisibility(bool show)
 	{
-		m_ButtonList.gameObject.SetActive(true);
-		m_VisibilityButton.SetActive(false);
-		m_SummaryButton.SetActive(false);
-	}
-
-	public void HideList()
-	{
-		m_ButtonList.gameObject.SetActive(false);
-		m_VisibilityButton.SetActive(true);
-		m_SummaryButton.SetActive(true);
+		if (show)
+		{
+			m_ButtonList.gameObject.SetActive(true);
+			m_VisibilityButton.SetActive(false);
+			m_SummaryButton.SetActive(false);
+		}
+		else
+		{
+			m_ButtonList.gameObject.SetActive(false);
+			m_VisibilityButton.SetActive(true);
+			m_SummaryButton.SetActive(true);
+		}
 	}
 
 	public void OnFilterClick(FilterButtonUI clickedButton)
@@ -92,7 +101,7 @@ public class FilterUI : MonoBehaviour
 				button.color = m_SearchQuery.Contains("t:") ? m_DisableColor : m_ActiveColor;
 		}
 
-		if (clickedButton.text.text.Equals(allText))
+		if (clickedButton.text.text.Equals(kAllText))
 		{
 			m_SummaryText.text = clickedButton.text.text;
 			m_DescriptionText.text = "All objects are visible";

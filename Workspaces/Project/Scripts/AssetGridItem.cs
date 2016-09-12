@@ -13,7 +13,6 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 
 	private const float kRotateSpeed = 50f;
 	
-
 	[SerializeField]
 	private Text m_Text;
 
@@ -57,6 +56,9 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	public Action<Transform, Vector3> placeObject { private get; set; }
 	public PositionPreviewDelegate positionPreview { private get; set; }
 
+	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
+	public PositionPreviewDelegate positionPreview { private get; set; }
+
 	public override void Setup(AssetData listData)
 	{
 		base.Setup(listData);
@@ -66,12 +68,12 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			// Cube material might change, so we always instance it
 			U.Material.GetMaterialClone(m_Cube);
 
-			m_Handle.handleDragging += GrabBegin;
-			m_Handle.handleDrag += GrabDrag;
-			m_Handle.handleDragged += GrabEnd;
+			m_Handle.dragStarted += OnGrabStarted;
+			m_Handle.dragging += OnGrabDragging;
+			m_Handle.dragEnded += OnGrabEnded;
 
-			m_Handle.hovering += OnBeginHover;
-			m_Handle.hovered += OnEndHover;
+			m_Handle.hovering += OnHoverStarted;
+			m_Handle.hovered += OnHoverEnded;
 
 			m_Setup = true;
 		}
@@ -88,7 +90,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 
 		m_TextPanel.transform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
 
-		//Handle preview fade
+		// Handle preview fade
 		if (m_PreviewObject)
 		{
 			if (m_PreviewFade == 0)
@@ -129,10 +131,10 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 
 		m_PreviewPrefabScale = m_PreviewObject.localScale;
 
-		//Normalize total scale to 1
+		// Normalize total scale to 1
 		var previewTotalBounds = U.Object.GetTotalBounds(m_PreviewObject);
 
-		//Don't show a preview if there are no renderers
+		// Don't show a preview if there are no renderers
 		if (previewTotalBounds == null)
 		{
 			U.Object.Destroy(m_PreviewObject.gameObject);
@@ -141,14 +143,14 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 
 		m_PreviewObject.SetParent(transform, false);
 
-		m_PreviewTargetScale = m_PreviewPrefabScale * (1 / previewTotalBounds.Value.size.Max());
+		m_PreviewTargetScale = m_PreviewPrefabScale * (1 / previewTotalBounds.Value.size.MaxComponent());
 		m_PreviewObject.localPosition = Vector3.up * 0.5f;
 
 		m_PreviewObject.gameObject.SetActive(false);
 		m_PreviewObject.localScale = Vector3.zero;
 	}
 
-	private void GrabBegin(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnGrabStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<AssetGridItem>();
@@ -158,6 +160,9 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			cloneItem.m_Cube.gameObject.SetActive(false);
 			cloneItem.m_PreviewObject.gameObject.SetActive(true);
 			cloneItem.m_PreviewObject.transform.localScale = m_PreviewTargetScale;
+
+			// Destroy label
+			U.Object.Destroy(cloneItem.m_TextPanel.gameObject);
 		}
 
 		m_GrabbedObject = clone.transform;
@@ -178,12 +183,12 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		m_GrabLerp = 1;
 	}
 
-	private void GrabDrag(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnGrabDragging(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		positionPreview(m_GrabbedObject.transform, eventData.rayOrigin, m_GrabLerp);
+		positionPreview(m_GrabbedObject.transform, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_GrabLerp);
 	}
 
-	private void GrabEnd(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnGrabEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var gridItem = m_GrabbedObject.GetComponent<AssetGridItem>();
 		if (gridItem.m_PreviewObject)
@@ -193,10 +198,10 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			switch (data.type)
 			{
 				case "Prefab":
-					Instantiate(data.GetAsset(), gridItem.transform.position, gridItem.transform.rotation);
+					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
 					break;
 				case "Model":
-					Instantiate(data.GetAsset(), gridItem.transform.position, gridItem.transform.rotation);
+					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
 					break;
 			}
 		}
@@ -204,7 +209,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		U.Object.Destroy(m_GrabbedObject.gameObject);
 	}
 
-	private void OnBeginHover(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		if (gameObject.activeInHierarchy)
 		{
@@ -214,7 +219,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		}
 	}
 
-	private void OnEndHover(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		if (gameObject.activeInHierarchy)
 		{
@@ -265,7 +270,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			case "Material":
 				m_Sphere.gameObject.SetActive(true);
 				icon.gameObject.SetActive(false);
-				var material = data.GetAsset() as Material;
+				var material = data.asset as Material;
 				if (material)
 					m_Sphere.sharedMaterial = material;
 				break;
@@ -274,7 +279,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			case "Texture":
 				m_Sphere.gameObject.SetActive(true);
 				icon.gameObject.SetActive(false);
-				var texture = data.GetAsset() as Texture;
+				var texture = data.asset as Texture;
 				if (texture)
 					m_Sphere.sharedMaterial = new Material(Shader.Find("Standard")) {mainTexture = texture};
 				break;

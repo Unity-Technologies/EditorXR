@@ -11,16 +11,9 @@ namespace UnityEngine.VR.Handles
 	/// </summary>
 	public class BaseHandle : MonoBehaviour, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler
 	{
-		[Flags]
-		public enum HandleFlags
-		{
-			Ray = 1 << 0,
-			Direct = 1 << 1
-		}
-
-		public event Action<BaseHandle, HandleEventData> handleDragging = delegate { };
-		public event Action<BaseHandle, HandleEventData> handleDrag = delegate { };
-		public event Action<BaseHandle, HandleEventData> handleDragged = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragStarted = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragging = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragEnded = delegate { };
 
 		public event Action<BaseHandle, HandleEventData> doubleClick = delegate { };
 
@@ -28,10 +21,10 @@ namespace UnityEngine.VR.Handles
 		public event Action<BaseHandle, HandleEventData> hover = delegate { };
 		public event Action<BaseHandle, HandleEventData> hovered = delegate { };
 
-		public HandleFlags handleFlags { get { return m_HandleFlags; } set { m_HandleFlags = value; } }
+		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]
 		[FlagsProperty]
-		private HandleFlags m_HandleFlags = HandleFlags.Ray | HandleFlags.Direct;
+		private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
 		private const int kDefaultCapacity = 2; // i.e. 2 controllers
 
@@ -58,38 +51,23 @@ namespace UnityEngine.VR.Handles
 
 		protected virtual HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new HandleEventData(eventData.rayOrigin, IsDirectSelection(eventData));
-		}
-
-		protected virtual bool IsDirectSelection(RayEventData eventData)
-		{
-			return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength;
-		}
-
-		protected virtual bool ValidEvent(HandleEventData eventData)
-		{
-			if ((handleFlags & HandleFlags.Direct) != 0 && eventData.direct)
-				return true;
-
-			if ((handleFlags & HandleFlags.Ray) != 0)
-				return true;
-
-			return false;
+			return new HandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData));
 		}
 
 		public void OnBeginDrag(RayEventData eventData)
 		{
-			var handleEventData = GetHandleEventData(eventData);
-			if (!ValidEvent(handleEventData))
+			if (!U.UI.IsValidEvent(eventData, selectionFlags))
 				return;
 
 			m_DragSources.Add(eventData.rayOrigin);
 			startDragPosition = eventData.pointerCurrentRaycast.worldPosition;
 
+			var handleEventData = GetHandleEventData(eventData);
+
 			//Double-click logic
 			var timeSinceLastClick = (float) (DateTime.Now - m_LastClickTime).TotalSeconds;
 			m_LastClickTime = DateTime.Now;
-			if (U.Input.DoubleClick(timeSinceLastClick))
+			if (U.UI.DoubleClick(timeSinceLastClick))
 			{
 				OnDoubleClick(handleEventData);
 			}
@@ -111,12 +89,11 @@ namespace UnityEngine.VR.Handles
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			var handleEventData = GetHandleEventData(eventData);
-			if (!ValidEvent(handleEventData))
+			if (!U.UI.IsValidEvent(eventData, selectionFlags))
 				return;
 
 			m_HoverSources.Add(eventData.rayOrigin);
-			OnHandleRayEnter(handleEventData);
+			OnHandleRayEnter(GetHandleEventData(eventData));
 		}
 
 		public void OnRayHover(RayEventData eventData)
@@ -125,7 +102,7 @@ namespace UnityEngine.VR.Handles
 
 			// Direct selection has special handling for enter/exit since those events may not have been called
 			// because the pointer wasn't close enough to the handle
-			if (handleFlags == HandleFlags.Direct)
+			if (selectionFlags == SelectionFlags.Direct)
 			{
 				if (!handleEventData.direct && m_HoverSources.Remove(eventData.rayOrigin))
 				{
@@ -179,7 +156,7 @@ namespace UnityEngine.VR.Handles
 		/// </summary>
 		protected virtual void OnHandleBeginDrag(HandleEventData eventData)
 		{
-			handleDragging(this, eventData);
+			dragStarted(this, eventData);
 		}
 
 		/// <summary>
@@ -187,7 +164,7 @@ namespace UnityEngine.VR.Handles
 		/// </summary>
 		protected virtual void OnHandleDrag(HandleEventData eventData)
 		{
-			handleDrag(this, eventData);
+			dragging(this, eventData);
 		}
 
 		/// <summary>
@@ -195,7 +172,7 @@ namespace UnityEngine.VR.Handles
 		/// </summary>
 		protected virtual void OnHandleEndDrag(HandleEventData eventData)
 		{
-			handleDragged(this, eventData);
+			dragEnded(this, eventData);
 		}
 
 		/// <summary>

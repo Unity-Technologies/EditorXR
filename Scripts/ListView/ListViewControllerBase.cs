@@ -109,14 +109,14 @@ namespace ListView
 				//Apply scrolling momentum
 				m_ScrollOffset += m_ScrollDelta * Time.unscaledDeltaTime;
 				if (m_ScrollReturn < float.MaxValue || m_ScrollOffset > 0)
-					OnEndScrolling();
+					OnScrollEnded();
 				if (m_ScrollDelta > 0)
 				{
 					m_ScrollDelta -= m_ScrollDamping * Time.unscaledDeltaTime;
 					if (m_ScrollDelta < 0)
 					{
 						m_ScrollDelta = 0;
-						OnEndScrolling();
+						OnScrollEnded();
 					}
 				}
 				else if (m_ScrollDelta < 0)
@@ -125,7 +125,7 @@ namespace ListView
 					if (m_ScrollDelta > 0)
 					{
 						m_ScrollDelta = 0;
-						OnEndScrolling();
+						OnScrollEnded();
 					}
 				}
 			}
@@ -186,7 +186,7 @@ namespace ListView
 			m_Scrolling = true;
 		}
 
-		public virtual void OnEndScrolling()
+		public virtual void OnScrollEnded()
 		{
 			m_Scrolling = false;
 

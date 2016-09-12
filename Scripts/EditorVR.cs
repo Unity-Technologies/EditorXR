@@ -655,6 +655,13 @@ public class EditorVR : MonoBehaviour
 		if (positionPreview != null)
 			positionPreview.positionPreview = m_ObjectPlacementModule.PositionPreview;
 
+		var positionPreview = obj as IPositionPreview;
+		if (positionPreview != null)
+		{
+			positionPreview.positionPreview = m_ObjectPlacementModule.PositionPreview;
+			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
+		}
+
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_AllTools.ToList();
@@ -1021,6 +1028,14 @@ public class EditorVR : MonoBehaviour
 		}
 		if (!inMiniWorld)
 			m_ObjectPlacementModule.PlaceObject(obj, targetScale);
+	}
+
+	private Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
+	{
+		return (from proxy in m_AllProxies
+				from origin in proxy.rayOrigins
+					where origin.Value.Equals(rayOrigin)
+						select proxy.previewOrigins[origin.Key]).FirstOrDefault();
 	}
 
 #if UNITY_EDITOR

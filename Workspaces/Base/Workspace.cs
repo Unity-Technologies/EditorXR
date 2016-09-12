@@ -103,7 +103,7 @@ namespace UnityEngine.VR.Workspaces
 			directManipulator.translate = Translate;
 			directManipulator.rotate = Rotate;
 
-			m_WorkspaceUI.vacuumHandle.doubleClick += OnDoubleClick;
+			m_WorkspaceUI.vacuumHandle.doubleClick += OnDoubleClicked;
 			m_WorkspaceUI.vacuumHandle.hovering += OnHandleHoverEnter;
 			m_WorkspaceUI.vacuumHandle.hovered += OnHandleHoverExit;
 
@@ -117,16 +117,16 @@ namespace UnityEngine.VR.Workspaces
 
 			foreach (var handle in handles)
 			{
-				handle.handleDragging += HandleDragging;
-				handle.handleDrag += HandleDrag;
-				handle.handleDragged += HandleDragged;
+				handle.dragStarted += OnHandleDragStarted;
+				handle.dragging += OnHandleDragging;
+				handle.dragEnded += OnHandleDragEnded;
 
 				handle.hovering += OnHandleHoverEnter;
 				handle.hovered += OnHandleHoverExit;
 			}
 		}
 
-		public virtual void HandleDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		public virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			m_PositionStart = transform.position;
 			m_DragStart = eventData.rayOrigin.position;
@@ -134,7 +134,7 @@ namespace UnityEngine.VR.Workspaces
 			m_Dragging = true;
 		}
 
-		public virtual void HandleDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		public virtual void OnHandleDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			if (m_Dragging && !m_DragLocked)
 			{
@@ -167,7 +167,7 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		public virtual void HandleDragged(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		public virtual void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			m_Dragging = false;
 		}
@@ -184,7 +184,7 @@ namespace UnityEngine.VR.Workspaces
 				setHighlight(handle.gameObject, false);
 		}
 
-		private void OnDoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		private void OnDoubleClicked(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			if (!m_Vacuuming)
 				StartCoroutine(VacuumToViewer());
