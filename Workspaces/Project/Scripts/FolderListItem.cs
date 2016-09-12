@@ -55,8 +55,8 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_ExpandArrow.dragEnded += ToggleExpanded;
 			m_Cube.dragStarted += SelectFolder;
 
-			m_Cube.hovering += OnHoverStarted;
-			m_Cube.hovered += OnHoverEnded;
+			m_Cube.hoverStarted += OnHoverStarted;
+			m_Cube.hoverEnded += OnHoverEnded;
 		}
 		
 		m_Text.text = listData.name;

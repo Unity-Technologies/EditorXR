@@ -27,13 +27,13 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 		foreach (var h in m_AllHandles)
 		{
 			if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
-				h.dragging += translateDragging;
+				h.dragging += OnTranslateDragging;
 
 			if (h is RadialHandle)
-				h.dragging += rotateDragging;
+				h.dragging += OnRotateDragging;
 
-			h.dragStarted += dragStarted;
-			h.dragEnded += dragEnded;
+			h.dragStarted += OnHandleDragStarted;
+			h.dragEnded += OnHandleDragEnded;
 		}
 	}
 
@@ -42,13 +42,13 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 		foreach (var h in m_AllHandles)
 		{
 			if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
-				h.dragging -= translateDragging;
+				h.dragging -= OnTranslateDragging;
 
 			if (h is RadialHandle)
-				h.dragging -= rotateDragging;
+				h.dragging -= OnRotateDragging;
 
-			h.dragStarted -= dragStarted;
-			h.dragEnded -= dragEnded;
+			h.dragStarted -= OnHandleDragStarted;
+			h.dragEnded -= OnHandleDragEnded;
 		}
 	}
 
@@ -69,17 +69,17 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 		}
 	}
 
-	private void translateDragging(BaseHandle handle, HandleEventData eventData)
+	private void OnTranslateDragging(BaseHandle handle, HandleEventData eventData)
 	{
 		translate(eventData.deltaPosition);
 	}
 
-	private void rotateDragging(BaseHandle handle, HandleEventData eventData)
+	private void OnRotateDragging(BaseHandle handle, HandleEventData eventData)
 	{
 		rotate(eventData.deltaRotation);
 	}
 
-	private void dragStarted(BaseHandle handle, HandleEventData eventData)
+	private void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
 	{
 		foreach (var h in m_AllHandles)
 			h.gameObject.SetActive(h == handle);
@@ -87,7 +87,7 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 		m_Dragging = true;
 	}
 
-	private void dragEnded(BaseHandle handle, HandleEventData eventData)
+	private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
 	{
 		if(gameObject.activeSelf)
 			foreach (var h in m_AllHandles)

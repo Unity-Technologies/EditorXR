@@ -17,9 +17,9 @@ namespace UnityEngine.VR.Handles
 
 		public event Action<BaseHandle, HandleEventData> doubleClick = delegate { };
 
+		public event Action<BaseHandle, HandleEventData> hoverStarted = delegate { };
 		public event Action<BaseHandle, HandleEventData> hovering = delegate { };
-		public event Action<BaseHandle, HandleEventData> hover = delegate { };
-		public event Action<BaseHandle, HandleEventData> hovered = delegate { };
+		public event Action<BaseHandle, HandleEventData> hoverEnded = delegate { };
 
 		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]
@@ -40,11 +40,11 @@ namespace UnityEngine.VR.Handles
 			{
 				var eventData = GetHandleEventData(new RayEventData(EventSystem.current));
 				for (int i = 0; i < m_HoverSources.Count; i++)
-					OnHandleRayExit(eventData);
+					OnHandleHoverEnded(eventData);
 				m_HoverSources.Clear();
 
 				for (int i = 0; i < m_DragSources.Count; i++)
-					OnHandleEndDrag(eventData);
+					OnHandleDragEnded(eventData);
 				m_DragSources.Clear();
 			}
 		}
@@ -72,19 +72,19 @@ namespace UnityEngine.VR.Handles
 				OnDoubleClick(handleEventData);
 			}
 
-			OnHandleBeginDrag(handleEventData);
+			OnHandleDragStarted(handleEventData);
 		}
 
 		public void OnDrag(RayEventData eventData)
 		{
 			if (m_DragSources.Count > 0)
-				OnHandleDrag(GetHandleEventData(eventData));
+				OnHandleDragging(GetHandleEventData(eventData));
 		}
 
 		public void OnEndDrag(RayEventData eventData)
 		{
 			if (m_DragSources.Remove(eventData.rayOrigin))
-				OnHandleEndDrag(GetHandleEventData(eventData));
+				OnHandleDragEnded(GetHandleEventData(eventData));
 		}
 
 		public void OnRayEnter(RayEventData eventData)
@@ -93,7 +93,7 @@ namespace UnityEngine.VR.Handles
 				return;
 
 			m_HoverSources.Add(eventData.rayOrigin);
-			OnHandleRayEnter(GetHandleEventData(eventData));
+			OnHandleHoverStarted(GetHandleEventData(eventData));
 		}
 
 		public void OnRayHover(RayEventData eventData)
@@ -106,31 +106,39 @@ namespace UnityEngine.VR.Handles
 			{
 				if (!handleEventData.direct && m_HoverSources.Remove(eventData.rayOrigin))
 				{
-					OnHandleRayExit(handleEventData);
+					OnHandleHoverEnded(handleEventData);
 					return;
 				}
 
 				if (handleEventData.direct && !m_HoverSources.Contains(eventData.rayOrigin))
 				{
 					m_HoverSources.Add(eventData.rayOrigin);
-					OnHandleRayEnter(handleEventData);
+					OnHandleHoverStarted(handleEventData);
 				}
 			}
 
 			if (m_HoverSources.Count > 0)
-				OnHandleRayHover(GetHandleEventData(eventData));
+				OnHandleHovering(GetHandleEventData(eventData));
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
 			if (m_HoverSources.Remove(eventData.rayOrigin))
-				OnHandleRayExit(GetHandleEventData(eventData));
+				OnHandleHoverEnded(GetHandleEventData(eventData));
 		}
 
 		/// <summary>
 		/// Override to modify event data prior to raising event (requires calling base method at the end)
 		/// </summary>
-		protected virtual void OnHandleRayEnter(HandleEventData eventData)
+		protected virtual void OnHandleHoverStarted(HandleEventData eventData)
+		{
+			hoverStarted(this, eventData);
+		}
+
+		/// <summary>
+		/// Override to modify event data prior to raising event (requires calling base method at the end)
+		/// </summary>
+		protected virtual void OnHandleHovering(HandleEventData eventData)
 		{
 			hovering(this, eventData);
 		}
@@ -138,23 +146,15 @@ namespace UnityEngine.VR.Handles
 		/// <summary>
 		/// Override to modify event data prior to raising event (requires calling base method at the end)
 		/// </summary>
-		protected virtual void OnHandleRayHover(HandleEventData eventData)
+		protected virtual void OnHandleHoverEnded(HandleEventData eventData)
 		{
-			hover(this, eventData);
+			hoverEnded(this, eventData);
 		}
 
 		/// <summary>
 		/// Override to modify event data prior to raising event (requires calling base method at the end)
 		/// </summary>
-		protected virtual void OnHandleRayExit(HandleEventData eventData)
-		{
-			hovered(this, eventData);
-		}
-
-		/// <summary>
-		/// Override to modify event data prior to raising event (requires calling base method at the end)
-		/// </summary>
-		protected virtual void OnHandleBeginDrag(HandleEventData eventData)
+		protected virtual void OnHandleDragStarted(HandleEventData eventData)
 		{
 			dragStarted(this, eventData);
 		}
@@ -162,7 +162,7 @@ namespace UnityEngine.VR.Handles
 		/// <summary>
 		/// Override to modify event data prior to raising event (requires calling base method at the end)
 		/// </summary>
-		protected virtual void OnHandleDrag(HandleEventData eventData)
+		protected virtual void OnHandleDragging(HandleEventData eventData)
 		{
 			dragging(this, eventData);
 		}
@@ -170,7 +170,7 @@ namespace UnityEngine.VR.Handles
 		/// <summary>
 		/// Override to modify event data prior to raising event (requires calling base method at the end)
 		/// </summary>
-		protected virtual void OnHandleEndDrag(HandleEventData eventData)
+		protected virtual void OnHandleDragEnded(HandleEventData eventData)
 		{
 			dragEnded(this, eventData);
 		}

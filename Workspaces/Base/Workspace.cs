@@ -103,9 +103,9 @@ namespace UnityEngine.VR.Workspaces
 			directManipulator.translate = Translate;
 			directManipulator.rotate = Rotate;
 
-			m_WorkspaceUI.vacuumHandle.doubleClick += OnDoubleClicked;
-			m_WorkspaceUI.vacuumHandle.hovering += OnHandleHoverEnter;
-			m_WorkspaceUI.vacuumHandle.hovered += OnHandleHoverExit;
+			m_WorkspaceUI.vacuumHandle.doubleClick += OnDoubleClick;
+			m_WorkspaceUI.vacuumHandle.hoverStarted += OnHandleHoverStarted;
+			m_WorkspaceUI.vacuumHandle.hoverEnded += OnHandleHoverEnded;
 
 			var handles = new BaseHandle[]
 			{
@@ -121,8 +121,8 @@ namespace UnityEngine.VR.Workspaces
 				handle.dragging += OnHandleDragging;
 				handle.dragEnded += OnHandleDragEnded;
 
-				handle.hovering += OnHandleHoverEnter;
-				handle.hovered += OnHandleHoverExit;
+				handle.hoverStarted += OnHandleHoverStarted;
+				handle.hoverEnded += OnHandleHoverEnded;
 			}
 		}
 
@@ -172,19 +172,19 @@ namespace UnityEngine.VR.Workspaces
 			m_Dragging = false;
 		}
 
-		public virtual void OnHandleHoverEnter(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		public virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
 				setHighlight(handle.gameObject, true);
 		}
 
-		public virtual void OnHandleHoverExit(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		public virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
 				setHighlight(handle.gameObject, false);
 		}
 
-		private void OnDoubleClicked(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		private void OnDoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			if (!m_Vacuuming)
 				StartCoroutine(VacuumToViewer());

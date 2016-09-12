@@ -71,8 +71,8 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			m_Handle.dragging += OnGrabDragging;
 			m_Handle.dragEnded += OnGrabEnded;
 
-			m_Handle.hovering += OnHoverStarted;
-			m_Handle.hovered += OnHoverEnded;
+			m_Handle.hoverStarted += OnHoverStarted;
+			m_Handle.hoverEnded += OnHoverEnded;
 
 			m_Setup = true;
 		}
@@ -157,6 +157,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		if (cloneItem.m_PreviewObject)
 		{
 			cloneItem.m_Cube.gameObject.SetActive(false);
+			cloneItem.m_Icon.gameObject.SetActive(false);
 			cloneItem.m_PreviewObject.gameObject.SetActive(true);
 			cloneItem.m_PreviewObject.transform.localScale = m_PreviewTargetScale;
 

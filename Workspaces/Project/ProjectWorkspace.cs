@@ -80,11 +80,11 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 			// Scroll Handle shouldn't move on bounds change
 			handle.transform.parent = m_WorkspaceUI.sceneContainer;
 
-			handle.dragStarted += OnScrollBeginDrag;
-			handle.dragging += OnScrollDrag;
-			handle.dragEnded += OnScrollEndDrag;
-			handle.hovering += OnScrollHoverEnter;
-			handle.hovered += OnScrollHoverExit;
+			handle.dragStarted += OnScrollDragStarted;
+			handle.dragging += OnScrollDragging;
+			handle.dragEnded += OnScrollDragEnded;
+			handle.hoverStarted += OnScrollHoverStarted;
+			handle.hoverEnded += OnScrollHoverEnded;
 		}
 
 		// Propagate initial bounds
@@ -150,7 +150,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		m_ProjectUI.assetListView.listData = data.assets;
 	}
 
-	private void OnScrollBeginDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	private void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		m_ScrollStart = eventData.rayOrigin.transform.position;
 		if (handle == m_ProjectUI.folderScrollHandle)
@@ -165,12 +165,12 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		}
 	}
 
-	private void OnScrollDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	private void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		Scroll(handle, eventData);
 	}
 
-	private void OnScrollEndDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	private void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		Scroll(handle, eventData);
 		if (handle == m_ProjectUI.folderScrollHandle)
@@ -194,12 +194,12 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 			m_ProjectUI.assetListView.scrollOffset = scrollOffset;
 	}
 
-	private void OnScrollHoverEnter(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	private void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		setHighlight(handle.gameObject, true);
 	}
 
-	private void OnScrollHoverExit(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	private void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		setHighlight(handle.gameObject, false);
 	}
