@@ -197,7 +197,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		switch (mode)
 		{
 			case TransformMode.Direct:
-				m_CurrentManipulator.transform.localScale = Vector3.one * m_SelectionBounds.size.Max();
+				m_CurrentManipulator.transform.localScale = Vector3.one * m_SelectionBounds.size.MaxComponent();
 				break;
 			default:
 				var camera = U.Camera.GetMainCamera();

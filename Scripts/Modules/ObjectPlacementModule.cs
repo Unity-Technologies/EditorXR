@@ -17,17 +17,6 @@ public class ObjectPlacementModule : MonoBehaviour
 		preview.transform.rotation = Quaternion.Lerp(preview.transform.rotation, previewOrigin.rotation, t);
 	}
 
-
-
-	private readonly Vector3 kGrabPositionOffset = new Vector3(0f, 0.02f, 0.03f);
-	private readonly Quaternion kGrabRotationOffset = Quaternion.AngleAxis(30f, Vector3.left);
-
-	public void PositionPreview(Transform preview, Transform rayOrigin, float t = 1f)
-	{
-		preview.transform.position = Vector3.Lerp(preview.transform.position, rayOrigin.position + rayOrigin.rotation * kGrabPositionOffset, t);
-		preview.transform.rotation = Quaternion.Lerp(preview.transform.rotation, rayOrigin.rotation * kGrabRotationOffset, t);
-	}
-
 	public void PlaceObject(Transform obj, Vector3 targetScale)
 	{
 		StartCoroutine(PlaceObjectCoroutine(obj, targetScale));

@@ -653,10 +653,6 @@ public class EditorVR : MonoBehaviour
 
 		var positionPreview = obj as IPositionPreview;
 		if (positionPreview != null)
-			positionPreview.positionPreview = m_ObjectPlacementModule.PositionPreview;
-
-		var positionPreview = obj as IPositionPreview;
-		if (positionPreview != null)
 		{
 			positionPreview.positionPreview = m_ObjectPlacementModule.PositionPreview;
 			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
@@ -982,7 +978,7 @@ public class EditorVR : MonoBehaviour
 					selectedObjectTransform.transform.localScale = Vector3.one;
 					var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);
 					if (totalBounds != null)
-						selectedObjectTransform.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.Max());
+						selectedObjectTransform.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.MaxComponent());
 				}
 
 				if (uiInput.select.wasJustReleased)
