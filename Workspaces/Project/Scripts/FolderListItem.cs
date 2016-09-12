@@ -55,8 +55,8 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_ExpandArrow.dragEnded += ToggleExpanded;
 			m_Cube.dragStarted += SelectFolder;
 
-			m_Cube.hovering += HoverBegin;
-			m_Cube.hovered += HoverEnd;
+			m_Cube.hovering += OnHoverStarted;
+			m_Cube.hovered += OnHoverEnded;
 		}
 		
 		m_Text.text = listData.name;
@@ -125,12 +125,12 @@ public class FolderListItem : ListViewItem<FolderData>
 		selectFolder(folderItem.data);
 	}
 
-	private void HoverBegin(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		m_Hovering = true;
 	}
 
-	private void HoverEnd(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		m_Hovering = false;
 	}

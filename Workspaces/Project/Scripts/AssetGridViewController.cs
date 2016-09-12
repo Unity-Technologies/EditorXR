@@ -173,7 +173,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		UpdateGridItem(data, offset);
 	}
 
-	public override void OnEndScrolling()
+	public override void OnScrollEnded()
 	{
 		m_Scrolling = false;
 		if (m_ScrollOffset > m_ScaleFactor)

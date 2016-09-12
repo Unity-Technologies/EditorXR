@@ -69,12 +69,12 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 			// Cube material might change, so we always instance it
 			U.Material.GetMaterialClone(m_Cube);
 
-			m_Handle.dragStarted += GrabBegin;
-			m_Handle.dragging += GrabDrag;
-			m_Handle.dragEnded += GrabEnd;
+			m_Handle.dragStarted += OnGrabStarted;
+			m_Handle.dragging += OnGrabDragging;
+			m_Handle.dragEnded += OnGrabEnded;
 
-			m_Handle.hovering += OnBeginHover;
-			m_Handle.hovered += OnEndHover;
+			m_Handle.hovering += OnHoverStarted;
+			m_Handle.hovered += OnHoverEnded;
 
 			m_Setup = true;
 		}
@@ -151,7 +151,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 		m_PreviewObject.localScale = Vector3.zero;
 	}
 
-	private void GrabBegin(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnGrabStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<AssetGridItem>();
@@ -181,14 +181,14 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 		m_GrabLerp = 1;
 	}
 
-	private void GrabDrag(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnGrabDragging(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var rayTransform = eventData.rayOrigin.transform;
 		m_GrabbedObject.transform.position = Vector3.Lerp(m_GrabbedObject.transform.position, rayTransform.position + rayTransform.rotation * kGrabPositionOffset, m_GrabLerp);
 		m_GrabbedObject.transform.rotation = Quaternion.Lerp(m_GrabbedObject.transform.rotation, rayTransform.rotation * kGrabRotationOffset, m_GrabLerp);
 	}
 
-	private void GrabEnd(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnGrabEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var gridItem = m_GrabbedObject.GetComponent<AssetGridItem>();
 		if (gridItem.m_PreviewObject)
@@ -209,7 +209,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 		U.Object.Destroy(m_GrabbedObject.gameObject);
 	}
 
-	private void OnBeginHover(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		if (gameObject.activeInHierarchy)
 		{
@@ -219,7 +219,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 		}
 	}
 
-	private void OnEndHover(BaseHandle baseHandle, HandleEventData eventData)
+	private void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		if (gameObject.activeInHierarchy)
 		{

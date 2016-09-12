@@ -38,7 +38,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	{
 		if (data.item == null)
 			data.item = GetItem(data);
-		var item = (FolderListItem) data.item;
+		var item = (FolderListItem)data.item;
 		item.UpdateTransforms(bounds.size.x - kClipMargin, depth);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
@@ -48,7 +48,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	protected override ListViewItem<FolderData> GetItem(FolderData listData)
 	{
-		var item = (FolderListItem) base.GetItem(listData);
+		var item = (FolderListItem)base.GetItem(listData);
 		item.SwapMaterials(m_TextMaterial, m_ExpandArrowMaterial);
 		item.selectFolder = selectFolder;
 		return item;
