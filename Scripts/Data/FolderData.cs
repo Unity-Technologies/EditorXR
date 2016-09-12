@@ -3,6 +3,7 @@
 public class FolderData : ListViewItemNestedData<FolderData>
 {
 	private const string kTemplateName = "FolderListItem";
+
 	public string name { get { return m_Name; } }
 	private readonly string m_Name;
 

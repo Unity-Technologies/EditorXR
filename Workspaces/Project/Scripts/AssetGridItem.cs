@@ -144,7 +144,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 
 		m_PreviewObject.SetParent(transform, false);
 
-		m_PreviewTargetScale = m_PreviewPrefabScale * (1 / previewTotalBounds.Value.size.Max());
+		m_PreviewTargetScale = m_PreviewPrefabScale * (1 / previewTotalBounds.Value.size.MaxComponent());
 		m_PreviewObject.localPosition = Vector3.up * 0.5f;
 
 		m_PreviewObject.gameObject.SetActive(false);
