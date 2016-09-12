@@ -69,9 +69,9 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects
 			// Cube material might change, so we always instance it
 			U.Material.GetMaterialClone(m_Cube);
 
-			m_Handle.handleDragging += GrabBegin;
-			m_Handle.handleDrag += GrabDrag;
-			m_Handle.handleDragged += GrabEnd;
+			m_Handle.dragStarted += GrabBegin;
+			m_Handle.dragging += GrabDrag;
+			m_Handle.dragEnded += GrabEnd;
 
 			m_Handle.hovering += OnBeginHover;
 			m_Handle.hovered += OnEndHover;

@@ -118,16 +118,16 @@ namespace UnityEngine.VR.Workspaces
 
 			foreach (var handle in handles)
 			{
-				handle.handleDragging += HandleDragging;
-				handle.handleDrag += HandleDrag;
-				handle.handleDragged += HandleDragged;
+				handle.dragStarted += OnDragStarted;
+				handle.dragging += OnDragging;
+				handle.dragEnded += OnDragEnded;
 
 				handle.hovering += OnHandleHoverEnter;
 				handle.hovered += OnHandleHoverExit;
 			}
 		}
 
-		public virtual void HandleDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		public virtual void OnDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			m_PositionStart = transform.position;
 			m_DragStart = eventData.rayOrigin.position;
@@ -135,7 +135,7 @@ namespace UnityEngine.VR.Workspaces
 			m_Dragging = true;
 		}
 
-		public virtual void HandleDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		public virtual void OnDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			if (m_Dragging && !m_DragLocked)
 			{
@@ -168,7 +168,7 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		public virtual void HandleDragged(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		public virtual void OnDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			m_Dragging = false;
 		}

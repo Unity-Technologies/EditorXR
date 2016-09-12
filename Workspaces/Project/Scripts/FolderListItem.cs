@@ -52,8 +52,8 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_NormalColor = m_CubeRenderer.sharedMaterial.color;
 			U.Material.GetMaterialClone(m_CubeRenderer);
 
-			m_ExpandArrow.handleDragged += ToggleExpanded;
-			m_Cube.handleDragging += SelectFolder;
+			m_ExpandArrow.dragEnded += ToggleExpanded;
+			m_Cube.dragStarted += SelectFolder;
 
 			m_Cube.hovering += HoverBegin;
 			m_Cube.hovered += HoverEnd;

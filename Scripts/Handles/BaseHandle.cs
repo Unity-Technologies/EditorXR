@@ -18,9 +18,9 @@ namespace UnityEngine.VR.Handles
 			Direct = 1 << 1
 		}
 
-		public event Action<BaseHandle, HandleEventData> handleDragging = delegate { };
-		public event Action<BaseHandle, HandleEventData> handleDrag = delegate { };
-		public event Action<BaseHandle, HandleEventData> handleDragged = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragStarted = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragging = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragEnded = delegate { };
 
 		public event Action<BaseHandle, HandleEventData> doubleClick = delegate { };
 
@@ -179,7 +179,7 @@ namespace UnityEngine.VR.Handles
 		/// </summary>
 		protected virtual void OnHandleBeginDrag(HandleEventData eventData)
 		{
-			handleDragging(this, eventData);
+			dragStarted(this, eventData);
 		}
 
 		/// <summary>
@@ -187,7 +187,7 @@ namespace UnityEngine.VR.Handles
 		/// </summary>
 		protected virtual void OnHandleDrag(HandleEventData eventData)
 		{
-			handleDrag(this, eventData);
+			dragging(this, eventData);
 		}
 
 		/// <summary>
@@ -195,7 +195,7 @@ namespace UnityEngine.VR.Handles
 		/// </summary>
 		protected virtual void OnHandleEndDrag(HandleEventData eventData)
 		{
-			handleDragged(this, eventData);
+			dragEnded(this, eventData);
 		}
 
 		/// <summary>

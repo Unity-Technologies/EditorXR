@@ -70,9 +70,9 @@ public class ProjectWorkspace : Workspace, IPlaceObjects
 			// Scroll Handle shouldn't move on bounds change
 			handle.transform.parent = m_WorkspaceUI.sceneContainer;
 
-			handle.handleDragging += OnScrollBeginDrag;
-			handle.handleDrag += OnScrollDrag;
-			handle.handleDragged += OnScrollEndDrag;
+			handle.dragStarted += OnScrollBeginDrag;
+			handle.dragging += OnScrollDrag;
+			handle.dragEnded += OnScrollEndDrag;
 			handle.hovering += OnScrollHoverEnter;
 			handle.hovered += OnScrollHoverExit;
 		}
