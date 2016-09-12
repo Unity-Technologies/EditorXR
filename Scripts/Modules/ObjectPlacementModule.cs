@@ -5,9 +5,19 @@ using UnityEngine.VR.Utilities;
 
 public class ObjectPlacementModule : MonoBehaviour
 {
+	public delegate void PositionPreviewDelegate(Transform preview, Transform rayOrigin, float t = 1f);
+
 	private const float kInstantiateFOVDifference = 20f;
 
 	private const float kGrowDuration = 0.5f;
+
+	public void PositionPreview(Transform preview, Transform previewOrigin, float t = 1f)
+	{
+		preview.transform.position = Vector3.Lerp(preview.transform.position, previewOrigin.position, t);
+		preview.transform.rotation = Quaternion.Lerp(preview.transform.rotation, previewOrigin.rotation, t);
+	}
+
+
 
 	public void PlaceObject(Transform obj, Vector3 targetScale)
 	{
