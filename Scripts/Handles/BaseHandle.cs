@@ -11,10 +11,9 @@ namespace UnityEngine.VR.Handles
 	/// </summary>
 	public class BaseHandle : MonoBehaviour, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler
 	{
-		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
+		public event Action<BaseHandle, HandleEventData> dragStarted = delegate { };
 		public event Action<BaseHandle, HandleEventData> dragging = delegate { };
 		public event Action<BaseHandle, HandleEventData> dragEnded = delegate { };
-		private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
 		public event Action<BaseHandle, HandleEventData> doubleClick = delegate { };
 
@@ -22,10 +21,10 @@ namespace UnityEngine.VR.Handles
 		public event Action<BaseHandle, HandleEventData> hover = delegate { };
 		public event Action<BaseHandle, HandleEventData> hovered = delegate { };
 
-		public HandleFlags handleFlags { get { return m_HandleFlags; } set { m_HandleFlags = value; } }
+		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]
 		[FlagsProperty]
-		private HandleFlags m_HandleFlags = HandleFlags.Ray | HandleFlags.Direct;
+		private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
 		private const int kDefaultCapacity = 2; // i.e. 2 controllers
 
