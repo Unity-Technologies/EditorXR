@@ -4,12 +4,13 @@ using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class RaySlider : Slider {
+public class RaySlider : Slider
+{
 	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 	[SerializeField]
 	[FlagsProperty]
 	private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
-	
+
 	public override void OnPointerEnter(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;

@@ -1,5 +1,4 @@
-﻿
-namespace UnityEngine.VR.Utilities
+﻿namespace UnityEngine.VR.Utilities
 {
 	using System;
 	using UnityEngine;
@@ -43,13 +42,18 @@ namespace UnityEngine.VR.Utilities
 				return false;
 			}
 
-			public static int FilteredMaskField(Rect position, GUIContent label, int mask, string[] displayedOptions, Type propertyType)
+			/// <summary>
+			/// Special version of EditorGUI.MaskField which ensures that only the chosen bits are set. Existing MaskFiled has a bug
+			/// whereby the first bit of the value may or may not be set depending on how the UI was used.
+			/// </summary>
+			/// <returns></returns>
+			public static int MaskField(Rect position, GUIContent label, int mask, string[] displayedOptions, Type propertyType)
 			{
 				mask = EditorGUI.MaskField(position, label, mask, displayedOptions);
-				return FilterEnum(mask, propertyType);
+				return ActualEnumFlags(mask, propertyType);
 			}
 
-			public static int FilterEnum(int value, Type t)
+			public static int ActualEnumFlags(int value, Type t)
 			{
 				if (value < 0)
 				{
