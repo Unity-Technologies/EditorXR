@@ -37,6 +37,7 @@ namespace UnityEngine.VR.Modules
 			public GameObject pressedObject;
 			public GameObject draggedObject;
 			public bool dragging;
+			public bool fakeRayDragging;
 
 			public bool hasObject { get { return (hoveredObject != null && hoveredObject.layer == UILayer) || pressedObject != null || draggedObject != null; } }
 
@@ -84,11 +85,14 @@ namespace UnityEngine.VR.Modules
 			return null;
 		}
 
-		public void SetRaycastSourceDragging(Transform rayOrigin, bool dragging)
+		public void SetFakeRaycastSourceDragging(Transform rayOrigin, Transform fakeRayOrigin, bool dragging)
 		{
 			RaycastSource source;
-			if(m_RaycastSources.TryGetValue(rayOrigin, out source))
+			if(m_RaycastSources.TryGetValue(fakeRayOrigin, out source))
 				source.dragging = dragging;
+
+			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
+				source.fakeRayDragging = dragging;
 		}
 
 		public override void Process()
@@ -104,6 +108,9 @@ namespace UnityEngine.VR.Modules
 				if (!(source.rayOrigin.gameObject.activeSelf || source.draggedObject) || !source.proxy.active)
 					continue;
 
+				if (source.fakeRayDragging)
+					continue;
+
 				if (source.eventData == null)
 					source.eventData = new RayEventData(base.eventSystem);
 				source.hoveredObject = GetRayIntersection(source); // Check all currently running raycasters
@@ -114,7 +121,7 @@ namespace UnityEngine.VR.Modules
 				eventData.pointerLength = getPointerLength(eventData.rayOrigin);
 
 				HandlePointerExitAndEnter(eventData, source.hoveredObject); // Send enter and exit events
-
+				
 				source.actionMapInput.active = source.hasObject || source.dragging;
 				
 				// Proceed only if pointer is interacting with something

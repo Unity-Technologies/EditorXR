@@ -960,7 +960,7 @@ public class EditorVR : MonoBehaviour
 
 			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && uiInput.select.wasJustPressed)
 			{
-				m_InputModule.SetRaycastSourceDragging(fakeRayOrigin, true);
+				m_InputModule.SetFakeRaycastSourceDragging(originalRayOrigin, fakeRayOrigin, true);
 
 				ray.Value.dragObject = hoverObject; // Capture object for later use
 				ray.Value.dragObjectOriginalScale = hoverObject.transform.localScale;
@@ -973,7 +973,7 @@ public class EditorVR : MonoBehaviour
 					Selection.objects = new UnityEngine.Object[0];
 					var selectedObjectTransform = ray.Value.dragObject.transform;
 
-					m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, ray.Value.originalRayOrigin);
+					m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
 
 					selectedObjectTransform.transform.localScale = Vector3.one;
 					var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);
@@ -983,7 +983,7 @@ public class EditorVR : MonoBehaviour
 
 				if (uiInput.select.wasJustReleased)
 				{
-					m_InputModule.SetRaycastSourceDragging(fakeRayOrigin, false);
+					m_InputModule.SetFakeRaycastSourceDragging(originalRayOrigin, fakeRayOrigin, false);
 					PlaceObject(ray.Value.dragObject.transform, ray.Value.dragObjectOriginalScale);
 					ray.Value.dragObject = null;
 				}
