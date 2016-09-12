@@ -62,6 +62,11 @@
 				return pivot;
 			}
 
+			/// <summary>
+			/// Returns a local roll-only rotation which will face the object toward the camera
+			/// </summary>
+			/// <param name="parentRotation">Glboal rotation of the parent transform</param>
+			/// <returns></returns>
 			public static Quaternion LocalRotateTowardCamera(Quaternion parentRotation)
 			{
 				Vector3 camVector = Quaternion.Inverse(parentRotation) * GetMainCamera().transform.forward;
