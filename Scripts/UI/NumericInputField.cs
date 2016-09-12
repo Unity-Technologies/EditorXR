@@ -18,6 +18,28 @@ public class NumericInputField : InputField
 	private string m_String;
 	private bool m_Open;
 
+	protected override void OnEnable()
+	{
+		onEndEdit.AddListener(Close);
+	}
+
+	protected override void OnDisable()
+	{
+		onEndEdit.RemoveListener(Close);
+	}
+
+	/*
+	public void SetPlaceholderText(string placeholderString)
+	{
+		var placeholderText = m_Placeholder.GetComponent<Text>();
+
+		if (placeholderText != null)
+		{
+			placeholderText.text = placeholderString;
+		}
+	}
+	*/
+
 	public override void OnPointerClick(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
@@ -65,11 +87,7 @@ public class NumericInputField : InputField
 		var rayEventData = eventData as RayEventData;
 		Debug.Log(rayEventData);
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
 			base.OnSubmit(eventData);
-
-			Close();
-		}
 	}
 
 	public override void OnSelect(BaseEventData eventData)
@@ -83,7 +101,7 @@ public class NumericInputField : InputField
 
 		m_Open = true;
 
-		m_String = text;
+		m_String = m_Text;
 
 		m_Keyboard = keyboard();
 		// Instantiate keyboard here
@@ -98,9 +116,11 @@ public class NumericInputField : InputField
 		}
 	}
 
-	void Close()
+	void Close(string inputString = "")
 	{
 		m_Open = false;
+
+		if (m_Keyboard == null) return;
 
 		m_Keyboard.gameObject.SetActive(true);
 		m_Keyboard = null;
@@ -109,6 +129,6 @@ public class NumericInputField : InputField
 	void OnKeyPress(char keyChar)
 	{
 		m_String += keyChar;
-		text = m_String;
+		m_Text = m_String;
 	}
 }
