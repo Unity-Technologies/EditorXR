@@ -12,34 +12,27 @@
 		
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
-		#pragma surface surf Standard vertex:vert
+		#pragma surface surf Standard vertex:listClipVert
 
 		// Use shader model 3.0 target, to get nicer looking lighting
 		#pragma target 3.0
 
-		sampler2D _MainTex;
 
 		struct Input {
 			float2 uv_MainTex;
 			float3 localPos;
 		};
 
-		float4x4 _ParentMatrix;
-		float4 _ClipExtents;
+		#include "ListClip.cginc"
+
+		sampler2D _MainTex;
+
 		half _Glossiness;
 		half _Metallic;
 		fixed4 _Color;
 
-		void vert(inout appdata_full v, out Input o) {
-			UNITY_INITIALIZE_OUTPUT(Input, o);
-			o.localPos = mul(_ParentMatrix, mul(UNITY_MATRIX_M, v.vertex)).xyz;
-		}
-
 		void surf (Input IN, inout SurfaceOutputStandard o) {
-			// Clip if position is outside of clip bounds
-			float3 diff = abs(IN.localPos);
-			if (diff.x > _ClipExtents.x || diff.y > _ClipExtents.y || diff.z > _ClipExtents.z)
-				discard;
+			listClipFrag(IN.localPos);
 
 			fixed4 c = tex2D(_MainTex, IN.uv_MainTex);
 			c *= _Color * c.a;
