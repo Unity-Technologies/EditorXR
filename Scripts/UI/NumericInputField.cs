@@ -20,6 +20,7 @@ public class NumericInputField : InputField
 
 	protected override void OnEnable()
 	{
+
 		onEndEdit.AddListener(Close);
 
 		base.OnEnable();
@@ -97,7 +98,15 @@ public class NumericInputField : InputField
 	{
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			base.OnSubmit(eventData);
+		{
+//			if (!IsInteractable())
+//				return;
+		}
+	}
+
+	public override void OnDeselect(BaseEventData eventData)
+	{
+		
 	}
 
 	public override void OnSelect(BaseEventData eventData)
@@ -190,8 +199,11 @@ public class NumericInputField : InputField
 	void OnKeyPress(char keyChar)
 	{
 		m_String += keyChar;
-		m_Text = m_String;
-
-		Debug.Log("Key pressed: " + keyChar);
+		text = m_String;
 	}
+
+//	protected new void OnFocus()
+//	{
+//		
+//	}
 }
