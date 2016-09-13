@@ -54,7 +54,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		zoomSlider.zoomSlider.value = m_ProjectUI.assetListView.scaleFactor;
 		zoomSlider.sliding += Scale;
 
-
 		m_ProjectUI.folderListView.selectFolder = SelectFolder;
 
 		var assetListView = m_ProjectUI.assetListView;
