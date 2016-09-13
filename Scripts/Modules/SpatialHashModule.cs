@@ -44,7 +44,8 @@ namespace UnityEngine.VR.Modules
 
 		private void OnDrawGizmos()
 		{
-			m_SpatialHash.DrawGizmos();
+			if (m_SpatialHash != null)
+				m_SpatialHash.DrawGizmos();
 		}
 
 		private IEnumerator UpdateDynamicObjects()

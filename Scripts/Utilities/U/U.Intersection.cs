@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine.Assertions;
-using UnityEngine.VR.Data;
+﻿using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Utilities
 {
@@ -18,10 +16,10 @@ namespace UnityEngine.VR.Utilities
 				for (int j = 0; j < tester.rays.Length; j++)
 				{
 					Ray ray = tester.rays[j];
-					//Transform to object space
-					ray.origin = tester.renderer.transform.TransformPoint(ray.origin);
-					ray.direction = tester.renderer.transform.TransformDirection(ray.direction);
-					//Debug.DrawRay(ray.origin, ray.direction * 0.5f, Color.black);
+					//Transform to world space
+					ray.origin = tester.transform.TransformPoint(ray.origin);
+					ray.direction = tester.transform.TransformDirection(ray.direction);
+					//Debug.DrawRay(ray.origin, ray.direction * 0.5f, Color.yellow);
 					if (TestRay(obj, color, ray) == 1)
 						return true;
 					//ray.origin = Vector3.Scale(
@@ -63,7 +61,7 @@ namespace UnityEngine.VR.Utilities
 				float maxDistance = collider.bounds.size.magnitude;
 				Ray forwardRay = new Ray(ray.origin, ray.direction);
 				forwardRay.origin = forwardRay.GetPoint(-maxDistance);
-				Debug.DrawRay(forwardRay.origin, forwardRay.direction, color);
+				//Debug.DrawRay(forwardRay.origin, forwardRay.direction, color);
 				RaycastHit hitInfo;
 				Vector3 forwardHit = Vector3.zero;
 				if (collider.Raycast(forwardRay, out hitInfo, maxDistance * 2f))
@@ -75,7 +73,7 @@ namespace UnityEngine.VR.Utilities
 				Vector3 behindHit = Vector3.zero;
 				Ray behindRay = new Ray(ray.origin, -ray.direction);
 				ray.origin = ray.GetPoint(-maxDistance);
-				Debug.DrawRay(behindRay.origin, behindRay.direction, color * 0.5f);
+				//Debug.DrawRay(behindRay.origin, behindRay.direction, color * 0.5f);
 				if (collider.Raycast(behindRay, out hitInfo, maxDistance * 2f))
 				{
 					behindHit = hitInfo.point;

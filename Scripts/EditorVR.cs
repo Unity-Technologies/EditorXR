@@ -376,7 +376,8 @@ public class EditorVR : MonoBehaviour
 		UpdatePlayerHandleMaps();
 	}
 
-	private void CreateSpatialSystem() {
+	private void CreateSpatialSystem()
+	{
 		// Create event system, input module, and event camera
 		m_SpatialHash = new SpatialHash<Renderer>();
 		m_SpatialHashModule = U.Object.AddComponent<SpatialHashModule>(gameObject);
@@ -392,12 +393,13 @@ public class EditorVR : MonoBehaviour
 				{
 					foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
 					{
-						if (device.tagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.tagIndex]] == rayOriginBase.Key) {
+						if (device.tagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.tagIndex]] == rayOriginBase.Key)
+						{
 							DeviceData deviceData;
-							if (m_DeviceData.TryGetValue(device, out deviceData)) {
-
-								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-								m_IntersectionModule.AddTester(rayOriginBase.Value);
+							if (m_DeviceData.TryGetValue(device, out deviceData))
+							{
+								var tester = rayOriginBase.Value.GetComponentInChildren<IntersectionTester>();
+								m_IntersectionModule.AddTester(tester);
 							}
 							break;
 						}
