@@ -10,10 +10,9 @@ public class RayButton : Button
 	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 	[SerializeField]
 	[FlagsProperty]
-	private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
+	protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
-	private OnEnterEvent m_OnEnter = new OnEnterEvent();
-	public OnEnterEvent onEnter { get; set; }
+	public OnEnterEvent onEnter = new OnEnterEvent();
 
 	public class OnEnterEvent : UnityEvent { }
 
@@ -21,7 +20,10 @@ public class RayButton : Button
 	{
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		{
 			base.OnPointerClick(eventData);
+			Debug.Log("CLICKED");
+		}
 	}
 
 	public override void OnPointerEnter(PointerEventData eventData)
@@ -30,8 +32,6 @@ public class RayButton : Button
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
 			base.OnPointerEnter(eventData);
-
-			if (onEnter != null)
 				onEnter.Invoke();
 		}
 	}

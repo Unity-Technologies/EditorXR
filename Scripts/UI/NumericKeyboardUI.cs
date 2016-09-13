@@ -31,8 +31,19 @@ public class NumericKeyboardUI : MonoBehaviour
 
 		for (int i = 0; i < keyChars.Length; i++)
 		{
-			var button = U.Object.Instantiate(m_ButtonTemplate.gameObject).GetComponent<NumericInputButton>();
-			m_Buttons.Add(button);
+			NumericInputButton button;
+
+			if (m_Buttons.Count > i)
+			{
+				button = m_Buttons[i];
+				if (button == null)
+					button = U.Object.Instantiate(m_ButtonTemplate.gameObject).GetComponent<NumericInputButton>();
+			}
+			else
+			{
+				button = U.Object.Instantiate(m_ButtonTemplate.gameObject).GetComponent<NumericInputButton>();
+				m_Buttons.Add(button);
+			}
 
 			if (m_CustomButtonLocations != null && m_CustomButtonLocations.Length > 0)
 			{
@@ -57,3 +68,28 @@ public class NumericKeyboardUI : MonoBehaviour
 		}
 	}
 }
+
+
+#if UNITY_EDITOR
+[UnityEditor.CustomEditor(typeof(NumericKeyboardUI))]
+public class NumericKeyboardUIEditor : UnityEditor.Editor
+{
+	public override void OnInspectorGUI()
+	{
+		DrawDefaultInspector();
+
+		NumericKeyboardUI myScript = (NumericKeyboardUI)target;
+
+		GUILayout.BeginHorizontal();
+
+		if (myScript.isActiveAndEnabled)
+		{
+			if (GUILayout.Button(""))
+			{
+				myScript.Setup(new char[] {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1'}, null);
+			}
+		}
+		GUILayout.EndHorizontal();
+	}
+}
+#endif

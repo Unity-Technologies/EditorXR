@@ -1,10 +1,17 @@
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using UnityEngine.VR.Modules;
+using UnityEngine.VR.Utilities;
 
 public class NumericInputButton : RayButton
 {
 	[SerializeField]
-	private GameObject m_Mesh;
+	private GameObject m_ButtonMesh;
+	
+	[SerializeField]
+	private Text m_ButtonText;
 
 	private Action<char> m_KeyPress;
 
@@ -17,6 +24,9 @@ public class NumericInputButton : RayButton
 		m_KeyChar = keyChar;
 		m_KeyPress = keyPress;
 		m_RequireClick = !pressOnHover;
+
+		if (m_ButtonText != null)
+			m_ButtonText.text = keyChar.ToString();
 
 		if (m_RequireClick)
 		{

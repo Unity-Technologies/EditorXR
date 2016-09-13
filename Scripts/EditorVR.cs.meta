@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 1d288f1a40f3bc54bb07e9a5eb99d137
-timeCreated: 1473448800
+timeCreated: 1473732781
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
@@ -17,7 +17,7 @@ MonoImporter:
       type: 2}
   - m_EventCameraPrefab: {fileID: 20000012271368486, guid: 6078fbea960c1014cba733bb3ec1d7ad,
       type: 2}
-  - m_NumericKeyboardPrefab: {fileID: 114000014250865768, guid: a8bc2b00545930b4ebcf84ad1534cfba,
+  - m_NumericKeyboardPrefab: {fileID: 114000013789124818, guid: a8bc2b00545930b4ebcf84ad1534cfba,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}

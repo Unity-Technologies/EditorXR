@@ -27,9 +27,9 @@ public class NumericInputField : InputField
 
 	protected override void OnDisable()
 	{
-		onEndEdit.RemoveListener(Close);
-
 		base.OnDisable();
+
+		onEndEdit.RemoveListener(Close);
 	}
 
 	/*
@@ -49,12 +49,19 @@ public class NumericInputField : InputField
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
-			base.OnPointerClick(eventData);
+//			base.OnPointerClick(eventData);
 
 			if (m_Open)
+			{
+				Debug.Log("Click to close");
 				Close();
+
+			}
 			else
+			{
+				Debug.Log("Click to open");
 				Open();
+			}
 		}
 	}
 
@@ -110,15 +117,14 @@ public class NumericInputField : InputField
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
-//			base.OnDrag(eventData);
-			DragNumericValue(rayEventData);
+			base.OnDrag(eventData);
+//			DragNumericValue(rayEventData);
 		}
 	}
 
 	public override void OnEndDrag(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
-		Debug.Log(rayEventData);
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 			base.OnEndDrag(eventData);
 	}
@@ -163,9 +169,9 @@ public class NumericInputField : InputField
 		if (m_NumericKeyboard != null)
 		{
 			m_NumericKeyboard.gameObject.SetActive(true);
-			m_NumericKeyboard.transform.SetParent(transform, false);
-			m_NumericKeyboard.transform.localPosition = Vector3.up * 0.1f;
-			m_NumericKeyboard.transform.localRotation = Quaternion.identity;
+			m_NumericKeyboard.transform.SetParent(transform, true);
+			m_NumericKeyboard.transform.localPosition = Vector3.up * 0.2f;
+			m_NumericKeyboard.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
 
 			m_NumericKeyboard.Setup(new char[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'}, OnKeyPress);
 		}
@@ -177,7 +183,7 @@ public class NumericInputField : InputField
 
 		if (m_NumericKeyboard == null) return;
 
-		m_NumericKeyboard.gameObject.SetActive(true);
+		m_NumericKeyboard.gameObject.SetActive(false);
 		m_NumericKeyboard = null;
 	}
 
@@ -185,5 +191,7 @@ public class NumericInputField : InputField
 	{
 		m_String += keyChar;
 		m_Text = m_String;
+
+		Debug.Log("Key pressed: " + keyChar);
 	}
 }
