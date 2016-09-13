@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
@@ -28,27 +29,66 @@ public class NumericInputButton : RayButton
 		if (m_ButtonText != null)
 			m_ButtonText.text = keyChar.ToString();
 
+		UnityEvent trigger;
+
 		if (m_RequireClick)
 		{
-			onClick.AddListener(KeyPressed);
+			trigger = onClick;
+//			onClick.AddListener(NumericKeyPressed);
 		}
 		else
 		{
-			onEnter.AddListener(KeyPressed);
+			trigger = onEnter;
+//			onEnter.AddListener(NumericKeyPressed);
+		}
+
+		if (char.IsNumber(keyChar))
+		{
+			trigger.AddListener(NumericKeyPressed);
+		}
+		else
+		{
+			switch (keyChar)
+			{
+				case 'r':
+					trigger.AddListener(SubmitButtonPressed);
+					break;
+				case '*':
+					trigger.AddListener(MultiplyButtonPressed);
+					break;
+				case '/':
+					trigger.AddListener(DivideButtonPressed);
+					break;
+			}
 		}
 	}
 
 	protected override void OnDisable()
 	{
-		onClick.RemoveListener(KeyPressed);
-		onEnter.RemoveListener(KeyPressed);
+		onClick.RemoveListener(NumericKeyPressed);
+		onEnter.RemoveListener(NumericKeyPressed);
 
 		base.OnDisable();
 	}
 
-	private void KeyPressed()
+	private void NumericKeyPressed()
 	{
 		m_KeyPress(m_KeyChar);
+	}
+
+	private void SubmitButtonPressed()
+	{
+		
+	}
+
+	private void DivideButtonPressed()
+	{
+		
+	}
+
+	private void MultiplyButtonPressed()
+	{
+		
 	}
 
 	/*

@@ -10,7 +10,7 @@ public class NumericInputField : InputField
 	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 	[SerializeField]
 	[FlagsProperty]
-	private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
+	protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
 	public Func<NumericKeyboardUI> keyboard;
 	private NumericKeyboardUI m_NumericKeyboard;
@@ -20,7 +20,6 @@ public class NumericInputField : InputField
 
 	protected override void OnEnable()
 	{
-
 		onEndEdit.AddListener(Close);
 
 		base.OnEnable();
@@ -106,7 +105,7 @@ public class NumericInputField : InputField
 
 	public override void OnDeselect(BaseEventData eventData)
 	{
-		
+		Close();
 	}
 
 	public override void OnSelect(BaseEventData eventData)
@@ -198,8 +197,32 @@ public class NumericInputField : InputField
 
 	void OnKeyPress(char keyChar)
 	{
+//		if (char.IsNumber(keyChar))
+//		{
+//			trigger.AddListener(NumericKeyPressed);
+//		}
+//		else
+//		{
+//			switch (keyChar)
+//			{
+//				case 'r':
+//					trigger.AddListener(SubmitButtonPressed);
+//					break;
+//				case '*':
+//					trigger.AddListener(MultiplyButtonPressed);
+//					break;
+//				case '/':
+//					trigger.AddListener(DivideButtonPressed);
+//					break;
+//			}
+//		}
 		m_String += keyChar;
 		text = m_String;
+	}
+
+	void SubmitTextToField()
+	{
+		SendOnSubmit();
 	}
 
 //	protected new void OnFocus()

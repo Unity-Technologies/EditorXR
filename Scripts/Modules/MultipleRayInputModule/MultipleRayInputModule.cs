@@ -314,8 +314,8 @@ namespace UnityEngine.VR.Modules
 
 			RayEventData eventData = source.eventData;
 			eventData.Reset();
-			eventData.delta = Vector2.zero;
-			eventData.position = m_EventCamera.pixelRect.center;
+//			eventData.delta = Vector2.zero;
+//			eventData.position = m_EventCamera.pixelRect.center;
 			eventData.scrollDelta = Vector2.zero;
 
 			List<RaycastResult> results = new List<RaycastResult>();
