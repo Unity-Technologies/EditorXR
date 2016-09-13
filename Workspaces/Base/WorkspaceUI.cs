@@ -81,7 +81,8 @@ namespace UnityEngine.VR.Workspaces
 			closeClicked();
 		}
 
-		public void LockClick() {
+		public void LockClick()
+		{
 			lockClicked();
 		}
 	}

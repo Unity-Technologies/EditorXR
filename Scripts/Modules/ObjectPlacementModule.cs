@@ -23,6 +23,7 @@ public class ObjectPlacementModule : MonoBehaviour
 	{
 		StartCoroutine(PlaceObjectCoroutine(obj, targetScale));
 	}
+
 	private IEnumerator PlaceObjectCoroutine(Transform obj, Vector3 targetScale)
 	{
 		float start = Time.realtimeSinceStartup;
