@@ -1,16 +1,17 @@
 ﻿using UnityEditor;
-using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Actions
 {
-	[ActionItem("Delete", "ActionIcons/DeleteIcon")]
+	[ActionItem("Delete", "ActionIcons/DeleteIcon", "DefaultActions", 7)]
 	public class Delete : MonoBehaviour, IAction
 	{
 		[SerializeField]
 		private Sprite m_Icon;
 
+		public int indexPosition { get; set; }
+		public string sectionName { get; set; }
 		public Sprite icon { get; set; }
-
+		
 		public bool Execute()
 		{
 			Debug.LogError("<color=yellow>Attempting to destroy an object</color>");

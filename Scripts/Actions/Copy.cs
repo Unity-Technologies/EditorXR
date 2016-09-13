@@ -1,9 +1,8 @@
 ﻿using UnityEditor;
-using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Actions
 {
-	[ActionItem("Copy", "ActionIcons/CopyIcon")]
+	[ActionItem("Copy", "ActionIcons/CopyIcon", "DefaultActions", 5)]
 	[ExecuteInEditMode]
 	public class Copy : MonoBehaviour, IAction
 	{
@@ -11,9 +10,11 @@ namespace UnityEngine.VR.Actions
 		private Sprite m_Icon;
 
 		private static GameObject m_SelectionCopy;
-
-		public Sprite icon { get; set; }
 		public static GameObject selectionCopy { get { return m_SelectionCopy; } }
+
+		public int indexPosition { get; set; }
+		public string sectionName { get; set; }
+		public Sprite icon { get; set; }
 
 		public bool Execute()
 		{

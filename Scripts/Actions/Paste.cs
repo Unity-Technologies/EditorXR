@@ -1,15 +1,15 @@
-﻿using UnityEngine.VR.Tools;
-
-namespace UnityEngine.VR.Actions
+﻿namespace UnityEngine.VR.Actions
 {
-	[ActionItem("Paste", "ActionIcons/PasteIcon")]
+	[ActionItem("Paste", "ActionIcons/PasteIcon", "DefaultActions", 6)]
 	[ExecuteInEditMode]
 	public class Paste : MonoBehaviour, IAction
 	{
 		[SerializeField]
 		private Sprite m_Icon;
-
 		public Sprite icon { get; set; }
+
+		public int indexPosition { get; set; }
+		public string sectionName { get; set; }
 
 		public bool Execute()
 		{

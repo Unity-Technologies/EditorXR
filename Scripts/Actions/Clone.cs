@@ -1,15 +1,16 @@
 ﻿using UnityEditor;
-using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Actions
 {
-	[ActionItem("Clone", "ActionIcons/CloneIcon")]
+	[ActionItem("Clone", "ActionIcons/CloneIcon", "DefaultActions", 3)]
 	public class Clone : MonoBehaviour, IAction
 	{
 		[SerializeField]
 		private Sprite m_Icon;
 
 		public Sprite icon { get; set; }
+		public int indexPosition { get; set; }
+		public string sectionName { get; set; }
 
 		public bool Execute()
 		{
