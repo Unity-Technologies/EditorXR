@@ -212,7 +212,6 @@ namespace UnityEngine.VR.Menus
 		private IEnumerator AnimatedItemScroll()
 		{
 			m_SnapState = SnapState.Snapping;
-			float positionLerp = 0;
 			Vector2 targetPosition = (Vector2)m_ScrollRect.transform.InverseTransformPoint(m_ButtonScrollTarget.position);
 			int direction = (int)Mathf.Sign(-targetPosition.y);
 			float scrollSpeed = direction * 200f;
