@@ -1,14 +1,16 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 
-public class MainMenuActionToggle : MainMenuActionButton
+namespace UnityEngine.VR.Menus
 {
-	[SerializeField]
-	private Button m_Button2;
+	public class MainMenuActionToggle : MainMenuActionButton
+	{
+		[SerializeField]
+		private Button m_Button2;
 
-	[SerializeField]
-	new private Sprite m_Icon02; // // Hide the parent sprite, as these are not shown in main menu toggles
+		[SerializeField]
+		new private Sprite m_Icon02; // // Hide the parent sprite, as these are not shown in main menu toggles
 
-	[SerializeField]
-	private Text m_NameText2;
+		[SerializeField]
+		private Text m_NameText2;
+	}
 }
