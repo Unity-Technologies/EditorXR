@@ -6,80 +6,56 @@ namespace UnityEngine.VR.Utilities
 	{
 		public static class Intersection
 		{
-			private const float k_RayMax = 1000;
-
-			public static bool TestObject(MeshCollider collisionTester, Renderer obj, Color color, IntersectionTester tester)
+			public static bool TestObject(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
 			{
-				//Vector3 objInvScale = InvertVector3(obj.transform.lossyScale);
-				//Quaternion objInvRotation = Quaternion.Inverse(obj.sceneObject.transform.rotation);
-
 				for (int j = 0; j < tester.rays.Length; j++)
 				{
 					Ray ray = tester.rays[j];
+					
 					//Transform to world space
 					ray.origin = tester.transform.TransformPoint(ray.origin);
 					ray.direction = tester.transform.TransformDirection(ray.direction);
-					//Debug.DrawRay(ray.origin, ray.direction * 0.5f, Color.yellow);
-					if (TestRay(collisionTester, obj, color, ray) == 1)
+
+					if (TestRay(collisionTester, obj, ray))
 						return true;
-					//ray.origin = Vector3.Scale(
-					//	objInvRotation * (tester.renderer.transform.position - obj.sceneObject.transform.position)
-					//	+ Vector3.Scale(objInvRotation * tester.renderer.transform.rotation * ray.origin, tester.renderer.transform.lossyScale), objInvScale);
-					//ray.direction = objInvRotation * tester.renderer.transform.rotation * ray.direction;
-					//int hitCount1 = TestRay(obj, color, ray);
-					//if (hitCount1 % 2 == 0)
-					//	continue;
-					//ray.direction *= -1;
-					//int hitCount2 = TestRay(obj, color, ray);
-					//if (hitCount1 % 2 == 1 && hitCount2 % 2 == 1)
-					//{
-					//	return true;
-					//}
 				}
+
 				return false;
 			}
 
-			public static int TestRay(MeshCollider collisionTester, Renderer obj, Color color, Ray ray)
+			public static bool TestRay(MeshCollider collisionTester, Renderer obj, Ray ray)
 			{
-				int hitCount = 0;
 				var mf = obj.GetComponent<MeshFilter>();
-				MeshCollider collider = collisionTester.GetComponent<MeshCollider>();
+				
+				collisionTester.sharedMesh = mf.sharedMesh;
 
-				Profiler.BeginSample("Collision Tester");
-				collider.sharedMesh = mf.sharedMesh;
-				//Debug.DrawRay(ray.origin, ray.direction, color);
 				ray.origin = mf.transform.InverseTransformPoint(ray.origin);
 				ray.direction = mf.transform.InverseTransformDirection(ray.direction);
-				//Debug.DrawRay(ray.origin, ray.direction, color);
+		
+				float maxDistance = collisionTester.bounds.size.magnitude;
+				RaycastHit hitInfo;
 
-				float maxDistance = collider.bounds.size.magnitude;
+				// Shoot a ray from outside the object (due to face normals) in the direction of the ray to see if it is inside
 				Ray forwardRay = new Ray(ray.origin, ray.direction);
 				forwardRay.origin = forwardRay.GetPoint(-maxDistance);
-				//Debug.DrawRay(forwardRay.origin, forwardRay.direction, color);
-				RaycastHit hitInfo;
-				Vector3 forwardHit = Vector3.zero;
-				if (collider.Raycast(forwardRay, out hitInfo, maxDistance * 2f))
-				{
+				Vector3 forwardHit;
+				if (collisionTester.Raycast(forwardRay, out hitInfo, maxDistance*2f))
 					forwardHit = hitInfo.point;
-				}
-
-				// Shoot a ray behind, too
-				Vector3 behindHit = Vector3.zero;
+				else
+					return false;
+				
+				// Shoot a ray in the other direction, too, from outside the object (due to face normals)
+				Vector3 behindHit;
 				Ray behindRay = new Ray(ray.origin, -ray.direction);
 				ray.origin = ray.GetPoint(-maxDistance);
-				//Debug.DrawRay(behindRay.origin, behindRay.direction, color * 0.5f);
-				if (collider.Raycast(behindRay, out hitInfo, maxDistance * 2f))
-				{
+				if (collisionTester.Raycast(behindRay, out hitInfo, maxDistance*2f))
 					behindHit = hitInfo.point;
-				}
+				else
+					return false;
 
+				// Check whether point (i.e. ray origin) is contained within the object
 				float projection = Vector3.Dot(forwardHit - behindHit, ray.origin - behindHit);
-				if (projection >= 0f && projection <= 1f)
-				{
-					return 1;
-				}
-				Profiler.EndSample();
-				return 0;
+				return (projection >= 0f && projection <= 1f);
 			}
 
 			public static Vector3 InvertVector3(Vector3 vec)

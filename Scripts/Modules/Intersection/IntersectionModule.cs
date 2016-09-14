@@ -62,18 +62,14 @@ namespace UnityEngine.VR.Modules
 			if (m_Testers == null)
 				return;
 
-			int i = 0;
 			foreach (var tester in m_Testers)
 			{
-				Color color = i % 2 == 0 ? Color.red : Color.green;
-				i++;
-
 				if (!tester.active)
 					continue;
 
 				if (tester.transform.hasChanged)
 				{
-					bool detected = false;
+					bool intersectionFound = false;
 					Renderer[] intersections;
 					if (m_SpatialHash.GetIntersections(tester.renderer.bounds, out intersections))
 					{
@@ -90,38 +86,38 @@ namespace UnityEngine.VR.Modules
 							if (!obj.bounds.Intersects(tester.renderer.bounds))
 								continue;
 
-							if (U.Intersection.TestObject(m_CollisionTester, obj, color, tester))
+							if (U.Intersection.TestObject(m_CollisionTester, obj, tester))
 							{
-								detected = true;
+								intersectionFound = true;
 								Renderer currentObject;
 								if (m_IntersectedObjects.TryGetValue(tester, out currentObject))
 								{
 									if (currentObject == obj)
 									{
 										OnIntersectionStay(tester, obj);
-									} else
+									}
+									else
 									{
 										OnIntersectionExit(tester, currentObject);
 										OnIntersectionEnter(tester, obj);
 									}
-								} else
+								}
+								else
 								{
 									OnIntersectionEnter(tester, obj);
 								}
 							}
 
-							if (detected)
+							if (intersectionFound)
 								break;
 						}
 					}
 
-					if (!detected)
+					if (!intersectionFound)
 					{
 						Renderer intersectedObject;
 						if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
-						{
 							OnIntersectionExit(tester, intersectedObject);
-						}
 					}
 				}
 
