@@ -21,7 +21,7 @@ namespace UnityEngine.VR.Menus
 		List<Type> menuWorkspaces { set; }
 
 		/// <summary>
-		/// Delegated used for creating a workspace selected from the Main Menu
+		/// Delegate used for creating a workspace selected from the Main Menu
 		/// </summary>
 		Action<Type> createWorkspace { set; }
 
@@ -37,5 +37,10 @@ namespace UnityEngine.VR.Menus
 
 		// HACK: Awake/Start get called together in ExecuteInEditMode, so calling this method after is a workaround for order of operations
 		Action setup { get; }
+
+		/// <summary>
+		/// Delegate used to inform another object that this menu is being shown
+		/// </summary>
+		Action menuShowing { get; set; }
 	}
 }
