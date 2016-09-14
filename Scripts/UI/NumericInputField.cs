@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -20,29 +21,24 @@ public class NumericInputField : InputField
 
 	protected override void OnEnable()
 	{
+		Debug.Log("Enable input field");
+
 		onEndEdit.AddListener(Close);
+
+		characterLimit = 100;
+		characterValidation = CharacterValidation.Decimal;
 
 		base.OnEnable();
 	}
 
 	protected override void OnDisable()
 	{
+		Debug.Log("Disable input field");
+
 		base.OnDisable();
 
 		onEndEdit.RemoveListener(Close);
 	}
-
-	/*
-	public void SetPlaceholderText(string placeholderString)
-	{
-		var placeholderText = m_Placeholder.GetComponent<Text>();
-
-		if (placeholderText != null)
-		{
-			placeholderText.text = placeholderString;
-		}
-	}
-	*/
 
 	public override void OnPointerClick(PointerEventData eventData)
 	{
@@ -105,7 +101,10 @@ public class NumericInputField : InputField
 
 	public override void OnDeselect(BaseEventData eventData)
 	{
-		Close();
+		base.OnDeselect(eventData);
+		// TODO this works but need to only deselect when something besides a key button is clicked
+//	    Debug.Log("Deselect callled");
+//		Close();
 	}
 
 	public override void OnSelect(BaseEventData eventData)
@@ -181,7 +180,7 @@ public class NumericInputField : InputField
 			m_NumericKeyboard.transform.localPosition = Vector3.up * 0.2f;
 			m_NumericKeyboard.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
 
-			m_NumericKeyboard.Setup(new char[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'}, OnKeyPress);
+			m_NumericKeyboard.Setup(new char[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '*', '.'}, OnKeyPress);
 		}
 	}
 
@@ -192,15 +191,16 @@ public class NumericInputField : InputField
 		if (m_NumericKeyboard == null) return;
 
 		m_NumericKeyboard.gameObject.SetActive(false);
-		m_NumericKeyboard = null;
+//		m_NumericKeyboard = null;
 	}
 
 	void OnKeyPress(char keyChar)
 	{
 //		if (char.IsNumber(keyChar))
 //		{
-//			trigger.AddListener(NumericKeyPressed);
-//		}
+            m_String += keyChar;
+            text = m_String;
+//        }
 //		else
 //		{
 //			switch (keyChar)
@@ -216,8 +216,7 @@ public class NumericInputField : InputField
 //					break;
 //			}
 //		}
-		m_String += keyChar;
-		text = m_String;
+		
 	}
 
 	void SubmitTextToField()
@@ -229,4 +228,8 @@ public class NumericInputField : InputField
 //	{
 //		
 //	}
+//    public void OnBeginDrag(RayEventData eventData)
+//    {
+//        throw new NotImplementedException();
+//    }
 }

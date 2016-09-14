@@ -22,7 +22,6 @@ public class RayButton : Button
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
 			base.OnPointerClick(eventData);
-			Debug.Log("CLICKED");
 		}
 	}
 
