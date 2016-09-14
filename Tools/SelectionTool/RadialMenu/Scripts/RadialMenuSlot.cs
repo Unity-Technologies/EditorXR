@@ -308,10 +308,7 @@ namespace UnityEngine.VR.Menus
 				duration += Time.unscaledDeltaTime / positionWait;
 				opacity = duration / 2;
 				opacity *= opacity;
-				//if (orderIndex == 0)
 				m_CanvasGroup.alpha = Mathf.Clamp01(duration - 1);
-				//transform.localScale = new Vector3(opacity, 1f, 1f);
-				float opacityShaped = Mathf.Pow(opacity, opacity);
 				m_InsetMaterial.SetFloat("_Alpha", opacity);
 				m_MenuInset.localScale = Vector3.Lerp(m_HiddenInsetLocalScale, m_VisibleInsetLocalScale, opacity);
 				yield return null;
@@ -389,7 +386,6 @@ namespace UnityEngine.VR.Menus
 
 				//if (orderIndex == 0)
 				//transform.localScale = new Vector3(opacity, 1f, 1f);
-				float opacityShaped = Mathf.Pow(opacity, opacity);
 
 				//transform.localScale = Vector3.Lerp(hiddenScale, Vector3.one, opacity);
 				//m_CanvasGroup.alpha = opacity;
