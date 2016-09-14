@@ -42,7 +42,8 @@ namespace UnityEngine.VR.Tools
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
 
-		public List<IAction> actions { set { m_RadialMenu.allActions = value; } }
+		public List<IAction> actions { set { m_RadialMenu.actions = value; } }
+		public ActionMapInput mainMenuActionMapInput { get; set; }
 
 		public Transform menuOrigin { get; set; }
 
@@ -53,9 +54,6 @@ namespace UnityEngine.VR.Tools
 			set
 			{
 				m_AlternateMenuOrigin = value;
-
-				if (m_RadialMenu != null)
-					m_RadialMenu.alternateMenuOrigin = value;
 			}
 		}
 
@@ -79,7 +77,7 @@ namespace UnityEngine.VR.Tools
 				m_RadialMenu = value(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenu>();
 				m_RadialMenu.instantiateUI = value;
 				m_RadialMenu.alternateMenuOrigin = m_AlternateMenuOrigin;
-				m_RadialMenu.Setup();
+				//m_RadialMenu.Setup();
 			}
 		}
 
@@ -89,13 +87,22 @@ namespace UnityEngine.VR.Tools
 				return;
 
 			//  TODO: Add rotational thumbstick-based selection of radial menu items
-			//if (m_SelectionInput.navigateRadialMenu.isEnabled)
-				//Debug.LogError("<color=yellow>Navigate Radial Menu ENABLED here</color>");
+			//if (m_SelectionInput.navigateRadialMenu.vector2)
+			//Debug.LogError("<color=yellow>Navigate Radial Menu ENABLED here</color>");
+
+			//Debug.LogError("<color=gray>" + m_SelectionInput.navigateRadialMenu.vector2  + "</color>"); // -1, -1 is bottom left - 1,1 is the top right
+
+			//Vector2 inputDirection = new Vector2(m_SelectionInput.navigateRadialMenuX.value, m_SelectionInput.navigateRadialMenuY.value);
+			//Debug.LogError("<color=green>" + inputDirection + "</color>");
+
+			m_RadialMenu.selectMenuItem = m_SelectionInput.selectRadialMenuItem.wasJustReleased;
+			m_RadialMenu.buttonInputDirection = m_SelectionInput.navigateRadialMenu.vector2;
+			m_RadialMenu.pressedDown = m_SelectionInput.selectRadialMenuItem.wasJustPressed;
 
 			//if (m_SelectionInput.navigateRadialMenu.rawValue != 0)
-				//Debug.LogError("<color=yellow>Navigate Radial Menu Raw Value here : </color>" + m_SelectionInput.navigateRadialMenu.rawValue);
+			//Debug.LogError("<color=yellow>Navigate Radial Menu Raw Value here : </color>" + m_SelectionInput.navigateRadialMenu.rawValue);
 
-			// Change activeGameObject selection to its parent transform when parent button is pressed 
+				// Change activeGameObject selection to its parent transform when parent button is pressed 
 			if (m_SelectionInput.parent.wasJustPressed)
 			{
 				var go = Selection.activeGameObject;
@@ -167,7 +174,7 @@ namespace UnityEngine.VR.Tools
 						s_SelectedObjects.Clear();
 						Selection.activeGameObject = m_HoverGameObject;
 						s_SelectedObjects.Add(m_HoverGameObject);
-						m_RadialMenu.Show(); // Show the radial menu if there are any objects in the set, hide it otherwise.
+						mainMenuActionMapInput.active = !m_RadialMenu.Show(); // Show the radial menu if there are any objects in the set, hide it otherwise.
 					}
 				}
 				Selection.objects = s_SelectedObjects.ToArray();
@@ -181,6 +188,12 @@ namespace UnityEngine.VR.Tools
 				setHighlight(m_HoverGameObject, false);
 				m_HoverGameObject = null;
 			}
+		}
+
+		public void HideRadialMenu()
+		{
+			Debug.LogError("HIDE RADIAL MENU called in Seleciton Tool");
+			m_RadialMenu.Hide();
 		}
 	}
 }
