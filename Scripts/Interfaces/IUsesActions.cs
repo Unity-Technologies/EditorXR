@@ -5,7 +5,7 @@ using UnityEngine.VR.Actions;
 public interface IUsesActions
 {
 	/// <summary>
-	/// Collection of actions
+	/// Collection of actions that can be performed
 	/// </summary>
 	List<IAction> actions { set; }
 
