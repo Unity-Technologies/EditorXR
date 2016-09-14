@@ -72,7 +72,7 @@ Material:
     m_Floats:
     - first:
         name: _Alpha
-      second: 0
+      second: 1
     - first:
         name: _BumpScale
       second: 1
@@ -130,10 +130,10 @@ Material:
       second: {r: 0.2146139, g: 0.20175552, b: 0.1457231, a: 1}
     - first:
         name: _ColorBottom
-      second: {r: 0.3137255, g: 0.32156864, b: 0.32156864, a: 1}
+      second: {r: 0.28137255, g: 0.28699997, b: 0.28699997, a: 1}
     - first:
         name: _ColorTop
-      second: {r: 0.20784314, g: 0.21568628, b: 0.21568628, a: 1}
+      second: {r: 0.38921568, g: 0.39699998, b: 0.39699998, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}
