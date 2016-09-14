@@ -7,6 +7,7 @@ using UnityEngine.Events;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
 using UnityEngine.VR.Actions;
+using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
@@ -14,13 +15,7 @@ namespace UnityEngine.VR.Menus
 {
 	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins, IUsesActions
 	{
-		public ActionMap actionMap
-	{
-			get
-		{
-				return m_MainMenuActionMap;
-			}
-		}
+		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
 		private ActionMap m_MainMenuActionMap;
 
@@ -65,6 +60,7 @@ namespace UnityEngine.VR.Menus
 		private MainMenuUI m_MainMenuPrefab;
 
 		private MainMenuUI m_MainMenuUI;
+		private BaseHandle m_MenuButton;
 		private float m_RotationInputStartTime;
 		private float m_RotationInputStartValue;
 		private float m_RotationInputIdleTime;
@@ -94,10 +90,13 @@ namespace UnityEngine.VR.Menus
 				if (m_MainMenuUI.visible != value)
 				{
 					m_MainMenuUI.visible = value;
-					if (value)
+					if (value == true)
 					{
 						hideDefaultRay();
 						lockRay(this);
+
+						if (menuShowing != null)
+							menuShowing();
 					}
 					else
 					{
@@ -108,52 +107,58 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 
+		/// <summary>
+		/// Delegate called when showing the Main Menu
+		/// This allows for informing the radial menu, or any other object of the Main Menu being shown
+		/// </summary>
+		public Action menuShowing { get; set; }
+
 		public void Setup()
 		{
 			m_MainMenuUI = instantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
 			m_MainMenuUI.instantiateUI = instantiateUI;
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
+			m_MainMenuUI.menuButtonSelected = () => { visible = !visible; }; // allow the menu button in the UI to enable/disable the main menu
 			m_MainMenuUI.Setup();
-
+			
 			CreateToolButtons(menuTools);
 		}
 
 		private void Update()
 		{
-			var rotationInput = m_MainMenuInput.rotate.rawValue;
+			var rotationInput = -m_MainMenuInput.rotate.rawValue;
 			if (Mathf.Approximately(rotationInput, m_LastRotationInput) && Mathf.Approximately(rotationInput, 0f))
 			{
 				m_RotationInputIdleTime += Time.unscaledDeltaTime;
 			}
-						else
-						{
+			else
+			{
 				const float kFlickDeltaThreshold = 0.5f;
 				const float kRotationInputIdleDurationThreshold = 0.05f; // Limits how often a flick can happen
 
 				// Track values for a new rotation when input has changed
 				if (m_RotationInputIdleTime > kRotationInputIdleDurationThreshold)
-		{
+				{
 					m_RotationInputStartTime = Time.realtimeSinceStartup;
 					// Low sampling can affect our latch value, so sometimes the last rotation is a better choice because
 					// the current rotation may be high by the time it is sampled
 					m_RotationInputStartValue = Mathf.Abs(rotationInput) < Mathf.Abs(m_LastRotationInput) ? rotationInput : m_LastRotationInput;
-		}
+				}
 
 				const float kFlickDurationThreshold = 0.3f;
 
 				// Perform a quick single face rotation if a quick flick of the input axis occurred
 				float flickRotation = rotationInput - m_RotationInputStartValue;
-				if (Mathf.Abs(flickRotation) >= kFlickDeltaThreshold
-					&& (Time.realtimeSinceStartup - m_RotationInputStartTime) < kFlickDurationThreshold)
-		{
+				if (Mathf.Abs(flickRotation) >= kFlickDeltaThreshold && (Time.realtimeSinceStartup - m_RotationInputStartTime) < kFlickDurationThreshold)
+				{
 					m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex + (int) Mathf.Sign(flickRotation);
 
 					// Don't allow another flick until rotation resets
 					m_RotationInputStartTime = 0f;
 				}
 				else
-			{
+				{
 					const float kRotationSpeed = 250;
 
 					// Otherwise, apply manual rotation to the main menu faces
@@ -162,15 +167,15 @@ namespace UnityEngine.VR.Menus
 
 				// Reset the idle time if we are no longer idle (i.e. rotation is happening)
 				m_RotationInputIdleTime = 0f;
-		}
+			}
 
 			m_LastRotationInput = rotationInput;
-			}
+		}
 
 		private void OnDisable()
-			{
+		{
 			unlockRay(this);
-			}
+		}
 
 		private void OnDestroy()
 		{
@@ -200,7 +205,7 @@ namespace UnityEngine.VR.Menus
 				{
 					b.button.onClick.RemoveAllListeners();
 					b.button.onClick.AddListener(() =>
-				{
+					{
 						if (visible && b.node.HasValue)
 							selectTool(b.node.Value, toolType);
 					});
@@ -208,6 +213,11 @@ namespace UnityEngine.VR.Menus
 			}
 
 			m_MainMenuUI.SetupMenuFaces();
+		}
+
+		public void MoveMenuActivator()
+		{
+			Debug.LogError("Move main menu activator!");
 		}
 	}
 }
