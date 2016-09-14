@@ -3,6 +3,7 @@ using System.Collections;
 using ListView;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEditor;
 
 public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPositionPreview
 {
@@ -208,7 +209,15 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override AssetGridItem GetItem(AssetData data)
 	{
+		// If this AssetData hasn't fetched its asset yet, do so now
+		if (data.asset == null)
+		{
+			data.asset = EditorUtility.InstanceIDToObject(data.instanceID);
+			data.preview = data.asset as GameObject;
+		}
+
 		var item = base.GetItem(data);
+
 		item.transform.localPosition = m_StartPosition;
 		item.placeObject = placeObject;
 		item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
