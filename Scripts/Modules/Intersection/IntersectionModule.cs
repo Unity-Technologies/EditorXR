@@ -11,6 +11,7 @@ namespace UnityEngine.VR.Modules
 		private readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
 
 		private SpatialHash<Renderer> m_SpatialHash;
+		private MeshCollider m_CollisionTester;
 
 		public bool hasObjects
 		{
@@ -47,9 +48,10 @@ namespace UnityEngine.VR.Modules
 		}
 #endif
 
-		internal void Setup(SpatialHash<Renderer> hash)
+		public void Setup(SpatialHash<Renderer> hash)
 		{
 			m_SpatialHash = hash;
+			m_CollisionTester = U.Object.CreateGameObjectWithComponent<MeshCollider>(transform);
 		}
 
 		void Update()
@@ -88,7 +90,7 @@ namespace UnityEngine.VR.Modules
 							if (!obj.bounds.Intersects(tester.renderer.bounds))
 								continue;
 
-							if (U.Intersection.TestObject(obj, color, tester))
+							if (U.Intersection.TestObject(m_CollisionTester, obj, color, tester))
 							{
 								detected = true;
 								Renderer currentObject;
