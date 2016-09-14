@@ -6,12 +6,12 @@ using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class NumericInputField : InputField
+public class NumericInputField : RayButton, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler
 {
-	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
-	[SerializeField]
-	[FlagsProperty]
-	protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
+//	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
+//	[SerializeField]
+//	[FlagsProperty]
+//	protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
 	public Func<NumericKeyboardUI> keyboard;
 	private NumericKeyboardUI m_NumericKeyboard;
@@ -21,23 +21,15 @@ public class NumericInputField : InputField
 
 	protected override void OnEnable()
 	{
-		Debug.Log("Enable input field");
-
-		onEndEdit.AddListener(Close);
-
-		characterLimit = 100;
-		characterValidation = CharacterValidation.Decimal;
+//		characterLimit = 100;
+//		characterValidation = CharacterValidation.Decimal;
 
 		base.OnEnable();
 	}
 
 	protected override void OnDisable()
 	{
-		Debug.Log("Disable input field");
-
 		base.OnDisable();
-
-		onEndEdit.RemoveListener(Close);
 	}
 
 	public override void OnPointerClick(PointerEventData eventData)
@@ -45,19 +37,12 @@ public class NumericInputField : InputField
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
-//			base.OnPointerClick(eventData);
+			base.OnPointerClick(eventData);
 
 			if (m_Open)
-			{
-				Debug.Log("Click to close");
 				Close();
-
-			}
 			else
-			{
-				Debug.Log("Click to open");
 				Open();
-			}
 		}
 	}
 
@@ -112,37 +97,13 @@ public class NumericInputField : InputField
 		//
 	}
 
-	public override void OnBeginDrag(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			base.OnBeginDrag(eventData);
-	}
-
-	public override void OnDrag(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			base.OnDrag(eventData);
-//			DragNumericValue(rayEventData);
-		}
-	}
-
-	public override void OnEndDrag(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			base.OnEndDrag(eventData);
-	}
-
 	void DragNumericValue(RayEventData rayEventData)
 	{
-		float num;
-		if (!float.TryParse(m_Text, out num))
-			num = 0f;
-		num += rayEventData.delta.x / 100f;
-		m_Text = num.ToString();
+//		float num;
+//		if (!float.TryParse(m_Text, out num))
+//			num = 0f;
+//		num += rayEventData.delta.x / 100f;
+//		m_Text = num.ToString();
 	}
 
 //	void UpdateLinearMapping(RayEventData rayEventData)
@@ -169,7 +130,7 @@ public class NumericInputField : InputField
 
 		m_Open = true;
 
-		m_String = m_Text;
+//		m_String = m_Text;
 
 		m_NumericKeyboard = keyboard();
 		// Instantiate keyboard here
@@ -198,9 +159,9 @@ public class NumericInputField : InputField
 	{
 //		if (char.IsNumber(keyChar))
 //		{
-            m_String += keyChar;
-            text = m_String;
-//        }
+			m_String += keyChar;
+//			text = m_String;
+//		}
 //		else
 //		{
 //			switch (keyChar)
@@ -221,7 +182,7 @@ public class NumericInputField : InputField
 
 	void SubmitTextToField()
 	{
-		SendOnSubmit();
+//		SendOnSubmit();
 	}
 
 //	protected new void OnFocus()
@@ -232,4 +193,16 @@ public class NumericInputField : InputField
 //    {
 //        throw new NotImplementedException();
 //    }
+
+	public void OnBeginDrag( RayEventData eventData )
+	{
+	}
+
+	public void OnDrag( RayEventData eventData )
+	{
+	}
+
+	public void OnEndDrag( RayEventData eventData )
+	{
+	}
 }

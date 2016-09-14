@@ -221,9 +221,6 @@ namespace UnityEngine.VR.Modules
 
 			var eventData = source.eventData;
 			var hoveredObject = source.hoveredObject;
-			eventData.delta = Vector2.zero;
-			eventData.positionDelta = Vector3.zero;
-			eventData.rotationDelta = Quaternion.identity;
 			eventData.dragging = false;
 			eventData.pressPosition = eventData.position;
 			eventData.pointerPressRaycast = eventData.pointerCurrentRaycast;
@@ -314,8 +311,8 @@ namespace UnityEngine.VR.Modules
 
 			RayEventData eventData = source.eventData;
 			eventData.Reset();
-//			eventData.delta = Vector2.zero;
-//			eventData.position = m_EventCamera.pixelRect.center;
+			eventData.delta = Vector2.zero;
+			eventData.position = m_EventCamera.pixelRect.center;
 			eventData.scrollDelta = Vector2.zero;
 
 			List<RaycastResult> results = new List<RaycastResult>();
