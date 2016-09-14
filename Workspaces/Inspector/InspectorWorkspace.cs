@@ -99,7 +99,8 @@ public class InspectorWorkspace : Workspace
 				iterator = obj.GetIterator();
 				while (iterator.NextVisible(true))
 				{
-					inspectorData.Add(new InspectorData() { name = iterator.name });
+					if(iterator.depth == 0)
+						inspectorData.Add(new InspectorData() { name = iterator.name });
 				}
 			}
 		}

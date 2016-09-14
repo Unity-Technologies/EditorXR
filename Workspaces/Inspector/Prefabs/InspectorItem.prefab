@@ -230,6 +230,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Text: {fileID: 114000013450012120}
+  m_ExpandArrow: {fileID: 114000012491731538}
+  m_Cube: {fileID: 114000011524206158}
 --- !u!114 &114000012491731538
 MonoBehaviour:
   m_ObjectHideFlags: 1
