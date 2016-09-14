@@ -221,8 +221,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		rootFolder.expanded = true;
 		m_ProjectUI.folderListView.listData = new[] { rootFolder };
 
+		
 		SelectFolder(rootFolder);
-
 		m_FilterUI.filterTypes = assetTypes.ToList();
 	}
 
@@ -241,7 +241,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		{
 			if (hp.isFolder)
 				folderList.Add(CreateFolderData(assetTypes, hp));
-			else if (hp.depth == depth + 1) // Ignore sub-assets (mixer children, terrain splats, etc.)
+			if (!hp.isFolder && hp.depth == depth + 1) // Ignore sub-assets (mixer children, terrain splats, etc.)
 				assetList.Add(CreateAssetData(assetTypes, hp));
 		}
 		return new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.Count > 0 ? assetList.ToArray() : null);

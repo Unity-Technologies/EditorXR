@@ -34,7 +34,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		m_ExpandArrowMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
 
-	protected override void UpdateItemRecursive(FolderData data, int offset, int depth)
+	protected override void UpdateNestedItem(FolderData data, int offset, int depth)
 	{
 		if (data.item == null)
 			data.item = GetItem(data);
