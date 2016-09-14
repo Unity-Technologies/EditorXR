@@ -1,2 +1,2 @@
 Assets/libs/input-prototype = https://ono.unity3d.com/users/input-prototype
-Assets/libs/UnityOctree = [git]https://github.com/Nition/UnityOctree.git
+Assets/EditorVR/libs/UnityOctree = [git]https://github.com/Nition/UnityOctree.git
