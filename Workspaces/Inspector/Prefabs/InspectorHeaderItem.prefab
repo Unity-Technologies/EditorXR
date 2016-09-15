@@ -1323,6 +1323,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Cube: {fileID: 114000011524206158}
+  m_Icon: {fileID: 114000013475963824}
   m_ActiveToggle: {fileID: 114000013033683108}
   m_NameField: {fileID: 114000013305609772}
   m_StaticToggle: {fileID: 114000010461564754}

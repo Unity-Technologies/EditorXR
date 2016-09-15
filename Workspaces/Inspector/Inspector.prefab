@@ -241,8 +241,8 @@ MonoBehaviour:
   m_ScrollDamping: 5
   m_MaxMomentum: 200
   m_Templates:
-  - {fileID: 1000011895958286, guid: b6357117261bf794ca39935f2bf510c1, type: 2}
   - {fileID: 1000011895958286, guid: de8c0fc8c49734e49ae847ae6b833fe2, type: 2}
+  - {fileID: 1000011895958286, guid: b6357117261bf794ca39935f2bf510c1, type: 2}
 --- !u!222 &222000012690064196
 CanvasRenderer:
   m_ObjectHideFlags: 1

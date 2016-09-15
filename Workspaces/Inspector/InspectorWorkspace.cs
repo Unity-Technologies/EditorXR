@@ -83,7 +83,11 @@ public class InspectorWorkspace : Workspace
 
 	private void OnSelectionChanged()
 	{
-		var obj =new SerializedObject(Selection.activeObject);
+		if (Selection.activeObject == null)
+		{
+			m_InspectorUI.inspectorListView.data = new InspectorData[0];
+			return;
+		}
 		var inspectorData = new List<InspectorData>();
 
 		var objectChildren = new List<InspectorData>();
@@ -92,7 +96,7 @@ public class InspectorWorkspace : Workspace
 		{
 			foreach (var component in Selection.activeGameObject.GetComponents<Component>())
 			{
-				obj = new SerializedObject(component);
+				var obj = new SerializedObject(component);
 
 				var componentChildren = new List<InspectorData>();
 
@@ -105,14 +109,14 @@ public class InspectorWorkspace : Workspace
 						componentChildren.Add(new PropertyData("InspectorItem", obj, new InspectorData[0], iterator.Copy(), canExpand));
 					}
 				}
-				var componentData = new InspectorData("InspectorItem", obj, componentChildren.ToArray());
+				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren.ToArray());
 				//TEMP: Auto-expand
 				componentData.expanded = true;
 				objectChildren.Add(componentData);
 			}
 		}
 
-		var objectData = new InspectorData("InspectorHeaderItem", obj, objectChildren.ToArray()) { expanded = true };
+		var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(Selection.activeObject), objectChildren.ToArray()) { expanded = true };
 		inspectorData.Add(objectData);
 
 		m_InspectorUI.inspectorListView.data = inspectorData.ToArray();

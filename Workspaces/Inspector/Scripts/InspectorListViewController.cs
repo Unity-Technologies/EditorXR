@@ -12,14 +12,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	private readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
 
-	public override InspectorData[] data
-	{
-		set
-		{
-			base.data = value;
-		}
-	}
-
 	protected override void Setup()
 	{
 		base.Setup();
@@ -27,7 +19,9 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		item.GetMaterials(out m_CubeMaterial);
 
 		foreach (var template in m_TemplateDictionary)
+		{
 			m_TemplateSizes[template.Key] = GetObjectSize(template.Value.prefab);
+		}
 	}
 
 	protected override void ComputeConditions()
