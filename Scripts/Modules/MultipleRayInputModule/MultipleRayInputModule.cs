@@ -238,7 +238,7 @@ namespace UnityEngine.VR.Modules
 					eventData.eligibleForClick = true;
 
 					// Track clicks for double-clicking, triple-clicking, etc.
-					float time = Time.unscaledTime;
+				    float time = Time.realtimeSinceStartup;
 					if (newPressed == eventData.lastPress)
 					{
 						var diffTime = time - eventData.clickTime;
