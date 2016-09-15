@@ -32,8 +32,6 @@ public class EditorVR : MonoBehaviour
 	private const float kWorkspaceVacuumEnableDistance = 1.5f; //Disable vacuum bounds if workspace is closer than 1.5 meters to player
 
 	[SerializeField]
-	private ActionMap m_ShowMenuActionMap;
-	[SerializeField]
 	private ActionMap m_DefaultActionMap;
 	[SerializeField]
 	private ActionMap m_TrackedObjectActionMap;
@@ -59,7 +57,6 @@ public class EditorVR : MonoBehaviour
 	private class DeviceData
 	{
 		public Stack<ITool> tools;
-		public ShowMenu showMenuInput;
 		public ActionMapInput uiInput;
 		public IMainMenu mainMenu;
 		public ITool currentTool;
@@ -114,8 +111,7 @@ public class EditorVR : MonoBehaviour
 		{
 			var deviceData = new DeviceData
 			{
-				tools = new Stack<ITool>(),
-				showMenuInput = (ShowMenu)CreateActionMapInput(m_ShowMenuActionMap, device)
+				tools = new Stack<ITool>()
 			};
 			m_DeviceData.Add(device, deviceData);
 		}
@@ -422,8 +418,6 @@ public class EditorVR : MonoBehaviour
 
 		foreach (DeviceData deviceData in m_DeviceData.Values)
 		{
-			maps.Add(deviceData.showMenuInput);
-
 			if (deviceData.mainMenu != null)
 				AddActionMapInputs(deviceData.mainMenu, maps);
 
