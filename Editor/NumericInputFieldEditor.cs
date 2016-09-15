@@ -2,21 +2,21 @@
 using UnityEditor.UI;
 
 [CustomEditor(typeof(NumericInputField))]
-public class NumericInputFieldEditor : InputFieldEditor
+public class NumericInputFieldEditor : RayButtonEditor
 {
-//	SerializedProperty m_SelectionFlagsProperty;
-//
-//	protected override void OnEnable()
-//	{
-//		base.OnEnable();
-//		m_SelectionFlagsProperty = serializedObject.FindProperty("m_SelectionFlags");
-//	}
-//
-//	public override void OnInspectorGUI()
-//	{
-//		serializedObject.Update();
-//		EditorGUILayout.PropertyField(m_SelectionFlagsProperty);
-//		serializedObject.ApplyModifiedProperties();
-//		base.OnInspectorGUI();
-//	}
+	SerializedProperty m_TextProperty;
+
+	protected override void OnEnable()
+	{
+		base.OnEnable();
+		m_TextProperty = serializedObject.FindProperty("m_TextComponent");
+	}
+
+	public override void OnInspectorGUI()
+	{
+		serializedObject.Update();
+		EditorGUILayout.PropertyField(m_TextProperty);
+		serializedObject.ApplyModifiedProperties();
+		base.OnInspectorGUI();
+	}
 }

@@ -17,16 +17,17 @@ public class NumericInputButton : RayButton
 
 	private bool m_RequireClick;
 
-	private UnityEvent m_Trigger;
+	private UnityEvent m_Trigger = new UnityEvent();
 
-	public void Setup(char keyChar, Action<char> keyPress, bool pressOnHover)
+	public void Setup(Action<char> keyPress, bool pressOnHover)
 	{
-		m_KeyChar = keyChar;
+//		m_KeyChar = keyChar;
 		m_KeyPress = keyPress;
 		m_RequireClick = !pressOnHover;
 
-		if (m_ButtonText != null)
-			m_ButtonText.text = keyChar.ToString();
+		if (m_ButtonText != null && m_ButtonText.text.Length > 0)
+//			m_ButtonText.text = keyChar.ToString();
+			m_KeyChar = m_ButtonText.text[0];
 
 		if (m_RequireClick)
 			m_Trigger = onClick;

@@ -13,6 +13,9 @@ public class RayButton : Button
 	protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
 	public OnEnterEvent onEnter = new OnEnterEvent();
+	public OnEnterEvent onExit = new OnEnterEvent();
+	public OnEnterEvent onDown = new OnEnterEvent();
+	public OnEnterEvent onUp = new OnEnterEvent();
 
 	public class OnEnterEvent : UnityEvent { }
 
@@ -31,7 +34,7 @@ public class RayButton : Button
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
 			base.OnPointerEnter(eventData);
-				onEnter.Invoke();
+			onEnter.Invoke();
 		}
 	}
 
@@ -39,21 +42,30 @@ public class RayButton : Button
 	{
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		{
 			base.OnPointerExit(eventData);
+			onExit.Invoke();
+		}
 	}
 
 	public override void OnPointerDown(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		{
 			base.OnPointerDown(eventData);
+			onDown.Invoke();
+		}
 	}
 
 	public override void OnPointerUp(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		{
 			base.OnPointerUp(eventData);
+			onUp.Invoke();
+		}
 	}
 
 	public override void OnSubmit(BaseEventData eventData)

@@ -1,6 +1,5 @@
-﻿using UnityEngine;
+using System.Text;
 using UnityEngine.EventSystems;
-using UnityEngine.VR.Handles;
 
 namespace UnityEngine.VR.Modules
 {
@@ -21,8 +20,26 @@ namespace UnityEngine.VR.Modules
 		/// </summary>
 		public float pointerLength { get; set; }
 
+		/// <summary>
+		/// The time the current object was pressed
+		/// </summary>
+		public float pressTime;
+
 		public RayEventData(EventSystem eventSystem) : base(eventSystem)
 		{
+			pressTime = 0f;
+		}
+
+		public override string ToString()
+		{
+			var sb = new StringBuilder();
+			sb.AppendLine(base.ToString());
+			sb.AppendLine("<b>Ray origin position<b>" + rayOrigin.position);
+			sb.AppendLine("<b>Ray origin rotation<b>" + rayOrigin.rotation);
+			sb.AppendLine("<b>node<b>" + node);
+			sb.AppendLine("<b>pointerLength<b>" + pointerLength);
+			sb.AppendLine("<b>pressTime<b>" + pressTime);
+			return sb.ToString();
 		}
 	}
 }

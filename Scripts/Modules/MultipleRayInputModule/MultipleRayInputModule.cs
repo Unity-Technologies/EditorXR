@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
@@ -11,9 +11,6 @@ namespace UnityEngine.VR.Modules
 		private readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
 
 		public Func<Transform, float> getPointerLength;
-
-		private Vector3 m_LastRayOriginPosition;
-		private Quaternion m_LastRayOriginRotation;
 
 		public Camera eventCamera
 		{
@@ -221,7 +218,6 @@ namespace UnityEngine.VR.Modules
 
 			var eventData = source.eventData;
 			var hoveredObject = source.hoveredObject;
-			eventData.dragging = false;
 			eventData.pressPosition = eventData.position;
 			eventData.pointerPressRaycast = eventData.pointerCurrentRaycast;
 			eventData.pointerPress = hoveredObject;
@@ -240,6 +236,23 @@ namespace UnityEngine.VR.Modules
 					eventData.pointerPress = newPressed;
 					Select(source.pressedObject);
 					eventData.eligibleForClick = true;
+
+					// Track clicks for double-clicking, triple-clicking, etc.
+					float time = Time.unscaledTime;
+					if (newPressed == eventData.lastPress)
+					{
+						var diffTime = time - eventData.clickTime;
+						if (diffTime < 0.3f)
+							++eventData.clickCount;
+						else
+							eventData.clickCount = 1;
+
+						eventData.clickTime = time;
+					}
+					else
+					{
+						eventData.clickCount = 1;
+					}
 				}
 				var pressedObject = source.pressedObject;
 				ExecuteEvents.Execute(pressedObject, eventData, ExecuteEvents.beginDragHandler);
@@ -271,20 +284,15 @@ namespace UnityEngine.VR.Modules
 			}
 
 			var clickHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(hoveredObject);
+
+//			if (eventData.clic)
+
 			if (source.pressedObject == clickHandler && eventData.eligibleForClick)
-			{
 				ExecuteEvents.Execute(clickHandler, eventData, ExecuteEvents.pointerClickHandler);
-			}
-			else if (eventData.pointerDrag != null && eventData.dragging)
-			{
-				ExecuteEvents.ExecuteHierarchy(clickHandler, eventData, ExecuteEvents.dropHandler);
-			}
 
 			eventData.rawPointerPress = null;
 			eventData.pointerPress = null;
 			eventData.eligibleForClick = false;
-			eventData.dragging = false;
-			eventData.pointerDrag = null;
 			source.pressedObject = null;
 		}
 
