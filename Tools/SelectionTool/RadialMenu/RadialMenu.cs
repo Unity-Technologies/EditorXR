@@ -14,6 +14,7 @@ namespace UnityEngine.VR.Menus
 
 		private Copy m_CopyAction;
 		private Paste m_PasteAction;
+		private object m_ObjectSelected;
 
 		[SerializeField]
 		private RadialMenuUI m_RadialMenuUI;
@@ -208,6 +209,10 @@ namespace UnityEngine.VR.Menus
 			}
 			else
 			{
+				if (m_ObjectSelected != Selection.activeGameObject)
+					Hide();
+
+				m_ObjectSelected = Selection.activeGameObject;
 				onRadialMenuShow(); // Raises the event that notifies the main menu to move its menu activator button
 
 				sRadialMenu = this;
@@ -254,6 +259,7 @@ namespace UnityEngine.VR.Menus
 			{
 				onRadialMenuHide(); // Raises the event that notifies the main menu to move its menu activator button back to its original position
 				m_RadialMenuUI.actions = null; // Hide the radial menu
+				m_ObjectSelected = null;
 			}
 
 			//Selection.activeGameObject = null;
