@@ -221,7 +221,7 @@ namespace UnityEngine.VR.Menus
 
 			m_ActivatorTransform = m_MainMenuActivator.transform;
 			m_OriginalActivatorLocalPosition = m_ActivatorTransform.localPosition;
-			m_AlternateActivatorLocalPosition = m_OriginalActivatorLocalPosition + Vector3.down * 0.1f;
+			m_AlternateActivatorLocalPosition = m_OriginalActivatorLocalPosition + Vector3.down * 0.075f;
 
 			transform.localScale = Vector3.zero;
 			m_AlternateMenu.localScale = Vector3.zero;
