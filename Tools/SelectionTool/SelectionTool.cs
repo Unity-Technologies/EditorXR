@@ -102,7 +102,7 @@ namespace UnityEngine.VR.Tools
 			//if (m_SelectionInput.navigateRadialMenu.rawValue != 0)
 			//Debug.LogError("<color=yellow>Navigate Radial Menu Raw Value here : </color>" + m_SelectionInput.navigateRadialMenu.rawValue);
 
-				// Change activeGameObject selection to its parent transform when parent button is pressed 
+			// Change activeGameObject selection to its parent transform when parent button is pressed 
 			if (m_SelectionInput.parent.wasJustPressed)
 			{
 				var go = Selection.activeGameObject;
