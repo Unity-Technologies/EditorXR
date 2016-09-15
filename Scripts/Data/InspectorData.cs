@@ -4,13 +4,11 @@ using UnityEditor;
 public class InspectorData : ListViewItemNestedData<InspectorData>
 {
 	public SerializedObject serializedObject { get; private set; }
-	public bool canToggleExpand { get; private set; }
 
-	public InspectorData(SerializedObject serializedObject, InspectorData[] children, bool canToggleExpand = false)
+	public InspectorData(string template, SerializedObject serializedObject, InspectorData[] children)
 	{
-		template = "InspectorItem";
+		this.template = template;
 		this.serializedObject = serializedObject;
 		this.children = children;
-		this.canToggleExpand = canToggleExpand;
 	}
 }

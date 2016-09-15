@@ -102,15 +102,17 @@ public class InspectorWorkspace : Workspace
 					if (iterator.depth == 0)
 					{
 						var canExpand = false;
-						componentChildren.Add(new PropertyData(obj, new InspectorData[0], canExpand, iterator.Copy()));
+						componentChildren.Add(new PropertyData("InspectorItem", obj, new InspectorData[0], iterator.Copy(), canExpand));
 					}
 				}
-				var componentData = new InspectorData(obj, componentChildren.ToArray(), true);
+				var componentData = new InspectorData("InspectorItem", obj, componentChildren.ToArray());
+				//TEMP: Auto-expand
+				componentData.expanded = true;
 				objectChildren.Add(componentData);
 			}
 		}
 
-		var objectData = new InspectorData(obj, objectChildren.ToArray()) { expanded = true };
+		var objectData = new InspectorData("InspectorHeaderItem", obj, objectChildren.ToArray()) { expanded = true };
 		inspectorData.Add(objectData);
 
 		m_InspectorUI.inspectorListView.data = inspectorData.ToArray();

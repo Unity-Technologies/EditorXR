@@ -6,15 +6,13 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 {
 	private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
-	private Material m_TextMaterial;
-	private Material m_ExpandArrowMaterial;
 	private Material m_CubeMaterial;
 
 	protected override void Setup()
 	{
 		base.Setup();
 		var item = m_Templates[0].GetComponent<InspectorListItem>();
-		item.GetMaterials(out m_TextMaterial, out m_ExpandArrowMaterial, out m_CubeMaterial);
+		item.GetMaterials(out m_CubeMaterial);
 	}
 
 	protected override void ComputeConditions()
@@ -22,10 +20,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		base.ComputeConditions();
 
 		var parentMatrix = transform.worldToLocalMatrix;
-		m_TextMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_TextMaterial.SetVector("_ClipExtents", bounds.extents);
-		m_ExpandArrowMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_ExpandArrowMaterial.SetVector("_ClipExtents", bounds.extents);
 		m_CubeMaterial.SetMatrix("_ParentMatrix", parentMatrix);
 		m_CubeMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
@@ -43,13 +37,12 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	protected override ListViewItem<InspectorData> GetItem(InspectorData listData)
 	{
 		var item = (InspectorListItem)base.GetItem(listData);
-		item.SwapMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_CubeMaterial);
+		item.SwapMaterials(m_CubeMaterial);
 		return item;
 	}
 
 	private void OnDestroy()
 	{
-		U.Object.Destroy(m_TextMaterial);
-		U.Object.Destroy(m_ExpandArrowMaterial);
+		U.Object.Destroy(m_CubeMaterial);
 	}
 }
