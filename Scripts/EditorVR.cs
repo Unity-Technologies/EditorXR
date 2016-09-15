@@ -258,11 +258,16 @@ public class EditorVR : MonoBehaviour
 				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 
-				var mainMenu = m_DeviceData[deviceData.Key].mainMenu = SpawnMainMenu(typeof(MainMenu), deviceData.Key);
-				mainMenu.isShowing += selectionTool.HideRadialMenu;
+				var imainMenu = m_DeviceData[deviceData.Key].mainMenu = SpawnMainMenu(typeof(MainMenu), deviceData.Key);
+				imainMenu.onShow += selectionTool.HideRadialMenu;
+
+				var mainMenu = imainMenu as MainMenu; // TODO: review this cast & event assign.  Should the iMainMenu interface mandate that all main menus implement MenuActivatorToAlternatePosition, if so, this subscription can occur without the additional cast.
+				selectionTool.onRadialMenuShow += mainMenu.MenuActivatorToAlternatePosition;
+				selectionTool.onRadialMenuHide += mainMenu.MenuActivatorToOriginalPosition;
+
 				// Set the main menu's action map input, allowing it to be disabled when the radial menu is displayed
 				// The Main Menu is currently consuming the x axis input the radial menu requires
-				var mainMenuActionMap = mainMenu as ICustomActionMap;
+				var mainMenuActionMap = imainMenu as ICustomActionMap;
 				selectionTool.mainMenuActionMapInput = mainMenuActionMap.actionMapInput;
 				UpdatePlayerHandleMaps();
 			}
@@ -330,17 +335,17 @@ public class EditorVR : MonoBehaviour
 				else
 				{
 					// If not hitting UI, then check pixel raycast and approximate bounds to set distance
-				var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
-				if (go != null)
-				{
-					var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-					var newDist = distance;
-					foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+					var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+					if (go != null)
 					{
-						if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
-							distance = Mathf.Min(distance, newDist);
+						var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+						var newDist = distance;
+						foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+						{
+							if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
+								distance = Mathf.Min(distance, newDist);
+						}
 					}
-				}
 				}
 				m_DefaultRays[rayOrigin].SetLength(distance);
 			}

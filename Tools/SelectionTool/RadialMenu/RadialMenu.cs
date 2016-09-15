@@ -149,6 +149,11 @@ namespace UnityEngine.VR.Menus
 				}
 			}
 		}
+		private Transform m_AlternateMenuOrigin;
+
+		public Action onRadialMenuShow { get; set; }
+		public Action onRadialMenuHide { get; set; }
+
 		/*
 		public void Setup(List<IAction> menuActions, Func<IAction, bool> performAction, Transform parentTransform)
 		{
@@ -158,8 +163,6 @@ namespace UnityEngine.VR.Menus
 			//StartCoroutine(DelayedTestCall());
 		}
 		*/
-
-		private Transform m_AlternateMenuOrigin;
 
 		private void Awake()
 		{
@@ -195,11 +198,14 @@ namespace UnityEngine.VR.Menus
 			if (Selection.objects.Length == 0)
 			{
 				Debug.LogError("<color=red>Hide Radial Menu UI here - no objects selected</color>");
+				
 				foreach (var radialMenu in sRadialMenus)
 					radialMenu.Hide();
 			}
 			else
 			{
+				onRadialMenuShow(); // Raises the event that notifies the main menu to move its menu activator button
+
 				sRadialMenu = this;
 				Debug.LogError("<color=green>Show Radial Menu UI here - objects are selected</color>");
 
@@ -241,7 +247,10 @@ namespace UnityEngine.VR.Menus
 				m_RadialMenuUI.actions = null;
 			}
 			else if (Selection.objects.Length == 0)
+			{
+				onRadialMenuHide(); // Raises the event that notifies the main menu to move its menu activator button back to its original position
 				m_RadialMenuUI.actions = null; // Hide the radial menu
+			}
 
 			//Selection.activeGameObject = null;
 			//Show();

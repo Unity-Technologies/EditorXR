@@ -70,7 +70,7 @@ namespace UnityEngine.VR.Menus
 		/// Event raised when showing the Main Menu
 		/// This allows for informing the radial menu, or any other object of the Main Menu being shown
 		/// </summary>
-		public event EventHandler isShowing;
+		public event EventHandler onShow;
 
 		public Func<GameObject, GameObject> instantiateUI { private get; set; }
 		public Transform rayOrigin { private get; set; }
@@ -100,8 +100,8 @@ namespace UnityEngine.VR.Menus
 						hideDefaultRay();
 						lockRay(this);
 
-						if (isShowing != null)
-							isShowing(this, null);
+						if (onShow != null)
+							onShow(this, null);
 					}
 					else
 					{
@@ -214,9 +214,16 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.SetupMenuFaces();
 		}
 
-		public void MoveMenuActivator()
+		public void MenuActivatorToAlternatePosition(object sender, EventArgs eventArgs)
 		{
-			Debug.LogError("Move main menu activator!");
+			Debug.LogError("Move main menu activator to alternate position!");
+			m_MainMenuUI.activatorButtonMoveAway = true; // TODO: handle for returning button
+		}
+
+		public void MenuActivatorToOriginalPosition(object sender, EventArgs eventArgs)
+		{
+			Debug.LogError("Move main menu activator to original position!");
+			m_MainMenuUI.activatorButtonMoveAway = false; // TODO: handle for returning button
 		}
 	}
 }

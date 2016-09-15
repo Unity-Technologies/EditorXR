@@ -41,6 +41,6 @@ namespace UnityEngine.VR.Menus
 		/// <summary>
 		/// Event used to inform another object that this menu is being shown
 		/// </summary>
-		event EventHandler isShowing;
+		event EventHandler onShow;
 	}
 }
