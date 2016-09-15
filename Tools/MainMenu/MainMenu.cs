@@ -66,6 +66,12 @@ namespace UnityEngine.VR.Menus
 		private float m_RotationInputIdleTime;
 		private float m_LastRotationInput;
 
+		/// <summary>
+		/// Event raised when showing the Main Menu
+		/// This allows for informing the radial menu, or any other object of the Main Menu being shown
+		/// </summary>
+		public event EventHandler isShowing;
+
 		public Func<GameObject, GameObject> instantiateUI { private get; set; }
 		public Transform rayOrigin { private get; set; }
 		public Action hideDefaultRay { private get; set; }
@@ -78,7 +84,6 @@ namespace UnityEngine.VR.Menus
 		public Action<Type> createWorkspace { private get; set; }
 		public Node? node { private get; set; }
 		public Action setup { get { return Setup; } }
-
 		public List<IAction> actions { private get; set; }
 		public Func<IAction, bool> performAction { get; set; }
 
@@ -95,8 +100,8 @@ namespace UnityEngine.VR.Menus
 						hideDefaultRay();
 						lockRay(this);
 
-						if (menuShowing != null)
-							menuShowing();
+						if (isShowing != null)
+							isShowing(this, null);
 					}
 					else
 					{
@@ -106,12 +111,6 @@ namespace UnityEngine.VR.Menus
 				}
 			}
 		}
-
-		/// <summary>
-		/// Delegate called when showing the Main Menu
-		/// This allows for informing the radial menu, or any other object of the Main Menu being shown
-		/// </summary>
-		public Action menuShowing { get; set; }
 
 		public void Setup()
 		{

@@ -190,7 +190,7 @@ namespace UnityEngine.VR.Tools
 			}
 		}
 
-		public void HideRadialMenu()
+		public void HideRadialMenu(object sender, EventArgs eventArgs)
 		{
 			Debug.LogError("HIDE RADIAL MENU called in Seleciton Tool");
 			m_RadialMenu.Hide();

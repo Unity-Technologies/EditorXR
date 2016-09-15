@@ -141,10 +141,10 @@ namespace UnityEngine.VR.Menus
 				else if (value.magnitude > 0)// (!m_PressedDown && value.magnitude > 0.1f)
 				{
 					m_InputMatrix = value;
-					Debug.Log("<color=cyan>enabling button highlighting - vector : " + m_InputMatrix + "</color> - magnitude of input vector : " + m_InputMatrix.magnitude);
-					Debug.Log(value.magnitude);
+					//Debug.Log("<color=cyan>enabling button highlighting - vector : " + m_InputMatrix + "</color> - magnitude of input vector : " + m_InputMatrix.magnitude);
+					//Debug.Log(value.magnitude);
 
-					Debug.Log(value);
+					//Debug.Log(value);
 
 					//m_InputDirection = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg;
 					//m_InputDirection = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg * -1;
@@ -163,14 +163,14 @@ namespace UnityEngine.VR.Menus
 					m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
 					m_InputDirection += m_InputPhaseOffset;
 
-					Debug.LogError("<color=orange>" + m_InputDirection + "</color>");
+					//Debug.LogError("<color=orange>" + m_InputDirection + "</color>");
 
 					var angleCorrected = m_InputDirection * Mathf.Deg2Rad;
 					m_InputMatrix = new Vector2(Mathf.Cos(angleCorrected), -Mathf.Sin(angleCorrected));
 					m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
 
 
-					Debug.LogError("<color=yellow>" + m_InputDirection + "</color>");
+					//Debug.LogError("<color=yellow>" + m_InputDirection + "</color>");
 					
 
 

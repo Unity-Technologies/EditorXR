@@ -259,7 +259,7 @@ public class EditorVR : MonoBehaviour
 				AddToolToDeviceData(tool, devices);
 
 				var mainMenu = m_DeviceData[deviceData.Key].mainMenu = SpawnMainMenu(typeof(MainMenu), deviceData.Key);
-				mainMenu.menuShowing += selectionTool.HideRadialMenu;
+				mainMenu.isShowing += selectionTool.HideRadialMenu;
 				// Set the main menu's action map input, allowing it to be disabled when the radial menu is displayed
 				// The Main Menu is currently consuming the x axis input the radial menu requires
 				var mainMenuActionMap = mainMenu as ICustomActionMap;

@@ -39,8 +39,8 @@ namespace UnityEngine.VR.Menus
 		Action setup { get; }
 
 		/// <summary>
-		/// Delegate used to inform another object that this menu is being shown
+		/// Event used to inform another object that this menu is being shown
 		/// </summary>
-		Action menuShowing { get; set; }
+		event EventHandler isShowing;
 	}
 }
