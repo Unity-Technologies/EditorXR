@@ -187,6 +187,11 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 
 		if (m_Sphere.gameObject.activeInHierarchy)
 			m_Sphere.transform.Rotate(Vector3.up, kRotateSpeed * Time.unscaledDeltaTime, Space.Self);
+
+		if (data.type == "Scene")
+		{
+			icon.transform.rotation = Quaternion.LookRotation(icon.transform.position - U.Camera.GetMainCamera().transform.position, Vector3.up);
+		}
 	}
 
 	private void InstantiatePreview()
