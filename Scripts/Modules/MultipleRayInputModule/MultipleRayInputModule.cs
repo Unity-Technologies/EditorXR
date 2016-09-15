@@ -285,8 +285,6 @@ namespace UnityEngine.VR.Modules
 
 			var clickHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(hoveredObject);
 
-//			if (eventData.clic)
-
 			if (source.pressedObject == clickHandler && eventData.eligibleForClick)
 				ExecuteEvents.Execute(clickHandler, eventData, ExecuteEvents.pointerClickHandler);
 

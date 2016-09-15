@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,44 +10,47 @@ using UnityEngine.VR.Utilities;
 
 public class NumericInputField : RayButton, IRayBeginDragHandler, IRayDragHandler
 {
-//	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
-//	[SerializeField]
-//	[FlagsProperty]
-//	protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
-
 	public Func<NumericKeyboardUI> keyboard;
 	private NumericKeyboardUI m_NumericKeyboard;
 
 	[SerializeField]
 	private Text m_TextComponent;
-	private string m_String;
+
+	[SerializeField]
+	private float m_DragFactor = 10f;
+
+	private string m_OutputString;
+	private List<string> m_RawInputString = new List<string>();
 
 	private bool m_Open;
 
 	private bool m_PointerOverField;
 	private Vector3 m_LastPointerHitPosition;
 
-
-	//	private float m_TimeCounter;
 	private float m_ClickThresholdTime = 0.3f;
 	private float m_PressedTime;
 
-	public void SetText(string text)
+	public void SetTextFromInspectorField(string text)
 	{
 		var isValidString = true;
 
 		foreach (var ch in text)
 		{
-			isValidString = isValidString && IsValidCharacter(ch);
+			isValidString = isValidString && IsNumericCharacter(ch);
 		}
 
 		if (isValidString)
 		{
-			m_TextComponent.text = m_String = text;
+			m_TextComponent.text = m_OutputString = text;
+			m_RawInputString.Clear();
+			m_RawInputString.Add(m_OutputString);
 		}
 	}
 
-	public void UpdateInspectorFieldText()
+	/// <summary>
+	/// Send string to the inspector field
+	/// </summary>
+	public void UpdateInspectorField()
 	{
 	}
 
@@ -94,17 +98,6 @@ public class NumericInputField : RayButton, IRayBeginDragHandler, IRayDragHandle
 			m_PressedTime = Time.realtimeSinceStartup;
 		}
 	}
-
-//	private IEnumerator TrackClickTime(PointerEventData eventData)
-//	{
-//		while (m_TimeCounter < m_ClickThresholdTime)
-//		{
-//			m_TimeCounter += Time.unscaledDeltaTime;
-//			yield return null;
-//		}
-//
-//		eventData.eligibleForClick = false;
-//	}
 
 	public override void OnPointerUp(PointerEventData eventData)
 	{
@@ -176,17 +169,29 @@ public class NumericInputField : RayButton, IRayBeginDragHandler, IRayDragHandle
 
 	private void OnKeyPress(char keyChar)
 	{
-		if (IsValidCharacter(keyChar))
-			m_TextComponent.text = m_String += keyChar;
-
-		//TODO handle delete and multiplication and whatnot here
+		if (IsOperandCharacter(keyChar))
+		{
+			if (m_RawInputString.Count > 1)
+				m_RawInputString.Add(keyChar.ToString());
+		}
+		else if (IsNumericCharacter(keyChar))
+		{
+			m_TextComponent.text = m_OutputString += keyChar;
+		}
 	}
 
-	bool IsValidCharacter(char ch)
+	private bool IsNumericCharacter(char ch)
 	{
 		if (ch >= '0' && ch <= '9') return true;
-		if (ch == '-' && (m_String.Length == 0)) return true;
-		if (ch == '.' && !m_String.Contains(".")) return true;
+		if (ch == '-' && (m_OutputString.Length == 0)) return true;
+		if (ch == '.' && !m_OutputString.Contains(".")) return true;
+
+		return false;
+	}
+
+	private bool IsOperandCharacter(char ch)
+	{
+		if (ch == '+' || ch == '-' || ch == '*' || ch == '/') return true;
 
 		return false;
 	}
@@ -211,8 +216,10 @@ public class NumericInputField : RayButton, IRayBeginDragHandler, IRayDragHandle
 		}
 	}
 
-	void DragNumericValue(RayEventData eventData)
+	private void DragNumericValue(RayEventData eventData)
 	{
+		if (m_RawInputString.Count > 1) ProcessRawString();
+
 		float num;
 		if (!float.TryParse(m_TextComponent.text, out num))
 			num = 0f;
@@ -223,12 +230,25 @@ public class NumericInputField : RayButton, IRayBeginDragHandler, IRayDragHandle
 
 		num += xDelta * 10f;
 
-		m_String = num.ToString();
-		m_TextComponent.text = m_String;
+		m_OutputString = num.ToString();
+		m_TextComponent.text = m_OutputString;
+
+		UpdateInspectorField();
 	}
 
-	Vector3 GetCurrentRayHitPosition(RayEventData eventData)
+	private void ProcessRawString()
 	{
-		return eventData.rayOrigin.position + eventData.rayOrigin.forward * eventData.pointerCurrentRaycast.distance;
+		for (int i = 1; i < m_RawInputString.Count; i++)
+		{
+//			if (
+		}
+
+		UpdateInspectorField();
+	}
+
+	private Vector3 GetCurrentRayHitPosition(RayEventData eventData)
+	{
+		var rayOriginPos = eventData.rayOrigin;
+		return rayOriginPos.position + rayOriginPos.forward * eventData.pointerCurrentRaycast.distance;
 	}
 }
