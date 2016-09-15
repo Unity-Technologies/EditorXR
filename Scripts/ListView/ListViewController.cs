@@ -6,6 +6,17 @@ namespace ListView
 		where DataType : ListViewItemData
 		where ItemType : ListViewItem<DataType>
 	{
+		public virtual DataType[] data
+		{
+			set
+			{
+				if (m_Data != null) // Clear out visuals for old data
+					foreach (var data in m_Data)
+						CleanUpBeginning(data);
+				m_Data = value;
+				scrollOffset = 0;
+			}
+		}
 		[SerializeField]
 		protected DataType[] m_Data;
 

@@ -24,31 +24,24 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	[SerializeField]
 	private GameObject[] m_Icons;
 
+	public override AssetData[] data
+	{
+		set
+		{
+			base.data = value;
+			m_ScrollOffset = m_ScaleFactor;
+		}
+	}
+
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 	public PositionPreviewDelegate positionPreview { private get; set; }
 
+	public Func<string, bool> testFilter;
+
 	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
 	private readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
-
-	public AssetData[] listData
-	{
-		set
-		{
-			if (m_Data != null) // Clear out visuals for old data
-			{
-				foreach (var data in m_Data)
-				{
-					CleanUpBeginning(data);
-				}
-			}
-			m_ScrollOffset = m_ScaleFactor; // Reset scroll value to start
-			m_Data = value;
-		}
-	}
-
-	public Func<string, bool> testFilter;
 
 	protected override void Setup()
 	{

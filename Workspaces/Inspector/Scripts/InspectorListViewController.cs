@@ -17,22 +17,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		item.GetMaterials(out m_TextMaterial, out m_ExpandArrowMaterial, out m_CubeMaterial);
 	}
 
-	public InspectorData[] listData
-	{
-		set
-		{
-			if (m_Data != null) // Clear out visuals for old data
-			{
-				foreach (var data in m_Data)
-				{
-					CleanUpBeginning(data);
-				}
-			}
-			m_ScrollOffset = 0;
-			m_Data = value;
-		}
-	}
-
 	protected override void ComputeConditions()
 	{
 		base.ComputeConditions();

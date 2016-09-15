@@ -23,7 +23,7 @@ public class InspectorWorkspace : Workspace
 		base.Setup();
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_InspectorUI = contentPrefab.GetComponent<InspectorUI>();
-		m_InspectorUI.inspectorListView.listData = new InspectorData[0];
+		m_InspectorUI.inspectorListView.data = new InspectorData[0];
 
 		var scrollHandle = m_InspectorUI.inspectorScrollHandle;
 
@@ -85,26 +85,35 @@ public class InspectorWorkspace : Workspace
 	{
 		var obj =new SerializedObject(Selection.activeObject);
 		var inspectorData = new List<InspectorData>();
-		var iterator = obj.GetIterator();
-		while (iterator.NextVisible(true))
-		{
-			inspectorData.Add(new InspectorData() { name = iterator.name });
-		}
+
+		var objectChildren = new List<InspectorData>();
 
 		if (Selection.activeGameObject)
 		{
 			foreach (var component in Selection.activeGameObject.GetComponents<Component>())
 			{
 				obj = new SerializedObject(component);
-				iterator = obj.GetIterator();
+
+				var componentChildren = new List<InspectorData>();
+
+				var iterator = obj.GetIterator();
 				while (iterator.NextVisible(true))
 				{
-					if(iterator.depth == 0)
-						inspectorData.Add(new InspectorData() { name = iterator.name });
+					if (iterator.depth == 0)
+					{
+						var canExpand = false;
+						componentChildren.Add(new PropertyData(obj, new InspectorData[0], canExpand, iterator.Copy()));
+					}
 				}
+				var componentData = new InspectorData(obj, componentChildren.ToArray(), true);
+				objectChildren.Add(componentData);
 			}
 		}
-		m_InspectorUI.inspectorListView.listData = inspectorData.ToArray();
+
+		var objectData = new InspectorData(obj, objectChildren.ToArray()) { expanded = true };
+		inspectorData.Add(objectData);
+
+		m_InspectorUI.inspectorListView.data = inspectorData.ToArray();
 	}
 
 	protected override void OnBoundsChanged()

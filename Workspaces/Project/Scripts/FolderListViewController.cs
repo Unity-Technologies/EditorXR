@@ -12,9 +12,13 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	private Transform m_GrabbedObject;
 
-	public FolderData[] listData { get { return m_Data; } set { m_Data = value; } }
-
 	public Action<FolderData> selectFolder;
+
+	public void ClearSelected()
+	{
+		foreach (var folderData in m_Data)
+			folderData.ClearSelected();
+	}
 
 	protected override void Setup()
 	{

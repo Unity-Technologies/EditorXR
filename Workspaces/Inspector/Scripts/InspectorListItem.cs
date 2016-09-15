@@ -23,7 +23,7 @@ public class InspectorListItem : ListViewItem<InspectorData>
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
-		m_Text.text = data.name;
+		m_Text.text = data.serializedObject.targetObject.name;
 	}
 
 	public void SwapMaterials(Material textMaterial, Material expandArrowMaterial, Material cubeMaterial)

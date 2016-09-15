@@ -143,10 +143,9 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 
 	private void SelectFolder(FolderData data)
 	{
-		foreach (var folderData in m_ProjectUI.folderListView.listData)
-			folderData.ClearSelected();
+		m_ProjectUI.folderListView.ClearSelected();
 		data.selected = true;
-		m_ProjectUI.assetListView.listData = data.assets;
+		m_ProjectUI.assetListView.data = data.assets;
 	}
 
 	private void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -219,7 +218,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		var assetTypes = new HashSet<string>();
 		var rootFolder = CreateFolderData(assetTypes);
 		rootFolder.expanded = true;
-		m_ProjectUI.folderListView.listData = new[] { rootFolder };
+		m_ProjectUI.folderListView.data = new[] { rootFolder };
 
 		SelectFolder(rootFolder);
 
