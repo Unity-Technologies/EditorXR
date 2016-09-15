@@ -28,7 +28,10 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	[SerializeField]
 	private Renderer m_Sphere;
 
+	[HideInInspector]
+	[SerializeField] // Serialized so that this remains set after cloning
 	private GameObject m_Icon;
+
 	private GameObject m_IconPrefab;
 
 	[HideInInspector]
@@ -234,7 +237,8 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		if (cloneItem.m_PreviewObject)
 		{
 			cloneItem.m_Cube.gameObject.SetActive(false);
-			cloneItem.m_Icon.gameObject.SetActive(false);
+			if(cloneItem.m_Icon)
+				cloneItem.m_Icon.gameObject.SetActive(false);
 			cloneItem.m_PreviewObject.gameObject.SetActive(true);
 			cloneItem.m_PreviewObject.transform.localScale = m_PreviewTargetScale;
 
