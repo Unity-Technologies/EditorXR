@@ -591,6 +591,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 4000010597544648}
+  - 114: {fileID: 114000011620731620}
   m_Layer: 5
   m_Name: ButtonSlotsContainer
   m_TagString: Untagged
@@ -4060,6 +4061,7 @@ MonoBehaviour:
   m_RadialMenuSlotTemplate: {fileID: 114000012271381704, guid: 4872d564ea911b540a7ab701540783ea,
     type: 2}
   m_SlotContainer: {fileID: 4000011673098958}
+  m_InputPhaseOffset: 75
 --- !u!114 &114000010592556804
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -5553,6 +5555,7 @@ MonoBehaviour:
   m_MenuInset: {fileID: 0}
   m_CanvasGroup: {fileID: 0}
   m_Icon: {fileID: 0}
+  m_IconContainer: {fileID: 0}
   m_Button: {fileID: 0}
   m_BorderRenderer: {fileID: 0}
 --- !u!114 &114000011473290416
@@ -5845,6 +5848,20 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114000011620731620
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010604279854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bdb8c4c20b229641a096572d9c36567, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_TargetTransform: {fileID: 0}
+  m_DampingReduction: 8
 --- !u!114 &114000011665497816
 MonoBehaviour:
   m_ObjectHideFlags: 1

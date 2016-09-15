@@ -182,6 +182,7 @@ GameObject:
   - 114: {fileID: 114000013817719604}
   - 135: {fileID: 135000011266424688}
   - 114: {fileID: 114000012056874086}
+  - 114: {fileID: 114000013384701994}
   m_Layer: 5
   m_Name: UnityIconButton
   m_TagString: Untagged
@@ -426,7 +427,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012900842314}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -0.1031}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -931,6 +932,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_HandleFlags: -1
+--- !u!114 &114000013384701994
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012900842314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bdb8c4c20b229641a096572d9c36567, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_TargetTransform: {fileID: 0}
+  dampingReduction: 5
 --- !u!114 &114000013817719604
 MonoBehaviour:
   m_ObjectHideFlags: 1
