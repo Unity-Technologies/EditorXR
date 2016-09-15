@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace UnityEngine.VR.Actions
 {
-	[ToggleActionItem("Rotation", "Center",  "ActionIcons/OriginCenterIcon", "Pivot",  "ActionIcons/OriginPivotIcon", "DefaultActions", 5)]
+	[ToggleActionItem("Rotation", "Center",  "ActionIcons/OriginCenterIcon", "Pivot",  "ActionIcons/OriginPivotIcon", "DefaultActions", 10)]
 	[ExecuteInEditMode]
 	public class OriginToggle : MonoBehaviour, IToggleAction, IUsesTransformTool
 	{
