@@ -57,6 +57,10 @@ namespace UnityEngine.VR.Menus
 						if (action.sectionName == kActionSectionName) // Verify that the action is in the DefaulActions category
 						{
 							Debug.Log("Adding action in section : " + action.sectionName  + " - order number : " + action.indexPosition);
+							
+							if (action as IToggleAction != null)
+								continue;
+
 							m_RadialMenuActions.Add(action);
 
 							var copyAction = action as Copy;
