@@ -1,12 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.VR.Tools;
 using UnityEditor;
-using UnityEditor.VR;
 using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool
 {
 	[SerializeField]
 	private GameObject m_StandardManipulatorPrefab;
@@ -56,6 +56,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 		}
 	}
 	private TransformInput m_TransformInput;
+
+	public Func <PivotMode> switchOriginMode { get { return SwitchPivotMode; } set {} }
+	public Func <PivotRotation> switchRotationMode { get { return SwitchPivotRotation; } set {} }
 
 	void Awake()
 	{
