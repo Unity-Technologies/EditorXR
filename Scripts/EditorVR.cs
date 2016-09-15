@@ -86,6 +86,7 @@ public class EditorVR : MonoBehaviour
 			// Steam's reference position should be at the feet and not at the head as we do with Oculus
 			VRView.viewerPivot.localPosition = Vector3.zero;
 		}
+
 		InitializePlayerHandle();
 		CreateDefaultActionMapInputs();
 		CreateAllProxies();
@@ -99,25 +100,7 @@ public class EditorVR : MonoBehaviour
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace));
 
-		IEnumerable<Type> actionTypes = U.Object.GetImplementationsOfInterface(typeof(IAction));
-		m_AllActions = new List<IAction>();
-		foreach (Type actionType in actionTypes)
-		{
-			var action = U.Object.AddComponent(actionType, gameObject) as IAction;
-
-			var customActionAttribute = (ActionItemAttribute)actionType.GetCustomAttributes(typeof(ActionItemAttribute), false).FirstOrDefault();
-			if (customActionAttribute != null && !String.IsNullOrEmpty(customActionAttribute.iconResourcePath))
-				action.icon = Resources.Load<Sprite>(customActionAttribute.iconResourcePath);
-			else
-				action.icon = Resources.Load<Sprite>(ActionItemAttribute.missingIconResourcePath);
-
-			if (action.icon != null)
-				Debug.LogWarning("Action Icon name: " + action.icon.name);
-			else
-				Debug.LogError("action icon was null for : " + action.ToString());
-
-			m_AllActions.Add(action);
-		}
+		SpawnActions();
 
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
@@ -194,29 +177,6 @@ public class EditorVR : MonoBehaviour
 		foreach (var proxy in m_AllProxies)
 			proxy.hidden = !proxy.active;
 
-		foreach (var kvp in m_DeviceData)
-		{
-			if (kvp.Value.showMenuInput.show.wasJustPressed)
-			{
-				var device = kvp.Key;
-				var mainMenu = m_DeviceData[device].mainMenu;
-				if (mainMenu != null)
-				{
-					// Toggle menu
-					mainMenu.visible = !mainMenu.visible;
-				}
-				else
-				{
-					// HACK to workaround missing MonoScript serialized fields
-					EditorApplication.delayCall += () =>
-					{
-						m_DeviceData[device].mainMenu = SpawnMainMenu(typeof(MainMenu), device);
-						UpdatePlayerHandleMaps();
-					};
-				}
-			}
-		}
-
 		var camera = U.Camera.GetMainCamera();
 		//Enable/disable workspace vacuum bounds based on distance to camera
 		foreach (var workspace in m_AllWorkspaces)
@@ -288,14 +248,40 @@ public class EditorVR : MonoBehaviour
 
 				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
+				var selectionTool = tool as SelectionTool;
 
 				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
+
+				var mainMenu = m_DeviceData[deviceData.Key].mainMenu = SpawnMainMenu(typeof(MainMenu), deviceData.Key);
+				mainMenu.menuShowing += selectionTool.HideRadialMenu;
+				// Set the main menu's action map input, allowing it to be disabled when the radial menu is displayed
+				// The Main Menu is currently consuming the x axis input the radial menu requires
+				var mainMenuActionMap = mainMenu as ICustomActionMap;
+				selectionTool.mainMenuActionMapInput = mainMenuActionMap.actionMapInput;
+				UpdatePlayerHandleMaps();
 			}
-				
+
 			tool = SpawnTool(typeof(TransformTool), out devices);
 			AddToolToDeviceData(tool, devices);
 		};
+	}
+
+	private void SpawnActions()
+	{
+		IEnumerable<Type> actionTypes = U.Object.GetImplementationsOfInterface(typeof(IAction));
+		m_AllActions = new List<IAction>();
+		foreach (Type actionType in actionTypes)
+		{
+			var action = U.Object.AddComponent(actionType, gameObject) as IAction;
+			var customActionAttribute = (ActionItemAttribute)actionType.GetCustomAttributes(typeof(ActionItemAttribute), false).FirstOrDefault();
+
+			action.icon = Resources.Load<Sprite>(customActionAttribute.iconResourcePath);
+			action.sectionName = customActionAttribute.categoryName;
+			action.indexPosition = customActionAttribute.indexPosition;
+
+			m_AllActions.Add(action);
+		}
 	}
 
 	private void CreateAllProxies()
@@ -513,7 +499,7 @@ public class EditorVR : MonoBehaviour
 		var mainMenu = U.Object.AddComponent(type, gameObject) as IMainMenu;
 		ConnectActionMaps(mainMenu, device);
 		ConnectInterfaces(mainMenu, device);
-		mainMenu.visible = true;
+		mainMenu.visible = false;
 
 		return mainMenu;
 	}
@@ -647,6 +633,20 @@ public class EditorVR : MonoBehaviour
 			mainMenuComponent.createWorkspace = CreateWorkspace;
 			mainMenuComponent.node = GetDeviceNode(device);
 			mainMenuComponent.setup();
+		}
+
+		var transformTool = m_AllActions != null && m_AllActions.Any() ? obj as ITransformTool : null; // Assign any TransformTool functionality to actions
+		if (transformTool != null)
+		{
+			foreach (var action in m_AllActions)
+			{
+				var usesTransformToolActions = action as IUsesTransformTool;
+				if (usesTransformToolActions != null)
+				{
+					usesTransformToolActions.switchOriginMode = transformTool.switchOriginMode;
+					usesTransformToolActions.switchRotationMode = transformTool.switchRotationMode;
+				}
+			}
 		}
 	}
 
