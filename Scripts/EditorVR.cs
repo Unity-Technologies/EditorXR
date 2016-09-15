@@ -184,9 +184,14 @@ public class EditorVR : MonoBehaviour
 
 #if UNITY_EDITOR
 		// HACK: Send a "mouse moved" event, so scene picking can occur for the controller
-		Event e = new Event();
-		e.type = EventType.MouseMove;
-		VRView.activeView.SendEvent(e);
+		EditorApplication.delayCall += () =>
+		{
+			Event e = new Event();
+			e.type = EventType.MouseMove;
+
+			if (this != null && gameObject != null && gameObject.activeInHierarchy)
+				VRView.activeView.SendEvent(e);
+		};
 #endif
 	}
 
