@@ -537,7 +537,7 @@ namespace UnityEngine.VR.Menus
 			float amount = 0f;
 			Vector3 currentPosition = m_ActivatorTransform.localPosition;
 			Vector3 targetPosition = moveAway == true ? m_AlternateActivatorLocalPosition : m_OriginalActivatorLocalPosition;
-			float speed = (currentPosition.z / targetPosition.z) * 4; // perform faster is returning to original position
+			float speed = (currentPosition.z / targetPosition.z) * (moveAway ? 10 : 3); // perform faster is returning to original position
 
 			while (amount < 1f)
 			{
