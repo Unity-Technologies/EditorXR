@@ -106,7 +106,21 @@ public class InspectorWorkspace : Workspace
 					if (iterator.depth == 0)
 					{
 						var canExpand = false;
-						componentChildren.Add(new PropertyData("InspectorItem", obj, new InspectorData[0], iterator.Copy(), canExpand));
+						var template = "InspectorItem";
+						var children = new InspectorData[0];
+						switch (iterator.propertyType)
+						{
+							case SerializedPropertyType.Vector2:
+								goto case SerializedPropertyType.Quaternion;
+							case SerializedPropertyType.Vector3:
+								goto case SerializedPropertyType.Quaternion;
+							case SerializedPropertyType.Vector4:
+								goto case SerializedPropertyType.Quaternion;
+							case SerializedPropertyType.Quaternion:
+								template = "InspectorVectorItem";
+								break;
+						}
+						componentChildren.Add(new PropertyData(template, obj, children, iterator.Copy(), canExpand));
 					}
 				}
 				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren.ToArray());
