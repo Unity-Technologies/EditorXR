@@ -8,11 +8,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 	private Material m_CubeMaterial;
-	private Material m_ExpandArrowMaterial;
-	private Material m_TextMaterial;
-	private Material m_GearMaterial;
-
-	private readonly List<Material> m_InstancedMaterials = new List<Material>(4);
 
 	private readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
 
@@ -24,20 +19,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 		foreach (var template in m_TemplateDictionary)
 			m_TemplateSizes[template.Key] = GetObjectSize(template.Value.prefab);
-
-		m_InstancedMaterials.Add(m_CubeMaterial);
-
-		foreach (var template in m_Templates)
-		{
-			var componentItem = template.GetComponent<InspectorComponentItem>();
-			if (componentItem)
-			{
-				componentItem.GetMaterials(out m_TextMaterial, out m_ExpandArrowMaterial, out m_GearMaterial);
-				m_InstancedMaterials.Add(m_TextMaterial);
-				m_InstancedMaterials.Add(m_ExpandArrowMaterial);
-				m_InstancedMaterials.Add(m_GearMaterial);
-			}
-		}
 	}
 
 	protected override void ComputeConditions()
@@ -48,8 +29,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 		var parentMatrix = transform.worldToLocalMatrix;
 		SetMaterialClip(m_CubeMaterial, parentMatrix);
-		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
-		SetMaterialClip(m_TextMaterial, parentMatrix);
 	}
 
 	protected override void UpdateItems()
@@ -72,7 +51,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 				CleanUpEnd(item);
 			else
 				UpdateItemRecursive(item, totalOffset, depth);
-			totalOffset += m_ItemSize.z;
+			totalOffset += m_ItemSize.y;
 			if (item.children != null)
 			{
 				if (item.expanded)
@@ -103,16 +82,11 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		var item = (InspectorListItem)base.GetItem(listData);
 		item.SwapMaterials(m_CubeMaterial);
-
-		var componentItem = item as InspectorComponentItem;
-		if (componentItem)
-			componentItem.SwapMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_GearMaterial);
 		return item;
 	}
 
 	private void OnDestroy()
 	{
-		foreach (var material in m_InstancedMaterials)
-			U.Object.Destroy(material);
+		U.Object.Destroy(m_CubeMaterial);
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
@@ -123,10 +124,8 @@ public class InspectorWorkspace : Workspace
 						componentChildren.Add(new PropertyData(template, obj, children, iterator.Copy(), canExpand));
 					}
 				}
-				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren.ToArray());
-				//TEMP: Auto-expand
-				componentData.expanded = true;
-				//objectChildren.Add(componentData);
+				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren.ToArray()) { expanded = true };
+				objectChildren.Add(componentData);
 			}
 		}
 
@@ -144,11 +143,10 @@ public class InspectorWorkspace : Workspace
 
 		var inspectorListView = m_InspectorUI.inspectorListView;
 		var bounds = contentBounds;
-		Debug.Log(bounds.size);
 		bounds.size = (inspectorListView.transform.localRotation * bounds.size).Abs();
-		Debug.Log(bounds.size);
 		inspectorListView.bounds = bounds;
 		inspectorListView.PreCompute(); // Compute item size
+		inspectorListView.transform.localPosition = inspectorListView.itemSize.z * Vector3.up;
 
 		var inspectorPanel = m_InspectorUI.inspectorPanel;
 		inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);

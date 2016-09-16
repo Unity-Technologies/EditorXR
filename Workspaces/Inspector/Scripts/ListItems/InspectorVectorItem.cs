@@ -18,74 +18,95 @@ public class InspectorVectorItem : InspectorListItem
 
 	private SerializedProperty m_SerializedProperty;
 
+	private bool m_Setup;
+
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
+
+		if (!m_Setup)
+		{
+			m_Setup = true;
+			for (int i = 0; i < m_InputFields.Length; i++)
+			{
+				var index = i;
+				m_InputFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+			}
+		}
 
 		m_SerializedProperty = ((PropertyData)data).property;
 
 		m_Label.text = m_SerializedProperty.displayName;
 
 		Vector4 vector = Vector4.zero;
+		int count = 4;
 		switch (m_SerializedProperty.propertyType)
 		{
 			case SerializedPropertyType.Vector2:
 				ZGroup.SetActive(false);
 				WGroup.SetActive(false);
 				vector = m_SerializedProperty.vector2Value;
+				count = 2;
 				break;
 			case SerializedPropertyType.Quaternion:
 				vector = m_SerializedProperty.quaternionValue.eulerAngles;
 				WGroup.SetActive(false);
+				count = 3;
 				break;
 			case SerializedPropertyType.Vector3:
 				vector = m_SerializedProperty.vector3Value;
 				WGroup.SetActive(false);
+				count = 3;
 				break;
 			case SerializedPropertyType.Vector4:
 				vector = m_SerializedProperty.vector4Value;
 				break;
 		}
 
-		for (int i = 0; i < m_InputFields.Length; i++)
-		{
-			var index = i;
-			m_InputFields[i].onValueChanged.RemoveAllListeners();
+		for (int i = 0; i < count; i++)
 			m_InputFields[i].text = vector[i].ToString();
-			m_InputFields[i].onValueChanged.AddListener(value => SetValue(value, index));
-		}
 	}
 
 	private void SetValue(string input, int index)
 	{
 		float value;
-		if (float.TryParse(input, out value))
+		if (!float.TryParse(input, out value)) return;
+		switch (m_SerializedProperty.propertyType)
 		{
-			switch (m_SerializedProperty.propertyType)
-			{
-				case SerializedPropertyType.Vector2:
-					var vector2 = m_SerializedProperty.vector2Value;
+			case SerializedPropertyType.Vector2:
+				var vector2 = m_SerializedProperty.vector2Value;
+				if (vector2[index] != value)
+				{
 					vector2[index] = value;
 					m_SerializedProperty.vector2Value = vector2;
-					break;
-				case SerializedPropertyType.Vector3:
-					var vector3 = m_SerializedProperty.vector3Value;
+				}
+				break;
+			case SerializedPropertyType.Vector3:
+				var vector3 = m_SerializedProperty.vector3Value;
+				if (vector3[index] != value)
+				{
 					vector3[index] = value;
 					m_SerializedProperty.vector3Value = vector3;
-					break;
-				case SerializedPropertyType.Vector4:
-					var vector4 = m_SerializedProperty.vector4Value;
+				}
+				break;
+			case SerializedPropertyType.Vector4:
+				var vector4 = m_SerializedProperty.vector4Value;
+				if (vector4[index] != value)
+				{
 					vector4[index] = value;
 					m_SerializedProperty.vector4Value = vector4;
-					break;
-				case SerializedPropertyType.Quaternion:
-					var euler = m_SerializedProperty.quaternionValue.eulerAngles;
+				}
+				break;
+			case SerializedPropertyType.Quaternion:
+				var euler = m_SerializedProperty.quaternionValue.eulerAngles;
+				if (euler[index] != value)
+				{
 					euler[index] = value;
 					m_SerializedProperty.quaternionValue = Quaternion.Euler(euler);
-					break;
-			}
-
-			data.serializedObject.ApplyModifiedProperties();
+				}
+				break;
 		}
+
+		data.serializedObject.ApplyModifiedProperties();
 	}
 }

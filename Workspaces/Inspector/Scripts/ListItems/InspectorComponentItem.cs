@@ -1,12 +1,11 @@
 ﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Handles;
 
 public class InspectorComponentItem : InspectorListItem
 {
 	[SerializeField]
-	private BaseHandle m_ExpandArrow;
+	private Button m_ExpandArrow;
 
 	[SerializeField]
 	private RawImage m_Icon;
@@ -18,7 +17,7 @@ public class InspectorComponentItem : InspectorListItem
 	private Text m_NameText;
 
 	[SerializeField]
-	private BaseHandle m_GearMenu;
+	private Button m_GearMenu;
 
 	private bool m_Setup;
 
@@ -29,7 +28,7 @@ public class InspectorComponentItem : InspectorListItem
 		if (!m_Setup)
 		{
 			m_Setup = true;
-			m_ExpandArrow.dragEnded += ToggleExpanded;
+			m_ExpandArrow.onClick.AddListener(ToggleExpanded);
 		}
 
 		var type = data.serializedObject.targetObject.GetType();
@@ -53,7 +52,7 @@ public class InspectorComponentItem : InspectorListItem
 		m_GearMenu.GetComponent<Renderer>().sharedMaterial = gearMaterial;
 	}
 
-	private void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
+	private void ToggleExpanded()
 	{
 		data.expanded = !data.expanded;
 	}
