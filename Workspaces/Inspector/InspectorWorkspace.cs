@@ -126,7 +126,7 @@ public class InspectorWorkspace : Workspace
 				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren.ToArray());
 				//TEMP: Auto-expand
 				componentData.expanded = true;
-				objectChildren.Add(componentData);
+				//objectChildren.Add(componentData);
 			}
 		}
 
@@ -144,7 +144,9 @@ public class InspectorWorkspace : Workspace
 
 		var inspectorListView = m_InspectorUI.inspectorListView;
 		var bounds = contentBounds;
-		bounds.size = inspectorListView.transform.localRotation * bounds.size;
+		Debug.Log(bounds.size);
+		bounds.size = (inspectorListView.transform.localRotation * bounds.size).Abs();
+		Debug.Log(bounds.size);
 		inspectorListView.bounds = bounds;
 		inspectorListView.PreCompute(); // Compute item size
 

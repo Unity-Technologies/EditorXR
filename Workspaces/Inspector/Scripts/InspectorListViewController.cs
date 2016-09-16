@@ -40,19 +40,11 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		}
 	}
 
-	void OnDrawGizmos()
-	{
-		Gizmos.matrix = transform.localToWorldMatrix;
-		Gizmos.DrawSphere(m_StartPosition, 0.05f);
-		Gizmos.DrawWireCube(Vector3.zero, bounds.size);
-		Gizmos.DrawWireCube(Vector3.zero, m_ItemSize);
-	}
-
 	protected override void ComputeConditions()
 	{
 		base.ComputeConditions();
 
-		m_StartPosition = bounds.extents.y * Vector3.down;
+		m_StartPosition = bounds.extents.y * Vector3.up;
 
 		var parentMatrix = transform.worldToLocalMatrix;
 		SetMaterialClip(m_CubeMaterial, parentMatrix);
@@ -74,7 +66,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		foreach (var item in data)
 		{
 			m_ItemSize = m_TemplateSizes[item.template];
-			if (totalOffset + scrollOffset + m_ItemSize.z < 0)
+			if (totalOffset + scrollOffset + m_ItemSize.y < 0)
 				CleanUpBeginning(item);
 			else if (totalOffset + scrollOffset > bounds.size.y)
 				CleanUpEnd(item);
@@ -104,7 +96,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	private void UpdateItem(Transform t, float offset)
 	{
 		t.localPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.down;
-		t.localRotation = Quaternion.AngleAxis(90, Vector3.left);
+		t.localRotation = Quaternion.identity;
 	}
 
 	protected override ListViewItem<InspectorData> GetItem(InspectorData listData)
