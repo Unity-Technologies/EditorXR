@@ -5861,7 +5861,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_TargetTransform: {fileID: 0}
-  m_DampingReduction: 10
+  m_DampingReduction: 13
 --- !u!114 &114000011665497816
 MonoBehaviour:
   m_ObjectHideFlags: 1
