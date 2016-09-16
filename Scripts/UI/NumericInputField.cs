@@ -25,7 +25,6 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 		Float,
 		Int,
 	}
-
 	[SerializeField]
 	private NumberType m_NumberType;
 
@@ -169,10 +168,9 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 		{
 			m_NumericKeyboard.gameObject.SetActive(true);
 			m_NumericKeyboard.transform.SetParent(transform, true);
-			m_NumericKeyboard.transform.localPosition = Vector3.up*0.2f;
-			m_NumericKeyboard.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
+			m_NumericKeyboard.transform.localPosition = Vector3.up * 0.05f;
+			m_NumericKeyboard.transform.localRotation = Quaternion.identity;
 
-//			m_NumericKeyboard.Setup(new char[] {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.'}, OnKeyPress);
 			m_NumericKeyboard.Setup(OnKeyPress);
 		}
 	}
@@ -187,17 +185,37 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 		m_NumericKeyboard = null;
 	}
 
-	private void OnKeyPress(char keyChar)
+	private void OnKeyPress(char keyCode)
 	{
-		if (IsOperandCharacter(keyChar))
+		if (keyCode == 'r') // Return
+		{
+			
+		}
+		else if (keyCode == 'b') // Backspace
+		{
+			DeleteChar();
+		}
+		else if (IsOperandCharacter((char)keyCode))
 		{
 			if (m_RawInputString.Count > 1)
-				m_RawInputString.Add(keyChar.ToString());
+				m_RawInputString.Add(keyCode.ToString());
 		}
-		else if (IsNumericCharacter(keyChar))
+		else if (IsNumericCharacter((char)keyCode))
 		{
-			m_TextComponent.text = m_OutputString += keyChar;
+			m_TextComponent.text = m_OutputString += keyCode;
 		}
+	}
+
+	private void DeleteChar()
+	{
+		m_OutputString = m_OutputString.Remove(m_OutputString.Length - 1);
+		m_TextComponent.text = m_OutputString;
+	}
+
+	private void ClearField()
+	{
+		m_OutputString = "";
+		m_TextComponent.text = m_OutputString;
 	}
 
 	private bool IsNumericCharacter(char ch)
@@ -279,12 +297,12 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 		{
 			return 0.0;
 		}
-		return (double) Mathf.Max(1, Mathf.Pow(Mathf.Abs((float)value), 0.5f))*kDragSensitivity;
+		return (double) Mathf.Max(1, Mathf.Pow(Mathf.Abs((float)value), 0.5f)) * kDragSensitivity;
 	}
 
 	private static long CalculateIntDragSensitivity(long value)
 	{
-		return (long) Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f)*kDragSensitivity);
+		return (long) Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f) * kDragSensitivity);
 	}
 
 	// Handle dragging of value
@@ -351,14 +369,16 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 //		}
 	}
 
-	void ParseNumberField(bool isDouble, ref double doubleVal, ref long longVal, string formatString)
+	private void ParseNumberField(ref double doubleVal, ref long longVal, string formatString)
 	{
-		string allowedCharacters = isDouble ? s_AllowedCharactersForFloat : s_AllowedCharactersForInt;
+		var isFloat = m_NumberType == NumberType.Float;
 
-		string str = isDouble ? doubleVal.ToString(formatString) : longVal.ToString(formatString);
+		string allowedCharacters = isFloat ? s_AllowedCharactersForFloat : s_AllowedCharactersForInt;
+
+		string str = isFloat ? doubleVal.ToString(formatString) : longVal.ToString(formatString);
 
 		// clean up the text
-		if (isDouble)
+		if (isFloat)
 		{
 			string lowered = str.ToLower();
 			if (lowered == "inf" || lowered == "infinity")
@@ -383,7 +403,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 
 				// Don't allow user to enter NaN - it opens a can of worms that can trigger many latent bugs,
 				// and is not really useful for anything.
-				if (Double.IsNaN(doubleVal))
+				if (double.IsNaN(doubleVal))
 				{
 					doubleVal = 0;
 				}

@@ -2,7 +2,7 @@
 using UnityEditor.UI;
 
 [CustomEditor(typeof(NumericInputField))]
-public class NumericInputFieldEditor : RayButtonEditor
+public class NumericInputFieldEditor : SelectableEditor
 {
 	SerializedProperty m_SelectionFlagsProperty;
 	SerializedProperty m_TextProperty;

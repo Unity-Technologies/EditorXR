@@ -3,28 +3,68 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
+/// <summary>
+/// Set either the button's text field or the ASCII value
+/// </summary>
 public class NumericInputButton : RayButton
 {
+	public enum CharacterDescriptionType
+	{
+		Character,
+		Special,
+	}
+	[SerializeField]
+	private CharacterDescriptionType m_CharacterDescriptionType;
+
+	public enum SpecialKeyType
+	{
+		Backspace,
+		Return,
+		Clear,
+	}
+	[SerializeField]
+	private SpecialKeyType m_SpecialKeyType;
+
+	[SerializeField]
+	private char m_KeyCode;
+
 	[SerializeField]
 	private GameObject m_ButtonMesh;
-	
+
 	[SerializeField]
-	private Text m_ButtonText;
+	private bool m_MatchButtonTextToCharacter = true;
+	[SerializeField]
+	private Text m_TextComponent;
 
 	private Action<char> m_KeyPress;
-
-	private char m_KeyChar;
 
 	private UnityEvent m_Trigger = new UnityEvent();
 
 	public void Setup(Action<char> keyPress, bool pressOnHover)
 	{
-//		m_KeyChar = keyChar;
 		m_KeyPress = keyPress;
 
-		if (m_ButtonText != null && m_ButtonText.text.Length > 0)
-//			m_ButtonText.text = keyChar.ToString();
-			m_KeyChar = m_ButtonText.text[0];
+		switch (m_CharacterDescriptionType)
+		{
+			case CharacterDescriptionType.Special:
+				if (m_SpecialKeyType == SpecialKeyType.Backspace)
+					m_KeyCode = 'b';
+				else if (m_SpecialKeyType == SpecialKeyType.Clear)
+					m_KeyCode = 'c';
+				else if (m_SpecialKeyType == SpecialKeyType.Return)
+					m_KeyCode = 'r';
+				break;
+			case CharacterDescriptionType.Character:
+				break;
+			default:
+				throw new ArgumentOutOfRangeException();
+		}
+
+		if (m_MatchButtonTextToCharacter)
+		{
+			if (m_TextComponent != null)
+				m_TextComponent.text = m_KeyCode.ToString();
+		}
 
 		if (pressOnHover)
 			m_Trigger = onEnter;
@@ -43,6 +83,6 @@ public class NumericInputButton : RayButton
 
 	private void NumericKeyPressed()
 	{
-		m_KeyPress(m_KeyChar);
+		m_KeyPress(m_KeyCode);
 	}
 }
