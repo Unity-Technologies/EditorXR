@@ -8,28 +8,35 @@ namespace UnityEngine.VR.Utilities
 		{
 			public static bool TestObject(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
 			{
-				return TestEdges(collisionTester, obj, tester);
-				//for (int j = 0; j < tester.rays.Length; j++)
-				//{
-				//	Ray ray = tester.rays[j];
-					
-				//	//Transform to world space
-				//	ray.origin = tester.transform.TransformPoint(ray.origin);
-				//	ray.direction = tester.transform.TransformDirection(ray.direction);
+				// Try a simple test with specific rays located at vertices
+				for (int j = 0; j < tester.rays.Length; j++)
+				{
+					Ray ray = tester.rays[j];
 
-				//	if (TestRay(collisionTester, obj, ray))
-				//	{
-				//		Debug.DrawRay(ray.origin, ray.direction, Color.yellow);
-				//		return true;
-				//	}
-				//}
+					//Transform rays to world space
+					ray.origin = tester.transform.TransformPoint(ray.origin);
+					ray.direction = tester.transform.TransformDirection(ray.direction);
 
-				//return false;
+					if (TestRay(collisionTester, obj, ray))
+						return true;
+				}
+
+				// Try a more robust version with all edges
+				if (TestEdges(collisionTester, obj, tester))
+					return true;
+
+				return false;
 			}
 
+			/// <summary>
+			/// Test the edges of the tester's collider against another mesh collider for intersection of being contained within
+			/// </summary>
+			/// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
+			/// <param name="obj">The object to test collision on</param>
+			/// <param name="tester">The tester object</param>
+			/// <returns>The result of whether the point/ray is intersection with or located within the object</returns>
 			public static bool TestEdges(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
 			{
-				Profiler.BeginSample("TestEdges");
 				var mf = obj.GetComponent<MeshFilter>();
 				int[] triangles = tester.triangles;
 				Vector3[] vertices = tester.vertices;
@@ -80,16 +87,11 @@ namespace UnityEngine.VR.Utilities
 							OnSegment(C, A, D) ||
 							OnSegment(C, B, D))
 						{
-							Debug.DrawLine(mf.transform.TransformPoint(forwardRay.origin), mf.transform.TransformPoint(forwardHit), Color.yellow);
-							Debug.DrawLine(mf.transform.TransformPoint(behindRay.origin), mf.transform.TransformPoint(behindHit), Color.blue);
-							Debug.DrawLine(mf.transform.TransformPoint(behindHit), mf.transform.TransformPoint(forwardHit), Color.black);
-							Profiler.EndSample();
 							return true;
 						}
 					}
 				}
 
-				Profiler.EndSample();
 				return false;
 			}
 
@@ -101,6 +103,13 @@ namespace UnityEngine.VR.Utilities
 				return Mathf.Approximately(Vector3.Distance(A, C) + Vector3.Distance(C, B), Vector3.Distance(A, B));
 			}
 
+			/// <summary>
+			/// Tests a "ray" against a collider; Really we are testing whether a point is located within or is intersecting with a collider
+			/// </summary>
+			/// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
+			/// <param name="obj">The object to test collision on</param>
+			/// <param name="ray">A ray positioned at a vertex of the tester's collider</param>
+			/// <returns>The result of whether the point/ray is intersection with or located within the object</returns>
 			public static bool TestRay(MeshCollider collisionTester, Renderer obj, Ray ray)
 			{
 				var mf = obj.GetComponent<MeshFilter>();
@@ -121,7 +130,6 @@ namespace UnityEngine.VR.Utilities
 					forwardHit = hitInfo.point;
 				else
 					return false;
-				Debug.DrawLine(mf.transform.TransformPoint(forwardRay.origin), mf.transform.TransformPoint(forwardHit), Color.yellow);
 				
 				// Shoot a ray in the other direction, too, from outside the object (due to face normals)
 				Vector3 behindHit;
@@ -131,12 +139,10 @@ namespace UnityEngine.VR.Utilities
 					behindHit = hitInfo.point;
 				else
 					return false;
-				Debug.DrawLine(mf.transform.TransformPoint(behindRay.origin), mf.transform.TransformPoint(behindHit), Color.blue);
 
 				// Check whether the point (i.e. ray origin) is contained within the object
 				Vector3 collisionLine = forwardHit - behindHit;
 				float projection = Vector3.Dot(collisionLine, ray.origin - behindHit);
-				Debug.DrawLine(mf.transform.TransformPoint(behindHit), mf.transform.TransformPoint(forwardHit), Color.black);
 				return (projection >= 0f && projection <= collisionLine.sqrMagnitude);
 			}
 
