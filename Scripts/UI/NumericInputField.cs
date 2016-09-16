@@ -208,6 +208,8 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 
 	private void DeleteChar()
 	{
+		if (m_OutputString.Length == 0) return;
+
 		m_OutputString = m_OutputString.Remove(m_OutputString.Length - 1);
 		m_TextComponent.text = m_OutputString;
 	}
