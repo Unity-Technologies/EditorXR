@@ -37,7 +37,7 @@
 
 		void surf(Input IN, inout SurfaceOutputStandard o)
 		{
-			listClipFrag(IN.localPos);
+			listClipCheckExtents(IN.localPos);
 
 			fixed4 c = tex2D(_MainTex, IN.uv_MainTex) *_Color;
 			o.Emission = c.rgb;

@@ -251,6 +251,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		StartCoroutine(Magnetize());
 	}
 
+	// Smoothly interpolate grabbed object into position, instead of "popping."
 	private IEnumerator Magnetize()
 	{
 		var startTime = Time.realtimeSinceStartup;
