@@ -8,25 +8,103 @@ namespace UnityEngine.VR.Utilities
 		{
 			public static bool TestObject(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
 			{
-				for (int j = 0; j < tester.rays.Length; j++)
-				{
-					Ray ray = tester.rays[j];
+				return TestEdges(collisionTester, obj, tester);
+				//for (int j = 0; j < tester.rays.Length; j++)
+				//{
+				//	Ray ray = tester.rays[j];
 					
-					//Transform to world space
-					ray.origin = tester.transform.TransformPoint(ray.origin);
-					ray.direction = tester.transform.TransformDirection(ray.direction);
+				//	//Transform to world space
+				//	ray.origin = tester.transform.TransformPoint(ray.origin);
+				//	ray.direction = tester.transform.TransformDirection(ray.direction);
 
-					if (TestRay(collisionTester, obj, ray))
-						return true;
+				//	if (TestRay(collisionTester, obj, ray))
+				//	{
+				//		Debug.DrawRay(ray.origin, ray.direction, Color.yellow);
+				//		return true;
+				//	}
+				//}
+
+				//return false;
+			}
+
+			public static bool TestEdges(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
+			{
+				Profiler.BeginSample("TestEdges");
+				var mf = obj.GetComponent<MeshFilter>();
+				int[] triangles = tester.triangles;
+				Vector3[] vertices = tester.vertices;
+
+				collisionTester.sharedMesh = mf.sharedMesh;
+
+				float maxDistance = collisionTester.bounds.size.magnitude;
+				RaycastHit hitInfo;
+
+				Vector3[] triangleVertices = new Vector3[3];
+				for (int i = 0; i < triangles.Length; i += 3)
+				{
+					triangleVertices[0] = vertices[triangles[i]];
+					triangleVertices[1] = vertices[triangles[i + 1]];
+					triangleVertices[2] = vertices[triangles[i + 2]];
+
+					for (int j = 0; j < 3; j++)
+					{
+						Vector3 start = mf.transform.InverseTransformPoint(tester.transform.TransformPoint(triangleVertices[j]));
+						Vector3 end = mf.transform.InverseTransformPoint(tester.transform.TransformPoint(triangleVertices[(j + 1) % 3]));
+						Vector3 direction = mf.transform.InverseTransformDirection(end - start);
+
+						// Shoot a ray from outside the object (due to face normals) in the direction of the ray to see if it is inside
+						Ray forwardRay = new Ray(start, direction);
+						forwardRay.origin = forwardRay.GetPoint(-maxDistance);
+						Vector3 forwardHit;
+						if (collisionTester.Raycast(forwardRay, out hitInfo, maxDistance * 2f))
+							forwardHit = hitInfo.point;
+						else
+							continue;
+
+						// Shoot a ray in the other direction, too, from outside the object (due to face normals)
+						Vector3 behindHit;
+						Ray behindRay = new Ray(end, -direction);
+						behindRay.origin = behindRay.GetPoint(-maxDistance);
+						if (collisionTester.Raycast(behindRay, out hitInfo, maxDistance * 2f))
+							behindHit = hitInfo.point;
+						else
+							continue;
+
+						// Check whether the triangle edge is contained or intersects with the object
+						Vector3 A = forwardHit;
+						Vector3 B = behindHit;
+						Vector3 C = start;
+						Vector3 D = end;
+						if (OnSegment(A, C, B) ||
+							OnSegment(A, D, B) ||
+							OnSegment(C, A, D) ||
+							OnSegment(C, B, D))
+						{
+							Debug.DrawLine(mf.transform.TransformPoint(forwardRay.origin), mf.transform.TransformPoint(forwardHit), Color.yellow);
+							Debug.DrawLine(mf.transform.TransformPoint(behindRay.origin), mf.transform.TransformPoint(behindHit), Color.blue);
+							Debug.DrawLine(mf.transform.TransformPoint(behindHit), mf.transform.TransformPoint(forwardHit), Color.black);
+							Profiler.EndSample();
+							return true;
+						}
+					}
 				}
 
+				Profiler.EndSample();
 				return false;
+			}
+
+			/// <summary>
+			/// Returns whether C lies on segment AB
+			/// </summary>
+			public static bool OnSegment(Vector3 A, Vector3 C, Vector3 B)
+			{
+				return Mathf.Approximately(Vector3.Distance(A, C) + Vector3.Distance(C, B), Vector3.Distance(A, B));
 			}
 
 			public static bool TestRay(MeshCollider collisionTester, Renderer obj, Ray ray)
 			{
 				var mf = obj.GetComponent<MeshFilter>();
-				
+
 				collisionTester.sharedMesh = mf.sharedMesh;
 
 				ray.origin = mf.transform.InverseTransformPoint(ray.origin);
@@ -43,19 +121,23 @@ namespace UnityEngine.VR.Utilities
 					forwardHit = hitInfo.point;
 				else
 					return false;
+				Debug.DrawLine(mf.transform.TransformPoint(forwardRay.origin), mf.transform.TransformPoint(forwardHit), Color.yellow);
 				
 				// Shoot a ray in the other direction, too, from outside the object (due to face normals)
 				Vector3 behindHit;
 				Ray behindRay = new Ray(ray.origin, -ray.direction);
-				ray.origin = ray.GetPoint(-maxDistance);
+				behindRay.origin = behindRay.GetPoint(-maxDistance);
 				if (collisionTester.Raycast(behindRay, out hitInfo, maxDistance*2f))
 					behindHit = hitInfo.point;
 				else
 					return false;
+				Debug.DrawLine(mf.transform.TransformPoint(behindRay.origin), mf.transform.TransformPoint(behindHit), Color.blue);
 
-				// Check whether point (i.e. ray origin) is contained within the object
-				float projection = Vector3.Dot(forwardHit - behindHit, ray.origin - behindHit);
-				return (projection >= 0f && projection <= 1f);
+				// Check whether the point (i.e. ray origin) is contained within the object
+				Vector3 collisionLine = forwardHit - behindHit;
+				float projection = Vector3.Dot(collisionLine, ray.origin - behindHit);
+				Debug.DrawLine(mf.transform.TransformPoint(behindHit), mf.transform.TransformPoint(forwardHit), Color.black);
+				return (projection >= 0f && projection <= collisionLine.sqrMagnitude);
 			}
 
 			public static Vector3 InvertVector3(Vector3 vec)

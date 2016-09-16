@@ -35,6 +35,38 @@
 		}
 		private Ray[] m_Rays;
 
+		public int[] triangles
+		{
+			get
+			{
+				if (m_Triangles == null)
+				{
+					var mf = GetComponent<MeshFilter>();
+					var mesh = mf.sharedMesh;
+					m_Triangles = mesh.triangles;
+				}
+
+				return m_Triangles;
+			}
+		}
+		private int[] m_Triangles;
+
+		public Vector3[] vertices
+		{
+			get
+			{
+				if (m_Vertices == null)
+				{
+					var mf = GetComponent<MeshFilter>();
+					var mesh = mf.sharedMesh;
+					m_Vertices = mesh.vertices;
+				}
+
+				return m_Vertices;
+			}
+		}
+		private Vector3[] m_Vertices;
+
 		public new Renderer renderer
 		{
 			get
@@ -48,13 +80,14 @@
 
 		public Renderer grabbedObject { get; set; }
 
-		private void OnDrawGizmosSelected()
+		private void OnDrawGizmos()
 		{
 			if (m_ShowRays)
 			{
-				foreach (var ray in rays)
+				foreach (var t in m_RayTransforms)
 				{
-					Debug.DrawRay(transform.TransformPoint(ray.origin), transform.TransformDirection(ray.direction), Color.red);
+					if (t)
+						Debug.DrawRay(t.position, t.forward, Color.red);
 				}
 			}
 		}
