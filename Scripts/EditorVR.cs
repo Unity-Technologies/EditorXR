@@ -264,6 +264,11 @@ public class EditorVR : MonoBehaviour
 			// Spawn default tools
 			HashSet<InputDevice> devices;
 			ITool tool;
+
+			var locomotionTool = typeof(BlinkLocomotionTool);
+			if (VRSettings.loadedDeviceName == "Oculus")
+				locomotionTool = typeof(JoystickLocomotionTool);
+
 			foreach (var deviceData in m_DeviceData)
 			{
 				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
@@ -273,7 +278,16 @@ public class EditorVR : MonoBehaviour
 				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 
-				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
+				if (locomotionTool == typeof(BlinkLocomotionTool))
+				{
+					tool = SpawnTool(locomotionTool, out devices, deviceData.Key);
+					AddToolToDeviceData(tool, devices);
+				}
+			}
+
+			if (locomotionTool == typeof(JoystickLocomotionTool))
+			{
+				tool = SpawnTool(locomotionTool, out devices);
 				AddToolToDeviceData(tool, devices);
 			}
 
