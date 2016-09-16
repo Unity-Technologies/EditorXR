@@ -1,11 +1,12 @@
 ﻿using System;
 using UnityEditor;
+using UnityEngine.VR.Menus;
 
 namespace UnityEngine.VR.Actions
 {
 	[ToggleActionItem("Rotation", "Center",  "ActionIcons/OriginCenterIcon", "Pivot",  "ActionIcons/OriginPivotIcon", "DefaultActions", 10)]
 	[ExecuteInEditMode]
-	public class OriginToggle : MonoBehaviour, IToggleAction, IUsesTransformTool
+	public class OriginToggle : MonoBehaviour, IUsesTransformTool
 	{
 		[SerializeField]
 		private Sprite m_Icon01;

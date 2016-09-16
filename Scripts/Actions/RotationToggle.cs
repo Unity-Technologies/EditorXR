@@ -5,7 +5,7 @@ namespace UnityEngine.VR.Actions
 {
 	[ToggleActionItem("Rotation", "Local",  "ActionIcons/RotationLocalIcon", "Global",  "ActionIcons/RotationGlobalIcon", "DefaultActions", 9)]
 	[ExecuteInEditMode]
-	public class RotationToggle : MonoBehaviour, IToggleAction, IUsesTransformTool
+	public class RotationToggle : MonoBehaviour, IUsesTransformTool
 	{
 		[SerializeField]
 		private Sprite m_Icon01;
