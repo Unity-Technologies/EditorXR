@@ -203,5 +203,11 @@ namespace ListView
 				m_ScrollDelta = 0;
 			}
 		}
+
+		protected void SetMaterialClip(Material material, Matrix4x4 parentMatrix)
+		{
+			material.SetMatrix("_ParentMatrix", parentMatrix);
+			material.SetVector("_ClipExtents", bounds.extents);
+		}
 	}
 }

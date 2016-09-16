@@ -32,10 +32,8 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		base.ComputeConditions();
 
 		var parentMatrix = transform.worldToLocalMatrix;
-		m_TextMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_TextMaterial.SetVector("_ClipExtents", bounds.extents);
-		m_ExpandArrowMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_ExpandArrowMaterial.SetVector("_ClipExtents", bounds.extents);
+		SetMaterialClip(m_TextMaterial, parentMatrix);
+		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
 	}
 
 	protected override void UpdateItemRecursive(FolderData data, int offset, int depth)
@@ -44,7 +42,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 			data.item = GetItem(data);
 		var item = (FolderListItem)data.item;
 		item.UpdateTransforms(bounds.size.x - kClipMargin, depth);
-		item.Clip(bounds, transform.worldToLocalMatrix);
+		SetMaterialClip(item.cubeMaterial, transform.localToWorldMatrix);
 
 		UpdateItem(item.transform, offset);
 	}

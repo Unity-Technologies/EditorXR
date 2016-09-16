@@ -36,9 +36,9 @@ public class FolderListItem : ListViewItem<FolderData>
 	private Color m_NormalColor;
 
 	private bool m_Hovering;
-
 	private Renderer m_CubeRenderer;
 
+	public Material cubeMaterial { get { return m_CubeRenderer.sharedMaterial; } }
 	public Action<FolderData> selectFolder;
 
 	public override void Setup(FolderData listData)
@@ -106,12 +106,6 @@ public class FolderListItem : ListViewItem<FolderData>
 	{
 		textMaterial = Instantiate(m_Text.material);
 		expandArrowMaterial = Instantiate(m_ExpandArrow.GetComponent<Renderer>().sharedMaterial);
-	}
-
-	public void Clip(Bounds bounds, Matrix4x4 parentMatrix)
-	{
-		m_CubeRenderer.sharedMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_CubeRenderer.sharedMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
 
 	private void ToggleExpanded(BaseHandle handle, HandleEventData eventData)

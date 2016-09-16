@@ -697,7 +697,6 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 224000010867083340}
-  - 222: {fileID: 222000010257676532}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -2296,12 +2295,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012637623490}
---- !u!222 &222000010257676532
-CanvasRenderer:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000014116023244}
 --- !u!222 &222000010287026704
 CanvasRenderer:
   m_ObjectHideFlags: 1

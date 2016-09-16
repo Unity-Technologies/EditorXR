@@ -143,7 +143,9 @@ public class InspectorWorkspace : Workspace
 		inspectorScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, inspectorScrollHandleTransform.localScale.y, size.z + kScrollMargin);
 
 		var inspectorListView = m_InspectorUI.inspectorListView;
-		inspectorListView.bounds = contentBounds;
+		var bounds = contentBounds;
+		bounds.size = inspectorListView.transform.localRotation * bounds.size;
+		inspectorListView.bounds = bounds;
 		inspectorListView.PreCompute(); // Compute item size
 
 		var inspectorPanel = m_InspectorUI.inspectorPanel;

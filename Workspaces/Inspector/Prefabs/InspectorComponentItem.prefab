@@ -176,7 +176,6 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 224000010867083340}
-  - 222: {fileID: 222000010257676532}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -587,12 +586,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
---- !u!222 &222000010257676532
-CanvasRenderer:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000014116023244}
 --- !u!222 &222000010295121642
 CanvasRenderer:
   m_ObjectHideFlags: 1
