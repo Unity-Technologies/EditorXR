@@ -6,7 +6,7 @@
 		private Transform m_TargetTransform;
 		
 		[SerializeField]
-		private float m_DampingReduction = 5f;
+		private float m_DampingReduction = 10f;
 
 		private Quaternion lazyRotation;
 
