@@ -2,10 +2,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InspectorVectorItem : InspectorListItem
+public class InspectorVectorItem : InspectorPropertyItem
 {
-	[SerializeField]
-	private Text m_Label;
 
 	[SerializeField]
 	private InputField[] m_InputFields;
@@ -15,8 +13,6 @@ public class InspectorVectorItem : InspectorListItem
 
 	[SerializeField]
 	private GameObject WGroup;
-
-	private SerializedProperty m_SerializedProperty;
 
 	private bool m_Setup;
 
@@ -33,10 +29,6 @@ public class InspectorVectorItem : InspectorListItem
 				m_InputFields[i].onValueChanged.AddListener(value => SetValue(value, index));
 			}
 		}
-
-		m_SerializedProperty = ((PropertyData)data).property;
-
-		m_Label.text = m_SerializedProperty.displayName;
 
 		Vector4 vector = Vector4.zero;
 		int count = 4;

@@ -1,15 +1,20 @@
 ﻿using UnityEngine;
-using System.Collections;
+using UnityEditor;
+using UnityEngine.UI;
 
-public class InspectorPropertyItem : MonoBehaviour {
+public class InspectorPropertyItem : InspectorListItem
+{
+	[SerializeField]
+	private Text m_Label;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+	protected SerializedProperty m_SerializedProperty;
+
+	public override void Setup(InspectorData data)
+	{
+		base.Setup(data);
+
+		m_SerializedProperty = ((PropertyData)data).property;
+
+		m_Label.text = m_SerializedProperty.displayName;
 	}
 }

@@ -120,6 +120,24 @@ public class InspectorWorkspace : Workspace
 							case SerializedPropertyType.Quaternion:
 								template = "InspectorVectorItem";
 								break;
+							case SerializedPropertyType.Integer:
+								goto case SerializedPropertyType.String;
+							case SerializedPropertyType.Float:
+								goto case SerializedPropertyType.String;
+							case SerializedPropertyType.Character:
+								goto case SerializedPropertyType.String;
+							case SerializedPropertyType.String:
+								template = "InspectorInputFieldItem";
+								break;
+							case SerializedPropertyType.Bounds:
+								template = "InspectorBoundsItem";
+								break;
+							case SerializedPropertyType.Boolean:
+								template = "InspectorBoolItem";
+								break;
+							default:
+								template = "InspectorUnimplementedItem";
+								break;
 						}
 						componentChildren.Add(new PropertyData(template, obj, children, iterator.Copy(), canExpand));
 					}
