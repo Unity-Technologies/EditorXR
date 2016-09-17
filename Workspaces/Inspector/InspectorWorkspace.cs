@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
@@ -24,7 +23,10 @@ public class InspectorWorkspace : Workspace
 		base.Setup();
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_InspectorUI = contentPrefab.GetComponent<InspectorUI>();
-		m_InspectorUI.inspectorListView.data = new InspectorData[0];
+
+		var listView = m_InspectorUI.inspectorListView;
+		listView.data = new InspectorData[0];
+		listView.instantiateUI = instantiateUI;
 
 		var scrollHandle = m_InspectorUI.inspectorScrollHandle;
 

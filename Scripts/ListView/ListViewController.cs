@@ -1,8 +1,10 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.VR.Tools;
 
 namespace ListView
 {
-	public abstract class ListViewController<DataType, ItemType> : ListViewControllerBase
+	public abstract class ListViewController<DataType, ItemType> : ListViewControllerBase, IInstantiateUI
 		where DataType : ListViewItemData
 		where ItemType : ListViewItem<DataType>
 	{
@@ -21,6 +23,8 @@ namespace ListView
 		protected DataType[] m_Data;
 
 		protected override int dataLength { get { return m_Data.Length; } }
+
+		public Func<GameObject, GameObject> instantiateUI { get; set; }
 
 		protected override void UpdateItems()
 		{
@@ -83,7 +87,10 @@ namespace ListView
 			}
 			else
 			{
-				item = Instantiate(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
+				if(instantiateUI != null)
+					item = instantiateUI(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
+				else
+					item = Instantiate(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
 				item.transform.SetParent(transform, false);
 				item.Setup(data);
 			}

@@ -383,16 +383,14 @@ public class EditorVR : MonoBehaviour
 	{
 		var go = U.Object.Instantiate(prefab, transform);
 		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
-		{
 			canvas.worldCamera = m_EventCamera;
 
-			foreach (NumericInputField inputField in canvas.GetComponentsInChildren<NumericInputField>())
-			{
-				if (inputField.inputType == NumericInputField.InputType.Numeric)
-					inputField.keyboard = SpawnNumericKeyboard;
-				else
-					inputField.keyboard = SpawnAlphaNumericKeyboard;
-			}
+		foreach (NumericInputField inputField in go.GetComponentsInChildren<NumericInputField>())
+		{
+			if (inputField.inputType == NumericInputField.InputType.Numeric)
+				inputField.keyboard = SpawnNumericKeyboard;
+			else
+				inputField.keyboard = SpawnAlphaNumericKeyboard;
 		}
 		return go;
 	}

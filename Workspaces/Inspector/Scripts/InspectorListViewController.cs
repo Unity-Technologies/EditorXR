@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ListView;
 using UnityEngine;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 public class InspectorListViewController : NestedListViewController<InspectorData>
