@@ -45,6 +45,9 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private NumericKeyboardUI m_NumericKeyboardPrefab;
 	private NumericKeyboardUI m_NumericKeyboard;
+	[SerializeField]
+	private NumericKeyboardUI m_AlphaNumericKeyboardPrefab;
+	private NumericKeyboardUI m_AlphaNumericKeyboard;
 
 	private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
@@ -381,17 +384,30 @@ public class EditorVR : MonoBehaviour
 			canvas.worldCamera = m_EventCamera;
 
 			foreach (NumericInputField inputField in canvas.GetComponentsInChildren<NumericInputField>())
-				inputField.keyboard = SpawnKeyboard;
+			{
+				if (inputField.inputType == NumericInputField.InputType.Numeric)
+					inputField.keyboard = SpawnNumericKeyboard;
+				else
+					inputField.keyboard = SpawnAlphaNumericKeyboard;
+			}
 		}
 		return go;
 	}
 
-	private NumericKeyboardUI SpawnKeyboard()
+	private NumericKeyboardUI SpawnNumericKeyboard()
 	{
 		// Check if the prefab has already been instantiated
 		if (m_NumericKeyboard == null)
 			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, transform ).GetComponent<NumericKeyboardUI>();
 		return m_NumericKeyboard;
+	}
+
+	private NumericKeyboardUI SpawnAlphaNumericKeyboard()
+	{
+		// Check if the prefab has already been instantiated
+		if (m_AlphaNumericKeyboard == null)
+			m_AlphaNumericKeyboard = U.Object.Instantiate(m_AlphaNumericKeyboardPrefab.gameObject, transform).GetComponent<NumericKeyboardUI>();
+		return m_AlphaNumericKeyboard;
 	}
 
 	private ActionMapInput CreateActionMapInput(ActionMap map, InputDevice device)

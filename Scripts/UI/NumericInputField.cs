@@ -17,6 +17,18 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 	[FlagsProperty]
 	protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
+	public enum InputType
+	{
+		Numeric,
+		Alpha,
+	}
+	[SerializeField]
+	protected InputType m_InputType;
+	public InputType inputType
+	{
+		get { return m_InputType; }
+	}
+
 	public Func<NumericKeyboardUI> keyboard;
 	private NumericKeyboardUI m_NumericKeyboard;
 
@@ -27,7 +39,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 	}
 	[SerializeField]
 	private NumberType m_NumberType;
-
+	
 	[SerializeField]
 	private Text m_TextComponent;
 
@@ -57,7 +69,8 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 
 		foreach (var ch in text)
 		{
-			isValidString = isValidString && IsNumericCharacter(ch);
+			if (m_InputType == InputType.Numeric)
+				isValidString = isValidString && IsNumericCharacter(ch);
 		}
 
 		if (isValidString)
@@ -187,20 +200,27 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 
 	private void OnKeyPress(char keyCode)
 	{
-		if (keyCode == 'r') // Return
+		if (m_InputType == InputType.Numeric)
 		{
-			
+			if (keyCode == 'r') // Return
+			{
+
+			}
+			else if (keyCode == 'b') // Backspace
+			{
+				DeleteChar();
+			}
+			else if (IsOperandCharacter((char) keyCode))
+			{
+				if (m_RawInputString.Count > 1)
+					m_RawInputString.Add(keyCode.ToString());
+			}
+			else if (IsNumericCharacter((char) keyCode))
+			{
+				m_TextComponent.text = m_OutputString += keyCode;
+			}
 		}
-		else if (keyCode == 'b') // Backspace
-		{
-			DeleteChar();
-		}
-		else if (IsOperandCharacter((char)keyCode))
-		{
-			if (m_RawInputString.Count > 1)
-				m_RawInputString.Add(keyCode.ToString());
-		}
-		else if (IsNumericCharacter((char)keyCode))
+		else
 		{
 			m_TextComponent.text = m_OutputString += keyCode;
 		}
@@ -260,7 +280,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 		if (!U.UI.IsValidEvent(eventData, selectionFlags))
 			return;
 
-		if (m_PointerOverField)
+		if (m_InputType == InputType.Numeric && m_PointerOverField)
 		{
 			DragNumericValue(eventData);
 			m_LastPointerDragPosition = GetCurrentRayHitPosition(eventData);

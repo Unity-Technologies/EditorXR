@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEditor.Graphs;
 
+[CanEditMultipleObjects]
 [CustomEditor(typeof(NumericInputButton))]
 public class NumericInputButtonEditor : RayButtonEditor
 {
