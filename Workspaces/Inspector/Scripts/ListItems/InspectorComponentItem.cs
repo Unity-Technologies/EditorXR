@@ -29,6 +29,7 @@ public class InspectorComponentItem : InspectorListItem
 		{
 			m_Setup = true;
 			m_ExpandArrow.onClick.AddListener(ToggleExpanded);
+			m_EnabledToggle.onValueChanged.AddListener(SetEnabled);
 		}
 
 		var type = data.serializedObject.targetObject.GetType();
@@ -55,5 +56,10 @@ public class InspectorComponentItem : InspectorListItem
 	private void ToggleExpanded()
 	{
 		data.expanded = !data.expanded;
+	}
+
+	private void SetEnabled(bool value)
+	{
+		
 	}
 }

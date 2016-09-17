@@ -16,6 +16,8 @@ public class InspectorHeaderItem : InspectorListItem
 	[SerializeField]
 	private Toggle m_StaticToggle;
 
+	// TODO: Add dropdown for different static types
+
 	private GameObject m_GameObject;
 
 	public override void Setup(InspectorData data)
@@ -24,16 +26,36 @@ public class InspectorHeaderItem : InspectorListItem
 
 		var target = data.serializedObject.targetObject;
 
-		m_NameField.text = target.name;
 		m_Icon.texture = AssetPreview.GetMiniThumbnail(target);
 
-		m_GameObject = target as GameObject;
+		m_GameObject = (GameObject)target;
+
+		m_ActiveToggle.isOn = m_GameObject.activeSelf;
+		m_NameField.text = m_GameObject.name;
+		m_StaticToggle.isOn = m_GameObject.isStatic;
 
 		m_ActiveToggle.onValueChanged.AddListener(SetActive);
+		m_NameField.onValueChanged.AddListener(SetName);
+		m_StaticToggle.onValueChanged.AddListener(SetStatic);
 	}
 
 	private void SetActive(bool active)
 	{
-		m_GameObject.SetActive(active);
+		// TODO: Add choice dialog for whether to set in children
+		if (m_GameObject.activeSelf != active)
+			m_GameObject.SetActive(active);
+	}
+
+	private void SetName(string name)
+	{
+		if(!m_GameObject.name.Equals(name))
+			m_GameObject.name = name;
+	}
+
+	private void SetStatic(bool isStatic)
+	{
+		// TODO: Add choice dialog for whether to set in children
+		if(m_GameObject.isStatic != isStatic)
+			m_GameObject.isStatic = isStatic;
 	}
 }
