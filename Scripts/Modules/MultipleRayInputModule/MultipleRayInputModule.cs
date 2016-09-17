@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
@@ -236,6 +236,23 @@ namespace UnityEngine.VR.Modules
 					eventData.pointerPress = newPressed;
 					Select(source.pressedObject);
 					eventData.eligibleForClick = true;
+
+					// Track clicks for double-clicking, triple-clicking, etc.
+				    float time = Time.realtimeSinceStartup;
+					if (newPressed == eventData.lastPress)
+					{
+						var diffTime = time - eventData.clickTime;
+						if (diffTime < 0.3f)
+							++eventData.clickCount;
+						else
+							eventData.clickCount = 1;
+
+						eventData.clickTime = time;
+					}
+					else
+					{
+						eventData.clickCount = 1;
+					}
 				}
 				var pressedObject = source.pressedObject;
 				ExecuteEvents.Execute(pressedObject, eventData, ExecuteEvents.beginDragHandler);
@@ -267,6 +284,7 @@ namespace UnityEngine.VR.Modules
 			}
 
 			var clickHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(hoveredObject);
+
 			if (source.pressedObject == clickHandler && eventData.eligibleForClick)
 				ExecuteEvents.Execute(clickHandler, eventData, ExecuteEvents.pointerClickHandler);
 

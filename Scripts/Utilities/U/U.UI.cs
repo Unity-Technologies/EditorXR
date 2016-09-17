@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Utilities
+namespace UnityEngine.VR.Utilities
 {
 	using System;
 	using UnityEngine;
@@ -78,7 +78,7 @@
 				Type currentType = property.serializedObject.targetObject.GetType();
 
 				for (int i = 0; i < parts.Length; i++)
-					currentType = currentType.GetField(parts[i], BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance).FieldType;
+					currentType = currentType.GetField(parts[i], BindingFlags.NonPublic | BindingFlags.Public| BindingFlags.FlattenHierarchy | BindingFlags.Instance).FieldType;
 
 				return currentType;
 			}

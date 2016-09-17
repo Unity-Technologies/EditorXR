@@ -1,14 +1,22 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEditor.UI;
 
 // Because Button already has a custom editor, and we need to expose SelectionFlags, we need a custom inspector
 [CustomEditor(typeof(RayButton))]
 public class RayButtonEditor : ButtonEditor
 {
+	SerializedProperty m_SelectionFlagsProperty;
+
+	protected override void OnEnable()
+	{
+		base.OnEnable();
+		m_SelectionFlagsProperty = serializedObject.FindProperty("m_SelectionFlags");
+	}
+
 	public override void OnInspectorGUI()
 	{
 		serializedObject.Update();
-		EditorGUILayout.PropertyField(serializedObject.FindProperty("m_SelectionFlags"));
+		EditorGUILayout.PropertyField(m_SelectionFlagsProperty);
 		serializedObject.ApplyModifiedProperties();
 		base.OnInspectorGUI();
 	}
