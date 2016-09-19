@@ -3,10 +3,11 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.VR.Tools;
 using UnityEditor;
+using UnityEngine.VR.Menus;
 using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, IHasToggles
 {
 	[SerializeField]
 	private GameObject m_StandardManipulatorPrefab;
@@ -219,6 +220,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		m_PositionOffsets.Clear();
 		m_RotationOffsets.Clear();
 		m_ScaleOffsets.Clear();
+
 		foreach (var t in m_SelectionTransforms)
 		{
 			m_PositionOffsets.Add(t, t.position - manipulatorTransform.position);
@@ -239,6 +241,22 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		m_PivotRotation = m_PivotRotation == PivotRotation.Global ? PivotRotation.Local : PivotRotation.Global;
 		UpdateCurrentManipulator();
 		return m_PivotRotation;
+	}
+
+	[ToggleItem("Rotation", "Local", "ActionIcons/RotationLocalIcon", "GLobal", "ActionIcons/RotationGlobalIcon")]
+	public void ToggleRotationMode()
+	{
+		Debug.LogError("<color=cyan>TOGGLE ROTATION MODE SHOULD OCCUR HERE!</color>");
+
+		//return m_PivotRotation == PivotRotation.Global;
+	}
+
+	[ToggleItem("Origin", "Pivot", "ActionIcons/OriginPivotIcon", "Center", "ActionIcons/OriginCenterIcon")]
+	public bool ToggleOriginMode()
+	{
+		Debug.LogError("<color=cyan>TOGGLE OROGIN MODE SHOULD OCCUR HERE!</color>");
+
+		return m_PivotMode == PivotMode.Center;
 	}
 
 	public void SwitchManipulator()

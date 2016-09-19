@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace UnityEngine.VR.Actions
 {
-	[ToggleActionItem("Rotation", "Local",  "ActionIcons/RotationLocalIcon", "Global",  "ActionIcons/RotationGlobalIcon", "DefaultActions", 9)]
+	//[ToggleActionItem("Rotation", "Local",  "ActionIcons/RotationLocalIcon", "Global",  "ActionIcons/RotationGlobalIcon", "DefaultActions", 9)]
 	[ExecuteInEditMode]
 	public class RotationToggle : MonoBehaviour, IUsesTransformTool
 	{
