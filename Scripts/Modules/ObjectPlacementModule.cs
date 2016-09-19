@@ -28,12 +28,6 @@ public class ObjectPlacementModule : MonoBehaviour
 		obj.parent = null;
 		var startScale = obj.localScale;
 		var startPosition = obj.position;
-		
-		var camera = U.Camera.GetMainCamera();
-		var perspective = camera.fieldOfView * 0.5f + kInstantiateFOVDifference;
-		var camPosition = camera.transform.position;
-		var forward = obj.position - camPosition;
-		forward.y = 0;
 
 		//Get bounds at target scale
 		var origScale = obj.localScale;
@@ -43,6 +37,15 @@ public class ObjectPlacementModule : MonoBehaviour
 
 		if (totalBounds != null)
 		{
+			// Calculate spawn distance using a right-triangle representing half of the perspective view (plus an adjustment factor)
+			var camera = U.Camera.GetMainCamera();
+			var halfAngle = camera.fieldOfView * 0.5f;
+			var perspective = halfAngle + kInstantiateFOVDifference;
+			var camPosition = camera.transform.position;
+			var forward = obj.position - camPosition;
+			forward.y = 0;
+
+			// distance = object width / Tan(half perspective angle)
 			var distance = totalBounds.Value.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
 			var destinationPosition = obj.position;
 			if (distance > forward.magnitude)
