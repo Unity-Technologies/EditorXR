@@ -67,7 +67,6 @@ public class EditorVR : MonoBehaviour
 	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
 	private IEnumerable<Type> m_AllTools;
 	private List<IAction> m_AllActions;
-	private List<Toggle> m_AllToggles;
 	private IEnumerable<Type> m_AllWorkspaceTypes;
 	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
 
@@ -104,7 +103,7 @@ public class EditorVR : MonoBehaviour
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
 		// then only show it in that hand's menu.
-		// CollectToolActionMaps(m_AllTools);		
+		// CollectToolActionMaps(m_AllTools);
 	}
 
 	private void CreateDeviceDataForInputDevices()
@@ -289,41 +288,6 @@ public class EditorVR : MonoBehaviour
 			action.indexPosition = customActionAttribute.indexPosition;
 
 			m_AllActions.Add(action);
-		}
-	}
-
-	private void SpawnToggle(IHasToggles hasToggles)
-	{
-		m_AllToggles = m_AllToggles ?? new List<Toggle>();
-
-		var methods = hasToggles.GetType().GetMethods().Where(m => m.GetCustomAttributes(typeof(ToggleItemAttribute), false).Any()).ToList();
-		if (methods == null || !methods.Any())
-			return;
-
-		foreach (var methodInfo in methods)
-		{
-			if (methodInfo.ReturnType != typeof(bool))
-			{
-				Debug.LogWarning("Toggle functions require a return type of Bool! \n <color=red>" + methodInfo.Name + "</color> will not be added as a toggle");
-				methods.Remove(methodInfo);
-			}
-		}
-
-		Dictionary<MethodInfo, ToggleItemAttribute> toggleData = new Dictionary<MethodInfo, ToggleItemAttribute>();
-		foreach (var method in methods)
-			toggleData.Add(method, method.GetCustomAttributes(false).First() as ToggleItemAttribute);
-
-		foreach (var data in toggleData)
-		{
-			Debug.LogError("<color=green>Toggle Attribute found on : </color>" + data.Key.ToString() + "<color=yellow><-----------------------</color>");
-			Debug.LogError(data.Key.ToString());
-
-			var attribute = data.Value;
-			if (attribute != null)
-			{
-				var toggle = new Toggle(hasToggles, attribute.name, attribute.item01Name, attribute.item01Icon, attribute.item02Name, attribute.item02Icon, () => data.Key.Invoke(hasToggles, null));
-				m_AllToggles.Add(toggle);
-			}
 		}
 	}
 
@@ -522,10 +486,6 @@ public class EditorVR : MonoBehaviour
 			U.Input.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
 		}
 
-		var hasToggles = tool as IHasToggles;
-		if (hasToggles != null)
-			SpawnToggle(hasToggles);
-
 		ConnectInterfaces(tool, device);
 
 		return tool;
@@ -670,13 +630,6 @@ public class EditorVR : MonoBehaviour
 			actionsComponent.performAction = PerformAction;
 		}
 
-		var toggleComponent = obj as IUsesToggles;
-		if (toggleComponent != null)
-		{
-			Debug.LogError("Setting toggles collection from EVR into tool/menu");
-			toggleComponent.toggles = m_AllToggles;
-		}
-
 		var mainMenuComponent = obj as IMainMenu;
 		if (mainMenuComponent != null)
 		{
@@ -775,24 +728,11 @@ public class EditorVR : MonoBehaviour
 					continue;
 				}
 
-				var hasToggles = deviceData.currentTool as IHasToggles;
-				if (hasToggles != null)
-					DestoryToggle(hasToggles);
-
 				deviceData.tools.Pop();
 				deviceData.currentTool = null;
 			}
 		}
 		U.Object.Destroy(tool as MonoBehaviour);
-	}
-
-	private void DestoryToggle(IHasToggles hasToggles)
-	{
-		foreach (var toggle in m_AllToggles)
-		{
-			if (toggle.owner == hasToggles)
-				m_AllToggles.Remove(toggle); // remove the only reference, allowing GC to collect it
-		}
 	}
 
 	private bool IsValidActionMapForDevice(ActionMap actionMap, InputDevice device)

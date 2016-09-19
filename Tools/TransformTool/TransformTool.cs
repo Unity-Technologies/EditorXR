@@ -7,7 +7,7 @@ using UnityEngine.VR.Menus;
 using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, IHasToggles
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMap
 {
 	[SerializeField]
 	private GameObject m_StandardManipulatorPrefab;
