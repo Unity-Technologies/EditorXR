@@ -27,7 +27,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		base.ComputeConditions();
 
-		m_StartPosition = bounds.extents.y * Vector3.up;
+		m_StartPosition = (bounds.extents.y - m_ItemSize.y * 0.5f) * Vector3.up;
 
 		var parentMatrix = transform.worldToLocalMatrix;
 		SetMaterialClip(m_CubeMaterial, parentMatrix);

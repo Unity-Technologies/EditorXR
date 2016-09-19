@@ -221,7 +221,7 @@ GameObject:
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 4
   m_Component:
-  - 224: {fileID: 224000012777721742}
+  - 4: {fileID: 4000013343821996}
   m_Layer: 5
   m_Name: Scene Container
   m_TagString: Untagged
@@ -316,6 +316,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 224000010300040132}
   m_RootOrder: 2
+--- !u!4 &4000013343821996
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013475109388}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.050000012, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 224000010300040132}
+  m_RootOrder: 1
 --- !u!4 &4000014081935550
 Transform:
   m_ObjectHideFlags: 1
@@ -969,7 +982,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SceneContainer: {fileID: 224000012777721742}
+  m_SceneContainer: {fileID: 4000013343821996}
   m_FrontPanel: {fileID: 224000012325241496}
   m_DirectManipulator: {fileID: 114000011014117582}
   m_GrabCollider: {fileID: 65000013091105856}
@@ -1081,7 +1094,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 4000011687496624}
-  - {fileID: 224000012777721742}
+  - {fileID: 4000013343821996}
   - {fileID: 4000013196174174}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -1146,24 +1159,6 @@ RectTransform:
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: -0.066}
   m_SizeDelta: {x: 0.85, y: 0.08}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!224 &224000012777721742
-RectTransform:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013475109388}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_Children: []
-  m_Father: {fileID: 224000010300040132}
-  m_RootOrder: 1
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.05}
-  m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224000013624739960
 RectTransform:

@@ -8,7 +8,6 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 	private Material m_TextMaterial;
-	private Material m_ExpandArrowMaterial;
 
 	private Transform m_GrabbedObject;
 
@@ -24,16 +23,17 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	{
 		base.Setup();
 		var item = m_Templates[0].GetComponent<FolderListItem>();
-		item.GetMaterials(out m_TextMaterial, out m_ExpandArrowMaterial);
+		item.GetMaterials(out m_TextMaterial);
 	}
 
 	protected override void ComputeConditions()
 	{
 		base.ComputeConditions();
 
+		m_StartPosition = (bounds.extents.y - itemSize.y * 0.5f) * Vector3.up;
+
 		var parentMatrix = transform.worldToLocalMatrix;
 		SetMaterialClip(m_TextMaterial, parentMatrix);
-		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
 	}
 
 	protected override void UpdateItemRecursive(FolderData data, int offset, int depth)
@@ -42,15 +42,21 @@ public class FolderListViewController : NestedListViewController<FolderData>
 			data.item = GetItem(data);
 		var item = (FolderListItem)data.item;
 		item.UpdateTransforms(bounds.size.x - kClipMargin, depth);
-		SetMaterialClip(item.cubeMaterial, transform.localToWorldMatrix);
+		SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 
 		UpdateItem(item.transform, offset);
+	}
+
+	protected override void UpdateItem(Transform t, int offset)
+	{
+		t.localPosition = m_StartPosition + (offset * m_ItemSize.y + m_ScrollOffset) * Vector3.down;
+		t.localRotation = Quaternion.identity;
 	}
 
 	protected override ListViewItem<FolderData> GetItem(FolderData listData)
 	{
 		var item = (FolderListItem)base.GetItem(listData);
-		item.SwapMaterials(m_TextMaterial, m_ExpandArrowMaterial);
+		item.SwapMaterials(m_TextMaterial);
 		item.selectFolder = selectFolder;
 		return item;
 	}
@@ -58,6 +64,5 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	private void OnDestroy()
 	{
 		U.Object.Destroy(m_TextMaterial);
-		U.Object.Destroy(m_ExpandArrowMaterial);
 	}
 }
