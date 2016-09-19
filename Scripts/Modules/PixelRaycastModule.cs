@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.VR.Utilities;
 
 namespace UnityEditor.VR.Modules
 {
@@ -24,6 +23,7 @@ namespace UnityEditor.VR.Modules
 			GameObject result = null;
 			result = rayOrigin.gameObject.activeSelf ? Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera, out distance) : null;
 
+			// If a positive pointerLength is specified, use direct selection
 			if (pointerLength > 0 && rayOrigin.gameObject.activeSelf)
 			{
 				if (pointerLength > 0 && distance > pointerLength)

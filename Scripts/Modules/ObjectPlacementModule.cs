@@ -44,7 +44,7 @@ public class ObjectPlacementModule : MonoBehaviour
 			var camPosition = camera.transform.position;
 			var forward = obj.position - camPosition;
 			forward.y = 0;
-			
+
 			var distance = totalBounds.Value.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
 			var destinationPosition = obj.position;
 			if (distance > forward.magnitude)

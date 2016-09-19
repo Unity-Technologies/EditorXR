@@ -75,12 +75,25 @@
 			{
 				string[] parts = property.propertyPath.Split('.');
 
-				Type currentType = property.serializedObject.targetObject.GetType();
+				var currentType = property.serializedObject.targetObject.GetType();
 
-				for (int i = 0; i < parts.Length; i++)
-					currentType = currentType.GetField(parts[i], BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance).FieldType;
+				if (parts.Length > 0)
+				{
+					var field = GetFieldInTypeOrParent(currentType, parts[parts.Length - 1]);
+					if (field != null)
+						return field.FieldType;
+				}
+				return null;
+			}
 
-				return currentType;
+			public static FieldInfo GetFieldInTypeOrParent(Type type, string fieldName)
+			{
+				if (type == null)
+					return null;
+				var field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
+				if (field == null)
+					return GetFieldInTypeOrParent(type.BaseType, fieldName);
+				return field;
 			}
 		}
 	}

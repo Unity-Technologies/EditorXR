@@ -81,14 +81,14 @@ namespace UnityEngine.VR.Modules
 			RaycastSource source;
 			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
 				return source.eventData;
-			
+
 			return null;
 		}
 
 		public void SetFakeRaycastSourceDragging(Transform rayOrigin, Transform fakeRayOrigin, bool dragging)
 		{
 			RaycastSource source;
-			if(m_RaycastSources.TryGetValue(fakeRayOrigin, out source))
+			if (m_RaycastSources.TryGetValue(fakeRayOrigin, out source))
 				source.dragging = dragging;
 
 			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
@@ -121,9 +121,9 @@ namespace UnityEngine.VR.Modules
 				eventData.pointerLength = getPointerLength(eventData.rayOrigin);
 
 				HandlePointerExitAndEnter(eventData, source.hoveredObject); // Send enter and exit events
-				
+
 				source.actionMapInput.active = source.hasObject || source.dragging;
-				
+
 				// Proceed only if pointer is interacting with something
 				if (!source.actionMapInput.active)
 					continue;
@@ -153,7 +153,7 @@ namespace UnityEngine.VR.Modules
 		}
 
 		private RayEventData CloneEventData(RayEventData eventData)
-		{			
+		{
 			RayEventData clone = new RayEventData(base.eventSystem);
 			clone.rayOrigin = eventData.rayOrigin;
 			clone.node = eventData.node;
@@ -197,7 +197,7 @@ namespace UnityEngine.VR.Modules
 			}
 
 			GameObject commonRoot = FindCommonRoot(cachedEventData.pointerEnter, newEnterTarget);
-			
+
 			// and we already an entered object from last time
 			if (cachedEventData.pointerEnter != null)
 			{
@@ -264,7 +264,7 @@ namespace UnityEngine.VR.Modules
 		{
 			var eventData = source.eventData;
 			var hoveredObject = source.hoveredObject;
-			
+
 			if (source.pressedObject)
 				ExecuteEvents.Execute(source.pressedObject, eventData, ExecuteEvents.pointerUpHandler);
 
