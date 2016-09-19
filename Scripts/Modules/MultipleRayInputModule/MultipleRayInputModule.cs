@@ -6,6 +6,7 @@ using UnityEngine.VR.Proxies;
 
 namespace UnityEngine.VR.Modules
 {
+	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
 	public class MultipleRayInputModule : BaseInputModule
 	{
 		private readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();

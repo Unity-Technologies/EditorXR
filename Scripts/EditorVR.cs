@@ -50,8 +50,8 @@ public class EditorVR : MonoBehaviour
 	private Default m_DefaultActionInput;
 
 	private MultipleRayInputModule m_InputModule;
-	private SpatialHash m_SpatialHash;
-	private SpatialHashUpdateModule m_SpatialHashUpdateModule;
+	private SpatialHash<Renderer> m_SpatialHash;
+	private SpatialHashModule m_SpatialHashModule;
 	private IntersectionModule m_IntersectionModule;
 	private Camera m_EventCamera;
 	private PixelRaycastModule m_PixelRaycastModule;
@@ -93,8 +93,7 @@ public class EditorVR : MonoBehaviour
 		CreateAllProxies();
 		CreateDeviceDataForInputDevices();
 		CreateEventSystem();
-		CreateSpatialSystem();
-
+		
 		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
@@ -141,6 +140,8 @@ public class EditorVR : MonoBehaviour
 
 			yield return null;
 		}
+
+		CreateSpatialSystem();
 		SpawnDefaultTools();
 	}
 
@@ -263,6 +264,11 @@ public class EditorVR : MonoBehaviour
 			// Spawn default tools
 			HashSet<InputDevice> devices;
 			ITool tool;
+
+			var locomotionTool = typeof(BlinkLocomotionTool);
+			if (VRSettings.loadedDeviceName == "Oculus")
+				locomotionTool = typeof(JoystickLocomotionTool);
+
 			foreach (var deviceData in m_DeviceData)
 			{
 				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
@@ -272,7 +278,16 @@ public class EditorVR : MonoBehaviour
 				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 
-				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
+				if (locomotionTool == typeof(BlinkLocomotionTool))
+				{
+					tool = SpawnTool(locomotionTool, out devices, deviceData.Key);
+					AddToolToDeviceData(tool, devices);
+				}
+			}
+
+			if (locomotionTool == typeof(JoystickLocomotionTool))
+			{
+				tool = SpawnTool(locomotionTool, out devices);
 				AddToolToDeviceData(tool, devices);
 			}
 
@@ -375,26 +390,33 @@ public class EditorVR : MonoBehaviour
 		UpdatePlayerHandleMaps();
 	}
 
-	private void CreateSpatialSystem() {
+	private void CreateSpatialSystem()
+	{
 		// Create event system, input module, and event camera
-		m_SpatialHash = new SpatialHash();
-		m_SpatialHashUpdateModule = U.Object.AddComponent<SpatialHashUpdateModule>(gameObject);
-		m_SpatialHashUpdateModule.Setup(m_SpatialHash);
+		m_SpatialHash = new SpatialHash<Renderer>();
+		m_SpatialHashModule = U.Object.AddComponent<SpatialHashModule>(gameObject);
+		m_SpatialHashModule.Setup(m_SpatialHash);
 		m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
 		m_IntersectionModule.Setup(m_SpatialHash);
 
-		foreach (var proxy in m_AllProxies) {
-			foreach (var rayOriginBase in proxy.rayOrigins) {
-				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
+		foreach (var proxy in m_AllProxies)
+		{
+			if (proxy.active)
+			{				
+				foreach (var rayOriginBase in proxy.rayOrigins)
 				{
-					if (device.tagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.tagIndex]] == rayOriginBase.Key) {
-						DeviceData deviceData;
-						if (m_DeviceData.TryGetValue(device, out deviceData)) {
-
-							// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-							m_IntersectionModule.AddTester(rayOriginBase.Value);
+					foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
+					{
+						if (device.tagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.tagIndex]] == rayOriginBase.Key)
+						{
+							DeviceData deviceData;
+							if (m_DeviceData.TryGetValue(device, out deviceData))
+							{
+								var tester = rayOriginBase.Value.GetComponentInChildren<IntersectionTester>();
+								m_IntersectionModule.AddTester(tester);
+							}
+							break;
 						}
-						break;
 					}
 				}
 			}
