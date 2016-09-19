@@ -4,17 +4,10 @@ using System.Collections.Generic;
 
 public class NumericKeyboardUI : MonoBehaviour
 {
+	public List<NumericInputButton> buttons { get { return m_Buttons; } set { m_Buttons = value; } }
+	[SerializeField]
 	private List<NumericInputButton> m_Buttons = new List<NumericInputButton>();
 
-	private void Awake()
-	{
-		foreach (var button in GetComponentsInChildren<NumericInputButton>())
-		{
-			m_Buttons.Add(button);
-		}
-	}
-
-//	public void Setup(char[] keyChars, Action<char> keyPress, bool pressOnHover = false)
 	public void Setup(Action<char> keyPress, bool pressOnHover = false)
 	{
 		foreach (var button in GetComponentsInChildren<NumericInputButton>())

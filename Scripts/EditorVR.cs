@@ -43,11 +43,15 @@ public class EditorVR : MonoBehaviour
 	private DefaultProxyRay m_ProxyRayPrefab;
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
+
 	[SerializeField]
 	private NumericKeyboardUI m_NumericKeyboardPrefab;
+
 	private NumericKeyboardUI m_NumericKeyboard;
+
 	[SerializeField]
 	private NumericKeyboardUI m_AlphaNumericKeyboardPrefab;
+
 	private NumericKeyboardUI m_AlphaNumericKeyboard;
 
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
@@ -387,7 +391,7 @@ public class EditorVR : MonoBehaviour
 
 		foreach (NumericInputField inputField in go.GetComponentsInChildren<NumericInputField>())
 		{
-			if (inputField.inputType == NumericInputField.InputType.Numeric)
+				if (inputField.contentType == SerializedPropertyType.Float || inputField.contentType == SerializedPropertyType.Integer)
 				inputField.keyboard = SpawnNumericKeyboard;
 			else
 				inputField.keyboard = SpawnAlphaNumericKeyboard;
