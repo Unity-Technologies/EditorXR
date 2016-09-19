@@ -37,15 +37,14 @@ public class ObjectPlacementModule : MonoBehaviour
 
 		if (totalBounds != null)
 		{
-			// Calculate spawn distance using a right-triangle representing half of the perspective view (plus an adjustment factor)
+			// We want to position the object so that it fits within the camera perspective at its original scale
 			var camera = U.Camera.GetMainCamera();
 			var halfAngle = camera.fieldOfView * 0.5f;
 			var perspective = halfAngle + kInstantiateFOVDifference;
 			var camPosition = camera.transform.position;
 			var forward = obj.position - camPosition;
 			forward.y = 0;
-
-			// distance = object width / Tan(half perspective angle)
+			
 			var distance = totalBounds.Value.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
 			var destinationPosition = obj.position;
 			if (distance > forward.magnitude)
