@@ -1,5 +1,4 @@
 using UnityEditor;
-using UnityEditor.Graphs;
 
 [CanEditMultipleObjects]
 [CustomEditor(typeof(NumericInputButton))]
@@ -16,6 +15,7 @@ public class NumericInputButtonEditor : RayButtonEditor
 	{
 		base.OnEnable();
 		m_CharacterDescriptionTypeProperty = serializedObject.FindProperty("m_CharacterDescriptionType");
+		m_SpecialKeyTypeProperty = serializedObject.FindProperty("m_SpecialKeyType");
 		m_KeyCodeProperty = serializedObject.FindProperty("m_KeyCode");
 		m_ButtonTextProperty = serializedObject.FindProperty("m_TextComponent");
 		m_MatchButtonTextToCharacterProperty = serializedObject.FindProperty("m_MatchButtonTextToCharacter");
@@ -26,7 +26,10 @@ public class NumericInputButtonEditor : RayButtonEditor
 	{
 		serializedObject.Update();
 		EditorGUILayout.PropertyField(m_CharacterDescriptionTypeProperty);
-		EditorGUILayout.PropertyField(m_KeyCodeProperty);
+		if (m_CharacterDescriptionTypeProperty.enumValueIndex == (int)NumericInputButton.CharacterDescriptionType.Special)
+			EditorGUILayout.PropertyField(m_SpecialKeyTypeProperty);
+		else
+			EditorGUILayout.PropertyField(m_KeyCodeProperty);
 		EditorGUILayout.PropertyField(m_ButtonTextProperty);
 		EditorGUILayout.PropertyField(m_MatchButtonTextToCharacterProperty);
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);

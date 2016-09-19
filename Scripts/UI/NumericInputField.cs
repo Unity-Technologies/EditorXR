@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandler, IRayDragHandler
+public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandler, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
 {
 	public SelectionFlags selectionFlags
 	{
@@ -17,83 +20,97 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 	[FlagsProperty]
 	protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
-	public enum InputType
-	{
-		Numeric,
-		Alpha,
-	}
+	[Serializable]
+	public class OnChangeEvent : UnityEvent<string> { }
+	public OnChangeEvent onValueChanged { get { return m_OnValueChanged; } }
 	[SerializeField]
-	protected InputType m_InputType;
-	public InputType inputType
-	{
-		get { return m_InputType; }
-	}
+	private OnChangeEvent m_OnValueChanged = new OnChangeEvent();
 
 	public Func<NumericKeyboardUI> keyboard;
 	private NumericKeyboardUI m_NumericKeyboard;
 
-	public enum NumberType
-	{
-		Float,
-		Int,
-	}
+	public SerializedPropertyType contentType { get { return m_ContentType; } }
 	[SerializeField]
-	private NumberType m_NumberType;
-	
+	private SerializedPropertyType m_ContentType = SerializedPropertyType.Float;
+
+	[SerializeField]
+	private Transform m_KeyboardAnchorTransform;
+
 	[SerializeField]
 	private Text m_TextComponent;
 
 	[SerializeField]
-	private float kDragFactor = 10f;
-	private const float kDragSensitivity = .03f;
+	private int m_CharacterLimit = 10;
+
+	[SerializeField]
+	private bool m_UpdateDrag;
+	private bool m_DragPositionOutOfBounds;
+	private const float kDragSensitivity = 10f;
 	private static float kDragDeadzone = 0.01f;
 	private Vector3 m_StartDragPosition;
-	private Vector3 m_LastPointerDragPosition;
-
-	private string m_OutputString;
-	private List<string> m_RawInputString = new List<string>();
+	private Vector3 m_LastPointerPosition;
+	private bool m_PointerOverField;
 
 	private bool m_Open;
 
-	private bool m_PointerOverField;
+	private const string kFloatFieldFormatString = "g7";
+	private const string kIntFieldFormatString = "#######0";
 
-	private float m_ClickThresholdTime = 0.3f;
-	private float m_PressedTime;
+	private const string kAllowedCharactersForFloat = "inftynaeINFTYNAE0123456789.,-*/+%^()";
+	private const string kAllowedCharactersForInt = "0123456789-*/+%^()";
 
-	private static readonly string s_AllowedCharactersForFloat = "inftynaeINFTYNAE0123456789.,-*/+%^()";
-	private static readonly string s_AllowedCharactersForInt = "0123456789-*/+%^()";
-
-	public void SetTextFromInspectorField(string text)
+	private bool m_Numeric
 	{
-		var isValidString = true;
+		get { return m_ContentType == SerializedPropertyType.Float || m_ContentType == SerializedPropertyType.Integer; } 
+	}
 
-		foreach (var ch in text)
+	public string text
+	{
+		get
 		{
-			if (m_InputType == InputType.Numeric)
-				isValidString = isValidString && IsNumericCharacter(ch);
+			return m_Text;
 		}
-
-		if (isValidString)
+		set
 		{
-			m_TextComponent.text = m_OutputString = text;
-			m_RawInputString.Clear();
-			m_RawInputString.Add(m_OutputString);
+			if (m_Text == value)
+				return;
+			if (value == null)
+				value = "";
+
+			m_Text = m_CharacterLimit > 0 && value.Length > m_CharacterLimit ? value.Substring(0, m_CharacterLimit) : value;
+		}
+	}
+	private string m_Text = string.Empty;
+
+	protected override void OnEnable()
+	{
+		base.OnEnable();
+
+		if (m_Text == null)
+			m_Text = string.Empty;
+
+		if (m_TextComponent != null)
+		{
+			UpdateLabel();
 		}
 	}
 
-	/// <summary>
-	/// Send string to the inspector field
-	/// </summary>
-	public void UpdateInspectorField()
+	public void ForceUpdateLabel()
 	{
+		UpdateLabel();
 	}
 
-//	private void Press()
-//	{
-//		if ( !IsActive() || !IsInteractable() )
-//			return;
-//
-//	}
+	public void OnPointerClick(PointerEventData eventData)
+	{
+		var rayEventData = eventData as RayEventData;
+		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		{
+			if (m_Open)
+				Close();
+			else
+				Open();
+		}
+	}
 
 	public override void OnPointerEnter(PointerEventData eventData)
 	{
@@ -105,7 +122,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 			m_PointerOverField = true;
 
 			if (eventData.dragging)
-				m_LastPointerDragPosition = GetCurrentRayHitPosition(rayEventData);
+				m_LastPointerPosition = GetLocalPointerPosition(rayEventData);
 		}
 	}
 
@@ -126,8 +143,6 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
 			base.OnPointerDown(eventData);
-
-			m_PressedTime = Time.realtimeSinceStartup;
 		}
 	}
 
@@ -137,15 +152,97 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
 			base.OnPointerUp(eventData);
+		}
+	}
 
-			if (Time.realtimeSinceStartup - m_PressedTime < m_ClickThresholdTime)
+	private bool MayDrag()
+	{
+		return IsActive() &&
+				IsInteractable() &&
+				m_TextComponent != null;
+	}
+
+	public void OnBeginDrag(RayEventData eventData)
+	{
+		if (!U.UI.IsValidEvent(eventData, selectionFlags) && MayDrag())
+			return;
+
+		m_StartDragPosition = GetLocalPointerPosition(eventData);
+	}
+
+	public void OnDrag(RayEventData eventData)
+	{
+		if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
+			return;
+
+		if (m_Numeric)
+		{
+			if (!m_UpdateDrag)
 			{
-				if (m_Open)
-					Close();
-				else
-					Open();
+				if (Mathf.Abs(GetLocalPointerPosition(eventData).x - m_StartDragPosition.x) > kDragDeadzone)
+					StartDrag(eventData);
+			}
+			else
+			{
+				DragNumberValue(eventData);
+				m_LastPointerPosition = GetLocalPointerPosition(eventData);
 			}
 		}
+	}
+
+	private void StartDrag(RayEventData eventData)
+	{
+		ParseNumberField();
+		m_LastPointerPosition = GetLocalPointerPosition(eventData);
+		m_UpdateDrag = true;
+		eventData.eligibleForClick = false;
+	}
+
+	public void OnEndDrag(RayEventData eventData)
+	{
+		if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
+			return;
+
+		m_UpdateDrag = false;
+	}
+
+	private void DragNumberValue(RayEventData eventData)
+	{
+		var delta = GetLocalPointerPosition(eventData).x - m_LastPointerPosition.x;
+
+		if (contentType == SerializedPropertyType.Float)
+		{
+			float num;
+			if (!float.TryParse(text, out num))
+				num = 0f;
+
+			var dragSensitivity = CalculateFloatDragSensitivity(num);
+			num += delta * dragSensitivity;
+			//	floatVal += HandleUtility.niceMouseDelta*s_DragSensitivity;
+			//	num = MathUtils.RoundBasedOnMinimumDifference(num, dragSensitivity);
+			m_Text = num.ToString(kFloatFieldFormatString);
+		}
+		else
+		{
+			int intNum;
+			if (!int.TryParse(text, out intNum))
+				intNum = 0;
+
+			var dragSensitivity = CalculateIntDragSensitivity(intNum);
+//			intNum += (int) Math.Round(HandleUtility.niceMouseDelta* dragSensitivity);
+			intNum += (int) Math.Round(delta * dragSensitivity);
+
+			m_Text = intNum.ToString(kIntFieldFormatString);
+		}
+
+		SendOnValueChangedAndUpdateLabel();
+	}
+
+	private Vector3 GetLocalPointerPosition(RayEventData eventData)
+	{
+		var rayOriginPos = eventData.rayOrigin;
+		var hitPos = rayOriginPos.position + rayOriginPos.forward * eventData.pointerCurrentRaycast.distance;
+		return transform.InverseTransformPoint(hitPos);
 	}
 
 	public virtual void OnSubmit(BaseEventData eventData)
@@ -153,16 +250,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
-//			base.OnSubmit(eventData);
 		}
-	}
-
-	public override void OnDeselect(BaseEventData eventData)
-	{
-		base.OnDeselect(eventData);
-		// TODO this works but need to only deselect when something besides a key button is clicked
-//		Debug.Log("Deselect callled");
-//		Close();
 	}
 
 	public override void OnSelect(BaseEventData eventData)
@@ -181,8 +269,8 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 		{
 			m_NumericKeyboard.gameObject.SetActive(true);
 			m_NumericKeyboard.transform.SetParent(transform, true);
-			m_NumericKeyboard.transform.localPosition = Vector3.up * 0.05f;
-			m_NumericKeyboard.transform.localRotation = Quaternion.identity;
+			m_NumericKeyboard.transform.position = m_KeyboardAnchorTransform.position;
+			m_NumericKeyboard.transform.rotation = m_KeyboardAnchorTransform.rotation;
 
 			m_NumericKeyboard.Setup(OnKeyPress);
 		}
@@ -192,6 +280,8 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 	{
 		m_Open = false;
 
+		ParseNumberField();
+
 		if (m_NumericKeyboard == null) return;
 
 		m_NumericKeyboard.gameObject.SetActive(false);
@@ -200,242 +290,142 @@ public class NumericInputField : Selectable, ISubmitHandler, IRayBeginDragHandle
 
 	private void OnKeyPress(char keyCode)
 	{
-		if (m_InputType == InputType.Numeric)
+		switch ((int)keyCode)
 		{
-			if (keyCode == 'r') // Return
-			{
+			case (int)NumericInputButton.SpecialKeyType.Backspace:
+				Delete();
+				return;
+			case (int)NumericInputButton.SpecialKeyType.Return:
+				Return();
+				return;
+		}
 
-			}
-			else if (keyCode == 'b') // Backspace
-			{
-				DeleteChar();
-			}
-			else if (IsOperandCharacter((char) keyCode))
-			{
-				if (m_RawInputString.Count > 1)
-					m_RawInputString.Add(keyCode.ToString());
-			}
-			else if (IsNumericCharacter((char) keyCode))
-			{
-				m_TextComponent.text = m_OutputString += keyCode;
-			}
-		}
-		else
-		{
-			m_TextComponent.text = m_OutputString += keyCode;
-		}
+		if (IsValid(keyCode))
+			Insert(keyCode);
 	}
 
-	private void DeleteChar()
+	private bool IsValid(char ch)
 	{
-		if (m_OutputString.Length == 0) return;
+		if (m_TextComponent.font.HasCharacter(ch))
+			return false;
 
-		m_OutputString = m_OutputString.Remove(m_OutputString.Length - 1);
-		m_TextComponent.text = m_OutputString;
+		if (m_ContentType == SerializedPropertyType.Float)
+		{
+			if (!kAllowedCharactersForFloat.Contains(ch.ToString()))
+				return false;
+		}
+		else if (m_ContentType == SerializedPropertyType.Integer)
+		{
+			if (!kAllowedCharactersForInt.Contains(ch.ToString()))
+				return false;
+		}
+
+		return true;
+	}
+
+	private void Insert(char ch)
+	{
+		var len = m_Text.Length;
+
+		text += ch;
+
+		if (len != m_Text.Length && !IsExpression())
+			SendOnValueChangedAndUpdateLabel();
+	}
+
+	private bool IsExpression()
+	{
+		return false;
+	}
+
+	private void Delete()
+	{
+		if (m_Text.Length == 0) return;
+
+		m_Text = m_Text.Remove(m_Text.Length - 1);
+		
+		SendOnValueChangedAndUpdateLabel();
+	}
+
+	private void Return()
+	{
+		if (m_Numeric)
+			ParseNumberField();
+		// TODO check multiline
 	}
 
 	private void ClearField()
 	{
-		m_OutputString = "";
-		m_TextComponent.text = m_OutputString;
+		m_Text = "";
+
+		SendOnValueChangedAndUpdateLabel();
 	}
 
-	private bool IsNumericCharacter(char ch)
+	private void SendOnValueChangedAndUpdateLabel()
 	{
-		if (ch >= '0' && ch <= '9') return true;
-		if (ch == '-' && (m_OutputString.Length == 0)) return true;
-		if (ch == '.' && !m_OutputString.Contains(".")) return true;
-
-		return false;
+		SendOnValueChanged();
+		UpdateLabel();
 	}
 
-	private bool IsNumericString(string str)
+	private void SendOnValueChanged()
 	{
-		var valid = true;
-
-		foreach (var ch in str)
-			valid = valid && IsNumericCharacter(ch);
-
-		return valid;
+		if (onValueChanged != null)
+			onValueChanged.Invoke(text);
 	}
 
-	private bool IsOperandCharacter(char ch)
+	protected void UpdateLabel()
 	{
-		if (ch == '+' || ch == '-' || ch == '*' || ch == '/') return true;
-
-		return false;
-	}
-
-	public void OnBeginDrag(RayEventData eventData)
-	{
-		if (!U.UI.IsValidEvent(eventData, selectionFlags))
-			return;
-
-		m_StartDragPosition = GetCurrentRayHitPosition(eventData);
-		m_LastPointerDragPosition = GetCurrentRayHitPosition(eventData);
-	}
-
-	public void OnDrag(RayEventData eventData)
-	{
-		if (!U.UI.IsValidEvent(eventData, selectionFlags))
-			return;
-
-		if (m_InputType == InputType.Numeric && m_PointerOverField)
+		if (m_TextComponent != null && m_TextComponent.font != null)
 		{
-			DragNumericValue(eventData);
-			m_LastPointerDragPosition = GetCurrentRayHitPosition(eventData);
+			m_TextComponent.text = m_Text;
 		}
 	}
 
-	private void DragNumericValue(RayEventData eventData)
+	private float CalculateFloatDragSensitivity(float value)
 	{
-//		if (m_RawInputString.Count > 1) ParseNumberField(true, );
+		if (float.IsInfinity(value) || float.IsNaN(value))
+			return 0f;
 
-		float num;
-		if (!float.TryParse(m_TextComponent.text, out num))
-			num = 0f;
-
-		var xDelta =
-			(transform.InverseTransformPoint(GetCurrentRayHitPosition(eventData)) -
-				transform.InverseTransformPoint(m_LastPointerDragPosition)).x;
-
-		num += xDelta*10f;
-
-		m_OutputString = num.ToString();
-		m_TextComponent.text = m_OutputString;
-
-		UpdateInspectorField();
+		return Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f)) * kDragSensitivity;
 	}
 
-	private Vector3 GetCurrentRayHitPosition(RayEventData eventData)
+	private int CalculateIntDragSensitivity(int value)
 	{
-		var rayOriginPos = eventData.rayOrigin;
-		return rayOriginPos.position + rayOriginPos.forward*eventData.pointerCurrentRaycast.distance;
+		return (int)Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f) * kDragSensitivity);
 	}
 
-	private static double CalculateFloatDragSensitivity(double value)
+	private void ParseNumberField()
 	{
-		if (Double.IsInfinity(value) || Double.IsNaN(value))
-		{
-			return 0.0;
-		}
-		return (double) Mathf.Max(1, Mathf.Pow(Mathf.Abs((float)value), 0.5f)) * kDragSensitivity;
-	}
+		var isFloat = m_ContentType == SerializedPropertyType.Float;
 
-	private static long CalculateIntDragSensitivity(long value)
-	{
-		return (long) Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f) * kDragSensitivity);
-	}
-
-	// Handle dragging of value
-	private static void DragNumberValue(bool isDouble, ref double doubleVal,
-		ref long longVal, string formatString, GUIStyle style, double dragSensitivity)
-	{
-//		switch (evt.GetTypeForControl(id))
-//		{
-//			case EventType.MouseDown:
-//				if (dragHotZone.Contains(evt.mousePosition) && evt.button == 0)
-//				{
-//
-//					s_DragCandidateState = 1;
-//					s_DragStartValue = doubleVal;
-//					s_DragStartIntValue = longVal;
-//					s_DragStartPos = evt.mousePosition;
-//					s_DragSensitivity = dragSensitivity;
-//					evt.Use();
-//					EditorGUIUtility.SetWantsMouseJumping(1);
-//				}
-//				break;
-//			case EventType.MouseUp:
-//				if (GUIUtility.hotControl == id && s_DragCandidateState != 0)
-//				{
-//					GUIUtility.hotControl = 0;
-//					s_DragCandidateState = 0;
-//					evt.Use();
-//					EditorGUIUtility.SetWantsMouseJumping(0);
-//				}
-//				break;
-//			case EventType.MouseDrag:
-//				if (GUIUtility.hotControl == id)
-//				{
-//					switch (s_DragCandidateState)
-//					{
-//						case 1:
-//							if ((Event.current.mousePosition - s_DragStartPos).sqrMagnitude > kDragDeadzone)
-//							{
-//								s_DragCandidateState = 2;
-//								GUIUtility.keyboardControl = id;
-//							}
-//							evt.Use();
-//							break;
-//						case 2:
-//							// Don't change the editor.content.text here.
-//							// Instead, wait for scripting validation to enforce clamping etc. and then
-//							// update the editor.content.text in the repaint event.
-//							if (isDouble)
-//							{
-//								doubleVal += HandleUtility.niceMouseDelta*s_DragSensitivity;
-//								doubleVal = MathUtils.RoundBasedOnMinimumDifference(doubleVal, s_DragSensitivity);
-//							}
-//							else
-//							{
-//								longVal += (long) Math.Round(HandleUtility.niceMouseDelta*s_DragSensitivity);
-//							}
-//							GUI.changed = true;
-//
-//							evt.Use();
-//							break;
-//					}
-//				}
-//				break;
-//		}
-	}
-
-	private void ParseNumberField(ref double doubleVal, ref long longVal, string formatString)
-	{
-		var isFloat = m_NumberType == NumberType.Float;
-
-		string allowedCharacters = isFloat ? s_AllowedCharactersForFloat : s_AllowedCharactersForInt;
-
-		string str = isFloat ? doubleVal.ToString(formatString) : longVal.ToString(formatString);
-
-		// clean up the text
 		if (isFloat)
 		{
-			string lowered = str.ToLower();
-			if (lowered == "inf" || lowered == "infinity")
-			{
-				doubleVal = Double.PositiveInfinity;
-			}
-			else if (lowered == "-inf" || lowered == "-infinity")
-			{
-				doubleVal = Double.NegativeInfinity;
-			}
-			else
-			{
-				// Make sure that comma & period are interchangable.
-				str = str.Replace(',', '.');
+			float floatVal;
 
-				if (!double.TryParse(str, System.Globalization.NumberStyles.Float,
-						System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out doubleVal))
-				{
-					doubleVal = StringExpressionEvaluator.Evaluate<double>(str);
-					return;
-				}
+			// Make sure that comma & period are interchangable.
+			m_Text = m_Text.Replace(',', '.');
 
-				// Don't allow user to enter NaN - it opens a can of worms that can trigger many latent bugs,
-				// and is not really useful for anything.
-				if (double.IsNaN(doubleVal))
-				{
-					doubleVal = 0;
-				}
+			if (!float.TryParse(m_Text, System.Globalization.NumberStyles.Float,
+					System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out floatVal))
+			{
+				floatVal = StringExpressionEvaluator.Evaluate<float>(m_Text);
 			}
+
+			if (double.IsNaN(floatVal))
+			{
+				floatVal = 0;
+			}
+
+			m_Text = floatVal.ToString(kFloatFieldFormatString);
+			SendOnValueChangedAndUpdateLabel();
 		}
 		else
 		{
-			if (!long.TryParse(str, out longVal))
+			int intVal;
+			if (!int.TryParse(m_Text, out intVal))
 			{
-				longVal = StringExpressionEvaluator.Evaluate<long>(str);
+				m_Text = StringExpressionEvaluator.Evaluate<long>(m_Text).ToString(kIntFieldFormatString);
+				SendOnValueChangedAndUpdateLabel();
 			}
 		}
 	}

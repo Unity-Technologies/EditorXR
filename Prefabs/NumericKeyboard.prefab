@@ -771,12 +771,12 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 0
+  m_CharacterDescriptionType: 1
+  m_SpecialKeyType: 13
   m_KeyCode: 114
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000011231296046}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000010225760790
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -885,9 +885,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 47
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000010225760790}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000010575436916
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -968,9 +968,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 48
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000011621208308}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000010773562998
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1014,12 +1014,12 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 0
+  m_CharacterDescriptionType: 1
+  m_SpecialKeyType: 8
   m_KeyCode: 98
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000010841863090}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000010803253378
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1156,9 +1156,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 55
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000010064090344}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000011061279742
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1301,9 +1301,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 42
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000013276039834}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000011398494664
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1480,9 +1480,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 37
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000014229952440}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000011829982066
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1529,9 +1529,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 53
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000013884876202}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000011845778662
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1612,9 +1612,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 49
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000010575436916}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000012009938788
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1745,9 +1745,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 52
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000011398494664}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000012199082344
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1781,7 +1781,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: '-'
+  m_Text: "\uE015\r\uE015\r\uE015\r\uE015\r\uE015\r\uE015\r"
 --- !u!114 &114000012246057796
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1856,9 +1856,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 45
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000012199082344}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000012558205658
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1905,9 +1905,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 51
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000013536529572}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000012590471394
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1982,9 +1982,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 46
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000011061279742}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000012677657366
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2127,9 +2127,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 57
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000011845778662}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000013000439300
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2192,7 +2192,7 @@ MonoBehaviour:
     m_Right: 0
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 0
+  m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
   m_CellSize: {x: 0.05, y: 0.05}
@@ -2273,9 +2273,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 43
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000011500284690}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000013170196560
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2440,9 +2440,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 56
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000010044753482}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000013411053144
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2517,6 +2517,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_Buttons:
+  - {fileID: 114000012382368202}
+  - {fileID: 114000011775548172}
+  - {fileID: 114000010374689978}
+  - {fileID: 114000011297318366}
+  - {fileID: 114000013157925260}
+  - {fileID: 114000010773562998}
+  - {fileID: 114000011918706296}
+  - {fileID: 114000014055691856}
+  - {fileID: 114000012558205658}
+  - {fileID: 114000012182865728}
+  - {fileID: 114000011829982066}
+  - {fileID: 114000012618316752}
+  - {fileID: 114000013912737946}
+  - {fileID: 114000010906472208}
+  - {fileID: 114000013359931670}
+  - {fileID: 114000012879674432}
+  - {fileID: 114000010646657596}
+  - {fileID: 114000010209708526}
 --- !u!114 &114000013884876202
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2597,9 +2616,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 54
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000012677657366}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000014055691856
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2646,9 +2665,9 @@ MonoBehaviour:
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
   m_KeyCode: 50
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 0
   m_TextComponent: {fileID: 114000012703092426}
+  m_MatchButtonTextToCharacter: 0
+  m_ButtonMesh: {fileID: 0}
 --- !u!114 &114000014229952440
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3285,7 +3304,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013347884336}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: -0.35099998}
+  m_LocalPosition: {x: 0, y: 0, z: -0.1115}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_Children:

@@ -20,15 +20,8 @@ namespace UnityEngine.VR.Modules
 		/// </summary>
 		public float pointerLength { get; set; }
 
-		/// <summary>
-		/// The time the current object was pressed
-		/// </summary>
-		public float pressTime;
-
 		public RayEventData(EventSystem eventSystem) : base(eventSystem)
-		{
-			pressTime = 0f;
-		}
+		{}
 
 		public override string ToString()
 		{
@@ -38,7 +31,6 @@ namespace UnityEngine.VR.Modules
 			sb.AppendLine("<b>Ray origin rotation<b>" + rayOrigin.rotation);
 			sb.AppendLine("<b>node<b>" + node);
 			sb.AppendLine("<b>pointerLength<b>" + pointerLength);
-			sb.AppendLine("<b>pressTime<b>" + pressTime);
 			return sb.ToString();
 		}
 	}
