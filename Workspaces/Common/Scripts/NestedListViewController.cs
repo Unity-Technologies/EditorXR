@@ -22,7 +22,7 @@
 				else if (count + m_DataOffset > m_NumRows - 1)
 					CleanUpEnd(item);
 				else
-					UpdateItemRecursive(item, count, depth);
+					UpdateNestedItem(item, count, depth);
 				count++;
 				if (item.children != null)
 				{
@@ -34,7 +34,7 @@
 			}
 		}
 
-		protected virtual void UpdateItemRecursive(DataType data, int count, int depth)
+		protected virtual void UpdateNestedItem(DataType data, int count, int depth)
 		{
 			UpdateVisibleItem(data, count);
 		}

@@ -43,7 +43,7 @@
 
 		void surf(Input IN, inout SurfaceOutputStandard o)
 		{
-			listClipFrag(IN.localPos);
+			listClipCheckExtents(IN.localPos);
 
 			o.Emission = IN.color;
 			o.Alpha = tex2D(_MainTex, IN.uv_MainTex).a * IN.color.a;

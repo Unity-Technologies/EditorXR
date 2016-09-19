@@ -308,7 +308,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000010076885970
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -367,7 +367,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000011829900818
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -415,7 +415,7 @@ MonoBehaviour:
   - Shader
   - Prefab
   m_Icons:
-  - {fileID: 100000, guid: 4f59d2c28d92b4a0486ef9a7530a7236, type: 3}
+  - {fileID: 1000012518484170, guid: 5684cf4522749a24c89ebb5094c26cd7, type: 2}
   - {fileID: 100000, guid: 8073bfb3d9b79403482bdea7a0f428d2, type: 3}
   - {fileID: 100000, guid: 380f1c54ead27452eac63ccdeeb4b131, type: 3}
   - {fileID: 100000, guid: 871514b9fd86846c7a7ae790635ca784, type: 3}
