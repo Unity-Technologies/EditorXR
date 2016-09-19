@@ -403,6 +403,7 @@ MonoBehaviour:
   - AudioMixer
   - Shader
   - Prefab
+  - Terrain
   m_Icons:
   - {fileID: 100000, guid: 4f59d2c28d92b4a0486ef9a7530a7236, type: 3}
   - {fileID: 100000, guid: 8073bfb3d9b79403482bdea7a0f428d2, type: 3}
@@ -412,6 +413,7 @@ MonoBehaviour:
   - {fileID: 100000, guid: 15e396cb94d3f4b7cbeab308bafe112a, type: 3}
   - {fileID: 100000, guid: 871514b9fd86846c7a7ae790635ca784, type: 3}
   - {fileID: 100000, guid: 380f1c54ead27452eac63ccdeeb4b131, type: 3}
+  - {fileID: 100000, guid: b14ea09a31f0cd447b1628078dbac5a9, type: 3}
 --- !u!114 &114000012332470128
 MonoBehaviour:
   m_ObjectHideFlags: 1
