@@ -685,17 +685,17 @@ public class EditorVR : MonoBehaviour
 	private float GetPointerLength(Transform rayOrigin)
 	{
 		float length = 0f;
+		// Check if this is a MiniWorldRay
 		MiniWorldRay ray;
 		if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
-		{
 			rayOrigin = ray.originalRayOrigin;
-		}
+
 		DefaultProxyRay dpr;
 		if (m_DefaultRays.TryGetValue(rayOrigin, out dpr))
 		{
 			length = dpr.pointerLength;
 			if (ray != null)
-				length *= Vector3.Scale(ray.miniWorld.referenceTransform.localScale, ray.miniWorld.miniWorldTransform.lossyScale).x; // Assume uniform scale, no rotation
+				length *= ray.miniWorld.miniWorldTransform.TransformPoint(ray.miniWorld.referenceTransform.localScale.Inverse()).x; // Assume uniform scale, no rotation
 		}
 
 		return length;
@@ -886,40 +886,40 @@ public class EditorVR : MonoBehaviour
 		workspace.Setup();
 
 		var miniWorld = workspace as IMiniWorld;
-		if (miniWorld != null)
+		if (miniWorld == null)
+			return;
+
+		m_MiniWorlds.Add(miniWorld);
+
+		foreach (var proxy in m_AllProxies)
 		{
-			m_MiniWorlds.Add(miniWorld);
-
-			foreach (var proxy in m_AllProxies)
+			foreach (var rayOriginBase in proxy.rayOrigins)
 			{
-				foreach (var rayOriginBase in proxy.rayOrigins)
+				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
 				{
-					foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
+					var node = GetDeviceNode(device);
+					if (node.HasValue && node.Value == rayOriginBase.Key)
 					{
-						var node = GetDeviceNode(device);
-						if (node.HasValue && node.Value == rayOriginBase.Key)
+						DeviceData deviceData;
+						if (m_DeviceData.TryGetValue(device, out deviceData))
 						{
-							DeviceData deviceData;
-							if (m_DeviceData.TryGetValue(device, out deviceData))
-							{
-								// Create fake rayOrigin
-								var fakeRayOrigin = new GameObject("FakeRayOrigin").transform;
-								fakeRayOrigin.parent = workspace.transform;
+							// Create fake rayOrigin
+							var fakeRayOrigin = new GameObject("FakeRayOrigin").transform;
+							fakeRayOrigin.parent = workspace.transform;
 
-								var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-								m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
-								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-								m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, uiInput, fakeRayOrigin);
-								m_MiniWorldRays[fakeRayOrigin] = new MiniWorldRay()
-								{
-									originalRayOrigin = rayOriginBase.Value,
-									miniWorld = miniWorld,
-									proxy = proxy,
-									uiInput = uiInput
-								};
-							}
-							break;
+							var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+							m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
+							// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+							m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, uiInput, fakeRayOrigin);
+							m_MiniWorldRays[fakeRayOrigin] = new MiniWorldRay()
+							{
+								originalRayOrigin = rayOriginBase.Value,
+								miniWorld = miniWorld,
+								proxy = proxy,
+								uiInput = uiInput
+							};
 						}
+						break;
 					}
 				}
 			}
@@ -979,27 +979,27 @@ public class EditorVR : MonoBehaviour
 				ray.Value.dragObjectOriginalScale = hoverObject.transform.localScale;
 			}
 
-			if (ray.Value.dragObject)
+			if (!ray.Value.dragObject)
+				continue;
+
+			if (!ray.Key.gameObject.activeSelf && uiInput.@select.isHeld)
 			{
-				if (!ray.Key.gameObject.activeSelf && uiInput.select.isHeld)
-				{
-					Selection.objects = new UnityEngine.Object[0];
-					var selectedObjectTransform = ray.Value.dragObject.transform;
+				Selection.objects = new UnityEngine.Object[0];
+				var selectedObjectTransform = ray.Value.dragObject.transform;
 
-					m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
+				m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
 
-					selectedObjectTransform.transform.localScale = Vector3.one;
-					var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);
-					if (totalBounds != null)
-						selectedObjectTransform.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.MaxComponent());
-				}
+				selectedObjectTransform.transform.localScale = Vector3.one;
+				var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);
+				if (totalBounds != null)
+					selectedObjectTransform.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.MaxComponent());
+			}
 
-				if (uiInput.select.wasJustReleased)
-				{
-					m_InputModule.SetFakeRaycastSourceDragging(originalRayOrigin, fakeRayOrigin, false);
-					PlaceObject(ray.Value.dragObject.transform, ray.Value.dragObjectOriginalScale);
-					ray.Value.dragObject = null;
-				}
+			if (uiInput.@select.wasJustReleased)
+			{
+				m_InputModule.SetFakeRaycastSourceDragging(originalRayOrigin, fakeRayOrigin, false);
+				PlaceObject(ray.Value.dragObject.transform, ray.Value.dragObjectOriginalScale);
+				ray.Value.dragObject = null;
 			}
 		}
 	}
@@ -1007,15 +1007,15 @@ public class EditorVR : MonoBehaviour
 	private GameObject GetFirstGameObject(Transform rayOrigin)
 	{
 		var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
-		if (!go)
+		if (go)
+			return go;
+
+		foreach (var miniWorldRay in m_MiniWorldRays)
 		{
-			foreach (var miniWorldRay in m_MiniWorldRays)
-			{
-				if (miniWorldRay.Value.originalRayOrigin.Equals(rayOrigin))
-					go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRay.Key);
-				if (go)
-					break;
-			}
+			if (miniWorldRay.Value.originalRayOrigin.Equals(rayOrigin))
+				go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRay.Key);
+			if (go)
+				break;
 		}
 		return go;
 	}
@@ -1025,15 +1025,16 @@ public class EditorVR : MonoBehaviour
 		var inMiniWorld = false;
 		foreach (var miniWorld in m_MiniWorlds)
 		{
-			if (miniWorld.IsContainedWithin(obj.position))
-			{
-				inMiniWorld = true;
-				var referenceTransform = miniWorld.referenceTransform;
-				obj.transform.parent = null;
-				obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
-				obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
-				obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
-			}
+			if (!miniWorld.IsContainedWithin(obj.position))
+				continue;
+
+			inMiniWorld = true;
+			var referenceTransform = miniWorld.referenceTransform;
+			obj.transform.parent = null;
+			obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
+			obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
+			obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
+			break;
 		}
 		if (!inMiniWorld)
 			m_ObjectPlacementModule.PlaceObject(obj, targetScale);

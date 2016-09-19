@@ -73,27 +73,28 @@
 
 			public static Type SerializedPropertyToType(SerializedProperty property)
 			{
-				string[] parts = property.propertyPath.Split('.');
+				var parts = property.propertyPath.Split('.');
 
 				var currentType = property.serializedObject.targetObject.GetType();
 
-				if (parts.Length > 0)
-				{
-					var field = GetFieldInTypeOrParent(currentType, parts[parts.Length - 1]);
-					if (field != null)
-						return field.FieldType;
-				}
-				return null;
+				if (parts.Length == 0)
+					return null;
+
+				var field = GetFieldInTypeOrParent(currentType, parts[parts.Length - 1]);
+
+				return field != null ? field.FieldType : null;
 			}
 
 			public static FieldInfo GetFieldInTypeOrParent(Type type, string fieldName)
 			{
-				if (type == null)
-					return null;
-				var field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
-				if (field == null)
-					return GetFieldInTypeOrParent(type.BaseType, fieldName);
-				return field;
+				while (true)
+				{
+					if (type == null)
+						return null;
+					var field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
+					if (field != null) return field;
+					type = type.BaseType;
+				}
 			}
 		}
 	}
