@@ -31,8 +31,6 @@ public class EditorVR : MonoBehaviour
 	private const int kMaxWorkspacePlacementAttempts = 20;
 	private const float kWorkspaceVacuumEnableDistance = 1f; // Disable vacuum bounds if workspace is close to player
 
-	public static event Action selectionChanged;
-
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
 	[SerializeField]
@@ -95,6 +93,8 @@ public class EditorVR : MonoBehaviour
 	private readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>();
 
 	private ITransformTool m_TransformTool;
+
+	private event Action selectionChanged;
 
 	private void Awake()
 	{
@@ -678,6 +678,10 @@ public class EditorVR : MonoBehaviour
 			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 		}
 
+		var selectionChanged = obj as ISelectionChanged;
+		if (selectionChanged != null)
+			this.selectionChanged += selectionChanged.OnSelectionChanged;
+
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_AllTools.ToList();
@@ -687,6 +691,13 @@ public class EditorVR : MonoBehaviour
 			mainMenu.node = GetDeviceNode(device);
 			mainMenu.setup();
 		}
+	}
+
+	private void DisconnectInterfaces(object obj)
+	{
+		var selectionChanged = obj as ISelectionChanged;
+		if (selectionChanged != null)
+			this.selectionChanged -= selectionChanged.OnSelectionChanged;
 	}
 
 	private float GetPointerLength(Transform rayOrigin)
@@ -773,6 +784,7 @@ public class EditorVR : MonoBehaviour
 				deviceData.currentTool = null;
 			}
 		}
+		DisconnectInterfaces(tool);
 		U.Object.Destroy(tool as MonoBehaviour);
 	}
 
@@ -936,6 +948,8 @@ public class EditorVR : MonoBehaviour
 	private void OnWorkspaceDestroyed(Workspace workspace)
 	{
 		m_AllWorkspaces.Remove(workspace);
+
+		DisconnectInterfaces(workspace);
 
 		var miniWorld = workspace as IMiniWorld;
 		if (miniWorld == null)

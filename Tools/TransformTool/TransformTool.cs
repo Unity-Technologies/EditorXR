@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged
 {
 	[SerializeField]
 	private GameObject m_DirectManipulatorPrefab;
@@ -77,17 +77,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		m_CurrentManipulator = m_AllManipulators[m_CurrentManipulatorIndex];
 	}
 
-	void OnEnable()
-	{
-		EditorVR.selectionChanged += OnSelectionChanged;
-	}
-
-	void OnDisable()
-	{
-		EditorVR.selectionChanged -= OnSelectionChanged;
-	}
-
-	private void OnSelectionChanged()
+	public void OnSelectionChanged()
 	{
 		m_SelectionTransforms = Selection.GetTransforms(SelectionMode.Editable);
 
