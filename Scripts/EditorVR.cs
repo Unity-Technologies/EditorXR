@@ -94,7 +94,7 @@ public class EditorVR : MonoBehaviour
 
 	private ITransformTool m_TransformTool;
 
-	private event Action selectionChanged;
+	private event Action m_SelectionChanged;
 
 	private void Awake()
 	{
@@ -126,8 +126,8 @@ public class EditorVR : MonoBehaviour
 
 	private void OnSelectionChanged()
 	{
-		if(selectionChanged != null)
-			selectionChanged.Invoke();
+		if(m_SelectionChanged != null)
+			m_SelectionChanged.Invoke();
 	}
 
 	private void CreateDeviceDataForInputDevices()
@@ -680,7 +680,7 @@ public class EditorVR : MonoBehaviour
 
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
-			this.selectionChanged += selectionChanged.OnSelectionChanged;
+			this.m_SelectionChanged += selectionChanged.OnSelectionChanged;
 
 		if (mainMenu != null)
 		{
@@ -697,7 +697,7 @@ public class EditorVR : MonoBehaviour
 	{
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
-			this.selectionChanged -= selectionChanged.OnSelectionChanged;
+			this.m_SelectionChanged -= selectionChanged.OnSelectionChanged;
 	}
 
 	private float GetPointerLength(Transform rayOrigin)
