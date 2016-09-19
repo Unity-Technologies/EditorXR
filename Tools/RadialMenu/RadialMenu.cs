@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine.InputNew;
 using UnityEngine.VR.Actions;
 
 namespace UnityEngine.VR.Menus
@@ -17,8 +18,22 @@ namespace UnityEngine.VR.Menus
 		private object m_ObjectSelected;
 
 		[SerializeField]
+		private ActionMap m_RadialMenuActionMap;
+
+		[SerializeField]
+		private RadialMenuUI m_RadialMenuPrefab;
+
+		[SerializeField]
 		private RadialMenuUI m_RadialMenuUI;
 		public RadialMenuUI radialMenuUI { get; private set; }
+
+		public ActionMapInput actionMapInput
+		{
+			get { return m_RadialMenuInput; }
+			set { m_RadialMenuInput = (MainMenuInput) value; }
+		}
+		[SerializeField]
+		private MainMenuInput m_RadialMenuInput;
 
 		public Func<IAction, bool> performAction { set { m_RadialMenuUI.performAction = value; } }
 
