@@ -79,12 +79,12 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	void OnEnable()
 	{
-		Selection.selectionChanged += OnSelectionChanged;
+		EditorVR.selectionChanged += OnSelectionChanged;
 	}
 
 	void OnDisable()
 	{
-		Selection.selectionChanged -= OnSelectionChanged;
+		EditorVR.selectionChanged -= OnSelectionChanged;
 	}
 
 	private void OnSelectionChanged()

@@ -31,6 +31,8 @@ public class EditorVR : MonoBehaviour
 	private const int kMaxWorkspacePlacementAttempts = 20;
 	private const float kWorkspaceVacuumEnableDistance = 1f; // Disable vacuum bounds if workspace is close to player
 
+	public static event Action selectionChanged;
+
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
 	[SerializeField]
@@ -122,6 +124,12 @@ public class EditorVR : MonoBehaviour
 		// CollectToolActionMaps(m_AllTools);
 	}
 
+	private void OnSelectionChanged()
+	{
+		if(selectionChanged != null)
+			selectionChanged.Invoke();
+	}
+
 	private void CreateDeviceDataForInputDevices()
 	{
 		foreach (var device in InputSystem.devices)
@@ -158,14 +166,12 @@ public class EditorVR : MonoBehaviour
 		SpawnDefaultTools();
 
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
-		EditorApplication.delayCall += () =>
-		{
-			Selection.selectionChanged.Invoke();
-		};
+		EditorApplication.delayCall += OnSelectionChanged;
 	}
 
 	private void OnEnable()
 	{
+		Selection.selectionChanged += OnSelectionChanged;
 #if UNITY_EDITOR
 		VRView.onGUIDelegate += OnSceneGUI;
 #endif
@@ -173,6 +179,7 @@ public class EditorVR : MonoBehaviour
 
 	private void OnDisable()
 	{
+		Selection.selectionChanged -= OnSelectionChanged;
 #if UNITY_EDITOR
 		VRView.onGUIDelegate -= OnSceneGUI;
 #endif
