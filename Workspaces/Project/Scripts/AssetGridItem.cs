@@ -12,7 +12,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	private const float kPreviewDuration = 0.1f;
 
 	private const float kRotateSpeed = 50f;
-	
+
 	[SerializeField]
 	private Text m_Text;
 
