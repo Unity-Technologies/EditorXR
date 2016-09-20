@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -45,6 +46,12 @@ public class NumericInputButton : RayButton
 	[SerializeField]
 	private bool m_RepeatOnHold;
 
+	[SerializeField]
+	private float m_RepeatTime = 0.5f;
+
+	private float m_HoldStartTime;
+	private bool m_ButtonDown;
+
 	private Action<char> m_KeyPress;
 
 	private UnityEvent m_Trigger = new UnityEvent();
@@ -62,7 +69,7 @@ public class NumericInputButton : RayButton
 				m_TextComponent.text = m_KeyCode.ToString();
 		}
 
-		m_Trigger = pressOnHover ? (UnityEvent) onEnter : onClick;
+		m_Trigger = pressOnHover ? (UnityEvent) onEnter : onDown;
 
 		m_Trigger.AddListener(NumericKeyPressed);
 	}
@@ -77,5 +84,44 @@ public class NumericInputButton : RayButton
 	private void NumericKeyPressed()
 	{
 		m_KeyPress(m_KeyCode);
+	}
+
+	public override void OnPointerDown(PointerEventData eventData)
+	{
+		var rayEventData = eventData as RayEventData;
+		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		{
+			base.OnPointerDown(eventData);
+
+			m_ButtonDown = true;
+			if (m_RepeatOnHold)
+				StartCoroutine(RepeatPress());
+		}
+	}
+
+	private IEnumerator RepeatPress()
+	{
+		m_HoldStartTime = Time.realtimeSinceStartup;
+		var repeatWaitTime = m_RepeatTime;
+
+		while (m_ButtonDown && m_HoldStartTime + repeatWaitTime < Time.realtimeSinceStartup)
+		{
+			NumericKeyPressed();
+			m_HoldStartTime = Time.realtimeSinceStartup;
+			repeatWaitTime *= 0.75f;
+
+			yield return null;
+		}
+	}
+
+	public override void OnPointerUp(PointerEventData eventData)
+	{
+		var rayEventData = eventData as RayEventData;
+		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		{
+			base.OnPointerUp(eventData);
+
+			m_ButtonDown = false;
+		}
 	}
 }

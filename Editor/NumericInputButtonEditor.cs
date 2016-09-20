@@ -10,6 +10,8 @@ public class NumericInputButtonEditor : RayButtonEditor
 	SerializedProperty m_ButtonTextProperty;
 	SerializedProperty m_MatchButtonTextToCharacterProperty;
 	SerializedProperty m_ButtonMeshProperty;
+	SerializedProperty m_RepeatOnHoldProperty;
+	SerializedProperty m_RepeatTimeProperty;
 
 	protected override void OnEnable()
 	{
@@ -20,6 +22,8 @@ public class NumericInputButtonEditor : RayButtonEditor
 		m_ButtonTextProperty = serializedObject.FindProperty("m_TextComponent");
 		m_MatchButtonTextToCharacterProperty = serializedObject.FindProperty("m_MatchButtonTextToCharacter");
 		m_ButtonMeshProperty = serializedObject.FindProperty("m_ButtonMesh");
+		m_RepeatOnHoldProperty = serializedObject.FindProperty("m_RepeatOnHold");
+		m_RepeatTimeProperty = serializedObject.FindProperty("m_RepeatTime");
 	}
 
 	public override void OnInspectorGUI()
@@ -33,6 +37,8 @@ public class NumericInputButtonEditor : RayButtonEditor
 		EditorGUILayout.PropertyField(m_ButtonTextProperty);
 		EditorGUILayout.PropertyField(m_MatchButtonTextToCharacterProperty);
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);
+		EditorGUILayout.PropertyField(m_RepeatOnHoldProperty);
+		EditorGUILayout.PropertyField(m_RepeatTimeProperty);
 		serializedObject.ApplyModifiedProperties();
 		base.OnInspectorGUI();
 	}

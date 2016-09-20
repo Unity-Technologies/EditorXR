@@ -777,6 +777,8 @@ MonoBehaviour:
   m_TextComponent: {fileID: 114000011231296046}
   m_MatchButtonTextToCharacter: 0
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 1
+  m_RepeatTime: 0.5
 --- !u!114 &114000010225760790
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -886,8 +888,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 47
   m_TextComponent: {fileID: 114000010225760790}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000010575436916
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -969,8 +973,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 48
   m_TextComponent: {fileID: 114000011621208308}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000010773562998
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1020,6 +1026,8 @@ MonoBehaviour:
   m_TextComponent: {fileID: 114000010841863090}
   m_MatchButtonTextToCharacter: 0
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000010803253378
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1157,8 +1165,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 55
   m_TextComponent: {fileID: 114000010064090344}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011061279742
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1302,8 +1312,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 42
   m_TextComponent: {fileID: 114000013276039834}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011398494664
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1481,8 +1493,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 37
   m_TextComponent: {fileID: 114000014229952440}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011829982066
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1530,8 +1544,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 53
   m_TextComponent: {fileID: 114000013884876202}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011845778662
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1613,8 +1629,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 49
   m_TextComponent: {fileID: 114000010575436916}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000012009938788
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1746,8 +1764,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 52
   m_TextComponent: {fileID: 114000011398494664}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000012199082344
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1857,8 +1877,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 45
   m_TextComponent: {fileID: 114000012199082344}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000012558205658
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1906,8 +1928,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 51
   m_TextComponent: {fileID: 114000013536529572}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000012590471394
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1983,8 +2007,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 46
   m_TextComponent: {fileID: 114000011061279742}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000012677657366
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2128,8 +2154,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 57
   m_TextComponent: {fileID: 114000011845778662}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000013000439300
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2274,8 +2302,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 43
   m_TextComponent: {fileID: 114000011500284690}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000013170196560
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2441,8 +2471,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 56
   m_TextComponent: {fileID: 114000010044753482}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000013411053144
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2617,8 +2649,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 54
   m_TextComponent: {fileID: 114000012677657366}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000014055691856
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2666,8 +2700,10 @@ MonoBehaviour:
   m_SpecialKeyType: 0
   m_KeyCode: 50
   m_TextComponent: {fileID: 114000012703092426}
-  m_MatchButtonTextToCharacter: 0
+  m_MatchButtonTextToCharacter: 1
   m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000014229952440
 MonoBehaviour:
   m_ObjectHideFlags: 1
