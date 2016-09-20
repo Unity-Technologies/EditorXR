@@ -777,7 +777,7 @@ MonoBehaviour:
   m_TextComponent: {fileID: 114000011231296046}
   m_MatchButtonTextToCharacter: 0
   m_ButtonMesh: {fileID: 0}
-  m_RepeatOnHold: 1
+  m_RepeatOnHold: 0
   m_RepeatTime: 0.5
 --- !u!114 &114000010225760790
 MonoBehaviour:
@@ -1026,7 +1026,7 @@ MonoBehaviour:
   m_TextComponent: {fileID: 114000010841863090}
   m_MatchButtonTextToCharacter: 0
   m_ButtonMesh: {fileID: 0}
-  m_RepeatOnHold: 0
+  m_RepeatOnHold: 1
   m_RepeatTime: 0.5
 --- !u!114 &114000010803253378
 MonoBehaviour:

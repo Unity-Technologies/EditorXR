@@ -104,11 +104,14 @@ public class NumericInputButton : RayButton
 		m_HoldStartTime = Time.realtimeSinceStartup;
 		var repeatWaitTime = m_RepeatTime;
 
-		while (m_ButtonDown && m_HoldStartTime + repeatWaitTime < Time.realtimeSinceStartup)
+		while (m_ButtonDown)
 		{
-			NumericKeyPressed();
-			m_HoldStartTime = Time.realtimeSinceStartup;
-			repeatWaitTime *= 0.75f;
+			if (m_HoldStartTime + repeatWaitTime < Time.realtimeSinceStartup)
+			{
+				NumericKeyPressed();
+				m_HoldStartTime = Time.realtimeSinceStartup;
+				repeatWaitTime *= 0.75f;
+			}
 
 			yield return null;
 		}
