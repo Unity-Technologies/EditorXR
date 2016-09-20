@@ -10,9 +10,5 @@ namespace UnityEngine.InputNew
 		public ButtonInputControl @select { get { return (ButtonInputControl)this[0]; } }
 		public ButtonInputControl @parent { get { return (ButtonInputControl)this[1]; } }
 		public ButtonInputControl @multiSelect { get { return (ButtonInputControl)this[2]; } }
-		public Vector2InputControl @navigateRadialMenu { get { return (Vector2InputControl)this[3]; } }
-		public AxisInputControl @navigateRadialMenuX { get { return (AxisInputControl)this[4]; } }
-		public AxisInputControl @navigateRadialMenuY { get { return (AxisInputControl)this[5]; } }
-		public ButtonInputControl @selectRadialMenuItem { get { return (ButtonInputControl)this[6]; } }
 	}
 }
