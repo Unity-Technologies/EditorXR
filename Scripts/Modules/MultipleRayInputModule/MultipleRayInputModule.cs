@@ -36,8 +36,6 @@ namespace UnityEngine.VR.Modules
 			public GameObject hoveredObject;
 			public GameObject pressedObject;
 			public GameObject draggedObject;
-			public bool dragging;
-			public bool miniWorldRayDragging;
 
 			public bool hasObject { get { return (hoveredObject != null && hoveredObject.layer == UILayer) || pressedObject != null || draggedObject != null; } }
 
@@ -85,16 +83,6 @@ namespace UnityEngine.VR.Modules
 			return null;
 		}
 
-		public void SetMiniWorldRaycastSourceDragging(Transform rayOrigin, Transform miniWorldRayOrigin, bool dragging)
-		{
-			RaycastSource source;
-			if (m_RaycastSources.TryGetValue(miniWorldRayOrigin, out source))
-				source.dragging = dragging;
-
-			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
-				source.miniWorldRayDragging = dragging;
-		}
-
 		public override void Process()
 		{
 			ExecuteUpdateOnSelectedObject();
@@ -108,9 +96,6 @@ namespace UnityEngine.VR.Modules
 				if (!(source.rayOrigin.gameObject.activeSelf || source.draggedObject) || !source.proxy.active)
 					continue;
 
-				if (source.miniWorldRayDragging)
-					continue;
-
 				if (source.eventData == null)
 					source.eventData = new RayEventData(base.eventSystem);
 				source.hoveredObject = GetRayIntersection(source); // Check all currently running raycasters
@@ -122,7 +107,7 @@ namespace UnityEngine.VR.Modules
 
 				HandlePointerExitAndEnter(eventData, source.hoveredObject); // Send enter and exit events
 
-				source.actionMapInput.active = source.hasObject || source.dragging;
+				source.actionMapInput.active = source.hasObject;
 
 				// Proceed only if pointer is interacting with something
 				if (!source.actionMapInput.active)

@@ -999,7 +999,8 @@ public class EditorVR : MonoBehaviour
 
 			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && uiInput.select.wasJustPressed)
 			{
-				m_InputModule.SetMiniWorldRaycastSourceDragging(originalRayOrigin, miniWorldRayOrigin, true);
+				//Disable original ray so that it doesn't interrupt dragging by activating its ActionMapInput
+				originalRayOrigin.gameObject.SetActive(false);
 
 				ray.Value.dragObject = hoverObject; // Capture object for later use
 				ray.Value.dragObjectOriginalScale = hoverObject.transform.localScale;
@@ -1023,7 +1024,8 @@ public class EditorVR : MonoBehaviour
 
 			if (uiInput.@select.wasJustReleased)
 			{
-				m_InputModule.SetMiniWorldRaycastSourceDragging(originalRayOrigin, miniWorldRayOrigin, false);
+				originalRayOrigin.gameObject.SetActive(true);
+
 				PlaceObject(ray.Value.dragObject.transform, ray.Value.dragObjectOriginalScale);
 				ray.Value.dragObject = null;
 			}
