@@ -32,9 +32,13 @@ public class InspectorComponentItem : InspectorListItem
 			m_EnabledToggle.onValueChanged.AddListener(SetEnabled);
 		}
 
-		var type = data.serializedObject.targetObject.GetType();
+		var target = data.serializedObject.targetObject;
+		var type = target.GetType();
 		m_NameText.text = type.Name;
 		m_Icon.texture = AssetPreview.GetMiniTypeThumbnail(type);
+
+		m_EnabledToggle.gameObject.SetActive(EditorUtility.GetObjectEnabled(target) != -1);
+		m_EnabledToggle.isOn = EditorUtility.GetObjectEnabled(target) == 1;
 
 		m_ExpandArrow.gameObject.SetActive(data.children != null);
 	}
@@ -60,6 +64,6 @@ public class InspectorComponentItem : InspectorListItem
 
 	private void SetEnabled(bool value)
 	{
-		
+		EditorUtility.SetObjectEnabled(data.serializedObject.targetObject, value);
 	}
 }
