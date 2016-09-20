@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -44,20 +42,25 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 	[SerializeField]
 	private bool m_UpdateDrag;
-	private bool m_DragPositionOutOfBounds;
 	private const float kDragSensitivity = 10f;
-	private static float kDragDeadzone = 0.01f;
+	private const float kDragDeadzone = 0.01f;
 	private Vector3 m_StartDragPosition;
 	private Vector3 m_LastPointerPosition;
 	private bool m_PointerOverField;
 
 	private bool m_Open;
 
+	private int m_OperandCount;
+
 	private const string kFloatFieldFormatString = "g7";
 	private const string kIntFieldFormatString = "#######0";
 
+	// We cannot round to more decimals than 15 according to docs for System.Math.Round.
+	private const int kMaxDecimals = 15;
 	private const string kAllowedCharactersForFloat = "inftynaeINFTYNAE0123456789.,-*/+%^()";
 	private const string kAllowedCharactersForInt = "0123456789-*/+%^()";
+	private const string kOperandCharacters = "-*/+%^()";
+
 
 	private bool m_Numeric
 	{
@@ -175,7 +178,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
 			return;
 
-		if (m_Numeric)
+		if (m_Numeric && m_PointerOverField)
 		{
 			if (!m_UpdateDrag)
 			{
@@ -219,7 +222,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 			var dragSensitivity = CalculateFloatDragSensitivity(num);
 			num += delta * dragSensitivity;
 			//	floatVal += HandleUtility.niceMouseDelta*s_DragSensitivity;
-			//	num = MathUtils.RoundBasedOnMinimumDifference(num, dragSensitivity);
+			num = RoundBasedOnMinimumDifference(num, dragSensitivity);
 			m_Text = num.ToString(kFloatFieldFormatString);
 		}
 		else
@@ -230,7 +233,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 			var dragSensitivity = CalculateIntDragSensitivity(intNum);
 //			intNum += (int) Math.Round(HandleUtility.niceMouseDelta* dragSensitivity);
-			intNum += (int) Math.Round(delta * dragSensitivity);
+			intNum += (int)Math.Round(delta * dragSensitivity);
 
 			m_Text = intNum.ToString(kIntFieldFormatString);
 		}
@@ -280,7 +283,8 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 	{
 		m_Open = false;
 
-		ParseNumberField();
+		if (IsExpression())
+			ParseNumberField();
 
 		if (m_NumericKeyboard == null) return;
 
@@ -297,6 +301,9 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 				return;
 			case (int)NumericInputButton.SpecialKeyType.Return:
 				Return();
+				return;
+			case (int)NumericInputButton.SpecialKeyType.Space:
+				AppendWhitespace();
 				return;
 		}
 
@@ -329,22 +336,39 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 		text += ch;
 
-		if (len != m_Text.Length && !IsExpression())
-			SendOnValueChangedAndUpdateLabel();
+		if (len != m_Text.Length)
+		{
+			if (m_Numeric)
+			{
+				if (m_Numeric && kOperandCharacters.Contains(ch.ToString()))
+					m_OperandCount++;
+			}
+
+			if (!IsExpression())
+				SendOnValueChangedAndUpdateLabel();
+			else
+				UpdateLabel();
+		}
 	}
 
 	private bool IsExpression()
 	{
-		return false;
+		return m_OperandCount > 0;
 	}
 
 	private void Delete()
 	{
 		if (m_Text.Length == 0) return;
 
+		if (m_Numeric && kOperandCharacters.Contains(m_Text[m_Text.Length - 1].ToString()))
+			m_OperandCount--;
+
 		m_Text = m_Text.Remove(m_Text.Length - 1);
-		
-		SendOnValueChangedAndUpdateLabel();
+
+		if (!IsExpression())
+			SendOnValueChangedAndUpdateLabel();
+		else
+			UpdateLabel();
 	}
 
 	private void Return()
@@ -354,9 +378,20 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		// TODO check multiline
 	}
 
+	private void AppendWhitespace()
+	{
+		var len = m_Text.Length;
+
+		text += " ";
+
+		if (len != m_Text.Length)
+			SendOnValueChangedAndUpdateLabel();
+	}
+
 	private void ClearField()
 	{
 		m_Text = "";
+		m_OperandCount = 0;
 
 		SendOnValueChangedAndUpdateLabel();
 	}
@@ -376,9 +411,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 	protected void UpdateLabel()
 	{
 		if (m_TextComponent != null && m_TextComponent.font != null)
-		{
 			m_TextComponent.text = m_Text;
-		}
 	}
 
 	private float CalculateFloatDragSensitivity(float value)
@@ -394,9 +427,31 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		return (int)Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f) * kDragSensitivity);
 	}
 
+	// From Editor/Mono/Utils/MathUtils.cs
+	private float RoundBasedOnMinimumDifference(float valueToRound, float minDifference)
+	{
+		if (minDifference == 0)
+			return DiscardLeastSignificantDecimal(valueToRound);
+		return (float)Math.Round(valueToRound, GetNumberOfDecimalsForMinimumDifference(minDifference), MidpointRounding.AwayFromZero);
+	}
+
+	// From Editor/Mono/Utils/MathUtils.cs
+	float DiscardLeastSignificantDecimal(float v)
+	{
+		int decimals = Mathf.Clamp((int)(5 - Mathf.Log10(Mathf.Abs(v))), 0, kMaxDecimals);
+		return (float)Math.Round(v, decimals, MidpointRounding.AwayFromZero);
+	}
+
+	// From Editor/Mono/Utils/MathUtils.cs
+	int GetNumberOfDecimalsForMinimumDifference(float minDifference)
+	{
+		return Mathf.Clamp(-Mathf.FloorToInt(Mathf.Log10(Mathf.Abs(minDifference))), 0, kMaxDecimals);
+	}
+
 	private void ParseNumberField()
 	{
 		var isFloat = m_ContentType == SerializedPropertyType.Float;
+		var str = m_Text;
 
 		if (isFloat)
 		{
@@ -407,26 +462,23 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 			if (!float.TryParse(m_Text, System.Globalization.NumberStyles.Float,
 					System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out floatVal))
-			{
 				floatVal = StringExpressionEvaluator.Evaluate<float>(m_Text);
-			}
 
-			if (double.IsNaN(floatVal))
-			{
+			if (float.IsNaN(floatVal))
 				floatVal = 0;
-			}
 
 			m_Text = floatVal.ToString(kFloatFieldFormatString);
-			SendOnValueChangedAndUpdateLabel();
 		}
 		else
 		{
 			int intVal;
 			if (!int.TryParse(m_Text, out intVal))
-			{
 				m_Text = StringExpressionEvaluator.Evaluate<long>(m_Text).ToString(kIntFieldFormatString);
-				SendOnValueChangedAndUpdateLabel();
-			}
 		}
+
+		if (str != m_Text)
+			SendOnValueChangedAndUpdateLabel();
+
+		m_OperandCount = 0;
 	}
 }
