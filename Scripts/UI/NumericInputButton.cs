@@ -1,7 +1,10 @@
 using System;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.VR.Modules;
+using UnityEngine.VR.Utilities;
 
 /// <summary>
 /// Set either the button's text field or the ASCII value
@@ -38,6 +41,9 @@ public class NumericInputButton : RayButton
 
 	[SerializeField]
 	private GameObject m_ButtonMesh;
+
+	[SerializeField]
+	private bool m_RepeatOnHold;
 
 	private Action<char> m_KeyPress;
 

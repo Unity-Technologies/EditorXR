@@ -61,10 +61,9 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 	private const string kAllowedCharactersForInt = "0123456789-*/+%^()";
 	private const string kOperandCharacters = "-*/+%^()";
 
-
 	private bool m_Numeric
 	{
-		get { return m_ContentType == SerializedPropertyType.Float || m_ContentType == SerializedPropertyType.Integer; } 
+		get { return m_ContentType == SerializedPropertyType.Float || m_ContentType == SerializedPropertyType.Integer; }
 	}
 
 	public string text
@@ -123,9 +122,6 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 			base.OnPointerEnter(eventData);
 
 			m_PointerOverField = true;
-
-			if (eventData.dragging)
-				m_LastPointerPosition = GetLocalPointerPosition(rayEventData);
 		}
 	}
 
@@ -195,7 +191,8 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 	private void StartDrag(RayEventData eventData)
 	{
-		ParseNumberField();
+		if (IsExpression())
+			ParseNumberField();
 		m_LastPointerPosition = GetLocalPointerPosition(eventData);
 		m_UpdateDrag = true;
 		eventData.eligibleForClick = false;
@@ -222,7 +219,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 			var dragSensitivity = CalculateFloatDragSensitivity(num);
 			num += delta * dragSensitivity;
 			//	floatVal += HandleUtility.niceMouseDelta*s_DragSensitivity;
-			num = RoundBasedOnMinimumDifference(num, dragSensitivity);
+			//num = RoundBasedOnMinimumDifference(num, dragSensitivity);
 			m_Text = num.ToString(kFloatFieldFormatString);
 		}
 		else
@@ -313,7 +310,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 	private bool IsValid(char ch)
 	{
-		if (m_TextComponent.font.HasCharacter(ch))
+		if (!m_TextComponent.font.HasCharacter(ch))
 			return false;
 
 		if (m_ContentType == SerializedPropertyType.Float)
