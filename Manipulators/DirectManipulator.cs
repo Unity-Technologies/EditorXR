@@ -48,9 +48,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 			h.gameObject.SetActive(h == handle);
 		dragging = true;
 
-		var target = m_Target;
-		if (m_Target == null)
-			target = transform;
+		var target = m_Target == null ? transform : m_Target;
 
 		var rayOrigin = eventData.rayOrigin;
 		var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
@@ -60,11 +58,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 
 	private void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
 	{
-		//var target = m_Target ?? transform; // MS: This implementation led to an UnassignedReferenceException 
-		// because target ends up == m_Target, which is not null by ?? check
-		var target = m_Target;
-		if (target == null)
-			target = transform;
+		var target = m_Target == null ? transform : m_Target;
 
 		var rayOrigin = eventData.rayOrigin;
 		translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
