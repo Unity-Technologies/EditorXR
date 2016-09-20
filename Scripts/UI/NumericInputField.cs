@@ -225,7 +225,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		else
 		{
 			int intNum;
-			if (!int.TryParse(text, out intNum))
+			if (!int.TryParse(text, out intNum) || m_Text == "")
 				intNum = 0;
 
 			var dragSensitivity = CalculateIntDragSensitivity(intNum);
@@ -327,6 +327,16 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		return true;
 	}
 
+	private bool IsExpression()
+	{
+		return m_OperandCount > 0;
+	}
+
+	private bool IsOperand(char ch)
+	{
+		return kOperandCharacters.Contains(ch.ToString()) && !(m_Text.Length == 0 && ch == '-');
+	}
+
 	private void Insert(char ch)
 	{
 		var len = m_Text.Length;
@@ -337,7 +347,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		{
 			if (m_Numeric)
 			{
-				if (m_Numeric && kOperandCharacters.Contains(ch.ToString()))
+				if (m_Numeric && IsOperand(ch))
 					m_OperandCount++;
 			}
 
@@ -348,16 +358,13 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		}
 	}
 
-	private bool IsExpression()
-	{
-		return m_OperandCount > 0;
-	}
-
 	private void Delete()
 	{
 		if (m_Text.Length == 0) return;
 
-		if (m_Numeric && kOperandCharacters.Contains(m_Text[m_Text.Length - 1].ToString()))
+		var ch = m_Text[m_Text.Length - 1];
+
+		if (m_Numeric && IsOperand(ch))
 			m_OperandCount--;
 
 		m_Text = m_Text.Remove(m_Text.Length - 1);

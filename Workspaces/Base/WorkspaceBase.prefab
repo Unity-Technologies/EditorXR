@@ -783,10 +783,16 @@ MonoBehaviour:
   m_Interactable: 1
   m_TargetGraphic: {fileID: 114000010274542296}
   m_SelectionFlags: 3
-  m_InputFieldType: 2
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: NumericInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  m_ContentType: 0
   m_KeyboardAnchorTransform: {fileID: 224000011789177380}
   m_TextComponent: {fileID: 114000011379192682}
-  kDragFactor: 10
+  m_CharacterLimit: 10
+  m_UpdateDrag: 0
 --- !u!114 &114000011658765658
 MonoBehaviour:
   m_ObjectHideFlags: 1
