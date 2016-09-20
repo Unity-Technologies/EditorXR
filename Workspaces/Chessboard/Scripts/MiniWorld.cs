@@ -45,7 +45,7 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 
 	public Bounds localBounds { get { return new Bounds(Vector3.zero, m_LocalBoundsSize); } set { m_LocalBoundsSize = value.size; } }
 
-	public bool IsContainedWithin(Vector3 position)
+	public bool Contains(Vector3 position)
 	{
 		return localBounds.Contains(transform.InverseTransformPoint(position));
 	}

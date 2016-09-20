@@ -3,6 +3,6 @@
 public interface IMiniWorld
 {
 	Transform miniWorldTransform { get; }
-	bool IsContainedWithin(Vector3 position);
+	bool Contains(Vector3 position);
 	Transform referenceTransform { get; }
 }

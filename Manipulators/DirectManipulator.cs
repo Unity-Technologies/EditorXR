@@ -13,8 +13,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	[SerializeField]
 	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 
-	public bool dragging { get { return m_Dragging; } }
-	private bool m_Dragging;
+	public bool dragging { get; private set; }
 
 	private Vector3 m_PositionOffset;
 	private Quaternion m_RotationOffset;
@@ -47,7 +46,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		foreach (var h in m_AllHandles)
 			h.gameObject.SetActive(h == handle);
-		m_Dragging = true;
+		dragging = true;
 
 		var target = m_Target;
 		if (m_Target == null)
@@ -78,6 +77,6 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 			foreach (var h in m_AllHandles)
 				h.gameObject.SetActive(true);
 
-		m_Dragging = false;
+		dragging = false;
 	}
 }

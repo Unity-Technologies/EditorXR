@@ -126,7 +126,7 @@ public class EditorVR : MonoBehaviour
 
 	private void OnSelectionChanged()
 	{
-		if(m_SelectionChanged != null)
+		if (m_SelectionChanged != null)
 			m_SelectionChanged.Invoke();
 	}
 
@@ -680,7 +680,7 @@ public class EditorVR : MonoBehaviour
 
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
-			this.m_SelectionChanged += selectionChanged.OnSelectionChanged;
+			m_SelectionChanged += selectionChanged.OnSelectionChanged;
 
 		if (mainMenu != null)
 		{
@@ -697,7 +697,7 @@ public class EditorVR : MonoBehaviour
 	{
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
-			this.m_SelectionChanged -= selectionChanged.OnSelectionChanged;
+			m_SelectionChanged -= selectionChanged.OnSelectionChanged;
 	}
 
 	private float GetPointerLength(Transform rayOrigin)
@@ -712,8 +712,13 @@ public class EditorVR : MonoBehaviour
 		if (m_DefaultRays.TryGetValue(rayOrigin, out dpr))
 		{
 			length = dpr.pointerLength;
-			if (ray != null)
-				length *= ray.miniWorld.miniWorldTransform.TransformPoint(ray.miniWorld.referenceTransform.localScale.Inverse()).x; // Assume uniform scale, no rotation
+			// If this is a MiniWorldRay, scale the pointer length to the correct size relative to MiniWorld objects
+			if (ray != null) {
+				var miniWorld = ray.miniWorld;
+				// As the miniworld gets smaller, the ray length grows, hence localScale.Inverse().
+				// Assume that both transforms have uniform scale, so we just need .x
+				length *= miniWorld.referenceTransform.TransformVector(miniWorld.miniWorldTransform.localScale.Inverse()).x;
+			}
 		}
 
 		return length;
@@ -922,15 +927,15 @@ public class EditorVR : MonoBehaviour
 						DeviceData deviceData;
 						if (m_DeviceData.TryGetValue(device, out deviceData))
 						{
-							// Create fake rayOrigin
-							var fakeRayOrigin = new GameObject("FakeRayOrigin").transform;
-							fakeRayOrigin.parent = workspace.transform;
+							// Create MiniWorld rayOrigin
+							var miniWorldRayOrigin = new GameObject("MiniWorldRayOrigin").transform;
+							miniWorldRayOrigin.parent = workspace.transform;
 
 							var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
 							m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
 							// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-							m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, uiInput, fakeRayOrigin);
-							m_MiniWorldRays[fakeRayOrigin] = new MiniWorldRay()
+							m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, uiInput, miniWorldRayOrigin);
+							m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay()
 							{
 								originalRayOrigin = rayOriginBase.Value,
 								miniWorld = miniWorld,
@@ -970,10 +975,10 @@ public class EditorVR : MonoBehaviour
 	{
 		foreach (var ray in m_MiniWorldRays)
 		{
-			var fakeRayOrigin = ray.Key;
+			var miniWorldRayOrigin = ray.Key;
 			if (!ray.Value.proxy.active)
 			{
-				fakeRayOrigin.gameObject.SetActive(false);
+				miniWorldRayOrigin.gameObject.SetActive(false);
 				continue;
 			}
 
@@ -981,20 +986,20 @@ public class EditorVR : MonoBehaviour
 			var miniWorld = ray.Value.miniWorld;
 			var originalRayOrigin = ray.Value.originalRayOrigin;
 			var referenceTransform = miniWorld.referenceTransform;
-			fakeRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
-			fakeRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
+			miniWorldRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
+			miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
 
-			// Set fakeRayOrigin active state based on whether controller is inside corresponding MiniWorld
+			// Set miniWorldRayOrigin active state based on whether controller is inside corresponding MiniWorld
 			var pointerLength = GetPointerLength(originalRayOrigin);
-			var isContained = miniWorld.IsContainedWithin(originalRayOrigin.position + originalRayOrigin.forward * pointerLength);
-			fakeRayOrigin.gameObject.SetActive(isContained);
+			var isContained = miniWorld.Contains(originalRayOrigin.position + originalRayOrigin.forward * pointerLength);
+			miniWorldRayOrigin.gameObject.SetActive(isContained);
 
 			var uiInput = (UIActions)ray.Value.uiInput;
 			var hoverObject = ray.Value.hoverObject;
 
 			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && uiInput.select.wasJustPressed)
 			{
-				m_InputModule.SetFakeRaycastSourceDragging(originalRayOrigin, fakeRayOrigin, true);
+				m_InputModule.SetMiniWorldRaycastSourceDragging(originalRayOrigin, miniWorldRayOrigin, true);
 
 				ray.Value.dragObject = hoverObject; // Capture object for later use
 				ray.Value.dragObjectOriginalScale = hoverObject.transform.localScale;
@@ -1018,7 +1023,7 @@ public class EditorVR : MonoBehaviour
 
 			if (uiInput.@select.wasJustReleased)
 			{
-				m_InputModule.SetFakeRaycastSourceDragging(originalRayOrigin, fakeRayOrigin, false);
+				m_InputModule.SetMiniWorldRaycastSourceDragging(originalRayOrigin, miniWorldRayOrigin, false);
 				PlaceObject(ray.Value.dragObject.transform, ray.Value.dragObjectOriginalScale);
 				ray.Value.dragObject = null;
 			}
@@ -1046,7 +1051,7 @@ public class EditorVR : MonoBehaviour
 		var inMiniWorld = false;
 		foreach (var miniWorld in m_MiniWorlds)
 		{
-			if (!miniWorld.IsContainedWithin(obj.position))
+			if (!miniWorld.Contains(obj.position))
 				continue;
 
 			inMiniWorld = true;

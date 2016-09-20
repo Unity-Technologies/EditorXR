@@ -37,7 +37,7 @@ namespace UnityEngine.VR.Modules
 			public GameObject pressedObject;
 			public GameObject draggedObject;
 			public bool dragging;
-			public bool fakeRayDragging;
+			public bool miniWorldRayDragging;
 
 			public bool hasObject { get { return (hoveredObject != null && hoveredObject.layer == UILayer) || pressedObject != null || draggedObject != null; } }
 
@@ -85,14 +85,14 @@ namespace UnityEngine.VR.Modules
 			return null;
 		}
 
-		public void SetFakeRaycastSourceDragging(Transform rayOrigin, Transform fakeRayOrigin, bool dragging)
+		public void SetMiniWorldRaycastSourceDragging(Transform rayOrigin, Transform miniWorldRayOrigin, bool dragging)
 		{
 			RaycastSource source;
-			if (m_RaycastSources.TryGetValue(fakeRayOrigin, out source))
+			if (m_RaycastSources.TryGetValue(miniWorldRayOrigin, out source))
 				source.dragging = dragging;
 
 			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
-				source.fakeRayDragging = dragging;
+				source.miniWorldRayDragging = dragging;
 		}
 
 		public override void Process()
@@ -108,7 +108,7 @@ namespace UnityEngine.VR.Modules
 				if (!(source.rayOrigin.gameObject.activeSelf || source.draggedObject) || !source.proxy.active)
 					continue;
 
-				if (source.fakeRayDragging)
+				if (source.miniWorldRayDragging)
 					continue;
 
 				if (source.eventData == null)

@@ -12,16 +12,19 @@ namespace UnityEditor.VR.Modules
 		public Transform ignoreRoot { get; set; }
 
 		/// <summary>
-		/// Must be called from OnGUI. Does raycast from all ray origins in the given proxies that are active.
+		/// Must be called from OnGUI. Does raycast from given rayOrigin if its gameObject is active.
 		/// </summary>
-		/// <param name="proxies"></param> List of proxies to raycast from
+		/// <param name="rayOrigin"></param> rayOrigin to raycast from
 		/// <param name="camera"></param> Camera to use for pixel based raycast (will be moved to the proxies' ray origins
+		/// <param name="pointerLength"></param> Length of pointer used for direct selection. If zero any raycast result is returned
 		public GameObject UpdateRaycast(Transform rayOrigin, Camera camera, float pointerLength = 0f)
 		{
+			if (!rayOrigin.gameObject.activeSelf)
+				return null;
 			UpdateIgnoreList();
-			float distance = 0;
-			GameObject result = null;
-			result = rayOrigin.gameObject.activeSelf ? Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera, out distance) : null;
+
+			float distance;
+			var result = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera, out distance);
 
 			// If a positive pointerLength is specified, use direct selection
 			if (pointerLength > 0 && rayOrigin.gameObject.activeSelf)
@@ -62,12 +65,13 @@ namespace UnityEditor.VR.Modules
 			Camera.SetupCurrent(camera);
 
 			var go = HandleUtility.PickGameObject(camera.pixelRect.center, false, m_IgnoreList);
+			// Find the distance to the closest renderer to check for direct selection
 			distance = float.MaxValue;
 			if (go)
 			{
 				foreach (var renderer in go.GetComponentsInChildren<Renderer>())
 				{
-					var newDist = 0f;
+					float newDist;
 					if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
 						distance = Mathf.Min(distance, newDist);
 				}
