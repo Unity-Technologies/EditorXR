@@ -42,7 +42,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 	[SerializeField]
 	private bool m_UpdateDrag;
-	private const float kDragSensitivity = 10f;
+	private const float kDragSensitivity = 0.01f;
 	private const float kDragDeadzone = 0.01f;
 	private Vector3 m_StartDragPosition;
 	private Vector3 m_LastPointerPosition;
@@ -208,7 +208,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 	private void DragNumberValue(RayEventData eventData)
 	{
-		var delta = GetLocalPointerPosition(eventData).x - m_LastPointerPosition.x;
+		var delta = GetLocalPointerPosition(eventData) - m_LastPointerPosition;
 
 		if (contentType == SerializedPropertyType.Float)
 		{
@@ -217,20 +217,20 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 				num = 0f;
 
 			var dragSensitivity = CalculateFloatDragSensitivity(num);
-			num += delta * dragSensitivity;
-			//	floatVal += HandleUtility.niceMouseDelta*s_DragSensitivity;
-			//num = RoundBasedOnMinimumDifference(num, dragSensitivity);
+//			num += delta * dragSensitivity;
+			num += GetNicePointerDelta(delta) * dragSensitivity;
+			num = RoundBasedOnMinimumDifference(num, dragSensitivity);
 			m_Text = num.ToString(kFloatFieldFormatString);
 		}
 		else
 		{
 			int intNum;
-			if (!int.TryParse(text, out intNum) || m_Text == "")
+			if (!int.TryParse(text, out intNum))
 				intNum = 0;
 
 			var dragSensitivity = CalculateIntDragSensitivity(intNum);
-//			intNum += (int) Math.Round(HandleUtility.niceMouseDelta* dragSensitivity);
-			intNum += (int)Math.Round(delta * dragSensitivity);
+			intNum += (int)Math.Round(GetNicePointerDelta(delta) * dragSensitivity);
+//			intNum += (int)Math.Round(delta * dragSensitivity);
 
 			m_Text = intNum.ToString(kIntFieldFormatString);
 		}
@@ -434,20 +434,20 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 	// From Editor/Mono/Utils/MathUtils.cs
 	private float RoundBasedOnMinimumDifference(float valueToRound, float minDifference)
 	{
-		if (minDifference == 0)
+		if (Math.Abs(minDifference) < Mathf.Epsilon)
 			return DiscardLeastSignificantDecimal(valueToRound);
 		return (float)Math.Round(valueToRound, GetNumberOfDecimalsForMinimumDifference(minDifference), MidpointRounding.AwayFromZero);
 	}
 
 	// From Editor/Mono/Utils/MathUtils.cs
-	float DiscardLeastSignificantDecimal(float v)
+	private float DiscardLeastSignificantDecimal(float v)
 	{
 		int decimals = Mathf.Clamp((int)(5 - Mathf.Log10(Mathf.Abs(v))), 0, kMaxDecimals);
 		return (float)Math.Round(v, decimals, MidpointRounding.AwayFromZero);
 	}
 
 	// From Editor/Mono/Utils/MathUtils.cs
-	int GetNumberOfDecimalsForMinimumDifference(float minDifference)
+	private int GetNumberOfDecimalsForMinimumDifference(float minDifference)
 	{
 		return Mathf.Clamp(-Mathf.FloorToInt(Mathf.Log10(Mathf.Abs(minDifference))), 0, kMaxDecimals);
 	}
@@ -477,12 +477,32 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		{
 			int intVal;
 			if (!int.TryParse(m_Text, out intVal))
-				m_Text = StringExpressionEvaluator.Evaluate<long>(m_Text).ToString(kIntFieldFormatString);
+				m_Text = StringExpressionEvaluator.Evaluate<int>(m_Text).ToString(kIntFieldFormatString);
 		}
 
 		if (str != m_Text)
 			SendOnValueChangedAndUpdateLabel();
 
 		m_OperandCount = 0;
+	}
+
+	private bool m_UseYSign;
+	private float GetNicePointerDelta(Vector3 delta)
+	{
+		Vector2 d = delta;
+		d.y = -d.y;
+
+		if (Mathf.Abs(Mathf.Abs(d.x) - Mathf.Abs(d.y)) / Mathf.Max(Mathf.Abs(d.x), Mathf.Abs(d.y)) > .1f)
+		{
+			if (Mathf.Abs(d.x) > Mathf.Abs(d.y))
+				m_UseYSign = false;
+			else
+				m_UseYSign = true;
+		}
+
+		if (m_UseYSign)
+			return Mathf.Sign(d.y) * d.magnitude * 100f;
+		else
+			return Mathf.Sign(d.x) * d.magnitude * 100f;
 	}
 }
