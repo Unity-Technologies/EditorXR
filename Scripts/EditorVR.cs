@@ -438,6 +438,9 @@ public class EditorVR : MonoBehaviour
 			if (deviceData.mainMenu != null)
 				AddActionMapInputs(deviceData.mainMenu, maps);
 
+			if (deviceData.alternateMenu != null)
+				AddActionMapInputs(deviceData.alternateMenu, maps);
+
 			// Not every tool has UI
 			if (deviceData.uiInput != null)
 				maps.Add(deviceData.uiInput);
