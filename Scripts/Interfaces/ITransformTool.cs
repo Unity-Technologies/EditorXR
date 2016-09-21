@@ -1,5 +1,5 @@
 ﻿/// <summary>
-/// Gives access to a Transform Tool settings
+/// Designates a tool as a Transform tool and allows for its control
 /// </summary>
 public interface ITransformTool
 {

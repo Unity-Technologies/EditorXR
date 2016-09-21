@@ -1,7 +1,7 @@
 ﻿using System;
 
 /// <summary>
-/// Which selection modes are active:
+/// What type of interaction is considered a selection:
 /// Direct for when objects intersect with the pointer,
 /// Ray for when the pointer ray hits far-away objects
 /// </summary>

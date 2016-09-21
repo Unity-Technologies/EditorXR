@@ -170,8 +170,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			}
 		}
 
-		// If we haven't encountered any Renderers, return bounds of (1,1,1) at the center of the selection
-		// for the purposes of positioning and  scaling the DirectManipulator
+		// If we haven't encountered any Renderers, return bounds of (1,1,1) at the center of the selection, otherwise
+		// we would scale the DirectManipulator to (0,0,0) rendering it unselectable
 		if (newBounds == null)
 		{
 			var bounds = new Bounds();
