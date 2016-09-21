@@ -1820,7 +1820,6 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 4000013624328300}
-  - 114: {fileID: 114000012127715022}
   - 114: {fileID: 114000010592100496}
   m_Layer: 0
   m_Name: RadialMenu
@@ -6649,19 +6648,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ShowMaskGraphic: 0
---- !u!114 &114000012127715022
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012424014352}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11fd46c50e83ee74083fc3e7b3f226d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_RadialMenuUI: {fileID: 114000010592100496}
 --- !u!114 &114000012133080420
 MonoBehaviour:
   m_ObjectHideFlags: 1
