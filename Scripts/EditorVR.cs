@@ -279,7 +279,10 @@ public class EditorVR : MonoBehaviour
 
 				var mainMenuActionMap = iMainMenu as ICustomActionMap;
 				if (mainMenuActionMap != null)
-					iAlternateMenu.mainMenuActionMapInput = mainMenuActionMap.actionMapInput; // allow the alternate menu to disable the main menu's action map input, as they both utilize the thumbstick x/y
+				{
+					iAlternateMenu.actionMapInputsToDisable = new List<ActionMapInput>();
+					iAlternateMenu.actionMapInputsToDisable.Add(mainMenuActionMap.actionMapInput); // allow the alternate menu to disable the main menu's action map input, as they both utilize the thumbstick x/y
+				}
 
 				UpdatePlayerHandleMaps();
 			}
