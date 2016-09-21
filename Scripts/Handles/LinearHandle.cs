@@ -1,4 +1,5 @@
 ﻿using UnityEngine.VR.Modules;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Handles
 {
@@ -27,24 +28,24 @@ namespace UnityEngine.VR.Handles
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new LinearHandleEventData(eventData.rayOrigin, IsDirectSelection(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
+			return new LinearHandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
 		}
 
-		protected override void OnHandleRayHover(HandleEventData eventData)
+		protected override void OnHandleHovering(HandleEventData eventData)
 		{
 			UpdateHandleTip(eventData as LinearHandleEventData);
 		}
 
-		protected override void OnHandleRayEnter(HandleEventData eventData)
+		protected override void OnHandleHoverStarted(HandleEventData eventData)
 		{
 			UpdateHandleTip(eventData as LinearHandleEventData);
-			base.OnHandleRayEnter(eventData);
+			base.OnHandleHoverStarted(eventData);
 		}
 
-		protected override void OnHandleRayExit(HandleEventData eventData)
+		protected override void OnHandleHoverEnded(HandleEventData eventData)
 		{
 			UpdateHandleTip(eventData as LinearHandleEventData);
-			base.OnHandleRayExit(eventData);
+			base.OnHandleHoverEnded(eventData);
 		}
 
 		private void UpdateHandleTip(LinearHandleEventData eventData)
@@ -63,7 +64,7 @@ namespace UnityEngine.VR.Handles
 			}
 		}
 
-		protected override void OnHandleBeginDrag(HandleEventData eventData)
+		protected override void OnHandleDragStarted(HandleEventData eventData)
 		{
 			var linearEventData = eventData as LinearHandleEventData;
 			m_LastPosition = linearEventData.raycastHitWorldPosition;
@@ -76,10 +77,10 @@ namespace UnityEngine.VR.Handles
 
 			UpdateHandleTip(linearEventData);
 
-			base.OnHandleBeginDrag(eventData);
+			base.OnHandleDragStarted(eventData);
 		}
 
-		protected override void OnHandleDrag(HandleEventData eventData)
+		protected override void OnHandleDragging(HandleEventData eventData)
 		{
 			Transform rayOrigin = eventData.rayOrigin;
 			Vector3 worldPosition = m_LastPosition;
@@ -108,14 +109,14 @@ namespace UnityEngine.VR.Handles
 
 			UpdateHandleTip(linearEventData);
 
-			base.OnHandleDrag(eventData);
+			base.OnHandleDragging(eventData);
 		}
 
-		protected override void OnHandleEndDrag(HandleEventData eventData)
+		protected override void OnHandleDragEnded(HandleEventData eventData)
 		{
 			UpdateHandleTip(eventData as LinearHandleEventData);
 
-			base.OnHandleEndDrag(eventData);
+			base.OnHandleDragEnded(eventData);
 		}
 	}
 }

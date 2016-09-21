@@ -11,27 +11,20 @@ namespace UnityEngine.VR.Handles
 	/// </summary>
 	public class BaseHandle : MonoBehaviour, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler
 	{
-		[Flags]
-		public enum HandleFlags
-		{
-			Ray = 1 << 0,
-			Direct = 1 << 1
-		}
-
-		public HandleFlags handleFlags { get { return m_HandleFlags; } set { m_HandleFlags = value; } }
-		[SerializeField]
-		[FlagsProperty]
-		private HandleFlags m_HandleFlags;
-
-		public event Action<BaseHandle, HandleEventData> handleDragging = delegate { };
-		public event Action<BaseHandle, HandleEventData> handleDrag = delegate { };
-		public event Action<BaseHandle, HandleEventData> handleDragged = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragStarted = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragging = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragEnded = delegate { };
 
 		public event Action<BaseHandle, HandleEventData> doubleClick = delegate { };
 
+		public event Action<BaseHandle, HandleEventData> hoverStarted = delegate { };
 		public event Action<BaseHandle, HandleEventData> hovering = delegate { };
-		public event Action<BaseHandle, HandleEventData> hover = delegate { };
-		public event Action<BaseHandle, HandleEventData> hovered = delegate { };
+		public event Action<BaseHandle, HandleEventData> hoverEnded = delegate { };
+
+		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
+		[SerializeField]
+		[FlagsProperty]
+		private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
 		private const int kDefaultCapacity = 2; // i.e. 2 controllers
 
@@ -46,77 +39,61 @@ namespace UnityEngine.VR.Handles
 			if (m_HoverSources.Count > 0 || m_DragSources.Count > 0)
 			{
 				var eventData = GetHandleEventData(new RayEventData(EventSystem.current));
-				for(int i = 0; i < m_HoverSources.Count; i++)
-					OnHandleRayExit(eventData);
+				for (int i = 0; i < m_HoverSources.Count; i++)
+					OnHandleHoverEnded(eventData);
 				m_HoverSources.Clear();
 
 				for (int i = 0; i < m_DragSources.Count; i++)
-					OnHandleEndDrag(eventData);
+					OnHandleDragEnded(eventData);
 				m_DragSources.Clear();
 			}
 		}
 
 		protected virtual HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new HandleEventData(eventData.rayOrigin, IsDirectSelection(eventData));
-		}
-
-		protected virtual bool IsDirectSelection(RayEventData eventData)
-		{
-			return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength;
-		}
-
-		protected virtual bool ValidEvent(HandleEventData eventData)
-		{
-			if ((handleFlags & HandleFlags.Direct) != 0 && eventData.direct)
-				return true;
-
-			if ((handleFlags & HandleFlags.Ray) != 0)
-				return true;
-
-			return false;
+			return new HandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData));
 		}
 
 		public void OnBeginDrag(RayEventData eventData)
 		{
-			var handleEventData = GetHandleEventData(eventData);
-			if (!ValidEvent(handleEventData))
+			if (!U.UI.IsValidEvent(eventData, selectionFlags))
 				return;
 
 			m_DragSources.Add(eventData.rayOrigin);
 			startDragPosition = eventData.pointerCurrentRaycast.worldPosition;
 
+			var handleEventData = GetHandleEventData(eventData);
+
 			//Double-click logic
-			var timeSinceLastClick = (float)(DateTime.Now - m_LastClickTime).TotalSeconds;
+			var timeSinceLastClick = (float) (DateTime.Now - m_LastClickTime).TotalSeconds;
 			m_LastClickTime = DateTime.Now;
-			if (U.Input.DoubleClick(timeSinceLastClick))
+			if (U.UI.DoubleClick(timeSinceLastClick))
 			{
 				OnDoubleClick(handleEventData);
 			}
 
-			OnHandleBeginDrag(handleEventData);
+			OnHandleDragStarted(handleEventData);
 		}
 
 		public void OnDrag(RayEventData eventData)
 		{
 			if (m_DragSources.Count > 0)
-				OnHandleDrag(GetHandleEventData(eventData));
+				OnHandleDragging(GetHandleEventData(eventData));
 		}
 
 		public void OnEndDrag(RayEventData eventData)
 		{
 			if (m_DragSources.Remove(eventData.rayOrigin))
-				OnHandleEndDrag(GetHandleEventData(eventData));
+				OnHandleDragEnded(GetHandleEventData(eventData));
 		}
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			var handleEventData = GetHandleEventData(eventData);
-			if (!ValidEvent(handleEventData))
+			if (!U.UI.IsValidEvent(eventData, selectionFlags))
 				return;
 
 			m_HoverSources.Add(eventData.rayOrigin);
-			OnHandleRayEnter(handleEventData);
+			OnHandleHoverStarted(GetHandleEventData(eventData));
 		}
 
 		public void OnRayHover(RayEventData eventData)
@@ -125,35 +102,43 @@ namespace UnityEngine.VR.Handles
 
 			// Direct selection has special handling for enter/exit since those events may not have been called
 			// because the pointer wasn't close enough to the handle
-			if (handleFlags == HandleFlags.Direct)
+			if (selectionFlags == SelectionFlags.Direct)
 			{
 				if (!handleEventData.direct && m_HoverSources.Remove(eventData.rayOrigin))
 				{
-					OnHandleRayExit(handleEventData);
+					OnHandleHoverEnded(handleEventData);
 					return;
 				}
 
 				if (handleEventData.direct && !m_HoverSources.Contains(eventData.rayOrigin))
 				{
 					m_HoverSources.Add(eventData.rayOrigin);
-					OnHandleRayEnter(handleEventData);
+					OnHandleHoverStarted(handleEventData);
 				}
 			}
 
 			if (m_HoverSources.Count > 0)
-				OnHandleRayHover(GetHandleEventData(eventData));
+				OnHandleHovering(GetHandleEventData(eventData));
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
 			if (m_HoverSources.Remove(eventData.rayOrigin))
-				OnHandleRayExit(GetHandleEventData(eventData));
+				OnHandleHoverEnded(GetHandleEventData(eventData));
 		}
 
 		/// <summary>
 		/// Override to modify event data prior to raising event (requires calling base method at the end)
 		/// </summary>
-		protected virtual void OnHandleRayEnter(HandleEventData eventData)
+		protected virtual void OnHandleHoverStarted(HandleEventData eventData)
+		{
+			hoverStarted(this, eventData);
+		}
+
+		/// <summary>
+		/// Override to modify event data prior to raising event (requires calling base method at the end)
+		/// </summary>
+		protected virtual void OnHandleHovering(HandleEventData eventData)
 		{
 			hovering(this, eventData);
 		}
@@ -161,41 +146,33 @@ namespace UnityEngine.VR.Handles
 		/// <summary>
 		/// Override to modify event data prior to raising event (requires calling base method at the end)
 		/// </summary>
-		protected virtual void OnHandleRayHover(HandleEventData eventData)
+		protected virtual void OnHandleHoverEnded(HandleEventData eventData)
 		{
-			hover(this, eventData);
+			hoverEnded(this, eventData);
 		}
 
 		/// <summary>
 		/// Override to modify event data prior to raising event (requires calling base method at the end)
 		/// </summary>
-		protected virtual void OnHandleRayExit(HandleEventData eventData)
+		protected virtual void OnHandleDragStarted(HandleEventData eventData)
 		{
-			hovered(this, eventData);
+			dragStarted(this, eventData);
 		}
 
 		/// <summary>
 		/// Override to modify event data prior to raising event (requires calling base method at the end)
 		/// </summary>
-		protected virtual void OnHandleBeginDrag(HandleEventData eventData)
+		protected virtual void OnHandleDragging(HandleEventData eventData)
 		{
-			handleDragging(this, eventData);
+			dragging(this, eventData);
 		}
 
 		/// <summary>
 		/// Override to modify event data prior to raising event (requires calling base method at the end)
 		/// </summary>
-		protected virtual void OnHandleDrag(HandleEventData eventData)
+		protected virtual void OnHandleDragEnded(HandleEventData eventData)
 		{
-			handleDrag(this, eventData);
-		}
-
-		/// <summary>
-		/// Override to modify event data prior to raising event (requires calling base method at the end)
-		/// </summary>
-		protected virtual void OnHandleEndDrag(HandleEventData eventData)
-		{
-			handleDragged(this, eventData);
+			dragEnded(this, eventData);
 		}
 
 		/// <summary>

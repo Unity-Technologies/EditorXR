@@ -89,11 +89,12 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 4000010144233392}
-  - {fileID: 4000013379088616}
+  - {fileID: 4000013239461546}
   - {fileID: 4000011673095590}
   - {fileID: 472760}
   - {fileID: 4000011730544990}
   - {fileID: 449628}
+  - {fileID: 4000013379088616}
   m_Father: {fileID: 0}
   m_RootOrder: 0
 --- !u!4 &449628
@@ -323,7 +324,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000013379088616}
   m_Layer: 0
-  m_Name: AltMenuOrigin
+  m_Name: PreviewOrigin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -339,6 +340,21 @@ GameObject:
   - 4: {fileID: 4000010144233392}
   m_Layer: 0
   m_Name: MenuOrigin
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000012214799898
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013239461546}
+  m_Layer: 0
+  m_Name: AltMenuOrigin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -383,12 +399,12 @@ Transform:
   m_Children: []
   m_Father: {fileID: 432966}
   m_RootOrder: 4
---- !u!4 &4000013379088616
+--- !u!4 &4000013239461546
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000010744105914}
+  m_GameObject: {fileID: 1000012214799898}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.0576, z: 0.0863}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -396,6 +412,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 432966}
   m_RootOrder: 1
+--- !u!4 &4000013379088616
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010744105914}
+  m_LocalRotation: {x: -0.258819, y: 0, z: 0, w: 0.9659259}
+  m_LocalPosition: {x: 0, y: 0.1235, z: 0.1443}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: -30, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 432966}
+  m_RootOrder: 6
 --- !u!114 &114000010981456888
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -410,4 +439,5 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_RayOrigin: {fileID: 4000011673095590}
   m_MenuOrigin: {fileID: 4000010144233392}
-  m_AlternateMenuOrigin: {fileID: 4000013379088616}
+  m_AlternateMenuOrigin: {fileID: 4000013239461546}
+  m_PreviewOrigin: {fileID: 4000013379088616}

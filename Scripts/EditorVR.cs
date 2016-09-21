@@ -14,6 +14,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Workspaces;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;
@@ -29,7 +30,7 @@ public class EditorVR : MonoBehaviour
 	private const float kWorkspaceAnglePadding = 25f;
 	private const float kWorkspaceYPadding = 0.35f;
 	private const int kMaxWorkspacePlacementAttempts = 20;
-	private const float kWorkspaceVacuumEnableDistance = 1.5f; //Disable vacuum bounds if workspace is closer than 1.5 meters to player
+	private const float kWorkspaceVacuumEnableDistance = 1f; // Disable vacuum bounds if workspace is close to player
 
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
@@ -44,7 +45,7 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
 
-	private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
+	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
 	private TrackedObject m_TrackedObjectInput;
 	private Default m_DefaultActionInput;
@@ -56,6 +57,7 @@ public class EditorVR : MonoBehaviour
 	private Camera m_EventCamera;
 	private PixelRaycastModule m_PixelRaycastModule;
 	private HighlightModule m_HighlightModule;
+	private ObjectPlacementModule m_ObjectPlacementModule;
 
 	private PlayerHandle m_PlayerHandle;
 
@@ -97,6 +99,7 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
+		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace));
@@ -104,7 +107,7 @@ public class EditorVR : MonoBehaviour
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
 		// then only show it in that hand's menu.
-		// CollectToolActionMaps(m_AllTools);		
+		// CollectToolActionMaps(m_AllTools);
 	}
 
 	private void CreateDeviceDataForInputDevices()
@@ -202,7 +205,7 @@ public class EditorVR : MonoBehaviour
 		}
 
 		var camera = U.Camera.GetMainCamera();
-		//Enable/disable workspace vacuum bounds based on distance to camera
+		// Enable/disable workspace vacuum bounds based on distance to camera
 		foreach (var workspace in m_AllWorkspaces)
 			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
 
@@ -663,6 +666,17 @@ public class EditorVR : MonoBehaviour
 		if (highlight != null)
 			highlight.setHighlight = m_HighlightModule.SetHighlight;
 
+		var placeObjects = obj as IPlaceObjects;
+		if (placeObjects != null)
+			placeObjects.placeObject = m_ObjectPlacementModule.PlaceObject;
+
+		var positionPreview = obj as IPositionPreview;
+		if (positionPreview != null)
+		{
+			positionPreview.positionPreview = m_ObjectPlacementModule.PositionPreview;
+			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
+		}
+
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_AllTools.ToList();
@@ -805,6 +819,7 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
+		CreateWorkspace<ProjectWorkspace>();
 		CreateWorkspace<ChessboardWorkspace>();
 		CreateWorkspace<ConsoleWorkspace>();
 	}
@@ -859,7 +874,7 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
-		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, transform);
+		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
 		m_AllWorkspaces.Add(workspace);
 		workspace.destroyed += OnWorkspaceDestroyed;
 		ConnectInterfaces(workspace);
@@ -873,6 +888,14 @@ public class EditorVR : MonoBehaviour
 	private void OnWorkspaceDestroyed(Workspace workspace)
 	{
 		m_AllWorkspaces.Remove(workspace);
+	}
+
+	private Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
+	{
+		return (from proxy in m_AllProxies
+				from origin in proxy.rayOrigins
+					where origin.Value.Equals(rayOrigin)
+						select proxy.previewOrigins[origin.Key]).FirstOrDefault();
 	}
 
 #if UNITY_EDITOR
