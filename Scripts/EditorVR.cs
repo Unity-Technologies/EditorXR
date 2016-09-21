@@ -95,7 +95,7 @@ public class EditorVR : MonoBehaviour
 		CreateAllProxies();
 		CreateDeviceDataForInputDevices();
 		CreateEventSystem();
-		
+
 		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);

@@ -13,39 +13,11 @@ namespace UnityEngine.VR.Modules
 		private SpatialHash<Renderer> m_SpatialHash;
 		private MeshCollider m_CollisionTester;
 
-		public bool hasObjects
-		{
-			get { return m_IntersectedObjects.Count > 0; }
-		}
-
 #if UNITY_EDITOR
-		public List<IntersectionTester> testers
-		{
-			get { return m_Testers; }
-		}
-
-		public bool ready
-		{
-			get
-			{
-				if (m_SpatialHash == null)
-					return false;
-				return true;
-			}
-		}
-
-		public List<Renderer> allObjects
-		{
-			get
-			{
-				return m_SpatialHash == null ? null : m_SpatialHash.allObjects;
-			}
-		}
-
-		public int intersectedObjectCount
-		{
-			get { return m_IntersectedObjects.Count; }
-		}
+		public bool ready { get { return m_SpatialHash != null; } }
+		public List<IntersectionTester> testers { get { return m_Testers; } }
+		public List<Renderer> allObjects { get { return m_SpatialHash == null ? null : m_SpatialHash.allObjects; } }
+		public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
 #endif
 
 		public void Setup(SpatialHash<Renderer> hash)
@@ -134,19 +106,16 @@ namespace UnityEngine.VR.Modules
 		void OnIntersectionEnter(IntersectionTester tester, Renderer obj)
 		{
 			m_IntersectedObjects[tester] = obj;
-			Debug.Log("Entered " + obj);
 		}
 
 		void OnIntersectionStay(IntersectionTester tester, Renderer obj)
 		{
 			m_IntersectedObjects[tester] = obj;
-			//Debug.Log("Stayed " + obj);
 		}
 
 		void OnIntersectionExit(IntersectionTester tester, Renderer obj)
 		{
 			m_IntersectedObjects.Remove(tester);
-			Debug.Log("Exited " + obj);
 		}
 
 		public Renderer GetIntersectedObjectForTester(IntersectionTester tester)
@@ -154,41 +123,6 @@ namespace UnityEngine.VR.Modules
 			Renderer obj;
 			m_IntersectedObjects.TryGetValue(tester, out obj);
 			return obj;
-		}
-
-		public Renderer GrabObjectAndRemove(IntersectionTester tester)
-		{
-			Renderer obj = GetIntersectedObjectForTester(tester);
-			tester.grabbedObject = obj;
-			m_SpatialHash.RemoveObject(obj);
-			return obj;
-		}
-
-		public Renderer GrabObjectAndDisableTester(IntersectionTester tester)
-		{
-			Renderer obj = GetIntersectedObjectForTester(tester);
-			tester.grabbedObject = obj;
-			tester.active = false;
-			return obj;
-		}
-
-		public Renderer GrabObjectAndRemoveAndDisableTester(IntersectionTester tester)
-		{
-			Renderer obj = GetIntersectedObjectForTester(tester);
-			if (obj != null)
-			{
-				tester.grabbedObject = obj;
-				m_SpatialHash.RemoveObject(obj);
-				tester.active = false;
-			}
-			return obj;
-		}
-
-		public void UnGrabObject(IntersectionTester tester)
-		{
-			m_SpatialHash.AddObject(tester.grabbedObject, tester.grabbedObject.bounds);
-			tester.grabbedObject = null;
-			tester.active = true;
 		}
 	}
 }

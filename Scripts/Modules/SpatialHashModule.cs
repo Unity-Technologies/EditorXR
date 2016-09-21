@@ -9,13 +9,7 @@ namespace UnityEngine.VR.Modules
 	{
 		private SpatialHash<Renderer> m_SpatialHash;
 
-		public int objectCount
-		{
-			get
-			{
-				return m_SpatialHash == null ? 0 : m_SpatialHash.allObjects.Count;
-			}
-		}
+		public bool showGizmos { get; set; }
 
 		internal void Setup(SpatialHash<Renderer> hash)
 		{
@@ -44,7 +38,7 @@ namespace UnityEngine.VR.Modules
 
 		private void OnDrawGizmos()
 		{
-			if (m_SpatialHash != null)
+			if (m_SpatialHash != null && showGizmos)
 				m_SpatialHash.DrawGizmos();
 		}
 
@@ -52,6 +46,7 @@ namespace UnityEngine.VR.Modules
 		{
 			while (true)
 			{
+				// TODO AE 9/21/16: Hook updates of new objects that are created
 				List<Renderer> allObjects = new List<Renderer>(m_SpatialHash.allObjects);
 				foreach (var obj in allObjects)
 				{

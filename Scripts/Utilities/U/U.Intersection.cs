@@ -6,6 +6,13 @@ namespace UnityEngine.VR.Utilities
 	{
 		public static class Intersection
 		{
+			/// <summary>
+			/// Test whether an object collides with the tester
+			/// </summary>
+			/// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
+			/// <param name="obj">The object to test collision on</param>
+			/// <param name="tester">The tester object</param>
+			/// <returns>The result of whether the tester is in intersection with or located within the object</returns>
 			public static bool TestObject(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
 			{
 				// Try a simple test with specific rays located at vertices
@@ -146,12 +153,7 @@ namespace UnityEngine.VR.Utilities
 				return (projection >= 0f && projection <= collisionLine.sqrMagnitude);
 			}
 
-			public static Vector3 InvertVector3(Vector3 vec)
-			{
-				return new Vector3(1 / vec.x, 1 / vec.y, 1 / vec.z);
-			}
-
-			//from Real Time Collision Detection p.141
+			// from Real Time Collision Detection p.141
 			public static Vector3 ClosestPtPointTriangle(Vector3 p, Vector3 a, Vector3 b, Vector3 c)
 			{
 				float v, w;
