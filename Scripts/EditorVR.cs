@@ -660,7 +660,7 @@ public class EditorVR : MonoBehaviour
 
 		var raycaster = obj as IRaycaster;
 		if (raycaster != null)
-			raycaster.getFirstGameObject = m_PixelRaycastModule.GetFirstGameObject;
+			raycaster.getFirstGameObject = GetFirstGameObject;
 
 		var highlight = obj as IHighlight;
 		if (highlight != null)
@@ -686,6 +686,23 @@ public class EditorVR : MonoBehaviour
 			mainMenu.node = GetDeviceNode(device);
 			mainMenu.setup();
 		}
+	}
+
+	private GameObject GetFirstGameObject(Transform rayOrigin)
+	{
+		GameObject go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+
+		// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
+		// so in that case use the spatial hash as a final test
+		if (!go)
+		{
+			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+			if (renderer)
+				go = renderer.gameObject;
+		}
+
+		return go;
 	}
 
 	private float GetPointerLength(Transform rayOrigin)
