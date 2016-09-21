@@ -42,6 +42,8 @@ public class EditorVR : MonoBehaviour
 	private DefaultProxyRay m_ProxyRayPrefab;
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
+	[SerializeField]
+	private MainMenuActivator m_MainMenuActivatorPrefab;
 
 	private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
@@ -61,6 +63,8 @@ public class EditorVR : MonoBehaviour
 		public ActionMapInput uiInput;
 		public IMainMenu mainMenu;
 		public ITool currentTool;
+		public IAlternateMenu alternateMenu;
+		public MainMenuActivator mainMenuActivator;
 	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
@@ -248,24 +252,35 @@ public class EditorVR : MonoBehaviour
 				if (deviceData.Key.tagIndex == -1)
 					continue;
 
+				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
+				AddToolToDeviceData(tool, devices);
+
 				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 				var selectionTool = tool as SelectionTool;
 
-				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
-				AddToolToDeviceData(tool, devices);
+				var mainMenuActivator = m_DeviceData[deviceData.Key].mainMenuActivator = SpawnMainMenuActivator(deviceData.Key);
+				var iMainMenu = m_DeviceData[deviceData.Key].mainMenu = SpawnMainMenu(typeof(MainMenu), deviceData.Key);
+				var iAlternateMenu = m_DeviceData[deviceData.Key].alternateMenu = SpawnAlternateMenu(typeof(UnityEngine.VR.Menus.RadialMenu), deviceData.Key);
 
-				var imainMenu = m_DeviceData[deviceData.Key].mainMenu = SpawnMainMenu(typeof(MainMenu), deviceData.Key);
-				imainMenu.onShow += selectionTool.HideRadialMenu;
+				selectionTool.selectionOccurred = iAlternateMenu.show; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 
-				var mainMenu = imainMenu as MainMenu; // TODO: review this cast & event assign.  Should the iMainMenu interface mandate that all main menus implement MenuActivatorToAlternatePosition, if so, this subscription can occur without the additional cast.
-				selectionTool.onRadialMenuShow += mainMenu.MenuActivatorToAlternatePosition;
-				selectionTool.onRadialMenuHide += mainMenu.MenuActivatorToOriginalPosition;
+				mainMenuActivator.onActivate += () => iMainMenu.visible = true; // Show main menu when main menu activator is activated
+				mainMenuActivator.onDeactivate += () => iMainMenu.visible = false; // Hide main menu when main menu activator is deactivated
+				mainMenuActivator.onActivate += iAlternateMenu.hide; // Hide alternate menu when main menu is activated
+				iAlternateMenu.onShow += mainMenuActivator.Deactivate; // Deactivate main menu activator when alternate menu is being shown;
+				// Add in support for pushing the radial menu onto other hand when main menu is opened and an object is selected
 
-				// Set the main menu's action map input, allowing it to be disabled when the radial menu is displayed
-				// The Main Menu is currently consuming the x axis input the radial menu requires
-				var mainMenuActionMap = imainMenu as ICustomActionMap;
-				selectionTool.mainMenuActionMapInput = mainMenuActionMap.actionMapInput;
+				//iMainMenu.onShow += iAlternateMenu.hideAlternateMenu;
+
+				var mainMenu = iMainMenu as MainMenu; // TODO: review this cast & event assign.  Should the iMainMenu interface mandate that all main menus implement MenuActivatorToAlternatePosition, if so, this subscription can occur without the additional cast.
+				//iAlternateMenu.onShow += mainMenu.MenuActivatorToAlternatePosition;
+				//iAlternateMenu.onHide += mainMenu.MenuActivatorToOriginalPosition;
+
+				var mainMenuActionMap = iMainMenu as ICustomActionMap;
+				if (mainMenuActionMap != null)
+					iAlternateMenu.mainMenuActionMapInput = mainMenuActionMap.actionMapInput; // allow the alternate menu to disable the main menu's action map input, as they both utilize the thumbstick x/y
+
 				UpdatePlayerHandleMaps();
 			}
 
@@ -510,6 +525,27 @@ public class EditorVR : MonoBehaviour
 		return mainMenu;
 	}
 
+	private IAlternateMenu SpawnAlternateMenu (Type type, InputDevice device)
+	{
+		if (!typeof(IAlternateMenu).IsAssignableFrom(type))
+			return null;
+
+		var alternateMenu = U.Object.AddComponent(type, gameObject) as IAlternateMenu;
+		ConnectActionMaps(alternateMenu, device);
+		ConnectInterfaces(alternateMenu, device);
+		alternateMenu.visible = false;
+
+		return alternateMenu;
+	}
+
+	private MainMenuActivator SpawnMainMenuActivator (InputDevice device)
+	{
+		var mainMenuActivator = U.Object.Instantiate(m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
+		ConnectInterfaces(mainMenuActivator, device);
+
+		return mainMenuActivator;
+	}
+
 	private Node? GetDeviceNode(InputDevice device)
 	{
 		var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
@@ -549,60 +585,57 @@ public class EditorVR : MonoBehaviour
 
 		if (device != null)
 		{
-			var ray = obj as IRay;
-			if (ray != null)
+			foreach (var proxy in m_AllProxies)
 			{
-				foreach (var proxy in m_AllProxies)
+				if (!proxy.active)
+					continue;
+
+				var node = GetDeviceNode(device);
+				if (node.HasValue)
 				{
-					if (!proxy.active)
-						continue;
+					bool continueSearching = true;
 
-					var node = GetDeviceNode(device);
-					if (node.HasValue)
+					Transform rayOrigin;
+					var ray = obj as IRay;
+					if (ray != null && proxy.rayOrigins.TryGetValue(node.Value, out rayOrigin))
 					{
-						bool continueSearching = true;
+						ray.rayOrigin = rayOrigin;
 
-						Transform rayOrigin;
-						if (proxy.rayOrigins.TryGetValue(node.Value, out rayOrigin))
+						// Specific proxy ray setting
+						DefaultProxyRay dpr = null;
+						var customRay = obj as ICustomRay;
+						if (customRay != null)
 						{
-							ray.rayOrigin = rayOrigin;
-
-							// Specific proxy ray setting
-							DefaultProxyRay dpr = null;
-							var customRay = obj as ICustomRay;
-							if (customRay != null)
-							{
-								dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-								customRay.showDefaultRay = dpr.Show;
-								customRay.hideDefaultRay = dpr.Hide;
-							}
-
-							var lockableRay = obj as ILockRay;
-							if (lockableRay != null)
-							{
-								dpr = dpr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-								lockableRay.lockRay = dpr.LockRay;
-								lockableRay.unlockRay = dpr.UnlockRay;
-							}
-
-							continueSearching = false;
+							dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+							customRay.showDefaultRay = dpr.Show;
+							customRay.hideDefaultRay = dpr.Hide;
 						}
 
-						if (menuOrigins != null)
+						var lockableRay = obj as ILockRay;
+						if (lockableRay != null)
 						{
-							Transform mainMenuOrigin;
-							if (proxy.menuOrigins.TryGetValue(node.Value, out mainMenuOrigin))
-							{
-								menuOrigins.menuOrigin = mainMenuOrigin;
-								Transform alternateMenuOrigin;
-								if (proxy.alternateMenuOrigins.TryGetValue(node.Value, out alternateMenuOrigin))
-									menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
-							}
+							dpr = dpr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+							lockableRay.lockRay = dpr.LockRay;
+							lockableRay.unlockRay = dpr.UnlockRay;
 						}
 
-						if (!continueSearching)
-							break;
+						continueSearching = false;
 					}
+
+					if (menuOrigins != null)
+					{
+						Transform mainMenuOrigin;
+						if (proxy.menuOrigins.TryGetValue(node.Value, out mainMenuOrigin))
+						{
+							menuOrigins.menuOrigin = mainMenuOrigin;
+							Transform alternateMenuOrigin;
+							if (proxy.alternateMenuOrigins.TryGetValue(node.Value, out alternateMenuOrigin))
+								menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
+						}
+					}
+
+					if (!continueSearching)
+						break;
 				}
 			}
 		}
@@ -639,6 +672,15 @@ public class EditorVR : MonoBehaviour
 			mainMenuComponent.createWorkspace = CreateWorkspace;
 			mainMenuComponent.node = GetDeviceNode(device);
 			mainMenuComponent.setup();
+		}
+
+		var alternateMenuComponent = obj as IAlternateMenu;
+		if (alternateMenuComponent != null)
+		{
+			alternateMenuComponent.menuActions = m_AllActions;
+			alternateMenuComponent.performAction = PerformAction;
+			alternateMenuComponent.node = GetDeviceNode(device);
+			alternateMenuComponent.setup();
 		}
 	}
 

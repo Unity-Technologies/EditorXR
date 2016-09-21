@@ -48,12 +48,6 @@ namespace UnityEngine.VR.Menus
 		[SerializeField] private SkinnedMeshRenderer m_MenuFrameRenderer;
 		[SerializeField] private Transform m_AlternateMenu;
 
-		/// <summary>
-		/// The object used to activate/deactivate the main menu
-		/// </summary>
-		[SerializeField]
-		private MainMenuActivator m_MainMenuActivator;
-
 		public int targetFaceIndex
 		{
 			get { return m_TargetFaceIndex; }
@@ -96,11 +90,6 @@ namespace UnityEngine.VR.Menus
 		private Coroutine m_VisibilityCoroutine;
 		private Transform m_ShowHideUI;
 
-		private Coroutine m_ActivatorMoveCoroutine;
-		private Transform m_ActivatorTransform;
-		private Vector3 m_OriginalActivatorLocalPosition;
-		private Vector3 m_AlternateActivatorLocalPosition;
-
 		public Transform menuOrigin
 		{
 			get { return m_MenuOrigin; }
@@ -112,8 +101,8 @@ namespace UnityEngine.VR.Menus
 				transform.localRotation = Quaternion.identity;
 				transform.localScale = Vector3.one;
 
-				m_ShowHideUI = m_MainMenuActivator.transform;
-				m_ShowHideUI.SetParent(m_MenuOrigin); // Now that the desired world position is set, change parent to the menu origin, so no unintended transform actions are performed when showing/hiding
+				//m_ShowHideUI = m_MainMenuActivator.transform;
+				//m_ShowHideUI.SetParent(m_MenuOrigin); // Now that the desired world position is set, change parent to the menu origin, so no unintended transform actions are performed when showing/hiding
 			}
 		}
 
@@ -133,7 +122,7 @@ namespace UnityEngine.VR.Menus
 
 		public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
-		public Action menuButtonSelected { set { m_MainMenuActivator.performActivation = value; } }
+		//public Action menuButtonSelected { set { m_MainMenuActivator.performActivation = value; } }
 
 		public float targetRotation { get; set; }
 
@@ -218,10 +207,6 @@ namespace UnityEngine.VR.Menus
 				var face = faceTransform.GetComponent<MainMenuFace>();
 				m_MenuFaces.Add(face);
 			}
-
-			m_ActivatorTransform = m_MainMenuActivator.transform;
-			m_OriginalActivatorLocalPosition = m_ActivatorTransform.localPosition;
-			m_AlternateActivatorLocalPosition = m_OriginalActivatorLocalPosition + Vector3.down * 0.075f;
 
 			transform.localScale = Vector3.zero;
 			m_AlternateMenu.localScale = Vector3.zero;
@@ -510,43 +495,6 @@ namespace UnityEngine.VR.Menus
 
 			if (m_VisibilityState == VisibilityState.Hidden)
 				m_MenuFrameRenderer.SetBlendShapeWeight(0, 0);
-		}
-
-		private bool m_ActivatorButtonMoveAway;
-		public bool activatorButtonMoveAway
-		{
-			get { return m_ActivatorButtonMoveAway; }
-			set
-			{
-				if (m_ActivatorButtonMoveAway == value)
-					return;
-
-				m_ActivatorButtonMoveAway = value;
-
-				if (m_ActivatorMoveCoroutine != null)
-					StopCoroutine(m_ActivatorMoveCoroutine);
-
-				m_ActivatorMoveCoroutine = StartCoroutine(AnimateMoveActivatorButton(m_ActivatorButtonMoveAway));
-			}
-		}
-
-		private IEnumerator AnimateMoveActivatorButton(bool moveAway = true)
-		{
-			Debug.LogError("Move Activator Button out of the way of the radial menu here");
-			
-			float amount = 0f;
-			Vector3 currentPosition = m_ActivatorTransform.localPosition;
-			Vector3 targetPosition = moveAway == true ? m_AlternateActivatorLocalPosition : m_OriginalActivatorLocalPosition;
-			float speed = (currentPosition.z / targetPosition.z) * (moveAway ? 10 : 3); // perform faster is returning to original position
-
-			while (amount < 1f)
-			{
-				amount += Time.unscaledDeltaTime * speed;
-				m_ActivatorTransform.localPosition = Vector3.Lerp(currentPosition, targetPosition, Mathf.SmoothStep(0f, 1f, amount));
-				yield return null;
-			}
-
-			m_ActivatorTransform.localPosition = targetPosition;
 		}
 	}
 }

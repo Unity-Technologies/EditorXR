@@ -86,6 +86,8 @@ namespace UnityEngine.VR.Menus
 		public Action setup { get { return Setup; } }
 		public List<IAction> actions { private get; set; }
 		public Func<IAction, bool> performAction { get; set; }
+		public Action hide { get; private set; }
+		public Action show { get; private set; }
 
 		public bool visible
 		{
@@ -118,7 +120,7 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.instantiateUI = instantiateUI;
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
-			m_MainMenuUI.menuButtonSelected = () => { visible = !visible; }; // allow the menu button in the UI to enable/disable the main menu
+			//m_MainMenuUI.menuButtonSelected = () => { visible = !visible; }; // allow the menu button in the UI to enable/disable the main menu
 			m_MainMenuUI.Setup();
 			
 			CreateToolButtons(menuTools);
@@ -214,6 +216,17 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.SetupMenuFaces();
 		}
 
+		private void Show()
+		{
+			Debug.LogError("SHOW CALLED IN MAIN MENU");
+		}
+
+		private void Hide()
+		{
+			Debug.LogError("HIDE CALLED IN MAIN MENU");
+		}
+
+		/*
 		public void MenuActivatorToAlternatePosition(object sender, EventArgs eventArgs)
 		{
 			Debug.LogError("Move main menu activator to alternate position!");
@@ -225,5 +238,6 @@ namespace UnityEngine.VR.Menus
 			Debug.LogError("Move main menu activator to original position!");
 			m_MainMenuUI.activatorButtonMoveAway = false; // TODO: handle for returning button
 		}
+		*/
 	}
 }
