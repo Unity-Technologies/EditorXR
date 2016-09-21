@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.VR.Proxies;
 
 namespace UnityEditor.VR.Modules
 {
@@ -13,21 +12,31 @@ namespace UnityEditor.VR.Modules
 		public Transform ignoreRoot { get; set; }
 
 		/// <summary>
-		/// Must be called from OnGUI. Does raycast from all ray origins in the given proxies that are active.
+		/// Must be called from OnGUI. Does raycast from given rayOrigin if its gameObject is active.
 		/// </summary>
-		/// <param name="proxies"></param> List of proxies to raycast from
+		/// <param name="rayOrigin"></param> rayOrigin to raycast from
 		/// <param name="camera"></param> Camera to use for pixel based raycast (will be moved to the proxies' ray origins
-		public void UpdateRaycasts(List<IProxy> proxies, Camera camera)
+		/// <param name="pointerLength"></param> Length of pointer used for direct selection. If zero any raycast result is returned
+		public GameObject UpdateRaycast(Transform rayOrigin, Camera camera, float pointerLength = 0f)
 		{
-			UpdateIgnoreList();
-			foreach (var proxy in proxies)
+			if (!rayOrigin.gameObject.activeSelf)
 			{
-				if (proxy.active)
-				{
-					foreach (var rayOrigin in proxy.rayOrigins.Values)
-						m_RaycastGameObjects[rayOrigin] = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera);
-				}
+				m_RaycastGameObjects[rayOrigin] = null;
+				return null;
 			}
+			UpdateIgnoreList();
+
+			float distance;
+			var result = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera, out distance);
+
+			// If a positive pointerLength is specified, use direct selection
+			if (pointerLength > 0 && rayOrigin.gameObject.activeSelf)
+			{
+				if (pointerLength > 0 && distance > pointerLength)
+					result = null;
+			}
+			m_RaycastGameObjects[rayOrigin] = result;
+			return result;
 		}
 
 		public GameObject GetFirstGameObject(Transform rayOrigin)
@@ -48,7 +57,7 @@ namespace UnityEditor.VR.Modules
 				m_IgnoreList[i] = children[i].gameObject;
 		}
 
-		private GameObject Raycast(Ray ray, Camera camera)
+		private GameObject Raycast(Ray ray, Camera camera, out float distance)
 		{
 			camera.transform.position = ray.origin;
 			camera.transform.forward = ray.direction;
@@ -59,6 +68,17 @@ namespace UnityEditor.VR.Modules
 			Camera.SetupCurrent(camera);
 
 			var go = HandleUtility.PickGameObject(camera.pixelRect.center, false, m_IgnoreList);
+			// Find the distance to the closest renderer to check for direct selection
+			distance = float.MaxValue;
+			if (go)
+			{
+				foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+				{
+					float newDist;
+					if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
+						distance = Mathf.Min(distance, newDist);
+				}
+			}
 
 			Camera.SetupCurrent(restoreCamera);
 			RenderTexture.ReleaseTemporary(camera.targetTexture);

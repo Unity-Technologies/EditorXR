@@ -13,4 +13,8 @@ public class ProxyHelper : MonoBehaviour
 	public Transform alternateMenuOrigin { get { return m_AlternateMenuOrigin; } }
 	[SerializeField]
 	private Transform m_AlternateMenuOrigin;
+
+	public Transform previewOirign { get { return m_PreviewOrigin; } }
+	[SerializeField]
+	private Transform m_PreviewOrigin;
 }

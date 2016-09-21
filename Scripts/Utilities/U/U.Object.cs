@@ -233,6 +233,24 @@
 					}
 				}
 			}
+
+			public static Bounds? GetTotalBounds(Transform t)
+			{
+				Bounds? bounds = null;
+				var renderers = t.GetComponentsInChildren<Renderer>(true);
+				foreach (var renderer in renderers)
+				{
+					if (bounds == null)
+						bounds = renderer.bounds;
+					else
+					{
+						Bounds b = bounds.Value;
+						b.Encapsulate(renderer.bounds);
+						bounds = b;
+					}
+				}
+				return bounds;
+			}
 		}
 	}
 }
