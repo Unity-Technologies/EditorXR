@@ -1,54 +1,24 @@
 using System;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandler, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
+public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
 {
-	public SelectionFlags selectionFlags
+	public enum ContentType
 	{
-		get { return m_SelectionFlags; }
-		set { m_SelectionFlags = value; }
+		Float,
+		Int,
 	}
+	public ContentType contentType { get { return m_ContentType; } }
 	[SerializeField]
-	[FlagsProperty]
-	protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
+	private ContentType m_ContentType = ContentType.Float;
 
-	[Serializable]
-	public class OnChangeEvent : UnityEvent<string> { }
-	public OnChangeEvent onValueChanged { get { return m_OnValueChanged; } }
-	[SerializeField]
-	private OnChangeEvent m_OnValueChanged = new OnChangeEvent();
-
-	public Func<NumericKeyboardUI> keyboard;
-	private NumericKeyboardUI m_NumericKeyboard;
-
-	public SerializedPropertyType contentType { get { return m_ContentType; } }
-	[SerializeField]
-	private SerializedPropertyType m_ContentType = SerializedPropertyType.Float;
-
-	[SerializeField]
-	private Transform m_KeyboardAnchorTransform;
-
-	[SerializeField]
-	private Text m_TextComponent;
-
-	[SerializeField]
-	private int m_CharacterLimit = 10;
-
-	[SerializeField]
 	private bool m_UpdateDrag;
-	private const float kDragSensitivity = 0.01f;
-	private const float kDragDeadzone = 0.01f;
 	private Vector3 m_StartDragPosition;
 	private Vector3 m_LastPointerPosition;
-	private bool m_PointerOverField;
-
-	private bool m_Open;
+	private const float kDragSensitivity = 0.01f;
+	private const float kDragDeadzone = 0.01f;
 
 	private int m_OperandCount;
 
@@ -60,99 +30,6 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 	private const string kAllowedCharactersForFloat = "inftynaeINFTYNAE0123456789.,-*/+%^()";
 	private const string kAllowedCharactersForInt = "0123456789-*/+%^()";
 	private const string kOperandCharacters = "-*/+%^()";
-
-	private bool m_Numeric
-	{
-		get { return m_ContentType == SerializedPropertyType.Float || m_ContentType == SerializedPropertyType.Integer; }
-	}
-
-	public string text
-	{
-		get
-		{
-			return m_Text;
-		}
-		set
-		{
-			if (m_Text == value)
-				return;
-			if (value == null)
-				value = "";
-
-			m_Text = m_CharacterLimit > 0 && value.Length > m_CharacterLimit ? value.Substring(0, m_CharacterLimit) : value;
-		}
-	}
-	private string m_Text = string.Empty;
-
-	protected override void OnEnable()
-	{
-		base.OnEnable();
-
-		if (m_Text == null)
-			m_Text = string.Empty;
-
-		if (m_TextComponent != null)
-		{
-			UpdateLabel();
-		}
-	}
-
-	public void ForceUpdateLabel()
-	{
-		UpdateLabel();
-	}
-
-	public void OnPointerClick(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			if (m_Open)
-				Close();
-			else
-				Open();
-		}
-	}
-
-	public override void OnPointerEnter(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			base.OnPointerEnter(eventData);
-
-			m_PointerOverField = true;
-		}
-	}
-
-	public override void OnPointerExit(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			base.OnPointerExit(eventData);
-
-			m_PointerOverField = false;
-		}
-	}
-
-	public override void OnPointerDown(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			base.OnPointerDown(eventData);
-		}
-	}
-
-	public override void OnPointerUp(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			base.OnPointerUp(eventData);
-		}
-	}
 
 	private bool MayDrag()
 	{
@@ -174,7 +51,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
 			return;
 
-		if (m_Numeric && m_PointerOverField)
+		if (eventData.pointerCurrentRaycast.gameObject == gameObject)
 		{
 			if (!m_UpdateDrag)
 			{
@@ -210,7 +87,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 	{
 		var delta = GetLocalPointerPosition(eventData) - m_LastPointerPosition;
 
-		if (contentType == SerializedPropertyType.Float)
+		if (contentType == ContentType.Float)
 		{
 			float num;
 			if (!float.TryParse(text, out num))
@@ -245,80 +122,25 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		return transform.InverseTransformPoint(hitPos);
 	}
 
-	public virtual void OnSubmit(BaseEventData eventData)
+	protected override void Close()
 	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-		}
-	}
-
-	public override void OnSelect(BaseEventData eventData)
-	{
-		//
-	}
-
-	private void Open()
-	{
-		if (m_Open) return;
-		m_Open = true;
-
-		m_NumericKeyboard = keyboard();
-		// Instantiate keyboard here
-		if (m_NumericKeyboard != null)
-		{
-			m_NumericKeyboard.gameObject.SetActive(true);
-			m_NumericKeyboard.transform.SetParent(transform, true);
-			m_NumericKeyboard.transform.position = m_KeyboardAnchorTransform.position;
-			m_NumericKeyboard.transform.rotation = m_KeyboardAnchorTransform.rotation;
-
-			m_NumericKeyboard.Setup(OnKeyPress);
-		}
-	}
-
-	private void Close()
-	{
-		m_Open = false;
-
 		if (IsExpression())
 			ParseNumberField();
 
-		if (m_NumericKeyboard == null) return;
-
-		m_NumericKeyboard.gameObject.SetActive(false);
-		m_NumericKeyboard = null;
+		base.Close();
 	}
 
-	private void OnKeyPress(char keyCode)
+	protected override bool IsValid(char ch)
 	{
-		switch ((int)keyCode)
-		{
-			case (int)NumericInputButton.SpecialKeyType.Backspace:
-				Delete();
-				return;
-			case (int)NumericInputButton.SpecialKeyType.Return:
-				Return();
-				return;
-			case (int)NumericInputButton.SpecialKeyType.Space:
-				AppendWhitespace();
-				return;
-		}
-
-		if (IsValid(keyCode))
-			Insert(keyCode);
-	}
-
-	private bool IsValid(char ch)
-	{
-		if (!m_TextComponent.font.HasCharacter(ch))
+		if (!base.IsValid(ch))
 			return false;
 
-		if (m_ContentType == SerializedPropertyType.Float)
+		if (m_ContentType == ContentType.Float)
 		{
 			if (!kAllowedCharactersForFloat.Contains(ch.ToString()))
 				return false;
 		}
-		else if (m_ContentType == SerializedPropertyType.Integer)
+		else if (m_ContentType == ContentType.Int)
 		{
 			if (!kAllowedCharactersForInt.Contains(ch.ToString()))
 				return false;
@@ -337,19 +159,16 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		return kOperandCharacters.Contains(ch.ToString()) && !(m_Text.Length == 0 && ch == '-');
 	}
 
-	private void Insert(char ch)
+	protected override void Append(char c)
 	{
 		var len = m_Text.Length;
 
-		text += ch;
+		text += c;
 
 		if (len != m_Text.Length)
 		{
-			if (m_Numeric)
-			{
-				if (m_Numeric && IsOperand(ch))
-					m_OperandCount++;
-			}
+			if (IsOperand(c))
+				m_OperandCount++;
 
 			if (!IsExpression())
 				SendOnValueChangedAndUpdateLabel();
@@ -358,13 +177,13 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		}
 	}
 
-	private void Delete()
+	protected override void Backspace()
 	{
 		if (m_Text.Length == 0) return;
 
 		var ch = m_Text[m_Text.Length - 1];
 
-		if (m_Numeric && IsOperand(ch))
+		if (IsOperand(ch))
 			m_OperandCount--;
 
 		m_Text = m_Text.Remove(m_Text.Length - 1);
@@ -375,47 +194,15 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 			UpdateLabel();
 	}
 
-	private void Return()
+	protected override void Return()
 	{
-		if (m_Numeric)
+		if (IsExpression())
 			ParseNumberField();
-		// TODO check multiline
 	}
 
-	private void AppendWhitespace()
+	protected override void Space()
 	{
-		var len = m_Text.Length;
-
-		text += " ";
-
-		if (len != m_Text.Length)
-			SendOnValueChangedAndUpdateLabel();
-	}
-
-	private void ClearField()
-	{
-		m_Text = "";
-		m_OperandCount = 0;
-
-		SendOnValueChangedAndUpdateLabel();
-	}
-
-	private void SendOnValueChangedAndUpdateLabel()
-	{
-		SendOnValueChanged();
-		UpdateLabel();
-	}
-
-	private void SendOnValueChanged()
-	{
-		if (onValueChanged != null)
-			onValueChanged.Invoke(text);
-	}
-
-	protected void UpdateLabel()
-	{
-		if (m_TextComponent != null && m_TextComponent.font != null)
-			m_TextComponent.text = m_Text;
+		Return();
 	}
 
 	private float CalculateFloatDragSensitivity(float value)
@@ -431,7 +218,6 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		return (int)Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f) * kDragSensitivity);
 	}
 
-	// From Editor/Mono/Utils/MathUtils.cs
 	private float RoundBasedOnMinimumDifference(float valueToRound, float minDifference)
 	{
 		if (Math.Abs(minDifference) < Mathf.Epsilon)
@@ -439,14 +225,12 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		return (float)Math.Round(valueToRound, GetNumberOfDecimalsForMinimumDifference(minDifference), MidpointRounding.AwayFromZero);
 	}
 
-	// From Editor/Mono/Utils/MathUtils.cs
 	private float DiscardLeastSignificantDecimal(float v)
 	{
 		int decimals = Mathf.Clamp((int)(5 - Mathf.Log10(Mathf.Abs(v))), 0, kMaxDecimals);
 		return (float)Math.Round(v, decimals, MidpointRounding.AwayFromZero);
 	}
 
-	// From Editor/Mono/Utils/MathUtils.cs
 	private int GetNumberOfDecimalsForMinimumDifference(float minDifference)
 	{
 		return Mathf.Clamp(-Mathf.FloorToInt(Mathf.Log10(Mathf.Abs(minDifference))), 0, kMaxDecimals);
@@ -454,10 +238,9 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 	private void ParseNumberField()
 	{
-		var isFloat = m_ContentType == SerializedPropertyType.Float;
 		var str = m_Text;
 
-		if (isFloat)
+		if (m_ContentType == ContentType.Float)
 		{
 			float floatVal;
 

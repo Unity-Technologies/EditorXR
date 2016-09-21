@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
+// TODO make ExpressionEvaluator.cs public in source
 // Evaluates simple expressions, supports int & float and operators: + - * / % ^ ( )
 internal class StringExpressionEvaluator
 {
