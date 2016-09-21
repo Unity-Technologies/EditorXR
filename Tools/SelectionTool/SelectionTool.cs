@@ -8,22 +8,9 @@ using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Tools
 {
-	using RadialMenu = UnityEngine.VR.Menus.RadialMenu;
-
 	[UnityEngine.VR.Tools.MainMenuItem("Selection", "Transform", "Select items in the scene")]
 	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight, IMenuOrigins
 	{
-		/// <summary>
-		/// Event raised when showing the Main Menu
-		/// This allows for informing the radial menu, or any other object of the Main Menu being shown
-		/// </summary>
-		public event EventHandler onRadialMenuShow;
-
-		/// <summary>
-		/// Event raised when hidin the Main Menu
-		/// </summary>
-		public event EventHandler onRadialMenuHide;
-
 		private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
 		private GameObject m_HoverGameObject;
@@ -139,7 +126,9 @@ namespace UnityEngine.VR.Tools
 						s_SelectedObjects.Clear();
 						Selection.activeGameObject = m_HoverGameObject;
 						s_SelectedObjects.Add(m_HoverGameObject);
-						selectionOccurred();
+
+						if (selectionOccurred != null)
+							selectionOccurred();
 					}
 				}
 				Selection.objects = s_SelectedObjects.ToArray();
