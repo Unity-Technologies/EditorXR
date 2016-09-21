@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Actions;
+using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {
-	public class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesActions, IMenuOrigins
+	public class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesActions, IMenuOrigins, ICustomActionMap
 	{
 		//[SerializeField]
 		//private RadialMenuUI m_RadialMenuPrefab;
@@ -53,7 +54,7 @@ namespace UnityEngine.VR.Menus
 
 		private static List<RadialMenu> sRadialMenus = new List<RadialMenu>();
 		private static RadialMenu sActiveRadialMenu;
-		private static RadialMenu sRadialMenu
+		private static RadialMenu sRadialMenu 
 		{
 			get { return sActiveRadialMenu; }
 			set
@@ -238,14 +239,19 @@ namespace UnityEngine.VR.Menus
 			//Vector2 inputDirection = new Vector2(m_SelectionInput.navigateRadialMenuX.value, m_SelectionInput.navigateRadialMenuY.value);
 			//Debug.LogError("<color=green>" + inputDirection + "</color>");
 
-			if (m_RadialMenuInput.navigateMenu.vector2.magnitude > 0)
-				Debug.LogError("<color=gray>" + m_RadialMenuInput.navigateMenu.vector2  + "</color>"); 
+			//if (m_RadialMenuInput.navigateMenu.vector2.magnitude > 0)
+				//Debug.LogError("<color=gray>" + m_RadialMenuInput.navigateMenu.vector2  + "</color>"); 
 
-			/*
-			m_RadialMenu.selectMenuItem = m_SelectionInput.selectRadialMenuItem.wasJustReleased;
-			m_RadialMenu.buttonInputDirection = m_SelectionInput.navigateRadialMenu.vector2;
-			m_RadialMenu.pressedDown = m_SelectionInput.selectRadialMenuItem.wasJustPressed;
-			*/
+			m_RadialMenuUI.buttonInputDirection = m_RadialMenuInput.navigate.vector2;
+			
+			//if (m_RadialMenuInput.selectItem.wasJustPressed)
+				//Debug.LogError("<color=gray> m_RadialMenuInput SELECT WAS JUST PRESSED </color>");
+
+			pressedDown = m_RadialMenuInput.selectItem.wasJustPressed;
+			selectMenuItem = m_RadialMenuInput.selectItem.wasJustReleased;
+
+			//m_RadialMenuUI.selectMenuItem = m_RadialMenuInput.selectItem.wasJustReleased;
+			//m_RadialMenu.pressed = m_RadialMenuInput.pressed.wasJustPressed;
 		}
 
 		private IEnumerator DelayedTestCall()
