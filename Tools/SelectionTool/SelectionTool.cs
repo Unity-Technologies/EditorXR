@@ -11,7 +11,7 @@ namespace UnityEngine.VR.Tools
 	using RadialMenu = UnityEngine.VR.Menus.RadialMenu;
 
 	[UnityEngine.VR.Tools.MainMenuItem("Selection", "Transform", "Select items in the scene")]
-	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight, IUsesActions, IMenuOrigins, IInstantiateUI
+	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight, IMenuOrigins
 	{
 		/// <summary>
 		/// Event raised when showing the Main Menu
@@ -36,18 +36,9 @@ namespace UnityEngine.VR.Tools
 		[SerializeField]
 		private ActionMap m_ActionMap;
 
-		[SerializeField]
-		private RadialMenu m_RadialMenuPrefab;
-
-		private RadialMenu m_RadialMenu;
-
-
-
 		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 		public Transform rayOrigin { private get; set; }
 		public Action<GameObject, bool> setHighlight { private get; set; }
-		public List<IAction> actions { set { m_RadialMenu.actions = value; } }
-		public ActionMapInput mainMenuActionMapInput { get; set; }
 		public Transform menuOrigin { get; set; }
 
 		public ActionMapInput actionMapInput
@@ -69,50 +60,12 @@ namespace UnityEngine.VR.Tools
 
 		public Transform menuInputOrigin { get; set; }
 
-		public Func<IAction, bool> performAction
-		{
-			set
-			{
-				if (m_RadialMenu != null)
-					m_RadialMenu.performAction = value;
-				else
-					Debug.LogError("Cannot set PerformAction in Radial Menu");
-			}
-		}
-
-		public Func<GameObject, GameObject> instantiateUI // TODO remove IInstantiate UI, no longer needed with thumbstick rotation input for button selection
-		{
-			set
-			{
-				m_RadialMenu = value(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenu>();
-				m_RadialMenu.instantiateUI = value;
-				m_RadialMenu.alternateMenuOrigin = m_AlternateMenuOrigin;
-				m_RadialMenu.onRadialMenuShow = () => { if (onRadialMenuShow != null) onRadialMenuShow(this, null); };
-				m_RadialMenu.onRadialMenuHide = () => { if (onRadialMenuHide != null) onRadialMenuHide(this, null); };
-				//m_RadialMenu.Setup();
-			}
-		}
+		public Action selectionOccurred { get; set; }
 
 		private void Update()
 		{
 			if (rayOrigin == null)
 				return;
-
-			//  TODO: Add rotational thumbstick-based selection of radial menu items
-			//if (m_SelectionInput.navigateRadialMenu.vector2)
-			//Debug.LogError("<color=yellow>Navigate Radial Menu ENABLED here</color>");
-
-			//Debug.LogError("<color=gray>" + m_SelectionInput.navigateRadialMenu.vector2  + "</color>"); // -1, -1 is bottom left - 1,1 is the top right
-
-			//Vector2 inputDirection = new Vector2(m_SelectionInput.navigateRadialMenuX.value, m_SelectionInput.navigateRadialMenuY.value);
-			//Debug.LogError("<color=green>" + inputDirection + "</color>");
-
-			m_RadialMenu.selectMenuItem = m_SelectionInput.selectRadialMenuItem.wasJustReleased;
-			m_RadialMenu.buttonInputDirection = m_SelectionInput.navigateRadialMenu.vector2;
-			m_RadialMenu.pressedDown = m_SelectionInput.selectRadialMenuItem.wasJustPressed;
-
-			//if (m_SelectionInput.navigateRadialMenu.rawValue != 0)
-			//Debug.LogError("<color=yellow>Navigate Radial Menu Raw Value here : </color>" + m_SelectionInput.navigateRadialMenu.rawValue);
 
 			// Change activeGameObject selection to its parent transform when parent button is pressed 
 			if (m_SelectionInput.parent.wasJustPressed)
@@ -186,7 +139,7 @@ namespace UnityEngine.VR.Tools
 						s_SelectedObjects.Clear();
 						Selection.activeGameObject = m_HoverGameObject;
 						s_SelectedObjects.Add(m_HoverGameObject);
-						mainMenuActionMapInput.active = !m_RadialMenu.Show(); // Show the radial menu if there are any objects in the set, hide it otherwise.
+						selectionOccurred();
 					}
 				}
 				Selection.objects = s_SelectedObjects.ToArray();
@@ -200,12 +153,6 @@ namespace UnityEngine.VR.Tools
 				setHighlight(m_HoverGameObject, false);
 				m_HoverGameObject = null;
 			}
-		}
-
-		public void HideRadialMenu(object sender, EventArgs eventArgs)
-		{
-			Debug.LogError("HIDE RADIAL MENU called in Seleciton Tool");
-			m_RadialMenu.Hide();
 		}
 	}
 }
