@@ -22,12 +22,12 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 	private MiniWorldRenderer m_MiniWorldRenderer;
 
 	public Transform miniWorldTransform { get { return transform; } }
+	
 	/// <summary>
 	/// RefernceTransform defines world space within the MiniWorld. When scaled up, a larger area is represented,
 	/// thus the objects in the MiniWorld get smaller.
 	/// </summary>
 	public Transform referenceTransform { get { return m_ReferenceTransform; } set { m_ReferenceTransform = value; } }
-
 	[SerializeField]
 	private Transform m_ReferenceTransform;
 

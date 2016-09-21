@@ -170,6 +170,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			}
 		}
 
+		// If we haven't encountered any Renderers, return bounds of (1,1,1) at the center of the selection
+		// for the purposes of positioning and  scaling the DirectManipulator
 		if (newBounds == null)
 		{
 			var bounds = new Bounds();
@@ -251,6 +253,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	{
 		if (mode == TransformMode.Direct)
 			return;
+
 		m_PivotMode = m_PivotMode == PivotMode.Pivot ?  PivotMode.Center :  PivotMode.Pivot;
 		UpdateCurrentManipulator();
 	}
@@ -259,6 +262,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	{
 		if (mode == TransformMode.Direct)
 			return;
+
 		m_PivotRotation = m_PivotRotation == PivotRotation.Global ? PivotRotation.Local : PivotRotation.Global;
 		UpdateCurrentManipulator();
 	}
@@ -267,8 +271,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	{
 		if (mode == TransformMode.Direct)
 			return;
+
 		foreach (var manipulator in m_AllManipulators)
 			manipulator.SetActive(false);
+
 		// Go to the next manipulator type in the list
 		m_CurrentManipulatorIndex = (m_CurrentManipulatorIndex + 1) % m_AllManipulators.Count;
 		m_CurrentManipulator = m_AllManipulators[m_CurrentManipulatorIndex];

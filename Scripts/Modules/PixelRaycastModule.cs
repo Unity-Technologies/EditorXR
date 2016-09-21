@@ -19,7 +19,8 @@ namespace UnityEditor.VR.Modules
 		/// <param name="pointerLength"></param> Length of pointer used for direct selection. If zero any raycast result is returned
 		public GameObject UpdateRaycast(Transform rayOrigin, Camera camera, float pointerLength = 0f)
 		{
-			if (!rayOrigin.gameObject.activeSelf) {
+			if (!rayOrigin.gameObject.activeSelf)
+			{
 				m_RaycastGameObjects[rayOrigin] = null;
 				return null;
 			}

@@ -193,7 +193,7 @@ public class EditorVR : MonoBehaviour
 
 			foreach (var proxy in m_AllProxies)
 			{
-				if(!proxy.active)
+				if (!proxy.active)
 					continue;
 
 				foreach (var rayOrigin in proxy.rayOrigins.Values)
