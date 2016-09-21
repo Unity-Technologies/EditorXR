@@ -8,7 +8,7 @@ using UnityEngine.VR.Actions;
 
 namespace UnityEngine.VR.Menus
 {
-	public class RadialMenu : MonoBehaviour, IInstantiateUI
+	public class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesActions, IMenuOrigins
 	{
 		//[SerializeField]
 		//private RadialMenuUI m_RadialMenuPrefab;
@@ -17,25 +17,37 @@ namespace UnityEngine.VR.Menus
 		private Paste m_PasteAction;
 		private object m_ObjectSelected;
 
+		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]
 		private ActionMap m_RadialMenuActionMap;
 
 		[SerializeField]
 		private RadialMenuUI m_RadialMenuPrefab;
-
-		[SerializeField]
+		
 		private RadialMenuUI m_RadialMenuUI;
 		public RadialMenuUI radialMenuUI { get; private set; }
 
 		public ActionMapInput actionMapInput
 		{
 			get { return m_RadialMenuInput; }
-			set { m_RadialMenuInput = (MainMenuInput) value; }
+			set { m_RadialMenuInput = (RadialMenuInput) value; }
 		}
 		[SerializeField]
-		private MainMenuInput m_RadialMenuInput;
+		private RadialMenuInput m_RadialMenuInput;
 
-		public Func<IAction, bool> performAction { set { m_RadialMenuUI.performAction = value; } }
+		public List<IAction> menuActions { get; set; }
+		public Node? node { get; set; }
+		public bool visible { get; set; }
+		public ActionMapInput mainMenuActionMapInput { get; set; }
+		public Action setup { get {return Setup; } }
+		public EventHandler hideAlternateMenu { get; set; }
+
+		Action IAlternateMenu.onShow { get; set; }
+
+		public event EventHandler onShow;
+		public event EventHandler onHide;
+		public Action hide { get; private set; }
+		public Action show { get {return Show; } }
 
 		private const string kActionSectionName = "DefaultActions";
 
@@ -55,6 +67,9 @@ namespace UnityEngine.VR.Menus
 				}
 			}
 		}
+
+		private Func<IAction, bool> m_performAction;
+		public Func<IAction, bool> performAction { get { return m_performAction; } set { m_performAction = value; } }
 
 		private List<IAction> m_RadialMenuActions;
 		public List<IAction> actions
@@ -95,11 +110,14 @@ namespace UnityEngine.VR.Menus
 
 		public Func<GameObject, GameObject> instantiateUI
 		{
+			get; set;
+			/*
 			set
 			{
 				m_RadialMenuUI.instantiateUI = value;
 				m_RadialMenuUI.Setup();
 			}
+			*/
 		}
 
 		public Vector2 buttonInputDirection { set { m_RadialMenuUI.buttonInputDirection = value; } }
@@ -146,6 +164,8 @@ namespace UnityEngine.VR.Menus
 		}
 
 		// HACK: As of now Awake/Start get called together, so we have to cache the value and apply it later
+		public Transform menuOrigin { get; set; }
+
 		public Transform alternateMenuOrigin
 		{
 			get
@@ -156,14 +176,8 @@ namespace UnityEngine.VR.Menus
 			{
 				m_AlternateMenuOrigin = value;
 
-				if (m_RadialMenuUI != null)
-				{
-					transform.SetParent(value);
-					transform.localPosition = Vector3.zero;
-					transform.localRotation = Quaternion.identity;
-					transform.localScale = Vector3.one;
+				if (radialMenuUI != null)
 					m_RadialMenuUI.alternateMenuOrigin = value;
-				}
 			}
 		}
 		private Transform m_AlternateMenuOrigin;
@@ -181,15 +195,57 @@ namespace UnityEngine.VR.Menus
 		}
 		*/
 
+		/*
+		public Func<GameObject, GameObject> instantiateUI // TODO remove IInstantiate UI, no longer needed with thumbstick rotation input for button selection
+		{
+			set
+			{
+				m_RadialMenu = value(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenu>();
+				m_RadialMenu.instantiateUI = value;
+				//m_RadialMenu = U.Object.Instantiate(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenu>();
+				m_RadialMenu.alternateMenuOrigin = m_AlternateMenuOrigin;
+				m_RadialMenu.onRadialMenuShow = () => { if (onRadialMenuShow != null) onRadialMenuShow(this, null); };
+				m_RadialMenu.onRadialMenuHide = () => { if (onRadialMenuHide != null) onRadialMenuHide(this, null); };
+				//m_RadialMenu.Setup();
+			}
+		}
+		*/
+
 		private void Awake()
 		{
 			Debug.LogError("Setting up RadialMenu");
 			radialMenuUI = m_RadialMenuUI;
 			sRadialMenus.Add(this); // Add this radial menu to the collection of radial menus, allowing for "pushing" of the radial menu to another hand if the menu is opened on a hand currently displaying the radial menu
+			hideAlternateMenu = Hide;
+			
 			//m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
 
 			//m_RadialMenuUI.alternateMenuOrigin = m_AlternateMenuOrigin;
 			//CreateToolButtons(menuTools);
+		}
+
+		private void Update()
+		{
+			if (m_RadialMenuInput == null)
+				return;
+
+			//  TODO: Add rotational thumbstick-based selection of radial menu items
+			//if (m_SelectionInput.navigateRadialMenu.vector2)
+			//Debug.LogError("<color=yellow>Navigate Radial Menu ENABLED here</color>");
+
+			//Debug.LogError("<color=gray>" + m_SelectionInput.navigateRadialMenu.vector2  + "</color>"); // -1, -1 is bottom left - 1,1 is the top right
+
+			//Vector2 inputDirection = new Vector2(m_SelectionInput.navigateRadialMenuX.value, m_SelectionInput.navigateRadialMenuY.value);
+			//Debug.LogError("<color=green>" + inputDirection + "</color>");
+
+			if (m_RadialMenuInput.navigateMenu.vector2.magnitude > 0)
+				Debug.LogError("<color=gray>" + m_RadialMenuInput.navigateMenu.vector2  + "</color>"); 
+
+			/*
+			m_RadialMenu.selectMenuItem = m_SelectionInput.selectRadialMenuItem.wasJustReleased;
+			m_RadialMenu.buttonInputDirection = m_SelectionInput.navigateRadialMenu.vector2;
+			m_RadialMenu.pressedDown = m_SelectionInput.selectRadialMenuItem.wasJustPressed;
+			*/
 		}
 
 		private IEnumerator DelayedTestCall()
@@ -205,9 +261,30 @@ namespace UnityEngine.VR.Menus
 			//Show();
 		}
 
-		public bool Show()//List<IAction> actions)
+		public void Setup()
 		{
-			bool isShowing = false;
+			Debug.LogError("Setup was just called in RadialMenu");
+
+			if (m_RadialMenuUI == null) // remove null check.  This should only be called in connect interfaces once after creation
+			{
+				m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
+				m_RadialMenuUI.instantiateUI = instantiateUI;
+				m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
+				//m_RadialMenuUI.menuButtonSelected = () => { visible = !visible; }; // allow the menu button in the UI to enable/disable the main menu
+				m_RadialMenuUI.performAction = performAction;
+			}
+
+			m_RadialMenuUI.Setup();
+		}
+
+		public void OnSelection()
+		{
+			Debug.LogError("Object was just selected, OnSelction was called in the RadialMenu");
+		}
+
+		public void Show()//List<IAction> actions)
+		{
+			//bool isShowing = false;
 
 			Debug.LogError("Show called in RadialMenu");
 
@@ -217,15 +294,17 @@ namespace UnityEngine.VR.Menus
 				Debug.LogError("<color=red>Hide Radial Menu UI here - no objects selected</color>");
 				
 				foreach (var radialMenu in sRadialMenus)
-					radialMenu.Hide();
+					radialMenu.Hide(this, null);
 			}
 			else
 			{
 				if (m_ObjectSelected != Selection.activeGameObject)
-					Hide();
+					Hide(this, null);
 
 				m_ObjectSelected = Selection.activeGameObject;
-				onRadialMenuShow(); // Raises the event that notifies the main menu to move its menu activator button
+
+				if (onRadialMenuShow != null)
+					onRadialMenuShow(); // Raises the event that notifies the main menu to move its menu activator button
 
 				sRadialMenu = this;
 				Debug.LogError("<color=green>Show Radial Menu UI here - objects are selected</color>");
@@ -248,14 +327,15 @@ namespace UnityEngine.VR.Menus
 				// if the same, dont hide, just stay showing
 
 				m_RadialMenuUI.actions = actions;
-				isShowing = true;
+				//isShowing = true;
 			}
 
-			return isShowing;
+			//return isShowing;
 		}
 
-		public void Hide()
+		public void Hide(object sender, EventArgs eventArgs)
 		{
+			Debug.LogError("HIDE RADIAL MENU called in Seleciton Tool");
 			if (Selection.objects.Length > 0 && m_RadialMenuUI.actions != null)
 			{
 				// Show the radial menu on the opposite hand if an object is currently selected, and this radial menu is being hidden
@@ -269,7 +349,9 @@ namespace UnityEngine.VR.Menus
 			}
 			else if (Selection.objects.Length == 0)
 			{
-				onRadialMenuHide(); // Raises the event that notifies the main menu to move its menu activator button back to its original position
+				if (onRadialMenuHide != null)
+					onRadialMenuHide(); // Raises the event that notifies the main menu to move its menu activator button back to its original position
+
 				m_RadialMenuUI.actions = null; // Hide the radial menu
 				m_ObjectSelected = null;
 			}
