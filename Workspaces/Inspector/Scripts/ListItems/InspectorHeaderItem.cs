@@ -18,7 +18,7 @@ public class InspectorHeaderItem : InspectorListItem
 
 	// TODO: Add dropdown for different static types
 
-	private GameObject m_GameObject;
+	private GameObject m_TargetObject;
 
 	public override void Setup(InspectorData data)
 	{
@@ -28,11 +28,11 @@ public class InspectorHeaderItem : InspectorListItem
 
 		m_Icon.texture = AssetPreview.GetMiniThumbnail(target);
 
-		m_GameObject = (GameObject)target;
+		m_TargetObject = (GameObject)target;
 
-		m_ActiveToggle.isOn = m_GameObject.activeSelf;
-		m_NameField.text = m_GameObject.name;
-		m_StaticToggle.isOn = m_GameObject.isStatic;
+		m_ActiveToggle.isOn = m_TargetObject.activeSelf;
+		m_NameField.text = m_TargetObject.name;
+		m_StaticToggle.isOn = m_TargetObject.isStatic;
 
 		m_ActiveToggle.onValueChanged.AddListener(SetActive);
 		m_NameField.onValueChanged.AddListener(SetName);
@@ -42,20 +42,20 @@ public class InspectorHeaderItem : InspectorListItem
 	private void SetActive(bool active)
 	{
 		// TODO: Add choice dialog for whether to set in children
-		if (m_GameObject.activeSelf != active)
-			m_GameObject.SetActive(active);
+		if (m_TargetObject.activeSelf != active)
+			m_TargetObject.SetActive(active);
 	}
 
 	private void SetName(string name)
 	{
-		if(!m_GameObject.name.Equals(name))
-			m_GameObject.name = name;
+		if(!m_TargetObject.name.Equals(name))
+			m_TargetObject.name = name;
 	}
 
 	private void SetStatic(bool isStatic)
 	{
 		// TODO: Add choice dialog for whether to set in children
-		if(m_GameObject.isStatic != isStatic)
-			m_GameObject.isStatic = isStatic;
+		if(m_TargetObject.isStatic != isStatic)
+			m_TargetObject.isStatic = isStatic;
 	}
 }
