@@ -22,8 +22,6 @@ namespace UnityEngine.VR.Menus
 
 		private const int kSlotCount = 16;
 
-		private Vector3 m_AlternateMenuOriginOriginalLocalScale;
-
 		private List<RadialMenuSlot> m_RadialMenuSlots;
 		private Coroutine m_ShowCoroutine;
 		private Coroutine m_HideCoroutine;
@@ -37,19 +35,12 @@ namespace UnityEngine.VR.Menus
 			get { return m_AlternateMenuOrigin; }
 			set
 			{
-				if (m_AlternateMenuOrigin != null)
+				if (m_AlternateMenuOrigin != value)
 				{
 					m_AlternateMenuOrigin = value;
-					Debug.LogError("RadialMenu UI origin set to : " + m_AlternateMenuOrigin);
-					m_AlternateMenuOriginOriginalLocalScale = m_AlternateMenuOrigin.localScale;
-					
-					/*
 					transform.SetParent(m_AlternateMenuOrigin);
 					transform.localPosition = Vector3.zero;
 					transform.localRotation = Quaternion.identity;
-					transform.localScale = Vector3.one;
-					m_AlternateMenuOriginOriginalLocalScale = m_AlternateMenuOrigin.localScale;
-					*/
 				}
 			}
 		}
@@ -433,7 +424,10 @@ namespace UnityEngine.VR.Menus
 			//}
 
 			Debug.LogError("AnimateHide called in RadialMenuUI");
-			
+
+			if (!m_SlotsMask.gameObject.activeInHierarchy)
+				yield break;
+
 			m_SlotsMask.fillAmount = 1f;
 			//yield return new WaitForSeconds(1f);
 
