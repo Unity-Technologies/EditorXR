@@ -39,7 +39,7 @@ namespace UnityEngine.VR.Menus
 		public List<IAction> menuActions { get; set; }
 		public Node? node { get; set; }
 		public bool visible { get; set; }
-		public ActionMapInput mainMenuActionMapInput { get; set; }
+		public List<ActionMapInput> actionMapInputsToDisable { get; set; }
 		public Action setup { get {return Setup; } }
 		public EventHandler hideAlternateMenu { get; set; }
 
@@ -243,10 +243,6 @@ namespace UnityEngine.VR.Menus
 				//Debug.LogError("<color=gray>" + m_RadialMenuInput.navigateMenu.vector2  + "</color>"); 
 
 			m_RadialMenuUI.buttonInputDirection = m_RadialMenuInput.navigate.vector2;
-			
-			//if (m_RadialMenuInput.selectItem.wasJustPressed)
-				//Debug.LogError("<color=gray> m_RadialMenuInput SELECT WAS JUST PRESSED </color>");
-
 			pressedDown = m_RadialMenuInput.selectItem.wasJustPressed;
 			selectMenuItem = m_RadialMenuInput.selectItem.wasJustReleased;
 
@@ -301,9 +297,15 @@ namespace UnityEngine.VR.Menus
 				
 				foreach (var radialMenu in sRadialMenus)
 					radialMenu.Hide(this, null);
+
+				foreach (var input in actionMapInputsToDisable)
+					input.active = true;
 			}
 			else
 			{
+				foreach (var input in actionMapInputsToDisable)
+					input.active = false;
+
 				if (m_ObjectSelected != Selection.activeGameObject)
 					Hide(this, null);
 
