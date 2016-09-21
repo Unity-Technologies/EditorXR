@@ -1,12 +1,15 @@
 fileFormatVersion: 2
 guid: 11fd46c50e83ee74083fc3e7b3f226d9
-timeCreated: 1473143603
+timeCreated: 1474317031
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
-  - m_RadialMenuUI: {fileID: 114000010592100496, guid: 7cc49adc1d2485a4e812f2c7d9697c2f,
+  - m_RadialMenuActionMap: {fileID: 11400000, guid: 8cc629df47c352a46b5658adfbe2aa1f,
       type: 2}
+  - m_RadialMenuPrefab: {fileID: 114000010592100496, guid: 7cc49adc1d2485a4e812f2c7d9697c2f,
+      type: 2}
+  - m_RadialMenuUI: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
