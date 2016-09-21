@@ -52,7 +52,8 @@
 						half4 sum = half4(0,0,0,0);
 						#define GrabAndOffset(weight,kernelx) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x + _GrabTexture_TexelSize.x * kernelx * _Blur * 1.25, input.grab.y, input.grab.z, input.grab.w))) * weight
 						
-						sum += GrabAndOffset(0.03, -4.0);
+						sum += GrabAndOffset(0.02, -5.0);
+						sum += GrabAndOffset(0.04, -4.0);
 						sum += GrabAndOffset(0.08, -3.0);
 						sum += GrabAndOffset(0.11, -2.0);
 						sum += GrabAndOffset(0.16, -1.0);
@@ -60,7 +61,8 @@
 						sum += GrabAndOffset(0.16, +1.0);
 						sum += GrabAndOffset(0.11, +2.0);
 						sum += GrabAndOffset(0.08, +3.0);
-						sum += GrabAndOffset(0.03, +4.0);
+						sum += GrabAndOffset(0.04, +4.0);
+						sum += GrabAndOffset(0.02, +5.0);
 						return sum;
 					}
 					ENDCG
@@ -107,15 +109,17 @@
 					half4 sum = half4(0,0,0,0);
 					#define GrabAndOffset(weight,kernely) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernely*_Blur, input.grab.z, input.grab.w))) * weight
 
-					sum += GrabAndOffset(0.03, -4.0);
-					sum += GrabAndOffset(0.07, -3.0);
+					sum += GrabAndOffset(0.02, -5.0);
+					sum += GrabAndOffset(0.04, -4.0);
+					sum += GrabAndOffset(0.08, -3.0);
 					sum += GrabAndOffset(0.11, -2.0);
 					sum += GrabAndOffset(0.16, -1.0);
 					sum += GrabAndOffset(0.18,  0.0);
 					sum += GrabAndOffset(0.16, +1.0);
 					sum += GrabAndOffset(0.11, +2.0);
-					sum += GrabAndOffset(0.07, +3.0);
-					sum += GrabAndOffset(0.03, +4.0);
+					sum += GrabAndOffset(0.08, +3.0);
+					sum += GrabAndOffset(0.04, +4.0);
+					sum += GrabAndOffset(0.02, +5.0);
 					return sum;
 				}
 				ENDCG
