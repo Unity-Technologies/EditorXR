@@ -234,7 +234,7 @@ GameObject:
   - 114: {fileID: 114000013765754858}
   - 114: {fileID: 114000013949995496}
   m_Layer: 0
-  m_Name: AlphaKeyboard
+  m_Name: StandardKeyboard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1145,10 +1145,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 97
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000010429185760}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000010329037602
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1374,10 +1376,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 115
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000013488115542}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000010637355190
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1423,10 +1427,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 118
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000010646279168}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000010646279168
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1506,10 +1512,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 116
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000010955841874}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000010697477264
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1611,10 +1619,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 98
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000011992182622}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000010795683010
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1756,10 +1766,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 102
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000012562084936}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000010955841874
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1901,10 +1913,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 110
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000011026163414}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011026163414
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2018,10 +2032,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 108
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000013965407984}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011092403534
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2067,10 +2083,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 101
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000013904714762}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011233314662
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2116,10 +2134,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 99
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000012028571902}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011253394842
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2199,10 +2219,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 107
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000011253394842}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011352070990
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2276,10 +2298,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 45
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000014204427700}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011509866216
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2325,10 +2349,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 105
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000014007753204}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011520591368
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2402,10 +2428,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 120
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000012696175168}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011643513634
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2479,10 +2507,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 107
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000010882877568}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011692716598
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2528,10 +2558,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 121
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000012081478336}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011909995862
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2577,10 +2609,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 106
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000010795683010}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000011992182622
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2865,10 +2899,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 122
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000013251548698}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000012258043122
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2914,10 +2950,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 111
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000010382750882}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000012291497692
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2991,10 +3029,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 112
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000012156695580}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000012415595180
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3102,10 +3142,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 103
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000011049618652}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000012696175168
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3365,10 +3407,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 104
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000010297171898}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000013282399358
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3414,10 +3458,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 114
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000013975077996}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000013316259514
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3553,10 +3599,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 117
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000012117185722}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000013488115542
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3636,10 +3684,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 119
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000014172194022}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000013648544944
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3741,10 +3791,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 100
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000010957163738}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000013765754858
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3807,10 +3859,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 113
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000013063231014}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!114 &114000013857777778
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4196,10 +4250,12 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_CharacterDescriptionType: 0
   m_SpecialKeyType: 0
-  m_KeyCode: 109
-  m_ButtonMesh: {fileID: 0}
-  m_MatchButtonTextToCharacter: 1
+  m_Character: 0
   m_TextComponent: {fileID: 114000013316259514}
+  m_MatchButtonTextToCharacter: 1
+  m_ButtonMesh: {fileID: 0}
+  m_RepeatOnHold: 0
+  m_RepeatTime: 0.5
 --- !u!222 &222000010050934690
 CanvasRenderer:
   m_ObjectHideFlags: 1

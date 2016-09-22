@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -10,7 +11,7 @@ using UnityEngine.VR.Utilities;
 /// <summary>
 /// Set either the button's text field or the ASCII value
 /// </summary>
-public class NumericInputButton : RayButton
+public class KeyboardButton : RayButton
 {
 	public enum CharacterDescriptionType
 	{
@@ -20,19 +21,30 @@ public class NumericInputButton : RayButton
 	[SerializeField]
 	private CharacterDescriptionType m_CharacterDescriptionType = CharacterDescriptionType.Character;
 
+//	public Dictionary<string, int> specialKeyDict 
 	public enum SpecialKeyType
 	{
-		None,
+		None = 0,
 		Backspace = 8,
-		Return = 13,
+		Tab = 9,
+		NewLine = 10,
+		CarriageReturn = 13,
+		ShiftOut = 14,
+		ShiftIn = 15,
+		Cancel = 24,
+		Escape = 27,
 		Space = 32,
 		Clear = 127,
 	}
+	public SpecialKeyType specialKeyType { get { return m_SpecialKeyType; } set { m_SpecialKeyType = value;  } }
 	[SerializeField]
-	private SpecialKeyType m_SpecialKeyType = SpecialKeyType.None;
+	private SpecialKeyType m_SpecialKeyType;
+
+//	[SerializeField]
 
 	[SerializeField]
-	private char m_KeyCode;
+//	[HideInInspector]
+	private char m_Character;
 
 	[SerializeField]
 	private Text m_TextComponent;
@@ -61,15 +73,15 @@ public class NumericInputButton : RayButton
 		m_KeyPress = keyPress;
 
 		if (m_CharacterDescriptionType ==  CharacterDescriptionType.Special)
-			m_KeyCode = (char) m_SpecialKeyType;
+			m_Character = (char) m_SpecialKeyType;
 
 		if (m_CharacterDescriptionType == CharacterDescriptionType.Character && m_MatchButtonTextToCharacter)
 		{
 			if (m_TextComponent != null)
-				m_TextComponent.text = m_KeyCode.ToString();
+				m_TextComponent.text = m_Character.ToString();
 		}
 
-		m_Trigger = pressOnHover ? (UnityEvent) onEnter : onDown;
+		m_Trigger = pressOnHover ? onEnter : onDown;
 
 		m_Trigger.AddListener(NumericKeyPressed);
 	}
@@ -83,7 +95,7 @@ public class NumericInputButton : RayButton
 
 	private void NumericKeyPressed()
 	{
-		m_KeyPress(m_KeyCode);
+		m_KeyPress(m_Character);
 	}
 
 	public override void OnPointerDown(PointerEventData eventData)
