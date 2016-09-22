@@ -73,7 +73,7 @@ namespace UnityEngine.VR.Menus
 				m_OriginalActivatorIconLocalPosition = m_Icon.localPosition;
 				m_HighlightedActivatorIconLocalScale = m_HighlightedPRS.localScale;
 				m_HighlightedActivatorIconLocalPosition = m_HighlightedPRS.localPosition;
-				m_AlternateActivatorLocalPosition = m_OriginalActivatorLocalPosition + Vector3.back * 0.075f;
+				m_AlternateActivatorLocalPosition = m_OriginalActivatorLocalPosition + Vector3.back * 0.175f;
 			}
 		}
 
