@@ -849,7 +849,7 @@ public class EditorVR : MonoBehaviour
 		//CreateWorkspace<ConsoleWorkspace>();
 		CreateWorkspace<ProfilerWorkspace>();
 	}
-
+	
 	private void CreateWorkspace<T>() where T : Workspace
 	{
 		CreateWorkspace(typeof(T));
