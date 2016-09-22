@@ -187,7 +187,7 @@ public class EditorVR : MonoBehaviour
 
 	private void OnSceneGUI(EditorWindow obj)
 	{
-		if (Event.current.type == EventType.MouseMove)
+		if (Event.current.type == EventType.ExecuteCommand)
 		{
 			var miniWorldHover = false;
 
@@ -256,10 +256,15 @@ public class EditorVR : MonoBehaviour
 
 		UpdateMiniWorldRays();
 #if UNITY_EDITOR
-		// HACK: Send a "mouse moved" event, so scene picking can occur for the controller
-		Event e = new Event();
-		e.type = EventType.MouseMove;
-		VRView.activeView.SendEvent(e);
+		// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
+		//		Additionally, on some machines it's required to do a delay call otherwise none of this works
+		EditorApplication.delayCall += () =>
+		{
+			Event e = new Event();
+			e.type = EventType.ExecuteCommand;
+			if (this != null) // Because this is a delay call, the component will be null when EditorVR closes
+				VRView.activeView.SendEvent(e);
+		};
 #endif
 	}
 
