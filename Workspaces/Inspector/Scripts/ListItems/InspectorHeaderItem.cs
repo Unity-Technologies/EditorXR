@@ -17,45 +17,55 @@ public class InspectorHeaderItem : InspectorListItem
 	private Toggle m_StaticToggle;
 
 	// TODO: Add dropdown for different static types
+	
+	private GameObject m_TargetGameObject;
 
-	private GameObject m_TargetObject;
+	private bool m_Setup;
 
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
 
+		if (!m_Setup)
+		{
+			m_Setup = true;
+			m_ActiveToggle.onValueChanged.AddListener(SetActive);
+			m_NameField.onValueChanged.AddListener(SetName);
+			m_StaticToggle.onValueChanged.AddListener(SetStatic);
+		}
+
 		var target = data.serializedObject.targetObject;
 
 		m_Icon.texture = AssetPreview.GetMiniThumbnail(target);
+		m_TargetGameObject = target as GameObject;
 
-		m_TargetObject = (GameObject)target;
+		if (m_TargetGameObject)
+		{
+			m_ActiveToggle.isOn = m_TargetGameObject.activeSelf;
+			m_StaticToggle.isOn = m_TargetGameObject.isStatic;
+		}
 
-		m_ActiveToggle.isOn = m_TargetObject.activeSelf;
-		m_NameField.text = m_TargetObject.name;
-		m_StaticToggle.isOn = m_TargetObject.isStatic;
-
-		m_ActiveToggle.onValueChanged.AddListener(SetActive);
-		m_NameField.onValueChanged.AddListener(SetName);
-		m_StaticToggle.onValueChanged.AddListener(SetStatic);
+		m_NameField.text = target.name;
 	}
 
 	private void SetActive(bool active)
 	{
 		// TODO: Add choice dialog for whether to set in children
-		if (m_TargetObject.activeSelf != active)
-			m_TargetObject.SetActive(active);
+		if (m_TargetGameObject.activeSelf != active)
+			m_TargetGameObject.SetActive(active);
 	}
 
 	private void SetName(string name)
 	{
-		if(!m_TargetObject.name.Equals(name))
-			m_TargetObject.name = name;
+		var target = data.serializedObject.targetObject;
+		if (!target.name.Equals(name))
+			target.name = name;
 	}
 
 	private void SetStatic(bool isStatic)
 	{
 		// TODO: Add choice dialog for whether to set in children
-		if(m_TargetObject.isStatic != isStatic)
-			m_TargetObject.isStatic = isStatic;
+		if(m_TargetGameObject.isStatic != isStatic)
+			m_TargetGameObject.isStatic = isStatic;
 	}
 }

@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 public class InspectorVectorItem : InspectorPropertyItem
 {
-
 	[SerializeField]
 	private NumericInputField[] m_InputFields;
 

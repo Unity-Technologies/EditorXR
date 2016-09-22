@@ -40,7 +40,7 @@ GameObject:
   - 114: {fileID: 114000010274738042}
   - 114: {fileID: 114000013511779268}
   m_Layer: 5
-  m_Name: LabelMask
+  m_Name: MaskedLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -9,18 +9,39 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 {
 	private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
-	private Material m_CubeMaterial;
+	[SerializeField]
+	private Material m_RowCubeMaterial;
+
+	[SerializeField]
+	private Material m_BackingCubeMaterial;
+
+	[SerializeField]
+	private Material m_TextMaterial;
+
+	[SerializeField]
+	private Material m_UIMaterial;
+
+	[SerializeField]
+	private Material m_NoClipRowCubeMaterial;
+
+	[SerializeField]
+	private Material m_NoClipBackingCubeMaterial;
 
 	private readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
 
 	protected override void Setup()
 	{
 		base.Setup();
-		var item = m_Templates[0].GetComponent<InspectorListItem>();
-		item.GetMaterials(out m_CubeMaterial);
+
+		m_RowCubeMaterial = Instantiate(m_RowCubeMaterial);
+		m_BackingCubeMaterial = Instantiate(m_BackingCubeMaterial);
+		m_TextMaterial = Instantiate(m_TextMaterial);
+		m_UIMaterial = Instantiate(m_UIMaterial);
 
 		foreach (var template in m_TemplateDictionary)
 			m_TemplateSizes[template.Key] = GetObjectSize(template.Value.prefab);
+
+		data = new InspectorData[0];
 	}
 
 	protected override void ComputeConditions()
@@ -30,7 +51,10 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		m_StartPosition = (bounds.extents.y - m_ItemSize.y * 0.5f) * Vector3.up;
 
 		var parentMatrix = transform.worldToLocalMatrix;
-		SetMaterialClip(m_CubeMaterial, parentMatrix);
+		SetMaterialClip(m_RowCubeMaterial, parentMatrix);
+		SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
+		SetMaterialClip(m_TextMaterial, parentMatrix);
+		SetMaterialClip(m_UIMaterial, parentMatrix);
 	}
 
 	protected override void UpdateItems()
@@ -83,12 +107,16 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	protected override ListViewItem<InspectorData> GetItem(InspectorData listData)
 	{
 		var item = (InspectorListItem)base.GetItem(listData);
-		item.SwapMaterials(m_CubeMaterial);
+		if(!item.hasMaterials)
+			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial);
 		return item;
 	}
 
 	private void OnDestroy()
 	{
-		U.Object.Destroy(m_CubeMaterial);
+		U.Object.Destroy(m_RowCubeMaterial);
+		U.Object.Destroy(m_BackingCubeMaterial);
+		U.Object.Destroy(m_TextMaterial);
+		U.Object.Destroy(m_UIMaterial);
 	}
 }

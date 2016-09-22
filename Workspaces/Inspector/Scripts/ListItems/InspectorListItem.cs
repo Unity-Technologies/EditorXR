@@ -1,20 +1,38 @@
 ﻿using ListView;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.VR.Handles;
 
 public class InspectorListItem : ListViewItem<InspectorData>
 {
+	private const float kIndent = 0.01f;
+
 	[SerializeField]
 	private BaseHandle m_Cube;
 
-	public void SwapMaterials(Material cubeMaterial)
-	{
-		m_Cube.GetComponent<Renderer>().sharedMaterial = cubeMaterial;
-	}
+	[SerializeField]
+	private RectTransform m_UIContainer;
 
-	public void GetMaterials(out Material cubeMaterial)
+	public bool hasMaterials { get; private set; }
+
+	public void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial)
 	{
-		cubeMaterial = Instantiate(m_Cube.GetComponent<Renderer>().sharedMaterial);
+		m_Cube.GetComponent<Renderer>().sharedMaterial = rowMaterial;
+
+		var cuboidLayouts = GetComponentsInChildren<CuboidLayout>(true);
+		foreach (var cuboidLayout in cuboidLayouts)
+			cuboidLayout.SwapMaterials(backingCubeMaterial);
+
+		var graphics = GetComponentsInChildren<Graphic>(true);
+		foreach (var graphic in graphics)
+			graphic.material = uiMaterial;
+
+		// Texts need a specific shader
+		var texts = GetComponentsInChildren<Text>(true);
+		foreach (var text in texts)
+			text.material = textMaterial;
+
+		hasMaterials = true;
 	}
 
 	public void UpdateTransforms(float width, int depth)
