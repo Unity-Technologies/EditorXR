@@ -87,6 +87,8 @@ public class EditorVR : MonoBehaviour
 		public GameObject hoverObject;
 		public GameObject dragObject;
 		public Vector3 dragObjectOriginalScale;
+		public Vector3 dragObjectOffset;
+		public bool selectHeld;
 	}
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
@@ -997,29 +999,40 @@ public class EditorVR : MonoBehaviour
 			var uiInput = (UIActions)ray.Value.uiInput;
 			var hoverObject = ray.Value.hoverObject;
 
-			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && uiInput.select.wasJustPressed)
+			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && !ray.Value.selectHeld && uiInput.select.isHeld)
 			{
 				//Disable original ray so that it doesn't interrupt dragging by activating its ActionMapInput
 				originalRayOrigin.gameObject.SetActive(false);
 
 				ray.Value.dragObject = hoverObject; // Capture object for later use
 				ray.Value.dragObjectOriginalScale = hoverObject.transform.localScale;
+				ray.Value.dragObjectOffset = hoverObject.transform.position - ray.Key.position;
 			}
+
+			ray.Value.selectHeld = uiInput.select.isHeld;
 
 			if (!ray.Value.dragObject)
 				continue;
 
-			if (!ray.Key.gameObject.activeSelf && uiInput.@select.isHeld)
+			if (uiInput.@select.isHeld)
 			{
-				Selection.objects = new UnityEngine.Object[0];
 				var selectedObjectTransform = ray.Value.dragObject.transform;
+				if (ray.Key.gameObject.activeSelf)
+				{
+					selectedObjectTransform.localScale = ray.Value.dragObjectOriginalScale;
+					selectedObjectTransform.position = ray.Key.position + ray.Value.dragObjectOffset;
+				}
+				else
+				{
+					Selection.objects = new UnityEngine.Object[0];
 
-				m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
+					m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
 
-				selectedObjectTransform.transform.localScale = Vector3.one;
-				var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);
-				if (totalBounds != null)
-					selectedObjectTransform.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.MaxComponent());
+					selectedObjectTransform.transform.localScale = Vector3.one;
+					var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);
+					if (totalBounds != null)
+						selectedObjectTransform.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.MaxComponent());
+				}
 			}
 
 			if (uiInput.@select.wasJustReleased)

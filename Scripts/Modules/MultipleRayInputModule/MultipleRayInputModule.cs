@@ -36,6 +36,7 @@ namespace UnityEngine.VR.Modules
 			public GameObject hoveredObject;
 			public GameObject pressedObject;
 			public GameObject draggedObject;
+			public bool selectHeld; // Keep track of our own selectPressed for one-click drag
 
 			public bool hasObject { get { return (hoveredObject != null && hoveredObject.layer == UILayer) || pressedObject != null || draggedObject != null; } }
 
@@ -116,7 +117,7 @@ namespace UnityEngine.VR.Modules
 				var draggedObject = source.draggedObject;
 
 				// Send select pressed and released events
-				if (source.actionMapInput.select.wasJustPressed)
+				if (!source.selectHeld && source.actionMapInput.select.isHeld)
 					OnSelectPressed(source);
 
 				if (source.actionMapInput.select.wasJustReleased)
@@ -134,6 +135,8 @@ namespace UnityEngine.VR.Modules
 					eventData.scrollDelta = new Vector2(0f, source.actionMapInput.verticalScroll.value);
 					ExecuteEvents.ExecuteHierarchy(source.hoveredObject, eventData, ExecuteEvents.scrollHandler);
 				}
+
+				source.selectHeld = source.actionMapInput.select.isHeld;
 			}
 		}
 
