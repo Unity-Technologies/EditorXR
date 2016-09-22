@@ -26,6 +26,7 @@ namespace UnityEngine.VR.Menus
 		private Transform m_HighlightedPRS;
 
 		private readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
+		private static readonly float kAlternateLocationOffset = 0.175f;
 
 		private Vector3 m_OriginalActivatorIconLocalScale;
 		private Vector3 m_OriginalActivatorIconLocalPosition;
@@ -73,7 +74,7 @@ namespace UnityEngine.VR.Menus
 				m_OriginalActivatorIconLocalPosition = m_Icon.localPosition;
 				m_HighlightedActivatorIconLocalScale = m_HighlightedPRS.localScale;
 				m_HighlightedActivatorIconLocalPosition = m_HighlightedPRS.localPosition;
-				m_AlternateActivatorLocalPosition = m_OriginalActivatorLocalPosition + Vector3.back * 0.175f;
+				m_AlternateActivatorLocalPosition = m_OriginalActivatorLocalPosition + Vector3.back * kAlternateLocationOffset;
 			}
 		}
 
