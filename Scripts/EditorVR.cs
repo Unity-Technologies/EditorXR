@@ -995,11 +995,12 @@ public class EditorVR : MonoBehaviour
 			var pointerLength = GetPointerLength(originalRayOrigin);
 			var isContained = miniWorld.Contains(originalRayOrigin.position + originalRayOrigin.forward * pointerLength);
 			miniWorldRayOrigin.gameObject.SetActive(isContained);
+			ray.Value.uiInput.active = isContained || ray.Value.dragObject;
 
 			var uiInput = (UIActions)ray.Value.uiInput;
 			var hoverObject = ray.Value.hoverObject;
 
-			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && !ray.Value.selectHeld && uiInput.select.isHeld)
+			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && !ray.Value.dragObject && uiInput.select.isHeld)
 			{
 				//Disable original ray so that it doesn't interrupt dragging by activating its ActionMapInput
 				originalRayOrigin.gameObject.SetActive(false);
