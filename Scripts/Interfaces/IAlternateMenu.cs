@@ -27,13 +27,6 @@ namespace UnityEngine.VR.Menus
 		/// </summary>
 		bool visible { get; set; }
 
-		/// <summary>
-		/// Collection of action map input's to disable, when this menu is enabled
-		/// Alternate menu disables main menu input when the alternate menu is displayed
-		/// The Main Menu is currently consuming the x axis input the alternate menu requires
-		/// </summary>
-		List<ActionMapInput> actionMapInputsToDisable { get; set; }
-
 		// HACK: Awake/Start get called together in ExecuteInEditMode, so calling this method after is a workaround for order of operations
 		Action setup { get; }
 
@@ -45,12 +38,12 @@ namespace UnityEngine.VR.Menus
 		/// <summary>
 		/// Event used to inform another object that this menu is being shown
 		/// </summary>
-		Action onShow { get; set; }
+		Action<Node?> onShow { get; set; }
 
 		/// <summary>
 		/// Event used to inform another object that this menu is being hidden
 		/// </summary>
-		event EventHandler onHide;
+		Action<Node?> onHide { get; set; }
 
 		Action hide { get; }
 

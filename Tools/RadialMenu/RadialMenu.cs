@@ -39,16 +39,16 @@ namespace UnityEngine.VR.Menus
 		public List<IAction> menuActions { get; set; }
 		public Node? node { get; set; }
 		public bool visible { get; set; }
-		public List<ActionMapInput> actionMapInputsToDisable { get; set; }
 		public Action setup { get {return Setup; } }
 		public EventHandler hideAlternateMenu { get; set; }
 
-		Action IAlternateMenu.onShow { get; set; }
+		public Action<Node?> onShow { get; set; }
+		public Action<Node?> onHide { get; set; }
 
-		public event EventHandler onShow;
-		public event EventHandler onHide;
+		//public event EventHandler onShow;
+		//public event EventHandler onHide;
 		public Action hide { get; private set; }
-		public Action show { get {return Show; } }
+		public Action show { get { return Show; } }
 
 		private const string kActionSectionName = "DefaultActions";
 
@@ -294,17 +294,14 @@ namespace UnityEngine.VR.Menus
 			if (Selection.objects.Length == 0)
 			{
 				Debug.LogError("<color=red>Hide Radial Menu UI here - no objects selected</color>");
-				
+				onHide(node);
+
 				foreach (var radialMenu in sRadialMenus)
 					radialMenu.Hide(this, null);
-
-				foreach (var input in actionMapInputsToDisable)
-					input.active = true;
 			}
 			else
 			{
-				foreach (var input in actionMapInputsToDisable)
-					input.active = false;
+				onShow(node);
 
 				if (m_ObjectSelected != Selection.activeGameObject)
 					Hide(this, null);
