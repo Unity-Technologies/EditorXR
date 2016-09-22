@@ -87,8 +87,8 @@ public class EditorVR : MonoBehaviour
 		public GameObject hoverObject;
 		public GameObject dragObject;
 		public Vector3 dragObjectOriginalScale;
-		public Vector3 dragObjectOffset;
-		public bool selectHeld;
+		public Vector3 dragObjectPositionOffset;
+		public Quaternion dragObjectRotationOffset;
 	}
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
@@ -191,7 +191,7 @@ public class EditorVR : MonoBehaviour
 	{
 		if (Event.current.type == EventType.MouseMove)
 		{
-			var miniWorldHover = false;
+			var miniWorldHasObject = false;
 
 			foreach (var proxy in m_AllProxies)
 			{
@@ -205,14 +205,14 @@ public class EditorVR : MonoBehaviour
 				{
 					miniWorldRay.Value.hoverObject = m_PixelRaycastModule.UpdateRaycast(miniWorldRay.Key, m_EventCamera, GetPointerLength(miniWorldRay.Key));
 
-					if (miniWorldRay.Value.hoverObject)
-						miniWorldHover = true;
+					if (miniWorldRay.Value.hoverObject || miniWorldRay.Value.dragObject)
+						miniWorldHasObject = true;
 				}
 			}
 
 			// If any active miniWorldRay hovers over a selected object, switch to the DirectManipulator
 			if (m_TransformTool != null)
-				m_TransformTool.mode = miniWorldHover ? TransformMode.Direct : TransformMode.Standard;
+				m_TransformTool.mode = miniWorldHasObject ? TransformMode.Direct : TransformMode.Standard;
 
 			UpdateDefaultProxyRays();
 		}
@@ -995,22 +995,25 @@ public class EditorVR : MonoBehaviour
 			var pointerLength = GetPointerLength(originalRayOrigin);
 			var isContained = miniWorld.Contains(originalRayOrigin.position + originalRayOrigin.forward * pointerLength);
 			miniWorldRayOrigin.gameObject.SetActive(isContained);
+
+			// Deactivate ActionMapInput if the ray is not inside a MiniWorld or currently dragging an object
 			ray.Value.uiInput.active = isContained || ray.Value.dragObject;
 
 			var uiInput = (UIActions)ray.Value.uiInput;
 			var hoverObject = ray.Value.hoverObject;
 
+			// Start dragging if we're hoving over a selected object, dragObject is null, and the trigger is held
 			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && !ray.Value.dragObject && uiInput.select.isHeld)
 			{
 				//Disable original ray so that it doesn't interrupt dragging by activating its ActionMapInput
 				originalRayOrigin.gameObject.SetActive(false);
 
 				ray.Value.dragObject = hoverObject; // Capture object for later use
+				var inverseRotation = Quaternion.Inverse(ray.Key.rotation);
+				ray.Value.dragObjectRotationOffset = inverseRotation * hoverObject.transform.rotation;
+				ray.Value.dragObjectPositionOffset = inverseRotation * (hoverObject.transform.position - ray.Key.position);
 				ray.Value.dragObjectOriginalScale = hoverObject.transform.localScale;
-				ray.Value.dragObjectOffset = hoverObject.transform.position - ray.Key.position;
 			}
-
-			ray.Value.selectHeld = uiInput.select.isHeld;
 
 			if (!ray.Value.dragObject)
 				continue;
@@ -1018,11 +1021,14 @@ public class EditorVR : MonoBehaviour
 			if (uiInput.@select.isHeld)
 			{
 				var selectedObjectTransform = ray.Value.dragObject.transform;
+				// If the pointer is inside the MiniWorld, position at an offset from controller positoin
 				if (ray.Key.gameObject.activeSelf)
 				{
 					selectedObjectTransform.localScale = ray.Value.dragObjectOriginalScale;
-					selectedObjectTransform.position = ray.Key.position + ray.Value.dragObjectOffset;
+					selectedObjectTransform.position = ray.Key.position + ray.Key.rotation * ray.Value.dragObjectPositionOffset;
+					selectedObjectTransform.rotation = ray.Key.rotation * ray.Value.dragObjectRotationOffset;
 				}
+				// If the object is outside, attach to controller as a preview
 				else
 				{
 					Selection.objects = new UnityEngine.Object[0];
@@ -1036,7 +1042,8 @@ public class EditorVR : MonoBehaviour
 				}
 			}
 
-			if (uiInput.@select.wasJustReleased)
+			// Release the current object if the trigger is no longer held
+			if (!uiInput.@select.isHeld && ray.Value.dragObject)
 			{
 				originalRayOrigin.gameObject.SetActive(true);
 
