@@ -27,6 +27,7 @@ namespace UnityEngine.VR.Tools
 		public Transform rayOrigin { private get; set; }
 		public Action<GameObject, bool> setHighlight { private get; set; }
 		public Transform menuOrigin { get; set; }
+		public Node? node { private get; set; }
 
 		public ActionMapInput actionMapInput
 		{
@@ -47,7 +48,7 @@ namespace UnityEngine.VR.Tools
 
 		public Transform menuInputOrigin { get; set; }
 
-		public Action selectionOccurred { get; set; }
+		public Action<Node?> selected { get; set; }
 
 		private void Update()
 		{
@@ -63,6 +64,7 @@ namespace UnityEngine.VR.Tools
 					s_SelectedObjects.Remove(go);
 					s_SelectedObjects.Add(go.transform.parent.gameObject);
 					Selection.objects = s_SelectedObjects.ToArray();
+					selected(node);
 				}
 			}
 			var newHoverGameObject = getFirstGameObject(rayOrigin);
@@ -98,6 +100,12 @@ namespace UnityEngine.VR.Tools
 				{
 					s_CurrentPrefabOpened = m_HoverGameObject;
 					s_SelectedObjects.Remove(s_CurrentPrefabOpened);
+					// clear the active gameobject if there are no selected objects.
+					// AlternateMenu's rely on there being no active gameobject, if there are no selected objects.
+					if (s_SelectedObjects.Count == 0)
+						Selection.activeGameObject = null;
+
+					selected(node);
 				}
 				else
 				{
@@ -113,12 +121,14 @@ namespace UnityEngine.VR.Tools
 						{
 							// Already selected, so remove from selection
 							s_SelectedObjects.Remove(m_HoverGameObject);
+							selected(node);
 						}
 						else
 						{
 							// Add to selection
-							s_SelectedObjects.Add(m_HoverGameObject); 
+							s_SelectedObjects.Add(m_HoverGameObject);
 							Selection.activeGameObject = m_HoverGameObject;
+							selected(node);
 						}
 					}
 					else
@@ -126,9 +136,7 @@ namespace UnityEngine.VR.Tools
 						s_SelectedObjects.Clear();
 						Selection.activeGameObject = m_HoverGameObject;
 						s_SelectedObjects.Add(m_HoverGameObject);
-
-						if (selectionOccurred != null)
-							selectionOccurred();
+						selected(node);
 					}
 				}
 				Selection.objects = s_SelectedObjects.ToArray();

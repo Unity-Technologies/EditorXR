@@ -38,15 +38,13 @@ namespace UnityEngine.VR.Menus
 		/// <summary>
 		/// Event used to inform another object that this menu is being shown
 		/// </summary>
-		Action<Node?> onShow { get; set; }
+		//Action<Node?> onShow { get; set; }
 
 		/// <summary>
 		/// Event used to inform another object that this menu is being hidden
 		/// </summary>
-		Action<Node?> onHide { get; set; }
+		//Action<Node?> onHide { get; set; }
 
-		Action hide { get; }
-
-		Action show { get; }
+		//Action show { get; }
 	}
 }

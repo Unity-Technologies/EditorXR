@@ -258,18 +258,18 @@ public class EditorVR : MonoBehaviour
 				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 				var selectionTool = tool as SelectionTool;
-
+				selectionTool.node = GetDeviceNode(deviceData.Key);
+				selectionTool.selected = OnSelection; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+				
 				var mainMenuActivator = m_DeviceData[deviceData.Key].mainMenuActivator = SpawnMainMenuActivator(deviceData.Key);
 				var mainMenu = m_DeviceData[deviceData.Key].mainMenu = SpawnMainMenu(typeof(MainMenu), deviceData.Key);
 				var alternateMenu = m_DeviceData[deviceData.Key].alternateMenu = SpawnAlternateMenu(typeof(UnityEngine.VR.Menus.RadialMenu), deviceData.Key);
 
-				selectionTool.selectionOccurred = alternateMenu.show; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
-
 				mainMenuActivator.onActivate += () => mainMenu.visible = true; // Show main menu when main menu activator is activated
-				mainMenuActivator.onDeactivate += () => mainMenu.visible = false; // Hide main menu when main menu activator is deactivated
-				mainMenuActivator.onActivate += alternateMenu.hide; // Hide alternate menu when main menu is activated
-				alternateMenu.onShow = OnAlternateMenuShow; // Deactivate main menu activator when alternate menu is being shown;
-				alternateMenu.onHide = OnAlternateMenuHide; // Deactivate main menu activator when alternate menu is being shown;
+				//mainMenuActivator.onDeactivate += () => mainMenu.visible = false; // Hide main menu when main menu activator is deactivated
+				//mainMenuActivator.onActivate += alternateMenu; // Hide alternate menu when main menu is activated
+					//alternateMenu.onShow = OnAlternateMenuShow; // Deactivate main menu activator when alternate menu is being shown;
+					//alternateMenu.onHide = OnAlternateMenuHide; // Deactivate main menu activator when alternate menu is being shown;
 				// Add in support for pushing the radial menu onto other hand when main menu is opened and an object is selected
 
 				//iMainMenu.onShow += iAlternateMenu.hideAlternateMenu;
@@ -293,24 +293,73 @@ public class EditorVR : MonoBehaviour
 		};
 	}
 
-	private void OnAlternateMenuShow(Node? menuNode)
+	private void OnSelection(Node? selectionToolNode)
 	{
-		if (menuNode == null)
+		if (selectionToolNode == null)
+			return;
+
+		foreach (var kvp in m_DeviceData)
+		{
+			Node? node = GetDeviceNode(kvp.Key);
+
+			if (node != null)
+				Debug.LogError("<color=orange>" + node.Value.ToString() + "</color> - " + (node.Value == selectionToolNode).ToString());
+
+			if (node.HasValue) //  && node.Value == selectionToolNode
+			{
+				var mainMenuActionMap = kvp.Value.mainMenu as ICustomActionMap;
+				if (mainMenuActionMap != null)
+					mainMenuActionMap.actionMapInput.active = node.Value == selectionToolNode; // Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
+
+				var alternateMenu = kvp.Value.alternateMenu;
+				if (alternateMenu != null)
+					alternateMenu.visible = Selection.gameObjects.Length > 0 && node.Value == selectionToolNode;
+
+				// move to alternate position if this is the node that made the selection, and the selection was not a deselect (no selected objects)
+				var mainMenuActivator = kvp.Value.mainMenuActivator;
+				if (mainMenuActivator != null)
+					mainMenuActivator.activatorButtonMoveAway = Selection.gameObjects.Length > 0 && node.Value == selectionToolNode;
+
+				//break;
+			}
+		}
+
+	}
+
+	private void OnMainMenuShow(Node? mainMenuNode)
+	{
+		if (mainMenuNode == null)
 			return;
 
 		Debug.Log("OnAlternateMenuShow called");
 		foreach (var kvp in m_DeviceData)
 		{
 			Node? node = GetDeviceNode(kvp.Key);
-			if (node.HasValue && node.Value == menuNode)
+			if (node.HasValue && node.Value == mainMenuNode)
 			{
 				var mainMenuActionMap = kvp.Value.mainMenu as ICustomActionMap;
 				if (mainMenuActionMap != null)
-					mainMenuActionMap.actionMapInput.active = false; // node.Value != menuNode; // Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
+					mainMenuActionMap.actionMapInput.active = false; // Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
 
-				var mainMenuActivator = kvp.Value.mainMenuActivator;
-				if (mainMenuActivator != null)
-					mainMenuActivator.activatorButtonMoveAway = true;
+				break;
+			}
+		}
+	}
+	/*
+	private void OnAlternateMenuShow(Node? alternateMenuNode)
+	{
+		if (alternateMenuNode == null)
+			return;
+
+		Debug.Log("OnAlternateMenuShow called");
+		foreach (var kvp in m_DeviceData)
+		{
+			Node? node = GetDeviceNode(kvp.Key);
+			if (node.HasValue && node.Value == alternateMenuNode)
+			{
+				var mainMenuActionMap = kvp.Value.mainMenu as ICustomActionMap;
+				if (mainMenuActionMap != null)
+					mainMenuActionMap.actionMapInput.active = false; // Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
 
 				break;
 			}
@@ -332,14 +381,11 @@ public class EditorVR : MonoBehaviour
 				if (mainMenuActionMap != null)
 					mainMenuActionMap.actionMapInput.active = true; // Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
 
-				var mainMenuActivator = kvp.Value.mainMenuActivator;
-				if (mainMenuActivator != null)
-					mainMenuActivator.activatorButtonMoveAway = false;
-
 				break;
 			}
 		}
 	}
+	*/
 
 	private void SpawnActions()
 	{

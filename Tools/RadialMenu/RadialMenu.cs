@@ -38,12 +38,12 @@ namespace UnityEngine.VR.Menus
 
 		public List<IAction> menuActions { get; set; }
 		public Node? node { get; set; }
-		public bool visible { get; set; }
 		public Action setup { get {return Setup; } }
 		public EventHandler hideAlternateMenu { get; set; }
 
-		public Action<Node?> onShow { get; set; }
-		public Action<Node?> onHide { get; set; }
+
+		//public Action<Node?> onShow { get; set; }
+		//public Action<Node?> onHide { get; set; }
 
 		//public event EventHandler onShow;
 		//public event EventHandler onHide;
@@ -52,7 +52,37 @@ namespace UnityEngine.VR.Menus
 
 		private const string kActionSectionName = "DefaultActions";
 
+		public bool visible
+		{
+			get { return m_RadialMenuUI.visible; }
+			set
+			{
+				if (m_RadialMenuUI.visible != value)
+				{
+					m_RadialMenuUI.visible = value;
+
+					if (value == true)
+					{
+						Show();
+						//hideDefaultRay();
+						//lockRay(this);
+
+						//if (onShow != null)
+							//onShow(this, null);
+					}
+					else
+					{
+						Hide(this, null);
+						//unlockRay(this);
+						//showDefaultRay();
+					}
+				}
+			}
+		}
+
 		private static List<RadialMenu> sRadialMenus = new List<RadialMenu>();
+
+		/*
 		private static RadialMenu sActiveRadialMenu;
 		private static RadialMenu sRadialMenu 
 		{
@@ -68,6 +98,7 @@ namespace UnityEngine.VR.Menus
 				}
 			}
 		}
+		*/
 
 		private Func<IAction, bool> m_performAction;
 		public Func<IAction, bool> performAction { get { return m_performAction; } set { m_performAction = value; } }
@@ -284,7 +315,7 @@ namespace UnityEngine.VR.Menus
 			Debug.LogError("Object was just selected, OnSelction was called in the RadialMenu");
 		}
 
-		public void Show()//List<IAction> actions)
+		private void Show()//List<IAction> actions)
 		{
 			//bool isShowing = false;
 
@@ -294,24 +325,28 @@ namespace UnityEngine.VR.Menus
 			if (Selection.objects.Length == 0)
 			{
 				Debug.LogError("<color=red>Hide Radial Menu UI here - no objects selected</color>");
-				onHide(node);
+				//onHide(node);
 
-				foreach (var radialMenu in sRadialMenus)
-					radialMenu.Hide(this, null);
+				Hide(this, null);
+
+				//foreach (var radialMenu in sRadialMenus)
+					//radialMenu.Hide(this, null);
 			}
 			else
 			{
-				onShow(node);
+				//onShow(node);
 
-				if (m_ObjectSelected != Selection.activeGameObject)
-					Hide(this, null);
+				//if (m_ObjectSelected != Selection.activeGameObject) { // TODO remove this, as both hands could be selecting the object 
+				//	Hide(this, null);
+				//	return;
+				//}
 
 				m_ObjectSelected = Selection.activeGameObject;
 
 				if (onRadialMenuShow != null)
 					onRadialMenuShow(); // Raises the event that notifies the main menu to move its menu activator button
 
-				sRadialMenu = this;
+				//sRadialMenu = this;
 				Debug.LogError("<color=green>Show Radial Menu UI here - objects are selected</color>");
 
 				currentlyApplicableActions = new List<IAction>();
@@ -341,18 +376,18 @@ namespace UnityEngine.VR.Menus
 		public void Hide(object sender, EventArgs eventArgs)
 		{
 			Debug.LogError("HIDE RADIAL MENU called in Seleciton Tool");
-			if (Selection.objects.Length > 0 && m_RadialMenuUI.actions != null)
-			{
-				// Show the radial menu on the opposite hand if an object is currently selected, and this radial menu is being hidden
-				foreach (var radialMenu in sRadialMenus)
-				{
-					if (radialMenu != this)
-						radialMenu.Show();
-				}
+			//if (Selection.objects.Length > 0 && m_RadialMenuUI.actions != null)
+			//{
+			//	// Show the radial menu on the opposite hand if an object is currently selected, and this radial menu is being hidden
+			//	foreach (var radialMenu in sRadialMenus)
+			//	{
+			//		if (radialMenu != this)
+			//			radialMenu.Show();
+			//	}
 
-				m_RadialMenuUI.actions = null;
-			}
-			else if (Selection.objects.Length == 0)
+			//	m_RadialMenuUI.actions = null;
+			//}
+			//else if (Selection.objects.Length == 0)
 			{
 				if (onRadialMenuHide != null)
 					onRadialMenuHide(); // Raises the event that notifies the main menu to move its menu activator button back to its original position
