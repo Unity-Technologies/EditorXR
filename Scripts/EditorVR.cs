@@ -87,6 +87,8 @@ public class EditorVR : MonoBehaviour
 		public GameObject hoverObject;
 		public GameObject dragObject;
 		public Vector3 dragObjectOriginalScale;
+		public Vector3 dragObjectPositionOffset;
+		public Quaternion dragObjectRotationOffset;
 	}
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
@@ -189,7 +191,7 @@ public class EditorVR : MonoBehaviour
 	{
 		if (Event.current.type == EventType.ExecuteCommand)
 		{
-			var miniWorldHover = false;
+			var miniWorldRayHasObject = false;
 
 			foreach (var proxy in m_AllProxies)
 			{
@@ -203,14 +205,14 @@ public class EditorVR : MonoBehaviour
 				{
 					miniWorldRay.Value.hoverObject = m_PixelRaycastModule.UpdateRaycast(miniWorldRay.Key, m_EventCamera, GetPointerLength(miniWorldRay.Key));
 
-					if (miniWorldRay.Value.hoverObject)
-						miniWorldHover = true;
+					if (miniWorldRay.Value.hoverObject || miniWorldRay.Value.dragObject)
+						miniWorldRayHasObject = true;
 				}
 			}
 
 			// If any active miniWorldRay hovers over a selected object, switch to the DirectManipulator
 			if (m_TransformTool != null)
-				m_TransformTool.mode = miniWorldHover ? TransformMode.Direct : TransformMode.Standard;
+				m_TransformTool.mode = miniWorldRayHasObject ? TransformMode.Direct : TransformMode.Standard;
 
 			UpdateDefaultProxyRays();
 		}
@@ -999,35 +1001,52 @@ public class EditorVR : MonoBehaviour
 			var isContained = miniWorld.Contains(originalRayOrigin.position + originalRayOrigin.forward * pointerLength);
 			miniWorldRayOrigin.gameObject.SetActive(isContained);
 
+			// Keep input alive if we are dragging an object, otherwise MultipleRayInputModule will reset our control state
+			ray.Value.uiInput.active = isContained || ray.Value.dragObject;
+
 			var uiInput = (UIActions)ray.Value.uiInput;
 			var hoverObject = ray.Value.hoverObject;
 
-			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && uiInput.select.wasJustPressed)
+			// Instead of using wasJustPressed, use isHeld to allow dragging with a single press
+			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && !ray.Value.dragObject && uiInput.select.isHeld)
 			{
 				//Disable original ray so that it doesn't interrupt dragging by activating its ActionMapInput
 				originalRayOrigin.gameObject.SetActive(false);
 
 				ray.Value.dragObject = hoverObject; // Capture object for later use
+				var inverseRotation = Quaternion.Inverse(ray.Key.rotation);
+				ray.Value.dragObjectRotationOffset = inverseRotation * hoverObject.transform.rotation;
+				ray.Value.dragObjectPositionOffset = inverseRotation * (hoverObject.transform.position - ray.Key.position);
 				ray.Value.dragObjectOriginalScale = hoverObject.transform.localScale;
 			}
 
 			if (!ray.Value.dragObject)
 				continue;
 
-			if (!ray.Key.gameObject.activeSelf && uiInput.@select.isHeld)
+			if (uiInput.@select.isHeld)
 			{
-				Selection.objects = new UnityEngine.Object[0];
 				var selectedObjectTransform = ray.Value.dragObject.transform;
+				// If the pointer is inside the MiniWorld, position at an offset from controller position
+				if (ray.Key.gameObject.activeSelf)
+				{
+					selectedObjectTransform.localScale = ray.Value.dragObjectOriginalScale;
+					selectedObjectTransform.position = ray.Key.position + ray.Key.rotation * ray.Value.dragObjectPositionOffset;
+					selectedObjectTransform.rotation = ray.Key.rotation * ray.Value.dragObjectRotationOffset;
+				}
+				// If the object is outside, attach to controller as a preview
+				else
+				{
+					m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
 
-				m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
-
-				selectedObjectTransform.transform.localScale = Vector3.one;
-				var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);
-				if (totalBounds != null)
-					selectedObjectTransform.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.MaxComponent());
+					selectedObjectTransform.transform.localScale = Vector3.one;
+					var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);
+					if (totalBounds != null)
+						selectedObjectTransform.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.MaxComponent());
+				}
 			}
 
-			if (uiInput.@select.wasJustReleased)
+			// Release the current object if the trigger is no longer held
+			if (!uiInput.@select.isHeld && ray.Value.dragObject)
 			{
 				originalRayOrigin.gameObject.SetActive(true);
 
