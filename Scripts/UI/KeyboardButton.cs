@@ -21,7 +21,6 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 	[SerializeField]
 	private CharacterDescriptionType m_CharacterDescriptionType = CharacterDescriptionType.Character;
 
-//	public Dictionary<string, int> specialKeyDict 
 	public enum SpecialKeyType
 	{
 		None = 0,
@@ -67,6 +66,8 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	public void Setup(Action<char> keyPress, bool pressOnHover)
 	{
+		m_Trigger.RemoveAllListeners();
+
 		m_KeyPress = keyPress;
 
 		if (m_CharacterDescriptionType == CharacterDescriptionType.Character && m_MatchButtonTextToCharacter)

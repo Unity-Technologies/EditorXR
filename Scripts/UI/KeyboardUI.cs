@@ -10,7 +10,7 @@ public class KeyboardUI : MonoBehaviour
 
 	public void Setup(Action<char> keyPress, bool pressOnHover = false)
 	{
-		foreach (var button in GetComponentsInChildren<KeyboardButton>())
+		foreach (var button in m_Buttons)
 		{
 			button.Setup(keyPress, pressOnHover);
 		}

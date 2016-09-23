@@ -37,14 +37,6 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	[SerializeField]
 	private int m_CharacterLimit = 10;
 
-	public delegate char OnValidateInput(string text, int charIndex, char addedChar);
-	[SerializeField]
-	private OnValidateInput m_OnValidateInput;
-	public OnValidateInput onValidateInput { get { return m_OnValidateInput; } set { m_OnValidateInput = value; } }
-
-	[SerializeField]
-	private InputField.SubmitEvent m_OnEndEdit = new InputField.SubmitEvent();
-
 	private bool m_Open;
 
 	public string text
@@ -87,6 +79,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	{
 		
 	}
+
 	public void OnPointerClick(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
@@ -101,7 +94,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 
 	public void OnSubmit(BaseEventData eventData)
 	{
-		//		throw new System.NotImplementedException();
+		//
 	}
 
 	protected void SendOnValueChangedAndUpdateLabel()
@@ -130,10 +123,11 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	private void Open()
 	{
 		if (m_Open) return;
+
 		m_Open = true;
 
 		m_Keyboard = spawnKeyboard();
-		// Instantiate keyboard here
+
 		if (m_Keyboard != null)
 		{
 			m_Keyboard.gameObject.SetActive(true);
@@ -164,8 +158,8 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 			case (int)KeyboardButton.SpecialKeyType.Backspace:
 				Backspace();
 				return;
-			case (int)KeyboardButton.SpecialKeyType.Tab:
-				return;
+//			case (int)KeyboardButton.SpecialKeyType.Tab:
+//				return;
 			case (int)KeyboardButton.SpecialKeyType.CarriageReturn:
 				Return();
 				return;

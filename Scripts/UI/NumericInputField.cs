@@ -18,7 +18,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 	private Vector3 m_StartDragPosition;
 	private Vector3 m_LastPointerPosition;
 	private const float kDragSensitivity = 0.01f;
-	private const float kDragDeadzone = 0.01f;
+	private const float kDragDeadzone = 0.02f;
 
 	private int m_OperandCount;
 

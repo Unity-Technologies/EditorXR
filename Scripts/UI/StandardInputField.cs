@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,10 +14,22 @@ public class StandardInputField : RayInputField
 	[SerializeField]
 	private LineType m_LineType = LineType.SingleLine;
 
-	[SerializeField]
-	protected Graphic m_Placeholder;
+	private bool m_Shift
+	{
+		get { return m_Shift; }
+		set
+		{
+			if (value == m_Shift)
+				return;
 
-	private bool m_Shift;
+			m_Shift = value;
+			if (m_Shift)
+				m_Keyboard.SetKeyTextToUpperCase();
+			else 
+				m_Keyboard.SetKeyTextToLowerCase();
+		}
+	}
+
 	private bool m_CapsLock;
 
 	protected override void Append(char c)
@@ -25,6 +38,11 @@ public class StandardInputField : RayInputField
 
 		if (m_LineType == LineType.SingleLine && (c == '\n' || c == '\t')) return;
 
+		if (m_Shift)
+		{
+			m_Shift = false;
+			c = char.ToUpper(c);
+		}
 		text += c;
 
 		if (len != m_Text.Length)
@@ -58,11 +76,10 @@ public class StandardInputField : RayInputField
 			SendOnValueChangedAndUpdateLabel();
 	}
 
-//	private void Shift()
-//	{
-//		foreach (var button in m_Keyboard.buttons)
-//		{
-//			
-//		}
-//	}
+	private void Shift()
+	{
+		m_Shift = true;
+
+		m_Keyboard.SetKeyTextToUpperCase();
+	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using UnityEditor;
 using UnityEngine;
@@ -17,6 +18,7 @@ public class KeyboardButtonEditor : RayButtonEditor
 	SerializedProperty m_RepeatOnHoldProperty;
 	SerializedProperty m_RepeatTimeProperty;
 
+	private KeyboardButton keyboardButton;
 	private string m_KeyCode = "";
 
 	protected override void OnEnable()
@@ -35,6 +37,7 @@ public class KeyboardButtonEditor : RayButtonEditor
 
 	public override void OnInspectorGUI()
 	{
+		keyboardButton = (KeyboardButton)target;
 //		m_KeyCode = ((char)m_CharacterProperty.intValue).ToString();
 		m_KeyCode = EditorGUILayout.TextField("Key Code", m_KeyCode);
 
@@ -100,11 +103,32 @@ public class KeyboardButtonEditor : RayButtonEditor
 			m_CharacterDescriptionTypeProperty.enumValueIndex = (int)KeyboardButton.CharacterDescriptionType.Character;
 
 			if (m_KeyCode.Length > 0)
+			{
 				m_CharacterProperty.intValue = m_KeyCode[0];
+
+				if (m_MatchButtonTextToCharacterProperty.boolValue)
+				{
+					if (keyboardButton.textComponent != null)
+						keyboardButton.textComponent.text = m_KeyCode[0].ToString();
+				}
+			}
 			if (m_KeyCode.Length > 1)
 				m_KeyCode = m_KeyCode.Remove(1, m_KeyCode.Length - 1);
-			
+		}
 
+		// Set text component string
+		if (m_CharacterDescriptionTypeProperty.enumValueIndex == (int)KeyboardButton.CharacterDescriptionType.Character)
+		{
+			if (m_KeyCode.Length > 0)
+			{
+				if (m_MatchButtonTextToCharacterProperty.boolValue && keyboardButton.textComponent != null)
+					keyboardButton.textComponent.text = m_KeyCode[0].ToString();
+			}
+		}
+		else
+		{
+			if (keyboardButton.textComponent != null)
+				keyboardButton.textComponent.text = "";
 		}
 
 		EditorGUILayout.LabelField(m_CharacterProperty.intValue.ToString());

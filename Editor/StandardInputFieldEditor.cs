@@ -1,0 +1,22 @@
+using UnityEditor;
+using UnityEditor.UI;
+
+[CustomEditor(typeof(StandardInputField))]
+public class StandardInputFieldEditor : RayInputFieldEditor
+{
+	SerializedProperty m_LineTypeProperty;
+
+	protected override void OnEnable()
+	{
+		base.OnEnable();
+		m_LineTypeProperty = serializedObject.FindProperty("m_LineType");
+	}
+
+	public override void OnInspectorGUI()
+	{
+		serializedObject.Update();
+		EditorGUILayout.PropertyField(m_LineTypeProperty);
+		serializedObject.ApplyModifiedProperties();
+		base.OnInspectorGUI();
+	}
+}
