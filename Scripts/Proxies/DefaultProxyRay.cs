@@ -25,8 +25,9 @@ public class DefaultProxyRay : MonoBehaviour
 
 	private State m_State;
 	private Vector3 m_TipStartScale;
-	private Coroutine m_Transitioning;
-	
+	private Transform m_ConeTransform;
+	private Vector3 m_OriginalConeLocalScale;
+
 	/// <summary>
 	/// The object that is set when LockRay is called while the ray is unlocked.
 	/// As long as this reference is set, and the ray is locked, only that object can unlock the ray.
@@ -79,6 +80,7 @@ public class DefaultProxyRay : MonoBehaviour
 				StopAllCoroutines();
 			
 			StartCoroutine(HideRay());
+			StartCoroutine(HideCone());
 		}
 	}
 
@@ -90,6 +92,7 @@ public class DefaultProxyRay : MonoBehaviour
 				StopAllCoroutines();
 			
 			StartCoroutine(ShowRay());
+			StartCoroutine(ShowCone());
 		}
 	}
 
@@ -102,6 +105,12 @@ public class DefaultProxyRay : MonoBehaviour
 		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth * length);
 		m_Tip.transform.position = transform.position + transform.forward * length;
 		m_Tip.transform.localScale = length * m_TipStartScale;
+	}
+
+	private void Awake()
+	{
+		m_ConeTransform = m_Cone.transform;
+		m_OriginalConeLocalScale = m_ConeTransform.localScale;
 	}
 
 	private void Start()
@@ -146,5 +155,33 @@ public class DefaultProxyRay : MonoBehaviour
 		// only set the value if another transition hasn't begun
 		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth);
 		m_State = State.Visible;
+	}
+
+	private IEnumerator HideCone()
+	{
+		Vector3 currentScale = m_ConeTransform.localScale;
+		Vector3 smoothVelocity = Vector3.one;
+		while (currentScale.x > 0)
+		{
+			currentScale = Vector3.SmoothDamp(currentScale, Vector3.zero, ref smoothVelocity, 0.1875f, Mathf.Infinity, Time.unscaledDeltaTime);
+			m_ConeTransform.localScale = currentScale;
+			yield return null;
+		}
+
+		m_ConeTransform.localScale = Vector3.zero;
+	}
+
+	private IEnumerator ShowCone()
+	{
+		Vector3 currentScale = m_ConeTransform.localScale;
+		Vector3 smoothVelocity = Vector3.one;
+		while (currentScale.x < m_OriginalConeLocalScale.x)
+		{
+			currentScale = Vector3.SmoothDamp(currentScale, m_OriginalConeLocalScale, ref smoothVelocity, 0.3125f, Mathf.Infinity, Time.unscaledDeltaTime);
+			m_ConeTransform.localScale = currentScale;
+			yield return null;
+		}
+
+		m_ConeTransform.localScale = m_OriginalConeLocalScale;
 	}
 }
