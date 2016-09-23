@@ -6,9 +6,9 @@ namespace UnityEngine.VR.Menus
 {
 	public class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IMenuOrigins
 	{
-		public Action onActivate;
+		public Action<Node?, bool> activated;
 
-		public Action onDeactivate;
+		//public Action<Node?> deactivated;
 
 		public void Activate()
 		{
@@ -26,7 +26,7 @@ namespace UnityEngine.VR.Menus
 		private Transform m_HighlightedPRS;
 
 		private readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
-		private static readonly float kAlternateLocationOffset = 0.175f;
+		private static readonly float kAlternateLocationOffset = 0.165f;
 
 		private Vector3 m_OriginalActivatorIconLocalScale;
 		private Vector3 m_OriginalActivatorIconLocalPosition;
@@ -36,10 +36,11 @@ namespace UnityEngine.VR.Menus
 		private Coroutine m_ActivatorMoveCoroutine;
 		private Vector3 m_AlternateActivatorLocalPosition;
 
+		public Node? node { private get; set; }
 		public Transform menuOrigin { get; set; }
 
 		private bool m_Activated;
-		private bool activated
+		private bool selected
 		{
 			get { return m_Activated; }
 			set
@@ -49,13 +50,10 @@ namespace UnityEngine.VR.Menus
 
 				m_Activated = value;
 
-				if (m_Activated == true && onActivate != null)
-					onActivate();
+				if (activated != null)
+					activated(node, m_Activated);
 
-				if (m_Activated == false && onDeactivate != null)
-					onDeactivate();
-
-				m_ActivatorMoveCoroutine = StartCoroutine(AnimateMoveActivatorButton(!m_Activated)); // Move back towards the original position if it activates the main menu
+				//m_ActivatorMoveCoroutine = StartCoroutine(AnimateMoveActivatorButton(!m_Activated)); // Move back towards the original position if it activates the main menu
 			}
 		}
 
@@ -69,6 +67,7 @@ namespace UnityEngine.VR.Menus
 				transform.SetParent(m_AlternateMenuOrigin = value);
 				transform.localPosition = m_OriginalActivatorLocalPosition;
 				transform.localRotation = Quaternion.identity;
+				transform.localScale = Vector3.one;
 
 				m_OriginalActivatorIconLocalScale = m_Icon.localScale;
 				m_OriginalActivatorIconLocalPosition = m_Icon.localPosition;
@@ -120,7 +119,14 @@ namespace UnityEngine.VR.Menus
 		public void OnPointerClick(PointerEventData eventData)
 		{
 			Debug.LogError("<color=green>OnPointerClick called on MenuTrigger</color>");
-			activated = !activated;
+			selected = !selected;
+
+			/*
+			if (m_HighlightCoroutine != null)
+				StopCoroutine(m_HighlightCoroutine);
+
+			m_HighlightCoroutine = StartCoroutine(Highlight(false));
+			*/
 		}
 
 		private IEnumerator Highlight(bool transitionIn = true)

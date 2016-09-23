@@ -36,6 +36,11 @@ namespace UnityEngine.VR.Menus
 		EventHandler hideAlternateMenu { get; set; }
 
 		/// <summary>
+		/// Delegate called when an item is selected in the alternate menu
+		/// </summary>
+		Action<Node?> selected { get; set; }
+
+		/// <summary>
 		/// Event used to inform another object that this menu is being shown
 		/// </summary>
 		//Action<Node?> onShow { get; set; }

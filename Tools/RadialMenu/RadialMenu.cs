@@ -52,6 +52,8 @@ namespace UnityEngine.VR.Menus
 
 		private const string kActionSectionName = "DefaultActions";
 
+		public Action<Node?> selected { get; set; }
+
 		public bool visible
 		{
 			get { return m_RadialMenuUI.visible; }
@@ -190,6 +192,9 @@ namespace UnityEngine.VR.Menus
 						// filter available button's being enabled, based on the action performed(or previous actions performed) - enable the paste button based on copy having alredy been performed, close the menu if delete was performed, etc
 						Selection.activeGameObject = null;
 						m_RadialMenuUI.actions = null;
+
+						if(selected != null)
+							selected(node);
 					}
 				}
 			}
@@ -310,10 +315,12 @@ namespace UnityEngine.VR.Menus
 			m_RadialMenuUI.Setup();
 		}
 
+		/*
 		public void OnSelection()
 		{
 			Debug.LogError("Object was just selected, OnSelction was called in the RadialMenu");
 		}
+		*/
 
 		private void Show()//List<IAction> actions)
 		{

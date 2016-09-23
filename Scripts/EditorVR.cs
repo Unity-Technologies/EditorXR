@@ -252,22 +252,28 @@ public class EditorVR : MonoBehaviour
 				if (deviceData.Key.tagIndex == -1)
 					continue;
 
+				Node? deviceNode = GetDeviceNode(deviceData.Key);
+
 				tool = SpawnTool(typeof(BlinkLocomotionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 
 				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 				var selectionTool = tool as SelectionTool;
-				selectionTool.node = GetDeviceNode(deviceData.Key);
+				selectionTool.node = deviceNode;
 				selectionTool.selected = OnSelection; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
-				
+
 				var mainMenuActivator = m_DeviceData[deviceData.Key].mainMenuActivator = SpawnMainMenuActivator(deviceData.Key);
+				mainMenuActivator.node = deviceNode;
+				mainMenuActivator.activated = OnMainMenuActivatorSelected;
+
 				var mainMenu = m_DeviceData[deviceData.Key].mainMenu = SpawnMainMenu(typeof(MainMenu), deviceData.Key);
 				var alternateMenu = m_DeviceData[deviceData.Key].alternateMenu = SpawnAlternateMenu(typeof(UnityEngine.VR.Menus.RadialMenu), deviceData.Key);
+				alternateMenu.selected = OnSelection;
 
-				mainMenuActivator.onActivate += () => mainMenu.visible = true; // Show main menu when main menu activator is activated
-				//mainMenuActivator.onDeactivate += () => mainMenu.visible = false; // Hide main menu when main menu activator is deactivated
-				//mainMenuActivator.onActivate += alternateMenu; // Hide alternate menu when main menu is activated
+				//mainMenuActivator.activated =  += () => mainMenu.visible = true; // Show main menu when main menu activator is activated
+				//mainMenuActivator.deactivated += () => mainMenu.visible = false; // Hide main menu when main menu activator is deactivated
+				//mainMenuActivator.activated += alternateMenu; // Hide alternate menu when main menu is activated
 					//alternateMenu.onShow = OnAlternateMenuShow; // Deactivate main menu activator when alternate menu is being shown;
 					//alternateMenu.onHide = OnAlternateMenuHide; // Deactivate main menu activator when alternate menu is being shown;
 				// Add in support for pushing the radial menu onto other hand when main menu is opened and an object is selected
@@ -307,9 +313,12 @@ public class EditorVR : MonoBehaviour
 
 			if (node.HasValue) //  && node.Value == selectionToolNode
 			{
-				var mainMenuActionMap = kvp.Value.mainMenu as ICustomActionMap;
-				if (mainMenuActionMap != null)
-					mainMenuActionMap.actionMapInput.active = node.Value == selectionToolNode; // Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
+				if (node.Value == selectionToolNode)
+				{ 
+					var mainMenuActionMap = kvp.Value.mainMenu as ICustomActionMap;
+					if (mainMenuActionMap != null)
+						mainMenuActionMap.actionMapInput.active = node.Value == selectionToolNode; // Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
+				}
 
 				var alternateMenu = kvp.Value.alternateMenu;
 				if (alternateMenu != null)
@@ -319,13 +328,52 @@ public class EditorVR : MonoBehaviour
 				var mainMenuActivator = kvp.Value.mainMenuActivator;
 				if (mainMenuActivator != null)
 					mainMenuActivator.activatorButtonMoveAway = Selection.gameObjects.Length > 0 && node.Value == selectionToolNode;
-
-				//break;
 			}
 		}
-
 	}
 
+	private void OnMainMenuActivatorSelected(Node? activatorNode, bool showMainMenu)
+	{
+		if (activatorNode == null)
+			return;
+
+		Debug.Log("OnMainMenuActivatorSelected called");
+		foreach (var kvp in m_DeviceData)
+		{
+			Node? node = GetDeviceNode(kvp.Key);
+			if (node.HasValue)
+			{
+				// move to rest position if this is the node that made the selection
+				if (node.Value == activatorNode)
+				{
+					var mainMenu = kvp.Value.mainMenu as IMainMenu;
+					if (mainMenu != null)
+						mainMenu.visible = showMainMenu;
+
+					var mainMenuActivator = kvp.Value.mainMenuActivator;
+					if (mainMenuActivator != null)
+						mainMenuActivator.activatorButtonMoveAway = false;
+
+					var alternateMenu = kvp.Value.alternateMenu;
+					if (alternateMenu != null)
+						alternateMenu.visible = false;
+				}
+				else if (Selection.gameObjects.Length > 0)
+				{
+					// Enable the alternate menu on the other hand if the menu was opened on a hand with the radial menu already enabled
+					var alternateMenu = kvp.Value.alternateMenu;
+					if (alternateMenu != null)
+						alternateMenu.visible = true;
+
+					var mainMenuActivator = kvp.Value.mainMenuActivator;
+					if (mainMenuActivator != null)
+						mainMenuActivator.activatorButtonMoveAway = true;
+				}
+			}
+		}
+	}
+
+	/*
 	private void OnMainMenuShow(Node? mainMenuNode)
 	{
 		if (mainMenuNode == null)
@@ -345,7 +393,6 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 	}
-	/*
 	private void OnAlternateMenuShow(Node? alternateMenuNode)
 	{
 		if (alternateMenuNode == null)
