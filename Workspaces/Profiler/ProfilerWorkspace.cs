@@ -8,8 +8,6 @@ public class ProfilerWorkspace : Workspace
 	private GameObject m_ProfilerWindowPrefab;
 
 	private Transform m_ProfilerWindow;
-	private EditorWindowCapture m_CaptureWindow = null;
-	private bool m_InView = true;
 
 	public override void Setup()
 	{
@@ -27,8 +25,6 @@ public class ProfilerWorkspace : Workspace
 		m_ProfilerWindow.localScale = size;
 
 		UnityEditorInternal.ProfilerDriver.profileEditor = true;
-		m_CaptureWindow = GetComponentInChildren<EditorWindowCapture>();
-		m_InView = true;
 	}
 
 	void Update()
