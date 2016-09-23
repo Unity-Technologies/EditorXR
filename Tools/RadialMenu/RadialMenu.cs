@@ -263,7 +263,7 @@ namespace UnityEngine.VR.Menus
 
 		private void Update()
 		{
-			if (m_RadialMenuInput == null)
+			if (m_RadialMenuInput == null || visible == false)
 				return;
 
 			//  TODO: Add rotational thumbstick-based selection of radial menu items
