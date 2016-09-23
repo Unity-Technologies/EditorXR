@@ -1,11 +1,10 @@
 ﻿using System;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenuButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IRayHoverHandler
+	public class MainMenuButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
 	{
 		public Button button { get { return m_Button; } }
 		[SerializeField]
@@ -16,11 +15,10 @@ namespace UnityEngine.VR.Menus
 		[SerializeField]
 		private Text m_ButtonTitle;
 
-		public Action<Transform> ButtonEntered;
 		public Action clicked;
 
 		/// <summary>
-		/// The node of the ray that is hovering over the button
+		/// The node of the ray that hovering over the button
 		/// </summary>
 		public Node? node { get; private set; }
 
@@ -44,24 +42,6 @@ namespace UnityEngine.VR.Menus
 		{
 			if (clicked != null)
 				clicked();
-		}
-
-		public void OnPointerEnter(PointerEventData eventData)
-		{
-			//Debug.LogError("<color=green>OnPointerEnter called on MainMenuButton</color>");
- 		}
-
-		public void OnPointerExit(PointerEventData eventData)
-		{
-			Debug.LogError("<color=green>OnPointerExit called on MainMenuButton</color>");
-		}
-
-		public void OnRayHover(RayEventData eventData)
-		{
-			Debug.LogError("<color=green>OnPointerEnter called on MainMenuButton</color>");
-			Action<Transform> ButtonEnteredHandler = ButtonEntered;
-			if (ButtonEnteredHandler != null)
-				ButtonEnteredHandler(transform);
 		}
 
 		public void OnRayEnter(RayEventData eventData)
