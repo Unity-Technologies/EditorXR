@@ -752,7 +752,6 @@ MonoBehaviour:
   m_MenuFaceRotationOrigin: {fileID: 4000012948932736}
   m_MenuFrameRenderer: {fileID: 137000013719920994}
   m_AlternateMenu: {fileID: 4000011216484522}
-  m_MainMenuActivator: {fileID: 0}
 --- !u!114 &114000012485892230
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -765,8 +764,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_TargetTransform: {fileID: 0}
-  m_DampingReduction: 16
+  m_Target: {fileID: 0}
+  m_Tighten: 20
 --- !u!137 &137000013719920994
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1
