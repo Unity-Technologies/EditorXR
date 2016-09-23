@@ -1,159 +1,35 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandler, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
+public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
 {
-	public SelectionFlags selectionFlags
+	public enum ContentType
 	{
-		get { return m_SelectionFlags; }
-		set { m_SelectionFlags = value; }
+		Float,
+		Int,
 	}
+	public ContentType numberType { get { return m_NumberType; } }
 	[SerializeField]
-	[FlagsProperty]
-	protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
+	private ContentType m_NumberType = ContentType.Float;
 
-	[Serializable]
-	public class OnChangeEvent : UnityEvent<string> { }
-	public OnChangeEvent onValueChanged { get { return m_OnValueChanged; } }
-	[SerializeField]
-	private OnChangeEvent m_OnValueChanged = new OnChangeEvent();
-
-	public Func<NumericKeyboardUI> keyboard;
-	private NumericKeyboardUI m_NumericKeyboard;
-
-	public SerializedPropertyType contentType { get { return m_ContentType; } }
-	[SerializeField]
-	private SerializedPropertyType m_ContentType = SerializedPropertyType.Float;
-
-	[SerializeField]
-	private Transform m_KeyboardAnchorTransform;
-
-	[SerializeField]
-	private Text m_TextComponent;
-
-	[SerializeField]
-	private int m_CharacterLimit = 10;
-
-	[SerializeField]
 	private bool m_UpdateDrag;
-	private bool m_DragPositionOutOfBounds;
-	private const float kDragSensitivity = 10f;
-	private static float kDragDeadzone = 0.01f;
 	private Vector3 m_StartDragPosition;
 	private Vector3 m_LastPointerPosition;
-	private bool m_PointerOverField;
+	private const float kDragSensitivity = 0.01f;
+	private const float kDragDeadzone = 0.01f;
 
-	private bool m_Open;
+	private int m_OperandCount;
 
 	private const string kFloatFieldFormatString = "g7";
 	private const string kIntFieldFormatString = "#######0";
 
+	// We cannot round to more decimals than 15 according to docs for System.Math.Round.
+	private const int kMaxDecimals = 15;
 	private const string kAllowedCharactersForFloat = "inftynaeINFTYNAE0123456789.,-*/+%^()";
 	private const string kAllowedCharactersForInt = "0123456789-*/+%^()";
-
-	private bool m_Numeric
-	{
-		get { return m_ContentType == SerializedPropertyType.Float || m_ContentType == SerializedPropertyType.Integer; } 
-	}
-
-	public string text
-	{
-		get
-		{
-			return m_Text;
-		}
-		set
-		{
-			if (m_Text == value)
-				return;
-			if (value == null)
-				value = "";
-
-			m_Text = m_CharacterLimit > 0 && value.Length > m_CharacterLimit ? value.Substring(0, m_CharacterLimit) : value;
-		}
-	}
-	private string m_Text = string.Empty;
-
-	protected override void OnEnable()
-	{
-		base.OnEnable();
-
-		if (m_Text == null)
-			m_Text = string.Empty;
-
-		if (m_TextComponent != null)
-		{
-			UpdateLabel();
-		}
-	}
-
-	public void ForceUpdateLabel()
-	{
-		UpdateLabel();
-	}
-
-	public void OnPointerClick(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			if (m_Open)
-				Close();
-			else
-				Open();
-		}
-	}
-
-	public override void OnPointerEnter(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			base.OnPointerEnter(eventData);
-
-			m_PointerOverField = true;
-
-			if (eventData.dragging)
-				m_LastPointerPosition = GetLocalPointerPosition(rayEventData);
-		}
-	}
-
-	public override void OnPointerExit(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			base.OnPointerExit(eventData);
-
-			m_PointerOverField = false;
-		}
-	}
-
-	public override void OnPointerDown(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			base.OnPointerDown(eventData);
-		}
-	}
-
-	public override void OnPointerUp(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			base.OnPointerUp(eventData);
-		}
-	}
+	private const string kOperandCharacters = "-*/+%^()";
 
 	private bool MayDrag()
 	{
@@ -175,7 +51,7 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
 			return;
 
-		if (m_Numeric)
+		if (eventData.pointerCurrentRaycast.gameObject == gameObject)
 		{
 			if (!m_UpdateDrag)
 			{
@@ -192,7 +68,8 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 	private void StartDrag(RayEventData eventData)
 	{
-		ParseNumberField();
+		if (IsExpression())
+			ParseNumberField();
 		m_LastPointerPosition = GetLocalPointerPosition(eventData);
 		m_UpdateDrag = true;
 		eventData.eligibleForClick = false;
@@ -208,18 +85,18 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 	private void DragNumberValue(RayEventData eventData)
 	{
-		var delta = GetLocalPointerPosition(eventData).x - m_LastPointerPosition.x;
+		var delta = GetLocalPointerPosition(eventData) - m_LastPointerPosition;
 
-		if (contentType == SerializedPropertyType.Float)
+		if (numberType == ContentType.Float)
 		{
 			float num;
 			if (!float.TryParse(text, out num))
 				num = 0f;
 
 			var dragSensitivity = CalculateFloatDragSensitivity(num);
-			num += delta * dragSensitivity;
-			//	floatVal += HandleUtility.niceMouseDelta*s_DragSensitivity;
-			//	num = MathUtils.RoundBasedOnMinimumDifference(num, dragSensitivity);
+//			num += delta * dragSensitivity;
+			num += GetNicePointerDelta(delta) * dragSensitivity;
+			num = RoundBasedOnMinimumDifference(num, dragSensitivity);
 			m_Text = num.ToString(kFloatFieldFormatString);
 		}
 		else
@@ -229,8 +106,8 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 				intNum = 0;
 
 			var dragSensitivity = CalculateIntDragSensitivity(intNum);
-//			intNum += (int) Math.Round(HandleUtility.niceMouseDelta* dragSensitivity);
-			intNum += (int) Math.Round(delta * dragSensitivity);
+			intNum += (int)Math.Round(GetNicePointerDelta(delta) * dragSensitivity);
+//			intNum += (int)Math.Round(delta * dragSensitivity);
 
 			m_Text = intNum.ToString(kIntFieldFormatString);
 		}
@@ -245,76 +122,25 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		return transform.InverseTransformPoint(hitPos);
 	}
 
-	public virtual void OnSubmit(BaseEventData eventData)
+	protected override void Close()
 	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-		}
+		if (IsExpression())
+			ParseNumberField();
+
+		base.Close();
 	}
 
-	public override void OnSelect(BaseEventData eventData)
+	protected override bool IsValid(char ch)
 	{
-		//
-	}
-
-	private void Open()
-	{
-		if (m_Open) return;
-		m_Open = true;
-
-		m_NumericKeyboard = keyboard();
-		// Instantiate keyboard here
-		if (m_NumericKeyboard != null)
-		{
-			m_NumericKeyboard.gameObject.SetActive(true);
-			m_NumericKeyboard.transform.SetParent(transform, true);
-			m_NumericKeyboard.transform.position = m_KeyboardAnchorTransform.position;
-			m_NumericKeyboard.transform.rotation = m_KeyboardAnchorTransform.rotation;
-
-			m_NumericKeyboard.Setup(OnKeyPress);
-		}
-	}
-
-	private void Close()
-	{
-		m_Open = false;
-
-		ParseNumberField();
-
-		if (m_NumericKeyboard == null) return;
-
-		m_NumericKeyboard.gameObject.SetActive(false);
-		m_NumericKeyboard = null;
-	}
-
-	private void OnKeyPress(char keyCode)
-	{
-		switch ((int)keyCode)
-		{
-			case (int)NumericInputButton.SpecialKeyType.Backspace:
-				Delete();
-				return;
-			case (int)NumericInputButton.SpecialKeyType.Return:
-				Return();
-				return;
-		}
-
-		if (IsValid(keyCode))
-			Insert(keyCode);
-	}
-
-	private bool IsValid(char ch)
-	{
-		if (m_TextComponent.font.HasCharacter(ch))
+		if (!base.IsValid(ch))
 			return false;
 
-		if (m_ContentType == SerializedPropertyType.Float)
+		if (m_NumberType == ContentType.Float)
 		{
 			if (!kAllowedCharactersForFloat.Contains(ch.ToString()))
 				return false;
 		}
-		else if (m_ContentType == SerializedPropertyType.Integer)
+		else if (m_NumberType == ContentType.Int)
 		{
 			if (!kAllowedCharactersForInt.Contains(ch.ToString()))
 				return false;
@@ -323,62 +149,60 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		return true;
 	}
 
-	private void Insert(char ch)
+	private bool IsExpression()
+	{
+		return m_OperandCount > 0;
+	}
+
+	private bool IsOperand(char ch)
+	{
+		return kOperandCharacters.Contains(ch.ToString()) && !(m_Text.Length == 0 && ch == '-');
+	}
+
+	protected override void Append(char c)
 	{
 		var len = m_Text.Length;
 
-		text += ch;
+		text += c;
 
-		if (len != m_Text.Length && !IsExpression())
-			SendOnValueChangedAndUpdateLabel();
+		if (len != m_Text.Length)
+		{
+			if (IsOperand(c))
+				m_OperandCount++;
+
+			if (!IsExpression())
+				SendOnValueChangedAndUpdateLabel();
+			else
+				UpdateLabel();
+		}
 	}
 
-	private bool IsExpression()
-	{
-		return false;
-	}
-
-	private void Delete()
+	protected override void Backspace()
 	{
 		if (m_Text.Length == 0) return;
 
+		var ch = m_Text[m_Text.Length - 1];
+
+		if (IsOperand(ch))
+			m_OperandCount--;
+
 		m_Text = m_Text.Remove(m_Text.Length - 1);
-		
-		SendOnValueChangedAndUpdateLabel();
+
+		if (!IsExpression())
+			SendOnValueChangedAndUpdateLabel();
+		else
+			UpdateLabel();
 	}
 
-	private void Return()
+	protected override void Return()
 	{
-		if (m_Numeric)
+		if (IsExpression())
 			ParseNumberField();
-		// TODO check multiline
 	}
 
-	private void ClearField()
+	protected override void Space()
 	{
-		m_Text = "";
-
-		SendOnValueChangedAndUpdateLabel();
-	}
-
-	private void SendOnValueChangedAndUpdateLabel()
-	{
-		SendOnValueChanged();
-		UpdateLabel();
-	}
-
-	private void SendOnValueChanged()
-	{
-		if (onValueChanged != null)
-			onValueChanged.Invoke(text);
-	}
-
-	protected void UpdateLabel()
-	{
-		if (m_TextComponent != null && m_TextComponent.font != null)
-		{
-			m_TextComponent.text = m_Text;
-		}
+		Return();
 	}
 
 	private float CalculateFloatDragSensitivity(float value)
@@ -394,11 +218,29 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 		return (int)Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f) * kDragSensitivity);
 	}
 
+	private float RoundBasedOnMinimumDifference(float valueToRound, float minDifference)
+	{
+		if (Math.Abs(minDifference) < Mathf.Epsilon)
+			return DiscardLeastSignificantDecimal(valueToRound);
+		return (float)Math.Round(valueToRound, GetNumberOfDecimalsForMinimumDifference(minDifference), MidpointRounding.AwayFromZero);
+	}
+
+	private float DiscardLeastSignificantDecimal(float v)
+	{
+		int decimals = Mathf.Clamp((int)(5 - Mathf.Log10(Mathf.Abs(v))), 0, kMaxDecimals);
+		return (float)Math.Round(v, decimals, MidpointRounding.AwayFromZero);
+	}
+
+	private int GetNumberOfDecimalsForMinimumDifference(float minDifference)
+	{
+		return Mathf.Clamp(-Mathf.FloorToInt(Mathf.Log10(Mathf.Abs(minDifference))), 0, kMaxDecimals);
+	}
+
 	private void ParseNumberField()
 	{
-		var isFloat = m_ContentType == SerializedPropertyType.Float;
+		var str = m_Text;
 
-		if (isFloat)
+		if (m_NumberType == ContentType.Float)
 		{
 			float floatVal;
 
@@ -407,26 +249,43 @@ public class NumericInputField : Selectable, ISubmitHandler, IPointerClickHandle
 
 			if (!float.TryParse(m_Text, System.Globalization.NumberStyles.Float,
 					System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out floatVal))
-			{
 				floatVal = StringExpressionEvaluator.Evaluate<float>(m_Text);
-			}
 
-			if (double.IsNaN(floatVal))
-			{
+			if (float.IsNaN(floatVal))
 				floatVal = 0;
-			}
 
 			m_Text = floatVal.ToString(kFloatFieldFormatString);
-			SendOnValueChangedAndUpdateLabel();
 		}
 		else
 		{
 			int intVal;
 			if (!int.TryParse(m_Text, out intVal))
-			{
-				m_Text = StringExpressionEvaluator.Evaluate<long>(m_Text).ToString(kIntFieldFormatString);
-				SendOnValueChangedAndUpdateLabel();
-			}
+				m_Text = StringExpressionEvaluator.Evaluate<int>(m_Text).ToString(kIntFieldFormatString);
 		}
+
+		if (str != m_Text)
+			SendOnValueChangedAndUpdateLabel();
+
+		m_OperandCount = 0;
+	}
+
+	private bool m_UseYSign;
+	private float GetNicePointerDelta(Vector3 delta)
+	{
+		Vector2 d = delta;
+		d.y = -d.y;
+
+		if (Mathf.Abs(Mathf.Abs(d.x) - Mathf.Abs(d.y)) / Mathf.Max(Mathf.Abs(d.x), Mathf.Abs(d.y)) > .1f)
+		{
+			if (Mathf.Abs(d.x) > Mathf.Abs(d.y))
+				m_UseYSign = false;
+			else
+				m_UseYSign = true;
+		}
+
+		if (m_UseYSign)
+			return Mathf.Sign(d.y) * d.magnitude * 100f;
+		else
+			return Mathf.Sign(d.x) * d.magnitude * 100f;
 	}
 }
