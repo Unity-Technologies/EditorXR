@@ -2,11 +2,11 @@
 {
 	Properties
 	{
-		_MainTex("Albedo (RGB)", 2D) = "white" {}
-		_Glossiness("Smoothness", Range(0,1)) = 0.5
-		_Metallic("Metallic", Range(0,1)) = 0.0
+		[PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
+		_Color("Tint", Color) = (1,1,1,1)
+
 		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
-		
+
 		_StencilComp("Stencil Comparison", Float) = 8
 		_Stencil("Stencil ID", Float) = 0
 		_StencilOp("Stencil Operation", Float) = 0
@@ -17,48 +17,101 @@
 
 		[Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip("Use Alpha Clip", Float) = 0
 	}
-	SubShader
+
+		SubShader
 	{
-		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent-1" }
-		LOD 200
+		Tags
+	{
+		"Queue" = "Transparent"
+		"IgnoreProjector" = "True"
+		"RenderType" = "Transparent"
+		"PreviewType" = "Plane"
+		"CanUseSpriteAtlas" = "True"
+	}
+
+		Stencil
+	{
+		Ref[_Stencil]
+		Comp[_StencilComp]
+		Pass[_StencilOp]
+		ReadMask[_StencilReadMask]
+		WriteMask[_StencilWriteMask]
+	}
+
+		Cull Off
+		Lighting Off
 		ZWrite Off
+		ZTest[unity_GUIZTestMode]
+		Blend SrcAlpha OneMinusSrcAlpha
+		ColorMask[_ColorMask]
 
+		Pass
+	{
 		CGPROGRAM
-		// Physically based Standard lighting model, and enable shadows on all light types
-		#pragma surface surf Standard alpha:fade vertex:vert
+#pragma vertex vert
+#pragma fragment frag
 
-		// Use shader model 3.0 target, to get nicer looking lighting
-		#pragma target 3.0
+#include "UnityCG.cginc"
+#include "UnityUI.cginc"
 
-		struct Input
-		{
-			float2 uv_MainTex;
-			float3 localPos;
-			half4 color;
-		};
+#pragma multi_compile __ UNITY_UI_ALPHACLIP
 
-		#include "ListClip.cginc"
+	struct appdata_t {
+		float4 vertex   : POSITION;
+		float4 color    : COLOR;
+		float2 texcoord : TEXCOORD0;
+	};
 
-		sampler2D _MainTex;
+	struct v2f {
+		float4 vertex   : SV_POSITION;
+		fixed4 color : COLOR;
+		half2 texcoord  : TEXCOORD0;
+		float4 worldPosition : TEXCOORD1;
+		float4 localPosition : TEXCOORD2;
+	};
 
-		half _Glossiness;
-		half _Metallic;
+	fixed4 _Color;
+	fixed4 _TextureSampleAdd;
+	float4 _ClipRect;
 
-		void vert(inout appdata_full v, out Input o)
-		{
-			UNITY_INITIALIZE_OUTPUT(Input, o);
-			o.localPos = listClipLocalPos(v.vertex);
-			o.color = v.color;
-		}
+	float4x4 _ParentMatrix;
+	float4 _ClipExtents;
 
-		void surf(Input IN, inout SurfaceOutputStandard o)
-		{
-			listClipFrag(IN.localPos);
+	v2f vert(appdata_t IN) {
+		v2f OUT;
+		OUT.worldPosition = IN.vertex;
+		OUT.localPosition = mul(_ParentMatrix, mul(UNITY_MATRIX_M, IN.vertex));
+		OUT.vertex = mul(UNITY_MATRIX_MVP, OUT.worldPosition);
 
-			o.Emission = IN.color;
-			o.Alpha = tex2D(_MainTex, IN.uv_MainTex).a * IN.color.a;
-		}
+		OUT.texcoord = IN.texcoord;
+
+#ifdef UNITY_HALF_TEXEL_OFFSET
+		OUT.vertex.xy += (_ScreenParams.zw - 1.0)*float2(-1,1);
+#endif
+
+		OUT.color = IN.color * _Color;
+		return OUT;
+	}
+
+	sampler2D _MainTex;
+
+	fixed4 frag(v2f IN) : SV_Target
+	{
+		float3 diff = abs(IN.localPosition);
+		if (diff.x > _ClipExtents.x || diff.y > _ClipExtents.y || diff.z > _ClipExtents.z)
+			discard;
+
+		half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
+
+		color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
+
+#ifdef UNITY_UI_ALPHACLIP
+		clip(color.a - 0.001);
+#endif
+
+		return color;
+	}
 		ENDCG
 	}
-	FallBack "Diffuse"
+	}
 }

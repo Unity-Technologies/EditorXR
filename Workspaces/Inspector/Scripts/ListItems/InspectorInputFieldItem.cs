@@ -8,17 +8,9 @@ public class InspectorInputFieldItem : InspectorPropertyItem
 	[SerializeField]
 	private InputField m_InputField;
 
-	private bool m_Setup;
-
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
-
-		if (!m_Setup)
-		{
-			m_Setup = true;
-			m_InputField.onValueChanged.AddListener(SetValue);
-		}
 
 		var val = string.Empty;
 		switch (m_SerializedProperty.propertyType)
@@ -40,7 +32,7 @@ public class InspectorInputFieldItem : InspectorPropertyItem
 		m_InputField.text = val;
 	}
 
-	private void SetValue(string input)
+	public void SetValue(string input)
 	{
 		switch (m_SerializedProperty.propertyType)
 		{

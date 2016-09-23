@@ -18,6 +18,8 @@ public class InspectorWorkspace : Workspace
 	private Vector3 m_ScrollStart;
 	private float m_ScrollOffsetStart;
 
+	public bool @lock;
+
 	public override void Setup()
 	{
 		base.Setup();
@@ -86,6 +88,8 @@ public class InspectorWorkspace : Workspace
 
 	private void OnSelectionChanged()
 	{
+		if (@lock)
+			return;
 		if (Selection.activeObject == null)
 		{
 			m_InspectorUI.inspectorListView.data = new InspectorData[0];

@@ -1,37 +1,34 @@
-﻿using UnityEditor;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 public class InspectorBoundsItem : InspectorPropertyItem
 {
-
 	[SerializeField]
 	private NumericInputField[] m_CenterFields;
 	[SerializeField]
 	private NumericInputField[] m_ExtentsFields;
 
-	private bool m_Setup;
-
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
-
-		if (!m_Setup)
-		{
-			m_Setup = true;
-			for (int i = 0; i < m_CenterFields.Length; i++)
-			{
-				var index = i;
-				m_CenterFields[i].onValueChanged.AddListener(value => SetValue(value, index, true));
-				m_ExtentsFields[i].onValueChanged.AddListener(value => SetValue(value, index));
-			}
-		}
 
 		for (int i = 0; i < m_CenterFields.Length; i++)
 		{
 			var bounds = m_SerializedProperty.boundsValue;
 			m_CenterFields[i].text = bounds.center[i].ToString();
 			m_ExtentsFields[i].text = bounds.extents[i].ToString();
+		}
+	}
+
+	protected override void FirstTimeSetup()
+	{
+		base.FirstTimeSetup();
+
+		//TODO: Expose onValueChanged in Inspector
+		for (int i = 0; i < m_CenterFields.Length; i++)
+		{
+			var index = i;
+			m_CenterFields[i].onValueChanged.AddListener(value => SetValue(value, index, true));
+			m_ExtentsFields[i].onValueChanged.AddListener(value => SetValue(value, index));
 		}
 	}
 

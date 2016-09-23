@@ -3,8 +3,8 @@ using UnityEngine.UI;
 
 public class ClipText : Text
 {
-	public static Matrix4x4 parentMatrix;
-	public static Vector3 clipExtents;
+	public Matrix4x4 parentMatrix { private get; set; }
+	public Vector3 clipExtents { private get; set; }
 
 	public override Material GetModifiedMaterial(Material baseMaterial)
 	{

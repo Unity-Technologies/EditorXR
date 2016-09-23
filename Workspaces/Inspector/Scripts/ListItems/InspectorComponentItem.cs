@@ -19,18 +19,9 @@ public class InspectorComponentItem : InspectorListItem
 	[SerializeField]
 	private Button m_GearMenu;
 
-	private bool m_Setup;
-
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
-
-		if (!m_Setup)
-		{
-			m_Setup = true;
-			m_ExpandArrow.onClick.AddListener(ToggleExpanded);
-			m_EnabledToggle.onValueChanged.AddListener(SetEnabled);
-		}
 
 		var target = data.serializedObject.targetObject;
 		var type = target.GetType();
@@ -57,12 +48,12 @@ public class InspectorComponentItem : InspectorListItem
 		m_GearMenu.GetComponent<Renderer>().sharedMaterial = gearMaterial;
 	}
 
-	private void ToggleExpanded()
+	public void ToggleExpanded()
 	{
 		data.expanded = !data.expanded;
 	}
 
-	private void SetEnabled(bool value)
+	public void SetEnabled(bool value)
 	{
 		EditorUtility.SetObjectEnabled(data.serializedObject.targetObject, value);
 	}

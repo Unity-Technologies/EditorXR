@@ -55,8 +55,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
 		SetMaterialClip(m_TextMaterial, parentMatrix);
 		SetMaterialClip(m_UIMaterial, parentMatrix);
-		ClipText.parentMatrix = parentMatrix;
-		ClipText.clipExtents = bounds.extents;
 	}
 
 	protected override void UpdateItems()
@@ -95,7 +93,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		if (data.item == null)
 			data.item = GetItem(data);
 		var item = (InspectorListItem)data.item;
-		item.UpdateTransforms(bounds.size.x - kClipMargin, depth);
+		item.UpdateSelf(bounds.size.x - kClipMargin, depth);
+		item.UpdateClipTexts(transform.worldToLocalMatrix, bounds.extents);
 
 		UpdateItem(item.transform, offset);
 	}

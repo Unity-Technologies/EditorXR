@@ -1,6 +1,5 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class InspectorVectorItem : InspectorPropertyItem
 {
@@ -13,21 +12,9 @@ public class InspectorVectorItem : InspectorPropertyItem
 	[SerializeField]
 	private GameObject WGroup;
 
-	private bool m_Setup;
-
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
-
-		//if (!m_Setup)
-		//{
-		//	m_Setup = true;
-		//	for (int i = 0; i < m_InputFields.Length; i++)
-		//	{
-		//		var index = i;
-		//		m_InputFields[i].onValueChanged.AddListener(value => SetValue(value, index));
-		//	}
-		//}
 
 		Vector4 vector = Vector4.zero;
 		int count = 4;
@@ -41,24 +28,40 @@ public class InspectorVectorItem : InspectorPropertyItem
 				break;
 			case SerializedPropertyType.Quaternion:
 				vector = m_SerializedProperty.quaternionValue.eulerAngles;
+				ZGroup.SetActive(true);
 				WGroup.SetActive(false);
 				count = 3;
 				break;
 			case SerializedPropertyType.Vector3:
 				vector = m_SerializedProperty.vector3Value;
+				ZGroup.SetActive(true);
 				WGroup.SetActive(false);
 				count = 3;
 				break;
 			case SerializedPropertyType.Vector4:
 				vector = m_SerializedProperty.vector4Value;
+				ZGroup.SetActive(true);
+				WGroup.SetActive(true);
 				break;
 		}
 
-		//for (int i = 0; i < count; i++)
-		//	m_InputFields[i].text = vector[i].ToString();
+		for (int i = 0; i < count; i++)
+			m_InputFields[i].text = vector[i].ToString();
 	}
 
-	private void SetValue(string input, int index)
+	protected override void FirstTimeSetup()
+	{
+		base.FirstTimeSetup();
+
+		//TODO: expose onValueChanged in Inspector
+		for (int i = 0; i < m_InputFields.Length; i++)
+		{
+			var index = i;
+			m_InputFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+		}
+	}
+
+	public void SetValue(string input, int index)
 	{
 		float value;
 		if (!float.TryParse(input, out value)) return;

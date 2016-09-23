@@ -20,19 +20,9 @@ public class InspectorHeaderItem : InspectorListItem
 	
 	private GameObject m_TargetGameObject;
 
-	private bool m_Setup;
-
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
-
-		if (!m_Setup)
-		{
-			m_Setup = true;
-			m_ActiveToggle.onValueChanged.AddListener(SetActive);
-			m_NameField.onValueChanged.AddListener(SetName);
-			m_StaticToggle.onValueChanged.AddListener(SetStatic);
-		}
 
 		var target = data.serializedObject.targetObject;
 
@@ -48,24 +38,24 @@ public class InspectorHeaderItem : InspectorListItem
 		m_NameField.text = target.name;
 	}
 
-	private void SetActive(bool active)
+	public void SetActive(bool active)
 	{
 		// TODO: Add choice dialog for whether to set in children
-		if (m_TargetGameObject.activeSelf != active)
+		if (m_TargetGameObject != null && m_TargetGameObject.activeSelf != active)
 			m_TargetGameObject.SetActive(active);
 	}
 
-	private void SetName(string name)
+	public void SetName(string name)
 	{
 		var target = data.serializedObject.targetObject;
 		if (!target.name.Equals(name))
 			target.name = name;
 	}
 
-	private void SetStatic(bool isStatic)
+	public void SetStatic(bool isStatic)
 	{
 		// TODO: Add choice dialog for whether to set in children
-		if(m_TargetGameObject.isStatic != isStatic)
+		if(m_TargetGameObject != null && m_TargetGameObject.isStatic != isStatic)
 			m_TargetGameObject.isStatic = isStatic;
 	}
 }
