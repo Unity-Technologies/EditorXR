@@ -6,9 +6,9 @@ public class InspectorBoundsItem : InspectorPropertyItem
 {
 
 	[SerializeField]
-	private InputField[] m_CenterFields;
+	private NumericInputField[] m_CenterFields;
 	[SerializeField]
-	private InputField[] m_ExtentsFields;
+	private NumericInputField[] m_ExtentsFields;
 
 	private bool m_Setup;
 

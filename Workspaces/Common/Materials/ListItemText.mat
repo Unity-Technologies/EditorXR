@@ -8,7 +8,7 @@ Material:
   m_PrefabInternal: {fileID: 0}
   m_Name: ListItemText
   m_Shader: {fileID: 4800000, guid: c0d62b0f6f8955744827ef9db62f4b73, type: 3}
-  m_ShaderKeywords: _EMISSION
+  m_ShaderKeywords: UNITY_UI_ALPHACLIP _EMISSION
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -135,7 +135,7 @@ Material:
       second: 0
     - first:
         name: _UseUIAlphaClip
-      second: 0
+      second: 1
     - first:
         name: _ZWrite
       second: 1

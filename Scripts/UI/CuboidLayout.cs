@@ -44,9 +44,9 @@ public class CuboidLayout : UIBehaviour
 			return;
 		for (int i = 0; i < m_CubeTransforms.Length; i++)
 		{
-			var rect = m_TargetTransforms[i].rect;
+			var rectSize = m_TargetTransforms[i].rect.size.Abs();
 			// Scale pivot by rect size to get correct xy local position
-			var pivotOffset =  Vector2.Scale(rect.size, kCuboidPivot - m_TargetTransforms[i].pivot);
+			var pivotOffset =  Vector2.Scale(rectSize, kCuboidPivot - m_TargetTransforms[i].pivot);
 
 			// Add space for cuboid
 			var localPosition = m_TargetTransforms[i].localPosition;
@@ -55,7 +55,7 @@ public class CuboidLayout : UIBehaviour
 			//Offset by 0.5 * height to account for pivot in center
 			var zOffset = kLayerHeight * 0.5f + kExtraSpace;
 			m_CubeTransforms[i].localPosition = new Vector3(pivotOffset.x, pivotOffset.y, zOffset);
-			m_CubeTransforms[i].localScale = new Vector3(rect.width, rect.height, kLayerHeight);
+			m_CubeTransforms[i].localScale = new Vector3(rectSize.x, rectSize.y, kLayerHeight);
 		}
 	}
 }

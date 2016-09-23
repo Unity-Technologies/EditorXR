@@ -15,6 +15,13 @@ public class InspectorListItem : ListViewItem<InspectorData>
 
 	public bool hasMaterials { get; private set; }
 
+	public override void Setup(InspectorData data)
+	{
+		base.Setup(data);
+		// Touch UI width to generate cubes
+		m_UIContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 0);
+	}
+
 	public void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial)
 	{
 		m_Cube.GetComponent<Renderer>().sharedMaterial = rowMaterial;
@@ -32,6 +39,11 @@ public class InspectorListItem : ListViewItem<InspectorData>
 		foreach (var text in texts)
 			text.material = textMaterial;
 
+		// Don't clip masks
+		var masks = GetComponentsInChildren<Mask>(true);
+		foreach (var mask in masks)
+			mask.graphic.material = null;
+
 		hasMaterials = true;
 	}
 
@@ -40,5 +52,8 @@ public class InspectorListItem : ListViewItem<InspectorData>
 		Vector3 cubeScale = m_Cube.transform.localScale;
 		cubeScale.x = width;
 		m_Cube.transform.localScale = cubeScale;
+
+		m_UIContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+		//m_UIContainer.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, indent, width - indent);
 	}
 }

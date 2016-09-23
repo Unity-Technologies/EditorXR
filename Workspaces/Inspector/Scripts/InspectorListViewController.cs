@@ -55,6 +55,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
 		SetMaterialClip(m_TextMaterial, parentMatrix);
 		SetMaterialClip(m_UIMaterial, parentMatrix);
+		ClipText.parentMatrix = parentMatrix;
+		ClipText.clipExtents = bounds.extents;
 	}
 
 	protected override void UpdateItems()
