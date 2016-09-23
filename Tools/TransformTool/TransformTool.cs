@@ -55,7 +55,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			}
 		}
 	}
-
 	private TransformMode m_Mode;
 
 	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput) value; } }
@@ -92,6 +91,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	{
 		if (m_Mode == TransformMode.Direct)
 			return;
+
 		if (m_SelectionTransforms != null && m_SelectionTransforms.Length > 0)
 		{
 			if (m_TransformInput.pivotMode.wasJustPressed) // Switching center vs pivot

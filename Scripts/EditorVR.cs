@@ -191,7 +191,7 @@ public class EditorVR : MonoBehaviour
 	{
 		if (Event.current.type == EventType.MouseMove)
 		{
-			var miniWorldHasObject = false;
+			var miniWorldRayHasObject = false;
 
 			foreach (var proxy in m_AllProxies)
 			{
@@ -206,13 +206,13 @@ public class EditorVR : MonoBehaviour
 					miniWorldRay.Value.hoverObject = m_PixelRaycastModule.UpdateRaycast(miniWorldRay.Key, m_EventCamera, GetPointerLength(miniWorldRay.Key));
 
 					if (miniWorldRay.Value.hoverObject || miniWorldRay.Value.dragObject)
-						miniWorldHasObject = true;
+						miniWorldRayHasObject = true;
 				}
 			}
 
 			// If any active miniWorldRay hovers over a selected object, switch to the DirectManipulator
 			if (m_TransformTool != null)
-				m_TransformTool.mode = miniWorldHasObject ? TransformMode.Direct : TransformMode.Standard;
+				m_TransformTool.mode = miniWorldRayHasObject ? TransformMode.Direct : TransformMode.Standard;
 
 			UpdateDefaultProxyRays();
 		}
@@ -996,13 +996,13 @@ public class EditorVR : MonoBehaviour
 			var isContained = miniWorld.Contains(originalRayOrigin.position + originalRayOrigin.forward * pointerLength);
 			miniWorldRayOrigin.gameObject.SetActive(isContained);
 
-			// Deactivate ActionMapInput if the ray is not inside a MiniWorld or currently dragging an object
+			// Keep input alive if we are dragging an object, otherwise MultipleRayInputModule will reset our control state
 			ray.Value.uiInput.active = isContained || ray.Value.dragObject;
 
 			var uiInput = (UIActions)ray.Value.uiInput;
 			var hoverObject = ray.Value.hoverObject;
 
-			// Start dragging if we're hoving over a selected object, dragObject is null, and the trigger is held
+			// Instead of using wasJustPressed, use isHeld to allow dragging with a single press
 			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && !ray.Value.dragObject && uiInput.select.isHeld)
 			{
 				//Disable original ray so that it doesn't interrupt dragging by activating its ActionMapInput
@@ -1021,7 +1021,7 @@ public class EditorVR : MonoBehaviour
 			if (uiInput.@select.isHeld)
 			{
 				var selectedObjectTransform = ray.Value.dragObject.transform;
-				// If the pointer is inside the MiniWorld, position at an offset from controller positoin
+				// If the pointer is inside the MiniWorld, position at an offset from controller position
 				if (ray.Key.gameObject.activeSelf)
 				{
 					selectedObjectTransform.localScale = ray.Value.dragObjectOriginalScale;
@@ -1031,8 +1031,6 @@ public class EditorVR : MonoBehaviour
 				// If the object is outside, attach to controller as a preview
 				else
 				{
-					Selection.objects = new UnityEngine.Object[0];
-
 					m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
 
 					selectedObjectTransform.transform.localScale = Vector3.one;
