@@ -271,26 +271,6 @@ public class EditorVR : MonoBehaviour
 				var alternateMenu = m_DeviceData[deviceData.Key].alternateMenu = SpawnAlternateMenu(typeof(UnityEngine.VR.Menus.RadialMenu), deviceData.Key);
 				alternateMenu.selected = OnSelection;
 
-				//mainMenuActivator.activated =  += () => mainMenu.visible = true; // Show main menu when main menu activator is activated
-				//mainMenuActivator.deactivated += () => mainMenu.visible = false; // Hide main menu when main menu activator is deactivated
-				//mainMenuActivator.activated += alternateMenu; // Hide alternate menu when main menu is activated
-					//alternateMenu.onShow = OnAlternateMenuShow; // Deactivate main menu activator when alternate menu is being shown;
-					//alternateMenu.onHide = OnAlternateMenuHide; // Deactivate main menu activator when alternate menu is being shown;
-				// Add in support for pushing the radial menu onto other hand when main menu is opened and an object is selected
-
-				//iMainMenu.onShow += iAlternateMenu.hideAlternateMenu;
-
-				//var mainMenuController = mainMenu as MainMenu; // TODO: review this cast & event assign.  Should the iMainMenu interface mandate that all main menus implement MenuActivatorToAlternatePosition, if so, this subscription can occur without the additional cast.
-				//iAlternateMenu.onShow += mainMenu.MenuActivatorToAlternatePosition;
-				//iAlternateMenu.onHide += mainMenu.MenuActivatorToOriginalPosition;
-
-				//var mainMenuActionMap = mainMenu as ICustomActionMap;
-				//if (mainMenuActionMap != null)
-				//{
-				//	alternateMenu.actionMapInputsToDisable = new List<ActionMapInput>();
-				//	alternateMenu.actionMapInputsToDisable.Add(mainMenuActionMap.actionMapInput); // allow the alternate menu to disable the main menu's action map input, as they both utilize the thumbstick x/y
-				//}
-
 				UpdatePlayerHandleMaps();
 			}
 
@@ -308,17 +288,15 @@ public class EditorVR : MonoBehaviour
 		{
 			Node? node = GetDeviceNode(kvp.Key);
 
-			if (node != null)
-				Debug.LogError("<color=orange>" + node.Value.ToString() + "</color> - " + (node.Value == selectionToolNode).ToString());
+			//if (node != null)
+				//Debug.LogError("<color=orange>" + node.Value.ToString() + "</color> - " + (node.Value == selectionToolNode).ToString());
 
 			if (node.HasValue) //  && node.Value == selectionToolNode
 			{
-				if (node.Value == selectionToolNode)
-				{ 
-					var mainMenuActionMap = kvp.Value.mainMenu as ICustomActionMap;
-					if (mainMenuActionMap != null)
-						mainMenuActionMap.actionMapInput.active = node.Value == selectionToolNode; // Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
-				}
+				// Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
+				var mainMenuActionMap = kvp.Value.mainMenu as ICustomActionMap;
+				if (mainMenuActionMap != null)
+					mainMenuActionMap.actionMapInput.active = node.Value != selectionToolNode;
 
 				var alternateMenu = kvp.Value.alternateMenu;
 				if (alternateMenu != null)
@@ -343,13 +321,13 @@ public class EditorVR : MonoBehaviour
 			Node? node = GetDeviceNode(kvp.Key);
 			if (node.HasValue)
 			{
-				// move to rest position if this is the node that made the selection
 				if (node.Value == activatorNode)
 				{
 					var mainMenu = kvp.Value.mainMenu as IMainMenu;
 					if (mainMenu != null)
 						mainMenu.visible = showMainMenu;
 
+					// move to rest position if this is the node that made the selection
 					var mainMenuActivator = kvp.Value.mainMenuActivator;
 					if (mainMenuActivator != null)
 						mainMenuActivator.activatorButtonMoveAway = false;
