@@ -11,7 +11,7 @@ using UnityEngine.VR.Utilities;
 /// <summary>
 /// Set either the button's text field or the ASCII value
 /// </summary>
-public class KeyboardButton : RayButton
+public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 {
 	public enum CharacterDescriptionType
 	{
@@ -36,16 +36,13 @@ public class KeyboardButton : RayButton
 		Space = 32,
 		Clear = 127,
 	}
-	public SpecialKeyType specialKeyType { get { return m_SpecialKeyType; } set { m_SpecialKeyType = value;  } }
 	[SerializeField]
 	private SpecialKeyType m_SpecialKeyType;
 
-//	[SerializeField]
-
 	[SerializeField]
-//	[HideInInspector]
 	private char m_Character;
 
+	public Text textComponent { get { return m_TextComponent; } }
 	[SerializeField]
 	private Text m_TextComponent;
 
@@ -62,7 +59,7 @@ public class KeyboardButton : RayButton
 	private float m_RepeatTime = 0.5f;
 
 	private float m_HoldStartTime;
-	private bool m_ButtonDown;
+	private float m_RepeatWaitTime;
 
 	private Action<char> m_KeyPress;
 
@@ -71,9 +68,6 @@ public class KeyboardButton : RayButton
 	public void Setup(Action<char> keyPress, bool pressOnHover)
 	{
 		m_KeyPress = keyPress;
-
-		if (m_CharacterDescriptionType ==  CharacterDescriptionType.Special)
-			m_Character = (char) m_SpecialKeyType;
 
 		if (m_CharacterDescriptionType == CharacterDescriptionType.Character && m_MatchButtonTextToCharacter)
 		{
@@ -98,45 +92,28 @@ public class KeyboardButton : RayButton
 		m_KeyPress(m_Character);
 	}
 
-	public override void OnPointerDown(PointerEventData eventData)
+	public void OnBeginDrag(RayEventData eventData)
 	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		if (U.UI.IsValidEvent(eventData, selectionFlags))
 		{
-			base.OnPointerDown(eventData);
-
-			m_ButtonDown = true;
 			if (m_RepeatOnHold)
-				StartCoroutine(RepeatPress());
+			{
+				m_HoldStartTime = Time.realtimeSinceStartup;
+				m_RepeatWaitTime = m_RepeatTime;
+			}
 		}
 	}
 
-	private IEnumerator RepeatPress()
+	public void OnDrag(RayEventData eventData)
 	{
-		m_HoldStartTime = Time.realtimeSinceStartup;
-		var repeatWaitTime = m_RepeatTime;
-
-		while (m_ButtonDown)
+		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold)
 		{
-			if (m_HoldStartTime + repeatWaitTime < Time.realtimeSinceStartup)
+			if (m_HoldStartTime + m_RepeatWaitTime < Time.realtimeSinceStartup)
 			{
 				NumericKeyPressed();
 				m_HoldStartTime = Time.realtimeSinceStartup;
-				repeatWaitTime *= 0.75f;
+				m_RepeatWaitTime *= 0.75f;
 			}
-
-			yield return null;
-		}
-	}
-
-	public override void OnPointerUp(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			base.OnPointerUp(eventData);
-
-			m_ButtonDown = false;
 		}
 	}
 }

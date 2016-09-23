@@ -87,6 +87,45 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	{
 		
 	}
+	public void OnPointerClick(PointerEventData eventData)
+	{
+		var rayEventData = eventData as RayEventData;
+		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		{
+			if (m_Open)
+				Close();
+			else
+				Open();
+		}
+	}
+
+	public void OnSubmit(BaseEventData eventData)
+	{
+		//		throw new System.NotImplementedException();
+	}
+
+	protected void SendOnValueChangedAndUpdateLabel()
+	{
+		SendOnValueChanged();
+		UpdateLabel();
+	}
+
+	protected void SendOnValueChanged()
+	{
+		if (onValueChanged != null)
+			onValueChanged.Invoke(text);
+	}
+
+	protected void UpdateLabel()
+	{
+		if (m_TextComponent != null && m_TextComponent.font != null)
+			m_TextComponent.text = m_Text;
+	}
+
+	public override void OnDeselect(BaseEventData eventData)
+	{
+
+	}
 
 	private void Open()
 	{
@@ -120,8 +159,12 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	{
 		switch ((int)keyCode)
 		{
+			case (int)KeyboardButton.SpecialKeyType.None:
+				return;
 			case (int)KeyboardButton.SpecialKeyType.Backspace:
 				Backspace();
+				return;
+			case (int)KeyboardButton.SpecialKeyType.Tab:
 				return;
 			case (int)KeyboardButton.SpecialKeyType.CarriageReturn:
 				Return();
@@ -144,44 +187,4 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	protected abstract void Backspace();
 	protected abstract void Return();
 	protected abstract void Space();
-
-	public void OnPointerClick(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			if (m_Open)
-				Close();
-			else
-				Open();
-		}
-	}
-
-	public void OnSubmit(BaseEventData eventData)
-	{
-//		throw new System.NotImplementedException();
-	}
-
-	protected void SendOnValueChangedAndUpdateLabel()
-	{
-		SendOnValueChanged();
-		UpdateLabel();
-	}
-
-	protected void SendOnValueChanged()
-	{
-		if (onValueChanged != null)
-			onValueChanged.Invoke(text);
-	}
-
-	protected void UpdateLabel()
-	{
-		if (m_TextComponent != null && m_TextComponent.font != null)
-			m_TextComponent.text = m_Text;
-	}
-
-	public override void OnDeselect(BaseEventData eventData)
-	{
-		
-	}
 }

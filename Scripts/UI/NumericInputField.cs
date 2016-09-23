@@ -10,9 +10,9 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		Float,
 		Int,
 	}
-	public ContentType contentType { get { return m_ContentType; } }
+	public ContentType numberType { get { return m_NumberType; } }
 	[SerializeField]
-	private ContentType m_ContentType = ContentType.Float;
+	private ContentType m_NumberType = ContentType.Float;
 
 	private bool m_UpdateDrag;
 	private Vector3 m_StartDragPosition;
@@ -87,7 +87,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 	{
 		var delta = GetLocalPointerPosition(eventData) - m_LastPointerPosition;
 
-		if (contentType == ContentType.Float)
+		if (numberType == ContentType.Float)
 		{
 			float num;
 			if (!float.TryParse(text, out num))
@@ -135,12 +135,12 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		if (!base.IsValid(ch))
 			return false;
 
-		if (m_ContentType == ContentType.Float)
+		if (m_NumberType == ContentType.Float)
 		{
 			if (!kAllowedCharactersForFloat.Contains(ch.ToString()))
 				return false;
 		}
-		else if (m_ContentType == ContentType.Int)
+		else if (m_NumberType == ContentType.Int)
 		{
 			if (!kAllowedCharactersForInt.Contains(ch.ToString()))
 				return false;
@@ -240,7 +240,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 	{
 		var str = m_Text;
 
-		if (m_ContentType == ContentType.Float)
+		if (m_NumberType == ContentType.Float)
 		{
 			float floatVal;
 

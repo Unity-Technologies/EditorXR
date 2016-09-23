@@ -5,7 +5,7 @@ using UnityEditor.UI;
 public class NumericInputFieldEditor : SelectableEditor
 {
 	SerializedProperty m_SelectionFlagsProperty;
-	SerializedProperty m_ContentTypeProperty;
+	SerializedProperty m_NumberTypeProperty;
 	SerializedProperty m_KeyboardAnchorTransformProperty;
 	SerializedProperty m_TextComponentProperty;
 	SerializedProperty m_CharacterLimitProperty;
@@ -15,7 +15,7 @@ public class NumericInputFieldEditor : SelectableEditor
 	{
 		base.OnEnable();
 		m_SelectionFlagsProperty = serializedObject.FindProperty("m_SelectionFlags");
-		m_ContentTypeProperty = serializedObject.FindProperty("m_ContentType");
+		m_NumberTypeProperty = serializedObject.FindProperty("m_NumberType");
 		m_KeyboardAnchorTransformProperty = serializedObject.FindProperty("m_KeyboardAnchorTransform");
 		m_TextComponentProperty = serializedObject.FindProperty("m_TextComponent");
 		m_CharacterLimitProperty = serializedObject.FindProperty("m_CharacterLimit");
@@ -27,7 +27,7 @@ public class NumericInputFieldEditor : SelectableEditor
 	{
 		serializedObject.Update();
 		EditorGUILayout.PropertyField(m_SelectionFlagsProperty);
-		EditorGUILayout.PropertyField(m_ContentTypeProperty);
+		EditorGUILayout.PropertyField(m_NumberTypeProperty);
 		EditorGUILayout.PropertyField(m_KeyboardAnchorTransformProperty);
 		EditorGUILayout.PropertyField(m_TextComponentProperty);
 		EditorGUILayout.PropertyField(m_CharacterLimitProperty);

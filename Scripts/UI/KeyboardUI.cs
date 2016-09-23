@@ -15,4 +15,22 @@ public class KeyboardUI : MonoBehaviour
 			button.Setup(keyPress, pressOnHover);
 		}
 	}
+
+	public void SetKeyTextToUpperCase()
+	{
+		foreach (var button in m_Buttons)
+		{
+			if (button.textComponent != null)
+				button.textComponent.text = button.textComponent.text.ToUpper();
+		}
+	}
+
+	public void SetKeyTextToLowerCase()
+	{
+		foreach (var button in m_Buttons)
+		{
+			if (button.textComponent != null)
+				button.textComponent.text = button.textComponent.text.ToLower();
+		}
+	}
 }
