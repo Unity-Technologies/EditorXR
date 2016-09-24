@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class InspectorComponentItem : InspectorListItem
 {
+	private const float kExpandArrowRotateSpeed = 0.4f;
+
 	[SerializeField]
 	private Button m_ExpandArrow;
 
@@ -46,6 +48,16 @@ public class InspectorComponentItem : InspectorListItem
 		m_NameText.material = textMaterial;
 		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
 		m_GearMenu.GetComponent<Renderer>().sharedMaterial = gearMaterial;
+	}
+
+	public override void UpdateSelf(float width, int depth)
+	{
+		base.UpdateSelf(width, depth);
+
+		// Rotate arrow for expand state
+		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
+												data.expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity,
+												kExpandArrowRotateSpeed);
 	}
 
 	public void ToggleExpanded()

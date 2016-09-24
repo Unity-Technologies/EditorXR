@@ -5,7 +5,7 @@ using UnityEngine.VR.Handles;
 
 public class InspectorListItem : ListViewItem<InspectorData>
 {
-	private const float kIndent = 0.01f;
+	private const float kIndent = 0.02f;
 
 	[SerializeField]
 	private BaseHandle m_Cube;
@@ -63,14 +63,15 @@ public class InspectorListItem : ListViewItem<InspectorData>
 		hasMaterials = true;
 	}
 
-	public void UpdateSelf(float width, int depth)
+	public virtual void UpdateSelf(float width, int depth)
 	{
 		Vector3 cubeScale = m_Cube.transform.localScale;
 		cubeScale.x = width;
 		m_Cube.transform.localScale = cubeScale;
 
-		m_UIContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
-		//m_UIContainer.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, indent, width - indent);
+		var indent = kIndent * depth;
+		//m_UIContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+		m_UIContainer.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, indent, width - indent);
 	}
 
 	public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)
@@ -79,6 +80,7 @@ public class InspectorListItem : ListViewItem<InspectorData>
 		{
 			clipText.clipExtents = clipExtents;
 			clipText.parentMatrix = parentMatrix;
+			clipText.UpdateMaterialClip();
 		}
 	}
 }

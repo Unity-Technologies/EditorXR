@@ -389,12 +389,12 @@ public class EditorVR : MonoBehaviour
 		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = m_EventCamera;
 
-			foreach (RayInputField inputField in canvas.GetComponentsInChildren<RayInputField>())
+		foreach (RayInputField inputField in go.GetComponentsInChildren<RayInputField>())
 		{
-				if (inputField is NumericInputField)
-					inputField.spawnKeyboard = SpawnNumericKeyboard;
-				else if (inputField is StandardInputField)
-					inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
+			if (inputField is NumericInputField)
+				inputField.spawnKeyboard = SpawnNumericKeyboard;
+			else if (inputField is StandardInputField)
+				inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
 		}
 		return go;
 	}

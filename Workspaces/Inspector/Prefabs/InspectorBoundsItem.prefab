@@ -422,7 +422,7 @@ GameObject:
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 4
   m_Component:
-  - 4: {fileID: 4000013402002794}
+  - 224: {fileID: 224000011659061128}
   - 114: {fileID: 114000011752801550}
   m_Layer: 5
   m_Name: InspectorBoundsItem
@@ -688,21 +688,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4000013402002794
-Transform:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000011895958286}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_Children:
-  - {fileID: 4000013704138378}
-  - {fileID: 224000010867083340}
-  m_Father: {fileID: 0}
-  m_RootOrder: 0
 --- !u!4 &4000013704138378
 Transform:
   m_ObjectHideFlags: 1
@@ -711,10 +696,10 @@ Transform:
   m_GameObject: {fileID: 1000011122323074}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -0.03, z: 0.00255}
-  m_LocalScale: {x: 0.3, y: 0.06, z: 0.005}
+  m_LocalScale: {x: 0.344, y: 0.06, z: 0.005}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
-  m_Father: {fileID: 4000013402002794}
+  m_Father: {fileID: 224000011659061128}
   m_RootOrder: 0
 --- !u!23 &23000011908066206
 MeshRenderer:
@@ -839,13 +824,17 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: NumericInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  m_ContentType: 0
+    m_TypeName: RayInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
   m_KeyboardAnchorTransform: {fileID: 0}
   m_TextComponent: {fileID: 114000012659711884}
   m_CharacterLimit: 0
-  m_UpdateDrag: 0
+  m_OnEndEdit:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.InputField+SubmitEvent, UnityEngine.UI, Version=1.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  m_NumberType: 0
 --- !u!114 &114000010170686564
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -887,13 +876,17 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: NumericInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  m_ContentType: 0
+    m_TypeName: RayInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
   m_KeyboardAnchorTransform: {fileID: 0}
   m_TextComponent: {fileID: 114000011069213394}
   m_CharacterLimit: 0
-  m_UpdateDrag: 0
+  m_OnEndEdit:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.InputField+SubmitEvent, UnityEngine.UI, Version=1.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  m_NumberType: 0
 --- !u!114 &114000010365358968
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1113,13 +1106,17 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: NumericInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  m_ContentType: 0
+    m_TypeName: RayInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
   m_KeyboardAnchorTransform: {fileID: 0}
   m_TextComponent: {fileID: 114000011639826514}
   m_CharacterLimit: 0
-  m_UpdateDrag: 0
+  m_OnEndEdit:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.InputField+SubmitEvent, UnityEngine.UI, Version=1.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  m_NumberType: 0
 --- !u!114 &114000011005619070
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1223,13 +1220,17 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: NumericInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  m_ContentType: 0
+    m_TypeName: RayInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
   m_KeyboardAnchorTransform: {fileID: 0}
   m_TextComponent: {fileID: 114000011952738192}
   m_CharacterLimit: 0
-  m_UpdateDrag: 0
+  m_OnEndEdit:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.InputField+SubmitEvent, UnityEngine.UI, Version=1.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  m_NumberType: 0
 --- !u!114 &114000011106510994
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1271,13 +1272,17 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: NumericInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  m_ContentType: 0
+    m_TypeName: RayInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
   m_KeyboardAnchorTransform: {fileID: 0}
   m_TextComponent: {fileID: 114000012565481690}
   m_CharacterLimit: 0
-  m_UpdateDrag: 0
+  m_OnEndEdit:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.InputField+SubmitEvent, UnityEngine.UI, Version=1.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  m_NumberType: 0
 --- !u!114 &114000011131020492
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1684,13 +1689,17 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: NumericInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  m_ContentType: 0
+    m_TypeName: RayInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
   m_KeyboardAnchorTransform: {fileID: 0}
   m_TextComponent: {fileID: 114000010714605292}
   m_CharacterLimit: 0
-  m_UpdateDrag: 0
+  m_OnEndEdit:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.InputField+SubmitEvent, UnityEngine.UI, Version=1.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  m_NumberType: 0
 --- !u!114 &114000012565481690
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2404,7 +2413,7 @@ RectTransform:
   m_AnchorMin: {x: 0.4, y: 0.49232292}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0.00023029745}
-  m_SizeDelta: {x: 0, y: 0.059539374}
+  m_SizeDelta: {x: -0.005, y: 0.059539374}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!224 &224000010471497940
 RectTransform:
@@ -2457,12 +2466,12 @@ RectTransform:
   m_Children:
   - {fileID: 224000014151491930}
   - {fileID: 224000010411811242}
-  m_Father: {fileID: 4000013402002794}
+  m_Father: {fileID: 224000011659061128}
   m_RootOrder: 1
-  m_AnchorMin: {x: 0, y: 0.5}
-  m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -0.03}
-  m_SizeDelta: {x: 0.3, y: 0.06}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224000010958995728
 RectTransform:
@@ -2577,6 +2586,26 @@ RectTransform:
   m_AnchoredPosition: {x: -0.0000044927, y: 0}
   m_SizeDelta: {x: -0.019, y: 0.02}
   m_Pivot: {x: 1, y: 0.5}
+--- !u!224 &224000011659061128
+RectTransform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011895958286}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children:
+  - {fileID: 4000013704138378}
+  - {fileID: 224000010867083340}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0.030000007}
+  m_SizeDelta: {x: 0, y: 0.06}
+  m_Pivot: {x: 0.5, y: 1}
 --- !u!224 &224000011734121582
 RectTransform:
   m_ObjectHideFlags: 1

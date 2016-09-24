@@ -19,10 +19,13 @@ public class FolderListItem : ListViewItem<FolderData>
 	private BaseHandle m_Cube;
 
 	[SerializeField]
-	private Button m_ExpandArrow;
+	private BaseHandle m_ExpandArrow;
 
 	[SerializeField]
 	private Material m_NoClipCubeMaterial;
+
+	[SerializeField]
+	private Material m_NoClipExpandArrowMaterial;
 
 	[SerializeField]
 	private Color m_HoverColor;
@@ -44,12 +47,12 @@ public class FolderListItem : ListViewItem<FolderData>
 		// First time setup
 		if (m_CubeRenderer == null)
 		{
-			// Cube material might change, so we always instance it
+			// Cube material might change for hover state, so we always instance it
 			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
 			m_NormalColor = m_CubeRenderer.sharedMaterial.color;
 			U.Material.GetMaterialClone(m_CubeRenderer);
 
-			m_ExpandArrow.onClick.AddListener(ToggleExpanded);
+			m_ExpandArrow.dragEnded += ToggleExpanded;
 			m_Cube.dragStarted += SelectFolder;
 
 			m_Cube.hoverStarted += OnHoverStarted;
@@ -61,18 +64,19 @@ public class FolderListItem : ListViewItem<FolderData>
 		m_Hovering = false;
 	}
 
-	public void SwapMaterials(Material textMaterial)
+	public void SetMaterials(Material textMaterial, Material expandArrowMaterial)
 	{
 		m_Text.material = textMaterial;
+		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
 	}
 
-	public void UpdateTransforms(float width, int depth)
+	public void UpdateSelf(float width, int depth)
 	{
 		Vector3 cubeScale = m_Cube.transform.localScale;
 		cubeScale.x = width;
 		m_Cube.transform.localScale = cubeScale;
 
-		var arrowWidth = m_ExpandArrow.GetComponent<RectTransform>().rect.width * 0.5f;
+		var arrowWidth = m_ExpandArrow.transform.localScale.x * 0.5f;
 		var halfWidth = width * 0.5f;
 		var indent = kIndent * depth;
 		var doubleMargin = kMargin * 2;
@@ -86,7 +90,7 @@ public class FolderListItem : ListViewItem<FolderData>
 
 		// Rotate arrow for expand state
 		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-												(data.expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
+												Quaternion.AngleAxis(90f, Vector3.right) * (data.expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
 												kExpandArrowRotateSpeed);
 
 		// Set selected/hover/normal color
@@ -98,12 +102,7 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_CubeRenderer.sharedMaterial.color = m_NormalColor;
 	}
 
-	public void GetMaterials(out Material textMaterial)
-	{
-		textMaterial = Instantiate(m_Text.material);
-	}
-
-	private void ToggleExpanded()
+	private void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
 	{
 		data.expanded = !data.expanded;
 	}

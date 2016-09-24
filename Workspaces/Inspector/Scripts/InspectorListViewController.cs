@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ListView;
 using UnityEngine;
-using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 public class InspectorListViewController : NestedListViewController<InspectorData>
@@ -48,7 +46,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		base.ComputeConditions();
 
-		m_StartPosition = (bounds.extents.y - m_ItemSize.y * 0.5f) * Vector3.up;
+		m_StartPosition = bounds.extents.y * Vector3.up;
 
 		var parentMatrix = transform.worldToLocalMatrix;
 		SetMaterialClip(m_RowCubeMaterial, parentMatrix);
@@ -63,7 +61,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		UpdateRecursively(m_Data, ref totalOffset);
 		// Snap back if list scrolled too far
 		if (totalOffset > 0 && -scrollOffset >= totalOffset)
-			m_ScrollReturn = totalOffset - m_ItemSize.z; // m_ItemSize will be equal to the size of the last visible item
+			m_ScrollReturn = -totalOffset + m_ItemSize.y; // m_ItemSize will be equal to the size of the last visible item
 	}
 
 	private void UpdateRecursively(InspectorData[] data, ref float totalOffset, int depth = 0)

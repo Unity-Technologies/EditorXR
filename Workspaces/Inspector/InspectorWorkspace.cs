@@ -113,7 +113,7 @@ public class InspectorWorkspace : Workspace
 					if (iterator.depth == 0)
 					{
 						var canExpand = false;
-						var template = "InspectorItem";
+						string template;
 						var children = new InspectorData[0];
 						switch (iterator.propertyType)
 						{

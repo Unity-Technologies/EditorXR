@@ -110,12 +110,12 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var folderListView = m_ProjectUI.folderListView;
-		bounds.size = (folderListView.transform.localRotation * bounds.size).Abs();
 		folderListView.bounds = bounds;
 		folderListView.PreCompute(); // Compute item size
-		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y, 0);
+		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0);
 
 		var folderPanel = m_ProjectUI.folderPanel;
+		folderPanel.transform.localPosition = xOffset * Vector3.right;
 		folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + kPanelMargin);
 		folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
 
@@ -243,7 +243,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 			else if (hp.depth == depth + 1) // Ignore sub-assets (mixer children, terrain splats, etc.)
 				assetList.Add(CreateAssetData(assetTypes, hp));
 		}
-		return new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.Count > 0 ? assetList.ToArray() : null);
+		return new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray());
 	}
 
 	private AssetData CreateAssetData(HashSet<string> assetTypes, HierarchyProperty hp)
