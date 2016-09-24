@@ -158,8 +158,9 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 			case (int)KeyCode.Backspace:
 				Backspace();
 				return;
-//			case (int)KeyboardButton.SpecialKeyType.Tab:
-//				return;
+			case (int)KeyCode.Tab:
+				Append('\t');
+				return;
 			case (int)KeyCode.Return:
 				Return();
 				return;
@@ -181,4 +182,5 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	protected abstract void Backspace();
 	protected abstract void Return();
 	protected abstract void Space();
+	protected abstract void Cancel();
 }

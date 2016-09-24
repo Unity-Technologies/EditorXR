@@ -76,6 +76,11 @@ public class StandardInputField : RayInputField
 			SendOnValueChangedAndUpdateLabel();
 	}
 
+	protected override void Cancel()
+	{
+//		throw new System.NotImplementedException();
+	}
+
 	private void Shift()
 	{
 		m_Shift = true;

@@ -10,7 +10,6 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		Float,
 		Int,
 	}
-	public NumberType numberType { get { return m_NumberType; } }
 	[SerializeField]
 	private NumberType m_NumberType = NumberType.Float;
 
@@ -87,7 +86,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 	{
 		var delta = GetLocalPointerPosition(eventData) - m_LastPointerPosition;
 
-		if (numberType == NumberType.Float)
+		if (m_NumberType == NumberType.Float)
 		{
 			float num;
 			if (!float.TryParse(text, out num))
@@ -154,9 +153,9 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		return m_OperandCount > 0;
 	}
 
-	private bool IsOperand(char ch)
+	private bool IsOperand(char c)
 	{
-		return kOperandCharacters.Contains(ch.ToString()) && !(m_Text.Length == 0 && ch == '-');
+		return kOperandCharacters.Contains(c.ToString()) && !(m_Text.Length == 0 && c == '-');
 	}
 
 	protected override void Append(char c)
@@ -203,6 +202,11 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 	protected override void Space()
 	{
 		Return();
+	}
+
+	protected override void Cancel()
+	{
+		
 	}
 
 	private float CalculateFloatDragSensitivity(float value)

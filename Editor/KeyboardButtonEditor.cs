@@ -18,97 +18,117 @@ public class KeyboardButtonEditor : RayButtonEditor
 	SerializedProperty m_RepeatTimeProperty;
 
 	private KeyCode m_KeyCode;
-	private string m_KeyCodeStr = "";
+	private string m_KeyCodeStr;
 	private KeyboardButton keyboardButton;
 
 	protected override void OnEnable()
 	{
 		base.OnEnable();
 		
-		m_CharacterProperty = serializedObject.FindProperty("m_Character"); // TODO debugging only
+		m_CharacterProperty = serializedObject.FindProperty("m_Character");
 		m_ButtonTextProperty = serializedObject.FindProperty("m_TextComponent");
 		m_MatchButtonTextToCharacterProperty = serializedObject.FindProperty("m_MatchButtonTextToCharacter");
 		m_ButtonIconProperty = serializedObject.FindProperty("m_ButtonIcon");
 		m_ButtonMeshProperty = serializedObject.FindProperty("m_ButtonMesh");
 		m_RepeatOnHoldProperty = serializedObject.FindProperty("m_RepeatOnHold");
 		m_RepeatTimeProperty = serializedObject.FindProperty("m_RepeatTime");
+
+		m_KeyCode = (KeyCode)m_CharacterProperty.intValue;
+		m_KeyCodeStr = ((char)m_KeyCode).ToString();
 	}
 
 	public override void OnInspectorGUI()
 	{
 		keyboardButton = (KeyboardButton)target;
 
-		EditorGUILayout.BeginHorizontal();
-		m_KeyCodeStr = EditorGUILayout.TextField("Key Code", m_KeyCodeStr);
-//		if (Enum.IsDefined(typeof(KeyCode), m_CharacterProperty.intValue))
-//			m_KeyCode = (KeyCode)m_CharacterProperty.intValue;
+		var processStringInput = false;
 
+		serializedObject.Update();
+
+		EditorGUILayout.BeginHorizontal();
+		EditorGUI.BeginChangeCheck();
+		m_KeyCodeStr = EditorGUILayout.TextField("Key Code", m_KeyCodeStr);
+		if (EditorGUI.EndChangeCheck())
+			processStringInput = true;
+
+		EditorGUI.BeginChangeCheck();
 		m_KeyCode = (KeyCode)EditorGUILayout.EnumPopup(m_KeyCode);
+		if (EditorGUI.EndChangeCheck())
+		{
+			m_KeyCodeStr = ((char)m_KeyCode).ToString();
+			m_CharacterProperty.intValue = (int)m_KeyCode;
+		}
 		EditorGUILayout.EndHorizontal();
 
-//		serializedObject.Update();
-
 		// Check for ASCII value
-		if (m_KeyCodeStr.StartsWith("\\") && m_KeyCodeStr.Length > 1)
+		if (processStringInput)
 		{
-			if (m_KeyCodeStr[1] == 'u')
+			if (m_KeyCodeStr.StartsWith("\\") && m_KeyCodeStr.Length > 1)
 			{
-				if (m_KeyCodeStr.Length > 2)
+				if (m_KeyCodeStr[1] == 'u')
 				{
-					int i;
-					if (int.TryParse(m_KeyCodeStr.Substring(2), out i))
+					if (m_KeyCodeStr.Length > 2)
 					{
-						if (Enum.IsDefined(typeof(KeyCode), i))
-							m_KeyCode = (KeyCode)i;
+						int i;
+						if (int.TryParse(m_KeyCodeStr.Substring(2), out i))
+						{
+							if (Enum.IsDefined(typeof(KeyCode), i))
+							{
+								m_KeyCode = (KeyCode)i;
+								m_CharacterProperty.intValue = (int)m_KeyCode;
+							}
+						}
 					}
+				}
+				else
+				{
+					var valid = true;
+					switch (m_KeyCodeStr[1])
+					{
+						case 'b':
+							m_KeyCode = KeyCode.Backspace;
+							break;
+						case 't':
+							m_KeyCode = KeyCode.Tab;
+							break;
+						case 'n': // KeyCode doesn't define newline
+						case 'r':
+							m_KeyCode = KeyCode.Return;
+							break;
+						case 's':
+							m_KeyCode = KeyCode.Space;
+							break;
+						default:
+							valid = false;
+							break;
+					}
+
+					if (m_KeyCodeStr.Length > 2)
+						m_KeyCodeStr = m_KeyCodeStr.Remove(2);
+
+					if (valid)
+						m_CharacterProperty.intValue = (int)m_KeyCode;
+					else
+						EditorGUILayout.HelpBox("Invalid entry", MessageType.Error);
 				}
 			}
 			else
 			{
-				var valid = true;
-				switch (m_KeyCodeStr[1])
+				if (m_KeyCodeStr.Length > 0)
 				{
-					case 'b':
-						m_KeyCode = KeyCode.Backspace;
-						break;
-					case 't':
-						m_KeyCode = KeyCode.Tab;
-						break;
-					case 'n': // KeyCode doesn't define newline
-					case 'r':
-						m_KeyCode = KeyCode.Return;
-						break;
-					case 's':
-						m_KeyCode = KeyCode.Space;
-						break;
-					default:
-						valid = false;
-						break;
+					if (m_KeyCodeStr.Length > 1)
+						m_KeyCodeStr = m_KeyCodeStr.Remove(1);
+
+					m_KeyCode = (KeyCode)m_KeyCodeStr[0];
+					m_CharacterProperty.intValue = (int)m_KeyCode;
 				}
-
-				if (m_KeyCodeStr.Length > 2)
-					m_KeyCodeStr = m_KeyCodeStr.Remove(2);
-
-				if (!valid)
-					m_KeyCodeStr = m_KeyCodeStr.Remove(1);
-			}
-		}
-		else
-		{
-			if (m_KeyCodeStr.Length > 0)
-			{
-//				m_KeyCodeStr = m_KeyCodeStr.Remove(1);
-				m_KeyCode = (KeyCode)m_KeyCodeStr[0];
 			}
 		}
 
-		EditorGUILayout.LabelField(m_CharacterProperty.intValue.ToString() + " " + ((char)m_CharacterProperty.intValue).ToString());
+		//For debug
+		//EditorGUILayout.LabelField(m_CharacterProperty.intValue.ToString() + " " + ((char)m_CharacterProperty.intValue).ToString());
+//		EditorGUILayout.PropertyField(m_CharacterProperty);
 
-		serializedObject.Update();
-
-		m_CharacterProperty.intValue = (int)m_KeyCode;
-
-		EditorGUILayout.PropertyField(m_CharacterProperty);
 		EditorGUILayout.PropertyField(m_ButtonTextProperty);
 		// Set text component to character
 		if (keyboardButton.textComponent != null)
@@ -123,29 +143,15 @@ public class KeyboardButtonEditor : RayButtonEditor
 					keyboardButton.textComponent.text = ((char)m_CharacterProperty.intValue).ToString();
 			}
 		}
+
 		EditorGUILayout.PropertyField(m_ButtonIconProperty);
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);
 		EditorGUILayout.PropertyField(m_RepeatOnHoldProperty);
+
 		if (m_RepeatOnHoldProperty.boolValue)
 			EditorGUILayout.PropertyField(m_RepeatTimeProperty);
 
-//		m_KeyCodeStr = m_KeyCode.ToString();
-
 		serializedObject.ApplyModifiedProperties();
 		base.OnInspectorGUI();
-	}
-
-	private int GetIndexOfEnumValue(int i)
-	{
-		int k = 0;
-		var enumValues = Enum.GetValues(typeof(KeyCode));
-		foreach (var val in enumValues)
-		{
-			if (i == (int)val)
-				return k;
-			k++;
-		}
-
-		return -1;
 	}
 }

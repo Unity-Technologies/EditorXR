@@ -693,7 +693,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: d
+  m_Text: 6
 --- !u!114 &114000010046273970
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2273,7 +2273,7 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_Character: 0
+  m_Character: 54
   m_TextComponent: {fileID: 114000010038757514}
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
@@ -2497,7 +2497,7 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_Character: 0
+  m_Character: 40
   m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
