@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.VR.Tools;
+using UnityEngine.VR.Workspaces;
 
 public class ConsoleWorkspace : Workspace
 {

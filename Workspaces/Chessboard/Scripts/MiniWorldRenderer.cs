@@ -47,8 +47,8 @@ public class MiniWorldRenderer : MonoBehaviour
 				m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
 				m_MiniCamera.worldToCameraMatrix = m_MainCamera.worldToCameraMatrix * miniWorld.miniToReferenceMatrix;
 				Shader shader = Shader.Find("Custom/Custom Clip Planes");
-				Shader.SetGlobalVector("_ClipCenter", miniWorld.referenceBounds.center);
-				Shader.SetGlobalVector("_ClipExtents", miniWorld.referenceBounds.extents);
+				Shader.SetGlobalVector("_GlobalClipCenter", miniWorld.referenceBounds.center);
+				Shader.SetGlobalVector("_GlobalClipExtents", miniWorld.referenceBounds.extents);
 				m_MiniCamera.RenderWithShader(shader, string.Empty);
 			}
 

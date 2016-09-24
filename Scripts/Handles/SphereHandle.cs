@@ -25,7 +25,7 @@ namespace UnityEngine.VR.Handles
 			return new SphereHandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData)) { raycastHitDistance = eventData.pointerCurrentRaycast.distance };
 		}
 
-		protected override void OnHandleBeginDrag(HandleEventData eventData)
+		protected override void OnHandleDragStarted(HandleEventData eventData)
 		{
 			var sphereEventData = eventData as SphereHandleEventData;
 
@@ -35,17 +35,17 @@ namespace UnityEngine.VR.Handles
 
 			m_ScrollRate = kInitialScrollRate;
 
-			base.OnHandleBeginDrag(eventData);
+			base.OnHandleDragStarted(eventData);
 		}
 
-		protected override void OnHandleDrag(HandleEventData eventData)
+		protected override void OnHandleDragging(HandleEventData eventData)
 		{
 			var worldPosition = GetRayPoint(eventData);
 
 			eventData.deltaPosition = worldPosition - m_LastPosition;
 			m_LastPosition = worldPosition;
 
-			base.OnHandleDrag(eventData);
+			base.OnHandleDragging(eventData);
 		}
 
 		public void ChangeRadius(float delta)

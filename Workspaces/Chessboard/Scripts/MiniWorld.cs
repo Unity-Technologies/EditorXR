@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.VR.Utilities;
 
-public class MiniWorld : MonoBehaviour
+public class MiniWorld : MonoBehaviour, IMiniWorld
 {
 	public LayerMask rendererCullingMask
 	{
@@ -21,12 +21,13 @@ public class MiniWorld : MonoBehaviour
 
 	private MiniWorldRenderer m_MiniWorldRenderer;
 
+	public Transform miniWorldTransform { get { return transform; } }
+	
 	/// <summary>
 	/// RefernceTransform defines world space within the MiniWorld. When scaled up, a larger area is represented,
 	/// thus the objects in the MiniWorld get smaller.
 	/// </summary>
 	public Transform referenceTransform { get { return m_ReferenceTransform; } set { m_ReferenceTransform = value; } }
-
 	[SerializeField]
 	private Transform m_ReferenceTransform;
 
@@ -43,6 +44,11 @@ public class MiniWorld : MonoBehaviour
 	}
 
 	public Bounds localBounds { get { return new Bounds(Vector3.zero, m_LocalBoundsSize); } set { m_LocalBoundsSize = value.size; } }
+
+	public bool Contains(Vector3 position)
+	{
+		return localBounds.Contains(transform.InverseTransformPoint(position));
+	}
 
 	private void OnEnable()
 	{
