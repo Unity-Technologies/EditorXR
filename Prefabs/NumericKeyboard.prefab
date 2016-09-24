@@ -459,6 +459,8 @@ GameObject:
   - 224: {fileID: 224000012256482572}
   - 114: {fileID: 114000013789124818}
   - 114: {fileID: 114000013104670256}
+  - 223: {fileID: 223000012056576856}
+  - 114: {fileID: 114000013642654328}
   m_Layer: 0
   m_Name: NumericKeyboard
   m_TagString: Untagged
@@ -691,7 +693,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: '-'
+  m_Text: d
 --- !u!114 &114000010046273970
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -735,11 +737,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 56
-  m_TextComponent: {fileID: 114000012837285208}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -786,11 +787,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 50
-  m_TextComponent: {fileID: 114000012430976548}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -927,11 +927,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 57
-  m_TextComponent: {fileID: 114000011500764728}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -978,11 +977,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 42
-  m_TextComponent: {fileID: 114000010491739692}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -1339,11 +1337,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 47
-  m_TextComponent: {fileID: 114000010260119970}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -1514,11 +1511,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 43
-  m_TextComponent: {fileID: 114000010966273518}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -1683,11 +1679,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 49
-  m_TextComponent: {fileID: 114000010759935682}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -1852,11 +1847,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 54
-  m_TextComponent: {fileID: 114000011946359140}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -1903,13 +1897,12 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 8
-  m_Character: 8
-  m_TextComponent: {fileID: 114000013429434572}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
-  m_RepeatOnHold: 1
+  m_RepeatOnHold: 0
   m_RepeatTime: 0.5
 --- !u!114 &114000012382368202
 MonoBehaviour:
@@ -1954,11 +1947,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 1
-  m_SpecialKeyType: 13
-  m_Character: 13
-  m_TextComponent: {fileID: 114000012199082344}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -2005,11 +1997,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 51
-  m_TextComponent: {fileID: 114000010601011922}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -2090,11 +2081,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 46
-  m_TextComponent: {fileID: 114000013238392300}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -2175,11 +2165,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 53
-  m_TextComponent: {fileID: 114000011410613424}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -2284,14 +2273,13 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 45
+  m_Character: 0
   m_TextComponent: {fileID: 114000010038757514}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
-  m_RepeatTime: 0.5
+  m_RepeatTime: 0.6
 --- !u!114 &114000013238392300
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2425,11 +2413,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 52
-  m_TextComponent: {fileID: 114000010751780856}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -2510,11 +2497,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 13
-  m_Character: 37
-  m_TextComponent: {fileID: 114000012622367856}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -2546,6 +2532,28 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114000013642654328
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013347884336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1980459831, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_UiScaleMode: 0
+  m_ReferencePixelsPerUnit: 100
+  m_ScaleFactor: 1
+  m_ReferenceResolution: {x: 800, y: 600}
+  m_ScreenMatchMode: 0
+  m_MatchWidthOrHeight: 0
+  m_PhysicalUnit: 3
+  m_FallbackScreenDPI: 96
+  m_DefaultSpriteDPI: 96
+  m_DynamicPixelsPerUnit: 25
 --- !u!114 &114000013789124818
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2558,25 +2566,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Buttons:
-  - {fileID: 114000013198568648}
-  - {fileID: 114000013492534864}
-  - {fileID: 114000010990129160}
-  - {fileID: 114000010341594958}
-  - {fileID: 114000011640157044}
-  - {fileID: 114000012382040394}
-  - {fileID: 114000012038733306}
-  - {fileID: 114000010083651462}
-  - {fileID: 114000012395849640}
-  - {fileID: 114000013415408726}
-  - {fileID: 114000012802995912}
-  - {fileID: 114000012596910112}
-  - {fileID: 114000012339047808}
-  - {fileID: 114000013880794226}
-  - {fileID: 114000010046273970}
-  - {fileID: 114000010270901120}
-  - {fileID: 114000013989658480}
-  - {fileID: 114000012382368202}
+  m_Buttons: []
 --- !u!114 &114000013880794226
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2620,11 +2610,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 55
-  m_TextComponent: {fileID: 114000014282966560}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -2671,11 +2660,10 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
-  m_CharacterDescriptionType: 0
-  m_SpecialKeyType: 9
-  m_Character: 48
-  m_TextComponent: {fileID: 114000014121416590}
+  m_Character: 0
+  m_TextComponent: {fileID: 0}
   m_MatchButtonTextToCharacter: 1
+  m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
   m_RepeatOnHold: 0
   m_RepeatTime: 0.5
@@ -2963,6 +2951,25 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000014233149826}
+--- !u!223 &223000012056576856
+Canvas:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013347884336}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
 --- !u!224 &224000010051561144
 RectTransform:
   m_ObjectHideFlags: 1
@@ -3041,9 +3048,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012711017634}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.0000057, z: 1.0000057}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000011078761930}
@@ -3096,9 +3103,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011942698582}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.0000029, z: 1.0000029}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000010993060748}
@@ -3151,9 +3158,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011850950214}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.0000024, z: 1.0000024}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000013016804092}
@@ -3188,9 +3195,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013387088170}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.0000043, z: 1.0000043}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000010051561144}
@@ -3225,9 +3232,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013719455064}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.0000014, z: 1.0000014}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000010763412338}
@@ -3262,9 +3269,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010548849720}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.0000052, z: 1.0000052}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000012409096216}
@@ -3281,9 +3288,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011314281516}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.0000000037252903}
-  m_LocalScale: {x: 1, y: 1.0000081, z: 1.0000081}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000010592030662}
@@ -3300,9 +3307,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012725961800}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.0000000037252903}
-  m_LocalScale: {x: 1, y: 1.0000062, z: 1.0000062}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000011023218316}
@@ -3319,10 +3326,10 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013347884336}
-  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -0.1115}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000014143307640}
   - {fileID: 224000013229709574}
@@ -3355,9 +3362,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013594654548}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.0000019, z: 1.0000019}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000013814494568}
@@ -3374,9 +3381,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011336625240}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.0000038, z: 1.0000038}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000013911247046}
@@ -3411,9 +3418,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010468764934}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.0000000037252903}
-  m_LocalScale: {x: 1, y: 1.0000067, z: 1.0000067}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000011538727530}
@@ -3430,9 +3437,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012545652590}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.0000033, z: 1.0000033}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000010520708798}
@@ -3467,9 +3474,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012213505296}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.0000048, z: 1.0000048}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000013971446824}
@@ -3486,9 +3493,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011199631166}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.000001, z: 1.000001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000011317491288}
@@ -3505,9 +3512,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010525038566}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.0000000037252903}
-  m_LocalScale: {x: 1, y: 1.0000076, z: 1.0000076}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000014266662376}
@@ -3524,9 +3531,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000014117981666}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000000007450581}
-  m_LocalScale: {x: 1, y: 1.0000005, z: 1.0000005}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000010449893362}
@@ -3543,9 +3550,9 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012217531536}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.0000000037252903}
-  m_LocalScale: {x: 1, y: 1.0000072, z: 1.0000072}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000010392707296}
