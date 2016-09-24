@@ -31,12 +31,6 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
 	}
 
-	void OnDrawGizmos()
-	{
-		Gizmos.matrix = transform.localToWorldMatrix;
-		Gizmos.DrawWireCube(Vector3.zero, bounds.size);
-	}
-
 	protected override void ComputeConditions()
 	{
 		base.ComputeConditions();
