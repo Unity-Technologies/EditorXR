@@ -13,12 +13,11 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	[SerializeField]
 	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 
-	public bool dragging { get {  return m_Dragging; } }
-	private bool m_Dragging;
+	public bool dragging { get; private set; }
 
 	private Vector3 m_PositionOffset;
 	private Quaternion m_RotationOffset;
-	
+
 	public Action<Vector3> translate { private get; set; }
 	public Action<Quaternion> rotate { private get; set; }
 	public Action<Vector3> scale { private get; set; }
@@ -47,9 +46,9 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		foreach (var h in m_AllHandles)
 			h.gameObject.SetActive(h == handle);
-		m_Dragging = true;
+		dragging = true;
 
-		Transform target = m_Target ?? transform;
+		var target = m_Target == null ? transform : m_Target;
 
 		var rayOrigin = eventData.rayOrigin;
 		var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
@@ -59,7 +58,7 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 
 	private void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
 	{
-		Transform target = m_Target ?? transform;
+		var target = m_Target == null ? transform : m_Target;
 
 		var rayOrigin = eventData.rayOrigin;
 		translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
@@ -68,9 +67,10 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 
 	private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
 	{
-		foreach (var h in m_AllHandles)
-			h.gameObject.SetActive(true);
+		if (gameObject.activeSelf)
+			foreach (var h in m_AllHandles)
+				h.gameObject.SetActive(true);
 
-		m_Dragging = false;
+		dragging = false;
 	}
 }

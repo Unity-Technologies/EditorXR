@@ -51,7 +51,7 @@ namespace ListView
 
 		void Update()
 		{
-			ViewUpdate();
+			UpdateView();
 		}
 
 		protected virtual void Setup()
@@ -68,7 +68,7 @@ namespace ListView
 			}
 		}
 
-		protected virtual void ViewUpdate()
+		protected virtual void UpdateView()
 		{
 			ComputeConditions();
 			UpdateItems();

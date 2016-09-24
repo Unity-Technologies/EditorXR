@@ -3,6 +3,8 @@ using System.Collections;
 using ListView;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine.VR.Utilities;
 
 public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPositionPreview
 {
@@ -29,7 +31,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		set
 		{
 			base.data = value;
-			m_ScrollOffset = m_ScaleFactor;
 		}
 	}
 
@@ -50,9 +51,8 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		m_Data = new AssetData[0]; // Start with empty list to avoid null references
 
 		for (int i = 0; i < m_IconTypes.Length; i++)
-		{
-			m_IconDictionary[m_IconTypes[i]] = m_Icons[i];
-		}
+			if(!string.IsNullOrEmpty(m_IconTypes[i]) && m_Icons[i] != null)
+				m_IconDictionary[m_IconTypes[i]] = m_Icons[i];
 	}
 
 	protected override void ComputeConditions()
@@ -201,16 +201,47 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override AssetGridItem GetItem(AssetData data)
 	{
+		// If this AssetData hasn't fetched its asset yet, do so now
+		if (data.asset == null)
+		{
+			data.asset = EditorUtility.InstanceIDToObject(data.instanceID);
+			data.preview = data.asset as GameObject;
+		}
+
 		var item = base.GetItem(data);
+
 		item.transform.localPosition = m_StartPosition;
 		item.placeObject = placeObject;
 		item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		item.positionPreview = positionPreview;
 		StartCoroutine(Transition(data, false));
 
-		GameObject icon;
-		item.SetIcon(m_IconDictionary.TryGetValue(data.type, out icon) ? icon : null);
-
+		switch (data.type)
+		{
+			case "Material":
+				var material = data.asset as Material;
+				if (material)
+					item.material = material;
+				else
+					item.fallbackTexture = data.icon;
+				break;
+			case "Texture2D":
+				goto case "Texture";
+			case "Texture":
+				var texture = data.asset as Texture;
+				if (texture)
+					item.texture = texture;
+				else
+					item.fallbackTexture = data.icon;
+				break;
+			default:
+				GameObject icon;
+				if (m_IconDictionary.TryGetValue(data.type, out icon))
+					item.icon = icon;
+				else
+					item.fallbackTexture = data.icon;
+				break;
+		}
 		return item;
 	}
 }

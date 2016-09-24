@@ -5,8 +5,6 @@ using UnityEngine.VR.Utilities;
 
 public class ObjectPlacementModule : MonoBehaviour
 {
-	public delegate void PositionPreviewDelegate(Transform preview, Transform rayOrigin, float t = 1f);
-
 	private const float kInstantiateFOVDifference = 20f;
 
 	private const float kGrowDuration = 0.5f;
@@ -16,8 +14,6 @@ public class ObjectPlacementModule : MonoBehaviour
 		preview.transform.position = Vector3.Lerp(preview.transform.position, previewOrigin.position, t);
 		preview.transform.rotation = Quaternion.Lerp(preview.transform.rotation, previewOrigin.rotation, t);
 	}
-
-
 
 	public void PlaceObject(Transform obj, Vector3 targetScale)
 	{
@@ -32,12 +28,6 @@ public class ObjectPlacementModule : MonoBehaviour
 		obj.parent = null;
 		var startScale = obj.localScale;
 		var startPosition = obj.position;
-		
-		var camera = U.Camera.GetMainCamera();
-		var perspective = camera.fieldOfView * 0.5f + kInstantiateFOVDifference;
-		var camPosition = camera.transform.position;
-		var forward = obj.position - camPosition;
-		forward.y = 0;
 
 		//Get bounds at target scale
 		var origScale = obj.localScale;
@@ -47,6 +37,14 @@ public class ObjectPlacementModule : MonoBehaviour
 
 		if (totalBounds != null)
 		{
+			// We want to position the object so that it fits within the camera perspective at its original scale
+			var camera = U.Camera.GetMainCamera();
+			var halfAngle = camera.fieldOfView * 0.5f;
+			var perspective = halfAngle + kInstantiateFOVDifference;
+			var camPosition = camera.transform.position;
+			var forward = obj.position - camPosition;
+			forward.y = 0;
+
 			var distance = totalBounds.Value.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
 			var destinationPosition = obj.position;
 			if (distance > forward.magnitude)

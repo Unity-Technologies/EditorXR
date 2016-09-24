@@ -89,8 +89,9 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 
 	private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
 	{
-		foreach (var h in m_AllHandles)
-			h.gameObject.SetActive(true);
+		if(gameObject.activeSelf)
+			foreach (var h in m_AllHandles)
+				h.gameObject.SetActive(true);
 
 		m_Dragging = false;
 	}

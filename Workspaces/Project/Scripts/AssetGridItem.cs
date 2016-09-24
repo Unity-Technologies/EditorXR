@@ -30,9 +30,13 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 
 	[HideInInspector]
 	[SerializeField] // Serialized so that this remains set after cloning
-	private Transform m_PreviewObject;
+	private GameObject m_Icon;
 
-	private Transform m_Icon;
+	private GameObject m_IconPrefab;
+
+	[HideInInspector]
+	[SerializeField] // Serialized so that this remains set after cloning
+	private Transform m_PreviewObject;
 
 	private bool m_Setup;
 	private Transform m_GrabbedObject;
@@ -43,16 +47,87 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 
 	private Coroutine m_TransitionCoroutine;
 
-	private Transform icon
+	private Material m_TextureMaterial;
+
+	public GameObject icon
 	{
-		get
+		private get
 		{
 			if (m_Icon)
 				return m_Icon;
-			return m_Cube.transform;
+			return m_Cube.gameObject;
+		}
+		set
+		{
+			m_Cube.gameObject.SetActive(false);
+			m_Sphere.gameObject.SetActive(false);
+
+			if (m_IconPrefab == value)
+			{
+				m_Icon.SetActive(true);
+				return;
+			}
+
+			if(m_Icon)
+				U.Object.Destroy(m_Icon);
+
+			m_IconPrefab = value;
+			m_Icon = U.Object.Instantiate(m_IconPrefab, transform, false);
+			m_Icon.transform.localPosition = Vector3.up * 0.5f;
+			m_Icon.transform.localRotation = Quaternion.AngleAxis(90, Vector3.down);
+			m_Icon.transform.localScale = Vector3.one;
 		}
 	}
-	
+
+	public Material material
+	{
+		set
+		{
+			m_Sphere.sharedMaterial = value;
+			m_Sphere.gameObject.SetActive(true);
+			m_Cube.gameObject.SetActive(false);
+			if(m_Icon)
+				m_Icon.gameObject.SetActive(false);
+		}
+	}
+
+	public Texture texture
+	{
+		set
+		{
+			m_Sphere.gameObject.SetActive(true);
+			m_Cube.gameObject.SetActive(false);
+			if(m_Icon)
+				m_Icon.gameObject.SetActive(false);
+			if (!value)
+			{
+				m_Sphere.sharedMaterial.mainTexture = null;
+				return;
+			}
+			if(m_TextureMaterial)
+				U.Object.Destroy(m_TextureMaterial);
+
+			m_TextureMaterial = new Material(Shader.Find("Standard")) { mainTexture = value };
+			m_Sphere.sharedMaterial = m_TextureMaterial;
+		}
+	}
+
+	public Texture fallbackTexture
+	{
+		set
+		{
+			if(value)
+				value.wrapMode = TextureWrapMode.Clamp;
+
+			m_Cube.sharedMaterial.mainTexture = value;
+			m_Cube.gameObject.SetActive(true);
+			m_Sphere.gameObject.SetActive(false);
+
+			if (m_Icon)
+				m_Icon.gameObject.SetActive(false);
+		}
+	}
+
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
@@ -95,26 +170,31 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			if (m_PreviewFade == 0)
 			{
 				m_PreviewObject.gameObject.SetActive(false);
-				icon.gameObject.SetActive(true);
-				icon.localScale = Vector3.one;
+				icon.SetActive(true);
+				icon.transform.localScale = Vector3.one;
 			}
 			else if (m_PreviewFade == 1)
 			{
 				m_PreviewObject.gameObject.SetActive(true);
-				icon.gameObject.SetActive(false);
+				icon.SetActive(false);
 				m_PreviewObject.transform.localScale = m_PreviewTargetScale;
 			}
 			else
 			{
-				icon.gameObject.SetActive(true);
+				icon.SetActive(true);
 				m_PreviewObject.gameObject.SetActive(true);
-				icon.localScale = Vector3.one * (1 - m_PreviewFade);
+				icon.transform.localScale = Vector3.one * (1 - m_PreviewFade);
 				m_PreviewObject.transform.localScale = Vector3.Lerp(Vector3.zero, m_PreviewTargetScale, m_PreviewFade);
 			}
 		}
 
 		if (m_Sphere.gameObject.activeInHierarchy)
 			m_Sphere.transform.Rotate(Vector3.up, kRotateSpeed * Time.unscaledDeltaTime, Space.Self);
+
+		if (data.type == "Scene")
+		{
+			icon.transform.rotation = Quaternion.LookRotation(icon.transform.position - U.Camera.GetMainCamera().transform.position, Vector3.up);
+		}
 	}
 
 	private void InstantiatePreview()
@@ -171,6 +251,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		StartCoroutine(Magnetize());
 	}
 
+	// Smoothly interpolate grabbed object into position, instead of "popping."
 	private IEnumerator Magnetize()
 	{
 		var startTime = Time.realtimeSinceStartup;
@@ -251,54 +332,5 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	private void OnDestroy()
 	{
 		U.Object.Destroy(m_Cube.sharedMaterial);
-	}
-
-	public void SetIcon(GameObject iconModel)
-	{
-		if (m_Icon)
-			U.Object.Destroy(m_Icon.gameObject);
-		if (iconModel)
-		{
-			m_Icon = U.Object.Instantiate(iconModel, transform, false).transform;
-			m_Icon.localPosition = Vector3.up * 0.5f;
-			m_Icon.localRotation = Quaternion.AngleAxis(90, Vector3.down);
-			m_Icon.localScale = Vector3.one;
-			m_Cube.gameObject.SetActive(false);
-		}
-
-		switch (data.type)
-		{
-			case "Material":
-				m_Sphere.gameObject.SetActive(true);
-				icon.gameObject.SetActive(false);
-				var material = data.asset as Material;
-				if (material)
-					m_Sphere.sharedMaterial = material;
-				break;
-			case "Texture2D":
-				goto case "Texture";
-			case "Texture":
-				m_Sphere.gameObject.SetActive(true);
-				icon.gameObject.SetActive(false);
-				var texture = data.asset as Texture;
-				if (texture)
-					m_Sphere.sharedMaterial = new Material(Shader.Find("Standard")) {mainTexture = texture};
-				break;
-			default:
-				m_Sphere.gameObject.SetActive(false);
-				icon.gameObject.SetActive(true);
-				if (m_Icon == null)
-				{
-					var cachedIcon = data.GetCachedIcon();
-					if (cachedIcon)
-					{
-						cachedIcon.wrapMode = TextureWrapMode.Clamp;
-						m_Cube.sharedMaterial.mainTexture = cachedIcon;
-					}
-					else
-						m_Cube.sharedMaterial.mainTexture = null;
-				}
-				break;
-		}
 	}
 }
