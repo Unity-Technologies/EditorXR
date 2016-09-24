@@ -153,17 +153,17 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	{
 		switch ((int)keyCode)
 		{
-			case (int)KeyboardButton.SpecialKeyType.None:
+			case (int)KeyCode.None:
 				return;
-			case (int)KeyboardButton.SpecialKeyType.Backspace:
+			case (int)KeyCode.Backspace:
 				Backspace();
 				return;
 //			case (int)KeyboardButton.SpecialKeyType.Tab:
 //				return;
-			case (int)KeyboardButton.SpecialKeyType.CarriageReturn:
+			case (int)KeyCode.Return:
 				Return();
 				return;
-			case (int)KeyboardButton.SpecialKeyType.Space:
+			case (int)KeyCode.Space:
 				Space();
 				return;
 		}

@@ -13,31 +13,6 @@ using UnityEngine.VR.Utilities;
 /// </summary>
 public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 {
-	public enum CharacterDescriptionType
-	{
-		Character,
-		Special,
-	}
-	[SerializeField]
-	private CharacterDescriptionType m_CharacterDescriptionType = CharacterDescriptionType.Character;
-
-	public enum SpecialKeyType
-	{
-		None = 0,
-		Backspace = 8,
-		Tab = 9,
-		NewLine = 10,
-		CarriageReturn = 13,
-		ShiftOut = 14,
-		ShiftIn = 15,
-		Cancel = 24,
-		Escape = 27,
-		Space = 32,
-		Clear = 127,
-	}
-	[SerializeField]
-	private SpecialKeyType m_SpecialKeyType;
-
 	[SerializeField]
 	private char m_Character;
 
@@ -47,6 +22,9 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	[SerializeField]
 	private bool m_MatchButtonTextToCharacter = true;
+
+	[SerializeField]
+	private Image m_ButtonIcon;
 
 	[SerializeField]
 	private GameObject m_ButtonMesh;
@@ -70,12 +48,6 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 		m_KeyPress = keyPress;
 
-		if (m_CharacterDescriptionType == CharacterDescriptionType.Character && m_MatchButtonTextToCharacter)
-		{
-			if (m_TextComponent != null)
-				m_TextComponent.text = m_Character.ToString();
-		}
-
 		m_Trigger = pressOnHover ? onEnter : onDown;
 
 		m_Trigger.AddListener(NumericKeyPressed);
@@ -95,13 +67,10 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	public void OnBeginDrag(RayEventData eventData)
 	{
-		if (U.UI.IsValidEvent(eventData, selectionFlags))
+		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold)
 		{
-			if (m_RepeatOnHold)
-			{
-				m_HoldStartTime = Time.realtimeSinceStartup;
-				m_RepeatWaitTime = m_RepeatTime;
-			}
+			m_HoldStartTime = Time.realtimeSinceStartup;
+			m_RepeatWaitTime = m_RepeatTime;
 		}
 	}
 

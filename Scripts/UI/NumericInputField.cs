@@ -5,14 +5,14 @@ using UnityEngine.VR.Utilities;
 
 public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
 {
-	public enum ContentType
+	public enum NumberType
 	{
 		Float,
 		Int,
 	}
-	public ContentType numberType { get { return m_NumberType; } }
+	public NumberType numberType { get { return m_NumberType; } }
 	[SerializeField]
-	private ContentType m_NumberType = ContentType.Float;
+	private NumberType m_NumberType = NumberType.Float;
 
 	private bool m_UpdateDrag;
 	private Vector3 m_StartDragPosition;
@@ -87,7 +87,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 	{
 		var delta = GetLocalPointerPosition(eventData) - m_LastPointerPosition;
 
-		if (numberType == ContentType.Float)
+		if (numberType == NumberType.Float)
 		{
 			float num;
 			if (!float.TryParse(text, out num))
@@ -135,12 +135,12 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		if (!base.IsValid(ch))
 			return false;
 
-		if (m_NumberType == ContentType.Float)
+		if (m_NumberType == NumberType.Float)
 		{
 			if (!kAllowedCharactersForFloat.Contains(ch.ToString()))
 				return false;
 		}
-		else if (m_NumberType == ContentType.Int)
+		else if (m_NumberType == NumberType.Int)
 		{
 			if (!kAllowedCharactersForInt.Contains(ch.ToString()))
 				return false;
@@ -240,7 +240,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 	{
 		var str = m_Text;
 
-		if (m_NumberType == ContentType.Float)
+		if (m_NumberType == NumberType.Float)
 		{
 			float floatVal;
 

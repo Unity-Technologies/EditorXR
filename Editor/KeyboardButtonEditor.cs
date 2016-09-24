@@ -9,27 +9,26 @@ using UnityEngine.UI;
 [CustomEditor(typeof(KeyboardButton))]
 public class KeyboardButtonEditor : RayButtonEditor
 {
-	SerializedProperty m_CharacterDescriptionTypeProperty;
-	SerializedProperty m_SpecialKeyTypeProperty;
 	SerializedProperty m_CharacterProperty;
 	SerializedProperty m_ButtonTextProperty;
 	SerializedProperty m_MatchButtonTextToCharacterProperty;
+	SerializedProperty m_ButtonIconProperty;
 	SerializedProperty m_ButtonMeshProperty;
 	SerializedProperty m_RepeatOnHoldProperty;
 	SerializedProperty m_RepeatTimeProperty;
 
+	private KeyCode m_KeyCode;
+	private string m_KeyCodeStr = "";
 	private KeyboardButton keyboardButton;
-	private string m_KeyCode = "";
 
 	protected override void OnEnable()
 	{
 		base.OnEnable();
 		
-		m_CharacterDescriptionTypeProperty = serializedObject.FindProperty("m_CharacterDescriptionType");
-		m_SpecialKeyTypeProperty = serializedObject.FindProperty("m_SpecialKeyType");
-		m_CharacterProperty = serializedObject.FindProperty("m_Character");
+		m_CharacterProperty = serializedObject.FindProperty("m_Character"); // TODO debugging only
 		m_ButtonTextProperty = serializedObject.FindProperty("m_TextComponent");
 		m_MatchButtonTextToCharacterProperty = serializedObject.FindProperty("m_MatchButtonTextToCharacter");
+		m_ButtonIconProperty = serializedObject.FindProperty("m_ButtonIcon");
 		m_ButtonMeshProperty = serializedObject.FindProperty("m_ButtonMesh");
 		m_RepeatOnHoldProperty = serializedObject.FindProperty("m_RepeatOnHold");
 		m_RepeatTimeProperty = serializedObject.FindProperty("m_RepeatTime");
@@ -38,109 +37,100 @@ public class KeyboardButtonEditor : RayButtonEditor
 	public override void OnInspectorGUI()
 	{
 		keyboardButton = (KeyboardButton)target;
-//		m_KeyCode = ((char)m_CharacterProperty.intValue).ToString();
-		m_KeyCode = EditorGUILayout.TextField("Key Code", m_KeyCode);
 
-		serializedObject.Update();
+		EditorGUILayout.BeginHorizontal();
+		m_KeyCodeStr = EditorGUILayout.TextField("Key Code", m_KeyCodeStr);
+//		if (Enum.IsDefined(typeof(KeyCode), m_CharacterProperty.intValue))
+//			m_KeyCode = (KeyCode)m_CharacterProperty.intValue;
 
-		if (m_KeyCode.StartsWith("\\") && m_KeyCode.Length > 1)
+		m_KeyCode = (KeyCode)EditorGUILayout.EnumPopup(m_KeyCode);
+		EditorGUILayout.EndHorizontal();
+
+//		serializedObject.Update();
+
+		// Check for ASCII value
+		if (m_KeyCodeStr.StartsWith("\\") && m_KeyCodeStr.Length > 1)
 		{
-			m_CharacterDescriptionTypeProperty.enumValueIndex = (int)KeyboardButton.CharacterDescriptionType.Special;
-
-			if (m_KeyCode[1] == 'u')
+			if (m_KeyCodeStr[1] == 'u')
 			{
-				if (m_KeyCode.Length > 2)
+				if (m_KeyCodeStr.Length > 2)
 				{
 					int i;
-					if (int.TryParse(m_KeyCode.Substring(2), out i))
+					if (int.TryParse(m_KeyCodeStr.Substring(2), out i))
 					{
-						if (Enum.IsDefined(typeof (KeyboardButton.SpecialKeyType), i))
-						{
-							var k = GetIndexOfEnumValue(i);
-							if (k != -1)
-								m_SpecialKeyTypeProperty.enumValueIndex = GetIndexOfEnumValue(i);
-						}
+						if (Enum.IsDefined(typeof(KeyCode), i))
+							m_KeyCode = (KeyCode)i;
 					}
 				}
 			}
 			else
 			{
 				var valid = true;
-				switch (m_KeyCode[1])
+				switch (m_KeyCodeStr[1])
 				{
 					case 'b':
-						m_SpecialKeyTypeProperty.enumValueIndex = 1;
+						m_KeyCode = KeyCode.Backspace;
 						break;
 					case 't':
-						m_SpecialKeyTypeProperty.enumValueIndex = 2;
+						m_KeyCode = KeyCode.Tab;
 						break;
-					case 'n':
-						m_SpecialKeyTypeProperty.enumValueIndex = 3;
-						break;
+					case 'n': // KeyCode doesn't define newline
 					case 'r':
-						m_SpecialKeyTypeProperty.enumValueIndex = 4;
+						m_KeyCode = KeyCode.Return;
 						break;
 					case 's':
-						m_SpecialKeyTypeProperty.enumValueIndex = 9;
+						m_KeyCode = KeyCode.Space;
 						break;
 					default:
 						valid = false;
 						break;
 				}
 
-				if (m_KeyCode.Length > 2)
-					m_KeyCode = m_KeyCode.Remove(2);
+				if (m_KeyCodeStr.Length > 2)
+					m_KeyCodeStr = m_KeyCodeStr.Remove(2);
 
 				if (!valid)
-					m_KeyCode = m_KeyCode.Remove(1);
-			}
-
-			m_CharacterProperty.intValue =
-				(int)Enum.GetValues(typeof (KeyboardButton.SpecialKeyType)).GetValue(m_SpecialKeyTypeProperty.enumValueIndex);
-		}
-		else
-		{
-			m_CharacterDescriptionTypeProperty.enumValueIndex = (int)KeyboardButton.CharacterDescriptionType.Character;
-
-			if (m_KeyCode.Length > 0)
-			{
-				m_CharacterProperty.intValue = m_KeyCode[0];
-
-				if (m_MatchButtonTextToCharacterProperty.boolValue)
-				{
-					if (keyboardButton.textComponent != null)
-						keyboardButton.textComponent.text = m_KeyCode[0].ToString();
-				}
-			}
-			if (m_KeyCode.Length > 1)
-				m_KeyCode = m_KeyCode.Remove(1, m_KeyCode.Length - 1);
-		}
-
-		// Set text component string
-		if (m_CharacterDescriptionTypeProperty.enumValueIndex == (int)KeyboardButton.CharacterDescriptionType.Character)
-		{
-			if (m_KeyCode.Length > 0)
-			{
-				if (m_MatchButtonTextToCharacterProperty.boolValue && keyboardButton.textComponent != null)
-					keyboardButton.textComponent.text = m_KeyCode[0].ToString();
+					m_KeyCodeStr = m_KeyCodeStr.Remove(1);
 			}
 		}
 		else
 		{
-			if (keyboardButton.textComponent != null)
-				keyboardButton.textComponent.text = "";
+			if (m_KeyCodeStr.Length > 0)
+			{
+//				m_KeyCodeStr = m_KeyCodeStr.Remove(1);
+				m_KeyCode = (KeyCode)m_KeyCodeStr[0];
+			}
 		}
 
-		EditorGUILayout.LabelField(m_CharacterProperty.intValue.ToString());
-		EditorGUILayout.LabelField(m_KeyCode);
-		Repaint();
+		EditorGUILayout.LabelField(m_CharacterProperty.intValue.ToString() + " " + ((char)m_CharacterProperty.intValue).ToString());
+
+		serializedObject.Update();
+
+		m_CharacterProperty.intValue = (int)m_KeyCode;
 
 		EditorGUILayout.PropertyField(m_CharacterProperty);
 		EditorGUILayout.PropertyField(m_ButtonTextProperty);
-		EditorGUILayout.PropertyField(m_MatchButtonTextToCharacterProperty);
+		// Set text component to character
+		if (keyboardButton.textComponent != null)
+		{
+			EditorGUILayout.PropertyField(m_MatchButtonTextToCharacterProperty);
+
+			if (m_MatchButtonTextToCharacterProperty.boolValue)
+			{
+				if (!keyboardButton.textComponent.font.HasCharacter((char)m_CharacterProperty.intValue))
+					EditorGUILayout.HelpBox("Character not defined in font, consider using an icon", MessageType.Error);
+				else
+					keyboardButton.textComponent.text = ((char)m_CharacterProperty.intValue).ToString();
+			}
+		}
+		EditorGUILayout.PropertyField(m_ButtonIconProperty);
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);
 		EditorGUILayout.PropertyField(m_RepeatOnHoldProperty);
-		EditorGUILayout.PropertyField(m_RepeatTimeProperty);
+		if (m_RepeatOnHoldProperty.boolValue)
+			EditorGUILayout.PropertyField(m_RepeatTimeProperty);
+
+//		m_KeyCodeStr = m_KeyCode.ToString();
+
 		serializedObject.ApplyModifiedProperties();
 		base.OnInspectorGUI();
 	}
@@ -148,7 +138,7 @@ public class KeyboardButtonEditor : RayButtonEditor
 	private int GetIndexOfEnumValue(int i)
 	{
 		int k = 0;
-		var enumValues = Enum.GetValues(typeof(KeyboardButton.SpecialKeyType));
+		var enumValues = Enum.GetValues(typeof(KeyCode));
 		foreach (var val in enumValues)
 		{
 			if (i == (int)val)
