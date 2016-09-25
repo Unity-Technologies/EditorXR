@@ -9,10 +9,27 @@ public class KeyboardUI : MonoBehaviour
 	[SerializeField]
 	private List<KeyboardButton> m_Buttons = new List<KeyboardButton>();
 
-	private Canvas m_Canvas;
+	public DirectManipulator directManipulator { get { return m_DirectManipulator; } }
+	[SerializeField]
+	private DirectManipulator m_DirectManipulator;
 
-	public void Setup(Action<char> keyPress, bool pressOnHover = false)
+	public enum ButtonMode
 	{
+		TriggerOnTouch,
+		TriggerOnPress,
+	}
+	private ButtonMode m_ButtonMode;
+
+	public void Setup(Action<char> keyPress)
+	{
+		//Set up DirectManipulaotr
+//		var directManipulator = directManipulator;
+		directManipulator.target = transform;
+		directManipulator.translate = Translate;
+		directManipulator.rotate = Rotate;
+
+		var pressOnHover = m_ButtonMode == ButtonMode.TriggerOnTouch;
+
 		foreach (var button in m_Buttons)
 		{
 			button.Setup(keyPress, pressOnHover);
@@ -44,6 +61,16 @@ public class KeyboardUI : MonoBehaviour
 				button.textComponent.enabled = true;
 			}
 		}
+	}
+
+	private void Translate(Vector3 deltaPosition)
+	{
+		transform.position += deltaPosition;
+	}
+
+	private void Rotate(Quaternion deltaRotation)
+	{
+		transform.rotation *= deltaRotation;
 	}
 
 	private void Update()

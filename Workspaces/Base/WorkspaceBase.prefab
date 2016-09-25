@@ -645,7 +645,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000011014117582
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -659,8 +659,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Target: {fileID: 0}
-  m_AllHandles:
-  - {fileID: 114000011868678278}
+  m_AllHandles: []
 --- !u!114 &114000011346188294
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -740,7 +739,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000011990078262
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -762,9 +761,9 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.73448277, g: 0.73448277, b: 0.73448277, a: 1}
-    m_PressedColor: {r: 0.5344828, g: 0.5344828, b: 0.5344828, a: 1}
-    m_DisabledColor: {r: 0.2724138, g: 0.2724138, b: 0.2724138, a: 0.5019608}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -780,21 +779,10 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114000010224824294}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 114000014286123538}
-        m_MethodName: LockClick
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
+      m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000012144030156
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -903,21 +891,10 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114000012171468040}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 114000014286123538}
-        m_MethodName: CloseClick
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
+      m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000012827231190
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -930,7 +907,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000013854833486
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -943,7 +920,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000014067047110
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -956,7 +933,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000014286123538
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -971,13 +948,13 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_SceneContainer: {fileID: 224000012777721742}
   m_FrontPanel: {fileID: 224000012325241496}
-  m_DirectManipulator: {fileID: 114000011014117582}
-  m_GrabCollider: {fileID: 65000013091105856}
-  m_VacuumHandle: {fileID: 114000012144030156}
-  m_LeftHandle: {fileID: 114000010929740822}
-  m_FrontHandle: {fileID: 114000014067047110}
-  m_RightHandle: {fileID: 114000012827231190}
-  m_BackHandle: {fileID: 114000013854833486}
+  m_DirectManipulator: {fileID: 0}
+  m_GrabCollider: {fileID: 65000013995236722}
+  m_VacuumHandle: {fileID: 0}
+  m_LeftHandle: {fileID: 0}
+  m_FrontHandle: {fileID: 0}
+  m_RightHandle: {fileID: 0}
+  m_BackHandle: {fileID: 0}
   m_Frame: {fileID: 137000012547310740}
 --- !u!137 &137000012547310740
 SkinnedMeshRenderer:

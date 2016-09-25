@@ -132,7 +132,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		if (m_Keyboard != null)
 		{
 			m_Keyboard.gameObject.SetActive(true);
-			m_Keyboard.transform.SetParent(transform, true);
+//			m_Keyboard.transform.SetParent(transform, true);
 			m_Keyboard.transform.position = m_KeyboardAnchorTransform.position;
 			m_Keyboard.transform.rotation = m_KeyboardAnchorTransform.rotation;
 
