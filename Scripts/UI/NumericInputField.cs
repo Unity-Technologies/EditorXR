@@ -67,8 +67,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 
 	private void StartDrag(RayEventData eventData)
 	{
-		if (IsExpression())
-			ParseNumberField();
+		ParseNumberField();
 		m_LastPointerPosition = GetLocalPointerPosition(eventData);
 		m_UpdateDrag = true;
 		eventData.eligibleForClick = false;
@@ -123,8 +122,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 
 	protected override void Close()
 	{
-		if (IsExpression())
-			ParseNumberField();
+		ParseNumberField();
 
 		base.Close();
 	}
@@ -193,20 +191,25 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 			UpdateLabel();
 	}
 
+	protected override void Tab()
+	{
+		Return();
+	}
+
+	protected override void Clear()
+	{
+		base.Clear();
+		m_OperandCount = 0;
+	}
+
 	protected override void Return()
 	{
-		if (IsExpression())
-			ParseNumberField();
+		ParseNumberField();
 	}
 
 	protected override void Space()
 	{
 		Return();
-	}
-
-	protected override void Cancel()
-	{
-		
 	}
 
 	private float CalculateFloatDragSensitivity(float value)
@@ -242,6 +245,8 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 
 	private void ParseNumberField()
 	{
+		if (!IsExpression()) return;
+
 		var str = m_Text;
 
 		if (m_NumberType == NumberType.Float)

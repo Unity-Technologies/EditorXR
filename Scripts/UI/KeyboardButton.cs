@@ -16,12 +16,13 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 	[SerializeField]
 	private char m_Character;
 
-	public Text textComponent { get { return m_TextComponent; } }
+	public Text textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
+
 	[SerializeField]
 	private Text m_TextComponent;
 
 	[SerializeField]
-	private bool m_MatchButtonTextToCharacter = true;
+	private bool m_MatchButtonTextToCharacter;
 
 	[SerializeField]
 	private Image m_ButtonIcon;

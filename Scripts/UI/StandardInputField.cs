@@ -1,18 +1,24 @@
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+
+// Don't allow return chars or tabulator key to be entered into single line fields.
+//if (!multiLine && (c == '\t' || c == '\r' || c == 10))
+
+// Convert carriage return and end-of-text characters to newline.
+//            if (c == '\r' || (int)c == 3)
+//                c = '\n';
 
 public class StandardInputField : RayInputField
 {
 	public enum LineType
 	{
 		SingleLine,
-		MultiLineSubmit,
-		MultiLineNewline
+		MultiLine,
 	}
 
 	[SerializeField]
 	private LineType m_LineType = LineType.SingleLine;
+
+	private bool m_CapsLock;
 
 	private bool m_Shift
 	{
@@ -30,19 +36,18 @@ public class StandardInputField : RayInputField
 		}
 	}
 
-	private bool m_CapsLock;
-
 	protected override void Append(char c)
 	{
 		var len = m_Text.Length;
-
-		if (m_LineType == LineType.SingleLine && (c == '\n' || c == '\t')) return;
 
 		if (m_Shift)
 		{
 			m_Shift = false;
 			c = char.ToUpper(c);
 		}
+		else
+			c = char.ToLower(c);
+
 		text += c;
 
 		if (len != m_Text.Length)
@@ -58,11 +63,20 @@ public class StandardInputField : RayInputField
 		SendOnValueChangedAndUpdateLabel();
 	}
 
+	protected override void Tab()
+	{
+		if (m_LineType == LineType.SingleLine) return;
+
+		text += "\t";
+	}
+
 	protected override void Return()
 	{
-//		if (c == '\r' || (int)c == 3)
-//			c = '\n';
-		//TODO multiline
+		if (m_LineType == LineType.SingleLine) return;
+
+		text += "\n";
+		text = text.Replace("<br>", "\n");
+
 		SendOnValueChangedAndUpdateLabel();
 	}
 
@@ -76,15 +90,8 @@ public class StandardInputField : RayInputField
 			SendOnValueChangedAndUpdateLabel();
 	}
 
-	protected override void Cancel()
-	{
-//		throw new System.NotImplementedException();
-	}
-
 	private void Shift()
 	{
 		m_Shift = true;
-
-		m_Keyboard.SetKeyTextToUpperCase();
 	}
 }

@@ -41,27 +41,12 @@ public class KeyboardButtonEditor : RayButtonEditor
 	{
 		keyboardButton = (KeyboardButton)target;
 
-		var processStringInput = false;
-
 		serializedObject.Update();
 
 		EditorGUILayout.BeginHorizontal();
 		EditorGUI.BeginChangeCheck();
 		m_KeyCodeStr = EditorGUILayout.TextField("Key Code", m_KeyCodeStr);
 		if (EditorGUI.EndChangeCheck())
-			processStringInput = true;
-
-		EditorGUI.BeginChangeCheck();
-		m_KeyCode = (KeyCode)EditorGUILayout.EnumPopup(m_KeyCode);
-		if (EditorGUI.EndChangeCheck())
-		{
-			m_KeyCodeStr = ((char)m_KeyCode).ToString();
-			m_CharacterProperty.intValue = (int)m_KeyCode;
-		}
-		EditorGUILayout.EndHorizontal();
-
-		// Check for ASCII value
-		if (processStringInput)
 		{
 			if (m_KeyCodeStr.StartsWith("\\") && m_KeyCodeStr.Length > 1)
 			{
@@ -75,7 +60,7 @@ public class KeyboardButtonEditor : RayButtonEditor
 							if (Enum.IsDefined(typeof(KeyCode), i))
 							{
 								m_KeyCode = (KeyCode)i;
-								m_CharacterProperty.intValue = (int)m_KeyCode;
+								UpdateCharacterValue();
 							}
 						}
 					}
@@ -107,7 +92,7 @@ public class KeyboardButtonEditor : RayButtonEditor
 						m_KeyCodeStr = m_KeyCodeStr.Remove(2);
 
 					if (valid)
-						m_CharacterProperty.intValue = (int)m_KeyCode;
+						UpdateCharacterValue();
 					else
 						EditorGUILayout.HelpBox("Invalid entry", MessageType.Error);
 				}
@@ -120,13 +105,22 @@ public class KeyboardButtonEditor : RayButtonEditor
 						m_KeyCodeStr = m_KeyCodeStr.Remove(1);
 
 					m_KeyCode = (KeyCode)m_KeyCodeStr[0];
-					m_CharacterProperty.intValue = (int)m_KeyCode;
+					UpdateCharacterValue();
 				}
 			}
 		}
 
+		EditorGUI.BeginChangeCheck();
+		m_KeyCode = (KeyCode)EditorGUILayout.EnumPopup(m_KeyCode);
+		if (EditorGUI.EndChangeCheck())
+		{
+			m_KeyCodeStr = ((char)m_KeyCode).ToString();
+			UpdateCharacterValue();
+		}
+		EditorGUILayout.EndHorizontal();
+
 		//For debug
-		//EditorGUILayout.LabelField(m_CharacterProperty.intValue.ToString() + " " + ((char)m_CharacterProperty.intValue).ToString());
+//		EditorGUILayout.LabelField(m_CharacterProperty.intValue.ToString() + " " + ((char)m_CharacterProperty.intValue).ToString());
 //		EditorGUILayout.PropertyField(m_CharacterProperty);
 
 		EditorGUILayout.PropertyField(m_ButtonTextProperty);
@@ -139,8 +133,6 @@ public class KeyboardButtonEditor : RayButtonEditor
 			{
 				if (!keyboardButton.textComponent.font.HasCharacter((char)m_CharacterProperty.intValue))
 					EditorGUILayout.HelpBox("Character not defined in font, consider using an icon", MessageType.Error);
-				else
-					keyboardButton.textComponent.text = ((char)m_CharacterProperty.intValue).ToString();
 			}
 		}
 
@@ -153,5 +145,15 @@ public class KeyboardButtonEditor : RayButtonEditor
 
 		serializedObject.ApplyModifiedProperties();
 		base.OnInspectorGUI();
+	}
+
+	private void UpdateCharacterValue()
+	{
+		m_CharacterProperty.intValue = (int)m_KeyCode;
+
+		if (m_MatchButtonTextToCharacterProperty.boolValue)
+		{
+			keyboardButton.textComponent.text = ((char)m_CharacterProperty.intValue).ToString();
+		}
 	}
 }

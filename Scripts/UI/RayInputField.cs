@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
+
 public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickHandler
 {
 	public SelectionFlags selectionFlags
@@ -159,10 +160,17 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 				Backspace();
 				return;
 			case (int)KeyCode.Tab:
-				Append('\t');
+				Tab();
 				return;
+			case (int)KeyCode.Clear:
+				Clear();
+				return;
+			case '\n':
 			case (int)KeyCode.Return:
 				Return();
+				return;
+			case (int)KeyCode.Escape:
+				Cancel();
 				return;
 			case (int)KeyCode.Space:
 				Space();
@@ -178,9 +186,20 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		return m_TextComponent.font.HasCharacter(c);
 	}
 
+	protected virtual void Cancel()
+	{
+		Close();
+	}
+
+	protected virtual void Clear()
+	{
+		m_Text = "";
+		SendOnValueChangedAndUpdateLabel();
+	}
+
 	protected abstract void Append(char c);
 	protected abstract void Backspace();
+	protected abstract void Tab();
 	protected abstract void Return();
 	protected abstract void Space();
-	protected abstract void Cancel();
 }
