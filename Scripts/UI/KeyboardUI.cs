@@ -20,6 +20,7 @@ public class KeyboardUI : MonoBehaviour
 	}
 	private ButtonMode m_ButtonMode;
 
+
 	public void Setup(Action<char> keyPress)
 	{
 		//Set up DirectManipulaotr
@@ -47,7 +48,6 @@ public class KeyboardUI : MonoBehaviour
 				button.textComponent.enabled = true;
 			}
 		}
-
 	}
 
 	public void SetKeyTextToLowerCase()
@@ -63,6 +63,19 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
+	private void OnEnable()
+	{
+		if (IsVertical())
+			m_ButtonMode = ButtonMode.TriggerOnPress;
+		else
+			m_ButtonMode = ButtonMode.TriggerOnTouch;
+	}
+
+	private bool IsVertical()
+	{
+		return Vector3.Dot(transform.up, Vector3.up) > 0.5f;
+	}
+
 	private void Translate(Vector3 deltaPosition)
 	{
 		transform.position += deltaPosition;
@@ -71,11 +84,10 @@ public class KeyboardUI : MonoBehaviour
 	private void Rotate(Quaternion deltaRotation)
 	{
 		transform.rotation *= deltaRotation;
-	}
 
-	private void Update()
-	{
-//		if (Vector3.Dot(transform.up, Vector3.up) > 0.5f))
-
+		if (m_ButtonMode == ButtonMode.TriggerOnPress && !IsVertical())
+		{
+			
+		}
 	}
 }
