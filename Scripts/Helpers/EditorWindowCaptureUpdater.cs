@@ -13,6 +13,9 @@ public class EditorWindowCaptureUpdater : MonoBehaviour
 
 	void Start()
 	{
+		if (!m_EditorWindowCapture)
+			m_EditorWindowCapture = GetComponent<EditorWindowCapture>();
+
 		if (!m_RawImage)
 			m_RawImage = GetComponent<RawImage>();
 

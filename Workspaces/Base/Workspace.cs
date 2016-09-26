@@ -46,7 +46,6 @@ namespace UnityEngine.VR.Workspaces
 				}
 			}
 		}
-
 		private Bounds m_ContentBounds;
 
 		[SerializeField]
