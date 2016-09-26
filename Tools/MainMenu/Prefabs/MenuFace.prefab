@@ -2978,11 +2978,8 @@ MonoBehaviour:
   m_BorderOutline: {fileID: 23000012074004932}
   m_CanvasGroup: {fileID: 225000011820790320}
   m_FaceTitle: {fileID: 114000013940025958}
-  m_GridLayoutGroup: {fileID: 114000014048498192}
-  m_ScrollRect: {fileID: 114000011741281716}
+  m_GridTransform: {fileID: 224000012046007752}
   m_TitleIcon: {fileID: 137000010769614414}
-  m_ScrollDetectionButton: {fileID: 0}
-  m_MaskRectTransform: {fileID: 224000010431111768}
 --- !u!114 &114000012577314670
 MonoBehaviour:
   m_ObjectHideFlags: 1

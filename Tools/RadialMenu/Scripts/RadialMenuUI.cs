@@ -46,6 +46,8 @@ namespace UnityEngine.VR.Menus
 		}
 		private Transform m_AlternateMenuOrigin;
 
+		public bool visible { get; set; }
+
 		public List<IAction> m_Actions;
 		public List<IAction> actions
 		{
@@ -118,74 +120,25 @@ namespace UnityEngine.VR.Menus
 		{
 			set
 			{
-				//if (value == m_InputMatrix) // detect for same value over 2 frames
-				//{
-				if (Mathf.Approximately(value.magnitude, 0) && !Mathf.Approximately(m_InputDirection, 0))// && m_PreviousInputMatrix.magnitude > 0)
+				if (Mathf.Approximately(value.magnitude, 0) && !Mathf.Approximately(m_InputDirection, 0))
 				{
-				//Debug.Log(m_InputDirection + " <---");
+					//Debug.Log(m_InputDirection + " <---");
 					Debug.Log("<color=blue>disabling button highlighting</color>");
 					m_InputDirection = 0;
 					foreach (var buttonMinMaxRange in buttonRotationRange)
 						buttonMinMaxRange.Key.highlight = false;
-				//}
 				}
-				else if (value.magnitude > 0)// (!m_PressedDown && value.magnitude > 0.1f)
+				else if (value.magnitude > 0)
 				{
+					Debug.Log("<color=cyan>enabling button highlighting - vector : " + value + "</color> - magnitude of input vector : " + value.magnitude);
+
 					m_InputMatrix = value;
-					//Debug.Log("<color=cyan>enabling button highlighting - vector : " + m_InputMatrix + "</color> - magnitude of input vector : " + m_InputMatrix.magnitude);
-					//Debug.Log(value.magnitude);
-
-					//Debug.Log(value);
-
-					//m_InputDirection = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg;
-					//m_InputDirection = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg * -1;
-
-					/*
-					var phaseOffset = 40f * Mathf.Deg2Rad;
-					//m_InputMatrix += phaseOffset;
-
-					//Vector2 = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
-					//var transformed = Vector2.Transform(dir, Matrix.CreateRotationX(angle)); direction = new Point((int)dir.X, (int)dir.Y);
-
-					m_InputDirection = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg * -1;
-					*/
-
-
 					m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
 					m_InputDirection += m_InputPhaseOffset;
-
-					//Debug.LogError("<color=orange>" + m_InputDirection + "</color>");
 
 					var angleCorrected = m_InputDirection * Mathf.Deg2Rad;
 					m_InputMatrix = new Vector2(Mathf.Cos(angleCorrected), -Mathf.Sin(angleCorrected));
 					m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
-
-
-					//Debug.LogError("<color=yellow>" + m_InputDirection + "</color>");
-					
-
-
-
-					/*
-					Vector2 offset = to.transform.position-from.transform.position; // Get an offset vector, get the opposite and adjacent of a right triangle
-					float radian = 0f;
-					if (offset.x != 0f) {
-						radian = Mathf.Atan (offset.y / offset.x); // Arc tangent of opposite/adjacent to find angle
-						if (offset.x < 0f) {
-							radian += Mathf.PI; // enable 360 degrees, disable if you want green line above red at all times
-						}
-					}
-					aligned.eulerAngles = new Vector3 (0f, 0f, radian * Mathf.Rad2Deg); // Set the angle.
- 
-					// Debug stuff:
-					aligned.transform.position = (from.transform.position + to.transform.position) * 0.5f;
-					//Debug.DrawLine (from.transform.position, to.transform.position, Color.red);
-					//Debug.DrawLine (aligned.transform.position, aligned.transform.position + aligned.transform.up, Color.green);
-
-					if (m_InputDirection.x < 0f) {
-						radian += Mathf.PI; // enable 360 degrees, disable if you want green line above red at all times
-					}
-					*/
 
 					foreach (var buttonMinMaxRange in buttonRotationRange)
 					{
@@ -193,7 +146,6 @@ namespace UnityEngine.VR.Menus
 						{
 							m_HighlightedButton = buttonMinMaxRange.Key;
 							m_HighlightedButton.highlight = true;
-							//m_HighlightedButton.transform.localScale = Vector3.one * Random.Range(1f, 1.5f);
 						}
 						else
 							buttonMinMaxRange.Key.highlight = false;
@@ -202,44 +154,9 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 
-		public bool visible
-		{
-			get; set;
-			/*
-			get { return m_VisibilityState == VisibilityState.Visible; }
-			set
-			{
-				switch (m_VisibilityState)
-				{
-					case VisibilityState.TransitioningOut:
-					case VisibilityState.Hidden:
-						if (value)
-						{
-							if (m_VisibilityCoroutine != null)
-								StopCoroutine(m_VisibilityCoroutine);
-							m_VisibilityCoroutine = StartCoroutine(AnimateShow());
-						}
-						return;
-					case VisibilityState.TransitioningIn:
-					case VisibilityState.Visible:
-						if (!value)
-						{
-							if (m_VisibilityCoroutine != null)
-								StopCoroutine(m_VisibilityCoroutine);
-							m_VisibilityCoroutine = StartCoroutine(AnimateHide());
-						}
-						return;
-				}
-			}
-			*/
-		}
-
 		private void Start()
 		{
-			//SetupRadialSlotPositions();
-			Debug.LogError("<color=green>Beginning Radial menu Start</color>");
 			m_SlotsMask.gameObject.SetActive(false);
-			//m_HideCoroutine = StartCoroutine(AnimateHide());
 		}
 
 		public void Setup()
@@ -253,9 +170,9 @@ namespace UnityEngine.VR.Menus
 			{
 				Transform menuSlot = null;
 #if UNITY_EDITOR
-				//menuSlot = instantiateUI(m_RadialMenuSlotTemplate.gameObject).transform;
 				menuSlot = U.Object.Instantiate(m_RadialMenuSlotTemplate.gameObject).transform;
 #else
+				// TODO REMOVE THIS - used for testing in play mode to get around the stutter of the EVR input rate
 				menuSlot = GameObject.Instantiate(m_RadialMenuSlotTemplate.gameObject).transform;
 #endif
 				menuSlot.SetParent(m_SlotContainer);
@@ -290,63 +207,18 @@ namespace UnityEngine.VR.Menus
 
 				int direction = i > 7 ? -1 : 1;
 				buttonRotationRange.Add(slot, new Vector2(direction * Mathf.PingPong(rotationSpacing * i, 180f), direction * Mathf.PingPong(rotationSpacing * i + rotationSpacing, 180f)));
-				// todo setup automatic hiding in start on the slot controllers
-				
-				//var test = Mathf.Atan2(m_RadialMenuSlots[i].transform.forward.y, m_RadialMenuSlots[i].transform.forward.x) * Mathf.Rad2Deg;
-				//Debug.LogError("<color=blue>" + test + "</color>");
 
-				int bufferRotation = 45;
 				Vector2 range = Vector2.zero;
 				buttonRotationRange.TryGetValue(m_RadialMenuSlots[i], out range);
 
 				slot.Hide();
-
-				/*
-				range = new Vector2(range.x - bufferRotation, range.y - bufferRotation);
-				buttonRotationRange.ke
-				*/
-
-				Debug.LogError(m_RadialMenuSlots[i].name +  "  : <color=blue>" + range + "</color>");
 			}
+
+			if (m_HideCoroutine != null)
+				StopCoroutine(m_HideCoroutine);
 
 			m_HideCoroutine = StartCoroutine(AnimateHide());
 		}
-
-		//private void Show(List<IAction> menuActions)
-		//{
-		//	// if list count is zero, hide
-		//	// if greather, and the icons are not the same, then hide then show with new icons
-		//	// if the same, dont hide, just stay showing
-		//	Debug.LogError("Show called in RadialMenuVisuals");
-
-		//	// BLOCK INPUT WHILE SHOWING OR HIDING!!!!!
-
-		//	/*
-		//	b.button.onClick.RemoveAllListeners();
-		//	b.button.onClick.AddListener(() =>
-		//	{
-		//		if (visible && b.node.HasValue)
-		//			selectTool(b.node.Value, toolType);
-		//	});
-		//	*/
-
-		//	if (menuActions != null && menuActions.Count > 0)
-		//	{
-		//		for (int i = 0; i < menuActions.Count; ++i)
-		//		{
-		//			m_RadialMenuSlots[i].iconSprite = menuActions[i].icon;
-		//			m_RadialMenuSlots[i].button.onClick.RemoveAllListeners();
-		//			m_RadialMenuSlots[i].button.onClick.AddListener(() =>
-		//			{
-		//				performAction(menuActions[i]);
-		//			});
-		//		}
-
-		//		StartCoroutine(AnimateShow());
-		//	}
-		//	else
-		//		StartCoroutine(AnimateHide());
-		//}
 
 		private void Hide()
 		{
@@ -378,10 +250,8 @@ namespace UnityEngine.VR.Menus
 					performAction(action);
 				});
 			}
-			
-			//int slotsToReveal = m_Actions.Count;
+
 			m_SlotsMask.fillAmount = 1f;
-			//yield return new WaitForSeconds(1f);
 
 			float revealAmount = 0f;
 			Quaternion hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;;
@@ -429,7 +299,6 @@ namespace UnityEngine.VR.Menus
 				yield break;
 
 			m_SlotsMask.fillAmount = 1f;
-			//yield return new WaitForSeconds(1f);
 
 			float revealAmount = 0f;
 			Quaternion hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
@@ -442,8 +311,6 @@ namespace UnityEngine.VR.Menus
 			{
 				revealAmount -= Time.unscaledDeltaTime * 5;
 
-				//m_SlotsMask.fillAmount = Mathf.Lerp(1f, m_SlotsMask.fillAmount, revealAmount * revealAmount);
-
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 					m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, revealAmount);
 
@@ -454,13 +321,24 @@ namespace UnityEngine.VR.Menus
 			m_HideCoroutine = null;
 		}
 
+		public void SelectionOccurred()
+		{
+			if (m_HighlightedButton != null)
+			{
+				for (int i = 0; i < kSlotCount; ++i)
+				{
+					if (m_HighlightedButton == m_RadialMenuSlots[i])
+						performAction(m_Actions[i]);
+				}
+			}
+		}
+
 		private IEnumerator AnimateSlotRevealLoop(int slotsToReveal)
 		{
 			if (m_SlotsRevealCoroutine == null)
 				yield break;
 
 			m_SlotsMask.fillAmount = 1f;
-			//yield return new WaitForSeconds(1f);
 
 			float revealAmount = 0f;
 			Quaternion hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
@@ -482,36 +360,14 @@ namespace UnityEngine.VR.Menus
 				yield return null;
 			}
 
-			/*
-			revealAmount = 0;
-			while (revealAmount < 1)
-			{
-				//revealAmount += Time.unscaledDeltaTime * 0.5f;
-				//m_SlotsMask.fillAmount = Mathf.Lerp(m_SlotsMask.fillAmount, 0f, revealAmount);
-				yield return null;
-			}
-			*/
-
-			//yield return new WaitForSeconds(0.5f);
-
-			//revealAmount = 1;
-			//while (revealAmount > 0)
-			//{
-			//	revealAmount -= Time.unscaledDeltaTime * 0.5f;
-			//	m_SlotsMask.fillAmount = Mathf.Lerp(m_SlotsMask.fillAmount, 0f, revealAmount);
-			//	yield return null;
-			//}
-
 			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				m_RadialMenuSlots[i].enabled = false;
 
 			revealAmount = 1;
 			while (revealAmount > 0)
 			{
-				//revealAmount -= Time.unscaledDeltaTime * 3;
 				revealAmount += Time.unscaledDeltaTime * 0.5f;
 				m_SlotsMask.fillAmount = Mathf.Lerp(m_SlotsMask.fillAmount, 0f, revealAmount);
-				//m_SlotsMask.fillAmount = Mathf.Lerp(1f, m_SlotsMask.fillAmount, revealAmount * revealAmount);
 
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 					m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, revealAmount);
@@ -520,36 +376,6 @@ namespace UnityEngine.VR.Menus
 			}
 
 			m_SlotsRevealCoroutine = null;
-
-			//StartCoroutine(AnimateSlotReveal(8));
 		}
-
-		/*
-		public void SetupButton(Sprite icon, Action<MainMenuButton> buttonCreationCallback)
-		{
-			var button = U.Object.Instantiate(m_ButtonTemplatePrefab.gameObject);
-			button.name = buttonData.name;
-			MainMenuButton mainMenuButton = button.GetComponent<MainMenuButton>();
-			buttonCreationCallback(mainMenuButton);
-
-			if (buttonData.sectionName != null)
-			{
-				mainMenuButton.SetData(buttonData.name, buttonData.description);
-
-				var found = m_FaceButtons.Any(x => x.Key == buttonData.sectionName);
-				if (found)
-				{
-					var kvp = m_FaceButtons.First(x => x.Key == buttonData.sectionName);
-					kvp.Value.Add(button.transform);
-				}
-				else
-				{
-					m_FaceButtons.Add(buttonData.sectionName, new List<Transform>() { button.transform });
-				}
-			}
-			else
-				mainMenuButton.SetData(buttonData.name, string.Empty);
-		}
-		*/
 	}
 }

@@ -267,7 +267,7 @@ public class EditorVR : MonoBehaviour
 				mainMenuActivator.node = deviceNode;
 				mainMenuActivator.activated = OnMainMenuActivatorSelected;
 
-				var mainMenu = m_DeviceData[deviceData.Key].mainMenu = SpawnMainMenu(typeof(MainMenu), deviceData.Key);
+				m_DeviceData[deviceData.Key].mainMenu = SpawnMainMenu(typeof(MainMenu), deviceData.Key);
 				var alternateMenu = m_DeviceData[deviceData.Key].alternateMenu = SpawnAlternateMenu(typeof(UnityEngine.VR.Menus.RadialMenu), deviceData.Key);
 				alternateMenu.selected = OnSelection;
 
@@ -287,10 +287,6 @@ public class EditorVR : MonoBehaviour
 		foreach (var kvp in m_DeviceData)
 		{
 			Node? node = GetDeviceNode(kvp.Key);
-
-			//if (node != null)
-				//Debug.LogError("<color=orange>" + node.Value.ToString() + "</color> - " + (node.Value == selectionToolNode).ToString());
-
 			if (node.HasValue) //  && node.Value == selectionToolNode
 			{
 				// Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
@@ -350,67 +346,6 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 	}
-
-	/*
-	private void OnMainMenuShow(Node? mainMenuNode)
-	{
-		if (mainMenuNode == null)
-			return;
-
-		Debug.Log("OnAlternateMenuShow called");
-		foreach (var kvp in m_DeviceData)
-		{
-			Node? node = GetDeviceNode(kvp.Key);
-			if (node.HasValue && node.Value == mainMenuNode)
-			{
-				var mainMenuActionMap = kvp.Value.mainMenu as ICustomActionMap;
-				if (mainMenuActionMap != null)
-					mainMenuActionMap.actionMapInput.active = false; // Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
-
-				break;
-			}
-		}
-	}
-	private void OnAlternateMenuShow(Node? alternateMenuNode)
-	{
-		if (alternateMenuNode == null)
-			return;
-
-		Debug.Log("OnAlternateMenuShow called");
-		foreach (var kvp in m_DeviceData)
-		{
-			Node? node = GetDeviceNode(kvp.Key);
-			if (node.HasValue && node.Value == alternateMenuNode)
-			{
-				var mainMenuActionMap = kvp.Value.mainMenu as ICustomActionMap;
-				if (mainMenuActionMap != null)
-					mainMenuActionMap.actionMapInput.active = false; // Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
-
-				break;
-			}
-		}
-	}
-
-	private void OnAlternateMenuHide(Node? menuNode)
-	{
-		if (menuNode == null)
-			return;
-
-		Debug.Log("OnAlternateMenuHide called");
-		foreach (var kvp in m_DeviceData)
-		{
-			Node? node = GetDeviceNode(kvp.Key);
-			if (node.HasValue && node.Value == menuNode)
-			{
-				var mainMenuActionMap = kvp.Value.mainMenu as ICustomActionMap;
-				if (mainMenuActionMap != null)
-					mainMenuActionMap.actionMapInput.active = true; // Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
-
-				break;
-			}
-		}
-	}
-	*/
 
 	private void SpawnActions()
 	{

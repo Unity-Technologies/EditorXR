@@ -37,10 +37,5 @@ namespace UnityEngine.VR.Menus
 
 		// HACK: Awake/Start get called together in ExecuteInEditMode, so calling this method after is a workaround for order of operations
 		Action setup { get; }
-
-		/// <summary>
-		/// Event used to inform another object that this menu is being shown
-		/// </summary>
-		event EventHandler onShow;
 	}
 }

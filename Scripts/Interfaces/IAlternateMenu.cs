@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine.InputNew;
 using UnityEngine.VR.Actions;
 
 namespace UnityEngine.VR.Menus
@@ -31,25 +30,8 @@ namespace UnityEngine.VR.Menus
 		Action setup { get; }
 
 		/// <summary>
-		/// Function called to hide the menu
-		/// </summary>
-		EventHandler hideAlternateMenu { get; set; }
-
-		/// <summary>
 		/// Delegate called when an item is selected in the alternate menu
 		/// </summary>
 		Action<Node?> selected { get; set; }
-
-		/// <summary>
-		/// Event used to inform another object that this menu is being shown
-		/// </summary>
-		//Action<Node?> onShow { get; set; }
-
-		/// <summary>
-		/// Event used to inform another object that this menu is being hidden
-		/// </summary>
-		//Action<Node?> onHide { get; set; }
-
-		//Action show { get; }
 	}
 }

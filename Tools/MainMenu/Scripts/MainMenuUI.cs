@@ -77,7 +77,7 @@ namespace UnityEngine.VR.Menus
 		private Material m_RotationHighlightLeftMaterial;
 		private Material m_RotationHighlightRightMaterial;
 		private Material m_OuterBorderMaterial;
-		private List<MainMenuFace> m_MenuFaces;
+		private MainMenuFace[] m_MenuFaces;
 		private Material m_MenuFacesMaterial;
 		private Color m_MenuFacesColor;
 		private Dictionary<string, List<Transform>> m_FaceButtons;
@@ -88,7 +88,14 @@ namespace UnityEngine.VR.Menus
 		private float m_RotationRate;
 		private float m_LastTargetRotation;
 		private Coroutine m_VisibilityCoroutine;
+		private Coroutine m_FrameRevealCoroutine;
 		private Transform m_ShowHideUI;
+
+		private Transform[] m_MenuFaceContentTransforms;
+		private Vector3[] m_MenuFaceContentOriginalLocalPositions;
+		private Vector3[] m_MenuFaceContentOffsetLocalPositions;
+		private Vector3 m_MenuFaceContentOriginalLocalScale;
+		private Vector3 m_MenuFaceContentHiddenLocalScale;
 
 		public Transform menuOrigin
 		{
@@ -126,7 +133,7 @@ namespace UnityEngine.VR.Menus
 
 		public float targetRotation { get; set; }
 
-		public int faceCount { get { return m_MenuFaces.Count; } }
+		public int faceCount { get { return m_MenuFaces.Length; } }
 
 		public bool visible
 		{
@@ -195,7 +202,10 @@ namespace UnityEngine.VR.Menus
 				m_FaceButtons.Add(kUncategorizedFaceName, m_UncategorizedButtons);
 			}
 
-			m_MenuFaces = new List<MainMenuFace>();
+			m_MenuFaceContentTransforms = new Transform[kFaceCount];
+			m_MenuFaceContentOffsetLocalPositions = new Vector3[kFaceCount];
+			m_MenuFaceContentOriginalLocalPositions = new Vector3[kFaceCount];
+			m_MenuFaces = new MainMenuFace[kFaceCount];
 			for (var faceCount = 0; faceCount < kFaceCount; ++faceCount)
 			{
 				// Add faces to the menu
@@ -205,8 +215,16 @@ namespace UnityEngine.VR.Menus
 				faceTransform.localScale = Vector3.one;
 				faceTransform.localPosition = Vector3.zero;
 				var face = faceTransform.GetComponent<MainMenuFace>();
-				m_MenuFaces.Add(face);
+				m_MenuFaces[faceCount] = face;
+
+				// Cache Face content reveal values
+				m_MenuFaceContentTransforms[faceCount] = faceTransform;
+				m_MenuFaceContentOriginalLocalPositions[faceCount] = faceTransform.localPosition;
+				m_MenuFaceContentOffsetLocalPositions[faceCount] = new Vector3(faceTransform.localPosition.x, faceTransform.localPosition.y, faceTransform.localPosition.z - 0.15f); // a position offset slightly in front of the menu face original position
 			}
+
+			m_MenuFaceContentOriginalLocalScale = m_MenuFaceContentTransforms[0].localScale;
+			m_MenuFaceContentHiddenLocalScale = new Vector3(0f, m_MenuFaceContentOriginalLocalScale.y * 0.5f, m_MenuFaceContentOriginalLocalScale.z);
 
 			transform.localScale = Vector3.zero;
 			m_AlternateMenu.localScale = Vector3.zero;
@@ -396,7 +414,13 @@ namespace UnityEngine.VR.Menus
 			foreach (var face in m_MenuFaces)
 				face.Show();
 
-			StartCoroutine(AnimateFrameReveal(m_VisibilityState));
+			if (m_FrameRevealCoroutine != null)
+				StopCoroutine(m_FrameRevealCoroutine);
+
+			m_FrameRevealCoroutine = StartCoroutine(AnimateFrameReveal(m_VisibilityState));
+
+			for (int i = 0; i < m_MenuFaceContainers.Length; ++i)
+				StartCoroutine(AnimateFaceReveal(i));
 
 			const float kTargetScale = 1f;
 			
@@ -427,7 +451,10 @@ namespace UnityEngine.VR.Menus
 			foreach (var face in m_MenuFaces)
 				face.Hide();
 
-			StartCoroutine(AnimateFrameReveal(m_VisibilityState));
+			if (m_FrameRevealCoroutine != null)
+				StopCoroutine(m_FrameRevealCoroutine);
+
+			m_FrameRevealCoroutine = StartCoroutine(AnimateFrameReveal(m_VisibilityState));
 
 			const float kTargetScale = 0f;
 			float scale = transform.localScale.x;
@@ -495,6 +522,42 @@ namespace UnityEngine.VR.Menus
 
 			if (m_VisibilityState == VisibilityState.Hidden)
 				m_MenuFrameRenderer.SetBlendShapeWeight(0, 0);
+
+			m_FrameRevealCoroutine = null;
+		}
+
+		private IEnumerator AnimateFaceReveal(int faceIndex)
+		{
+			Vector3 targetScale = m_MenuFaceContentOriginalLocalScale;
+			Vector3 targetPosition = m_MenuFaceContentOriginalLocalPositions[faceIndex];
+			Vector3 currentScale = m_MenuFaceContentHiddenLocalScale; // Custom initial scale
+			Vector3 currentPosition = m_MenuFaceContentOffsetLocalPositions[faceIndex]; // start the face in the cached original target position
+			Transform faceTransform = m_MenuFaceContentTransforms[faceIndex];
+
+			faceTransform.localScale = currentScale;
+			faceTransform.localPosition = currentPosition;
+
+			float currentDelay = 0f;
+			float delayTarget = 0.5f + (faceIndex * 0.1f); // delay duration before starting the face reveal
+			const float kSmoothTime = 0.1f;
+			while (currentDelay < delayTarget) // delay the reveal of each face slightly more than the previous
+			{
+				currentDelay += Time.unscaledDeltaTime;
+				yield return null;
+			}
+
+			Vector3 smoothVelocity = Vector3.zero;
+			while (!Mathf.Approximately(currentScale.x, targetScale.x))
+			{
+				currentScale = Vector3.SmoothDamp(currentScale, targetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentPosition = Vector3.Lerp(currentPosition, targetPosition, Mathf.Pow(currentScale.x / targetScale.x, 2)); // lerp the position with extra emphasis on the beginning transition
+				faceTransform.localScale = currentScale;
+				faceTransform.localPosition = currentPosition;
+				yield return null;
+			}
+
+			faceTransform.localScale = targetScale;
+			faceTransform.localPosition = targetPosition;
 		}
 	}
 }
