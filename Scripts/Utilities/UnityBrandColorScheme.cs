@@ -29,7 +29,6 @@ namespace UnityEngine.VR.Utilities
 		/// </summary>
 		private static readonly List<GradientPair> s_Gradients = new List<GradientPair>();
 		private static int s_RandomGradientPairColorAPosition;
-		private static int s_RandomGradientPairColorBPosition;
 		
 		private static Color s_Red;
 		private static Color s_RedLight;
@@ -273,7 +272,6 @@ namespace UnityEngine.VR.Utilities
 
 			// Set the first random color position value so it can be compared to the next gradient fetch
 			s_RandomGradientPairColorAPosition = randomPositionA;
-			s_RandomGradientPairColorBPosition = randomPositionB;
 
 			return new GradientPair(colorA, colorB);
 		}
