@@ -144,8 +144,6 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		return true;
 	}
 
-
-
 	protected override void Append(char c)
 	{
 		var len = m_Text.Length;

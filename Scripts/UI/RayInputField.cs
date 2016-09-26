@@ -124,7 +124,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		//
 	}
 
-	protected virtual void Open(Vector3 atPosition)
+	protected virtual void Open(Vector3 position)
 	{
 		if (m_Open) return;
 		m_Open = true;
@@ -133,7 +133,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		if (m_Keyboard != null)
 		{
 			m_Keyboard.gameObject.SetActive(true);
-			m_Keyboard.transform.position = atPosition;
+			m_Keyboard.transform.position = position + Vector3.up * 0.1f;
 			m_Keyboard.transform.rotation = Quaternion.identity;
 			m_Keyboard.Setup(OnKeyPress);
 		}

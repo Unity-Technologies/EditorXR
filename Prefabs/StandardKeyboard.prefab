@@ -314,7 +314,7 @@ GameObject:
   - 114: {fileID: 114000012457552694}
   - 114: {fileID: 114000012829679386}
   m_Layer: 5
-  m_Name: Row2 (2)
+  m_Name: Row4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1185,7 +1185,7 @@ GameObject:
   - 23: {fileID: 23000010269886468}
   - 114: {fileID: 114000013237493328}
   m_Layer: 5
-  m_Name: Handle (2)
+  m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3145,9 +3145,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000011390411606}
   m_Character: 104
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -3198,9 +3198,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000013378976514}
   m_Character: 118
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -3313,9 +3313,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000014252317210}
   m_Character: 122
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -3847,9 +3847,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000011014007908}
   m_Character: 117
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -4143,9 +4143,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000012265395360}
   m_Character: 108
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -4249,9 +4249,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000012374888326}
   m_Character: 103
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -4408,9 +4408,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000010494032566}
   m_Character: 105
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -4732,9 +4732,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000013153456756}
   m_Character: 101
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -4804,9 +4804,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000012090961016}
   m_Character: 116
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -5038,9 +5038,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000012071946538}
   m_Character: 113
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -5254,9 +5254,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000010426019886}
   m_Character: 112
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -5382,9 +5382,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000010555080538}
   m_Character: 100
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -6005,9 +6005,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000011791606508}
   m_Character: 102
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -6303,9 +6303,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000012494944974}
   m_Character: 106
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -6596,9 +6596,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000012621967090}
   m_Character: 120
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -6683,9 +6683,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000013678087540}
   m_Character: 99
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -6875,9 +6875,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000010089697908}
   m_Character: 110
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -7019,9 +7019,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000014187382322}
   m_Character: 98
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -7165,9 +7165,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000014204265984}
   m_Character: 121
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -7690,9 +7690,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000010453025518}
   m_Character: 114
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -8063,9 +8063,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000011092539610}
   m_Character: 107
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -8207,9 +8207,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000012076652338}
   m_Character: 119
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -8645,9 +8645,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000013511658758}
   m_Character: 115
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -9091,9 +9091,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000013664633878}
   m_Character: 97
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -9475,9 +9475,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000010186564130}
   m_Character: 111
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}
@@ -9528,9 +9528,9 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000010732513784}
   m_Character: 109
-  m_UseShiftCharacter: 0
+  m_UseShiftCharacter: 1
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
+  m_ShiftCharIsUppercase: 1
   m_MatchButtonTextToCharacter: 1
   m_ButtonIcon: {fileID: 0}
   m_ButtonMesh: {fileID: 0}

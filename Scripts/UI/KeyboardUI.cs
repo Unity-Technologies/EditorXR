@@ -26,7 +26,6 @@ public class KeyboardUI : MonoBehaviour
 	{
 		this.keyPress = keyPress;
 
-		//Set up DirectManipulaotr
 		directManipulator.target = transform;
 		directManipulator.translate = Translate;
 		directManipulator.rotate = Rotate;

@@ -114,10 +114,6 @@ public class KeyboardButtonEditor : RayButtonEditor
 			}
 		}
 
-		//For debug
-		EditorGUILayout.LabelField(m_CharacterProperty.intValue + " " + ((char)m_CharacterProperty.intValue).ToString());
-		EditorGUILayout.LabelField(m_ShiftCharacterProperty.intValue + " " + ((char)m_ShiftCharacterProperty.intValue).ToString());
-
 		EditorGUILayout.PropertyField(m_ButtonIconProperty);
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);
 		EditorGUILayout.PropertyField(m_RepeatOnHoldProperty);

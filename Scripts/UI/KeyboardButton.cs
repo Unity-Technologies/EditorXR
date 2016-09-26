@@ -63,7 +63,7 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	public void SetShiftModeActive(bool active)
 	{
-		if (!m_UseShiftCharacter || m_ShiftCharacter == 0) return;
+		if (!m_UseShiftCharacter) return;
 
 		m_ShiftMode = active;
 
@@ -73,7 +73,7 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 			{
 				if (m_ShiftCharIsUppercase)
 					m_TextComponent.text = m_TextComponent.text.ToUpper();
-				else
+				else if (m_ShiftCharacter != 0)
 					m_TextComponent.text = m_ShiftCharacter.ToString();
 			}
 			else

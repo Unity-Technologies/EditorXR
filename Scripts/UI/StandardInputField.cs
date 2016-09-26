@@ -25,21 +25,12 @@ public class StandardInputField : RayInputField
 	{
 		var len = m_Text.Length;
 
-		if (m_Shift)
-		{
-			Shift();
-			if (m_CapsLock)
-				c = char.ToLower(c);
-			else
-				c = char.ToUpper(c);
-		}
-		else
-		{
-			if (m_CapsLock)
-				c = char.ToUpper(c);
-			else
-				c = char.ToLower(c);
-		}
+		if (m_CapsLock && !m_Shift || !m_CapsLock && m_Shift)
+			c = char.ToUpper(c);
+		else if (m_CapsLock && m_Shift || !m_CapsLock && !m_Shift)
+			c = char.ToLower(c);
+		// Deactivate shift after pressing a key
+		if (m_Shift) Shift();
 
 		text += c;
 
@@ -101,19 +92,9 @@ public class StandardInputField : RayInputField
 
 	private void UpdateKeyText()
 	{
-		if (m_Shift)
-		{
-			if (m_CapsLock)
-				m_Keyboard.DeactivateShiftModeOnKeys();
-			else
-				m_Keyboard.ActivateShiftModeOnKeys();
-		}
-		else
-		{
-			if (m_CapsLock)
-				m_Keyboard.ActivateShiftModeOnKeys();
-			else
-				m_Keyboard.DeactivateShiftModeOnKeys();
-		}
+		if (m_CapsLock && !m_Shift || !m_CapsLock && m_Shift)
+			m_Keyboard.ActivateShiftModeOnKeys();
+		else if (m_CapsLock && m_Shift || !m_CapsLock && !m_Shift)
+			m_Keyboard.DeactivateShiftModeOnKeys();
 	}
 }

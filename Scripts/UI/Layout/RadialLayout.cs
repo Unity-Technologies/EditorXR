@@ -9,8 +9,6 @@ namespace UnityEngine.UI.Extensions
 	{
 		public float fDistance;
 
-//		public Vector3 up = Vector3.up;
-
 		[Range(0f, 360f)]
 		public float MinAngle;
 		[Range(0f, 360f)]
