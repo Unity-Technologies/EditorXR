@@ -45,10 +45,10 @@ MonoBehaviour:
   m_WindowClass: UnityEditor.ProfilerWindow
   m_Position:
     serializedVersion: 2
-    x: -800
-    y: 0
-    width: 800
-    height: 600
+    x: -600
+    y: -400
+    width: 600
+    height: 400
 --- !u!114 &114000012014650434
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -103,7 +103,7 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011330012626}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
