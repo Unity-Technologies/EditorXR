@@ -1,7 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
-using UnityEngine.VR.Utilities;
 using SnappingModes = UnityEngine.VR.Utilities.U.Snapping.SnappingModes;
 
 [ExecuteInEditMode]

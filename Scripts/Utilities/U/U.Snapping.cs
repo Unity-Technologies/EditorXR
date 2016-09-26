@@ -1,11 +1,7 @@
 namespace UnityEngine.VR.Utilities
 {
-	using System;
 	using UnityEngine;
 #if UNITY_EDITOR
-	using UnityEditor;
-	using System.Reflection;
-	using Modules;
 	using UnityEditor.VR;
 #endif
 
@@ -32,19 +28,21 @@ namespace UnityEngine.VR.Utilities
 				Throw = 8
 			}
 
-			public static void SnapToGroundPlane(Transform objectToSnap, Vector3 movement)
+			public static bool SnapToGroundPlane(Transform objectToSnap, Vector3 movement)
 			{
 				Vector3 objectPosition = objectToSnap.position;
 				bool movingAway = Mathf.Sign(objectPosition.y) == Mathf.Sign(movement.y);
 				float snapDistance = movingAway ? kSnapReleaseDistance : kSnapApproachDistance;
+				bool needSnap = Mathf.Abs(objectPosition.y) < snapDistance;
 
-				if (Mathf.Abs(objectPosition.y) < snapDistance)
+				if (needSnap)
 					objectPosition.y = 0;
 
 				objectToSnap.position = objectPosition;
+				return needSnap;
 			}
 
-			public static void SnapToSurface(Transform objectToSnap, Ray ray, float distance = float.PositiveInfinity, bool alignRotation = false)
+			public static bool SnapToSurface(Transform objectToSnap, Ray ray, float distance = float.PositiveInfinity, bool alignRotation = false)
 			{
 				RaycastHit hit;
 				bool hadTarget = GetRaySnapHit(ray, distance, out hit, objectToSnap);
@@ -56,12 +54,15 @@ namespace UnityEngine.VR.Utilities
 
 					objectToSnap.position = hit.point;
 				}
+
+				return hadTarget;
 			}
 
 			public static bool GetRaySnapHit(Ray ray, float distance, out RaycastHit hit, params Transform[] raycastIgnore)
 			{
 				RaycastHit[] hits = new RaycastHit[10];
-				int hitCount = Physics.RaycastNonAlloc(ray,
+				int hitCount = Physics.RaycastNonAlloc(
+					ray,
 					hits,
 					distance,
 					VRView.viewerCamera.cullingMask,

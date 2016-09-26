@@ -40,6 +40,7 @@ public class SnappingTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActio
 	
 	private Vector3 m_LastRayPosition;
 	private float m_InitialDistance;
+	private float m_LastDistance;
 	
 	private Coroutine m_ThrowCoroutine;
 
@@ -90,6 +91,7 @@ public class SnappingTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActio
 	{
 		m_LastRayPosition = active.transform.position;
 		m_InitialDistance = Vector3.Distance(rayOrigin.position, m_LastRayPosition);
+		m_LastDistance = m_InitialDistance;
 
 		if (m_ThrowCoroutine != null)
 		{
@@ -105,6 +107,8 @@ public class SnappingTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActio
 		while (m_MovementBufferTimestamps.Count > kFramesToKeep)
 			m_MovementBufferTimestamps.RemoveAt(0);
 
+		var activeTransform = active.transform;
+
 		Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
 		switch (snappingMode)
 		{
@@ -114,7 +118,7 @@ public class SnappingTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActio
 				Vector3 rayPoint = ray.GetPoint(m_InitialDistance);
 				Vector3 deltaMovement = rayPoint - m_LastRayPosition;
 
-				active.transform.position = rayPoint;
+				activeTransform.position = rayPoint;
 				m_MovementBufferDirections.Add(deltaMovement);
 				m_MovementBufferTimestamps.Add(Time.realtimeSinceStartup);
 
@@ -129,14 +133,17 @@ public class SnappingTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActio
 					}
 					smoothDelta /= bufferCount;
 
-					U.Snapping.SnapToGroundPlane(active.transform, smoothDelta);
+					U.Snapping.SnapToGroundPlane(activeTransform, smoothDelta);
 				}
 
 				m_LastRayPosition = rayPoint;
 				break;
 			case SnappingModes.SnapToSurface:
 			case SnappingModes.SnapToSurfaceNormal:
-				U.Snapping.SnapToSurface(active.transform, ray, alignRotation: snappingMode == SnappingModes.SnapToSurfaceNormal);
+				if (U.Snapping.SnapToSurface(activeTransform, ray, alignRotation: snappingMode == SnappingModes.SnapToSurfaceNormal))
+					m_LastDistance = Vector3.Distance(ray.origin, activeTransform.position);
+				else
+					activeTransform.position = ray.GetPoint(m_LastDistance);
 				break;
 		}
 	}
