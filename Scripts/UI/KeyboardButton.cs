@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
@@ -13,13 +10,23 @@ using UnityEngine.VR.Utilities;
 /// </summary>
 public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 {
+	public Text textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
+	[SerializeField]
+	private Text m_TextComponent;
+
 	[SerializeField]
 	private char m_Character;
 
-	public Text textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
+	[SerializeField]
+	private bool m_UseShiftCharacter;
 
 	[SerializeField]
-	private Text m_TextComponent;
+	private char m_ShiftCharacter;
+
+	[SerializeField]
+	private bool m_ShiftCharIsUppercase;
+
+	private bool m_ShiftMode;
 
 	[SerializeField]
 	private bool m_MatchButtonTextToCharacter;
@@ -41,7 +48,6 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	private Action<char> m_KeyPress;
 
-	public UnityEvent trigger { get; set; }
 	private UnityEvent m_Trigger = new UnityEvent();
 
 	public void Setup(Action<char> keyPress, bool pressOnHover)
@@ -55,17 +61,27 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 		m_Trigger.AddListener(NumericKeyPressed);
 	}
 
-	protected override void OnDisable()
+	public void SetShiftModeActive(bool active)
 	{
-		m_Trigger.RemoveListener(NumericKeyPressed);
+		if (!m_UseShiftCharacter || m_ShiftCharacter == 0) return;
 
-		base.OnDisable();
-	}
+		m_ShiftMode = active;
 
-	private void NumericKeyPressed()
-	{
-		if (m_KeyPress != null)
-			m_KeyPress(m_Character);
+		if (m_TextComponent != null && m_MatchButtonTextToCharacter)
+		{
+			if (m_ShiftMode)
+			{
+				if (m_ShiftCharIsUppercase)
+					m_TextComponent.text = m_TextComponent.text.ToUpper();
+				else
+					m_TextComponent.text = m_ShiftCharacter.ToString();
+			}
+			else
+				m_TextComponent.text = m_Character.ToString();
+
+			m_TextComponent.enabled = false;
+			m_TextComponent.enabled = true;
+		}
 	}
 
 	public void OnBeginDrag(RayEventData eventData)
@@ -89,4 +105,22 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 			}
 		}
 	}
+
+	protected override void OnDisable()
+	{
+		m_Trigger.RemoveListener(NumericKeyPressed);
+
+		base.OnDisable();
+	}
+
+	protected void NumericKeyPressed()
+	{
+		if (m_KeyPress == null) return;
+
+		if (m_ShiftMode && !m_ShiftCharIsUppercase)
+			m_KeyPress(m_ShiftCharacter);
+		else
+			m_KeyPress(m_Character);
+	}
+
 }

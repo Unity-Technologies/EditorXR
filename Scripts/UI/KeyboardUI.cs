@@ -13,72 +13,52 @@ public class KeyboardUI : MonoBehaviour
 	[SerializeField]
 	private DirectManipulator m_DirectManipulator;
 
-	public enum ButtonMode
+	private Action<char> keyPress;
+
+	public enum KeyboardButtonMode
 	{
 		TriggerOnHover,
 		TriggerOnPress,
 	}
-	private ButtonMode m_ButtonMode;
+	private KeyboardButtonMode m_KeyboardButtonMode;
 
 	public void Setup(Action<char> keyPress)
 	{
+		this.keyPress = keyPress;
+
 		//Set up DirectManipulaotr
 		directManipulator.target = transform;
 		directManipulator.translate = Translate;
 		directManipulator.rotate = Rotate;
 
-		var pressOnHover = m_ButtonMode == ButtonMode.TriggerOnHover;
-
-		foreach (var button in m_Buttons)
-		{
-			button.Setup(keyPress, pressOnHover);
-//			if (pressOnHover)
-//				button.trigger = button.onEnter;
-		}
+		UpdateKeyboardButtonMode();
 	}
 
-	public void SetKeyTextToUpperCase()
+	public void ActivateShiftModeOnKeys()
 	{
 		foreach (var button in m_Buttons)
-		{
-			if (button.textComponent != null)
-			{
-				if (button.textComponent.text.Length != 1) continue;
-				var c = button.textComponent.text[0];
-//				if (c >= 'a' && c <= 'z')
-				{
-					button.textComponent.text = button.textComponent.text.ToUpper();
-					button.textComponent.enabled = false;
-					button.textComponent.enabled = true;
-				}
-			}
-		}
+			button.SetShiftModeActive(true);
 	}
 
-	public void SetKeyTextToLowerCase()
+	public void DeactivateShiftModeOnKeys()
 	{
 		foreach (var button in m_Buttons)
-		{
-			if (button.textComponent != null)
-			{
-				if (button.textComponent.text.Length != 1) continue;
-				var c = button.textComponent.text[0];
-//				if (c >= 'A' && c <= 'Z')
-				{
-					button.textComponent.text = button.textComponent.text.ToLower();
-					button.textComponent.enabled = false;
-					button.textComponent.enabled = true;
-				}
-			}
-		}
+			button.SetShiftModeActive(false);
 	}
 
 	private void OnEnable()
 	{
 		if (IsVertical())
-			m_ButtonMode = ButtonMode.TriggerOnPress;
+			m_KeyboardButtonMode = KeyboardButtonMode.TriggerOnPress;
 		else
-			m_ButtonMode = ButtonMode.TriggerOnHover;
+			m_KeyboardButtonMode = KeyboardButtonMode.TriggerOnHover;
+	}
+
+	private void UpdateKeyboardButtonMode()
+	{
+		var pressOnHover = m_KeyboardButtonMode == KeyboardButtonMode.TriggerOnHover;
+		foreach (var button in m_Buttons)
+			button.Setup(keyPress, pressOnHover);
 	}
 
 	private bool IsVertical()
@@ -95,17 +75,15 @@ public class KeyboardUI : MonoBehaviour
 	{
 		transform.rotation *= deltaRotation;
 
-//		if (m_ButtonMode == ButtonMode.TriggerOnPress && !IsVertical())
-//		{
-//			m_ButtonMode = ButtonMode.TriggerOnHover;
-//			foreach (var button in m_Buttons)
-//				button.trigger = button.onEnter;
-//		}
-//		else if (m_ButtonMode == ButtonMode.TriggerOnHover && IsVertical())
-//		{
-//			m_ButtonMode = ButtonMode.TriggerOnPress;
-//			foreach (var button in m_Buttons)
-//				button.trigger = button.onClick;
-//		}
+		if (m_KeyboardButtonMode == KeyboardButtonMode.TriggerOnPress && !IsVertical())
+		{
+			m_KeyboardButtonMode = KeyboardButtonMode.TriggerOnHover;
+			UpdateKeyboardButtonMode();
+		}
+		else if (m_KeyboardButtonMode == KeyboardButtonMode.TriggerOnHover && IsVertical())
+		{
+			m_KeyboardButtonMode = KeyboardButtonMode.TriggerOnPress;
+			UpdateKeyboardButtonMode();
+		}
 	}
 }

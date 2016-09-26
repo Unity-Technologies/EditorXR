@@ -69,9 +69,8 @@ public class StandardInputField : RayInputField
 	{
 		if (m_LineType == LineType.SingleLine) return;
 
-		text += "<br>";
-//		text += "\n";
-//		text = text.Replace("<br>", "\n");
+		text += "\n";
+		text = text.Replace("<br>", "\n");
 
 		SendOnValueChangedAndUpdateLabel();
 	}
@@ -105,16 +104,16 @@ public class StandardInputField : RayInputField
 		if (m_Shift)
 		{
 			if (m_CapsLock)
-				m_Keyboard.SetKeyTextToLowerCase();
+				m_Keyboard.DeactivateShiftModeOnKeys();
 			else
-				m_Keyboard.SetKeyTextToUpperCase();
+				m_Keyboard.ActivateShiftModeOnKeys();
 		}
 		else
 		{
 			if (m_CapsLock)
-				m_Keyboard.SetKeyTextToUpperCase();
+				m_Keyboard.ActivateShiftModeOnKeys();
 			else
-				m_Keyboard.SetKeyTextToLowerCase();
+				m_Keyboard.DeactivateShiftModeOnKeys();
 		}
 	}
 }

@@ -10,6 +10,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		Float,
 		Int,
 	}
+
 	[SerializeField]
 	private NumberType m_NumberType = NumberType.Float;
 
@@ -50,19 +51,16 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
 			return;
 
-//		if (eventData.pointerCurrentRaycast.gameObject == gameObject)
-//		{
-			if (!m_UpdateDrag)
-			{
-				if (Mathf.Abs(GetLocalPointerPosition(eventData).x - m_StartDragPosition.x) > kDragDeadzone)
-					StartDrag(eventData);
-			}
-			else
-			{
-				DragNumberValue(eventData);
-				m_LastPointerPosition = GetLocalPointerPosition(eventData);
-			}
-//		}
+		if (!m_UpdateDrag)
+		{
+			if (Mathf.Abs(GetLocalPointerPosition(eventData).x - m_StartDragPosition.x) > kDragDeadzone)
+				StartDrag(eventData);
+		}
+		else
+		{
+			DragNumberValue(eventData);
+			m_LastPointerPosition = GetLocalPointerPosition(eventData);
+		}
 	}
 
 	private void StartDrag(RayEventData eventData)

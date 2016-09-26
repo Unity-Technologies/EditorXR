@@ -27,9 +27,6 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	[SerializeField]
 	private OnChangeEvent m_OnValueChanged = new OnChangeEvent();
 
-//	[SerializeField]
-//	private Transform m_KeyboardAnchorTransform;
-
 	[SerializeField]
 	protected Text m_TextComponent;
 
@@ -89,7 +86,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 			else
 			{
 				if (rayEventData != null)
-					Open(rayEventData.rayOrigin.position, rayEventData.rayOrigin.rotation);
+					Open(rayEventData.rayOrigin.position);
 			}
 		}
 	}
@@ -127,23 +124,17 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		//
 	}
 
-	protected virtual void Open(Vector3 atPosition, Quaternion atRotation)
+	protected virtual void Open(Vector3 atPosition)
 	{
 		if (m_Open) return;
-
 		m_Open = true;
 
 		m_Keyboard = spawnKeyboard();
-
 		if (m_Keyboard != null)
 		{
 			m_Keyboard.gameObject.SetActive(true);
-//			m_Keyboard.transform.SetParent(transform, true);
-//			m_Keyboard.transform.position = m_KeyboardAnchorTransform.position;
-//			m_Keyboard.transform.rotation = m_KeyboardAnchorTransform.rotation;
 			m_Keyboard.transform.position = atPosition;
-			m_Keyboard.transform.rotation = atRotation;
-
+			m_Keyboard.transform.rotation = Quaternion.identity;
 			m_Keyboard.Setup(OnKeyPress);
 		}
 	}
