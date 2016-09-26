@@ -23,6 +23,15 @@ namespace UnityEngine.VR.Utilities
 			private const float kSnapApproachDistance = .3f;
 			private const float kSnapReleaseDistance = .5f;
 
+			public enum SnappingModes
+			{
+				None = 0,
+				SnapToGround = 1,
+				SnapToSurface = 2,
+				SnapToSurfaceNormal = 4,
+				Throw = 8
+			}
+
 			public static void SnapToGroundPlane(Transform objectToSnap, Vector3 movement)
 			{
 				Vector3 objectPosition = objectToSnap.position;
@@ -35,10 +44,10 @@ namespace UnityEngine.VR.Utilities
 				objectToSnap.position = objectPosition;
 			}
 
-			public static void SnapToSurface(Transform objectToSnap, Ray ray, bool alignRotation = false)
+			public static void SnapToSurface(Transform objectToSnap, Ray ray, float distance = float.PositiveInfinity, bool alignRotation = false)
 			{
 				RaycastHit hit;
-				bool hadTarget = GetRaySnapHit(ray, out hit, objectToSnap);
+				bool hadTarget = GetRaySnapHit(ray, distance, out hit, objectToSnap);
 
 				if (hadTarget)
 				{
@@ -49,16 +58,16 @@ namespace UnityEngine.VR.Utilities
 				}
 			}
 
-			private static bool GetRaySnapHit(Ray ray, out RaycastHit hit, params Transform[] raycastIgnore)
+			public static bool GetRaySnapHit(Ray ray, float distance, out RaycastHit hit, params Transform[] raycastIgnore)
 			{
 				RaycastHit[] hits = new RaycastHit[10];
 				int hitCount = Physics.RaycastNonAlloc(ray,
 					hits,
-					float.PositiveInfinity,
+					distance,
 					VRView.viewerCamera.cullingMask,
 					QueryTriggerInteraction.Ignore);
 
-				float closestDistance = float.PositiveInfinity;
+				float closestDistance = distance;
 				int closestIndex = -1;
 
 				for (int i = 0; i < hitCount; i++)
