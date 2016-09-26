@@ -1,37 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using UnityEngine.VR.Utilities;
+using SnappingModes = UnityEngine.VR.Utilities.U.Snapping.SnappingModes;
 
 [ExecuteInEditMode]
 public class SnappingToolUI : MonoBehaviour
 {
 
-	[SerializeField]
-	private Toggle GroundSnapToggle;
+	public SnappingTool snappingTool { set { m_SnappingTool = value; } }
+	private SnappingTool m_SnappingTool;
 
-	[SerializeField]
-	private Toggle SurfaceSnapToggle;
-
-	[SerializeField]
-	private Toggle SurfaceSnapAlignToggle;
-
-	[SerializeField]
-	private Toggle ThrowAlignToggle;
-
-	public void OnToggleGroundSnap(bool isOn)
+	public void OnTogglePressed(int ToggleId)
 	{
-	}
-
-	public void OnToggleSurfaceSnap(bool isOn)
-	{
-	}
-
-	public void OnToggleSurfAlignSnap(bool isOn)
-	{
-	}
-
-	public void OnToggleThrowSnap(bool isOn)
-	{
+		if (m_SnappingTool)
+		{
+			SnappingModes mode = (SnappingModes)ToggleId;
+			m_SnappingTool.snappingMode = mode;
+		}
 	}
 
 }
