@@ -479,8 +479,8 @@ public class EditorVR : MonoBehaviour
 		if (m_StandardKeyboard == null)
 		{
 			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, transform).GetComponent<KeyboardUI>();
-			if (m_NumericKeyboard != null)
-				m_NumericKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
+			if (m_StandardKeyboard != null)
+				m_StandardKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
 		}
 		return m_StandardKeyboard;
 	}

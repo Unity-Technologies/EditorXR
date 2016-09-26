@@ -19,22 +19,7 @@ public class StandardInputField : RayInputField
 	private LineType m_LineType = LineType.SingleLine;
 
 	private bool m_CapsLock;
-
-	private bool m_Shift
-	{
-		get { return m_Shift; }
-		set
-		{
-			if (value == m_Shift)
-				return;
-
-			m_Shift = value;
-			if (m_Shift)
-				m_Keyboard.SetKeyTextToUpperCase();
-			else 
-				m_Keyboard.SetKeyTextToLowerCase();
-		}
-	}
+	private bool m_Shift;
 
 	protected override void Append(char c)
 	{
@@ -42,11 +27,19 @@ public class StandardInputField : RayInputField
 
 		if (m_Shift)
 		{
-			m_Shift = false;
-			c = char.ToUpper(c);
+			Shift();
+			if (m_CapsLock)
+				c = char.ToLower(c);
+			else
+				c = char.ToUpper(c);
 		}
 		else
-			c = char.ToLower(c);
+		{
+			if (m_CapsLock)
+				c = char.ToUpper(c);
+			else
+				c = char.ToLower(c);
+		}
 
 		text += c;
 
@@ -68,14 +61,17 @@ public class StandardInputField : RayInputField
 		if (m_LineType == LineType.SingleLine) return;
 
 		text += "\t";
+
+		SendOnValueChangedAndUpdateLabel();
 	}
 
 	protected override void Return()
 	{
 		if (m_LineType == LineType.SingleLine) return;
 
-		text += "\n";
-		text = text.Replace("<br>", "\n");
+		text += "<br>";
+//		text += "\n";
+//		text = text.Replace("<br>", "\n");
 
 		SendOnValueChangedAndUpdateLabel();
 	}
@@ -90,8 +86,35 @@ public class StandardInputField : RayInputField
 			SendOnValueChangedAndUpdateLabel();
 	}
 
-	private void Shift()
+	protected override void Shift()
 	{
-		m_Shift = true;
+		m_Shift = !m_Shift;
+
+		UpdateKeyText();
+	}
+
+	protected override void CapsLock()
+	{
+		m_CapsLock = !m_CapsLock;
+
+		UpdateKeyText();
+	}
+
+	private void UpdateKeyText()
+	{
+		if (m_Shift)
+		{
+			if (m_CapsLock)
+				m_Keyboard.SetKeyTextToLowerCase();
+			else
+				m_Keyboard.SetKeyTextToUpperCase();
+		}
+		else
+		{
+			if (m_CapsLock)
+				m_Keyboard.SetKeyTextToUpperCase();
+			else
+				m_Keyboard.SetKeyTextToLowerCase();
+		}
 	}
 }

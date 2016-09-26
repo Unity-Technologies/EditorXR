@@ -178,10 +178,17 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 				Return();
 				return;
 			case (int)KeyCode.Escape:
-				Cancel();
+				Escape();
 				return;
 			case (int)KeyCode.Space:
 				Space();
+				return;
+			case (int)KeyCode.LeftShift:
+			case (int)KeyCode.RightShift:
+				Shift();
+				return;
+			case (int)KeyCode.CapsLock:
+				CapsLock();
 				return;
 		}
 
@@ -194,7 +201,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		return m_TextComponent.font.HasCharacter(c);
 	}
 
-	protected virtual void Cancel()
+	protected virtual void Escape()
 	{
 		Close();
 	}
@@ -210,4 +217,6 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	protected abstract void Tab();
 	protected abstract void Return();
 	protected abstract void Space();
+	protected abstract void Shift();
+	protected abstract void CapsLock();
 }

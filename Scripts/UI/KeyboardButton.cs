@@ -64,8 +64,8 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	private void NumericKeyPressed()
 	{
-		Debug.Log("keypressed");
-		m_KeyPress(m_Character);
+		if (m_KeyPress != null)
+			m_KeyPress(m_Character);
 	}
 
 	public void OnBeginDrag(RayEventData eventData)

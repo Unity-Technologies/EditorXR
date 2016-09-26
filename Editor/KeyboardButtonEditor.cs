@@ -1,9 +1,6 @@
 using System;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
 
 [CanEditMultipleObjects]
 [CustomEditor(typeof(KeyboardButton))]

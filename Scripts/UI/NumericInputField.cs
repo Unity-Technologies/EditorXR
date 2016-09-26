@@ -203,6 +203,14 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		Return();
 	}
 
+	protected override void Shift()
+	{
+	}
+
+	protected override void CapsLock()
+	{
+	}
+
 	private bool IsExpression()
 	{
 		return m_OperandCount > 0;

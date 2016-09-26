@@ -937,7 +937,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 48
   m_TextComponent: {fileID: 114000012667250764}
   m_MatchButtonTextToCharacter: 1
@@ -1028,7 +1028,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 53
   m_TextComponent: {fileID: 114000012422491724}
   m_MatchButtonTextToCharacter: 1
@@ -1214,7 +1214,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 51
   m_TextComponent: {fileID: 114000013730770792}
   m_MatchButtonTextToCharacter: 1
@@ -1264,7 +1264,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 57
   m_TextComponent: {fileID: 114000013873843358}
   m_MatchButtonTextToCharacter: 1
@@ -1467,7 +1467,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 54
   m_TextComponent: {fileID: 114000011320096046}
   m_MatchButtonTextToCharacter: 1
@@ -1777,7 +1777,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 55
   m_TextComponent: {fileID: 114000012769307956}
   m_MatchButtonTextToCharacter: 1
@@ -1827,7 +1827,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 56
   m_TextComponent: {fileID: 114000012542392132}
   m_MatchButtonTextToCharacter: 1
@@ -1877,7 +1877,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 46
   m_TextComponent: {fileID: 114000010038757514}
   m_MatchButtonTextToCharacter: 1
@@ -2005,7 +2005,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 52
   m_TextComponent: {fileID: 114000012845462162}
   m_MatchButtonTextToCharacter: 1
@@ -2104,6 +2104,11 @@ MonoBehaviour:
   - {fileID: 114000011548224866}
   - {fileID: 114000013869915610}
   - {fileID: 114000013918460810}
+  - {fileID: 114000010512392902}
+  - {fileID: 114000011647020668}
+  - {fileID: 114000013184675952}
+  - {fileID: 114000013071093258}
+  - {fileID: 114000012216104234}
   m_DirectManipulator: {fileID: 114000010773288940}
 --- !u!114 &114000013869915610
 MonoBehaviour:
@@ -2147,7 +2152,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 50
   m_TextComponent: {fileID: 114000012703566436}
   m_MatchButtonTextToCharacter: 1
@@ -2231,7 +2236,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 49
   m_TextComponent: {fileID: 114000010911778778}
   m_MatchButtonTextToCharacter: 1
@@ -2315,7 +2320,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
   m_Character: 8
   m_TextComponent: {fileID: 114000013927787966}
   m_MatchButtonTextToCharacter: 0

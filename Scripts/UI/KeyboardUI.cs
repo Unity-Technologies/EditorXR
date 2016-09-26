@@ -45,7 +45,7 @@ public class KeyboardUI : MonoBehaviour
 			{
 				if (button.textComponent.text.Length != 1) continue;
 				var c = button.textComponent.text[0];
-				if (c >= 'a' && c <= 'z')
+//				if (c >= 'a' && c <= 'z')
 				{
 					button.textComponent.text = button.textComponent.text.ToUpper();
 					button.textComponent.enabled = false;
@@ -63,7 +63,7 @@ public class KeyboardUI : MonoBehaviour
 			{
 				if (button.textComponent.text.Length != 1) continue;
 				var c = button.textComponent.text[0];
-				if (c >= 'A' && c <= 'Z')
+//				if (c >= 'A' && c <= 'Z')
 				{
 					button.textComponent.text = button.textComponent.text.ToLower();
 					button.textComponent.enabled = false;
