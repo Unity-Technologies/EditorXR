@@ -16,8 +16,8 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 	private bool m_UpdateDrag;
 	private Vector3 m_StartDragPosition;
 	private Vector3 m_LastPointerPosition;
-	private const float kDragSensitivity = 0.01f;
-	private const float kDragDeadzone = 0.02f;
+	private const float kDragSensitivity = 0.02f;
+	private const float kDragDeadzone = 0.01f;
 
 	private int m_OperandCount;
 
@@ -50,8 +50,8 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
 			return;
 
-		if (eventData.pointerCurrentRaycast.gameObject == gameObject)
-		{
+//		if (eventData.pointerCurrentRaycast.gameObject == gameObject)
+//		{
 			if (!m_UpdateDrag)
 			{
 				if (Mathf.Abs(GetLocalPointerPosition(eventData).x - m_StartDragPosition.x) > kDragDeadzone)
@@ -62,7 +62,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 				DragNumberValue(eventData);
 				m_LastPointerPosition = GetLocalPointerPosition(eventData);
 			}
-		}
+//		}
 	}
 
 	private void StartDrag(RayEventData eventData)
@@ -146,15 +146,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		return true;
 	}
 
-	private bool IsExpression()
-	{
-		return m_OperandCount > 0;
-	}
 
-	private bool IsOperand(char c)
-	{
-		return kOperandCharacters.Contains(c.ToString()) && !(m_Text.Length == 0 && c == '-');
-	}
 
 	protected override void Append(char c)
 	{
@@ -179,7 +171,6 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		if (m_Text.Length == 0) return;
 
 		var ch = m_Text[m_Text.Length - 1];
-
 		if (IsOperand(ch))
 			m_OperandCount--;
 
@@ -210,6 +201,16 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 	protected override void Space()
 	{
 		Return();
+	}
+
+	private bool IsExpression()
+	{
+		return m_OperandCount > 0;
+	}
+
+	private bool IsOperand(char c)
+	{
+		return kOperandCharacters.Contains(c.ToString()) && !(m_Text.Length == 0 && c == '-');
 	}
 
 	private float CalculateFloatDragSensitivity(float value)

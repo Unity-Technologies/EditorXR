@@ -27,10 +27,8 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	[SerializeField]
 	private OnChangeEvent m_OnValueChanged = new OnChangeEvent();
 
-	protected UnityEvent m_OnCloseKeyboard = new UnityEvent();
-
-	[SerializeField]
-	private Transform m_KeyboardAnchorTransform;
+//	[SerializeField]
+//	private Transform m_KeyboardAnchorTransform;
 
 	[SerializeField]
 	protected Text m_TextComponent;
@@ -78,7 +76,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 
 	public virtual void ClearLabel()
 	{
-		
+		Clear();
 	}
 
 	public void OnPointerClick(PointerEventData eventData)
@@ -89,11 +87,19 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 			if (m_Open)
 				Close();
 			else
-				Open();
+			{
+				if (rayEventData != null)
+					Open(rayEventData.rayOrigin.position, rayEventData.rayOrigin.rotation);
+			}
 		}
 	}
 
 	public void OnSubmit(BaseEventData eventData)
+	{
+		//
+	}
+
+	public override void OnSelect(BaseEventData eventData)
 	{
 		//
 	}
@@ -118,10 +124,10 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 
 	public override void OnDeselect(BaseEventData eventData)
 	{
-
+		//
 	}
 
-	private void Open()
+	protected virtual void Open(Vector3 atPosition, Quaternion atRotation)
 	{
 		if (m_Open) return;
 
@@ -133,8 +139,10 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		{
 			m_Keyboard.gameObject.SetActive(true);
 //			m_Keyboard.transform.SetParent(transform, true);
-			m_Keyboard.transform.position = m_KeyboardAnchorTransform.position;
-			m_Keyboard.transform.rotation = m_KeyboardAnchorTransform.rotation;
+//			m_Keyboard.transform.position = m_KeyboardAnchorTransform.position;
+//			m_Keyboard.transform.rotation = m_KeyboardAnchorTransform.rotation;
+			m_Keyboard.transform.position = atPosition;
+			m_Keyboard.transform.rotation = atRotation;
 
 			m_Keyboard.Setup(OnKeyPress);
 		}

@@ -127,7 +127,10 @@ public class KeyboardButtonEditor : RayButtonEditor
 		// Set text component to character
 		if (keyboardButton.textComponent != null)
 		{
+			EditorGUI.BeginChangeCheck();
 			EditorGUILayout.PropertyField(m_MatchButtonTextToCharacterProperty);
+			if (EditorGUI.EndChangeCheck())
+				UpdateCharacterValue();
 
 			if (m_MatchButtonTextToCharacterProperty.boolValue)
 			{
@@ -155,5 +158,7 @@ public class KeyboardButtonEditor : RayButtonEditor
 		{
 			keyboardButton.textComponent.text = ((char)m_CharacterProperty.intValue).ToString();
 		}
+
+		keyboardButton.gameObject.name = m_KeyCode.ToString();
 	}
 }

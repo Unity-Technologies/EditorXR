@@ -41,6 +41,7 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	private Action<char> m_KeyPress;
 
+	public UnityEvent trigger { get; set; }
 	private UnityEvent m_Trigger = new UnityEvent();
 
 	public void Setup(Action<char> keyPress, bool pressOnHover)
@@ -63,6 +64,7 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	private void NumericKeyPressed()
 	{
+		Debug.Log("keypressed");
 		m_KeyPress(m_Character);
 	}
 

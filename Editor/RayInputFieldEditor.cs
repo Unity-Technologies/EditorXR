@@ -6,7 +6,7 @@ using UnityEditor.UI;
 public class RayInputFieldEditor : SelectableEditor
 {
 	SerializedProperty m_SelectionFlagsProperty;
-	SerializedProperty m_KeyboardAnchorTransformProperty;
+//	SerializedProperty m_KeyboardAnchorTransformProperty;
 	SerializedProperty m_TextComponentProperty;
 	SerializedProperty m_CharacterLimitProperty;
 	SerializedProperty m_OnValueChangedProperty;
@@ -15,7 +15,7 @@ public class RayInputFieldEditor : SelectableEditor
 	{
 		base.OnEnable();
 		m_SelectionFlagsProperty = serializedObject.FindProperty("m_SelectionFlags");
-		m_KeyboardAnchorTransformProperty = serializedObject.FindProperty("m_KeyboardAnchorTransform");
+//		m_KeyboardAnchorTransformProperty = serializedObject.FindProperty("m_KeyboardAnchorTransform");
 		m_TextComponentProperty = serializedObject.FindProperty("m_TextComponent");
 		m_CharacterLimitProperty = serializedObject.FindProperty("m_CharacterLimit");
 		m_OnValueChangedProperty = serializedObject.FindProperty("m_OnValueChanged");
@@ -26,7 +26,7 @@ public class RayInputFieldEditor : SelectableEditor
 	{
 		serializedObject.Update();
 		EditorGUILayout.PropertyField(m_SelectionFlagsProperty);
-		EditorGUILayout.PropertyField(m_KeyboardAnchorTransformProperty);
+//		EditorGUILayout.PropertyField(m_KeyboardAnchorTransformProperty);
 		EditorGUILayout.PropertyField(m_TextComponentProperty);
 		EditorGUILayout.PropertyField(m_CharacterLimitProperty);
 		EditorGUILayout.PropertyField(m_OnValueChangedProperty);

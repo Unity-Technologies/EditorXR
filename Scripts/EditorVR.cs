@@ -44,7 +44,7 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
 
-	private Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
+	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
 	[SerializeField]
 	private KeyboardUI m_NumericKeyboardPrefab;
@@ -465,7 +465,11 @@ public class EditorVR : MonoBehaviour
 	{
 		// Check if the prefab has already been instantiated
 		if (m_NumericKeyboard == null)
-			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, transform ).GetComponent<KeyboardUI>();
+		{
+			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, transform).GetComponent<KeyboardUI>();
+			if (m_NumericKeyboard != null)
+				m_NumericKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
+		}
 		return m_NumericKeyboard;
 	}
 
@@ -473,7 +477,11 @@ public class EditorVR : MonoBehaviour
 	{
 		// Check if the prefab has already been instantiated
 		if (m_StandardKeyboard == null)
+		{
 			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, transform).GetComponent<KeyboardUI>();
+			if (m_NumericKeyboard != null)
+				m_NumericKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
+		}
 		return m_StandardKeyboard;
 	}
 

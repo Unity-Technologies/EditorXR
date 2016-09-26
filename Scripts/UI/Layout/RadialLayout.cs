@@ -9,7 +9,7 @@ namespace UnityEngine.UI.Extensions
 	{
 		public float fDistance;
 
-		public Vector3 up = Vector3.up;
+//		public Vector3 up = Vector3.up;
 
 		[Range(0f, 360f)]
 		public float MinAngle;
@@ -70,12 +70,7 @@ namespace UnityEngine.UI.Extensions
 					DrivenTransformProperties.AnchoredPosition |
 					DrivenTransformProperties.Pivot);
 
-					Vector3 vPos; 
-					
-					if (up == Vector3.up)
-						vPos = new Vector3(Mathf.Cos(fAngle * Mathf.Deg2Rad), 0f, Mathf.Sin(fAngle * Mathf.Deg2Rad));
-					else
-						vPos = new Vector3(Mathf.Cos(fAngle * Mathf.Deg2Rad), Mathf.Sin(fAngle * Mathf.Deg2Rad), 0);
+					var vPos = new Vector3(Mathf.Cos(fAngle * Mathf.Deg2Rad), Mathf.Sin(fAngle * Mathf.Deg2Rad), 0);
 					child.localPosition = vPos * fDistance;
 					//Force objects to be center aligned, this can be changed however I'd suggest you keep all of the objects with the same anchor points.
 					child.anchorMin = child.anchorMax = child.pivot = new Vector2(0.5f, 0.5f);
