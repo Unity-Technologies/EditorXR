@@ -44,7 +44,12 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
 
+	[SerializeField]
+	private KeyboardMallet m_KeyboardMalletPrefab;
+
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
+
+	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
 
 	[SerializeField]
 	private KeyboardUI m_NumericKeyboardPrefab;
@@ -55,13 +60,6 @@ public class EditorVR : MonoBehaviour
 	private KeyboardUI m_StandardKeyboardPrefab;
 
 	private KeyboardUI m_StandardKeyboard;
-
-	[SerializeField]
-	private KeyboardMallet m_KeyboardMalletPrefab;
-
-	private KeyboardMallet m_KeyboardMallet;
-
-	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
 
 	private TrackedObject m_TrackedObjectInput;
 	private Default m_DefaultActionInput;

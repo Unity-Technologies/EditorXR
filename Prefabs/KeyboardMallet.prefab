@@ -220,7 +220,7 @@ MonoBehaviour:
   m_StemLength: 0.09
   m_StemWidth: 0.003125
   m_Bulb: {fileID: 4000013082501652}
-  m_BulbRadius: 0.04
+  m_BulbRadius: 0.02
   m_BulbCollider: {fileID: 135000012803460838}
 --- !u!135 &135000012803460838
 SphereCollider:

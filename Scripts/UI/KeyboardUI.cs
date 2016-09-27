@@ -13,24 +13,14 @@ public class KeyboardUI : MonoBehaviour
 	[SerializeField]
 	private DirectManipulator m_DirectManipulator;
 
-	private Action<char> keyPress;
-
-	public enum KeyboardButtonMode
-	{
-		TriggerOnHover,
-		TriggerOnPress,
-	}
-	private KeyboardButtonMode m_KeyboardButtonMode;
-
 	public void Setup(Action<char> keyPress)
 	{
-		this.keyPress = keyPress;
-
 		directManipulator.target = transform;
 		directManipulator.translate = Translate;
 		directManipulator.rotate = Rotate;
 
-		UpdateKeyboardButtonMode();
+		foreach (var button in m_Buttons) 
+			button.Setup(keyPress, IsHorizontal);
 	}
 
 	public void ActivateShiftModeOnKeys()
@@ -45,24 +35,9 @@ public class KeyboardUI : MonoBehaviour
 			button.SetShiftModeActive(false);
 	}
 
-	private void OnEnable()
+	private bool IsHorizontal()
 	{
-		if (IsVertical())
-			m_KeyboardButtonMode = KeyboardButtonMode.TriggerOnPress;
-		else
-			m_KeyboardButtonMode = KeyboardButtonMode.TriggerOnHover;
-	}
-
-	private void UpdateKeyboardButtonMode()
-	{
-		var pressOnHover = m_KeyboardButtonMode == KeyboardButtonMode.TriggerOnHover;
-		foreach (var button in m_Buttons)
-			button.Setup(keyPress, pressOnHover);
-	}
-
-	private bool IsVertical()
-	{
-		return Vector3.Dot(transform.up, Vector3.up) > 0.5f;
+		return Vector3.Dot(transform.up, Vector3.up) <= 0.5f;
 	}
 
 	private void Translate(Vector3 deltaPosition)
@@ -73,16 +48,5 @@ public class KeyboardUI : MonoBehaviour
 	private void Rotate(Quaternion deltaRotation)
 	{
 		transform.rotation *= deltaRotation;
-
-		if (m_KeyboardButtonMode == KeyboardButtonMode.TriggerOnPress && !IsVertical())
-		{
-			m_KeyboardButtonMode = KeyboardButtonMode.TriggerOnHover;
-			UpdateKeyboardButtonMode();
-		}
-		else if (m_KeyboardButtonMode == KeyboardButtonMode.TriggerOnHover && IsVertical())
-		{
-			m_KeyboardButtonMode = KeyboardButtonMode.TriggerOnPress;
-			UpdateKeyboardButtonMode();
-		}
 	}
 }

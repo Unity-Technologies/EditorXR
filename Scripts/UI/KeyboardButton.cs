@@ -45,25 +45,17 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	private float m_HoldStartTime;
 	private float m_RepeatWaitTime;
+	private bool m_Holding;
 
 	private Action<char> m_KeyPress;
 
-	private UnityEvent m_Trigger = new UnityEvent();
+	private Func<bool> m_PressOnHover;
 
-	private bool m_PressOnHover;
-
-	public void Setup(Action<char> keyPress, bool pressOnHover)
+	public void Setup(Action<char> keyPress, Func<bool> pressOnHover)
 	{
 		m_PressOnHover = pressOnHover;
 
-		m_Trigger.RemoveAllListeners();
 		m_KeyPress = keyPress;
-
-		if (pressOnHover)
-		{
-			m_Trigger = onDown;
-			m_Trigger.AddListener(NumericKeyPressed);
-		}
 	}
 
 	public void SetShiftModeActive(bool active)
@@ -89,23 +81,24 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 		}
 	}
 
+	public void OnPointerClick(RayEventData eventData)
+	{
+		if (U.UI.IsValidEvent(eventData, selectionFlags) && !m_PressOnHover())
+		{
+			NumericKeyPressed();
+		}
+	}
+
 	public void OnBeginDrag(RayEventData eventData)
 	{
-		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold && !m_PressOnHover)
+		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold && !m_PressOnHover())
 			StartHold();
 	}
 
 	public void OnDrag(RayEventData eventData)
 	{
-		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold && !m_PressOnHover)
+		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold)
 			Hold();
-	}
-
-	protected override void OnDisable()
-	{
-		m_Trigger.RemoveListener(NumericKeyPressed);
-
-		base.OnDisable();
 	}
 
 	public void NumericKeyPressed()
@@ -120,7 +113,8 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	public void OnTriggerEnter(Collider col)
 	{
-		if (!m_PressOnHover) return;
+		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
+			return;
 
 		NumericKeyPressed();
 
@@ -130,30 +124,38 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	public void OnTriggerStay(Collider col)
 	{
-		if (!m_PressOnHover) return;
+		if (col.GetComponentInParent<KeyboardMallet>() == null) return;
 
-		if (m_RepeatOnHold)
+		if (m_Holding && m_RepeatOnHold)
 			Hold();
 	}
 
 	public void OnTriggerExit(Collider col)
 	{
-		//
+		if (col.GetComponentInParent<KeyboardMallet>() == null) return;
+
+		EndHold();
 	}
 
 	private void StartHold()
 	{
+		m_Holding = true;
 		m_HoldStartTime = Time.realtimeSinceStartup;
 		m_RepeatWaitTime = m_RepeatTime;
 	}
 
 	private void Hold()
 	{
-		if (m_HoldStartTime + m_RepeatWaitTime < Time.realtimeSinceStartup)
+		if (m_Holding && m_HoldStartTime + m_RepeatWaitTime < Time.realtimeSinceStartup)
 		{
 			NumericKeyPressed();
 			m_HoldStartTime = Time.realtimeSinceStartup;
 			m_RepeatWaitTime *= 0.75f;
 		}
+	}
+
+	private void EndHold()
+	{
+		m_Holding = false;
 	}
 }

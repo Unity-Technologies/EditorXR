@@ -30,8 +30,8 @@ public class KeyboardMallet : MonoBehaviour
 	}
 
 	private State m_State;
+
 	private Vector3 m_BulbStartScale;
-	private Coroutine m_Transitioning;
 
 	// TODO replace this logic with physics once that's working
 	private KeyboardButton m_CurrentButton;
@@ -61,7 +61,7 @@ public class KeyboardMallet : MonoBehaviour
 		m_StemOrigin.localScale = new Vector3(m_StemWidth, m_StemLength, m_StemWidth);
 
 		m_Bulb.transform.localPosition = new Vector3(0f, 0f, m_StemLength * 2f);
-		m_Bulb.transform.localScale = Vector3.one * m_BulbRadius;
+		m_Bulb.transform.localScale = Vector3.one * m_BulbRadius * 2f;
 		m_BulbStartScale = m_Bulb.transform.localScale;
 	}
 
@@ -96,18 +96,20 @@ public class KeyboardMallet : MonoBehaviour
 
 	private void Update()
 	{
+		if (m_State != State.Visible) return;
+
 		if (m_CurrentButton != null)
 			m_CurrentButton.OnTriggerStay(m_BulbCollider);
 
-		Collider[] hitColliders = Physics.OverlapSphere(m_Bulb.position, m_BulbStartScale.x * 0.5f);
 		var shortestDistance = Mathf.Infinity;
 		KeyboardButton hitKey = null;
+		Collider[] hitColliders = Physics.OverlapSphere(m_Bulb.position, m_BulbRadius);
 		foreach (var col in hitColliders)
 		{
 			var key = col.GetComponentInParent<KeyboardButton>();
 			if (key != null)
 			{
-				var newDist = Vector3.Distance(transform.position, key.transform.position);
+				var newDist = Vector3.Distance(m_Bulb.position, key.transform.position);
 				if (newDist < shortestDistance)
 					hitKey = key;
 			}
@@ -155,5 +157,12 @@ public class KeyboardMallet : MonoBehaviour
 
 		// only set the value if another transition hasn't begun
 		m_State = State.Visible;
+	}
+
+	private void OnDrawGizmos()
+	{
+		Gizmos.color = Color.blue;
+		//        var pos = selector.directSelectTransform ? selector.directSelectTransform.position : transform.position;
+		Gizmos.DrawWireSphere(m_Bulb.position, m_BulbRadius);
 	}
 }
