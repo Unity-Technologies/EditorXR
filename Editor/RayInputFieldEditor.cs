@@ -17,7 +17,6 @@ public class RayInputFieldEditor : SelectableEditor
 		m_TextComponentProperty = serializedObject.FindProperty("m_TextComponent");
 		m_CharacterLimitProperty = serializedObject.FindProperty("m_CharacterLimit");
 		m_OnValueChangedProperty = serializedObject.FindProperty("m_OnValueChanged");
-
 	}
 
 	public override void OnInspectorGUI()

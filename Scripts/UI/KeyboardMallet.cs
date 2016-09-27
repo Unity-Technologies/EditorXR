@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using Valve.VR;
 
 public class KeyboardMallet : MonoBehaviour
 {
@@ -64,7 +63,6 @@ public class KeyboardMallet : MonoBehaviour
 		m_Bulb.transform.localScale = Vector3.one * m_BulbRadius * 2f;
 		m_BulbStartScale = m_Bulb.transform.localScale;
 	}
-
 
 	public void Hide()
 	{

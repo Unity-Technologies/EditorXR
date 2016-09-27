@@ -1,5 +1,4 @@
 using UnityEditor;
-using UnityEditor.UI;
 
 [CustomEditor(typeof(NumericInputField))]
 [CanEditMultipleObjects]

@@ -1,14 +1,10 @@
 using System;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-/// <summary>
-/// Set either the button's text field or the ASCII value
-/// </summary>
 public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 {
 	public Text textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
@@ -95,13 +91,13 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 	public void OnBeginDrag(RayEventData eventData)
 	{
 		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold && !m_PressOnHover())
-			StartHold();
+			StartKeyHold();
 	}
 
 	public void OnDrag(RayEventData eventData)
 	{
 		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold)
-			Hold();
+			HoldKey();
 	}
 
 	public void NumericKeyPressed()
@@ -122,7 +118,7 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 		NumericKeyPressed();
 
 		if (m_RepeatOnHold)
-			StartHold();
+			StartKeyHold();
 	}
 
 	public void OnTriggerStay(Collider col)
@@ -130,24 +126,24 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 		if (col.GetComponentInParent<KeyboardMallet>() == null) return;
 
 		if (m_Holding && m_RepeatOnHold)
-			Hold();
+			HoldKey();
 	}
 
 	public void OnTriggerExit(Collider col)
 	{
 		if (col.GetComponentInParent<KeyboardMallet>() == null) return;
 
-		EndHold();
+		EndKeyHold();
 	}
 
-	private void StartHold()
+	private void StartKeyHold()
 	{
 		m_Holding = true;
 		m_HoldStartTime = Time.realtimeSinceStartup;
 		m_RepeatWaitTime = m_RepeatTime;
 	}
 
-	private void Hold()
+	private void HoldKey()
 	{
 		if (m_Holding && m_HoldStartTime + m_RepeatWaitTime < Time.realtimeSinceStartup)
 		{
@@ -157,7 +153,7 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 		}
 	}
 
-	private void EndHold()
+	private void EndKeyHold()
 	{
 		m_Holding = false;
 	}

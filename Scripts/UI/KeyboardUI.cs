@@ -5,19 +5,17 @@ using System.Collections.Generic;
 [RequireComponent(typeof(Canvas))]
 public class KeyboardUI : MonoBehaviour
 {
-	public List<KeyboardButton> buttons { get { return m_Buttons; } set { m_Buttons = value; } }
 	[SerializeField]
 	private List<KeyboardButton> m_Buttons = new List<KeyboardButton>();
 
-	public DirectManipulator directManipulator { get { return m_DirectManipulator; } }
 	[SerializeField]
 	private DirectManipulator m_DirectManipulator;
 
 	public void Setup(Action<char> keyPress)
 	{
-		directManipulator.target = transform;
-		directManipulator.translate = Translate;
-		directManipulator.rotate = Rotate;
+		m_DirectManipulator.target = transform;
+		m_DirectManipulator.translate = Translate;
+		m_DirectManipulator.rotate = Rotate;
 
 		foreach (var button in m_Buttons) 
 			button.Setup(keyPress, IsHorizontal);

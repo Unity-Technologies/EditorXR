@@ -8,7 +8,7 @@ namespace UnityEngine.UI.Extensions
 	public class RadialLayout : LayoutGroup
 	{
 		[SerializeField]
-		private float m_FDistance;
+		private float m_Radius;
 
 		[SerializeField]
 		[Range(0f, 360f)]
@@ -72,7 +72,7 @@ namespace UnityEngine.UI.Extensions
 					m_Tracker.Add(this, child, DrivenTransformProperties.Anchors | DrivenTransformProperties.AnchoredPosition | DrivenTransformProperties.Pivot);
 
 					var pos = new Vector3(Mathf.Cos(fAngle * Mathf.Deg2Rad), Mathf.Sin(fAngle * Mathf.Deg2Rad), 0);
-					child.localPosition = pos * m_FDistance;
+					child.localPosition = pos * m_Radius;
 					//Force objects to be center aligned, this can be changed however I'd suggest you keep all of the objects with the same anchor points.
 					child.anchorMin = child.anchorMax = child.pivot = new Vector2(0.5f, 0.5f);
 					fAngle += fOffsetAngle;

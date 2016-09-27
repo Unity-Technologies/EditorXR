@@ -19,8 +19,10 @@ public class KeyboardButtonEditor : RayButtonEditor
 
 	private KeyCode m_KeyCode;
 	private KeyCode m_ShiftKeyCode;
+
 	private string m_KeyCodeStr;
 	private string m_ShiftKeyCodeStr;
+
 	private KeyboardButton m_KeyboardButton;
 
 	protected override void OnEnable()
@@ -177,8 +179,8 @@ public class KeyboardButtonEditor : RayButtonEditor
 
 				if (valid)
 					return (int)keyCode;
-				else
-					EditorGUILayout.HelpBox("Invalid entry", MessageType.Error);
+
+				EditorGUILayout.HelpBox("Invalid entry", MessageType.Error);
 			}
 		}
 		else
@@ -199,9 +201,7 @@ public class KeyboardButtonEditor : RayButtonEditor
 	private void UpdateButtonTextAndObjectName(KeyCode keyCode)
 	{
 		if (m_MatchButtonTextToCharacterProperty.boolValue)
-		{
 			m_KeyboardButton.textComponent.text = ((char)(int)keyCode).ToString();
-		}
 
 		m_KeyboardButton.gameObject.name = keyCode.ToString();
 	}
