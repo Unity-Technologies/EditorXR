@@ -241,7 +241,15 @@ public class EditorVR : MonoBehaviour
 	private void Update()
 	{
 		foreach (var proxy in m_AllProxies)
+		{
 			proxy.hidden = !proxy.active;
+			// TODO remove this after physics are in
+			if (proxy.active)
+			{
+				foreach (var rayOrigin in proxy.rayOrigins.Values)
+					m_KeyboardMallets[rayOrigin].CheckForKeyCollision();
+			}
+		}
 
 		foreach (var kvp in m_DeviceData)
 		{
@@ -370,7 +378,7 @@ public class EditorVR : MonoBehaviour
 				var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginBase.Value).transform;
 				malletTransform.position = rayOriginBase.Value.position;
 				malletTransform.rotation = rayOriginBase.Value.rotation;
-				m_KeyboardMallets.Add(rayOriginBase.Value, rayTransform.GetComponent<KeyboardMallet>());
+				m_KeyboardMallets.Add(rayOriginBase.Value, malletTransform.GetComponent<KeyboardMallet>());
 			}
 			m_AllProxies.Add(proxy);
 		}

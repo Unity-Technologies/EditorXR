@@ -88,13 +88,7 @@ public class KeyboardMallet : MonoBehaviour
 		}
 	}
 
-	private void Start()
-	{
-		m_BulbStartScale = m_Bulb.localScale;
-		m_State = State.Visible;
-	}
-
-	private void Update()
+	public void CheckForKeyCollision()
 	{
 		if (m_State != State.Visible) return;
 
@@ -115,6 +109,12 @@ public class KeyboardMallet : MonoBehaviour
 			}
 		}
 		currentButton = hitKey;
+	}
+
+	private void Start()
+	{
+		m_BulbStartScale = m_Bulb.localScale;
+		m_State = State.Visible;
 	}
 
 	private IEnumerator HideMallet()

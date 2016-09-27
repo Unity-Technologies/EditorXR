@@ -85,6 +85,7 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 	{
 		if (U.UI.IsValidEvent(eventData, selectionFlags) && !m_PressOnHover())
 		{
+			base.OnPointerClick(eventData);
 			NumericKeyPressed();
 		}
 	}
