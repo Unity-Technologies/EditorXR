@@ -52,13 +52,16 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	public void Setup(Action<char> keyPress, bool pressOnHover)
 	{
-		m_Trigger.RemoveAllListeners();
+		m_PressOnHover = pressOnHover;
 
+		m_Trigger.RemoveAllListeners();
 		m_KeyPress = keyPress;
 
-		m_Trigger = pressOnHover ? onEnter : onDown;
-
-		m_Trigger.AddListener(NumericKeyPressed);
+		if (pressOnHover)
+		{
+			m_Trigger = onDown;
+			m_Trigger.AddListener(NumericKeyPressed);
+		}
 	}
 
 	public void SetShiftModeActive(bool active)
@@ -86,24 +89,14 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	public void OnBeginDrag(RayEventData eventData)
 	{
-		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold)
-		{
-			m_HoldStartTime = Time.realtimeSinceStartup;
-			m_RepeatWaitTime = m_RepeatTime;
-		}
+		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold && !m_PressOnHover)
+			StartHold();
 	}
 
 	public void OnDrag(RayEventData eventData)
 	{
-		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold)
-		{
-			if (m_HoldStartTime + m_RepeatWaitTime < Time.realtimeSinceStartup)
-			{
-				NumericKeyPressed();
-				m_HoldStartTime = Time.realtimeSinceStartup;
-				m_RepeatWaitTime *= 0.75f;
-			}
-		}
+		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold && !m_PressOnHover)
+			Hold();
 	}
 
 	protected override void OnDisable()
@@ -113,7 +106,7 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 		base.OnDisable();
 	}
 
-	protected void NumericKeyPressed()
+	public void NumericKeyPressed()
 	{
 		if (m_KeyPress == null) return;
 
@@ -123,4 +116,42 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 			m_KeyPress(m_Character);
 	}
 
+	public void OnTriggerEnter(Collider col)
+	{
+		if (!m_PressOnHover) return;
+
+		NumericKeyPressed();
+
+		if (m_RepeatOnHold)
+			StartHold();
+	}
+
+	public void OnTriggerStay(Collider col)
+	{
+		if (!m_PressOnHover) return;
+
+		if (m_RepeatOnHold)
+			Hold();
+	}
+
+	public void OnTriggerExit(Collider col)
+	{
+		//
+	}
+
+	private void StartHold()
+	{
+		m_HoldStartTime = Time.realtimeSinceStartup;
+		m_RepeatWaitTime = m_RepeatTime;
+	}
+
+	private void Hold()
+	{
+		if (m_HoldStartTime + m_RepeatWaitTime < Time.realtimeSinceStartup)
+		{
+			NumericKeyPressed();
+			m_HoldStartTime = Time.realtimeSinceStartup;
+			m_RepeatWaitTime *= 0.75f;
+		}
+	}
 }

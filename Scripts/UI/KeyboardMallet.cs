@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Valve.VR;
 
 public class KeyboardMallet : MonoBehaviour
 {
@@ -7,10 +8,19 @@ public class KeyboardMallet : MonoBehaviour
 	private Transform m_StemOrigin;
 
 	[SerializeField]
-	private float m_StemLength = 0.02f;
+	private float m_StemLength = 0.06f;
+
+	[SerializeField]
+	private float m_StemWidth = 0.003125f;
 
 	[SerializeField]
 	private Transform m_Bulb;
+
+	[SerializeField]
+	private float m_BulbRadius;
+
+	[SerializeField]
+	private Collider m_BulbCollider;
 
 	private enum State
 	{
@@ -23,53 +33,42 @@ public class KeyboardMallet : MonoBehaviour
 	private Vector3 m_BulbStartScale;
 	private Coroutine m_Transitioning;
 
-	/// <summary>
-	/// The object that is set when LockRay is called while the ray is unlocked.
-	/// As long as this reference is set, and the ray is locked, only that object can unlock the ray.
-	/// If the object reference becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
-	/// </summary>
-	private object m_LockRayObject;
-
-	public bool LockRay(object lockCaller)
+	// TODO replace this logic with physics once that's working
+	private KeyboardButton m_CurrentButton;
+	private KeyboardButton currentButton
 	{
-		// Allow the caller to lock the ray
-		// If the reference to the lockCaller is destroyed, and the ray was not properly
-		// unlocked by the original locking caller, then allow locking by another object
-		if (m_LockRayObject == null)
+		get { return m_CurrentButton; }
+		set
 		{
-			m_LockRayObject = lockCaller;
-			return true;
-		}
+			if (m_CurrentButton == value) return;
 
-		return false;
-	}
+			if (m_CurrentButton != null)
+			{
+				m_CurrentButton.OnTriggerExit(m_BulbCollider);
+			}
 
-	public bool UnlockRay(object unlockCaller)
-	{
-		// Only allow unlocking if the original lock caller is null or there is no locker caller set
-		if (m_LockRayObject == unlockCaller)
-		{
-			m_LockRayObject = null;
-			return true;
-		}
+			m_CurrentButton = value;
 
-		return false;
-	}
-
-	/// <summary>
-	/// The length of the direct selection pointer
-	/// </summary>
-	public float pointerLength
-	{
-		get
-		{
-			return m_BulbStartScale.x;
+			if (m_CurrentButton != null)
+			{
+				m_CurrentButton.OnTriggerEnter(m_BulbCollider);
+			}
 		}
 	}
+
+	public void UpdateMalletDimensions()
+	{
+		m_StemOrigin.localScale = new Vector3(m_StemWidth, m_StemLength, m_StemWidth);
+
+		m_Bulb.transform.localPosition = new Vector3(0f, 0f, m_StemLength * 2f);
+		m_Bulb.transform.localScale = Vector3.one * m_BulbRadius;
+		m_BulbStartScale = m_Bulb.transform.localScale;
+	}
+
 
 	public void Hide()
 	{
-		if (isActiveAndEnabled && m_LockRayObject == null)
+		if (isActiveAndEnabled)
 		{
 			if (m_State == State.Transitioning)
 				StopAllCoroutines();
@@ -80,7 +79,7 @@ public class KeyboardMallet : MonoBehaviour
 
 	public void Show()
 	{
-		if (isActiveAndEnabled && m_LockRayObject == null)
+		if (isActiveAndEnabled)
 		{
 			if (m_State == State.Transitioning)
 				StopAllCoroutines();
@@ -89,20 +88,31 @@ public class KeyboardMallet : MonoBehaviour
 		}
 	}
 
-	public void SetLength(float length)
-	{
-		if (m_State != State.Visible)
-			return;
-
-		var stemScale = m_StemOrigin.localScale;
-		m_StemOrigin.localScale = new Vector3(stemScale.x, length, stemScale.z);
-		m_Bulb.transform.localPosition = new Vector3(0f, 0f, length * 2f);
-	}
-
 	private void Start()
 	{
 		m_BulbStartScale = m_Bulb.localScale;
 		m_State = State.Visible;
+	}
+
+	private void Update()
+	{
+		if (m_CurrentButton != null)
+			m_CurrentButton.OnTriggerStay(m_BulbCollider);
+
+		Collider[] hitColliders = Physics.OverlapSphere(m_Bulb.position, m_BulbStartScale.x * 0.5f);
+		var shortestDistance = Mathf.Infinity;
+		KeyboardButton hitKey = null;
+		foreach (var col in hitColliders)
+		{
+			var key = col.GetComponentInParent<KeyboardButton>();
+			if (key != null)
+			{
+				var newDist = Vector3.Distance(transform.position, key.transform.position);
+				if (newDist < shortestDistance)
+					hitKey = key;
+			}
+		}
+		currentButton = hitKey;
 	}
 
 	private IEnumerator HideMallet()
@@ -111,7 +121,7 @@ public class KeyboardMallet : MonoBehaviour
 
 		var stemScale = m_StemOrigin.localScale;
 		// cache current width for smooth animation to target value without snapping
-		float currentLength = m_StemOrigin.localScale.y;
+		var currentLength = m_StemOrigin.localScale.y;
 		while (currentLength > 0)
 		{
 			float smoothVelocity = 0f;
@@ -131,7 +141,7 @@ public class KeyboardMallet : MonoBehaviour
 		m_State = State.Transitioning;
 
 		var stemScale = m_StemOrigin.localScale;
-		float currentLength = m_StemOrigin.localScale.y;
+		var currentLength = m_StemOrigin.localScale.y;
 		float smoothVelocity = 0f;
 		while (currentLength < m_StemLength)
 		{

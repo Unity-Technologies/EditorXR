@@ -61,6 +61,8 @@ public class EditorVR : MonoBehaviour
 
 	private KeyboardMallet m_KeyboardMallet;
 
+	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
+
 	private TrackedObject m_TrackedObjectInput;
 	private Default m_DefaultActionInput;
 
@@ -366,6 +368,11 @@ public class EditorVR : MonoBehaviour
 				rayTransform.position = rayOriginBase.Value.position;
 				rayTransform.rotation = rayOriginBase.Value.rotation;
 				m_DefaultRays.Add(rayOriginBase.Value, rayTransform.GetComponent<DefaultProxyRay>());
+
+				var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginBase.Value).transform;
+				malletTransform.position = rayOriginBase.Value.position;
+				malletTransform.rotation = rayOriginBase.Value.rotation;
+				m_KeyboardMallets.Add(rayOriginBase.Value, rayTransform.GetComponent<KeyboardMallet>());
 			}
 			m_AllProxies.Add(proxy);
 		}
