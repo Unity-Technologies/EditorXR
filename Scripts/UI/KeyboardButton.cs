@@ -50,6 +50,8 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	private UnityEvent m_Trigger = new UnityEvent();
 
+	private bool m_PressOnHover;
+
 	public void Setup(Action<char> keyPress, bool pressOnHover)
 	{
 		m_PressOnHover = pressOnHover;
