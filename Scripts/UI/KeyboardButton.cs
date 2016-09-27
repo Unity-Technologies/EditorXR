@@ -1,53 +1,35 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-/// <summary>
-/// Set either the button's text field or the ASCII value
-/// </summary>
 public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 {
-	public enum CharacterDescriptionType
-	{
-		Character,
-		Special,
-	}
-	[SerializeField]
-	private CharacterDescriptionType m_CharacterDescriptionType = CharacterDescriptionType.Character;
-
-//	public Dictionary<string, int> specialKeyDict 
-	public enum SpecialKeyType
-	{
-		None = 0,
-		Backspace = 8,
-		Tab = 9,
-		NewLine = 10,
-		CarriageReturn = 13,
-		ShiftOut = 14,
-		ShiftIn = 15,
-		Cancel = 24,
-		Escape = 27,
-		Space = 32,
-		Clear = 127,
-	}
-	[SerializeField]
-	private SpecialKeyType m_SpecialKeyType;
-
-	[SerializeField]
-	private char m_Character;
-
-	public Text textComponent { get { return m_TextComponent; } }
+	public Text textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
 	[SerializeField]
 	private Text m_TextComponent;
 
 	[SerializeField]
-	private bool m_MatchButtonTextToCharacter = true;
+	private char m_Character;
+
+	[SerializeField]
+	private bool m_UseShiftCharacter;
+
+	[SerializeField]
+	private char m_ShiftCharacter;
+
+	[SerializeField]
+	private bool m_ShiftCharIsUppercase;
+
+	private bool m_ShiftMode;
+
+	[SerializeField]
+	private bool m_MatchButtonTextToCharacter;
+
+	[SerializeField]
+	private Image m_ButtonIcon;
 
 	[SerializeField]
 	private GameObject m_ButtonMesh;
@@ -60,60 +42,119 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 	private float m_HoldStartTime;
 	private float m_RepeatWaitTime;
+	private bool m_Holding;
 
 	private Action<char> m_KeyPress;
 
-	private UnityEvent m_Trigger = new UnityEvent();
+	private Func<bool> m_PressOnHover;
 
-	public void Setup(Action<char> keyPress, bool pressOnHover)
+	public void Setup(Action<char> keyPress, Func<bool> pressOnHover)
 	{
+		m_PressOnHover = pressOnHover;
+
 		m_KeyPress = keyPress;
+	}
 
-		if (m_CharacterDescriptionType == CharacterDescriptionType.Character && m_MatchButtonTextToCharacter)
+	public void SetShiftModeActive(bool active)
+	{
+		if (!m_UseShiftCharacter) return;
+
+		m_ShiftMode = active;
+
+		if (m_TextComponent != null && m_MatchButtonTextToCharacter)
 		{
-			if (m_TextComponent != null)
+			if (m_ShiftMode)
+			{
+				if (m_ShiftCharIsUppercase)
+					m_TextComponent.text = m_TextComponent.text.ToUpper();
+				else if (m_ShiftCharacter != 0)
+					m_TextComponent.text = m_ShiftCharacter.ToString();
+			}
+			else
 				m_TextComponent.text = m_Character.ToString();
+
+			m_TextComponent.enabled = false;
+			m_TextComponent.enabled = true;
 		}
-
-		m_Trigger = pressOnHover ? onEnter : onDown;
-
-		m_Trigger.AddListener(NumericKeyPressed);
 	}
 
-	protected override void OnDisable()
+	public override void OnPointerClick(PointerEventData eventData)
 	{
-		m_Trigger.RemoveListener(NumericKeyPressed);
-
-		base.OnDisable();
-	}
-
-	private void NumericKeyPressed()
-	{
-		m_KeyPress(m_Character);
+		var rayEventData = eventData as RayEventData;
+		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+		{
+			base.OnPointerClick(eventData);
+			NumericKeyPressed();
+		}
 	}
 
 	public void OnBeginDrag(RayEventData eventData)
 	{
-		if (U.UI.IsValidEvent(eventData, selectionFlags))
-		{
-			if (m_RepeatOnHold)
-			{
-				m_HoldStartTime = Time.realtimeSinceStartup;
-				m_RepeatWaitTime = m_RepeatTime;
-			}
-		}
+		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold && !m_PressOnHover())
+			StartKeyHold();
 	}
 
 	public void OnDrag(RayEventData eventData)
 	{
 		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold)
+			HoldKey();
+	}
+
+	public void NumericKeyPressed()
+	{
+		if (m_KeyPress == null) return;
+
+		if (m_ShiftMode && !m_ShiftCharIsUppercase && m_ShiftCharacter != 0)
+			m_KeyPress(m_ShiftCharacter);
+		else
+			m_KeyPress(m_Character);
+	}
+
+	public void OnTriggerEnter(Collider col)
+	{
+		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
+			return;
+
+		NumericKeyPressed();
+
+		if (m_RepeatOnHold)
+			StartKeyHold();
+	}
+
+	public void OnTriggerStay(Collider col)
+	{
+		if (col.GetComponentInParent<KeyboardMallet>() == null) return;
+
+		if (m_Holding && m_RepeatOnHold)
+			HoldKey();
+	}
+
+	public void OnTriggerExit(Collider col)
+	{
+		if (col.GetComponentInParent<KeyboardMallet>() == null) return;
+
+		EndKeyHold();
+	}
+
+	private void StartKeyHold()
+	{
+		m_Holding = true;
+		m_HoldStartTime = Time.realtimeSinceStartup;
+		m_RepeatWaitTime = m_RepeatTime;
+	}
+
+	private void HoldKey()
+	{
+		if (m_Holding && m_HoldStartTime + m_RepeatWaitTime < Time.realtimeSinceStartup)
 		{
-			if (m_HoldStartTime + m_RepeatWaitTime < Time.realtimeSinceStartup)
-			{
-				NumericKeyPressed();
-				m_HoldStartTime = Time.realtimeSinceStartup;
-				m_RepeatWaitTime *= 0.75f;
-			}
+			NumericKeyPressed();
+			m_HoldStartTime = Time.realtimeSinceStartup;
+			m_RepeatWaitTime *= 0.75f;
 		}
+	}
+
+	private void EndKeyHold()
+	{
+		m_Holding = false;
 	}
 }

@@ -23,9 +23,7 @@ public class RayButton : Button
 	{
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
 			base.OnPointerClick(eventData);
-		}
 	}
 
 	public override void OnPointerEnter(PointerEventData eventData)

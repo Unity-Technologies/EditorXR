@@ -1,30 +1,31 @@
 ﻿using UnityEditor;
 using UnityEditor.UI;
 
-[CustomEditor(typeof(DragTest))]
-public class DragTestEditor : SelectableEditor
+[CustomEditor(typeof(RayInputField))]
+[CanEditMultipleObjects]
+public class RayInputFieldEditor : SelectableEditor
 {
-	SerializedProperty m_InputFieldTypeProperty;
-	SerializedProperty m_KeyboardAnchorTransformProperty;
+	SerializedProperty m_SelectionFlagsProperty;
 	SerializedProperty m_TextComponentProperty;
 	SerializedProperty m_CharacterLimitProperty;
+	SerializedProperty m_OnValueChangedProperty;
 
 	protected override void OnEnable()
 	{
 		base.OnEnable();
-		m_InputFieldTypeProperty = serializedObject.FindProperty("m_ContentType");
-		m_KeyboardAnchorTransformProperty = serializedObject.FindProperty("m_KeyboardAnchorTransform");
+		m_SelectionFlagsProperty = serializedObject.FindProperty("m_SelectionFlags");
 		m_TextComponentProperty = serializedObject.FindProperty("m_TextComponent");
 		m_CharacterLimitProperty = serializedObject.FindProperty("m_CharacterLimit");
+		m_OnValueChangedProperty = serializedObject.FindProperty("m_OnValueChanged");
 	}
 
 	public override void OnInspectorGUI()
 	{
 		serializedObject.Update();
-		EditorGUILayout.PropertyField(m_InputFieldTypeProperty);
-		EditorGUILayout.PropertyField(m_KeyboardAnchorTransformProperty);
+		EditorGUILayout.PropertyField(m_SelectionFlagsProperty);
 		EditorGUILayout.PropertyField(m_TextComponentProperty);
 		EditorGUILayout.PropertyField(m_CharacterLimitProperty);
+		EditorGUILayout.PropertyField(m_OnValueChangedProperty);
 		serializedObject.ApplyModifiedProperties();
 		base.OnInspectorGUI();
 	}

@@ -1,29 +1,29 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class StandardInputField : RayInputField
 {
 	public enum LineType
 	{
 		SingleLine,
-		MultiLineSubmit,
-		MultiLineNewline
+		MultiLine,
 	}
 
 	[SerializeField]
 	private LineType m_LineType = LineType.SingleLine;
 
-	[SerializeField]
-	protected Graphic m_Placeholder;
-
-	private bool m_Shift;
 	private bool m_CapsLock;
+	private bool m_Shift;
 
 	protected override void Append(char c)
 	{
 		var len = m_Text.Length;
 
-		if (m_LineType == LineType.SingleLine && (c == '\n' || c == '\t')) return;
+		if (m_CapsLock && !m_Shift || !m_CapsLock && m_Shift)
+			c = char.ToUpper(c);
+		else if (m_CapsLock && m_Shift || !m_CapsLock && !m_Shift)
+			c = char.ToLower(c);
+		// Deactivate shift after pressing a key
+		if (m_Shift) Shift();
 
 		text += c;
 
@@ -40,11 +40,22 @@ public class StandardInputField : RayInputField
 		SendOnValueChangedAndUpdateLabel();
 	}
 
+	protected override void Tab()
+	{
+		if (m_LineType == LineType.SingleLine) return;
+
+		text += "\t";
+
+		SendOnValueChangedAndUpdateLabel();
+	}
+
 	protected override void Return()
 	{
-//		if (c == '\r' || (int)c == 3)
-//			c = '\n';
-		//TODO multiline
+		if (m_LineType == LineType.SingleLine) return;
+
+		text += "\n";
+		text = text.Replace("<br>", "\n");
+
 		SendOnValueChangedAndUpdateLabel();
 	}
 
@@ -58,11 +69,25 @@ public class StandardInputField : RayInputField
 			SendOnValueChangedAndUpdateLabel();
 	}
 
-//	private void Shift()
-//	{
-//		foreach (var button in m_Keyboard.buttons)
-//		{
-//			
-//		}
-//	}
+	protected override void Shift()
+	{
+		m_Shift = !m_Shift;
+
+		UpdateKeyText();
+	}
+
+	protected override void CapsLock()
+	{
+		m_CapsLock = !m_CapsLock;
+
+		UpdateKeyText();
+	}
+
+	private void UpdateKeyText()
+	{
+		if (m_CapsLock && !m_Shift || !m_CapsLock && m_Shift)
+			m_Keyboard.ActivateShiftModeOnKeys();
+		else if (m_CapsLock && m_Shift || !m_CapsLock && !m_Shift)
+			m_Keyboard.DeactivateShiftModeOnKeys();
+	}
 }

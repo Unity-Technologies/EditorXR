@@ -3,21 +3,22 @@ using UnityEngine;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
+public class NumericInputField : RayInputField, IRayEnterHandler, IRayExitHandler, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
 {
-	public enum ContentType
+	public enum NumberType
 	{
 		Float,
 		Int,
 	}
-	public ContentType numberType { get { return m_NumberType; } }
+
 	[SerializeField]
-	private ContentType m_NumberType = ContentType.Float;
+	private NumberType m_NumberType = NumberType.Float;
 
 	private bool m_UpdateDrag;
 	private Vector3 m_StartDragPosition;
 	private Vector3 m_LastPointerPosition;
-	private const float kDragSensitivity = 0.01f;
+	private bool m_PointerOverField;
+	private const float kDragSensitivity = 0.02f;
 	private const float kDragDeadzone = 0.01f;
 
 	private int m_OperandCount;
@@ -38,6 +39,18 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 				m_TextComponent != null;
 	}
 
+	public void OnRayEnter(RayEventData eventData)
+	{
+		if (eventData == null || U.UI.IsValidEvent(eventData, selectionFlags))
+			m_PointerOverField = true;
+	}
+
+	public void OnRayExit(RayEventData eventData)
+	{
+		if (eventData == null || U.UI.IsValidEvent(eventData, selectionFlags))
+			m_PointerOverField = false;
+	}
+
 	public void OnBeginDrag(RayEventData eventData)
 	{
 		if (!U.UI.IsValidEvent(eventData, selectionFlags) && MayDrag())
@@ -51,25 +64,21 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
 			return;
 
-		if (eventData.pointerCurrentRaycast.gameObject == gameObject)
+		if (!m_UpdateDrag)
 		{
-			if (!m_UpdateDrag)
-			{
-				if (Mathf.Abs(GetLocalPointerPosition(eventData).x - m_StartDragPosition.x) > kDragDeadzone)
-					StartDrag(eventData);
-			}
-			else
-			{
-				DragNumberValue(eventData);
-				m_LastPointerPosition = GetLocalPointerPosition(eventData);
-			}
+			if (Mathf.Abs(GetLocalPointerPosition(eventData).x - m_StartDragPosition.x) > kDragDeadzone)
+				StartDrag(eventData);
+		}
+		else
+		{
+			DragNumberValue(eventData);
+			m_LastPointerPosition = GetLocalPointerPosition(eventData);
 		}
 	}
 
 	private void StartDrag(RayEventData eventData)
 	{
-		if (IsExpression())
-			ParseNumberField();
+		ParseNumberField();
 		m_LastPointerPosition = GetLocalPointerPosition(eventData);
 		m_UpdateDrag = true;
 		eventData.eligibleForClick = false;
@@ -87,14 +96,13 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 	{
 		var delta = GetLocalPointerPosition(eventData) - m_LastPointerPosition;
 
-		if (numberType == ContentType.Float)
+		if (m_NumberType == NumberType.Float)
 		{
 			float num;
 			if (!float.TryParse(text, out num))
 				num = 0f;
 
 			var dragSensitivity = CalculateFloatDragSensitivity(num);
-//			num += delta * dragSensitivity;
 			num += GetNicePointerDelta(delta) * dragSensitivity;
 			num = RoundBasedOnMinimumDifference(num, dragSensitivity);
 			m_Text = num.ToString(kFloatFieldFormatString);
@@ -108,7 +116,6 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 			var dragSensitivity = CalculateIntDragSensitivity(intNum);
 			intNum += (int)Math.Round(GetNicePointerDelta(delta) * dragSensitivity);
 //			intNum += (int)Math.Round(delta * dragSensitivity);
-
 			m_Text = intNum.ToString(kIntFieldFormatString);
 		}
 
@@ -117,15 +124,21 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 
 	private Vector3 GetLocalPointerPosition(RayEventData eventData)
 	{
-		var rayOriginPos = eventData.rayOrigin;
-		var hitPos = rayOriginPos.position + rayOriginPos.forward * eventData.pointerCurrentRaycast.distance;
+		var rayOrigin = eventData.rayOrigin;
+		Vector3 hitPos;
+
+		if (m_PointerOverField)
+			hitPos = rayOrigin.position + rayOrigin.forward * eventData.pointerCurrentRaycast.distance;
+		else
+			U.Math.LinePlaneIntersection(out hitPos, rayOrigin.position, rayOrigin.forward, -transform.forward,
+				transform.position);
+
 		return transform.InverseTransformPoint(hitPos);
 	}
 
 	protected override void Close()
 	{
-		if (IsExpression())
-			ParseNumberField();
+		ParseNumberField();
 
 		base.Close();
 	}
@@ -135,28 +148,18 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		if (!base.IsValid(ch))
 			return false;
 
-		if (m_NumberType == ContentType.Float)
+		if (m_NumberType == NumberType.Float)
 		{
 			if (!kAllowedCharactersForFloat.Contains(ch.ToString()))
 				return false;
 		}
-		else if (m_NumberType == ContentType.Int)
+		else if (m_NumberType == NumberType.Int)
 		{
 			if (!kAllowedCharactersForInt.Contains(ch.ToString()))
 				return false;
 		}
 
 		return true;
-	}
-
-	private bool IsExpression()
-	{
-		return m_OperandCount > 0;
-	}
-
-	private bool IsOperand(char ch)
-	{
-		return kOperandCharacters.Contains(ch.ToString()) && !(m_Text.Length == 0 && ch == '-');
 	}
 
 	protected override void Append(char c)
@@ -182,7 +185,6 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		if (m_Text.Length == 0) return;
 
 		var ch = m_Text[m_Text.Length - 1];
-
 		if (IsOperand(ch))
 			m_OperandCount--;
 
@@ -194,15 +196,43 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 			UpdateLabel();
 	}
 
+	protected override void Tab()
+	{
+		Return();
+	}
+
+	protected override void Clear()
+	{
+		base.Clear();
+		m_OperandCount = 0;
+	}
+
 	protected override void Return()
 	{
-		if (IsExpression())
-			ParseNumberField();
+		ParseNumberField();
 	}
 
 	protected override void Space()
 	{
 		Return();
+	}
+
+	protected override void Shift()
+	{
+	}
+
+	protected override void CapsLock()
+	{
+	}
+
+	private bool IsExpression()
+	{
+		return m_OperandCount > 0;
+	}
+
+	private bool IsOperand(char c)
+	{
+		return kOperandCharacters.Contains(c.ToString()) && !(m_Text.Length == 0 && c == '-');
 	}
 
 	private float CalculateFloatDragSensitivity(float value)
@@ -238,9 +268,11 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 
 	private void ParseNumberField()
 	{
+		if (!IsExpression()) return;
+
 		var str = m_Text;
 
-		if (m_NumberType == ContentType.Float)
+		if (m_NumberType == NumberType.Float)
 		{
 			float floatVal;
 

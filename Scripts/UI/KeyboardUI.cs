@@ -2,35 +2,49 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(Canvas))]
 public class KeyboardUI : MonoBehaviour
 {
-	public List<KeyboardButton> buttons { get { return m_Buttons; } set { m_Buttons = value; } }
 	[SerializeField]
 	private List<KeyboardButton> m_Buttons = new List<KeyboardButton>();
 
-	public void Setup(Action<char> keyPress, bool pressOnHover = false)
+	[SerializeField]
+	private DirectManipulator m_DirectManipulator;
+
+	public void Setup(Action<char> keyPress)
 	{
-		foreach (var button in GetComponentsInChildren<KeyboardButton>())
-		{
-			button.Setup(keyPress, pressOnHover);
-		}
+		m_DirectManipulator.target = transform;
+		m_DirectManipulator.translate = Translate;
+		m_DirectManipulator.rotate = Rotate;
+
+		foreach (var button in m_Buttons) 
+			button.Setup(keyPress, IsHorizontal);
 	}
 
-	public void SetKeyTextToUpperCase()
+	public void ActivateShiftModeOnKeys()
 	{
 		foreach (var button in m_Buttons)
-		{
-			if (button.textComponent != null)
-				button.textComponent.text = button.textComponent.text.ToUpper();
-		}
+			button.SetShiftModeActive(true);
 	}
 
-	public void SetKeyTextToLowerCase()
+	public void DeactivateShiftModeOnKeys()
 	{
 		foreach (var button in m_Buttons)
-		{
-			if (button.textComponent != null)
-				button.textComponent.text = button.textComponent.text.ToLower();
-		}
+			button.SetShiftModeActive(false);
+	}
+
+	private bool IsHorizontal()
+	{
+		return Vector3.Dot(transform.up, Vector3.up) < 0.5f;
+	}
+
+	private void Translate(Vector3 deltaPosition)
+	{
+		transform.position += deltaPosition;
+	}
+
+	private void Rotate(Quaternion deltaRotation)
+	{
+		transform.rotation *= deltaRotation;
 	}
 }
