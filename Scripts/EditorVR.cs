@@ -56,6 +56,11 @@ public class EditorVR : MonoBehaviour
 
 	private KeyboardUI m_StandardKeyboard;
 
+	[SerializeField]
+	private KeyboardMallet m_KeyboardMalletPrefab;
+
+	private KeyboardMallet m_KeyboardMallet;
+
 	private TrackedObject m_TrackedObjectInput;
 	private Default m_DefaultActionInput;
 

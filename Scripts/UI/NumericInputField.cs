@@ -90,7 +90,6 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 				num = 0f;
 
 			var dragSensitivity = CalculateFloatDragSensitivity(num);
-//			num += delta * dragSensitivity;
 			num += GetNicePointerDelta(delta) * dragSensitivity;
 			num = RoundBasedOnMinimumDifference(num, dragSensitivity);
 			m_Text = num.ToString(kFloatFieldFormatString);
@@ -104,7 +103,6 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 			var dragSensitivity = CalculateIntDragSensitivity(intNum);
 			intNum += (int)Math.Round(GetNicePointerDelta(delta) * dragSensitivity);
 //			intNum += (int)Math.Round(delta * dragSensitivity);
-
 			m_Text = intNum.ToString(kIntFieldFormatString);
 		}
 
