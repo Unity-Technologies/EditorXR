@@ -484,7 +484,7 @@ public class EditorVR : MonoBehaviour
 		// Check if the prefab has already been instantiated
 		if (m_NumericKeyboard == null)
 		{
-			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, transform).GetComponent<KeyboardUI>();
+			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
 			m_NumericKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
 		}
 		return m_NumericKeyboard;
@@ -495,7 +495,7 @@ public class EditorVR : MonoBehaviour
 		// Check if the prefab has already been instantiated
 		if (m_StandardKeyboard == null)
 		{
-			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, transform).GetComponent<KeyboardUI>();
+			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
 			m_StandardKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
 		}
 		return m_StandardKeyboard;

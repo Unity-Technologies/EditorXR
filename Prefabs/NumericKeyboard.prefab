@@ -1841,7 +1841,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
-  m_FDistance: 0.38
+  m_Radius: 0.38
   m_MinAngle: 14
   m_MaxAngle: 74
   m_StartAngle: 65
@@ -3009,7 +3009,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
-  m_FDistance: 0.35
+  m_Radius: 0.35
   m_MinAngle: 18
   m_MaxAngle: 75
   m_StartAngle: 66
