@@ -1,12 +1,5 @@
 using UnityEngine;
 
-// Don't allow return chars or tabulator key to be entered into single line fields.
-//if (!multiLine && (c == '\t' || c == '\r' || c == 10))
-
-// Convert carriage return and end-of-text characters to newline.
-//            if (c == '\r' || (int)c == 3)
-//                c = '\n';
-
 public class StandardInputField : RayInputField
 {
 	public enum LineType

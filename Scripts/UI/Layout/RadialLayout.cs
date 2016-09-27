@@ -7,14 +7,20 @@ namespace UnityEngine.UI.Extensions
 	[AddComponentMenu("Layout/Extensions/Radial Layout")]
 	public class RadialLayout : LayoutGroup
 	{
-		public float fDistance;
+		[SerializeField]
+		private float m_FDistance;
 
+		[SerializeField]
 		[Range(0f, 360f)]
-		public float MinAngle;
+		private float m_MinAngle;
+
+		[SerializeField]
 		[Range(0f, 360f)]
-		public float MaxAngle;
+		private float m_MaxAngle;
+
+		[SerializeField]
 		[Range(0f, 360f)]
-		public float StartAngle;
+		private float m_StartAngle;
 
 		protected override void OnEnable()
 		{
@@ -54,22 +60,19 @@ namespace UnityEngine.UI.Extensions
 			if (transform.childCount == 0)
 				return;
 
-			float fOffsetAngle = (MaxAngle - MinAngle) / transform.childCount;
+			float fOffsetAngle = (m_MaxAngle - m_MinAngle) / transform.childCount;
 
-			float fAngle = StartAngle;
+			float fAngle = m_StartAngle;
 			for (int i = 0; i < transform.childCount; i++)
 			{
-				RectTransform child = (RectTransform)transform.GetChild(i);
+				var child = (RectTransform)transform.GetChild(i);
 				if (child != null)
 				{
 					//Adding the elements to the tracker stops the user from modifiying their positions via the editor.
-					m_Tracker.Add(this, child,
-					DrivenTransformProperties.Anchors |
-					DrivenTransformProperties.AnchoredPosition |
-					DrivenTransformProperties.Pivot);
+					m_Tracker.Add(this, child, DrivenTransformProperties.Anchors | DrivenTransformProperties.AnchoredPosition | DrivenTransformProperties.Pivot);
 
-					var vPos = new Vector3(Mathf.Cos(fAngle * Mathf.Deg2Rad), Mathf.Sin(fAngle * Mathf.Deg2Rad), 0);
-					child.localPosition = vPos * fDistance;
+					var pos = new Vector3(Mathf.Cos(fAngle * Mathf.Deg2Rad), Mathf.Sin(fAngle * Mathf.Deg2Rad), 0);
+					child.localPosition = pos * m_FDistance;
 					//Force objects to be center aligned, this can be changed however I'd suggest you keep all of the objects with the same anchor points.
 					child.anchorMin = child.anchorMax = child.pivot = new Vector2(0.5f, 0.5f);
 					fAngle += fOffsetAngle;

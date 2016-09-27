@@ -6,7 +6,6 @@ using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-
 public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickHandler
 {
 	public SelectionFlags selectionFlags
@@ -61,9 +60,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 			m_Text = string.Empty;
 
 		if (m_TextComponent != null)
-		{
 			UpdateLabel();
-		}
 	}
 
 	public void ForceUpdateLabel()
