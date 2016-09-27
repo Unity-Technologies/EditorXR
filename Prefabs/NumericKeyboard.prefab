@@ -1607,10 +1607,10 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
-  fDistance: 0.38
-  MinAngle: 35
-  MaxAngle: 95
-  StartAngle: 65
+  m_FDistance: 0.38
+  m_MinAngle: 14
+  m_MaxAngle: 74
+  m_StartAngle: 65
 --- !u!114 &114000011548224866
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2775,10 +2775,10 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
-  fDistance: 0.38
-  MinAngle: 35
-  MaxAngle: 85
-  StartAngle: 69
+  m_FDistance: 0.35
+  m_MinAngle: 15
+  m_MaxAngle: 75
+  m_StartAngle: 66
 --- !u!114 &114000013708560008
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3702,7 +3702,7 @@ RectTransform:
   m_RootOrder: 1
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.005, y: -0.382}
+  m_AnchoredPosition: {x: -0.005, y: -0.35492647}
   m_SizeDelta: {x: 0.305, y: 0.152}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224000011331838924
