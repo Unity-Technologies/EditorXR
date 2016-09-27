@@ -64,6 +64,18 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 				newHoverGameObject = newPrefabRoot;
 		}
 
+		U.Locking.SetCurrentHoverObject(newHoverGameObject);
+		if(U.Locking.IsGameObjectLocked(newHoverGameObject))
+		{
+			//newHoverGameObject = null;
+			//s_SelectedObjects.Clear();
+			//Selection.activeGameObject = null;
+			//if(U.Locking.IsCurrentHoverObjectReadyToUnlock())
+			//	U.Locking.UnLockGameObject(newHoverGameObject);
+			//else
+			return;
+		}
+
 		// Handle changing highlight
 		if (newHoverGameObject != m_HoverGameObject)
 		{

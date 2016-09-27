@@ -78,13 +78,13 @@ namespace UnityEngine.VR.Menus
 		public void Show()
 		{
 			m_BorderOutlineTransform.localScale = m_BorderOutlineOriginalLocalScale;
-			StopCoroutine(ref m_VisibilityCoroutine);
+			MonoBehaviourExtensions.StopCoroutine(this,ref m_VisibilityCoroutine);
 			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(true));
 		}
 
 		public void Hide()
 		{
-			StopCoroutine(ref m_VisibilityCoroutine);
+			MonoBehaviourExtensions.StopCoroutine(this,ref m_VisibilityCoroutine);
 			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(false));
 		}
 
@@ -119,13 +119,13 @@ namespace UnityEngine.VR.Menus
 
 		public void BeginVisuals()
 		{
-			StopCoroutine(ref m_RotationVisualsCoroutine);
+			MonoBehaviourExtensions.StopCoroutine(this, ref m_RotationVisualsCoroutine);
 			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(true));
 		}
 
 		public void EndVisuals()
 		{
-			StopCoroutine(ref m_RotationVisualsCoroutine);
+			MonoBehaviourExtensions.StopCoroutine(this,ref m_RotationVisualsCoroutine);
 			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(false));
 		}
 
