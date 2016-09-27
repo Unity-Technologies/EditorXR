@@ -90,7 +90,8 @@ public class KeyboardButtonEditor : RayButtonEditor
 		m_UseShiftCharacterProperty.boolValue = EditorGUILayout.Toggle("Use Shift Character", m_UseShiftCharacterProperty.boolValue);
 		if (m_UseShiftCharacterProperty.boolValue)
 		{
-			if (char.IsLetter((char)m_CharacterProperty.intValue))
+			var ch = (char)m_CharacterProperty.intValue;
+			if (ch > 'a' && ch < 'z' || ch > 'A' && ch < 'Z')
 				m_ShiftCharIsUppercaseProperty.boolValue = EditorGUILayout.Toggle("Shift Character is Uppercase", m_ShiftCharIsUppercaseProperty.boolValue);
 			else
 				m_ShiftCharIsUppercaseProperty.boolValue = false;
@@ -112,6 +113,10 @@ public class KeyboardButtonEditor : RayButtonEditor
 				}
 				EditorGUILayout.EndHorizontal();
 			}
+		}
+		else
+		{
+			m_ShiftCharIsUppercaseProperty.boolValue = false;
 		}
 
 		EditorGUILayout.PropertyField(m_ButtonIconProperty);

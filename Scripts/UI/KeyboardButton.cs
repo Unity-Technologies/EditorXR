@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
@@ -81,9 +82,10 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 		}
 	}
 
-	public void OnPointerClick(RayEventData eventData)
+	public override void OnPointerClick(PointerEventData eventData)
 	{
-		if (U.UI.IsValidEvent(eventData, selectionFlags) && !m_PressOnHover())
+		var rayEventData = eventData as RayEventData;
+		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
 			base.OnPointerClick(eventData);
 			NumericKeyPressed();
@@ -106,7 +108,7 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 	{
 		if (m_KeyPress == null) return;
 
-		if (m_ShiftMode && !m_ShiftCharIsUppercase)
+		if (m_ShiftMode && !m_ShiftCharIsUppercase && m_ShiftCharacter != 0)
 			m_KeyPress(m_ShiftCharacter);
 		else
 			m_KeyPress(m_Character);

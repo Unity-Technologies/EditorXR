@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
+public class NumericInputField : RayInputField, IRayEnterHandler, IRayExitHandler, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
 {
 	public enum NumberType
 	{
@@ -17,6 +17,7 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 	private bool m_UpdateDrag;
 	private Vector3 m_StartDragPosition;
 	private Vector3 m_LastPointerPosition;
+	private bool m_PointerOverField;
 	private const float kDragSensitivity = 0.02f;
 	private const float kDragDeadzone = 0.01f;
 
@@ -36,6 +37,18 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 		return IsActive() &&
 				IsInteractable() &&
 				m_TextComponent != null;
+	}
+
+	public void OnRayEnter(RayEventData eventData)
+	{
+		if (eventData == null || U.UI.IsValidEvent(eventData, selectionFlags))
+			m_PointerOverField = true;
+	}
+
+	public void OnRayExit(RayEventData eventData)
+	{
+		if (eventData == null || U.UI.IsValidEvent(eventData, selectionFlags))
+			m_PointerOverField = false;
 	}
 
 	public void OnBeginDrag(RayEventData eventData)
@@ -111,8 +124,15 @@ public class NumericInputField : RayInputField, IRayBeginDragHandler, IRayEndDra
 
 	private Vector3 GetLocalPointerPosition(RayEventData eventData)
 	{
-		var rayOriginPos = eventData.rayOrigin;
-		var hitPos = rayOriginPos.position + rayOriginPos.forward * eventData.pointerCurrentRaycast.distance;
+		var rayOrigin = eventData.rayOrigin;
+		Vector3 hitPos;
+
+		if (m_PointerOverField)
+			hitPos = rayOrigin.position + rayOrigin.forward * eventData.pointerCurrentRaycast.distance;
+		else
+			U.Math.LinePlaneIntersection(out hitPos, rayOrigin.position, rayOrigin.forward, -transform.forward,
+				transform.position);
+
 		return transform.InverseTransformPoint(hitPos);
 	}
 
