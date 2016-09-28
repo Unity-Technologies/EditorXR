@@ -116,10 +116,11 @@ public class BlinkVisuals : MonoBehaviour
 			sphere.name = "motion-sphere-" + i;
 			sphere.gameObject.SetActive(false);
 
+			var sphereRenderer = sphere.GetComponent<MeshRenderer>();
 			if (m_MotionSpheresMaterial == null) // Only one material clone is needed
-				m_MotionSpheresMaterial = U.Material.GetMaterialClone(sphere.GetComponent<MeshRenderer>());
+				m_MotionSpheresMaterial = U.Material.GetMaterialClone(sphereRenderer);
 
-			sphere.GetComponent<MeshRenderer>().sharedMaterial = m_MotionSpheresMaterial;
+			sphereRenderer.sharedMaterial = m_MotionSpheresMaterial;
 		}
 		m_MotionSphereOriginalScale = m_MotionSpheres[0].localScale;
 		m_CurveLengthEstimate = 1.0f;
