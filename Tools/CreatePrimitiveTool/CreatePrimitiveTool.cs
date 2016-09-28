@@ -8,10 +8,26 @@ using UnityEngine.InputNew;
 [MainMenuItem("Primitive", "Primitive", "Create primitives in the scene")]
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateUI
 {
+	public static PrimitiveType s_SelectedPrimitiveType = PrimitiveType.Cube;
+
+	private GameObject m_CurrentGameObject = null;
+	private float m_CurrentDistance;
+
+	private Vector3 m_PointA = Vector3.zero;
+	private Vector3 m_PointB = Vector3.zero;
+
+	private const float kDrawDistance = 10.0f;
+	private const float kWaitTime = 0.2f;
+
+	private float m_TimeStamp = 0.0f;
+
+	private PrimitiveCreationStates m_State = PrimitiveCreationStates.PointA;
+
 	[SerializeField]
 	private Canvas CanvasPrefab;
 	private Canvas m_ToolCanvas;
-
+	private bool m_ToolCanvasSpawned = false;
+	
 	public Standard standardInput
 	{
 		get; set;
@@ -27,141 +43,106 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 		private get; set;
 	}
 
-	private enum cubeCreationStates
+	private enum PrimitiveCreationStates
 	{
-		pointA,
-		pointB,
-		pointC,
-		pointD,
+		PointA,
+		Delay,
+		PointB,
 	}
-
-	cubeCreationStates cube_state = cubeCreationStates.pointA;
-	GameObject current = null;
-
-	Vector3 a = Vector3.zero;
-	Vector3 b = Vector3.zero;
-	Vector3 c = Vector3.zero;
-	Vector3 d = Vector3.zero;
-	Vector3 ab = Vector3.zero;
-	Vector3 bc = Vector3.zero;
-
-	GameObject m_drawSphere;
-	float kDrawSphereDistance = 1.5f;
-	float kDrawSphereSize = 0.025f;
-
-	[SerializeField]
-	PrimitiveType m_SelectedPrimitive = PrimitiveType.Cube;
 
 	void Awake()
 	{
-		m_drawSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        m_drawSphere.GetComponent<MeshRenderer>().sharedMaterial.color = Color.white;
-		m_drawSphere.transform.position = new Vector3(1f,1f,1f);
-		m_drawSphere.transform.localScale = new Vector3(kDrawSphereSize,kDrawSphereSize,kDrawSphereSize);
+		m_TimeStamp = 0.0f;
+		m_ToolCanvasSpawned = false;
 	}
 
 	void Update()
 	{
-		m_drawSphere.transform.position = rayOrigin.position + rayOrigin.forward * kDrawSphereDistance;
-		switch(cube_state)
+		if(!m_ToolCanvasSpawned && standardInput.action.wasJustPressed)
 		{
-			case cubeCreationStates.pointA:
-				{
-					if(standardInput.action.wasJustPressed)
-					{
-						current = GameObject.CreatePrimitive(m_SelectedPrimitive);
-						current.transform.localScale = new Vector3(0.01f,0.01f,0.01f);
-						current.transform.position = rayOrigin.position + rayOrigin.forward * kDrawSphereDistance;
-						a = rayOrigin.position + rayOrigin.forward * kDrawSphereDistance;
-						cube_state = cubeCreationStates.pointB;
-						return;
-					}
-					break;
-				}
-
-			case cubeCreationStates.pointB:
-				{
-					b = rayOrigin.position + rayOrigin.forward * kDrawSphereDistance;
-					current.transform.LookAt(b);
-					Vector3 temp_scale = current.transform.localScale;
-					temp_scale.z = Vector3.Distance(a,b);
-					current.transform.position = a + ((b - a).normalized * Vector3.Distance(a,b) / 2.0f);
-					current.transform.localScale = temp_scale;
-
-					if(standardInput.action.wasJustPressed)
-					{
-						b = rayOrigin.position + rayOrigin.forward * kDrawSphereDistance;
-						ab = current.transform.position;
-                        cube_state = cubeCreationStates.pointC;
-					}
-					break;
-				}
-
-			case cubeCreationStates.pointC:
-				{
-					c = rayOrigin.position + rayOrigin.forward * kDrawSphereDistance;
-					Vector3 temp_scale = current.transform.localScale;
-
-					Vector3 t = Quaternion.Euler(0.0f,90.0f,0.0f) * (b - a);
-					temp_scale.x = Vector3.Distance(b,c) * Mathf.Sign(Vector3.Dot(t,(c - b)));
-
-					current.transform.position = ab + (current.transform.right * Mathf.Sign(Vector3.Dot(t,(c - b))) * Vector3.Distance(b,c) / 2.0f);
-					current.transform.localScale = temp_scale;
-
-					if(standardInput.action.wasJustPressed)
-					{
-						c = rayOrigin.position + rayOrigin.forward * kDrawSphereDistance;
-						bc = current.transform.position;
-                        cube_state = cubeCreationStates.pointD;
-					}
-
-					break;
-				}
-			case cubeCreationStates.pointD:
-				{
-					d = rayOrigin.position + rayOrigin.forward * kDrawSphereDistance;
-					Vector3 temp_scale = current.transform.localScale;
-
-					Vector3 t = Quaternion.Euler(0.0f,90.0f,0.0f) * (c - b);
-					temp_scale.y = Vector3.Distance(c,d) * Mathf.Sign(Vector3.Dot(t,(d - c)));
-					
-					current.transform.position = bc + (current.transform.up * Mathf.Sign(Vector3.Dot(t,(d - c))) * Vector3.Distance(c,d) / 2.0f);
-					current.transform.localScale = temp_scale;
-
-					if(standardInput.action.wasJustPressed)
-					{
-						//d = rayOrigin.position + rayOrigin.forward * 2f;
-						cube_state = cubeCreationStates.pointA;
-						a = Vector3.zero;
-						b = Vector3.zero;
-						c = Vector3.zero;
-						d = Vector3.zero;
-						ab = Vector3.zero;
-						bc = Vector3.zero;
-					}
-					break;
-				}
-
+			if(m_ToolCanvas == null)
+			{
+				var go = instantiateUI(CanvasPrefab.gameObject);
+				m_ToolCanvas = go.GetComponent<Canvas>();
+				m_ToolCanvasSpawned = true;
+            }
+			m_ToolCanvas.transform.position = rayOrigin.position + rayOrigin.forward * kDrawDistance * 2f;
+			m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - VRView.viewerCamera.transform.position);
+			return;
 		}
 
+		switch(m_State)
+		{
+			case PrimitiveCreationStates.PointA:
+			{
+				if(standardInput.action.wasJustPressed)
+				{
+					m_CurrentGameObject = GameObject.CreatePrimitive(s_SelectedPrimitiveType);
+					m_CurrentGameObject.GetComponent<Collider>().enabled = false;
+					m_CurrentGameObject.transform.localScale = new Vector3(1.0f,1.0f,1.0f);
 
+					Vector3 spawnPos = Vector3.zero;
+                    RaycastHit hit;
+					Ray r = new Ray(rayOrigin.position,rayOrigin.forward);
+					if(Physics.Raycast(r,out hit))
+					{
+						Vector3 temp = m_CurrentGameObject.GetComponent<MeshRenderer>().bounds.extents;
+						temp.x = 0.0f;
+						temp.z = 0.0f;
+						spawnPos = hit.point + Quaternion.FromToRotation(Vector3.up,hit.normal) * temp;
+						m_CurrentDistance = hit.distance;
+					}
+					else
+					{
+						m_CurrentDistance = 10.0f;
+						spawnPos = r.GetPoint(kDrawDistance);
+					}
 
-		//if(standardInput.action.wasJustPressed)
-		//{
-		//	if(m_ToolCanvas == null)
-		//	{
-		//		var go = instantiateUI(CanvasPrefab.gameObject);
-		//		m_ToolCanvas = go.GetComponent<Canvas>();
-		//	}
-		//	m_ToolCanvas.transform.position = rayOrigin.position + rayOrigin.forward * 5f;
-		//	m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - VRView.viewerCamera.transform.position);
-		//}
+					m_CurrentGameObject.transform.position = spawnPos;
+					m_PointA = spawnPos;
+					m_State = PrimitiveCreationStates.Delay;
+					m_TimeStamp = Time.realtimeSinceStartup;
+					break;
+				}
+				break;
+			}
+
+			case PrimitiveCreationStates.Delay:
+			{
+				if(Time.realtimeSinceStartup - m_TimeStamp > kWaitTime)
+				{
+					m_State = PrimitiveCreationStates.PointB;
+					break;
+				}
+				if(standardInput.action.wasJustReleased)
+				{
+					m_State = PrimitiveCreationStates.PointA;
+					m_CurrentGameObject.GetComponent<Collider>().enabled = true;
+					break;
+				}
+				break;
+			}
+			case PrimitiveCreationStates.PointB:
+			{
+				m_PointB = rayOrigin.position + rayOrigin.forward * m_CurrentDistance;
+				Vector3 temp_scale = m_CurrentGameObject.transform.localScale;
+				float dist = Vector3.Distance(m_PointA,m_PointB);
+				temp_scale = new Vector3(1.0f,1.0f,1.0f) * dist;
+				m_CurrentGameObject.transform.localScale = temp_scale;
+				m_CurrentGameObject.transform.position = m_PointA + ((m_PointB - m_PointA).normalized * dist / 2.0f);
+
+				if(standardInput.action.wasJustReleased)
+				{
+					m_CurrentGameObject.GetComponent<Collider>().enabled = true;
+					m_State = PrimitiveCreationStates.PointA;
+				}
+				break;
+			}
+		}
 	}
+
 	void OnDestroy()
 	{
-		if(m_drawSphere != null)
-			U.Object.Destroy(m_drawSphere);
-
 		if (m_ToolCanvas != null)
 			U.Object.Destroy(m_ToolCanvas.gameObject);
 	}
