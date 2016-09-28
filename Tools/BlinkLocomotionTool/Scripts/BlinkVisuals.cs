@@ -82,6 +82,12 @@ public class BlinkVisuals : MonoBehaviour
 
 	private bool visible { get { return m_State == State.TransitioningIn || m_State == State.Active;  } }
 
+	private void OnDestroy()
+	{
+		U.Object.Destroy(m_BlinkMaterial);
+		U.Object.Destroy(m_MotionSpheresMaterial);
+	}
+
 	private void Awake()
 	{
 		m_LineRenderer = GetComponent<VRLineRenderer>();
@@ -104,15 +110,16 @@ public class BlinkVisuals : MonoBehaviour
 		m_MotionSpheres = new Transform[m_MotionSphereCount];
 		for (int i = 0; i < m_MotionSphereCount; i++)
 		{
-			m_MotionSpheres[i] = ((GameObject)Instantiate(m_MotionIndicatorSphere, m_ToolPoint.position, m_ToolPoint.rotation)).transform;
-			m_MotionSpheres[i].SetParent(m_Transform);
-			m_MotionSpheres[i].name = "motion-sphere-" + i;
-			m_MotionSpheres[i].gameObject.SetActive(false);
+			var sphere = ((GameObject)Instantiate(m_MotionIndicatorSphere, m_ToolPoint.position, m_ToolPoint.rotation)).transform;
+			m_MotionSpheres[i] = sphere;
+			sphere.SetParent(m_Transform);
+			sphere.name = "motion-sphere-" + i;
+			sphere.gameObject.SetActive(false);
 
-			if (m_MotionSpheresMaterial == null)
-				m_MotionSpheresMaterial = U.Material.GetMaterialClone(m_MotionSpheres[0].GetComponent<MeshRenderer>());
-			
-			m_MotionSpheres[i].GetComponent<MeshRenderer>().sharedMaterial = m_MotionSpheresMaterial;
+			if (m_MotionSpheresMaterial == null) // Only one material clone is needed
+				m_MotionSpheresMaterial = U.Material.GetMaterialClone(sphere.GetComponent<MeshRenderer>());
+
+			sphere.GetComponent<MeshRenderer>().sharedMaterial = m_MotionSpheresMaterial;
 		}
 		m_MotionSphereOriginalScale = m_MotionSpheres[0].localScale;
 		m_CurveLengthEstimate = 1.0f;
