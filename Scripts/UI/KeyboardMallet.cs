@@ -32,7 +32,7 @@ public class KeyboardMallet : MonoBehaviour
 
 	private Vector3 m_BulbStartScale;
 
-	// TODO replace this logic with physics once that's working
+	// TODO replace manual sending of collision events with physics system
 	private KeyboardButton m_CurrentButton;
 	private KeyboardButton currentButton
 	{
@@ -86,6 +86,7 @@ public class KeyboardMallet : MonoBehaviour
 		}
 	}
 
+	// Called from EditorVR
 	public void CheckForKeyCollision()
 	{
 		if (m_State != State.Visible) return;
@@ -155,12 +156,5 @@ public class KeyboardMallet : MonoBehaviour
 
 		// only set the value if another transition hasn't begun
 		m_State = State.Visible;
-	}
-
-	private void OnDrawGizmos()
-	{
-		Gizmos.color = Color.blue;
-		//        var pos = selector.directSelectTransform ? selector.directSelectTransform.position : transform.position;
-		Gizmos.DrawWireSphere(m_Bulb.position, m_BulbRadius);
 	}
 }

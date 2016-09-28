@@ -130,7 +130,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		if (m_Keyboard != null)
 		{
 			m_Keyboard.gameObject.SetActive(true);
-			m_Keyboard.transform.position = position + Vector3.up * 0.1f;
+			m_Keyboard.transform.position = position + Vector3.up * 0.01f;
 			m_Keyboard.transform.rotation = Quaternion.identity;
 			m_Keyboard.Setup(OnKeyPress);
 		}

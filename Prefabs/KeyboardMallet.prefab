@@ -127,7 +127,7 @@ Transform:
   m_GameObject: {fileID: 1000011926010334}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0.18}
-  m_LocalScale: {x: 0.04, y: 0.04, z: 0.04}
+  m_LocalScale: {x: 0.03, y: 0.03, z: 0.03}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000010088396120}
@@ -145,7 +145,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: a7c4ef2b7e9d41547ae6afefb71d9f9e, type: 2}
+  - {fileID: 2100000, guid: 11bbc0c72e48b564fb30bf3acec6b57e, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -174,7 +174,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: a7c4ef2b7e9d41547ae6afefb71d9f9e, type: 2}
+  - {fileID: 2100000, guid: 226e59ccf8115a34099f741931f64c68, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -220,7 +220,7 @@ MonoBehaviour:
   m_StemLength: 0.09
   m_StemWidth: 0.003125
   m_Bulb: {fileID: 4000013082501652}
-  m_BulbRadius: 0.02
+  m_BulbRadius: 0.015
   m_BulbCollider: {fileID: 135000012803460838}
 --- !u!135 &135000012803460838
 SphereCollider:

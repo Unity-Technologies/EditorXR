@@ -115,7 +115,6 @@ public class NumericInputField : RayInputField, IRayEnterHandler, IRayExitHandle
 
 			var dragSensitivity = CalculateIntDragSensitivity(intNum);
 			intNum += (int)Math.Round(GetNicePointerDelta(delta) * dragSensitivity);
-//			intNum += (int)Math.Round(delta * dragSensitivity);
 			m_Text = intNum.ToString(kIntFieldFormatString);
 		}
 
@@ -158,7 +157,6 @@ public class NumericInputField : RayInputField, IRayEnterHandler, IRayExitHandle
 			if (!kAllowedCharactersForInt.Contains(ch.ToString()))
 				return false;
 		}
-
 		return true;
 	}
 

@@ -8,7 +8,7 @@ namespace UnityEngine.UI.Extensions
 	public class RadialLayout : LayoutGroup
 	{
 		[SerializeField]
-		private float m_Radius;
+		private float m_Radius = 0.01f;
 
 		[SerializeField]
 		[Range(0f, 360f)]
@@ -16,7 +16,7 @@ namespace UnityEngine.UI.Extensions
 
 		[SerializeField]
 		[Range(0f, 360f)]
-		private float m_MaxAngle;
+		private float m_MaxAngle = 180f;
 
 		[SerializeField]
 		[Range(0f, 360f)]

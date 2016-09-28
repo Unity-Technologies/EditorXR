@@ -1,11 +1,11 @@
 using System;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.VR.Modules;
+using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 
-public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
+public class KeyboardButton : BaseHandle
 {
 	public Text textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
 	[SerializeField]
@@ -29,24 +29,44 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 	private bool m_MatchButtonTextToCharacter;
 
 	[SerializeField]
-	private Image m_ButtonIcon;
+	private Transform m_TargetMesh;
+
+	private Vector3 m_TargetMeshInitialScale;
+	private Vector3 m_TargetMeshInitialLocalPosition;
 
 	[SerializeField]
-	private GameObject m_ButtonMesh;
+	private Graphic m_TargetGraphic;
 
 	[SerializeField]
 	private bool m_RepeatOnHold;
 
-	[SerializeField]
-	private float m_RepeatTime = 0.5f;
-
 	private float m_HoldStartTime;
 	private float m_RepeatWaitTime;
 	private bool m_Holding;
+	private const float kRepeatTime = 0.5f;
 
 	private Action<char> m_KeyPress;
 
 	private Func<bool> m_PressOnHover;
+
+	[SerializeField]
+	private ColorBlock m_Colors = ColorBlock.defaultColorBlock;
+
+	private Material m_TargetMeshMaterial;
+
+	protected enum SelectionState
+	{
+		Normal,
+		Highlighted,
+		Pressed,
+		Disabled
+	}
+
+//	private const float kHoverEmission = 0.5f;
+	private const float kPressEmission = 1f;
+	private const float kEmissionLerpTime = 0.1f;
+	private const float kKeyResponseDuration = 0.5f;
+	private const float kKeyResponseAmplitude = 0.06f;
 
 	public void Setup(Action<char> keyPress, Func<bool> pressOnHover)
 	{
@@ -61,53 +81,75 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 
 		m_ShiftMode = active;
 
-		if (m_TextComponent != null && m_MatchButtonTextToCharacter)
+		if (m_TextComponent != null)
 		{
 			if (m_ShiftMode)
 			{
-				if (m_ShiftCharIsUppercase)
+				if (m_ShiftCharIsUppercase || m_TextComponent.text.Length > 1)
 					m_TextComponent.text = m_TextComponent.text.ToUpper();
 				else if (m_ShiftCharacter != 0)
 					m_TextComponent.text = m_ShiftCharacter.ToString();
 			}
 			else
-				m_TextComponent.text = m_Character.ToString();
+			{
+				if (m_TextComponent.text.Length > 1)
+					m_TextComponent.text = m_TextComponent.text.ToLower();
+				else
+					m_TextComponent.text = m_Character.ToString();
+			}
 
 			m_TextComponent.enabled = false;
 			m_TextComponent.enabled = true;
 		}
 	}
 
-	public override void OnPointerClick(PointerEventData eventData)
+	protected override void OnHandleHoverStarted(HandleEventData eventData)
 	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-		{
-			base.OnPointerClick(eventData);
-			NumericKeyPressed();
-		}
+		DoGraphicStateTransition(SelectionState.Highlighted, false);
+
+		base.OnHandleHoverStarted(eventData);
 	}
 
-	public void OnBeginDrag(RayEventData eventData)
+	protected override void OnHandleHoverEnded(HandleEventData eventData)
 	{
-		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold && !m_PressOnHover())
-			StartKeyHold();
+		DoGraphicStateTransition(SelectionState.Highlighted, false);
+
+		base.OnHandleHoverEnded(eventData);
 	}
 
-	public void OnDrag(RayEventData eventData)
+	protected override void OnHandleDragStarted(HandleEventData eventData)
 	{
-		if (U.UI.IsValidEvent(eventData, selectionFlags) && m_RepeatOnHold)
+		if (m_PressOnHover())
+			return;
+
+		NumericKeyPressed();
+
+		base.OnHandleDragStarted(eventData);
+	}
+
+	protected override void OnHandleDragging(HandleEventData eventData)
+	{
+		if (m_PressOnHover())
+			return;
+
+		if (m_RepeatOnHold)
 			HoldKey();
+
+		base.OnHandleDragging(eventData);
 	}
 
-	public void NumericKeyPressed()
+	/// <summary>
+	/// Override to modify event data prior to raising event (requires calling base method at the end)
+	/// </summary>
+	protected override void OnHandleDragEnded(HandleEventData eventData)
 	{
-		if (m_KeyPress == null) return;
+		if (m_PressOnHover())
+			return;
 
-		if (m_ShiftMode && !m_ShiftCharIsUppercase && m_ShiftCharacter != 0)
-			m_KeyPress(m_ShiftCharacter);
-		else
-			m_KeyPress(m_Character);
+		if (m_RepeatOnHold)
+			EndKeyHold();
+
+		base.OnHandleDragEnded(eventData);
 	}
 
 	public void OnTriggerEnter(Collider col)
@@ -116,31 +158,49 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 			return;
 
 		NumericKeyPressed();
-
-		if (m_RepeatOnHold)
-			StartKeyHold();
 	}
 
 	public void OnTriggerStay(Collider col)
 	{
-		if (col.GetComponentInParent<KeyboardMallet>() == null) return;
+		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
+			return;
 
-		if (m_Holding && m_RepeatOnHold)
+		if (m_RepeatOnHold)
 			HoldKey();
 	}
 
 	public void OnTriggerExit(Collider col)
 	{
-		if (col.GetComponentInParent<KeyboardMallet>() == null) return;
+		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
+			return;
 
-		EndKeyHold();
+		if (m_RepeatOnHold)
+			EndKeyHold();
+	}
+	public void NumericKeyPressed()
+	{
+		if (m_KeyPress == null) return;
+
+		DoGraphicStateTransition(SelectionState.Pressed, false);
+
+		if (m_ShiftMode && !m_ShiftCharIsUppercase && m_ShiftCharacter != 0)
+			m_KeyPress(m_ShiftCharacter);
+		else
+			m_KeyPress(m_Character);
+
+		StartCoroutine(IncreaseEmissionCoroutine());
+
+		if (m_RepeatOnHold)
+			StartKeyHold();
+		else
+			DoGraphicStateTransition(SelectionState.Normal, false);
 	}
 
 	private void StartKeyHold()
 	{
 		m_Holding = true;
 		m_HoldStartTime = Time.realtimeSinceStartup;
-		m_RepeatWaitTime = m_RepeatTime;
+		m_RepeatWaitTime = kRepeatTime;
 	}
 
 	private void HoldKey()
@@ -156,5 +216,142 @@ public class KeyboardButton : RayButton, IRayBeginDragHandler, IRayDragHandler
 	private void EndKeyHold()
 	{
 		m_Holding = false;
+		DoGraphicStateTransition(SelectionState.Normal, false);
+		StartCoroutine(DecreaseEmissionCoroutine());
+	}
+
+	private void Start()
+	{
+		if (m_TargetMesh != null)
+		{
+			m_TargetMeshInitialLocalPosition = m_TargetMesh.localPosition;
+			m_TargetMeshInitialScale = m_TargetMesh.localScale;
+			m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
+		}
+	}
+
+	private void OnDisable()
+	{
+		InstantClearState();
+	}
+
+	private void OnDestroy()
+	{
+		U.Object.Destroy(m_TargetMeshMaterial);
+	}
+
+	protected virtual void DoGraphicStateTransition(SelectionState state, bool instant)
+	{
+		Color graphicTintColor;
+
+		switch (state)
+		{
+			case SelectionState.Normal:
+				graphicTintColor = m_Colors.normalColor;
+				break;
+			case SelectionState.Highlighted:
+				graphicTintColor = m_Colors.highlightedColor;
+				break;
+			case SelectionState.Pressed:
+				graphicTintColor = m_Colors.pressedColor;
+				StartCoroutine(PunchKey());
+				break;
+			case SelectionState.Disabled:
+				graphicTintColor = m_Colors.disabledColor;
+				break;
+			default:
+				graphicTintColor = Color.black;
+				break;
+		}
+
+		if (gameObject.activeInHierarchy)
+			StartGraphicColorTween(graphicTintColor * m_Colors.colorMultiplier, instant);
+	}
+
+	private void StartGraphicColorTween(Color targetColor, bool instant)
+	{
+		if (m_TargetGraphic == null)
+			return;
+
+		m_TargetGraphic.CrossFadeColor(targetColor, instant ? 0f : m_Colors.fadeDuration, true, true);
+	}
+
+	protected virtual void InstantClearState()
+	{
+		DoGraphicStateTransition(SelectionState.Normal, true);
+	}
+
+	private IEnumerator IncreaseEmissionCoroutine()
+	{
+		if (!gameObject.activeInHierarchy) yield break;
+
+		StopCoroutine("DecreaseEmissionCoroutine");
+
+		var t = 0f;
+		Color finalColor;
+		while (t < kEmissionLerpTime)
+		{
+			float emission = Mathf.PingPong(t / kEmissionLerpTime, kPressEmission);
+			finalColor = Color.white * Mathf.LinearToGammaSpace(emission);
+			m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
+			t += Time.unscaledDeltaTime;
+
+			yield return null;
+		}
+		finalColor = Color.white * Mathf.LinearToGammaSpace(kPressEmission);
+		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
+
+		if (!m_Holding)
+			StartCoroutine(DecreaseEmissionCoroutine());
+	}
+
+	private IEnumerator DecreaseEmissionCoroutine()
+	{
+		if (!gameObject.activeInHierarchy) yield break;
+
+		StopCoroutine("IncreaseEmissionCoroutine");
+
+		var t = 0f;
+		Color finalColor;
+		while (t < kEmissionLerpTime)
+		{
+			float emission = Mathf.PingPong(1f - t / kEmissionLerpTime, kPressEmission);
+			finalColor = Color.white * Mathf.LinearToGammaSpace(emission);
+			m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
+			t += Time.unscaledDeltaTime;
+
+			yield return null;
+		}
+		finalColor = Color.white * Mathf.LinearToGammaSpace(0f);
+		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
+	}
+
+	private IEnumerator PunchKey()
+	{
+		m_TargetMesh.localPosition = m_TargetMeshInitialLocalPosition;
+
+		var elapsedTime = 0f;
+		while (elapsedTime < kKeyResponseDuration)
+		{
+			elapsedTime += Time.unscaledDeltaTime;
+			var t = Mathf.Clamp01(elapsedTime / kKeyResponseDuration);
+
+			if (t == 0 || t == 1)
+				break;
+			var p = 0.3f;
+			t = Mathf.Pow(2, -10 * t) * Mathf.Sin(t * (2 * Mathf.PI) / p);
+
+			m_TargetMesh.transform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponseAmplitude;
+
+			var pos = m_TargetMeshInitialLocalPosition;
+			pos.z = t * kKeyResponseAmplitude;
+			m_TargetMesh.transform.localPosition = pos;
+
+			elapsedTime += Time.unscaledDeltaTime;
+			yield return null;
+		}
+
+		m_TargetMesh.transform.localScale = m_TargetMeshInitialScale;
+		m_TargetMesh.transform.localPosition = m_TargetMeshInitialLocalPosition;
 	}
 }

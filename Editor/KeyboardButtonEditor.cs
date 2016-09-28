@@ -4,7 +4,7 @@ using UnityEngine;
 
 [CanEditMultipleObjects]
 [CustomEditor(typeof(KeyboardButton))]
-public class KeyboardButtonEditor : RayButtonEditor
+public class KeyboardButtonEditor : BaseHandleEditor
 {
 	SerializedProperty m_CharacterProperty;
 	SerializedProperty m_UseShiftCharacterProperty;
@@ -12,10 +12,9 @@ public class KeyboardButtonEditor : RayButtonEditor
 	SerializedProperty m_ShiftCharIsUppercaseProperty;
 	SerializedProperty m_ButtonTextProperty;
 	SerializedProperty m_MatchButtonTextToCharacterProperty;
-	SerializedProperty m_ButtonIconProperty;
 	SerializedProperty m_ButtonMeshProperty;
+	SerializedProperty m_ButtonGraphicProperty;
 	SerializedProperty m_RepeatOnHoldProperty;
-	SerializedProperty m_RepeatTimeProperty;
 
 	private KeyCode m_KeyCode;
 	private KeyCode m_ShiftKeyCode;
@@ -28,17 +27,16 @@ public class KeyboardButtonEditor : RayButtonEditor
 	protected override void OnEnable()
 	{
 		base.OnEnable();
-		
+
 		m_CharacterProperty = serializedObject.FindProperty("m_Character");
 		m_UseShiftCharacterProperty = serializedObject.FindProperty("m_UseShiftCharacter");
 		m_ShiftCharacterProperty = serializedObject.FindProperty("m_ShiftCharacter");
 		m_ShiftCharIsUppercaseProperty = serializedObject.FindProperty("m_ShiftCharIsUppercase");
 		m_ButtonTextProperty = serializedObject.FindProperty("m_TextComponent");
 		m_MatchButtonTextToCharacterProperty = serializedObject.FindProperty("m_MatchButtonTextToCharacter");
-		m_ButtonIconProperty = serializedObject.FindProperty("m_ButtonIcon");
-		m_ButtonMeshProperty = serializedObject.FindProperty("m_ButtonMesh");
+		m_ButtonMeshProperty = serializedObject.FindProperty("m_TargetMesh");
+		m_ButtonGraphicProperty = serializedObject.FindProperty("m_TargetGraphic");
 		m_RepeatOnHoldProperty = serializedObject.FindProperty("m_RepeatOnHold");
-		m_RepeatTimeProperty = serializedObject.FindProperty("m_RepeatTime");
 
 		m_KeyCode = (KeyCode)m_CharacterProperty.intValue;
 		m_KeyCodeStr = ((char)m_KeyCode).ToString();
@@ -49,6 +47,8 @@ public class KeyboardButtonEditor : RayButtonEditor
 
 	public override void OnInspectorGUI()
 	{
+		base.OnInspectorGUI();
+
 		m_KeyboardButton = (KeyboardButton)target;
 
 		serializedObject.Update();
@@ -121,15 +121,11 @@ public class KeyboardButtonEditor : RayButtonEditor
 			m_ShiftCharIsUppercaseProperty.boolValue = false;
 		}
 
-		EditorGUILayout.PropertyField(m_ButtonIconProperty);
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);
+		EditorGUILayout.PropertyField(m_ButtonGraphicProperty);
 		EditorGUILayout.PropertyField(m_RepeatOnHoldProperty);
 
-		if (m_RepeatOnHoldProperty.boolValue)
-			EditorGUILayout.PropertyField(m_RepeatTimeProperty);
-
 		serializedObject.ApplyModifiedProperties();
-		base.OnInspectorGUI();
 	}
 
 	private int GetCharacterValueFromText(ref KeyCode keyCode, ref string keyCodeStr)
