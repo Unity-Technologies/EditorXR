@@ -23,7 +23,7 @@ GameObject:
   - 65: {fileID: 65000012906092516}
   - 23: {fileID: 23000011055790038}
   - 114: {fileID: 114000010474635166}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: UIBackingCube
   m_TagString: Untagged
   m_Icon: {fileID: 0}

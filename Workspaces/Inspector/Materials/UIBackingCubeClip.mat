@@ -124,7 +124,7 @@ Material:
       second: {r: 0, g: 0, b: 0, a: 0}
     - first:
         name: _ClipExtents
-      second: {r: 10.51, g: 13.34, b: 4.72, a: 0}
+      second: {r: 0.15, g: 0.25000003, b: 0.04999998, a: 0}
     - first:
         name: _Color
       second: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}

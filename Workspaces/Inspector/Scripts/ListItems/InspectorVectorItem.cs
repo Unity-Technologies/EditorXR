@@ -45,6 +45,8 @@ public class InspectorVectorItem : InspectorPropertyItem
 				break;
 		}
 
+		m_CuboidLayout.UpdateCubes();
+
 		for (int i = 0; i < count; i++)
 			m_InputFields[i].text = vector[i].ToString();
 	}

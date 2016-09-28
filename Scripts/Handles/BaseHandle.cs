@@ -34,6 +34,12 @@ namespace UnityEngine.VR.Handles
 
 		public Vector3 startDragPosition { get; protected set; }
 
+		private void Awake()
+		{
+			// Put this object in the UI layer so that it is hit by UI raycasts
+			gameObject.layer = LayerMask.NameToLayer("UI");
+		}
+
 		private void OnDisable()
 		{
 			if (m_HoverSources.Count > 0 || m_DragSources.Count > 0)

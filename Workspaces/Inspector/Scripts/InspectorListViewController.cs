@@ -2,8 +2,11 @@
 using ListView;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Modules;
+using System;
+using UnityEngine.VR.Tools;
 
-public class InspectorListViewController : NestedListViewController<InspectorData>
+public class InspectorListViewController : NestedListViewController<InspectorData>, IPositionPreview, IDroppable, IDropReciever, IHighlight
 {
 	private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -20,12 +23,17 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	private Material m_UIMaterial;
 
 	[SerializeField]
-	private Material m_NoClipRowCubeMaterial;
-
-	[SerializeField]
-	private Material m_NoClipBackingCubeMaterial;
+	private Material m_NoClipBackingCube;
 
 	private readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
+	
+	public Action<GameObject, bool> setHighlight { private get; set; }
+
+	public PositionPreviewDelegate positionPreview { private get; set; }
+	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
+
+	public Func<Transform, IDropReciever> getCurrentDropReciever { private get; set; }
+	public Action<Transform, IDropReciever> setCurrentDropReciever { private get; set; }
 
 	protected override void Setup()
 	{
@@ -46,7 +54,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		base.ComputeConditions();
 
-		m_StartPosition = bounds.extents.y * Vector3.up;
+		m_StartPosition = bounds.extents.z * Vector3.forward;
 
 		var parentMatrix = transform.worldToLocalMatrix;
 		SetMaterialClip(m_RowCubeMaterial, parentMatrix);
@@ -61,7 +69,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		UpdateRecursively(m_Data, ref totalOffset);
 		// Snap back if list scrolled too far
 		if (totalOffset > 0 && -scrollOffset >= totalOffset)
-			m_ScrollReturn = -totalOffset + m_ItemSize.y; // m_ItemSize will be equal to the size of the last visible item
+			m_ScrollReturn = -totalOffset + m_ItemSize.z; // m_ItemSize will be equal to the size of the last visible item
 	}
 
 	private void UpdateRecursively(InspectorData[] data, ref float totalOffset, int depth = 0)
@@ -69,13 +77,13 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		foreach (var item in data)
 		{
 			m_ItemSize = m_TemplateSizes[item.template];
-			if (totalOffset + scrollOffset + m_ItemSize.y < 0)
+			if (totalOffset + scrollOffset + m_ItemSize.z < 0)
 				CleanUpBeginning(item);
-			else if (totalOffset + scrollOffset > bounds.size.y)
+			else if (totalOffset + scrollOffset > bounds.size.z)
 				CleanUpEnd(item);
 			else
 				UpdateItemRecursive(item, totalOffset, depth);
-			totalOffset += m_ItemSize.y;
+			totalOffset += m_ItemSize.z;
 			if (item.children != null)
 			{
 				if (item.expanded)
@@ -99,15 +107,25 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	private void UpdateItem(Transform t, float offset)
 	{
-		t.localPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.down;
+		t.localPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.back;
 		t.localRotation = Quaternion.identity;
 	}
 
 	protected override ListViewItem<InspectorData> GetItem(InspectorData listData)
 	{
 		var item = (InspectorListItem)base.GetItem(listData);
-		if(!item.hasMaterials)
-			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial);
+		if (!item.setup)
+		{
+			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCube);
+
+			item.getCurrentDropReciever = getCurrentDropReciever;
+			item.setCurrentDropReciever = setCurrentDropReciever;
+			item.setHighlight = setHighlight;
+			item.positionPreview = positionPreview;
+			item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
+
+			item.setup = true;
+		}
 		return item;
 	}
 
@@ -117,5 +135,10 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		U.Object.Destroy(m_BackingCubeMaterial);
 		U.Object.Destroy(m_TextMaterial);
 		U.Object.Destroy(m_UIMaterial);
+	}
+
+	public bool OnDrop(object droppedObject)
+	{
+		return false;
 	}
 }

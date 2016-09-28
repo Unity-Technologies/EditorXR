@@ -64,6 +64,7 @@ public class EditorVR : MonoBehaviour
 	private PixelRaycastModule m_PixelRaycastModule;
 	private HighlightModule m_HighlightModule;
 	private ObjectPlacementModule m_ObjectPlacementModule;
+	private DragAndDropModule m_DragAndDropModule;
 
 	private PlayerHandle m_PlayerHandle;
 
@@ -126,6 +127,7 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+		m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace));
@@ -160,6 +162,9 @@ public class EditorVR : MonoBehaviour
 		// Workspaces don't need to wait until devices are active
 		CreateDefaultWorkspaces();
 
+		// In case we have anything selected at start, set up manipulators, inspector, etc.
+		EditorApplication.delayCall += OnSelectionChanged;
+
 		// Delay until at least one proxy initializes
 		bool proxyActive = false;
 		while (!proxyActive)
@@ -177,7 +182,7 @@ public class EditorVR : MonoBehaviour
 		}
 		SpawnDefaultTools();
 
-		// In case we have anything selected at start, set up manipulators, inspector, etc.
+		// Call OnSelectionChanged one more time for tools
 		EditorApplication.delayCall += OnSelectionChanged;
 	}
 
@@ -722,6 +727,14 @@ public class EditorVR : MonoBehaviour
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
 			m_SelectionChanged += selectionChanged.OnSelectionChanged;
+
+		var droppable = obj as IDroppable;
+		if (droppable != null)
+			droppable.getCurrentDropReciever = m_DragAndDropModule.GetCurrentDropReciever;
+
+		var dropReciever = obj as IDropReciever;
+		if (dropReciever != null)
+			dropReciever.setCurrentDropReciever = m_DragAndDropModule.SetCurrentDropReciever;
 
 		if (mainMenu != null)
 		{

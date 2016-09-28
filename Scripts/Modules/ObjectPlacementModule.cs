@@ -9,6 +9,8 @@ public class ObjectPlacementModule : MonoBehaviour
 
 	private const float kGrowDuration = 0.5f;
 
+	private const float kMagnetizeDuration = 0.5f;
+
 	public void PositionPreview(Transform preview, Transform previewOrigin, float t = 1f)
 	{
 		preview.transform.position = Vector3.Lerp(preview.transform.position, previewOrigin.position, t);

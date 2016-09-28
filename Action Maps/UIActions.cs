@@ -9,5 +9,6 @@ namespace UnityEngine.InputNew
 		
 		public ButtonInputControl @select { get { return (ButtonInputControl)this[0]; } }
 		public AxisInputControl @verticalScroll { get { return (AxisInputControl)this[1]; } }
+		public ButtonInputControl @altSelect { get { return (ButtonInputControl)this[2]; } }
 	}
 }

@@ -214,6 +214,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		item.placeObject = placeObject;
 		item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		item.positionPreview = positionPreview;
+
 		StartCoroutine(Transition(data, false));
 
 		switch (data.type)

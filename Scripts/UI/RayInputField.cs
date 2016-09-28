@@ -63,6 +63,8 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 			m_Text = m_CharacterLimit > 0 && value.Length > m_CharacterLimit ? value.Substring(0, m_CharacterLimit) : value;
 		}
 	}
+	[HideInInspector]
+	[SerializeField] // Serialized so that this remains set after cloning
 	protected string m_Text = string.Empty;
 
 	protected override void OnEnable()

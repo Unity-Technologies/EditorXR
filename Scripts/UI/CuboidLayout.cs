@@ -32,13 +32,13 @@ public class CuboidLayout : UIBehaviour
 		UpdateCubes();
 	}
 
-	public void SwapMaterials(Material backingCubeMaterial)
+	public void SetMaterials(Material backingCubeMaterial)
 	{
 		foreach (var cube in m_CubeTransforms)
 			cube.GetComponent<Renderer>().sharedMaterial = backingCubeMaterial;
 	}
 
-	private void UpdateCubes()
+	public void UpdateCubes()
 	{
 		if (m_CubeTransforms == null)
 			return;

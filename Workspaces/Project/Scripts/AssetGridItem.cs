@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections;
-using ListView;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPreview
+public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDroppable
 {
-	private const float kMagnetizeDuration = 0.5f;
 	private const float kPreviewDuration = 0.1f;
 
 	private const float kRotateSpeed = 50f;
@@ -39,8 +38,6 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	private Transform m_PreviewObject;
 
 	private bool m_Setup;
-	private Transform m_GrabbedObject;
-	private float m_GrabLerp;
 	private float m_PreviewFade;
 	private Vector3 m_PreviewPrefabScale;
 	private Vector3 m_PreviewTargetScale;
@@ -128,10 +125,8 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		}
 	}
 
+	public Func<Transform, IDropReciever> getCurrentDropReciever { private get; set; }
 	public Action<Transform, Vector3> placeObject { private get; set; }
-
-	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
-	public PositionPreviewDelegate positionPreview { private get; set; }
 
 	public override void Setup(AssetData listData)
 	{
@@ -142,9 +137,9 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			// Cube material might change, so we always instance it
 			U.Material.GetMaterialClone(m_Cube);
 
-			m_Handle.dragStarted += OnGrabStarted;
-			m_Handle.dragging += OnGrabDragging;
-			m_Handle.dragEnded += OnGrabEnded;
+			m_Handle.dragStarted += OnDragStarted;
+			m_Handle.dragging += OnDragging;
+			m_Handle.dragEnded += OnDragEnded;
 
 			m_Handle.hoverStarted += OnHoverStarted;
 			m_Handle.hoverEnded += OnHoverEnded;
@@ -229,8 +224,10 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		m_PreviewObject.localScale = Vector3.zero;
 	}
 
-	private void OnGrabStarted(BaseHandle baseHandle, HandleEventData eventData)
+	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
+		base.OnDragStarted(baseHandle, eventData);
+
 		var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<AssetGridItem>();
 
@@ -246,33 +243,12 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			U.Object.Destroy(cloneItem.m_TextPanel.gameObject);
 		}
 
-		m_GrabbedObject = clone.transform;
-		m_GrabLerp = 0;
-		StartCoroutine(Magnetize());
+		m_DragObject = clone.transform;
 	}
 
-	// Smoothly interpolate grabbed object into position, instead of "popping."
-	private IEnumerator Magnetize()
+	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		var startTime = Time.realtimeSinceStartup;
-		var currTime = 0f;
-		while (currTime < kMagnetizeDuration)
-		{
-			currTime = Time.realtimeSinceStartup - startTime;
-			m_GrabLerp = currTime / kMagnetizeDuration;
-			yield return null;
-		}
-		m_GrabLerp = 1;
-	}
-
-	private void OnGrabDragging(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		positionPreview(m_GrabbedObject.transform, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_GrabLerp);
-	}
-
-	private void OnGrabEnded(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		var gridItem = m_GrabbedObject.GetComponent<AssetGridItem>();
+		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 		if (gridItem.m_PreviewObject)
 			placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
 		else
@@ -288,7 +264,9 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			}
 		}
 		gridItem.m_Cube.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
-		U.Object.Destroy(m_GrabbedObject.gameObject);
+		U.Object.Destroy(m_DragObject.gameObject);
+
+		base.OnDragEnded(baseHandle, eventData);
 	}
 
 	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)

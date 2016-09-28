@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class InspectorWorkspace : Workspace
+public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDropReciever, ISelectionChanged
 {
 	private const float kScrollMargin = 0.03f;
 	public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
@@ -20,6 +22,12 @@ public class InspectorWorkspace : Workspace
 
 	public bool @lock;
 
+	public PositionPreviewDelegate positionPreview { private get; set; }
+	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
+
+	public Func<Transform, IDropReciever> getCurrentDropReciever { private get; set; }
+	public Action<Transform, IDropReciever> setCurrentDropReciever { private get; set; }
+
 	public override void Setup()
 	{
 		base.Setup();
@@ -29,6 +37,11 @@ public class InspectorWorkspace : Workspace
 		var listView = m_InspectorUI.inspectorListView;
 		listView.data = new InspectorData[0];
 		listView.instantiateUI = instantiateUI;
+		listView.getCurrentDropReciever = getCurrentDropReciever;
+		listView.setCurrentDropReciever = setCurrentDropReciever;
+		listView.positionPreview = positionPreview;
+		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
+		listView.setHighlight = setHighlight;
 
 		var scrollHandle = m_InspectorUI.inspectorScrollHandle;
 
@@ -37,8 +50,6 @@ public class InspectorWorkspace : Workspace
 		scrollHandle.dragEnded += OnScrollDragEnded;
 		scrollHandle.hoverStarted += OnScrollHoverStarted;
 		scrollHandle.hoverEnded += OnScrollHoverEnded;
-
-		Selection.selectionChanged += OnSelectionChanged;
 
 		minBounds = kDefaultBounds;
 		contentBounds = new Bounds(Vector3.zero, kDefaultBounds);
@@ -60,7 +71,7 @@ public class InspectorWorkspace : Workspace
 	private void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		Scroll(handle, eventData);
-			m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
+		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
 		m_InspectorUI.inspectorListView.OnScrollEnded();
 	}
 
@@ -80,16 +91,11 @@ public class InspectorWorkspace : Workspace
 		setHighlight(handle.gameObject, false);
 	}
 
-	protected override void OnDestroy()
-	{
-		base.OnDestroy();
-		Selection.selectionChanged -= OnSelectionChanged;
-	}
-
-	private void OnSelectionChanged()
+	public void OnSelectionChanged()
 	{
 		if (@lock)
 			return;
+
 		if (Selection.activeObject == null)
 		{
 			m_InspectorUI.inspectorListView.data = new InspectorData[0];
@@ -167,13 +173,15 @@ public class InspectorWorkspace : Workspace
 
 		var inspectorListView = m_InspectorUI.inspectorListView;
 		var bounds = contentBounds;
-		bounds.size = (inspectorListView.transform.localRotation * bounds.size).Abs();
 		inspectorListView.bounds = bounds;
-		inspectorListView.PreCompute(); // Compute item size
-		inspectorListView.transform.localPosition = inspectorListView.itemSize.z * Vector3.up;
 
 		var inspectorPanel = m_InspectorUI.inspectorPanel;
 		inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
 		inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
+	}
+
+	public bool OnDrop(object droppedObject)
+	{
+		return false;
 	}
 }
