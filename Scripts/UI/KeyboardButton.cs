@@ -103,26 +103,26 @@ public class KeyboardButton : BaseHandle
 		}
 	}
 
-	protected override void OnHandleHoverStarted(HandleEventData eventData)
-	{
-		DoGraphicStateTransition(SelectionState.Highlighted, false);
-
-		base.OnHandleHoverStarted(eventData);
-	}
-
-	protected override void OnHandleHoverEnded(HandleEventData eventData)
-	{
-		DoGraphicStateTransition(SelectionState.Highlighted, false);
-
-		base.OnHandleHoverEnded(eventData);
-	}
+//	protected override void OnHandleHoverStarted(HandleEventData eventData)
+//	{
+//		DoGraphicStateTransition(SelectionState.Highlighted, false);
+//
+//		base.OnHandleHoverStarted(eventData);
+//	}
+//
+//	protected override void OnHandleHoverEnded(HandleEventData eventData)
+//	{
+//		DoGraphicStateTransition(SelectionState.Highlighted, false);
+//
+//		base.OnHandleHoverEnded(eventData);
+//	}
 
 	protected override void OnHandleDragStarted(HandleEventData eventData)
 	{
 		if (m_PressOnHover())
 			return;
 
-		NumericKeyPressed();
+		KeyPressed();
 
 		base.OnHandleDragStarted(eventData);
 	}
@@ -138,9 +138,6 @@ public class KeyboardButton : BaseHandle
 		base.OnHandleDragging(eventData);
 	}
 
-	/// <summary>
-	/// Override to modify event data prior to raising event (requires calling base method at the end)
-	/// </summary>
 	protected override void OnHandleDragEnded(HandleEventData eventData)
 	{
 		if (m_PressOnHover())
@@ -157,7 +154,7 @@ public class KeyboardButton : BaseHandle
 		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
 			return;
 
-		NumericKeyPressed();
+		KeyPressed();
 	}
 
 	public void OnTriggerStay(Collider col)
@@ -177,7 +174,7 @@ public class KeyboardButton : BaseHandle
 		if (m_RepeatOnHold)
 			EndKeyHold();
 	}
-	public void NumericKeyPressed()
+	public void KeyPressed()
 	{
 		if (m_KeyPress == null) return;
 
@@ -207,7 +204,7 @@ public class KeyboardButton : BaseHandle
 	{
 		if (m_Holding && m_HoldStartTime + m_RepeatWaitTime < Time.realtimeSinceStartup)
 		{
-			NumericKeyPressed();
+			KeyPressed();
 			m_HoldStartTime = Time.realtimeSinceStartup;
 			m_RepeatWaitTime *= 0.75f;
 		}

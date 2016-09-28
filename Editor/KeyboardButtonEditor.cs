@@ -117,9 +117,7 @@ public class KeyboardButtonEditor : BaseHandleEditor
 			}
 		}
 		else
-		{
 			m_ShiftCharIsUppercaseProperty.boolValue = false;
-		}
 
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);
 		EditorGUILayout.PropertyField(m_ButtonGraphicProperty);
