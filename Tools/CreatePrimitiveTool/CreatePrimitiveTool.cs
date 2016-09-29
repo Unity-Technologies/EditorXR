@@ -6,17 +6,18 @@ using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
 
 [MainMenuItem("Primitive", "Primitive", "Create primitives in the scene")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateUI
+public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateUI, ICustomRay
 {
 	public static PrimitiveType s_SelectedPrimitiveType = PrimitiveType.Cube;
+	public static bool s_Freeform = false;
 
 	private GameObject m_CurrentGameObject = null;
-	private float m_CurrentDistance;
+	//private float m_CurrentDistance;
 
 	private Vector3 m_PointA = Vector3.zero;
 	private Vector3 m_PointB = Vector3.zero;
 
-	private const float kDrawDistance = 10.0f;
+	private const float kDrawDistance = 0.08f;
 	private const float kWaitTime = 0.2f;
 
 	private float m_TimeStamp = 0.0f;
@@ -43,11 +44,20 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 		private get; set;
 	}
 
+	public Action hideDefaultRay
+	{
+		private get; set;
+	}
+	public Action showDefaultRay
+	{
+		private get; set;
+	}
+
 	private enum PrimitiveCreationStates
 	{
 		PointA,
-		Delay,
 		PointB,
+		Freeform,
 	}
 
 	void Awake()
@@ -65,9 +75,10 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 				var go = instantiateUI(CanvasPrefab.gameObject);
 				m_ToolCanvas = go.GetComponent<Canvas>();
 				m_ToolCanvasSpawned = true;
-            }
-			m_ToolCanvas.transform.position = rayOrigin.position + rayOrigin.forward * kDrawDistance * 2f;
+			}
+			m_ToolCanvas.transform.position = rayOrigin.position + rayOrigin.forward * 20f;
 			m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - VRView.viewerCamera.transform.position);
+			hideDefaultRay();
 			return;
 		}
 
@@ -79,57 +90,44 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 				{
 					m_CurrentGameObject = GameObject.CreatePrimitive(s_SelectedPrimitiveType);
 					m_CurrentGameObject.GetComponent<Collider>().enabled = false;
-					m_CurrentGameObject.transform.localScale = new Vector3(1.0f,1.0f,1.0f);
+					m_CurrentGameObject.transform.localScale = new Vector3(0.0025f,0.0025f,0.0025f);
 
-					Vector3 spawnPos = Vector3.zero;
-                    RaycastHit hit;
-					Ray r = new Ray(rayOrigin.position,rayOrigin.forward);
-					if(Physics.Raycast(r,out hit))
-					{
-						Vector3 temp = m_CurrentGameObject.GetComponent<MeshRenderer>().bounds.extents;
-						temp.x = 0.0f;
-						temp.z = 0.0f;
-						spawnPos = hit.point + Quaternion.FromToRotation(Vector3.up,hit.normal) * temp;
-						m_CurrentDistance = hit.distance;
-					}
+					m_PointA = rayOrigin.position + rayOrigin.forward * kDrawDistance;
+
+					m_CurrentGameObject.transform.position = m_PointA;
+
+					if(s_Freeform)
+						m_State = PrimitiveCreationStates.Freeform;
 					else
-					{
-						m_CurrentDistance = 10.0f;
-						spawnPos = r.GetPoint(kDrawDistance);
-					}
+						m_State = PrimitiveCreationStates.PointB;
 
-					m_CurrentGameObject.transform.position = spawnPos;
-					m_PointA = spawnPos;
-					m_State = PrimitiveCreationStates.Delay;
 					m_TimeStamp = Time.realtimeSinceStartup;
-					break;
-				}
-				break;
-			}
-
-			case PrimitiveCreationStates.Delay:
-			{
-				if(Time.realtimeSinceStartup - m_TimeStamp > kWaitTime)
-				{
-					m_State = PrimitiveCreationStates.PointB;
-					break;
-				}
-				if(standardInput.action.wasJustReleased)
-				{
-					m_State = PrimitiveCreationStates.PointA;
-					m_CurrentGameObject.GetComponent<Collider>().enabled = true;
 					break;
 				}
 				break;
 			}
 			case PrimitiveCreationStates.PointB:
 			{
-				m_PointB = rayOrigin.position + rayOrigin.forward * m_CurrentDistance;
-				Vector3 temp_scale = m_CurrentGameObject.transform.localScale;
-				float dist = Vector3.Distance(m_PointA,m_PointB);
-				temp_scale = new Vector3(1.0f,1.0f,1.0f) * dist;
-				m_CurrentGameObject.transform.localScale = temp_scale;
-				m_CurrentGameObject.transform.position = m_PointA + ((m_PointB - m_PointA).normalized * dist / 2.0f);
+				m_PointB = rayOrigin.position + rayOrigin.forward * kDrawDistance;
+                float dist = Vector3.Distance(m_PointA,m_PointB);
+				m_CurrentGameObject.transform.localScale = new Vector3(1.0f,1.0f,1.0f) * dist;
+				m_CurrentGameObject.transform.position = m_PointB;
+
+				if(standardInput.action.wasJustReleased)
+				{
+					m_CurrentGameObject.GetComponent<Collider>().enabled = true;
+					m_State = PrimitiveCreationStates.PointA;
+				}
+				break;
+			}
+			case PrimitiveCreationStates.Freeform:
+			{
+				m_PointB = rayOrigin.position + rayOrigin.forward * kDrawDistance;
+				m_CurrentGameObject.transform.position = (m_PointA + m_PointB) * .5f;
+				Vector3 maxCorner = Vector3.Max(m_PointA,m_PointB);
+				Vector3 minCorner = Vector3.Min(m_PointA,m_PointB);
+
+				m_CurrentGameObject.transform.localScale = (maxCorner - minCorner);
 
 				if(standardInput.action.wasJustReleased)
 				{
