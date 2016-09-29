@@ -41,6 +41,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 	public override void Setup()
 	{
 		base.Setup();
+		base.dynamicFaceAdjustment = true;
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
 
