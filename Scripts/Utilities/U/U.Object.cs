@@ -1,4 +1,6 @@
-﻿namespace UnityEngine.VR.Utilities
+﻿using System.Reflection;
+
+namespace UnityEngine.VR.Utilities
 {
 	using System;
 	using UnityEngine;
@@ -140,26 +142,49 @@
 				return component;
 			}
 
+			private static IEnumerable<Type> GetAssignableTypes(Type type)
+			{
+				var list = new List<Type>();
+				var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+				foreach (var assembly in assemblies)
+				{
+					Type[] types;
+					try
+					{
+						types = assembly.GetTypes();
+					}
+					catch (ReflectionTypeLoadException)
+					{
+						// Skip any assemblies that don't load properly
+						continue;
+					}
+
+					foreach (var t in types)
+					{
+						if (type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+							list.Add(t);
+					}
+				}
+
+				return list;
+
+			}
+
 			public static IEnumerable<Type> GetImplementationsOfInterface(Type type)
 			{
+				
 				if (type.IsInterface)
-				{
-					return AppDomain.CurrentDomain.GetAssemblies()
-						.SelectMany(s => s.GetTypes())
-						.Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
-				}
-				return new List<Type>();
+					return GetAssignableTypes(type);
+				else
+					return Enumerable.Empty<Type>();
 			}
 
 			public static IEnumerable<Type> GetExtensionsOfClass(Type type)
 			{
 				if (type.IsClass)
-				{
-					return AppDomain.CurrentDomain.GetAssemblies()
-						.SelectMany(s => s.GetTypes())
-						.Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
-				}
-				return new List<Type>();
+					return GetAssignableTypes(type);
+				else
+					return Enumerable.Empty<Type>();
 			}
 
 			public static void Destroy(UnityObject o, float t = 0f)

@@ -10,6 +10,7 @@ namespace UnityEngine.VR.Workspaces
 	{
 		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 		public static readonly Vector3 kDefaultOffset = new Vector3(0, -0.15f, 1f);
+		public static readonly Vector3 kVacuumOffset = new Vector3(0, -0.15f, 0.6f);
 		public static readonly Quaternion kDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
 		public const float kHandleMargin = -0.15f; // Compensate for base size from frame model
@@ -46,7 +47,6 @@ namespace UnityEngine.VR.Workspaces
 				}
 			}
 		}
-
 		private Bounds m_ContentBounds;
 
 		[SerializeField]
@@ -219,7 +219,7 @@ namespace UnityEngine.VR.Workspaces
 			cameraYawVector.y = 0;
 			var cameraYaw = Quaternion.LookRotation(cameraYawVector, Vector3.up);
 
-			Vector3 destPosition = camera.position + cameraYaw * kDefaultOffset;
+			Vector3 destPosition = camera.position + cameraYaw * kVacuumOffset;
 
 			Quaternion destRotation = cameraYaw * kDefaultTilt;
 
