@@ -26,24 +26,11 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	[SerializeField]
 	private OnChangeEvent m_OnValueChanged = new OnChangeEvent();
 
-	protected UnityEvent m_OnCloseKeyboard = new UnityEvent();
-
-	[SerializeField]
-	private Transform m_KeyboardAnchorTransform;
-
 	[SerializeField]
 	protected Text m_TextComponent;
 
 	[SerializeField]
 	private int m_CharacterLimit = 10;
-
-	public delegate char OnValidateInput(string text, int charIndex, char addedChar);
-	[SerializeField]
-	private OnValidateInput m_OnValidateInput;
-	public OnValidateInput onValidateInput { get { return m_OnValidateInput; } set { m_OnValidateInput = value; } }
-
-	[SerializeField]
-	private InputField.SubmitEvent m_OnEndEdit = new InputField.SubmitEvent();
 
 	private bool m_Open;
 
@@ -75,9 +62,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 			m_Text = string.Empty;
 
 		if (m_TextComponent != null)
-		{
 			UpdateLabel();
-		}
 	}
 
 	public void ForceUpdateLabel()
@@ -87,8 +72,9 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 
 	public virtual void ClearLabel()
 	{
-		
+		Clear();
 	}
+
 	public void OnPointerClick(PointerEventData eventData)
 	{
 		var rayEventData = eventData as RayEventData;
@@ -103,12 +89,20 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		if (m_Open)
 			Close();
 		else
-			Open();
+			{
+				if (rayEventData != null)
+					Open(rayEventData.rayOrigin.position);
+			}
 	}
 
 	public void OnSubmit(BaseEventData eventData)
 	{
-		//		throw new System.NotImplementedException();
+		//
+	}
+
+	public override void OnSelect(BaseEventData eventData)
+	{
+		//
 	}
 
 	protected void SendOnValueChangedAndUpdateLabel()
@@ -131,23 +125,20 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 
 	public override void OnDeselect(BaseEventData eventData)
 	{
-
+		//
 	}
 
-	private void Open()
+	protected virtual void Open(Vector3 position)
 	{
 		if (m_Open) return;
 		m_Open = true;
 
 		m_Keyboard = spawnKeyboard();
-		// Instantiate keyboard here
 		if (m_Keyboard != null)
 		{
 			m_Keyboard.gameObject.SetActive(true);
-			m_Keyboard.transform.SetParent(transform, true);
-			m_Keyboard.transform.position = m_KeyboardAnchorTransform.position;
-			m_Keyboard.transform.rotation = m_KeyboardAnchorTransform.rotation;
-
+			m_Keyboard.transform.position = position + Vector3.up * 0.01f;
+			m_Keyboard.transform.rotation = Quaternion.identity;
 			m_Keyboard.Setup(OnKeyPress);
 		}
 	}
@@ -166,18 +157,33 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	{
 		switch ((int)keyCode)
 		{
-			case (int)KeyboardButton.SpecialKeyType.None:
+			case (int)KeyCode.None:
 				return;
-			case (int)KeyboardButton.SpecialKeyType.Backspace:
+			case (int)KeyCode.Backspace:
 				Backspace();
 				return;
-			case (int)KeyboardButton.SpecialKeyType.Tab:
+			case (int)KeyCode.Tab:
+				Tab();
 				return;
-			case (int)KeyboardButton.SpecialKeyType.CarriageReturn:
+			case (int)KeyCode.Clear:
+				Clear();
+				return;
+			case '\n':
+			case (int)KeyCode.Return:
 				Return();
 				return;
-			case (int)KeyboardButton.SpecialKeyType.Space:
+			case (int)KeyCode.Escape:
+				Escape();
+				return;
+			case (int)KeyCode.Space:
 				Space();
+				return;
+			case (int)KeyCode.LeftShift:
+			case (int)KeyCode.RightShift:
+				Shift();
+				return;
+			case (int)KeyCode.CapsLock:
+				CapsLock();
 				return;
 		}
 
@@ -190,8 +196,22 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		return m_TextComponent.font.HasCharacter(c);
 	}
 
+	protected virtual void Escape()
+	{
+		Close();
+	}
+
+	protected virtual void Clear()
+	{
+		m_Text = "";
+		SendOnValueChangedAndUpdateLabel();
+	}
+
 	protected abstract void Append(char c);
 	protected abstract void Backspace();
+	protected abstract void Tab();
 	protected abstract void Return();
 	protected abstract void Space();
+	protected abstract void Shift();
+	protected abstract void CapsLock();
 }

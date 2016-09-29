@@ -45,6 +45,13 @@ public class EditorVR : MonoBehaviour
 	private Camera m_EventCameraPrefab;
 
 	[SerializeField]
+	private KeyboardMallet m_KeyboardMalletPrefab;
+
+	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
+
+	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
+
+	[SerializeField]
 	private KeyboardUI m_NumericKeyboardPrefab;
 
 	private KeyboardUI m_NumericKeyboard;
@@ -53,8 +60,6 @@ public class EditorVR : MonoBehaviour
 	private KeyboardUI m_StandardKeyboardPrefab;
 
 	private KeyboardUI m_StandardKeyboard;
-
-	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
 	private TrackedObject m_TrackedObjectInput;
 	private Default m_DefaultActionInput;
@@ -65,6 +70,8 @@ public class EditorVR : MonoBehaviour
 	private HighlightModule m_HighlightModule;
 	private ObjectPlacementModule m_ObjectPlacementModule;
 	private DragAndDropModule m_DragAndDropModule;
+
+	private bool m_UpdatePixelRaycastModule = true;
 
 	private bool m_UpdatePixelRaycastModule = true;
 
@@ -246,7 +253,15 @@ public class EditorVR : MonoBehaviour
 	private void Update()
 	{
 		foreach (var proxy in m_AllProxies)
+		{
 			proxy.hidden = !proxy.active;
+			// TODO remove this after physics are in
+			if (proxy.active)
+			{
+				foreach (var rayOrigin in proxy.rayOrigins.Values)
+					m_KeyboardMallets[rayOrigin].CheckForKeyCollision();
+			}
+		}
 
 		foreach (var kvp in m_DeviceData)
 		{
@@ -380,6 +395,11 @@ public class EditorVR : MonoBehaviour
 				rayTransform.position = rayOriginBase.Value.position;
 				rayTransform.rotation = rayOriginBase.Value.rotation;
 				m_DefaultRays.Add(rayOriginBase.Value, rayTransform.GetComponent<DefaultProxyRay>());
+
+				var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginBase.Value).transform;
+				malletTransform.position = rayOriginBase.Value.position;
+				malletTransform.rotation = rayOriginBase.Value.rotation;
+				m_KeyboardMallets.Add(rayOriginBase.Value, malletTransform.GetComponent<KeyboardMallet>());
 			}
 			m_AllProxies.Add(proxy);
 		}
@@ -466,14 +486,16 @@ public class EditorVR : MonoBehaviour
 	{
 		var go = U.Object.Instantiate(prefab, transform);
 		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
+		{
 			canvas.worldCamera = m_EventCamera;
 
-		foreach (RayInputField inputField in go.GetComponentsInChildren<RayInputField>())
-		{
-			if (inputField is NumericInputField)
-				inputField.spawnKeyboard = SpawnNumericKeyboard;
-			else if (inputField is StandardInputField)
-				inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
+			foreach (RayInputField inputField in canvas.GetComponentsInChildren<RayInputField>())
+			{
+				if (inputField is NumericInputField)
+					inputField.spawnKeyboard = SpawnNumericKeyboard;
+				else if (inputField is StandardInputField)
+					inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
+			}
 		}
 		return go;
 	}
@@ -482,7 +504,10 @@ public class EditorVR : MonoBehaviour
 	{
 		// Check if the prefab has already been instantiated
 		if (m_NumericKeyboard == null)
-			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, transform ).GetComponent<KeyboardUI>();
+		{
+			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
+			m_NumericKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
+		}
 		return m_NumericKeyboard;
 	}
 
@@ -490,7 +515,10 @@ public class EditorVR : MonoBehaviour
 	{
 		// Check if the prefab has already been instantiated
 		if (m_StandardKeyboard == null)
-			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, transform).GetComponent<KeyboardUI>();
+		{
+			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
+			m_StandardKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
+		}
 		return m_StandardKeyboard;
 	}
 
@@ -912,7 +940,6 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
-		CreateWorkspace<InspectorWorkspace>();
 		CreateWorkspace<ProjectWorkspace>();
 		CreateWorkspace<ChessboardWorkspace>();
 		CreateWorkspace<ConsoleWorkspace>();
