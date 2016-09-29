@@ -32,8 +32,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	public PositionPreviewDelegate positionPreview { private get; set; }
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
-	public Func<Transform, IDropReciever> getCurrentDropReciever { private get; set; }
-	public Action<Transform, IDropReciever> setCurrentDropReciever { private get; set; }
+	public GetDropRecieverDelegate getCurrentDropReciever { private get; set; }
+	public Action<Transform, IDropReciever, GameObject> setCurrentDropReciever { private get; set; }
 
 	protected override void Setup()
 	{
@@ -137,7 +137,12 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		U.Object.Destroy(m_UIMaterial);
 	}
 
-	public bool OnDrop(object droppedObject)
+	public bool TestDrop(GameObject target, object droppedObject)
+	{
+		return false;
+	}
+
+	public bool RecieveDrop(GameObject target, object droppedObject)
 	{
 		return false;
 	}

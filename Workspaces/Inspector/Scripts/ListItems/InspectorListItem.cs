@@ -1,13 +1,19 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
 
-public class InspectorListItem : DraggableListItem<InspectorData>, IHighlight, IDroppable, IDropReciever
+public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHighlight, IDroppable, IDropReciever
 {
 	private const float kIndent = 0.02f;
+	private const float kMinDragDistance = 0.01f;
+
+	private static readonly Quaternion previewRotation = Quaternion.AngleAxis(90, Vector3.right);
 
 	protected CuboidLayout m_CuboidLayout;
 
@@ -23,13 +29,22 @@ public class InspectorListItem : DraggableListItem<InspectorData>, IHighlight, I
 
 	private bool m_Setup;
 
+	private readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform, Vector3>();
+
+	private float m_LastClickTime;
+	private int m_ClickCount;
+	private bool m_SelectIsHeld;
+	private float m_DragDistance;
+	private RayInputField m_ClickedField;
+	private Vector3 m_PointerPosition;
+
 	public bool setup { get; set; }
 
 	public Action<GameObject, bool> setHighlight { set; private get; }
 
-	public Func<Transform, IDropReciever> getCurrentDropReciever { protected get; set; }
+	public GetDropRecieverDelegate getCurrentDropReciever { protected get; set; }
 
-	public Action<Transform, IDropReciever> setCurrentDropReciever { private get; set; }
+	public Action<Transform, IDropReciever, GameObject> setCurrentDropReciever { private get; set; }
 
 	public override void Setup(InspectorData data)
 	{
@@ -113,48 +128,132 @@ public class InspectorListItem : DraggableListItem<InspectorData>, IHighlight, I
 	protected virtual void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
 	{
 		setHighlight(handle.gameObject, true);
-		setCurrentDropReciever(eventData.rayOrigin, this);
+		setCurrentDropReciever(eventData.rayOrigin, this, handle.gameObject);
 	}
 
 	protected virtual void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
 	{
 		setHighlight(handle.gameObject, false);
-		setCurrentDropReciever(eventData.rayOrigin, null);
+		setCurrentDropReciever(eventData.rayOrigin, null, handle.gameObject);
 	}
 
 	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		base.OnDragStarted(baseHandle, eventData);
+		m_DragObject = null;
 
-		var clone = Instantiate(baseHandle.transform.parent.gameObject, baseHandle.transform.parent.parent) as GameObject;
-		// Re-center pivot
-		clone.GetComponent<RectTransform>().pivot = Vector2.one * 0.5f;
-
-		//Re-center backing cube
-		foreach (Transform child in clone.transform)
+		var fieldBlock = baseHandle.transform.parent;
+		if (fieldBlock)
 		{
-			if (child.GetComponent<BaseHandle>())
+			if (m_ClickCount == 0)
 			{
-				var localPos = child.localPosition;
-				localPos.x = 0;
-				localPos.y = 0;
-				child.localPosition = localPos;
+				// Get RayInputField from direct children
+				foreach (Transform child in fieldBlock.transform)
+				{
+					m_ClickedField = child.GetComponent<RayInputField>();
+					if (m_ClickedField)
+					{
+						StartCoroutine(CheckSingleClick());
+						break;
+					}
+				}
+			}
+			m_PointerPosition = eventData.rayOrigin.position;
+			m_ClickCount++;
+			m_SelectIsHeld = true;
+			m_DragStarts[eventData.rayOrigin] = fieldBlock.position;
+
+			// Detect double click
+			var timeSinceLastClick = Time.realtimeSinceStartup - m_LastClickTime;
+			m_LastClickTime = Time.realtimeSinceStartup;
+			if (m_ClickCount > 1 && U.UI.DoubleClick(timeSinceLastClick))
+			{
+				m_ClickCount = 0;
+
+				var clone = Instantiate(fieldBlock.gameObject, fieldBlock.parent) as GameObject;
+				// Re-center pivot
+				clone.GetComponent<RectTransform>().pivot = Vector2.one * 0.5f;
+
+				//Re-center backing cube
+				foreach (Transform child in clone.transform)
+				{
+					if (child.GetComponent<BaseHandle>())
+					{
+						var localPos = child.localPosition;
+						localPos.x = 0;
+						localPos.y = 0;
+						child.localPosition = localPos;
+					}
+				}
+
+				m_DragObject = clone.transform;
+
+				var graphics = clone.GetComponentsInChildren<Graphic>(true);
+				foreach (var graphic in graphics)
+					graphic.material = null;
+
+				var renderers = clone.GetComponentsInChildren<Renderer>(true);
+				foreach (var renderer in renderers)
+					renderer.sharedMaterial = m_NoClipBackingCube;
+			}
+		}
+	}
+
+	protected override void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
+	{
+		if (m_ClickedField)
+		{
+			var currentPosition = m_ClickedField.transform.parent.position;
+			m_DragDistance = (currentPosition - m_DragStarts[eventData.rayOrigin]).magnitude;
+			//TODO: drag sliding
+		}
+
+		if (m_DragObject)
+			positionPreview(m_DragObject, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_DragLerp, previewRotation);
+	}
+
+	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
+	{
+		m_SelectIsHeld = false;
+		var fieldBlock = baseHandle.transform.parent;
+		if (fieldBlock)
+		{
+			if (m_DragObject)
+			{
+				GameObject target;
+				var dropReciever = getCurrentDropReciever(eventData.rayOrigin, out target);
+				if (dropReciever != null)
+					DropItem(fieldBlock, dropReciever, target);
+
+				U.Object.Destroy(m_DragObject.gameObject);
 			}
 		}
 
-		m_DragObject = clone.transform;
-
-		var graphics = clone.GetComponentsInChildren<Graphic>(true);
-		foreach (var graphic in graphics)
-			graphic.material = null;
-
-		var renderers = clone.GetComponentsInChildren<Renderer>(true);
-		foreach (var renderer in renderers)
-			renderer.sharedMaterial = m_NoClipBackingCube;
+		base.OnDragEnded(baseHandle, eventData);
 	}
 
-	public virtual bool OnDrop(object droppedObject)
+	private IEnumerator CheckSingleClick()
 	{
-		return false;
+		var start = Time.realtimeSinceStartup;
+		var currTime = 0f;
+		while (m_SelectIsHeld || currTime < U.UI.kDoubleClickIntervalMax)
+		{
+			currTime = Time.realtimeSinceStartup - start;
+			yield return null;
+		}
+
+		if (m_ClickCount == 1)
+		{
+			if (m_ClickedField && m_DragDistance < kMinDragDistance)
+				m_ClickedField.ToggleKeyboard();
+		}
+
+		m_ClickCount = 0;
 	}
+
+	protected abstract void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target);
+
+	public abstract bool TestDrop(GameObject target, object droppedObject);
+
+	public abstract bool RecieveDrop(GameObject target, object droppedObject);
 }

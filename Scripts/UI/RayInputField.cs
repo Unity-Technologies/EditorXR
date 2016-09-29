@@ -94,11 +94,16 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
-			if (m_Open)
-				Close();
-			else
-				Open();
+			ToggleKeyboard();
 		}
+	}
+
+	public void ToggleKeyboard()
+	{
+		if (m_Open)
+			Close();
+		else
+			Open();
 	}
 
 	public void OnSubmit(BaseEventData eventData)

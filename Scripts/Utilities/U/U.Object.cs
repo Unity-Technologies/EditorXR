@@ -276,6 +276,11 @@ namespace UnityEngine.VR.Utilities
 				}
 				return bounds;
 			}
+
+			public static string NiceSerializedPropertyType(string type)
+			{
+				return type.Replace("PPtr<", "").Replace(">", "");
+			}
 		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Modules;
 
 public class InspectorHeaderItem : InspectorListItem
 {
@@ -57,5 +58,20 @@ public class InspectorHeaderItem : InspectorListItem
 		// TODO: Add choice dialog for whether to set in children
 		if(m_TargetGameObject != null && m_TargetGameObject.isStatic != isStatic)
 			m_TargetGameObject.isStatic = isStatic;
+	}
+
+	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	{
+
+	}
+
+	public override bool TestDrop(GameObject target, object droppedObject)
+	{
+		return false;
+	}
+
+	public override bool RecieveDrop(GameObject target, object droppedObject)
+	{
+		return false;
 	}
 }

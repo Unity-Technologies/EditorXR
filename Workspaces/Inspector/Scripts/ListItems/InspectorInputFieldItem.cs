@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Modules;
 
 public class InspectorInputFieldItem : InspectorPropertyItem
 {
@@ -58,5 +59,20 @@ public class InspectorInputFieldItem : InspectorPropertyItem
 		}
 
 		data.serializedObject.ApplyModifiedProperties();
+	}
+
+	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	{
+
+	}
+
+	public override bool TestDrop(GameObject target, object droppedObject)
+	{
+		return false;
+	}
+
+	public override bool RecieveDrop(GameObject target, object droppedObject)
+	{
+		return false;
 	}
 }

@@ -235,6 +235,7 @@ MonoBehaviour:
   - {fileID: 1000011895958286, guid: 61173edee2245b040b8a5ad7f6724376, type: 2}
   - {fileID: 1000011895958286, guid: 9e6015ec88cd0254da1988ad4ad31eb4, type: 2}
   - {fileID: 1000011895958286, guid: af9b9a552e99f314facbf66830c466dd, type: 2}
+  - {fileID: 1000011895958286, guid: c38977c1de4266548b89d3188cb81849, type: 2}
   m_RowCubeMaterial: {fileID: 2100000, guid: 12a15ace9ad7dd14a80ebb0712daed4b, type: 2}
   m_BackingCubeMaterial: {fileID: 2100000, guid: de3a472d61ee2cf44b1a333112b4e3a4,
     type: 2}

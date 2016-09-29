@@ -125,7 +125,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDropp
 		}
 	}
 
-	public Func<Transform, IDropReciever> getCurrentDropReciever { private get; set; }
+	public GetDropRecieverDelegate getCurrentDropReciever { private get; set; }
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public override void Setup(AssetData listData)
@@ -249,18 +249,27 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDropp
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
-		if (gridItem.m_PreviewObject)
-			placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
+		GameObject target;
+		var dropReciever = getCurrentDropReciever(eventData.rayOrigin, out target);
+		if (dropReciever != null)
+		{
+			dropReciever.RecieveDrop(target, data.asset);
+		}
 		else
 		{
-			switch (data.type)
+			if (gridItem.m_PreviewObject)
+				placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
+			else
 			{
-				case "Prefab":
-					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
-					break;
-				case "Model":
-					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
-					break;
+				switch (data.type)
+				{
+					case "Prefab":
+						Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+						break;
+					case "Model":
+						Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+						break;
+				}
 			}
 		}
 		gridItem.m_Cube.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)

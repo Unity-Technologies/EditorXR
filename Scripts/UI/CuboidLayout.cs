@@ -21,7 +21,7 @@ public class CuboidLayout : UIBehaviour
 		for (int i = 0; i < m_CubeTransforms.Length; i++)
 		{
 			var cube = Instantiate(m_CubePrefab).transform;
-			cube.transform.SetParent(m_TargetTransforms[i], false);
+			cube.SetParent(m_TargetTransforms[i], false);
 			m_CubeTransforms[i] = cube;
 		}
 		UpdateCubes();

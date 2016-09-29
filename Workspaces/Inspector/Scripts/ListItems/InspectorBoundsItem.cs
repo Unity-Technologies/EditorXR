@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.VR.Modules;
 
 public class InspectorBoundsItem : InspectorPropertyItem
 {
@@ -50,5 +51,20 @@ public class InspectorBoundsItem : InspectorPropertyItem
 			m_SerializedProperty.boundsValue = bounds;
 			data.serializedObject.ApplyModifiedProperties();
 		}
+	}
+
+	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	{
+
+	}
+
+	public override bool TestDrop(GameObject target, object droppedObject)
+	{
+		return false;
+	}
+
+	public override bool RecieveDrop(GameObject target, object droppedObject)
+	{
+		return false;
 	}
 }

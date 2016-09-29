@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Handles;
+using UnityEngine.VR.Modules;
 
 public class InspectorBoolItem : InspectorPropertyItem
 {
@@ -27,5 +29,27 @@ public class InspectorBoolItem : InspectorPropertyItem
 			m_SerializedProperty.boolValue = value;
 			data.serializedObject.ApplyModifiedProperties();
 		}
+	}
+
+	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
+	{
+		// Bools cannot be dragged and droppped
+	}
+
+	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	{
+		// Bools cannot be dragged and droppped
+	}
+
+	public override bool TestDrop(GameObject target, object droppedObject)
+	{
+		// Bools cannot be dragged and droppped
+		return false;
+	}
+
+	public override bool RecieveDrop(GameObject target, object droppedObject)
+	{
+		// Bools cannot be dragged and droppped
+		return false;
 	}
 }

@@ -2,8 +2,9 @@
 
 namespace UnityEngine.VR.Modules
 {
+	public delegate IDropReciever GetDropRecieverDelegate(Transform rayOrigin, out GameObject target);
 	public interface IDroppable
 	{
-		Func<Transform, IDropReciever> getCurrentDropReciever { set; }
+		GetDropRecieverDelegate getCurrentDropReciever { set; }
 	}
 }
