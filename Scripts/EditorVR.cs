@@ -73,8 +73,6 @@ public class EditorVR : MonoBehaviour
 
 	private bool m_UpdatePixelRaycastModule = true;
 
-	private bool m_UpdatePixelRaycastModule = true;
-
 	private PlayerHandle m_PlayerHandle;
 
 	private class DeviceData
@@ -486,17 +484,16 @@ public class EditorVR : MonoBehaviour
 	{
 		var go = U.Object.Instantiate(prefab, transform);
 		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
-		{
 			canvas.worldCamera = m_EventCamera;
 
-			foreach (RayInputField inputField in canvas.GetComponentsInChildren<RayInputField>())
-			{
-				if (inputField is NumericInputField)
-					inputField.spawnKeyboard = SpawnNumericKeyboard;
-				else if (inputField is StandardInputField)
-					inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
-			}
+		foreach (RayInputField inputField in go.GetComponentsInChildren<RayInputField>())
+		{
+			if (inputField is NumericInputField)
+				inputField.spawnKeyboard = SpawnNumericKeyboard;
+			else if (inputField is StandardInputField)
+				inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
 		}
+
 		return go;
 	}
 
@@ -940,6 +937,7 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
+		CreateWorkspace<InspectorWorkspace>();
 		CreateWorkspace<ProjectWorkspace>();
 		CreateWorkspace<ChessboardWorkspace>();
 		CreateWorkspace<ConsoleWorkspace>();

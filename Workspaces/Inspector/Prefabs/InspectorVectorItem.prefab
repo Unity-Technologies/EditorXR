@@ -539,7 +539,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 12a15ace9ad7dd14a80ebb0712daed4b, type: 2}
+  - {fileID: 2100000, guid: 7076eefb0e29024489a88aac0cac7403, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -810,14 +810,8 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: RayInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-  m_KeyboardAnchorTransform: {fileID: 0}
   m_TextComponent: {fileID: 114000010285016246}
   m_CharacterLimit: 0
-  m_OnEndEdit:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: UnityEngine.UI.InputField+SubmitEvent, UnityEngine.UI, Version=1.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   m_Text: 
   m_NumberType: 0
 --- !u!114 &114000011237704542
@@ -863,14 +857,8 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: RayInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-  m_KeyboardAnchorTransform: {fileID: 0}
   m_TextComponent: {fileID: 114000013340569338}
   m_CharacterLimit: 0
-  m_OnEndEdit:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: UnityEngine.UI.InputField+SubmitEvent, UnityEngine.UI, Version=1.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   m_Text: 
   m_NumberType: 0
 --- !u!114 &114000011317068494
@@ -1069,14 +1057,8 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: RayInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-  m_KeyboardAnchorTransform: {fileID: 0}
   m_TextComponent: {fileID: 114000013333489314}
   m_CharacterLimit: 0
-  m_OnEndEdit:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: UnityEngine.UI.InputField+SubmitEvent, UnityEngine.UI, Version=1.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   m_Text: 
   m_NumberType: 0
 --- !u!114 &114000012434466558
@@ -1237,14 +1219,8 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: RayInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-  m_KeyboardAnchorTransform: {fileID: 0}
   m_TextComponent: {fileID: 114000012460105578}
   m_CharacterLimit: 0
-  m_OnEndEdit:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: UnityEngine.UI.InputField+SubmitEvent, UnityEngine.UI, Version=1.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   m_Text: 
   m_NumberType: 0
 --- !u!114 &114000012692240956

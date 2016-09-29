@@ -2435,7 +2435,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000010131921790}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012667250764}
   m_RepeatOnHold: 0
   m_Colors:
@@ -2464,7 +2464,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000011319944194}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012422491724}
   m_RepeatOnHold: 0
   m_Colors:
@@ -2493,7 +2493,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000011161635284}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000011605983866}
   m_RepeatOnHold: 0
   m_Colors:
@@ -2594,7 +2594,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000010205718258}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000013573862044}
   m_RepeatOnHold: 0
   m_Colors:
@@ -2623,7 +2623,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000012043892412}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000010209330408}
   m_RepeatOnHold: 1
   m_Colors:
@@ -2708,7 +2708,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000011475780424}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000013730770792}
   m_RepeatOnHold: 0
   m_Colors:
@@ -2771,7 +2771,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000012923197210}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000013873843358}
   m_RepeatOnHold: 0
   m_Colors:
@@ -2853,7 +2853,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000011794585876}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000011320096046}
   m_RepeatOnHold: 0
   m_Colors:
@@ -2882,7 +2882,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000010378058986}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000010203064600}
   m_RepeatOnHold: 0
   m_Colors:
@@ -3163,7 +3163,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000010536049684}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012769307956}
   m_RepeatOnHold: 0
   m_Colors:
@@ -3205,7 +3205,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000010699152360}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012542392132}
   m_RepeatOnHold: 0
   m_Colors:
@@ -3234,7 +3234,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 0
-  m_TargetMesh: {fileID: 4000011846548060}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000010038757514}
   m_RepeatOnHold: 1
   m_Colors:
@@ -3319,7 +3319,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000011632844878}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012845462162}
   m_RepeatOnHold: 0
   m_Colors:
@@ -3467,7 +3467,7 @@ MonoBehaviour:
   - {fileID: 114000014073735494}
   - {fileID: 114000011291326558}
   - {fileID: 114000013198568648}
-  m_DirectManipulator: {fileID: 114000013034095432}
+  m_DirectManipulator: {fileID: 0}
 --- !u!114 &114000013869915610
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3487,7 +3487,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000014172066202}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012703566436}
   m_RepeatOnHold: 0
   m_Colors:
@@ -3550,7 +3550,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000013901054140}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000010911778778}
   m_RepeatOnHold: 0
   m_Colors:
@@ -3579,7 +3579,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000011969195810}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000013701596486}
   m_RepeatOnHold: 0
   m_Colors:
@@ -3642,7 +3642,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 0
-  m_TargetMesh: {fileID: 4000010160426600}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000013927787966}
   m_RepeatOnHold: 1
   m_Colors:
@@ -3690,7 +3690,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
-  m_TargetMesh: {fileID: 4000013823270706}
+  m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000011715007826}
   m_RepeatOnHold: 0
   m_Colors:

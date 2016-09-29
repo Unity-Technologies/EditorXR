@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: ListItemClip
-  m_Shader: {fileID: 4800000, guid: f8dbde0846f23ca438cbe142ff7cd494, type: 3}
+  m_Shader: {fileID: 4800000, guid: 91211d46ba5f0a84ab6786bcda73a95d, type: 3}
   m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1

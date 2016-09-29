@@ -245,7 +245,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		if (m_ClickCount == 1)
 		{
 			if (m_ClickedField && m_DragDistance < kMinDragDistance)
-				m_ClickedField.ToggleKeyboard();
+				m_ClickedField.ToggleKeyboard(m_PointerPosition);
 		}
 
 		m_ClickCount = 0;
