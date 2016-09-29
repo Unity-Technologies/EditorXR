@@ -19,6 +19,8 @@ namespace UnityEngine.VR.Workspaces
 
 		protected WorkspaceUI m_WorkspaceUI;
 
+		public bool dynamicFaceAdjustment { get { return m_WorkspaceUI.dynamicFaceAdjustment; } set {m_WorkspaceUI.dynamicFaceAdjustment = value; } }
+
 		public static readonly Vector3 kMinBounds = new Vector3(0.7f, 0.4f, 0.1f);
 		private const float kExtraHeight = 0.15f; //Extra space for frame model
 
@@ -249,7 +251,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
 			m_WorkspaceUI.vacuumHandle.transform.localScale = outerBounds.size;
-			m_WorkspaceUI.SetBounds(contentBounds);
+			m_WorkspaceUI.setBounds = contentBounds;
 		}
 
 		protected virtual void OnDestroy()
