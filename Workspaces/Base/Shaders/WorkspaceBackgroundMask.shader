@@ -2,7 +2,7 @@
 {
 	SubShader
 	{
-		Tags{ "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "TransparentCutout" }
+		Tags{ "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "Queue" = "Transparent" "RenderType" = "TransparentCutout" }
 		ZWrite On
 		Blend Zero One
 
