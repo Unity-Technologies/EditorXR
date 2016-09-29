@@ -71,6 +71,8 @@ public class BlinkVisuals : MonoBehaviour
 	private Vector3 m_TubeTransformHiddenScale;
 	private Vector3 m_TubeTransformOriginalScale;
 	private bool m_ValidTarget;
+	private Material m_BlinkMaterial;
+	private Material m_MotionSpheresMaterial;
 
 	public Vector3 locatorPosition { get { return locatorRoot.position; } }
 	public Transform locatorRoot { get { return m_LocatorRoot; } }
@@ -80,10 +82,20 @@ public class BlinkVisuals : MonoBehaviour
 
 	private bool visible { get { return m_State == State.TransitioningIn || m_State == State.Active;  } }
 
-	void Awake()
+	private void OnDestroy()
+	{
+		U.Object.Destroy(m_BlinkMaterial);
+		U.Object.Destroy(m_MotionSpheresMaterial);
+	}
+
+	private void Awake()
 	{
 		m_LineRenderer = GetComponent<VRLineRenderer>();
 		m_LineRendererMeshRenderer = m_LineRenderer.GetComponent<MeshRenderer>();
+		m_BlinkMaterial = U.Material.GetMaterialClone(m_RoomScaleRenderer);
+
+		foreach (var renderer in m_LocatorRoot.GetComponentsInChildren<Renderer>())
+			renderer.sharedMaterial = m_BlinkMaterial;
 	}
 
 	public void Start()
@@ -98,10 +110,17 @@ public class BlinkVisuals : MonoBehaviour
 		m_MotionSpheres = new Transform[m_MotionSphereCount];
 		for (int i = 0; i < m_MotionSphereCount; i++)
 		{
-			m_MotionSpheres[i] = ((GameObject)Instantiate(m_MotionIndicatorSphere, m_ToolPoint.position, m_ToolPoint.rotation)).transform;
-			m_MotionSpheres[i].SetParent(m_Transform);
-			m_MotionSpheres[i].name = "motion-sphere-" + i;
-			m_MotionSpheres[i].gameObject.SetActive(false);
+			var sphere = ((GameObject)Instantiate(m_MotionIndicatorSphere, m_ToolPoint.position, m_ToolPoint.rotation)).transform;
+			m_MotionSpheres[i] = sphere;
+			sphere.SetParent(m_Transform);
+			sphere.name = "motion-sphere-" + i;
+			sphere.gameObject.SetActive(false);
+
+			var sphereRenderer = sphere.GetComponent<MeshRenderer>();
+			if (m_MotionSpheresMaterial == null) // Only one material clone is needed
+				m_MotionSpheresMaterial = U.Material.GetMaterialClone(sphereRenderer);
+
+			sphereRenderer.sharedMaterial = m_MotionSpheresMaterial;
 		}
 		m_MotionSphereOriginalScale = m_MotionSpheres[0].localScale;
 		m_CurveLengthEstimate = 1.0f;
