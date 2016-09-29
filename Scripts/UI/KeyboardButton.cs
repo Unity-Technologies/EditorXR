@@ -62,7 +62,6 @@ public class KeyboardButton : BaseHandle
 		Disabled
 	}
 
-//	private const float kHoverEmission = 0.5f;
 	private const float kPressEmission = 1f;
 	private const float kEmissionLerpTime = 0.1f;
 	private const float kKeyResponseDuration = 0.5f;
@@ -103,19 +102,19 @@ public class KeyboardButton : BaseHandle
 		}
 	}
 
-//	protected override void OnHandleHoverStarted(HandleEventData eventData)
-//	{
-//		DoGraphicStateTransition(SelectionState.Highlighted, false);
-//
-//		base.OnHandleHoverStarted(eventData);
-//	}
-//
-//	protected override void OnHandleHoverEnded(HandleEventData eventData)
-//	{
-//		DoGraphicStateTransition(SelectionState.Highlighted, false);
-//
-//		base.OnHandleHoverEnded(eventData);
-//	}
+	protected override void OnHandleHoverStarted(HandleEventData eventData)
+	{
+		DoGraphicStateTransition(SelectionState.Highlighted, false);
+
+		base.OnHandleHoverStarted(eventData);
+	}
+
+	protected override void OnHandleHoverEnded(HandleEventData eventData)
+	{
+		DoGraphicStateTransition(SelectionState.Highlighted, false);
+
+		base.OnHandleHoverEnded(eventData);
+	}
 
 	protected override void OnHandleDragStarted(HandleEventData eventData)
 	{
