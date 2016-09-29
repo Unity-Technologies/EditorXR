@@ -150,6 +150,12 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 							case SerializedPropertyType.ObjectReference:
 								template = "InspectorObjectFieldItem";
 								break;
+							case SerializedPropertyType.Color:
+								template = "InspectorColorItem";
+								break;
+							case SerializedPropertyType.Rect:
+								template = "InspectorRectItem";
+								break;
 							default:
 								template = "InspectorUnimplementedItem";
 								break;

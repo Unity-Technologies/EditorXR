@@ -3467,7 +3467,7 @@ MonoBehaviour:
   - {fileID: 114000014073735494}
   - {fileID: 114000011291326558}
   - {fileID: 114000013198568648}
-  m_DirectManipulator: {fileID: 0}
+  m_DirectManipulator: {fileID: 114000013034095432}
 --- !u!114 &114000013869915610
 MonoBehaviour:
   m_ObjectHideFlags: 1

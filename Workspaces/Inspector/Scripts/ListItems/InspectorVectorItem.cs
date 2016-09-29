@@ -149,7 +149,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 	public override bool TestDrop(GameObject target, object droppedObject)
 	{
-		return droppedObject is string || droppedObject is Vector2 || droppedObject is Vector3 || droppedObject is Vector4 || droppedObject is Quaternion;
+		return droppedObject is string || droppedObject is Vector2 || droppedObject is Vector3 || droppedObject is Vector4 || droppedObject is Quaternion || droppedObject is Color;
 	}
 
 	public override bool RecieveDrop(GameObject target, object droppedObject)
@@ -253,6 +253,38 @@ public class InspectorVectorItem : InspectorPropertyItem
 			}
 
 			UpdateInputFields(4, vector4);
+
+			data.serializedObject.ApplyModifiedProperties();
+			return true;
+		}
+
+		if (droppedObject is Color)
+		{
+			var color = (Color)droppedObject;
+			switch (m_SerializedProperty.propertyType)
+			{
+				case SerializedPropertyType.Vector2:
+					Vector2 vector2;
+					vector2.x = color.r;
+					vector2.y = color.g;
+					m_SerializedProperty.vector2Value = vector2;
+					break;
+				case SerializedPropertyType.Vector3:
+					Vector3 vector3;
+					vector3.x = color.r;
+					vector3.y = color.g;
+					vector3.z = color.b;
+					m_SerializedProperty.vector3Value = vector3;
+					break;
+				case SerializedPropertyType.Vector4:
+					m_SerializedProperty.vector4Value = color;
+					break;
+				case SerializedPropertyType.Quaternion:
+					m_SerializedProperty.quaternionValue = new Quaternion(color.r, color.g, color.b, color.a);
+					break;
+			}
+
+			UpdateInputFields(4, color);
 
 			data.serializedObject.ApplyModifiedProperties();
 			return true;

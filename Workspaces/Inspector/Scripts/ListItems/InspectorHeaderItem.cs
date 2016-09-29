@@ -12,7 +12,7 @@ public class InspectorHeaderItem : InspectorListItem
 	private Toggle m_ActiveToggle;
 
 	[SerializeField]
-	private InputField m_NameField;
+	private StandardInputField m_NameField;
 
 	[SerializeField]
 	private Toggle m_StaticToggle;
