@@ -55,6 +55,8 @@ public class EditorVR : MonoBehaviour
 	private HighlightModule m_HighlightModule;
 	private ObjectPlacementModule m_ObjectPlacementModule;
 
+	private bool m_UpdatePixelRaycastModule = true;
+
 	private PlayerHandle m_PlayerHandle;
 
 	private class DeviceData
@@ -68,8 +70,8 @@ public class EditorVR : MonoBehaviour
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
 	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
-	private IEnumerable<Type> m_AllTools;
-	private IEnumerable<Type> m_AllWorkspaceTypes;
+	private List<Type> m_AllTools;
+	private List<Type> m_AllWorkspaceTypes;
 	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
 
 	private readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
@@ -117,8 +119,8 @@ public class EditorVR : MonoBehaviour
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
 
-		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool));
-		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace));
+		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
+		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
 
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
@@ -215,6 +217,9 @@ public class EditorVR : MonoBehaviour
 				m_TransformTool.mode = miniWorldRayHasObject ? TransformMode.Direct : TransformMode.Standard;
 
 			UpdateDefaultProxyRays();
+
+			// Queue up the next round
+			m_UpdatePixelRaycastModule = true;
 		}
 	}
 
@@ -257,16 +262,25 @@ public class EditorVR : MonoBehaviour
 			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
 
 		UpdateMiniWorldRays();
+
 #if UNITY_EDITOR
 		// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
 		//		Additionally, on some machines it's required to do a delay call otherwise none of this works
-		EditorApplication.delayCall += () =>
+		//		I noticed that delay calls were queuing up, so it was necessary to protect against that, so only one is processed
+		if (m_UpdatePixelRaycastModule)
 		{
-			Event e = new Event();
-			e.type = EventType.ExecuteCommand;
-			if (this != null) // Because this is a delay call, the component will be null when EditorVR closes
-				VRView.activeView.SendEvent(e);
-		};
+			EditorApplication.delayCall += () =>
+			{
+				if (this != null) // Because this is a delay call, the component will be null when EditorVR closes
+				{
+					Event e = new Event();
+					e.type = EventType.ExecuteCommand;
+					VRView.activeView.SendEvent(e);
+				}
+			};
+
+			m_UpdatePixelRaycastModule = false; // Don't allow another one to queue until the current one is processed
+		}
 #endif
 	}
 
@@ -1108,7 +1122,8 @@ public class EditorVR : MonoBehaviour
 	[MenuItem("Window/EditorVR", false)]
 	public static void ShowEditorVR()
 	{
-		VRView.GetWindow<VRView>("EditorVR", true);
+		// Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
+		VRView.GetWindow<VRView>(true, "EditorVR", true);
 	}
 
 	[MenuItem("Window/EditorVR", true)]
