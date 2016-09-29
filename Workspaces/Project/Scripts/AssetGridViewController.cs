@@ -32,6 +32,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	public PositionPreviewDelegate positionPreview { private get; set; }
 
 	public GetDropRecieverDelegate getCurrentDropReciever { get; set; }
+	public Action<Transform, object> setCurrentDropObject { get; set; }
 
 	public Func<string, bool> testFilter;
 
@@ -209,6 +210,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		item.positionPreview = positionPreview;
 		item.getCurrentDropReciever = getCurrentDropReciever;
+		item.setCurrentDropObject = setCurrentDropObject;
 
 		StartCoroutine(Transition(data, false));
 

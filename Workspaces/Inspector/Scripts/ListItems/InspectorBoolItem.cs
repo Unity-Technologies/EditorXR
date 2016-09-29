@@ -36,9 +36,10 @@ public class InspectorBoolItem : InspectorPropertyItem
 		// Bools cannot be dragged and droppped
 	}
 
-	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	protected override object GetDropObject(Transform fieldBlock)
 	{
 		// Bools cannot be dragged and droppped
+		return null;
 	}
 
 	public override bool TestDrop(GameObject target, object droppedObject)

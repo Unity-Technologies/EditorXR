@@ -33,7 +33,9 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
 	public GetDropRecieverDelegate getCurrentDropReciever { private get; set; }
+	public Func<Transform, object> getCurrentDropObject { private get; set; }
 	public Action<Transform, IDropReciever, GameObject> setCurrentDropReciever { private get; set; }
+	public Action<Transform, object> setCurrentDropObject { private get; set; }
 
 	protected override void Setup()
 	{
@@ -119,7 +121,9 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCube);
 
 			item.getCurrentDropReciever = getCurrentDropReciever;
+			item.getCurrentDropObject = getCurrentDropObject;
 			item.setCurrentDropReciever = setCurrentDropReciever;
+			item.setCurrentDropObject = setCurrentDropObject;
 			item.setHighlight = setHighlight;
 			item.positionPreview = positionPreview;
 			item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;

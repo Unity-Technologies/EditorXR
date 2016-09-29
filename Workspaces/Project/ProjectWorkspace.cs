@@ -40,6 +40,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview, IDro
 	public PositionPreviewDelegate positionPreview { private get; set; }
 
 	public GetDropRecieverDelegate getCurrentDropReciever { private get; set; }
+	public Action<Transform, object> setCurrentDropObject { private get; set; }
 
 	public override void Setup()
 	{
@@ -65,6 +66,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview, IDro
 		assetListView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		assetListView.positionPreview = positionPreview;
 		assetListView.getCurrentDropReciever = getCurrentDropReciever;
+		assetListView.setCurrentDropObject = setCurrentDropObject;
 
 #if UNITY_EDITOR
 		EditorApplication.projectWindowChanged += SetupFolderList;

@@ -5,6 +5,7 @@ namespace UnityEngine.VR.Modules
 	public interface IDropReciever
 	{
 		Action<Transform, IDropReciever, GameObject> setCurrentDropReciever { set; }
+		Func<Transform, object> getCurrentDropObject { set; }
 
 		/// <summary>
 		/// Called when an object is hovering over the reciever

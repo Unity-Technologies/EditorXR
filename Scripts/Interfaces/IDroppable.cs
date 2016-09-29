@@ -6,5 +6,6 @@ namespace UnityEngine.VR.Modules
 	public interface IDroppable
 	{
 		GetDropRecieverDelegate getCurrentDropReciever { set; }
+		Action<Transform, object> setCurrentDropObject { set; }
 	}
 }

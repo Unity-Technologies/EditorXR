@@ -77,9 +77,10 @@ public class InspectorComponentItem : InspectorListItem
 		// Components cannot be dragged and dropped (yet)
 	}
 
-	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	protected override object GetDropObject(Transform fieldBlock)
 	{
 		// Components cannot be dragged and dropped (yet)
+		return null;
 	}
 
 	public override bool TestDrop(GameObject target, object droppedObject)

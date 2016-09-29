@@ -26,7 +26,9 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
 	public GetDropRecieverDelegate getCurrentDropReciever { private get; set; }
+	public Func<Transform, object> getCurrentDropObject { private get; set; }
 	public Action<Transform, IDropReciever, GameObject> setCurrentDropReciever { private get; set; }
+	public Action<Transform, object> setCurrentDropObject { private get; set; }
 
 	public override void Setup()
 	{
@@ -38,7 +40,9 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 		listView.data = new InspectorData[0];
 		listView.instantiateUI = instantiateUI;
 		listView.getCurrentDropReciever = getCurrentDropReciever;
+		listView.getCurrentDropObject = getCurrentDropObject;
 		listView.setCurrentDropReciever = setCurrentDropReciever;
+		listView.setCurrentDropObject = setCurrentDropObject;
 		listView.positionPreview = positionPreview;
 		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		listView.setHighlight = setHighlight;
@@ -133,13 +137,14 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 								template = "InspectorVectorItem";
 								break;
 							case SerializedPropertyType.Integer:
-								goto case SerializedPropertyType.String;
+								goto case SerializedPropertyType.Float;
 							case SerializedPropertyType.Float:
-								goto case SerializedPropertyType.String;
+								template = "InspectorStringItem";
+								break;
 							case SerializedPropertyType.Character:
 								goto case SerializedPropertyType.String;
 							case SerializedPropertyType.String:
-								template = "InspectorInputFieldItem";
+								template = "InspectorStringItem";
 								break;
 							case SerializedPropertyType.Bounds:
 								template = "InspectorBoundsItem";

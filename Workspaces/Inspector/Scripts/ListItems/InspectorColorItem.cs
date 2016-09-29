@@ -54,17 +54,17 @@ public class InspectorColorItem : InspectorPropertyItem
 		return true;
 	}
 
-	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	protected override object GetDropObject(Transform fieldBlock)
 	{
-		object droppedObject = null;
+		object dropObject = null;
 		var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
 		if (inputfields.Length > 1)
 		{
-			droppedObject = m_SerializedProperty.colorValue;
+			dropObject = m_SerializedProperty.colorValue;
 		} else if (inputfields.Length > 0)
-			droppedObject = inputfields[0].text;
+			dropObject = inputfields[0].text;
 
-		dropReciever.RecieveDrop(target, droppedObject);
+		return dropObject;
 	}
 
 	public override bool TestDrop(GameObject target, object droppedObject)

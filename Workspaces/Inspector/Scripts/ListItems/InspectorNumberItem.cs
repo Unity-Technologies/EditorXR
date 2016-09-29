@@ -1,13 +1,11 @@
-﻿using System;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 
-public class InspectorInputFieldItem : InspectorPropertyItem
+public class InspectorNumberItem : InspectorPropertyItem
 {
 	[SerializeField]
-	private InputField m_InputField;
+	private NumericInputField m_InputField;
 
 	public override void Setup(InspectorData data)
 	{
@@ -21,12 +19,6 @@ public class InspectorInputFieldItem : InspectorPropertyItem
 				break;
 			case SerializedPropertyType.Float:
 				val = m_SerializedProperty.floatValue.ToString();
-				break;
-			case SerializedPropertyType.String:
-				val = m_SerializedProperty.stringValue;
-				break;
-			case SerializedPropertyType.Character:
-				val = m_SerializedProperty.intValue.ToString();
 				break;
 		}
 
@@ -47,32 +39,24 @@ public class InspectorInputFieldItem : InspectorPropertyItem
 				if (float.TryParse(input, out f) && !Mathf.Approximately(m_SerializedProperty.floatValue, f))
 					m_SerializedProperty.floatValue = f;
 				break;
-			case SerializedPropertyType.String:
-				if(!m_SerializedProperty.stringValue.Equals(input))
-					m_SerializedProperty.stringValue = input;
-				break;
-			case SerializedPropertyType.Character:
-				char c;
-				if (char.TryParse(input, out c) && c != m_SerializedProperty.intValue)
-					m_SerializedProperty.intValue = c;
-				break;
 		}
 
 		data.serializedObject.ApplyModifiedProperties();
 	}
 
-	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	protected override object GetDropObject(Transform fieldBlock)
 	{
-
+		return m_InputField.text;
 	}
 
 	public override bool TestDrop(GameObject target, object droppedObject)
 	{
-		return false;
+		return droppedObject is string;
 	}
 
 	public override bool RecieveDrop(GameObject target, object droppedObject)
 	{
-		return false;
+		SetValue(droppedObject.ToString());
+		return true;
 	}
 }

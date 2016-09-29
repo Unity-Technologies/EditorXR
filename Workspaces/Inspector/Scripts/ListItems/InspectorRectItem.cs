@@ -61,23 +61,23 @@ public class InspectorRectItem : InspectorPropertyItem
 		return true;
 	}
 
-	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	protected override object GetDropObject(Transform fieldBlock)
 	{
-		object droppedObject = null;
+		object dropObject = null;
 		var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
 
 		if (inputfields.Length > 3) // If we've grabbed all of the fields
-			droppedObject = m_SerializedProperty.boundsValue;
+			dropObject = m_SerializedProperty.boundsValue;
 		if (inputfields.Length > 1) // If we've grabbed one vector
 		{
 			if (m_CenterFields.Intersect(inputfields).Any())
-				droppedObject = m_SerializedProperty.boundsValue.center;
+				dropObject = m_SerializedProperty.boundsValue.center;
 			else
-				droppedObject = m_SerializedProperty.boundsValue.extents;
+				dropObject = m_SerializedProperty.boundsValue.extents;
 		} else if (inputfields.Length > 0) // If we've grabbed a single field
-			droppedObject = inputfields[0].text;
+			dropObject = inputfields[0].text;
 
-		dropReciever.RecieveDrop(target, droppedObject);
+		return dropObject;
 	}
 
 	public override bool TestDrop(GameObject target, object droppedObject)

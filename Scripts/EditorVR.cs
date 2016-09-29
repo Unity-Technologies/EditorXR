@@ -769,11 +769,17 @@ public class EditorVR : MonoBehaviour
 
 		var droppable = obj as IDroppable;
 		if (droppable != null)
+		{
 			droppable.getCurrentDropReciever = m_DragAndDropModule.GetCurrentDropReciever;
+			droppable.setCurrentDropObject = m_DragAndDropModule.SetCurrentDropObject;
+		}
 
 		var dropReciever = obj as IDropReciever;
 		if (dropReciever != null)
+		{
 			dropReciever.setCurrentDropReciever = m_DragAndDropModule.SetCurrentDropReciever;
+			dropReciever.getCurrentDropObject = m_DragAndDropModule.GetCurrentDropObject;
+		}
 
 		if (mainMenu != null)
 		{

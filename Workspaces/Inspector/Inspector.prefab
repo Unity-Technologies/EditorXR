@@ -236,6 +236,8 @@ MonoBehaviour:
   - {fileID: 1000011895958286, guid: 9e6015ec88cd0254da1988ad4ad31eb4, type: 2}
   - {fileID: 1000011895958286, guid: af9b9a552e99f314facbf66830c466dd, type: 2}
   - {fileID: 1000011895958286, guid: c38977c1de4266548b89d3188cb81849, type: 2}
+  - {fileID: 1000011895958286, guid: 34a01627de455724087807d1cecf3588, type: 2}
+  - {fileID: 1000011895958286, guid: efedb45a438c5f942ac5f1702b7920c8, type: 2}
   m_RowCubeMaterial: {fileID: 2100000, guid: 7076eefb0e29024489a88aac0cac7403, type: 2}
   m_BackingCubeMaterial: {fileID: 2100000, guid: de3a472d61ee2cf44b1a333112b4e3a4,
     type: 2}
@@ -272,7 +274,7 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011206020412}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -119,32 +119,32 @@ public class InspectorVectorItem : InspectorPropertyItem
 		return true;
 	}
 
-	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	protected override object GetDropObject(Transform fieldBlock)
 	{
-		object droppedObject = null;
+		object dropObject = null;
 		var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
 		if (inputfields.Length > 1)
 		{
 			switch (m_SerializedProperty.propertyType)
 			{
 				case SerializedPropertyType.Vector2:
-					droppedObject = m_SerializedProperty.vector2Value;
+					dropObject = m_SerializedProperty.vector2Value;
 					break;
 				case SerializedPropertyType.Quaternion:
-					droppedObject = m_SerializedProperty.quaternionValue;
+					dropObject = m_SerializedProperty.quaternionValue;
 					break;
 				case SerializedPropertyType.Vector3:
-					droppedObject = m_SerializedProperty.vector3Value;
+					dropObject = m_SerializedProperty.vector3Value;
 					break;
 				case SerializedPropertyType.Vector4:
-					droppedObject = m_SerializedProperty.vector4Value;
+					dropObject = m_SerializedProperty.vector4Value;
 					break;
 			}
 		}
 		else if (inputfields.Length > 0)
-			droppedObject = inputfields[0].text;
+			dropObject = inputfields[0].text;
 
-		dropReciever.RecieveDrop(target, droppedObject);
+		return dropObject;
 	}
 
 	public override bool TestDrop(GameObject target, object droppedObject)

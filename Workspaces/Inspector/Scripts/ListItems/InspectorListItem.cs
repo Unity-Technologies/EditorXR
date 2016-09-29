@@ -43,8 +43,10 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 	public Action<GameObject, bool> setHighlight { set; private get; }
 
 	public GetDropRecieverDelegate getCurrentDropReciever { protected get; set; }
+	public Func<Transform, object> getCurrentDropObject { protected get; set; }
 
 	public Action<Transform, IDropReciever, GameObject> setCurrentDropReciever { private get; set; }
+	public Action<Transform, object> setCurrentDropObject { private get; set; }
 
 	public override void Setup(InspectorData data)
 	{
@@ -127,14 +129,27 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 	protected virtual void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
 	{
-		setHighlight(handle.gameObject, true);
-		setCurrentDropReciever(eventData.rayOrigin, this, handle.gameObject);
+		var rayOrigin = eventData.rayOrigin;
+		var dropObject = getCurrentDropObject(rayOrigin);
+
+		// TODO: red hover state when TestDrop fails
+		if (dropObject == null || TestDrop(handle.gameObject, dropObject))
+		{
+			setHighlight(handle.gameObject, true);
+			setCurrentDropReciever(rayOrigin, this, handle.gameObject);
+		}
 	}
 
 	protected virtual void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
 	{
-		setHighlight(handle.gameObject, false);
-		setCurrentDropReciever(eventData.rayOrigin, null, handle.gameObject);
+		var rayOrigin = eventData.rayOrigin;
+		var dropObject = getCurrentDropObject(rayOrigin);
+
+		if (dropObject == null || TestDrop(handle.gameObject, dropObject))
+		{
+			setHighlight(handle.gameObject, false);
+			setCurrentDropReciever(eventData.rayOrigin, null, handle.gameObject);
+		}
 	}
 
 	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
@@ -187,6 +202,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 				}
 
 				m_DragObject = clone.transform;
+				setCurrentDropObject(eventData.rayOrigin, GetDropObject(fieldBlock));
 
 				var graphics = clone.GetComponentsInChildren<Graphic>(true);
 				foreach (var graphic in graphics)
@@ -220,10 +236,13 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		{
 			if (m_DragObject)
 			{
+				var rayOrigin = eventData.rayOrigin;
 				GameObject target;
-				var dropReciever = getCurrentDropReciever(eventData.rayOrigin, out target);
+				var dropReciever = getCurrentDropReciever(rayOrigin, out target);
+				var dropObject = getCurrentDropObject(rayOrigin);
 				if (dropReciever != null)
-					DropItem(fieldBlock, dropReciever, target);
+					dropReciever.RecieveDrop(target, dropObject);
+				setCurrentDropObject(rayOrigin, null);
 
 				U.Object.Destroy(m_DragObject.gameObject);
 			}
@@ -251,7 +270,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		m_ClickCount = 0;
 	}
 
-	protected abstract void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target);
+	protected abstract object GetDropObject(Transform fieldBlock);
 
 	public abstract bool TestDrop(GameObject target, object droppedObject);
 

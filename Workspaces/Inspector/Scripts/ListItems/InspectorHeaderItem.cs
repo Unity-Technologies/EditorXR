@@ -60,9 +60,12 @@ public class InspectorHeaderItem : InspectorListItem
 			m_TargetGameObject.isStatic = isStatic;
 	}
 
-	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	protected override object GetDropObject(Transform fieldBlock)
 	{
-
+		var inputField = fieldBlock.GetComponentInChildren<StandardInputField>();
+		if (inputField)
+			return inputField.text;
+		return null;
 	}
 
 	public override bool TestDrop(GameObject target, object droppedObject)

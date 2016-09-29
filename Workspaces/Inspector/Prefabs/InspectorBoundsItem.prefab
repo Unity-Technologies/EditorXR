@@ -1056,7 +1056,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1131,7 +1131,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1206,7 +1206,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1234,7 +1234,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1399,7 +1399,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1433,7 +1433,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1461,7 +1461,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1512,7 +1512,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1546,7 +1546,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1610,7 +1610,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1774,7 +1774,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1821,7 +1821,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -2114,7 +2114,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []

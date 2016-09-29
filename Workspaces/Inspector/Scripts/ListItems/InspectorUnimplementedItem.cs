@@ -15,9 +15,10 @@ public class InspectorUnimplementedItem : InspectorPropertyItem
 		m_TypeLabel.text = U.Object.NiceSerializedPropertyType(m_SerializedProperty.type);
 	}
 
-	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	protected override object GetDropObject(Transform fieldBlock)
 	{
 		// Unimplemented
+		return null;
 	}
 
 	public override bool TestDrop(GameObject target, object droppedObject)

@@ -74,9 +74,9 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		SetObject(null);
 	}
 
-	protected override void DropItem(Transform fieldBlock, IDropReciever dropReciever, GameObject target)
+	protected override object GetDropObject(Transform fieldBlock)
 	{
-		dropReciever.RecieveDrop(target, m_SerializedProperty.objectReferenceValue);
+		return m_SerializedProperty.objectReferenceValue;
 	}
 
 	public override bool TestDrop(GameObject target, object droppedObject)
