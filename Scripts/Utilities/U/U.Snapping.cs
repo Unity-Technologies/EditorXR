@@ -1,6 +1,7 @@
 namespace UnityEngine.VR.Utilities
 {
 	using UnityEngine;
+	using System;
 #if UNITY_EDITOR
 	using UnityEditor.VR;
 #endif
@@ -19,6 +20,14 @@ namespace UnityEngine.VR.Utilities
 			private const float kSnapApproachDistance = .3f;
 			private const float kSnapReleaseDistance = .5f;
 
+			public static SnappingModes currentSnappingMode
+			{
+				get { return s_CurrentSnappingMode; }
+				set { s_CurrentSnappingMode = value; }
+			}
+			private static SnappingModes s_CurrentSnappingMode = SnappingModes.SnapToGround | SnappingModes.SnapToSurfaceNormal;
+
+			[Flags]
 			public enum SnappingModes
 			{
 				None = 0,
@@ -45,12 +54,20 @@ namespace UnityEngine.VR.Utilities
 			public static bool SnapToSurface(Transform objectToSnap, Ray ray, float distance = float.PositiveInfinity, bool alignRotation = false)
 			{
 				RaycastHit hit;
+				return SnapToSurface(objectToSnap, ray, out hit, distance, alignRotation);
+			}
+
+			public static bool SnapToSurface(Transform objectToSnap, Ray ray, out RaycastHit hit, float distance = float.PositiveInfinity, bool alignRotation = false)
+			{
 				bool hadTarget = GetRaySnapHit(ray, distance, out hit, objectToSnap);
 
 				if (hadTarget)
 				{
 					if (alignRotation)
-						objectToSnap.up = hit.normal;
+					{
+						Quaternion rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+						objectToSnap.rotation = rotation;
+					}
 
 					objectToSnap.position = hit.point;
 				}
