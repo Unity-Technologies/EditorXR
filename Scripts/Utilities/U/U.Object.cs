@@ -279,7 +279,14 @@ namespace UnityEngine.VR.Utilities
 
 			public static string NiceSerializedPropertyType(string type)
 			{
-				return type.Replace("PPtr<", "").Replace(">", "");
+				return type.Replace("PPtr<", "").Replace(">", "").Replace("$", "");
+			}
+
+			public static Type TypeNameToType(string name)
+			{
+				return AppDomain.CurrentDomain.GetAssemblies()
+								 .SelectMany(x => x.GetTypes())
+								 .FirstOrDefault(x => x.Name == name);
 			}
 		}
 	}

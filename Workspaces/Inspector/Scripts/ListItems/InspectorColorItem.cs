@@ -1,8 +1,5 @@
 ﻿using System;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
 
 public class InspectorColorItem : InspectorPropertyItem
 {
@@ -47,9 +44,11 @@ public class InspectorColorItem : InspectorPropertyItem
 		{
 			color[index] = value;
 			m_SerializedProperty.colorValue = color;
-		}
 
-		data.serializedObject.ApplyModifiedProperties();
+			UpdateInputFields(color);
+
+			data.serializedObject.ApplyModifiedProperties();
+		}
 
 		return true;
 	}

@@ -1,6 +1,5 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Modules;
 
 public class InspectorNumberItem : InspectorPropertyItem
 {
@@ -23,6 +22,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 		}
 
 		m_InputField.text = val;
+		m_InputField.ForceUpdateLabel();
 	}
 
 	public void SetValue(string input)
@@ -32,16 +32,28 @@ public class InspectorNumberItem : InspectorPropertyItem
 			case SerializedPropertyType.Integer:
 				int i;
 				if (int.TryParse(input, out i) && m_SerializedProperty.intValue != i)
+				{
 					m_SerializedProperty.intValue = i;
+
+					m_InputField.text = i.ToString();
+					m_InputField.ForceUpdateLabel();
+
+					data.serializedObject.ApplyModifiedProperties();
+				}
 				break;
 			case SerializedPropertyType.Float:
 				float f;
 				if (float.TryParse(input, out f) && !Mathf.Approximately(m_SerializedProperty.floatValue, f))
+				{
 					m_SerializedProperty.floatValue = f;
+
+					m_InputField.text = f.ToString();
+					m_InputField.ForceUpdateLabel();
+
+					data.serializedObject.ApplyModifiedProperties();
+				}
 				break;
 		}
-
-		data.serializedObject.ApplyModifiedProperties();
 	}
 
 	protected override object GetDropObject(Transform fieldBlock)

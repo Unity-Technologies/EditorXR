@@ -29,20 +29,29 @@ public class InspectorStringItem : InspectorPropertyItem
 		switch (m_SerializedProperty.propertyType)
 		{
 			case SerializedPropertyType.String:
-				if(!m_SerializedProperty.stringValue.Equals(input))
+				if (!m_SerializedProperty.stringValue.Equals(input))
+				{
 					m_SerializedProperty.stringValue = input;
+
+					m_InputField.text = input;
+					m_InputField.ForceUpdateLabel();
+
+					data.serializedObject.ApplyModifiedProperties();
+				}
 				break;
 			case SerializedPropertyType.Character:
 				char c;
 				if (char.TryParse(input, out c) && c != m_SerializedProperty.intValue)
+				{
 					m_SerializedProperty.intValue = c;
+
+					m_InputField.text = input;
+					m_InputField.ForceUpdateLabel();
+
+					data.serializedObject.ApplyModifiedProperties();
+				}
 				break;
 		}
-
-		m_InputField.text = input;
-		m_InputField.ForceUpdateLabel();
-
-		data.serializedObject.ApplyModifiedProperties();
 	}
 
 	protected override object GetDropObject(Transform fieldBlock)

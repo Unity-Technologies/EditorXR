@@ -73,6 +73,10 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 			if(handle.Equals(m_Cube))
 				continue;
 
+			// Toggles can't be dragged
+			if (handle.transform.parent.GetComponentInChildren<Toggle>())
+				continue;
+
 			handle.dragStarted += OnDragStarted;
 			handle.dragging += OnDragging;
 			handle.dragEnded += OnDragEnded;

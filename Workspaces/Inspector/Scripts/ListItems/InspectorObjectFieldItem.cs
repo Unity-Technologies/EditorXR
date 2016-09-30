@@ -1,18 +1,26 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
+using Object = UnityEngine.Object;
 
 public class InspectorObjectFieldItem : InspectorPropertyItem
 {
 	[SerializeField]
 	private Text m_FieldLabel;
 
+	private Type m_ObjectType;
+	private string m_ObjectTypeName;
+
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
+
+		m_ObjectTypeName = U.Object.NiceSerializedPropertyType(m_SerializedProperty.type);
+		m_ObjectType = U.Object.TypeNameToType(m_ObjectTypeName);
 
 		SetObject(m_SerializedProperty.objectReferenceValue);
 	}
@@ -20,9 +28,14 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 	private void SetObject(Object obj)
 	{
 		if (obj == null)
-			m_FieldLabel.text = string.Format("None ({0})", U.Object.NiceSerializedPropertyType(m_SerializedProperty.type));
+			m_FieldLabel.text = string.Format("None ({0})", m_ObjectTypeName);
 		else
+		{
+			var objType = obj.GetType();
+			if (!objType.IsAssignableFrom(m_ObjectType))
+				return;
 			m_FieldLabel.text = string.Format("{0} ({1})", obj.name, obj.GetType().Name);
+		}
 
 		if (obj == null && m_SerializedProperty.objectReferenceValue == null)
 			return;

@@ -44,17 +44,20 @@ public class InspectorRectItem : InspectorPropertyItem
 		float value;
 		if (!float.TryParse(input, out value)) return false;
 
-		var bounds = m_SerializedProperty.boundsValue;
-		var vector = center ? bounds.center : bounds.extents;
+		var rect = m_SerializedProperty.rectValue;
+		var vector = center ? rect.center : rect.size;
 
 		if (!Mathf.Approximately(vector[index], value))
 		{
 			vector[index] = value;
 			if (center)
-				bounds.center = vector;
+				rect.center = vector;
 			else
-				bounds.extents = vector;
-			m_SerializedProperty.boundsValue = bounds;
+				rect.size = vector;
+
+			UpdateInputFields(rect);
+
+			m_SerializedProperty.rectValue = rect;
 			data.serializedObject.ApplyModifiedProperties();
 		}
 

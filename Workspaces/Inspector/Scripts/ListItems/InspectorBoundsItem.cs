@@ -55,6 +55,9 @@ public class InspectorBoundsItem : InspectorPropertyItem
 				bounds.center = vector;
 			else
 				bounds.extents = vector;
+
+			UpdateInputFields(bounds);
+
 			m_SerializedProperty.boundsValue = bounds;
 			data.serializedObject.ApplyModifiedProperties();
 		}

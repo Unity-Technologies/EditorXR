@@ -139,7 +139,7 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 							case SerializedPropertyType.Integer:
 								goto case SerializedPropertyType.Float;
 							case SerializedPropertyType.Float:
-								template = "InspectorStringItem";
+								template = "InspectorNumberItem";
 								break;
 							case SerializedPropertyType.Character:
 								goto case SerializedPropertyType.String;

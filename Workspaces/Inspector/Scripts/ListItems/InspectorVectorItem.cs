@@ -86,6 +86,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 				{
 					vector2[index] = value;
 					m_SerializedProperty.vector2Value = vector2;
+					UpdateInputFields(2, vector2);
 				}
 				break;
 			case SerializedPropertyType.Vector3:
@@ -94,6 +95,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 				{
 					vector3[index] = value;
 					m_SerializedProperty.vector3Value = vector3;
+					UpdateInputFields(3, vector3);
 				}
 				break;
 			case SerializedPropertyType.Vector4:
@@ -102,6 +104,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 				{
 					vector4[index] = value;
 					m_SerializedProperty.vector4Value = vector4;
+					UpdateInputFields(4, vector4);
 				}
 				break;
 			case SerializedPropertyType.Quaternion:
@@ -110,6 +113,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 				{
 					euler[index] = value;
 					m_SerializedProperty.quaternionValue = Quaternion.Euler(euler);
+					UpdateInputFields(3, euler);
 				}
 				break;
 		}

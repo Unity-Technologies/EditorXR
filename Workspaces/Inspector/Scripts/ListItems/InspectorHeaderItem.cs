@@ -36,6 +36,7 @@ public class InspectorHeaderItem : InspectorListItem
 		}
 
 		m_NameField.text = target.name;
+		m_NameField.ForceUpdateLabel();
 	}
 
 	public void SetActive(bool active)
