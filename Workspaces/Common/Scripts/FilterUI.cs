@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Utilities;
@@ -33,7 +34,12 @@ public class FilterUI : MonoBehaviour
 	[SerializeField]
 	private Color m_DisableColor;
 
+	[SerializeField]
+	CanvasGroup m_CanvasGroup;
+
 	private FilterButtonUI[] m_VisibilityButtons;
+	Coroutine m_ShowUICoroutine;
+	Coroutine m_HideUICoroutine;
 
 	public List<string> filterTypes
 	{
@@ -75,15 +81,21 @@ public class FilterUI : MonoBehaviour
 	{
 		if (show)
 		{
+			if (m_HideUICoroutine != null)
+				StopCoroutine(m_HideUICoroutine);
+
+			m_HideUICoroutine = StartCoroutine(HideUIContent());
+
 			m_ButtonList.gameObject.SetActive(true);
-			m_VisibilityButton.SetActive(false);
-			m_SummaryButton.SetActive(false);
 		}
 		else
 		{
+			if (m_ShowUICoroutine != null)
+				StopCoroutine(m_ShowUICoroutine);
+
+			m_ShowUICoroutine = StartCoroutine(ShowUIContent());
+
 			m_ButtonList.gameObject.SetActive(false);
-			m_VisibilityButton.SetActive(true);
-			m_SummaryButton.SetActive(true);
 		}
 	}
 
@@ -126,5 +138,38 @@ public class FilterUI : MonoBehaviour
 			return true;
 		}
 		return false;
+	}
+
+	IEnumerator ShowUIContent()
+	{
+		float currentAlpha = m_CanvasGroup.alpha;
+		float kTargetAlpha = 1f;
+		float transitionAmount = Time.unscaledDeltaTime;
+		while (transitionAmount < 1)
+		{
+			m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
+			transitionAmount = transitionAmount + Time.unscaledDeltaTime;
+			yield return null;
+		}
+
+		m_CanvasGroup.alpha = kTargetAlpha;
+		m_ShowUICoroutine = null;
+	}
+
+	IEnumerator HideUIContent()
+	{
+		float currentAlpha = m_CanvasGroup.alpha;
+		float kTargetAlpha = 0f;
+		float transitionAmount = Time.unscaledDeltaTime;
+		int kSpeedMultiplier = 3;
+		while (transitionAmount < 1)
+		{
+			m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
+			transitionAmount = transitionAmount + Time.unscaledDeltaTime * kSpeedMultiplier;
+			yield return null;
+		}
+
+		m_CanvasGroup.alpha = kTargetAlpha;
+		m_HideUICoroutine = null;
 	}
 }
