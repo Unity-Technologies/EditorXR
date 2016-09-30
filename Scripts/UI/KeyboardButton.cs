@@ -29,7 +29,7 @@ public class KeyboardButton : BaseHandle
 	private bool m_MatchButtonTextToCharacter;
 
 	[SerializeField]
-	private Transform m_TargetMesh;
+	private Renderer m_TargetMesh;
 
 	private Vector3 m_TargetMeshInitialScale;
 	private Vector3 m_TargetMeshInitialLocalPosition;
@@ -66,6 +66,12 @@ public class KeyboardButton : BaseHandle
 	private const float kEmissionLerpTime = 0.1f;
 	private const float kKeyResponseDuration = 0.5f;
 	private const float kKeyResponseAmplitude = 0.06f;
+
+	private void Awake()
+	{
+		if (!m_TargetMesh)
+			m_TargetMesh = GetComponentInChildren<Renderer>(true);
+	}
 
 	public void Setup(Action<char> keyPress, Func<bool> pressOnHover)
 	{
@@ -220,9 +226,10 @@ public class KeyboardButton : BaseHandle
 	{
 		if (m_TargetMesh != null)
 		{
-			m_TargetMeshInitialLocalPosition = m_TargetMesh.localPosition;
-			m_TargetMeshInitialScale = m_TargetMesh.localScale;
-			m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
+			var targetTransform = m_TargetMesh.transform;
+			m_TargetMeshInitialLocalPosition = targetTransform.localPosition;
+			m_TargetMeshInitialScale = targetTransform.localScale;
+			m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh);
 		}
 	}
 
@@ -324,7 +331,8 @@ public class KeyboardButton : BaseHandle
 
 	private IEnumerator PunchKey()
 	{
-		m_TargetMesh.localPosition = m_TargetMeshInitialLocalPosition;
+		var targetTransform = m_TargetMesh.transform;
+		targetTransform.localPosition = m_TargetMeshInitialLocalPosition;
 
 		var elapsedTime = 0f;
 		while (elapsedTime < kKeyResponseDuration)
@@ -337,17 +345,17 @@ public class KeyboardButton : BaseHandle
 			var p = 0.3f;
 			t = Mathf.Pow(2, -10 * t) * Mathf.Sin(t * (2 * Mathf.PI) / p);
 
-			m_TargetMesh.transform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponseAmplitude;
+			targetTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponseAmplitude;
 
 			var pos = m_TargetMeshInitialLocalPosition;
 			pos.z = t * kKeyResponseAmplitude;
-			m_TargetMesh.transform.localPosition = pos;
+			targetTransform.localPosition = pos;
 
 			elapsedTime += Time.unscaledDeltaTime;
 			yield return null;
 		}
 
-		m_TargetMesh.transform.localScale = m_TargetMeshInitialScale;
-		m_TargetMesh.transform.localPosition = m_TargetMeshInitialLocalPosition;
+		targetTransform.localScale = m_TargetMeshInitialScale;
+		targetTransform.localPosition = m_TargetMeshInitialLocalPosition;
 	}
 }
