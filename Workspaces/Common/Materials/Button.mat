@@ -130,7 +130,7 @@ Material:
       second: {r: 0.2146139, g: 0.20175552, b: 0.1457231, a: 1}
     - first:
         name: _ColorBottom
-      second: {r: 0.28137255, g: 0.28699997, b: 0.28699997, a: 1}
+      second: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
     - first:
         name: _ColorTop
       second: {r: 0.38921568, g: 0.39699998, b: 0.39699998, a: 1}
