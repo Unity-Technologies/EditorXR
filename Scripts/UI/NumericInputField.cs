@@ -29,6 +29,7 @@ namespace UnityEngine.VR.UI
 		private Vector3 m_LastPointerPosition;
 		private bool m_PointerOverField;
 		private int m_OperandCount;
+		private bool m_UseYSign;
 
 		private bool MayDrag()
 		{
@@ -291,8 +292,6 @@ namespace UnityEngine.VR.UI
 
 			m_OperandCount = 0;
 		}
-
-		private bool m_UseYSign;
 
 		private float GetNicePointerDelta(Vector3 delta)
 		{

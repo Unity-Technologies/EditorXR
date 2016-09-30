@@ -7,6 +7,20 @@ using UnityEngine.VR.Utilities;
 
 public class KeyboardButton : BaseHandle
 {
+	protected enum SelectionState
+	{
+		Normal,
+		Highlighted,
+		Pressed,
+		Disabled
+	}
+
+	private const float kRepeatTime = 0.35f;
+	private const float kPressEmission = 1f;
+	private const float kEmissionLerpTime = 0.1f;
+	private const float kKeyResponseDuration = 0.5f;
+	private const float kKeyResponseAmplitude = 0.06f;
+
 	public Text textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
 	[SerializeField]
 	private Text m_TextComponent;
@@ -37,7 +51,6 @@ public class KeyboardButton : BaseHandle
 	[SerializeField]
 	private bool m_RepeatOnHold;
 
-	private const float kRepeatTime = 0.35f;
 	private float m_HoldStartTime;
 	private float m_RepeatWaitTime;
 	private bool m_Holding;
@@ -53,19 +66,6 @@ public class KeyboardButton : BaseHandle
 
 	private Coroutine m_IncreaseEmissionCoroutine;
 	private Coroutine m_DecreaseEmissionCoroutine;
-
-	protected enum SelectionState
-	{
-		Normal,
-		Highlighted,
-		Pressed,
-		Disabled
-	}
-
-	private const float kPressEmission = 1f;
-	private const float kEmissionLerpTime = 0.1f;
-	private const float kKeyResponseDuration = 0.5f;
-	private const float kKeyResponseAmplitude = 0.06f;
 
 	private void Awake()
 	{
@@ -109,7 +109,7 @@ public class KeyboardButton : BaseHandle
 					m_TextComponent.text = m_Character.ToString();
 			}
 
-			// Toggle text component to refresh text
+			// HACK: Toggle text component to refresh text
 			m_TextComponent.enabled = false;
 			m_TextComponent.enabled = true;
 		}
@@ -361,8 +361,9 @@ public class KeyboardButton : BaseHandle
 			elapsedTime += Time.unscaledDeltaTime;
 			var t = Mathf.Clamp01(elapsedTime / kKeyResponseDuration);
 
-			if (t == 0 || t == 1)
+			if (Mathf.Approximately(t, 0) || Mathf.Approximately(t, 1))
 				break;
+
 			const float p = 0.3f;
 			t = Mathf.Pow(2, -10 * t) * Mathf.Sin(t * (2 * Mathf.PI) / p);
 

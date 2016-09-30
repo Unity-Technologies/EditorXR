@@ -108,7 +108,7 @@ namespace UnityEngine.VR.UI
 
 		public override void OnSelect(BaseEventData eventData)
 		{
-			//
+			// Don't do base functionality
 		}
 
 		protected void SendOnValueChangedAndUpdateLabel()
@@ -156,35 +156,35 @@ namespace UnityEngine.VR.UI
 
 		protected void OnKeyPress(char keyCode)
 		{
-			const char kNewline = '\n';
-			switch ((int)keyCode)
+			const KeyCode kNewline = (KeyCode)'\n';
+			switch ((KeyCode)keyCode)
 			{
-				case (int)KeyCode.None:
+				case KeyCode.None:
 					return;
-				case (int)KeyCode.Backspace:
+				case KeyCode.Backspace:
 					Backspace();
 					return;
-				case (int)KeyCode.Tab:
+				case KeyCode.Tab:
 					Tab();
 					return;
-				case (int)KeyCode.Clear:
+				case KeyCode.Clear:
 					Clear();
 					return;
 				case kNewline:
-				case (int)KeyCode.Return:
+				case KeyCode.Return:
 					Return();
 					return;
-				case (int)KeyCode.Escape:
+				case KeyCode.Escape:
 					Escape();
 					return;
-				case (int)KeyCode.Space:
+				case KeyCode.Space:
 					Space();
 					return;
-				case (int)KeyCode.LeftShift:
-				case (int)KeyCode.RightShift:
+				case KeyCode.LeftShift:
+				case KeyCode.RightShift:
 					Shift();
 					return;
-				case (int)KeyCode.CapsLock:
+				case KeyCode.CapsLock:
 					CapsLock();
 					return;
 			}
