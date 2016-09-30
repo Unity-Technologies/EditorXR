@@ -11,6 +11,10 @@ public class KeyboardUI : MonoBehaviour
 	[SerializeField]
 	private DirectManipulator m_DirectManipulator;
 
+	/// <summary>
+	/// Initialize the keyboard and its buttons
+	/// </summary>
+	/// <param name="keyPress"></param>
 	public void Setup(Action<char> keyPress)
 	{
 		m_DirectManipulator.target = transform;
@@ -21,12 +25,18 @@ public class KeyboardUI : MonoBehaviour
 			button.Setup(keyPress, IsHorizontal);
 	}
 
+	/// <summary>
+	/// Activate shift mode on all buttons
+	/// </summary>
 	public void ActivateShiftModeOnKeys()
 	{
 		foreach (var button in m_Buttons)
 			button.SetShiftModeActive(true);
 	}
 
+	/// <summary>
+	/// Deactivate shift mode on all buttons
+	/// </summary>
 	public void DeactivateShiftModeOnKeys()
 	{
 		foreach (var button in m_Buttons)

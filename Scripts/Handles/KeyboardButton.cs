@@ -40,10 +40,10 @@ public class KeyboardButton : BaseHandle
 	[SerializeField]
 	private bool m_RepeatOnHold;
 
+	private const float kRepeatTime = 0.35f;
 	private float m_HoldStartTime;
 	private float m_RepeatWaitTime;
 	private bool m_Holding;
-	private const float kRepeatTime = 0.5f;
 
 	private Action<char> m_KeyPress;
 
@@ -53,6 +53,9 @@ public class KeyboardButton : BaseHandle
 	private ColorBlock m_Colors = ColorBlock.defaultColorBlock;
 
 	private Material m_TargetMeshMaterial;
+
+	private Coroutine m_IncreaseEmissionCoroutine;
+	private Coroutine m_DecreaseEmissionCoroutine;
 
 	protected enum SelectionState
 	{
@@ -67,6 +70,11 @@ public class KeyboardButton : BaseHandle
 	private const float kKeyResponseDuration = 0.5f;
 	private const float kKeyResponseAmplitude = 0.06f;
 
+	/// <summary>
+	/// Initiallize this key
+	/// </summary>
+	/// <param name="keyPress">Method to be invoked when the key is pressed</param>
+	/// <param name="pressOnHover">Method to be invoked to determine key behaviour</param>
 	public void Setup(Action<char> keyPress, Func<bool> pressOnHover)
 	{
 		m_PressOnHover = pressOnHover;
@@ -74,6 +82,10 @@ public class KeyboardButton : BaseHandle
 		m_KeyPress = keyPress;
 	}
 
+	/// <summary>
+	/// Enable or disable shift mode for this key
+	/// </summary>
+	/// <param name="active">Set to true to enable shift, false to disable</param>
 	public void SetShiftModeActive(bool active)
 	{
 		if (!m_UseShiftCharacter) return;
@@ -97,6 +109,7 @@ public class KeyboardButton : BaseHandle
 					m_TextComponent.text = m_Character.ToString();
 			}
 
+			// Toggle text component to refresh text
 			m_TextComponent.enabled = false;
 			m_TextComponent.enabled = true;
 		}
@@ -173,7 +186,8 @@ public class KeyboardButton : BaseHandle
 		if (m_RepeatOnHold)
 			EndKeyHold();
 	}
-	public void KeyPressed()
+
+	private void KeyPressed()
 	{
 		if (m_KeyPress == null) return;
 
@@ -184,7 +198,13 @@ public class KeyboardButton : BaseHandle
 		else
 			m_KeyPress(m_Character);
 
-		StartCoroutine(IncreaseEmissionCoroutine());
+		if (m_IncreaseEmissionCoroutine != null)
+			StopCoroutine(m_IncreaseEmissionCoroutine);
+
+		if (m_DecreaseEmissionCoroutine != null)
+			StopCoroutine(m_DecreaseEmissionCoroutine);
+
+		m_IncreaseEmissionCoroutine = StartCoroutine(IncreaseEmission());
 
 		if (m_RepeatOnHold)
 			StartKeyHold();
@@ -213,7 +233,14 @@ public class KeyboardButton : BaseHandle
 	{
 		m_Holding = false;
 		DoGraphicStateTransition(SelectionState.Normal, false);
-		StartCoroutine(DecreaseEmissionCoroutine());
+
+		if (m_IncreaseEmissionCoroutine != null)
+			StopCoroutine(m_IncreaseEmissionCoroutine);
+
+		if (m_DecreaseEmissionCoroutine != null)
+			StopCoroutine(m_DecreaseEmissionCoroutine);
+
+		m_DecreaseEmissionCoroutine = StartCoroutine(DecreaseEmission());
 	}
 
 	private void Start()
@@ -236,7 +263,7 @@ public class KeyboardButton : BaseHandle
 		U.Object.Destroy(m_TargetMeshMaterial);
 	}
 
-	protected virtual void DoGraphicStateTransition(SelectionState state, bool instant)
+	private void DoGraphicStateTransition(SelectionState state, bool instant)
 	{
 		Color graphicTintColor;
 
@@ -277,17 +304,15 @@ public class KeyboardButton : BaseHandle
 		DoGraphicStateTransition(SelectionState.Normal, true);
 	}
 
-	private IEnumerator IncreaseEmissionCoroutine()
+	private IEnumerator IncreaseEmission()
 	{
 		if (!gameObject.activeInHierarchy) yield break;
-
-		StopCoroutine("DecreaseEmissionCoroutine");
 
 		var t = 0f;
 		Color finalColor;
 		while (t < kEmissionLerpTime)
 		{
-			float emission = Mathf.PingPong(t / kEmissionLerpTime, kPressEmission);
+			var emission = Mathf.PingPong(t / kEmissionLerpTime, kPressEmission);
 			finalColor = Color.white * Mathf.LinearToGammaSpace(emission);
 			m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 			t += Time.unscaledDeltaTime;
@@ -298,20 +323,20 @@ public class KeyboardButton : BaseHandle
 		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 
 		if (!m_Holding)
-			StartCoroutine(DecreaseEmissionCoroutine());
+			StartCoroutine(DecreaseEmission());
+
+		m_IncreaseEmissionCoroutine = null;
 	}
 
-	private IEnumerator DecreaseEmissionCoroutine()
+	private IEnumerator DecreaseEmission()
 	{
 		if (!gameObject.activeInHierarchy) yield break;
-
-		StopCoroutine("IncreaseEmissionCoroutine");
 
 		var t = 0f;
 		Color finalColor;
 		while (t < kEmissionLerpTime)
 		{
-			float emission = Mathf.PingPong(1f - t / kEmissionLerpTime, kPressEmission);
+			var emission = Mathf.PingPong(1f - t / kEmissionLerpTime, kPressEmission);
 			finalColor = Color.white * Mathf.LinearToGammaSpace(emission);
 			m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 			t += Time.unscaledDeltaTime;
@@ -320,6 +345,8 @@ public class KeyboardButton : BaseHandle
 		}
 		finalColor = Color.white * Mathf.LinearToGammaSpace(0f);
 		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
+
+		m_DecreaseEmissionCoroutine = null;
 	}
 
 	private IEnumerator PunchKey()
@@ -334,7 +361,7 @@ public class KeyboardButton : BaseHandle
 
 			if (t == 0 || t == 1)
 				break;
-			var p = 0.3f;
+			const float p = 0.3f;
 			t = Mathf.Pow(2, -10 * t) * Mathf.Sin(t * (2 * Mathf.PI) / p);
 
 			m_TargetMesh.transform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponseAmplitude;

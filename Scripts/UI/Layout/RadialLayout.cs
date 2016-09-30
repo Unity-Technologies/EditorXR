@@ -54,15 +54,15 @@ namespace UnityEngine.UI.Extensions
 		}
 #endif
 
-		void CalculateRadial()
+		private void CalculateRadial()
 		{
 			m_Tracker.Clear();
 			if (transform.childCount == 0)
 				return;
 
-			float fOffsetAngle = (m_MaxAngle - m_MinAngle) / transform.childCount;
+			var fOffsetAngle = (m_MaxAngle - m_MinAngle) / transform.childCount;
 
-			float fAngle = m_StartAngle;
+			var fAngle = m_StartAngle;
 			for (int i = 0; i < transform.childCount; i++)
 			{
 				var child = (RectTransform)transform.GetChild(i);
