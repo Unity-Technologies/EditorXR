@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine.UI;
 
-public class InspectorPropertyItem : InspectorListItem
+public abstract class InspectorPropertyItem : InspectorListItem
 {
 	[SerializeField]
 	private Text m_Label;

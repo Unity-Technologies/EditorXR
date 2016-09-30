@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: UIBackingCubeClip
-  m_Shader: {fileID: 4800000, guid: f8dbde0846f23ca438cbe142ff7cd494, type: 3}
+  m_Shader: {fileID: 4800000, guid: 91211d46ba5f0a84ab6786bcda73a95d, type: 3}
   m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
@@ -124,7 +124,7 @@ Material:
       second: {r: 0, g: 0, b: 0, a: 0}
     - first:
         name: _ClipExtents
-      second: {r: 10.51, g: 13.34, b: 4.72, a: 0}
+      second: {r: 0.15, g: 0.25000003, b: 0.04999998, a: 0}
     - first:
         name: _Color
       second: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}

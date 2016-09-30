@@ -18,7 +18,7 @@ namespace UnityEngine.VR.Utilities
 		/// </summary>
 		public static class UI
 		{
-			private const float kDoubleClickIntervalMax = 0.3f;
+			public const float kDoubleClickIntervalMax = 0.3f;
 			private const float kDoubleClickIntervalMin = 0.15f;
 
 			public static bool DoubleClick(float timeSinceLastClick)

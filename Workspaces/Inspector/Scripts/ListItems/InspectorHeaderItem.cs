@@ -11,7 +11,7 @@ public class InspectorHeaderItem : InspectorListItem
 	private Toggle m_ActiveToggle;
 
 	[SerializeField]
-	private InputField m_NameField;
+	private StandardInputField m_NameField;
 
 	[SerializeField]
 	private Toggle m_StaticToggle;
@@ -36,6 +36,7 @@ public class InspectorHeaderItem : InspectorListItem
 		}
 
 		m_NameField.text = target.name;
+		m_NameField.ForceUpdateLabel();
 	}
 
 	public void SetActive(bool active)
@@ -57,5 +58,23 @@ public class InspectorHeaderItem : InspectorListItem
 		// TODO: Add choice dialog for whether to set in children
 		if(m_TargetGameObject != null && m_TargetGameObject.isStatic != isStatic)
 			m_TargetGameObject.isStatic = isStatic;
+	}
+
+	protected override object GetDropObject(Transform fieldBlock)
+	{
+		var inputField = fieldBlock.GetComponentInChildren<StandardInputField>();
+		if (inputField)
+			return inputField.text;
+		return null;
+	}
+
+	public override bool TestDrop(GameObject target, object droppedObject)
+	{
+		return false;
+	}
+
+	public override bool RecieveDrop(GameObject target, object droppedObject)
+	{
+		return false;
 	}
 }

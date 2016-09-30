@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: ListClipUI
-  m_Shader: {fileID: 4800000, guid: a5a64d8408b14614aaa7678963846d1e, type: 3}
+  m_Shader: {fileID: 4800000, guid: 7a00b76bb9aa9e4499db51bfa1b54fb4, type: 3}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
@@ -142,7 +142,7 @@ Material:
     m_Colors:
     - first:
         name: _ClipExtents
-      second: {r: 0, g: 0, b: 0, a: 0}
+      second: {r: 0.15, g: 0.25000003, b: 0.04999998, a: 0}
     - first:
         name: _Color
       second: {r: 1, g: 1, b: 1, a: 1}

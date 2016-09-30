@@ -1,6 +1,8 @@
 ﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Handles;
+using UnityEngine.VR.Modules;
 
 public class InspectorComponentItem : InspectorListItem
 {
@@ -68,5 +70,26 @@ public class InspectorComponentItem : InspectorListItem
 	public void SetEnabled(bool value)
 	{
 		EditorUtility.SetObjectEnabled(data.serializedObject.targetObject, value);
+	}
+
+	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
+	{
+		// Components cannot be dragged and dropped (yet)
+	}
+
+	protected override object GetDropObject(Transform fieldBlock)
+	{
+		// Components cannot be dragged and dropped (yet)
+		return null;
+	}
+
+	public override bool TestDrop(GameObject target, object droppedObject)
+	{
+		return false;
+	}
+
+	public override bool RecieveDrop(GameObject target, object droppedObject)
+	{
+		return false;
 	}
 }

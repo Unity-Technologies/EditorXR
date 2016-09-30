@@ -4,9 +4,9 @@ using ListView;
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Modules;
 
-public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPositionPreview
+public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPositionPreview, IDroppable
 {
 	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
@@ -26,18 +26,13 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	[SerializeField]
 	private GameObject[] m_Icons;
 
-	public override AssetData[] data
-	{
-		set
-		{
-			base.data = value;
-		}
-	}
-
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 	public PositionPreviewDelegate positionPreview { private get; set; }
+
+	public GetDropRecieverDelegate getCurrentDropReciever { get; set; }
+	public Action<Transform, object> setCurrentDropObject { get; set; }
 
 	public Func<string, bool> testFilter;
 
@@ -214,6 +209,9 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		item.placeObject = placeObject;
 		item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		item.positionPreview = positionPreview;
+		item.getCurrentDropReciever = getCurrentDropReciever;
+		item.setCurrentDropObject = setCurrentDropObject;
+
 		StartCoroutine(Transition(data, false));
 
 		switch (data.type)

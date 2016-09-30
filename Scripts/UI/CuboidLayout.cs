@@ -21,7 +21,7 @@ public class CuboidLayout : UIBehaviour
 		for (int i = 0; i < m_CubeTransforms.Length; i++)
 		{
 			var cube = Instantiate(m_CubePrefab).transform;
-			cube.transform.SetParent(m_TargetTransforms[i], false);
+			cube.SetParent(m_TargetTransforms[i], false);
 			m_CubeTransforms[i] = cube;
 		}
 		UpdateCubes();
@@ -32,13 +32,13 @@ public class CuboidLayout : UIBehaviour
 		UpdateCubes();
 	}
 
-	public void SwapMaterials(Material backingCubeMaterial)
+	public void SetMaterials(Material backingCubeMaterial)
 	{
 		foreach (var cube in m_CubeTransforms)
 			cube.GetComponent<Renderer>().sharedMaterial = backingCubeMaterial;
 	}
 
-	private void UpdateCubes()
+	public void UpdateCubes()
 	{
 		if (m_CubeTransforms == null)
 			return;

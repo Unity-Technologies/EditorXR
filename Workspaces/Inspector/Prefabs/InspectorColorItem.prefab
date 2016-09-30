@@ -23,7 +23,7 @@ GameObject:
   - 114: {fileID: 114000010961242706}
   - 114: {fileID: 114000011237704542}
   m_Layer: 5
-  m_Name: XField
+  m_Name: RField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -90,7 +90,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000012299979466}
   m_Layer: 5
-  m_Name: WFieldContainer
+  m_Name: AFieldContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -105,7 +105,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000012965567806}
   m_Layer: 5
-  m_Name: W
+  m_Name: A
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -123,7 +123,7 @@ GameObject:
   - 114: {fileID: 114000011317068494}
   - 114: {fileID: 114000012683308434}
   m_Layer: 5
-  m_Name: WField
+  m_Name: AField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -141,7 +141,7 @@ GameObject:
   - 114: {fileID: 114000011478281706}
   - 114: {fileID: 114000012159935352}
   m_Layer: 5
-  m_Name: YField
+  m_Name: GField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -192,7 +192,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000010267079224}
   m_Layer: 5
-  m_Name: X
+  m_Name: R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -207,7 +207,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000013238035632}
   m_Layer: 5
-  m_Name: YFieldContainer
+  m_Name: GFieldContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -255,7 +255,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000011734121582}
   m_Layer: 5
-  m_Name: Y
+  m_Name: G
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -271,7 +271,7 @@ GameObject:
   - 224: {fileID: 224000012986250906}
   - 114: {fileID: 114000011752801550}
   m_Layer: 5
-  m_Name: InspectorVectorItem
+  m_Name: InspectorColorItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -320,7 +320,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000012463135546}
   m_Layer: 5
-  m_Name: Z
+  m_Name: B
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -338,7 +338,7 @@ GameObject:
   - 114: {fileID: 114000012956155316}
   - 114: {fileID: 114000011210353174}
   m_Layer: 5
-  m_Name: ZField
+  m_Name: BField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -371,7 +371,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000012173273710}
   m_Layer: 5
-  m_Name: XFieldContainer
+  m_Name: RFieldContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -421,7 +421,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000010822187490}
   m_Layer: 5
-  m_Name: ZFieldContainer
+  m_Name: BFieldContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -627,7 +627,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: W
+  m_Text: A
 --- !u!114 &114000010242863754
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -959,7 +959,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000011895958286}
   m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e9617fad27f7de4fadbf9fd1e0e23d1, type: 3}
+  m_Script: {fileID: 11500000, guid: deebf2fafcd9cfb41a3d108894bad91b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -967,12 +967,10 @@ MonoBehaviour:
   m_UIContainer: {fileID: 224000010867083340}
   m_Label: {fileID: 114000010242863754}
   m_InputFields:
-  - {fileID: 114000011237704542}
-  - {fileID: 114000012159935352}
-  - {fileID: 114000011210353174}
   - {fileID: 114000012683308434}
-  ZGroup: {fileID: 1000012460620550}
-  WGroup: {fileID: 1000010558686332}
+  - {fileID: 114000011210353174}
+  - {fileID: 114000012159935352}
+  - {fileID: 114000011237704542}
 --- !u!114 &114000011797594124
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1094,7 +1092,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: X
+  m_Text: R
 --- !u!114 &114000012458130594
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1128,7 +1126,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Y
+  m_Text: G
 --- !u!114 &114000012460105578
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1325,7 +1323,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Z
+  m_Text: B
 --- !u!114 &114000013208813950
 MonoBehaviour:
   m_ObjectHideFlags: 1

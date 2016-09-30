@@ -1,29 +1,28 @@
 ﻿using System;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Modules;
 
-public class InspectorBoundsItem : InspectorPropertyItem
+public class InspectorRectItem : InspectorPropertyItem
 {
 	[SerializeField]
 	private NumericInputField[] m_CenterFields;
 	[SerializeField]
-	private NumericInputField[] m_ExtentsFields;
+	private NumericInputField[] m_SizeFields;
 
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
 
-		UpdateInputFields(m_SerializedProperty.boundsValue);
+		UpdateInputFields(m_SerializedProperty.rectValue);
 	}
 
-	private void UpdateInputFields(Bounds bounds)
+	private void UpdateInputFields(Rect rect)
 	{
 		for (int i = 0; i < m_CenterFields.Length; i++)
 		{
-			m_CenterFields[i].text = bounds.center[i].ToString();
-			m_ExtentsFields[i].text = bounds.extents[i].ToString();
+			m_CenterFields[i].text = rect.center[i].ToString();
+			m_SizeFields[i].text = rect.size[i].ToString();
 		}
 	}
 
@@ -36,7 +35,7 @@ public class InspectorBoundsItem : InspectorPropertyItem
 		{
 			var index = i;
 			m_CenterFields[i].onValueChanged.AddListener(value => SetValue(value, index, true));
-			m_ExtentsFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+			m_SizeFields[i].onValueChanged.AddListener(value => SetValue(value, index));
 		}
 	}
 
@@ -45,20 +44,20 @@ public class InspectorBoundsItem : InspectorPropertyItem
 		float value;
 		if (!float.TryParse(input, out value)) return false;
 
-		var bounds = m_SerializedProperty.boundsValue;
-		var vector = center ? bounds.center : bounds.extents;
+		var rect = m_SerializedProperty.rectValue;
+		var vector = center ? rect.center : rect.size;
 
 		if (!Mathf.Approximately(vector[index], value))
 		{
 			vector[index] = value;
 			if (center)
-				bounds.center = vector;
+				rect.center = vector;
 			else
-				bounds.extents = vector;
+				rect.size = vector;
 
-			UpdateInputFields(bounds);
+			UpdateInputFields(rect);
 
-			m_SerializedProperty.boundsValue = bounds;
+			m_SerializedProperty.rectValue = rect;
 			data.serializedObject.ApplyModifiedProperties();
 		}
 
@@ -78,8 +77,7 @@ public class InspectorBoundsItem : InspectorPropertyItem
 				dropObject = m_SerializedProperty.boundsValue.center;
 			else
 				dropObject = m_SerializedProperty.boundsValue.extents;
-		}
-		else if (inputfields.Length > 0) // If we've grabbed a single field
+		} else if (inputfields.Length > 0) // If we've grabbed a single field
 			dropObject = inputfields[0].text;
 
 		return dropObject;
@@ -87,7 +85,7 @@ public class InspectorBoundsItem : InspectorPropertyItem
 
 	public override bool TestDrop(GameObject target, object droppedObject)
 	{
-		return droppedObject is string || droppedObject is Bounds;
+		return droppedObject is string || droppedObject is Rect;
 	}
 
 	public override bool RecieveDrop(GameObject target, object droppedObject)
@@ -100,7 +98,7 @@ public class InspectorBoundsItem : InspectorPropertyItem
 		{
 			var targetParent = target.transform.parent;
 			var inputField = targetParent.GetComponentInChildren<NumericInputField>();
-			var index = Array.IndexOf(m_ExtentsFields, inputField);
+			var index = Array.IndexOf(m_SizeFields, inputField);
 			if (index > -1)
 			{
 				if (SetValue(str, index))
@@ -124,11 +122,11 @@ public class InspectorBoundsItem : InspectorPropertyItem
 			return false;
 		}
 
-		if (droppedObject is Bounds)
+		if (droppedObject is Rect)
 		{
-			m_SerializedProperty.boundsValue = (Bounds) droppedObject;
+			m_SerializedProperty.rectValue = (Rect)droppedObject;
 
-			UpdateInputFields(m_SerializedProperty.boundsValue);
+			UpdateInputFields(m_SerializedProperty.rectValue);
 
 			data.serializedObject.ApplyModifiedProperties();
 			return true;

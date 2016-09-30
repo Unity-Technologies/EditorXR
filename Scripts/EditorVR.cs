@@ -69,6 +69,7 @@ public class EditorVR : MonoBehaviour
 	private PixelRaycastModule m_PixelRaycastModule;
 	private HighlightModule m_HighlightModule;
 	private ObjectPlacementModule m_ObjectPlacementModule;
+	private DragAndDropModule m_DragAndDropModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
 
@@ -133,6 +134,7 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+		m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
@@ -167,6 +169,9 @@ public class EditorVR : MonoBehaviour
 		// Workspaces don't need to wait until devices are active
 		CreateDefaultWorkspaces();
 
+		// In case we have anything selected at start, set up manipulators, inspector, etc.
+		EditorApplication.delayCall += OnSelectionChanged;
+
 		// Delay until at least one proxy initializes
 		bool proxyActive = false;
 		while (!proxyActive)
@@ -184,7 +189,7 @@ public class EditorVR : MonoBehaviour
 		}
 		SpawnDefaultTools();
 
-		// In case we have anything selected at start, set up manipulators, inspector, etc.
+		// Call OnSelectionChanged one more time for tools
 		EditorApplication.delayCall += OnSelectionChanged;
 	}
 
@@ -479,17 +484,16 @@ public class EditorVR : MonoBehaviour
 	{
 		var go = U.Object.Instantiate(prefab, transform);
 		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
-		{
 			canvas.worldCamera = m_EventCamera;
 
-			foreach (RayInputField inputField in canvas.GetComponentsInChildren<RayInputField>())
-			{
-				if (inputField is NumericInputField)
-					inputField.spawnKeyboard = SpawnNumericKeyboard;
-				else if (inputField is StandardInputField)
-					inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
-			}
+		foreach (RayInputField inputField in go.GetComponentsInChildren<RayInputField>())
+		{
+			if (inputField is NumericInputField)
+				inputField.spawnKeyboard = SpawnNumericKeyboard;
+			else if (inputField is StandardInputField)
+				inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
 		}
+
 		return go;
 	}
 
@@ -763,6 +767,20 @@ public class EditorVR : MonoBehaviour
 		if (selectionChanged != null)
 			m_SelectionChanged += selectionChanged.OnSelectionChanged;
 
+		var droppable = obj as IDroppable;
+		if (droppable != null)
+		{
+			droppable.getCurrentDropReciever = m_DragAndDropModule.GetCurrentDropReciever;
+			droppable.setCurrentDropObject = m_DragAndDropModule.SetCurrentDropObject;
+		}
+
+		var dropReciever = obj as IDropReciever;
+		if (dropReciever != null)
+		{
+			dropReciever.setCurrentDropReciever = m_DragAndDropModule.SetCurrentDropReciever;
+			dropReciever.getCurrentDropObject = m_DragAndDropModule.GetCurrentDropObject;
+		}
+
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_AllTools.ToList();
@@ -925,6 +943,7 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
+		CreateWorkspace<InspectorWorkspace>();
 		CreateWorkspace<ProjectWorkspace>();
 		CreateWorkspace<ChessboardWorkspace>();
 		CreateWorkspace<ConsoleWorkspace>();

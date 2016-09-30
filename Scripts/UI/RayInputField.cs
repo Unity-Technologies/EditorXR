@@ -8,6 +8,9 @@ using UnityEngine.VR.Utilities;
 
 public abstract class RayInputField : Selectable, IPointerClickHandler
 {
+	private static readonly Vector3 kKeyboardPositionOffset = new Vector3(0.05f, 0.01f, 0);
+	private static readonly Quaternion kKeyboardRotationOffset = Quaternion.AngleAxis(30, Vector3.up);
+
 	public SelectionFlags selectionFlags
 	{
 		get { return m_SelectionFlags; }
@@ -50,6 +53,8 @@ public abstract class RayInputField : Selectable, IPointerClickHandler
 			m_Text = m_CharacterLimit > 0 && value.Length > m_CharacterLimit ? value.Substring(0, m_CharacterLimit) : value;
 		}
 	}
+	[HideInInspector]
+	[SerializeField] // Serialized so that this remains set after cloning
 	protected string m_Text = string.Empty;
 
 	protected override void OnEnable()
@@ -84,14 +89,19 @@ public abstract class RayInputField : Selectable, IPointerClickHandler
 		var rayEventData = eventData as RayEventData;
 		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 		{
-			if (m_Open)
+			if (rayEventData != null)
+				ToggleKeyboard(rayEventData.rayOrigin.position);
+			else if(m_Open)
 				Close();
-			else
-			{
-				if (rayEventData != null)
-					Open(rayEventData.rayOrigin.position);
-			}
 		}
+	}
+
+	public void ToggleKeyboard(Vector3 position)
+	{
+		if (m_Open)
+			Close();
+		else
+			Open(position);
 	}
 
 	public override void OnSelect(BaseEventData eventData)
@@ -126,8 +136,8 @@ public abstract class RayInputField : Selectable, IPointerClickHandler
 		if (m_Keyboard != null)
 		{
 			m_Keyboard.gameObject.SetActive(true);
-			m_Keyboard.transform.position = position + Vector3.up * 0.01f;
-			m_Keyboard.transform.rotation = transform.rotation;
+			m_Keyboard.transform.position = position + kKeyboardPositionOffset;
+			m_Keyboard.transform.rotation = kKeyboardRotationOffset;
 			m_Keyboard.Setup(OnKeyPress);
 		}
 	}
