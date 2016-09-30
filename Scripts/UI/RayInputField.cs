@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickHandler
+public abstract class RayInputField : Selectable, IPointerClickHandler
 {
 	public SelectionFlags selectionFlags
 	{
@@ -94,11 +94,6 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 		}
 	}
 
-	public void OnSubmit(BaseEventData eventData)
-	{
-		//
-	}
-
 	public override void OnSelect(BaseEventData eventData)
 	{
 		//
@@ -120,11 +115,6 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 	{
 		if (m_TextComponent != null && m_TextComponent.font != null)
 			m_TextComponent.text = m_Text;
-	}
-
-	public override void OnDeselect(BaseEventData eventData)
-	{
-		//
 	}
 
 	protected virtual void Open(Vector3 position)
@@ -154,6 +144,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 
 	protected void OnKeyPress(char keyCode)
 	{
+		const char kNewline = '\n';
 		switch ((int)keyCode)
 		{
 			case (int)KeyCode.None:
@@ -167,7 +158,7 @@ public abstract class RayInputField : Selectable, ISubmitHandler, IPointerClickH
 			case (int)KeyCode.Clear:
 				Clear();
 				return;
-			case '\n':
+			case kNewline:
 			case (int)KeyCode.Return:
 				Return();
 				return;

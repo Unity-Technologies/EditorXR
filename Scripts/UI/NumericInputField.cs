@@ -147,17 +147,15 @@ public class NumericInputField : RayInputField, IRayEnterHandler, IRayExitHandle
 		if (!base.IsValid(ch))
 			return false;
 
-		if (m_NumberType == NumberType.Float)
+		switch (m_NumberType)
 		{
-			if (!kAllowedCharactersForFloat.Contains(ch.ToString()))
+			case NumberType.Float:
+				return kAllowedCharactersForInt.Contains(ch.ToString());
+			case NumberType.Int:
+				return kAllowedCharactersForFloat.Contains(ch.ToString());
+			default:
 				return false;
 		}
-		else if (m_NumberType == NumberType.Int)
-		{
-			if (!kAllowedCharactersForInt.Contains(ch.ToString()))
-				return false;
-		}
-		return true;
 	}
 
 	protected override void Append(char c)
@@ -255,7 +253,7 @@ public class NumericInputField : RayInputField, IRayEnterHandler, IRayExitHandle
 
 	private float DiscardLeastSignificantDecimal(float v)
 	{
-		int decimals = Mathf.Clamp((int)(5 - Mathf.Log10(Mathf.Abs(v))), 0, kMaxDecimals);
+		var decimals = Mathf.Clamp((int)(5 - Mathf.Log10(Mathf.Abs(v))), 0, kMaxDecimals);
 		return (float)Math.Round(v, decimals, MidpointRounding.AwayFromZero);
 	}
 
@@ -277,8 +275,7 @@ public class NumericInputField : RayInputField, IRayEnterHandler, IRayExitHandle
 			// Make sure that comma & period are interchangable.
 			m_Text = m_Text.Replace(',', '.');
 
-			if (!float.TryParse(m_Text, System.Globalization.NumberStyles.Float,
-					System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out floatVal))
+			if (!float.TryParse(m_Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out floatVal))
 				floatVal = StringExpressionEvaluator.Evaluate<float>(m_Text);
 
 			if (float.IsNaN(floatVal))
@@ -300,9 +297,10 @@ public class NumericInputField : RayInputField, IRayEnterHandler, IRayExitHandle
 	}
 
 	private bool m_UseYSign;
+
 	private float GetNicePointerDelta(Vector3 delta)
 	{
-		Vector2 d = delta;
+		var d = delta;
 		d.y = -d.y;
 
 		if (Mathf.Abs(Mathf.Abs(d.x) - Mathf.Abs(d.y)) / Mathf.Max(Mathf.Abs(d.x), Mathf.Abs(d.y)) > .1f)

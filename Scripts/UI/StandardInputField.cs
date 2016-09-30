@@ -44,7 +44,8 @@ public class StandardInputField : RayInputField
 	{
 		if (m_LineType == LineType.SingleLine) return;
 
-		text += "\t";
+		const char kTab = '\t';
+		text += kTab;
 
 		SendOnValueChangedAndUpdateLabel();
 	}
@@ -53,8 +54,10 @@ public class StandardInputField : RayInputField
 	{
 		if (m_LineType == LineType.SingleLine) return;
 
-		text += "\n";
-		text = text.Replace("<br>", "\n");
+		const char kNewline = '\n';
+		const string kLineBreak = "<br>";
+		text += kNewline;
+		text = text.Replace(kLineBreak, kNewline.ToString());
 
 		SendOnValueChangedAndUpdateLabel();
 	}
@@ -63,7 +66,8 @@ public class StandardInputField : RayInputField
 	{
 		var len = m_Text.Length;
 
-		text += " ";
+		const string kWhiteSpace = " ";
+		text += kWhiteSpace;
 
 		if (len != m_Text.Length)
 			SendOnValueChangedAndUpdateLabel();
