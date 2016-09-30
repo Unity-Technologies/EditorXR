@@ -85,6 +85,7 @@ namespace UnityEngine.VR.Workspaces
 		public Action<GameObject, bool> setHighlight { get; set; }
 
 		public bool vacuumEnabled { set { m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value); } }
+		protected bool workspaceBaseInteractive { set { m_WorkspaceUI.workspaceBaseInteractive = value; } }
 
 		public virtual void Setup()
 		{
@@ -177,14 +178,18 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			/*
 			if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
 				setHighlight(handle.gameObject, true);
+			*/
 		}
 
 		public virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			/*
 			if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
 				setHighlight(handle.gameObject, false);
+			*/
 		}
 
 		private void OnDoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

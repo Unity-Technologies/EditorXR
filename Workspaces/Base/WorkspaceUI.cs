@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine.VR.Handles;
+using UnityEngine.UI;
 
 namespace UnityEngine.VR.Workspaces
 {
@@ -8,7 +9,36 @@ namespace UnityEngine.VR.Workspaces
 		public event Action closeClicked = delegate { };
 		public event Action lockClicked = delegate { };
 
-		private const float kPanelOffset = 0f; // The panel needs to be pulled back slightly
+		private float m_OriginalUIContainerLocalYPos;
+
+		private const float kPanelOffset = -0.09f; // The panel needs to be pulled back slightly
+
+		[SerializeField]
+		private RectTransform m_UIContentContainer;
+
+		[SerializeField]
+		private Image m_FrontLeftResizeIcon;
+
+		[SerializeField]
+		private Image m_FrontRightResizeIcon;
+
+		[SerializeField]
+		private Image m_BackLeftResizeIcon;
+
+		[SerializeField]
+		private Image m_BackRightResizeIcon;
+
+		[SerializeField]
+		private Image m_LeftSideFrontResizeIcon;
+
+		[SerializeField]
+		private Image m_LeftSideBackResizeIcon;
+
+		[SerializeField]
+		private Image m_RightSideFrontResizeIcon;
+
+		[SerializeField]
+		private Image m_RightSideBackResizeIcon;
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -47,33 +77,194 @@ namespace UnityEngine.VR.Workspaces
 
 		[SerializeField]
 		private SkinnedMeshRenderer m_Frame;
+		private Material m_FrameGradientMaterial;
 
-		public void SetBounds(Bounds bounds)
+		private const string kBottomGradientProperty = "_ColorBottom";
+		private const string kTopGradientProperty = "_ColorTop";
+		private const int kAngledFaceBlendShapeIndex = 2;
+		private const int kHiddenFacesBlendShapeIndex = 3;
+
+		public bool dynamicFaceAdjustment { get; set; }
+
+		public bool workspaceBaseInteractive
 		{
-			// Because BlendShapes cap at 100, our workspace maxes out at 100m wide
-			m_Frame.SetBlendShapeWeight(0, bounds.size.x + Workspace.kHandleMargin);
-			m_Frame.SetBlendShapeWeight(1, bounds.size.z + Workspace.kHandleMargin);
+			get { return m_workspaceBaseInteractive; }
+			set
+			{
+				m_workspaceBaseInteractive = value;
+				dynamicFaceAdjustment = false;
 
-			// Resize handles
-			float handleScale = leftHandle.transform.localScale.z;
+				if (m_workspaceBaseInteractive == false)
+					m_Frame.SetBlendShapeWeight(kHiddenFacesBlendShapeIndex, 100f);
+			}
+		}
+		bool m_workspaceBaseInteractive = true;
 
-			m_LeftHandle.transform.localPosition = new Vector3(-bounds.extents.x + handleScale * 0.5f, m_LeftHandle.transform.localPosition.y, 0);
-			m_LeftHandle.transform.localScale = new Vector3(bounds.size.z, handleScale, handleScale);
+		public Bounds setBounds
+		{
+			get { return m_Bounds; }
+			set
+			{
+				m_Bounds = value;
 
-			m_FrontHandle.transform.localPosition = new Vector3(0, m_FrontHandle.transform.localPosition.y, -bounds.extents.z - handleScale);
-			m_FrontHandle.transform.localScale = new Vector3(bounds.size.x, handleScale, handleScale);
+				// Because BlendShapes cap at 100, our workspace maxes out at 100m wide
+				m_Frame.SetBlendShapeWeight(0, m_Bounds.size.x + Workspace.kHandleMargin);
+				m_Frame.SetBlendShapeWeight(1, m_Bounds.size.z + Workspace.kHandleMargin);
 
-			m_RightHandle.transform.localPosition = new Vector3(bounds.extents.x - handleScale * 0.5f, m_RightHandle.transform.localPosition.y, 0);
-			m_RightHandle.transform.localScale = new Vector3(bounds.size.z, handleScale, handleScale);
+				// Resize handles
+				float handleScale = leftHandle.transform.localScale.z;
 
-			m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandle.transform.localPosition.y, bounds.extents.z - handleScale);
-			m_BackHandle.transform.localScale = new Vector3(bounds.size.x, handleScale, handleScale);
+				m_LeftHandle.transform.localPosition = new Vector3(-m_Bounds.extents.x + handleScale * 0.5f, m_LeftHandle.transform.localPosition.y, 0);
+				m_LeftHandle.transform.localScale = new Vector3(m_Bounds.size.z, handleScale, handleScale);
 
-			// Resize front panel
-			m_FrontPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bounds.size.x);
-			m_FrontPanel.localPosition = new Vector3(0, m_FrontPanel.localPosition.y, -bounds.extents.z + kPanelOffset);
+				m_FrontHandle.transform.localPosition = new Vector3(0, m_FrontHandle.transform.localPosition.y, -m_Bounds.extents.z - handleScale);
+				m_FrontHandle.transform.localScale = new Vector3(m_Bounds.size.x, handleScale, handleScale);
 
-			m_GrabCollider.size = new Vector3(bounds.size.x, m_GrabCollider.size.y, m_GrabCollider.size.z);
+				m_RightHandle.transform.localPosition = new Vector3(m_Bounds.extents.x - handleScale * 0.5f, m_RightHandle.transform.localPosition.y, 0);
+				m_RightHandle.transform.localScale = new Vector3(m_Bounds.size.z, handleScale, handleScale);
+
+				m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandle.transform.localPosition.y, m_Bounds.extents.z - handleScale);
+				m_BackHandle.transform.localScale = new Vector3(m_Bounds.size.x, handleScale, handleScale);
+
+				// Resize content container
+				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, m_Bounds.size.x);
+				m_UIContentContainer.localPosition = new Vector3(0, m_OriginalUIContainerLocalYPos, -m_Bounds.extents.z);
+
+				// Resize front panel
+				if (dynamicFaceAdjustment == false)
+					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, kPanelOffset);
+
+				m_GrabCollider.size = new Vector3(m_Bounds.size.x, m_GrabCollider.size.y, m_GrabCollider.size.z);
+			}
+		}
+		private Bounds m_Bounds;
+
+		private void ResizeHighlightBegin(BaseHandle baseHandle, HandleEventData eventData)
+		{
+			const float kOpacityTarget = 0.75f;
+			const float kDuration = 0.5f;
+
+			if (baseHandle == m_FrontHandle) // in order of potential usage
+			{
+				m_FrontLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+				m_FrontRightResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+			}
+			else if (baseHandle == m_RightHandle)
+			{
+				m_RightSideFrontResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+				m_RightSideBackResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+			}
+			else if (baseHandle == m_LeftHandle)
+			{
+				m_LeftSideFrontResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+				m_LeftSideBackResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+			}
+			else if (baseHandle == m_BackHandle)
+			{
+				m_BackLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+				m_BackRightResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+			}
+		}
+
+		private void ResizeHighlightEnd(BaseHandle baseHandle, HandleEventData eventData)
+		{
+			const float kOpacityTarget = 0f;
+			const float kDuration = 0.2f;
+
+			if (baseHandle == m_FrontHandle) // in order of potential usage
+			{
+				m_FrontLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+				m_FrontRightResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+			}
+			else if (baseHandle == m_RightHandle)
+			{
+				m_RightSideFrontResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+				m_RightSideBackResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+			}
+			else if (baseHandle == m_LeftHandle)
+			{
+				m_LeftSideFrontResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+				m_LeftSideBackResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+			}
+			else if (baseHandle == m_BackHandle)
+			{
+				m_BackLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+				m_BackRightResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
+			}
+		}
+
+		private void Awake()
+		{
+			m_OriginalUIContainerLocalYPos = m_UIContentContainer.localPosition.y;
+			m_OriginalFontPanelLocalPosition = m_FrontPanel.localPosition;
+
+			m_FrontHandle.hoverStarted += ResizeHighlightBegin;
+			m_FrontHandle.hoverEnded += ResizeHighlightEnd;
+			m_RightHandle.hoverStarted += ResizeHighlightBegin;
+			m_RightHandle.hoverEnded += ResizeHighlightEnd;
+			m_LeftHandle.hoverStarted += ResizeHighlightBegin;
+			m_LeftHandle.hoverEnded += ResizeHighlightEnd;
+			m_BackHandle.hoverStarted += ResizeHighlightBegin;
+			m_BackHandle.hoverEnded += ResizeHighlightEnd;
+
+			m_FrontLeftResizeIcon.CrossFadeAlpha(0f, 0f, true);
+			m_FrontRightResizeIcon.CrossFadeAlpha(0f, 0f, true);
+			m_RightSideFrontResizeIcon.CrossFadeAlpha(0f, 0f, true);
+			m_RightSideBackResizeIcon.CrossFadeAlpha(0f, 0f, true);
+			m_LeftSideFrontResizeIcon.CrossFadeAlpha(0f, 0f, true);
+			m_LeftSideBackResizeIcon.CrossFadeAlpha(0f, 0f, true);
+			m_BackLeftResizeIcon.CrossFadeAlpha(0f, 0f, true);
+			m_BackRightResizeIcon.CrossFadeAlpha(0f, 0f, true);
+
+			/*
+			m_Frame.sharedMaterials = U.Material.GetMaterialClones(m_Frame); // no need to assign again, as clones are assigned therein
+
+			foreach (var material in m_Frame.sharedMaterials)
+			{
+				Debug.LogError(material.name);
+				if (material.name == "GradientBorder")
+				{
+					m_FrameGradientMaterial = material;
+					break;
+				}
+			}
+
+			var gradientPair = UnityBrandColorScheme.GetRandomGradient();
+			m_FrameGradientMaterial.SetColor(kTopGradientProperty, gradientPair.a);
+			m_FrameGradientMaterial.SetColor(kBottomGradientProperty, gradientPair.b);
+			*/
+
+			//m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, Random.Range(0, 100f));
+		}
+
+		private float m_AngledAmount; 
+		private Vector3 m_BaseFrontPanelRotation = Vector3.zero;
+		private Vector3 m_MaxFrontPanelRotation = new Vector3(45f, 0f, 0f);
+		private float kMaxAlternateFrontPanelLocalZOffset = -0.075f;//-0.1f; //-0.0575f;// -0.3009003f;
+		private float kMaxAlternateFrontPanelLocalYOffset = -0.005f;//-0.03813409f;
+		private Vector3 m_OriginalFontPanelLocalPosition;
+		private float kMaxBlendShapeAngle = 90f;
+
+		private void Update()
+		{
+			if (dynamicFaceAdjustment == false)
+				return;
+
+			// sin of x rotation drives the blendeshape value
+			//Debug.LogWarning("<color=green>" + Mathf.Sin(transform.rotation.eulerAngles.x) + "</color> : " + transform.rotation.eulerAngles.x);
+			//Debug.LogWarning("<color=green>" + Mathf.Deg2Rad * transform.rotation.eulerAngles.x + "</color> : " + transform.rotation.eulerAngles.x);
+
+			m_AngledAmount = Mathf.Clamp(Mathf.DeltaAngle(transform.rotation.eulerAngles.x, 0f), 0f, 100f);
+
+			//Debug.LogWarning("<color=purple>" + m_AngledAmount + "</color> : " + transform.rotation.eulerAngles.x);
+
+			float lerpAmount = m_AngledAmount / 90f;
+			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));  // qua Quaternion.Euler(Mathf.Lerp(0, 45, angledBlendshapeAmount), 0f, 0f);
+			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
+
+			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, m_AngledAmount);
+
+			//Debug.LogWarning("<color=yellow>" + m_AngledAmount + "</color>");
 		}
 
 		public void CloseClick()
