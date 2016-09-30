@@ -54,6 +54,7 @@ public class EditorVR : MonoBehaviour
 	private PixelRaycastModule m_PixelRaycastModule;
 	private HighlightModule m_HighlightModule;
 	private ObjectPlacementModule m_ObjectPlacementModule;
+	private LockModule m_LockModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
 
@@ -118,6 +119,7 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+		m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
@@ -691,6 +693,13 @@ public class EditorVR : MonoBehaviour
 		var placeObjects = obj as IPlaceObjects;
 		if (placeObjects != null)
 			placeObjects.placeObject = PlaceObject;
+
+		var locking = obj as ILocking;
+		if(locking != null)
+		{
+			locking.setLocked = m_LockModule.SetLocked;
+			locking.getLocked= m_LockModule.GetLocked;
+		}
 
 		var positionPreview = obj as IPositionPreview;
 		if (positionPreview != null)

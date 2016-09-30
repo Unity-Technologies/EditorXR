@@ -10,7 +10,7 @@ using UnityEngine.InputNew;
 using UnityEngine.VR.Utilities;
 
 [UnityEngine.VR.Tools.MainMenuItem("Selection", "Transform", "Select items in the scene")]
-public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
+public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight, ILocking
 {
 	private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
@@ -36,6 +36,9 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 	public Transform rayOrigin { private get; set; }
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
+
+	public Action<GameObject,bool> setLocked { private get; set; }
+	public Func<GameObject,bool> getLocked { get; set; }
 
 	void Update()
 	{
@@ -64,17 +67,9 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 				newHoverGameObject = newPrefabRoot;
 		}
 
-		U.Locking.SetCurrentHoverObject(newHoverGameObject);
-		if(U.Locking.IsGameObjectLocked(newHoverGameObject))
-		{
-			//newHoverGameObject = null;
-			//s_SelectedObjects.Clear();
-			//Selection.activeGameObject = null;
-			//if(U.Locking.IsCurrentHoverObjectReadyToUnlock())
-			//	U.Locking.UnLockGameObject(newHoverGameObject);
-			//else
+		//LOCKING TEST
+		if(getLocked(newHoverGameObject))
 			return;
-		}
 
 		// Handle changing highlight
 		if (newHoverGameObject != m_HoverGameObject)
