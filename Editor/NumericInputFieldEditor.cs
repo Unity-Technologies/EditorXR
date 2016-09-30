@@ -1,22 +1,25 @@
-using UnityEditor;
+using UnityEngine.VR.UI;
 
-[CustomEditor(typeof(NumericInputField))]
-[CanEditMultipleObjects]
-public class NumericInputFieldEditor : RayInputFieldEditor
+namespace UnityEditor.VR.UI
 {
-	SerializedProperty m_NumberTypeProperty;
-
-	protected override void OnEnable()
+	[CustomEditor(typeof(NumericInputField))]
+	[CanEditMultipleObjects]
+	public class NumericInputFieldEditor : InputFieldEditor
 	{
-		base.OnEnable();
-		m_NumberTypeProperty = serializedObject.FindProperty("m_NumberType");
-	}
+		SerializedProperty m_NumberTypeProperty;
 
-	public override void OnInspectorGUI()
-	{
-		serializedObject.Update();
-		EditorGUILayout.PropertyField(m_NumberTypeProperty);
-		serializedObject.ApplyModifiedProperties();
-		base.OnInspectorGUI();
+		protected override void OnEnable()
+		{
+			base.OnEnable();
+			m_NumberTypeProperty = serializedObject.FindProperty("m_NumberType");
+		}
+
+		public override void OnInspectorGUI()
+		{
+			serializedObject.Update();
+			EditorGUILayout.PropertyField(m_NumberTypeProperty);
+			serializedObject.ApplyModifiedProperties();
+			base.OnInspectorGUI();
+		}
 	}
 }

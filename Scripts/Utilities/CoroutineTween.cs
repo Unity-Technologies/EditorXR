@@ -1,45 +1,13 @@
-/*
- * This code is provided as is without warranty, guarantee of function, 
- * or provided support
- */
-
-/* Example usage: move an object from (0, 0, 0) to (1, 1, 1) over 1s
-	void Start()
-	{
-		PositionTween positionTween = new PositionTween
-		{
-			startPosition = Vector3.zero,
-			targetPosition = Vector3.one,
-			duration = 1f
-		};
-
-		positionTween.AddOnChangedCallback(MoveObject);
-
-		var tweenRunner = new TweenRunner<PositionTween>();
-		tweenRunner.Init(this);
-		tweenRunner.StartTween(positionTween);
-	}
-
-	public void MoveObject( Vector3 position )
-	{
-		transform.position = position;
-	}
-*/
-
-//todo add OnComplete callback
-//todo simplify the creation and running of a tween, perhaps using extension methods
-//todo handle cleaning up tween runners
-//todo handle moving/rotating objects with rigidbodies
 using System;
 using System.Collections;
 using UnityEngine.Events;
 
 namespace UnityEngine.Experimental.Tweening
 {
-   // Base interface for tweeners, 
-   // using an interface instead of 
-   // an abstract class as we want the
-   // tweens to be structs.
+	// Base interface for tweeners, 
+	// using an interface instead of 
+	// an abstract class as we want the
+	// tweens to be structs.
 	public interface ITweenValue
 	{
 		void TweenValue(float floatPercentage);
@@ -48,6 +16,27 @@ namespace UnityEngine.Experimental.Tweening
 		bool ValidOnChangedTarget();
 	}
 
+	// Example usage: move an object from (0, 0, 0) to (1, 1, 1) over 1s
+	//	void Start()
+	//	{
+	//		PositionTween positionTween = new PositionTween
+	//		{
+	//			startPosition = Vector3.zero,
+	//			targetPosition = Vector3.one,
+	//			duration = 1f
+	//		};
+	//	
+	//		positionTween.AddOnChangedCallback(MoveObject);
+	//	
+	//	 	var tweenRunner = new TweenRunner<PositionTween>();
+	//		tweenRunner.Init(this);
+	//		tweenRunner.StartTween(positionTween);
+	//	}
+	//	
+	//	public void MoveObject(Vector3 position)
+	//	{
+	//		transform.position = position;
+	//	}
 	internal struct PositionTween : ITweenValue
 	{
 		public class PositionTweenCallback : UnityEvent<Vector3>
@@ -320,9 +309,9 @@ namespace UnityEngine.Experimental.Tweening
 		}
 	}
 
-// Color tween class, receives the
-// TweenValue callback and then sets
-// the value on the target.
+	// Color tween class, receives the
+	// TweenValue callback and then sets
+	// the value on the target.
 	internal struct ColorTween : ITweenValue
 	{
 		public enum ColorTweenMode

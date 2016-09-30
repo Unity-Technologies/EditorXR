@@ -2433,7 +2433,6 @@ MonoBehaviour:
   m_Character: 48
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012667250764}
@@ -2462,7 +2461,6 @@ MonoBehaviour:
   m_Character: 45
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012422491724}
@@ -2491,7 +2489,6 @@ MonoBehaviour:
   m_Character: 53
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000011605983866}
@@ -2592,7 +2589,6 @@ MonoBehaviour:
   m_Character: 51
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000013573862044}
@@ -2621,7 +2617,6 @@ MonoBehaviour:
   m_Character: 46
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000010209330408}
@@ -2706,7 +2701,6 @@ MonoBehaviour:
   m_Character: 47
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000013730770792}
@@ -2769,7 +2763,6 @@ MonoBehaviour:
   m_Character: 57
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000013873843358}
@@ -2851,7 +2844,6 @@ MonoBehaviour:
   m_Character: 54
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000011320096046}
@@ -2880,7 +2872,6 @@ MonoBehaviour:
   m_Character: 52
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000010203064600}
@@ -3161,7 +3152,6 @@ MonoBehaviour:
   m_Character: 55
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012769307956}
@@ -3203,7 +3193,6 @@ MonoBehaviour:
   m_Character: 56
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012542392132}
@@ -3232,7 +3221,6 @@ MonoBehaviour:
   m_Character: 13
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 0
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000010038757514}
@@ -3317,7 +3305,6 @@ MonoBehaviour:
   m_Character: 37
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012845462162}
@@ -3485,7 +3472,6 @@ MonoBehaviour:
   m_Character: 42
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000012703566436}
@@ -3548,7 +3534,6 @@ MonoBehaviour:
   m_Character: 43
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000010911778778}
@@ -3577,7 +3562,6 @@ MonoBehaviour:
   m_Character: 49
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000013701596486}
@@ -3640,7 +3624,6 @@ MonoBehaviour:
   m_Character: 8
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 0
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000013927787966}
@@ -3688,7 +3671,6 @@ MonoBehaviour:
   m_Character: 50
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_ShiftCharIsUppercase: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 0}
   m_TargetGraphic: {fileID: 114000011715007826}

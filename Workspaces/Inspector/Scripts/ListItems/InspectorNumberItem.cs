@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using UnityEngine.VR.UI;
 
 public class InspectorNumberItem : InspectorPropertyItem
 {

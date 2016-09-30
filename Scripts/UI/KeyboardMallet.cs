@@ -28,33 +28,15 @@ public class KeyboardMallet : MonoBehaviour
 		Hidden
 	}
 
-	private State m_State;
+	private State m_State = State.Visible;
 
 	private Vector3 m_BulbStartScale;
 
-	// TODO replace manual sending of collision events with physics system
 	private KeyboardButton m_CurrentButton;
-	private KeyboardButton currentButton
-	{
-		get { return m_CurrentButton; }
-		set
-		{
-			if (m_CurrentButton == value) return;
 
-			if (m_CurrentButton != null)
-			{
-				m_CurrentButton.OnTriggerExit(m_BulbCollider);
-			}
-
-			m_CurrentButton = value;
-
-			if (m_CurrentButton != null)
-			{
-				m_CurrentButton.OnTriggerEnter(m_BulbCollider);
-			}
-		}
-	}
-
+	/// <summary>
+	/// Invoked by the editor to update the mallet components' transform data.
+	/// </summary>
 	public void UpdateMalletDimensions()
 	{
 		m_StemOrigin.localScale = new Vector3(m_StemWidth, m_StemLength, m_StemWidth);
@@ -64,6 +46,9 @@ public class KeyboardMallet : MonoBehaviour
 		m_BulbStartScale = m_Bulb.transform.localScale;
 	}
 
+	/// <summary>
+	/// Hide the mallet with a transition.
+	/// </summary>
 	public void Hide()
 	{
 		if (isActiveAndEnabled)
@@ -75,6 +60,9 @@ public class KeyboardMallet : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	/// Show the mallet with a transition.
+	/// </summary>
 	public void Show()
 	{
 		if (isActiveAndEnabled)
@@ -86,7 +74,9 @@ public class KeyboardMallet : MonoBehaviour
 		}
 	}
 
-	// Called from EditorVR
+	/// <summary>
+	/// Check for colliders that are keyboard keys.
+	/// </summary>
 	public void CheckForKeyCollision()
 	{
 		if (m_State != State.Visible) return;
@@ -107,13 +97,22 @@ public class KeyboardMallet : MonoBehaviour
 					hitKey = key;
 			}
 		}
-		currentButton = hitKey;
+
+		if (m_CurrentButton != hitKey)
+		{
+			if (m_CurrentButton != null)
+				m_CurrentButton.OnTriggerExit(m_BulbCollider);
+
+			m_CurrentButton = hitKey;
+
+			if (m_CurrentButton != null)
+				m_CurrentButton.OnTriggerEnter(m_BulbCollider);
+		}
 	}
 
 	private void Start()
 	{
 		m_BulbStartScale = m_Bulb.localScale;
-		m_State = State.Visible;
 	}
 
 	private IEnumerator HideMallet()
@@ -143,7 +142,7 @@ public class KeyboardMallet : MonoBehaviour
 
 		var stemScale = m_StemOrigin.localScale;
 		var currentLength = m_StemOrigin.localScale.y;
-		float smoothVelocity = 0f;
+		var smoothVelocity = 0f;
 		while (currentLength < m_StemLength)
 		{
 			currentLength = Mathf.SmoothDamp(currentLength, m_StemLength, ref smoothVelocity, 0.3125f, Mathf.Infinity, Time.unscaledDeltaTime);

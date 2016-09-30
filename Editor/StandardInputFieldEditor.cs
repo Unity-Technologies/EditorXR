@@ -1,21 +1,24 @@
-using UnityEditor;
+using UnityEngine.VR.UI;
 
-[CustomEditor(typeof(StandardInputField))]
-public class StandardInputFieldEditor : RayInputFieldEditor
+namespace UnityEditor.VR.UI
 {
-	SerializedProperty m_LineTypeProperty;
-
-	protected override void OnEnable()
+	[CustomEditor(typeof(StandardInputField))]
+	public class StandardInputFieldEditor : InputFieldEditor
 	{
-		base.OnEnable();
-		m_LineTypeProperty = serializedObject.FindProperty("m_LineType");
-	}
+		SerializedProperty m_LineTypeProperty;
 
-	public override void OnInspectorGUI()
-	{
-		serializedObject.Update();
-		EditorGUILayout.PropertyField(m_LineTypeProperty);
-		serializedObject.ApplyModifiedProperties();
-		base.OnInspectorGUI();
+		protected override void OnEnable()
+		{
+			base.OnEnable();
+			m_LineTypeProperty = serializedObject.FindProperty("m_LineType");
+		}
+
+		public override void OnInspectorGUI()
+		{
+			serializedObject.Update();
+			EditorGUILayout.PropertyField(m_LineTypeProperty);
+			serializedObject.ApplyModifiedProperties();
+			base.OnInspectorGUI();
+		}
 	}
 }

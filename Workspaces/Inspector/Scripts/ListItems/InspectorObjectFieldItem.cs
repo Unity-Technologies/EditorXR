@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using Object = UnityEngine.Object;
 
