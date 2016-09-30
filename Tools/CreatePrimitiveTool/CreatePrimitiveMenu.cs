@@ -7,7 +7,7 @@ public class CreatePrimitiveMenu : MonoBehaviour
 	public void CreatePrimitive(int type)
 	{
 		CreatePrimitiveTool.s_SelectedPrimitiveType = (PrimitiveType)type;
-		CreatePrimitiveTool.s_Freeform = false;	
+		CreatePrimitiveTool.s_Freeform = false;
 	}
 
 	public void CreateFreeformCube()
