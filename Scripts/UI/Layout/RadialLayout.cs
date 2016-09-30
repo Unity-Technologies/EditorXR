@@ -78,7 +78,6 @@ namespace UnityEngine.UI.Extensions
 					fAngle += fOffsetAngle;
 				}
 			}
-
 		}
 	}
 }

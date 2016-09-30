@@ -1,6 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.UI;
 
 public class InspectorHeaderItem : InspectorListItem
 {

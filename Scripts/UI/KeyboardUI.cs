@@ -45,8 +45,7 @@ public class KeyboardUI : MonoBehaviour
 
 	private bool IsHorizontal()
 	{
-		var isHorizontal = Vector3.Dot(transform.up, Vector3.up) < 0.7f;
-		return isHorizontal;
+		return Vector3.Dot(transform.up, Vector3.up) < 0.7f;
 	}
 
 	private void Translate(Vector3 deltaPosition)

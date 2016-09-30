@@ -32,27 +32,6 @@ public class KeyboardMallet : MonoBehaviour
 
 	private Vector3 m_BulbStartScale;
 
-	// TODO replace manual sending of collision events with physics system
-	private KeyboardButton currentButton
-	{
-		get { return m_CurrentButton; }
-		set
-		{
-			if (m_CurrentButton == value) return;
-
-			if (m_CurrentButton != null)
-			{
-				m_CurrentButton.OnTriggerExit(m_BulbCollider);
-			}
-
-			m_CurrentButton = value;
-
-			if (m_CurrentButton != null)
-			{
-				m_CurrentButton.OnTriggerEnter(m_BulbCollider);
-			}
-		}
-	}
 	private KeyboardButton m_CurrentButton;
 
 	/// <summary>
@@ -118,7 +97,17 @@ public class KeyboardMallet : MonoBehaviour
 					hitKey = key;
 			}
 		}
-		currentButton = hitKey;
+
+		if (m_CurrentButton != hitKey)
+		{
+			if (m_CurrentButton != null)
+				m_CurrentButton.OnTriggerExit(m_BulbCollider);
+
+			m_CurrentButton = hitKey;
+
+			if (m_CurrentButton != null)
+				m_CurrentButton.OnTriggerEnter(m_BulbCollider);
+		}
 	}
 
 	private void Start()

@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.VR.UI;
 
 public class InspectorColorItem : InspectorPropertyItem
 {

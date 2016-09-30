@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Modules;
+using UnityEngine.VR.UI;
 
 public class InspectorBoundsItem : InspectorPropertyItem
 {

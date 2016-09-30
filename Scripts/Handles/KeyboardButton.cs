@@ -20,9 +20,6 @@ public class KeyboardButton : BaseHandle
 	[SerializeField]
 	private char m_ShiftCharacter;
 
-	[SerializeField]
-	private bool m_ShiftCharIsUppercase;
-
 	private bool m_ShiftMode;
 
 	[SerializeField]
@@ -100,12 +97,9 @@ public class KeyboardButton : BaseHandle
 
 		if (m_TextComponent != null)
 		{
-			if (m_ShiftMode)
+			if (m_ShiftMode && m_ShiftCharacter != 0)
 			{
-				if (m_ShiftCharIsUppercase || m_TextComponent.text.Length > 1)
-					m_TextComponent.text = m_TextComponent.text.ToUpper();
-				else if (m_ShiftCharacter != 0)
-					m_TextComponent.text = m_ShiftCharacter.ToString();
+				m_TextComponent.text = m_ShiftCharacter.ToString();
 			}
 			else
 			{
@@ -199,7 +193,7 @@ public class KeyboardButton : BaseHandle
 
 		DoGraphicStateTransition(SelectionState.Pressed, false);
 
-		if (m_ShiftMode && !m_ShiftCharIsUppercase && m_ShiftCharacter != 0)
+		if (m_ShiftMode && m_ShiftCharacter != 0)
 			m_KeyPress(m_ShiftCharacter);
 		else
 			m_KeyPress(m_Character);

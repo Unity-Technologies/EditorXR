@@ -1,8 +1,7 @@
 ﻿using System;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
+using UnityEngine.VR.UI;
 
 public class InspectorVectorItem : InspectorPropertyItem
 {

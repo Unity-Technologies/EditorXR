@@ -12,6 +12,7 @@ using UnityEngine.VR.Menus;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 #if UNITY_EDITOR
@@ -47,18 +48,16 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private KeyboardMallet m_KeyboardMalletPrefab;
 
-	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
-
-	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
-
 	[SerializeField]
 	private KeyboardUI m_NumericKeyboardPrefab;
-
-	private KeyboardUI m_NumericKeyboard;
 
 	[SerializeField]
 	private KeyboardUI m_StandardKeyboardPrefab;
 
+	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
+	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
+
+	private KeyboardUI m_NumericKeyboard;
 	private KeyboardUI m_StandardKeyboard;
 
 	private TrackedObject m_TrackedObjectInput;
@@ -486,7 +485,7 @@ public class EditorVR : MonoBehaviour
 		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = m_EventCamera;
 
-		foreach (RayInputField inputField in go.GetComponentsInChildren<RayInputField>())
+		foreach (InputField inputField in go.GetComponentsInChildren<InputField>())
 		{
 			if (inputField is NumericInputField)
 				inputField.spawnKeyboard = SpawnNumericKeyboard;

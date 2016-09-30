@@ -1,60 +1,37 @@
 using System;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
 [CanEditMultipleObjects]
 [CustomEditor(typeof(KeyboardButton))]
-public class KeyboardButtonEditor : BaseHandleEditor
+public class KeyboardButtonEditor : Editor
 {
+	const char kLowercaseStart = 'a';
+	const char kLowercaseEnd = 'z';
+
 	SerializedProperty m_CharacterProperty;
 	SerializedProperty m_UseShiftCharacterProperty;
 	SerializedProperty m_ShiftCharacterProperty;
-	SerializedProperty m_ShiftCharIsUppercaseProperty;
 	SerializedProperty m_ButtonTextProperty;
 	SerializedProperty m_MatchButtonTextToCharacterProperty;
 	SerializedProperty m_ButtonMeshProperty;
 	SerializedProperty m_ButtonGraphicProperty;
 	SerializedProperty m_RepeatOnHoldProperty;
+	
+	KeyboardButton m_KeyboardButton;
+	bool m_ShiftCharIsUppercase;
 
-	private KeyCode m_KeyCode;
-	private KeyCode m_ShiftKeyCode;
-
-	private string m_KeyCodeStr;
-	private string m_ShiftKeyCodeStr;
-
-	private KeyboardButton m_KeyboardButton;
-
-	private const char kCustomKeyCodePrefix = 'u';
-	private const char kBackspace = 'b';
-	private const char kTab = 't';
-	private const char kSpace = 's';
-	private const char kNewline = 'n';
-	private const char kReturn = 'r';
-
-	private const char kLowercaseStart = 'a';
-	private const char kLowercaseEnd = 'z';
-	private const char kUppercaseStart = 'A';
-	private const char kUppercaseEnd = 'Z';
-
-	protected override void OnEnable()
+	protected void OnEnable()
 	{
-		base.OnEnable();
-
 		m_CharacterProperty = serializedObject.FindProperty("m_Character");
 		m_UseShiftCharacterProperty = serializedObject.FindProperty("m_UseShiftCharacter");
 		m_ShiftCharacterProperty = serializedObject.FindProperty("m_ShiftCharacter");
-		m_ShiftCharIsUppercaseProperty = serializedObject.FindProperty("m_ShiftCharIsUppercase");
 		m_ButtonTextProperty = serializedObject.FindProperty("m_TextComponent");
 		m_MatchButtonTextToCharacterProperty = serializedObject.FindProperty("m_MatchButtonTextToCharacter");
 		m_ButtonMeshProperty = serializedObject.FindProperty("m_TargetMesh");
 		m_ButtonGraphicProperty = serializedObject.FindProperty("m_TargetGraphic");
 		m_RepeatOnHoldProperty = serializedObject.FindProperty("m_RepeatOnHold");
-
-		m_KeyCode = (KeyCode)m_CharacterProperty.intValue;
-		m_KeyCodeStr = ((char)m_KeyCode).ToString();
-
-		m_ShiftKeyCode = (KeyCode)m_ShiftCharacterProperty.intValue;
-		m_ShiftKeyCodeStr = ((char)m_ShiftKeyCode).ToString();
 	}
 
 	public override void OnInspectorGUI()
@@ -65,24 +42,7 @@ public class KeyboardButtonEditor : BaseHandleEditor
 
 		serializedObject.Update();
 
-		EditorGUILayout.BeginHorizontal();
-		EditorGUI.BeginChangeCheck();
-		m_KeyCodeStr = EditorGUILayout.TextField("Key Code", m_KeyCodeStr);
-		if (EditorGUI.EndChangeCheck())
-		{
-			m_CharacterProperty.intValue = (int)GetCharacterValueFromText(ref m_KeyCode, ref m_KeyCodeStr);
-			UpdateButtonTextAndObjectName(m_KeyCode);
-		}
-
-		EditorGUI.BeginChangeCheck();
-		m_KeyCode = (KeyCode)EditorGUILayout.EnumPopup(m_KeyCode);
-		if (EditorGUI.EndChangeCheck())
-		{
-			m_KeyCodeStr = ((char)m_KeyCode).ToString();
-			m_CharacterProperty.intValue = (int)m_KeyCode;
-			UpdateButtonTextAndObjectName(m_KeyCode);
-		}
-		EditorGUILayout.EndHorizontal();
+		CharacterField("Primary Character", m_CharacterProperty);
 
 		EditorGUILayout.PropertyField(m_ButtonTextProperty);
 		// Set text component to character
@@ -91,7 +51,7 @@ public class KeyboardButtonEditor : BaseHandleEditor
 			EditorGUI.BeginChangeCheck();
 			EditorGUILayout.PropertyField(m_MatchButtonTextToCharacterProperty);
 			if (EditorGUI.EndChangeCheck())
-				UpdateButtonTextAndObjectName(m_KeyCode);
+				UpdateButtonTextAndObjectName(m_CharacterProperty.intValue);
 
 			if (m_MatchButtonTextToCharacterProperty.boolValue)
 			{
@@ -105,31 +65,23 @@ public class KeyboardButtonEditor : BaseHandleEditor
 		if (m_UseShiftCharacterProperty.boolValue)
 		{
 			var ch = (char)m_CharacterProperty.intValue;
-			if (ch > kLowercaseStart && ch < kLowercaseEnd || ch > kUppercaseStart && ch < kUppercaseEnd)
-				m_ShiftCharIsUppercaseProperty.boolValue = EditorGUILayout.Toggle("Shift Character is Uppercase", m_ShiftCharIsUppercaseProperty.boolValue);
-			else
-				m_ShiftCharIsUppercaseProperty.boolValue = false;
-
-			if (!m_ShiftCharIsUppercaseProperty.boolValue)
+			if (ch >= kLowercaseStart && ch <= kLowercaseEnd)
 			{
-				EditorGUILayout.BeginHorizontal();
+				var upperCase = ((char)m_CharacterProperty.intValue).ToString().ToUpper();
+				m_ShiftCharIsUppercase = upperCase.Equals(((char)m_ShiftCharacterProperty.intValue).ToString());
 				EditorGUI.BeginChangeCheck();
-				m_ShiftKeyCodeStr = EditorGUILayout.TextField("Shift Key Code", m_ShiftKeyCodeStr);
+				m_ShiftCharIsUppercase = EditorGUILayout.Toggle("Shift Character is Uppercase", m_ShiftCharIsUppercase);
 				if (EditorGUI.EndChangeCheck())
-					m_ShiftCharacterProperty.intValue = (int)GetCharacterValueFromText(ref m_ShiftKeyCode, ref m_ShiftKeyCodeStr);
-
-				EditorGUI.BeginChangeCheck();
-				m_ShiftKeyCode = (KeyCode)EditorGUILayout.EnumPopup(m_ShiftKeyCode);
-				if (EditorGUI.EndChangeCheck())
-				{
-					m_ShiftKeyCodeStr = ((char)m_ShiftKeyCode).ToString();
-					m_ShiftCharacterProperty.intValue = (int)m_ShiftKeyCode;
-				}
-				EditorGUILayout.EndHorizontal();
+					m_ShiftCharacterProperty.intValue = m_ShiftCharIsUppercase ? upperCase[0] : 0;
 			}
+			else
+				m_ShiftCharIsUppercase = false;
+
+			if (!m_ShiftCharIsUppercase)
+				CharacterField("Shift Character", m_ShiftCharacterProperty);
 		}
 		else
-			m_ShiftCharIsUppercaseProperty.boolValue = false;
+			m_ShiftCharIsUppercase = false;
 
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);
 		EditorGUILayout.PropertyField(m_ButtonGraphicProperty);
@@ -138,77 +90,54 @@ public class KeyboardButtonEditor : BaseHandleEditor
 		serializedObject.ApplyModifiedProperties();
 	}
 
-	private KeyCode GetCharacterValueFromText(ref KeyCode keyCode, ref string keyCodeStr)
+	private void CharacterField(string label, SerializedProperty property)
 	{
-		if (keyCodeStr.StartsWith("\\") && keyCodeStr.Length > 1)
+		EditorGUILayout.BeginHorizontal();
+		EditorGUI.BeginChangeCheck();
+		var inputString = ((char)property.intValue).ToString();
+		inputString = EditorGUILayout.TextField(label, inputString);
+		if (EditorGUI.EndChangeCheck())
 		{
-			if (keyCodeStr[1] == kCustomKeyCodePrefix)
-			{
-				if (keyCodeStr.Length > 2)
-				{
-					int i;
-					if (int.TryParse(keyCodeStr.Substring(2), out i))
-					{
-						if (Enum.IsDefined(typeof(KeyCode), i))
-						{
-							keyCode = (KeyCode)i;
-							return keyCode;
-						}
-					}
-				}
-			}
-			else
-			{
-				var valid = true;
-				switch (keyCodeStr[1])
-				{
-					case kBackspace:
-						keyCode = KeyCode.Backspace;
-						break;
-					case kTab:
-						keyCode = KeyCode.Tab;
-						break;
-					case kNewline: // KeyCode doesn't define newline
-					case kReturn:
-						keyCode = KeyCode.Return;
-						break;
-					case kSpace:
-						keyCode = KeyCode.Space;
-						break;
-					default:
-						valid = false;
-						break;
-				}
-
-				if (keyCodeStr.Length > 2)
-					keyCodeStr = keyCodeStr.Remove(2);
-
-				if (valid)
-					return keyCode;
-
-				EditorGUILayout.HelpBox("Invalid entry", MessageType.Error);
-			}
+			property.intValue = (int)GetKeycodeFromString(inputString);
+			UpdateButtonTextAndObjectName(property.intValue);
 		}
-		else
-		{
-			if (keyCodeStr.Length > 0)
-			{
-				if (keyCodeStr.Length > 1)
-					keyCodeStr = keyCodeStr.Remove(1);
 
-				keyCode = (KeyCode)keyCodeStr[0];
-				return keyCode;
-			}
+		EditorGUI.BeginChangeCheck();
+		property.intValue = (int)(KeyCode)EditorGUILayout.EnumPopup((KeyCode)property.intValue);
+		if (EditorGUI.EndChangeCheck())
+			UpdateButtonTextAndObjectName(property.intValue);
+		EditorGUILayout.EndHorizontal();
+	}
+
+	KeyCode GetKeycodeFromString(string inputString)
+	{
+		if (string.IsNullOrEmpty(inputString))
+			return KeyCode.None;
+
+		try
+		{
+			inputString = Regex.Unescape(inputString);
+			return (KeyCode)inputString[0];
+		}
+		catch (ArgumentException)
+		{
+			// Incomplete (i.e. user is still typing it out likely) or badly formed unicode string
 		}
 
 		return KeyCode.None;
 	}
 
-	private void UpdateButtonTextAndObjectName(KeyCode keyCode)
+	void UpdateButtonTextAndObjectName(int input)
 	{
-		if (m_MatchButtonTextToCharacterProperty.boolValue)
-			m_KeyboardButton.textComponent.text = ((char)(int)keyCode).ToString();
+		var inputString = ((char)input).ToString();
 
-		m_KeyboardButton.gameObject.name = keyCode.ToString();
+		if (m_MatchButtonTextToCharacterProperty.boolValue)
+			m_KeyboardButton.textComponent.text = inputString;
+
+		// For valid keycodes, use the string version of those for 
+		if (Enum.IsDefined(typeof(KeyCode), input))
+			inputString = ((KeyCode) input).ToString();
+
+		m_KeyboardButton.gameObject.name = inputString;
 	}
 }

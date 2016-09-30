@@ -7,6 +7,7 @@ using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using InputField = UnityEngine.VR.UI.InputField;
 
 public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHighlight, IDroppable, IDropReciever
 {
@@ -35,7 +36,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 	private int m_ClickCount;
 	private bool m_SelectIsHeld;
 	private float m_DragDistance;
-	private RayInputField m_ClickedField;
+	private InputField m_ClickedField;
 	private Vector3 m_PointerPosition;
 
 	public bool setup { get; set; }
@@ -169,7 +170,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 				// Get RayInputField from direct children
 				foreach (Transform child in fieldBlock.transform)
 				{
-					m_ClickedField = child.GetComponent<RayInputField>();
+					m_ClickedField = child.GetComponent<InputField>();
 					if (m_ClickedField)
 					{
 						StartCoroutine(CheckSingleClick());
