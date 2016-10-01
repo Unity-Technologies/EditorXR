@@ -55,7 +55,7 @@ namespace UnityEngine.VR.UI
 			if (!U.UI.IsValidEvent(eventData, selectionFlags) && MayDrag())
 				return;
 
-			m_StartDragPosition = GetLocalPointerPosition(eventData);
+			m_StartDragPosition = GetLocalPointerPosition(eventData.rayOrigin);
 		}
 
 		public void OnDrag(RayEventData eventData)
@@ -63,20 +63,25 @@ namespace UnityEngine.VR.UI
 			if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
 				return;
 
+			SliderDrag(eventData.rayOrigin);
+		}
+
+		public void SliderDrag(Transform rayOrigin)
+		{
 			if (!m_UpdateDrag)
 			{
-				if (Mathf.Abs(GetLocalPointerPosition(eventData).x - m_StartDragPosition.x) > kDragDeadzone)
+				if (Mathf.Abs(GetLocalPointerPosition(rayOrigin).x - m_StartDragPosition.x) > kDragDeadzone)
 				{
 					ParseNumberField();
-					m_LastPointerPosition = GetLocalPointerPosition(eventData);
+					m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
 					m_UpdateDrag = true;
-					eventData.eligibleForClick = false;
+					//eventData.eligibleForClick = false;
 				}
 			}
 			else
 			{
-				DragNumberValue(eventData);
-				m_LastPointerPosition = GetLocalPointerPosition(eventData);
+				DragNumberValue(rayOrigin);
+				m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
 			}
 		}
 
@@ -88,9 +93,9 @@ namespace UnityEngine.VR.UI
 			m_UpdateDrag = false;
 		}
 
-		private void DragNumberValue(RayEventData eventData)
+		private void DragNumberValue(Transform rayOrigin)
 		{
-			var delta = GetLocalPointerPosition(eventData) - m_LastPointerPosition;
+			var delta = GetLocalPointerPosition(rayOrigin) - m_LastPointerPosition;
 
 			if (m_NumberType == NumberType.Float)
 			{
@@ -117,16 +122,11 @@ namespace UnityEngine.VR.UI
 			SendOnValueChangedAndUpdateLabel();
 		}
 
-		private Vector3 GetLocalPointerPosition(RayEventData eventData)
+		private Vector3 GetLocalPointerPosition(Transform rayOrigin)
 		{
-			var rayOrigin = eventData.rayOrigin;
 			Vector3 hitPos;
-
-			if (m_PointerOverField)
-				hitPos = rayOrigin.position + rayOrigin.forward * eventData.pointerCurrentRaycast.distance;
-			else
-				U.Math.LinePlaneIntersection(out hitPos, rayOrigin.position, rayOrigin.forward, -transform.forward,
-					transform.position);
+			U.Math.LinePlaneIntersection(out hitPos, rayOrigin.position, rayOrigin.forward, -transform.forward,
+				transform.position);
 
 			return transform.InverseTransformPoint(hitPos);
 		}

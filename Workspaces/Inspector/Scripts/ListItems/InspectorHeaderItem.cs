@@ -1,7 +1,9 @@
-﻿using UnityEditor;
+﻿using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.UI;
+using InputField = UnityEngine.VR.UI.InputField;
 
 public class InspectorHeaderItem : InspectorListItem
 {
@@ -71,11 +73,16 @@ public class InspectorHeaderItem : InspectorListItem
 
 	public override bool TestDrop(GameObject target, object droppedObject)
 	{
-		return false;
+		var inputFields = target.transform.parent.GetComponentsInChildren<InputField>();
+		return droppedObject is string && inputFields.Contains(m_NameField);
 	}
 
 	public override bool RecieveDrop(GameObject target, object droppedObject)
 	{
+		if (!TestDrop(target, droppedObject))
+			return false;
+		m_NameField.text = (string)droppedObject;
+		m_NameField.ForceUpdateLabel();
 		return false;
 	}
 }

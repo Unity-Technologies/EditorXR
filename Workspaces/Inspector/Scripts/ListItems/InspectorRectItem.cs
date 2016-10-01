@@ -22,7 +22,9 @@ public class InspectorRectItem : InspectorPropertyItem
 		for (int i = 0; i < m_CenterFields.Length; i++)
 		{
 			m_CenterFields[i].text = rect.center[i].ToString();
+			m_CenterFields[i].ForceUpdateLabel();
 			m_SizeFields[i].text = rect.size[i].ToString();
+			m_SizeFields[i].ForceUpdateLabel();
 		}
 	}
 
@@ -70,13 +72,13 @@ public class InspectorRectItem : InspectorPropertyItem
 		var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
 
 		if (inputfields.Length > 3) // If we've grabbed all of the fields
-			dropObject = m_SerializedProperty.boundsValue;
+			dropObject = m_SerializedProperty.rectValue;
 		if (inputfields.Length > 1) // If we've grabbed one vector
 		{
 			if (m_CenterFields.Intersect(inputfields).Any())
-				dropObject = m_SerializedProperty.boundsValue.center;
+				dropObject = m_SerializedProperty.rectValue.center;
 			else
-				dropObject = m_SerializedProperty.boundsValue.extents;
+				dropObject = m_SerializedProperty.rectValue.size;
 		} else if (inputfields.Length > 0) // If we've grabbed a single field
 			dropObject = inputfields[0].text;
 
@@ -85,7 +87,7 @@ public class InspectorRectItem : InspectorPropertyItem
 
 	public override bool TestDrop(GameObject target, object droppedObject)
 	{
-		return droppedObject is string || droppedObject is Rect;
+		return droppedObject is string || droppedObject is Rect || droppedObject is Vector2 || droppedObject is Vector3 || droppedObject is Vector4;
 	}
 
 	public override bool RecieveDrop(GameObject target, object droppedObject)
@@ -129,6 +131,27 @@ public class InspectorRectItem : InspectorPropertyItem
 			UpdateInputFields(m_SerializedProperty.rectValue);
 
 			data.serializedObject.ApplyModifiedProperties();
+			return true;
+		}
+
+		if (droppedObject is Vector2 || droppedObject is Vector3 || droppedObject is Vector4)
+		{
+			var vector2 = (Vector2)droppedObject;
+			var targetParent = target.transform.parent;
+			var inputField = targetParent.GetComponentInChildren<NumericInputField>();
+			var rect = m_SerializedProperty.rectValue;
+
+			if (m_CenterFields.Contains(inputField))
+				rect.center = vector2;
+			else
+				rect.size = vector2;
+
+			m_SerializedProperty.rectValue = rect;
+
+			UpdateInputFields(rect);
+
+			data.serializedObject.ApplyModifiedProperties();
+			
 			return true;
 		}
 

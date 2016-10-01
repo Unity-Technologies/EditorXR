@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using InputField = UnityEngine.VR.UI.InputField;
 
@@ -118,6 +119,9 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		cubeScale.x = width;
 		m_Cube.transform.localScale = cubeScale;
 
+		if (depth > 0) // Lose one level of indentation because everything is a child of the header
+			depth--;
+
 		var indent = kIndent * depth;
 		m_UIContainer.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, indent, width - indent);
 	}
@@ -181,14 +185,14 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 			m_PointerPosition = eventData.rayOrigin.position;
 			m_ClickCount++;
 			m_SelectIsHeld = true;
-			m_DragStarts[eventData.rayOrigin] = fieldBlock.position;
+			m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
 
 			// Detect double click
 			var timeSinceLastClick = Time.realtimeSinceStartup - m_LastClickTime;
 			m_LastClickTime = Time.realtimeSinceStartup;
 			if (m_ClickCount > 1 && U.UI.DoubleClick(timeSinceLastClick))
 			{
-				m_ClickCount = 0;
+				CancelSingleClick();
 
 				var clone = Instantiate(fieldBlock.gameObject, fieldBlock.parent) as GameObject;
 				// Re-center pivot
@@ -224,9 +228,18 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 	{
 		if (m_ClickedField)
 		{
-			var currentPosition = m_ClickedField.transform.parent.position;
-			m_DragDistance = (currentPosition - m_DragStarts[eventData.rayOrigin]).magnitude;
+			var rayOrigin = eventData.rayOrigin;
+			m_DragDistance = (rayOrigin.position - m_DragStarts[rayOrigin]).magnitude;
 			//TODO: drag sliding
+
+			var numericField = m_ClickedField as NumericInputField;
+			if (numericField)
+			{
+				if(m_DragDistance > kMinDragDistance)
+					CancelSingleClick();
+
+				numericField.SliderDrag(eventData.rayOrigin);
+			}
 		}
 
 		if (m_DragObject)
@@ -256,6 +269,11 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		base.OnDragEnded(baseHandle, eventData);
 	}
 
+	private void CancelSingleClick()
+	{
+		m_ClickCount = 0;
+	}
+
 	private IEnumerator CheckSingleClick()
 	{
 		var start = Time.realtimeSinceStartup;
@@ -268,7 +286,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 		if (m_ClickCount == 1)
 		{
-			if (m_ClickedField && m_DragDistance < kMinDragDistance)
+			if (m_ClickedField)
 				m_ClickedField.ToggleKeyboard(m_PointerPosition);
 		}
 

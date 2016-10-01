@@ -375,7 +375,7 @@ MonoBehaviour:
   m_Icon: {fileID: 114000013475963824}
   m_EnabledToggle: {fileID: 114000013033683108}
   m_NameText: {fileID: 114000013310249318}
-  m_GearMenu: {fileID: 114000013214274256}
+  m_GearMenu: {fileID: 0}
 --- !u!114 &114000011993946876
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -384,7 +384,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000014179207750}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1392445389, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: c75e541e7d7e17f40b6aae5dd949e157, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -429,6 +429,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  m_SelectionFlags: 3
 --- !u!114 &114000012114130442
 MonoBehaviour:
   m_ObjectHideFlags: 1

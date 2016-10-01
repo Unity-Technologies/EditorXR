@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -10,7 +9,7 @@ namespace UnityEngine.VR.UI
 {
 	public abstract class InputField : Selectable, IPointerClickHandler
 	{
-		private static readonly Vector3 kKeyboardPositionOffset = new Vector3(0.05f, 0.01f, 0);
+		private static readonly Vector3 kKeyboardPositionOffset = new Vector3(0.10f, 0.01f, 0.05f);
 		private static readonly Quaternion kKeyboardRotationOffset = Quaternion.AngleAxis(30, Vector3.up);
 
 		public SelectionFlags selectionFlags

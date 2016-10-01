@@ -308,7 +308,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
 --- !u!114 &114000010076885970
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -370,7 +370,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
 --- !u!114 &114000011829900818
 MonoBehaviour:
   m_ObjectHideFlags: 1
