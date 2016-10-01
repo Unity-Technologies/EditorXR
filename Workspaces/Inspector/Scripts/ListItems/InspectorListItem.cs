@@ -13,7 +13,7 @@ using InputField = UnityEngine.VR.UI.InputField;
 public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHighlight, IDroppable, IDropReciever
 {
 	private const float kIndent = 0.02f;
-	private const float kMinDragDistance = 0.01f;
+	private const float kMinDragDistance = 0.02f;
 
 	private static readonly Quaternion previewRotation = Quaternion.AngleAxis(90, Vector3.right);
 
