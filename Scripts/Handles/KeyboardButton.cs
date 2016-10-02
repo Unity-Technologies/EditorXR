@@ -67,12 +67,6 @@ public class KeyboardButton : BaseHandle
 	private Coroutine m_IncreaseEmissionCoroutine;
 	private Coroutine m_DecreaseEmissionCoroutine;
 
-	private void Awake()
-	{
-		if (!m_TargetMesh)
-			m_TargetMesh = GetComponentInChildren<Renderer>(true);
-	}
-
 	/// <summary>
 	/// Initiallize this key
 	/// </summary>
