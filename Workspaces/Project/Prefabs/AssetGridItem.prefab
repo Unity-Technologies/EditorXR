@@ -221,10 +221,9 @@ MonoBehaviour:
   m_Text: {fileID: 114000013632537286}
   m_Handle: {fileID: 114000011913880262}
   m_TextPanel: {fileID: 114000012861929906}
-  m_NoClipCubeMaterial: {fileID: 2100000, guid: 66d21d847da9fae44a46053afe8d825b,
-    type: 2}
   m_Cube: {fileID: 23000013864279834}
   m_Sphere: {fileID: 23000012405634146}
+  m_Icon: {fileID: 0}
   m_PreviewObject: {fileID: 0}
 --- !u!114 &114000011913880262
 MonoBehaviour:
@@ -238,7 +237,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: 2
+  m_SelectionFlags: 2
 --- !u!114 &114000012861929906
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -356,7 +356,7 @@ MonoBehaviour:
   m_Templates:
   - {fileID: 1000014066556564, guid: 918c55469b1324d46b0c41586835ce87, type: 2}
   m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
-  m_ExpandArrowMaterial: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba,
+  m_ExpandArrowMaterial: {fileID: 2100000, guid: 41165fc29d3ea90418665f906b7fa247,
     type: 2}
 --- !u!114 &114000011690277160
 MonoBehaviour:
