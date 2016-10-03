@@ -2,7 +2,7 @@
 using UnityEngine.VR.Tools;
 using System.Collections;
 
-//[MainMenuItem("Quad","Primitive","")]
+[MainMenuItem("Quad","Primitive","")]
 public class CreateQuad : CreatePrimitiveTool
 {
 	protected override void Awake()

@@ -15,7 +15,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 	protected Vector3 m_PointA = Vector3.zero;
 	protected Vector3 m_PointB = Vector3.zero;
 
-	protected const float kDrawDistance = 0.08f;
+	protected const float kDrawDistance = 0.075f;
 	protected const float kWaitTime = 0.2f;
 
 	protected PrimitiveCreationStates m_State = PrimitiveCreationStates.PointA;
@@ -81,7 +81,11 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 
 				m_CurrentGameObject.transform.position = (m_PointA + m_PointB) * .5f;
 				var corner = (m_PointA - m_PointB).magnitude;
-				m_CurrentGameObject.transform.localScale = Vector3.one * corner;
+
+				if(s_SelectedPrimitiveType == PrimitiveType.Capsule || s_SelectedPrimitiveType == PrimitiveType.Cylinder)
+					m_CurrentGameObject.transform.localScale = Vector3.one * corner * 0.5f;
+				else
+					m_CurrentGameObject.transform.localScale = Vector3.one * corner;
 
 				if(standardInput.action.wasJustReleased)
 					m_State = PrimitiveCreationStates.PointA;
