@@ -5,27 +5,21 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
 
-[MainMenuItem("Primitive", "Primitive", "Create primitives in the scene")]
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateUI, ICustomRay
 {
-	public static PrimitiveType s_SelectedPrimitiveType = PrimitiveType.Cube;
-	public static bool s_Freeform = false;
+	protected PrimitiveType s_SelectedPrimitiveType = PrimitiveType.Cube;
+	protected bool s_Freeform = false;
 
-	private GameObject m_CurrentGameObject = null;
+	protected GameObject m_CurrentGameObject = null;
 
-	private Vector3 m_PointA = Vector3.zero;
-	private Vector3 m_PointB = Vector3.zero;
+	protected Vector3 m_PointA = Vector3.zero;
+	protected Vector3 m_PointB = Vector3.zero;
 
-	private const float kDrawDistance = 0.08f;
-	private const float kWaitTime = 0.2f;
+	protected const float kDrawDistance = 0.08f;
+	protected const float kWaitTime = 0.2f;
 
-	private PrimitiveCreationStates m_State = PrimitiveCreationStates.PointA;
+	protected PrimitiveCreationStates m_State = PrimitiveCreationStates.PointA;
 
-	[SerializeField]
-	private Canvas CanvasPrefab;
-	private Canvas m_ToolCanvas;
-	private bool m_ToolCanvasSpawned = false;
-	
 	public Standard standardInput {	get; set; }
 
 	public Transform rayOrigin { get; set; }
@@ -36,27 +30,30 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 
 	public Action showDefaultRay { private get; set; }
 
-	private enum PrimitiveCreationStates
+	protected enum PrimitiveCreationStates
 	{
 		PointA,
 		PointB,
 		Freeform,
 	}
 
+	protected bool m_RayHidden;
+
+	protected virtual void Awake()
+	{
+	}
+
+	void Start()
+	{
+		m_RayHidden = false;
+	}
+
 	void Update()
 	{
-		if(!m_ToolCanvasSpawned && standardInput.action.wasJustPressed)
+		if(!m_RayHidden)
 		{
-			if(m_ToolCanvas == null)
-			{
-				var go = instantiateUI(CanvasPrefab.gameObject);
-				m_ToolCanvas = go.GetComponent<Canvas>();
-				m_ToolCanvasSpawned = true;
-			}
-			m_ToolCanvas.transform.position = rayOrigin.position + rayOrigin.forward * 20f;
-			m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - VRView.viewerCamera.transform.position);
 			hideDefaultRay();
-			return;
+			m_RayHidden = true;
 		}
 
 		switch(m_State)
@@ -81,9 +78,10 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 			case PrimitiveCreationStates.PointB:
 			{
 				m_PointB = rayOrigin.position + rayOrigin.forward * kDrawDistance;
-                float dist = Vector3.Distance(m_PointA,m_PointB);
-				m_CurrentGameObject.transform.localScale = Vector3.one * dist;
-				m_CurrentGameObject.transform.position = m_PointB;
+
+				m_CurrentGameObject.transform.position = (m_PointA + m_PointB) * .5f;
+				var corner = (m_PointA - m_PointB).magnitude;
+				m_CurrentGameObject.transform.localScale = Vector3.one * corner;
 
 				if(standardInput.action.wasJustReleased)
 					m_State = PrimitiveCreationStates.PointA;
@@ -104,11 +102,5 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 				break;
 			}
 		}
-	}
-
-	void OnDestroy()
-	{
-		if (m_ToolCanvas != null)
-			U.Object.Destroy(m_ToolCanvas.gameObject);
 	}
 }
