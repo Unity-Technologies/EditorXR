@@ -500,6 +500,9 @@ public class EditorVR : MonoBehaviour
 
 	private KeyboardUI SpawnNumericKeyboard()
 	{
+		if(m_StandardKeyboard != null)
+			m_StandardKeyboard.gameObject.SetActive(false);
+		
 		// Check if the prefab has already been instantiated
 		if (m_NumericKeyboard == null)
 		{
@@ -511,6 +514,9 @@ public class EditorVR : MonoBehaviour
 
 	private KeyboardUI SpawnAlphaNumericKeyboard()
 	{
+		if (m_NumericKeyboard != null)
+			m_NumericKeyboard.gameObject.SetActive(false);
+		
 		// Check if the prefab has already been instantiated
 		if (m_StandardKeyboard == null)
 		{

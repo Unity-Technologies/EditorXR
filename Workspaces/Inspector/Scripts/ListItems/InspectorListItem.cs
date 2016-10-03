@@ -37,7 +37,6 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 	private bool m_SelectIsHeld;
 	private float m_DragDistance;
 	private InputField m_ClickedField;
-	private Vector3 m_PointerPosition;
 
 	public bool setup { get; set; }
 
@@ -181,7 +180,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 					}
 				}
 			}
-			m_PointerPosition = eventData.rayOrigin.position;
+
 			m_ClickCount++;
 			m_SelectIsHeld = true;
 			m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
@@ -286,7 +285,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		if (m_ClickCount == 1)
 		{
 			if (m_ClickedField)
-				m_ClickedField.ToggleKeyboard(m_PointerPosition);
+				m_ClickedField.ToggleKeyboard();
 		}
 
 		m_ClickCount = 0;

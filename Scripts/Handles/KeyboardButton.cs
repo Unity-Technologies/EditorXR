@@ -67,6 +67,12 @@ public class KeyboardButton : BaseHandle
 	private Coroutine m_IncreaseEmissionCoroutine;
 	private Coroutine m_DecreaseEmissionCoroutine;
 
+	void Awake()
+	{
+		if(!m_TargetMesh)
+			m_TargetMesh = GetComponentInChildren<Renderer>(true);
+	}
+
 	/// <summary>
 	/// Initiallize this key
 	/// </summary>
@@ -197,6 +203,14 @@ public class KeyboardButton : BaseHandle
 
 		if (m_DecreaseEmissionCoroutine != null)
 			StopCoroutine(m_DecreaseEmissionCoroutine);
+
+		if ((KeyCode) m_Character == KeyCode.Escape) // Avoid message about starting coroutine on inactive object
+		{
+			var targetMeshTransform = m_TargetMesh.transform;
+			targetMeshTransform.localScale = m_TargetMeshInitialScale;
+			targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;
+			return;
+		}
 
 		m_IncreaseEmissionCoroutine = StartCoroutine(IncreaseEmission());
 
