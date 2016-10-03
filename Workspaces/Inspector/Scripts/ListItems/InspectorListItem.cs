@@ -13,7 +13,6 @@ using InputField = UnityEngine.VR.UI.InputField;
 public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHighlight, IDroppable, IDropReciever
 {
 	private const float kIndent = 0.02f;
-	private const float kMinDragDistance = 0.02f;
 
 	private static readonly Quaternion previewRotation = Quaternion.AngleAxis(90, Vector3.right);
 
@@ -235,7 +234,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 			var numericField = m_ClickedField as NumericInputField;
 			if (numericField)
 			{
-				if(m_DragDistance > kMinDragDistance)
+				if(m_DragDistance > NumericInputField.kDragDeadzone)
 					CancelSingleClick();
 
 				numericField.SliderDrag(eventData.rayOrigin);

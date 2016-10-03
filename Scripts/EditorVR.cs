@@ -214,6 +214,8 @@ public class EditorVR : MonoBehaviour
 		{
 			var miniWorldRayHasObject = false;
 
+			m_PixelRaycastModule.UpdateIgnoreList();
+
 			foreach (var proxy in m_AllProxies)
 			{
 				if (!proxy.active)

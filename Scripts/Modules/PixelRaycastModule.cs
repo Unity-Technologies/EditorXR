@@ -24,7 +24,6 @@ namespace UnityEditor.VR.Modules
 				m_RaycastGameObjects[rayOrigin] = null;
 				return null;
 			}
-			UpdateIgnoreList();
 
 			float distance;
 			var result = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera, out distance);
@@ -39,6 +38,11 @@ namespace UnityEditor.VR.Modules
 			return result;
 		}
 
+		/// <summary>
+		/// Get the GameObject over which a particular ray is hovering
+		/// </summary>
+		/// <param name="rayOrigin">rayOrigin to check against</param>
+		/// <returns></returns>
 		public GameObject GetFirstGameObject(Transform rayOrigin)
 		{
 			GameObject go;
@@ -49,9 +53,12 @@ namespace UnityEditor.VR.Modules
 			return null;
 		}
 
-		private void UpdateIgnoreList()
+		/// <summary>
+		/// Update the list of objects that ignore raycasts. This list will include EditorVR and all of its children
+		/// </summary>
+		public void UpdateIgnoreList()
 		{
-			var children = ignoreRoot.GetComponentsInChildren<Transform>();
+			var children = ignoreRoot.GetComponentsInChildren<Transform>(true);
 			m_IgnoreList = new GameObject[children.Length];
 			for (int i = 0; i < children.Length; i++)
 				m_IgnoreList[i] = children[i].gameObject;

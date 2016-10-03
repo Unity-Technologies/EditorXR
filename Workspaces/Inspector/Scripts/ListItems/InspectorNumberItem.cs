@@ -14,11 +14,14 @@ public class InspectorNumberItem : InspectorPropertyItem
 		var val = string.Empty;
 		switch (m_SerializedProperty.propertyType)
 		{
+			case SerializedPropertyType.ArraySize:
 			case SerializedPropertyType.Integer:
 				val = m_SerializedProperty.intValue.ToString();
+				m_InputField.numberType = NumericInputField.NumberType.Int;
 				break;
 			case SerializedPropertyType.Float:
 				val = m_SerializedProperty.floatValue.ToString();
+				m_InputField.numberType = NumericInputField.NumberType.Float;
 				break;
 		}
 
@@ -32,7 +35,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 		{
 			case SerializedPropertyType.ArraySize:
 				int size;
-				if (int.TryParse(input, out size) && m_SerializedProperty.arraySize != size)
+				if (int.TryParse(input, out size) && m_SerializedProperty.intValue != size)
 				{
 					m_SerializedProperty.arraySize = size;
 

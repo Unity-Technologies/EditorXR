@@ -185,28 +185,26 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 	PropertyData GenericProperty(SerializedProperty property, SerializedObject obj)
 	{
 		var children = new List<InspectorData>();
-		var isArray = false;
-		var headerProperty = property.Copy();
-		while (headerProperty.NextVisible(true))
+		var iteratorProperty = property.Copy();
+		while (iteratorProperty.NextVisible(true))
 		{
-			if (headerProperty.depth == 0)
+			if (iteratorProperty.depth == 0)
 				break;
 
-			switch (headerProperty.propertyType)
+			switch (iteratorProperty.propertyType)
 			{
 				case SerializedPropertyType.ArraySize:
-					isArray = true;
-					children.Add(new PropertyData("InspectorNumberItem", obj, null, headerProperty.Copy()));
+					children.Add(new PropertyData("InspectorNumberItem", obj, null, iteratorProperty.Copy()));
 					break;
 				default:
-					children.Add(SerializedPropertyToPropertyData(headerProperty, obj));
+					children.Add(SerializedPropertyToPropertyData(iteratorProperty, obj));
 					break;
 			}
 		}
 
-		return isArray
+		return property.isArray
 			? new PropertyData("InspectorArrayHeaderItem", obj, children.ToArray(), property.Copy())
-			: new PropertyData("InspectorUnimplementedItem", obj, null, property.Copy());
+			: new PropertyData("InspectorGenericItem", obj, children.ToArray(), property.Copy()) {expanded = true};
 	}
 
 	protected override void OnBoundsChanged()

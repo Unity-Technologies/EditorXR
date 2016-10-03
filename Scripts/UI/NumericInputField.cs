@@ -12,15 +12,17 @@ namespace UnityEngine.VR.UI
 			Int,
 		}
 
+		public const float kDragDeadzone = 0.025f;
+
 		private const string kFloatFieldFormatString = "g7";
 		private const string kIntFieldFormatString = "#######0";
 		private const float kDragSensitivity = 0.02f;
-		private const float kDragDeadzone = 0.01f;
 		private const string kAllowedCharactersForFloat = "inftynaeINFTYNAE0123456789.,-*/+%^()";
 		private const string kAllowedCharactersForInt = "0123456789-*/+%^()";
 		private const string kOperandCharacters = "-*/+%^()";
 		private const int kMaxDecimals = 15; // We cannot round to more decimals than 15 according to docs for System.Math.Round.
 
+		public NumberType numberType { get { return m_NumberType; } set { m_NumberType = value; } }
 		[SerializeField]
 		private NumberType m_NumberType = NumberType.Float;
 
@@ -77,6 +79,7 @@ namespace UnityEngine.VR.UI
 			if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
 				return;
 
+			Debug.Log("end");
 			m_UpdateDrag = false;
 		}
 
