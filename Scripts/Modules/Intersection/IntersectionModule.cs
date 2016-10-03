@@ -41,12 +41,14 @@ namespace UnityEngine.VR.Modules
 
 				if (tester.transform.hasChanged)
 				{
-					bool intersectionFound = false;
+					var intersectionFound = false;
 					Renderer[] intersections;
 					if (m_SpatialHash.GetIntersections(tester.renderer.bounds, out intersections))
 					{
 						//Sort list to try and hit closer object first
-						Array.Sort(intersections, (a, b) => (a.bounds.center - tester.renderer.bounds.center).magnitude.CompareTo((b.bounds.center - tester.renderer.bounds.center).magnitude));
+						var testerBounds = tester.renderer.bounds;
+						var testerBoundsCenter = testerBounds.center;
+						Array.Sort(intersections, (a, b) => (a.bounds.center - testerBoundsCenter).magnitude.CompareTo((b.bounds.center - testerBoundsCenter).magnitude));
 						foreach (var obj in intersections)
 						{
 							//Early-outs:
@@ -55,7 +57,7 @@ namespace UnityEngine.VR.Modules
 								continue;
 
 							//Bounds check
-							if (!obj.bounds.Intersects(tester.renderer.bounds))
+							if (!obj.bounds.Intersects(testerBounds))
 								continue;
 
 							if (U.Intersection.TestObject(m_CollisionTester, obj, tester))

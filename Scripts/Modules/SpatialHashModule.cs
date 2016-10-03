@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
-using UnityEngine;
 using UnityEngine.VR.Data;
 
 namespace UnityEngine.VR.Modules

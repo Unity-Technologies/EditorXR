@@ -379,12 +379,12 @@ public class EditorVR : MonoBehaviour
 		{
 			IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
 			proxy.trackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
-			foreach (var rayOriginBase in proxy.rayOrigins)
+			foreach (var rayOriginPair in proxy.rayOrigins)
 			{
-				var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginBase.Value).transform;
-				rayTransform.position = rayOriginBase.Value.position;
-				rayTransform.rotation = rayOriginBase.Value.rotation;
-				m_DefaultRays.Add(rayOriginBase.Value, rayTransform.GetComponent<DefaultProxyRay>());
+				var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPair.Value).transform;
+				rayTransform.position = rayOriginPair.Value.position;
+				rayTransform.rotation = rayOriginPair.Value.rotation;
+				m_DefaultRays.Add(rayOriginPair.Value, rayTransform.GetComponent<DefaultProxyRay>());
 			}
 			m_AllProxies.Add(proxy);
 		}
@@ -413,8 +413,8 @@ public class EditorVR : MonoBehaviour
 				}
 				else
 				{
-					// If not hitting UI, then check pixel raycast and approximate bounds to set distance
-					var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+					// If not hitting UI, then check standard raycast and approximate bounds to set distance
+					var go = GetFirstGameObject(rayOrigin);
 					if (go != null)
 					{
 						var ray = new Ray(rayOrigin.position, rayOrigin.forward);
@@ -440,31 +440,42 @@ public class EditorVR : MonoBehaviour
 		m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
 		m_InputModule.eventCamera = m_EventCamera;
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			// Create ui action map input for device.
+			if (deviceData.uiInput == null)
+				deviceData.uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+
+			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput);
+		});
+		UpdatePlayerHandleMaps();
+	}
+
+	void ForEachRayOrigin(Action<IProxy, KeyValuePair<Node, Transform>, InputDevice, DeviceData> callback, bool activeOnly = false)
+	{
 		foreach (var proxy in m_AllProxies)
 		{
-			foreach (var rayOriginBase in proxy.rayOrigins)
+			if (activeOnly && !proxy.active)
+				continue;
+
+			foreach (var rayOriginPair in proxy.rayOrigins)
 			{
-				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
+				foreach (var device in InputSystem.devices)
 				{
+					// Find device tagged with the node that matches this RayOrigin node
 					var node = GetDeviceNode(device);
-					if (node.HasValue && node.Value == rayOriginBase.Key)
+					if (node.HasValue && node.Value == rayOriginPair.Key)
 					{
 						DeviceData deviceData;
 						if (m_DeviceData.TryGetValue(device, out deviceData))
-						{
-							// Create ui action map input for device.
-							if (deviceData.uiInput == null)
-								deviceData.uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+							callback(proxy, rayOriginPair, device, deviceData);
 
-							// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-							m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, deviceData.uiInput);
-						}
 						break;
 					}
 				}
 			}
 		}
-		UpdatePlayerHandleMaps();
 	}
 
 	private void CreateSpatialSystem()
@@ -476,28 +487,12 @@ public class EditorVR : MonoBehaviour
 		m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
 		m_IntersectionModule.Setup(m_SpatialHash);
 
-		foreach (var proxy in m_AllProxies)
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
-			if (proxy.active)
-			{				
-				foreach (var rayOriginBase in proxy.rayOrigins)
-				{
-					foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
-					{
-						if (device.tagIndex != -1 && m_TagToNode[VRInputDevice.Tags[device.tagIndex]] == rayOriginBase.Key)
-						{
-							DeviceData deviceData;
-							if (m_DeviceData.TryGetValue(device, out deviceData))
-							{
-								var tester = rayOriginBase.Value.GetComponentInChildren<IntersectionTester>();
-								m_IntersectionModule.AddTester(tester);
-							}
-							break;
-						}
-					}
-				}
-			}
-		}
+			var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
+			tester.active = proxy.active;
+			m_IntersectionModule.AddTester(tester);
+		});
 		UpdatePlayerHandleMaps();
 	}
 
@@ -775,9 +770,11 @@ public class EditorVR : MonoBehaviour
 			m_SelectionChanged -= selectionChanged.OnSelectionChanged;
 	}
 
+	// NOTE: This is for the length of the pointer object, not the length of the ray coming out of the pointer
 	private float GetPointerLength(Transform rayOrigin)
 	{
-		float length = 0f;
+		var length = 0f;
+
 		// Check if this is a MiniWorldRay
 		MiniWorldRay ray;
 		if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
@@ -990,39 +987,24 @@ public class EditorVR : MonoBehaviour
 
 		m_MiniWorlds.Add(miniWorld);
 
-		foreach (var proxy in m_AllProxies)
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
-			foreach (var rayOriginBase in proxy.rayOrigins)
-			{
-				foreach (var device in InputSystem.devices) // Find device tagged with the node that matches this RayOrigin node
-				{
-					var node = GetDeviceNode(device);
-					if (node.HasValue && node.Value == rayOriginBase.Key)
-					{
-						DeviceData deviceData;
-						if (m_DeviceData.TryGetValue(device, out deviceData))
-						{
-							// Create MiniWorld rayOrigin
-							var miniWorldRayOrigin = new GameObject("MiniWorldRayOrigin").transform;
-							miniWorldRayOrigin.parent = workspace.transform;
+			// Create MiniWorld rayOrigin
+			var miniWorldRayOrigin = new GameObject("MiniWorldRayOrigin").transform;
+			miniWorldRayOrigin.parent = workspace.transform;
 
-							var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-							m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
-							// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-							m_InputModule.AddRaycastSource(proxy, rayOriginBase.Key, uiInput, miniWorldRayOrigin);
-							m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay()
-							{
-								originalRayOrigin = rayOriginBase.Value,
-								miniWorld = miniWorld,
-								proxy = proxy,
-								uiInput = uiInput
-							};
-						}
-						break;
-					}
-				}
-			}
-		}
+			var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+			m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
+			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
+			m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay()
+			{
+				originalRayOrigin = rayOriginPair.Value,
+				miniWorld = miniWorld,
+				proxy = proxy,
+				uiInput = uiInput
+			};
+		}, true);
 	}
 
 	private void OnWorkspaceDestroyed(Workspace workspace)
@@ -1127,29 +1109,31 @@ public class EditorVR : MonoBehaviour
 	private GameObject GetFirstGameObject(Transform rayOrigin)
 	{
 		var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+		if (go)
+			return go;
 
 		// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
 		// so in that case use the spatial hash as a final test
-		if (!go)
+		var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+		var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+		if (renderer)
 		{
-			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-			if (renderer)
-				go = renderer.gameObject;
+			go = renderer.gameObject;
+			if (go)
+				return go;
 		}
 
-		if (!go)
+		foreach (var miniWorldRay in m_MiniWorldRays)
 		{
-			foreach (var miniWorldRay in m_MiniWorldRays)
+			if (miniWorldRay.Value.originalRayOrigin.Equals(rayOrigin))
 			{
-				if (miniWorldRay.Value.originalRayOrigin.Equals(rayOrigin))
-					go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRay.Key);
+				go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRay.Key);
 				if (go)
-					break;
+					return go;
 			}
 		}
 
-		return go;
+		return null;
 	}
 
 	private void PlaceObject(Transform obj, Vector3 targetScale)
