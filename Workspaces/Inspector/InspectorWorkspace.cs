@@ -15,12 +15,13 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 	[SerializeField]
 	private GameObject m_ContentPrefab;
 
+	[SerializeField]
+	private bool m_IsLocked;
+
 	private InspectorUI m_InspectorUI;
 
 	private Vector3 m_ScrollStart;
 	private float m_ScrollOffsetStart;
-
-	public bool @lock;
 
 	public PositionPreviewDelegate positionPreview { private get; set; }
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
@@ -46,6 +47,8 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 		listView.positionPreview = positionPreview;
 		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		listView.setHighlight = setHighlight;
+		listView.getIsLocked = GetIsLocked;
+		listView.setIsLocked = SetIsLocked;
 
 		var scrollHandle = m_InspectorUI.inspectorScrollHandle;
 
@@ -81,7 +84,7 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 
 	private void Scroll(BaseHandle handle, HandleEventData eventData)
 	{
-		var scrollOffset = m_ScrollOffsetStart + Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
+		var scrollOffset = m_ScrollOffsetStart - Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
 		m_InspectorUI.inspectorListView.scrollOffset = scrollOffset;
 	}
 
@@ -97,7 +100,7 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 
 	public void OnSelectionChanged()
 	{
-		if (@lock)
+		if (m_IsLocked)
 			return;
 
 		if (Selection.activeObject == null)
@@ -202,5 +205,15 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 	public bool RecieveDrop(GameObject target, object droppedObject)
 	{
 		return false;
+	}
+
+	private bool GetIsLocked()
+	{
+		return m_IsLocked;
+	}
+
+	private void SetIsLocked(bool isLocked)
+	{
+		m_IsLocked = isLocked;
 	}
 }

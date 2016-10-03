@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,9 +20,15 @@ public class InspectorHeaderItem : InspectorListItem
 	[SerializeField]
 	private Toggle m_StaticToggle;
 
+	public Toggle lockToggle { get { return m_LockToggle; } }
+	[SerializeField]
+	private Toggle m_LockToggle;
+
 	// TODO: Add dropdown for different static types
-	
+
 	private GameObject m_TargetGameObject;
+	
+	public Action<bool> setLocked { private get; set; }
 
 	public override void Setup(InspectorData data)
 	{
@@ -61,6 +68,12 @@ public class InspectorHeaderItem : InspectorListItem
 		// TODO: Add choice dialog for whether to set in children
 		if(m_TargetGameObject != null && m_TargetGameObject.isStatic != isStatic)
 			m_TargetGameObject.isStatic = isStatic;
+	}
+
+	public void SetLock(bool isLocked)
+	{
+		if (setLocked != null)
+			setLocked(isLocked);
 	}
 
 	protected override object GetDropObject(Transform fieldBlock)

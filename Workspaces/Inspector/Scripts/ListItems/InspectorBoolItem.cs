@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
 
 public class InspectorBoolItem : InspectorPropertyItem
 {

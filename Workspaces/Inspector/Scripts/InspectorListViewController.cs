@@ -37,6 +37,9 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	public Action<Transform, IDropReciever, GameObject> setCurrentDropReciever { private get; set; }
 	public Action<Transform, object> setCurrentDropObject { private get; set; }
 
+	public Func<bool> getIsLocked { private get; set; }
+	public Action<bool> setIsLocked { private get; set; }
+
 	protected override void Setup()
 	{
 		base.Setup();
@@ -56,7 +59,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		base.ComputeConditions();
 
-		m_StartPosition = bounds.extents.z * Vector3.forward;
+		m_StartPosition = bounds.extents.z * Vector3.back;
 
 		var parentMatrix = transform.worldToLocalMatrix;
 		SetMaterialClip(m_RowCubeMaterial, parentMatrix);
@@ -74,7 +77,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			m_ScrollReturn = -totalOffset + m_ItemSize.z; // m_ItemSize will be equal to the size of the last visible item
 	}
 
-	private void UpdateRecursively(InspectorData[] data, ref float totalOffset, int depth = 0)
+	private void UpdateRecursively(IEnumerable<InspectorData> data, ref float totalOffset, int depth = 0)
 	{
 		foreach (var item in data)
 		{
@@ -109,7 +112,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	private void UpdateItem(Transform t, float offset)
 	{
-		t.localPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.back;
+		t.localPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.forward;
 		t.localRotation = Quaternion.identity;
 	}
 
@@ -129,6 +132,13 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 
 			item.setup = true;
+		}
+
+		var headerItem = item as InspectorHeaderItem;
+		if (headerItem)
+		{
+			headerItem.lockToggle.isOn = getIsLocked();
+			headerItem.setLocked = setIsLocked;
 		}
 		return item;
 	}

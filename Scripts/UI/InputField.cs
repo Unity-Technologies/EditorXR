@@ -127,7 +127,8 @@ namespace UnityEngine.VR.UI
 			if (m_TextComponent != null && m_TextComponent.font != null)
 				m_TextComponent.text = m_Text;
 
-			m_Keyboard.SetPreviewText(m_Text);
+			if(m_Keyboard)
+				m_Keyboard.SetPreviewText(m_Text);
 		}
 
 		protected virtual void Open(Vector3 position)
