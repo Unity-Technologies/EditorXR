@@ -30,6 +30,18 @@ public class InspectorNumberItem : InspectorPropertyItem
 	{
 		switch (m_SerializedProperty.propertyType)
 		{
+			case SerializedPropertyType.ArraySize:
+				int size;
+				if (int.TryParse(input, out size) && m_SerializedProperty.arraySize != size)
+				{
+					m_SerializedProperty.arraySize = size;
+
+					m_InputField.text = size.ToString();
+					m_InputField.ForceUpdateLabel();
+
+					data.serializedObject.ApplyModifiedProperties();
+				}
+				break;
 			case SerializedPropertyType.Integer:
 				int i;
 				if (int.TryParse(input, out i) && m_SerializedProperty.intValue != i)

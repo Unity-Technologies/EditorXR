@@ -4,7 +4,7 @@ using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.UI
 {
-	public class NumericInputField : InputField, IRayEnterHandler, IRayExitHandler, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
+	public class NumericInputField : InputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
 	{
 		public enum NumberType
 		{
@@ -27,7 +27,6 @@ namespace UnityEngine.VR.UI
 		private bool m_UpdateDrag;
 		private Vector3 m_StartDragPosition;
 		private Vector3 m_LastPointerPosition;
-		private bool m_PointerOverField;
 		private int m_OperandCount;
 		private bool m_UseYSign;
 
@@ -36,18 +35,6 @@ namespace UnityEngine.VR.UI
 			return IsActive()
 					&& IsInteractable()
 					&& m_TextComponent != null;
-		}
-
-		public void OnRayEnter(RayEventData eventData)
-		{
-			if (eventData == null || U.UI.IsValidEvent(eventData, selectionFlags))
-				m_PointerOverField = true;
-		}
-
-		public void OnRayExit(RayEventData eventData)
-		{
-			if (eventData == null || U.UI.IsValidEvent(eventData, selectionFlags))
-				m_PointerOverField = false;
 		}
 
 		public void OnBeginDrag(RayEventData eventData)

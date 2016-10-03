@@ -286,7 +286,7 @@ namespace UnityEngine.VR.Utilities
 			{
 				return AppDomain.CurrentDomain.GetAssemblies()
 								 .SelectMany(x => x.GetTypes())
-								 .FirstOrDefault(x => x.Name == name);
+								 .FirstOrDefault(x => x.Name.Equals(name) && typeof(UnityObject).IsAssignableFrom(x));
 			}
 		}
 	}

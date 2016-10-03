@@ -120,56 +120,11 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 
 				var componentChildren = new List<InspectorData>();
 
-				var iterator = obj.GetIterator();
-				while (iterator.NextVisible(true))
+				var property = obj.GetIterator();
+				while (property.NextVisible(true))
 				{
-					if (iterator.depth == 0)
-					{
-						var canExpand = false;
-						string template;
-						var children = new InspectorData[0];
-						switch (iterator.propertyType)
-						{
-							case SerializedPropertyType.Vector2:
-								goto case SerializedPropertyType.Quaternion;
-							case SerializedPropertyType.Vector3:
-								goto case SerializedPropertyType.Quaternion;
-							case SerializedPropertyType.Vector4:
-								goto case SerializedPropertyType.Quaternion;
-							case SerializedPropertyType.Quaternion:
-								template = "InspectorVectorItem";
-								break;
-							case SerializedPropertyType.Integer:
-								goto case SerializedPropertyType.Float;
-							case SerializedPropertyType.Float:
-								template = "InspectorNumberItem";
-								break;
-							case SerializedPropertyType.Character:
-								goto case SerializedPropertyType.String;
-							case SerializedPropertyType.String:
-								template = "InspectorStringItem";
-								break;
-							case SerializedPropertyType.Bounds:
-								template = "InspectorBoundsItem";
-								break;
-							case SerializedPropertyType.Boolean:
-								template = "InspectorBoolItem";
-								break;
-							case SerializedPropertyType.ObjectReference:
-								template = "InspectorObjectFieldItem";
-								break;
-							case SerializedPropertyType.Color:
-								template = "InspectorColorItem";
-								break;
-							case SerializedPropertyType.Rect:
-								template = "InspectorRectItem";
-								break;
-							default:
-								template = "InspectorUnimplementedItem";
-								break;
-						}
-						componentChildren.Add(new PropertyData(template, obj, children, iterator.Copy(), canExpand));
-					}
+					if (property.depth == 0)
+						componentChildren.Add(SerializedPropertyToPropertyData(property, obj));
 				}
 				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren.ToArray()) { expanded = true };
 				objectChildren.Add(componentData);
@@ -180,6 +135,78 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 		inspectorData.Add(objectData);
 
 		m_InspectorUI.inspectorListView.data = inspectorData.ToArray();
+	}
+
+	PropertyData SerializedPropertyToPropertyData(SerializedProperty property, SerializedObject obj)
+	{
+		string template;
+		switch (property.propertyType)
+		{
+			case SerializedPropertyType.Vector2:
+			case SerializedPropertyType.Vector3:
+			case SerializedPropertyType.Vector4:
+			case SerializedPropertyType.Quaternion:
+				template = "InspectorVectorItem";
+				break;
+			case SerializedPropertyType.Integer:
+				goto case SerializedPropertyType.Float;
+			case SerializedPropertyType.Float:
+				template = "InspectorNumberItem";
+				break;
+			case SerializedPropertyType.Character:
+			case SerializedPropertyType.String:
+				template = "InspectorStringItem";
+				break;
+			case SerializedPropertyType.Bounds:
+				template = "InspectorBoundsItem";
+				break;
+			case SerializedPropertyType.Boolean:
+				template = "InspectorBoolItem";
+				break;
+			case SerializedPropertyType.ObjectReference:
+				template = "InspectorObjectFieldItem";
+				break;
+			case SerializedPropertyType.Color:
+				template = "InspectorColorItem";
+				break;
+			case SerializedPropertyType.Rect:
+				template = "InspectorRectItem";
+				break;
+			case SerializedPropertyType.Generic:
+				return GenericProperty(property, obj);
+			default:
+				template = "InspectorUnimplementedItem";
+				break;
+		}
+
+		return new PropertyData(template, obj, null, property.Copy());
+	}
+
+	PropertyData GenericProperty(SerializedProperty property, SerializedObject obj)
+	{
+		var children = new List<InspectorData>();
+		var isArray = false;
+		var headerProperty = property.Copy();
+		while (headerProperty.NextVisible(true))
+		{
+			if (headerProperty.depth == 0)
+				break;
+
+			switch (headerProperty.propertyType)
+			{
+				case SerializedPropertyType.ArraySize:
+					isArray = true;
+					children.Add(new PropertyData("InspectorNumberItem", obj, null, headerProperty.Copy()));
+					break;
+				default:
+					children.Add(SerializedPropertyToPropertyData(headerProperty, obj));
+					break;
+			}
+		}
+
+		return isArray
+			? new PropertyData("InspectorArrayHeaderItem", obj, children.ToArray(), property.Copy())
+			: new PropertyData("InspectorUnimplementedItem", obj, null, property.Copy());
 	}
 
 	protected override void OnBoundsChanged()

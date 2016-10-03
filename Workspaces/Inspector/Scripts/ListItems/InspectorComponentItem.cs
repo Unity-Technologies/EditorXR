@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Collections;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
@@ -7,6 +8,8 @@ using Button = UnityEngine.VR.UI.Button;
 public class InspectorComponentItem : InspectorListItem
 {
 	private const float kExpandArrowRotateSpeed = 0.4f;
+	static readonly Quaternion kExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
+	static readonly Quaternion kNormalRotation = Quaternion.identity;
 
 	[SerializeField]
 	private Button m_ExpandArrow;
@@ -20,9 +23,6 @@ public class InspectorComponentItem : InspectorListItem
 	[SerializeField]
 	private Text m_NameText;
 
-	[SerializeField]
-	private Button m_GearMenu;
-
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -30,7 +30,9 @@ public class InspectorComponentItem : InspectorListItem
 		var target = data.serializedObject.targetObject;
 		var type = target.GetType();
 		m_NameText.text = type.Name;
-		m_Icon.texture = AssetPreview.GetMiniTypeThumbnail(type);
+
+		StopAllCoroutines();
+		StartCoroutine(GetAssetPreview());
 
 		m_EnabledToggle.gameObject.SetActive(EditorUtility.GetObjectEnabled(target) != -1);
 		m_EnabledToggle.isOn = EditorUtility.GetObjectEnabled(target) == 1;
@@ -38,18 +40,21 @@ public class InspectorComponentItem : InspectorListItem
 		m_ExpandArrow.gameObject.SetActive(data.children != null);
 	}
 
-	public void GetMaterials(out Material textMaterial, out Material expandArrowMaterial, out Material gearMaterial)
+	IEnumerator GetAssetPreview()
 	{
-		textMaterial = Instantiate(m_NameText.material);
-		expandArrowMaterial = Instantiate(m_ExpandArrow.GetComponent<Renderer>().sharedMaterial);
-		gearMaterial = Instantiate(m_GearMenu.GetComponent<Renderer>().sharedMaterial);
-	}
+		m_Icon.texture = null;
 
-	public void SwapMaterials(Material textMaterial, Material expandArrowMaterial, Material gearMaterial)
-	{
-		m_NameText.material = textMaterial;
-		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
-		m_GearMenu.GetComponent<Renderer>().sharedMaterial = gearMaterial;
+		var target = data.serializedObject.targetObject;
+		m_Icon.texture = AssetPreview.GetAssetPreview(target);
+
+		while (AssetPreview.IsLoadingAssetPreview(target.GetInstanceID()))
+		{
+			m_Icon.texture = AssetPreview.GetAssetPreview(target);
+			yield return null;
+		}
+
+		if (!m_Icon.texture)
+			m_Icon.texture = AssetPreview.GetMiniThumbnail(target);
 	}
 
 	public override void UpdateSelf(float width, int depth)
@@ -58,7 +63,7 @@ public class InspectorComponentItem : InspectorListItem
 
 		// Rotate arrow for expand state
 		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-												data.expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity,
+												data.expanded ? kExpandedRotation : kNormalRotation,
 												kExpandArrowRotateSpeed);
 	}
 

@@ -26,26 +26,34 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		SetObject(m_SerializedProperty.objectReferenceValue);
 	}
 
-	private void SetObject(Object obj)
+	private bool SetObject(Object obj)
 	{
+		var objectReference = m_SerializedProperty.objectReferenceValue;
+
 		if (obj == null)
 			m_FieldLabel.text = string.Format("None ({0})", m_ObjectTypeName);
 		else
 		{
 			var objType = obj.GetType();
 			if (!objType.IsAssignableFrom(m_ObjectType))
-				return;
+			{
+				if (obj.Equals(objectReference)) // Show type mismatch for old serialized data
+					m_FieldLabel.text = "Type Mismatch";
+				return false;
+			}
 			m_FieldLabel.text = string.Format("{0} ({1})", obj.name, obj.GetType().Name);
 		}
 
 		if (obj == null && m_SerializedProperty.objectReferenceValue == null)
-			return;
+			return true;
 		if (m_SerializedProperty.objectReferenceValue != null && m_SerializedProperty.objectReferenceValue.Equals(obj))
-			return;
+			return true;
 
 		m_SerializedProperty.objectReferenceValue = obj;
 
 		data.serializedObject.ApplyModifiedProperties();
+
+		return true;
 	}
 
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)

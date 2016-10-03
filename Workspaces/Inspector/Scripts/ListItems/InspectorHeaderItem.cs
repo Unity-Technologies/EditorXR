@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -36,7 +37,9 @@ public class InspectorHeaderItem : InspectorListItem
 
 		var target = data.serializedObject.targetObject;
 
-		m_Icon.texture = AssetPreview.GetMiniThumbnail(target);
+		StopAllCoroutines();
+		StartCoroutine(GetAssetPreview());
+
 		m_TargetGameObject = target as GameObject;
 
 		if (m_TargetGameObject)
@@ -47,6 +50,23 @@ public class InspectorHeaderItem : InspectorListItem
 
 		m_NameField.text = target.name;
 		m_NameField.ForceUpdateLabel();
+	}
+
+	IEnumerator GetAssetPreview()
+	{
+		m_Icon.texture = null;
+
+		var target = data.serializedObject.targetObject;
+		m_Icon.texture = AssetPreview.GetAssetPreview(target);
+
+		while (AssetPreview.IsLoadingAssetPreview(target.GetInstanceID()))
+		{
+			m_Icon.texture = AssetPreview.GetAssetPreview(target);
+			yield return null;
+		}
+
+		if (!m_Icon.texture)
+			m_Icon.texture = AssetPreview.GetMiniThumbnail(target);
 	}
 
 	public void SetActive(bool active)
