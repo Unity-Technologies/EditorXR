@@ -36,8 +36,6 @@ public class KeyboardButtonEditor : Editor
 
 	public override void OnInspectorGUI()
 	{
-		base.OnInspectorGUI();
-
 		m_KeyboardButton = (KeyboardButton)target;
 
 		serializedObject.Update();

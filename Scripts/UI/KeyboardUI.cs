@@ -1,15 +1,19 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Canvas))]
 public class KeyboardUI : MonoBehaviour
 {
 	[SerializeField]
-	private List<KeyboardButton> m_Buttons = new List<KeyboardButton>();
+	List<KeyboardButton> m_Buttons = new List<KeyboardButton>();
 
 	[SerializeField]
-	private DirectManipulator m_DirectManipulator;
+	DirectManipulator m_DirectManipulator;
+
+	[SerializeField]
+	Text m_PreviewText;
 
 	/// <summary>
 	/// Initialize the keyboard and its buttons
@@ -41,6 +45,11 @@ public class KeyboardUI : MonoBehaviour
 	{
 		foreach (var button in m_Buttons)
 			button.SetShiftModeActive(false);
+	}
+
+	public void SetPreviewText(string str)
+	{
+		m_PreviewText.text = str;
 	}
 
 	private bool IsHorizontal()
