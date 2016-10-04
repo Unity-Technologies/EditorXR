@@ -246,6 +246,11 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			U.Object.Destroy(cloneItem.m_TextPanel.gameObject);
 		}
 
+		// Disable any SmoothMotion that may be applied to a cloned Asset Grid Item now referencing input device p/r/s
+		var smoothMotion = clone.GetComponent<SmoothMotion>();
+		if (smoothMotion != null)
+			smoothMotion.enabled = false;
+
 		m_GrabbedObject = clone.transform;
 		m_GrabLerp = 0;
 		StartCoroutine(Magnetize());
