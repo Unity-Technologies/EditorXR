@@ -9,7 +9,7 @@
 
 	SubShader
 	{
-		Tags{ "Queue" = "Transparent+1" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" }
+		Tags{ "Queue" = "Transparent+1" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
 		ZWrite On
 		ZTest Greater
 		Blend SrcAlpha OneMinusSrcAlpha
@@ -45,9 +45,9 @@
 				return output;
 			}
 
-			float4 frag(v2f input) : COLOR
+			fixed4 frag(v2f input) : COLOR
 			{
-				float4 col = input.color;
+				fixed4 col = input.color;
 				col.a = _Alpha;
 				return col;
 			}
