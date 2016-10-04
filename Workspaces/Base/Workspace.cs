@@ -256,6 +256,25 @@ namespace UnityEngine.VR.Workspaces
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
+		public virtual void OnLockClicked()
+		{
+			m_DragLocked = !m_DragLocked;
+		}
+
+		private void UpdateBounds()
+		{
+			m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
+			m_WorkspaceUI.vacuumHandle.transform.localScale = outerBounds.size;
+			m_WorkspaceUI.setBounds = contentBounds;
+		}
+
+		protected virtual void OnDestroy()
+		{
+			destroyed(this);
+		}
+
+		protected abstract void OnBoundsChanged();
+
 		IEnumerator AnimateShow()
 		{
 			Vector3 kTargetScale = transform.localScale;
@@ -287,24 +306,5 @@ namespace UnityEngine.VR.Workspaces
 			m_VisibilityCoroutine = null;
 			U.Object.Destroy(gameObject);
 		}
-
-		public virtual void OnLockClicked()
-		{
-			m_DragLocked = !m_DragLocked;
-		}
-
-		private void UpdateBounds()
-		{
-			m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
-			m_WorkspaceUI.vacuumHandle.transform.localScale = outerBounds.size;
-			m_WorkspaceUI.setBounds = contentBounds;
-		}
-
-		protected virtual void OnDestroy()
-		{
-			destroyed(this);
-		}
-
-		protected abstract void OnBoundsChanged();
 	}
 }
