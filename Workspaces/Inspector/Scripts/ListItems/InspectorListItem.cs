@@ -36,7 +36,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 	private int m_ClickCount;
 	private bool m_SelectIsHeld;
 	private float m_DragDistance;
-	private InputField m_ClickedField;
+
+	protected InputField m_ClickedField;
 
 	public bool setup { get; set; }
 
@@ -256,7 +257,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		m_SelectIsHeld = false;
 
 		var numericField = m_ClickedField as NumericInputField;
-		if(numericField)
+		if (numericField)
 			numericField.EndDrag();
 
 		var fieldBlock = baseHandle.transform.parent;

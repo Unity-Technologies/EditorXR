@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using UnityEngine.VR.Handles;
 using UnityEngine.VR.UI;
 
 public class InspectorNumberItem : InspectorPropertyItem
@@ -7,9 +8,13 @@ public class InspectorNumberItem : InspectorPropertyItem
 	[SerializeField]
 	private NumericInputField m_InputField;
 
+	public SerializedPropertyType propertyType { get; private set; }
+
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
+
+		propertyType = m_SerializedProperty.propertyType;
 
 		var val = string.Empty;
 		switch (m_SerializedProperty.propertyType)
@@ -87,5 +92,60 @@ public class InspectorNumberItem : InspectorPropertyItem
 	{
 		SetValue(droppedObject.ToString());
 		return true;
+	}
+
+	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
+	{
+		base.OnDragEnded(baseHandle, eventData);
+		// Update field value in case drag value was invalid (i.e. array size < 0)
+		if (m_ClickedField)
+		{
+			var numericField = m_ClickedField as NumericInputField;
+			if (numericField)
+			{
+				switch (m_SerializedProperty.propertyType)
+				{
+					case SerializedPropertyType.ArraySize:
+					case SerializedPropertyType.Integer:
+						numericField.text = m_SerializedProperty.intValue.ToString();
+						numericField.ForceUpdateLabel();
+						break;
+					case SerializedPropertyType.Float:
+						numericField.text = m_SerializedProperty.floatValue.ToString();
+						numericField.ForceUpdateLabel();
+						break;
+				}
+			}
+		}
+	}
+
+	public void Increment()
+	{
+		switch (m_SerializedProperty.propertyType)
+		{
+			case SerializedPropertyType.ArraySize:
+			case SerializedPropertyType.Integer:
+				SetValue((m_SerializedProperty.intValue + 1).ToString());
+				break;
+			case SerializedPropertyType.Float:
+				SetValue((m_SerializedProperty.floatValue + 1).ToString());
+				break;
+
+		}
+	}
+
+	public void Decrement()
+	{
+		switch (m_SerializedProperty.propertyType)
+		{
+			case SerializedPropertyType.ArraySize:
+			case SerializedPropertyType.Integer:
+				SetValue((m_SerializedProperty.intValue - 1).ToString());
+				break;
+			case SerializedPropertyType.Float:
+				SetValue((m_SerializedProperty.floatValue - 1).ToString());
+				break;
+
+		}
 	}
 }
