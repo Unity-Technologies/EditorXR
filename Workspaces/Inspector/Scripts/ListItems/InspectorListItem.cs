@@ -122,6 +122,9 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 		var indent = kIndent * depth;
 		m_UIContainer.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, indent, width - indent);
+
+		if(m_CuboidLayout)
+			m_CuboidLayout.UpdateCubes();
 	}
 
 	public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)
@@ -150,6 +153,9 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 	protected virtual void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
 	{
 		var rayOrigin = eventData.rayOrigin;
+		if (rayOrigin == null) // BaseHandle.OnDisable sends a null rayOrigin
+			return;
+
 		var dropObject = getCurrentDropObject(rayOrigin);
 
 		if (dropObject == null || TestDrop(handle.gameObject, dropObject))

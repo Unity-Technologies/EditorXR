@@ -41,6 +41,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 					m_InputField.text = size.ToString();
 					m_InputField.ForceUpdateLabel();
+					((PropertyData) data).updateParent();
 
 					data.serializedObject.ApplyModifiedProperties();
 				}

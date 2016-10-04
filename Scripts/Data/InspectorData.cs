@@ -1,4 +1,5 @@
-﻿using ListView;
+﻿using System;
+using ListView;
 using UnityEditor;
 
 public class InspectorData : ListViewItemNestedData<InspectorData>

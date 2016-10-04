@@ -27,10 +27,11 @@ public class CuboidLayout : UIBehaviour
 		UpdateCubes();
 	}
 
-	protected override void OnRectTransformDimensionsChange()
-	{
-		UpdateCubes();
-	}
+	// TODO: fix UI events so that this happens
+	//protected override void OnRectTransformDimensionsChange()
+	//{
+	//	UpdateCubes();
+	//}
 
 	public void SetMaterials(Material backingCubeMaterial)
 	{

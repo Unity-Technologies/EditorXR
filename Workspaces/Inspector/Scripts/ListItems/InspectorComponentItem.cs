@@ -34,8 +34,9 @@ public class InspectorComponentItem : InspectorListItem
 		StopAllCoroutines();
 		StartCoroutine(GetAssetPreview());
 
-		m_EnabledToggle.gameObject.SetActive(EditorUtility.GetObjectEnabled(target) != -1);
-		m_EnabledToggle.isOn = EditorUtility.GetObjectEnabled(target) == 1;
+		var enabled = EditorUtility.GetObjectEnabled(target);
+		m_EnabledToggle.gameObject.SetActive(enabled != -1);
+		m_EnabledToggle.isOn = enabled == 1;
 
 		m_ExpandArrow.gameObject.SetActive(data.children != null);
 	}
@@ -74,7 +75,13 @@ public class InspectorComponentItem : InspectorListItem
 
 	public void SetEnabled(bool value)
 	{
-		EditorUtility.SetObjectEnabled(data.serializedObject.targetObject, value);
+		var serializedObject = data.serializedObject;
+		var target = serializedObject.targetObject;
+		if (value != (EditorUtility.GetObjectEnabled(target) == 1))
+		{
+			EditorUtility.SetObjectEnabled(target, value);
+			serializedObject.ApplyModifiedProperties();
+		}
 	}
 
 	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)

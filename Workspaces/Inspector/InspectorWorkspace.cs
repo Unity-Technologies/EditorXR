@@ -184,6 +184,17 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 
 	PropertyData GenericProperty(SerializedProperty property, SerializedObject obj)
 	{
+		var propertyData = property.isArray
+			? new PropertyData("InspectorArrayHeaderItem", obj, null, property.Copy())
+			: new PropertyData("InspectorGenericItem", obj, null, property.Copy()) {expanded = true};
+		
+		propertyData.SetChildren(GetChildProperties(propertyData, property, obj));
+
+		return propertyData;
+	}
+
+	InspectorData[] GetChildProperties(PropertyData parent, SerializedProperty property, SerializedObject obj)
+	{
 		var children = new List<InspectorData>();
 		var iteratorProperty = property.Copy();
 		while (iteratorProperty.NextVisible(true))
@@ -194,17 +205,17 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 			switch (iteratorProperty.propertyType)
 			{
 				case SerializedPropertyType.ArraySize:
-					children.Add(new PropertyData("InspectorNumberItem", obj, null, iteratorProperty.Copy()));
+					children.Add(new PropertyData("InspectorNumberItem", obj, null, iteratorProperty.Copy(), () =>
+					{
+						parent.SetChildren(GetChildProperties(parent, parent.property.Copy(), obj));
+					}));
 					break;
 				default:
 					children.Add(SerializedPropertyToPropertyData(iteratorProperty, obj));
 					break;
 			}
 		}
-
-		return property.isArray
-			? new PropertyData("InspectorArrayHeaderItem", obj, children.ToArray(), property.Copy())
-			: new PropertyData("InspectorGenericItem", obj, children.ToArray(), property.Copy()) {expanded = true};
+		return children.ToArray();
 	}
 
 	protected override void OnBoundsChanged()
