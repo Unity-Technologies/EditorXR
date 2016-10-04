@@ -40,13 +40,16 @@ namespace UnityEngine.VR.Workspaces
 		private Vector3 m_HiddenInsetLocalScale;
 		private Vector3 m_HighlightedInsetLocalScale;
 		private Vector3 m_OriginalIconLocalPosition;
-		private Vector3 m_HiddenLocalScale = new Vector3(1f, 0f, 1f);
+		private Vector3 m_HiddenLocalScale;
+		private Vector3 m_VisibleLocalScale;
 		private Vector3 m_IconHighlightedLocalPosition;
 		private Vector3 m_IconPressedLocalPosition;
 		private Quaternion m_OriginalIconLocalRotation;
 		private Vector3 m_OriginalForwardVector;
 		private float m_IconLookForwardOffset = 0.5f;
 		private Vector3 m_IconLookDirection;
+
+		Coroutine m_VisibilityCoroutine;
 
 		private Coroutine m_FadeInCoroutine;
 		private Coroutine m_FadeOutCoroutine;
@@ -160,7 +163,9 @@ namespace UnityEngine.VR.Workspaces
 			m_VisibleInsetLocalScale = m_ButtonMeshTransform.localScale;
 			m_HighlightedInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_VisibleInsetLocalScale.y * 1.1f, m_VisibleInsetLocalScale.z);
 			m_VisibleInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_ButtonMeshTransform.localScale.y * 0.35f, m_VisibleInsetLocalScale.z);
-			m_HiddenInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, 0f, m_VisibleInsetLocalScale.z);
+			m_VisibleLocalScale = transform.localScale;
+			m_HiddenLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, 0f);
+			m_HiddenInsetLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, 0f);
 
 			m_IconTransform = m_IconContainer;// m_Icon.transform;
 			m_OriginalForwardVector = transform.forward;
@@ -169,22 +174,21 @@ namespace UnityEngine.VR.Workspaces
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * m_IconHighlightedLocalYOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * -m_IconHighlightedLocalYOffset;
 
+			Show();
+
 			//Debug.LogWarning("Icon original local rotation" + m_OriginalIconLocalRotation);
 		}
 
 		public void Show()
 		{
-			m_ButtonMeshTransform.localScale = m_HiddenInsetLocalScale;
+			//m_ButtonMeshTransform.localScale = m_HiddenInsetLocalScale;
 			m_Pressed = false;
 			m_Highlighted = false;
 
-			if (m_FadeInCoroutine != null)
-				StopCoroutine(m_FadeInCoroutine);
+			if (m_VisibilityCoroutine != null)
+				StopCoroutine(m_VisibilityCoroutine);
 
-			if (m_FadeOutCoroutine != null)
-				StopCoroutine(m_FadeOutCoroutine);
-
-			m_FadeInCoroutine = StartCoroutine(AnimateShow());
+			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
 
 		public void Hide()
@@ -199,102 +203,66 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		private void OnTransformParentChanged()
-		{
-			m_parentTransform = transform.parent;
-			//m_IconDirection = m_parentTransform.local
-			//Debug.LogError("<color=red>Radial Menu Slot Transform parent changed to : " + parentTransform.name + "</color>");
-		}
-
-		private void Update()
-		{
-			//m_IconTransform.localEulerAngles = new Vector3(m_IconTransform.localRotation.x, m_IconTransform.localRotation.y, m_IconTransform.localRotation.z);
-			//m_Icon.transform.LookAt(m_parentTransform.forward);
-			//m_IconTransform.localRotation = m_OriginalIconLocalRotation * m_parentTransform.localRotation;// Quaternion.Euler(m_OriginalIconLocalRotation.x, m_OriginalIconLocalRotation.y, m_OriginalIconLocalRotation.z);
-
-			//iconLookDir = new Vector3 (m_IconTransform.localPosition.x, m_IconTransform.localPosition.y, m_IconTransform.localPosition.z + iconLookOffset);
-			//lookDir = m_IconTransform.position + new Vector3(0f, 0f, (transform.parent.parent.forward * iconLookOffset).z);
-			//iconLookDir = new Vector3(0f, lookDir.y, 0f);
-
-			//iconLookDir = new Vector3(iconLookDir.x, m_IconTransform.position.y, iconLookDir.z);
-
-			//conLookDir = m_Icon.transform.position +  transform.parent.forward * iconLookOffset; // set a position offset above the icon, regardless of the icon's rotation
-																								  //m_IconTransform.LookAt(iconLookDir);
-
-			//m_IconTransform.LookAt(new Vector3(iconLookDir.x, m_IconTransform.localPosition.y, iconLookDir.z));
-
-			//m_IconTransform.LookAt(iconLookDir);
-			
-
-			//Quaternion relativeRotation = Quaternion.Inverse(m_IconTransform.localRotation) * m_OriginalIconLocalRotation;
-			//m_IconTransform.localRotation = relativeRotation;// m_OriginalIconLocalRotation - m_parentTransform.localRotation - m_IconTransform.localRotation;
-		}
-
-		private void LateUpdate()
-		{
-			//m_IconTransform.localEulerAngles = new Vector3 (m_IconTransform.localRotation.x, m_IconTransform.localRotation.y, m_IconTransform.localRotation.z);
-
-		}
-
-		private void CorrectIconRotation()
-		{
-			m_IconLookDirection = m_Icon.transform.position + transform.parent.forward * m_IconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
-			//m_IconTransform.LookAt(iconLookDir);
-			//m_IconTransform.LookAt(new Vector3(iconLookDir.x, m_IconTransform.localPosition.y, iconLookDir.z));
-			m_IconTransform.LookAt(m_IconLookDirection);
-			m_IconTransform.localEulerAngles = new Vector3(0f, m_IconTransform.localEulerAngles.y, 0f);
-		}
-
-		/*
-		private void OnDrawGizmos()
-		{
-			Gizmos.color = Color.yellow;
-			Gizmos.DrawSphere(iconLookDir, 0.005f);
-		}
-		*/
-
 		private IEnumerator AnimateShow()
 		{
 			m_CanvasGroup.interactable = false;
-			m_ButtonMaterial.SetFloat("_Alpha", 0);
-			m_ButtonMaterial.SetColor("_ColorTop", sOriginalInsetGradientPair.a);
-			m_ButtonMaterial.SetColor("_ColorBottom", sOriginalInsetGradientPair.b);
-			m_BorderRendererMaterial.SetFloat("_Expand", 0);
-			m_ButtonMeshTransform.localScale = m_HiddenInsetLocalScale ;
-			transform.localScale = m_HiddenLocalScale;
-			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
-			
-			StartCoroutine(ShowInset());
-			
-			float opacity = 0;
-			float positionWait = orderIndex * 0.05f;
+			//m_ButtonMaterial.SetColor("_ColorTop", sOriginalInsetGradientPair.a);
+			//m_ButtonMaterial.SetColor("_ColorBottom", sOriginalInsetGradientPair.b);
+			//m_BorderRendererMaterial.SetFloat("_Expand", 0);
+			//m_ButtonMeshTransform.localScale = m_HiddenInsetLocalScale ;
+			//m_IconTransform.localPosition = m_OriginalIconLocalPosition;
+
+			//StartCoroutine(ShowInset());
+
+			const float kTargetDelay = 2f;
+			float currentDelay = 0f;
+			Vector3 scale = m_HiddenLocalScale;
+			Vector3 smoothVelocity = Vector3.zero;
+			while (!Mathf.Approximately(scale.z, m_VisibleLocalScale.z)) // Z axis scales during the reveal
+			{
+				transform.localScale = scale;
+				m_ButtonMaterial.SetFloat("_Alpha", scale.z);
+				m_CanvasGroup.alpha = scale.z;
+
+				while (currentDelay < kTargetDelay)
+				{
+					currentDelay += Time.unscaledDeltaTime;
+					yield return null;
+				}
+
+				scale = Vector3.SmoothDamp(scale, m_VisibleLocalScale, ref smoothVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
+
+				yield return null;
+			}
+
+			/*
 			while (opacity < 1)
 			{
 				//if (orderIndex == 0)
 				//transform.localScale = new Vector3(opacity, 1f, 1f);
-				opacity += Time.unscaledDeltaTime / positionWait;
+				opacity += Time.unscaledDeltaTime;
 				float opacityShaped = Mathf.Pow(opacity, opacity);
 
-				transform.localScale = Vector3.Lerp(m_HiddenLocalScale, Vector3.one, opacity);
+				transform.localScale = Vector3.Lerp(m_HiddenLocalScale, m_VisibleLocalScale, opacity);
+				//m_BorderRendererMaterial.SetFloat("_Expand", 1 - opacityShaped);
+				
 				//m_CanvasGroup.alpha = opacity * 0.25f;
-				m_BorderRendererMaterial.SetFloat("_Expand", 1 - opacityShaped);
 				//m_ButtonMaterial.SetFloat("_Alpha", opacityShaped / 4);
 				//m_ButtonMeshTransform.localScale = Vector3.Lerp(m_HiddenMenuInsetLocalScale, m_VisibleMenuInsetLocalScale, opacity / 4);
 				//m_CanvasGroup.alpha = opacity;
-				CorrectIconRotation();
 				yield return null;
 			}
+			*/
 
 
-			m_BorderRendererMaterial.SetFloat("_Expand", 0);
-			//m_ButtonMaterial.SetFloat("_Alpha", 1);
+			//m_BorderRendererMaterial.SetFloat("_Expand", 0);
 			//m_ButtonMeshTransform.localScale = m_VisibleMenuInsetLocalScale;
+			//transform.localScale = Vector3.one;
+
+			m_ButtonMaterial.SetFloat("_Alpha", 1);
 			m_CanvasGroup.interactable = true;
-			transform.localScale = Vector3.one;
-
-			CorrectIconRotation();
-
-			m_FadeInCoroutine = null;
+			m_CanvasGroup.alpha = 1f;
+			m_VisibilityCoroutine = null;
 		}
 
 		private IEnumerator ShowInset()
@@ -343,7 +311,6 @@ namespace UnityEngine.VR.Workspaces
 				m_ButtonMeshTransform.localScale = Vector3.Lerp(m_HiddenInsetLocalScale, m_VisibleInsetLocalScale, opacityShaped);
 				opacity -= Time.unscaledDeltaTime * 1.5f;
 				opacityShaped = Mathf.Pow(opacity, opacity);
-				CorrectIconRotation();
 				yield return null;
 			}
 
@@ -359,7 +326,6 @@ namespace UnityEngine.VR.Workspaces
 			m_BorderRendererMaterial.SetFloat("_Expand", 1);
 			m_ButtonMaterial.SetFloat("_Alpha", 0);
 			m_ButtonMeshTransform.localScale = m_HiddenInsetLocalScale;
-			CorrectIconRotation();
 			transform.localScale = Vector3.zero;
 		}
 
