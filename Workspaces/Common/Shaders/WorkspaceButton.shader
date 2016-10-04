@@ -7,50 +7,51 @@
 		_Alpha("Alpha", Range(0.0, 1.0)) = 1.0
 	}
 
-		SubShader
+	SubShader
 	{
-		Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" }
+		Tags{ "Queue" = "Transparent+1" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" }
 		ZWrite On
 		ZTest Greater
 		Blend SrcAlpha OneMinusSrcAlpha
 
-		Stencil{
-		Ref 1
-		Comp equal
-	}
+		Stencil
+		{
+			Ref 1
+			Comp equal
+		}
 
 		Pass
-	{
-		CGPROGRAM
-#pragma vertex vert
-#pragma fragment frag
-#include "UnityCG.cginc"
+		{
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+			#include "UnityCG.cginc"
 
-		fixed4 _ColorTop;
-	fixed4 _ColorBottom;
-	fixed _Alpha;
+			fixed4 _ColorTop;
+			fixed4 _ColorBottom;
+			fixed _Alpha;
 
-	struct v2f
-	{
-		float4 position : SV_POSITION;
-		fixed4 color : COLOR;
-	};
+			struct v2f
+			{
+				float4 position : SV_POSITION;
+				fixed4 color : COLOR;
+			};
 
-	v2f vert(appdata_full v)
-	{
-		v2f output;
-		output.position = mul(UNITY_MATRIX_MVP, v.vertex);
-		output.color = lerp(_ColorBottom, _ColorTop, v.texcoord.y *  saturate(dot(v.normal * 1.5, _WorldSpaceLightPos0)));
-		return output;
-	}
+			v2f vert(appdata_full v)
+			{
+				v2f output;
+				output.position = mul(UNITY_MATRIX_MVP, v.vertex);
+				output.color = lerp(_ColorBottom, _ColorTop, v.texcoord.y *  saturate(dot(v.normal * 1.5, _WorldSpaceLightPos0)));
+				return output;
+			}
 
-	float4 frag(v2f input) : COLOR
-	{
-		float4 col = input.color;
-		col.a = _Alpha;
-		return col;
-	}
-		ENDCG
-	}
+			float4 frag(v2f input) : COLOR
+			{
+				float4 col = input.color;
+				col.a = _Alpha;
+				return col;
+			}
+			ENDCG
+		}
 	}
 }
