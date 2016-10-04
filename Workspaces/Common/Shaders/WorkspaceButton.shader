@@ -45,9 +45,9 @@
 				return output;
 			}
 
-			fixed4 frag(v2f input) : COLOR
+			half4 frag(v2f input) : COLOR
 			{
-				fixed4 col = input.color;
+				half4 col = input.color;
 				col.a = _Alpha;
 				return col;
 			}
