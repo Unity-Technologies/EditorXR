@@ -210,6 +210,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 				m_DragObject = clone.transform;
 				setCurrentDropObject(eventData.rayOrigin, GetDropObject(fieldBlock));
+				m_ClickedField = null; // Clear clicked field so we don't drag the value
 
 				var graphics = clone.GetComponentsInChildren<Graphic>(true);
 				foreach (var graphic in graphics)
