@@ -50,7 +50,9 @@ namespace UnityEngine.VR.Workspaces
 		private Vector3 m_IconLookDirection;
 
 		Coroutine m_VisibilityCoroutine;
+		Coroutine m_ContentVisibilityCoroutine;
 
+		// TODO DELETE THESE
 		private Coroutine m_FadeInCoroutine;
 		private Coroutine m_FadeOutCoroutine;
 		private Coroutine m_HighlightCoroutine;
@@ -206,32 +208,38 @@ namespace UnityEngine.VR.Workspaces
 		private IEnumerator AnimateShow()
 		{
 			m_CanvasGroup.interactable = false;
+			m_ButtonMaterial.SetFloat("_Alpha", 0f);
+
 			//m_ButtonMaterial.SetColor("_ColorTop", sOriginalInsetGradientPair.a);
 			//m_ButtonMaterial.SetColor("_ColorBottom", sOriginalInsetGradientPair.b);
 			//m_BorderRendererMaterial.SetFloat("_Expand", 0);
 			//m_ButtonMeshTransform.localScale = m_HiddenInsetLocalScale ;
 			//m_IconTransform.localPosition = m_OriginalIconLocalPosition;
 
-			//StartCoroutine(ShowInset());
+			if (m_ContentVisibilityCoroutine != null)
+				StopCoroutine(m_ContentVisibilityCoroutine);
 
-			const float kTargetDelay = 2f;
+			m_ContentVisibilityCoroutine = StartCoroutine(ShowContent());
+
+			const float kTargetDelay = 1f;
 			float currentDelay = 0f;
+			float shapedDelayLerp = 0f;
 			Vector3 scale = m_HiddenLocalScale;
 			Vector3 smoothVelocity = Vector3.zero;
 			while (!Mathf.Approximately(scale.z, m_VisibleLocalScale.z)) // Z axis scales during the reveal
 			{
 				transform.localScale = scale;
 				m_ButtonMaterial.SetFloat("_Alpha", scale.z);
-				m_CanvasGroup.alpha = scale.z;
 
 				while (currentDelay < kTargetDelay)
 				{
 					currentDelay += Time.unscaledDeltaTime;
+					transform.localScale = Vector3.Lerp(new Vector3(m_HiddenLocalScale.x, 0f, 0f), m_HiddenInsetLocalScale, shapedDelayLerp * shapedDelayLerp);
+					shapedDelayLerp = currentDelay / kTargetDelay;
 					yield return null;
 				}
 
 				scale = Vector3.SmoothDamp(scale, m_VisibleLocalScale, ref smoothVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
-
 				yield return null;
 			}
 
@@ -260,32 +268,48 @@ namespace UnityEngine.VR.Workspaces
 			//transform.localScale = Vector3.one;
 
 			m_ButtonMaterial.SetFloat("_Alpha", 1);
-			m_CanvasGroup.interactable = true;
-			m_CanvasGroup.alpha = 1f;
 			m_VisibilityCoroutine = null;
 		}
 
-		private IEnumerator ShowInset()
+		private IEnumerator ShowContent()
 		{
-			m_CanvasGroup.alpha = 0.0001f;
-
+			const float kTargetDelay = 2f;
+			float currentDelay = 0f;
 			float opacity = 0f;
-			float duration = 0f;
-			float positionWait = orderIndex * 0.075f;
-			while (duration < 2)
+			const float kTargetOpacity = 1f;
+			float opacitySmoothVelocity = 1f;
+			while (!Mathf.Approximately(m_CanvasGroup.alpha, 2f))
 			{
-				duration += Time.unscaledDeltaTime / positionWait;
-				opacity = duration / 2;
-				opacity *= opacity;
-				m_CanvasGroup.alpha = Mathf.Clamp01(duration - 1);
-				m_ButtonMaterial.SetFloat("_Alpha", opacity);
-				m_ButtonMeshTransform.localScale = Vector3.Lerp(m_HiddenInsetLocalScale, m_VisibleInsetLocalScale, opacity);
+				m_CanvasGroup.alpha = opacity;
+
+				while (currentDelay < kTargetDelay)
+				{
+					currentDelay += Time.unscaledDeltaTime;
+					yield return null;
+				}
+
+				opacity = Mathf.SmoothDamp(opacity, kTargetOpacity, ref opacitySmoothVelocity, 0.2f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
-			//m_CanvasGroup.alpha = 1;
-			m_ButtonMaterial.SetFloat("_Alpha", 1);
-			m_ButtonMeshTransform.localScale = m_VisibleInsetLocalScale;
+
+			//float opacity = 0f;
+			//float duration = 0f;
+			//float positionWait = orderIndex * 0.075f;
+			//while (duration < 2)
+			//{
+			//	duration += Time.unscaledDeltaTime / positionWait;
+			//	opacity = duration / 2;
+			//	opacity *= opacity;
+			//	m_CanvasGroup.alpha = Mathf.Clamp01(duration - 1);
+			//	m_ButtonMaterial.SetFloat("_Alpha", opacity);
+			//	m_ButtonMeshTransform.localScale = Vector3.Lerp(m_HiddenInsetLocalScale, m_VisibleInsetLocalScale, opacity);
+			//	yield return null;
+			//}
+
+			m_CanvasGroup.alpha = 1;
+			m_CanvasGroup.interactable = true;
+			m_ContentVisibilityCoroutine = null;
 		}
 
 		private IEnumerator AnimateHide()
