@@ -6,7 +6,13 @@ using UnityEngine.VR.UI;
 public class InspectorNumberItem : InspectorPropertyItem
 {
 	[SerializeField]
-	private NumericInputField m_InputField;
+	NumericInputField m_InputField;
+
+	[SerializeField]
+	GameObject[] m_TickButtons;
+
+	[SerializeField]
+	GameObject[] m_ScrubIcons;
 
 	public SerializedPropertyType propertyType { get; private set; }
 
@@ -94,6 +100,19 @@ public class InspectorNumberItem : InspectorPropertyItem
 		return true;
 	}
 
+	protected override void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
+	{
+		base.OnDragging(baseHandle, eventData);
+
+		if (m_ClickedField && m_ClickCount == 0)
+		{
+			foreach(var tickButton in m_TickButtons)
+				tickButton.gameObject.SetActive(false);
+			foreach (var scrubIcon in m_ScrubIcons)
+				scrubIcon.gameObject.SetActive(true);
+		}
+	}
+
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		base.OnDragEnded(baseHandle, eventData);
@@ -116,6 +135,11 @@ public class InspectorNumberItem : InspectorPropertyItem
 						break;
 				}
 			}
+
+			foreach (var tickButton in m_TickButtons)
+				tickButton.gameObject.SetActive(true);
+			foreach (var scrubIcon in m_ScrubIcons)
+				scrubIcon.gameObject.SetActive(false);
 		}
 	}
 

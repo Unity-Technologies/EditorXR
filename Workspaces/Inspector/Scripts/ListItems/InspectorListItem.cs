@@ -33,11 +33,11 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 	private readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform, Vector3>();
 
 	private float m_LastClickTime;
-	private int m_ClickCount;
 	private bool m_SelectIsHeld;
 	private float m_DragDistance;
 
 	protected InputField m_ClickedField;
+	protected int m_ClickCount;
 
 	public bool setup { get; set; }
 
