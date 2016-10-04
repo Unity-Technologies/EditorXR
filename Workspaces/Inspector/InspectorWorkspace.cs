@@ -226,6 +226,8 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 
 		var inspectorListView = m_InspectorUI.inspectorListView;
 		var bounds = contentBounds;
+		size.y = float.MaxValue; // Add height for dropdowns
+		bounds.size = size;
 		inspectorListView.bounds = bounds;
 
 		var inspectorPanel = m_InspectorUI.inspectorPanel;

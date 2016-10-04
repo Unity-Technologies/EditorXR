@@ -10,24 +10,29 @@ using InputField = UnityEngine.VR.UI.InputField;
 public class InspectorHeaderItem : InspectorListItem
 {
 	[SerializeField]
-	private RawImage m_Icon;
+	RawImage m_Icon;
 
 	[SerializeField]
-	private Toggle m_ActiveToggle;
+	Toggle m_ActiveToggle;
 
 	[SerializeField]
-	private StandardInputField m_NameField;
+	StandardInputField m_NameField;
 
 	[SerializeField]
-	private Toggle m_StaticToggle;
+	Toggle m_StaticToggle;
+	// TODO: Add dropdown for different static types
 
 	public Toggle lockToggle { get { return m_LockToggle; } }
 	[SerializeField]
-	private Toggle m_LockToggle;
+	Toggle m_LockToggle;
 
-	// TODO: Add dropdown for different static types
+	[SerializeField]
+	DropDown m_TagDropDown;
 
-	private GameObject m_TargetGameObject;
+	[SerializeField]
+	DropDown m_LayerDropDown;
+
+	GameObject m_TargetGameObject;
 	
 	public Action<bool> setLocked { private get; set; }
 
@@ -50,6 +55,20 @@ public class InspectorHeaderItem : InspectorListItem
 
 		m_NameField.text = target.name;
 		m_NameField.ForceUpdateLabel();
+
+		var tags = UnityEditorInternal.InternalEditorUtility.tags;
+		m_TagDropDown.options = tags;
+		var tagIndex = Array.IndexOf(tags, m_TargetGameObject.tag);
+		if (tagIndex > -1)
+			m_TagDropDown.value = tagIndex;
+		m_TagDropDown.onValueChanged += SetTag;
+
+		var layers = UnityEditorInternal.InternalEditorUtility.layers;
+		m_LayerDropDown.options = layers;
+		var layerIndex = Array.IndexOf(layers, LayerMask.LayerToName(m_TargetGameObject.layer));
+		if (layerIndex > -1)
+			m_LayerDropDown.value = layerIndex;
+		m_LayerDropDown.onValueChanged += SetLayer;
 	}
 
 	IEnumerator GetAssetPreview()
@@ -94,6 +113,22 @@ public class InspectorHeaderItem : InspectorListItem
 	{
 		if (setLocked != null)
 			setLocked(isLocked);
+	}
+
+	void SetTag(int[] values)
+	{
+		var tags = UnityEditorInternal.InternalEditorUtility.tags;
+		var tag = tags[values[0]];
+		if(!m_TargetGameObject.tag.Equals(tag))
+			m_TargetGameObject.tag = tag;
+	}
+
+	void SetLayer(int[] values)
+	{
+		var layers = UnityEditorInternal.InternalEditorUtility.layers;
+		var layer = LayerMask.NameToLayer(layers[values[0]]);
+		if (m_TargetGameObject.layer != layer)
+			m_TargetGameObject.layer = layer;
 	}
 
 	protected override object GetDropObject(Transform fieldBlock)

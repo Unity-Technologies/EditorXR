@@ -39,12 +39,8 @@ namespace UnityEngine.VR.UI
 
 		public override void OnPointerExit(PointerEventData eventData)
 		{
-			var rayEventData = eventData as RayEventData;
-			if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			{
-				base.OnPointerExit(eventData);
-				onExit.Invoke();
-			}
+			base.OnPointerExit(eventData);
+			onExit.Invoke();
 		}
 
 		public override void OnPointerDown(PointerEventData eventData)

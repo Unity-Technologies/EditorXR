@@ -9,12 +9,6 @@ float3 listClipLocalPos(float4 vertex)
 	return mul(_ParentMatrix, mul(UNITY_MATRIX_M, vertex)).xyz;
 }
 
-void listClipVert(inout appdata_full v, out Input o)
-{
-	UNITY_INITIALIZE_OUTPUT(Input, o);
-	o.localPos = listClipLocalPos(v.vertex);
-}
-
 void listClipFrag(float3 localPos)
 {
 	// Clip if position is outside of clip bounds
