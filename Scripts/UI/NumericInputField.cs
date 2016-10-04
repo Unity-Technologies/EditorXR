@@ -64,7 +64,6 @@ namespace UnityEngine.VR.UI
 					ParseNumberField();
 					m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
 					m_UpdateDrag = true;
-					//eventData.eligibleForClick = false;
 				}
 			}
 			else
@@ -79,7 +78,11 @@ namespace UnityEngine.VR.UI
 			if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
 				return;
 
-			Debug.Log("end");
+			EndDrag();
+		}
+
+		public void EndDrag()
+		{
 			m_UpdateDrag = false;
 		}
 
@@ -136,9 +139,9 @@ namespace UnityEngine.VR.UI
 			switch (m_NumberType)
 			{
 				case NumberType.Float:
-					return kAllowedCharactersForInt.Contains(ch.ToString());
-				case NumberType.Int:
 					return kAllowedCharactersForFloat.Contains(ch.ToString());
+				case NumberType.Int:
+					return kAllowedCharactersForInt.Contains(ch.ToString());
 				default:
 					return false;
 			}

@@ -247,6 +247,11 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		m_SelectIsHeld = false;
+
+		var numericField = m_ClickedField as NumericInputField;
+		if(numericField)
+			numericField.EndDrag();
+
 		var fieldBlock = baseHandle.transform.parent;
 		if (fieldBlock)
 		{
