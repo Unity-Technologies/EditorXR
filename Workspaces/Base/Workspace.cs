@@ -129,6 +129,11 @@ namespace UnityEngine.VR.Workspaces
 				handle.hoverStarted += OnHandleHoverStarted;
 				handle.hoverEnded += OnHandleHoverEnded;
 			}
+
+			if (m_VisibilityCoroutine != null)
+				StopCoroutine(m_VisibilityCoroutine);
+
+			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
 
 		public virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -249,6 +254,22 @@ namespace UnityEngine.VR.Workspaces
 				StopCoroutine(m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+		}
+
+		IEnumerator AnimateShow()
+		{
+			Vector3 kTargetScale = transform.localScale;
+			Vector3 scale = Vector3.zero;
+			Vector3 smoothVelocity = Vector3.zero;
+
+			while (!Mathf.Approximately(scale.x, kTargetScale.x))
+			{
+				transform.localScale = scale;
+				scale = Vector3.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.125f, Mathf.Infinity, Time.unscaledDeltaTime);
+				yield return null;
+			}
+
+			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateHide()
