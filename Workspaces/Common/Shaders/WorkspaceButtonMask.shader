@@ -3,7 +3,7 @@
 	SubShader
 	{
 		Tags { "Queue"="Geometry" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
-		ZWrite On
+		ZWrite Off
 		ZTest NotEqual
 		Blend Zero OneMinusSrcAlpha
 
@@ -32,7 +32,7 @@
 				return output;
 			}
 
-			float4 frag(v2f input) : COLOR
+			fixed4 frag(v2f input) : COLOR
 			{
 				return 0;
 			}
