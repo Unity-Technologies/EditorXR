@@ -51,7 +51,6 @@ public class EditorVR : MonoBehaviour
 	private Default m_DefaultActionInput;
 
 	private MultipleRayInputModule m_InputModule;
-	private SpatialHash<Renderer> m_SpatialHash;
 	private SpatialHashModule m_SpatialHashModule;
 	private IntersectionModule m_IntersectionModule;
 	private Camera m_EventCamera;
@@ -481,11 +480,10 @@ public class EditorVR : MonoBehaviour
 	private void CreateSpatialSystem()
 	{
 		// Create event system, input module, and event camera
-		m_SpatialHash = new SpatialHash<Renderer>();
 		m_SpatialHashModule = U.Object.AddComponent<SpatialHashModule>(gameObject);
-		m_SpatialHashModule.Setup(m_SpatialHash);
+		m_SpatialHashModule.Setup();
 		m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
-		m_IntersectionModule.Setup(m_SpatialHash);
+		m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{

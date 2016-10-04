@@ -6,13 +6,15 @@ namespace UnityEngine.VR.Modules
 {
 	public class SpatialHashModule : MonoBehaviour
 	{
-		private SpatialHash<Renderer> m_SpatialHash;
+		public SpatialHash<Renderer> spatialHash { get; private set; }
 
-		public bool showGizmos { get; set; }
-
-		internal void Setup(SpatialHash<Renderer> hash)
+		void Awake()
 		{
-			m_SpatialHash = hash;
+			spatialHash = new SpatialHash<Renderer>();
+		}
+
+		internal void Setup()
+		{
 			SetupObjects();
 			StartCoroutine(UpdateDynamicObjects());
 		}
@@ -30,15 +32,9 @@ namespace UnityEngine.VR.Modules
 
 					Renderer renderer = mf.GetComponent<Renderer>();
 					if (renderer)
-						m_SpatialHash.AddObject(renderer, renderer.bounds);
+						spatialHash.AddObject(renderer, renderer.bounds);
 				}
 			}
-		}
-
-		private void OnDrawGizmos()
-		{
-			if (m_SpatialHash != null && showGizmos)
-				m_SpatialHash.DrawGizmos();
 		}
 
 		private IEnumerator UpdateDynamicObjects()
@@ -46,13 +42,13 @@ namespace UnityEngine.VR.Modules
 			while (true)
 			{
 				// TODO AE 9/21/16: Hook updates of new objects that are created
-				List<Renderer> allObjects = new List<Renderer>(m_SpatialHash.allObjects);
+				List<Renderer> allObjects = new List<Renderer>(spatialHash.allObjects);
 				foreach (var obj in allObjects)
 				{
 					if (obj.transform.hasChanged)
 					{
-						m_SpatialHash.RemoveObject(obj);
-						m_SpatialHash.AddObject(obj, obj.bounds);
+						spatialHash.RemoveObject(obj);
+						spatialHash.AddObject(obj, obj.bounds);
 						obj.transform.hasChanged = false;
 					}
 				}

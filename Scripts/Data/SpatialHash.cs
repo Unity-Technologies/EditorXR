@@ -14,13 +14,6 @@ namespace UnityEngine.VR.Data
 			get { return m_AllObjects; }
 		}
 
-		public void DrawGizmos()
-		{
-			m_Octree.DrawAllBounds(); // Draw node boundaries
-			m_Octree.DrawAllObjects(); // Draw object boundaries
-			m_Octree.DrawCollisionChecks(); // Draw the last *numCollisionsToSave* collision check boundaries
-		}
-
 		public bool GetIntersections(Bounds bounds, out T[] intersections)
 		{
 			intersections = m_Octree.GetColliding(bounds);

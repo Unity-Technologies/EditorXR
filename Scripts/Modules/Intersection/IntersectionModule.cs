@@ -39,7 +39,8 @@ namespace UnityEngine.VR.Modules
 				if (!tester.active)
 					continue;
 
-				if (tester.transform.hasChanged)
+				var testerTransform = tester.transform;
+				if (testerTransform.hasChanged)
 				{
 					var intersectionFound = false;
 					Renderer[] intersections;
@@ -93,9 +94,9 @@ namespace UnityEngine.VR.Modules
 						if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
 							OnIntersectionExit(tester, intersectedObject);
 					}
-				}
 
-				tester.renderer.transform.hasChanged = false;
+					testerTransform.hasChanged = false;
+				}
 			}
 		}
 
