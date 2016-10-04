@@ -10,6 +10,7 @@ namespace UnityEngine.VR.Workspaces
 		public event Action lockClicked = delegate { };
 
 		private float m_OriginalUIContainerLocalYPos;
+		Material m_FrameGradientMaterial;
 
 		private const float kPanelOffset = -0.09f; // The panel needs to be pulled back slightly
 
@@ -77,8 +78,10 @@ namespace UnityEngine.VR.Workspaces
 
 		[SerializeField]
 		private SkinnedMeshRenderer m_Frame;
-		private Material m_FrameGradientMaterial;
 
+		[SerializeField]
+		Transform m_FrameFrontFaceTransform;
+		
 		private const string kBottomGradientProperty = "_ColorBottom";
 		private const string kTopGradientProperty = "_ColorTop";
 		private const int kAngledFaceBlendShapeIndex = 2;
@@ -99,6 +102,8 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 		bool m_workspaceBaseInteractive = true;
+		
+		const float m_FaceWidthMatchMultiplier =  7.23f;
 
 		public Bounds setBounds
 		{
@@ -133,6 +138,8 @@ namespace UnityEngine.VR.Workspaces
 				// Resize front panel
 				if (dynamicFaceAdjustment == false)
 					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, kPanelOffset);
+
+				//m_FrameFrontFaceTransform.localScale = new Vector3(m_Bounds.size.x * m_FaceWidthMultiplier, 1f, 1f);
 
 				m_GrabCollider.size = new Vector3(m_Bounds.size.x, m_GrabCollider.size.y, m_GrabCollider.size.z);
 			}
@@ -247,6 +254,8 @@ namespace UnityEngine.VR.Workspaces
 
 		private void Update()
 		{
+			m_FrameFrontFaceTransform.localScale = new Vector3(m_Bounds.size.x * m_FaceWidthMatchMultiplier, 1f, 1f); // hack remove
+
 			if (dynamicFaceAdjustment == false)
 				return;
 
