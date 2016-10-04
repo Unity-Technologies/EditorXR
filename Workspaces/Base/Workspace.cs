@@ -63,6 +63,7 @@ namespace UnityEngine.VR.Workspaces
 		private bool m_Dragging;
 		private bool m_DragLocked;
 		private bool m_Vacuuming;
+		Coroutine m_VisibilityCoroutine;
 
 		/// <summary>
 		/// Bounding box for entire workspace, including UI handles
@@ -244,6 +245,25 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnCloseClicked()
 		{
+			if (m_VisibilityCoroutine != null)
+				StopCoroutine(m_VisibilityCoroutine);
+
+			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+		}
+
+		IEnumerator AnimateHide()
+		{
+			Vector3 kTargetScale = Vector3.zero;
+			Vector3 scale = transform.localScale;
+			Vector3 smoothVelocity = Vector3.zero;
+			while (!Mathf.Approximately(scale.x, kTargetScale.x))
+			{
+				transform.localScale = scale;
+				scale = Vector3.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.06875f, Mathf.Infinity, Time.unscaledDeltaTime);
+				yield return null;
+			}
+
+			m_VisibilityCoroutine = null;
 			U.Object.Destroy(gameObject);
 		}
 
