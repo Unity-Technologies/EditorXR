@@ -29,7 +29,7 @@ namespace UnityEngine.VR.Workspaces
 
 		static Material sSharedMaterialInstance;
 		static UnityBrandColorScheme.GradientPair sOriginalGradientPair;
-		static UnityBrandColorScheme.GradientPair? sHighlightGradientPair;
+		UnityBrandColorScheme.GradientPair? sHighlightGradientPair;
 
 		Transform m_parentTransform;
 		Vector3 m_IconDirection;
@@ -115,7 +115,7 @@ namespace UnityEngine.VR.Workspaces
 		void Awake()
 		{
 			m_ButtonMaterial = U.Material.GetMaterialClone(m_ButtonMeshRenderer);
-			sOriginalGradientPair = new Utilities.UnityBrandColorScheme.GradientPair (m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
+			sOriginalGradientPair = new UnityBrandColorScheme.GradientPair (m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
 			m_VisibleLocalScale = transform.localScale;
 			m_HiddenLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, 0f);
 
@@ -124,7 +124,7 @@ namespace UnityEngine.VR.Workspaces
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * kIconHighlightedLocalZOffset;
 
 			if (sHighlightGradientPair == null)
-				sHighlightGradientPair = UnityBrandColorScheme.GetRandomGradient();
+				sHighlightGradientPair = UnityBrandColorScheme.sessionGradient;
 
 			if (m_VisibilityCoroutine != null)
 				StopCoroutine(m_VisibilityCoroutine);

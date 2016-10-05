@@ -134,17 +134,17 @@ namespace UnityEngine.VR.Utilities
 		/// A unique Unity brand color gradient generated once per session
 		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements
 		/// </summary>
-		public static GradientPair coloredSessionGradient
+		public static GradientPair sessionGradient
 		{
 			get
 			{
-				if (m_ColoredSessionGradient == null)
-					m_ColoredSessionGradient = GetRandomGradient();
+				if (m_SessionGradient == null)
+					m_SessionGradient = GetRandomGradient();
 
-				return m_ColoredSessionGradient.Value;
+				return m_SessionGradient.Value;
 			}
 		}
-		static GradientPair? m_ColoredSessionGradient;
+		static GradientPair? m_SessionGradient;
 
 		/// <summary>
 		/// Gradient pair container class
@@ -303,6 +303,15 @@ namespace UnityEngine.VR.Utilities
 		{
 			float difference = Mathf.Abs(swatchA.r - swatchB.r) + Mathf.Abs(swatchA.g - swatchB.g) + Mathf.Abs(swatchA.b - swatchB.b);
 			return difference < requiredMinimumDifference;
+		}
+
+		/// <summary>
+		/// Clear any cached Session Gradient value
+		/// Mandate that a new SessionGradient is generated when next fetched
+		/// </summary>
+		public static void ResetSessionGradient()
+		{
+			m_SessionGradient = null;
 		}
 	}
 }
