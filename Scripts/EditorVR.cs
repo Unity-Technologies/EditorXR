@@ -74,7 +74,7 @@ public class EditorVR : MonoBehaviour
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
 	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
 	private List<Type> m_AllTools;
-	private List<Type> m_MainMenuTools;
+	List<Type> m_MainMenuTools;
 	private List<Type> m_AllWorkspaceTypes;
 	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
 
@@ -177,7 +177,7 @@ public class EditorVR : MonoBehaviour
 			m_SelectionChanged.Invoke();
 	}
 
-	private IEnumerable<InputDevice> GetSystemDevices()
+	IEnumerable<InputDevice> GetSystemDevices()
 	{
 		// For now let's filter out any other devices other than VR controller devices; Eventually, we may support mouse / keyboard etc.
 		return InputSystem.devices.Where(d => d is VRInputDevice && d.tagIndex != -1);
@@ -318,7 +318,7 @@ public class EditorVR : MonoBehaviour
 			proxy.hidden = !proxy.active;
 
 		foreach (var kvp in m_DeviceData)
-		{			
+		{
 			if (kvp.Value.showMenuInput.show.wasJustPressed)
 			{
 				var device = kvp.Key;
@@ -897,7 +897,7 @@ public class EditorVR : MonoBehaviour
 		// HACK to workaround missing serialized fields coming from the MonoScript
 		EditorApplication.delayCall += () =>
 		{
-			bool spawnTool = true;
+			var spawnTool = true;
 			DeviceData deviceData;
 			if (m_DeviceData.TryGetValue(deviceToAssignTool, out deviceData))
 			{
