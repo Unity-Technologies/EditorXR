@@ -26,7 +26,7 @@ namespace UnityEngine.VR.Workspaces
 		//[SerializeField]
 		//private MeshRenderer m_BorderRenderer;
 
-		private const float m_IconHighlightedLocalZOffset = 0.006f;
+		private const float m_IconHighlightedLocalZOffset = -0.0015f;
 
 		private static Material sSharedMaterialInstance;
 		private static UnityBrandColorScheme.GradientPair sOriginalGradientPair;
@@ -35,7 +35,6 @@ namespace UnityEngine.VR.Workspaces
 		private Transform m_parentTransform;
 		private Vector3 m_IconDirection;
 		private Material m_BorderRendererMaterial;
-		private Transform m_IconTransform;
 		private Material m_ButtonMaterial;
 		private Vector3 m_VisibleInsetLocalScale;
 		private Vector3 m_OriginalIconLocalPosition;
@@ -159,8 +158,7 @@ namespace UnityEngine.VR.Workspaces
 			m_VisibleLocalScale = transform.localScale;
 			m_HiddenLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, 0f);
 
-			m_IconTransform = m_IconContainer;
-			m_OriginalIconLocalPosition = m_IconTransform.localPosition;
+			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * m_IconHighlightedLocalZOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * m_IconHighlightedLocalZOffset;
 
@@ -401,7 +399,7 @@ namespace UnityEngine.VR.Workspaces
 			m_ButtonMaterial.SetColor("_ColorBottom", bottomHighlightColor);
 			transform.localScale = highlightedLocalScale;
 
-			Debug.LogError("<color=green>Finished Slot Highlight</color>");
+			Debug.LogError("<color=green>Finished BEGINNING Slot Highlight</color>");
 
 			m_HighlightCoroutine = null;
 		}
@@ -442,7 +440,7 @@ namespace UnityEngine.VR.Workspaces
 			m_ButtonMaterial.SetColor("_ColorBottom", bottomOriginalColor);
 			transform.localScale = m_VisibleLocalScale;
 
-			Debug.LogError("<color=green>Finished Slot Highlight</color>");
+			Debug.LogError("<color=green>Finished ENDING Slot Highlight</color>");
 
 			m_HighlightCoroutine = null;
 		}
@@ -465,38 +463,38 @@ namespace UnityEngine.VR.Workspaces
 
 		private IEnumerator IconBeginHighlight(bool pressed = false)
 		{
-			Vector3 currentPosition = m_IconTransform.localPosition;
+			Debug.LogError("<color=green>Inside ICON HIGHLIGHT</color>");
+			Vector3 currentPosition = m_IconContainer.localPosition;
 			Vector3 targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // Raise up for highlight; lower for press
 			float transitionAmount = Time.unscaledDeltaTime;
-			float transitionAddMultiplier = pressed == false ? 14 : 18; // Faster transition in for standard highlight; slower for pressed highlight
+			float transitionAddMultiplier = pressed == false ? 2 : 5; // Faster transition in for standard highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
-				Debug.LogError("Inside ICON HIGHLIGHT");
-				m_IconTransform.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
-				transitionAmount = Time.unscaledDeltaTime * transitionAddMultiplier;
+				m_IconContainer.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
+				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
 				yield return null;
 			}
 
-			m_IconTransform.localPosition = targetPosition;
+			m_IconContainer.localPosition = targetPosition;
 			m_IconHighlightCoroutine = null;
 		}
 
 		private IEnumerator IconEndHighlight()
 		{
-			Debug.LogError("<color=blue>ENDING ICON HIGHLIGHT</color> : " + m_IconTransform.localPosition);
+			Debug.LogError("<color=blue>ENDING ICON HIGHLIGHT</color> : " + m_IconContainer.localPosition);
 
-			Vector3 currentPosition = m_IconTransform.localPosition;
+			Vector3 currentPosition = m_IconContainer.localPosition;
 			float transitionAmount = 1f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
-			float transitionSubtractMultiplier = 5f;//18;
+			const float kTransitionSubtractMultiplier = 5f;//18;
 			while (transitionAmount > 0)
 			{
-				m_IconTransform.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
+				m_IconContainer.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
 				//Debug.LogError("transition amount : " + transitionAmount + "icon position : " + m_IconTransform.localPosition);
-				transitionAmount -= Time.unscaledDeltaTime * transitionSubtractMultiplier;
+				transitionAmount -= Time.unscaledDeltaTime * kTransitionSubtractMultiplier;
 				yield return null;
 			}
 
-			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
+			m_IconContainer.localPosition = m_OriginalIconLocalPosition;
 			m_IconHighlightCoroutine = null;
 		}
 
