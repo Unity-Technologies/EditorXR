@@ -42,8 +42,13 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		item.UpdateTransforms(bounds.size.x - kClipMargin, depth);
 		item.Clip(bounds, transform.worldToLocalMatrix);
 
-		item.transform.localPosition = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.back;
-		item.transform.localRotation = Quaternion.identity;
+		var itemTransform = item.transform;
+		var newPosition = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.back;
+		if (itemTransform.localPosition != newPosition)
+			itemTransform.localPosition = newPosition;
+
+		if (itemTransform.localRotation != Quaternion.identity)
+			itemTransform.localRotation = Quaternion.identity;
 	}
 
 	protected override ListViewItem<FolderData> GetItem(FolderData listData)
