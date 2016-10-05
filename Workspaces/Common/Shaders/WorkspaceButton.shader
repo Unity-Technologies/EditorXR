@@ -9,7 +9,7 @@
 
 	SubShader
 	{
-		Tags{ "Queue" = "Transparent+1" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
+		Tags{ "Queue" = "Transparent+1" "LightMode" = "Always" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
 		ZWrite On
 		ZTest Greater
 		Blend SrcAlpha OneMinusSrcAlpha

@@ -2,9 +2,9 @@
 {
 	SubShader
 	{
-		Tags { "Queue"="Geometry" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
+		Tags { "Queue"="Geometry" "LightMode" = "Always" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
 		ZWrite Off
-		ZTest NotEqual
+		ZTest LEqual
 		Blend Zero OneMinusSrcAlpha
 
 		Stencil{
