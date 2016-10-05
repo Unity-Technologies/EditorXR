@@ -1200,12 +1200,11 @@ public class EditorVR : MonoBehaviour
 		// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
 		// so in that case use the spatial hash as a final test
 		var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-		var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-		if (renderer)
+		if (m_IntersectionModule)
 		{
-			go = renderer.gameObject;
-			if (go)
-				return go;
+			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+			if (renderer)
+				return renderer.gameObject;
 		}
 
 		foreach (var miniWorldRay in m_MiniWorldRays)
@@ -1215,6 +1214,8 @@ public class EditorVR : MonoBehaviour
 				go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRay.Key);
 				if (go)
 					return go;
+
+				// TODO: use testers for miniworldrays
 			}
 		}
 
