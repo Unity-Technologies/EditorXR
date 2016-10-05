@@ -2,12 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEditor.VR.Modules;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Data;
 using UnityEngine.VR;
 using UnityEngine.VR.Menus;
 using UnityEngine.VR.Modules;
@@ -74,6 +74,7 @@ public class EditorVR : MonoBehaviour
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
 	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
 	private List<Type> m_AllTools;
+	List<Type> m_MainMenuTools;
 	private List<Type> m_AllWorkspaceTypes;
 	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
 
@@ -123,6 +124,11 @@ public class EditorVR : MonoBehaviour
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
+		m_MainMenuTools = m_AllTools.Where(t =>
+			// Don't show default tools in the main menu
+			!typeof(ITransformTool).IsAssignableFrom(t)
+			&& !typeof(SelectionTool).IsAssignableFrom(t)
+			&& !typeof(ILocomotion).IsAssignableFrom(t)).ToList();
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
 
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
@@ -131,15 +137,55 @@ public class EditorVR : MonoBehaviour
 		// CollectToolActionMaps(m_AllTools);
 	}
 
+	void ClearDeveloperConsoleIfNecessary()
+	{
+		var asm = Assembly.GetAssembly(typeof(Editor));
+		var consoleWindowType = asm.GetType("UnityEditor.ConsoleWindow");
+
+		EditorWindow window = null;
+		foreach (var w in Resources.FindObjectsOfTypeAll<EditorWindow>())
+		{
+			if (w.GetType() == consoleWindowType)
+			{
+				window = w;
+				break;
+			}
+		}
+
+		if (window)
+		{
+			var consoleFlagsType = consoleWindowType.GetNestedType("ConsoleFlags", BindingFlags.NonPublic);
+			var names = Enum.GetNames(consoleFlagsType);
+			var values = Enum.GetValues(consoleFlagsType);
+			var clearOnPlayFlag = values.GetValue(Array.IndexOf(names, "ClearOnPlay"));
+
+			var hasFlagMethod = consoleWindowType.GetMethod("HasFlag", BindingFlags.NonPublic | BindingFlags.Instance);
+			var result = (bool)hasFlagMethod.Invoke(window, new [] { clearOnPlayFlag });
+
+			if (result)
+			{
+				var logEntries = asm.GetType("UnityEditorInternal.LogEntries");
+				var clearMethod = logEntries.GetMethod("Clear", BindingFlags.Static | BindingFlags.Public);
+				clearMethod.Invoke(null, null);
+			}
+		}
+	}
+
 	private void OnSelectionChanged()
 	{
 		if (m_SelectionChanged != null)
 			m_SelectionChanged.Invoke();
 	}
 
+	IEnumerable<InputDevice> GetSystemDevices()
+	{
+		// For now let's filter out any other devices other than VR controller devices; Eventually, we may support mouse / keyboard etc.
+		return InputSystem.devices.Where(d => d is VRInputDevice && d.tagIndex != -1);
+	}
+
 	private void CreateDeviceDataForInputDevices()
 	{
-		foreach (var device in InputSystem.devices)
+		foreach (var device in GetSystemDevices())
 		{
 			var deviceData = new DeviceData
 			{
@@ -173,9 +219,12 @@ public class EditorVR : MonoBehaviour
 
 		CreateSpatialSystem();
 		SpawnDefaultTools();
+		StartCoroutine(PrewarmAssets());
 
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
 		EditorApplication.delayCall += OnSelectionChanged;
+
+		ClearDeveloperConsoleIfNecessary();
 	}
 
 	private void OnEnable()
@@ -233,6 +282,36 @@ public class EditorVR : MonoBehaviour
 		PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
 	}
 
+	IEnumerator PrewarmAssets()
+	{
+		// HACK: Cannot async load assets in the editor yet, so to avoid a hitch let's spawn the menu immediately and then make it invisible
+		foreach (var kvp in m_DeviceData)
+		{
+			var device = kvp.Key;
+			var deviceData = m_DeviceData[device];
+			var mainMenu = deviceData.mainMenu;
+
+			if (mainMenu == null)
+			{
+				// HACK to workaround missing MonoScript serialized fields
+				EditorApplication.delayCall += () =>
+				{
+					mainMenu = SpawnMainMenu(typeof(MainMenu), device, true);
+					UpdatePlayerHandleMaps();
+					deviceData.mainMenu = mainMenu;
+				};
+
+				while (mainMenu == null)
+					yield return null;
+
+				while (!mainMenu.visible)
+					yield return null;
+
+				mainMenu.visible = false;
+			}
+		}
+	}
+
 	private void Update()
 	{
 		foreach (var proxy in m_AllProxies)
@@ -244,19 +323,11 @@ public class EditorVR : MonoBehaviour
 			{
 				var device = kvp.Key;
 				var mainMenu = m_DeviceData[device].mainMenu;
+
 				if (mainMenu != null)
 				{
 					// Toggle menu
 					mainMenu.visible = !mainMenu.visible;
-				}
-				else
-				{
-					// HACK to workaround missing MonoScript serialized fields
-					EditorApplication.delayCall += () =>
-					{
-						m_DeviceData[device].mainMenu = SpawnMainMenu(typeof(MainMenu), device);
-						UpdatePlayerHandleMaps();
-					};
 				}
 			}
 		}
@@ -460,7 +531,7 @@ public class EditorVR : MonoBehaviour
 
 			foreach (var rayOriginPair in proxy.rayOrigins)
 			{
-				foreach (var device in InputSystem.devices)
+				foreach (var device in GetSystemDevices())
 				{
 					// Find device tagged with the node that matches this RayOrigin node
 					var node = GetDeviceNode(device);
@@ -609,7 +680,7 @@ public class EditorVR : MonoBehaviour
 			AddToolToStack(dev, tool);
 	}
 
-	private IMainMenu SpawnMainMenu(Type type, InputDevice device)
+	private IMainMenu SpawnMainMenu(Type type, InputDevice device, bool visible)
 	{
 		if (!typeof(IMainMenu).IsAssignableFrom(type))
 			return null;
@@ -617,7 +688,7 @@ public class EditorVR : MonoBehaviour
 		var mainMenu = U.Object.AddComponent(type, gameObject) as IMainMenu;
 		ConnectActionMaps(mainMenu, device);
 		ConnectInterfaces(mainMenu, device);
-		mainMenu.visible = true;
+		mainMenu.visible = visible;
 
 		return mainMenu;
 	}
@@ -752,7 +823,7 @@ public class EditorVR : MonoBehaviour
 
 		if (mainMenu != null)
 		{
-			mainMenu.menuTools = m_AllTools.ToList();
+			mainMenu.menuTools = m_MainMenuTools;
 			mainMenu.selectTool = SelectTool;
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
 			mainMenu.createWorkspace = CreateWorkspace;
@@ -807,7 +878,7 @@ public class EditorVR : MonoBehaviour
 		return null;
 	}
 
-	private bool SelectTool(Node targetNode, Type tool)
+	private bool SelectTool(Node targetNode, Type toolType)
 	{
 		InputDevice deviceToAssignTool = null;
 		foreach (var kvp in m_DeviceData)
@@ -826,38 +897,48 @@ public class EditorVR : MonoBehaviour
 		// HACK to workaround missing serialized fields coming from the MonoScript
 		EditorApplication.delayCall += () =>
 		{
-			// Spawn tool and collect all devices that this tool will need
-			HashSet<InputDevice> usedDevices;
-			var newTool = SpawnTool(tool, out usedDevices, deviceToAssignTool);
-
-			foreach (var dev in usedDevices)
+			var spawnTool = true;
+			DeviceData deviceData;
+			if (m_DeviceData.TryGetValue(deviceToAssignTool, out deviceData))
 			{
-				var deviceData = m_DeviceData[dev];
-				if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
-					DespawnTool(deviceData.currentTool);
+				// If this tool was on the current device already, then simply toggle it off
+				if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
+				{
+					DespawnTool(deviceData, deviceData.currentTool);
+					// Don't spawn a new tool, since we are toggling the old tool
+					spawnTool = false;
+				}
+			}
 
-				AddToolToStack(dev, newTool);
+			if (spawnTool)
+			{
+				// Spawn tool and collect all devices that this tool will need
+				HashSet<InputDevice> usedDevices;
+				var newTool = SpawnTool(toolType, out usedDevices, deviceToAssignTool);
+
+				foreach (var dev in usedDevices)
+				{
+					deviceData = m_DeviceData[dev];
+					if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
+						DespawnTool(deviceData, deviceData.currentTool);
+
+					AddToolToStack(dev, newTool);
+				}
 			}
 		};
 
 		return true;
 	}
 
-	private void DespawnTool(ITool tool)
+	private void DespawnTool(DeviceData deviceData, ITool tool)
 	{
-		foreach (var deviceData in m_DeviceData.Values)
+		// Remove the tool if it is the current tool on this device tool stack
+		if (deviceData.currentTool == tool)
 		{
-			// Remove the tool if it is the current tool on this device tool stack
-			if (deviceData.currentTool == tool)
-			{
-				if (deviceData.tools.Peek() != deviceData.currentTool)
-				{
-					Debug.LogError("Tool at top of stack is not current tool.");
-					continue;
-				}
-				deviceData.tools.Pop();
-				deviceData.currentTool = null;
-			}
+			if (deviceData.tools.Peek() != deviceData.currentTool)
+				Debug.LogError("Tool at top of stack is not current tool.");
+			deviceData.tools.Pop();
+			deviceData.currentTool = null;
 		}
 		DisconnectInterfaces(tool);
 		U.Object.Destroy(tool as MonoBehaviour);
