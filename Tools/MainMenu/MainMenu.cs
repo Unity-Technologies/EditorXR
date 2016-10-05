@@ -8,6 +8,7 @@ using UnityEngine.InputNew;
 using UnityEngine.UI;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
@@ -112,7 +113,9 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
 
-			CreateToolButtons(menuTools);
+			CreateFaceButtons(menuTools);
+			CreateFaceButtons(menuWorkspaces);
+			m_MainMenuUI.SetupMenuFaces();
 		}
 
 		private void Update()
@@ -176,10 +179,13 @@ namespace UnityEngine.VR.Menus
 			showDefaultRay();
 		}
 
-		private void CreateToolButtons(List<Type> toolTypes)
+		private void CreateFaceButtons(List<Type> types)
 		{
-			foreach (var type in toolTypes)
+			foreach (var type in types)
 			{
+				var isTool = typeof(ITool).IsAssignableFrom(type);
+				var isWorkspace = typeof(Workspace).IsAssignableFrom(type);
+
 				var buttonData = new MainMenuUI.ButtonData();
 				buttonData.name = type.Name;
 
@@ -190,22 +196,36 @@ namespace UnityEngine.VR.Menus
 					buttonData.sectionName = customMenuAttribute.sectionName;
 					buttonData.description = customMenuAttribute.description;
 				}
+				else if (isWorkspace)
+				{
+					const string kWorkspace = "Workspace";
+					// For workspaces that haven't specified a custom attribute, do some menu categorization automatically
+					buttonData.name = type.Name.Replace(kWorkspace, string.Empty);
+					buttonData.sectionName = kWorkspace;
+				}
 
-				var toolType = type; // Local variable for proper closure
+				var selectedType = type; // Local variable for proper closure
 				m_MainMenuUI.CreateFaceButton(buttonData, (b) =>
 				{
 					b.button.onClick.RemoveAllListeners();
-					b.button.onClick.AddListener(() =>
+					if (isTool)
 					{
-						if (visible && b.node.HasValue)
+						b.button.onClick.AddListener(() =>
 						{
-							selectTool(b.node.Value, toolType);
-						}
-					});
+							if (visible && b.node.HasValue)
+								selectTool(b.node.Value, selectedType);
+						});
+					}
+					else if (isWorkspace)
+					{
+						b.button.onClick.AddListener(() =>
+						{
+							if (visible && b.node.HasValue)
+								createWorkspace(selectedType);
+						});
+					}
 				});
 			}
-
-			m_MainMenuUI.SetupMenuFaces();
 		}
 	}
 }

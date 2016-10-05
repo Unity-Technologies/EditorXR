@@ -74,8 +74,7 @@ namespace UnityEngine.VR.Menus
 		private List<MainMenuFace> m_MenuFaces;
 		private Material m_MenuFacesMaterial;
 		private Color m_MenuFacesColor;
-		private Dictionary<string, List<Transform>> m_FaceButtons;
-		private List<Transform> m_UncategorizedButtons;
+		private readonly Dictionary<string, List<Transform>> m_FaceButtons = new Dictionary<string, List<Transform>>();
 		private Transform m_MenuOrigin;
 		private Transform m_AlternateMenuOrigin;
 		private Vector3 m_AlternateMenuOriginOriginalLocalScale;
@@ -176,13 +175,6 @@ namespace UnityEngine.VR.Menus
 		// we need to make use of instantiateUI
 		public void Setup()
 		{
-			if (m_FaceButtons == null)
-			{
-				m_FaceButtons = new Dictionary<string, List<Transform>>();
-				m_UncategorizedButtons = new List<Transform>();
-				m_FaceButtons.Add(kUncategorizedFaceName, m_UncategorizedButtons);
-			}
-
 			m_MenuFaces = new List<MainMenuFace>();
 			for (var faceCount = 0; faceCount < kFaceCount; ++faceCount)
 			{
@@ -293,34 +285,29 @@ namespace UnityEngine.VR.Menus
 			MainMenuButton mainMenuButton = button.GetComponent<MainMenuButton>();
 			buttonCreationCallback(mainMenuButton);
 
-			if (buttonData.sectionName != null)
-			{
-				mainMenuButton.SetData(buttonData.name, buttonData.description);
+			if (string.IsNullOrEmpty(buttonData.sectionName))
+				buttonData.sectionName = kUncategorizedFaceName;
 
-				var found = m_FaceButtons.Any(x => x.Key == buttonData.sectionName);
-				if (found)
-				{
-					var kvp = m_FaceButtons.First(x => x.Key == buttonData.sectionName);
-					kvp.Value.Add(button.transform);
-				}
-				else
-				{
-					m_FaceButtons.Add(buttonData.sectionName, new List<Transform>() { button.transform });
-				}
+			mainMenuButton.SetData(buttonData.name, buttonData.description);
+
+			var found = m_FaceButtons.Any(x => x.Key == buttonData.sectionName);
+			if (found)
+			{
+				var kvp = m_FaceButtons.First(x => x.Key == buttonData.sectionName);
+				kvp.Value.Add(button.transform);
 			}
 			else
 			{
-				m_UncategorizedButtons.Add(button.transform);
-				mainMenuButton.SetData(buttonData.name, string.Empty);
+				m_FaceButtons.Add(buttonData.sectionName, new List<Transform>() { button.transform });
 			}
 		}
 
 		public void SetupMenuFaces()
 		{
 			int position = 0;
-			foreach (var faceNameToButtons in m_FaceButtons)
+			foreach (var faceButtons in m_FaceButtons)
 			{
-				m_MenuFaces[position].SetFaceData(faceNameToButtons.Key, faceNameToButtons.Value,
+				m_MenuFaces[position].SetFaceData(faceButtons.Key, faceButtons.Value,
 					UnityBrandColorScheme.GetRandomGradient());
 				++position;
 			}
