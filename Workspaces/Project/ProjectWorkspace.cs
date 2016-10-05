@@ -241,14 +241,17 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview, IDro
 		var depth = hp.depth;
 		var folderList = new List<FolderData>();
 		var assetList = new List<AssetData>();
-		while (hp.Next(null) && hp.depth > depth)
+		var hasNext = hp.Next(null);
+		while (hasNext && hp.depth > depth)
 		{
 			if (hp.isFolder)
 				folderList.Add(CreateFolderData(assetTypes, hp));
 			else if(hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
 				assetList.Add(CreateAssetData(assetTypes, hp));
+			hasNext = hp.Next(null);
 		}
-		hp.Previous(null);
+		if(hasNext)
+			hp.Previous(null);
 		return new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray());
 	}
 
