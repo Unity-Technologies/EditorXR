@@ -66,6 +66,7 @@ namespace UnityEditor.VR.Modules
 
 		private GameObject Raycast(Ray ray, Camera camera, out float distance)
 		{
+#if UNITY_EDITOR
 			camera.transform.position = ray.origin;
 			camera.transform.forward = ray.direction;
 
@@ -92,6 +93,9 @@ namespace UnityEditor.VR.Modules
 			camera.targetTexture = null;
 
 			return go;
+#else
+			return null;
+#endif
 		}
 	}
 }

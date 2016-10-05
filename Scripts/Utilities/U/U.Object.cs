@@ -74,7 +74,7 @@ namespace UnityEngine.VR.Utilities
 				return empty;
 			}
 
-			public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : MonoBehaviour
+			public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : Component
 			{
 				return (T)CreateGameObjectWithComponent(typeof(T), parent);
 			}
