@@ -2,10 +2,11 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Workspaces
 {
-	public class WorkspaceButton : MonoBehaviour
+	public class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
 	{
 		[SerializeField]
 		private MeshRenderer m_ButtonMeshRenderer;
@@ -25,10 +26,10 @@ namespace UnityEngine.VR.Workspaces
 		//[SerializeField]
 		//private MeshRenderer m_BorderRenderer;
 
-		private const float m_IconHighlightedLocalYOffset = 0.006f;
+		private const float m_IconHighlightedLocalZOffset = 0.006f;
 
-		private static Material sSharedInsetMaterialInstance;
-		private static UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair sOriginalInsetGradientPair;
+		private static Material sSharedMaterialInstance;
+		private static UnityBrandColorScheme.GradientPair sOriginalGradientPair;
 		
 		private Transform m_ButtonMeshTransform;
 		private Transform m_parentTransform;
@@ -37,27 +38,19 @@ namespace UnityEngine.VR.Workspaces
 		private Transform m_IconTransform;
 		private Material m_ButtonMaterial;
 		private Vector3 m_VisibleInsetLocalScale;
-		private Vector3 m_HiddenInsetLocalScale;
-		private Vector3 m_HighlightedInsetLocalScale;
 		private Vector3 m_OriginalIconLocalPosition;
 		private Vector3 m_HiddenLocalScale;
 		private Vector3 m_VisibleLocalScale;
 		private Vector3 m_IconHighlightedLocalPosition;
 		private Vector3 m_IconPressedLocalPosition;
-		private Quaternion m_OriginalIconLocalRotation;
-		private Vector3 m_OriginalForwardVector;
-		private float m_IconLookForwardOffset = 0.5f;
 		private Vector3 m_IconLookDirection;
 
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ContentVisibilityCoroutine;
 
 		// TODO DELETE THESE
-		private Coroutine m_FadeInCoroutine;
-		private Coroutine m_FadeOutCoroutine;
 		private Coroutine m_HighlightCoroutine;
 		private Coroutine m_IconHighlightCoroutine;
-		private Coroutine m_IconEndHighlightCoroutine;
 
 		/*
 		public Material borderRendererMaterial
@@ -95,8 +88,7 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		private bool m_Pressed;
-		public bool pressed
+		bool pressed
 		{
 			get { return m_Pressed; }
 			set
@@ -108,19 +100,16 @@ namespace UnityEngine.VR.Workspaces
 					Debug.LogError("<color=green>Radial Menu Slot was just pressed</color>");
 					m_Pressed = value;
 
-					if (m_IconEndHighlightCoroutine != null)
-						StopCoroutine(m_IconEndHighlightCoroutine);
-
-					if (m_IconHighlightCoroutine != null) // dont begin a new icon highlight coroutine; allow the currently running cortoutine to finish itself according to the m_Highlighted value
+					if (m_IconHighlightCoroutine != null)
 						StopCoroutine(m_IconHighlightCoroutine);
 
-					m_IconHighlightCoroutine = StartCoroutine(IconHighlightAnimatedShow(true));
+					m_IconHighlightCoroutine = StartCoroutine(IconBeginHighlight(true));
 				}
 			}
 		}
+		bool m_Pressed;
 
-		private bool m_Highlighted;
-		public bool highlight
+		bool highlight
 		{
 			//get { return m_Highlighted; }
 			set
@@ -129,81 +118,83 @@ namespace UnityEngine.VR.Workspaces
 					return;
 				else
 				{
-					if (m_IconEndHighlightCoroutine != null)
-						StopCoroutine(m_IconEndHighlightCoroutine);
+					// Stop any existing icon highlight coroutines
+					if (m_IconHighlightCoroutine != null)
+						StopCoroutine(m_IconHighlightCoroutine);
 
 					m_Highlighted = value;
 					Debug.LogError("<color=black>m_Highlighted set to : </color>" + m_Highlighted);
-					if (m_Highlighted == true) // only start the highlight coroutine if the highlight coroutine isnt already playing. Otherwise allow it to gracefully finish.
-					{
-						if (m_HighlightCoroutine == null)
-							m_HighlightCoroutine = StartCoroutine(Highlight());
-					}
-					else
-						m_IconEndHighlightCoroutine = StartCoroutine(IconEndHighlight());
+
+					// Stop any existing begin/end highlight coroutine
+					if (m_HighlightCoroutine != null)
+						StopCoroutine(m_HighlightCoroutine);
+
+					m_HighlightCoroutine = m_Highlighted == true ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
 				}
 			}
 		}
+		bool m_Highlighted;
 
-		private static UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair sGradientPair;
-		public UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair gradientPair
+		private static UnityBrandColorScheme.GradientPair? sHighlightGradientPair;
+		/*
+		public UnityBrandColorScheme.GradientPair highlightedGradientPair
 		{
 			set
 			{
-				sGradientPair = value;
+				sHighlightGradientPair = value;
 				m_BorderRendererMaterial.SetColor("_ColorTop", value.a);
 				m_BorderRendererMaterial.SetColor("_ColorBottom", value.b);
 			}
 		}
+		*/
 
 		private void Awake()
 		{
 			m_ButtonMeshTransform = m_ButtonMeshRenderer.transform;
 			m_ButtonMaterial = U.Material.GetMaterialClone(m_ButtonMeshRenderer);
-			sOriginalInsetGradientPair = new Utilities.UnityBrandColorScheme.GradientPair (m_ButtonMaterial.GetColor("_ColorTop"), m_ButtonMaterial.GetColor("_ColorBottom"));
+			sOriginalGradientPair = new Utilities.UnityBrandColorScheme.GradientPair (m_ButtonMaterial.GetColor("_ColorTop"), m_ButtonMaterial.GetColor("_ColorBottom"));
 			m_HiddenLocalRotation = transform.localRotation;
 			m_VisibleInsetLocalScale = m_ButtonMeshTransform.localScale;
-			m_HighlightedInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_VisibleInsetLocalScale.y * 1.1f, m_VisibleInsetLocalScale.z);
 			m_VisibleInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_ButtonMeshTransform.localScale.y * 0.35f, m_VisibleInsetLocalScale.z);
 			m_VisibleLocalScale = transform.localScale;
 			m_HiddenLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, 0f);
-			m_HiddenInsetLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, 0f);
 
-			m_IconTransform = m_IconContainer;// m_Icon.transform;
-			m_OriginalForwardVector = transform.forward;
+			m_IconTransform = m_IconContainer;
 			m_OriginalIconLocalPosition = m_IconTransform.localPosition;
-			m_OriginalIconLocalRotation = m_IconTransform.localRotation;
-			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * m_IconHighlightedLocalYOffset;
-			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * -m_IconHighlightedLocalYOffset;
+			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * m_IconHighlightedLocalZOffset;
+			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * m_IconHighlightedLocalZOffset;
 
-			Show();
-
-			//Debug.LogWarning("Icon original local rotation" + m_OriginalIconLocalRotation);
-		}
-
-		public void Show()
-		{
-			//m_ButtonMeshTransform.localScale = m_HiddenInsetLocalScale;
-			m_Pressed = false;
-			m_Highlighted = false;
+			if (sHighlightGradientPair == null)
+				sHighlightGradientPair = UnityBrandColorScheme.GetRandomGradient();
 
 			if (m_VisibilityCoroutine != null)
 				StopCoroutine(m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
+
+			//Show();
+			//Debug.LogWarning("Icon original local rotation" + m_OriginalIconLocalRotation);
 		}
 
-		public void Hide()
-		{
-			if (gameObject.activeInHierarchy)
-			{
-				if (m_FadeInCoroutine != null)
-					StopCoroutine(m_FadeInCoroutine); // stop any fade in visuals
+		//public void Show()
+		//{
+		//	//m_ButtonMeshTransform.localScale = m_HiddenInsetLocalScale;
+		//	m_Pressed = false;
+		//	m_Highlighted = false;
 
-				if (m_FadeOutCoroutine == null)
-					m_FadeOutCoroutine = StartCoroutine(AnimateHide()); // perform fade if not already performing
-			}
-		}
+		//}
+
+		//public void Hide()
+		//{
+		//	if (gameObject.activeInHierarchy)
+		//	{
+		//		if (m_FadeInCoroutine != null)
+		//			StopCoroutine(m_FadeInCoroutine); // stop any fade in visuals
+
+		//		if (m_FadeOutCoroutine == null)
+		//			m_FadeOutCoroutine = StartCoroutine(AnimateHide()); // perform fade if not already performing
+		//	}
+		//}
 
 		private IEnumerator AnimateShow()
 		{
@@ -224,7 +215,6 @@ namespace UnityEngine.VR.Workspaces
 			m_ContentVisibilityCoroutine = StartCoroutine(ShowContent());
 
 			float delay = 0f;
-			float shapedDelayLerp = 0f;
 			Vector3 scale = m_HiddenLocalScale;
 			Vector3 smoothVelocity = Vector3.zero;
 			Vector3 hiddenLocalYScale = new Vector3(m_HiddenLocalScale.x, 0f, 0f);
@@ -244,6 +234,7 @@ namespace UnityEngine.VR.Workspaces
 					if (delay >= kTargetDelay)
 					{
 						delay = 0f;
+						float shapedDelayLerp = 0f;
 						while (delay < kTargetDelay)
 						{
 							Debug.LogWarning(transform.localScale);
@@ -331,114 +322,148 @@ namespace UnityEngine.VR.Workspaces
 			m_ContentVisibilityCoroutine = null;
 		}
 
-		private IEnumerator AnimateHide()
+		//private IEnumerator AnimateHide()
+		//{
+		//	m_CanvasGroup.interactable = false;
+		//	m_Pressed = false;
+		//	m_Highlighted = false;
+
+		//	//if (m_HighlightCoroutine != null)
+		//		//StopCoroutine(m_HighlightCoroutine);
+
+		//	float opacity = m_ButtonMaterial.GetFloat("_Alpha");;
+		//	float opacityShaped = Mathf.Pow(opacity, opacity);
+		//	while (opacity > 0)
+		//	{
+		//		//if (orderIndex == 0)
+		//		Vector3 newScale = Vector3.one * opacity * opacityShaped * (opacity * 0.5f);
+		//		transform.localScale = newScale;
+
+		//		m_CanvasGroup.alpha = opacityShaped;
+		//		m_BorderRendererMaterial.SetFloat("_Expand", opacityShaped);
+		//		m_ButtonMaterial.SetFloat("_Alpha", opacityShaped);
+		//		m_ButtonMeshTransform.localScale = Vector3.Lerp(m_HiddenInsetLocalScale, m_VisibleInsetLocalScale, opacityShaped);
+		//		opacity -= Time.unscaledDeltaTime * 1.5f;
+		//		opacityShaped = Mathf.Pow(opacity, opacity);
+		//		yield return null;
+		//	}
+
+		//	FadeOutCleanup();
+		//	m_FadeOutCoroutine = null;
+		//}
+
+		//private void FadeOutCleanup()
+		//{
+		//	m_CanvasGroup.alpha = 0;
+		//	m_ButtonMaterial.SetColor("_ColorTop", sOriginalGradientPair.a);
+		//	m_ButtonMaterial.SetColor("_ColorBottom", sOriginalGradientPair.b);
+		//	m_BorderRendererMaterial.SetFloat("_Expand", 1);
+		//	m_ButtonMaterial.SetFloat("_Alpha", 0);
+		//	m_ButtonMeshTransform.localScale = m_HiddenInsetLocalScale;
+		//	transform.localScale = Vector3.zero;
+		//}
+
+		private IEnumerator BeginHighlight()
 		{
-			m_CanvasGroup.interactable = false;
-			m_Pressed = false;
-			m_Highlighted = false;
+			Debug.LogError("Starting button Highlight");
 
-			//if (m_HighlightCoroutine != null)
-				//StopCoroutine(m_HighlightCoroutine);
+			m_IconHighlightCoroutine = StartCoroutine(IconBeginHighlight());
 
-			float opacity = m_ButtonMaterial.GetFloat("_Alpha");;
-			float opacityShaped = Mathf.Pow(opacity, opacity);
-			while (opacity > 0)
-			{
-				//if (orderIndex == 0)
-				Vector3 newScale = Vector3.one * opacity * opacityShaped * (opacity * 0.5f);
-				transform.localScale = newScale;
-
-				m_CanvasGroup.alpha = opacityShaped;
-				m_BorderRendererMaterial.SetFloat("_Expand", opacityShaped);
-				m_ButtonMaterial.SetFloat("_Alpha", opacityShaped);
-				m_ButtonMeshTransform.localScale = Vector3.Lerp(m_HiddenInsetLocalScale, m_VisibleInsetLocalScale, opacityShaped);
-				opacity -= Time.unscaledDeltaTime * 1.5f;
-				opacityShaped = Mathf.Pow(opacity, opacity);
-				yield return null;
-			}
-
-			FadeOutCleanup();
-			m_FadeOutCoroutine = null;
-		}
-
-		private void FadeOutCleanup()
-		{
-			m_CanvasGroup.alpha = 0;
-			m_ButtonMaterial.SetColor("_ColorTop", sOriginalInsetGradientPair.a);
-			m_ButtonMaterial.SetColor("_ColorBottom", sOriginalInsetGradientPair.b);
-			m_BorderRendererMaterial.SetFloat("_Expand", 1);
-			m_ButtonMaterial.SetFloat("_Alpha", 0);
-			m_ButtonMeshTransform.localScale = m_HiddenInsetLocalScale;
-			transform.localScale = Vector3.zero;
-		}
-
-		private IEnumerator Highlight()
-		{
-			Debug.LogError("Starting Slot Highlight");
-			
-			if (m_IconHighlightCoroutine == null)
-				m_IconHighlightCoroutine = StartCoroutine(IconHighlightAnimatedShow());
-
-			float opacity = Time.unscaledDeltaTime;
-			Color topColor = sOriginalInsetGradientPair.a;
-			Color bottomColor = sOriginalInsetGradientPair.b;
-			while (opacity > 0)
+			float transitionAmount = Time.unscaledDeltaTime;
+			const float kTargetTransitionAmount = 1f;
+			float shapedTransitionAmount = 0f;
+			Color topColor = Color.clear;
+			Color bottomColor = Color.clear;
+			Color currentTopColor = m_ButtonMaterial.GetColor("_ColorTop");
+			Color currentBottomColor = m_ButtonMaterial.GetColor("_ColorBottom");
+			Color topHighlightColor = sHighlightGradientPair.Value.a;
+			Color bottomHighlightColor = sHighlightGradientPair.Value.b;
+			Vector3 currentLocalScale = transform.localScale;
+			Vector3 highlightedLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, m_VisibleLocalScale.z * 2);
+			while (transitionAmount < kTargetTransitionAmount)
 			{
 				//Debug.Log(opacity + " - " + m_Highlighted.ToString());
+				transitionAmount += Time.unscaledDeltaTime * 3;
+				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
+				topColor = Color.Lerp(currentTopColor, topHighlightColor, shapedTransitionAmount);
+				bottomColor = Color.Lerp(currentBottomColor, bottomHighlightColor, shapedTransitionAmount);
 
-				if (m_Highlighted)
-				{
-					if (!Mathf.Approximately(opacity, 1f))
-						opacity = Mathf.Clamp01(opacity + Time.unscaledDeltaTime * 4); // stay highlighted
-				}
-				else
-					opacity = Mathf.Clamp01(opacity - Time.unscaledDeltaTime * 2); //Mathf.PingPong(opacity + Time.unscaledDeltaTime * 4, 1); // ping pong out of the hide visual state if no longer highlighted
-
-				//if (orderIndex == 0)
-				//transform.localScale = new Vector3(opacity, 1f, 1f);
-
-				//transform.localScale = Vector3.Lerp(hiddenScale, Vector3.one, opacity);
-				//m_CanvasGroup.alpha = opacity;
-
-				topColor = Color.Lerp(sOriginalInsetGradientPair.a, sGradientPair.a, opacity * 2f);
-				bottomColor = Color.Lerp(sOriginalInsetGradientPair.b, sGradientPair.b, opacity);
-
-				//m_BorderRendererMaterial.SetFloat("_Expand", opacityShaped);
+				//m_BorderRendererMaterial.SetFloat("_Expand", transitionAmount);
 				m_ButtonMaterial.SetColor("_ColorTop", topColor);
 				m_ButtonMaterial.SetColor("_ColorBottom", bottomColor);
 
-				//m_ButtonMaterial.SetFloat("_Alpha", opacityShaped / 4);
-				m_ButtonMeshTransform.localScale = Vector3.Lerp(m_VisibleInsetLocalScale, m_HighlightedInsetLocalScale, opacity * opacity);
-				//m_CanvasGroup.alpha = opacity;
+				transform.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
 				yield return null;
 			}
 
-			m_BorderRendererMaterial.SetFloat("_Expand", 0);
-			m_ButtonMaterial.SetColor("_ColorTop", sOriginalInsetGradientPair.a);
-			m_ButtonMaterial.SetColor("_ColorBottom", sOriginalInsetGradientPair.b);
+			//m_BorderRendererMaterial.SetFloat("_Expand", 0);
+			m_ButtonMaterial.SetColor("_ColorTop", topHighlightColor);
+			m_ButtonMaterial.SetColor("_ColorBottom", bottomHighlightColor);
+			transform.localScale = highlightedLocalScale;
 
 			Debug.LogError("<color=green>Finished Slot Highlight</color>");
 
 			m_HighlightCoroutine = null;
 		}
 
-		private void IconHighlight()
+		private IEnumerator EndHighlight()
 		{
-			if (m_IconHighlightCoroutine != null)
-				StopCoroutine(m_IconHighlightCoroutine);
+			Debug.LogError("Ending button Highlight");
 
-			StartCoroutine(IconHighlightAnimatedShow());
+			m_IconHighlightCoroutine = StartCoroutine(IconEndHighlight());
+
+			float transitionAmount = Time.unscaledDeltaTime;
+			const float kTargetTransitionAmount = 1f;
+			float shapedTransitionAmount = 0f;
+			Color topColor = Color.clear;
+			Color bottomColor = Color.clear;
+			Color currentTopColor = m_ButtonMaterial.GetColor("_ColorTop");
+			Color currentBottomColor = m_ButtonMaterial.GetColor("_ColorBottom");
+			Color topOriginalColor = sOriginalGradientPair.a;
+			Color bottomOriginalColor = sOriginalGradientPair.b;
+			Vector3 currentLocalScale = transform.localScale;
+			while (transitionAmount < kTargetTransitionAmount)
+			{
+				transitionAmount += Time.unscaledDeltaTime * 3;
+				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
+				topColor = Color.Lerp(currentTopColor, topOriginalColor, shapedTransitionAmount);
+				bottomColor = Color.Lerp(currentBottomColor, bottomOriginalColor, shapedTransitionAmount);
+
+				//m_BorderRendererMaterial.SetFloat("_Expand", transitionAmount);
+				m_ButtonMaterial.SetColor("_ColorTop", topColor);
+				m_ButtonMaterial.SetColor("_ColorBottom", bottomColor);
+
+				transform.localScale = Vector3.Lerp(currentLocalScale, m_VisibleLocalScale, shapedTransitionAmount);
+				yield return null;
+			}
+
+			//m_BorderRendererMaterial.SetFloat("_Expand", 0);
+			m_ButtonMaterial.SetColor("_ColorTop", topOriginalColor);
+			m_ButtonMaterial.SetColor("_ColorBottom", bottomOriginalColor);
+			transform.localScale = m_VisibleLocalScale;
+
+			Debug.LogError("<color=green>Finished Slot Highlight</color>");
+
+			m_HighlightCoroutine = null;
 		}
 
-		private void IconPressed()
-		{
-			if (m_IconHighlightCoroutine != null)
-				StopCoroutine(m_IconHighlightCoroutine);
+		//private void IconHighlight()
+		//{
+		//	if (m_IconHighlightCoroutine != null)
+		//		StopCoroutine(m_IconHighlightCoroutine);
 
-			StartCoroutine(IconHighlightAnimatedShow(true));
-		}
+		//	StartCoroutine(IconHighlightAnimatedShow());
+		//}
 
-		private IEnumerator IconHighlightAnimatedShow(bool pressed = false)
+		//private void IconPressed()
+		//{
+		//	if (m_IconHighlightCoroutine != null)
+		//		StopCoroutine(m_IconHighlightCoroutine);
+
+		//	StartCoroutine(IconHighlightAnimatedShow(true));
+		//}
+
+		private IEnumerator IconBeginHighlight(bool pressed = false)
 		{
 			Vector3 currentPosition = m_IconTransform.localPosition;
 			Vector3 targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // Raise up for highlight; lower for press
@@ -448,7 +473,7 @@ namespace UnityEngine.VR.Workspaces
 			{
 				Debug.LogError("Inside ICON HIGHLIGHT");
 				m_IconTransform.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
-				transitionAmount = transitionAmount + Time.unscaledDeltaTime * transitionAddMultiplier;
+				transitionAmount = Time.unscaledDeltaTime * transitionAddMultiplier;
 				yield return null;
 			}
 
@@ -472,7 +497,17 @@ namespace UnityEngine.VR.Workspaces
 			}
 
 			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
-			m_IconEndHighlightCoroutine = null;
+			m_IconHighlightCoroutine = null;
+		}
+
+		public void OnRayEnter(RayEventData eventData)
+		{
+			highlight = true;
+		}
+
+		public void OnRayExit(RayEventData eventData)
+		{
+			highlight = false;
 		}
 	}
 }
