@@ -216,30 +216,48 @@ namespace UnityEngine.VR.Workspaces
 			//m_ButtonMeshTransform.localScale = m_HiddenInsetLocalScale ;
 			//m_IconTransform.localPosition = m_OriginalIconLocalPosition;
 
+			const float kTargetDelay = 1f;
+
 			if (m_ContentVisibilityCoroutine != null)
 				StopCoroutine(m_ContentVisibilityCoroutine);
 
 			m_ContentVisibilityCoroutine = StartCoroutine(ShowContent());
 
-			const float kTargetDelay = 1f;
-			float currentDelay = 0f;
+			float delay = 0f;
 			float shapedDelayLerp = 0f;
 			Vector3 scale = m_HiddenLocalScale;
 			Vector3 smoothVelocity = Vector3.zero;
+			Vector3 hiddenLocalYScale = new Vector3(m_HiddenLocalScale.x, 0f, 0f);
 			while (!Mathf.Approximately(scale.z, m_VisibleLocalScale.z)) // Z axis scales during the reveal
 			{
 				transform.localScale = scale;
 				m_ButtonMaterial.SetFloat("_Alpha", scale.z);
 
-				while (currentDelay < kTargetDelay)
+				// Perform nested delay the first time stepping through the while loop
+				while (delay < kTargetDelay)
 				{
-					currentDelay += Time.unscaledDeltaTime;
-					transform.localScale = Vector3.Lerp(new Vector3(m_HiddenLocalScale.x, 0f, 0f), m_HiddenInsetLocalScale, shapedDelayLerp * shapedDelayLerp);
-					shapedDelayLerp = currentDelay / kTargetDelay;
+					Debug.LogWarning(transform.localScale);
+					delay += Time.unscaledDeltaTime;
 					yield return null;
+
+					// Perform the button vertical button reveal, after the initial wait
+					if (delay >= kTargetDelay)
+					{
+						delay = 0f;
+						while (delay < kTargetDelay)
+						{
+							Debug.LogWarning(transform.localScale);
+							delay += Time.unscaledDeltaTime;
+							shapedDelayLerp = delay / kTargetDelay;
+							transform.localScale = Vector3.Lerp(hiddenLocalYScale, m_HiddenLocalScale, shapedDelayLerp * shapedDelayLerp);
+							yield return null;
+						}
+					}
 				}
 
-				scale = Vector3.SmoothDamp(scale, m_VisibleLocalScale, ref smoothVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
+				// Perform the button depth reveal
+				Debug.LogWarning(transform.localScale);
+				scale = Vector3.SmoothDamp(scale, m_VisibleLocalScale, ref smoothVelocity, 0.25f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
@@ -273,22 +291,24 @@ namespace UnityEngine.VR.Workspaces
 
 		private IEnumerator ShowContent()
 		{
-			const float kTargetDelay = 2f;
-			float currentDelay = 0f;
-			float opacity = 0f;
-			const float kTargetOpacity = 1f;
-			float opacitySmoothVelocity = 1f;
-			while (!Mathf.Approximately(m_CanvasGroup.alpha, 2f))
-			{
-				m_CanvasGroup.alpha = opacity;
+			m_CanvasGroup.interactable = true;
 
-				while (currentDelay < kTargetDelay)
+			float delay = 0f;
+			const float kTargetDelay = 2.5f;
+			float alpha = 0f;
+			const float kTargetAlpha = 1f;
+			float opacitySmoothVelocity = 1f;
+			while (!Mathf.Approximately(alpha, kTargetAlpha))
+			{
+				m_CanvasGroup.alpha = alpha;
+
+				while (delay < kTargetDelay)
 				{
-					currentDelay += Time.unscaledDeltaTime;
+					delay += Time.unscaledDeltaTime;
 					yield return null;
 				}
 
-				opacity = Mathf.SmoothDamp(opacity, kTargetOpacity, ref opacitySmoothVelocity, 0.2f, Mathf.Infinity, Time.unscaledDeltaTime);
+				alpha = Mathf.SmoothDamp(alpha, kTargetAlpha, ref opacitySmoothVelocity, 0.4f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
@@ -308,7 +328,6 @@ namespace UnityEngine.VR.Workspaces
 			//}
 
 			m_CanvasGroup.alpha = 1;
-			m_CanvasGroup.interactable = true;
 			m_ContentVisibilityCoroutine = null;
 		}
 
