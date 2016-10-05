@@ -9,10 +9,9 @@ public class ProfilerWorkspace : Workspace
 
 	private Transform m_ProfilerWindow;
 
-	private bool m_InView;
+	private bool inView { get; set; }
 
-	private const float kQuarter = 0.25f;
-	private const float kThreeQuarters = 0.75f;
+	private RectTransform m_CaptureWindowRect;
 
 	public override void Setup()
 	{
@@ -29,38 +28,39 @@ public class ProfilerWorkspace : Workspace
 
 		m_ProfilerWindow.localScale = size;
 
-		UnityEditorInternal.ProfilerDriver.profileEditor = false;	
-		m_InView = false;
-    }
+		UnityEditorInternal.ProfilerDriver.profileEditor = false;
+		inView = false;
+
+		m_CaptureWindowRect = GetComponentInChildren<EditorWindowCapture>().GetComponent<RectTransform>();
+	}
 
 	void Update()
 	{
 		UpdateProfilerInView();
+		UnityEditorInternal.ProfilerDriver.profileEditor = inView;
 	}
 
 	void UpdateProfilerInView()
 	{
-		RectTransform rect = GetComponentInChildren<EditorWindowCapture>().GetComponent<RectTransform>();
 		Vector3[] corners = new Vector3[4];
-		rect.GetWorldCorners(corners);
+		m_CaptureWindowRect.GetWorldCorners(corners);
 
-		float minX = VRView.viewerCamera.pixelRect.width * kQuarter;
-		float minY = VRView.viewerCamera.pixelRect.height * kQuarter;
-		float maxX = VRView.viewerCamera.pixelRect.width * kThreeQuarters;
-		float maxY = VRView.viewerCamera.pixelRect.height * kThreeQuarters;
+		//use a smaller rect than the full viewerCamera to re-enable only when enough of the profiler is in view.
+		float minX = VRView.viewerCamera.pixelRect.width * .25f;
+		float minY = VRView.viewerCamera.pixelRect.height * .25f;
+		float maxX = VRView.viewerCamera.pixelRect.width * .75f;
+		float maxY = VRView.viewerCamera.pixelRect.height * .75f;
 
-		m_InView = false;
+		inView = false;
 		foreach(Vector3 vec in corners)
 		{
 			Vector3 screenPoint = VRView.viewerCamera.WorldToScreenPoint(vec);
 			if(screenPoint.x > minX && screenPoint.x < maxX && screenPoint.y > minY && screenPoint.y < maxY)
 			{
-				m_InView = true;
+				inView = true;
 				break;
 			}
 		}
-
-		UnityEditorInternal.ProfilerDriver.profileEditor = m_InView;
 	}
 
 	protected override void OnBoundsChanged()
