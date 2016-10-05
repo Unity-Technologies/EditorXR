@@ -21,9 +21,10 @@ namespace UnityEngine.VR.UI
 		[SerializeField]
 		string[] m_Options;
 
+		public bool multiSelect { get { return m_MultiSelect; } set { m_MultiSelect = value; } }
 		[SerializeField]
 		bool m_MultiSelect;
-
+		
 		[SerializeField]
 		Text m_Label;
 
@@ -35,6 +36,9 @@ namespace UnityEngine.VR.UI
 
 		[SerializeField]
 		GameObject m_TemplatePrefab;
+
+		[SerializeField]
+		GameObject m_TemplatePrefabMulti;
 
 		public int value
 		{
@@ -54,13 +58,16 @@ namespace UnityEngine.VR.UI
 			set
 			{
 				m_Values = value;
+				UpdateToggles();
 				UpdateLabel();
 			}
 		}
 		[SerializeField]
 		int[] m_Values = new int[0];
 
-		public event Action<int[]> onValueChanged;
+		Toggle[] m_Toggles;
+
+		public event Action<int, int[]> onValueChanged;
 
 		void Awake()
 		{
@@ -79,9 +86,11 @@ namespace UnityEngine.VR.UI
 				UpdateLabel();
 			}
 
-			if (m_TemplatePrefab)
+			var template = m_MultiSelect ? m_TemplatePrefabMulti : m_TemplatePrefab;
+
+			if (template)
 			{
-				var size = m_TemplatePrefab.GetComponent<RectTransform>().rect.size;
+				var size = template.GetComponent<RectTransform>().rect.size;
 				m_OptionPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y * m_Options.Length);
 
 				var listTransform = m_OptionList.transform;
@@ -91,17 +100,27 @@ namespace UnityEngine.VR.UI
 				foreach (Transform child in children)
 					U.Object.Destroy(child.gameObject);
 
+				m_Toggles = new Toggle[m_Options.Length];
+
 				for (int i = 0; i < m_Options.Length; i++)
 				{
-					var optionObject = Instantiate(m_TemplatePrefab, listTransform.position, listTransform.rotation, listTransform) as GameObject;
+					var optionObject = Instantiate(template, listTransform.position, listTransform.rotation, listTransform) as GameObject;
 					var optionText = optionObject.GetComponentInChildren<Text>();
 					if (optionText)
 						optionText.text = m_Options[i];
 
-					var optionHandle = optionObject.GetComponentInChildren<Button>();
+					var toggle = optionObject.GetComponentInChildren<Toggle>();
+					if (toggle)
+						toggle.isOn = values.Contains(i);
+
+					m_Toggles[i] = toggle;
+
+					var button = optionObject.GetComponentInChildren<Button>();
 					var index = i;
-					optionHandle.onClick.AddListener(() =>
+					button.onClick.AddListener(() =>
 					{
+						if (toggle)
+							toggle.isOn = !toggle.isOn;
 						OptionClicked(index);
 					});
 				}
@@ -118,10 +137,22 @@ namespace UnityEngine.VR.UI
 			m_OptionPanel.gameObject.SetActive(false);
 		}
 
+		public void LabelOverride(string text)
+		{
+			m_Label.text = text;
+		}
+
 		void OptionClicked(int val)
 		{
 			if (m_MultiSelect)
-				m_Values = new List<int>(values) { val }.ToArray();
+			{
+				var list = new List<int>(values);
+				if (list.Contains(val))
+					list.Remove(val);
+				else
+					list.Add(val);
+				m_Values =  list.ToArray();
+			}
 			else
 				m_Value = val;
 
@@ -130,7 +161,17 @@ namespace UnityEngine.VR.UI
 			ClosePanel();
 
 			if(onValueChanged != null)
-				onValueChanged(m_MultiSelect ? m_Values : new [] {m_Value});
+				onValueChanged(val, m_MultiSelect ? m_Values : new [] {m_Value});
+		}
+
+		void UpdateToggles()
+		{
+			for(int i = 0; i < m_Toggles.Length; i++)
+			{
+				var toggle = m_Toggles[i];
+				if (toggle)
+					toggle.isOn = m_Values.Contains(i);
+			}
 		}
 
 		void UpdateLabel()
@@ -138,13 +179,19 @@ namespace UnityEngine.VR.UI
 			if (m_MultiSelect)
 			{
 				var labelText = string.Empty;
-				foreach (var v in values)
-					labelText += m_Options[v] + ", ";
-				m_Label.text = labelText.Substring(labelText.Length - 3);
+				if (values.Length > 0)
+				{
+					foreach (var v in values)
+						labelText += m_Options[v] + ", ";
+					m_Label.text = labelText.Substring(0, labelText.Length - 2);
+				}
+				else
+					m_Label.text = "Nothing";
 			}
 			else
 			{
-				m_Label.text = m_Options[m_Value];
+				if(m_Value >= 0 && m_Value < m_Options.Length)
+					m_Label.text = m_Options[m_Value];
 			}
 		}
 	}

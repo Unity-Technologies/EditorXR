@@ -56,19 +56,22 @@ public class InspectorHeaderItem : InspectorListItem
 		m_NameField.text = target.name;
 		m_NameField.ForceUpdateLabel();
 
-		var tags = UnityEditorInternal.InternalEditorUtility.tags;
-		m_TagDropDown.options = tags;
-		var tagIndex = Array.IndexOf(tags, m_TargetGameObject.tag);
-		if (tagIndex > -1)
-			m_TagDropDown.value = tagIndex;
-		m_TagDropDown.onValueChanged += SetTag;
+		if (m_TargetGameObject)
+		{
+			var tags = UnityEditorInternal.InternalEditorUtility.tags;
+			m_TagDropDown.options = tags;
+			var tagIndex = Array.IndexOf(tags, m_TargetGameObject.tag);
+			if (tagIndex > -1)
+				m_TagDropDown.value = tagIndex;
+			m_TagDropDown.onValueChanged += SetTag;
 
-		var layers = UnityEditorInternal.InternalEditorUtility.layers;
-		m_LayerDropDown.options = layers;
-		var layerIndex = Array.IndexOf(layers, LayerMask.LayerToName(m_TargetGameObject.layer));
-		if (layerIndex > -1)
-			m_LayerDropDown.value = layerIndex;
-		m_LayerDropDown.onValueChanged += SetLayer;
+			var layers = UnityEditorInternal.InternalEditorUtility.layers;
+			m_LayerDropDown.options = layers;
+			var layerIndex = Array.IndexOf(layers, LayerMask.LayerToName(m_TargetGameObject.layer));
+			if (layerIndex > -1)
+				m_LayerDropDown.value = layerIndex;
+			m_LayerDropDown.onValueChanged += SetLayer;
+		}
 	}
 
 	IEnumerator GetAssetPreview()
@@ -115,7 +118,7 @@ public class InspectorHeaderItem : InspectorListItem
 			setLocked(isLocked);
 	}
 
-	void SetTag(int[] values)
+	void SetTag(int val, int[] values)
 	{
 		var tags = UnityEditorInternal.InternalEditorUtility.tags;
 		var tag = tags[values[0]];
@@ -123,7 +126,7 @@ public class InspectorHeaderItem : InspectorListItem
 			m_TargetGameObject.tag = tag;
 	}
 
-	void SetLayer(int[] values)
+	void SetLayer(int val, int[] values)
 	{
 		var layers = UnityEditorInternal.InternalEditorUtility.layers;
 		var layer = LayerMask.NameToLayer(layers[values[0]]);

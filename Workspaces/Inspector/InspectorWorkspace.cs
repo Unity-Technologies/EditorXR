@@ -172,6 +172,10 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 			case SerializedPropertyType.Rect:
 				template = "InspectorRectItem";
 				break;
+			case SerializedPropertyType.LayerMask:
+			case SerializedPropertyType.Enum:
+				template = "InspectorDropDownItem";
+				break;
 			case SerializedPropertyType.Generic:
 				return GenericProperty(property, obj);
 			default:
