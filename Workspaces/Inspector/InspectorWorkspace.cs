@@ -7,28 +7,28 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDropReciever, ISelectionChanged
+public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDropReceiver, ISelectionChanged
 {
-	private const float kScrollMargin = 0.03f;
+	const float kScrollMargin = 0.03f;
 	public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 
 	[SerializeField]
-	private GameObject m_ContentPrefab;
+	GameObject m_ContentPrefab;
 
 	[SerializeField]
-	private bool m_IsLocked;
+	bool m_IsLocked;
 
-	private InspectorUI m_InspectorUI;
+	InspectorUI m_InspectorUI;
 
-	private Vector3 m_ScrollStart;
-	private float m_ScrollOffsetStart;
+	Vector3 m_ScrollStart;
+	float m_ScrollOffsetStart;
 
 	public PositionPreviewDelegate positionPreview { private get; set; }
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
-	public GetDropRecieverDelegate getCurrentDropReciever { private get; set; }
+	public GetDropReceiverDelegate getCurrentDropReceiver { private get; set; }
 	public Func<Transform, object> getCurrentDropObject { private get; set; }
-	public Action<Transform, IDropReciever, GameObject> setCurrentDropReciever { private get; set; }
+	public Action<Transform, IDropReceiver, GameObject> setCurrentDropReceiver { private get; set; }
 	public Action<Transform, object> setCurrentDropObject { private get; set; }
 
 	public override void Setup()
@@ -40,9 +40,9 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 		var listView = m_InspectorUI.inspectorListView;
 		listView.data = new InspectorData[0];
 		listView.instantiateUI = instantiateUI;
-		listView.getCurrentDropReciever = getCurrentDropReciever;
+		listView.getCurrentDropReceiver = getCurrentDropReceiver;
 		listView.getCurrentDropObject = getCurrentDropObject;
-		listView.setCurrentDropReciever = setCurrentDropReciever;
+		listView.setCurrentDropReceiver = setCurrentDropReceiver;
 		listView.setCurrentDropObject = setCurrentDropObject;
 		listView.positionPreview = positionPreview;
 		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
@@ -51,7 +51,6 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 		listView.setIsLocked = SetIsLocked;
 
 		var scrollHandle = m_InspectorUI.inspectorScrollHandle;
-
 		scrollHandle.dragStarted += OnScrollDragStarted;
 		scrollHandle.dragging += OnScrollDragging;
 		scrollHandle.dragEnded += OnScrollDragEnded;
@@ -62,7 +61,7 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 		contentBounds = new Bounds(Vector3.zero, kDefaultBounds);
 	}
 
-	private void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		m_ScrollStart = eventData.rayOrigin.transform.position;
 		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
@@ -70,30 +69,30 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 		m_InspectorUI.inspectorListView.OnBeginScrolling();
 	}
 
-	private void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		Scroll(handle, eventData);
+		Scroll(eventData);
 	}
 
-	private void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		Scroll(handle, eventData);
+		Scroll(eventData);
 		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
 		m_InspectorUI.inspectorListView.OnScrollEnded();
 	}
 
-	private void Scroll(BaseHandle handle, HandleEventData eventData)
+	void Scroll(HandleEventData eventData)
 	{
 		var scrollOffset = m_ScrollOffsetStart - Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
 		m_InspectorUI.inspectorListView.scrollOffset = scrollOffset;
 	}
 
-	private void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		setHighlight(handle.gameObject, true);
 	}
 
-	private void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		setHighlight(handle.gameObject, false);
 	}
@@ -126,6 +125,7 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 					if (property.depth == 0)
 						componentChildren.Add(SerializedPropertyToPropertyData(property, obj));
 				}
+
 				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren.ToArray()) { expanded = true };
 				objectChildren.Add(componentData);
 			}
@@ -244,17 +244,17 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 		return false;
 	}
 
-	public bool RecieveDrop(GameObject target, object droppedObject)
+	public bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		return false;
 	}
 
-	private bool GetIsLocked()
+	bool GetIsLocked()
 	{
 		return m_IsLocked;
 	}
 
-	private void SetIsLocked(bool isLocked)
+	void SetIsLocked(bool isLocked)
 	{
 		m_IsLocked = isLocked;
 	}

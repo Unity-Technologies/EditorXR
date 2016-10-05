@@ -18,7 +18,7 @@
 
 		protected int m_ExpandedDataLength;
 
-		private void CleanUpRecursively(DataType data)
+		void CleanUpRecursively(DataType data)
 		{
 			CleanUpBeginning(data);
 			if(data.children != null)

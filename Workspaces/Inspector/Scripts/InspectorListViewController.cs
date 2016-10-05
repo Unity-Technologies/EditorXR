@@ -6,35 +6,35 @@ using UnityEngine.VR.Modules;
 using System;
 using UnityEngine.VR.Tools;
 
-public class InspectorListViewController : NestedListViewController<InspectorData>, IPositionPreview, IDroppable, IDropReciever, IHighlight
+public class InspectorListViewController : NestedListViewController<InspectorData>, IPositionPreview, IDroppable, IDropReceiver, IHighlight
 {
-	private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
+	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 	[SerializeField]
-	private Material m_RowCubeMaterial;
+	Material m_RowCubeMaterial;
 
 	[SerializeField]
-	private Material m_BackingCubeMaterial;
+	Material m_BackingCubeMaterial;
 
 	[SerializeField]
-	private Material m_TextMaterial;
+	Material m_TextMaterial;
 
 	[SerializeField]
-	private Material m_UIMaterial;
+	Material m_UIMaterial;
 
 	[SerializeField]
-	private Material m_NoClipBackingCube;
+	Material m_NoClipBackingCube;
 
-	private readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
+	readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
 	
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
 	public PositionPreviewDelegate positionPreview { private get; set; }
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
-	public GetDropRecieverDelegate getCurrentDropReciever { private get; set; }
+	public GetDropReceiverDelegate getCurrentDropReceiver { private get; set; }
 	public Func<Transform, object> getCurrentDropObject { private get; set; }
-	public Action<Transform, IDropReciever, GameObject> setCurrentDropReciever { private get; set; }
+	public Action<Transform, IDropReceiver, GameObject> setCurrentDropReceiver { private get; set; }
 	public Action<Transform, object> setCurrentDropObject { private get; set; }
 
 	public Func<bool> getIsLocked { private get; set; }
@@ -77,7 +77,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			m_ScrollReturn = -totalOffset + m_ItemSize.z; // m_ItemSize will be equal to the size of the last visible item
 	}
 
-	private void UpdateRecursively(IEnumerable<InspectorData> data, ref float totalOffset, int depth = 0)
+	void UpdateRecursively(IEnumerable<InspectorData> data, ref float totalOffset, int depth = 0)
 	{
 		foreach (var item in data)
 		{
@@ -99,7 +99,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		}
 	}
 
-	private void UpdateItemRecursive(InspectorData data, float offset, int depth)
+	void UpdateItemRecursive(InspectorData data, float offset, int depth)
 	{
 		if (data.item == null)
 			data.item = GetItem(data);
@@ -110,7 +110,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		UpdateItem(item.transform, offset);
 	}
 
-	private void UpdateItem(Transform t, float offset)
+	void UpdateItem(Transform t, float offset)
 	{
 		t.localPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.forward;
 		t.localRotation = Quaternion.identity;
@@ -123,9 +123,9 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		{
 			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCube);
 
-			item.getCurrentDropReciever = getCurrentDropReciever;
+			item.getCurrentDropReceiver = getCurrentDropReceiver;
 			item.getCurrentDropObject = getCurrentDropObject;
-			item.setCurrentDropReciever = setCurrentDropReciever;
+			item.setCurrentDropReceiver = setCurrentDropReceiver;
 			item.setCurrentDropObject = setCurrentDropObject;
 			item.setHighlight = setHighlight;
 			item.positionPreview = positionPreview;
@@ -143,7 +143,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		return item;
 	}
 
-	private void OnDestroy()
+	void OnDestroy()
 	{
 		U.Object.Destroy(m_RowCubeMaterial);
 		U.Object.Destroy(m_BackingCubeMaterial);
@@ -156,7 +156,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		return false;
 	}
 
-	public bool RecieveDrop(GameObject target, object droppedObject)
+	public bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		return false;
 	}

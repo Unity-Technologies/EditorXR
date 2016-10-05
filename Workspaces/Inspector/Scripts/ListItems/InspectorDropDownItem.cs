@@ -20,24 +20,28 @@ public class InspectorDropDownItem : InspectorPropertyItem
 		if (m_SerializedProperty.propertyType == SerializedPropertyType.LayerMask)
 		{
 			m_DropDown.multiSelect = true;
-			var options = new List<string>();
-			options.Add(kNothing);
-			options.Add(kEverything);
+
+			var options = new List<string> { kNothing, kEverything };
 			options.AddRange(InternalEditorUtility.layers);
 			m_DropDown.options = options.ToArray();
 
-			if (m_SerializedProperty.intValue == 0)
-				m_DropDown.values = new[] { 0 };
-			else if (m_SerializedProperty.intValue == ~0) // Everything
+			switch (m_SerializedProperty.intValue)
 			{
-				m_DropDown.values = EverythingValues();
-				m_DropDown.LabelOverride("Everything");
+				case 0:
+					m_DropDown.values = new[] { 0 };
+					break;
+				case ~0:
+					m_DropDown.values = EverythingValues();
+					m_DropDown.LabelOverride("Everything");
+					break;
+				default:
+					m_DropDown.values = LayerMaskToIndices(m_SerializedProperty.intValue);
+					break;
 			}
-			else
-				m_DropDown.values = LayerMaskToIndices(m_SerializedProperty.intValue);
-			
+
 		}
-		else {
+		else
+		{
 			m_DropDown.multiSelect = false;
 			m_DropDown.options = m_SerializedProperty.enumDisplayNames;
 			m_DropDown.value = m_SerializedProperty.enumValueIndex;
@@ -105,7 +109,7 @@ public class InspectorDropDownItem : InspectorPropertyItem
 	int[] EverythingValues()
 	{
 		var values = new int[InternalEditorUtility.layers.Length + 1];
-		for (int i = 0; i < values.Length; i++)
+		for (var i = 0; i < values.Length; i++)
 			values[i] = i + 1;
 		return values;
 	}
@@ -121,7 +125,7 @@ public class InspectorDropDownItem : InspectorPropertyItem
 			|| !m_DropDown.multiSelect && droppedObject is int;
 	}
 
-	public override bool RecieveDrop(GameObject target, object droppedObject)
+	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		if (m_DropDown.multiSelect && droppedObject is int[])
 		{
@@ -139,9 +143,9 @@ public class InspectorDropDownItem : InspectorPropertyItem
 
 	static int[] LayerMaskToIndices(int layerMask)
 	{
-		int mask = 1;
-		List<int> layers = new List<int>();
-		for (int i = 0; i < 32; i++)
+		var mask = 1;
+		var layers = new List<int>();
+		for (var i = 0; i < 32; i++)
 		{
 			if ((layerMask & mask) != 0)
 				layers.Add(Array.IndexOf(InternalEditorUtility.layers, LayerMask.LayerToName(i)) + 2);

@@ -10,43 +10,43 @@ using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using InputField = UnityEngine.VR.UI.InputField;
 
-public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHighlight, IDroppable, IDropReciever
+public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHighlight, IDroppable, IDropReceiver
 {
-	private const float kIndent = 0.02f;
+	const float kIndent = 0.02f;
 
-	private static readonly Quaternion previewRotation = Quaternion.AngleAxis(90, Vector3.right);
+	static readonly Quaternion kPreviewRotation = Quaternion.AngleAxis(90, Vector3.right);
 
 	protected CuboidLayout m_CuboidLayout;
-
-	[SerializeField]
-	private BaseHandle m_Cube;
-
-	[SerializeField]
-	private RectTransform m_UIContainer;
-
-	private ClipText[] m_ClipTexts;
-
-	private Material m_NoClipBackingCube;
-
-	private bool m_Setup;
-
-	private readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform, Vector3>();
-
-	private float m_LastClickTime;
-	private bool m_SelectIsHeld;
-	private float m_DragDistance;
 
 	protected InputField m_ClickedField;
 	protected int m_ClickCount;
 
+	[SerializeField]
+	BaseHandle m_Cube;
+
+	[SerializeField]
+	RectTransform m_UIContainer;
+
+	ClipText[] m_ClipTexts;
+
+	Material m_NoClipBackingCube;
+
+	bool m_Setup;
+
+	readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform, Vector3>();
+
+	float m_LastClickTime;
+	bool m_SelectIsHeld;
+	float m_DragDistance;
+
 	public bool setup { get; set; }
 
-	public Action<GameObject, bool> setHighlight { set; private get; }
+	public Action<GameObject, bool> setHighlight { private get; set; }
 
-	public GetDropRecieverDelegate getCurrentDropReciever { protected get; set; }
+	public GetDropReceiverDelegate getCurrentDropReceiver { protected get; set; }
 	public Func<Transform, object> getCurrentDropObject { protected get; set; }
 
-	public Action<Transform, IDropReciever, GameObject> setCurrentDropReciever { private get; set; }
+	public Action<Transform, IDropReceiver, GameObject> setCurrentDropReceiver { private get; set; }
 	public Action<Transform, object> setCurrentDropObject { private get; set; }
 
 	public override void Setup(InspectorData data)
@@ -147,7 +147,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		if (dropObject == null || TestDrop(handle.gameObject, dropObject))
 		{
 			setHighlight(handle.gameObject, true);
-			setCurrentDropReciever(rayOrigin, this, handle.gameObject);
+			setCurrentDropReceiver(rayOrigin, this, handle.gameObject);
 		}
 	}
 
@@ -162,7 +162,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		if (dropObject == null || TestDrop(handle.gameObject, dropObject))
 		{
 			setHighlight(handle.gameObject, false);
-			setCurrentDropReciever(eventData.rayOrigin, null, handle.gameObject);
+			setCurrentDropReceiver(eventData.rayOrigin, null, handle.gameObject);
 		}
 	}
 
@@ -236,7 +236,6 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		{
 			var rayOrigin = eventData.rayOrigin;
 			m_DragDistance = (rayOrigin.position - m_DragStarts[rayOrigin]).magnitude;
-			//TODO: drag sliding
 
 			var numericField = m_ClickedField as NumericInputField;
 			if (numericField)
@@ -249,7 +248,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		}
 
 		if (m_DragObject)
-			positionPreview(m_DragObject, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_DragLerp, previewRotation);
+			positionPreview(m_DragObject, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_DragLerp, kPreviewRotation);
 	}
 
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
@@ -267,10 +266,10 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 			{
 				var rayOrigin = eventData.rayOrigin;
 				GameObject target;
-				var dropReciever = getCurrentDropReciever(rayOrigin, out target);
+				var dropReceiver = getCurrentDropReceiver(rayOrigin, out target);
 				var dropObject = getCurrentDropObject(rayOrigin);
-				if (dropReciever != null)
-					dropReciever.RecieveDrop(target, dropObject);
+				if (dropReceiver != null)
+					dropReceiver.ReceiveDrop(target, dropObject);
 				setCurrentDropObject(rayOrigin, null);
 
 				U.Object.Destroy(m_DragObject.gameObject);
@@ -280,12 +279,12 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		base.OnDragEnded(baseHandle, eventData);
 	}
 
-	private void CancelSingleClick()
+	void CancelSingleClick()
 	{
 		m_ClickCount = 0;
 	}
 
-	private IEnumerator CheckSingleClick()
+	IEnumerator CheckSingleClick()
 	{
 		var start = Time.realtimeSinceStartup;
 		var currTime = 0f;
@@ -308,5 +307,5 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 	public abstract bool TestDrop(GameObject target, object droppedObject);
 
-	public abstract bool RecieveDrop(GameObject target, object droppedObject);
+	public abstract bool ReceiveDrop(GameObject target, object droppedObject);
 }

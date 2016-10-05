@@ -3,11 +3,21 @@ using UnityEngine.UI;
 
 public class ClipText : Text
 {
+	/// <summary>
+	/// Parent transform worldToLocalMatrix
+	/// </summary>
 	public Matrix4x4 parentMatrix { private get; set; }
+
+	/// <summary>
+	/// World space extents of visible (non-clipped) region
+	/// </summary>
 	public Vector3 clipExtents { private get; set; }
 
-	private Material m_ModifiedMaterial;
+	Material m_ModifiedMaterial;
 
+	/// <summary>
+	/// Set material properties to update clipping
+	/// </summary>
 	public void UpdateMaterialClip()
 	{
 		if (m_ModifiedMaterial != null)
@@ -17,6 +27,11 @@ public class ClipText : Text
 		}
 	}
 
+	/// <summary>
+	/// Get and cache the modified material instanced by the UI System (needed to apply properties)
+	/// </summary>
+	/// <param name="baseMaterial">Original material</param>
+	/// <returns>Modified material</returns>
 	public override Material GetModifiedMaterial(Material baseMaterial)
 	{
 		m_ModifiedMaterial = base.GetModifiedMaterial(baseMaterial);

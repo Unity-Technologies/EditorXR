@@ -6,9 +6,10 @@ using UnityEngine.VR.UI;
 public class InspectorRectItem : InspectorPropertyItem
 {
 	[SerializeField]
-	private NumericInputField[] m_CenterFields;
+	NumericInputField[] m_CenterFields;
+
 	[SerializeField]
-	private NumericInputField[] m_SizeFields;
+	NumericInputField[] m_SizeFields;
 
 	public override void Setup(InspectorData data)
 	{
@@ -17,9 +18,9 @@ public class InspectorRectItem : InspectorPropertyItem
 		UpdateInputFields(m_SerializedProperty.rectValue);
 	}
 
-	private void UpdateInputFields(Rect rect)
+	void UpdateInputFields(Rect rect)
 	{
-		for (int i = 0; i < m_CenterFields.Length; i++)
+		for (var i = 0; i < m_CenterFields.Length; i++)
 		{
 			m_CenterFields[i].text = rect.center[i].ToString();
 			m_CenterFields[i].ForceUpdateLabel();
@@ -33,7 +34,7 @@ public class InspectorRectItem : InspectorPropertyItem
 		base.FirstTimeSetup();
 
 		//TODO: Expose onValueChanged in Inspector
-		for (int i = 0; i < m_CenterFields.Length; i++)
+		for (var i = 0; i < m_CenterFields.Length; i++)
 		{
 			var index = i;
 			m_CenterFields[i].onValueChanged.AddListener(value => SetValue(value, index, true));
@@ -41,7 +42,7 @@ public class InspectorRectItem : InspectorPropertyItem
 		}
 	}
 
-	private bool SetValue(string input, int index, bool center = false)
+	bool SetValue(string input, int index, bool center = false)
 	{
 		float value;
 		if (!float.TryParse(input, out value)) return false;
@@ -90,7 +91,7 @@ public class InspectorRectItem : InspectorPropertyItem
 		return droppedObject is string || droppedObject is Rect || droppedObject is Vector2 || droppedObject is Vector3 || droppedObject is Vector4;
 	}
 
-	public override bool RecieveDrop(GameObject target, object droppedObject)
+	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		if (!TestDrop(target, droppedObject))
 			return false;
@@ -101,26 +102,21 @@ public class InspectorRectItem : InspectorPropertyItem
 			var targetParent = target.transform.parent;
 			var inputField = targetParent.GetComponentInChildren<NumericInputField>();
 			var index = Array.IndexOf(m_SizeFields, inputField);
-			if (index > -1)
+			if (index > -1 && SetValue(str, index))
 			{
-				if (SetValue(str, index))
-				{
-					inputField.text = str;
-					inputField.ForceUpdateLabel();
-					return true;
-				}
+				inputField.text = str;
+				inputField.ForceUpdateLabel();
+				return true;
 			}
 
 			index = Array.IndexOf(m_CenterFields, inputField);
-			if (index > -1)
+			if (index > -1 && SetValue(str, index, true))
 			{
-				if (SetValue(str, index, true))
-				{
-					inputField.text = str;
-					inputField.ForceUpdateLabel();
-					return true;
-				}
+				inputField.text = str;
+				inputField.ForceUpdateLabel();
+				return true;
 			}
+
 			return false;
 		}
 

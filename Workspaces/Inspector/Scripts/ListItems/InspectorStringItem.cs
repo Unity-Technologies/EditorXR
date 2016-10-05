@@ -5,7 +5,7 @@ using UnityEngine.VR.UI;
 public class InspectorStringItem : InspectorPropertyItem
 {
 	[SerializeField]
-	private StandardInputField m_InputField;
+	StandardInputField m_InputField;
 
 	public override void Setup(InspectorData data)
 	{
@@ -65,7 +65,7 @@ public class InspectorStringItem : InspectorPropertyItem
 		return droppedObject is string;
 	}
 
-	public override bool RecieveDrop(GameObject target, object droppedObject)
+	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		SetValue(droppedObject.ToString());
 		return true;

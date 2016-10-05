@@ -125,7 +125,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDropp
 		}
 	}
 
-	public GetDropRecieverDelegate getCurrentDropReciever { private get; set; }
+	public GetDropReceiverDelegate getCurrentDropReceiver { private get; set; }
 	public Action<Transform, object> setCurrentDropObject { private get; set; }
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
@@ -253,10 +253,10 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDropp
 		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 		var rayOrigin = eventData.rayOrigin;
 		GameObject target;
-		var dropReciever = getCurrentDropReciever(rayOrigin, out target);
+		var dropReceiver = getCurrentDropReceiver(rayOrigin, out target);
 		setCurrentDropObject(rayOrigin, null);
-		if (dropReciever != null)
-			dropReciever.RecieveDrop(target, data.asset);
+		if (dropReceiver != null)
+			dropReceiver.ReceiveDrop(target, data.asset);
 		else
 		{
 			if (gridItem.m_PreviewObject)

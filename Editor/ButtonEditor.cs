@@ -1,4 +1,3 @@
-using UnityEditor;
 using UnityEngine.VR.UI;
 
 namespace UnityEditor.VR.UI

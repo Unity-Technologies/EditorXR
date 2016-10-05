@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using UnityEditorInternal;
 
 namespace UnityEngine.VR.Utilities
 {

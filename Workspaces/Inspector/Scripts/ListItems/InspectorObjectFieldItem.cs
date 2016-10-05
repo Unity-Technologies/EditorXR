@@ -11,10 +11,10 @@ using Object = UnityEngine.Object;
 public class InspectorObjectFieldItem : InspectorPropertyItem
 {
 	[SerializeField]
-	private Text m_FieldLabel;
+	Text m_FieldLabel;
 
-	private Type m_ObjectType;
-	private string m_ObjectTypeName;
+	Type m_ObjectType;
+	string m_ObjectTypeName;
 
 	public override void Setup(InspectorData data)
 	{
@@ -26,7 +26,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		SetObject(m_SerializedProperty.objectReferenceValue);
 	}
 
-	private bool SetObject(Object obj)
+	bool SetObject(Object obj)
 	{
 		var objectReference = m_SerializedProperty.objectReferenceValue;
 
@@ -61,8 +61,8 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		var fieldBlock = baseHandle.transform.parent;
 		object droppedObject = null;
 		GameObject target;
-		IDropReciever dropReciever = getCurrentDropReciever(eventData.rayOrigin, out target);
-		if (dropReciever != null && fieldBlock)
+		IDropReceiver dropReceiver = getCurrentDropReceiver(eventData.rayOrigin, out target);
+		if (dropReceiver != null && fieldBlock)
 		{
 			var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
 			if (inputfields.Length > 1)
@@ -86,7 +86,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 			else if (inputfields.Length > 0)
 				droppedObject = inputfields[0].text;
 
-			dropReciever.RecieveDrop(target, droppedObject);
+			dropReceiver.ReceiveDrop(target, droppedObject);
 		}
 		base.OnDragEnded(baseHandle, eventData);
 	}
@@ -106,14 +106,9 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		return droppedObject is Object;
 	}
 
-	public override bool RecieveDrop(GameObject target, object droppedObject)
+	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		var obj = droppedObject as Object;
-		if (obj)
-		{
-			SetObject(obj);
-			return true;
-		}
-		return false;
+		return obj && SetObject(obj);
 	}
 }

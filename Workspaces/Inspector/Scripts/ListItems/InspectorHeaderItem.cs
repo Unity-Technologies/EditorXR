@@ -148,7 +148,7 @@ public class InspectorHeaderItem : InspectorListItem
 		return droppedObject is string && inputFields.Contains(m_NameField);
 	}
 
-	public override bool RecieveDrop(GameObject target, object droppedObject)
+	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		if (!TestDrop(target, droppedObject))
 			return false;

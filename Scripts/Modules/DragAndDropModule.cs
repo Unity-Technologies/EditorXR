@@ -3,14 +3,14 @@ using UnityEngine;
 using UnityEngine.VR.Modules;
 
 public class DragAndDropModule : MonoBehaviour {
-	private class DropData
+	class DropData
 	{
-		public IDropReciever reciever; // The IDropReciever that we will call .Drop on
+		public IDropReceiver receiver; // The IDropReceiver that we will call .Drop on
 		public GameObject target; // The actual object that was hovered
 	}
 
-	private readonly Dictionary<Transform, object> m_DropObjects = new Dictionary<Transform, object>();
-	private readonly Dictionary<Transform, DropData> m_DropRecievers = new Dictionary<Transform, DropData>();
+	readonly Dictionary<Transform, object> m_DropObjects = new Dictionary<Transform, object>();
+	readonly Dictionary<Transform, DropData> m_DropReceivers = new Dictionary<Transform, DropData>();
 
 	public void SetCurrentDropObject(Transform rayOrigin, object obj)
 	{
@@ -23,30 +23,27 @@ public class DragAndDropModule : MonoBehaviour {
 		return m_DropObjects.TryGetValue(rayOrigin, out obj) ? obj : null;
 	}
 
-	public void SetCurrentDropReciever(Transform rayOrigin, IDropReciever dropReciever, GameObject target)
+	public void SetCurrentDropReceiver(Transform rayOrigin, IDropReceiver dropReceiver, GameObject target)
 	{
-		if (dropReciever == null)
+		if (dropReceiver == null)
 		{
 			DropData data;
-			if (m_DropRecievers.TryGetValue(rayOrigin, out data))
-			{
-				if (data.reciever.Equals(dropReciever))
-					m_DropRecievers[rayOrigin] = null;
-				}
-			}
+			if (m_DropReceivers.TryGetValue(rayOrigin, out data) && data.target == target)
+				m_DropReceivers[rayOrigin] = null;
+		}
 		else
 		{
-			m_DropRecievers[rayOrigin] = new DropData { reciever = dropReciever, target = target };
+			m_DropReceivers[rayOrigin] = new DropData { receiver = dropReceiver, target = target };
 		}
 	}
 
-	public IDropReciever GetCurrentDropReciever(Transform rayOrigin, out GameObject target)
+	public IDropReceiver GetCurrentDropReceiver(Transform rayOrigin, out GameObject target)
 	{
 		DropData data;
-		if (m_DropRecievers.TryGetValue(rayOrigin, out data))
+		if (m_DropReceivers.TryGetValue(rayOrigin, out data))
 		{
 			target = data.target;
-			return data.reciever;
+			return data.receiver;
 		}
 
 		target = null;

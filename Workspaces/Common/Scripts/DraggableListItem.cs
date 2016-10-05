@@ -6,7 +6,7 @@ using UnityEngine.VR.Handles;
 
 public class DraggableListItem<DataType> : ListViewItem<DataType>, IPositionPreview where DataType : ListViewItemData
 {
-	private const float kMagnetizeDuration = 0.5f;
+	const float kMagnetizeDuration = 0.5f;
 
 	protected Transform m_DragObject;
 
@@ -24,7 +24,7 @@ public class DraggableListItem<DataType> : ListViewItem<DataType>, IPositionPrev
 	}
 
 	// Smoothly interpolate grabbed object into position, instead of "popping."
-	private IEnumerator Magnetize()
+	IEnumerator Magnetize()
 	{
 		var startTime = Time.realtimeSinceStartup;
 		var currTime = 0f;

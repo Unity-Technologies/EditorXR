@@ -5,13 +5,13 @@ public class InspectorUI : MonoBehaviour
 {
 	public InspectorListViewController inspectorListView { get { return m_InspectorListView; } }
 	[SerializeField]
-	private InspectorListViewController m_InspectorListView;
+	InspectorListViewController m_InspectorListView;
 
 	public BaseHandle inspectorScrollHandle { get { return m_InspectorScrollHandle; } }
 	[SerializeField]
-	private BaseHandle m_InspectorScrollHandle;
+	BaseHandle m_InspectorScrollHandle;
 
 	public RectTransform inspectorPanel { get { return m_InspectorPanel; } }
 	[SerializeField]
-	private RectTransform m_InspectorPanel;
+	RectTransform m_InspectorPanel;
 }

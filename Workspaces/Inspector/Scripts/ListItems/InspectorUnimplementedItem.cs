@@ -1,12 +1,11 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
 public class InspectorUnimplementedItem : InspectorPropertyItem
 {
 	[SerializeField]
-	private Text m_TypeLabel;
+	Text m_TypeLabel;
 
 	public override void Setup(InspectorData data)
 	{
@@ -26,7 +25,7 @@ public class InspectorUnimplementedItem : InspectorPropertyItem
 		return false;
 	}
 
-	public override bool RecieveDrop(GameObject target, object droppedObject)
+	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		return false;
 	}

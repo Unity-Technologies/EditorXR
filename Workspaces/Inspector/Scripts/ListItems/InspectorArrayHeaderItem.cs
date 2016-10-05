@@ -1,17 +1,15 @@
-﻿using UnityEditor;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 using UnityEngine.VR.Handles;
 using Button = UnityEngine.VR.UI.Button;
 
 public class InspectorArrayHeaderItem : InspectorPropertyItem
 {
-	private const float kExpandArrowRotateSpeed = 0.4f;
+	const float kExpandArrowRotateSpeed = 0.4f;
 	static readonly Quaternion kExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
 	static readonly Quaternion kNormalRotation = Quaternion.identity;
 
 	[SerializeField]
-	private Button m_ExpandArrow;
+	Button m_ExpandArrow;
 
 	public override void UpdateSelf(float width, int depth)
 	{
@@ -44,7 +42,7 @@ public class InspectorArrayHeaderItem : InspectorPropertyItem
 		return false;
 	}
 
-	public override bool RecieveDrop(GameObject target, object droppedObject)
+	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		return false;
 	}

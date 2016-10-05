@@ -94,7 +94,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 		return droppedObject is string;
 	}
 
-	public override bool RecieveDrop(GameObject target, object droppedObject)
+	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		SetValue(droppedObject.ToString());
 		return true;
@@ -154,7 +154,6 @@ public class InspectorNumberItem : InspectorPropertyItem
 			case SerializedPropertyType.Float:
 				SetValue((m_SerializedProperty.floatValue + 1).ToString());
 				break;
-
 		}
 	}
 
@@ -169,7 +168,6 @@ public class InspectorNumberItem : InspectorPropertyItem
 			case SerializedPropertyType.Float:
 				SetValue((m_SerializedProperty.floatValue - 1).ToString());
 				break;
-
 		}
 	}
 }

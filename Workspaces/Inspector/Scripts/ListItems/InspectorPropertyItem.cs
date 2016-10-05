@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public abstract class InspectorPropertyItem : InspectorListItem
 {
 	[SerializeField]
-	private Text m_Label;
+	Text m_Label;
 
 	protected SerializedProperty m_SerializedProperty;
 

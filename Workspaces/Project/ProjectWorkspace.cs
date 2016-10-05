@@ -39,7 +39,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview, IDro
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 	public PositionPreviewDelegate positionPreview { private get; set; }
 
-	public GetDropRecieverDelegate getCurrentDropReciever { private get; set; }
+	public GetDropReceiverDelegate getCurrentDropReceiver { private get; set; }
 	public Action<Transform, object> setCurrentDropObject { private get; set; }
 
 	public override void Setup()
@@ -65,7 +65,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview, IDro
 		assetListView.placeObject = placeObject;
 		assetListView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		assetListView.positionPreview = positionPreview;
-		assetListView.getCurrentDropReciever = getCurrentDropReciever;
+		assetListView.getCurrentDropReceiver = getCurrentDropReceiver;
 		assetListView.setCurrentDropObject = setCurrentDropObject;
 
 #if UNITY_EDITOR

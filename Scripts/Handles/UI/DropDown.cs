@@ -82,9 +82,7 @@ namespace UnityEngine.VR.UI
 		void SetupOptions()
 		{
 			if (m_Options.Length > 0)
-			{
 				UpdateLabel();
-			}
 
 			var template = m_MultiSelect ? m_TemplatePrefabMulti : m_TemplatePrefab;
 
@@ -104,7 +102,8 @@ namespace UnityEngine.VR.UI
 
 				for (int i = 0; i < m_Options.Length; i++)
 				{
-					var optionObject = Instantiate(template, listTransform.position, listTransform.rotation, listTransform) as GameObject;
+					var optionObject = (GameObject)Instantiate(template, listTransform.position, listTransform.rotation, listTransform);
+
 					var optionText = optionObject.GetComponentInChildren<Text>();
 					if (optionText)
 						optionText.text = m_Options[i];
@@ -116,13 +115,16 @@ namespace UnityEngine.VR.UI
 					m_Toggles[i] = toggle;
 
 					var button = optionObject.GetComponentInChildren<Button>();
-					var index = i;
-					button.onClick.AddListener(() =>
+					if (button)
 					{
-						if (toggle)
-							toggle.isOn = !toggle.isOn;
-						OptionClicked(index);
-					});
+						var index = i;
+						button.onClick.AddListener(() =>
+						{
+							if (toggle)
+								toggle.isOn = !toggle.isOn;
+							OptionClicked(index);
+						});
+					}
 				}
 			}
 		}

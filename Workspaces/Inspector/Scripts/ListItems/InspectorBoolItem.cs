@@ -5,7 +5,7 @@ using UnityEngine.VR.Handles;
 public class InspectorBoolItem : InspectorPropertyItem
 {
 	[SerializeField]
-	private Toggle m_Toggle;
+	Toggle m_Toggle;
 
 	public override void Setup(InspectorData data)
 	{
@@ -47,7 +47,7 @@ public class InspectorBoolItem : InspectorPropertyItem
 		return false;
 	}
 
-	public override bool RecieveDrop(GameObject target, object droppedObject)
+	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		// Bools cannot be dragged and droppped
 		return false;

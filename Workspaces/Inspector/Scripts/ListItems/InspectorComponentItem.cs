@@ -7,21 +7,21 @@ using Button = UnityEngine.VR.UI.Button;
 
 public class InspectorComponentItem : InspectorListItem
 {
-	private const float kExpandArrowRotateSpeed = 0.4f;
+	const float kExpandArrowRotateSpeed = 0.4f;
 	static readonly Quaternion kExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
 	static readonly Quaternion kNormalRotation = Quaternion.identity;
 
 	[SerializeField]
-	private Button m_ExpandArrow;
+	Button m_ExpandArrow;
 
 	[SerializeField]
-	private RawImage m_Icon;
+	RawImage m_Icon;
 
 	[SerializeField]
-	private Toggle m_EnabledToggle;
+	Toggle m_EnabledToggle;
 
 	[SerializeField]
-	private Text m_NameText;
+	Text m_NameText;
 
 	public override void Setup(InspectorData data)
 	{
@@ -100,7 +100,7 @@ public class InspectorComponentItem : InspectorListItem
 		return false;
 	}
 
-	public override bool RecieveDrop(GameObject target, object droppedObject)
+	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		return false;
 	}

@@ -5,7 +5,7 @@ using UnityEngine.VR.UI;
 public class InspectorColorItem : InspectorPropertyItem
 {
 	[SerializeField]
-	private NumericInputField[] m_InputFields;
+	NumericInputField[] m_InputFields;
 
 	public override void Setup(InspectorData data)
 	{
@@ -14,9 +14,9 @@ public class InspectorColorItem : InspectorPropertyItem
 		UpdateInputFields(m_SerializedProperty.colorValue);
 	}
 
-	private void UpdateInputFields(Color color)
+	void UpdateInputFields(Color color)
 	{
-		for (int i = 0; i < 4; i++)
+		for (var i = 0; i < 4; i++)
 		{
 			m_InputFields[i].text = color[i].ToString();
 			m_InputFields[i].ForceUpdateLabel();
@@ -28,7 +28,7 @@ public class InspectorColorItem : InspectorPropertyItem
 		base.FirstTimeSetup();
 
 		//TODO: expose onValueChanged in Inspector
-		for (int i = 0; i < m_InputFields.Length; i++)
+		for (var i = 0; i < m_InputFields.Length; i++)
 		{
 			var index = i;
 			m_InputFields[i].onValueChanged.AddListener(value => SetValue(value, index));
@@ -41,7 +41,7 @@ public class InspectorColorItem : InspectorPropertyItem
 		if (!float.TryParse(input, out value)) return false;
 
 		var color = m_SerializedProperty.colorValue;
-		if (color[index] != value)
+		if (!Mathf.Approximately(color[index], value))
 		{
 			color[index] = value;
 			m_SerializedProperty.colorValue = color;
@@ -49,9 +49,11 @@ public class InspectorColorItem : InspectorPropertyItem
 			UpdateInputFields(color);
 
 			data.serializedObject.ApplyModifiedProperties();
+
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 
 	protected override object GetDropObject(Transform fieldBlock)
@@ -72,7 +74,7 @@ public class InspectorColorItem : InspectorPropertyItem
 		return droppedObject is string || droppedObject is Vector2 || droppedObject is Vector3 || droppedObject is Vector4 || droppedObject is Quaternion || droppedObject is Color;
 	}
 
-	public override bool RecieveDrop(GameObject target, object droppedObject)
+	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
 		if (!TestDrop(target, droppedObject))
 			return false;
