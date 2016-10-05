@@ -409,15 +409,16 @@ public class EditorVR : MonoBehaviour
 			proxy.trackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
 			foreach (var rayOriginPair in proxy.rayOrigins)
 			{
-				var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPair.Value).transform;
-				rayTransform.position = rayOriginPair.Value.position;
-				rayTransform.rotation = rayOriginPair.Value.rotation;
-				m_DefaultRays.Add(rayOriginPair.Value, rayTransform.GetComponent<DefaultProxyRay>());
+				var rayOriginPairValue = rayOriginPair.Value;
+				var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
+				rayTransform.position = rayOriginPairValue.position;
+				rayTransform.rotation = rayOriginPairValue.rotation;
+				m_DefaultRays.Add(rayOriginPairValue, rayTransform.GetComponent<DefaultProxyRay>());
 
-				var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginBase.Value).transform;
-				malletTransform.position = rayOriginBase.Value.position;
-				malletTransform.rotation = rayOriginBase.Value.rotation;
-				m_KeyboardMallets.Add(rayOriginBase.Value, malletTransform.GetComponent<KeyboardMallet>());
+				var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginPairValue).transform;
+				malletTransform.position = rayOriginPairValue.position;
+				malletTransform.rotation = rayOriginPairValue.rotation;
+				m_KeyboardMallets.Add(rayOriginPairValue, malletTransform.GetComponent<KeyboardMallet>());
 			}
 			m_AllProxies.Add(proxy);
 		}
