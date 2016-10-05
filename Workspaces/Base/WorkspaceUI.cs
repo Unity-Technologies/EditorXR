@@ -222,35 +222,14 @@ namespace UnityEngine.VR.Workspaces
 			m_LeftSideBackResizeIcon.CrossFadeAlpha(0f, 0f, true);
 			m_BackLeftResizeIcon.CrossFadeAlpha(0f, 0f, true);
 			m_BackRightResizeIcon.CrossFadeAlpha(0f, 0f, true);
-
-			/*
-			m_Frame.sharedMaterials = U.Material.GetMaterialClones(m_Frame); // no need to assign again, as clones are assigned therein
-
-			foreach (var material in m_Frame.sharedMaterials)
-			{
-				Debug.LogError(material.name);
-				if (material.name == "GradientBorder")
-				{
-					m_FrameGradientMaterial = material;
-					break;
-				}
-			}
-
-			var gradientPair = UnityBrandColorScheme.GetRandomGradient();
-			m_FrameGradientMaterial.SetColor(kTopGradientProperty, gradientPair.a);
-			m_FrameGradientMaterial.SetColor(kBottomGradientProperty, gradientPair.b);
-			*/
-
-			//m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, Random.Range(0, 100f));
 		}
 
 		private float m_AngledAmount; 
 		private Vector3 m_BaseFrontPanelRotation = Vector3.zero;
 		private Vector3 m_MaxFrontPanelRotation = new Vector3(45f, 0f, 0f);
-		private float kMaxAlternateFrontPanelLocalZOffset = -0.075f;//-0.1f; //-0.0575f;// -0.3009003f;
-		private float kMaxAlternateFrontPanelLocalYOffset = -0.005f;//-0.03813409f;
+		private float kMaxAlternateFrontPanelLocalZOffset = -0.075f;
+		private float kMaxAlternateFrontPanelLocalYOffset = -0.005f;
 		private Vector3 m_OriginalFontPanelLocalPosition;
-		private float kMaxBlendShapeAngle = 90f;
 
 		private void Update()
 		{
@@ -260,20 +239,13 @@ namespace UnityEngine.VR.Workspaces
 				return;
 
 			// sin of x rotation drives the blendeshape value
-			//Debug.LogWarning("<color=green>" + Mathf.Sin(transform.rotation.eulerAngles.x) + "</color> : " + transform.rotation.eulerAngles.x);
-			//Debug.LogWarning("<color=green>" + Mathf.Deg2Rad * transform.rotation.eulerAngles.x + "</color> : " + transform.rotation.eulerAngles.x);
-
 			m_AngledAmount = Mathf.Clamp(Mathf.DeltaAngle(transform.rotation.eulerAngles.x, 0f), 0f, 100f);
 
-			//Debug.LogWarning("<color=purple>" + m_AngledAmount + "</color> : " + transform.rotation.eulerAngles.x);
-
 			float lerpAmount = m_AngledAmount / 90f;
-			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));  // qua Quaternion.Euler(Mathf.Lerp(0, 45, angledBlendshapeAmount), 0f, 0f);
+			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));
 			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
 
 			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, m_AngledAmount);
-
-			//Debug.LogWarning("<color=yellow>" + m_AngledAmount + "</color>");
 		}
 
 		public void CloseClick()
