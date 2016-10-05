@@ -131,6 +131,22 @@ namespace UnityEngine.VR.Utilities
 		public static Color light { get { return s_Light; } }
 
 		/// <summary>
+		/// A unique Unity brand color gradient generated once per session
+		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements
+		/// </summary>
+		public static GradientPair coloredSessionGradient
+		{
+			get
+			{
+				if (m_ColoredSessionGradient == null)
+					m_ColoredSessionGradient = GetRandomGradient();
+
+				return m_ColoredSessionGradient.Value;
+			}
+		}
+		static GradientPair? m_ColoredSessionGradient;
+
+		/// <summary>
 		/// Gradient pair container class
 		/// </summary>
 		[Serializable]
