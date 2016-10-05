@@ -222,7 +222,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview, IDro
 	private void SetupFolderList()
 	{
 		var assetTypes = new HashSet<string>();
-		var rootFolder = CreateFolderData(assetTypes);
+		var hasNext = true;
+		var rootFolder = CreateFolderData(assetTypes, ref hasNext);
 		rootFolder.expanded = true;
 		m_ProjectUI.folderListView.data = new[] { rootFolder };
 
@@ -230,7 +231,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview, IDro
 		m_FilterUI.filterTypes = assetTypes.ToList();
 	}
 
-	private FolderData CreateFolderData(HashSet<string> assetTypes, HierarchyProperty hp = null)
+	private FolderData CreateFolderData(HashSet<string> assetTypes, ref bool hasNext, HierarchyProperty hp = null)
 	{
 		if (hp == null)
 		{
@@ -241,17 +242,21 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview, IDro
 		var depth = hp.depth;
 		var folderList = new List<FolderData>();
 		var assetList = new List<AssetData>();
-		var hasNext = hp.Next(null);
-		while (hasNext && hp.depth > depth)
+		if (hasNext)
 		{
-			if (hp.isFolder)
-				folderList.Add(CreateFolderData(assetTypes, hp));
-			else if(hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
-				assetList.Add(CreateAssetData(assetTypes, hp));
 			hasNext = hp.Next(null);
+			while (hasNext && hp.depth > depth)
+			{
+				if (hp.isFolder)
+					folderList.Add(CreateFolderData(assetTypes, ref hasNext, hp));
+				else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
+					assetList.Add(CreateAssetData(assetTypes, hp));
+				if(hasNext)
+					hasNext = hp.Next(null);
+			}
+			if (hasNext)
+				hp.Previous(null);
 		}
-		if(hasNext)
-			hp.Previous(null);
 		return new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray());
 	}
 
