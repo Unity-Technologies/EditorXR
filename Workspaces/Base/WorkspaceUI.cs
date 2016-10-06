@@ -26,7 +26,8 @@ namespace UnityEngine.VR.Workspaces
 		const float kMaxAlternateFrontPanelLocalZOffset = -0.075f;
 		const float kMaxAlternateFrontPanelLocalYOffset = -0.005f;
 		const int kAngledFaceBlendShapeIndex = 2;
-		const int kHiddenFacesBlendShapeIndex = 3;
+		const int kThinFrameBlendShapeIndex = 3;
+		const int kHiddenFacesBlendShapeIndex = 4;
 		const float kBackHandleOffset = -0.145f; // Offset to place the back handle in the expected region behind the workspace
 		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
 		const float kPanelOffset = -0.09f; // The panel needs to be pulled back slightly
@@ -281,6 +282,8 @@ namespace UnityEngine.VR.Workspaces
 			const float frontResizeIconsContainerforwardOffset = -0.025f;
 			m_FrontResizeIconsContainerOriginalLocalPosition = m_FrontResizeIconsContainer.localPosition;
 			m_FrontResizeIconsContainerAngledLocalPosition = new Vector3(m_FrontResizeIconsContainerOriginalLocalPosition.x, m_FrontResizeIconsContainerOriginalLocalPosition.y, m_FrontResizeIconsContainerOriginalLocalPosition.z + frontResizeIconsContainerforwardOffset);
+
+			m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, 50f); // Set default frame thickness to be in middle
 		}
 
 		void Update()
