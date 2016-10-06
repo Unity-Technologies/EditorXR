@@ -33,13 +33,10 @@ namespace UnityEngine.VR.Menus
 		}
 
 		[SerializeField] private MainMenuButton m_ButtonTemplatePrefab;
-		[SerializeField] private Transform m_InputArrowLeft;
-		[SerializeField] private Transform m_InputArrowRight;
 		[SerializeField] private MeshRenderer m_InputHighlightLeft;
 		[SerializeField] private MeshRenderer m_InputHighlightRight;
 		[SerializeField] private MeshRenderer m_InputOuterBorder;
 		[SerializeField] private Transform[] m_MenuFaceContainers;
-		[SerializeField] private Transform m_MenuFacePositionTarget;
 		[SerializeField] private MainMenuFace m_MenuFacePrefab;
 		[SerializeField] private Transform m_MenuFaceRotationOrigin;
 		[SerializeField] private SkinnedMeshRenderer m_MenuFrameRenderer;
@@ -289,7 +286,7 @@ namespace UnityEngine.VR.Menus
 				U.Object.Destroy(face.gameObject);
 		}
 
-		public void CreateToolButton(ButtonData buttonData, Action<MainMenuButton> buttonCreationCallback)
+		public void CreateFaceButton(ButtonData buttonData, Action<MainMenuButton> buttonCreationCallback)
 		{
 			var button = U.Object.Instantiate(m_ButtonTemplatePrefab.gameObject);
 			button.name = buttonData.name;
@@ -308,7 +305,7 @@ namespace UnityEngine.VR.Menus
 				}
 				else
 				{
-					m_FaceButtons.Add(buttonData.sectionName, new List<Transform>() {button.transform});
+					m_FaceButtons.Add(buttonData.sectionName, new List<Transform>() { button.transform });
 				}
 			}
 			else

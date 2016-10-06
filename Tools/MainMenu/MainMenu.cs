@@ -192,13 +192,15 @@ namespace UnityEngine.VR.Menus
 				}
 
 				var toolType = type; // Local variable for proper closure
-				m_MainMenuUI.CreateToolButton(buttonData, (b) =>
+				m_MainMenuUI.CreateFaceButton(buttonData, (b) =>
 				{
 					b.button.onClick.RemoveAllListeners();
 					b.button.onClick.AddListener(() =>
 					{
 						if (visible && b.node.HasValue)
+						{
 							selectTool(b.node.Value, toolType);
+						}
 					});
 				});
 			}
