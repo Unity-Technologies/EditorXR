@@ -31,13 +31,13 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 	{
 		if (standardInput.action.wasJustPressed)
 		{
-				if (m_ToolCanvas == null)
-				{
-					var go = instantiateUI(CanvasPrefab.gameObject);
-					m_ToolCanvas = go.GetComponent<Canvas>();
-				}
-				m_ToolCanvas.transform.position = rayOrigin.position + rayOrigin.forward*5f;
-				m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - VRView.viewerCamera.transform.position);            
+			if (m_ToolCanvas == null)
+			{
+				var go = instantiateUI(CanvasPrefab.gameObject);
+				m_ToolCanvas = go.GetComponent<Canvas>();
+			}
+			m_ToolCanvas.transform.position = rayOrigin.position + rayOrigin.forward*5f;
+			m_ToolCanvas.transform.rotation = Quaternion.LookRotation(m_ToolCanvas.transform.position - VRView.viewerCamera.transform.position);
 		}
 	}
 	void OnDestroy()

@@ -35,8 +35,6 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
 	[SerializeField]
-	private ActionMap m_DefaultActionMap;
-	[SerializeField]
 	private ActionMap m_TrackedObjectActionMap;
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
@@ -48,8 +46,7 @@ public class EditorVR : MonoBehaviour
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
 	private TrackedObject m_TrackedObjectInput;
-	private Default m_DefaultActionInput;
-
+	
 	private MultipleRayInputModule m_InputModule;
 	private SpatialHashModule m_SpatialHashModule;
 	private IntersectionModule m_IntersectionModule;
@@ -124,11 +121,7 @@ public class EditorVR : MonoBehaviour
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
-		m_MainMenuTools = m_AllTools.Where(t =>
-			// Don't show default tools in the main menu
-			!typeof(ITransformTool).IsAssignableFrom(t)
-			&& !typeof(SelectionTool).IsAssignableFrom(t)
-			&& !typeof(ILocomotion).IsAssignableFrom(t)).ToList();
+		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
 
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
@@ -225,6 +218,9 @@ public class EditorVR : MonoBehaviour
 		EditorApplication.delayCall += OnSelectionChanged;
 
 		ClearDeveloperConsoleIfNecessary();
+
+		// This will be the first call to update the player handle (input) maps, sorted by priority
+		UpdatePlayerHandleMaps();
 	}
 
 	private void OnEnable()
@@ -285,6 +281,7 @@ public class EditorVR : MonoBehaviour
 	IEnumerator PrewarmAssets()
 	{
 		// HACK: Cannot async load assets in the editor yet, so to avoid a hitch let's spawn the menu immediately and then make it invisible
+		List<IMainMenu> menus = new List<IMainMenu>();
 		foreach (var kvp in m_DeviceData)
 		{
 			var device = kvp.Key;
@@ -297,18 +294,22 @@ public class EditorVR : MonoBehaviour
 				EditorApplication.delayCall += () =>
 				{
 					mainMenu = SpawnMainMenu(typeof(MainMenu), device, true);
-					UpdatePlayerHandleMaps();
 					deviceData.mainMenu = mainMenu;
 				};
 
 				while (mainMenu == null)
 					yield return null;
 
-				while (!mainMenu.visible)
-					yield return null;
-
-				mainMenu.visible = false;
+				menus.Add(mainMenu);
 			}
+		}
+
+		foreach (var mainMenu in menus)
+		{
+			while (!mainMenu.visible)
+				yield return null;
+
+			mainMenu.visible = false;
 		}
 	}
 
@@ -396,9 +397,13 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultActionMapInputs()
 	{
 		m_TrackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap, null);
-		m_DefaultActionInput = (Default)CreateActionMapInput(m_DefaultActionMap, null);
+	}
 
-		UpdatePlayerHandleMaps();
+	bool IsPermanentTool(Type type)
+	{
+		return typeof(ITransformTool).IsAssignableFrom(type)
+			|| typeof(SelectionTool).IsAssignableFrom(type)
+			|| typeof(ILocomotion).IsAssignableFrom(type);
 	}
 
 	private void SpawnDefaultTools()
@@ -448,7 +453,7 @@ public class EditorVR : MonoBehaviour
 		foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
 		{
 			IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
-			proxy.trackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
+			proxy.trackedObjectInput = m_TrackedObjectInput;
 			foreach (var rayOriginPair in proxy.rayOrigins)
 			{
 				var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPair.Value).transform;
@@ -519,7 +524,6 @@ public class EditorVR : MonoBehaviour
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput);
 		});
-		UpdatePlayerHandleMaps();
 	}
 
 	void ForEachRayOrigin(Action<IProxy, KeyValuePair<Node, Transform>, InputDevice, DeviceData> callback, bool activeOnly = false)
@@ -562,7 +566,6 @@ public class EditorVR : MonoBehaviour
 			tester.active = proxy.active;
 			m_IntersectionModule.AddTester(tester);
 		});
-		UpdatePlayerHandleMaps();
 	}
 
 	private GameObject InstantiateUI(GameObject prefab)
@@ -618,8 +621,6 @@ public class EditorVR : MonoBehaviour
 			foreach (ITool tool in deviceData.tools)
 				AddActionMapInputs(tool, maps);
 		}
-
-		maps.Add(m_DefaultActionInput);
 	}
 
 	private void AddActionMapInputs(object obj, List<ActionMapInput> maps)
@@ -905,6 +906,7 @@ public class EditorVR : MonoBehaviour
 				if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
 				{
 					DespawnTool(deviceData, deviceData.currentTool);
+
 					// Don't spawn a new tool, since we are toggling the old tool
 					spawnTool = false;
 				}
@@ -925,6 +927,8 @@ public class EditorVR : MonoBehaviour
 					AddToolToStack(dev, newTool);
 				}
 			}
+
+			UpdatePlayerHandleMaps();
 		};
 
 		return true;
@@ -932,16 +936,19 @@ public class EditorVR : MonoBehaviour
 
 	private void DespawnTool(DeviceData deviceData, ITool tool)
 	{
-		// Remove the tool if it is the current tool on this device tool stack
-		if (deviceData.currentTool == tool)
+		if (!IsPermanentTool(tool.GetType()))
 		{
-			if (deviceData.tools.Peek() != deviceData.currentTool)
-				Debug.LogError("Tool at top of stack is not current tool.");
-			deviceData.tools.Pop();
-			deviceData.currentTool = null;
+			// Remove the tool if it is the current tool on this device tool stack
+			if (deviceData.currentTool == tool)
+			{
+				if (deviceData.tools.Peek() != deviceData.currentTool)
+					Debug.LogError("Tool at top of stack is not current tool.");
+				deviceData.tools.Pop();
+				deviceData.currentTool = deviceData.tools.Peek();
+			}
+			DisconnectInterfaces(tool);
+			U.Object.Destroy(tool as MonoBehaviour);
 		}
-		DisconnectInterfaces(tool);
-		U.Object.Destroy(tool as MonoBehaviour);
 	}
 
 	private bool IsValidActionMapForDevice(ActionMap actionMap, InputDevice device)
@@ -989,15 +996,12 @@ public class EditorVR : MonoBehaviour
 		{
 			m_DeviceData[device].tools.Push(tool);
 			m_DeviceData[device].currentTool = tool;
-			UpdatePlayerHandleMaps();
 		}
 	}
 
 	private void CreateDefaultWorkspaces()
 	{
 		CreateWorkspace<ProjectWorkspace>();
-		CreateWorkspace<ChessboardWorkspace>();
-		CreateWorkspace<ConsoleWorkspace>();
 	}
 
 	private void CreateWorkspace<T>() where T : Workspace
@@ -1025,65 +1029,71 @@ public class EditorVR : MonoBehaviour
 		int count = 0;
 		int direction = 1;
 		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
-		
-		//While the current position is occupied, try a new one
-		while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts)
+
+		// HACK to workaround missing MonoScript serialized fields
+		EditorApplication.delayCall += () =>
 		{
-			//The next position will be rotated by currentRotation, as if the hands of a clock
-			Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-			position = viewerPivot.position + rotateAroundY * defaultOffset + Vector3.up * currentHeight;
-			rotation = rotateAroundY * defaultTilt;
-			
-			//Every other iteration, rotate a little further
-			if (direction < 0)
-				currentRotation += arcLength;
-			
-			//Switch directions every iteration (left, right, left, right)
-			direction *= -1;
-			
-			//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
-			if (currentRotation > 180)
+			// Spawn to one of the sides of the player instead of directly in front of the player
+			do
 			{
-				direction = -1;
-				currentRotation = 0;
-				currentHeight += heightOffset;
+				//The next position will be rotated by currentRotation, as if the hands of a clock
+				Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
+				position = viewerPivot.position + rotateAroundY * defaultOffset + Vector3.up * currentHeight;
+				rotation = rotateAroundY * defaultTilt;
+
+				//Every other iteration, rotate a little further
+				if (direction < 0)
+					currentRotation += arcLength;
+
+				//Switch directions every iteration (left, right, left, right)
+				direction *= -1;
+
+				//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
+				if (currentRotation > 180)
+				{
+					direction = -1;
+					currentRotation = 0;
+					currentHeight += heightOffset;
+				}
 			}
-		}
+			//While the current position is occupied, try a new one
+			while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
 
-		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
-		m_AllWorkspaces.Add(workspace);
-		workspace.destroyed += OnWorkspaceDestroyed;
-		ConnectInterfaces(workspace);
-		workspace.transform.position = position;
-		workspace.transform.rotation = rotation;
-		
-		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
-		workspace.Setup();
+			Workspace workspace = (Workspace) U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
+			m_AllWorkspaces.Add(workspace);
+			workspace.destroyed += OnWorkspaceDestroyed;
+			ConnectInterfaces(workspace);
+			workspace.transform.position = position;
+			workspace.transform.rotation = rotation;
 
-		var miniWorld = workspace as IMiniWorld;
-		if (miniWorld == null)
-			return;
+			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
+			workspace.Setup();
 
-		m_MiniWorlds.Add(miniWorld);
+			var miniWorld = workspace as IMiniWorld;
+			if (miniWorld == null)
+				return;
 
-		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-		{
-			// Create MiniWorld rayOrigin
-			var miniWorldRayOrigin = new GameObject("MiniWorldRayOrigin").transform;
-			miniWorldRayOrigin.parent = workspace.transform;
+			m_MiniWorlds.Add(miniWorld);
 
-			var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-			m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
-			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
-			m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay()
+			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 			{
-				originalRayOrigin = rayOriginPair.Value,
-				miniWorld = miniWorld,
-				proxy = proxy,
-				uiInput = uiInput
-			};
-		}, true);
+				// Create MiniWorld rayOrigin
+				var miniWorldRayOrigin = new GameObject("MiniWorldRayOrigin").transform;
+				miniWorldRayOrigin.parent = workspace.transform;
+
+				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
+				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
+				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay()
+				{
+					originalRayOrigin = rayOriginPair.Value,
+					miniWorld = miniWorld,
+					proxy = proxy,
+					uiInput = uiInput
+				};
+			}, true);
+		};
 	}
 
 	private void OnWorkspaceDestroyed(Workspace workspace)
