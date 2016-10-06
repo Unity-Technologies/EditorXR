@@ -218,6 +218,9 @@ public class EditorVR : MonoBehaviour
 		EditorApplication.delayCall += OnSelectionChanged;
 
 		ClearDeveloperConsoleIfNecessary();
+
+		// This will be the first call to update the player handle (input) maps, sorted by priority
+		UpdatePlayerHandleMaps();
 	}
 
 	private void OnEnable()
@@ -278,6 +281,7 @@ public class EditorVR : MonoBehaviour
 	IEnumerator PrewarmAssets()
 	{
 		// HACK: Cannot async load assets in the editor yet, so to avoid a hitch let's spawn the menu immediately and then make it invisible
+		List<IMainMenu> menus = new List<IMainMenu>();
 		foreach (var kvp in m_DeviceData)
 		{
 			var device = kvp.Key;
@@ -290,18 +294,22 @@ public class EditorVR : MonoBehaviour
 				EditorApplication.delayCall += () =>
 				{
 					mainMenu = SpawnMainMenu(typeof(MainMenu), device, true);
-					UpdatePlayerHandleMaps();
 					deviceData.mainMenu = mainMenu;
 				};
 
 				while (mainMenu == null)
 					yield return null;
 
-				while (!mainMenu.visible)
-					yield return null;
-
-				mainMenu.visible = false;
+				menus.Add(mainMenu);
 			}
+		}
+
+		foreach (var mainMenu in menus)
+		{
+			while (!mainMenu.visible)
+				yield return null;
+
+			mainMenu.visible = false;
 		}
 	}
 
@@ -389,8 +397,6 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultActionMapInputs()
 	{
 		m_TrackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap, null);
-
-		UpdatePlayerHandleMaps();
 	}
 
 	bool IsPermanentTool(Type type)
@@ -447,7 +453,7 @@ public class EditorVR : MonoBehaviour
 		foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
 		{
 			IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
-			proxy.trackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
+			proxy.trackedObjectInput = m_TrackedObjectInput;
 			foreach (var rayOriginPair in proxy.rayOrigins)
 			{
 				var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPair.Value).transform;
@@ -518,7 +524,6 @@ public class EditorVR : MonoBehaviour
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput);
 		});
-		UpdatePlayerHandleMaps();
 	}
 
 	void ForEachRayOrigin(Action<IProxy, KeyValuePair<Node, Transform>, InputDevice, DeviceData> callback, bool activeOnly = false)
@@ -561,7 +566,6 @@ public class EditorVR : MonoBehaviour
 			tester.active = proxy.active;
 			m_IntersectionModule.AddTester(tester);
 		});
-		UpdatePlayerHandleMaps();
 	}
 
 	private GameObject InstantiateUI(GameObject prefab)
@@ -902,7 +906,6 @@ public class EditorVR : MonoBehaviour
 				if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
 				{
 					DespawnTool(deviceData, deviceData.currentTool);
-					UpdatePlayerHandleMaps();
 
 					// Don't spawn a new tool, since we are toggling the old tool
 					spawnTool = false;
@@ -924,6 +927,8 @@ public class EditorVR : MonoBehaviour
 					AddToolToStack(dev, newTool);
 				}
 			}
+
+			UpdatePlayerHandleMaps();
 		};
 
 		return true;
@@ -991,7 +996,6 @@ public class EditorVR : MonoBehaviour
 		{
 			m_DeviceData[device].tools.Push(tool);
 			m_DeviceData[device].currentTool = tool;
-			UpdatePlayerHandleMaps();
 		}
 	}
 
