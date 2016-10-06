@@ -99,9 +99,10 @@ namespace UnityEngine.VR.Menus
 			float startingOpacity = m_CanvasGroup.alpha;
 			float targetOpacity = show ? 1f : 0f;
 			float smoothVelocity = 0f;
-			while (!Mathf.Approximately(startingOpacity, targetOpacity))
+			var startTime = Time.realtimeSinceStartup;
+			while (Time.realtimeSinceStartup < startTime + smoothTime)
 			{
-				startingOpacity = Mathf.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				startingOpacity = U.Math.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_CanvasGroup.alpha = startingOpacity * startingOpacity;
 				yield return null;
 			}
@@ -142,9 +143,10 @@ namespace UnityEngine.VR.Menus
 			float smoothTime = focus ? 0.25f : 0.5f;
 			const float kLerpEmphasisWeight = 0.2f;
 			float smoothVelocity = 0f;
-			while (!Mathf.Approximately(currentBlendShapeWeight, targetWeight))
+			var startTime = Time.realtimeSinceStartup;
+			while (Time.realtimeSinceStartup < startTime + smoothTime)
 			{
-				currentBlendShapeWeight = Mathf.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBlendShapeWeight = U.Math.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				currentBorderLocalScale = Vector3.Lerp(currentBorderLocalScale, targetBorderLocalScale, currentBlendShapeWeight * kLerpEmphasisWeight);
 				m_BorderOutlineTransform.localScale = currentBorderLocalScale;
 				m_TitleIcon.SetBlendShapeWeight(0, currentBlendShapeWeight);
