@@ -20,8 +20,6 @@ namespace UnityEngine.VR.Workspaces
 
 		const float kMaxAlternateFrontPanelLocalZOffset = -0.075f;
 		const float kMaxAlternateFrontPanelLocalYOffset = -0.005f;
-		const string kBottomGradientProperty = "_ColorBottom";
-		const string kTopGradientProperty = "_ColorTop";
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kHiddenFacesBlendShapeIndex = 3;
 		const float backHandleOffset = -0.15f; // Offset to place the back handle in the expected region behind the workspace
