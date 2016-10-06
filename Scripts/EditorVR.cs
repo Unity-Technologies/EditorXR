@@ -35,8 +35,6 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
 	[SerializeField]
-	private ActionMap m_DefaultActionMap;
-	[SerializeField]
 	private ActionMap m_TrackedObjectActionMap;
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
@@ -48,8 +46,7 @@ public class EditorVR : MonoBehaviour
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
 	private TrackedObject m_TrackedObjectInput;
-	private Default m_DefaultActionInput;
-
+	
 	private MultipleRayInputModule m_InputModule;
 	private SpatialHashModule m_SpatialHashModule;
 	private IntersectionModule m_IntersectionModule;
@@ -124,11 +121,7 @@ public class EditorVR : MonoBehaviour
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
-		m_MainMenuTools = m_AllTools.Where(t =>
-			// Don't show default tools in the main menu
-			!typeof(ITransformTool).IsAssignableFrom(t)
-			&& !typeof(SelectionTool).IsAssignableFrom(t)
-			&& !typeof(ILocomotion).IsAssignableFrom(t)).ToList();
+		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
 
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
@@ -396,9 +389,15 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultActionMapInputs()
 	{
 		m_TrackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap, null);
-		m_DefaultActionInput = (Default)CreateActionMapInput(m_DefaultActionMap, null);
 
 		UpdatePlayerHandleMaps();
+	}
+
+	bool IsPermanentTool(Type type)
+	{
+		return typeof(ITransformTool).IsAssignableFrom(type)
+			|| typeof(SelectionTool).IsAssignableFrom(type)
+			|| typeof(ILocomotion).IsAssignableFrom(type);
 	}
 
 	private void SpawnDefaultTools()
@@ -618,8 +617,6 @@ public class EditorVR : MonoBehaviour
 			foreach (ITool tool in deviceData.tools)
 				AddActionMapInputs(tool, maps);
 		}
-
-		maps.Add(m_DefaultActionInput);
 	}
 
 	private void AddActionMapInputs(object obj, List<ActionMapInput> maps)
@@ -905,6 +902,8 @@ public class EditorVR : MonoBehaviour
 				if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
 				{
 					DespawnTool(deviceData, deviceData.currentTool);
+					UpdatePlayerHandleMaps();
+
 					// Don't spawn a new tool, since we are toggling the old tool
 					spawnTool = false;
 				}
@@ -932,16 +931,19 @@ public class EditorVR : MonoBehaviour
 
 	private void DespawnTool(DeviceData deviceData, ITool tool)
 	{
-		// Remove the tool if it is the current tool on this device tool stack
-		if (deviceData.currentTool == tool)
+		if (!IsPermanentTool(tool.GetType()))
 		{
-			if (deviceData.tools.Peek() != deviceData.currentTool)
-				Debug.LogError("Tool at top of stack is not current tool.");
-			deviceData.tools.Pop();
-			deviceData.currentTool = null;
+			// Remove the tool if it is the current tool on this device tool stack
+			if (deviceData.currentTool == tool)
+			{
+				if (deviceData.tools.Peek() != deviceData.currentTool)
+					Debug.LogError("Tool at top of stack is not current tool.");
+				deviceData.tools.Pop();
+				deviceData.currentTool = deviceData.tools.Peek();
+			}
+			DisconnectInterfaces(tool);
+			U.Object.Destroy(tool as MonoBehaviour);
 		}
-		DisconnectInterfaces(tool);
-		U.Object.Destroy(tool as MonoBehaviour);
 	}
 
 	private bool IsValidActionMapForDevice(ActionMap actionMap, InputDevice device)
