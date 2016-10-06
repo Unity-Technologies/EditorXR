@@ -18,6 +18,7 @@ namespace UnityEngine.VR.Workspaces
 		float m_RightHandleYLocalPosition;
 		Material m_FrameGradientMaterial;
 		Vector3 m_FrontResizeIconsContainerOriginalLocalPosition;
+		Vector3 m_BackResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BaseFrontPanelRotation = Vector3.zero;
 		Vector3 m_MaxFrontPanelRotation = new Vector3(45f, 0f, 0f);
 		Vector3 m_OriginalFontPanelLocalPosition;
@@ -28,6 +29,8 @@ namespace UnityEngine.VR.Workspaces
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kThinFrameBlendShapeIndex = 3;
 		const int kHiddenFacesBlendShapeIndex = 4;
+		const float kFaceWidthMatchMultiplier =  7.23f; // Multiplier that sizes the face to the intended width
+		const float kBackResizeButtonPositionOffset = 0.057f; // Offset to place the back resize buttons in their intended location
 		const float kBackHandleOffset = -0.145f; // Offset to place the back handle in the expected region behind the workspace
 		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
 		const float kPanelOffset = -0.09f; // The panel needs to be pulled back slightly
@@ -106,6 +109,9 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		Transform m_FrontResizeIconsContainer;
 
+		[SerializeField]
+		Transform m_BackResizeIconsContainer;
+
 		public bool dynamicFaceAdjustment { get; set; }
 
 		/// <summary>
@@ -137,8 +143,6 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 		bool m_workspaceBaseInteractive = true;
-		
-		const float m_FaceWidthMatchMultiplier =  7.23f;
 
 		public Bounds setBounds
 		{
@@ -169,12 +173,15 @@ namespace UnityEngine.VR.Workspaces
 				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, m_Bounds.size.x);
 				m_UIContentContainer.localPosition = new Vector3(0, m_OriginalUIContainerLocalYPos, -extents.z);
 
+				// Position the back resize handles
+				m_BackResizeIconsContainer.localPosition = new Vector3 (m_BackResizeIconsContainerOriginalLocalPosition.x, m_BackResizeIconsContainerOriginalLocalPosition.y, m_Bounds.size.z + kBackResizeButtonPositionOffset);
+
 				// Adjust front panel position if dynamic adjustment is enabled
 				if (dynamicFaceAdjustment == false)
 					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, kPanelOffset);
 
 				// Resize front panel
-				m_FrameFrontFaceTransform.localScale = new Vector3(m_Bounds.size.x * m_FaceWidthMatchMultiplier, 1f, 1f);
+				m_FrameFrontFaceTransform.localScale = new Vector3(m_Bounds.size.x * kFaceWidthMatchMultiplier, 1f, 1f);
 
 				// Position the separator mask if enabled
 				if (m_SignedSeparatorMaskOffset != null)
@@ -281,6 +288,7 @@ namespace UnityEngine.VR.Workspaces
 
 			const float frontResizeIconsContainerforwardOffset = -0.025f;
 			m_FrontResizeIconsContainerOriginalLocalPosition = m_FrontResizeIconsContainer.localPosition;
+			m_BackResizeIconsContainerOriginalLocalPosition = m_BackResizeIconsContainer.localPosition;
 			m_FrontResizeIconsContainerAngledLocalPosition = new Vector3(m_FrontResizeIconsContainerOriginalLocalPosition.x, m_FrontResizeIconsContainerOriginalLocalPosition.y, m_FrontResizeIconsContainerOriginalLocalPosition.z + frontResizeIconsContainerforwardOffset);
 
 			m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, 50f); // Set default frame thickness to be in middle
@@ -288,8 +296,6 @@ namespace UnityEngine.VR.Workspaces
 
 		void Update()
 		{
-			//m_FrameFrontFaceTransform.localScale = new Vector3(m_Bounds.size.x * m_FaceWidthMatchMultiplier, 1f, 1f); // hack remove
-
 			if (dynamicFaceAdjustment == false)
 				return;
 
