@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.VR;
 using UnityEngine.InputNew;
+using UnityEngine.VR;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 
@@ -37,6 +38,7 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustom
 	}
 	private JoystickLocomotion m_JoystickLocomotionInput;
 
+	public Node node { private get; set; }
 
 	void Start()
 	{

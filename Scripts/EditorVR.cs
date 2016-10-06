@@ -66,7 +66,8 @@ public class EditorVR : MonoBehaviour
 		public ActionMapInput uiInput;
 		public IMainMenu mainMenu;
 		public ITool currentTool;
-	}
+		public List<GameObject> toolMenus;
+    }
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
 	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
@@ -141,7 +142,8 @@ public class EditorVR : MonoBehaviour
 			var deviceData = new DeviceData
 			{
 				tools = new Stack<ITool>(),
-				showMenuInput = (ShowMenu)CreateActionMapInput(m_ShowMenuActionMap, device)
+				showMenuInput = (ShowMenu)CreateActionMapInput(m_ShowMenuActionMap,device),
+				toolMenus = new List<GameObject>()
 			};
 			m_DeviceData.Add(device, deviceData);
 		}
@@ -241,6 +243,10 @@ public class EditorVR : MonoBehaviour
 				var mainMenu = m_DeviceData[device].mainMenu;
 				if (mainMenu != null)
 				{
+					foreach(GameObject go in kvp.Value.toolMenus)
+					{
+						go.SetActive(mainMenu.visible);
+					}
 					// Toggle menu
 					mainMenu.visible = !mainMenu.visible;
 				}
@@ -455,6 +461,49 @@ public class EditorVR : MonoBehaviour
 		return go;
 	}
 
+	private GameObject InstantiateMenuUI(Node node,MenuOrigin origin,GameObject prefab)
+	{
+		var go = U.Object.Instantiate(prefab,transform);
+		foreach(Canvas canvas in go.GetComponentsInChildren<Canvas>())
+			canvas.worldCamera = m_EventCamera;
+
+		if(node == Node.LeftHand)
+			node = Node.RightHand;
+		else if(node == Node.RightHand)
+			node = Node.LeftHand;
+
+		foreach(var proxy in m_AllProxies)
+		{
+			Dictionary<Node,Transform> temp = null;
+
+			if(origin == MenuOrigin.Main)
+				temp = proxy.menuOrigins;
+			else if(origin == MenuOrigin.Alternate)
+				temp = proxy.alternateMenuOrigins;
+
+			Transform parent;
+			if(temp != null && temp.TryGetValue(node,out parent))
+			{
+				go.transform.SetParent(parent);
+				go.transform.localPosition = Vector3.zero;
+				go.transform.localRotation = Quaternion.identity;
+
+				foreach(var kvp in m_DeviceData)
+				{
+					var device = kvp.Key;
+					if(GetDeviceNode(device) == node)
+					{
+						kvp.Value.toolMenus.Add(go);
+						m_DeviceData[device].mainMenu.visible = false;
+                    }
+				}
+			}
+			
+		}
+
+		return go;
+	}
+
 	private ActionMapInput CreateActionMapInput(ActionMap map, InputDevice device)
 	{
 		// Check for improper use of action maps first
@@ -627,6 +676,12 @@ public class EditorVR : MonoBehaviour
 					{
 						bool continueSearching = true;
 
+						var iTool = obj as ITool;
+						if(iTool != null)
+						{
+							iTool.node = node.Value;
+						}
+
 						Transform rayOrigin;
 						if (proxy.rayOrigins.TryGetValue(node.Value, out rayOrigin))
 						{
@@ -679,6 +734,10 @@ public class EditorVR : MonoBehaviour
 		var instantiateUI = obj as IInstantiateUI;
 		if (instantiateUI != null)
 			instantiateUI.instantiateUI = InstantiateUI;
+
+		var instantiateMenuUI = obj as IInstantiateMenuUI;
+		if(instantiateMenuUI != null)
+			instantiateMenuUI.instantiateMenuUI = InstantiateMenuUI;
 
 		var raycaster = obj as IRaycaster;
 		if (raycaster != null)

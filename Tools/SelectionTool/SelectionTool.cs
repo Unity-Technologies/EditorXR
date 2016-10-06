@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,8 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 	public Transform rayOrigin { private get; set; }
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
+
+	public Node node { private get; set; }
 
 	void Update()
 	{

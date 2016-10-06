@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.VR;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 
@@ -7,7 +8,11 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay
 {	
 	public Transform rayOrigin { get; set; }
 	public Standard standardInput { get; set; }
-    
+	public Node node
+	{
+		private get; set;
+	}
+
 	private void Update()
 	{
 		if (standardInput.action.wasJustPressed)

@@ -1,6 +1,8 @@
-﻿using UnityEngine.VR.Utilities;
+﻿using System;
+using UnityEngine.VR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Tools;
 
 public class CreatePrimitiveMenu : MonoBehaviour
 {

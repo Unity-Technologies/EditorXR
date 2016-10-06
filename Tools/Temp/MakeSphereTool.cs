@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.VR;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 
@@ -8,6 +9,7 @@ using UnityEngine.VR.Tools;
 public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay
 {	
 	public Transform rayOrigin { get; set; }
+	public Node node { private get; set; }
 
 	public ActionMap actionMap
 	{

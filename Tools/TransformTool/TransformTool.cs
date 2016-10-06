@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 using UnityEditor;
 using UnityEngine.VR.Utilities;
@@ -59,6 +60,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput) value; } }
 	private TransformInput m_TransformInput;
+
+	public Node node { private get; set; }
 
 	void Awake()
 	{
