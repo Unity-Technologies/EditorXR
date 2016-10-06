@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: fcfac1c86ef120e4494261ba5a4cfa9d
+timeCreated: 1472070063
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_Text: {instanceID: 0}
+  - m_Cube: {instanceID: 0}
+  - m_ExpandArrow: {instanceID: 0}
+  - m_NoClipCubeMaterial: {fileID: 2100000, guid: 66d21d847da9fae44a46053afe8d825b,
+      type: 2}
+  - m_NoClipExpandArrowMaterial: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

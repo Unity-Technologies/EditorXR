@@ -1,27 +1,24 @@
-﻿using UnityEngine;
-using System;
-using System.Collections.Generic;
-using System.Security.AccessControl;
-using UnityEngine.InputNew;
+﻿using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
 {
 	public class SixenseProxy : TwoHandedProxyBase
 	{
-		public override bool Active
+		private SixenseInputToEvents m_InputToEvents;
+
+		public override bool active
 		{
 			get
 			{
-				return m_InputToEvents.Active;
+				return m_InputToEvents.active;
 			}
 		}
 
-		private SixenseInputToEvents m_InputToEvents;
-
 		public override void Awake()
 		{
-            base.Awake();
-			m_InputToEvents = U.AddComponent<SixenseInputToEvents>(gameObject);
-		}		
+			base.Awake();
+			transform.position = U.Camera.GetViewerPivot().position; // Reference position should be the viewer pivot, so remove any offsets
+			m_InputToEvents = U.Object.AddComponent<SixenseInputToEvents>(gameObject);
+		}
 	}
 }

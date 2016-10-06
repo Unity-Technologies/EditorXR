@@ -1,27 +1,38 @@
-﻿using UnityEngine;
-using System;
-using System.Collections.Generic;
-using System.Security.AccessControl;
-using UnityEngine.InputNew;
+﻿using UnityEditor;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
 {
 	public class TouchProxy : TwoHandedProxyBase
 	{
-		public override bool Active
+		private OVRTouchInputToEvents m_InputToEvents;
+
+		public override bool active
 		{
 			get
 			{
-				return m_InputToEvents.Active;
+				return m_InputToEvents.active;
 			}
 		}
-
-		private OVRTouchInputToEvents m_InputToEvents;
 
 		public override void Awake()
 		{
 			base.Awake();
-			m_InputToEvents = U.AddComponent<OVRTouchInputToEvents>(gameObject);
-		}		
+			m_InputToEvents = U.Object.AddComponent<OVRTouchInputToEvents>(gameObject);
+		}
+
+		public override void Start()
+		{
+			// Touch controllers should be spawned under a pivot that corresponds to the head with no offsets, since the
+			// local positions of the controllers will be provided that way.
+#if UNITY_EDITOR
+			EditorApplication.delayCall += () =>
+			{
+				transform.localPosition = Vector3.zero;
+			};
+#else
+			transform.localPosition = Vector3.zero;
+#endif
+		}
 	}
 }

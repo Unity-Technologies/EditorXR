@@ -2,7 +2,7 @@
 
 namespace UnityEngine.VR.Tools
 {
-    public interface ITool
-    {     
-    }
+	public interface ITool
+	{
+	}
 }
