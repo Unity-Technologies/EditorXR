@@ -1027,7 +1027,7 @@ public class EditorVR : MonoBehaviour
 		// HACK to workaround missing MonoScript serialized fields
 		EditorApplication.delayCall += () =>
 		{
-			//While the current position is occupied, try a new one
+			// Spawn to one of the sides of the player instead of directly in front of the player
 			do
 			{
 				//The next position will be rotated by currentRotation, as if the hands of a clock
@@ -1050,6 +1050,7 @@ public class EditorVR : MonoBehaviour
 					currentHeight += heightOffset;
 				}
 			}
+			//While the current position is occupied, try a new one
 			while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
 
 			Workspace workspace = (Workspace) U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
