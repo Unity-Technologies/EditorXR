@@ -24,7 +24,8 @@ namespace UnityEngine.VR.Workspaces
 		const string kTopGradientProperty = "_ColorTop";
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kHiddenFacesBlendShapeIndex = 3;
-		private const float kPanelOffset = -0.09f; // The panel needs to be pulled back slightly
+		const float backHandleOffset = -0.15f; // Offset to place the back handle in the expected region behind the workspace
+		const float kPanelOffset = -0.09f; // The panel needs to be pulled back slightly
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -155,7 +156,7 @@ namespace UnityEngine.VR.Workspaces
 				m_RightHandle.transform.localPosition = new Vector3(m_Bounds.extents.x - handleScale * 0.5f, m_RightHandle.transform.localPosition.y, 0);
 				m_RightHandle.transform.localScale = new Vector3(m_Bounds.size.z, handleScale, handleScale);
 
-				m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandle.transform.localPosition.y, m_Bounds.extents.z - handleScale);
+				m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandle.transform.localPosition.y, m_Bounds.extents.z - handleScale - backHandleOffset);
 				m_BackHandle.transform.localScale = new Vector3(m_Bounds.size.x, handleScale, handleScale);
 
 				// Resize content container
