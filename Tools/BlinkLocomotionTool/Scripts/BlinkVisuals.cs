@@ -225,11 +225,12 @@ public class BlinkVisuals : MonoBehaviour
 			yield return null;
 		}
 
-		m_TubeTransform.localScale = new Vector3(tubeScale, kTargetScale, tubeScale);
-		m_LocatorRoot.localScale = Vector3.one * kTargetScale;
-
 		if (m_State == State.TransitioningIn)
+		{
+			m_TubeTransform.localScale = new Vector3(tubeScale, kTargetScale, tubeScale);
+			m_LocatorRoot.localScale = Vector3.one * kTargetScale;
 			m_LineRenderer.SetWidth(kTargetScale, kTargetScale);
+		}
 
 		m_State = State.Active;
 	}
