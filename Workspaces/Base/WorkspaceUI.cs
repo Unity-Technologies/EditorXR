@@ -10,36 +10,21 @@ namespace UnityEngine.VR.Workspaces
 		public event Action lockClicked = delegate { };
 
 		float m_OriginalUIContainerLocalYPos;
+		float m_PreviousXRotation;
 		Material m_FrameGradientMaterial;
+		Vector3 m_FrontResizeIconsContainerOriginalLocalPosition;
+		Vector3 m_BaseFrontPanelRotation = Vector3.zero;
+		Vector3 m_MaxFrontPanelRotation = new Vector3(45f, 0f, 0f);
+		Vector3 m_OriginalFontPanelLocalPosition;
+		Vector3 m_FrontResizeIconsContainerAngledLocalPosition;
 
+		const float kMaxAlternateFrontPanelLocalZOffset = -0.075f;
+		const float kMaxAlternateFrontPanelLocalYOffset = -0.005f;
+		const string kBottomGradientProperty = "_ColorBottom";
+		const string kTopGradientProperty = "_ColorTop";
+		const int kAngledFaceBlendShapeIndex = 2;
+		const int kHiddenFacesBlendShapeIndex = 3;
 		private const float kPanelOffset = -0.09f; // The panel needs to be pulled back slightly
-
-		[SerializeField]
-		private RectTransform m_UIContentContainer;
-
-		[SerializeField]
-		private Image m_FrontLeftResizeIcon;
-
-		[SerializeField]
-		private Image m_FrontRightResizeIcon;
-
-		[SerializeField]
-		private Image m_BackLeftResizeIcon;
-
-		[SerializeField]
-		private Image m_BackRightResizeIcon;
-
-		[SerializeField]
-		private Image m_LeftSideFrontResizeIcon;
-
-		[SerializeField]
-		private Image m_LeftSideBackResizeIcon;
-
-		[SerializeField]
-		private Image m_RightSideFrontResizeIcon;
-
-		[SerializeField]
-		private Image m_RightSideBackResizeIcon;
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -85,10 +70,35 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		Transform m_SeparatorMaskTransform;
 
-		private const string kBottomGradientProperty = "_ColorBottom";
-		private const string kTopGradientProperty = "_ColorTop";
-		private const int kAngledFaceBlendShapeIndex = 2;
-		private const int kHiddenFacesBlendShapeIndex = 3;
+		[SerializeField]
+		RectTransform m_UIContentContainer;
+
+		[SerializeField]
+		Image m_FrontLeftResizeIcon;
+
+		[SerializeField]
+		Image m_FrontRightResizeIcon;
+
+		[SerializeField]
+		Image m_BackLeftResizeIcon;
+
+		[SerializeField]
+		Image m_BackRightResizeIcon;
+
+		[SerializeField]
+		Image m_LeftSideFrontResizeIcon;
+
+		[SerializeField]
+		Image m_LeftSideBackResizeIcon;
+
+		[SerializeField]
+		Image m_RightSideFrontResizeIcon;
+
+		[SerializeField]
+		Image m_RightSideBackResizeIcon;
+
+		[SerializeField]
+		Transform m_FrontResizeIconsContainer;
 
 		public bool dynamicFaceAdjustment { get; set; }
 
@@ -152,10 +162,14 @@ namespace UnityEngine.VR.Workspaces
 				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, m_Bounds.size.x);
 				m_UIContentContainer.localPosition = new Vector3(0, m_OriginalUIContainerLocalYPos, -m_Bounds.extents.z);
 
-				// Resize front panel
+				// Adjust front panel position if dynamic adjustment is enabled
 				if (dynamicFaceAdjustment == false)
 					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, kPanelOffset);
 
+				// Resize front panel
+				m_FrameFrontFaceTransform.localScale = new Vector3(m_Bounds.size.x * m_FaceWidthMatchMultiplier, 1f, 1f);
+
+				// Position the separator mask if enabled
 				if (m_SignedSeparatorMaskOffset != null)
 				{
 					const float heightCompensationMultiplier = 4.225f;
@@ -224,9 +238,6 @@ namespace UnityEngine.VR.Workspaces
 
 		private void Awake()
 		{
-			m_OriginalUIContainerLocalYPos = m_UIContentContainer.localPosition.y;
-			m_OriginalFontPanelLocalPosition = m_FrontPanel.localPosition;
-
 			m_FrontHandle.hoverStarted += ResizeHighlightBegin;
 			m_FrontHandle.hoverEnded += ResizeHighlightEnd;
 			m_RightHandle.hoverStarted += ResizeHighlightBegin;
@@ -244,30 +255,37 @@ namespace UnityEngine.VR.Workspaces
 			m_LeftSideBackResizeIcon.CrossFadeAlpha(0f, 0f, true);
 			m_BackLeftResizeIcon.CrossFadeAlpha(0f, 0f, true);
 			m_BackRightResizeIcon.CrossFadeAlpha(0f, 0f, true);
-		}
 
-		private float m_AngledAmount; 
-		private Vector3 m_BaseFrontPanelRotation = Vector3.zero;
-		private Vector3 m_MaxFrontPanelRotation = new Vector3(45f, 0f, 0f);
-		private float kMaxAlternateFrontPanelLocalZOffset = -0.075f;
-		private float kMaxAlternateFrontPanelLocalYOffset = -0.005f;
-		private Vector3 m_OriginalFontPanelLocalPosition;
+			m_OriginalUIContainerLocalYPos = m_UIContentContainer.localPosition.y;
+			m_OriginalFontPanelLocalPosition = m_FrontPanel.localPosition;
+
+			const float frontResizeIconsContainerforwardOffset = -0.025f;
+			m_FrontResizeIconsContainerOriginalLocalPosition = m_FrontResizeIconsContainer.localPosition;
+			m_FrontResizeIconsContainerAngledLocalPosition = new Vector3(m_FrontResizeIconsContainerOriginalLocalPosition.x, m_FrontResizeIconsContainerOriginalLocalPosition.y, m_FrontResizeIconsContainerOriginalLocalPosition.z + frontResizeIconsContainerforwardOffset);
+		}
 
 		private void Update()
 		{
-			m_FrameFrontFaceTransform.localScale = new Vector3(m_Bounds.size.x * m_FaceWidthMatchMultiplier, 1f, 1f); // hack remove
+			//m_FrameFrontFaceTransform.localScale = new Vector3(m_Bounds.size.x * m_FaceWidthMatchMultiplier, 1f, 1f); // hack remove
 
 			if (dynamicFaceAdjustment == false)
 				return;
 
-			// sin of x rotation drives the blendeshape value
-			m_AngledAmount = Mathf.Clamp(Mathf.DeltaAngle(transform.rotation.eulerAngles.x, 0f), 0f, 100f);
+			float currentXRotation = transform.rotation.eulerAngles.x;
+			if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
+				return; // Exit if no x rotation change occurred for this frame
 
-			float lerpAmount = m_AngledAmount / 90f;
+			m_PreviousXRotation = currentXRotation;
+
+			float angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 100f);
+			float lerpAmount = angledAmount / 90f;
 			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));
 			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
 
-			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, m_AngledAmount);
+			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, angledAmount);
+
+			// offset the front resize icons to accommodate for the blendshape extending outwards
+			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, angledAmount * 0.1f);
 		}
 
 		public void CloseClick()
