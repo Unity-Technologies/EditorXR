@@ -997,8 +997,6 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultWorkspaces()
 	{
 		CreateWorkspace<ProjectWorkspace>();
-		CreateWorkspace<ChessboardWorkspace>();
-		CreateWorkspace<ConsoleWorkspace>();
 	}
 
 	private void CreateWorkspace<T>() where T : Workspace
@@ -1026,65 +1024,71 @@ public class EditorVR : MonoBehaviour
 		int count = 0;
 		int direction = 1;
 		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
-		
-		//While the current position is occupied, try a new one
-		while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts)
+
+		// HACK to workaround missing MonoScript serialized fields
+		EditorApplication.delayCall += () =>
 		{
-			//The next position will be rotated by currentRotation, as if the hands of a clock
-			Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-			position = viewerPivot.position + rotateAroundY * defaultOffset + Vector3.up * currentHeight;
-			rotation = rotateAroundY * defaultTilt;
-			
-			//Every other iteration, rotate a little further
-			if (direction < 0)
-				currentRotation += arcLength;
-			
-			//Switch directions every iteration (left, right, left, right)
-			direction *= -1;
-			
-			//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
-			if (currentRotation > 180)
+			// Spawn to one of the sides of the player instead of directly in front of the player
+			do
 			{
-				direction = -1;
-				currentRotation = 0;
-				currentHeight += heightOffset;
+				//The next position will be rotated by currentRotation, as if the hands of a clock
+				Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
+				position = viewerPivot.position + rotateAroundY * defaultOffset + Vector3.up * currentHeight;
+				rotation = rotateAroundY * defaultTilt;
+
+				//Every other iteration, rotate a little further
+				if (direction < 0)
+					currentRotation += arcLength;
+
+				//Switch directions every iteration (left, right, left, right)
+				direction *= -1;
+
+				//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
+				if (currentRotation > 180)
+				{
+					direction = -1;
+					currentRotation = 0;
+					currentHeight += heightOffset;
+				}
 			}
-		}
+			//While the current position is occupied, try a new one
+			while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
 
-		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
-		m_AllWorkspaces.Add(workspace);
-		workspace.destroyed += OnWorkspaceDestroyed;
-		ConnectInterfaces(workspace);
-		workspace.transform.position = position;
-		workspace.transform.rotation = rotation;
-		
-		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
-		workspace.Setup();
+			Workspace workspace = (Workspace) U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
+			m_AllWorkspaces.Add(workspace);
+			workspace.destroyed += OnWorkspaceDestroyed;
+			ConnectInterfaces(workspace);
+			workspace.transform.position = position;
+			workspace.transform.rotation = rotation;
 
-		var miniWorld = workspace as IMiniWorld;
-		if (miniWorld == null)
-			return;
+			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
+			workspace.Setup();
 
-		m_MiniWorlds.Add(miniWorld);
+			var miniWorld = workspace as IMiniWorld;
+			if (miniWorld == null)
+				return;
 
-		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-		{
-			// Create MiniWorld rayOrigin
-			var miniWorldRayOrigin = new GameObject("MiniWorldRayOrigin").transform;
-			miniWorldRayOrigin.parent = workspace.transform;
+			m_MiniWorlds.Add(miniWorld);
 
-			var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-			m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
-			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
-			m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay()
+			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 			{
-				originalRayOrigin = rayOriginPair.Value,
-				miniWorld = miniWorld,
-				proxy = proxy,
-				uiInput = uiInput
-			};
-		}, true);
+				// Create MiniWorld rayOrigin
+				var miniWorldRayOrigin = new GameObject("MiniWorldRayOrigin").transform;
+				miniWorldRayOrigin.parent = workspace.transform;
+
+				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
+				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
+				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay()
+				{
+					originalRayOrigin = rayOriginPair.Value,
+					miniWorld = miniWorld,
+					proxy = proxy,
+					uiInput = uiInput
+				};
+			}, true);
+		};
 	}
 
 	private void OnWorkspaceDestroyed(Workspace workspace)
