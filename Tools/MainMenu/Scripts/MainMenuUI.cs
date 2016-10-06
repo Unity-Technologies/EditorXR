@@ -74,8 +74,7 @@ namespace UnityEngine.VR.Menus
 		private List<MainMenuFace> m_MenuFaces;
 		private Material m_MenuFacesMaterial;
 		private Color m_MenuFacesColor;
-		private Dictionary<string, List<Transform>> m_FaceButtons;
-		private List<Transform> m_UncategorizedButtons;
+		private readonly Dictionary<string, List<Transform>> m_FaceButtons = new Dictionary<string, List<Transform>>();
 		private Transform m_MenuOrigin;
 		private Transform m_AlternateMenuOrigin;
 		private Vector3 m_AlternateMenuOriginOriginalLocalScale;
@@ -176,13 +175,6 @@ namespace UnityEngine.VR.Menus
 		// we need to make use of instantiateUI
 		public void Setup()
 		{
-			if (m_FaceButtons == null)
-			{
-				m_FaceButtons = new Dictionary<string, List<Transform>>();
-				m_UncategorizedButtons = new List<Transform>();
-				m_FaceButtons.Add(kUncategorizedFaceName, m_UncategorizedButtons);
-			}
-
 			m_MenuFaces = new List<MainMenuFace>();
 			for (var faceCount = 0; faceCount < kFaceCount; ++faceCount)
 			{
@@ -293,34 +285,29 @@ namespace UnityEngine.VR.Menus
 			MainMenuButton mainMenuButton = button.GetComponent<MainMenuButton>();
 			buttonCreationCallback(mainMenuButton);
 
-			if (buttonData.sectionName != null)
-			{
-				mainMenuButton.SetData(buttonData.name, buttonData.description);
+			if (string.IsNullOrEmpty(buttonData.sectionName))
+				buttonData.sectionName = kUncategorizedFaceName;
 
-				var found = m_FaceButtons.Any(x => x.Key == buttonData.sectionName);
-				if (found)
-				{
-					var kvp = m_FaceButtons.First(x => x.Key == buttonData.sectionName);
-					kvp.Value.Add(button.transform);
-				}
-				else
-				{
-					m_FaceButtons.Add(buttonData.sectionName, new List<Transform>() { button.transform });
-				}
+			mainMenuButton.SetData(buttonData.name, buttonData.description);
+
+			var found = m_FaceButtons.Any(x => x.Key == buttonData.sectionName);
+			if (found)
+			{
+				var kvp = m_FaceButtons.First(x => x.Key == buttonData.sectionName);
+				kvp.Value.Add(button.transform);
 			}
 			else
 			{
-				m_UncategorizedButtons.Add(button.transform);
-				mainMenuButton.SetData(buttonData.name, string.Empty);
+				m_FaceButtons.Add(buttonData.sectionName, new List<Transform>() { button.transform });
 			}
 		}
 
 		public void SetupMenuFaces()
 		{
 			int position = 0;
-			foreach (var faceNameToButtons in m_FaceButtons)
+			foreach (var faceButtons in m_FaceButtons)
 			{
-				m_MenuFaces[position].SetFaceData(faceNameToButtons.Key, faceNameToButtons.Value,
+				m_MenuFaces[position].SetFaceData(faceButtons.Key, faceButtons.Value,
 					UnityBrandColorScheme.GetRandomGradient());
 				++position;
 			}
@@ -361,7 +348,7 @@ namespace UnityEngine.VR.Menus
 			float smoothSnapSpeed = 0.5f;
 			while (Mathf.Abs(Mathf.DeltaAngle(rotation, faceTargetRotation)) > kRotationEpsilon)
 			{
-				smoothSnapSpeed = Mathf.SmoothDamp(smoothSnapSpeed, snapSpeed, ref smoothVelocity, 0.0625f, Mathf.Infinity, Time.unscaledDeltaTime);
+				smoothSnapSpeed = U.Math.SmoothDamp(smoothSnapSpeed, snapSpeed, ref smoothVelocity, 0.0625f, Mathf.Infinity, Time.unscaledDeltaTime);
 				rotation = Mathf.LerpAngle(rotation, faceTargetRotation, Time.unscaledDeltaTime * smoothSnapSpeed);
 				m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, rotation, 0));
 				yield return null;
@@ -390,11 +377,13 @@ namespace UnityEngine.VR.Menus
 			
 			float scale = 0f;
 			float smoothVelocity = 0f;
-			while (!Mathf.Approximately(scale, kTargetScale))
+			const float kSmoothTime = 0.125f;
+			var startTime = Time.realtimeSinceStartup;
+			while (Time.realtimeSinceStartup < startTime + kSmoothTime)
 			{
 				menuOrigin.localScale = Vector3.one * scale;
 				alternateMenuOrigin.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
-				scale = Mathf.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.125f, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
@@ -420,11 +409,13 @@ namespace UnityEngine.VR.Menus
 			const float kTargetScale = 0f;
 			float scale = menuOrigin.localScale.x;
 			float smoothVelocity = 0f;
-			while (!Mathf.Approximately(scale, kTargetScale))
+			const float kSmoothTime = 0.06875f;
+			var startTime = Time.realtimeSinceStartup;
+			while (Time.realtimeSinceStartup < startTime + kSmoothTime)
 			{
 				menuOrigin.localScale = Vector3.one * scale;
 				alternateMenuOrigin.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
-				scale = Mathf.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.06875f, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
@@ -445,9 +436,10 @@ namespace UnityEngine.VR.Menus
 			float currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
 			float targetWeight = rotationState == RotationState.Rotating ? 100f : 0f;
 			float smoothVelocity = 0f;
-			while (m_RotationState == rotationState && !Mathf.Approximately(currentBlendShapeWeight, targetWeight))
+			var startTime = Time.realtimeSinceStartup;
+			while (m_RotationState == rotationState && Time.realtimeSinceStartup < startTime + smoothTime)
 			{
-				currentBlendShapeWeight = Mathf.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBlendShapeWeight = U.Math.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_MenuFrameRenderer.SetBlendShapeWeight(0, currentBlendShapeWeight);
 				yield return null;
 			}
@@ -467,9 +459,10 @@ namespace UnityEngine.VR.Menus
 			const float kLerpEmphasisWeight = 0.25f;
 			currentBlendShapeWeight = currentBlendShapeWeight > 0 ? currentBlendShapeWeight : zeroStartBlendShapePadding;
 
-			while (m_VisibilityState != VisibilityState.Hidden && !Mathf.Approximately(currentBlendShapeWeight, targetWeight))
+			var startTime = Time.realtimeSinceStartup;
+			while (m_VisibilityState != VisibilityState.Hidden && Time.realtimeSinceStartup < startTime + smoothTime)
 			{
-				currentBlendShapeWeight = Mathf.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBlendShapeWeight = U.Math.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_MenuFrameRenderer.SetBlendShapeWeight(1, currentBlendShapeWeight * currentBlendShapeWeight);
 				m_MenuFacesMaterial.color = Color.Lerp(m_MenuFacesColor, kMenuFacesHiddenColor, currentBlendShapeWeight * kLerpEmphasisWeight);
 				yield return null;
