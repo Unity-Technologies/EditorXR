@@ -139,7 +139,7 @@ namespace UnityEngine.VR.Utilities
 			get
 			{
 				if (m_SessionGradient == null)
-					m_SessionGradient = GetRandomGradient();
+					m_SessionGradient = s_Gradients[Random.Range(0, s_Gradients.Count - 1)];
 
 				return m_SessionGradient.Value;
 			}
