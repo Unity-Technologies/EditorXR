@@ -119,14 +119,16 @@ namespace UnityEngine.VR.Workspaces
 
 		public bool workspaceBaseInteractive
 		{
-			get { return m_workspaceBaseInteractive; }
 			set
 			{
 				m_workspaceBaseInteractive = value;
 				dynamicFaceAdjustment = false;
 
 				if (m_workspaceBaseInteractive == false)
+				{
 					m_Frame.SetBlendShapeWeight(kHiddenFacesBlendShapeIndex, 100f);
+					m_FrameFrontFaceTransform.gameObject.SetActive(false);
+				}
 			}
 		}
 		bool m_workspaceBaseInteractive = true;
@@ -185,6 +187,9 @@ namespace UnityEngine.VR.Workspaces
 
 		private void ResizeHighlightBegin(BaseHandle baseHandle, HandleEventData eventData)
 		{
+			if (m_workspaceBaseInteractive == false)
+				return;
+
 			const float kOpacityTarget = 0.75f;
 			const float kDuration = 0.5f;
 
@@ -212,6 +217,9 @@ namespace UnityEngine.VR.Workspaces
 
 		private void ResizeHighlightEnd(BaseHandle baseHandle, HandleEventData eventData)
 		{
+			if (m_workspaceBaseInteractive == false)
+				return;
+
 			const float kOpacityTarget = 0f;
 			const float kDuration = 0.2f;
 
