@@ -19,8 +19,6 @@ namespace UnityEngine.VR.Workspaces
 
 		protected WorkspaceUI m_WorkspaceUI;
 
-		public bool dynamicFaceAdjustment { get { return m_WorkspaceUI.dynamicFaceAdjustment; } set {m_WorkspaceUI.dynamicFaceAdjustment = value; } }
-
 		public static readonly Vector3 kMinBounds = new Vector3(0.7f, 0.4f, 0.1f);
 		private const float kExtraHeight = 0.15f; //Extra space for frame model
 
@@ -84,6 +82,21 @@ namespace UnityEngine.VR.Workspaces
 		public Func<GameObject, GameObject> instantiateUI { protected get; set; }
 
 		public Action<GameObject, bool> setHighlight { get; set; }
+
+		public bool dynamicFaceAdjustment { get { return m_WorkspaceUI.dynamicFaceAdjustment; } set {m_WorkspaceUI.dynamicFaceAdjustment = value; } }
+
+		/// <summary>
+		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
+		/// A value of zero will leave the mask in the center of the workspace
+		/// </summary>
+		public float signedSeparatorMaskOffset
+		{
+			set
+			{
+				m_WorkspaceUI.signedSeparatorMaskOffset = value;
+				m_WorkspaceUI.setBounds = contentBounds;
+			}
+		}
 
 		public bool vacuumEnabled { set { m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value); } }
 		protected bool workspaceBaseInteractive { set { m_WorkspaceUI.workspaceBaseInteractive = value; } }

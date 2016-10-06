@@ -42,6 +42,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 	{
 		base.Setup();
 		dynamicFaceAdjustment = true;
+		signedSeparatorMaskOffset = -0.2875f; // enable & position the separator-mask slightly to the left of workspace center
 
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();

@@ -9,7 +9,7 @@ namespace UnityEngine.VR.Workspaces
 		public event Action closeClicked = delegate { };
 		public event Action lockClicked = delegate { };
 
-		private float m_OriginalUIContainerLocalYPos;
+		float m_OriginalUIContainerLocalYPos;
 		Material m_FrameGradientMaterial;
 
 		private const float kPanelOffset = -0.09f; // The panel needs to be pulled back slightly
@@ -81,13 +81,30 @@ namespace UnityEngine.VR.Workspaces
 
 		[SerializeField]
 		Transform m_FrameFrontFaceTransform;
-		
+
+		[SerializeField]
+		Transform m_SeparatorMaskTransform;
+
 		private const string kBottomGradientProperty = "_ColorBottom";
 		private const string kTopGradientProperty = "_ColorTop";
 		private const int kAngledFaceBlendShapeIndex = 2;
 		private const int kHiddenFacesBlendShapeIndex = 3;
 
 		public bool dynamicFaceAdjustment { get; set; }
+
+		/// <summary>
+		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
+		/// A value of zero will leave the mask in the center of the workspace
+		/// </summary>
+		public float signedSeparatorMaskOffset
+		{
+			set
+			{
+				m_SignedSeparatorMaskOffset = value;
+				m_SeparatorMaskTransform.gameObject.SetActive(true);
+			}
+		}
+		float? m_SignedSeparatorMaskOffset;
 
 		public bool workspaceBaseInteractive
 		{
@@ -139,7 +156,12 @@ namespace UnityEngine.VR.Workspaces
 				if (dynamicFaceAdjustment == false)
 					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, kPanelOffset);
 
-				//m_FrameFrontFaceTransform.localScale = new Vector3(m_Bounds.size.x * m_FaceWidthMultiplier, 1f, 1f);
+				if (m_SignedSeparatorMaskOffset != null)
+				{
+					const float heightCompensationMultiplier = 4.225f;
+					m_SeparatorMaskTransform.localPosition = new Vector3(m_Bounds.size.x * 0.5f * m_SignedSeparatorMaskOffset.Value, 0f, 0f);
+					m_SeparatorMaskTransform.localScale = new Vector3(1f, 1f, m_Bounds.size.z * heightCompensationMultiplier);
+				}
 
 				m_GrabCollider.size = new Vector3(m_Bounds.size.x, m_GrabCollider.size.y, m_GrabCollider.size.z);
 			}
