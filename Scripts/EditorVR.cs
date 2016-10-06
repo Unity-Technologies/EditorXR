@@ -295,6 +295,7 @@ public class EditorVR : MonoBehaviour
 				{
 					mainMenu = SpawnMainMenu(typeof(MainMenu), device, true);
 					deviceData.mainMenu = mainMenu;
+					UpdatePlayerHandleMaps();
 				};
 
 				while (mainMenu == null)
