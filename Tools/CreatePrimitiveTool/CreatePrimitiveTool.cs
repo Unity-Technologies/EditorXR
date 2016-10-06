@@ -6,27 +6,24 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
 
-[MainMenuItem("Primitive", "Primitive", "Create primitives in the scene")]
+[MainMenuItem("Primitive", "Primitive", "create primitives")]
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateMenuUI, ICustomRay, IHighlight, IRaycaster
 {
 	public static PrimitiveType s_SelectedPrimitiveType = PrimitiveType.Cube;
 	public static bool s_Freeform = false;
 
+	[SerializeField]
+	Canvas CanvasPrefab;
 	private GameObject m_CurrentGameObject = null;
 
 	private Vector3 m_PointA = Vector3.zero;
 	private Vector3 m_PointB = Vector3.zero;
 
-	private const float kDrawDistance = 0.08f;
+	private const float kDrawDistance = 0.075f;
 	private const float kWaitTime = 0.2f;
 
 	private PrimitiveCreationStates m_State = PrimitiveCreationStates.PointA;
 
-	[SerializeField]
-	private Canvas CanvasPrefab;
-	private Canvas m_ToolCanvas;
-	private bool m_ToolCanvasSpawned = false;
-	
 	public Standard standardInput {	get; set; }
 
 	public Transform rayOrigin { get; set; }
@@ -36,15 +33,15 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 	public Action hideDefaultRay { private get; set; }
 
 	public Action showDefaultRay { private get; set; }
-
 	
-
 	private enum PrimitiveCreationStates
 	{
 		PointA,
 		PointB,
 		Freeform,
 	}
+
+	private bool m_ToolCanvasSpawned;
 
 	public Node node { private get; set; }
 
@@ -61,16 +58,12 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 
 	void Update()
 	{
+		
 		if(!m_ToolCanvasSpawned)
 		{
-			if(m_ToolCanvas == null)
-			{
-				var go = instantiateMenuUI(node, MenuOrigin.Main,CanvasPrefab.gameObject);
-				m_ToolCanvas = go.GetComponent<Canvas>();
-				m_ToolCanvasSpawned = true;
-			}
+			var go = instantiateMenuUI(node, MenuOrigin.Main,CanvasPrefab.gameObject);
+			m_ToolCanvasSpawned = true;
 			hideDefaultRay();
-			return;
 		}
 
 		switch(m_State)
@@ -138,11 +131,5 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 		}
 
 		m_HoverGameObject = newHoverGameObject;
-	}
-
-	void OnDestroy()
-	{
-		if (m_ToolCanvas != null)
-			U.Object.Destroy(m_ToolCanvas.gameObject);
 	}
 }
