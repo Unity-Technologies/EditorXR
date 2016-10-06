@@ -107,14 +107,13 @@ namespace UnityEngine.VR.Menus
 				yield return null;
 			}
 
+			m_CanvasGroup.alpha = targetOpacity;
+
 			if (show)
-			{
 				m_CanvasGroup.interactable = true;
-				m_CanvasGroup.alpha = 1f;
-			}
 			else
 				m_TitleIcon.SetBlendShapeWeight(0, 0);
-
+			
 			m_VisibilityCoroutine = null;
 		}
 
