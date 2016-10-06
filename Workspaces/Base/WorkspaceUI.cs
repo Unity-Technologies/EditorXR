@@ -144,27 +144,28 @@ namespace UnityEngine.VR.Workspaces
 			set
 			{
 				m_Bounds = value;
+				var extents = m_Bounds.extents;
 
 				// Because BlendShapes cap at 100, our workspace maxes out at 100m wide
 				m_Frame.SetBlendShapeWeight(0, m_Bounds.size.x + Workspace.kHandleMargin);
 				m_Frame.SetBlendShapeWeight(1, m_Bounds.size.z + Workspace.kHandleMargin);
 
 				// Resize handles
-				m_LeftHandle.transform.localPosition = new Vector3(-m_Bounds.extents.x + m_HandleScale * 0.5f, m_LeftHandleYLocalPosition, 0);
+				m_LeftHandle.transform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f, m_LeftHandleYLocalPosition, 0);
 				m_LeftHandle.transform.localScale = new Vector3(m_Bounds.size.z, m_HandleScale, m_HandleScale);
 
-				m_FrontHandle.transform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale);
+				m_FrontHandle.transform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -extents.z - m_HandleScale);
 				m_FrontHandle.transform.localScale = new Vector3(m_Bounds.size.x, m_HandleScale, m_HandleScale);
 
-				m_RightHandle.transform.localPosition = new Vector3(m_Bounds.extents.x - m_HandleScale * 0.5f, m_RightHandleYLocalPosition, 0);
+				m_RightHandle.transform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f, m_RightHandleYLocalPosition, 0);
 				m_RightHandle.transform.localScale = new Vector3(m_Bounds.size.z, m_HandleScale, m_HandleScale);
 
-				m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, m_Bounds.extents.z - m_HandleScale - backHandleOffset);
+				m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, extents.z - m_HandleScale - backHandleOffset);
 				m_BackHandle.transform.localScale = new Vector3(m_Bounds.size.x, m_HandleScale, m_HandleScale);
 
 				// Resize content container
 				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, m_Bounds.size.x);
-				m_UIContentContainer.localPosition = new Vector3(0, m_OriginalUIContainerLocalYPos, -m_Bounds.extents.z);
+				m_UIContentContainer.localPosition = new Vector3(0, m_OriginalUIContainerLocalYPos, -extents.z);
 
 				// Adjust front panel position if dynamic adjustment is enabled
 				if (dynamicFaceAdjustment == false)
