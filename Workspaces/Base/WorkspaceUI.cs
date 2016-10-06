@@ -27,7 +27,8 @@ namespace UnityEngine.VR.Workspaces
 		const float kMaxAlternateFrontPanelLocalYOffset = -0.005f;
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kHiddenFacesBlendShapeIndex = 3;
-		const float backHandleOffset = -0.15f; // Offset to place the back handle in the expected region behind the workspace
+		const float kBackHandleOffset = -0.145f; // Offset to place the back handle in the expected region behind the workspace
+		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
 		const float kPanelOffset = -0.09f; // The panel needs to be pulled back slightly
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
@@ -151,16 +152,16 @@ namespace UnityEngine.VR.Workspaces
 				m_Frame.SetBlendShapeWeight(1, m_Bounds.size.z + Workspace.kHandleMargin);
 
 				// Resize handles
-				m_LeftHandle.transform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f, m_LeftHandleYLocalPosition, 0);
+				m_LeftHandle.transform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f - kSideHandleOffset, m_LeftHandleYLocalPosition, 0);
 				m_LeftHandle.transform.localScale = new Vector3(m_Bounds.size.z, m_HandleScale, m_HandleScale);
 
 				m_FrontHandle.transform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -extents.z - m_HandleScale);
 				m_FrontHandle.transform.localScale = new Vector3(m_Bounds.size.x, m_HandleScale, m_HandleScale);
 
-				m_RightHandle.transform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f, m_RightHandleYLocalPosition, 0);
+				m_RightHandle.transform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
 				m_RightHandle.transform.localScale = new Vector3(m_Bounds.size.z, m_HandleScale, m_HandleScale);
 
-				m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, extents.z - m_HandleScale - backHandleOffset);
+				m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, extents.z - m_HandleScale - kBackHandleOffset);
 				m_BackHandle.transform.localScale = new Vector3(m_Bounds.size.x, m_HandleScale, m_HandleScale);
 
 				// Resize content container
@@ -273,7 +274,7 @@ namespace UnityEngine.VR.Workspaces
 			var handleTransform = leftHandle.transform;
 			m_HandleScale = handleTransform.localScale.z;
 			m_LeftHandleYLocalPosition = handleTransform.localPosition.y;
-			m_RightHandleYLocalPosition = rightHandle.transform.localPosition.y;
+			m_RightHandleYLocalPosition = m_LeftHandleYLocalPosition;
 			m_FrontHandleYLocalPosition = frontHandle.transform.localPosition.y;
 			m_BackHandleYLocalPosition = backHandle.transform.localPosition.y;
 
