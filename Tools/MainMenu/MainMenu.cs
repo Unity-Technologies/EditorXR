@@ -196,6 +196,10 @@ namespace UnityEngine.VR.Menus
 					buttonData.sectionName = customMenuAttribute.sectionName;
 					buttonData.description = customMenuAttribute.description;
 				}
+				else if (isTool)
+				{
+					buttonData.name = type.Name.Replace("Tool", string.Empty);
+				}
 				else if (isWorkspace)
 				{
 					const string kWorkspace = "Workspace";

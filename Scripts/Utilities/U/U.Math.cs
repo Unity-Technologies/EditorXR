@@ -154,7 +154,6 @@
 				var correctSmoothTime = smoothTime / 3f;
 				return Vector3.SmoothDamp(current, target, ref currentVelocity, correctSmoothTime, maxSpeed, deltaTime);
 			}
-
 		}
 	}
 }
