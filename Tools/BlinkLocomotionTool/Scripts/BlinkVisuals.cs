@@ -225,6 +225,9 @@ public class BlinkVisuals : MonoBehaviour
 			yield return null;
 		}
 
+		m_TubeTransform.localScale = new Vector3(tubeScale, kTargetScale, tubeScale);
+		m_LocatorRoot.localScale = Vector3.one * kTargetScale;
+
 		if (m_State == State.TransitioningIn)
 			m_LineRenderer.SetWidth(kTargetScale, kTargetScale);
 
@@ -258,9 +261,11 @@ public class BlinkVisuals : MonoBehaviour
 		// set value if no additional transition has begun
 		if (m_State == State.TransitioningOut)
 		{
+			SetColors(Color.Lerp(validTarget == true ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f));
+			m_TubeTransform.localScale = new Vector3(tubeScale, kTargetScale, tubeScale);
+			m_LineRenderer.SetWidth(kTargetScale, kTargetScale);
 			m_RingTransform.localScale = m_RingTransformOriginalScale;
 			m_State = State.Inactive;
-			m_LineRenderer.SetWidth(kTargetScale, kTargetScale);
 			ShowLine(false);
 
 			for (int i = 0; i < m_MotionSphereCount; ++i)
