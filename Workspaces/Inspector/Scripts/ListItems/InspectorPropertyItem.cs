@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
+using UnityEngine;
 using UnityEngine.UI;
 
 public abstract class InspectorPropertyItem : InspectorListItem

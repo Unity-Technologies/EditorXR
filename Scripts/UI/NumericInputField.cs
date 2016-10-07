@@ -14,25 +14,25 @@ namespace UnityEngine.VR.UI
 
 		public const float kDragDeadzone = 0.025f;
 
-		private const string kFloatFieldFormatString = "g7";
-		private const string kIntFieldFormatString = "#######0";
-		private const float kDragSensitivity = 0.02f;
-		private const string kAllowedCharactersForFloat = "inftynaeINFTYNAE0123456789.,-*/+%^()";
-		private const string kAllowedCharactersForInt = "0123456789-*/+%^()";
-		private const string kOperandCharacters = "-*/+%^()";
-		private const int kMaxDecimals = 15; // We cannot round to more decimals than 15 according to docs for System.Math.Round.
+		const string kFloatFieldFormatString = "g7";
+		const string kIntFieldFormatString = "#######0";
+		const float kDragSensitivity = 0.02f;
+		const string kAllowedCharactersForFloat = "inftynaeINFTYNAE0123456789.,-*/+%^()";
+		const string kAllowedCharactersForInt = "0123456789-*/+%^()";
+		const string kOperandCharacters = "-*/+%^()";
+		const int kMaxDecimals = 15; // We cannot round to more decimals than 15 according to docs for System.Math.Round.
 
 		public NumberType numberType { get { return m_NumberType; } set { m_NumberType = value; } }
 		[SerializeField]
-		private NumberType m_NumberType = NumberType.Float;
+		NumberType m_NumberType = NumberType.Float;
 
-		private bool m_UpdateDrag;
-		private Vector3 m_StartDragPosition;
-		private Vector3 m_LastPointerPosition;
-		private int m_OperandCount;
-		private bool m_UseYSign;
+		bool m_UpdateDrag;
+		Vector3 m_StartDragPosition;
+		Vector3 m_LastPointerPosition;
+		int m_OperandCount;
+		bool m_UseYSign;
 
-		private bool MayDrag()
+		bool MayDrag()
 		{
 			return IsActive()
 					&& IsInteractable()
@@ -86,7 +86,7 @@ namespace UnityEngine.VR.UI
 			m_UpdateDrag = false;
 		}
 
-		private void DragNumberValue(Transform rayOrigin)
+		void DragNumberValue(Transform rayOrigin)
 		{
 			var delta = GetLocalPointerPosition(rayOrigin) - m_LastPointerPosition;
 
@@ -115,7 +115,7 @@ namespace UnityEngine.VR.UI
 			SendOnValueChangedAndUpdateLabel();
 		}
 
-		private Vector3 GetLocalPointerPosition(Transform rayOrigin)
+		Vector3 GetLocalPointerPosition(Transform rayOrigin)
 		{
 			Vector3 hitPos;
 			U.Math.LinePlaneIntersection(out hitPos, rayOrigin.position, rayOrigin.forward, -transform.forward,
@@ -210,17 +210,17 @@ namespace UnityEngine.VR.UI
 		{
 		}
 
-		private bool IsExpression()
+		bool IsExpression()
 		{
 			return m_OperandCount > 0;
 		}
 
-		private bool IsOperand(char c)
+		bool IsOperand(char c)
 		{
 			return kOperandCharacters.Contains(c.ToString()) && !(m_Text.Length == 0 && c == '-');
 		}
 
-		private float CalculateFloatDragSensitivity(float value)
+		float CalculateFloatDragSensitivity(float value)
 		{
 			if (float.IsInfinity(value) || float.IsNaN(value))
 				return 0f;
@@ -228,30 +228,30 @@ namespace UnityEngine.VR.UI
 			return Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f)) * kDragSensitivity;
 		}
 
-		private int CalculateIntDragSensitivity(int value)
+		int CalculateIntDragSensitivity(int value)
 		{
 			return (int)Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f) * kDragSensitivity);
 		}
 
-		private float RoundBasedOnMinimumDifference(float valueToRound, float minDifference)
+		float RoundBasedOnMinimumDifference(float valueToRound, float minDifference)
 		{
 			if (Math.Abs(minDifference) < Mathf.Epsilon)
 				return DiscardLeastSignificantDecimal(valueToRound);
 			return (float)Math.Round(valueToRound, GetNumberOfDecimalsForMinimumDifference(minDifference), MidpointRounding.AwayFromZero);
 		}
 
-		private float DiscardLeastSignificantDecimal(float v)
+		float DiscardLeastSignificantDecimal(float v)
 		{
 			var decimals = Mathf.Clamp((int)(5 - Mathf.Log10(Mathf.Abs(v))), 0, kMaxDecimals);
 			return (float)Math.Round(v, decimals, MidpointRounding.AwayFromZero);
 		}
 
-		private int GetNumberOfDecimalsForMinimumDifference(float minDifference)
+		int GetNumberOfDecimalsForMinimumDifference(float minDifference)
 		{
 			return Mathf.Clamp(-Mathf.FloorToInt(Mathf.Log10(Mathf.Abs(minDifference))), 0, kMaxDecimals);
 		}
 
-		private void ParseNumberField()
+		void ParseNumberField()
 		{
 			if (!IsExpression())
 				return;

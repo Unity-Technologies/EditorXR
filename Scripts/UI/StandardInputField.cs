@@ -9,10 +9,10 @@ namespace UnityEngine.VR.UI
 		}
 
 		[SerializeField]
-		private LineType m_LineType = LineType.SingleLine;
+		LineType m_LineType = LineType.SingleLine;
 
-		private bool m_CapsLock;
-		private bool m_Shift;
+		bool m_CapsLock;
+		bool m_Shift;
 
 		protected override void Append(char c)
 		{
@@ -89,7 +89,7 @@ namespace UnityEngine.VR.UI
 			UpdateKeyText();
 		}
 
-		private void UpdateKeyText()
+		void UpdateKeyText()
 		{
 			if (m_CapsLock && !m_Shift || !m_CapsLock && m_Shift)
 				m_Keyboard.ActivateShiftModeOnKeys();

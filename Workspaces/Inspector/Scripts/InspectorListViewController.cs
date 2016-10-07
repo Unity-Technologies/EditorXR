@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using ListView;
-using UnityEngine;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Modules;
+﻿using ListView;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
 
 public class InspectorListViewController : NestedListViewController<InspectorData>, IPositionPreview, IDroppable, IDropReceiver, IHighlight
 {
@@ -77,7 +77,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			m_ScrollReturn = -totalOffset + m_ItemSize.z; // m_ItemSize will be equal to the size of the last visible item
 	}
 
-	void UpdateRecursively(IEnumerable<InspectorData> data, ref float totalOffset, int depth = 0)
+	void UpdateRecursively(InspectorData[] data, ref float totalOffset, int depth = 0)
 	{
 		foreach (var item in data)
 		{

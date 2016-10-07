@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.VR.Utilities;
 
 public class PropertyData : InspectorData

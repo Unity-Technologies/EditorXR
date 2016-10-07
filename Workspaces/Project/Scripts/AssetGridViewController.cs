@@ -1,9 +1,9 @@
-﻿using System;
+﻿using ListView;
+using System;
 using System.Collections;
-using ListView;
-using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.VR.Modules;
 
 public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPositionPreview, IDroppable
