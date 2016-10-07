@@ -151,11 +151,11 @@ namespace UnityEngine.VR.Workspaces
 
 			m_ContentVisibilityCoroutine = StartCoroutine(ShowContent());
 
-			float delay = 0f;
+			var delay = 0f;
 			const float kTargetDelay = 1f;
-			Vector3 scale = m_HiddenLocalScale;
-			Vector3 smoothVelocity = Vector3.zero;
-			Vector3 hiddenLocalYScale = new Vector3(m_HiddenLocalScale.x, 0f, 0f);
+			var scale = m_HiddenLocalScale;
+			var smoothVelocity = Vector3.zero;
+			var hiddenLocalYScale = new Vector3(m_HiddenLocalScale.x, 0f, 0f);
 			while (!Mathf.Approximately(scale.z, m_VisibleLocalScale.z)) // Z axis scales during the reveal
 			{
 				transform.localScale = scale;
@@ -195,11 +195,11 @@ namespace UnityEngine.VR.Workspaces
 		{
 			m_CanvasGroup.interactable = true;
 
-			float delay = 0f;
+			var delay = 0f;
 			const float kTargetDelay = 2.5f;
-			float alpha = 0f;
+			var alpha = 0f;
 			const float kTargetAlpha = 1f;
-			float opacitySmoothVelocity = 1f;
+			var opacitySmoothVelocity = 1f;
 			while (!Mathf.Approximately(alpha, kTargetAlpha))
 			{
 				m_CanvasGroup.alpha = alpha;
@@ -222,17 +222,17 @@ namespace UnityEngine.VR.Workspaces
 		{
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
-			float transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.unscaledDeltaTime;
 			const float kTargetTransitionAmount = 1f;
 			float shapedTransitionAmount = 0f;
-			Color topColor = Color.clear;
-			Color bottomColor = Color.clear;
-			Color currentTopColor = m_ButtonMaterial.GetColor(kMaterialColorTopProperty);
-			Color currentBottomColor = m_ButtonMaterial.GetColor(kMaterialColorBottomProperty);
-			Color topHighlightColor = sHighlightGradientPair.Value.a;
-			Color bottomHighlightColor = sHighlightGradientPair.Value.b;
-			Vector3 currentLocalScale = transform.localScale;
-			Vector3 highlightedLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, m_VisibleLocalScale.z * 2);
+			var topColor = Color.clear;
+			var bottomColor = Color.clear;
+			var currentTopColor = m_ButtonMaterial.GetColor(kMaterialColorTopProperty);
+			var currentBottomColor = m_ButtonMaterial.GetColor(kMaterialColorBottomProperty);
+			var topHighlightColor = sHighlightGradientPair.Value.a;
+			var bottomHighlightColor = sHighlightGradientPair.Value.b;
+			var currentLocalScale = transform.localScale;
+			var highlightedLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, m_VisibleLocalScale.z * 2);
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.unscaledDeltaTime * 3;
@@ -256,16 +256,16 @@ namespace UnityEngine.VR.Workspaces
 		{
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsEndHighlight());
 
-			float transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.unscaledDeltaTime;
 			const float kTargetTransitionAmount = 1f;
-			float shapedTransitionAmount = 0f;
-			Color topColor = Color.clear;
-			Color bottomColor = Color.clear;
-			Color currentTopColor = m_ButtonMaterial.GetColor(kMaterialColorTopProperty);
-			Color currentBottomColor = m_ButtonMaterial.GetColor(kMaterialColorBottomProperty);
-			Color topOriginalColor = sOriginalGradientPair.a;
-			Color bottomOriginalColor = sOriginalGradientPair.b;
-			Vector3 currentLocalScale = transform.localScale;
+			var shapedTransitionAmount = 0f;
+			var topColor = Color.clear;
+			var bottomColor = Color.clear;
+			var currentTopColor = m_ButtonMaterial.GetColor(kMaterialColorTopProperty);
+			var currentBottomColor = m_ButtonMaterial.GetColor(kMaterialColorBottomProperty);
+			var topOriginalColor = sOriginalGradientPair.a;
+			var bottomOriginalColor = sOriginalGradientPair.b;
+			var currentLocalScale = transform.localScale;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.unscaledDeltaTime * 3;
@@ -288,10 +288,10 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator IconContainerContentsBeginHighlight(bool pressed = false)
 		{
-			Vector3 currentPosition = m_IconContainer.localPosition;
-			Vector3 targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // forward for highlight, backward for press
-			float transitionAmount = Time.unscaledDeltaTime;
-			float transitionAddMultiplier = pressed == false ? 2 : 5; // Faster transition in for highlight; slower for pressed highlight
+			var currentPosition = m_IconContainer.localPosition;
+			var targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // forward for highlight, backward for press
+			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAddMultiplier = pressed == false ? 2 : 5; // Faster transition in for highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
 				foreach (var graphic in m_HighlightItems)
@@ -311,8 +311,8 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator IconContainerContentsEndHighlight()
 		{
-			Vector3 currentPosition = m_IconContainer.localPosition;
-			float transitionAmount = 1f;
+			var currentPosition = m_IconContainer.localPosition;
+			var transitionAmount = 1f;
 			const float kTransitionSubtractMultiplier = 5f;//18;
 			while (transitionAmount > 0)
 			{

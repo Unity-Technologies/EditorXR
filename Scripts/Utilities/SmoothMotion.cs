@@ -41,19 +41,19 @@
 			if (m_Target != transform.parent)
 				m_Target = transform.parent; // cache new parent as this transform is assigned to different objects
 
-			if (m_Target == null || (!m_SmoothPosition && !m_SmoothRotation))
+			if (m_Target == null)
 				return;
 
 			if (m_SmoothRotation)
 			{
-				Quaternion targetRotation = m_Target.rotation;
+				var targetRotation = m_Target.rotation;
 				m_LazyRotation = Quaternion.Lerp(m_LazyRotation, targetRotation, m_TightenRotation * Time.unscaledDeltaTime);
 				transform.rotation = m_LazyRotation;
 			}
 
 			if (m_SmoothPosition)
 			{
-				Vector3 targetPosition = m_Target.position;
+				var targetPosition = m_Target.position;
 				m_LazyPosition = Vector3.Lerp(m_LazyPosition, targetPosition, m_TightenPosition * Time.unscaledDeltaTime);
 				transform.position = m_LazyPosition;
 			}

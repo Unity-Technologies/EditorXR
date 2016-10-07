@@ -142,9 +142,9 @@ public class FilterUI : MonoBehaviour
 
 	IEnumerator ShowUIContent()
 	{
-		float currentAlpha = m_CanvasGroup.alpha;
-		float kTargetAlpha = 1f;
-		float transitionAmount = Time.unscaledDeltaTime;
+		var currentAlpha = m_CanvasGroup.alpha;
+		var kTargetAlpha = 1f;
+		var transitionAmount = Time.unscaledDeltaTime;
 		while (transitionAmount < 1)
 		{
 			m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
@@ -158,10 +158,10 @@ public class FilterUI : MonoBehaviour
 
 	IEnumerator HideUIContent()
 	{
-		float currentAlpha = m_CanvasGroup.alpha;
-		float kTargetAlpha = 0f;
-		float transitionAmount = Time.unscaledDeltaTime;
-		int kSpeedMultiplier = 3;
+		var currentAlpha = m_CanvasGroup.alpha;
+		var kTargetAlpha = 0f;
+		var transitionAmount = Time.unscaledDeltaTime;
+		var kSpeedMultiplier = 3;
 		while (transitionAmount < 1)
 		{
 			m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);

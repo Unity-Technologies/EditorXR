@@ -1,6 +1,6 @@
 ﻿using System;
-using UnityEngine.VR.Handles;
 using UnityEngine.UI;
+using UnityEngine.VR.Handles;
 
 namespace UnityEngine.VR.Workspaces
 {
@@ -194,9 +194,9 @@ namespace UnityEngine.VR.Workspaces
 				m_GrabCollider.size = new Vector3(m_Bounds.size.x, m_GrabCollider.size.y, m_GrabCollider.size.z);
 			}
 		}
-		private Bounds m_Bounds;
+		Bounds m_Bounds;
 
-		private void ResizeHighlightBegin(BaseHandle baseHandle, HandleEventData eventData)
+		void ResizeHighlightBegin(BaseHandle baseHandle, HandleEventData eventData)
 		{
 			if (m_workspaceBaseInteractive == false)
 				return;
@@ -226,7 +226,7 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		private void ResizeHighlightEnd(BaseHandle baseHandle, HandleEventData eventData)
+		void ResizeHighlightEnd(BaseHandle baseHandle, HandleEventData eventData)
 		{
 			if (m_workspaceBaseInteractive == false)
 				return;
@@ -256,7 +256,7 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		private void Awake()
+		void Awake()
 		{
 			m_FrontHandle.hoverStarted += ResizeHighlightBegin;
 			m_FrontHandle.hoverEnded += ResizeHighlightEnd;
@@ -299,14 +299,14 @@ namespace UnityEngine.VR.Workspaces
 			if (dynamicFaceAdjustment == false)
 				return;
 
-			float currentXRotation = transform.rotation.eulerAngles.x;
+			var currentXRotation = transform.rotation.eulerAngles.x;
 			if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
 				return; // Exit if no x rotation change occurred for this frame
 
 			m_PreviousXRotation = currentXRotation;
 
-			float angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 100f);
-			float lerpAmount = angledAmount / 90f;
+			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 100f);
+			var lerpAmount = angledAmount / 90f;
 			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));
 			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
 

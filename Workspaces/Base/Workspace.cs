@@ -197,6 +197,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			// TODO: Add new highlight visuals support
 			/*
 			if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
 				setHighlight(handle.gameObject, true);
@@ -205,6 +206,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			// TODO: Add new highlight visuals support
 			/*
 			if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
 				setHighlight(handle.gameObject, false);
@@ -290,9 +292,9 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator AnimateShow()
 		{
-			Vector3 kTargetScale = transform.localScale;
-			Vector3 scale = Vector3.zero;
-			Vector3 smoothVelocity = Vector3.zero;
+			var kTargetScale = transform.localScale;
+			var scale = Vector3.zero;
+			var smoothVelocity = Vector3.zero;
 
 			while (!Mathf.Approximately(scale.x, kTargetScale.x))
 			{
@@ -306,9 +308,9 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator AnimateHide()
 		{
-			Vector3 kTargetScale = Vector3.zero;
-			Vector3 scale = transform.localScale;
-			Vector3 smoothVelocity = Vector3.zero;
+			var kTargetScale = Vector3.zero;
+			var scale = transform.localScale;
+			var smoothVelocity = Vector3.zero;
 			while (!Mathf.Approximately(scale.x, kTargetScale.x))
 			{
 				transform.localScale = scale;

@@ -299,9 +299,9 @@ namespace UnityEngine.VR.Utilities
 		/// <param name="swatchB">Second swatch/color</param>
 		/// <param name="requiredMinimumDifference">The minimum amount of divergence required of the swatches</param>
 		/// <returns>Bool denoting that(when false) the two color parameters differ by at least the required minimum</returns>
-		private static bool SwatchesSimilar(Color swatchA, Color swatchB, float requiredMinimumDifference = 0.75f)
+		static bool SwatchesSimilar(Color swatchA, Color swatchB, float requiredMinimumDifference = 0.75f)
 		{
-			float difference = Mathf.Abs(swatchA.r - swatchB.r) + Mathf.Abs(swatchA.g - swatchB.g) + Mathf.Abs(swatchA.b - swatchB.b);
+			var difference = Mathf.Abs(swatchA.r - swatchB.r) + Mathf.Abs(swatchA.g - swatchB.g) + Mathf.Abs(swatchA.b - swatchB.b);
 			return difference < requiredMinimumDifference;
 		}
 

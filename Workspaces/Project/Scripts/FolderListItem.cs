@@ -39,6 +39,8 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	private Renderer m_CubeRenderer;
 
+	Transform m_CubeTransform;
+
 	public Action<FolderData> selectFolder;
 
 	public override void Setup(FolderData listData)
@@ -58,7 +60,8 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_Cube.hoverStarted += OnHoverStarted;
 			m_Cube.hoverEnded += OnHoverEnded;
 		}
-		
+
+		m_CubeTransform = m_Cube.transform;
 		m_Text.text = listData.name;
 		m_ExpandArrow.gameObject.SetActive(listData.children != null);
 		m_Hovering = false;
@@ -72,11 +75,11 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	public void UpdateTransforms(float width, int depth)
 	{
-		if (width != m_Cube.transform.localScale.x)
+		var cubeScale = m_CubeTransform.localScale;
+		if (width != cubeScale.x)
 		{
-			var cubeScale = m_Cube.transform.localScale;
 			cubeScale.x = width;
-			m_Cube.transform.localScale = cubeScale;
+			m_CubeTransform.localScale = cubeScale;
 		}
 
 		var arrowWidth = m_ExpandArrow.transform.localScale.x * 0.5f;
