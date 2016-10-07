@@ -204,9 +204,6 @@ namespace UnityEngine.VR.Workspaces
 
 		void ResizeHighlightBegin(BaseHandle baseHandle, HandleEventData eventData)
 		{
-			if (m_workspaceBaseInteractive == false)
-				return;
-
 			const float kOpacityTarget = 0.75f;
 			const float kDuration = 0.5f;
 
@@ -234,9 +231,6 @@ namespace UnityEngine.VR.Workspaces
 
 		void ResizeHighlightEnd(BaseHandle baseHandle, HandleEventData eventData)
 		{
-			if (m_workspaceBaseInteractive == false)
-				return;
-
 			const float kOpacityTarget = 0f;
 			const float kDuration = 0.2f;
 
