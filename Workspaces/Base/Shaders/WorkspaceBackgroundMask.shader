@@ -2,9 +2,9 @@
 {
 	SubShader
 	{
-		Tags{ "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "Queue" = "Transparent" "RenderType" = "TransparentCutout" }
+		Tags{ "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "LightMode" = "Always" "Queue" = "Transparent-1" "RenderType" = "TransparentCutout" }
 		ZWrite On
-		Blend Zero One
+		Blend Zero One // Dont draw any color data
 
 		Pass
 		{
@@ -15,7 +15,7 @@
 
 			struct v2f
 			{
-				half4 position : SV_POSITION;
+				float4 position : SV_POSITION;
 			};
 
 			v2f vert(appdata_base v)
