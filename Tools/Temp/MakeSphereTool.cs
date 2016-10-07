@@ -44,10 +44,7 @@ public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay
 		{
 			Transform cube = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
 			if (rayOrigin)
-			{
 				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
-				cube.parent = transform;
-			}
 		}
 	}
 }

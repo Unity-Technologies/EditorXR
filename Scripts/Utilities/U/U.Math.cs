@@ -139,6 +139,21 @@
 				return p;
 			}
 
+			public static float SmoothDamp(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+			{
+				// This will have us converge on 98% of our target value within the smooth time
+				// Reference: http://devblog.aliasinggames.com/smoothdamp/
+				var correctSmoothTime = smoothTime / 3f;
+				return Mathf.SmoothDamp(current, target, ref currentVelocity, correctSmoothTime, maxSpeed, deltaTime);
+			}
+
+			public static Vector3 SmoothDamp(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+			{
+				// This will have us converge on 98% of our target value within the smooth time
+				// Reference: http://devblog.aliasinggames.com/smoothdamp/
+				var correctSmoothTime = smoothTime / 3f;
+				return Vector3.SmoothDamp(current, target, ref currentVelocity, correctSmoothTime, maxSpeed, deltaTime);
+			}
 		}
 	}
 }
