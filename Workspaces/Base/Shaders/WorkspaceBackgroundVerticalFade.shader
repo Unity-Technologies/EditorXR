@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/TransparentBlurVerticalFade"
+﻿Shader "EditorVR/Workspaces/TransparentBlurVerticalFade"
 {
 	Properties{
 		_Color("Main Color", Color) = (1,1,1,1)
@@ -10,8 +10,6 @@
 		{
 			Tags{ "Queue" = "Transparent" "LightMode" = "Always" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
 			ZWrite On
-			//Offset 1000, 1
-			//ZTest Always
 
 			SubShader{
 
@@ -121,10 +119,6 @@
 				half4 frag(v2f input) : COLOR{
 					half4 sum = half4(0,0,0,0);
 					#define GrabAndOffset(weight,kernelY) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * (_Blur * input.yPos + _VerticalOffset), input.grab.z, input.grab.w))) * weight
-					//#define GrabAndOffset(weight,kernelY, yBlend) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * (_Blur * input.grab.y), input.grab.z, input.grab.w))) * weight * saturate(0.02 * 3 / input.grab.y)
-					//#define GrabAndOffset(weight,kernelY, yBlend) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * _Blur / saturate(yBlend * 4), input.grab.z, input.grab.w))) * weight * yBlend
-					//#define GrabAndOffset(weight,kernelY, yBlend) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * saturate(kernelY - (-input.grab.y * 50)), input.grab.z, input.grab.w))) * weight * yBlend
-					//saturate(0.02 * 3 / input.grab.y)
 
 					sum += GrabAndOffset(0.02, -6.0);
 					sum += GrabAndOffset(0.04, -5.0);

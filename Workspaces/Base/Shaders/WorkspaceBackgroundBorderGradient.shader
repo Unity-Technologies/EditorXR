@@ -37,8 +37,6 @@
 			v2f vert(appdata_full v)
 			{
 				v2f output;
-				//v.vertex.xyz += v.texcoord.x * v.normal * _Expand;
-				//v.vertex.xyz += v.normal * _Expand;
 				output.position = mul(UNITY_MATRIX_MVP, v.vertex);
 				output.color = lerp(_ColorBottom, _ColorTop, v.texcoord.y);
 				return output;
@@ -81,7 +79,6 @@
 				v2f vert(appdata_full v)
 				{
 					v2f output;
-					//v.vertex.xyz += v.texcoord.x * v.normal * _Expand * 0.125f; // TODO
 					v.vertex.xyz += v.normal * (_Expand * 0.0125) * 2;
 					output.position = mul(UNITY_MATRIX_MVP, v.vertex);
 					output.color = lerp(_ColorBottom, _ColorTop, v.texcoord.y);
