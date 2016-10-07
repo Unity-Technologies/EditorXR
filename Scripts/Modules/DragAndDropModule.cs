@@ -29,7 +29,7 @@ public class DragAndDropModule : MonoBehaviour {
 		{
 			DropData data;
 			if (m_DropReceivers.TryGetValue(rayOrigin, out data) && data.target == target)
-				m_DropReceivers[rayOrigin] = null;
+				m_DropReceivers.Remove(rayOrigin);
 		}
 		else
 		{
