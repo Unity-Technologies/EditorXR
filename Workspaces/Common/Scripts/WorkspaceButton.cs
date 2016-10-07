@@ -22,6 +22,13 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		Button m_Button;
 
+		[Header("Extras")]
+		[SerializeField]
+		Color m_CustomHighlightColor = UnityBrandColorScheme.light;
+
+		[SerializeField]
+		Graphic[] m_HighlightItems;
+
 		const float kIconHighlightedLocalZOffset = -0.0015f;
 		const string kMaterialAlphaProperty = "_Alpha";
 		const string kMaterialColorTopProperty = "_ColorTop";
@@ -40,6 +47,7 @@ namespace UnityEngine.VR.Workspaces
 		Vector3 m_IconHighlightedLocalPosition;
 		Vector3 m_IconPressedLocalPosition;
 		Vector3 m_IconLookDirection;
+		Color m_OriginalColor;
 
 		// The initial button reveal coroutines, before highlighting
 		Coroutine m_VisibilityCoroutine;
@@ -82,7 +90,7 @@ namespace UnityEngine.VR.Workspaces
 					if (m_IconHighlightCoroutine != null)
 						StopCoroutine(m_IconHighlightCoroutine);
 
-					m_IconHighlightCoroutine = StartCoroutine(IconBeginHighlight(true));
+					m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight(true));
 				}
 			}
 		}
@@ -114,6 +122,7 @@ namespace UnityEngine.VR.Workspaces
 
 		void Awake()
 		{
+			m_OriginalColor = m_Icon.color;
 			m_ButtonMaterial = U.Material.GetMaterialClone(m_ButtonMeshRenderer);
 			sOriginalGradientPair = new UnityBrandColorScheme.GradientPair (m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
 			m_VisibleLocalScale = transform.localScale;
@@ -211,7 +220,7 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
-			m_IconHighlightCoroutine = StartCoroutine(IconBeginHighlight());
+			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
 			float transitionAmount = Time.unscaledDeltaTime;
 			const float kTargetTransitionAmount = 1f;
@@ -245,7 +254,7 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator EndHighlight()
 		{
-			m_IconHighlightCoroutine = StartCoroutine(IconEndHighlight());
+			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsEndHighlight());
 
 			float transitionAmount = Time.unscaledDeltaTime;
 			const float kTargetTransitionAmount = 1f;
@@ -277,7 +286,7 @@ namespace UnityEngine.VR.Workspaces
 			m_HighlightCoroutine = null;
 		}
 
-		IEnumerator IconBeginHighlight(bool pressed = false)
+		IEnumerator IconContainerContentsBeginHighlight(bool pressed = false)
 		{
 			Vector3 currentPosition = m_IconContainer.localPosition;
 			Vector3 targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // forward for highlight, backward for press
@@ -285,6 +294,12 @@ namespace UnityEngine.VR.Workspaces
 			float transitionAddMultiplier = pressed == false ? 2 : 5; // Faster transition in for highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
+				foreach (var graphic in m_HighlightItems)
+				{
+					if (graphic != null)
+						graphic.color = Color.Lerp(m_OriginalColor, m_CustomHighlightColor, transitionAmount);
+				}
+
 				m_IconContainer.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
 				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
 				yield return null;
@@ -294,13 +309,19 @@ namespace UnityEngine.VR.Workspaces
 			m_IconHighlightCoroutine = null;
 		}
 
-		IEnumerator IconEndHighlight()
+		IEnumerator IconContainerContentsEndHighlight()
 		{
 			Vector3 currentPosition = m_IconContainer.localPosition;
 			float transitionAmount = 1f;
 			const float kTransitionSubtractMultiplier = 5f;//18;
 			while (transitionAmount > 0)
 			{
+				foreach (var graphic in m_HighlightItems)
+				{
+					if (graphic != null)
+						graphic.color = Color.Lerp(m_OriginalColor, m_CustomHighlightColor, transitionAmount);
+				}
+
 				m_IconContainer.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
 				transitionAmount -= Time.unscaledDeltaTime * kTransitionSubtractMultiplier;
 				yield return null;
