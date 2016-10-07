@@ -4,9 +4,6 @@ using UnityEngine.VR.UI;
 
 public class InspectorColorItem : InspectorPropertyItem
 {
-	[SerializeField]
-	NumericInputField[] m_InputFields;
-
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);

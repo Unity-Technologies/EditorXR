@@ -124,7 +124,7 @@ namespace UnityEngine.VR.UI
 			return transform.InverseTransformPoint(hitPos);
 		}
 
-		protected override void Close()
+		public override void Close()
 		{
 			ParseNumberField();
 

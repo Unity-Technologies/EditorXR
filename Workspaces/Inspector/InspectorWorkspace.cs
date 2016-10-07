@@ -20,6 +20,8 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 
 	InspectorUI m_InspectorUI;
 
+	GameObject m_SelectedObject;
+
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
 
@@ -102,9 +104,13 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 		if (m_IsLocked)
 			return;
 
-		if (Selection.activeObject == null)
+		if (Selection.activeGameObject == m_SelectedObject)
+			return;
+
+		if (Selection.activeGameObject == null)
 		{
 			m_InspectorUI.inspectorListView.data = new InspectorData[0];
+			m_SelectedObject = null;
 			return;
 		}
 		var inspectorData = new List<InspectorData>();
@@ -113,6 +119,7 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 
 		if (Selection.activeGameObject)
 		{
+			m_SelectedObject = Selection.activeGameObject;
 			foreach (var component in Selection.activeGameObject.GetComponents<Component>())
 			{
 				var obj = new SerializedObject(component);
@@ -257,5 +264,7 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 	void SetIsLocked(bool isLocked)
 	{
 		m_IsLocked = isLocked;
+		if(!isLocked)
+			OnSelectionChanged();
 	}
 }

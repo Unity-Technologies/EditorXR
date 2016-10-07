@@ -9,7 +9,7 @@ namespace UnityEngine.VR.UI
 {
 	public abstract class InputField : Selectable, IPointerClickHandler
 	{
-		private static readonly Quaternion kKeyboardRotationOffset = Quaternion.AngleAxis(35, Vector3.up);
+		private static readonly Quaternion kKeyboardRotationOffset = Quaternion.AngleAxis(15, Vector3.up);
 
 		public SelectionFlags selectionFlags
 		{
@@ -90,18 +90,15 @@ namespace UnityEngine.VR.UI
 			if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
 			{
 				if (rayEventData != null)
-					ToggleKeyboard();
+				{
+					if (m_Open)
+						Close();
+					else
+						Open();
+				}
 				else if (m_Open)
 					Close();
 			}
-		}
-
-		public void ToggleKeyboard()
-		{
-			if (m_Open)
-				Close();
-			else
-				Open();
 		}
 
 		public override void OnSelect(BaseEventData eventData)
@@ -130,7 +127,7 @@ namespace UnityEngine.VR.UI
 				m_Keyboard.SetPreviewText(m_Text);
 		}
 
-		protected virtual void Open()
+		public virtual void Open()
 		{
 			if (m_Open) return;
 			m_Open = true;
@@ -141,7 +138,10 @@ namespace UnityEngine.VR.UI
 				m_Keyboard.gameObject.SetActive(true);
 
 				m_Keyboard.transform.position = transform.position;
-				m_Keyboard.transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * kKeyboardRotationOffset;
+				var direction = U.Camera.GetMainCamera().transform.position - transform.position;
+				direction.y = 0;
+				var rotation = Vector3.Angle(Vector3.back, direction);
+				m_Keyboard.transform.rotation = Quaternion.Euler(0, rotation, 0) * kKeyboardRotationOffset;
 
 				m_Keyboard.Setup(OnKeyPress);
 
@@ -149,7 +149,7 @@ namespace UnityEngine.VR.UI
 			}
 		}
 
-		protected virtual void Close()
+		public virtual void Close()
 		{
 			m_Open = false;
 

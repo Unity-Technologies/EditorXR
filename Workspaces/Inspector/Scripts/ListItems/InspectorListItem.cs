@@ -18,6 +18,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 	protected CuboidLayout m_CuboidLayout;
 
+	protected InputField[] m_InputFields;
+
 	protected InputField m_ClickedField;
 	protected int m_ClickCount;
 
@@ -85,6 +87,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 			handle.hoverStarted += OnHoverStarted;
 			handle.hoverEnded += OnHoverEnded;
 		}
+
+		m_InputFields = GetComponentsInChildren<InputField>(true);
 	}
 
 	public void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material UIMaterial, Material textMaterial, Material noClipBackingCube)
@@ -296,8 +300,11 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 		if (m_ClickCount == 1)
 		{
+			foreach (var inputField in m_InputFields)
+				inputField.Close();
+
 			if (m_ClickedField)
-				m_ClickedField.ToggleKeyboard();
+				m_ClickedField.Open();
 		}
 
 		m_ClickCount = 0;

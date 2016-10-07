@@ -6,9 +6,6 @@ using UnityEngine.VR.UI;
 public class InspectorVectorItem : InspectorPropertyItem
 {
 	[SerializeField]
-	NumericInputField[] m_InputFields;
-
-	[SerializeField]
 	GameObject ZGroup;
 
 	[SerializeField]
