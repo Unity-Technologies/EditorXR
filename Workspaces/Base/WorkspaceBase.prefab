@@ -238,7 +238,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1000011104047316
 GameObject:
   m_ObjectHideFlags: 1
@@ -2432,8 +2432,6 @@ MonoBehaviour:
   m_RightSideBackResizeIcon: {fileID: 114000010732110990}
   m_FrontResizeIconsContainer: {fileID: 224000012214220868}
   m_BackResizeIconsContainer: {fileID: 224000013299645382}
-  kBackResizeButtonPositionOffset: 1.25
-  extentsBackResizePadding: 0.1
 --- !u!137 &137000012547310740
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1
