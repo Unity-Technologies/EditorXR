@@ -23,6 +23,10 @@ namespace UnityEngine.VR.Workspaces
 		Vector3 m_MaxFrontPanelRotation = new Vector3(45f, 0f, 0f);
 		Vector3 m_OriginalFontPanelLocalPosition;
 		Vector3 m_FrontResizeIconsContainerAngledLocalPosition;
+		Transform m_LeftHandleTransform;
+		Transform m_RightHandleTransform;
+		Transform m_FrontHandleTransform;
+		Transform m_BackHandleTransform;
 
 		const float kMaxAlternateFrontPanelLocalZOffset = -0.075f;
 		const float kMaxAlternateFrontPanelLocalYOffset = -0.005f;
@@ -151,47 +155,49 @@ namespace UnityEngine.VR.Workspaces
 			{
 				m_Bounds = value;
 				var extents = m_Bounds.extents;
+				var boundsSize = m_Bounds.size;
 
 				// Because BlendShapes cap at 100, our workspace maxes out at 100m wide
-				m_Frame.SetBlendShapeWeight(0, m_Bounds.size.x + Workspace.kHandleMargin);
-				m_Frame.SetBlendShapeWeight(1, m_Bounds.size.z + Workspace.kHandleMargin);
+				m_Frame.SetBlendShapeWeight(0, boundsSize.x + Workspace.kHandleMargin);
+				m_Frame.SetBlendShapeWeight(1, boundsSize.z + Workspace.kHandleMargin);
 
 				// Resize handles
-				m_LeftHandle.transform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f - kSideHandleOffset, m_LeftHandleYLocalPosition, 0);
-				m_LeftHandle.transform.localScale = new Vector3(m_Bounds.size.z, m_HandleScale, m_HandleScale);
+				m_LeftHandleTransform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f - kSideHandleOffset, m_LeftHandleYLocalPosition, 0);
+				m_LeftHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
 
-				m_FrontHandle.transform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -extents.z - m_HandleScale);
-				m_FrontHandle.transform.localScale = new Vector3(m_Bounds.size.x, m_HandleScale, m_HandleScale);
+				m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -extents.z - m_HandleScale);
+				m_FrontHandleTransform.localScale = new Vector3(boundsSize.x, m_HandleScale, m_HandleScale);
 
-				m_RightHandle.transform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
-				m_RightHandle.transform.localScale = new Vector3(m_Bounds.size.z, m_HandleScale, m_HandleScale);
+				m_RightHandleTransform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
+				m_RightHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
 
-				m_BackHandle.transform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, extents.z - m_HandleScale - kBackHandleOffset);
-				m_BackHandle.transform.localScale = new Vector3(m_Bounds.size.x, m_HandleScale, m_HandleScale);
+				m_BackHandleTransform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, extents.z - m_HandleScale - kBackHandleOffset);
+				m_BackHandleTransform.localScale = new Vector3(boundsSize.x, m_HandleScale, m_HandleScale);
 
 				// Resize content container
-				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, m_Bounds.size.x);
+				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, boundsSize.x);
 				m_UIContentContainer.localPosition = new Vector3(0, m_OriginalUIContainerLocalYPos, -extents.z);
 
 				// Position the back resize handles
-				m_BackResizeIconsContainer.localPosition = new Vector3 (m_BackResizeIconsContainerOriginalLocalPosition.x, m_BackResizeIconsContainerOriginalLocalPosition.y, m_Bounds.size.z + kBackResizeButtonPositionOffset);
+				m_BackResizeIconsContainer.localPosition = new Vector3 (m_BackResizeIconsContainerOriginalLocalPosition.x, m_BackResizeIconsContainerOriginalLocalPosition.y, boundsSize.z + kBackResizeButtonPositionOffset);
 
 				// Adjust front panel position if dynamic adjustment is enabled
 				if (dynamicFaceAdjustment == false)
 					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, kPanelOffset);
 
 				// Resize front panel
-				m_FrameFrontFaceTransform.localScale = new Vector3(m_Bounds.size.x * kFaceWidthMatchMultiplier, 1f, 1f);
+				m_FrameFrontFaceTransform.localScale = new Vector3(boundsSize.x * kFaceWidthMatchMultiplier, 1f, 1f);
 
 				// Position the separator mask if enabled
 				if (m_SignedSeparatorMaskOffset != null)
 				{
 					const float heightCompensationMultiplier = 4.225f;
-					m_SeparatorMaskTransform.localPosition = new Vector3(m_Bounds.size.x * 0.5f * m_SignedSeparatorMaskOffset.Value, 0f, 0f);
-					m_SeparatorMaskTransform.localScale = new Vector3(1f, 1f, m_Bounds.size.z * heightCompensationMultiplier);
+					m_SeparatorMaskTransform.localPosition = new Vector3(boundsSize.x * 0.5f * m_SignedSeparatorMaskOffset.Value, 0f, 0f);
+					m_SeparatorMaskTransform.localScale = new Vector3(1f, 1f, boundsSize.z * heightCompensationMultiplier);
 				}
 
-				m_GrabCollider.size = new Vector3(m_Bounds.size.x, m_GrabCollider.size.y, m_GrabCollider.size.z);
+				var grabColliderSize = m_GrabCollider.size;
+				m_GrabCollider.size = new Vector3(boundsSize.x, grabColliderSize.y, grabColliderSize.z);
 			}
 		}
 		Bounds m_Bounds;
@@ -279,19 +285,23 @@ namespace UnityEngine.VR.Workspaces
 			m_OriginalUIContainerLocalYPos = m_UIContentContainer.localPosition.y;
 			m_OriginalFontPanelLocalPosition = m_FrontPanel.localPosition;
 
-			var handleTransform = leftHandle.transform;
-			m_HandleScale = handleTransform.localScale.z;
-			m_LeftHandleYLocalPosition = handleTransform.localPosition.y;
-			m_RightHandleYLocalPosition = m_LeftHandleYLocalPosition;
-			m_FrontHandleYLocalPosition = frontHandle.transform.localPosition.y;
-			m_BackHandleYLocalPosition = backHandle.transform.localPosition.y;
+			m_LeftHandleTransform = m_LeftHandle.transform;
+			m_RightHandleTransform = m_RightHandle.transform;
+			m_FrontHandleTransform = m_FrontHandle.transform;
+			m_BackHandleTransform = m_BackHandle.transform;
+
+			m_HandleScale = m_LeftHandleTransform.localScale.z;
+			m_LeftHandleYLocalPosition = m_LeftHandleTransform.localPosition.y;
+			m_RightHandleYLocalPosition = m_LeftHandleYLocalPosition; // use the same for right as was used for left; front and back can differ
+			m_FrontHandleYLocalPosition = m_FrontHandleTransform.localPosition.y;
+			m_BackHandleYLocalPosition = m_BackHandleTransform.localPosition.y;
 
 			const float frontResizeIconsContainerforwardOffset = -0.025f;
 			m_FrontResizeIconsContainerOriginalLocalPosition = m_FrontResizeIconsContainer.localPosition;
 			m_BackResizeIconsContainerOriginalLocalPosition = m_BackResizeIconsContainer.localPosition;
 			m_FrontResizeIconsContainerAngledLocalPosition = new Vector3(m_FrontResizeIconsContainerOriginalLocalPosition.x, m_FrontResizeIconsContainerOriginalLocalPosition.y, m_FrontResizeIconsContainerOriginalLocalPosition.z + frontResizeIconsContainerforwardOffset);
 
-			m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, 50f); // Set default frame thickness to be in middle
+			m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, 50f); // Set default frame thickness to be in middle for a thinner initial frame
 		}
 
 		void Update()
@@ -313,7 +323,8 @@ namespace UnityEngine.VR.Workspaces
 			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, angledAmount);
 
 			// offset the front resize icons to accommodate for the blendshape extending outwards
-			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, angledAmount * 0.1f);
+			const float blendShapeToLerpConversionFactor = 0.1f;
+			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, angledAmount * blendShapeToLerpConversionFactor);
 		}
 
 		public void CloseClick()
