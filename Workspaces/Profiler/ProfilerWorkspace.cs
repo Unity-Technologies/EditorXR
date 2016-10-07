@@ -9,7 +9,7 @@ public class ProfilerWorkspace : Workspace
 
 	private Transform m_ProfilerWindow;
 
-	private bool inView
+	bool inView
 	{
 		get
 		{
@@ -26,10 +26,7 @@ public class ProfilerWorkspace : Workspace
 			{
 				Vector3 screenPoint = VRView.viewerCamera.WorldToScreenPoint(vec);
 				if(screenPoint.x > minX && screenPoint.x < maxX && screenPoint.y > minY && screenPoint.y < maxY)
-				{
 					return true;
-					
-				}
 			}
 			return false;
 		}
