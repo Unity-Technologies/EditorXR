@@ -5,6 +5,8 @@ using UnityEditor.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Handles;
+
 
 [MainMenuItem("Primitive", "Primitive", "create primitives")]
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateMenuUI, ICustomRay, IHighlight, IRaycaster
@@ -55,6 +57,20 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 	}
 
 	private GameObject m_HoverGameObject;
+
+	BaseHandle m_SphereHandle;
+	BaseHandle m_CubeHandle;
+
+	void Awake()
+	{
+		m_SphereHandle = CanvasPrefab.GetComponent<CreatePrimitiveMenu>().Sphere.GetComponent<BaseHandle>();
+		m_CubeHandle = CanvasPrefab.GetComponent<CreatePrimitiveMenu>().Cube.GetComponent<BaseHandle>();
+
+		m_SphereHandle.hoverStarted += OnHandleHoverStarted;
+		m_SphereHandle.hoverEnded += OnHandleHoverEnded;
+		m_CubeHandle.hoverStarted += OnHandleHoverStarted;
+		m_CubeHandle.hoverEnded += OnHandleHoverEnded;
+	}
 
 	void Update()
 	{
@@ -131,5 +147,15 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 		}
 
 		m_HoverGameObject = newHoverGameObject;
+	}
+
+	void OnHandleHoverStarted(BaseHandle handle,HandleEventData eventData = default(HandleEventData))
+	{
+		setHighlight(handle.gameObject,true);
+	}
+
+	void OnHandleHoverEnded(BaseHandle handle,HandleEventData eventData = default(HandleEventData))
+	{
+		setHighlight(handle.gameObject,false);
 	}
 }

@@ -6,6 +6,11 @@ using UnityEngine.VR.Tools;
 
 public class CreatePrimitiveMenu : MonoBehaviour
 {
+	[SerializeField]
+	public GameObject Cube;
+	[SerializeField]
+	public GameObject Sphere;
+
 	public void CreatePrimitive(int type)
 	{
 		CreatePrimitiveTool.s_SelectedPrimitiveType = (PrimitiveType)type;

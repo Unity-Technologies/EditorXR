@@ -76,7 +76,7 @@ GameObject:
   - 4: {fileID: 4000013090994192}
   - 33: {fileID: 33000011559203654}
   - 137: {fileID: 137000011730458282}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: MenuFaceTitleGradientShape
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -310,7 +310,7 @@ GameObject:
   - 4: {fileID: 4000013417422256}
   - 33: {fileID: 33000013622279140}
   - 23: {fileID: 23000011901827168}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: MainMenuFaceModel1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -346,6 +346,7 @@ GameObject:
   - 33: {fileID: 33000014143026804}
   - 65: {fileID: 65000014128114842}
   - 23: {fileID: 23000014046434806}
+  - 114: {fileID: 114000011548288670}
   m_Layer: 5
   m_Name: Cube
   m_TagString: Untagged
@@ -562,7 +563,8 @@ GameObject:
   - 33: {fileID: 33000010239066878}
   - 135: {fileID: 135000012577857280}
   - 23: {fileID: 23000011958990456}
-  m_Layer: 0
+  - 114: {fileID: 114000013154046198}
+  m_Layer: 5
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1339,6 +1341,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  Cube: {fileID: 1000012000597718}
+  Sphere: {fileID: 1000013224359186}
 --- !u!114 &114000010666244620
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1703,6 +1707,19 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+--- !u!114 &114000011548288670
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012000597718}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_SelectionFlags: 3
 --- !u!114 &114000011739519648
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2043,6 +2060,19 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Draw 3D rectangles of any dimension
+--- !u!114 &114000013154046198
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013224359186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_SelectionFlags: 3
 --- !u!114 &114000013158287060
 MonoBehaviour:
   m_ObjectHideFlags: 1
