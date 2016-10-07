@@ -532,6 +532,10 @@ MonoBehaviour:
   m_Icon: {fileID: 114000010570993454}
   m_IconContainer: {fileID: 224000011194382768}
   m_Button: {fileID: 114000010404580652}
+  m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_HighlightItems:
+  - {fileID: 114000013668190444}
+  - {fileID: 114000013883654872}
 --- !u!114 &114000010404580652
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1132,6 +1136,9 @@ MonoBehaviour:
   m_Icon: {fileID: 114000013587831842}
   m_IconContainer: {fileID: 224000011830306076}
   m_Button: {fileID: 114000011294446628}
+  m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_HighlightItems:
+  - {fileID: 114000013587831842}
 --- !u!114 &114000013883654872
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1374,7 +1381,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 3.3028882, y: 23.943584}
+  m_AnchoredPosition: {x: 3.3028882, y: 26.4}
   m_SizeDelta: {x: 14.507797, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224000010866448056
@@ -1697,7 +1704,7 @@ RectTransform:
   m_RootOrder: 1
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 3.4014516, y: -4.4949865}
+  m_AnchoredPosition: {x: 3.4014516, y: -2}
   m_SizeDelta: {x: 14.507797, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &225000010025708586
