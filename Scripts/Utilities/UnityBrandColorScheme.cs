@@ -139,7 +139,7 @@ namespace UnityEngine.VR.Utilities
 			get
 			{
 				if (m_SessionGradient == null)
-					m_SessionGradient = s_Gradients[Random.Range(0, s_Gradients.Count - 1)];
+					m_SessionGradient = GetRandomGradient();
 
 				return m_SessionGradient.Value;
 			}
@@ -243,7 +243,7 @@ namespace UnityEngine.VR.Utilities
 			s_Gradients.Add(new GradientPair(s_Teal, s_Lime));
 			s_Gradients.Add(new GradientPair(s_Cyan, s_Red));
 			s_Gradients.Add(new GradientPair(s_Blue, s_Magenta));
-			s_Gradients.Add(new GradientPair(s_Red, s_DarkBlue));
+			s_Gradients.Add(new GradientPair(s_Red, s_Blue));
 			s_Gradients.Add(new GradientPair(s_Blue, s_Lime));
 			s_Gradients.Add(new GradientPair(s_Orange, s_Lime));
 		}
