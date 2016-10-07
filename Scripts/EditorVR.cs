@@ -35,8 +35,6 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
 	[SerializeField]
-	private ActionMap m_DefaultActionMap;
-	[SerializeField]
 	private ActionMap m_TrackedObjectActionMap;
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
@@ -48,8 +46,7 @@ public class EditorVR : MonoBehaviour
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
 	private TrackedObject m_TrackedObjectInput;
-	private Default m_DefaultActionInput;
-
+	
 	private MultipleRayInputModule m_InputModule;
 	private SpatialHashModule m_SpatialHashModule;
 	private IntersectionModule m_IntersectionModule;
@@ -124,11 +121,7 @@ public class EditorVR : MonoBehaviour
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
-		m_MainMenuTools = m_AllTools.Where(t =>
-			// Don't show default tools in the main menu
-			!typeof(ITransformTool).IsAssignableFrom(t)
-			&& !typeof(SelectionTool).IsAssignableFrom(t)
-			&& !typeof(ILocomotion).IsAssignableFrom(t)).ToList();
+		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
 
 		UnityBrandColorScheme.ResetSessionGradient();
@@ -226,6 +219,9 @@ public class EditorVR : MonoBehaviour
 		EditorApplication.delayCall += OnSelectionChanged;
 
 		ClearDeveloperConsoleIfNecessary();
+
+		// This will be the first call to update the player handle (input) maps, sorted by priority
+		UpdatePlayerHandleMaps();
 	}
 
 	private void OnEnable()
@@ -286,6 +282,7 @@ public class EditorVR : MonoBehaviour
 	IEnumerator PrewarmAssets()
 	{
 		// HACK: Cannot async load assets in the editor yet, so to avoid a hitch let's spawn the menu immediately and then make it invisible
+		List<IMainMenu> menus = new List<IMainMenu>();
 		foreach (var kvp in m_DeviceData)
 		{
 			var device = kvp.Key;
@@ -298,18 +295,23 @@ public class EditorVR : MonoBehaviour
 				EditorApplication.delayCall += () =>
 				{
 					mainMenu = SpawnMainMenu(typeof(MainMenu), device, true);
-					UpdatePlayerHandleMaps();
 					deviceData.mainMenu = mainMenu;
+					UpdatePlayerHandleMaps();
 				};
 
 				while (mainMenu == null)
 					yield return null;
 
-				while (!mainMenu.visible)
-					yield return null;
-
-				mainMenu.visible = false;
+				menus.Add(mainMenu);
 			}
+		}
+
+		foreach (var mainMenu in menus)
+		{
+			while (!mainMenu.visible)
+				yield return null;
+
+			mainMenu.visible = false;
 		}
 	}
 
@@ -397,9 +399,13 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultActionMapInputs()
 	{
 		m_TrackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap, null);
-		m_DefaultActionInput = (Default)CreateActionMapInput(m_DefaultActionMap, null);
+	}
 
-		UpdatePlayerHandleMaps();
+	bool IsPermanentTool(Type type)
+	{
+		return typeof(ITransformTool).IsAssignableFrom(type)
+			|| typeof(SelectionTool).IsAssignableFrom(type)
+			|| typeof(ILocomotion).IsAssignableFrom(type);
 	}
 
 	private void SpawnDefaultTools()
@@ -449,7 +455,7 @@ public class EditorVR : MonoBehaviour
 		foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
 		{
 			IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
-			proxy.trackedObjectInput = m_PlayerHandle.GetActions<TrackedObject>();
+			proxy.trackedObjectInput = m_TrackedObjectInput;
 			foreach (var rayOriginPair in proxy.rayOrigins)
 			{
 				var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPair.Value).transform;
@@ -520,7 +526,6 @@ public class EditorVR : MonoBehaviour
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput);
 		});
-		UpdatePlayerHandleMaps();
 	}
 
 	void ForEachRayOrigin(Action<IProxy, KeyValuePair<Node, Transform>, InputDevice, DeviceData> callback, bool activeOnly = false)
@@ -563,7 +568,6 @@ public class EditorVR : MonoBehaviour
 			tester.active = proxy.active;
 			m_IntersectionModule.AddTester(tester);
 		});
-		UpdatePlayerHandleMaps();
 	}
 
 	private GameObject InstantiateUI(GameObject prefab)
@@ -619,8 +623,6 @@ public class EditorVR : MonoBehaviour
 			foreach (ITool tool in deviceData.tools)
 				AddActionMapInputs(tool, maps);
 		}
-
-		maps.Add(m_DefaultActionInput);
 	}
 
 	private void AddActionMapInputs(object obj, List<ActionMapInput> maps)
@@ -906,6 +908,7 @@ public class EditorVR : MonoBehaviour
 				if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
 				{
 					DespawnTool(deviceData, deviceData.currentTool);
+
 					// Don't spawn a new tool, since we are toggling the old tool
 					spawnTool = false;
 				}
@@ -926,6 +929,8 @@ public class EditorVR : MonoBehaviour
 					AddToolToStack(dev, newTool);
 				}
 			}
+
+			UpdatePlayerHandleMaps();
 		};
 
 		return true;
@@ -933,16 +938,19 @@ public class EditorVR : MonoBehaviour
 
 	private void DespawnTool(DeviceData deviceData, ITool tool)
 	{
-		// Remove the tool if it is the current tool on this device tool stack
-		if (deviceData.currentTool == tool)
+		if (!IsPermanentTool(tool.GetType()))
 		{
-			if (deviceData.tools.Peek() != deviceData.currentTool)
-				Debug.LogError("Tool at top of stack is not current tool.");
-			deviceData.tools.Pop();
-			deviceData.currentTool = null;
+			// Remove the tool if it is the current tool on this device tool stack
+			if (deviceData.currentTool == tool)
+			{
+				if (deviceData.tools.Peek() != deviceData.currentTool)
+					Debug.LogError("Tool at top of stack is not current tool.");
+				deviceData.tools.Pop();
+				deviceData.currentTool = deviceData.tools.Peek();
+			}
+			DisconnectInterfaces(tool);
+			U.Object.Destroy(tool as MonoBehaviour);
 		}
-		DisconnectInterfaces(tool);
-		U.Object.Destroy(tool as MonoBehaviour);
 	}
 
 	private bool IsValidActionMapForDevice(ActionMap actionMap, InputDevice device)
@@ -990,7 +998,6 @@ public class EditorVR : MonoBehaviour
 		{
 			m_DeviceData[device].tools.Push(tool);
 			m_DeviceData[device].currentTool = tool;
-			UpdatePlayerHandleMaps();
 		}
 	}
 

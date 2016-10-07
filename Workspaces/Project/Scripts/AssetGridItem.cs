@@ -155,6 +155,11 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		InstantiatePreview();
 
 		m_Text.text = listData.name;
+
+		// HACK: We need to kick the canvasRenderer to update the mesh properly
+		m_Text.gameObject.SetActive(false);
+		m_Text.gameObject.SetActive(true);
+
 		m_PreviewFade = 0;
 	}
 
