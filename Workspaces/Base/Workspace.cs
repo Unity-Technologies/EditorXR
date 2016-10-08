@@ -90,7 +90,7 @@ namespace UnityEngine.VR.Workspaces
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
 		/// A value of zero will leave the mask in the center of the workspace
 		/// </summary>
-		public float signedSeparatorMaskOffset
+		public float topPanelDividerOffset
 		{
 			set
 			{
