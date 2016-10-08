@@ -266,7 +266,7 @@ namespace UnityEngine.VR.Utilities
 			var randomPositionA = s_ColorRandom.Next(s_ColorSwatchRange);
 			var randomPositionB = s_ColorRandom.Next(s_ColorSwatchRange);
 
-			// Return a new random colorA that is not the same as the previous A or B
+			// Return a new random colorA that is not the same as the previous A
 			while (SwatchesSimilar(s_ColorSwatches[randomPositionA], s_ColorSwatches[s_RandomGradientPairColorAPosition], 0.35f))
 				randomPositionA = s_ColorRandom.Next(s_ColorSwatchRange);
 
