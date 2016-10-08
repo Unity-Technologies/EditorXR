@@ -81,11 +81,8 @@ public class FolderListItem : ListViewItem<FolderData>
 	public void UpdateTransforms(float width, int depth)
 	{
 		var cubeScale = m_CubeTransform.localScale;
-		if (width != cubeScale.x)
-		{
-			cubeScale.x = width;
-			m_CubeTransform.localScale = cubeScale;
-		}
+		cubeScale.x = width;
+		m_CubeTransform.localScale = cubeScale;
 
 		var arrowWidth = m_ExpandArrow.transform.localScale.x * 0.5f;
 		var halfWidth = width * 0.5f;
