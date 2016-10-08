@@ -131,7 +131,7 @@ namespace UnityEngine.VR.Utilities
 		public static Color light { get { return s_Light; } }
 
 		/// <summary>
-		/// A unique Unity brand color gradient generated once per session
+		/// A unique Unity brand color gradient that can be set manually
 		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements
 		/// </summary>
 		public static GradientPair sessionGradient { get; set; }
@@ -236,6 +236,8 @@ namespace UnityEngine.VR.Utilities
 			s_Gradients.Add(new GradientPair(s_Red, s_Blue));
 			s_Gradients.Add(new GradientPair(s_Blue, s_Lime));
 			s_Gradients.Add(new GradientPair(s_Orange, s_Lime));
+
+			sessionGradient = GetRandomGradient();
 		}
 
 		/// <summary>

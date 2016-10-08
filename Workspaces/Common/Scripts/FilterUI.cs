@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Utilities;
 
 public class FilterUI : MonoBehaviour
@@ -81,8 +82,7 @@ public class FilterUI : MonoBehaviour
 	{
 		if (show)
 		{
-			if (m_HideUICoroutine != null)
-				StopCoroutine(m_HideUICoroutine);
+			StopCoroutine(ref m_HideUICoroutine);
 
 			m_HideUICoroutine = StartCoroutine(HideUIContent());
 
@@ -90,8 +90,7 @@ public class FilterUI : MonoBehaviour
 		}
 		else
 		{
-			if (m_ShowUICoroutine != null)
-				StopCoroutine(m_ShowUICoroutine);
+			StopCoroutine(ref m_ShowUICoroutine);
 
 			m_ShowUICoroutine = StartCoroutine(ShowUIContent());
 

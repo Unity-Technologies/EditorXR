@@ -2365,7 +2365,7 @@ MonoBehaviour:
   m_BackHandle: {fileID: 114000013854833486}
   m_Frame: {fileID: 137000012547310740}
   m_FrameFrontFaceTransform: {fileID: 4000010331582456}
-  m_SeparatorMaskTransform: {fileID: 4000011607955888}
+  m_TopPanelDividerTransform: {fileID: 4000011607955888}
   m_UIContentContainer: {fileID: 224000012325241496}
   m_FrontLeftResizeIcon: {fileID: 114000013666556608}
   m_FrontRightResizeIcon: {fileID: 114000010384418974}

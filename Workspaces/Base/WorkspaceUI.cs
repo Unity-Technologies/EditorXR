@@ -9,6 +9,7 @@ namespace UnityEngine.VR.Workspaces
 		public event Action closeClicked = delegate { };
 		public event Action lockClicked = delegate { };
 
+		// Cached for optimization
 		float m_OriginalUIContainerLocalYPos;
 		float m_PreviousXRotation;
 		float m_HandleScale;
@@ -81,7 +82,7 @@ namespace UnityEngine.VR.Workspaces
 		Transform m_FrameFrontFaceTransform;
 
 		[SerializeField]
-		Transform m_SeparatorMaskTransform;
+		Transform m_TopPanelDividerTransform;
 
 		[SerializeField]
 		RectTransform m_UIContentContainer;
@@ -122,33 +123,33 @@ namespace UnityEngine.VR.Workspaces
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
 		/// A value of zero will leave the mask in the center of the workspace
 		/// </summary>
-		public float signedSeparatorMaskOffset
+		public float topPanelDividerOffset
 		{
 			set
 			{
-				m_SignedSeparatorMaskOffset = value;
-				m_SeparatorMaskTransform.gameObject.SetActive(true);
+				m_TopPanelDividerOffset = value;
+				m_TopPanelDividerTransform.gameObject.SetActive(true);
 			}
 		}
-		float? m_SignedSeparatorMaskOffset;
+		float? m_TopPanelDividerOffset;
 
-		public bool workspaceBaseInteractive
+		public bool workspacePanelsVisible
 		{
 			set
 			{
-				m_workspaceBaseInteractive = value;
+				m_workspacePanelsVisible = value;
 				dynamicFaceAdjustment = false;
 
-				if (m_workspaceBaseInteractive == false)
+				if (m_workspacePanelsVisible == false)
 				{
 					m_Frame.SetBlendShapeWeight(kHiddenFacesBlendShapeIndex, 100f);
 					m_FrameFrontFaceTransform.gameObject.SetActive(false);
 				}
 			}
 		}
-		bool m_workspaceBaseInteractive = true;
+		bool m_workspacePanelsVisible = true;
 
-		public Bounds setBounds
+		public Bounds bounds
 		{
 			get { return m_Bounds; }
 			set
@@ -189,11 +190,11 @@ namespace UnityEngine.VR.Workspaces
 				m_FrameFrontFaceTransform.localScale = new Vector3(boundsSize.x * kFaceWidthMatchMultiplier, 1f, 1f);
 
 				// Position the separator mask if enabled
-				if (m_SignedSeparatorMaskOffset != null)
+				if (m_TopPanelDividerOffset != null)
 				{
 					const float heightCompensationMultiplier = 4.225f;
-					m_SeparatorMaskTransform.localPosition = new Vector3(boundsSize.x * 0.5f * m_SignedSeparatorMaskOffset.Value, 0f, 0f);
-					m_SeparatorMaskTransform.localScale = new Vector3(1f, 1f, boundsSize.z * heightCompensationMultiplier);
+					m_TopPanelDividerTransform.localPosition = new Vector3(boundsSize.x * 0.5f * m_TopPanelDividerOffset.Value, 0f, 0f);
+					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, boundsSize.z * heightCompensationMultiplier);
 				}
 
 				var grabColliderSize = m_GrabCollider.size;
@@ -202,7 +203,7 @@ namespace UnityEngine.VR.Workspaces
 		}
 		Bounds m_Bounds;
 
-		void ResizeHighlightBegin(BaseHandle baseHandle, HandleEventData eventData)
+		void ShowResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
 			const float kOpacityTarget = 0.75f;
 			const float kDuration = 0.5f;
@@ -229,7 +230,7 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		void ResizeHighlightEnd(BaseHandle baseHandle, HandleEventData eventData)
+		void HideResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
 			const float kOpacityTarget = 0f;
 			const float kDuration = 0.2f;
@@ -258,14 +259,14 @@ namespace UnityEngine.VR.Workspaces
 
 		void Awake()
 		{
-			m_FrontHandle.hoverStarted += ResizeHighlightBegin;
-			m_FrontHandle.hoverEnded += ResizeHighlightEnd;
-			m_RightHandle.hoverStarted += ResizeHighlightBegin;
-			m_RightHandle.hoverEnded += ResizeHighlightEnd;
-			m_LeftHandle.hoverStarted += ResizeHighlightBegin;
-			m_LeftHandle.hoverEnded += ResizeHighlightEnd;
-			m_BackHandle.hoverStarted += ResizeHighlightBegin;
-			m_BackHandle.hoverEnded += ResizeHighlightEnd;
+			m_FrontHandle.hoverStarted += ShowResizeUI;
+			m_FrontHandle.hoverEnded += HideResizeUI;
+			m_RightHandle.hoverStarted += ShowResizeUI;
+			m_RightHandle.hoverEnded += HideResizeUI;
+			m_LeftHandle.hoverStarted += ShowResizeUI;
+			m_LeftHandle.hoverEnded += HideResizeUI;
+			m_BackHandle.hoverStarted += ShowResizeUI;
+			m_BackHandle.hoverEnded += HideResizeUI;
 
 			m_FrontLeftResizeIcon.CrossFadeAlpha(0f, 0f, true);
 			m_FrontRightResizeIcon.CrossFadeAlpha(0f, 0f, true);

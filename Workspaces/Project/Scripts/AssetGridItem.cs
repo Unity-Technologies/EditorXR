@@ -3,6 +3,7 @@ using System.Collections;
 using ListView;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 
@@ -325,8 +326,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	{
 		if (gameObject.activeInHierarchy)
 		{
-			if (m_TransitionCoroutine != null)
-				StopCoroutine(m_TransitionCoroutine);
+			StopCoroutine(ref m_TransitionCoroutine);
 			m_TransitionCoroutine = StartCoroutine(AnimatePreview(false));
 		}
 	}
@@ -335,8 +335,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	{
 		if (gameObject.activeInHierarchy)
 		{
-			if (m_TransitionCoroutine != null)
-				StopCoroutine(m_TransitionCoroutine);
+			StopCoroutine(ref m_TransitionCoroutine);
 			m_TransitionCoroutine = StartCoroutine(AnimatePreview(true));
 		}
 	}

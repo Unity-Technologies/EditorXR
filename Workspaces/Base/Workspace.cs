@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Workspaces
 {
@@ -83,7 +84,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public Action<GameObject, bool> setHighlight { get; set; }
 
-		public bool dynamicFaceAdjustment { get { return m_WorkspaceUI.dynamicFaceAdjustment; } set {m_WorkspaceUI.dynamicFaceAdjustment = value; } }
+		public bool dynamicFaceAdjustment { get { return m_WorkspaceUI.dynamicFaceAdjustment; } set { m_WorkspaceUI.dynamicFaceAdjustment = value; } }
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
@@ -93,13 +94,13 @@ namespace UnityEngine.VR.Workspaces
 		{
 			set
 			{
-				m_WorkspaceUI.signedSeparatorMaskOffset = value;
-				m_WorkspaceUI.setBounds = contentBounds;
+				m_WorkspaceUI.topPanelDividerOffset = value;
+				m_WorkspaceUI.bounds = contentBounds;
 			}
 		}
 
 		public bool vacuumEnabled { set { m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value); } }
-		protected bool workspaceBaseInteractive { set { m_WorkspaceUI.workspaceBaseInteractive = value; } }
+		protected bool workspacePanelsVisible { set { m_WorkspaceUI.workspacePanelsVisible = value; } }
 
 		public virtual void Setup()
 		{
@@ -143,8 +144,7 @@ namespace UnityEngine.VR.Workspaces
 				handle.hoverEnded += OnHandleHoverEnded;
 			}
 
-			if (m_VisibilityCoroutine != null)
-				StopCoroutine(m_VisibilityCoroutine);
+			StopCoroutine(ref m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
@@ -198,19 +198,15 @@ namespace UnityEngine.VR.Workspaces
 		public virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			// TODO: Add new highlight visuals support
-			/*
-			if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
-				setHighlight(handle.gameObject, true);
-			*/
+			//if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
+			//	setHighlight(handle.gameObject, true);
 		}
 
 		public virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			// TODO: Add new highlight visuals support
-			/*
-			if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
-				setHighlight(handle.gameObject, false);
-			*/
+			//if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
+			//	setHighlight(handle.gameObject, false);
 		}
 
 		private void OnDoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -265,8 +261,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnCloseClicked()
 		{
-			if (m_VisibilityCoroutine != null)
-				StopCoroutine(m_VisibilityCoroutine);
+			StopCoroutine(ref m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
@@ -280,7 +275,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
 			m_WorkspaceUI.vacuumHandle.transform.localScale = outerBounds.size;
-			m_WorkspaceUI.setBounds = contentBounds;
+			m_WorkspaceUI.bounds = contentBounds;
 		}
 
 		protected virtual void OnDestroy()
