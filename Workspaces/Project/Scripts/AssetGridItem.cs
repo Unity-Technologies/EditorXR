@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Utilities;
 
 public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPreview
