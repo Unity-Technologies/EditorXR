@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Utilities
+﻿namespace UnityEngine.VR.Helpers
 {
 	public class SmoothMotion : MonoBehaviour
 	{
