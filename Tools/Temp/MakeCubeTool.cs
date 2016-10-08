@@ -14,12 +14,8 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay
 		{
 			Transform cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
 			if (rayOrigin)
-			{
 				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
-				cube.parent = transform;
-			}
 		}
-
 	}
 
 }
