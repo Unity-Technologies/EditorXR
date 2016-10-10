@@ -291,6 +291,9 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		const float kDuration = 1f;
 		while (currentTime < kDuration)
 		{
+			if (m_GrabbedObject == null)
+				yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
+
 			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_GrabbedObject.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, currentTime);
 			yield return null;
