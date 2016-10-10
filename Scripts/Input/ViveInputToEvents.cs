@@ -33,8 +33,8 @@ public class ViveInputToEvents : MonoBehaviour
 			if (steamDeviceIndex == -1)
 			{
 				steamDeviceIndex = SteamVR_Controller.GetDeviceIndex(hand == VRInputDevice.Handedness.Left
-					 ? SteamVR_Controller.DeviceRelation.Leftmost
-					 : SteamVR_Controller.DeviceRelation.Rightmost);
+					? SteamVR_Controller.DeviceRelation.Leftmost
+					: SteamVR_Controller.DeviceRelation.Rightmost);
 
 				if (steamDeviceIndex == -1)
 					continue;

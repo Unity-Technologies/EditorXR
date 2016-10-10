@@ -17,7 +17,7 @@ MonoBehaviour:
   - {fileID: 114000010230225506}
   - {fileID: 114000010321248940}
   m_ControlSchemes:
-  - m_Name: Sixense
+  - m_Name: VRInputDevice
     m_DeviceSlots:
     - m_Key: 1
       m_Type:

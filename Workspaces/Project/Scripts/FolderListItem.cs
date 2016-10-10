@@ -60,6 +60,11 @@ public class FolderListItem : ListViewItem<FolderData>
 		}
 		
 		m_Text.text = listData.name;
+
+		// HACK: We need to kick the canvasRenderer to update the mesh properly
+		m_Text.gameObject.SetActive(false);
+		m_Text.gameObject.SetActive(true);
+
 		m_ExpandArrow.gameObject.SetActive(listData.children != null);
 		m_Hovering = false;
 	}
