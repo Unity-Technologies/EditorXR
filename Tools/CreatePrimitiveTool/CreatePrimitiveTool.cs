@@ -12,6 +12,8 @@ using UnityEngine.VR.Handles;
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateMenuUI, ICustomRay, IHighlight, IRaycaster
 {
 	public static PrimitiveType s_SelectedPrimitiveType = PrimitiveType.Cube;
+	//public static GameObject s_CurrentHightighted;
+
 	public static bool s_Freeform = false;
 
 	[SerializeField]
@@ -58,23 +60,22 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 
 	private GameObject m_HoverGameObject;
 
-	BaseHandle m_SphereHandle;
-	BaseHandle m_CubeHandle;
+	//BaseHandle m_SphereHandle;
+	//BaseHandle m_CubeHandle;
 
 	void Awake()
 	{
-		m_SphereHandle = CanvasPrefab.GetComponent<CreatePrimitiveMenu>().Sphere.GetComponent<BaseHandle>();
-		m_CubeHandle = CanvasPrefab.GetComponent<CreatePrimitiveMenu>().Cube.GetComponent<BaseHandle>();
+		//m_SphereHandle = CanvasPrefab.GetComponent<CreatePrimitiveMenu>().Sphere.GetComponent<BaseHandle>();
+		//m_CubeHandle = CanvasPrefab.GetComponent<CreatePrimitiveMenu>().Cube.GetComponent<BaseHandle>();
 
-		m_SphereHandle.hoverStarted += OnHandleHoverStarted;
-		m_SphereHandle.hoverEnded += OnHandleHoverEnded;
-		m_CubeHandle.hoverStarted += OnHandleHoverStarted;
-		m_CubeHandle.hoverEnded += OnHandleHoverEnded;
+		//m_SphereHandle.hoverStarted += OnHandleHoverStarted;
+		//m_SphereHandle.hoverEnded += OnHandleHoverEnded;
+		//m_CubeHandle.hoverStarted += OnHandleHoverStarted;
+		//m_CubeHandle.hoverEnded += OnHandleHoverEnded;
 	}
 
 	void Update()
 	{
-		
 		if(!m_ToolCanvasSpawned)
 		{
 			var go = instantiateMenuUI(node, MenuOrigin.Main,CanvasPrefab.gameObject);
@@ -104,10 +105,10 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 			case PrimitiveCreationStates.PointB:
 			{
 				m_PointB = rayOrigin.position + rayOrigin.forward * kDrawDistance;
+				m_CurrentGameObject.transform.position = (m_PointA + m_PointB) * 0.5f;
 
-				m_CurrentGameObject.transform.position = (m_PointA + m_PointB) * .5f;
 				var corner = (m_PointA - m_PointB).magnitude;
-
+				// to keep the capsule's and cylinder's draw point at the top or bottom
 				if(s_SelectedPrimitiveType == PrimitiveType.Capsule || s_SelectedPrimitiveType == PrimitiveType.Cylinder)
 					m_CurrentGameObject.transform.localScale = Vector3.one * corner * 0.5f;
 				else
@@ -133,6 +134,8 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 			}
 		}
 
+		//UpdateCurrentHighlightedObj();
+
 		if(rayOrigin == null)
 			return;
 
@@ -149,13 +152,44 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 		m_HoverGameObject = newHoverGameObject;
 	}
 
-	void OnHandleHoverStarted(BaseHandle handle,HandleEventData eventData = default(HandleEventData))
-	{
-		setHighlight(handle.gameObject,true);
-	}
+	//void OnHandleHoverStarted(BaseHandle handle,HandleEventData eventData = default(HandleEventData))
+	//{
+	//	setHighlight(handle.gameObject,true);
+	//}
 
-	void OnHandleHoverEnded(BaseHandle handle,HandleEventData eventData = default(HandleEventData))
-	{
-		setHighlight(handle.gameObject,false);
-	}
+	//void OnHandleHoverEnded(BaseHandle handle,HandleEventData eventData = default(HandleEventData))
+	//{
+	//	setHighlight(handle.gameObject,false);
+	//}
+
+	//void UpdateCurrentHighlightedObj()
+	//{
+	//	switch(s_SelectedPrimitiveType)
+	//	{
+	//		case PrimitiveType.Cube:
+	//		{
+	//			if(s_CurrentHightighted != CanvasPrefab.GetComponent<CreatePrimitiveMenu>().Cube)
+	//			{
+	//				if(s_CurrentHightighted != null)
+	//					setHighlight(s_CurrentHightighted,false);
+
+	//				s_CurrentHightighted = CanvasPrefab.GetComponent<CreatePrimitiveMenu>().Cube;
+	//				setHighlight(s_CurrentHightighted,true);
+	//			}
+	//			break;
+	//		}
+	//		case PrimitiveType.Sphere:
+	//		{
+	//			if(s_CurrentHightighted != CanvasPrefab.GetComponent<CreatePrimitiveMenu>().Sphere)
+	//			{
+	//				if(s_CurrentHightighted != null)
+	//					setHighlight(s_CurrentHightighted,false);
+
+	//				s_CurrentHightighted = CanvasPrefab.GetComponent<CreatePrimitiveMenu>().Sphere;
+	//				setHighlight(s_CurrentHightighted,true);
+	//			}
+	//			break;
+	//		}
+	//	}
+	//}
 }
