@@ -54,6 +54,7 @@ public class EditorVR : MonoBehaviour
 	private PixelRaycastModule m_PixelRaycastModule;
 	private HighlightModule m_HighlightModule;
 	private ObjectPlacementModule m_ObjectPlacementModule;
+	private SnappingModule m_SnappingModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
 
@@ -118,6 +119,7 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+		m_SnappingModule = U.Object.AddComponent<SnappingModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
@@ -702,6 +704,15 @@ public class EditorVR : MonoBehaviour
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
 			m_SelectionChanged += selectionChanged.OnSelectionChanged;
+
+		var snapping = obj as ISnapping;
+		if (snapping != null)
+		{
+			snapping.onSnapEnded = m_SnappingModule.OnSnapEnded;
+			snapping.onSnapHeld = m_SnappingModule.OnSnapHeld;
+			snapping.onSnapStarted = m_SnappingModule.OnSnapStarted;
+			snapping.onSnapUpdate = m_SnappingModule.OnSnapUpdate;
+		}
 
 		if (mainMenu != null)
 		{

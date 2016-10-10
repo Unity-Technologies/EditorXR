@@ -4,8 +4,9 @@ using UnityEngine.VR.Tools;
 using UnityEditor;
 using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
+using System;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, ISnapping
 {
 	[SerializeField]
 	private GameObject m_StandardManipulatorPrefab;
@@ -58,6 +59,14 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	private TransformMode m_Mode;
 
 	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput) value; } }
+
+	public Action<Transform, Vector3, Transform[]> onSnapStarted { private get; set; }
+	public Action<Transform, Vector3, Transform[]> onSnapEnded { private get; set; }
+	public Action<Transform, Vector3, Transform[]> onSnapHeld { private get; set; }
+	public Action<Transform> onSnapUpdate { private get; set; }
+	
+	bool m_IsDragging;
+
 	private TransformInput m_TransformInput;
 
 	void Awake()
@@ -112,10 +121,15 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 			var deltaTime = Time.unscaledDeltaTime;
 			var manipulatorTransform = m_CurrentManipulator.transform;
+			Vector3 prevPos = manipulatorTransform.position;
 			manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, kLazyFollowTranslate * deltaTime);
+			Vector3 deltaMovement = manipulatorTransform.position - prevPos;
 
 			if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 				manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, kLazyFollowRotate * deltaTime);
+
+			var manipulatorChildren = m_CurrentManipulator.GetComponentsInChildren<Transform>(true);
+			List<Transform> ignoreList = new List<Transform>(manipulatorChildren);
 
 			foreach (var t in m_SelectionTransforms)
 			{
@@ -128,8 +142,39 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 				}
 				else
 					t.position = manipulatorTransform.position + m_PositionOffsets[t];
+				
+				ignoreList.Add(t);
+				HandleSnap(manipulator, t, deltaMovement, ignoreList.ToArray());
+				ignoreList.Remove(t);
 
 				t.localScale = Vector3.Lerp(t.localScale, Vector3.Scale(m_TargetScale, m_ScaleOffsets[t]), kLazyFollowTranslate * deltaTime);
+			}
+		}
+	}
+
+	private void HandleSnap(IManipulator manipulator, Transform trans, Vector3 deltaMovement, Transform[] ignoreList)
+	{
+		if (manipulator != null)
+		{
+			if (manipulator.dragging)
+			{
+				if (!m_IsDragging)
+				{
+					m_IsDragging = true;
+					onSnapStarted(trans, deltaMovement, ignoreList);
+				}
+				else
+					onSnapHeld(trans, deltaMovement, ignoreList);
+			}
+			else
+			{
+				if (m_IsDragging)
+				{
+					m_IsDragging = false;
+					onSnapEnded(trans, deltaMovement, ignoreList);
+				}
+				else
+					onSnapUpdate(trans);
 			}
 		}
 	}

@@ -37,15 +37,15 @@ namespace UnityEngine.VR.Utilities
 				Throw = 8
 			}
 
-			public static bool SnapToGroundPlane(Transform objectToSnap, Vector3 movement)
+			public static bool SnapToGroundPlane(Transform objectToSnap, Vector3 movement, Vector3 offset = default(Vector3))
 			{
 				Vector3 objectPosition = objectToSnap.position;
 				bool movingAway = Mathf.Sign(objectPosition.y) == Mathf.Sign(movement.y);
 				float snapDistance = movingAway ? kSnapReleaseDistance : kSnapApproachDistance;
-				bool needSnap = Mathf.Abs(objectPosition.y) < snapDistance;
+				bool needSnap = Mathf.Abs(objectPosition.y + offset.y) < snapDistance;
 
 				if (needSnap)
-					objectPosition.y = 0;
+					objectPosition.y = -offset.y;
 
 				objectToSnap.position = objectPosition;
 				return needSnap;
@@ -121,6 +121,56 @@ namespace UnityEngine.VR.Utilities
 					hit = default(RaycastHit);
 					return false;
 				}
+			}
+
+			public static Vector3 GetClosestVertex(MeshFilter target, Vector3 surfacePoint, Vector3 surfaceNormal, bool singleAxisAwayFromSurface = true)
+			{
+				Vector3 closest = Vector3.zero;
+
+				if (target)
+				{
+					var mesh = target.sharedMesh;
+					if (mesh)
+					{
+						var vertexCount = mesh.vertexCount;
+						var vertices = mesh.vertices;
+
+						float lowestDistance = float.PositiveInfinity;
+
+						Quaternion rotation = Quaternion.FromToRotation(Vector3.up, surfaceNormal);
+						Matrix4x4 surfaceToWorld = Matrix4x4.TRS(surfacePoint, rotation, Vector3.one);
+						Matrix4x4 worldToSurface = surfaceToWorld.inverse;
+						Matrix4x4 objectToWorld = target.transform.localToWorldMatrix;
+
+						for (int i = 0; i < vertexCount; i++)
+						{
+							var vertex = vertices[i];
+							var transformVector = objectToWorld.MultiplyVector(vertex);
+							var surfaceVertex = worldToSurface.MultiplyVector(transformVector);
+							float vertexY = surfaceVertex.y;
+
+							if (vertexY < lowestDistance)
+							{
+								if (singleAxisAwayFromSurface)
+								{
+									Vector3 onlyY = new Vector3(0, vertexY, 0);
+									closest = surfaceToWorld.MultiplyVector(onlyY);
+								}
+								else
+									closest = transformVector;
+
+								lowestDistance = vertexY;
+							}
+						}
+					}
+				}
+
+				return closest;
+			}
+
+			public static bool HasFlag(SnappingModes flag)
+			{
+				return (currentSnappingMode & flag) != 0;
 			}
 
 		}
