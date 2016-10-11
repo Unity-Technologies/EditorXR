@@ -34,7 +34,7 @@ namespace UnityEngine.VR.Workspaces
 		Coroutine m_RotateFrontFaceForwardCoroutine;
 		Coroutine m_RotateFrontFaceBackwardCoroutine;
 
-		const float kMaxAlternateFrontPanelLocalZOffset = -0.1725f;
+		const float kMaxAlternateFrontPanelLocalZOffset = -0.136f;
 		const float kMaxAlternateFrontPanelLocalYOffset = 0.0525f;
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kThinFrameBlendShapeIndex = 3;
@@ -43,7 +43,7 @@ namespace UnityEngine.VR.Workspaces
 		const float kBackResizeButtonPositionOffset = 0.057f; // Offset to place the back resize buttons in their intended location
 		const float kBackHandleOffset = -0.145f; // Offset to place the back handle in the expected region behind the workspace
 		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
-		const float kPanelOffset = -0.085f; // The panel needs to be pulled back slightly
+		const float kPanelOffset = -0.0495f; // The panel needs to be pulled back slightly
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
