@@ -106,6 +106,8 @@ namespace UnityEditor.VR
 		public static event System.Action onDisable = delegate {};
 		public static event System.Action<EditorWindow> onGUIDelegate = delegate { };
 
+		public static event Action onHMDReady;
+
 		public DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 		
 		[NonSerialized]
@@ -124,6 +126,7 @@ namespace UnityEditor.VR
 		
 		private const string kLaunchOnExitPlaymode = "EditorVR.LaunchOnExitPlaymode";
 		private const float kHMDActivityTimeout = 3f; // in seconds
+		bool m_HMDReady;
 
 		public void OnEnable()
 		{
@@ -180,12 +183,12 @@ namespace UnityEditor.VR
 
 		private void UpdateCamera()
 		{
-			// Latch HMD values early in case it is used in other scripts				
+			// Latch HMD values early in case it is used in other scripts
 			Vector3 headPosition = InputTracking.GetLocalPosition(VRNode.Head);
 			Quaternion headRotation = InputTracking.GetLocalRotation(VRNode.Head);
 
 			// HACK: Until an actual fix is found, this is a workaround
-			// Delay until the VR subsystem has set the initial tracking position, then we can start latching values for 
+			// Delay until the VR subsystem has set the initial tracking position, then we can start latching values for
 			// the HMD for the camera transform. Otherwise, we will bork the original centering of the HMD.
 			var cameraTransform = m_Camera.transform;
 			if (!Mathf.Approximately(Quaternion.Angle(cameraTransform.localRotation, Quaternion.identity), 0f))
@@ -204,6 +207,12 @@ namespace UnityEditor.VR
 			{
 				cameraTransform.localPosition = headPosition;
 				cameraTransform.localRotation = headRotation;
+				if (!m_HMDReady)
+				{
+					m_HMDReady = true;
+					if (onHMDReady != null)
+						onHMDReady();
+				}
 			}
 
 			m_LastHeadRotation = headRotation;
@@ -256,7 +265,7 @@ namespace UnityEditor.VR
 			CreateCameraTargetTexture(cameraRect, hdr);
 			m_Camera.targetTexture = m_ShowDeviceView ? m_SceneTargetTexture : null;
 			VRSettings.showDeviceView = m_ShowDeviceView;
-		}     
+		}
 
 		private void OnGUI()
 		{
@@ -315,7 +324,7 @@ namespace UnityEditor.VR
 
 			// Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
 			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
-				 SetSceneViewsEnabled(true);
+				SetSceneViewsEnabled(true);
 		}
 
 		private void SetGameViewsEnabled(bool enabled)
