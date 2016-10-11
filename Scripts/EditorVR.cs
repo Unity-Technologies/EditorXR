@@ -243,10 +243,10 @@ public class EditorVR : MonoBehaviour
 				var mainMenu = m_DeviceData[device].mainMenu;
 				if (mainMenu != null)
 				{
+					// Toggle tool menus
 					foreach(GameObject go in kvp.Value.toolMenus)
-					{
 						go.SetActive(mainMenu.visible);
-					}
+					
 					// Toggle menu
 					mainMenu.visible = !mainMenu.visible;
 				}
@@ -467,6 +467,7 @@ public class EditorVR : MonoBehaviour
 		foreach(Canvas canvas in go.GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = m_EventCamera;
 
+		// the menu needs to be on the opposite hand to the tool
 		if(node == Node.LeftHand)
 			node = Node.RightHand;
 		else if(node == Node.RightHand)

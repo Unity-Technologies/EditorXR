@@ -60,7 +60,7 @@ GameObject:
   - 114: {fileID: 114000014144221930}
   - 114: {fileID: 114000012469117326}
   m_Layer: 5
-  m_Name: MenuButton (4)
+  m_Name: QuadButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -79,7 +79,7 @@ GameObject:
   - 114: {fileID: 114000011327615652}
   - 114: {fileID: 114000012099991742}
   m_Layer: 5
-  m_Name: MenuButton (5)
+  m_Name: CylinderButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -151,7 +151,7 @@ GameObject:
   - 114: {fileID: 114000010903254168}
   - 114: {fileID: 114000014189560488}
   m_Layer: 5
-  m_Name: MenuButton
+  m_Name: SphereButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -189,7 +189,7 @@ GameObject:
   - 114: {fileID: 114000011140226108}
   - 114: {fileID: 114000014014803856}
   m_Layer: 5
-  m_Name: MenuButton (1)
+  m_Name: CubeButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -564,7 +564,7 @@ GameObject:
   - 114: {fileID: 114000010260101998}
   - 114: {fileID: 114000010289911076}
   m_Layer: 5
-  m_Name: MenuButton (2)
+  m_Name: CapsuleButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -601,7 +601,7 @@ GameObject:
   - 114: {fileID: 114000013405031928}
   - 114: {fileID: 114000013352514132}
   m_Layer: 5
-  m_Name: MenuButton (3)
+  m_Name: PlaneButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1781,12 +1781,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  HighlightCube: {fileID: 1000012000597718}
-  HighlightSphere: {fileID: 1000013224359186}
-  HighlightCapsule: {fileID: 1000012760086958}
-  HighlightPlane: {fileID: 1000010335982858}
-  HighlightQuad: {fileID: 1000010923335932}
-  HighlightCylinder: {fileID: 1000013855096706}
+  HighlightObjects:
+  - {fileID: 1000013224359186}
+  - {fileID: 1000012760086958}
+  - {fileID: 1000013855096706}
+  - {fileID: 1000012000597718}
+  - {fileID: 1000010335982858}
+  - {fileID: 1000010923335932}
 --- !u!114 &114000010666244620
 MonoBehaviour:
   m_ObjectHideFlags: 1

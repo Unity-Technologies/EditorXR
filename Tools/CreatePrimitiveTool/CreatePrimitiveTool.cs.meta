@@ -1,11 +1,11 @@
 fileFormatVersion: 2
 guid: a88637e6fe98dcd4da6c6238d3cfc5a4
-timeCreated: 1475759104
+timeCreated: 1476184001
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
-  - CanvasPrefab: {fileID: 223000012660392470, guid: 86d6b2e01d02faf42be52ce94b33817b,
+  - m_CanvasPrefab: {fileID: 223000012660392470, guid: 86d6b2e01d02faf42be52ce94b33817b,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
