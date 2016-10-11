@@ -10,7 +10,8 @@
 	}
 	SubShader
 	{
-		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent-1" }
+		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent+2" }
+		Lighting Off
 		LOD 200
 		ZWrite Off
 
@@ -30,16 +31,15 @@
 		#include "ListClip.cginc"
 
 		sampler2D _MainTex;
-
 		half _Glossiness;
 		half _Metallic;
-		fixed4 _Color;
+		half4 _Color;
 
 		void surf(Input IN, inout SurfaceOutputStandard o)
 		{
 			listClipCheckExtents(IN.localPos);
 
-			fixed4 c = tex2D(_MainTex, IN.uv_MainTex) *_Color;
+			half4 c = tex2D(_MainTex, IN.uv_MainTex) *_Color;
 			o.Emission = c.rgb;
 			o.Alpha = c.a;
 		}
