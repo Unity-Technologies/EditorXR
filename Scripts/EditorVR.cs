@@ -101,6 +101,8 @@ public class EditorVR : MonoBehaviour
 
 	private event Action m_SelectionChanged;
 
+	bool m_HMDReady;
+
 	private void Awake()
 	{
 		ClearDeveloperConsoleIfNecessary();
@@ -121,7 +123,6 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
-		CreateSpatialSystem();
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
@@ -195,6 +196,10 @@ public class EditorVR : MonoBehaviour
 
 	private IEnumerator Start()
 	{
+		while (!m_HMDReady)
+			yield return null;
+		CreateDefaultWorkspaces();
+
 		// Delay until at least one proxy initializes
 		bool proxyActive = false;
 		while (!proxyActive)
@@ -211,7 +216,7 @@ public class EditorVR : MonoBehaviour
 			yield return null;
 		}
 
-		AddSpatialTesters();
+		CreateSpatialSystem();
 		SpawnDefaultTools();
 		StartCoroutine(PrewarmAssets());
 
@@ -227,6 +232,7 @@ public class EditorVR : MonoBehaviour
 		Selection.selectionChanged += OnSelectionChanged;
 #if UNITY_EDITOR
 		VRView.onGUIDelegate += OnSceneGUI;
+		VRView.onHMDReady += OnHMDReady;
 #endif
 	}
 
@@ -235,7 +241,13 @@ public class EditorVR : MonoBehaviour
 		Selection.selectionChanged -= OnSelectionChanged;
 #if UNITY_EDITOR
 		VRView.onGUIDelegate -= OnSceneGUI;
+		VRView.onHMDReady -= OnHMDReady;
 #endif
+	}
+
+	void OnHMDReady()
+	{
+		m_HMDReady = true;
 	}
 
 	private void OnSceneGUI(EditorWindow obj)
@@ -559,9 +571,7 @@ public class EditorVR : MonoBehaviour
 		m_SpatialHashModule.Setup();
 		m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
 		m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
-	}
 
-	void AddSpatialTesters() {
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
@@ -1004,7 +1014,6 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultWorkspaces()
 	{
 		CreateWorkspace<ProjectWorkspace>();
-		CreateWorkspace<ProfilerWorkspace>();
 	}
 
 	private void CreateWorkspace<T>() where T : Workspace
@@ -1065,7 +1074,7 @@ public class EditorVR : MonoBehaviour
 			//While the current position is occupied, try a new one
 			while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
 
-			Workspace workspace = (Workspace) U.Object.CreateGameObjectWithComponent(t, viewerPivot);
+			Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
 			m_AllWorkspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			ConnectInterfaces(workspace);
@@ -1207,15 +1216,18 @@ public class EditorVR : MonoBehaviour
 		if (go)
 			return go;
 
-		// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
-		// so in that case use the spatial hash as a final test
-		var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-		var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-		if (renderer)
+		if (m_IntersectionModule)
 		{
-			go = renderer.gameObject;
-			if (go)
-				return go;
+			// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
+			// so in that case use the spatial hash as a final test
+			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+			if (renderer)
+			{
+				go = renderer.gameObject;
+				if (go)
+					return go;
+			}
 		}
 
 		foreach (var miniWorldRay in m_MiniWorldRays)
@@ -1286,12 +1298,6 @@ public class EditorVR : MonoBehaviour
 	{
 		InitializeInputManager();
 		s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
-		VRView.onHMDReady += s_Instance.OnHMDReady;
-	}
-
-	void OnHMDReady()
-	{
-		CreateDefaultWorkspaces();
 	}
 
 	private static void InitializeInputManager()
@@ -1326,7 +1332,6 @@ public class EditorVR : MonoBehaviour
 
 	private static void OnEVRDisabled()
 	{
-		VRView.onHMDReady -= s_Instance.OnHMDReady;
 		U.Object.Destroy(s_Instance.gameObject);
 		U.Object.Destroy(s_InputManager.gameObject);
 	}

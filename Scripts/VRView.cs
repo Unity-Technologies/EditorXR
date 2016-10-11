@@ -102,11 +102,10 @@ namespace UnityEditor.VR
 			}
 		}
 
-		public static event System.Action onEnable = delegate {};
-		public static event System.Action onDisable = delegate {};
-		public static event System.Action<EditorWindow> onGUIDelegate = delegate { };
-
-		public static event Action onHMDReady;
+		public static event Action onEnable = delegate {};
+		public static event Action onDisable = delegate {};
+		public static event Action<EditorWindow> onGUIDelegate = delegate {};
+		public static event Action onHMDReady = delegate {};
 
 		public DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 		
@@ -210,8 +209,7 @@ namespace UnityEditor.VR
 				if (!m_HMDReady)
 				{
 					m_HMDReady = true;
-					if (onHMDReady != null)
-						onHMDReady();
+					onHMDReady();
 				}
 			}
 
