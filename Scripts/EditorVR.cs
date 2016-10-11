@@ -103,6 +103,8 @@ public class EditorVR : MonoBehaviour
 
 	private void Awake()
 	{
+		ClearDeveloperConsoleIfNecessary();
+
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 		if (VRSettings.loadedDeviceName == "OpenVR")
 		{
@@ -125,6 +127,7 @@ public class EditorVR : MonoBehaviour
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
 
+		UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
 		// then only show it in that hand's menu.
@@ -214,8 +217,6 @@ public class EditorVR : MonoBehaviour
 
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
 		EditorApplication.delayCall += OnSelectionChanged;
-
-		ClearDeveloperConsoleIfNecessary();
 
 		// This will be the first call to update the player handle (input) maps, sorted by priority
 		UpdatePlayerHandleMaps();
@@ -1003,9 +1004,9 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultWorkspaces()
 	{
 		CreateWorkspace<ProjectWorkspace>();
-		CreateWorkspace<ConsoleWorkspace>();
+		CreateWorkspace<ProfilerWorkspace>();
 	}
-	
+
 	private void CreateWorkspace<T>() where T : Workspace
 	{
 		CreateWorkspace(typeof(T));

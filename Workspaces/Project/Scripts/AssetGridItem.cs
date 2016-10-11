@@ -3,7 +3,9 @@ using System.Collections;
 using ListView;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Utilities;
 
 public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPreview
@@ -251,6 +253,11 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			U.Object.Destroy(cloneItem.m_TextPanel.gameObject);
 		}
 
+		// Disable any SmoothMotion that may be applied to a cloned Asset Grid Item now referencing input device p/r/s
+		var smoothMotion = clone.GetComponent<SmoothMotion>();
+		if (smoothMotion != null)
+			smoothMotion.enabled = false;
+
 		m_GrabbedObject = clone.transform;
 		m_GrabLerp = 0;
 		StartCoroutine(Magnetize());
@@ -292,16 +299,35 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 					break;
 			}
 		}
-		gridItem.m_Cube.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
-		U.Object.Destroy(m_GrabbedObject.gameObject);
+
+		StartCoroutine(AnimatedHide(m_GrabbedObject.gameObject, gridItem.m_Cube));
+	}
+
+	IEnumerator AnimatedHide(GameObject itemToHide, Renderer cubeRenderer)
+	{
+		m_GrabbedObject = null;
+
+		var itemTransform = itemToHide.transform;
+		var currentScale = itemTransform.localScale;
+		var targetScale = Vector3.zero;
+		var transitionAmount = Time.unscaledDeltaTime;
+		var transitionAddMultiplier = 6;
+		while (transitionAmount < 1)
+		{
+			itemTransform.localScale = Vector3.Lerp(currentScale, targetScale, transitionAmount);
+			transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
+			yield return null;
+		}
+
+		cubeRenderer.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
+		U.Object.Destroy(itemToHide);
 	}
 
 	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		if (gameObject.activeInHierarchy)
 		{
-			if (m_TransitionCoroutine != null)
-				StopCoroutine(m_TransitionCoroutine);
+			StopCoroutine(ref m_TransitionCoroutine);
 			m_TransitionCoroutine = StartCoroutine(AnimatePreview(false));
 		}
 	}
@@ -310,8 +336,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	{
 		if (gameObject.activeInHierarchy)
 		{
-			if (m_TransitionCoroutine != null)
-				StopCoroutine(m_TransitionCoroutine);
+			StopCoroutine(ref m_TransitionCoroutine);
 			m_TransitionCoroutine = StartCoroutine(AnimatePreview(true));
 		}
 	}
