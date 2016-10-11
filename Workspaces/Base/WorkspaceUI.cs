@@ -31,6 +31,7 @@ namespace UnityEngine.VR.Workspaces
 		float m_BackHandleYLocalPosition;
 		float m_LeftHandleYLocalPosition;
 		float m_RightHandleYLocalPosition;
+		float m_AngledFrontHandleOffset;
 		Material m_FrameGradientMaterial;
 		Vector3 m_FrontResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BackResizeIconsContainerOriginalLocalPosition;
@@ -171,7 +172,7 @@ namespace UnityEngine.VR.Workspaces
 				m_LeftHandleTransform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f - kSideHandleOffset, m_LeftHandleYLocalPosition, 0);
 				m_LeftHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
 
-				m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -extents.z - m_HandleScale);
+				m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -extents.z - m_HandleScale + m_AngledFrontHandleOffset);
 				m_FrontHandleTransform.localScale = new Vector3(boundsSize.x, m_HandleScale, m_HandleScale);
 
 				m_RightHandleTransform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
@@ -296,7 +297,7 @@ namespace UnityEngine.VR.Workspaces
 			m_FrontHandleYLocalPosition = m_FrontHandleTransform.localPosition.y;
 			m_BackHandleYLocalPosition = m_BackHandleTransform.localPosition.y;
 
-			const float frontResizeIconsContainerForwardOffset = -0.025f;
+			const float frontResizeIconsContainerForwardOffset = -0.15f;
 			const float frontResizeIconsContainerUpOffset = -0.025f;
 			m_FrontResizeIconsContainerOriginalLocalPosition = m_FrontResizeIconsContainer.localPosition;
 			m_BackResizeIconsContainerOriginalLocalPosition = m_BackResizeIconsContainer.localPosition;
@@ -345,6 +346,9 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator RotateFrontFaceForward()
 		{
+			m_AngledFrontHandleOffset = -0.125f; // set this value so it can be applied when manually setting bounds as well
+			m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale + m_AngledFrontHandleOffset); // only the front handle needs to be repositioned
+
 			const float targetBlendAmount = 100f;
 			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kAngledFaceBlendShapeIndex);
 			var currentVelocity = 0f;
@@ -364,6 +368,9 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator RotateFrontFaceBackward()
 		{
+			m_AngledFrontHandleOffset = 0.0f; // clear this offset value so it is not applied when manually setting bounds
+			m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale + m_AngledFrontHandleOffset); // only the front handle needs to be repositioned
+
 			const float targetBlendAmount = 0f;
 			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kAngledFaceBlendShapeIndex);
 			var currentVelocity = 0f;
