@@ -202,10 +202,9 @@ namespace UnityEngine.VR.Menus
 				}
 				else if (isWorkspace)
 				{
-					const string kWorkspace = "Workspace";
 					// For workspaces that haven't specified a custom attribute, do some menu categorization automatically
-					buttonData.name = type.Name.Replace(kWorkspace, string.Empty);
-					buttonData.sectionName = kWorkspace;
+					buttonData.name = type.Name.Replace("Workspace", string.Empty);
+					buttonData.sectionName = "Workspaces";
 				}
 
 				var selectedType = type; // Local variable for proper closure

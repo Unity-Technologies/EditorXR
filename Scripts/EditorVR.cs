@@ -103,6 +103,8 @@ public class EditorVR : MonoBehaviour
 
 	private void Awake()
 	{
+		ClearDeveloperConsoleIfNecessary();
+
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 		if (VRSettings.loadedDeviceName == "OpenVR")
 		{
@@ -217,8 +219,6 @@ public class EditorVR : MonoBehaviour
 
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
 		EditorApplication.delayCall += OnSelectionChanged;
-
-		ClearDeveloperConsoleIfNecessary();
 
 		// This will be the first call to update the player handle (input) maps, sorted by priority
 		UpdatePlayerHandleMaps();
@@ -1004,9 +1004,8 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultWorkspaces()
 	{
 		CreateWorkspace<ProjectWorkspace>();
-		CreateWorkspace<ProfilerWorkspace>();
 	}
-	
+
 	private void CreateWorkspace<T>() where T : Workspace
 	{
 		CreateWorkspace(typeof(T));
