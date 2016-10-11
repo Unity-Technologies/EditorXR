@@ -11,6 +11,7 @@ public class ConsoleWorkspace : Workspace
 	public override void Setup()
 	{
 		base.Setup();
+		workspacePanelsVisible = false;
 
 		m_ConsoleWindow = instantiateUI(m_ConsoleWindowPrefab).transform;
 		m_ConsoleWindow.SetParent(m_WorkspaceUI.sceneContainer, false);
