@@ -119,6 +119,7 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+		CreateSpatialSystem();
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
@@ -210,7 +211,7 @@ public class EditorVR : MonoBehaviour
 			yield return null;
 		}
 
-		CreateSpatialSystem();
+		AddSpatialTesters();
 		SpawnDefaultTools();
 		StartCoroutine(PrewarmAssets());
 
@@ -560,7 +561,9 @@ public class EditorVR : MonoBehaviour
 		m_SpatialHashModule.Setup();
 		m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
 		m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
+	}
 
+	void AddSpatialTesters() {
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
@@ -1003,7 +1006,7 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultWorkspaces()
 	{
 		CreateWorkspace<ProjectWorkspace>();
-		CreateWorkspace<ProfilerWorkspace>();
+		CreateWorkspace<ConsoleWorkspace>();
 	}
 	
 	private void CreateWorkspace<T>() where T : Workspace
