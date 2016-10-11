@@ -9,6 +9,17 @@ namespace UnityEngine.VR.Workspaces
 		public event Action closeClicked = delegate { };
 		public event Action lockClicked = delegate { };
 
+		const float kMaxAlternateFrontPanelLocalZOffset = -0.075f;
+		const float kMaxAlternateFrontPanelLocalYOffset = -0.005f;
+		const int kAngledFaceBlendShapeIndex = 2;
+		const int kThinFrameBlendShapeIndex = 3;
+		const int kHiddenFacesBlendShapeIndex = 4;
+		const float kFaceWidthMatchMultiplier =  7.23f; // Multiplier that sizes the face to the intended width
+		const float kBackResizeButtonPositionOffset = 0.057f; // Offset to place the back resize buttons in their intended location
+		const float kBackHandleOffset = -0.145f; // Offset to place the back handle in the expected region behind the workspace
+		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
+		const float kPanelOffset = -0.09f; // The panel needs to be pulled back slightly
+
 		// Cached for optimization
 		float m_OriginalUIContainerLocalYPos;
 		float m_PreviousXRotation;
@@ -28,17 +39,6 @@ namespace UnityEngine.VR.Workspaces
 		Transform m_RightHandleTransform;
 		Transform m_FrontHandleTransform;
 		Transform m_BackHandleTransform;
-
-		const float kMaxAlternateFrontPanelLocalZOffset = -0.075f;
-		const float kMaxAlternateFrontPanelLocalYOffset = -0.005f;
-		const int kAngledFaceBlendShapeIndex = 2;
-		const int kThinFrameBlendShapeIndex = 3;
-		const int kHiddenFacesBlendShapeIndex = 4;
-		const float kFaceWidthMatchMultiplier =  7.23f; // Multiplier that sizes the face to the intended width
-		const float kBackResizeButtonPositionOffset = 0.057f; // Offset to place the back resize buttons in their intended location
-		const float kBackHandleOffset = -0.145f; // Offset to place the back handle in the expected region behind the workspace
-		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
-		const float kPanelOffset = -0.09f; // The panel needs to be pulled back slightly
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
