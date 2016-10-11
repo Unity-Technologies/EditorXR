@@ -8,6 +8,14 @@ namespace UnityEngine.VR.Workspaces
 {
 	public class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
 	{
+		const float kIconHighlightedLocalZOffset = -0.0015f;
+		const string kMaterialAlphaProperty = "_Alpha";
+		const string kMaterialColorTopProperty = "_ColorTop";
+		const string kMaterialColorBottomProperty = "_ColorBottom";
+
+		static Material sSharedMaterialInstance;
+		static UnityBrandColorScheme.GradientPair sOriginalGradientPair;
+
 		[SerializeField]
 		MeshRenderer m_ButtonMeshRenderer;
 
@@ -29,14 +37,6 @@ namespace UnityEngine.VR.Workspaces
 
 		[SerializeField]
 		Graphic[] m_HighlightItems;
-
-		const float kIconHighlightedLocalZOffset = -0.0015f;
-		const string kMaterialAlphaProperty = "_Alpha";
-		const string kMaterialColorTopProperty = "_ColorTop";
-		const string kMaterialColorBottomProperty = "_ColorBottom";
-
-		static Material sSharedMaterialInstance;
-		static UnityBrandColorScheme.GradientPair sOriginalGradientPair;
 		UnityBrandColorScheme.GradientPair? sHighlightGradientPair;
 
 		Transform m_parentTransform;
