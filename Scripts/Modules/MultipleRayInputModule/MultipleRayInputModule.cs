@@ -130,10 +130,13 @@ namespace UnityEngine.VR.Modules
 				}
 
 				// Send scroll events
-				if (source.hoveredObject)
+				var scrollObject = source.hoveredObject;
+				if (!scrollObject)
+					scrollObject = source.selectedObject;
+				if (scrollObject)
 				{
 					eventData.scrollDelta = new Vector2(0f, source.actionMapInput.verticalScroll.value);
-					ExecuteEvents.ExecuteHierarchy(source.hoveredObject, eventData, ExecuteEvents.scrollHandler);
+					ExecuteEvents.ExecuteHierarchy(scrollObject, eventData, ExecuteEvents.scrollHandler);
 				}
 			}
 		}
