@@ -44,8 +44,6 @@ namespace UnityEditor.VR.Modules
 			GameObject go;
 			if (m_RaycastGameObjects.TryGetValue(rayOrigin, out go))
 				return go;
-			else
-				Debug.LogError("Transform rayOrigin " + rayOrigin + " is not set to raycast from.");
 			return null;
 		}
 
