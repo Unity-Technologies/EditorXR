@@ -313,7 +313,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.UI.Slider+SliderEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000012276274990
 MonoBehaviour:
   m_ObjectHideFlags: 1
