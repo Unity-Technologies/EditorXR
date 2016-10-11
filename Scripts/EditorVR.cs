@@ -121,6 +121,7 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+		CreateSpatialSystem();
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
@@ -194,9 +195,6 @@ public class EditorVR : MonoBehaviour
 
 	private IEnumerator Start()
 	{
-		// Workspaces don't need to wait until devices are active
-		CreateDefaultWorkspaces();
-
 		// Delay until at least one proxy initializes
 		bool proxyActive = false;
 		while (!proxyActive)
@@ -213,7 +211,7 @@ public class EditorVR : MonoBehaviour
 			yield return null;
 		}
 
-		CreateSpatialSystem();
+		AddSpatialTesters();
 		SpawnDefaultTools();
 		StartCoroutine(PrewarmAssets());
 
@@ -561,7 +559,9 @@ public class EditorVR : MonoBehaviour
 		m_SpatialHashModule.Setup();
 		m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
 		m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
+	}
 
+	void AddSpatialTesters() {
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
@@ -1004,6 +1004,7 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultWorkspaces()
 	{
 		CreateWorkspace<ProjectWorkspace>();
+		CreateWorkspace<ProfilerWorkspace>();
 	}
 
 	private void CreateWorkspace<T>() where T : Workspace
@@ -1016,10 +1017,10 @@ public class EditorVR : MonoBehaviour
 		var defaultOffset = Workspace.kDefaultOffset;
 		var defaultTilt = Workspace.kDefaultTilt;
 
-		var viewerPivot = U.Camera.GetViewerPivot();
-		Vector3 position = viewerPivot.position + defaultOffset;
+		var cameraTransform = U.Camera.GetMainCamera().transform;
+		var headPosition = cameraTransform.position;
+		var headRotation = Quaternion.Euler(0, cameraTransform.rotation.eulerAngles.y, 0);
 
-		Quaternion rotation = defaultTilt;
 		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
 			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
 			+ kWorkspaceAnglePadding;													//Need some extra padding because workspaces are tilted
@@ -1032,6 +1033,9 @@ public class EditorVR : MonoBehaviour
 		int direction = 1;
 		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
 
+		Vector3 position;
+		Quaternion rotation;
+		var viewerPivot = U.Camera.GetViewerPivot();
 		// HACK to workaround missing MonoScript serialized fields
 		EditorApplication.delayCall += () =>
 		{
@@ -1040,8 +1044,8 @@ public class EditorVR : MonoBehaviour
 			{
 				//The next position will be rotated by currentRotation, as if the hands of a clock
 				Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-				position = viewerPivot.position + rotateAroundY * defaultOffset + Vector3.up * currentHeight;
-				rotation = rotateAroundY * defaultTilt;
+				position = headPosition + headRotation * rotateAroundY * defaultOffset + Vector3.up * currentHeight;
+				rotation = headRotation * rotateAroundY * defaultTilt;
 
 				//Every other iteration, rotate a little further
 				if (direction < 0)
@@ -1061,7 +1065,7 @@ public class EditorVR : MonoBehaviour
 			//While the current position is occupied, try a new one
 			while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
 
-			Workspace workspace = (Workspace) U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
+			Workspace workspace = (Workspace) U.Object.CreateGameObjectWithComponent(t, viewerPivot);
 			m_AllWorkspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			ConnectInterfaces(workspace);
@@ -1282,6 +1286,12 @@ public class EditorVR : MonoBehaviour
 	{
 		InitializeInputManager();
 		s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
+		VRView.onHMDReady += s_Instance.OnHMDReady;
+	}
+
+	void OnHMDReady()
+	{
+		CreateDefaultWorkspaces();
 	}
 
 	private static void InitializeInputManager()
@@ -1316,6 +1326,7 @@ public class EditorVR : MonoBehaviour
 
 	private static void OnEVRDisabled()
 	{
+		VRView.onHMDReady -= s_Instance.OnHMDReady;
 		U.Object.Destroy(s_Instance.gameObject);
 		U.Object.Destroy(s_InputManager.gameObject);
 	}
