@@ -20,6 +20,8 @@ namespace UnityEngine.VR.Workspaces
 
 		protected WorkspaceUI m_WorkspaceUI;
 
+		protected Vector3? m_CustomStartingBounds;
+
 		public static readonly Vector3 kMinBounds = new Vector3(0.7f, 0.4f, 0.1f);
 		private const float kExtraHeight = 0.15f; //Extra space for frame model
 
@@ -113,7 +115,7 @@ namespace UnityEngine.VR.Workspaces
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-			m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, kDefaultBounds);
+			m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? kDefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
 			UpdateBounds();
 
 			//Set up DirectManipulaotr
@@ -234,28 +236,29 @@ namespace UnityEngine.VR.Workspaces
 		private IEnumerator VacuumToViewer()
 		{
 			m_Vacuuming = true;
-			float startTime = Time.realtimeSinceStartup;
-			Vector3 startPosition = transform.position;
-			Quaternion startRotation = transform.rotation;
+			var startPosition = transform.position;
+			var startRotation = transform.rotation;
 
-			Transform camera = U.Camera.GetMainCamera().transform;
+			var camera = U.Camera.GetMainCamera().transform;
 			var cameraYawVector = camera.forward;
 			cameraYawVector.y = 0;
 			var cameraYaw = Quaternion.LookRotation(cameraYawVector, Vector3.up);
 
-			Vector3 destPosition = camera.position + cameraYaw * kVacuumOffset;
+			var destPosition = camera.position + cameraYaw * kVacuumOffset;
+			var destRotation = cameraYaw * kDefaultTilt;
 
-			Quaternion destRotation = cameraYaw * kDefaultTilt;
+			var currentValue = 0f;
+			var currentVelocity = 0f;
+			const float kTargetValue = 1f;
+			const float kTargetValueOvershoot = 1.1f; // overshoot target value to compensate for smoothDamp not reaching target value
 
-			while (Time.realtimeSinceStartup < startTime + m_VacuumTime)
+			while (currentValue < kTargetValue)
 			{
-				transform.position = Vector3.Lerp(startPosition, destPosition, (Time.realtimeSinceStartup - startTime) / m_VacuumTime);
-				transform.rotation = Quaternion.Lerp(startRotation, destRotation, (Time.realtimeSinceStartup - startTime) / m_VacuumTime);
+				currentValue = U.Math.SmoothDamp(currentValue, kTargetValueOvershoot, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
+				transform.position = Vector3.Lerp(startPosition, destPosition, currentValue);
+				transform.rotation = Quaternion.Lerp(startRotation, destRotation, currentValue);
 				yield return null;
 			}
-
-			transform.position = destPosition;
-			transform.rotation = destRotation;
 			m_Vacuuming = false;
 		}
 
