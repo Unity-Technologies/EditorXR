@@ -287,7 +287,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		var currentLocalScale = m_GrabbedObject.localScale;
 		var targetLocalScale = Vector3.one * 0.125f;
 		var currentTime = 0f;
-		float currentVelocity = 0f;
+		var currentVelocity = 0f;
 		const float kDuration = 1f;
 		while (currentTime < kDuration)
 		{
