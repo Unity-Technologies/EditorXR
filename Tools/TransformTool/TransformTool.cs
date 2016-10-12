@@ -4,61 +4,85 @@ using UnityEngine.VR.Tools;
 using UnityEditor;
 using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
+using System;
+using UnityEngine.VR;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransformTool, ISelectionChanged, IDirectSelection
 {
 	[SerializeField]
-	private GameObject m_StandardManipulatorPrefab;
+	GameObject m_StandardManipulatorPrefab;
+
 	[SerializeField]
-	private GameObject m_ScaleManipulatorPrefab;
+	GameObject m_ScaleManipulatorPrefab;
 
-	public ActionMap actionMap
-	{
-		get { return m_ActionMap; }
-	}
 	[SerializeField]
-	private ActionMap m_ActionMap;
+	ActionMap m_TransformActionMap;
 
-	private const float kBaseManipulatorSize = 0.3f;
-	private const float kLazyFollowTranslate = 8f;
-	private const float kLazyFollowRotate = 12f;
+	[SerializeField]
+	ActionMap m_DirectSelectActionMap;
 
-	private readonly List<GameObject> m_AllManipulators = new List<GameObject>();
-	private GameObject m_CurrentManipulator;
-	private int m_CurrentManipulatorIndex;
+	const float kBaseManipulatorSize = 0.3f;
+	const float kLazyFollowTranslate = 8f;
+	const float kLazyFollowRotate = 12f;
 
-	private Transform[] m_SelectionTransforms;
-	private Bounds m_SelectionBounds;
-	private Vector3 m_TargetPosition;
-	private Quaternion m_TargetRotation;
-	private Vector3 m_TargetScale;
-	private Quaternion m_PositionOffsetRotation;
-	private Quaternion m_StartRotation;
+	readonly List<GameObject> m_AllManipulators = new List<GameObject>();
+	GameObject m_CurrentManipulator;
+	int m_CurrentManipulatorIndex;
 
-	private readonly Dictionary<Transform, Vector3> m_PositionOffsets = new Dictionary<Transform, Vector3>();
-	private readonly Dictionary<Transform, Quaternion> m_RotationOffsets = new Dictionary<Transform, Quaternion>();
-	private readonly Dictionary<Transform, Vector3> m_ScaleOffsets = new Dictionary<Transform, Vector3>();
+	Transform[] m_SelectionTransforms;
+	Bounds m_SelectionBounds;
+	Vector3 m_TargetPosition;
+	Quaternion m_TargetRotation;
+	Vector3 m_TargetScale;
+	Quaternion m_PositionOffsetRotation;
+	Quaternion m_StartRotation;
 
-	private PivotRotation m_PivotRotation = PivotRotation.Local;
-	private PivotMode m_PivotMode = PivotMode.Pivot;
+	readonly Dictionary<Transform, Vector3> m_PositionOffsets = new Dictionary<Transform, Vector3>();
+	readonly Dictionary<Transform, Quaternion> m_RotationOffsets = new Dictionary<Transform, Quaternion>();
+	readonly Dictionary<Transform, Vector3> m_ScaleOffsets = new Dictionary<Transform, Vector3>();
 
-	public TransformMode mode
+	PivotRotation m_PivotRotation = PivotRotation.Local;
+	PivotMode m_PivotMode = PivotMode.Pivot;
+
+	Transform m_GrabbedObjectLeft;
+	Transform m_RayOriginLeft;
+	Transform m_GrabbedObjectRight;
+	Transform m_RayOriginRight;
+	Vector3 m_PositionOffsetLeft;
+	Vector3 m_PositionOffsetRight;
+	Quaternion m_RotationOffsetLeft;
+	Quaternion m_RotationOffsetRight;
+	bool m_DirectSelected;
+
+	TransformInput m_TransformInput;
+	DirectSelectInput m_DirectSelectInput;
+
+	public ActionMap[] actionMaps { get { return new ActionMap[] { m_TransformActionMap, m_DirectSelectActionMap }; } }
+
+	public ActionMapInput[] actionMapInputs
 	{
+		get
+		{
+			return m_ActionMapInputs;
+		}
 		set
 		{
-			m_Mode = value;
-			switch (m_Mode)
+			m_ActionMapInputs = value;
+			foreach (var input in m_ActionMapInputs)
 			{
-				case TransformMode.Direct:
-					m_CurrentManipulator.SetActive(false);
-					break;
+				var transformInput = input as TransformInput;
+				if (transformInput != null)
+					m_TransformInput = transformInput;
+
+				var directInput = input as DirectSelectInput;
+				if (directInput != null)
+					m_DirectSelectInput = directInput;
 			}
 		}
 	}
-	private TransformMode m_Mode;
+	ActionMapInput[] m_ActionMapInputs;
 
-	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput) value; } }
-	private TransformInput m_TransformInput;
+	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
 
 	void Awake()
 	{
@@ -76,6 +100,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	public void OnSelectionChanged()
 	{
 		m_SelectionTransforms = Selection.GetTransforms(SelectionMode.Editable);
+		m_DirectSelected = false;
 
 		if (m_SelectionTransforms.Length == 0)
 		{
@@ -89,8 +114,62 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	void Update()
 	{
-		if (m_Mode == TransformMode.Direct)
+		var directSelection = getDirectSelection();
+		var isHovering = directSelection.Count > 0 || m_GrabbedObjectLeft || m_GrabbedObjectRight;
+		m_DirectSelectInput.active = isHovering;
+		if(m_CurrentManipulator.activeSelf && isHovering)
+			m_CurrentManipulator.SetActive(false);
+
+		foreach (var selection in directSelection)
+		{
+			if (selection.Value.node == Node.LeftHand && m_DirectSelectInput.selectLeft.wasJustPressed)
+			{
+				EditorVR.s_Dragging = true;
+				m_DirectSelected = true;
+				var grabbedObject = selection.Value.gameObject;
+				m_GrabbedObjectLeft = grabbedObject.transform;
+				Selection.activeGameObject = grabbedObject;
+				m_RayOriginLeft = selection.Key;
+				var inverseRotation = Quaternion.Inverse(m_RayOriginLeft.rotation);
+				m_PositionOffsetLeft = inverseRotation * (m_GrabbedObjectLeft.transform.position - m_RayOriginLeft.position);
+				m_RotationOffsetLeft = inverseRotation * m_GrabbedObjectLeft.transform.rotation;
+			}
+			if (selection.Value.node == Node.RightHand && m_DirectSelectInput.selectRight.wasJustPressed)
+			{
+				EditorVR.s_Dragging = true;
+				m_DirectSelected = true;
+				var grabbedObject = selection.Value.gameObject;
+				m_GrabbedObjectRight = grabbedObject.transform;
+				Selection.activeGameObject = grabbedObject;
+				m_RayOriginRight = selection.Key;
+				var inverseRotation = Quaternion.Inverse(m_RayOriginRight.rotation);
+				m_PositionOffsetRight = inverseRotation * (m_GrabbedObjectRight.transform.position - m_RayOriginRight.position);
+				m_RotationOffsetRight = inverseRotation * m_GrabbedObjectRight.transform.rotation;
+			}
+		}
+
+		if (m_GrabbedObjectLeft && m_DirectSelectInput.selectLeft.isHeld)
+		{
+			m_GrabbedObjectLeft.position = m_RayOriginLeft.position + m_RayOriginLeft.rotation * m_PositionOffsetLeft;
+			m_GrabbedObjectLeft.rotation = m_RayOriginLeft.rotation * m_RotationOffsetLeft;
+		}
+
+		if (m_GrabbedObjectRight && m_DirectSelectInput.selectRight.isHeld)
+		{
+			m_GrabbedObjectRight.position = m_RayOriginRight.position + m_RayOriginRight.rotation * m_PositionOffsetRight;
+			m_GrabbedObjectRight.rotation = m_RayOriginRight.rotation * m_RotationOffsetRight;
+		}
+
+		if (m_DirectSelectInput.selectLeft.wasJustReleased)
+			m_GrabbedObjectLeft = null;
+
+		if (m_DirectSelectInput.selectRight.wasJustReleased)
+			m_GrabbedObjectRight = null;
+
+		if (isHovering || m_DirectSelected)
 			return;
+
+		EditorVR.s_Dragging = false;
 
 		if (m_SelectionTransforms != null && m_SelectionTransforms.Length > 0)
 		{
@@ -227,27 +306,18 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	private void SwitchPivotMode()
 	{
-		if (m_Mode == TransformMode.Direct)
-			return;
-
 		m_PivotMode = m_PivotMode == PivotMode.Pivot ? PivotMode.Center : PivotMode.Pivot;
 		UpdateCurrentManipulator();
 	}
 
 	private void SwitchPivotRotation()
 	{
-		if (m_Mode == TransformMode.Direct)
-			return;
-
 		m_PivotRotation = m_PivotRotation == PivotRotation.Global ? PivotRotation.Local : PivotRotation.Global;
 		UpdateCurrentManipulator();
 	}
 
 	private void SwitchManipulator()
 	{
-		if (m_Mode == TransformMode.Direct)
-			return;
-
 		foreach (var manipulator in m_AllManipulators)
 			manipulator.SetActive(false);
 

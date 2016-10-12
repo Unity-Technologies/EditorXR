@@ -25,6 +25,8 @@ public class EditorVR : MonoBehaviour
 {
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
+	public static bool s_Dragging;
+
 	private const float kDefaultRayLength = 100f;
 
 	private const float kWorkspaceAnglePadding = 25f;
@@ -88,6 +90,7 @@ public class EditorVR : MonoBehaviour
 		public Transform originalRayOrigin;
 		public IMiniWorld miniWorld;
 		public IProxy proxy;
+		public Node node;
 		public IntersectionTester tester;
 		public ActionMapInput uiInput;
 		public GameObject hoverObject;
@@ -99,8 +102,6 @@ public class EditorVR : MonoBehaviour
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
 	private readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>();
-
-	private ITransformTool m_TransformTool;
 
 	private event Action m_SelectionChanged;
 
@@ -257,15 +258,12 @@ public class EditorVR : MonoBehaviour
 	{
 		if (Event.current.type == EventType.ExecuteCommand)
 		{
-			var miniWorldRayHasObject = false;
-
 			foreach (var proxy in m_AllProxies)
 			{
 				if (!proxy.active)
 					continue;
-
 				foreach (var rayOrigin in proxy.rayOrigins.Values)
-					m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera);
+					m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera, GetPointerLength(rayOrigin));
 
 				foreach (var ray in m_MiniWorldRays)
 				{
@@ -276,15 +274,8 @@ public class EditorVR : MonoBehaviour
 					var miniWorldRay = ray.Value;
 
 					miniWorldRay.hoverObject = m_PixelRaycastModule.UpdateRaycast(miniWorldRayOrigin, m_EventCamera, GetPointerLength(miniWorldRayOrigin));
-
-					if (miniWorldRay.hoverObject || miniWorldRay.dragObject)
-						miniWorldRayHasObject = true;
 				}
 			}
-
-			// If any active miniWorldRay hovers over a selected object, switch to the DirectManipulator
-			if (m_TransformTool != null)
-				m_TransformTool.mode = miniWorldRayHasObject ? TransformMode.Direct : TransformMode.Standard;
 
 			UpdateDefaultProxyRays();
 
@@ -404,6 +395,10 @@ public class EditorVR : MonoBehaviour
 			if (customActionMap != null)
 				actionMaps.Add(customActionMap.actionMap);
 
+			var customActionMaps = tool as ICustomActionMaps;
+			if (customActionMaps != null)
+				actionMaps.AddRange(customActionMaps.actionMaps);
+
 			var standardActionMap = tool as IStandardActionMap;
 			if (standardActionMap != null)
 				actionMaps.Add(m_StandardToolActionMap);
@@ -434,7 +429,7 @@ public class EditorVR : MonoBehaviour
 		EditorApplication.delayCall += () =>
 		{
 			// Spawn default tools
-			HashSet<InputDevice> devices;
+			HashSet<InputDevice> devices = null;
 			ITool tool;
 
 			var locomotionTool = typeof(BlinkLocomotionTool);
@@ -462,9 +457,8 @@ public class EditorVR : MonoBehaviour
 				tool = SpawnTool(locomotionTool, out devices);
 				AddToolToDeviceData(tool, devices);
 			}
-
+			
 			tool = SpawnTool(typeof(TransformTool), out devices);
-			m_TransformTool = tool as ITransformTool;
 			AddToolToDeviceData(tool, devices);
 		};
 	}
@@ -603,7 +597,7 @@ public class EditorVR : MonoBehaviour
 		if (device != null && !IsValidActionMapForDevice(map, device))
 			return null;
 
-		var devices = device == null ? m_PlayerHandle.GetApplicableDevices() : new InputDevice[] { device };
+		var devices = device == null ? GetSystemDevices() : new InputDevice[] { device };
 
 		var actionMapInput = ActionMapInput.Create(map);
 		// It's possible that there are no suitable control schemes for the device that is being initialized, 
@@ -658,6 +652,16 @@ public class EditorVR : MonoBehaviour
 		{
 			if (!maps.Contains(customActionMap.actionMapInput))
 				maps.Add(customActionMap.actionMapInput);
+		}
+
+		ICustomActionMaps customActionMaps = obj as ICustomActionMaps;
+		if (customActionMaps != null)
+		{
+			foreach (var input in customActionMaps.actionMapInputs)
+			{
+				if (!maps.Contains(input))
+					maps.Add(input);
+			}
 		}
 	}
 
@@ -745,6 +749,21 @@ public class EditorVR : MonoBehaviour
 			customMap.actionMapInput = CreateActionMapInput(customMap.actionMap, device);
 			if (actionMapInputs != null)
 				actionMapInputs.Add(customMap.actionMapInput);
+		}
+
+		var customMaps = obj as ICustomActionMaps;
+		if (customMaps != null)
+		{
+			var actionMaps = customMaps.actionMaps;
+			var inputs = new ActionMapInput[actionMaps.Length];
+			for(int i = 0; i < actionMaps.Length; i++)
+			{
+				var input = CreateActionMapInput(actionMaps[i], device);
+				inputs[i] = input;
+				if (actionMapInputs != null)
+					actionMapInputs.Add(input);
+			}
+			customMaps.actionMapInputs = inputs;
 		}
 	}
 
@@ -842,6 +861,10 @@ public class EditorVR : MonoBehaviour
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
 			m_SelectionChanged += selectionChanged.OnSelectionChanged;
+
+		var directSelection = obj as IDirectSelection;
+		if (directSelection != null)
+			directSelection.getDirectSelection = GetDirectSelection;
 
 		if (mainMenu != null)
 		{
@@ -1022,7 +1045,7 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
-		CreateWorkspace<ChessboardWorkspace>();
+		//CreateWorkspace<ChessboardWorkspace>();
 		CreateWorkspace<ConsoleWorkspace>();
 		CreateWorkspace<ProjectWorkspace>();
 	}
@@ -1120,6 +1143,7 @@ public class EditorVR : MonoBehaviour
 					originalRayOrigin = rayOriginPair.Value,
 					miniWorld = miniWorld,
 					proxy = proxy,
+					node = rayOriginPair.Key,
 					uiInput = uiInput,
 					tester = tester
 				};
@@ -1267,6 +1291,56 @@ public class EditorVR : MonoBehaviour
 						return renderer.gameObject;
 				}
 			}
+		}
+
+		return null;
+	}
+
+	Dictionary<Transform, DirectSelection> GetDirectSelection()
+	{
+		var result = new Dictionary<Transform, DirectSelection>();
+
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			var rayOrigin = rayOriginPair.Value;
+			var obj = GetDirectSelectionForRayOrigin(rayOrigin);
+			if (obj)
+				result[rayOrigin] = new DirectSelection
+				{
+					gameObject = obj,
+					node = rayOriginPair.Key
+				};
+		}, true);
+
+		foreach (var ray in m_MiniWorldRays)
+		{
+			var rayOrigin = ray.Key;
+			var go = GetDirectSelectionForRayOrigin(ray.Key);
+			if (go != null)
+				result[rayOrigin] = new DirectSelection
+				{
+					gameObject = go,
+					node = ray.Value.node
+				};
+		}
+		return result;
+	}
+
+	GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin)
+	{
+		//bool direct;
+		//var go = m_PixelRaycastModule.GetFirstGameObject(rayOrigin, out direct);
+		//if (go && direct)
+		//	return go;
+
+		if (m_IntersectionModule)
+		{
+			// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
+			// so in that case use the spatial hash as a final test
+			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+			if (renderer)
+				return renderer.gameObject;
 		}
 
 		return null;

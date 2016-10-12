@@ -3,8 +3,4 @@
 /// </summary>
 public interface ITransformTool
 {
-	/// <summary>
-	/// Sets the transform mode on this tool
-	/// </summary>
-	TransformMode mode { set; }
 }

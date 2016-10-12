@@ -21,6 +21,8 @@ namespace UnityEngine.VR.Modules
 
 		public Func<Transform, float> getPointerLength { get; set; }
 
+		public bool inputBlocked { get; set; }
+
 		protected override void Awake()
 		{
 			base.Awake();
@@ -88,6 +90,9 @@ namespace UnityEngine.VR.Modules
 			ExecuteUpdateOnSelectedObject();
 
 			if (m_EventCamera == null)
+				return;
+
+			if (inputBlocked || EditorVR.s_Dragging)
 				return;
 
 			//Process events for all different transforms in RayOrigins

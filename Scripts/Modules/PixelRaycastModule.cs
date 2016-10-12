@@ -5,9 +5,15 @@ namespace UnityEditor.VR.Modules
 {
 	public class PixelRaycastModule : MonoBehaviour
 	{
-		private readonly Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
+		class PixelRaycastHit
+		{
+			public GameObject gameObject;
+			public bool direct;
+		}
 
-		private GameObject[] m_IgnoreList;
+		readonly Dictionary<Transform, PixelRaycastHit> m_RaycastGameObjects = new Dictionary<Transform, PixelRaycastHit>(); // Stores which gameobject the proxys' ray origins are pointing at
+
+		GameObject[] m_IgnoreList;
 
 		public Transform ignoreRoot { get; set; }
 
@@ -16,34 +22,43 @@ namespace UnityEditor.VR.Modules
 		/// </summary>
 		/// <param name="rayOrigin"></param> rayOrigin to raycast from
 		/// <param name="camera"></param> Camera to use for pixel based raycast (will be moved to the proxies' ray origins
-		/// <param name="pointerLength"></param> Length of pointer used for direct selection. If zero any raycast result is returned
-		public GameObject UpdateRaycast(Transform rayOrigin, Camera camera, float pointerLength = 0f)
+		/// <param name="pointerLength"></param> Length of pointer used to determine direct selection
+		/// <param name="direct"></param> Whether the object is close enough for direct selection
+		public GameObject UpdateRaycast(Transform rayOrigin, Camera camera, float pointerLength)
 		{
 			if (!rayOrigin.gameObject.activeSelf)
-			{
-				m_RaycastGameObjects[rayOrigin] = null;
 				return null;
-			}
+
 			UpdateIgnoreList();
 
 			float distance;
 			var result = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera, out distance);
 
-			// If a positive pointerLength is specified, use direct selection
-			if (pointerLength > 0 && rayOrigin.gameObject.activeSelf)
+			m_RaycastGameObjects[rayOrigin] = new PixelRaycastHit
 			{
-				if (pointerLength > 0 && distance > pointerLength)
-					result = null;
-			}
-			m_RaycastGameObjects[rayOrigin] = result;
+				gameObject = result,
+				direct = distance <= pointerLength
+			};
 			return result;
 		}
 
 		public GameObject GetFirstGameObject(Transform rayOrigin)
 		{
-			GameObject go;
-			if (m_RaycastGameObjects.TryGetValue(rayOrigin, out go))
-				return go;
+			PixelRaycastHit hit;
+			if (m_RaycastGameObjects.TryGetValue(rayOrigin, out hit))
+				return hit.gameObject;
+			return null;
+		}
+
+		public GameObject GetFirstGameObject(Transform rayOrigin, out bool direct)
+		{
+			PixelRaycastHit hit;
+			if (m_RaycastGameObjects.TryGetValue(rayOrigin, out hit))
+			{
+				direct = hit.direct;
+				return hit.gameObject;
+			}
+			direct = false;
 			return null;
 		}
 

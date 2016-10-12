@@ -35,6 +35,19 @@ namespace UnityEngine.VR.Modules
 						spatialHash.AddObject(renderer, renderer.bounds);
 				}
 			}
+
+			SkinnedMeshRenderer[] skinnedMeshRenderers = FindObjectsOfType<SkinnedMeshRenderer>();
+			foreach (var smr in skinnedMeshRenderers)
+			{
+				if (smr.sharedMesh)
+				{
+					// Exclude EditorVR objects
+					if (smr.GetComponentInParent<EditorVR>())
+						continue;
+					
+					spatialHash.AddObject(smr, smr.bounds);
+				}
+			}
 		}
 
 		private IEnumerator UpdateDynamicObjects()
