@@ -53,9 +53,6 @@ namespace UnityEngine.VR.Workspaces
 		private Bounds m_ContentBounds;
 
 		[SerializeField]
-		private float m_VacuumTime = 0.75f;
-
-		[SerializeField]
 		private GameObject m_BasePrefab;
 
 		private Vector3 m_DragStart;
