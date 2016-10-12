@@ -606,7 +606,7 @@ public class EditorVR : MonoBehaviour
 		else if(node == Node.RightHand)
 			node = Node.LeftHand;
 
-		foreach(var proxy in m_AllProxies)
+		ForEachRayOrigin((proxy,rayOriginPair,device,deviceData) =>
 		{
 			Dictionary<Node,Transform> temp = null;
 
@@ -622,18 +622,10 @@ public class EditorVR : MonoBehaviour
 				go.transform.localPosition = Vector3.zero;
 				go.transform.localRotation = Quaternion.identity;
 
-				foreach(var kvp in m_DeviceData)
-				{
-					var device = kvp.Key;
-					if(GetDeviceNode(device) == node)
-					{
-						kvp.Value.toolMenus.Add(go);
-						m_DeviceData[device].mainMenu.visible = false;
-                    }
-				}
+				deviceData.toolMenus.Add(go);
+				m_DeviceData[device].mainMenu.visible = false;
 			}
-			
-		}
+		}, true);
 
 		return go;
 	}
