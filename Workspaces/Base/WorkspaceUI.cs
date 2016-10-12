@@ -198,11 +198,9 @@ namespace UnityEngine.VR.Workspaces
 				// Position the separator mask if enabled
 				if (m_TopPanelDividerOffset != null)
 				{
-					const float heightCompensationMultiplier = 1.55f;
+					const float heightCompensationDecrement = 0.1375f;
 					m_TopPanelDividerTransform.localPosition = new Vector3(boundsSize.x*0.5f*m_TopPanelDividerOffset.Value, 0f, 0f);
-					//m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, boundsSize.z + heightCompensationMultiplier);
-					Debug.LogError(bounds.size.z);
-					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, boundsSize.z);
+					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, boundsSize.z - heightCompensationDecrement);
 				}
 
 				var grabColliderSize = m_GrabCollider.size;
@@ -306,6 +304,9 @@ namespace UnityEngine.VR.Workspaces
 			m_FrontResizeIconsContainerAngledLocalPosition = new Vector3(m_FrontResizeIconsContainerOriginalLocalPosition.x, m_FrontResizeIconsContainerOriginalLocalPosition.y + frontResizeIconsContainerUpOffset, m_FrontResizeIconsContainerOriginalLocalPosition.z + frontResizeIconsContainerForwardOffset);
 
 			m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, 50f); // Set default frame thickness to be in middle for a thinner initial frame
+
+			if (m_TopPanelDividerOffset == null)
+				m_TopPanelDividerTransform.gameObject.SetActive(false);
 		}
 
 		void Update()
