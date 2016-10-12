@@ -103,7 +103,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		size.x -= kPaneMargin * 2;
 		size.x *= kLeftPaneRatio;
 		size.y = kYBounds;
-		size.z = size.z * 0.5f;
+		size.z = size.z * 0.725f;
 		bounds.size = size;
 		bounds.center = Vector3.zero;
 
