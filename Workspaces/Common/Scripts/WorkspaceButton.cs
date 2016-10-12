@@ -8,6 +8,14 @@ namespace UnityEngine.VR.Workspaces
 {
 	public class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
 	{
+		const float kIconHighlightedLocalZOffset = -0.0015f;
+		const string kMaterialAlphaProperty = "_Alpha";
+		const string kMaterialColorTopProperty = "_ColorTop";
+		const string kMaterialColorBottomProperty = "_ColorBottom";
+
+		static Material sSharedMaterialInstance;
+		static UnityBrandColorScheme.GradientPair sOriginalGradientPair;
+
 		[SerializeField]
 		MeshRenderer m_ButtonMeshRenderer;
 
@@ -29,14 +37,6 @@ namespace UnityEngine.VR.Workspaces
 
 		[SerializeField]
 		Graphic[] m_HighlightItems;
-
-		const float kIconHighlightedLocalZOffset = -0.0015f;
-		const string kMaterialAlphaProperty = "_Alpha";
-		const string kMaterialColorTopProperty = "_ColorTop";
-		const string kMaterialColorBottomProperty = "_ColorBottom";
-
-		static Material sSharedMaterialInstance;
-		static UnityBrandColorScheme.GradientPair sOriginalGradientPair;
 		UnityBrandColorScheme.GradientPair? sHighlightGradientPair;
 
 		Transform m_parentTransform;
@@ -148,7 +148,7 @@ namespace UnityEngine.VR.Workspaces
 			m_ContentVisibilityCoroutine = StartCoroutine(ShowContent());
 
 			var delay = 0f;
-			const float kTargetDelay = 1f;
+			const float kTargetDelay = 0.5f;
 			var scale = m_HiddenLocalScale;
 			var smoothVelocity = Vector3.zero;
 			var hiddenLocalYScale = new Vector3(m_HiddenLocalScale.x, 0f, 0f);
