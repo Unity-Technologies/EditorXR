@@ -36,6 +36,9 @@ public class ProfilerWorkspace : Workspace
 
 	public override void Setup()
 	{
+		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.125f);
+		m_CustomStartingBounds = minBounds;
+
 		base.Setup();
 
 		m_ProfilerWindow = instantiateUI(m_ProfilerWindowPrefab).transform;

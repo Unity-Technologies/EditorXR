@@ -40,6 +40,9 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 
 	public override void Setup()
 	{
+		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.5f);
+		m_CustomStartingBounds = minBounds;
+
 		base.Setup();
 		dynamicFaceAdjustment = true;
 		topPanelDividerOffset = -0.2875f; // enable & position the top-divider(mask) slightly to the left of workspace center
@@ -100,6 +103,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		size.x -= kPaneMargin * 2;
 		size.x *= kLeftPaneRatio;
 		size.y = kYBounds;
+		size.z = size.z * 0.5f;
 		bounds.size = size;
 		bounds.center = Vector3.zero;
 
