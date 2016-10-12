@@ -39,6 +39,8 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	private Renderer m_CubeRenderer;
 
+	Transform m_CubeTransform;
+
 	public Action<FolderData> selectFolder;
 
 	public override void Setup(FolderData listData)
@@ -58,8 +60,14 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_Cube.hoverStarted += OnHoverStarted;
 			m_Cube.hoverEnded += OnHoverEnded;
 		}
-		
+
+		m_CubeTransform = m_Cube.transform;
 		m_Text.text = listData.name;
+
+		// HACK: We need to kick the canvasRenderer to update the mesh properly
+		m_Text.gameObject.SetActive(false);
+		m_Text.gameObject.SetActive(true);
+
 		m_ExpandArrow.gameObject.SetActive(listData.children != null);
 		m_Hovering = false;
 	}
@@ -72,9 +80,9 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	public void UpdateTransforms(float width, int depth)
 	{
-		Vector3 cubeScale = m_Cube.transform.localScale;
+		var cubeScale = m_CubeTransform.localScale;
 		cubeScale.x = width;
-		m_Cube.transform.localScale = cubeScale;
+		m_CubeTransform.localScale = cubeScale;
 
 		var arrowWidth = m_ExpandArrow.transform.localScale.x * 0.5f;
 		var halfWidth = width * 0.5f;

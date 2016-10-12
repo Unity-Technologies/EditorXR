@@ -29,7 +29,6 @@ namespace UnityEngine.VR.Utilities
 		/// </summary>
 		private static readonly List<GradientPair> s_Gradients = new List<GradientPair>();
 		private static int s_RandomGradientPairColorAPosition;
-		private static int s_RandomGradientPairColorBPosition;
 		
 		private static Color s_Red;
 		private static Color s_RedLight;
@@ -132,6 +131,12 @@ namespace UnityEngine.VR.Utilities
 		public static Color light { get { return s_Light; } }
 
 		/// <summary>
+		/// A unique Unity brand color gradient that can be set manually
+		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements
+		/// </summary>
+		public static GradientPair sessionGradient { get; set; }
+
+		/// <summary>
 		/// Gradient pair container class
 		/// </summary>
 		[Serializable]
@@ -228,15 +233,17 @@ namespace UnityEngine.VR.Utilities
 			s_Gradients.Add(new GradientPair(s_Teal, s_Lime));
 			s_Gradients.Add(new GradientPair(s_Cyan, s_Red));
 			s_Gradients.Add(new GradientPair(s_Blue, s_Magenta));
-			s_Gradients.Add(new GradientPair(s_Red, s_DarkBlue));
+			s_Gradients.Add(new GradientPair(s_Red, s_Blue));
 			s_Gradients.Add(new GradientPair(s_Blue, s_Lime));
 			s_Gradients.Add(new GradientPair(s_Orange, s_Lime));
+
+			sessionGradient = GetRandomGradient();
 		}
 
 		/// <summary>
 		/// Fetch a Unity brand-specific color swatch
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>Random color swatch</returns>
 		public static Color GetRandomSwatch()
 		{
 			var randomPosition = s_ColorRandom.Next(s_ColorSwatchRange);
@@ -253,18 +260,19 @@ namespace UnityEngine.VR.Utilities
 		/// <summary>
 		/// Fetch a Unity brand-specific color scheme (pair of differing brand-swatches)
 		/// </summary>
-		/// <returns>Gradient pair of 2 brand-swatches</returns>
+		/// <returns>Gradient pair of two brand-swatches</returns>
 		public static GradientPair GetRandomGradient()
 		{
 			var randomPositionA = s_ColorRandom.Next(s_ColorSwatchRange);
 			var randomPositionB = s_ColorRandom.Next(s_ColorSwatchRange);
 
-			// Return a new random colorA that is not the same as the previous A or B
-			while (s_RandomGradientPairColorAPosition == randomPositionA)
+			// Return a new random colorA that is not the same as the previous A
+			while (SwatchesSimilar(s_ColorSwatches[randomPositionA], s_ColorSwatches[s_RandomGradientPairColorAPosition], 0.35f))
 				randomPositionA = s_ColorRandom.Next(s_ColorSwatchRange);
 
 			// Mandate that the second color in the gradient is not the first color
-			while (randomPositionA == randomPositionB || s_RandomGradientPairColorBPosition == randomPositionB || randomPositionB == s_RandomGradientPairColorAPosition)
+			// Require additional swatch chroma separation for the second color chosen, making the gradient contrast more evident
+			while (SwatchesSimilar(s_ColorSwatches[randomPositionB], s_ColorSwatches[randomPositionA], 1.0f))
 				randomPositionB = s_ColorRandom.Next(s_ColorSwatchRange);
 
 			var colorA = s_ColorSwatches[randomPositionA];
@@ -272,9 +280,21 @@ namespace UnityEngine.VR.Utilities
 
 			// Set the first random color position value so it can be compared to the next gradient fetch
 			s_RandomGradientPairColorAPosition = randomPositionA;
-			s_RandomGradientPairColorBPosition = randomPositionB;
 
 			return new GradientPair(colorA, colorB);
+		}
+
+		/// <summary>
+		/// Validate that two swatches/colors diverge by a minimum amount (or greater)
+		/// </summary>
+		/// <param name="swatchA">First swatch/color</param>
+		/// <param name="swatchB">Second swatch/color</param>
+		/// <param name="requiredMinimumDifference">The minimum amount of divergence required of the swatches</param>
+		/// <returns>Bool denoting that(when false) the two color parameters differ by at least the required minimum</returns>
+		static bool SwatchesSimilar(Color swatchA, Color swatchB, float requiredMinimumDifference = 0.75f)
+		{
+			var difference = Mathf.Abs(swatchA.r - swatchB.r) + Mathf.Abs(swatchA.g - swatchB.g) + Mathf.Abs(swatchA.b - swatchB.b);
+			return difference < requiredMinimumDifference;
 		}
 	}
 }
