@@ -1781,7 +1781,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  HighlightObjects:
+  m_HighlightObjects:
   - {fileID: 1000013224359186}
   - {fileID: 1000012760086958}
   - {fileID: 1000013855096706}

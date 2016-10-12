@@ -51,15 +51,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 		{
 			case PrimitiveCreationStates.PointA:
 			{
-				if(standardInput.action.wasJustPressed)
-				{
-					SetStartPoint();
-
-					if(m_Freeform)
-						m_State = PrimitiveCreationStates.Freeform;
-					else
-						m_State = PrimitiveCreationStates.PointB;
-				}
+				HandlePointA();
 				break;
 			}
 			case PrimitiveCreationStates.PointB:
@@ -93,12 +85,20 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 		m_Freeform = isFreeform;
 	}
 
-	void SetStartPoint()
+	void HandlePointA()
 	{
-		m_CurrentGameObject = GameObject.CreatePrimitive(m_SelectedPrimitiveType);
-		m_CurrentGameObject.transform.localScale = new Vector3(0.0025f,0.0025f,0.0025f);
-		m_PointA = rayOrigin.position + rayOrigin.forward * kDrawDistance;
-		m_CurrentGameObject.transform.position = m_PointA;
+		if(standardInput.action.wasJustPressed)
+		{
+			m_CurrentGameObject = GameObject.CreatePrimitive(m_SelectedPrimitiveType);
+			m_CurrentGameObject.transform.localScale = new Vector3(0.0025f,0.0025f,0.0025f);
+			m_PointA = rayOrigin.position + rayOrigin.forward * kDrawDistance;
+			m_CurrentGameObject.transform.position = m_PointA;
+
+			if(m_Freeform)
+				m_State = PrimitiveCreationStates.Freeform;
+			else
+				m_State = PrimitiveCreationStates.PointB;
+		}
 	}
 
 	void SetScalingForObjectType()

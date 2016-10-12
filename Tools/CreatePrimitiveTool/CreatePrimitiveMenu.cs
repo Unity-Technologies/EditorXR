@@ -4,7 +4,7 @@ using UnityEngine;
 public class CreatePrimitiveMenu : MonoBehaviour
 {
 	[SerializeField]
-	GameObject[] HighlightObjects;
+	GameObject[] m_HighlightObjects;
 
 	public Action<PrimitiveType, bool> selectPrimitive;
 
@@ -12,17 +12,17 @@ public class CreatePrimitiveMenu : MonoBehaviour
 	{
 		selectPrimitive((PrimitiveType)type,false);
 
-		foreach(GameObject go in HighlightObjects)
+		foreach(GameObject go in m_HighlightObjects)
 			go.SetActive(false);
 
-		HighlightObjects[type].SetActive(true);
+		m_HighlightObjects[type].SetActive(true);
 	}
 
 	public void CreateFreeformCube()
 	{
 		selectPrimitive(PrimitiveType.Cube,true);
 
-		foreach(GameObject go in HighlightObjects)
+		foreach(GameObject go in m_HighlightObjects)
 			go.SetActive(false);
 	}
 }
