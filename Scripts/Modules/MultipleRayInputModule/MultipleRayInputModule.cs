@@ -6,6 +6,7 @@ using UnityEngine.VR.Proxies;
 
 namespace UnityEngine.VR.Modules
 {
+	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
 	public class MultipleRayInputModule : BaseInputModule
 	{
 		private static int UILayer = -1;
@@ -129,10 +130,13 @@ namespace UnityEngine.VR.Modules
 				}
 
 				// Send scroll events
-				if (source.hoveredObject)
+				var scrollObject = source.hoveredObject;
+				if (!scrollObject)
+					scrollObject = source.selectedObject;
+				if (scrollObject)
 				{
 					eventData.scrollDelta = new Vector2(0f, source.actionMapInput.verticalScroll.value);
-					ExecuteEvents.ExecuteHierarchy(source.hoveredObject, eventData, ExecuteEvents.scrollHandler);
+					ExecuteEvents.ExecuteHierarchy(scrollObject, eventData, ExecuteEvents.scrollHandler);
 				}
 			}
 		}

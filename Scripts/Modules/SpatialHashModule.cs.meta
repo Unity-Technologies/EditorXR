@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: fa5f593f5a55d4a4c822ff265a9e80c6
+timeCreated: 1469136056
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - selectedMaterial: {instanceID: 0}
+  - coneMaterial: {fileID: 2100000, guid: d33a89222f7efbf4a8c087bee7d33cc2, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
