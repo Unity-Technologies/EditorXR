@@ -77,6 +77,7 @@ namespace UnityEngine.VR.Menus
 		public Func<object, bool> lockRay { private get; set; }
 		public Func<object, bool> unlockRay { private get; set; }
 		public List<Type> menuTools { private get; set; }
+		public List<IModule> menuModules { private get; set; }
 		public Func<Node, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
 		public Action<Type> createWorkspace { private get; set; }
@@ -115,6 +116,7 @@ namespace UnityEngine.VR.Menus
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
+			CreateModuleFaceButtons(menuModules);
 			m_MainMenuUI.SetupMenuFaces();
 		}
 
@@ -231,5 +233,49 @@ namespace UnityEngine.VR.Menus
 				});
 			}
 		}
+
+		private void CreateModuleFaceButtons(List<IModule> modules)
+		{
+			foreach (var module in modules)
+			{
+				var moduleType = module.GetType();
+				var buttonData = new MainMenuUI.ButtonData();
+				buttonData.name = moduleType.Name;
+
+				var customMenuAttribute = (MainMenuItemAttribute)moduleType.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
+				if (customMenuAttribute != null)
+				{
+					buttonData.name = customMenuAttribute.name;
+					buttonData.sectionName = customMenuAttribute.sectionName;
+					buttonData.description = customMenuAttribute.description;
+				}
+				else
+					buttonData.name = moduleType.Name.Replace("Module", string.Empty);
+
+				var currentModule = module; // Local variable for proper closure
+				m_MainMenuUI.CreateFaceButton(buttonData, (b) =>
+				{
+					b.button.onClick.RemoveAllListeners();
+					b.button.onClick.AddListener(() =>
+					{
+						// HACK: Just instantiate the snapping menu face (and disable the previous face) until the IInstantiateMenuUI is merged into dev.
+						var moduleMenu = instantiateUI(currentModule.moduleMenuPrefab);
+						var bTransform = b.transform;
+						var moduleTransform = moduleMenu.transform;
+						var secondParent = bTransform.parent.parent;
+
+						moduleTransform.SetParent(secondParent.parent);
+
+						moduleTransform.localPosition = Vector3.zero;
+						moduleTransform.localRotation = Quaternion.identity;
+						moduleTransform.localScale = Vector3.one;
+
+						foreach (Transform child in secondParent)
+							child.gameObject.SetActive(false);
+					});
+				});
+			}
+		}
+
 	}
 }

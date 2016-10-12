@@ -76,6 +76,8 @@ public class EditorVR : MonoBehaviour
 	private List<Type> m_AllWorkspaceTypes;
 	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
 
+	private List<IModule> m_MainMenuModules = new List<IModule>();
+
 	private readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 	{
 		{ "Left", Node.LeftHand },
@@ -125,6 +127,8 @@ public class EditorVR : MonoBehaviour
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
+
+		m_MainMenuModules = GetComponents<IModule>().ToList();
 
 		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
 		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
@@ -837,6 +841,7 @@ public class EditorVR : MonoBehaviour
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_MainMenuTools;
+			mainMenu.menuModules = m_MainMenuModules;
 			mainMenu.selectTool = SelectTool;
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
 			mainMenu.createWorkspace = CreateWorkspace;

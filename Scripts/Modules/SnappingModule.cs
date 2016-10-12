@@ -1,9 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Tools;
 
-public class SnappingModule : MonoBehaviour
+[MainMenuItem("Snapping", "Settings", "Select snapping modes")]
+public class SnappingModule : MonoBehaviour, IModule
 {
+
+	public GameObject moduleMenuPrefab
+	{
+		get { return m_ModuleMenuPrefab; }
+	}
+	[SerializeField]
+	private GameObject m_ModuleMenuPrefab;
 
 	private Dictionary<Transform, ObjectSnapData> m_SnapDataTable = new Dictionary<Transform, ObjectSnapData>();
 

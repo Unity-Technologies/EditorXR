@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {
@@ -19,6 +20,11 @@ namespace UnityEngine.VR.Menus
 		/// The menu tools that will populate the menu
 		/// </summary>
 		List<Type> menuTools { set; }
+
+		/// <summary>
+		/// The menu modules that will populate the menu
+		/// </summary>
+		List<IModule> menuModules { set; }
 
 		/// <summary>
 		/// Delegate used select tools from the Main Menu

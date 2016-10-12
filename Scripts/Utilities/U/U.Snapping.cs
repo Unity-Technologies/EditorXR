@@ -170,7 +170,7 @@ namespace UnityEngine.VR.Utilities
 
 			public static bool HasFlag(SnappingModes flag)
 			{
-				return (currentSnappingMode & flag) != 0;
+				return (currentSnappingMode & flag) == flag;
 			}
 
 		}
