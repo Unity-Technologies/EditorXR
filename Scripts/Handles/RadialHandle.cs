@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Handles
 {
@@ -31,10 +32,10 @@ namespace UnityEngine.VR.Handles
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new RadialHandleEventData(eventData.rayOrigin, IsDirectSelection(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
+			return new RadialHandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
 		}
 
-		protected override void OnHandleRayHover(HandleEventData eventData)
+		protected override void OnHandleHovering(HandleEventData eventData)
 		{
 			UpdateHandleTip(eventData as RadialHandleEventData);
 		}
@@ -59,19 +60,19 @@ namespace UnityEngine.VR.Handles
 			}
 		}
 
-		protected override void OnHandleRayEnter(HandleEventData eventData)
+		protected override void OnHandleHoverStarted(HandleEventData eventData)
 		{
 			UpdateHandleTip(eventData as RadialHandleEventData);
-			base.OnHandleRayEnter(eventData);
+			base.OnHandleHoverStarted(eventData);
 		}
 
-		protected override void OnHandleRayExit(HandleEventData eventData)
+		protected override void OnHandleHoverEnded(HandleEventData eventData)
 		{
 			UpdateHandleTip(eventData as RadialHandleEventData);
-			base.OnHandleRayExit(eventData);
+			base.OnHandleHoverEnded(eventData);
 		}
 
-		protected override void OnHandleBeginDrag(HandleEventData eventData)
+		protected override void OnHandleDragStarted(HandleEventData eventData)
 		{
 			Transform rayOrigin = eventData.rayOrigin;
 
@@ -85,10 +86,10 @@ namespace UnityEngine.VR.Handles
 
 			UpdateHandleTip(radialEventData);
 
-			base.OnHandleBeginDrag(eventData);
+			base.OnHandleDragStarted(eventData);
 		}
 
-		protected override void OnHandleDrag(HandleEventData eventData)
+		protected override void OnHandleDragging(HandleEventData eventData)
 		{
 			Transform rayOrigin = eventData.rayOrigin;
 
@@ -110,14 +111,14 @@ namespace UnityEngine.VR.Handles
 			if (m_HandleTip != null)
 				m_HandleTip.RotateAround(transform.position, transform.up, angle);
 
-			base.OnHandleDrag(eventData);
+			base.OnHandleDragging(eventData);
 		}
 
-		protected override void OnHandleEndDrag(HandleEventData eventData)
+		protected override void OnHandleDragEnded(HandleEventData eventData)
 		{
 			UpdateHandleTip(eventData as RadialHandleEventData);
 
-			base.OnHandleEndDrag(eventData);
+			base.OnHandleDragEnded(eventData);
 		}
 	}
 }

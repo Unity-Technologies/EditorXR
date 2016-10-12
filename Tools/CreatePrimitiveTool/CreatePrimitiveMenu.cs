@@ -14,7 +14,7 @@ public class CreatePrimitiveMenu : MonoBehaviour
 	{
 		Transform primitive = GameObject.CreatePrimitive((PrimitiveType)type).transform;
 		primitive.position = transform.position;
-		primitive.localScale = Vector3.one*m_ScaleSlider.value;
+		primitive.localScale = Vector3.one * m_ScaleSlider.value;
 		U.Object.Destroy(gameObject);
 	}
 

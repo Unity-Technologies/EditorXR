@@ -131,6 +131,12 @@ namespace UnityEngine.VR.Utilities
 		public static Color light { get { return s_Light; } }
 
 		/// <summary>
+		/// A unique Unity brand color gradient that can be set manually
+		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements
+		/// </summary>
+		public static GradientPair sessionGradient { get; set; }
+
+		/// <summary>
 		/// Gradient pair container class
 		/// </summary>
 		[Serializable]
@@ -227,9 +233,11 @@ namespace UnityEngine.VR.Utilities
 			s_Gradients.Add(new GradientPair(s_Teal, s_Lime));
 			s_Gradients.Add(new GradientPair(s_Cyan, s_Red));
 			s_Gradients.Add(new GradientPair(s_Blue, s_Magenta));
-			s_Gradients.Add(new GradientPair(s_Red, s_DarkBlue));
+			s_Gradients.Add(new GradientPair(s_Red, s_Blue));
 			s_Gradients.Add(new GradientPair(s_Blue, s_Lime));
 			s_Gradients.Add(new GradientPair(s_Orange, s_Lime));
+
+			sessionGradient = GetRandomGradient();
 		}
 
 		/// <summary>
@@ -258,7 +266,7 @@ namespace UnityEngine.VR.Utilities
 			var randomPositionA = s_ColorRandom.Next(s_ColorSwatchRange);
 			var randomPositionB = s_ColorRandom.Next(s_ColorSwatchRange);
 
-			// Return a new random colorA that is not the same as the previous A or B
+			// Return a new random colorA that is not the same as the previous A
 			while (SwatchesSimilar(s_ColorSwatches[randomPositionA], s_ColorSwatches[s_RandomGradientPairColorAPosition], 0.35f))
 				randomPositionA = s_ColorRandom.Next(s_ColorSwatchRange);
 
@@ -283,9 +291,9 @@ namespace UnityEngine.VR.Utilities
 		/// <param name="swatchB">Second swatch/color</param>
 		/// <param name="requiredMinimumDifference">The minimum amount of divergence required of the swatches</param>
 		/// <returns>Bool denoting that(when false) the two color parameters differ by at least the required minimum</returns>
-		private static bool SwatchesSimilar(Color swatchA, Color swatchB, float requiredMinimumDifference = 0.75f)
+		static bool SwatchesSimilar(Color swatchA, Color swatchB, float requiredMinimumDifference = 0.75f)
 		{
-			float difference = Mathf.Abs(swatchA.r - swatchB.r) + Mathf.Abs(swatchA.g - swatchB.g) + Mathf.Abs(swatchA.b - swatchB.b);
+			var difference = Mathf.Abs(swatchA.r - swatchB.r) + Mathf.Abs(swatchA.g - swatchB.g) + Mathf.Abs(swatchA.b - swatchB.b);
 			return difference < requiredMinimumDifference;
 		}
 	}

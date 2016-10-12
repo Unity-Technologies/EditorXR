@@ -10,6 +10,7 @@ using UnityEngine.VR.Actions;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
@@ -124,7 +125,9 @@ namespace UnityEngine.VR.Menus
 			//m_MainMenuUI.menuButtonSelected = () => { visible = !visible; }; // allow the menu button in the UI to enable/disable the main menu
 			m_MainMenuUI.Setup();
 			
-			CreateToolButtons(menuTools);
+			CreateFaceButtons(menuTools);
+			CreateFaceButtons(menuWorkspaces);
+			m_MainMenuUI.SetupMenuFaces();
 		}
 
 		private void Update()
@@ -187,10 +190,13 @@ namespace UnityEngine.VR.Menus
 			showDefaultRay();
 		}
 
-		private void CreateToolButtons(List<Type> toolTypes)
+		private void CreateFaceButtons(List<Type> types)
 		{
-			foreach (var type in toolTypes)
+			foreach (var type in types)
 			{
+				var isTool = typeof(ITool).IsAssignableFrom(type);
+				var isWorkspace = typeof(Workspace).IsAssignableFrom(type);
+
 				var buttonData = new MainMenuUI.ButtonData();
 				buttonData.name = type.Name;
 
@@ -201,20 +207,39 @@ namespace UnityEngine.VR.Menus
 					buttonData.sectionName = customMenuAttribute.sectionName;
 					buttonData.description = customMenuAttribute.description;
 				}
+				else if (isTool)
+				{
+					buttonData.name = type.Name.Replace("Tool", string.Empty);
+				}
+				else if (isWorkspace)
+				{
+					// For workspaces that haven't specified a custom attribute, do some menu categorization automatically
+					buttonData.name = type.Name.Replace("Workspace", string.Empty);
+					buttonData.sectionName = "Workspaces";
+				}
 
-				var toolType = type; // Local variable for proper closure
-				m_MainMenuUI.CreateToolButton(buttonData, (b) =>
+				var selectedType = type; // Local variable for proper closure
+				m_MainMenuUI.CreateFaceButton(buttonData, (b) =>
 				{
 					b.button.onClick.RemoveAllListeners();
-					b.button.onClick.AddListener(() =>
+					if (isTool)
 					{
-						if (visible && b.node.HasValue)
-							selectTool(b.node.Value, toolType);
-					});
+						b.button.onClick.AddListener(() =>
+						{
+							if (visible && b.node.HasValue)
+								selectTool(b.node.Value, selectedType);
+						});
+					}
+					else if (isWorkspace)
+					{
+						b.button.onClick.AddListener(() =>
+						{
+							if (visible && b.node.HasValue)
+								createWorkspace(selectedType);
+						});
+					}
 				});
 			}
-
-			m_MainMenuUI.SetupMenuFaces();
 		}
 
 		private void Show()

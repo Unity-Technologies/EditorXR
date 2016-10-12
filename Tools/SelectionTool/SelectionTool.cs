@@ -8,7 +8,6 @@ using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Tools
 {
-	[UnityEngine.VR.Tools.MainMenuItem("Selection", "Transform", "Select items in the scene")]
 	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight, IMenuOrigins
 	{
 		private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
@@ -96,10 +95,11 @@ namespace UnityEngine.VR.Tools
 				// Detect double click
 				var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
 				m_LastSelectTime = DateTime.Now;
-				if (U.Input.DoubleClick(timeSinceLastSelect))
+				if (U.UI.DoubleClick(timeSinceLastSelect))
 				{
 					s_CurrentPrefabOpened = m_HoverGameObject;
 					s_SelectedObjects.Remove(s_CurrentPrefabOpened);
+
 					// clear the active gameobject if there are no selected objects.
 					// AlternateMenu's rely on there being no active gameobject, if there are no selected objects.
 					if (s_SelectedObjects.Count == 0)

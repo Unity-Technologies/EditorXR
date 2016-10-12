@@ -34,5 +34,10 @@ namespace UnityEngine.VR.Proxies
 		{
 			get; set;
 		}
+
+		Dictionary<Node, Transform> previewOrigins
+		{
+			get; set;
+		}
 	}
 }

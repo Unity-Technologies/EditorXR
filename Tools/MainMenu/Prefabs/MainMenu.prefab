@@ -52,7 +52,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000014048047630}
   m_Layer: 5
-  m_Name: MenuFace04
+  m_Name: MenuFace01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -99,7 +99,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000012536524048}
   m_Layer: 5
-  m_Name: MenuFace03
+  m_Name: MenuFace04
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -181,7 +181,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000010549452114}
   m_Layer: 5
-  m_Name: MenuFace01
+  m_Name: MenuFace03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -266,7 +266,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000012948932736}
-  m_RootOrder: 0
+  m_RootOrder: 2
 --- !u!4 &4000010678221566
 Transform:
   m_ObjectHideFlags: 1
@@ -393,7 +393,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
   m_Children: []
   m_Father: {fileID: 4000012948932736}
-  m_RootOrder: 2
+  m_RootOrder: 3
 --- !u!4 &4000012948932736
 Transform:
   m_ObjectHideFlags: 1
@@ -405,10 +405,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
-  - {fileID: 4000010549452114}
-  - {fileID: 4000010678221566}
-  - {fileID: 4000012536524048}
   - {fileID: 4000014048047630}
+  - {fileID: 4000010678221566}
+  - {fileID: 4000010549452114}
+  - {fileID: 4000012536524048}
   m_Father: {fileID: 4000011260103804}
   m_RootOrder: 1
 --- !u!4 &4000012987344734
@@ -436,7 +436,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000012948932736}
-  m_RootOrder: 3
+  m_RootOrder: 0
 --- !u!4 &4000014060086970
 Transform:
   m_ObjectHideFlags: 1
@@ -742,10 +742,10 @@ MonoBehaviour:
   m_InputHighlightRight: {fileID: 23000010669258108}
   m_InputOuterBorder: {fileID: 23000013709472916}
   m_MenuFaceContainers:
-  - {fileID: 4000010549452114}
-  - {fileID: 4000010678221566}
-  - {fileID: 4000012536524048}
   - {fileID: 4000014048047630}
+  - {fileID: 4000010678221566}
+  - {fileID: 4000010549452114}
+  - {fileID: 4000012536524048}
   m_MenuFacePositionTarget: {fileID: 4000012301197336}
   m_MenuFacePrefab: {fileID: 114000012540919192, guid: 8ce0e5eba4cf2f84f91d1e520932fbb7,
     type: 2}

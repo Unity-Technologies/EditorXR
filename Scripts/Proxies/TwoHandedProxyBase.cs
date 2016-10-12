@@ -44,7 +44,8 @@ namespace UnityEngine.VR.Proxies
 
 		public Dictionary<Node, Transform> menuOrigins { get; set; }
 		public Dictionary<Node, Transform> alternateMenuOrigins { get; set; }
-		
+		public Dictionary<Node, Transform> previewOrigins { get; set; }
+
 		public virtual void Awake()
 		{
 			m_LeftHand = U.Object.Instantiate(m_LeftHandProxyPrefab, transform).transform;
@@ -59,6 +60,8 @@ namespace UnityEngine.VR.Proxies
 			var rightHandMenuOrigin = rightProxyHelper.menuOrigin;
 			var leftHandAlternateMenu = leftProxyHelper.alternateMenuOrigin;
 			var rightHandAlternateMenu = rightProxyHelper.alternateMenuOrigin;
+
+			// MS: Unless I misunderstand, these two if blocks are overridden by the setters below
 			if (leftHandAlternateMenu != null)
 			{
 				menuOrigins.Add(Node.LeftHand, leftHandMenuOrigin);
@@ -87,6 +90,12 @@ namespace UnityEngine.VR.Proxies
 			{
 				{ Node.LeftHand, leftProxyHelper.alternateMenuOrigin },
 				{ Node.RightHand, rightProxyHelper.alternateMenuOrigin },
+			};
+
+			previewOrigins = new Dictionary<Node, Transform>
+			{
+				{ Node.LeftHand, leftProxyHelper.previewOirign },
+				{ Node.RightHand, rightProxyHelper.previewOirign }
 			};
 		}
 

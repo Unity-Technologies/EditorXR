@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.UI;
 using UnityEngine.VR.Actions;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using GradientPair = UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair;
 

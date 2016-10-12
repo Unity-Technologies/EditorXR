@@ -102,9 +102,10 @@ namespace UnityEditor.VR
 			}
 		}
 
-		public static event System.Action onEnable = delegate {};
-		public static event System.Action onDisable = delegate {};
-		public static event System.Action<EditorWindow> onGUIDelegate = delegate { };
+		public static event Action onEnable = delegate {};
+		public static event Action onDisable = delegate {};
+		public static event Action<EditorWindow> onGUIDelegate = delegate {};
+		public static event Action onHMDReady = delegate {};
 
 		public DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 		
@@ -112,15 +113,19 @@ namespace UnityEditor.VR
 		private Camera m_Camera;
 
 		private RenderTexture m_SceneTargetTexture;
-
+		private bool m_ShowDeviceView;
+		private bool m_SceneViewsEnabled;
+		
 		private static VRView s_ActiveView = null;
 
 		private Transform m_CameraPivot = null;
 		private Quaternion m_LastHeadRotation = Quaternion.identity;
 		private float m_TimeSinceLastHMDChange = 0f;
+		private bool m_LatchHMDValues = false;
 		
 		private const string kLaunchOnExitPlaymode = "EditorVR.LaunchOnExitPlaymode";
 		private const float kHMDActivityTimeout = 3f; // in seconds
+		bool m_HMDReady;
 
 		public void OnEnable()
 		{
@@ -129,7 +134,6 @@ namespace UnityEditor.VR
 			Assert.IsNull(s_ActiveView, "Only one EditorVR should be active");
 
 			autoRepaintOnSceneChange = true;
-			wantsMouseMove = true;
 			s_ActiveView = this;
 
 			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCamera", EditorVR.kDefaultHideFlags, typeof(Camera));
@@ -176,16 +180,19 @@ namespace UnityEditor.VR
 			s_ActiveView = null;
 		}
 
-		protected void SetupCamera()
+		private void UpdateCamera()
 		{
-			// Transfer original camera position and rotation to pivot, since it will get overridden by tracking
-			//m_CameraPivot.position = m_Camera.transform.position;
-			//m_CameraPivot.rotation = m_Camera.transform.rotation;
-			//m_Camera.ResetFieldOfView(); // Use FOV from HMD
-
-			// Latch HMD values initially
-			m_Camera.transform.localPosition = InputTracking.GetLocalPosition(VRNode.Head);
+			// Latch HMD values early in case it is used in other scripts
+			Vector3 headPosition = InputTracking.GetLocalPosition(VRNode.Head);
 			Quaternion headRotation = InputTracking.GetLocalRotation(VRNode.Head);
+
+			// HACK: Until an actual fix is found, this is a workaround
+			// Delay until the VR subsystem has set the initial tracking position, then we can start latching values for
+			// the HMD for the camera transform. Otherwise, we will bork the original centering of the HMD.
+			var cameraTransform = m_Camera.transform;
+			if (!Mathf.Approximately(Quaternion.Angle(cameraTransform.localRotation, Quaternion.identity), 0f))
+				m_LatchHMDValues = true;
+
 			if (Quaternion.Angle(headRotation, m_LastHeadRotation) > 0.1f)
 			{
 				if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
@@ -194,7 +201,18 @@ namespace UnityEditor.VR
 				// Keep track of HMD activity by tracking head rotations
 				m_TimeSinceLastHMDChange = Time.realtimeSinceStartup;
 			}
-			m_Camera.transform.localRotation = headRotation;
+
+			if (m_LatchHMDValues)
+			{
+				cameraTransform.localPosition = headPosition;
+				cameraTransform.localRotation = headRotation;
+				if (!m_HMDReady)
+				{
+					m_HMDReady = true;
+					onHMDReady();
+				}
+			}
+
 			m_LastHeadRotation = headRotation;
 		}
 
@@ -243,20 +261,18 @@ namespace UnityEditor.VR
 			// Always render camera into a RT
 			bool hdr = false; // SceneViewIsRenderingHDR();
 			CreateCameraTargetTexture(cameraRect, hdr);
-			m_Camera.targetTexture = m_SceneTargetTexture;
-		}     
+			m_Camera.targetTexture = m_ShowDeviceView ? m_SceneTargetTexture : null;
+			VRSettings.showDeviceView = m_ShowDeviceView;
+		}
 
 		private void OnGUI()
 		{
 			onGUIDelegate(this);
 			SceneViewUtilities.ResetOnGUIState();
 
-			SetupCamera();
-
 			Rect guiRect = new Rect(0, 0, position.width, position.height);
 			Rect cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
 			PrepareCameraTargetTexture(cameraRect);
-			Handles.ClearCamera(cameraRect, m_Camera);
 			
 			m_Camera.cullingMask = Tools.visibleLayers;
 
@@ -264,7 +280,13 @@ namespace UnityEditor.VR
 			bool pushedGUIClip;
 			DoDrawCamera(guiRect, out pushedGUIClip);
 
-			SceneViewUtilities.BlitRT(m_SceneTargetTexture, guiRect, pushedGUIClip);
+			if (m_ShowDeviceView)
+				SceneViewUtilities.DrawTexture(m_SceneTargetTexture, guiRect, pushedGUIClip);
+
+			GUILayout.BeginArea(guiRect);
+			if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))
+				m_ShowDeviceView = !m_ShowDeviceView;
+			GUILayout.EndArea();
 		}
 
 		private void DoDrawCamera(Rect cameraRect, out bool pushedGUIClip)
@@ -274,7 +296,7 @@ namespace UnityEditor.VR
 				return;
 			//DrawGridParameters gridParam = grid.PrepareGridRender(camera, pivot, m_Rotation.target, m_Size.value, m_Ortho.target, AnnotationUtility.showGrid);
 
-			SceneViewUtilities.DrawCamera(m_Camera, cameraRect, position, m_RenderMode, true, out pushedGUIClip);			
+			SceneViewUtilities.DrawCamera(m_Camera, cameraRect, position, m_RenderMode, out pushedGUIClip);
 		}
 
 		private void OnPlaymodeStateChanged()
@@ -296,9 +318,11 @@ namespace UnityEditor.VR
 			// This also allows scripts with [ExecuteInEditMode] to run
 			SceneViewUtilities.SetSceneRepaintDirty();
 
+			UpdateCamera();
+
 			// Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
 			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
-				 SetSceneViewsEnabled(true);
+				SetSceneViewsEnabled(true);
 		}
 
 		private void SetGameViewsEnabled(bool enabled)
@@ -310,7 +334,12 @@ namespace UnityEditor.VR
 
 		private void SetSceneViewsEnabled(bool enabled)
 		{
-			SceneViewUtilities.SetViewsEnabled(typeof(SceneView), enabled);
+			// It's costly to call through to SetViewsEnabled, so only call when the value has changed
+			if (m_SceneViewsEnabled != enabled)
+			{
+				SceneViewUtilities.SetViewsEnabled(typeof(SceneView), enabled);
+				m_SceneViewsEnabled = enabled;
+			}
 		}
 
 		private void SetOtherViewsEnabled(bool enabled)

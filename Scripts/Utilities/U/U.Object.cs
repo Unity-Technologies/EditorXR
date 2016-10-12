@@ -1,4 +1,6 @@
-﻿namespace UnityEngine.VR.Utilities
+﻿using System.Reflection;
+
+namespace UnityEngine.VR.Utilities
 {
 	using System;
 	using UnityEngine;
@@ -15,12 +17,12 @@
 	/// <summary>
 	/// EditorVR Utilities
 	/// </summary>
-	public partial class U
+	public static partial class U
 	{
 		/// <summary>
 		/// Object related EditorVR utilities
 		/// </summary>
-		public class Object
+		public static class Object
 		{
 			public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true, bool active = true)
 			{
@@ -71,7 +73,7 @@
 				return empty;
 			}
 
-			public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : MonoBehaviour
+			public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : Component
 			{
 				return (T)CreateGameObjectWithComponent(typeof(T), parent);
 			}
@@ -140,33 +142,56 @@
 				return component;
 			}
 
+			private static IEnumerable<Type> GetAssignableTypes(Type type)
+			{
+				var list = new List<Type>();
+				var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+				foreach (var assembly in assemblies)
+				{
+					Type[] types;
+					try
+					{
+						types = assembly.GetTypes();
+					}
+					catch (ReflectionTypeLoadException)
+					{
+						// Skip any assemblies that don't load properly
+						continue;
+					}
+
+					foreach (var t in types)
+					{
+						if (type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+							list.Add(t);
+					}
+				}
+
+				return list;
+
+			}
+
 			public static IEnumerable<Type> GetImplementationsOfInterface(Type type)
 			{
+				
 				if (type.IsInterface)
-				{
-					return AppDomain.CurrentDomain.GetAssemblies()
-						.SelectMany(s => s.GetTypes())
-						.Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
-				}
-				return new List<Type>();
+					return GetAssignableTypes(type);
+				else
+					return Enumerable.Empty<Type>();
 			}
 
 			public static IEnumerable<Type> GetExtensionsOfClass(Type type)
 			{
 				if (type.IsClass)
-				{
-					return AppDomain.CurrentDomain.GetAssemblies()
-						.SelectMany(s => s.GetTypes())
-						.Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
-				}
-				return new List<Type>();
+					return GetAssignableTypes(type);
+				else
+					return Enumerable.Empty<Type>();
 			}
 
 			public static void Destroy(UnityObject o, float t = 0f)
 			{
 				if (Application.isPlaying)
 				{
-					Object.Destroy(o, t);
+					UnityObject.Destroy(o, t);
 				}
 #if UNITY_EDITOR
 				else
@@ -232,6 +257,24 @@
 						// mf.mesh = WireframeGenerator.Generate(ref mesh, WIRE_INSIDE.Color);
 					}
 				}
+			}
+
+			public static Bounds? GetTotalBounds(Transform t)
+			{
+				Bounds? bounds = null;
+				var renderers = t.GetComponentsInChildren<Renderer>(true);
+				foreach (var renderer in renderers)
+				{
+					if (bounds == null)
+						bounds = renderer.bounds;
+					else
+					{
+						Bounds b = bounds.Value;
+						b.Encapsulate(renderer.bounds);
+						bounds = b;
+					}
+				}
+				return bounds;
 			}
 		}
 	}

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
 
@@ -126,15 +127,18 @@ public class DefaultProxyRay : MonoBehaviour
 
 		// cache current width for smooth animation to target value without snapping
 		float currentWidth = m_LineRenderer.widthStart;
-		while (currentWidth > 0)
+		const float kTargetWidth = 0f;
+		const float kSmoothTime = 0.1875f;
+		var startTime = Time.realtimeSinceStartup;
+		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
 		{
 			float smoothVelocity = 0f;
-			currentWidth = Mathf.SmoothDamp(currentWidth, 0f, ref smoothVelocity, 0.1875f, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentWidth = U.Math.SmoothDamp(currentWidth, kTargetWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
 			yield return null;
 		}
 
-		m_LineRenderer.SetWidth(0, 0);
+		m_LineRenderer.SetWidth(kTargetWidth, kTargetWidth);
 		m_State = State.Hidden;
 	}
 
@@ -145,14 +149,15 @@ public class DefaultProxyRay : MonoBehaviour
 
 		float currentWidth = m_LineRenderer.widthStart;
 		float smoothVelocity = 0f;
-		while (currentWidth < m_LineWidth)
+		const float kSmoothTime = 0.3125f;
+		var startTime = Time.realtimeSinceStartup;
+		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
 		{
-			currentWidth = Mathf.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, 0.3125f, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentWidth = U.Math.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
 			yield return null;
 		}
-
-		// only set the value if another transition hasn't begun
+		
 		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth);
 		m_State = State.Visible;
 	}

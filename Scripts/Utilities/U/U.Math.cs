@@ -5,12 +5,12 @@
 	/// <summary>
 	/// EditorVR Utilities
 	/// </summary>
-	public partial class U
+	public static partial class U
 	{
 		/// <summary>
 		/// Math related EditorVR utilities
 		/// </summary>
-		public class Math
+		public static class Math
 		{
 			// snaps value to a unit. unit can be any number.
 			// for example, with a unit of 0.2, 0.41 -> 0.4, and 0.52 -> 0.6
@@ -116,17 +116,6 @@
 				}
 			}
 
-			// from http://wiki.unity3d.com/index.php/3d_Math_functions
-			//This function returns a point which is a projection from a point to a line.
-			//The line is regarded infinite. If the line is finite, use ProjectPointOnLineSegment() instead.
-			public static Vector3 ProjectPointOnLine(Vector3 linePoint, Vector3 lineVec, Vector3 point)
-			{
-				//get vector from point on line to point in space
-				Vector3 linePointToPoint = point - linePoint;
-				float t = Vector3.Dot(linePointToPoint, lineVec);
-				return linePoint + lineVec * t;
-			}
-
 			public static Vector3 CalculateCubicBezierPoint(float t, Vector3[] points)
 			{
 				if (points.Length != 4)
@@ -150,6 +139,21 @@
 				return p;
 			}
 
+			public static float SmoothDamp(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+			{
+				// This will have us converge on 98% of our target value within the smooth time
+				// Reference: http://devblog.aliasinggames.com/smoothdamp/
+				var correctSmoothTime = smoothTime / 3f;
+				return Mathf.SmoothDamp(current, target, ref currentVelocity, correctSmoothTime, maxSpeed, deltaTime);
+			}
+
+			public static Vector3 SmoothDamp(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+			{
+				// This will have us converge on 98% of our target value within the smooth time
+				// Reference: http://devblog.aliasinggames.com/smoothdamp/
+				var correctSmoothTime = smoothTime / 3f;
+				return Vector3.SmoothDamp(current, target, ref currentVelocity, correctSmoothTime, maxSpeed, deltaTime);
+			}
 		}
 	}
 }
