@@ -701,7 +701,7 @@ Transform:
   m_GameObject: {fileID: 1000011717280698}
   m_LocalRotation: {x: 0.7071064, y: -0.000000022351736, z: 0.000000014901305, w: 0.70710725}
   m_LocalPosition: {x: 0, y: -0.01, z: -0.0002}
-  m_LocalScale: {x: 0.0083193, y: 0.74, z: 0.005}
+  m_LocalScale: {x: 0.0083193, y: 1, z: 0.005}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000011607955888}
@@ -2377,6 +2377,7 @@ MonoBehaviour:
   m_RightSideBackResizeIcon: {fileID: 114000010732110990}
   m_FrontResizeIconsContainer: {fileID: 224000012214220868}
   m_BackResizeIconsContainer: {fileID: 224000013299645382}
+  heightCompensationMultiplier: 1.75
 --- !u!137 &137000012547310740
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1
