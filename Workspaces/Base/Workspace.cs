@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Workspaces
 {
@@ -61,6 +62,7 @@ namespace UnityEngine.VR.Workspaces
 		private bool m_Dragging;
 		private bool m_DragLocked;
 		private bool m_Vacuuming;
+		Coroutine m_VisibilityCoroutine;
 
 		/// <summary>
 		/// Bounding box for entire workspace, including UI handles
@@ -82,7 +84,23 @@ namespace UnityEngine.VR.Workspaces
 
 		public Action<GameObject, bool> setHighlight { get; set; }
 
+		public bool dynamicFaceAdjustment { get { return m_WorkspaceUI.dynamicFaceAdjustment; } set { m_WorkspaceUI.dynamicFaceAdjustment = value; } }
+
+		/// <summary>
+		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
+		/// A value of zero will leave the mask in the center of the workspace
+		/// </summary>
+		public float topPanelDividerOffset
+		{
+			set
+			{
+				m_WorkspaceUI.topPanelDividerOffset = value;
+				m_WorkspaceUI.bounds = contentBounds;
+			}
+		}
+
 		public bool vacuumEnabled { set { m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value); } }
+		protected bool workspacePanelsVisible { set { m_WorkspaceUI.workspacePanelsVisible = value; } }
 
 		public virtual void Setup()
 		{
@@ -125,6 +143,10 @@ namespace UnityEngine.VR.Workspaces
 				handle.hoverStarted += OnHandleHoverStarted;
 				handle.hoverEnded += OnHandleHoverEnded;
 			}
+
+			StopCoroutine(ref m_VisibilityCoroutine);
+
+			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
 
 		public virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -175,14 +197,16 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
-				setHighlight(handle.gameObject, true);
+			// TODO: Add new highlight visuals support
+			//if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
+			//	setHighlight(handle.gameObject, true);
 		}
 
 		public virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
-				setHighlight(handle.gameObject, false);
+			// TODO: Add new highlight visuals support
+			//if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
+			//	setHighlight(handle.gameObject, false);
 		}
 
 		private void OnDoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -237,7 +261,9 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnCloseClicked()
 		{
-			U.Object.Destroy(gameObject);
+			StopCoroutine(ref m_VisibilityCoroutine);
+
+			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
 		public virtual void OnLockClicked()
@@ -249,7 +275,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
 			m_WorkspaceUI.vacuumHandle.transform.localScale = outerBounds.size;
-			m_WorkspaceUI.SetBounds(contentBounds);
+			m_WorkspaceUI.bounds = contentBounds;
 		}
 
 		protected virtual void OnDestroy()
@@ -258,5 +284,37 @@ namespace UnityEngine.VR.Workspaces
 		}
 
 		protected abstract void OnBoundsChanged();
+
+		IEnumerator AnimateShow()
+		{
+			var kTargetScale = transform.localScale;
+			var scale = Vector3.zero;
+			var smoothVelocity = Vector3.zero;
+
+			while (!Mathf.Approximately(scale.x, kTargetScale.x))
+			{
+				transform.localScale = scale;
+				scale = Vector3.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.125f, Mathf.Infinity, Time.unscaledDeltaTime);
+				yield return null;
+			}
+
+			m_VisibilityCoroutine = null;
+		}
+
+		IEnumerator AnimateHide()
+		{
+			var kTargetScale = Vector3.zero;
+			var scale = transform.localScale;
+			var smoothVelocity = Vector3.zero;
+			while (!Mathf.Approximately(scale.x, kTargetScale.x))
+			{
+				transform.localScale = scale;
+				scale = Vector3.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.06875f, Mathf.Infinity, Time.unscaledDeltaTime);
+				yield return null;
+			}
+
+			m_VisibilityCoroutine = null;
+			U.Object.Destroy(gameObject);
+		}
 	}
 }
