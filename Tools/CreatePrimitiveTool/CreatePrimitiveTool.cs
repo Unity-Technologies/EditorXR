@@ -56,14 +56,14 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 			}
 			case PrimitiveCreationStates.PointB:
 			{
-				UpdateEndPoint();
+				UpdatePositions();
 				SetScalingForObjectType();
 				CheckForTriggerRelease();
 				break;
 			}
 			case PrimitiveCreationStates.Freeform:
 			{
-				UpdateEndPoint();
+				UpdatePositions();
 				UpdateFreeformScale();
 				CheckForTriggerRelease();
 				break;
@@ -112,7 +112,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 			m_CurrentGameObject.transform.localScale = Vector3.one * corner;
 	}
 
-	void UpdateEndPoint()
+	void UpdatePositions()
 	{
 		m_PointB = rayOrigin.position + rayOrigin.forward * kDrawDistance;
 		m_CurrentGameObject.transform.position = (m_PointA + m_PointB) * 0.5f;

@@ -608,15 +608,15 @@ public class EditorVR : MonoBehaviour
 
 		ForEachRayOrigin((proxy,rayOriginPair,device,deviceData) =>
 		{
-			Dictionary<Node,Transform> temp = null;
+			Dictionary<Node,Transform> tempOrigin = null;
 
 			if(origin == MenuOrigin.Main)
-				temp = proxy.menuOrigins;
+				tempOrigin = proxy.menuOrigins;
 			else if(origin == MenuOrigin.Alternate)
-				temp = proxy.alternateMenuOrigins;
+				tempOrigin = proxy.alternateMenuOrigins;
 
 			Transform parent;
-			if(temp != null && temp.TryGetValue(node,out parent))
+			if(tempOrigin != null && tempOrigin.TryGetValue(node,out parent))
 			{
 				go.transform.SetParent(parent);
 				go.transform.localPosition = Vector3.zero;

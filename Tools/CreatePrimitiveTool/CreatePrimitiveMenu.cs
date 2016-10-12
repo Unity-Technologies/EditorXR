@@ -15,6 +15,7 @@ public class CreatePrimitiveMenu : MonoBehaviour
 		foreach(GameObject go in m_HighlightObjects)
 			go.SetActive(false);
 
+		// the order of the objects in m_HighlightObjects is matched to the values of the PrimitiveType enum elements
 		m_HighlightObjects[type].SetActive(true);
 	}
 
