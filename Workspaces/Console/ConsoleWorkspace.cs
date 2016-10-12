@@ -10,11 +10,10 @@ public class ConsoleWorkspace : Workspace
 
 	public override void Setup()
 	{
-		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.25f);
+		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.27f);
 		m_CustomStartingBounds = minBounds;
 
 		base.Setup();
-		workspacePanelsVisible = false;
 
 		m_ConsoleWindow = instantiateUI(m_ConsoleWindowPrefab).transform;
 		m_ConsoleWindow.SetParent(m_WorkspaceUI.sceneContainer, false);

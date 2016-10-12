@@ -36,7 +36,7 @@ public class ProfilerWorkspace : Workspace
 
 	public override void Setup()
 	{
-		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.125f);
+		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.27f);
 		m_CustomStartingBounds = minBounds;
 
 		base.Setup();
