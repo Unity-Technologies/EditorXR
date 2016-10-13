@@ -4,7 +4,7 @@
 		_Color("Main Color", Color) = (1,1,1,1)
 		_Blur("Blur", Range(0, 10)) = 1
 		_VerticalOffset("Offset", Range(-1, 1)) = 1
-		_MainTex("-", 2D) = "white" {}
+		_MainTex("Texture", 2D) = "white" {}
 		}
 
 		Category
