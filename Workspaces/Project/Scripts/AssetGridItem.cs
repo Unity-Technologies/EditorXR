@@ -261,7 +261,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		m_GrabbedObject = clone.transform;
 		m_GrabLerp = 0;
 		StartCoroutine(Magnetize());
-		StartCoroutine(AnimatesToPreviewScale());
+		StartCoroutine(AnimateToPreviewScale());
 	}
 
 	// Smoothly interpolate grabbed object into position, instead of "popping."
@@ -282,7 +282,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	/// Animate the LocalScale of the asset towards a common/unified scale
 	/// used when the asset is magnetized/attached to the proxy, after grabbing it from the asset grid
 	/// </summary>
-	IEnumerator AnimatesToPreviewScale()
+	IEnumerator AnimateToPreviewScale()
 	{
 		var currentLocalScale = m_GrabbedObject.localScale;
 		var targetLocalScale = Vector3.one * 0.125f;
