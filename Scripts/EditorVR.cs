@@ -101,8 +101,12 @@ public class EditorVR : MonoBehaviour
 
 	private event Action m_SelectionChanged;
 
+	bool m_HMDReady;
+
 	private void Awake()
 	{
+		ClearDeveloperConsoleIfNecessary();
+
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 		if (VRSettings.loadedDeviceName == "OpenVR")
 		{
@@ -192,7 +196,8 @@ public class EditorVR : MonoBehaviour
 
 	private IEnumerator Start()
 	{
-		// Workspaces don't need to wait until devices are active
+		while (!m_HMDReady)
+			yield return null;
 		CreateDefaultWorkspaces();
 
 		// Delay until at least one proxy initializes
@@ -218,8 +223,6 @@ public class EditorVR : MonoBehaviour
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
 		EditorApplication.delayCall += OnSelectionChanged;
 
-		ClearDeveloperConsoleIfNecessary();
-
 		// This will be the first call to update the player handle (input) maps, sorted by priority
 		UpdatePlayerHandleMaps();
 	}
@@ -229,6 +232,7 @@ public class EditorVR : MonoBehaviour
 		Selection.selectionChanged += OnSelectionChanged;
 #if UNITY_EDITOR
 		VRView.onGUIDelegate += OnSceneGUI;
+		VRView.onHMDReady += OnHMDReady;
 #endif
 	}
 
@@ -237,7 +241,13 @@ public class EditorVR : MonoBehaviour
 		Selection.selectionChanged -= OnSelectionChanged;
 #if UNITY_EDITOR
 		VRView.onGUIDelegate -= OnSceneGUI;
+		VRView.onHMDReady -= OnHMDReady;
 #endif
+	}
+
+	void OnHMDReady()
+	{
+		m_HMDReady = true;
 	}
 
 	private void OnSceneGUI(EditorWindow obj)
@@ -1017,10 +1027,10 @@ public class EditorVR : MonoBehaviour
 		var defaultOffset = Workspace.kDefaultOffset;
 		var defaultTilt = Workspace.kDefaultTilt;
 
-		var viewerPivot = U.Camera.GetViewerPivot();
-		Vector3 position = viewerPivot.position + defaultOffset;
+		var cameraTransform = U.Camera.GetMainCamera().transform;
+		var headPosition = cameraTransform.position;
+		var headRotation = Quaternion.Euler(0, cameraTransform.rotation.eulerAngles.y, 0);
 
-		Quaternion rotation = defaultTilt;
 		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
 			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
 			+ kWorkspaceAnglePadding;													//Need some extra padding because workspaces are tilted
@@ -1033,6 +1043,9 @@ public class EditorVR : MonoBehaviour
 		int direction = 1;
 		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
 
+		Vector3 position;
+		Quaternion rotation;
+		var viewerPivot = U.Camera.GetViewerPivot();
 		// HACK to workaround missing MonoScript serialized fields
 		EditorApplication.delayCall += () =>
 		{
@@ -1041,8 +1054,8 @@ public class EditorVR : MonoBehaviour
 			{
 				//The next position will be rotated by currentRotation, as if the hands of a clock
 				Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-				position = viewerPivot.position + rotateAroundY * defaultOffset + Vector3.up * currentHeight;
-				rotation = rotateAroundY * defaultTilt;
+				position = headPosition + headRotation * rotateAroundY * defaultOffset + Vector3.up * currentHeight;
+				rotation = headRotation * rotateAroundY * defaultTilt;
 
 				//Every other iteration, rotate a little further
 				if (direction < 0)
@@ -1062,7 +1075,7 @@ public class EditorVR : MonoBehaviour
 			//While the current position is occupied, try a new one
 			while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
 
-			Workspace workspace = (Workspace) U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
+			Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
 			m_AllWorkspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			ConnectInterfaces(workspace);
@@ -1204,15 +1217,18 @@ public class EditorVR : MonoBehaviour
 		if (go)
 			return go;
 
-		// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
-		// so in that case use the spatial hash as a final test
-		var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-		var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-		if (renderer)
+		if (m_IntersectionModule)
 		{
-			go = renderer.gameObject;
-			if (go)
-				return go;
+			// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
+			// so in that case use the spatial hash as a final test
+			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+			if (renderer)
+			{
+				go = renderer.gameObject;
+				if (go)
+					return go;
+			}
 		}
 
 		foreach (var miniWorldRay in m_MiniWorldRays)
