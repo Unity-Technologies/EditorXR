@@ -98,12 +98,14 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 
 	protected override void OnBoundsChanged()
 	{
+		const float heightCompensationDecrement = 0.1375f;
+
 		Bounds bounds = contentBounds;
 		Vector3 size = bounds.size;
 		size.x -= kPaneMargin * 2;
 		size.x *= kLeftPaneRatio;
 		size.y = kYBounds;
-		size.z = size.z * 0.725f;
+		size.z = size.z - heightCompensationDecrement;
 		bounds.size = size;
 		bounds.center = Vector3.zero;
 
@@ -130,6 +132,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		size = contentBounds.size;
 		size.x -= kPaneMargin * 2;
 		size.x *= 1 - kLeftPaneRatio;
+		size.z = size.z - heightCompensationDecrement;
 		bounds.size = size;
 
 		xOffset = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f;
@@ -153,6 +156,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 	{
 		foreach (var folderData in m_ProjectUI.folderListView.listData)
 			folderData.ClearSelected();
+
 		data.selected = true;
 		m_ProjectUI.assetListView.listData = data.assets;
 	}
