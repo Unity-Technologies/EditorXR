@@ -54,7 +54,7 @@ public class InspectorColorItem : InspectorPropertyItem
 		return false;
 	}
 
-	protected override object GetDropObject(Transform fieldBlock)
+	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 	{
 		object dropObject = null;
 		var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
@@ -67,47 +67,40 @@ public class InspectorColorItem : InspectorPropertyItem
 		return dropObject;
 	}
 
-	public override bool CanDrop(GameObject target, object droppedObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		return droppedObject is string || droppedObject is Vector2 || droppedObject is Vector3
-			|| droppedObject is Vector4 || droppedObject is Quaternion || droppedObject is Color;
+		return dropObject is string || dropObject is Vector2 || dropObject is Vector3
+			|| dropObject is Vector4 || dropObject is Quaternion || dropObject is Color;
 	}
 
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		if (!CanDrop(target, droppedObject))
-			return false;
-
-		var str = droppedObject as string;
+		var str = dropObject as string;
 		if (str != null)
 		{
-			var targetParent = target.transform.parent;
-			var inputField = targetParent.GetComponentInChildren<NumericInputField>();
+			var inputField = fieldBlock.GetComponentInChildren<NumericInputField>();
 			var index = Array.IndexOf(m_InputFields, inputField);
 
 			if (SetValue(str, index))
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
-				return true;
 			}
-			return false;
 		}
 
-		if (droppedObject is Color)
+		if (dropObject is Color)
 		{
-			m_SerializedProperty.colorValue = (Color)droppedObject;
+			m_SerializedProperty.colorValue = (Color)dropObject;
 
 			UpdateInputFields(m_SerializedProperty.colorValue);
 
 			data.serializedObject.ApplyModifiedProperties();
-			return true;
 		}
 
 		var color = m_SerializedProperty.colorValue;
-		if (droppedObject is Vector2)
+		if (dropObject is Vector2)
 		{
-			var vector2 = (Vector2) droppedObject;
+			var vector2 = (Vector2) dropObject;
 			color.r = vector2.x;
 			color.g = vector2.y;
 			m_SerializedProperty.colorValue = color;
@@ -115,12 +108,11 @@ public class InspectorColorItem : InspectorPropertyItem
 			UpdateInputFields(color);
 
 			data.serializedObject.ApplyModifiedProperties();
-			return true;
 		}
 
-		if (droppedObject is Vector3)
+		if (dropObject is Vector3)
 		{
-			var vector3= (Vector3)droppedObject;
+			var vector3= (Vector3)dropObject;
 			color.r = vector3.x;
 			color.g = vector3.y;
 			color.b = vector3.z;
@@ -129,12 +121,11 @@ public class InspectorColorItem : InspectorPropertyItem
 			UpdateInputFields(color);
 
 			data.serializedObject.ApplyModifiedProperties();
-			return true;
 		}
 
-		if (droppedObject is Vector4)
+		if (dropObject is Vector4)
 		{
-			var vector4 = (Vector4)droppedObject;
+			var vector4 = (Vector4)dropObject;
 			color.r = vector4.x;
 			color.g = vector4.y;
 			color.b = vector4.z;
@@ -144,9 +135,6 @@ public class InspectorColorItem : InspectorPropertyItem
 			UpdateInputFields(color);
 
 			data.serializedObject.ApplyModifiedProperties();
-			return true;
 		}
-
-		return false;
 	}
 }

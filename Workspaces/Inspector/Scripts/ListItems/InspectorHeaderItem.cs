@@ -134,7 +134,7 @@ public class InspectorHeaderItem : InspectorListItem
 			m_TargetGameObject.layer = layer;
 	}
 
-	protected override object GetDropObject(Transform fieldBlock)
+	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 	{
 		var inputField = fieldBlock.GetComponentInChildren<StandardInputField>();
 		if (inputField)
@@ -142,18 +142,15 @@ public class InspectorHeaderItem : InspectorListItem
 		return null;
 	}
 
-	public override bool CanDrop(GameObject target, object droppedObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		var inputFields = target.transform.parent.GetComponentsInChildren<InputField>();
-		return droppedObject is string && inputFields.Contains(m_NameField);
+		var inputFields = fieldBlock.GetComponentsInChildren<InputField>();
+		return dropObject is string && inputFields.Contains(m_NameField);
 	}
 
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		if (!CanDrop(target, droppedObject))
-			return false;
-		m_NameField.text = (string)droppedObject;
+		m_NameField.text = (string)dropObject;
 		m_NameField.ForceUpdateLabel();
-		return false;
 	}
 }

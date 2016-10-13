@@ -5,13 +5,11 @@ using UnityEngine.VR.Utilities;
 public class PropertyData : InspectorData
 {
 	public SerializedProperty property { get; private set; }
-	public Action updateParent { get; private set; }
 
-	public PropertyData(string template, SerializedObject serializedObject, InspectorData[] children, SerializedProperty property, Action updateParent = null)
+	public PropertyData(string template, SerializedObject serializedObject, InspectorData[] children, SerializedProperty property)
 		: base(template, serializedObject, children)
 	{
 		this.property = property;
-		this.updateParent = updateParent;
 	}
 
 	public void SetChildren(InspectorData[] children)

@@ -25,27 +25,4 @@ public class InspectorArrayHeaderItem : InspectorPropertyItem
 	{
 		data.expanded = !data.expanded;
 	}
-
-	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		// Arrays cannot be dragged and dropped (yet)
-	}
-
-	protected override object GetDropObject(Transform fieldBlock)
-	{
-		// Arrays cannot be dragged and dropped (yet)
-		return null;
-	}
-
-	public override bool CanDrop(GameObject target, object droppedObject)
-	{
-		// TODO: support multiple object dragging to recieve array ranges
-		return false;
-	}
-
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
-	{
-		// TODO: support multiple object dragging to recieve array ranges
-		return false;
-	}
 }

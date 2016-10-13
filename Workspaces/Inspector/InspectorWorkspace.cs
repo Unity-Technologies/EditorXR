@@ -7,7 +7,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class InspectorWorkspace : Workspace, IPreview, IDroppable, IDropReceiver, ISelectionChanged
+public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 {
 	const float kScrollMargin = 0.03f;
 	public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
@@ -28,11 +28,6 @@ public class InspectorWorkspace : Workspace, IPreview, IDroppable, IDropReceiver
 	public PreviewDelegate preview { private get; set; }
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
-	public GetDropReceiverDelegate getCurrentDropReceiver { private get; set; }
-	public Func<Transform, object> getCurrentDropObject { private get; set; }
-	public Action<Transform, IDropReceiver, GameObject> setCurrentDropReceiver { private get; set; }
-	public Action<Transform, object> setCurrentDropObject { private get; set; }
-
 	public override void Setup()
 	{
 		base.Setup();
@@ -42,15 +37,12 @@ public class InspectorWorkspace : Workspace, IPreview, IDroppable, IDropReceiver
 		var listView = m_InspectorUI.inspectorListView;
 		listView.data = new InspectorData[0];
 		listView.instantiateUI = instantiateUI;
-		listView.getCurrentDropReceiver = getCurrentDropReceiver;
-		listView.getCurrentDropObject = getCurrentDropObject;
-		listView.setCurrentDropReceiver = setCurrentDropReceiver;
-		listView.setCurrentDropObject = setCurrentDropObject;
 		listView.preview = preview;
 		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		listView.setHighlight = setHighlight;
 		listView.getIsLocked = GetIsLocked;
 		listView.setIsLocked = SetIsLocked;
+		listView.arraySizeChanged += OnArraySizeChanged;
 
 		var scrollHandle = m_InspectorUI.inspectorScrollHandle;
 		scrollHandle.dragStarted += OnScrollDragStarted;
@@ -216,10 +208,7 @@ public class InspectorWorkspace : Workspace, IPreview, IDroppable, IDropReceiver
 			switch (iteratorProperty.propertyType)
 			{
 				case SerializedPropertyType.ArraySize:
-					children.Add(new PropertyData("InspectorNumberItem", obj, null, iteratorProperty.Copy(), () =>
-					{
-						parent.SetChildren(GetChildProperties(parent, parent.property.Copy(), obj));
-					}));
+					children.Add(new PropertyData("InspectorNumberItem", obj, null, iteratorProperty.Copy()));
 					break;
 				default:
 					children.Add(SerializedPropertyToPropertyData(iteratorProperty, obj));
@@ -227,6 +216,36 @@ public class InspectorWorkspace : Workspace, IPreview, IDroppable, IDropReceiver
 			}
 		}
 		return children.ToArray();
+	}
+
+	void OnArraySizeChanged(InspectorData[] data, PropertyData element)
+	{
+		foreach (var d in data)
+		{
+			if (FindElementAndUpdateParent(d, element))
+				break;
+		}
+	}
+
+	bool FindElementAndUpdateParent(InspectorData parent, PropertyData element)
+	{
+		if (parent.children != null)
+		{
+			foreach (var child in parent.children)
+			{
+				if (child == element)
+				{
+					var propertyData = (PropertyData)parent;
+					propertyData.SetChildren(GetChildProperties(propertyData, propertyData.property.Copy(), propertyData.serializedObject));
+					return true;
+				}
+
+				if (FindElementAndUpdateParent(child, element))
+					return true;
+			}
+		}
+
+		return false;
 	}
 
 	protected override void OnBoundsChanged()
@@ -244,18 +263,6 @@ public class InspectorWorkspace : Workspace, IPreview, IDroppable, IDropReceiver
 		var inspectorPanel = m_InspectorUI.inspectorPanel;
 		inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
 		inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
-	}
-
-	public bool CanDrop(GameObject target, object droppedObject)
-	{
-		// Cannot drop on the workspace itself, but need setCurrentDropReceiver to pass along to fields
-		return false;
-	}
-
-	public bool ReceiveDrop(GameObject target, object droppedObject)
-	{
-		// Cannot drop on the workspace itself, but need setCurrentDropReceiver to pass along to fields
-		return false;
 	}
 
 	bool GetIsLocked()

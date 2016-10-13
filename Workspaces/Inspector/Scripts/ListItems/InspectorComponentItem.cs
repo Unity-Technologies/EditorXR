@@ -83,25 +83,4 @@ public class InspectorComponentItem : InspectorListItem
 			serializedObject.ApplyModifiedProperties();
 		}
 	}
-
-	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		// Components cannot be dragged and dropped (yet)
-	}
-
-	protected override object GetDropObject(Transform fieldBlock)
-	{
-		// Components cannot be dragged and dropped (yet)
-		return null;
-	}
-
-	public override bool CanDrop(GameObject target, object droppedObject)
-	{
-		return false;
-	}
-
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
-	{
-		return false;
-	}
 }

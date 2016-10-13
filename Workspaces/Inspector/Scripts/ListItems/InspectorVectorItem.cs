@@ -119,7 +119,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 		return true;
 	}
 
-	protected override object GetDropObject(Transform fieldBlock)
+	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 	{
 		object dropObject = null;
 		var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
@@ -147,36 +147,30 @@ public class InspectorVectorItem : InspectorPropertyItem
 		return dropObject;
 	}
 
-	public override bool CanDrop(GameObject target, object droppedObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		return droppedObject is string || droppedObject is Vector2 || droppedObject is Vector3
-			|| droppedObject is Vector4 || droppedObject is Quaternion || droppedObject is Color;
+		return dropObject is string || dropObject is Vector2 || dropObject is Vector3
+			|| dropObject is Vector4 || dropObject is Quaternion || dropObject is Color;
 	}
 
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		if (!CanDrop(target, droppedObject))
-			return false;
-
-		var str = droppedObject as string;
+		var str = dropObject as string;
 		if (str != null)
 		{
-			var targetParent = target.transform.parent;
-			var inputField = targetParent.GetComponentInChildren<NumericInputField>();
+			var inputField = fieldBlock.GetComponentInChildren<NumericInputField>();
 			var index = Array.IndexOf(m_InputFields, inputField);
 
 			if (SetValue(str, index))
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
-				return true;
 			}
-			return false;
 		}
 
-		if (droppedObject is Vector2)
+		if (dropObject is Vector2)
 		{
-			var vector2 = (Vector2) droppedObject;
+			var vector2 = (Vector2) dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
 				case SerializedPropertyType.Vector2:
@@ -204,12 +198,11 @@ public class InspectorVectorItem : InspectorPropertyItem
 			UpdateInputFields(2, vector2);
 
 			data.serializedObject.ApplyModifiedProperties();
-			return true;
 		}
 
-		if (droppedObject is Vector3)
+		if (dropObject is Vector3)
 		{
-			var vector3 = (Vector3)droppedObject;
+			var vector3 = (Vector3)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
 				case SerializedPropertyType.Vector2:
@@ -231,12 +224,11 @@ public class InspectorVectorItem : InspectorPropertyItem
 			UpdateInputFields(3, vector3);
 
 			data.serializedObject.ApplyModifiedProperties();
-			return true;
 		}
 
-		if (droppedObject is Vector4)
+		if (dropObject is Vector4)
 		{
-			var vector4 = (Vector4)droppedObject;
+			var vector4 = (Vector4)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
 				case SerializedPropertyType.Vector2:
@@ -256,12 +248,11 @@ public class InspectorVectorItem : InspectorPropertyItem
 			UpdateInputFields(4, vector4);
 
 			data.serializedObject.ApplyModifiedProperties();
-			return true;
 		}
 
-		if (droppedObject is Color)
+		if (dropObject is Color)
 		{
-			var color = (Color)droppedObject;
+			var color = (Color)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
 				case SerializedPropertyType.Vector2:
@@ -288,12 +279,11 @@ public class InspectorVectorItem : InspectorPropertyItem
 			UpdateInputFields(4, color);
 
 			data.serializedObject.ApplyModifiedProperties();
-			return true;
 		}
 
-		if (droppedObject is Quaternion)
+		if (dropObject is Quaternion)
 		{
-			var quaternion = (Quaternion)droppedObject;
+			var quaternion = (Quaternion)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
 				case SerializedPropertyType.Vector2:
@@ -313,9 +303,6 @@ public class InspectorVectorItem : InspectorPropertyItem
 			UpdateInputFields(3, quaternion.eulerAngles);
 
 			data.serializedObject.ApplyModifiedProperties();
-			return true;
 		}
-
-		return false;
 	}
 }

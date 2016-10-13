@@ -68,7 +68,7 @@ public class InspectorBoundsItem : InspectorPropertyItem
 		return false;
 	}
 
-	protected override object GetDropObject(Transform fieldBlock)
+	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 	{
 		object dropObject = null;
 		var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
@@ -88,27 +88,22 @@ public class InspectorBoundsItem : InspectorPropertyItem
 		return dropObject;
 	}
 
-	public override bool CanDrop(GameObject target, object droppedObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		return droppedObject is string || droppedObject is Bounds;
+		return dropObject is string || dropObject is Bounds;
 	}
 
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		if (!CanDrop(target, droppedObject))
-			return false;
-
-		var str = droppedObject as string;
+		var str = dropObject as string;
 		if (str != null)
 		{
-			var targetParent = target.transform.parent;
-			var inputField = targetParent.GetComponentInChildren<NumericInputField>();
+			var inputField = fieldBlock.GetComponentInChildren<NumericInputField>();
 			var index = Array.IndexOf(m_ExtentsFields, inputField);
 			if (index > -1 && SetValue(str, index))
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
-				return true;
 			}
 
 			index = Array.IndexOf(m_CenterFields, inputField);
@@ -116,22 +111,16 @@ public class InspectorBoundsItem : InspectorPropertyItem
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
-				return true;
 			}
-
-			return false;
 		}
 
-		if (droppedObject is Bounds)
+		if (dropObject is Bounds)
 		{
-			m_SerializedProperty.boundsValue = (Bounds)droppedObject;
+			m_SerializedProperty.boundsValue = (Bounds)dropObject;
 
 			UpdateInputFields(m_SerializedProperty.boundsValue);
 
 			data.serializedObject.ApplyModifiedProperties();
-			return true;
 		}
-
-		return false;
 	}
 }

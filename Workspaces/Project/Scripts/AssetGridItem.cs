@@ -6,7 +6,7 @@ using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDroppable
+public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 {
 	private const float kPreviewDuration = 0.1f;
 
@@ -125,8 +125,6 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDropp
 		}
 	}
 
-	public GetDropReceiverDelegate getCurrentDropReceiver { private get; set; }
-	public Action<Transform, object> setCurrentDropObject { private get; set; }
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public override void Setup(AssetData listData)
@@ -144,6 +142,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDropp
 
 			m_Handle.hoverStarted += OnHoverStarted;
 			m_Handle.hoverEnded += OnHoverEnded;
+
+			m_Handle.getDropObject += GetDropObject;
 
 			m_Setup = true;
 		}
@@ -250,35 +250,24 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDropp
 		}
 
 		m_DragObject = clone.transform;
-		setCurrentDropObject(eventData.rayOrigin, data.asset);
 	}
 
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
-		var rayOrigin = eventData.rayOrigin;
 
-		GameObject target;
-		var dropReceiver = getCurrentDropReceiver(rayOrigin, out target);
-		setCurrentDropObject(rayOrigin, null);
-
-		if (dropReceiver != null)
-			dropReceiver.ReceiveDrop(target, data.asset);
+		if (gridItem.m_PreviewObject)
+			placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
 		else
 		{
-			if (gridItem.m_PreviewObject)
-				placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
-			else
+			switch (data.type)
 			{
-				switch (data.type)
-				{
-					case "Prefab":
-						Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
-						break;
-					case "Model":
-						Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
-						break;
-				}
+				case "Prefab":
+					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+					break;
+				case "Model":
+					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+					break;
 			}
 		}
 
@@ -324,6 +313,11 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDropp
 			yield return null;
 		}
 		m_PreviewFade = endVal;
+	}
+
+	object GetDropObject(BaseHandle handle)
+	{
+		return data.asset;
 	}
 
 	private void OnDestroy()

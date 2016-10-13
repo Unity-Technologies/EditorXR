@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.UI;
@@ -15,6 +16,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 	GameObject[] m_ScrubIcons;
 
 	public SerializedPropertyType propertyType { get; private set; }
+	public event Action<PropertyData> arraySizeChanged = delegate {};
 
 	public override void Setup(InspectorData data)
 	{
@@ -52,7 +54,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 					m_InputField.text = size.ToString();
 					m_InputField.ForceUpdateLabel();
-					((PropertyData) data).updateParent();
+					arraySizeChanged((PropertyData)data);
 
 					data.serializedObject.ApplyModifiedProperties();
 				}
@@ -84,20 +86,19 @@ public class InspectorNumberItem : InspectorPropertyItem
 		}
 	}
 
-	protected override object GetDropObject(Transform fieldBlock)
+	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 	{
 		return m_InputField.text;
 	}
 
-	public override bool CanDrop(GameObject target, object droppedObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		return droppedObject is string;
+		return dropObject is string;
 	}
 
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		SetValue(droppedObject.ToString());
-		return true;
+		SetValue(dropObject.ToString());
 	}
 
 	protected override void OnDragging(BaseHandle baseHandle, HandleEventData eventData)

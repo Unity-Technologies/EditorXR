@@ -68,7 +68,7 @@ public class InspectorRectItem : InspectorPropertyItem
 		return true;
 	}
 
-	protected override object GetDropObject(Transform fieldBlock)
+	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 	{
 		object dropObject = null;
 		var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
@@ -87,28 +87,23 @@ public class InspectorRectItem : InspectorPropertyItem
 		return dropObject;
 	}
 
-	public override bool CanDrop(GameObject target, object droppedObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		return droppedObject is string || droppedObject is Rect || droppedObject is Vector2
-			|| droppedObject is Vector3 || droppedObject is Vector4;
+		return dropObject is string || dropObject is Rect || dropObject is Vector2
+			|| dropObject is Vector3 || dropObject is Vector4;
 	}
 
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		if (!CanDrop(target, droppedObject))
-			return false;
-
-		var str = droppedObject as string;
+		var str = dropObject as string;
 		if (str != null)
 		{
-			var targetParent = target.transform.parent;
-			var inputField = targetParent.GetComponentInChildren<NumericInputField>();
+			var inputField = fieldBlock.GetComponentInChildren<NumericInputField>();
 			var index = Array.IndexOf(m_SizeFields, inputField);
 			if (index > -1 && SetValue(str, index))
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
-				return true;
 			}
 
 			index = Array.IndexOf(m_CenterFields, inputField);
@@ -116,27 +111,22 @@ public class InspectorRectItem : InspectorPropertyItem
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
-				return true;
 			}
-
-			return false;
 		}
 
-		if (droppedObject is Rect)
+		if (dropObject is Rect)
 		{
-			m_SerializedProperty.rectValue = (Rect)droppedObject;
+			m_SerializedProperty.rectValue = (Rect)dropObject;
 
 			UpdateInputFields(m_SerializedProperty.rectValue);
 
 			data.serializedObject.ApplyModifiedProperties();
-			return true;
 		}
 
-		if (droppedObject is Vector2 || droppedObject is Vector3 || droppedObject is Vector4)
+		if (dropObject is Vector2 || dropObject is Vector3 || dropObject is Vector4)
 		{
-			var vector2 = (Vector2)droppedObject;
-			var targetParent = target.transform.parent;
-			var inputField = targetParent.GetComponentInChildren<NumericInputField>();
+			var vector2 = (Vector2)dropObject;
+			var inputField = fieldBlock.GetComponentInChildren<NumericInputField>();
 			var rect = m_SerializedProperty.rectValue;
 
 			if (m_CenterFields.Contains(inputField))
@@ -149,10 +139,6 @@ public class InspectorRectItem : InspectorPropertyItem
 			UpdateInputFields(rect);
 
 			data.serializedObject.ApplyModifiedProperties();
-			
-			return true;
 		}
-
-		return false;
 	}
 }

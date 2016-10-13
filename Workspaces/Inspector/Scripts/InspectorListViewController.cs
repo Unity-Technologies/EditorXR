@@ -6,7 +6,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class InspectorListViewController : NestedListViewController<InspectorData>, IPreview, IDroppable, IDropReceiver, IHighlight
+public class InspectorListViewController : NestedListViewController<InspectorData>, IPreview, IHighlight
 {
 	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -26,19 +26,16 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	Material m_NoClipBackingCube;
 
 	readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
-	
+
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
 	public PreviewDelegate preview { private get; set; }
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
-	public GetDropReceiverDelegate getCurrentDropReceiver { private get; set; }
-	public Func<Transform, object> getCurrentDropObject { private get; set; }
-	public Action<Transform, IDropReceiver, GameObject> setCurrentDropReceiver { private get; set; }
-	public Action<Transform, object> setCurrentDropObject { private get; set; }
-
 	public Func<bool> getIsLocked { private get; set; }
 	public Action<bool> setIsLocked { private get; set; }
+
+	public event Action<InspectorData[], PropertyData> arraySizeChanged = delegate {};
 
 	protected override void Setup()
 	{
@@ -123,10 +120,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		{
 			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCube);
 
-			item.getCurrentDropReceiver = getCurrentDropReceiver;
-			item.getCurrentDropObject = getCurrentDropObject;
-			item.setCurrentDropReceiver = setCurrentDropReceiver;
-			item.setCurrentDropObject = setCurrentDropObject;
 			item.setHighlight = setHighlight;
 			item.preview = preview;
 			item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
@@ -140,7 +133,17 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			headerItem.lockToggle.isOn = getIsLocked();
 			headerItem.setLocked = setIsLocked;
 		}
+
+		var numberItem = item as InspectorNumberItem;
+		if (numberItem)
+			numberItem.arraySizeChanged += OnArraySizeChanged;
+
 		return item;
+	}
+
+	void OnArraySizeChanged(PropertyData element)
+	{
+		arraySizeChanged(m_Data, element);
 	}
 
 	void OnDestroy()
@@ -149,17 +152,5 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		U.Object.Destroy(m_BackingCubeMaterial);
 		U.Object.Destroy(m_TextMaterial);
 		U.Object.Destroy(m_UIMaterial);
-	}
-
-	public bool CanDrop(GameObject target, object droppedObject)
-	{
-		// Cannot drop on the list itself, but need setCurrentDropReceiver to pass along to fields
-		return false;
-	}
-
-	public bool ReceiveDrop(GameObject target, object droppedObject)
-	{
-		// Cannot drop on the list itself, but need setCurrentDropReceiver to pass along to fields
-		return false;
 	}
 }

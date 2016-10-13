@@ -55,19 +55,18 @@ public class InspectorStringItem : InspectorPropertyItem
 		}
 	}
 
-	protected override object GetDropObject(Transform fieldBlock)
+	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 	{
 		return m_InputField.text;
 	}
 
-	public override bool CanDrop(GameObject target, object droppedObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		return droppedObject is string;
+		return dropObject is string;
 	}
 
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		SetValue(droppedObject.ToString());
-		return true;
+		SetValue(dropObject.ToString());
 	}
 }

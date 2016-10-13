@@ -8,7 +8,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IDroppable
+public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 	const float kPaneMargin = 0.01f;
@@ -39,9 +39,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IDroppable
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 	public PreviewDelegate preview { private get; set; }
 
-	public GetDropReceiverDelegate getCurrentDropReceiver { private get; set; }
-	public Action<Transform, object> setCurrentDropObject { private get; set; }
-
 	public override void Setup()
 	{
 		base.Setup();
@@ -65,8 +62,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IDroppable
 		assetListView.placeObject = placeObject;
 		assetListView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		assetListView.preview = preview;
-		assetListView.getCurrentDropReceiver = getCurrentDropReceiver;
-		assetListView.setCurrentDropObject = setCurrentDropObject;
 
 #if UNITY_EDITOR
 		EditorApplication.projectWindowChanged += SetupFolderList;

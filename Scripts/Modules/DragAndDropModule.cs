@@ -4,50 +4,85 @@ using UnityEngine.VR.Modules;
 
 public class DragAndDropModule : MonoBehaviour
 {
-	class DropData
-	{
-		public IDropReceiver receiver; // The IDropReceiver that we will call .Drop on
-		public GameObject target; // The actual object that was hovered
-	}
-
 	readonly Dictionary<Transform, object> m_DropObjects = new Dictionary<Transform, object>();
-	readonly Dictionary<Transform, DropData> m_DropReceivers = new Dictionary<Transform, DropData>();
+	readonly Dictionary<Transform, IDropReceiver> m_DropReceivers = new Dictionary<Transform, IDropReceiver>();
 
-	public void SetCurrentDropObject(Transform rayOrigin, object obj)
+	readonly Dictionary<Transform, GameObject> m_HoverObjects = new Dictionary<Transform, GameObject>();
+
+	void SetCurrentDropObject(Transform rayOrigin, object obj)
 	{
 		m_DropObjects[rayOrigin] = obj;
 	}
 
-	public object GetCurrentDropObject(Transform rayOrigin)
+	object GetCurrentDropObject(Transform rayOrigin)
 	{
 		object obj;
 		return m_DropObjects.TryGetValue(rayOrigin, out obj) ? obj : null;
 	}
 
-	public void SetCurrentDropReceiver(Transform rayOrigin, IDropReceiver dropReceiver, GameObject target)
+	void SetCurrentDropReceiver(Transform rayOrigin, IDropReceiver dropReceiver)
 	{
 		if (dropReceiver == null)
-		{
-			DropData data;
-			if (m_DropReceivers.TryGetValue(rayOrigin, out data) && data.target == target)
-				m_DropReceivers.Remove(rayOrigin);
-		}
+			m_DropReceivers.Remove(rayOrigin);
 		else
+			m_DropReceivers[rayOrigin] = dropReceiver;
+	}
+
+	public IDropReceiver GetCurrentDropReceiver(Transform rayOrigin)
+	{
+		IDropReceiver dropReceiver;
+		if (m_DropReceivers.TryGetValue(rayOrigin, out dropReceiver))
+			return dropReceiver;
+
+		return null;
+	}
+
+	public void OnRayEntered(GameObject gameObject, RayEventData eventData)
+	{
+		var dropReceiver = gameObject.GetComponent<IDropReceiver>();
+		if (dropReceiver != null)
 		{
-			m_DropReceivers[rayOrigin] = new DropData { receiver = dropReceiver, target = target };
+			if (dropReceiver.CanDrop(GetCurrentDropObject(eventData.rayOrigin)))
+			{
+				dropReceiver.OnDropHoverStarted();
+				m_HoverObjects[eventData.rayOrigin] = gameObject;
+				SetCurrentDropReceiver(eventData.rayOrigin, dropReceiver);
+			}
 		}
 	}
 
-	public IDropReceiver GetCurrentDropReceiver(Transform rayOrigin, out GameObject target)
+	public void OnRayExited(GameObject gameObject, RayEventData eventData)
 	{
-		DropData data;
-		if (m_DropReceivers.TryGetValue(rayOrigin, out data))
+		var dropReceiver = gameObject.GetComponent<IDropReceiver>();
+		if (dropReceiver != null)
 		{
-			target = data.target;
-			return data.receiver;
+			if (m_HoverObjects.Remove(eventData.rayOrigin))
+			{
+				dropReceiver.OnDropHoverEnded();
+				SetCurrentDropReceiver(eventData.rayOrigin, null);
+			}
 		}
+	}
 
-		target = null;
-		return null;
+	public void OnDragStarted(GameObject gameObject, RayEventData eventData)
+	{
+		var droppable = gameObject.GetComponent<IDroppable>();
+		if (droppable != null)
+			SetCurrentDropObject(eventData.rayOrigin, droppable.GetDropObject());
+	}
+
+	public void OnDragEnded(GameObject gameObject, RayEventData eventData)
+	{
+		var droppable = gameObject.GetComponent<IDroppable>();
+		if (droppable != null)
+		{
+			var rayOrigin = eventData.rayOrigin;
+			SetCurrentDropObject(rayOrigin, null);
+
+			var dropReceiver = GetCurrentDropReceiver(rayOrigin);
+			var dropObject = droppable.GetDropObject();
+			if (dropReceiver != null && dropReceiver.CanDrop(dropObject))
+				dropReceiver.ReceiveDrop(droppable.GetDropObject());
+		}
 	}
 }

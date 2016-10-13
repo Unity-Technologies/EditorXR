@@ -114,31 +114,28 @@ public class InspectorDropDownItem : InspectorPropertyItem
 		return values;
 	}
 
-	protected override object GetDropObject(Transform fieldBlock)
+	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 	{
 		return m_DropDown.multiSelect ? (object) m_DropDown.values : m_DropDown.value;
 	}
 
-	public override bool CanDrop(GameObject target, object droppedObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		return m_DropDown.multiSelect && droppedObject is int[]
-			|| !m_DropDown.multiSelect && droppedObject is int;
+		return m_DropDown.multiSelect && dropObject is int[]
+			|| !m_DropDown.multiSelect && dropObject is int;
 	}
 
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		if (m_DropDown.multiSelect && droppedObject is int[])
+		if (m_DropDown.multiSelect && dropObject is int[])
 		{
-			m_DropDown.values = (int[]) droppedObject;
-			return true;
+			m_DropDown.values = (int[]) dropObject;
 		}
 
-		if (!m_DropDown.multiSelect && droppedObject is int)
+		if (!m_DropDown.multiSelect && dropObject is int)
 		{
-			m_DropDown.value = (int) droppedObject;
-			return true;
+			m_DropDown.value = (int) dropObject;
 		}
-		return false;
 	}
 
 	static int[] LayerMaskToIndices(int layerMask)

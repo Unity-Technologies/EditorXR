@@ -128,13 +128,15 @@ public class EditorVR : MonoBehaviour
 		CreateDefaultActionMapInputs();
 		CreateAllProxies();
 		CreateDeviceDataForInputDevices();
+
+		m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
+
 		CreateEventSystem();
 
 		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
-		m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
@@ -546,11 +548,19 @@ public class EditorVR : MonoBehaviour
 	{
 		// Create event system, input module, and event camera
 		U.Object.AddComponent<EventSystem>(gameObject);
+
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_InputModule.getPointerLength = GetPointerLength;
+
 		m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
 		m_InputModule.eventCamera = m_EventCamera;
+
+		m_InputModule.rayEntered += m_DragAndDropModule.OnRayEntered;
+		m_InputModule.rayExited += m_DragAndDropModule.OnRayExited;
+		m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
+		m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
+
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			// Create ui action map input for device.
@@ -894,20 +904,6 @@ public class EditorVR : MonoBehaviour
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
 			m_SelectionChanged += selectionChanged.OnSelectionChanged;
-
-		var droppable = obj as IDroppable;
-		if (droppable != null)
-		{
-			droppable.getCurrentDropReceiver = m_DragAndDropModule.GetCurrentDropReceiver;
-			droppable.setCurrentDropObject = m_DragAndDropModule.SetCurrentDropObject;
-		}
-
-		var dropReceiver = obj as IDropReceiver;
-		if (dropReceiver != null)
-		{
-			dropReceiver.setCurrentDropReceiver = m_DragAndDropModule.SetCurrentDropReceiver;
-			dropReceiver.getCurrentDropObject = m_DragAndDropModule.GetCurrentDropObject;
-		}
 
 		if (mainMenu != null)
 		{

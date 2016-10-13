@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Modules;
 
-public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPreview, IDroppable
+public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPreview
 {
 	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
@@ -30,9 +30,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 	public PreviewDelegate preview { private get; set; }
-
-	public GetDropReceiverDelegate getCurrentDropReceiver { get; set; }
-	public Action<Transform, object> setCurrentDropObject { get; set; }
 
 	public Func<string, bool> testFilter;
 
@@ -209,8 +206,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		item.placeObject = placeObject;
 		item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		item.preview = preview;
-		item.getCurrentDropReceiver = getCurrentDropReceiver;
-		item.setCurrentDropObject = setCurrentDropObject;
 
 		StartCoroutine(Transition(data, false));
 

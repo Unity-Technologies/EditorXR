@@ -29,27 +29,4 @@ public class InspectorBoolItem : InspectorPropertyItem
 			data.serializedObject.ApplyModifiedProperties();
 		}
 	}
-
-	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		// Bools cannot be dragged and droppped
-	}
-
-	protected override object GetDropObject(Transform fieldBlock)
-	{
-		// Bools cannot be dragged and droppped
-		return null;
-	}
-
-	public override bool CanDrop(GameObject target, object droppedObject)
-	{
-		// Bools cannot be dragged and droppped
-		return false;
-	}
-
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
-	{
-		// Bools cannot be dragged and droppped
-		return false;
-	}
 }

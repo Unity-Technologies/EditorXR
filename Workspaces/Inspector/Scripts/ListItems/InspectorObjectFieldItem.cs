@@ -56,59 +56,23 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		return true;
 	}
 
-	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		var fieldBlock = baseHandle.transform.parent;
-		object droppedObject = null;
-		GameObject target;
-		IDropReceiver dropReceiver = getCurrentDropReceiver(eventData.rayOrigin, out target);
-		if (dropReceiver != null && fieldBlock)
-		{
-			var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
-			if (inputfields.Length > 1)
-			{
-				switch (m_SerializedProperty.propertyType)
-				{
-					case SerializedPropertyType.Vector2:
-						droppedObject = m_SerializedProperty.vector2Value;
-						break;
-					case SerializedPropertyType.Quaternion:
-						droppedObject = m_SerializedProperty.quaternionValue;
-						break;
-					case SerializedPropertyType.Vector3:
-						droppedObject = m_SerializedProperty.vector3Value;
-						break;
-					case SerializedPropertyType.Vector4:
-						droppedObject = m_SerializedProperty.vector4Value;
-						break;
-				}
-			}
-			else if (inputfields.Length > 0)
-				droppedObject = inputfields[0].text;
-
-			dropReceiver.ReceiveDrop(target, droppedObject);
-		}
-		base.OnDragEnded(baseHandle, eventData);
-	}
-
 	public void ClearButton()
 	{
 		SetObject(null);
 	}
 
-	protected override object GetDropObject(Transform fieldBlock)
+	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 	{
 		return m_SerializedProperty.objectReferenceValue;
 	}
 
-	public override bool CanDrop(GameObject target, object droppedObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		return droppedObject is Object;
+		return dropObject is Object;
 	}
 
-	public override bool ReceiveDrop(GameObject target, object droppedObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		var obj = droppedObject as Object;
-		return obj && SetObject(obj);
+		SetObject(dropObject as Object);
 	}
 }

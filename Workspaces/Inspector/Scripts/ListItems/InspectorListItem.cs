@@ -10,7 +10,7 @@ using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using InputField = UnityEngine.VR.UI.InputField;
 
-public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHighlight, IDroppable, IDropReceiver
+public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHighlight
 {
 	const float kIndent = 0.02f;
 
@@ -45,12 +45,6 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
-	public GetDropReceiverDelegate getCurrentDropReceiver { protected get; set; }
-	public Func<Transform, object> getCurrentDropObject { protected get; set; }
-
-	public Action<Transform, IDropReceiver, GameObject> setCurrentDropReceiver { private get; set; }
-	public Action<Transform, object> setCurrentDropObject { private get; set; }
-
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -84,8 +78,12 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 			handle.dragging += OnDragging;
 			handle.dragEnded += OnDragEnded;
 
-			handle.hoverStarted += OnHoverStarted;
-			handle.hoverEnded += OnHoverEnded;
+			handle.dropHoverStarted += OnDropHoverStarted;
+			handle.dropHoverEnded += OnDropHoverEnded;
+
+			handle.canDrop = CanDrop;
+			handle.receiveDrop = ReceiveDrop;
+			handle.getDropObject = GetDropObject;
 		}
 
 		m_InputFields = GetComponentsInChildren<InputField>(true);
@@ -142,32 +140,29 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		}
 	}
 
-	protected virtual void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
+	protected virtual void OnDropHoverStarted(BaseHandle handle)
 	{
-		var rayOrigin = eventData.rayOrigin;
-		var dropObject = getCurrentDropObject(rayOrigin);
-
-		// TODO: red hover state when CanDrop fails
-		if (dropObject == null || CanDrop(handle.gameObject, dropObject))
-		{
-			setHighlight(handle.gameObject, true);
-			setCurrentDropReceiver(rayOrigin, this, handle.gameObject);
-		}
+		setHighlight(handle.gameObject, true);
 	}
 
-	protected virtual void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
+	protected virtual void OnDropHoverEnded(BaseHandle handle)
 	{
-		var rayOrigin = eventData.rayOrigin;
-		if (rayOrigin == null) // BaseHandle.OnDisable sends a null rayOrigin
-			return;
+		setHighlight(handle.gameObject, false);
+	}
 
-		var dropObject = getCurrentDropObject(rayOrigin);
+	object GetDropObject(BaseHandle handle)
+	{
+		return GetDropObjectForFieldBlock(handle.transform.parent);
+	}
 
-		if (dropObject == null || CanDrop(handle.gameObject, dropObject))
-		{
-			setHighlight(handle.gameObject, false);
-			setCurrentDropReceiver(eventData.rayOrigin, null, handle.gameObject);
-		}
+	bool CanDrop(BaseHandle handle, object dropObject)
+	{
+		return CanDropForFieldBlock(handle.transform.parent, dropObject);
+	}
+
+	void ReceiveDrop(BaseHandle handle, object dropObject)
+	{
+		ReceiveDropForFieldBlock(handle.transform.parent, dropObject);
 	}
 
 	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
@@ -220,7 +215,6 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 				}
 
 				m_DragObject = clone.transform;
-				setCurrentDropObject(eventData.rayOrigin, GetDropObject(fieldBlock));
 				m_ClickedField = null; // Clear clicked field so we don't drag the value
 
 				var graphics = clone.GetComponentsInChildren<Graphic>(true);
@@ -267,17 +261,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		if (fieldBlock)
 		{
 			if (m_DragObject)
-			{
-				var rayOrigin = eventData.rayOrigin;
-				GameObject target;
-				var dropReceiver = getCurrentDropReceiver(rayOrigin, out target);
-				var dropObject = getCurrentDropObject(rayOrigin);
-				if (dropReceiver != null)
-					dropReceiver.ReceiveDrop(target, dropObject);
-				setCurrentDropObject(rayOrigin, null);
-
 				U.Object.Destroy(m_DragObject.gameObject);
-			}
 		}
 
 		base.OnDragEnded(baseHandle, eventData);
@@ -310,9 +294,17 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		m_ClickCount = 0;
 	}
 
-	protected abstract object GetDropObject(Transform fieldBlock);
+	protected virtual object GetDropObjectForFieldBlock(Transform fieldBlock)
+	{
+		return null;
+	}
 
-	public abstract bool CanDrop(GameObject target, object droppedObject);
+	protected virtual bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
+	{
+		return false;
+	}
 
-	public abstract bool ReceiveDrop(GameObject target, object droppedObject);
+	protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+	{
+	}
 }
