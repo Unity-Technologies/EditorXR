@@ -2,7 +2,8 @@
 using UnityEngine;
 using UnityEngine.VR.Modules;
 
-public class DragAndDropModule : MonoBehaviour {
+public class DragAndDropModule : MonoBehaviour
+{
 	class DropData
 	{
 		public IDropReceiver receiver; // The IDropReceiver that we will call .Drop on

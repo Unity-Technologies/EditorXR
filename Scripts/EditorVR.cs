@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -884,10 +884,10 @@ public class EditorVR : MonoBehaviour
 		if (placeObjects != null)
 			placeObjects.placeObject = PlaceObject;
 
-		var positionPreview = obj as IPositionPreview;
+		var positionPreview = obj as IPreview;
 		if (positionPreview != null)
 		{
-			positionPreview.positionPreview = m_ObjectPlacementModule.PositionPreview;
+			positionPreview.preview = m_ObjectPlacementModule.PositionPreview;
 			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 		}
 

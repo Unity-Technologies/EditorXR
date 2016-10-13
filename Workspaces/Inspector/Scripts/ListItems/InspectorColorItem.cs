@@ -24,7 +24,7 @@ public class InspectorColorItem : InspectorPropertyItem
 	{
 		base.FirstTimeSetup();
 
-		//TODO: expose onValueChanged in Inspector
+		//TODO: expose valueChanged in Inspector
 		for (var i = 0; i < m_InputFields.Length; i++)
 		{
 			var index = i;
@@ -35,7 +35,8 @@ public class InspectorColorItem : InspectorPropertyItem
 	public bool SetValue(string input, int index)
 	{
 		float value;
-		if (!float.TryParse(input, out value)) return false;
+		if (!float.TryParse(input, out value))
+			return false;
 
 		var color = m_SerializedProperty.colorValue;
 		if (!Mathf.Approximately(color[index], value))
@@ -66,14 +67,15 @@ public class InspectorColorItem : InspectorPropertyItem
 		return dropObject;
 	}
 
-	public override bool TestDrop(GameObject target, object droppedObject)
+	public override bool CanDrop(GameObject target, object droppedObject)
 	{
-		return droppedObject is string || droppedObject is Vector2 || droppedObject is Vector3 || droppedObject is Vector4 || droppedObject is Quaternion || droppedObject is Color;
+		return droppedObject is string || droppedObject is Vector2 || droppedObject is Vector3
+			|| droppedObject is Vector4 || droppedObject is Quaternion || droppedObject is Color;
 	}
 
 	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
-		if (!TestDrop(target, droppedObject))
+		if (!CanDrop(target, droppedObject))
 			return false;
 
 		var str = droppedObject as string;

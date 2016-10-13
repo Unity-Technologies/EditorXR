@@ -37,7 +37,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000010258896432}
   m_Layer: 5
-  m_Name: OptionPanel
+  m_Name: OptionsPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -107,7 +107,7 @@ GameObject:
   - 114: {fileID: 114000011737525226}
   - 114: {fileID: 114000010593461330}
   m_Layer: 5
-  m_Name: OptionList
+  m_Name: OptionsList
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -432,7 +432,7 @@ GameObject:
   - 114: {fileID: 114000013965017918}
   - 114: {fileID: 114000013917567020}
   m_Layer: 5
-  m_Name: OptionList
+  m_Name: OptionsList
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -549,7 +549,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000012819706564}
   m_Layer: 5
-  m_Name: OptionPanel
+  m_Name: OptionsPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -819,9 +819,11 @@ MonoBehaviour:
   m_Options: []
   m_MultiSelect: 0
   m_Label: {fileID: 114000014165220566}
-  m_OptionPanel: {fileID: 224000010258896432}
-  m_OptionList: {fileID: 114000013917567020}
+  m_OptionsPanel: {fileID: 224000010258896432}
+  m_OptionsList: {fileID: 114000013917567020}
   m_TemplatePrefab: {fileID: 1000012851962796, guid: 96e9e26ba4c02c4459218e81d404980f,
+    type: 2}
+  m_MultiSelectTemplatePrefab: {fileID: 1000011005728614, guid: 44aae4eb5a02aae479e9a5b75c0591dc,
     type: 2}
   m_Value: 0
   m_Values: 
@@ -1313,9 +1315,11 @@ MonoBehaviour:
   m_Options: []
   m_MultiSelect: 0
   m_Label: {fileID: 114000011047914888}
-  m_OptionPanel: {fileID: 224000012819706564}
-  m_OptionList: {fileID: 114000010593461330}
+  m_OptionsPanel: {fileID: 224000012819706564}
+  m_OptionsList: {fileID: 114000010593461330}
   m_TemplatePrefab: {fileID: 1000012851962796, guid: 96e9e26ba4c02c4459218e81d404980f,
+    type: 2}
+  m_MultiSelectTemplatePrefab: {fileID: 1000011005728614, guid: 44aae4eb5a02aae479e9a5b75c0591dc,
     type: 2}
   m_Value: 0
   m_Values: 

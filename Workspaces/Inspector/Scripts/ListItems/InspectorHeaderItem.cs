@@ -63,14 +63,14 @@ public class InspectorHeaderItem : InspectorListItem
 			var tagIndex = Array.IndexOf(tags, m_TargetGameObject.tag);
 			if (tagIndex > -1)
 				m_TagDropDown.value = tagIndex;
-			m_TagDropDown.onValueChanged += SetTag;
+			m_TagDropDown.valueChanged += SetTag;
 
 			var layers = UnityEditorInternal.InternalEditorUtility.layers;
 			m_LayerDropDown.options = layers;
 			var layerIndex = Array.IndexOf(layers, LayerMask.LayerToName(m_TargetGameObject.layer));
 			if (layerIndex > -1)
 				m_LayerDropDown.value = layerIndex;
-			m_LayerDropDown.onValueChanged += SetLayer;
+			m_LayerDropDown.valueChanged += SetLayer;
 		}
 	}
 
@@ -142,7 +142,7 @@ public class InspectorHeaderItem : InspectorListItem
 		return null;
 	}
 
-	public override bool TestDrop(GameObject target, object droppedObject)
+	public override bool CanDrop(GameObject target, object droppedObject)
 	{
 		var inputFields = target.transform.parent.GetComponentsInChildren<InputField>();
 		return droppedObject is string && inputFields.Contains(m_NameField);
@@ -150,7 +150,7 @@ public class InspectorHeaderItem : InspectorListItem
 
 	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
-		if (!TestDrop(target, droppedObject))
+		if (!CanDrop(target, droppedObject))
 			return false;
 		m_NameField.text = (string)droppedObject;
 		m_NameField.ForceUpdateLabel();

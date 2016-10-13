@@ -257,9 +257,11 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDropp
 	{
 		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 		var rayOrigin = eventData.rayOrigin;
+
 		GameObject target;
 		var dropReceiver = getCurrentDropReceiver(rayOrigin, out target);
 		setCurrentDropObject(rayOrigin, null);
+
 		if (dropReceiver != null)
 			dropReceiver.ReceiveDrop(target, data.asset);
 		else
@@ -279,6 +281,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IDropp
 				}
 			}
 		}
+
 		gridItem.m_Cube.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
 		U.Object.Destroy(m_DragObject.gameObject);
 

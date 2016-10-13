@@ -3,8 +3,9 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Modules;
 
-public class DraggableListItem<DataType> : ListViewItem<DataType>, IPositionPreview where DataType : ListViewItemData
+public class DraggableListItem<DataType> : ListViewItem<DataType>, IPreview where DataType : ListViewItemData
 {
 	const float kMagnetizeDuration = 0.5f;
 
@@ -14,7 +15,7 @@ public class DraggableListItem<DataType> : ListViewItem<DataType>, IPositionPrev
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { set; protected get; }
 
-	public PositionPreviewDelegate positionPreview { set; protected get; }
+	public PreviewDelegate preview { set; protected get; }
 
 	protected virtual void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
@@ -40,7 +41,7 @@ public class DraggableListItem<DataType> : ListViewItem<DataType>, IPositionPrev
 	protected virtual void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		if(m_DragObject)
-			positionPreview(m_DragObject, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_DragLerp);
+			preview(m_DragObject, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_DragLerp);
 	}
 
 	protected virtual void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)

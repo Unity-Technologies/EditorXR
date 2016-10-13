@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using UnityEngine.EventSystems;
 
 namespace UnityEngine.VR.Modules
@@ -22,16 +22,5 @@ namespace UnityEngine.VR.Modules
 
 		public RayEventData(EventSystem eventSystem) : base(eventSystem)
 		{}
-
-		public override string ToString()
-		{
-			var sb = new StringBuilder();
-			sb.AppendLine(base.ToString());
-			sb.AppendLine("<b>Ray origin position<b>" + rayOrigin.position);
-			sb.AppendLine("<b>Ray origin rotation<b>" + rayOrigin.rotation);
-			sb.AppendLine("<b>node<b>" + node);
-			sb.AppendLine("<b>pointerLength<b>" + pointerLength);
-			return sb.ToString();
-		}
 	}
 }

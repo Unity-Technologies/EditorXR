@@ -6,7 +6,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class InspectorListViewController : NestedListViewController<InspectorData>, IPositionPreview, IDroppable, IDropReceiver, IHighlight
+public class InspectorListViewController : NestedListViewController<InspectorData>, IPreview, IDroppable, IDropReceiver, IHighlight
 {
 	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -29,7 +29,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
-	public PositionPreviewDelegate positionPreview { private get; set; }
+	public PreviewDelegate preview { private get; set; }
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
 	public GetDropReceiverDelegate getCurrentDropReceiver { private get; set; }
@@ -128,7 +128,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			item.setCurrentDropReceiver = setCurrentDropReceiver;
 			item.setCurrentDropObject = setCurrentDropObject;
 			item.setHighlight = setHighlight;
-			item.positionPreview = positionPreview;
+			item.preview = preview;
 			item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 
 			item.setup = true;
@@ -151,13 +151,15 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		U.Object.Destroy(m_UIMaterial);
 	}
 
-	public bool TestDrop(GameObject target, object droppedObject)
+	public bool CanDrop(GameObject target, object droppedObject)
 	{
+		// Cannot drop on the list itself, but need setCurrentDropReceiver to pass along to fields
 		return false;
 	}
 
 	public bool ReceiveDrop(GameObject target, object droppedObject)
 	{
+		// Cannot drop on the list itself, but need setCurrentDropReceiver to pass along to fields
 		return false;
 	}
 }

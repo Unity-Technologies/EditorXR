@@ -33,7 +33,7 @@ public class InspectorRectItem : InspectorPropertyItem
 	{
 		base.FirstTimeSetup();
 
-		//TODO: Expose onValueChanged in Inspector
+		//TODO: Expose valueChanged in Inspector
 		for (var i = 0; i < m_CenterFields.Length; i++)
 		{
 			var index = i;
@@ -45,7 +45,8 @@ public class InspectorRectItem : InspectorPropertyItem
 	bool SetValue(string input, int index, bool center = false)
 	{
 		float value;
-		if (!float.TryParse(input, out value)) return false;
+		if (!float.TryParse(input, out value))
+			return false;
 
 		var rect = m_SerializedProperty.rectValue;
 		var vector = center ? rect.center : rect.size;
@@ -86,14 +87,15 @@ public class InspectorRectItem : InspectorPropertyItem
 		return dropObject;
 	}
 
-	public override bool TestDrop(GameObject target, object droppedObject)
+	public override bool CanDrop(GameObject target, object droppedObject)
 	{
-		return droppedObject is string || droppedObject is Rect || droppedObject is Vector2 || droppedObject is Vector3 || droppedObject is Vector4;
+		return droppedObject is string || droppedObject is Rect || droppedObject is Vector2
+			|| droppedObject is Vector3 || droppedObject is Vector4;
 	}
 
 	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
-		if (!TestDrop(target, droppedObject))
+		if (!CanDrop(target, droppedObject))
 			return false;
 
 		var str = droppedObject as string;

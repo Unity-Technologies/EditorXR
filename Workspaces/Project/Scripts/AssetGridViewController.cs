@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Modules;
 
-public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPositionPreview, IDroppable
+public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPreview, IDroppable
 {
 	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
@@ -29,7 +29,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
-	public PositionPreviewDelegate positionPreview { private get; set; }
+	public PreviewDelegate preview { private get; set; }
 
 	public GetDropReceiverDelegate getCurrentDropReceiver { get; set; }
 	public Action<Transform, object> setCurrentDropObject { get; set; }
@@ -208,7 +208,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		item.transform.localPosition = m_StartPosition;
 		item.placeObject = placeObject;
 		item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
-		item.positionPreview = positionPreview;
+		item.preview = preview;
 		item.getCurrentDropReceiver = getCurrentDropReceiver;
 		item.setCurrentDropObject = setCurrentDropObject;
 

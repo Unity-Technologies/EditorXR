@@ -37,13 +37,15 @@ public class InspectorArrayHeaderItem : InspectorPropertyItem
 		return null;
 	}
 
-	public override bool TestDrop(GameObject target, object droppedObject)
+	public override bool CanDrop(GameObject target, object droppedObject)
 	{
+		// TODO: support multiple object dragging to recieve array ranges
 		return false;
 	}
 
 	public override bool ReceiveDrop(GameObject target, object droppedObject)
 	{
+		// TODO: support multiple object dragging to recieve array ranges
 		return false;
 	}
 }

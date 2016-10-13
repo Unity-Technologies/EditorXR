@@ -11,7 +11,7 @@ public class InspectorUnimplementedItem : InspectorPropertyItem
 	{
 		base.Setup(data);
 
-		m_TypeLabel.text = U.Object.NiceSerializedPropertyType(m_SerializedProperty.type);
+		m_TypeLabel.text = U.Object.NicifySerializedPropertyType(m_SerializedProperty.type);
 	}
 
 	protected override object GetDropObject(Transform fieldBlock)
@@ -20,7 +20,7 @@ public class InspectorUnimplementedItem : InspectorPropertyItem
 		return null;
 	}
 
-	public override bool TestDrop(GameObject target, object droppedObject)
+	public override bool CanDrop(GameObject target, object droppedObject)
 	{
 		return false;
 	}

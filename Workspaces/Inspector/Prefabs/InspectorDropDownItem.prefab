@@ -137,12 +137,12 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000013570480658}
   m_Layer: 5
-  m_Name: OptionPanel
+  m_Name: OptionsPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1000012284357972
 GameObject:
   m_ObjectHideFlags: 0
@@ -189,7 +189,7 @@ GameObject:
   - 114: {fileID: 114000012971767526}
   - 114: {fileID: 114000012345588220}
   m_Layer: 5
-  m_Name: OptionList
+  m_Name: OptionsList
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -480,11 +480,11 @@ MonoBehaviour:
   m_Options: []
   m_MultiSelect: 0
   m_Label: {fileID: 114000012258556284}
-  m_OptionPanel: {fileID: 224000013570480658}
-  m_OptionList: {fileID: 114000012345588220}
+  m_OptionsPanel: {fileID: 224000013570480658}
+  m_OptionsList: {fileID: 114000012345588220}
   m_TemplatePrefab: {fileID: 1000012851962796, guid: 96e9e26ba4c02c4459218e81d404980f,
     type: 2}
-  m_TemplatePrefabMulti: {fileID: 1000011005728614, guid: 44aae4eb5a02aae479e9a5b75c0591dc,
+  m_MultiSelectTemplatePrefab: {fileID: 1000011005728614, guid: 44aae4eb5a02aae479e9a5b75c0591dc,
     type: 2}
   m_Value: 0
   m_Values: 

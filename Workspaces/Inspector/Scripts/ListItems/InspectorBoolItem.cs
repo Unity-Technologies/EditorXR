@@ -41,7 +41,7 @@ public class InspectorBoolItem : InspectorPropertyItem
 		return null;
 	}
 
-	public override bool TestDrop(GameObject target, object droppedObject)
+	public override bool CanDrop(GameObject target, object droppedObject)
 	{
 		// Bools cannot be dragged and droppped
 		return false;

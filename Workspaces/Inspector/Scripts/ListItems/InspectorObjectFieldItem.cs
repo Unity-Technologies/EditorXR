@@ -20,7 +20,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 	{
 		base.Setup(data);
 
-		m_ObjectTypeName = U.Object.NiceSerializedPropertyType(m_SerializedProperty.type);
+		m_ObjectTypeName = U.Object.NicifySerializedPropertyType(m_SerializedProperty.type);
 		m_ObjectType = U.Object.TypeNameToType(m_ObjectTypeName);
 
 		SetObject(m_SerializedProperty.objectReferenceValue);
@@ -101,7 +101,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		return m_SerializedProperty.objectReferenceValue;
 	}
 
-	public override bool TestDrop(GameObject target, object droppedObject)
+	public override bool CanDrop(GameObject target, object droppedObject)
 	{
 		return droppedObject is Object;
 	}

@@ -7,7 +7,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDropReceiver, ISelectionChanged
+public class InspectorWorkspace : Workspace, IPreview, IDroppable, IDropReceiver, ISelectionChanged
 {
 	const float kScrollMargin = 0.03f;
 	public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
@@ -25,7 +25,7 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
 
-	public PositionPreviewDelegate positionPreview { private get; set; }
+	public PreviewDelegate preview { private get; set; }
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
 	public GetDropReceiverDelegate getCurrentDropReceiver { private get; set; }
@@ -46,7 +46,7 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 		listView.getCurrentDropObject = getCurrentDropObject;
 		listView.setCurrentDropReceiver = setCurrentDropReceiver;
 		listView.setCurrentDropObject = setCurrentDropObject;
-		listView.positionPreview = positionPreview;
+		listView.preview = preview;
 		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		listView.setHighlight = setHighlight;
 		listView.getIsLocked = GetIsLocked;
@@ -113,14 +113,14 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 			m_SelectedObject = null;
 			return;
 		}
-		var inspectorData = new List<InspectorData>();
 
+		var inspectorData = new List<InspectorData>();
 		var objectChildren = new List<InspectorData>();
 
 		if (Selection.activeGameObject)
 		{
 			m_SelectedObject = Selection.activeGameObject;
-			foreach (var component in Selection.activeGameObject.GetComponents<Component>())
+			foreach (var component in m_SelectedObject.GetComponents<Component>())
 			{
 				var obj = new SerializedObject(component);
 
@@ -246,13 +246,15 @@ public class InspectorWorkspace : Workspace, IPositionPreview, IDroppable, IDrop
 		inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
 	}
 
-	public bool TestDrop(GameObject target, object droppedObject)
+	public bool CanDrop(GameObject target, object droppedObject)
 	{
+		// Cannot drop on the workspace itself, but need setCurrentDropReceiver to pass along to fields
 		return false;
 	}
 
 	public bool ReceiveDrop(GameObject target, object droppedObject)
 	{
+		// Cannot drop on the workspace itself, but need setCurrentDropReceiver to pass along to fields
 		return false;
 	}
 

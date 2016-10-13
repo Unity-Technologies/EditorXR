@@ -147,8 +147,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		var rayOrigin = eventData.rayOrigin;
 		var dropObject = getCurrentDropObject(rayOrigin);
 
-		// TODO: red hover state when TestDrop fails
-		if (dropObject == null || TestDrop(handle.gameObject, dropObject))
+		// TODO: red hover state when CanDrop fails
+		if (dropObject == null || CanDrop(handle.gameObject, dropObject))
 		{
 			setHighlight(handle.gameObject, true);
 			setCurrentDropReceiver(rayOrigin, this, handle.gameObject);
@@ -163,7 +163,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 		var dropObject = getCurrentDropObject(rayOrigin);
 
-		if (dropObject == null || TestDrop(handle.gameObject, dropObject))
+		if (dropObject == null || CanDrop(handle.gameObject, dropObject))
 		{
 			setHighlight(handle.gameObject, false);
 			setCurrentDropReceiver(eventData.rayOrigin, null, handle.gameObject);
@@ -252,7 +252,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		}
 
 		if (m_DragObject)
-			positionPreview(m_DragObject, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_DragLerp, kPreviewRotation);
+			preview(m_DragObject, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_DragLerp, kPreviewRotation);
 	}
 
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
@@ -312,7 +312,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 	protected abstract object GetDropObject(Transform fieldBlock);
 
-	public abstract bool TestDrop(GameObject target, object droppedObject);
+	public abstract bool CanDrop(GameObject target, object droppedObject);
 
 	public abstract bool ReceiveDrop(GameObject target, object droppedObject);
 }

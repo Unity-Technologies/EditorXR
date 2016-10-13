@@ -277,11 +277,23 @@ namespace UnityEngine.VR.Utilities
 				return bounds;
 			}
 
-			public static string NiceSerializedPropertyType(string type)
+			/// <summary>
+			/// Strip "PPtr<> and $ from a string for getting a System.Type from SerializedProperty.type
+			/// TODO: expose internal SerializedProperty.objectReferenceTypeString to remove this hack
+			/// </summary>
+			/// <param name="type">Type string</param>
+			/// <returns>Nicified type string</returns>
+			public static string NicifySerializedPropertyType(string type)
 			{
 				return type.Replace("PPtr<", "").Replace(">", "").Replace("$", "");
 			}
 
+			/// <summary>
+			/// Search through all assemblies in the current AppDomain for a class that is assignable to UnityObject and matches the given weak name
+			/// TODO: expoose internal SerialzedProperty.ValidateObjectReferenceValue to remove his hack
+			/// </summary>
+			/// <param name="name">Weak type name</param>
+			/// <returns>Best guess System.Type</returns>
 			public static Type TypeNameToType(string name)
 			{
 				return AppDomain.CurrentDomain.GetAssemblies()

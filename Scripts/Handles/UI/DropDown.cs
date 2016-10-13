@@ -29,16 +29,16 @@ namespace UnityEngine.VR.UI
 		Text m_Label;
 
 		[SerializeField]
-		RectTransform m_OptionPanel;
+		RectTransform m_OptionsPanel;
 
 		[SerializeField]
-		LayoutGroup m_OptionList;
+		LayoutGroup m_OptionsList;
 
 		[SerializeField]
 		GameObject m_TemplatePrefab;
 
 		[SerializeField]
-		GameObject m_TemplatePrefabMulti;
+		GameObject m_MultiSelectTemplatePrefab;
 
 		public int value
 		{
@@ -67,7 +67,7 @@ namespace UnityEngine.VR.UI
 
 		Toggle[] m_Toggles;
 
-		public event Action<int, int[]> onValueChanged;
+		public event Action<int, int[]> valueChanged;
 
 		void Awake()
 		{
@@ -76,7 +76,7 @@ namespace UnityEngine.VR.UI
 
 		void OnEnable()
 		{
-			m_OptionPanel.gameObject.SetActive(false);
+			m_OptionsPanel.gameObject.SetActive(false);
 		}
 
 		void SetupOptions()
@@ -84,18 +84,18 @@ namespace UnityEngine.VR.UI
 			if (m_Options.Length > 0)
 				UpdateLabel();
 
-			var template = m_MultiSelect ? m_TemplatePrefabMulti : m_TemplatePrefab;
+			var template = m_MultiSelect ? m_MultiSelectTemplatePrefab : m_TemplatePrefab;
 
 			if (template)
 			{
 				var size = template.GetComponent<RectTransform>().rect.size;
-				m_OptionPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y * m_Options.Length);
+				m_OptionsPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y * m_Options.Length);
 
-				var listTransform = m_OptionList.transform;
+				var listTransform = m_OptionsList.transform;
 
 				// Clear existing options
-				var children = listTransform.Cast<Transform>().ToList();
-				foreach (Transform child in children)
+				var children = listTransform.Cast<Transform>().ToList(); // Copy list, since destroying children changes count
+				foreach (var child in children)
 					U.Object.Destroy(child.gameObject);
 
 				m_Toggles = new Toggle[m_Options.Length];
@@ -122,7 +122,7 @@ namespace UnityEngine.VR.UI
 						{
 							if (toggle)
 								toggle.isOn = !toggle.isOn;
-							OptionClicked(index);
+							OnOptionClicked(index);
 						});
 					}
 				}
@@ -131,12 +131,12 @@ namespace UnityEngine.VR.UI
 
 		protected override void OnHandleDragEnded(HandleEventData eventData)
 		{
-			m_OptionPanel.gameObject.SetActive(true);
+			m_OptionsPanel.gameObject.SetActive(true);
 		}
 
 		public void ClosePanel()
 		{
-			m_OptionPanel.gameObject.SetActive(false);
+			m_OptionsPanel.gameObject.SetActive(false);
 		}
 
 		public void LabelOverride(string text)
@@ -144,7 +144,7 @@ namespace UnityEngine.VR.UI
 			m_Label.text = text;
 		}
 
-		void OptionClicked(int val)
+		void OnOptionClicked(int val)
 		{
 			if (m_MultiSelect)
 			{
@@ -162,13 +162,13 @@ namespace UnityEngine.VR.UI
 
 			ClosePanel();
 
-			if(onValueChanged != null)
-				onValueChanged(val, m_MultiSelect ? m_Values : new [] {m_Value});
+			if (valueChanged != null)
+				valueChanged(val, m_MultiSelect ? m_Values : new [] {m_Value});
 		}
 
 		void UpdateToggles()
 		{
-			for(int i = 0; i < m_Toggles.Length; i++)
+			for (int i = 0; i < m_Toggles.Length; i++)
 			{
 				var toggle = m_Toggles[i];
 				if (toggle)

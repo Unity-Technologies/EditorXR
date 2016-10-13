@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Extension of UI.Text allows the use of a custom clipping material by providing GetModifiedMaterial override
+/// </summary>
 public class ClipText : Text
 {
 	/// <summary>

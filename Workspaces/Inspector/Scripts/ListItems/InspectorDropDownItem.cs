@@ -51,10 +51,10 @@ public class InspectorDropDownItem : InspectorPropertyItem
 	protected override void FirstTimeSetup()
 	{
 		base.FirstTimeSetup();
-		m_DropDown.onValueChanged += OnValueChanged;
+		m_DropDown.valueChanged += ValueChanged;
 	}
 
-	void OnValueChanged(int clicked, int[] values)
+	void ValueChanged(int clicked, int[] values)
 	{
 		if (m_SerializedProperty.propertyType == SerializedPropertyType.LayerMask)
 		{
@@ -119,7 +119,7 @@ public class InspectorDropDownItem : InspectorPropertyItem
 		return m_DropDown.multiSelect ? (object) m_DropDown.values : m_DropDown.value;
 	}
 
-	public override bool TestDrop(GameObject target, object droppedObject)
+	public override bool CanDrop(GameObject target, object droppedObject)
 	{
 		return m_DropDown.multiSelect && droppedObject is int[]
 			|| !m_DropDown.multiSelect && droppedObject is int;

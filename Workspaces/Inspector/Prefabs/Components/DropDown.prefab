@@ -20,7 +20,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000011695297064}
   m_Layer: 5
-  m_Name: OptionPanel
+  m_Name: OptionsPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -90,7 +90,7 @@ GameObject:
   - 114: {fileID: 114000012103203696}
   - 114: {fileID: 114000011318542928}
   m_Layer: 5
-  m_Name: OptionList
+  m_Name: OptionsList
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -311,9 +311,11 @@ MonoBehaviour:
   m_Options: []
   m_MultiSelect: 0
   m_Label: {fileID: 114000010200217102}
-  m_OptionPanel: {fileID: 224000011695297064}
-  m_OptionList: {fileID: 114000011318542928}
+  m_OptionsPanel: {fileID: 224000011695297064}
+  m_OptionsList: {fileID: 114000011318542928}
   m_TemplatePrefab: {fileID: 1000012851962796, guid: 96e9e26ba4c02c4459218e81d404980f,
+    type: 2}
+  m_MultiSelectTemplatePrefab: {fileID: 1000011005728614, guid: 44aae4eb5a02aae479e9a5b75c0591dc,
     type: 2}
   m_Value: 0
   m_Values: 

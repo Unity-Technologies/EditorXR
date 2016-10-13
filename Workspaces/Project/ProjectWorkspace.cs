@@ -8,7 +8,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview, IDroppable
+public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IDroppable
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 	const float kPaneMargin = 0.01f;
@@ -37,7 +37,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview, IDro
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
-	public PositionPreviewDelegate positionPreview { private get; set; }
+	public PreviewDelegate preview { private get; set; }
 
 	public GetDropReceiverDelegate getCurrentDropReceiver { private get; set; }
 	public Action<Transform, object> setCurrentDropObject { private get; set; }
@@ -64,7 +64,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview, IDro
 		assetListView.testFilter = TestFilter;
 		assetListView.placeObject = placeObject;
 		assetListView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
-		assetListView.positionPreview = positionPreview;
+		assetListView.preview = preview;
 		assetListView.getCurrentDropReceiver = getCurrentDropReceiver;
 		assetListView.setCurrentDropObject = setCurrentDropObject;
 
