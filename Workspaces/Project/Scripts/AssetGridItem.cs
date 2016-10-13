@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
@@ -66,7 +67,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 				return;
 			}
 
-			if(m_Icon)
+			if (m_Icon)
 				U.Object.Destroy(m_Icon);
 
 			m_IconPrefab = value;
@@ -84,7 +85,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 			m_Sphere.sharedMaterial = value;
 			m_Sphere.gameObject.SetActive(true);
 			m_Cube.gameObject.SetActive(false);
-			if(m_Icon)
+			if (m_Icon)
 				m_Icon.gameObject.SetActive(false);
 		}
 	}
@@ -95,14 +96,14 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 		{
 			m_Sphere.gameObject.SetActive(true);
 			m_Cube.gameObject.SetActive(false);
-			if(m_Icon)
+			if (m_Icon)
 				m_Icon.gameObject.SetActive(false);
 			if (!value)
 			{
 				m_Sphere.sharedMaterial.mainTexture = null;
 				return;
 			}
-			if(m_TextureMaterial)
+			if (m_TextureMaterial)
 				U.Object.Destroy(m_TextureMaterial);
 
 			m_TextureMaterial = new Material(Shader.Find("Standard")) { mainTexture = value };
@@ -114,7 +115,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 	{
 		set
 		{
-			if(value)
+			if (value)
 				value.wrapMode = TextureWrapMode.Clamp;
 
 			m_Cube.sharedMaterial.mainTexture = value;
@@ -131,6 +132,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 	public override void Setup(AssetData listData)
 	{
 		base.Setup(listData);
+
 		// First time setup
 		if (!m_Setup)
 		{
@@ -195,7 +197,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 
 		if (data.type == "Scene")
 		{
-			icon.transform.rotation = Quaternion.LookRotation(icon.transform.position - U.Camera.GetMainCamera().transform.position, Vector3.up);
+			icon.transform.rotation =
+				Quaternion.LookRotation(icon.transform.position - U.Camera.GetMainCamera().transform.position, Vector3.up);
 		}
 	}
 
@@ -235,13 +238,13 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 	{
 		base.OnDragStarted(baseHandle, eventData);
 
-		var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
+		var clone = (GameObject)Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<AssetGridItem>();
 
 		if (cloneItem.m_PreviewObject)
 		{
 			cloneItem.m_Cube.gameObject.SetActive(false);
-			if(cloneItem.m_Icon)
+			if (cloneItem.m_Icon)
 				cloneItem.m_Icon.gameObject.SetActive(false);
 			cloneItem.m_PreviewObject.gameObject.SetActive(true);
 			cloneItem.m_PreviewObject.transform.localScale = m_PreviewTargetScale;
@@ -251,9 +254,11 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 		}
 
 		m_DragObject = clone.transform;
+
+		// Disable any SmoothMotion that may be applied to a cloned Asset Grid Item now referencing input device p/r/s
+		var smoothMotion = clone.GetComponent<SmoothMotion>();
 		if (smoothMotion != null)
 			smoothMotion.enabled = false;
-
 	}
 
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
@@ -275,11 +280,12 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 			}
 		}
 
+		StartCoroutine(AnimatedHide(m_DragObject.gameObject, gridItem.m_Cube, rayOrigin));
 	}
-		U.Object.Destroy(m_DragObject.gameObject);
 
-		base.OnDragEnded(baseHandle, eventData);
-		m_GrabbedObject = null;
+	IEnumerator AnimatedHide(GameObject itemToHide, Renderer cubeRenderer, Transform rayOrigin)
+	{
+		setCurrentDropObject(rayOrigin, null);
 
 		var itemTransform = itemToHide.transform;
 		var currentScale = itemTransform.localScale;
@@ -296,6 +302,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 		cubeRenderer.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
 		U.Object.Destroy(itemToHide);
 	}
+
+
 
 	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{

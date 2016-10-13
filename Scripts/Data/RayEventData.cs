@@ -21,6 +21,7 @@ namespace UnityEngine.VR.Modules
 		public float pointerLength { get; set; }
 
 		public RayEventData(EventSystem eventSystem) : base(eventSystem)
-		{}
+		{
+		}
 	}
 }

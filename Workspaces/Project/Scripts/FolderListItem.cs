@@ -36,7 +36,10 @@ public class FolderListItem : ListViewItem<FolderData>
 	private Color m_NormalColor;
 
 	private bool m_Hovering;
+
 	private Renderer m_CubeRenderer;
+
+	Transform m_CubeTransform;
 
 	public Material cubeMaterial { get { return m_CubeRenderer.sharedMaterial; } }
 
