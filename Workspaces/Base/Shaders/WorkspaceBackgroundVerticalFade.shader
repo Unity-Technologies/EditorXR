@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Workspaces/TransparentBlurVerticalFade"
+﻿Shader "EditorVR/Workspaces/WorkspaceBackgroundVerticalFade"
 {
 	Properties{
 		_Color("Main Color", Color) = (1,1,1,1)
