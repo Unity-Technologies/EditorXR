@@ -1,6 +1,6 @@
 ﻿using System;
 
-public interface IBlockInput
+public interface IBlockUIInput
 {
 	Action<bool> setInputBlocked { set; }
 }

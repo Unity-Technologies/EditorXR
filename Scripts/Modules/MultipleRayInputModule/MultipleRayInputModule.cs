@@ -92,7 +92,7 @@ namespace UnityEngine.VR.Modules
 			if (m_EventCamera == null)
 				return;
 
-			if (inputBlocked || EditorVR.s_Dragging)
+			if (inputBlocked)
 				return;
 
 			//Process events for all different transforms in RayOrigins

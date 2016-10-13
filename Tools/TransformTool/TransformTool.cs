@@ -7,7 +7,7 @@ using UnityEngine.InputNew;
 using System;
 using UnityEngine.VR;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransformTool, ISelectionChanged, IDirectSelection
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransformTool, ISelectionChanged, IDirectSelection, IBlockUIInput
 {
 	[SerializeField]
 	GameObject m_StandardManipulatorPrefab;
@@ -44,20 +44,28 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 	PivotRotation m_PivotRotation = PivotRotation.Local;
 	PivotMode m_PivotMode = PivotMode.Pivot;
 
-	Transform m_GrabbedObjectLeft;
-	Transform m_RayOriginLeft;
-	Transform m_GrabbedObjectRight;
-	Transform m_RayOriginRight;
-	Vector3 m_PositionOffsetLeft;
-	Vector3 m_PositionOffsetRight;
-	Quaternion m_RotationOffsetLeft;
-	Quaternion m_RotationOffsetRight;
+
+	struct GrabData
+	{
+		public Transform grabbedObject;
+		public Transform rayOrigin;
+		public Vector3 positionOffset;
+		public Quaternion rotationOffset;
+		public Vector3 initialScale;
+	}
+	readonly Dictionary<Node, GrabData> m_GrabData = new Dictionary<Node, GrabData>();
 	bool m_DirectSelected;
+	float zoomStartDistance;
+	Node zoomFirstNode;
 
 	TransformInput m_TransformInput;
 	DirectSelectInput m_DirectSelectInput;
 
-	public ActionMap[] actionMaps { get { return new ActionMap[] { m_TransformActionMap, m_DirectSelectActionMap }; } }
+	public ActionMap[] actionMaps { get { return new [] { m_TransformActionMap, m_DirectSelectActionMap }; } }
+
+	public DirectSelectInput directSelectInput { get { return m_DirectSelectInput; } }
+
+	public bool directManipulationEnabled { get; set; }
 
 	public ActionMapInput[] actionMapInputs
 	{
@@ -84,8 +92,11 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
 
+	public Action<bool> setInputBlocked { get; set; }
+
 	void Awake()
 	{
+		directManipulationEnabled = true;
 		// Add standard and scale manipulator prefabs to a list (because you cannot add asset references directly to a serialized list)
 		if (m_StandardManipulatorPrefab != null)
 			m_AllManipulators.Add(CreateManipulator(m_StandardManipulatorPrefab));
@@ -114,62 +125,140 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 
 	void Update()
 	{
-		var directSelection = getDirectSelection();
-		var isHovering = directSelection.Count > 0 || m_GrabbedObjectLeft || m_GrabbedObjectRight;
-		m_DirectSelectInput.active = isHovering;
-		if(m_CurrentManipulator.activeSelf && isHovering)
-			m_CurrentManipulator.SetActive(false);
-
-		foreach (var selection in directSelection)
+		var isHovering = false;
+		if (directManipulationEnabled)
 		{
-			if (selection.Value.node == Node.LeftHand && m_DirectSelectInput.selectLeft.wasJustPressed)
+			var directSelection = getDirectSelection();
+			var hasLeft = m_GrabData.ContainsKey(Node.LeftHand);
+			var hasRight = m_GrabData.ContainsKey(Node.RightHand);
+			isHovering = directSelection.Count > 0 || hasLeft || hasRight;
+			m_DirectSelectInput.active = isHovering;
+			if (m_CurrentManipulator.activeSelf && isHovering)
+				m_CurrentManipulator.SetActive(false);
+
+			Transform grabbedObject;
+			Transform rayOrigin;
+
+			foreach (var selection in directSelection)
 			{
-				EditorVR.s_Dragging = true;
-				m_DirectSelected = true;
-				var grabbedObject = selection.Value.gameObject;
-				m_GrabbedObjectLeft = grabbedObject.transform;
-				Selection.activeGameObject = grabbedObject;
-				m_RayOriginLeft = selection.Key;
-				var inverseRotation = Quaternion.Inverse(m_RayOriginLeft.rotation);
-				m_PositionOffsetLeft = inverseRotation * (m_GrabbedObjectLeft.transform.position - m_RayOriginLeft.position);
-				m_RotationOffsetLeft = inverseRotation * m_GrabbedObjectLeft.transform.rotation;
+				if (selection.Value.node == Node.LeftHand && m_DirectSelectInput.selectLeft.wasJustPressed)
+				{
+					setInputBlocked(true);
+					grabbedObject = selection.Value.gameObject.transform;
+					rayOrigin = selection.Key;
+					var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
+					m_GrabData[Node.LeftHand] = new GrabData
+					{
+						grabbedObject = grabbedObject.transform,
+						rayOrigin = rayOrigin,
+						positionOffset = inverseRotation * (grabbedObject.transform.position - rayOrigin.position),
+						rotationOffset = inverseRotation * grabbedObject.transform.rotation,
+						initialScale = grabbedObject.transform.localScale
+					};
+
+					// Check if the other hand is intersecting
+					foreach (var otherSelection in directSelection)
+					{
+						if (otherSelection.Value.node != Node.LeftHand)
+						{
+							zoomStartDistance = (rayOrigin.position - otherSelection.Key.position).magnitude;
+							zoomFirstNode = otherSelection.Value.node;
+							break;
+						}
+					}
+					Selection.activeGameObject = grabbedObject.gameObject;
+				}
+				if (selection.Value.node == Node.RightHand && m_DirectSelectInput.selectRight.wasJustPressed)
+				{
+					setInputBlocked(true);
+					grabbedObject = selection.Value.gameObject.transform;
+					rayOrigin = selection.Key;
+					var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
+					m_GrabData[Node.RightHand] = new GrabData
+					{
+						grabbedObject = grabbedObject.transform,
+						rayOrigin = rayOrigin,
+						positionOffset = inverseRotation * (grabbedObject.transform.position - rayOrigin.position),
+						rotationOffset = inverseRotation * grabbedObject.transform.rotation,
+						initialScale = grabbedObject.transform.localScale
+					};
+
+					// Check if the other hand is intersecting
+					foreach (var otherSelection in directSelection)
+					{
+						if (otherSelection.Value.node != Node.RightHand)
+						{
+							zoomStartDistance = (rayOrigin.position - otherSelection.Key.position).magnitude;
+							zoomFirstNode = otherSelection.Value.node;
+							break;
+						}
+					}
+					Selection.activeGameObject = grabbedObject.gameObject;
+				}
 			}
-			if (selection.Value.node == Node.RightHand && m_DirectSelectInput.selectRight.wasJustPressed)
+
+			GrabData leftData;
+			hasLeft = m_GrabData.TryGetValue(Node.LeftHand, out leftData);
+			grabbedObject = leftData.grabbedObject;
+			rayOrigin = leftData.rayOrigin;
+			var positionOffset = leftData.positionOffset;
+			var rotationOffset = leftData.rotationOffset;
+
+			GrabData rightData;
+			hasRight = m_GrabData.TryGetValue(Node.RightHand, out rightData);
+
+			var leftHeld = m_DirectSelectInput.selectLeft.isHeld;
+			var rightHeld = m_DirectSelectInput.selectRight.isHeld;
+			if (hasLeft && hasRight && leftHeld && rightHeld && leftData.grabbedObject == rightData.grabbedObject)
 			{
-				EditorVR.s_Dragging = true;
+				var scaleFactor = (leftData.rayOrigin.position - rightData.rayOrigin.position).magnitude / zoomStartDistance;
+				if (scaleFactor > 0 && scaleFactor < Mathf.Infinity)
+				{
+					if (zoomFirstNode == Node.LeftHand)
+					{
+						leftData.grabbedObject.position = rayOrigin.position + rayOrigin.rotation * positionOffset * scaleFactor;
+						leftData.grabbedObject.rotation = rayOrigin.rotation * rotationOffset;
+						leftData.grabbedObject.localScale = leftData.initialScale * scaleFactor;
+					}
+					else
+					{
+						rayOrigin = rightData.rayOrigin;
+						rightData.grabbedObject.position = rayOrigin.position + rayOrigin.rotation * rightData.positionOffset * scaleFactor;
+						rightData.grabbedObject.rotation = rayOrigin.rotation * rightData.rotationOffset;
+						rightData.grabbedObject.localScale = rightData.initialScale * scaleFactor;
+					}
+				}
+
 				m_DirectSelected = true;
-				var grabbedObject = selection.Value.gameObject;
-				m_GrabbedObjectRight = grabbedObject.transform;
-				Selection.activeGameObject = grabbedObject;
-				m_RayOriginRight = selection.Key;
-				var inverseRotation = Quaternion.Inverse(m_RayOriginRight.rotation);
-				m_PositionOffsetRight = inverseRotation * (m_GrabbedObjectRight.transform.position - m_RayOriginRight.position);
-				m_RotationOffsetRight = inverseRotation * m_GrabbedObjectRight.transform.rotation;
+			} else if (hasLeft && leftHeld)
+			{
+				grabbedObject.position = rayOrigin.position + rayOrigin.rotation * positionOffset;
+				grabbedObject.rotation = rayOrigin.rotation * rotationOffset;
+
+				m_DirectSelected = true;
+			} else if (hasRight && rightHeld)
+			{
+				grabbedObject = rightData.grabbedObject;
+				rayOrigin = rightData.rayOrigin;
+				positionOffset = rightData.positionOffset;
+				rotationOffset = rightData.rotationOffset;
+				grabbedObject.position = rayOrigin.position + rayOrigin.rotation * positionOffset;
+				grabbedObject.rotation = rayOrigin.rotation * rotationOffset;
+
+				m_DirectSelected = true;
 			}
+
+			if (m_DirectSelectInput.selectLeft.wasJustReleased)
+				m_GrabData.Remove(Node.LeftHand);
+
+			if (m_DirectSelectInput.selectRight.wasJustReleased)
+				m_GrabData.Remove(Node.RightHand);
 		}
-
-		if (m_GrabbedObjectLeft && m_DirectSelectInput.selectLeft.isHeld)
-		{
-			m_GrabbedObjectLeft.position = m_RayOriginLeft.position + m_RayOriginLeft.rotation * m_PositionOffsetLeft;
-			m_GrabbedObjectLeft.rotation = m_RayOriginLeft.rotation * m_RotationOffsetLeft;
-		}
-
-		if (m_GrabbedObjectRight && m_DirectSelectInput.selectRight.isHeld)
-		{
-			m_GrabbedObjectRight.position = m_RayOriginRight.position + m_RayOriginRight.rotation * m_PositionOffsetRight;
-			m_GrabbedObjectRight.rotation = m_RayOriginRight.rotation * m_RotationOffsetRight;
-		}
-
-		if (m_DirectSelectInput.selectLeft.wasJustReleased)
-			m_GrabbedObjectLeft = null;
-
-		if (m_DirectSelectInput.selectRight.wasJustReleased)
-			m_GrabbedObjectRight = null;
 
 		if (isHovering || m_DirectSelected)
 			return;
 
-		EditorVR.s_Dragging = false;
+		setInputBlocked(false);
 
 		if (m_SelectionTransforms != null && m_SelectionTransforms.Length > 0)
 		{

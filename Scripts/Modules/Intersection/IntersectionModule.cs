@@ -37,7 +37,12 @@ namespace UnityEngine.VR.Modules
 			foreach (var tester in m_Testers)
 			{
 				if (!tester.active)
+				{
+					Renderer intersectedObject;
+					if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
+						OnIntersectionExit(tester, intersectedObject);
 					continue;
+				}
 
 				var testerTransform = tester.transform;
 				if (testerTransform.hasChanged)
