@@ -257,20 +257,7 @@ namespace UnityEngine.VR.Menus
 					b.button.onClick.RemoveAllListeners();
 					b.button.onClick.AddListener(() =>
 					{
-						// HACK: Just instantiate the snapping menu face (and disable the previous face) until the IInstantiateMenuUI is merged into dev.
-						var moduleMenu = instantiateUI(currentModule.moduleMenuPrefab);
-						var bTransform = b.transform;
-						var moduleTransform = moduleMenu.transform;
-						var secondParent = bTransform.parent.parent;
-
-						moduleTransform.SetParent(secondParent.parent);
-
-						moduleTransform.localPosition = Vector3.zero;
-						moduleTransform.localRotation = Quaternion.identity;
-						moduleTransform.localScale = Vector3.one;
-
-						foreach (Transform child in secondParent)
-							child.gameObject.SetActive(false);
+						m_MainMenuUI.AddSubmenu(buttonData.sectionName, currentModule.moduleMenuPrefab);
 					});
 				});
 			}

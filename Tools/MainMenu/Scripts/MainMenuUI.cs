@@ -82,6 +82,8 @@ namespace UnityEngine.VR.Menus
 		private float m_LastTargetRotation;
 		private Coroutine m_VisibilityCoroutine;
 
+		private readonly Dictionary<string, List<GameObject>> m_FaceSubmenus = new Dictionary<string, List<GameObject>>();
+
 		public Transform menuOrigin
 		{
 			get { return m_MenuOrigin; }
@@ -311,6 +313,73 @@ namespace UnityEngine.VR.Menus
 					UnityBrandColorScheme.GetRandomGradient());
 				++position;
 			}
+		}
+
+		public void AddSubmenu(string face, GameObject submenuPrefab)
+		{
+			int index = FaceNameToIndex(face);
+			if (index > -1)
+			{
+				var submenu = instantiateUI(submenuPrefab);
+				AddSubmenuToFace(index, submenu);
+				
+				var btn = submenu.GetComponentInChildren<UI.Button>();
+				btn.onClick.RemoveAllListeners();
+				btn.onClick.AddListener(() => { RemoveSubmenu(face, submenu); });
+
+				if (!m_FaceSubmenus.ContainsKey(face))
+					m_FaceSubmenus.Add(face, new List<GameObject>() { submenu });
+				else
+				{
+					foreach (var faceSubmenu in m_FaceSubmenus[face])
+						faceSubmenu.SetActive(false);
+					m_FaceSubmenus[face].Add(submenu);
+				}
+				m_MenuFaces[index].Hide();
+			}
+		}
+
+		private void AddSubmenuToFace(int face, GameObject submenu)
+		{
+			var submenuTrans = submenu.transform;
+
+			submenuTrans.SetParent(m_MenuFaceContainers[face]);
+
+			submenuTrans.localPosition = Vector3.zero;
+			submenuTrans.localScale = Vector3.one;
+			submenuTrans.localRotation = Quaternion.identity;
+		}
+
+		private void RemoveSubmenu(string face, GameObject submenu)
+		{
+			int index = FaceNameToIndex(face);
+			if (index > -1)
+			{
+				if (m_FaceSubmenus.ContainsKey(face))
+				{
+					var target = m_FaceSubmenus[face].Last();
+					m_FaceSubmenus[face].Remove(target);
+					U.Object.Destroy(target);
+					if (m_FaceSubmenus[face].Count > 1)
+						m_FaceSubmenus[face].Last().SetActive(true);
+					else
+						m_MenuFaces[index].Show();
+				}
+			}
+		}
+
+		private int FaceNameToIndex(string face)
+		{
+			int index = 0;
+			foreach (var faceButtons in m_FaceButtons)
+			{
+				if (faceButtons.Key == face)
+					return index;
+
+				index++;
+			}
+
+			return -1;
 		}
 
 		private int GetClosestFaceIndexForRotation(float rotation)

@@ -163,8 +163,7 @@ public class SnappingModule : MonoBehaviour, IModule
 					}
 
 					float totalMagnitude = total.magnitude;
-					if (totalMagnitude > 1 && time > 0.1f)
-						SetupThrow(target, meshFilter, raycastIgnore, total / totalMagnitude, totalMagnitude, time);
+					SetupThrow(target, meshFilter, raycastIgnore, total / totalMagnitude, totalMagnitude, time);
 				}
 			}
 		}
@@ -172,10 +171,13 @@ public class SnappingModule : MonoBehaviour, IModule
 
 	private void SetupThrow(Transform target, MeshFilter meshFilter, Transform[] raycastIgnore, Vector3 throwDirection, float distance, float throwTime)
 	{
+		float velocity = distance / throwTime;
+		if (velocity < 1)
+			return;
+
 		var snapData = m_SnapDataTable[target];
 
 		snapData.throwDirection = throwDirection;
-		float velocity = distance / throwTime;
 		snapData.startVelocity = velocity;
 		snapData.currentVelocity = velocity;
 
