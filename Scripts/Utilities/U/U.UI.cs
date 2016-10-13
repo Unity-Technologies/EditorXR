@@ -21,7 +21,7 @@ namespace UnityEngine.VR.Utilities
 			public const float kDoubleClickIntervalMax = 0.3f;
 			private const float kDoubleClickIntervalMin = 0.15f;
 
-			public static bool DoubleClick(float timeSinceLastClick)
+			public static bool IsDoubleClick(float timeSinceLastClick)
 			{
 				return timeSinceLastClick <= kDoubleClickIntervalMax && timeSinceLastClick >= kDoubleClickIntervalMin;
 			}

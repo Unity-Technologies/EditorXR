@@ -79,7 +79,7 @@ namespace UnityEngine.VR.Handles
 			//Double-click logic
 			var timeSinceLastClick = (float) (DateTime.Now - m_LastClickTime).TotalSeconds;
 			m_LastClickTime = DateTime.Now;
-			if (U.UI.DoubleClick(timeSinceLastClick))
+			if (U.UI.IsDoubleClick(timeSinceLastClick))
 			{
 				OnDoubleClick(handleEventData);
 			}

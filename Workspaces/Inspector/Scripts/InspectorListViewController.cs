@@ -80,9 +80,9 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		{
 			m_ItemSize = m_TemplateSizes[item.template];
 			if (totalOffset + scrollOffset + m_ItemSize.z < 0)
-				CleanUpBeginning(item);
+				RecycleBeginning(item);
 			else if (totalOffset + scrollOffset > bounds.size.z)
-				CleanUpEnd(item);
+				RecycleEnd(item);
 			else
 				UpdateItemRecursive(item, totalOffset, depth);
 			totalOffset += m_ItemSize.z;

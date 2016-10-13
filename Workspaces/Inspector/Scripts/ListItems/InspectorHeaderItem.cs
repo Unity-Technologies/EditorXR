@@ -20,7 +20,6 @@ public class InspectorHeaderItem : InspectorListItem
 
 	[SerializeField]
 	Toggle m_StaticToggle;
-	// TODO: Add dropdown for different static types
 
 	public Toggle lockToggle { get { return m_LockToggle; } }
 	[SerializeField]
@@ -93,7 +92,6 @@ public class InspectorHeaderItem : InspectorListItem
 
 	public void SetActive(bool active)
 	{
-		// TODO: Add choice dialog for whether to set in children
 		if (m_TargetGameObject != null && m_TargetGameObject.activeSelf != active)
 			m_TargetGameObject.SetActive(active);
 	}
@@ -107,7 +105,6 @@ public class InspectorHeaderItem : InspectorListItem
 
 	public void SetStatic(bool isStatic)
 	{
-		// TODO: Add choice dialog for whether to set in children
 		if(m_TargetGameObject != null && m_TargetGameObject.isStatic != isStatic)
 			m_TargetGameObject.isStatic = isStatic;
 	}

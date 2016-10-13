@@ -27,11 +27,10 @@ public class CuboidLayout : UIBehaviour
 		UpdateCubes();
 	}
 
-	// TODO: fix UI events so that this happens when we need it to
-	//protected override void OnRectTransformDimensionsChange()
-	//{
-	//	UpdateCubes();
-	//}
+	protected override void OnRectTransformDimensionsChange()
+	{
+		UpdateCubes();
+	}
 
 	/// <summary>
 	/// Set a new material on all backing cubes (used for instanced version of the material)

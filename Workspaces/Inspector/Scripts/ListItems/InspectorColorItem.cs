@@ -24,7 +24,6 @@ public class InspectorColorItem : InspectorPropertyItem
 	{
 		base.FirstTimeSetup();
 
-		//TODO: expose valueChanged in Inspector
 		for (var i = 0; i < m_InputFields.Length; i++)
 		{
 			var index = i;
@@ -112,7 +111,7 @@ public class InspectorColorItem : InspectorPropertyItem
 
 		if (dropObject is Vector3)
 		{
-			var vector3= (Vector3)dropObject;
+			var vector3 = (Vector3)dropObject;
 			color.r = vector3.x;
 			color.g = vector3.y;
 			color.b = vector3.z;

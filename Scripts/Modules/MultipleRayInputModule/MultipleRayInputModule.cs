@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Proxies;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Modules
 {
@@ -249,21 +250,20 @@ namespace UnityEngine.VR.Modules
 					eventData.eligibleForClick = true;
 
 					// Track clicks for double-clicking, triple-clicking, etc.
-				    float time = Time.realtimeSinceStartup;
+					float time = Time.realtimeSinceStartup;
 					if (newPressed == eventData.lastPress)
 					{
 						var diffTime = time - eventData.clickTime;
-						if (diffTime < 0.3f)
+						if (U.UI.IsDoubleClick(diffTime))
 							++eventData.clickCount;
 						else
 							eventData.clickCount = 1;
-
-						eventData.clickTime = time;
 					}
 					else
 					{
 						eventData.clickCount = 1;
 					}
+					eventData.clickTime = time;
 				}
 
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.beginDragHandler);

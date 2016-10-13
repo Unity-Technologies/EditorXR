@@ -14,7 +14,7 @@ namespace ListView
 			{
 				if (m_Data != null) // Clear out visuals for old data
 					foreach (var data in m_Data)
-						CleanUpBeginning(data);
+						RecycleBeginning(data);
 				m_Data = value;
 				scrollOffset = 0;
 			}
@@ -32,11 +32,11 @@ namespace ListView
 			{
 				if (i + m_DataOffset < -1)
 				{
-					CleanUpBeginning(m_Data[i]);
+					RecycleBeginning(m_Data[i]);
 				}
 				else if (i + m_DataOffset > m_NumRows - 1)
 				{
-					CleanUpEnd(m_Data[i]);
+					RecycleEnd(m_Data[i]);
 				}
 				else
 				{
@@ -45,13 +45,13 @@ namespace ListView
 			}
 		}
 
-		protected virtual void CleanUpBeginning(DataType data)
+		protected virtual void RecycleBeginning(DataType data)
 		{
 			RecycleItem(data.template, data.item);
 			data.item = null;
 		}
 
-		protected virtual void CleanUpEnd(DataType data)
+		protected virtual void RecycleEnd(DataType data)
 		{
 			RecycleItem(data.template, data.item);
 			data.item = null;

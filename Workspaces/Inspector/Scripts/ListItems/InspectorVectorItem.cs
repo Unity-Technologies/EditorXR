@@ -60,9 +60,8 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 	protected override void FirstTimeSetup()
 	{
-		base.FirstTimeSetup();
+		base.FirstTimeSetup(); 
 
-		//TODO: expose valueChanged in Inspector
 		for (var i = 0; i < m_InputFields.Length; i++)
 		{
 			var index = i;

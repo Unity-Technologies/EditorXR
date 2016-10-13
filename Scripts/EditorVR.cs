@@ -897,7 +897,7 @@ public class EditorVR : MonoBehaviour
 		var positionPreview = obj as IPreview;
 		if (positionPreview != null)
 		{
-			positionPreview.preview = m_ObjectPlacementModule.PositionPreview;
+			positionPreview.preview = m_ObjectPlacementModule.Preview;
 			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 		}
 
@@ -1259,7 +1259,7 @@ public class EditorVR : MonoBehaviour
 				// If the object is outside, attach to controller as a preview
 				else
 				{
-					m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
+					m_ObjectPlacementModule.Preview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
 
 					selectedObjectTransform.transform.localScale = Vector3.one;
 					var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);

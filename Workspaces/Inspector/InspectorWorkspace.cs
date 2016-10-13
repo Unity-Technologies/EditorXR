@@ -9,8 +9,8 @@ using UnityEngine.VR.Workspaces;
 
 public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 {
-	const float kScrollMargin = 0.03f;
 	public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
+	const float kScrollMargin = 0.03f;
 
 	[SerializeField]
 	GameObject m_ContentPrefab;

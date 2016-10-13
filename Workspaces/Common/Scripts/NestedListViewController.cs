@@ -6,9 +6,14 @@
 		{
 			set
 			{
-				if (m_Data != null) // Clear out visuals for old data
+				if (m_Data != null)
+				{
+					// Clear out visuals for old data
 					foreach (var data in m_Data)
-						CleanUpRecursively(data);
+					{
+						RecycleRecursively(data);
+					}
+				}
 				m_Data = value;
 				scrollOffset = 0;
 			}
@@ -18,12 +23,16 @@
 
 		protected int m_ExpandedDataLength;
 
-		void CleanUpRecursively(DataType data)
+		void RecycleRecursively(DataType data)
 		{
-			CleanUpBeginning(data);
-			if(data.children != null)
+			RecycleBeginning(data);
+			if (data.children != null)
+			{
 				foreach (var child in data.children)
-					CleanUpRecursively(child);
+				{
+					RecycleRecursively(child);
+				}
+			}
 		}
 
 		protected override void UpdateItems()
@@ -38,9 +47,9 @@
 			foreach (var item in data)
 			{
 				if (count + m_DataOffset < -1)
-					CleanUpBeginning(item);
+					RecycleBeginning(item);
 				else if (count + m_DataOffset > m_NumRows - 1)
-					CleanUpEnd(item);
+					RecycleEnd(item);
 				else
 					UpdateNestedItem(item, count, depth);
 				count++;

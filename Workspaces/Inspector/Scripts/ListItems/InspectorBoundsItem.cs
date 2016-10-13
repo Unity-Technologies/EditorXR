@@ -31,7 +31,6 @@ public class InspectorBoundsItem : InspectorPropertyItem
 	{
 		base.FirstTimeSetup();
 
-		//TODO: Expose valueChanged in Inspector
 		for (var i = 0; i < m_CenterFields.Length; i++)
 		{
 			var index = i;

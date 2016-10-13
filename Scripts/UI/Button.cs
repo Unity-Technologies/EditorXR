@@ -15,12 +15,10 @@ namespace UnityEngine.VR.UI
 		[FlagsProperty]
 		protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
-		public OnEnterEvent onEnter = new OnEnterEvent();
-		public OnEnterEvent onExit = new OnEnterEvent();
-		public OnEnterEvent onDown = new OnEnterEvent();
-		public OnEnterEvent onUp = new OnEnterEvent();
-
-		public class OnEnterEvent : UnityEvent { }
+		public UnityEvent onEnter = new UnityEvent();
+		public UnityEvent onExit = new UnityEvent();
+		public UnityEvent onDown = new UnityEvent();
+		public UnityEvent onUp = new UnityEvent();
 
 		public override void OnPointerClick(PointerEventData eventData)
 		{

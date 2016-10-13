@@ -2,7 +2,6 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Handles;
 using Button = UnityEngine.VR.UI.Button;
 
 public class InspectorComponentItem : InspectorListItem

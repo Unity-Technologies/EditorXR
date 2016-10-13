@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
@@ -194,7 +193,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 			// Detect double click
 			var timeSinceLastClick = Time.realtimeSinceStartup - m_LastClickTime;
 			m_LastClickTime = Time.realtimeSinceStartup;
-			if (m_ClickCount > 1 && U.UI.DoubleClick(timeSinceLastClick))
+			if (m_ClickCount > 1 && U.UI.IsDoubleClick(timeSinceLastClick))
 			{
 				CancelSingleClick();
 
