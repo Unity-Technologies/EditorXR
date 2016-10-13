@@ -45,7 +45,12 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	public override void Setup()
 	{
+		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.27f);
+
 		base.Setup();
+
+		dynamicFaceAdjustment = true;
+
 		U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
 		m_GridMaterial = U.Material.GetMaterialClone(m_ChessboardUI.grid);

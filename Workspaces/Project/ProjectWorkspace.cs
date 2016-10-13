@@ -44,8 +44,9 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		m_CustomStartingBounds = minBounds;
 
 		base.Setup();
-		dynamicFaceAdjustment = true;
+
 		topPanelDividerOffset = -0.2875f; // enable & position the top-divider(mask) slightly to the left of workspace center
+		dynamicFaceAdjustment = true;
 
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
@@ -98,14 +99,14 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 
 	protected override void OnBoundsChanged()
 	{
-		const float heightCompensationDecrement = 0.1375f;
+		const float depthCompensation = 0.1375f;
 
 		Bounds bounds = contentBounds;
 		Vector3 size = bounds.size;
 		size.x -= kPaneMargin * 2;
 		size.x *= kLeftPaneRatio;
 		size.y = kYBounds;
-		size.z = size.z - heightCompensationDecrement;
+		size.z = size.z - depthCompensation;
 		bounds.size = size;
 		bounds.center = Vector3.zero;
 
@@ -132,7 +133,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		size = contentBounds.size;
 		size.x -= kPaneMargin * 2;
 		size.x *= 1 - kLeftPaneRatio;
-		size.z = size.z - heightCompensationDecrement;
+		size.z = size.z - depthCompensation;
 		bounds.size = size;
 
 		xOffset = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f;

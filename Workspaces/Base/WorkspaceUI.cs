@@ -139,21 +139,8 @@ namespace UnityEngine.VR.Workspaces
 		}
 		float? m_TopPanelDividerOffset;
 
-		public bool workspacePanelsVisible
-		{
-			set
-			{
-				m_workspacePanelsVisible = value;
-				dynamicFaceAdjustment = false;
-
-				if (m_workspacePanelsVisible == false)
-				{
-					m_Frame.SetBlendShapeWeight(kHiddenFacesBlendShapeIndex, 100f);
-					m_FrameFrontFaceTransform.gameObject.SetActive(false);
-				}
-			}
-		}
-		bool m_workspacePanelsVisible = true;
+		public bool preventFrontBackResize { set { m_PreventFrontBackResize = value; } }
+		bool m_PreventFrontBackResize = false;
 
 		public Bounds bounds
 		{
@@ -173,13 +160,13 @@ namespace UnityEngine.VR.Workspaces
 				m_LeftHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
 
 				m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -extents.z - m_HandleScale + m_AngledFrontHandleOffset);
-				m_FrontHandleTransform.localScale = new Vector3(boundsSize.x, m_HandleScale, m_HandleScale);
+				m_FrontHandleTransform.localScale = m_PreventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				m_RightHandleTransform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
 				m_RightHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
 
 				m_BackHandleTransform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, extents.z - m_HandleScale - kBackHandleOffset);
-				m_BackHandleTransform.localScale = new Vector3(boundsSize.x, m_HandleScale, m_HandleScale);
+				m_BackHandleTransform.localScale = m_PreventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				// Resize content container
 				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, boundsSize.x);
@@ -198,9 +185,9 @@ namespace UnityEngine.VR.Workspaces
 				// Position the separator mask if enabled
 				if (m_TopPanelDividerOffset != null)
 				{
-					const float heightCompensationDecrement = 0.1375f;
+					const float depthCompensation = 0.1375f;
 					m_TopPanelDividerTransform.localPosition = new Vector3(boundsSize.x*0.5f*m_TopPanelDividerOffset.Value, 0f, 0f);
-					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, boundsSize.z - heightCompensationDecrement);
+					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, boundsSize.z - depthCompensation);
 				}
 
 				var grabColliderSize = m_GrabCollider.size;

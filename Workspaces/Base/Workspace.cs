@@ -83,7 +83,8 @@ namespace UnityEngine.VR.Workspaces
 
 		public Action<GameObject, bool> setHighlight { get; set; }
 
-		public bool dynamicFaceAdjustment { get { return m_WorkspaceUI.dynamicFaceAdjustment; } set { m_WorkspaceUI.dynamicFaceAdjustment = value; } }
+		public bool dynamicFaceAdjustment { set { m_WorkspaceUI.dynamicFaceAdjustment = value; } }
+		public bool preventFrontBackResize { set { m_WorkspaceUI.preventFrontBackResize = value; } }
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
@@ -99,7 +100,6 @@ namespace UnityEngine.VR.Workspaces
 		}
 
 		public bool vacuumEnabled { set { m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value); } }
-		protected bool workspacePanelsVisible { set { m_WorkspaceUI.workspacePanelsVisible = value; } }
 
 		public virtual void Setup()
 		{

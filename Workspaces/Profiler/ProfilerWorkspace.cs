@@ -41,6 +41,8 @@ public class ProfilerWorkspace : Workspace
 
 		base.Setup();
 
+		preventFrontBackResize = true;
+
 		m_ProfilerWindow = instantiateUI(m_ProfilerWindowPrefab).transform;
 		m_ProfilerWindow.SetParent(m_WorkspaceUI.sceneContainer,false);
 

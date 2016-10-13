@@ -15,6 +15,8 @@ public class ConsoleWorkspace : Workspace
 
 		base.Setup();
 
+		preventFrontBackResize = true;
+
 		m_ConsoleWindow = instantiateUI(m_ConsoleWindowPrefab).transform;
 		m_ConsoleWindow.SetParent(m_WorkspaceUI.sceneContainer, false);
 
