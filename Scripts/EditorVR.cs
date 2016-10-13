@@ -54,6 +54,7 @@ public class EditorVR : MonoBehaviour
 	private PixelRaycastModule m_PixelRaycastModule;
 	private HighlightModule m_HighlightModule;
 	private ObjectPlacementModule m_ObjectPlacementModule;
+	//private MoveWorkspacesModule m_MoveWorkspacesModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
 
@@ -123,6 +124,8 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+		//m_MoveWorkspacesModule = U.Object.AddComponent<MoveWorkspacesModule>(gameObject);
+		//m_MoveWorkspacesModule.m_AllWorkspaces = m_AllWorkspaces;
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
@@ -438,7 +441,8 @@ public class EditorVR : MonoBehaviour
 				if (deviceData.Key.tagIndex == -1)
 					continue;
 
-				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
+				//Original SelectionTool
+				tool = SpawnTool(typeof(MoveWorkspacesModule), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 
 				if (locomotionTool == typeof(BlinkLocomotionTool))
@@ -818,6 +822,10 @@ public class EditorVR : MonoBehaviour
 		var highlight = obj as IHighlight;
 		if (highlight != null)
 			highlight.setHighlight = m_HighlightModule.SetHighlight;
+
+		//var moveWorkspaces = obj as IMoveWorkspaces;
+		//if(moveWorkspaces != null)
+			//moveWorkspaces.
 
 		var placeObjects = obj as IPlaceObjects;
 		if (placeObjects != null)

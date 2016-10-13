@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 49e533569ecea994c856e43af713e5be
+timeCreated: 1476361759
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_MoveWorkspacesModuleActionMap: {fileID: 11400000, guid: 294250dc3c5ace44399da0e1096205f3,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

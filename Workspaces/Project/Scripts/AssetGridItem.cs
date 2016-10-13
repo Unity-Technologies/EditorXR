@@ -327,7 +327,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	{
 		if (gameObject.activeInHierarchy)
 		{
-			StopCoroutine(ref m_TransitionCoroutine);
+			MonoBehaviourExtensions.StopCoroutine(this, ref m_TransitionCoroutine);
 			m_TransitionCoroutine = StartCoroutine(AnimatePreview(false));
 		}
 	}
@@ -336,7 +336,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	{
 		if (gameObject.activeInHierarchy)
 		{
-			StopCoroutine(ref m_TransitionCoroutine);
+			MonoBehaviourExtensions.StopCoroutine(this, ref m_TransitionCoroutine);
 			m_TransitionCoroutine = StartCoroutine(AnimatePreview(true));
 		}
 	}
