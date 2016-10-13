@@ -40,9 +40,14 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 
 	public override void Setup()
 	{
+		// Initial bounds must be set before the base.Setup() is called
+		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.5f);
+		m_CustomStartingBounds = minBounds;
+
 		base.Setup();
-		dynamicFaceAdjustment = true;
+
 		topPanelDividerOffset = -0.2875f; // enable & position the top-divider(mask) slightly to the left of workspace center
+		dynamicFaceAdjustment = true;
 
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
@@ -95,22 +100,26 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 
 	protected override void OnBoundsChanged()
 	{
+		const float depthCompensation = 0.1375f;
+
 		Bounds bounds = contentBounds;
 		Vector3 size = bounds.size;
 		size.x -= kPaneMargin * 2;
 		size.x *= kLeftPaneRatio;
 		size.y = kYBounds;
+		size.z = size.z - depthCompensation;
 		bounds.size = size;
 		bounds.center = Vector3.zero;
 
 		var halfScrollMargin = kScrollMargin * 0.5f;
 		var doubleScrollMargin = kScrollMargin * 2;
-
 		var xOffset = (contentBounds.size.x - size.x + kPaneMargin) * -0.5f;
+		var folderScrollHandleXPositionOffset = 0.025f;
+		var folderScrollHandleXScaleOffset = 0.015f;
 
 		var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
-		folderScrollHandleTransform.localPosition = new Vector3(xOffset - halfScrollMargin, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
-		folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
+		folderScrollHandleTransform.localPosition = new Vector3(xOffset - halfScrollMargin + folderScrollHandleXPositionOffset, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
+		folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin + folderScrollHandleXScaleOffset, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var folderListView = m_ProjectUI.folderListView;
 		folderListView.bounds = bounds;
@@ -125,6 +134,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		size = contentBounds.size;
 		size.x -= kPaneMargin * 2;
 		size.x *= 1 - kLeftPaneRatio;
+		size.z = size.z - depthCompensation;
 		bounds.size = size;
 
 		xOffset = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f;
@@ -148,6 +158,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 	{
 		foreach (var folderData in m_ProjectUI.folderListView.listData)
 			folderData.ClearSelected();
+
 		data.selected = true;
 		m_ProjectUI.assetListView.listData = data.assets;
 	}

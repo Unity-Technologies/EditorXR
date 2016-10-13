@@ -10,6 +10,7 @@ ModelImporter:
     2300000: //RootNode
     3300000: //RootNode
     4300000: Button
+    4300002: Button.001
   materials:
     importMaterials: 0
     materialName: 0

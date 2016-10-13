@@ -261,6 +261,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		m_GrabbedObject = clone.transform;
 		m_GrabLerp = 0;
 		StartCoroutine(Magnetize());
+		StartCoroutine(AnimatesToPreviewScale());
 	}
 
 	// Smoothly interpolate grabbed object into position, instead of "popping."
@@ -275,6 +276,28 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			yield return null;
 		}
 		m_GrabLerp = 1;
+	}
+
+	/// <summary>
+	/// Animate the LocalScale of the asset towards a common/unified scale
+	/// used when the asset is magnetized/attached to the proxy, after grabbing it from the asset grid
+	/// </summary>
+	IEnumerator AnimatesToPreviewScale()
+	{
+		var currentLocalScale = m_GrabbedObject.localScale;
+		var targetLocalScale = Vector3.one * 0.125f;
+		var currentTime = 0f;
+		var currentVelocity = 0f;
+		const float kDuration = 1f;
+		while (currentTime < kDuration)
+		{
+			if (m_GrabbedObject == null)
+				yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
+
+			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
+			m_GrabbedObject.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, currentTime);
+			yield return null;
+		}
 	}
 
 	private void OnGrabDragging(BaseHandle baseHandle, HandleEventData eventData)

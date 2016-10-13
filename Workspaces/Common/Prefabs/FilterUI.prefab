@@ -570,8 +570,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SummaryText: {fileID: 0}
-  m_DescriptionText: {fileID: 0}
+  m_SummaryText: {fileID: 114000013668190444}
+  m_DescriptionText: {fileID: 114000013883654872}
   m_VisibilityButton: {fileID: 1000011073178180}
   m_SummaryButton: {fileID: 1000012133731784}
   m_ButtonList: {fileID: 224000013333582342}
@@ -1131,7 +1131,7 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011003453154}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
