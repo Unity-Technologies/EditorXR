@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Handles;
 
 [RequireComponent(typeof(Canvas))]
 public class KeyboardUI : MonoBehaviour
@@ -16,6 +17,11 @@ public class KeyboardUI : MonoBehaviour
 	Text m_PreviewText;
 
 	/// <summary>
+	/// Called when the orientation changes, parameter is whether keyboard is currently horizontal
+	/// </summary>
+	public event Action<bool> orientationChanged = delegate {};
+
+	/// <summary>
 	/// Initialize the keyboard and its buttons
 	/// </summary>
 	/// <param name="keyPress"></param>
@@ -24,6 +30,11 @@ public class KeyboardUI : MonoBehaviour
 		m_DirectManipulator.target = transform;
 		m_DirectManipulator.translate = Translate;
 		m_DirectManipulator.rotate = Rotate;
+
+		foreach (var handle in m_DirectManipulator.GetComponentsInChildren<BaseHandle>(true))
+		{
+			handle.dragEnded += OnDragEnded;
+		}
 
 		foreach (var button in m_Buttons) 
 			button.Setup(keyPress, IsHorizontal);
@@ -65,5 +76,10 @@ public class KeyboardUI : MonoBehaviour
 	private void Rotate(Quaternion deltaRotation)
 	{
 		transform.rotation *= deltaRotation;
+	}
+
+	void OnDragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
+	{
+		orientationChanged(IsHorizontal());
 	}
 }

@@ -497,7 +497,9 @@ public class EditorVR : MonoBehaviour
 				var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginPairValue).transform;
 				malletTransform.position = rayOriginPairValue.position;
 				malletTransform.rotation = rayOriginPairValue.rotation;
-				m_KeyboardMallets.Add(rayOriginPairValue, malletTransform.GetComponent<KeyboardMallet>());
+				var mallet = malletTransform.GetComponent<KeyboardMallet>();
+				mallet.Hide();
+				m_KeyboardMallets.Add(rayOriginPairValue, mallet);
 			}
 			m_AllProxies.Add(proxy);
 		}
@@ -641,6 +643,7 @@ public class EditorVR : MonoBehaviour
 		{
 			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
 			m_NumericKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
+			m_NumericKeyboard.orientationChanged += KeyboardOrientationChanged;
 		}
 		return m_NumericKeyboard;
 	}
@@ -655,8 +658,28 @@ public class EditorVR : MonoBehaviour
 		{
 			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
 			m_StandardKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
+			m_StandardKeyboard.orientationChanged += KeyboardOrientationChanged;
 		}
 		return m_StandardKeyboard;
+	}
+
+	void KeyboardOrientationChanged(bool isHorizontal)
+	{
+		foreach (var kvp in m_KeyboardMallets)
+		{
+			var mallet = kvp.Value;
+			var dpr = kvp.Key.GetComponentInChildren<DefaultProxyRay>();
+			if (isHorizontal)
+			{
+				mallet.Show();
+				dpr.Hide();
+			}
+			else
+			{
+				mallet.Hide();
+				dpr.Show();
+			}
+		}
 	}
 
 	private ActionMapInput CreateActionMapInput(ActionMap map, InputDevice device)

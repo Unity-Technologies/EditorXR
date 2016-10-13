@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.VR.Utilities;
 
 public class KeyboardMallet : MonoBehaviour
 {
@@ -120,12 +121,14 @@ public class KeyboardMallet : MonoBehaviour
 		m_State = State.Transitioning;
 
 		var stemScale = m_StemOrigin.localScale;
-		// cache current width for smooth animation to target value without snapping
-		var currentLength = m_StemOrigin.localScale.y;
-		while (currentLength > 0)
+		var currentLength = m_StemOrigin.localScale.y; // cache current length for smooth animation to target value without snapping
+			
+		const float kSmoothTime = 0.1875f;
+		var startTime = Time.realtimeSinceStartup;
+		float smoothVelocity = 0f;
+		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
 		{
-			float smoothVelocity = 0f;
-			currentLength = Mathf.SmoothDamp(currentLength, 0f, ref smoothVelocity, 0.1875f, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentLength = U.Math.SmoothDamp(currentLength, 0f, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_StemOrigin.localScale = new Vector3(stemScale.x, currentLength, stemScale.z);
 			m_Bulb.transform.localPosition = new Vector3(0f, 0f, currentLength * 2f);
 			yield return null;
@@ -142,10 +145,13 @@ public class KeyboardMallet : MonoBehaviour
 
 		var stemScale = m_StemOrigin.localScale;
 		var currentLength = m_StemOrigin.localScale.y;
-		var smoothVelocity = 0f;
-		while (currentLength < m_StemLength)
+
+		const float kSmoothTime = 0.3125f;
+		var startTime = Time.realtimeSinceStartup;
+		float smoothVelocity = 0f;
+		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
 		{
-			currentLength = Mathf.SmoothDamp(currentLength, m_StemLength, ref smoothVelocity, 0.3125f, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentLength = U.Math.SmoothDamp(currentLength, m_StemLength, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_StemOrigin.localScale = new Vector3(stemScale.x, currentLength, stemScale.z);
 			m_Bulb.transform.localPosition = new Vector3(0f, 0f, currentLength * 2f);
 			yield return null;
