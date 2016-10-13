@@ -2377,7 +2377,6 @@ MonoBehaviour:
   m_RightSideBackResizeIcon: {fileID: 114000010732110990}
   m_FrontResizeIconsContainer: {fileID: 224000012214220868}
   m_BackResizeIconsContainer: {fileID: 224000013299645382}
-  heightCompensationMultiplier: 1.75
 --- !u!137 &137000012547310740
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1
@@ -2391,7 +2390,7 @@ SkinnedMeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 2100000, guid: 83ca310535508784eac3169945a7c18b, type: 2}
+  - {fileID: 2100000, guid: ee51784288d12324cb38f4fc3a4b5788, type: 2}
   - {fileID: 2100000, guid: dcfcbcce22eb43f4ebbf1d9a5ef17f78, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
