@@ -213,7 +213,7 @@ namespace UnityEngine.VR.Workspaces
 		void ShowResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
 			const float kOpacityTarget = 0.75f;
-			const float kDuration = 0.5f;
+			const float kDuration = 0.25f;
 
 			if (baseHandle == m_FrontHandle) // in order of potential usage
 			{
