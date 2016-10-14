@@ -150,6 +150,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			m_WorkspaceUI.highlightVisible = true;
 			m_PositionStart = transform.position;
 			m_DragStart = eventData.rayOrigin.position;
 			m_BoundSizeStart = contentBounds.size;
@@ -191,6 +192,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			m_WorkspaceUI.highlightVisible = false;
 			m_Dragging = false;
 		}
 
@@ -287,29 +289,31 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator AnimateShow()
 		{
-			var kTargetScale = transform.localScale;
+			m_WorkspaceUI.highlightVisible = true;
+
+			var targetScale = transform.localScale;
 			var scale = Vector3.zero;
 			var smoothVelocity = Vector3.zero;
-
-			while (!Mathf.Approximately(scale.x, kTargetScale.x))
+			while (!Mathf.Approximately(scale.x, targetScale.x))
 			{
 				transform.localScale = scale;
-				scale = Vector3.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.125f, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = Vector3.SmoothDamp(scale, targetScale, ref smoothVelocity, 0.125f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
+			m_WorkspaceUI.highlightVisible = false;
 			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateHide()
 		{
-			var kTargetScale = Vector3.zero;
+			var targetScale = Vector3.zero;
 			var scale = transform.localScale;
 			var smoothVelocity = Vector3.zero;
-			while (!Mathf.Approximately(scale.x, kTargetScale.x))
+			while (!Mathf.Approximately(scale.x, targetScale.x))
 			{
 				transform.localScale = scale;
-				scale = Vector3.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.06875f, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = Vector3.SmoothDamp(scale, targetScale, ref smoothVelocity, 0.06875f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
