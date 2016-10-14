@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.UI;
 
 public class ProjectUI : MonoBehaviour
 {
@@ -26,4 +27,8 @@ public class ProjectUI : MonoBehaviour
 	public RectTransform assetPanel { get { return m_AssetPanel; } }
 	[SerializeField]
 	private RectTransform m_AssetPanel;
+
+	public WorkspaceHighlight highlight { get { return m_WorkspaceHighlight; } }
+	[SerializeField]
+	private WorkspaceHighlight m_WorkspaceHighlight;
 }

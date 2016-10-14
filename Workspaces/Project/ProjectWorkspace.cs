@@ -95,6 +95,11 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 			handle.hoverEnded += OnScrollHoverEnded;
 		}
 
+		m_ProjectUI.assetScrollHandle.hoverStarted += (handle, data) => { m_ProjectUI.highlight.visible = true; };
+		m_ProjectUI.assetScrollHandle.hoverEnded += (handle, data) => { m_ProjectUI.highlight.visible = false; };
+		m_ProjectUI.assetScrollHandle.dragStarted += (handle, data) => { m_ProjectUI.highlight.visible = true; };
+		m_ProjectUI.assetScrollHandle.dragEnded += (handle, data) => { m_ProjectUI.highlight.visible = false; };
+
 		// Propagate initial bounds
 		OnBoundsChanged();
 	}
