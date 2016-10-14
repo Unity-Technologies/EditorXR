@@ -1140,6 +1140,7 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
+		CreateWorkspace<ConsoleWorkspace>();
 		CreateWorkspace<ProjectWorkspace>();
 	}
 
@@ -1228,6 +1229,7 @@ public class EditorVR : MonoBehaviour
 
 				var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 				tester.active = false;
+				miniWorldRayOrigin.gameObject.SetActive(false);
 
 				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
 				{
