@@ -471,7 +471,7 @@ public class EditorVR : MonoBehaviour
 				if (deviceData.Key.tagIndex == -1)
 					continue;
 
-				//Original SelectionTool
+				//SelectionTool
 				tool = SpawnTool(typeof(MoveWorkspacesModule), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 
@@ -488,6 +488,7 @@ public class EditorVR : MonoBehaviour
 				AddToolToDeviceData(tool, devices);
 			}
 
+			//Original TransformTool
 			tool = SpawnTool(typeof(TransformTool), out devices);
 			m_TransformTool = tool as ITransformTool;
 			AddToolToDeviceData(tool, devices);

@@ -215,6 +215,12 @@ namespace UnityEngine.VR.Workspaces
 				StartCoroutine(VacuumToViewer());
 		}
 
+		public void OnDoubleTriggerTapAboveHMD()
+		{
+			if(!m_Vacuuming)
+				StartCoroutine(VacuumToViewer());
+		}
+
 		private void Translate(Vector3 deltaPosition)
 		{
 			if (m_DragLocked)

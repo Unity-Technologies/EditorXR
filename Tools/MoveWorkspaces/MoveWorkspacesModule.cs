@@ -4,15 +4,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
+using UnityEditor.VR;
+using System;
 
 [ExecuteInEditMode]
-public class MoveWorkspacesModule : MonoBehaviour, ITool, ICustomActionMap, IRay
+public class MoveWorkspacesModule : MonoBehaviour, ITool, ICustomActionMap, IRay, ICustomRay
 {
-	private Workspace[] m_AllWorkspaces;
-	private Vector3[] m_StartPositions;
-
-	private Vector3 m_RayOriginStartPos;
-
 	public ActionMap actionMap
 	{
 		get
@@ -42,17 +39,33 @@ public class MoveWorkspacesModule : MonoBehaviour, ITool, ICustomActionMap, IRay
 		get; set;
 	}
 
+	public Action showDefaultRay
+	{
+		private get; set;
+	}
+
+	public Action hideDefaultRay
+	{
+		private get; set;
+	}
+
 	float m_HeldTimeStamp = 0.0f;
-	const float kPressedTime = 1.0f;
-	Vector3 m_StartPos;
-	Vector3 m_StartRot;
+	const float kMoveTime = 1.0f;
+	const float kDestroyThrowTime = 0.3f;
+	const float kDoubleTriggerTapTime = 0.3f;
+	private Workspace[] m_AllWorkspaces;
+	private Vector3[] m_StartPositions;
+	private Quaternion[] m_StartAngles;
+	private Vector3 m_RayOriginStartPos;
+	private Quaternion m_RayOriginStartAngle;
+
+	private Vector3 m_StartThrowPosition;
+	private bool m_StartedThrowing = false;
 
 	private enum ManipulateMode
 	{
 		On,
 		Off,
-		Move,
-		Rotate,
 	}
 	private ManipulateMode mode = ManipulateMode.Off;
 
@@ -64,85 +77,128 @@ public class MoveWorkspacesModule : MonoBehaviour, ITool, ICustomActionMap, IRay
 			{
 				if(m_MoveWorkspacesInput.trig.wasJustPressed)
 				{
-					m_HeldTimeStamp = Time.realtimeSinceStartup;
+					m_StartedThrowing = false;
+					if(IsControllerAboveHMD())
+					{
+						if(Time.realtimeSinceStartup - m_HeldTimeStamp < kDoubleTriggerTapTime)
+						{
+							m_AllWorkspaces = GetComponentsInChildren<Workspace>();
+							if(m_AllWorkspaces.Length > 0)
+							{
+								for(int i = 0; i < m_AllWorkspaces.Length; i++)
+								{
+									m_AllWorkspaces[i].OnDoubleTriggerTapAboveHMD();
+								}
+							}
+						}
+						m_HeldTimeStamp = Time.realtimeSinceStartup;
+					}
 				}
 				else if(m_MoveWorkspacesInput.trig.isHeld)
 				{
-					if(Time.realtimeSinceStartup - m_HeldTimeStamp > kPressedTime)
+					if(IsControllerAboveHMD())
 					{
-						m_AllWorkspaces = GetComponentsInChildren<Workspace>();
-						if(m_AllWorkspaces.Length > 0)
+						if(Time.realtimeSinceStartup - m_HeldTimeStamp > kDestroyThrowTime)
 						{
-							m_RayOriginStartPos = rayOrigin.position;
-							m_StartPositions = new Vector3[m_AllWorkspaces.Length];
-							for(int i = 0; i < m_StartPositions.Length; i++)
+							if(UserThrowsDown())
 							{
-								m_StartPositions[i] = m_AllWorkspaces[i].transform.position;
+								m_AllWorkspaces = GetComponentsInChildren<Workspace>();
+								if(m_AllWorkspaces.Length > 0)
+								{
+									for(int i = 0; i < m_AllWorkspaces.Length; i++)
+									{
+										m_AllWorkspaces[i].OnCloseClicked();
+									}
+								}
 							}
-							mode = ManipulateMode.On;
 						}
-						else
+						if(Time.realtimeSinceStartup - m_HeldTimeStamp > kMoveTime)
 						{
-							return;
-						}
-                    }
+							m_AllWorkspaces = GetComponentsInChildren<Workspace>();
+							if(m_AllWorkspaces.Length > 0)
+								SetManipulationStarted();
+							else
+								return;
+						} 
+					}
 				}
 				break;
 			}
 			case ManipulateMode.On:
 			{
-				if(m_MoveWorkspacesInput.trig.wasJustPressed)
+				if(m_MoveWorkspacesInput.trig.isHeld)
 				{
-					m_AllWorkspaces = GetComponentsInChildren<Workspace>();
-					if(m_AllWorkspaces.Length > 0)
-					{
-						m_RayOriginStartPos = rayOrigin.position;
-						m_StartPositions = new Vector3[m_AllWorkspaces.Length];
-						for(int i = 0; i < m_StartPositions.Length; i++)
-						{
-							m_StartPositions[i] = m_AllWorkspaces[i].transform.position;
-						}
-					}
-				}
-				else if(m_MoveWorkspacesInput.trig.isHeld)
-				{
-					Vector3 rayDelta = (rayOrigin.position - m_RayOriginStartPos);
-					if(Mathf.Abs(rayDelta.y) > 0.1f)
-					{
-						mode = ManipulateMode.Move;
-					}
-					else if(Mathf.Abs(rayDelta.x) > 1.0f || Mathf.Abs(rayDelta.z) > 1.0f)
-					{
-						mode = ManipulateMode.Rotate;
-					}
-				}
-				break;
-			}
-			case ManipulateMode.Move:
-			{
-				//move more than hand movement
-				Vector3 rayDelta = (rayOrigin.position - m_RayOriginStartPos) * 4.5f;
-				for(int i = 0; i < m_AllWorkspaces.Length; i++)
-				{
-					m_AllWorkspaces[i].transform.position = new Vector3(m_StartPositions[i].x,m_StartPositions[i].y + rayDelta.y,m_StartPositions[i].z);
-				}
+					Vector3 rayDelta = (rayOrigin.position - m_RayOriginStartPos) * 1.5f;
+					Quaternion rayCurrentAngle = Quaternion.LookRotation(rayOrigin.forward);
+					float rayAngleDelta = Quaternion.Angle(m_RayOriginStartAngle,rayCurrentAngle);
+					float sign = rayCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
+					if(sign < 0.0f)
+						rayAngleDelta *= -1;
 
-				if(m_MoveWorkspacesInput.trig.wasJustReleased)
-				{
-					mode = ManipulateMode.On;
+					for(int i = 0; i < m_AllWorkspaces.Length; i++)
+					{
+						if(Mathf.Abs(rayDelta.y) > 0.1f)
+							m_AllWorkspaces[i].transform.position = new Vector3(m_AllWorkspaces[i].transform.position.x,m_StartPositions[i].y + rayDelta.y,m_AllWorkspaces[i].transform.position.z);
+
+						if(Mathf.Abs(rayAngleDelta) > 1.0f)
+							m_AllWorkspaces[i].transform.RotateAround(VRView.viewerPivot.position,Vector3.up,rayAngleDelta);
+
+						//workspaces should look at center on Y axis
+						Quaternion temp = m_AllWorkspaces[i].transform.rotation;
+						temp.SetLookRotation(m_AllWorkspaces[i].transform.position,Vector3.up - VRView.viewerPivot.position);
+						m_AllWorkspaces[i].transform.rotation = temp;
+					}
+					m_RayOriginStartAngle = rayCurrentAngle;
 				}
-				break;
-			}
-			case ManipulateMode.Rotate:
-			{
 				if(m_MoveWorkspacesInput.trig.wasJustReleased)
 				{
-					mode = ManipulateMode.On;
+					mode = ManipulateMode.Off;
+					showDefaultRay();
 				}
 				break;
 			}
 		}
 	}
 
+	bool IsControllerAboveHMD()
+	{
+		if(rayOrigin.position.y > VRView.viewerCamera.transform.position.y)
+			return true;
 
+		return false;
+	}
+
+	void SetManipulationStarted()
+	{
+		m_RayOriginStartPos = rayOrigin.position;
+		m_RayOriginStartAngle = Quaternion.LookRotation(rayOrigin.forward);
+		m_StartPositions = new Vector3[m_AllWorkspaces.Length];
+		for(int i = 0; i < m_StartPositions.Length; i++)
+		{
+			m_StartPositions[i] = m_AllWorkspaces[i].transform.position;
+			Vector3 wsDir = VRView.viewerPivot.position - m_AllWorkspaces[i].transform.position;
+		}
+		mode = ManipulateMode.On;
+		hideDefaultRay();
+	}
+
+	bool UserThrowsDown()
+	{
+		if(!m_StartedThrowing)
+		{
+			m_StartedThrowing = true;
+			m_StartThrowPosition = rayOrigin.position;
+			return false;
+		}
+		else
+		{
+			float deltaY = m_StartThrowPosition.y - rayOrigin.position.y;
+			Debug.Log(deltaY.ToString());
+			if(deltaY > 0.1f)
+			{
+				return true;
+			}
+			return false;
+		}
+	}
 }
