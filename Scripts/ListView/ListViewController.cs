@@ -1,15 +1,30 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.VR.Tools;
 
 namespace ListView
 {
-	public abstract class ListViewController<DataType, ItemType> : ListViewControllerBase
+	public abstract class ListViewController<DataType, ItemType> : ListViewControllerBase, IInstantiateUI
 		where DataType : ListViewItemData
 		where ItemType : ListViewItem<DataType>
 	{
+		public virtual DataType[] data
+		{
+			set
+			{
+				if (m_Data != null) // Clear out visuals for old data
+					foreach (var data in m_Data)
+						RecycleBeginning(data);
+				m_Data = value;
+				scrollOffset = 0;
+			}
+		}
 		[SerializeField]
 		protected DataType[] m_Data;
 
 		protected override int dataLength { get { return m_Data.Length; } }
+
+		public Func<GameObject, GameObject> instantiateUI { get; set; }
 
 		protected override void UpdateItems()
 		{
@@ -17,11 +32,11 @@ namespace ListView
 			{
 				if (i + m_DataOffset < -1)
 				{
-					CleanUpBeginning(m_Data[i]);
+					RecycleBeginning(m_Data[i]);
 				}
 				else if (i + m_DataOffset > m_NumRows - 1)
 				{
-					CleanUpEnd(m_Data[i]);
+					RecycleEnd(m_Data[i]);
 				}
 				else
 				{
@@ -30,13 +45,13 @@ namespace ListView
 			}
 		}
 
-		protected virtual void CleanUpBeginning(DataType data)
+		protected virtual void RecycleBeginning(DataType data)
 		{
 			RecycleItem(data.template, data.item);
 			data.item = null;
 		}
 
-		protected virtual void CleanUpEnd(DataType data)
+		protected virtual void RecycleEnd(DataType data)
 		{
 			RecycleItem(data.template, data.item);
 			data.item = null;
@@ -72,7 +87,10 @@ namespace ListView
 			}
 			else
 			{
-				item = Instantiate(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
+				if(instantiateUI != null)
+					item = instantiateUI(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
+				else
+					item = Instantiate(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
 				item.transform.SetParent(transform, false);
 				item.Setup(data);
 			}
