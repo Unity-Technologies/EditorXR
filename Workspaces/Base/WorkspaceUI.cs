@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Workspaces
@@ -22,9 +23,6 @@ namespace UnityEngine.VR.Workspaces
 		const float kBackHandleOffset = -0.145f; // Offset to place the back handle in the expected region behind the workspace
 		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
 		const float kPanelOffset = 0.0625f; // The panel needs to be pulled back slightly
-		const string kMaterialHighlightColorTopProperty = "_ColorTop";
-		const string kMaterialHighlightColorBottomProperty = "_ColorBottom";
-		const string kMaterialHighlightAlphaProperty = "_Alpha";
 
 		// Cached for optimization
 		float m_OriginalUIContainerLocalYPos;
@@ -47,10 +45,8 @@ namespace UnityEngine.VR.Workspaces
 		Transform m_FrontHandleTransform;
 		Transform m_BackHandleTransform;
 		Transform m_TopHighlightTransform;
-		Material m_TopHighlightMaterial;
 		Coroutine m_RotateFrontFaceForwardCoroutine;
 		Coroutine m_RotateFrontFaceBackwardCoroutine;
-		Coroutine m_HighlightCoroutine;
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -130,12 +126,14 @@ namespace UnityEngine.VR.Workspaces
 		Transform m_BackResizeIconsContainer;
 
 		[SerializeField]
-		MeshRenderer m_TopHighlightRenderer;
+		WorkspaceHighlight m_TopHighlight;
 
 		[SerializeField]
 		Transform m_TopHighlightContainer;
 
 		public bool dynamicFaceAdjustment { get; set; }
+
+		public bool highlightVisible { set { m_TopHighlight.visible = value; } }
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
@@ -211,26 +209,6 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 		Bounds m_Bounds;
-
-		public bool highlightVisible
-		{
-			set
-			{
-				if (m_HighlightVisible == value)
-					return;
-
-				m_HighlightVisible = value;
-
-				if (m_HighlightCoroutine != null)
-					StopCoroutine(ref m_HighlightCoroutine);
-
-				if (m_HighlightVisible == true)
-					m_HighlightCoroutine = StartCoroutine(ShowHighlight());
-				else
-					m_HighlightCoroutine = StartCoroutine(HideHighlight());
-			}
-		}
-		bool m_HighlightVisible;
 
 		void ShowResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
@@ -330,16 +308,6 @@ namespace UnityEngine.VR.Workspaces
 
 			if (m_TopPanelDividerOffset == null)
 				m_TopPanelDividerTransform.gameObject.SetActive(false);
-
-			m_TopHighlightMaterial = U.Material.GetMaterialClone(m_TopHighlightRenderer);
-			m_TopHighlightMaterial.SetColor(kMaterialHighlightColorTopProperty, UnityBrandColorScheme.sessionGradient.a);
-			m_TopHighlightMaterial.SetColor(kMaterialHighlightColorBottomProperty, UnityBrandColorScheme.sessionGradient.b);
-			m_TopHighlightMaterial.SetFloat(kMaterialHighlightAlphaProperty, 0f); // hide the highlight initially
-		}
-
-		private void OnDestory()
-		{
-			U.Object.Destroy(m_TopHighlightMaterial);
 		}
 
 		void Update()
@@ -421,38 +389,6 @@ namespace UnityEngine.VR.Workspaces
 				m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
 				yield return null;
 			}
-		}
-
-		IEnumerator ShowHighlight()
-		{
-			var kTargetAlpha = 1f;
-			var currentAlpha = m_TopHighlightMaterial.GetFloat(kMaterialHighlightAlphaProperty);
-			var smoothVelocity = 0f;
-
-			while (!Mathf.Approximately(currentAlpha, kTargetAlpha))
-			{
-				m_TopHighlightMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
-				currentAlpha = Mathf.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, 0.25f, Mathf.Infinity, Time.unscaledDeltaTime);
-				yield return null;
-			}
-
-			m_HighlightCoroutine = null;
-		}
-
-		IEnumerator HideHighlight()
-		{
-			var kTargetAlpha = 0f;
-			var currentAlpha = m_TopHighlightMaterial.GetFloat(kMaterialHighlightAlphaProperty);
-			var smoothVelocity = 0f;
-
-			while (!Mathf.Approximately(currentAlpha, kTargetAlpha))
-			{
-				m_TopHighlightMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
-				currentAlpha = Mathf.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, 0.25f, Mathf.Infinity, Time.unscaledDeltaTime);
-				yield return null;
-			}
-
-			m_HighlightCoroutine = null;
 		}
 	}
 }
