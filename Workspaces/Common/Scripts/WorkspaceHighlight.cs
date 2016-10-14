@@ -58,7 +58,7 @@ namespace UnityEngine.VR.UI
 			while (!Mathf.Approximately(currentAlpha, kTargetAlpha))
 			{
 				m_TopHighlightMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
-				currentAlpha = Mathf.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, 0.25f, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentAlpha = Mathf.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, 0.15f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
