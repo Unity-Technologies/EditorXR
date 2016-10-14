@@ -259,6 +259,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 		var smoothMotion = clone.GetComponent<SmoothMotion>();
 		if (smoothMotion != null)
 			smoothMotion.enabled = false;
+
+		StartCoroutine(AnimateToPreviewScale());
 	}
 
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
@@ -345,5 +347,27 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 	private void OnDestroy()
 	{
 		U.Object.Destroy(m_Cube.sharedMaterial);
+	}
+
+	/// <summary>
+	/// Animate the LocalScale of the asset towards a common/unified scale
+	/// used when the asset is magnetized/attached to the proxy, after grabbing it from the asset grid
+	/// </summary>
+	IEnumerator AnimateToPreviewScale()
+	{
+		var currentLocalScale = m_DragObject.localScale;
+		var targetLocalScale = Vector3.one * 0.125f;
+		var currentTime = 0f;
+		var currentVelocity = 0f;
+		const float kDuration = 1f;
+		while (currentTime < kDuration)
+		{
+			if (m_DragObject == null)
+				yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
+
+			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
+			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, currentTime);
+			yield return null;
+		}
 	}
 }
