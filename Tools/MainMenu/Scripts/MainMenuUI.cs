@@ -360,6 +360,7 @@ namespace UnityEngine.VR.Menus
 					var target = m_FaceSubmenus[face].Last();
 					m_FaceSubmenus[face].Remove(target);
 					U.Object.Destroy(target);
+
 					if (m_FaceSubmenus[face].Count > 1)
 						m_FaceSubmenus[face].Last().SetActive(true);
 					else
@@ -472,6 +473,13 @@ namespace UnityEngine.VR.Menus
 
 			foreach (var face in m_MenuFaces)
 				face.Hide();
+
+			foreach (var submenus in m_FaceSubmenus)
+			{
+				foreach (var submenu in submenus.Value)
+					U.Object.Destroy(submenu);
+			}
+			m_FaceSubmenus.Clear();
 
 			StartCoroutine(AnimateFrameReveal(m_VisibilityState));
 

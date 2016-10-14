@@ -98,21 +98,17 @@ public class SnappingModule : MonoBehaviour, IModule
 
 	private void HandleGroundSnap(Transform target, MeshFilter meshFilter, Vector3 deltaMovement)
 	{
-		if (U.Snapping.HasFlag(U.Snapping.SnappingModes.SnapToGround))
-		{
-			var closestVertex = U.Snapping.GetClosestVertex(meshFilter, Vector3.zero, Vector3.up);
-			U.Snapping.SnapToGroundPlane(target, deltaMovement, closestVertex);
-		}
+		if (!U.Snapping.HasFlag(U.Snapping.SnappingModes.SnapToGround))
+			return;
+
+		var closestVertex = U.Snapping.GetClosestVertex(meshFilter, Vector3.zero, Vector3.up);
+		U.Snapping.SnapToGroundPlane(target, deltaMovement, closestVertex);
 	}
 
 	private void HandleSurfaceSnap(Transform target, MeshFilter meshFilter, Transform[] raycastIgnore)
 	{
-		if (U.Snapping.HasFlag(U.Snapping.SnappingModes.SnapToSurfaceNormal))
-		{
-			Vector3 transformPosition = target.position;
-			Vector3 origin = m_SnapDataTable[target].startPosition;
-			Vector3 currentOffset = transformPosition - origin;
-			RaycastHit hit;
+		if (!U.Snapping.HasFlag(U.Snapping.SnappingModes.SnapToSurfaceNormal))
+			return;
 
 			Ray ray = new Ray(origin, currentOffset);
 			if (U.Snapping.GetRaySnapHit(
@@ -134,39 +130,38 @@ public class SnappingModule : MonoBehaviour, IModule
 
 	private void HandleThrowEnd(Transform target, MeshFilter meshFilter, Transform[] raycastIgnore)
 	{
-		if (U.Snapping.HasFlag(U.Snapping.SnappingModes.Throw))
+		if (!U.Snapping.HasFlag(U.Snapping.SnappingModes.Throw))
+			return;
+		
+		if (!m_SnapDataTable.ContainsKey(target))
+			return;
+
+		var movementBuffer = m_SnapDataTable[target].movementDirections;
+		var timestampBuffer = m_SnapDataTable[target].movementTimestamps;
+
+		int count = movementBuffer.Count;
+		if (count <= 1)
+			return;
+
+		Vector3 lastDirection = movementBuffer[count - 1];
+		Vector3 total = lastDirection;
+
+		float firstTime = timestampBuffer[count - 1];
+		float time = 0;
+
+		for (int i = count - 2; i > 0; i--)
 		{
-			if (m_SnapDataTable.ContainsKey(target))
+			if (Vector3.Angle(lastDirection, movementBuffer[i]) < 30)
 			{
-				var movementBuffer = m_SnapDataTable[target].movementDirections;
-				var timestampBuffer = m_SnapDataTable[target].movementTimestamps;
-
-				int count = movementBuffer.Count;
-
-				if (count > 1)
-				{
-					Vector3 lastDirection = movementBuffer[count - 1];
-					Vector3 total = lastDirection;
-
-					float firstTime = timestampBuffer[count - 1];
-					float time = 0;
-
-					for (int i = count - 2; i > 0; i--)
-					{
-						if (Vector3.Angle(lastDirection, movementBuffer[i]) < 30)
-						{
-							total += movementBuffer[i];
-							time = firstTime - timestampBuffer[i];
-						}
-						else
-							break;
-					}
-
-					float totalMagnitude = total.magnitude;
-					SetupThrow(target, meshFilter, raycastIgnore, total / totalMagnitude, totalMagnitude, time);
-				}
+				total += movementBuffer[i];
+				time = firstTime - timestampBuffer[i];
 			}
+			else
+				break;
 		}
+
+		float totalMagnitude = total.magnitude;
+		SetupThrow(target, meshFilter, raycastIgnore, total / totalMagnitude, totalMagnitude, time);
 	}
 
 	private void SetupThrow(Transform target, MeshFilter meshFilter, Transform[] raycastIgnore, Vector3 throwDirection, float distance, float throwTime)
@@ -199,39 +194,55 @@ public class SnappingModule : MonoBehaviour, IModule
 
 	private void UpdateThrow(Transform target)
 	{
-		if (U.Snapping.HasFlag(U.Snapping.SnappingModes.Throw))
+		if (!U.Snapping.HasFlag(U.Snapping.SnappingModes.Throw))
+			return;
+
+		if (!m_SnapDataTable.ContainsKey(target))
+			return;
+
+		var snapData = m_SnapDataTable[target];
+		if (snapData.currentVelocity <= 0)
+			return;
+
+		float deltaTime = Time.unscaledDeltaTime;
+		float deltaVelocity = snapData.currentVelocity * deltaTime;
+		Vector3 deltaMovement = snapData.throwDirection * deltaVelocity;
+		bool validMovement = true;
+		for (int i = 0; i < 3; i++)
 		{
-			if (m_SnapDataTable.ContainsKey(target))
+			if (float.IsInfinity(deltaMovement[i]) || float.IsNaN(deltaMovement[i]))
 			{
-				var snapData = m_SnapDataTable[target];
-				if (snapData.currentVelocity > 0)
-				{
-					float deltaTime = Time.unscaledDeltaTime;
-					float deltaVelocity = snapData.currentVelocity * deltaTime;
-
-					if (!float.IsNaN(deltaVelocity))
-						target.position += snapData.throwDirection * deltaVelocity;
-
-					snapData.currentVelocity -= snapData.startVelocity * deltaTime;
-
-					if (snapData.hasCollision)
-					{
-						float currentDistance = Vector3.Distance(target.position + snapData.closestVertex, snapData.targetPoint.point);
-
-						bool isClose = currentDistance < deltaVelocity;
-						bool overshot = currentDistance > snapData.startDistance;
-
-						if (isClose || overshot)
-						{
-							Vector3 targetPosition = snapData.targetPoint.point - snapData.closestVertex;
-							target.position = targetPosition;
-							snapData.currentVelocity = -1;
-						}
-					}
-					m_SnapDataTable[target] = snapData;
-				}
+				validMovement = false;
+				break;
 			}
 		}
+
+		if (validMovement)
+			target.position += deltaMovement;
+
+		snapData.currentVelocity -= snapData.startVelocity * deltaTime;
+
+		if (snapData.hasCollision)
+		{
+			float currentDistance = Vector3.Distance(target.position + snapData.closestVertex, snapData.targetPoint.point);
+
+			bool isClose = currentDistance < deltaVelocity;
+			bool overshot = currentDistance > snapData.startDistance;
+
+			if (isClose || overshot)
+			{
+				Vector3 targetPosition = snapData.targetPoint.point - snapData.closestVertex;
+				target.position = targetPosition;
+				snapData.currentVelocity = -1;
+			}
+		}
+		else
+		{
+			if (U.Snapping.SnapToGroundPlane(target, snapData.throwDirection, snapData.closestVertex))
+				snapData.currentVelocity = -1;
+		}
+
+		m_SnapDataTable[target] = snapData;
 	}
 
 }
