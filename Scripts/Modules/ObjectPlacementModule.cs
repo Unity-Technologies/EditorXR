@@ -1,18 +1,21 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.VR.Utilities;
 
 public class ObjectPlacementModule : MonoBehaviour
 {
-	private const float kInstantiateFOVDifference = 20f;
+	const float kInstantiateFOVDifference = 20f;
 
-	private const float kGrowDuration = 0.5f;
+	const float kGrowDuration = 0.5f;
 
-	public void PositionPreview(Transform preview, Transform previewOrigin, float t = 1f)
+	public void Preview(Transform preview, Transform previewOrigin, float t = 1f, Quaternion? localRotation = null)
 	{
 		preview.transform.position = Vector3.Lerp(preview.transform.position, previewOrigin.position, t);
-		preview.transform.rotation = Quaternion.Lerp(preview.transform.rotation, previewOrigin.rotation, t);
+		preview.transform.rotation = Quaternion.Lerp(
+									preview.transform.rotation,
+									localRotation != null ? previewOrigin.rotation * localRotation.Value : previewOrigin.rotation,
+									t);
 	}
 
 	public void PlaceObject(Transform obj, Vector3 targetScale)

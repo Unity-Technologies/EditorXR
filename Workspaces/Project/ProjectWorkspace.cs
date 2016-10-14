@@ -4,39 +4,40 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
+public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 {
-	private const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
-	private const float kPaneMargin = 0.01f;
-	private const float kPanelMargin = 0.01f;
-	private const float kScrollMargin = 0.03f;
-	private const float kYBounds = 0.2f;
+	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
+	const float kPaneMargin = 0.01f;
+	const float kPanelMargin = 0.01f;
+	const float kScrollMargin = 0.03f;
+	const float kYBounds = 0.2f;
 
-	private const float kMinScale = 0.03f;
-	private const float kMaxScale = 0.2f;
-
-	[SerializeField]
-	private GameObject m_ContentPrefab;
+	const float kMinScale = 0.03f;
+	const float kMaxScale = 0.2f;
 
 	[SerializeField]
-	private GameObject m_SliderPrefab;
+	GameObject m_ContentPrefab;
 
 	[SerializeField]
-	private GameObject m_FilterPrefab;
+	GameObject m_SliderPrefab;
 
-	private ProjectUI m_ProjectUI;
-	private FilterUI m_FilterUI;
+	[SerializeField]
+	GameObject m_FilterPrefab;
 
-	private Vector3 m_ScrollStart;
-	private float m_ScrollOffsetStart;
+	ProjectUI m_ProjectUI;
+	FilterUI m_FilterUI;
+
+	Vector3 m_ScrollStart;
+	float m_ScrollOffsetStart;
 
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
-	public PositionPreviewDelegate positionPreview { private get; set; }
+	public PreviewDelegate preview { private get; set; }
 
 	public override void Setup()
 	{
@@ -63,7 +64,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		assetListView.testFilter = TestFilter;
 		assetListView.placeObject = placeObject;
 		assetListView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
-		assetListView.positionPreview = positionPreview;
+		assetListView.preview = preview;
 
 #if UNITY_EDITOR
 		EditorApplication.projectWindowChanged += SetupFolderList;
@@ -145,15 +146,14 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
 	}
 
-	private void SelectFolder(FolderData data)
+	void SelectFolder(FolderData data)
 	{
-		foreach (var folderData in m_ProjectUI.folderListView.listData)
-			folderData.ClearSelected();
+		m_ProjectUI.folderListView.ClearSelected();
 		data.selected = true;
-		m_ProjectUI.assetListView.listData = data.assets;
+		m_ProjectUI.assetListView.data = data.assets;
 	}
 
-	private void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		m_ScrollStart = eventData.rayOrigin.transform.position;
 		if (handle == m_ProjectUI.folderScrollHandle)
@@ -168,12 +168,12 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		}
 	}
 
-	private void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		Scroll(handle, eventData);
 	}
 
-	private void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		Scroll(handle, eventData);
 		if (handle == m_ProjectUI.folderScrollHandle)
@@ -188,7 +188,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		}
 	}
 
-	private void Scroll(BaseHandle handle, HandleEventData eventData)
+	void Scroll(BaseHandle handle, HandleEventData eventData)
 	{
 		var scrollOffset = m_ScrollOffsetStart + Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
 		if (handle == m_ProjectUI.folderScrollHandle)
@@ -197,39 +197,40 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 			m_ProjectUI.assetListView.scrollOffset = scrollOffset;
 	}
 
-	private void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		setHighlight(handle.gameObject, true);
 	}
 
-	private void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		setHighlight(handle.gameObject, false);
 	}
 
-	private void Scale(float value)
+	void Scale(float value)
 	{
 		m_ProjectUI.assetListView.scaleFactor = value;
 	}
 
-	private bool TestFilter(string type)
+	bool TestFilter(string type)
 	{
 		return FilterUI.TestFilter(m_FilterUI.searchQuery, type);
 	}
 
 #if UNITY_EDITOR
-	private void SetupFolderList()
+	void SetupFolderList()
 	{
 		var assetTypes = new HashSet<string>();
-		var rootFolder = CreateFolderData(assetTypes);
+		var hasNext = true;
+		var rootFolder = CreateFolderData(assetTypes, ref hasNext);
 		rootFolder.expanded = true;
-		m_ProjectUI.folderListView.listData = new[] { rootFolder };
+		m_ProjectUI.folderListView.data = new[] { rootFolder };
 
 		SelectFolder(rootFolder);
 		m_FilterUI.filterTypes = assetTypes.ToList();
 	}
 
-	private FolderData CreateFolderData(HashSet<string> assetTypes, HierarchyProperty hp = null)
+	FolderData CreateFolderData(HashSet<string> assetTypes, ref bool hasNext, HierarchyProperty hp = null)
 	{
 		if (hp == null)
 		{
@@ -240,18 +241,25 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPositionPreview
 		var depth = hp.depth;
 		var folderList = new List<FolderData>();
 		var assetList = new List<AssetData>();
-		while (hp.Next(null) && hp.depth > depth)
+		if (hasNext)
 		{
-			if (hp.isFolder)
-				folderList.Add(CreateFolderData(assetTypes, hp));
-			else if(hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
-				assetList.Add(CreateAssetData(assetTypes, hp));
+			hasNext = hp.Next(null);
+			while (hasNext && hp.depth > depth)
+			{
+				if (hp.isFolder)
+					folderList.Add(CreateFolderData(assetTypes, ref hasNext, hp));
+				else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
+					assetList.Add(CreateAssetData(assetTypes, hp));
+				if(hasNext)
+					hasNext = hp.Next(null);
+			}
+			if (hasNext)
+				hp.Previous(null);
 		}
-		hp.Previous(null);
 		return new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray());
 	}
 
-	private AssetData CreateAssetData(HashSet<string> assetTypes, HierarchyProperty hp)
+	AssetData CreateAssetData(HashSet<string> assetTypes, HierarchyProperty hp)
 	{
 		var type = hp.pptrValue.GetType().Name;
 		switch (type)
