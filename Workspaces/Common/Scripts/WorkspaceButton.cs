@@ -148,7 +148,7 @@ namespace UnityEngine.VR.Workspaces
 			m_ContentVisibilityCoroutine = StartCoroutine(ShowContent());
 
 			var delay = 0f;
-			const float kTargetDelay = 1f;
+			const float kTargetDelay = 0.5f;
 			var scale = m_HiddenLocalScale;
 			var smoothVelocity = Vector3.zero;
 			var hiddenLocalYScale = new Vector3(m_HiddenLocalScale.x, 0f, 0f);

@@ -259,6 +259,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 		var smoothMotion = clone.GetComponent<SmoothMotion>();
 		if (smoothMotion != null)
 			smoothMotion.enabled = false;
+
+		StartCoroutine(AnimateToPreviewScale());
 	}
 
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
@@ -281,24 +283,6 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 		}
 
 		StartCoroutine(AnimatedHide(m_DragObject.gameObject, gridItem.m_Cube, eventData.rayOrigin));
-	}
-
-	IEnumerator AnimatedHide(GameObject itemToHide, Renderer cubeRenderer, Transform rayOrigin)
-	{
-		var itemTransform = itemToHide.transform;
-		var currentScale = itemTransform.localScale;
-		var targetScale = Vector3.zero;
-		var transitionAmount = Time.unscaledDeltaTime;
-		var transitionAddMultiplier = 6;
-		while (transitionAmount < 1)
-		{
-			itemTransform.localScale = Vector3.Lerp(currentScale, targetScale, transitionAmount);
-			transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
-			yield return null;
-		}
-
-		cubeRenderer.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
-		U.Object.Destroy(itemToHide);
 	}
 
 	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
@@ -345,5 +329,46 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 	private void OnDestroy()
 	{
 		U.Object.Destroy(m_Cube.sharedMaterial);
+	}
+
+	/// <summary>
+	/// Animate the LocalScale of the asset towards a common/unified scale
+	/// used when the asset is magnetized/attached to the proxy, after grabbing it from the asset grid
+	/// </summary>
+	IEnumerator AnimateToPreviewScale()
+	{
+		var currentLocalScale = m_DragObject.localScale;
+		const float smallerLocalScaleMultiplier = 0.125f;
+		var targetLocalScale = Vector3.one * smallerLocalScaleMultiplier;
+		var currentTime = 0f;
+		var currentVelocity = 0f;
+		const float kDuration = 1f;
+		while (currentTime < kDuration - 0.05f)
+		{
+			if (m_DragObject == null)
+				yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
+
+			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
+			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, currentTime);
+			yield return null;
+		}
+	}
+
+	IEnumerator AnimatedHide(GameObject itemToHide, Renderer cubeRenderer, Transform rayOrigin)
+	{
+		var itemTransform = itemToHide.transform;
+		var currentScale = itemTransform.localScale;
+		var targetScale = Vector3.zero;
+		var transitionAmount = Time.unscaledDeltaTime;
+		var transitionAddMultiplier = 6;
+		while (transitionAmount < 1)
+		{
+			itemTransform.localScale = Vector3.Lerp(currentScale, targetScale, transitionAmount);
+			transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
+			yield return null;
+		}
+
+		cubeRenderer.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
+		U.Object.Destroy(itemToHide);
 	}
 }

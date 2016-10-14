@@ -106,12 +106,13 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 		var halfScrollMargin = kScrollMargin * 0.5f;
 		var doubleScrollMargin = kScrollMargin * 2;
-
 		var xOffset = (contentBounds.size.x - size.x + kPaneMargin) * -0.5f;
+		var folderScrollHandleXPositionOffset = 0.025f;
+		var folderScrollHandleXScaleOffset = 0.015f;
 
 		var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
-		folderScrollHandleTransform.localPosition = new Vector3(xOffset - halfScrollMargin, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
-		folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
+		folderScrollHandleTransform.localPosition = new Vector3(xOffset - halfScrollMargin + folderScrollHandleXPositionOffset, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
+		folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin + folderScrollHandleXScaleOffset, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var folderListView = m_ProjectUI.folderListView;
 		folderListView.bounds = bounds;

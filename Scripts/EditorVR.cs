@@ -1142,7 +1142,7 @@ public class EditorVR : MonoBehaviour
 	{
 		CreateWorkspace<ProjectWorkspace>();
 	}
-
+	
 	private void CreateWorkspace<T>() where T : Workspace
 	{
 		CreateWorkspace(typeof(T));
