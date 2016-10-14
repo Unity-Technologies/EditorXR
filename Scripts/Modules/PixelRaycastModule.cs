@@ -1,6 +1,5 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
-using UnityEngine.VR.Proxies;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace UnityEditor.VR.Modules
 {
@@ -22,6 +21,11 @@ namespace UnityEditor.VR.Modules
 			m_RaycastGameObjects[rayOrigin] = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera);
 		}
 
+		/// <summary>
+		/// Get the GameObject over which a particular ray is hovering
+		/// </summary>
+		/// <param name="rayOrigin">rayOrigin to check against</param>
+		/// <returns></returns>
 		public GameObject GetFirstGameObject(Transform rayOrigin)
 		{
 			GameObject go;
@@ -31,9 +35,12 @@ namespace UnityEditor.VR.Modules
 			return null;
 		}
 
+		/// <summary>
+		/// Update the list of objects that ignore raycasts. This list will include EditorVR and all of its children
+		/// </summary>
 		public void UpdateIgnoreList()
 		{
-			var children = ignoreRoot.GetComponentsInChildren<Transform>();
+			var children = ignoreRoot.GetComponentsInChildren<Transform>(true);
 			m_IgnoreList = new GameObject[children.Length];
 			for (int i = 0; i < children.Length; i++)
 				m_IgnoreList[i] = children[i].gameObject;

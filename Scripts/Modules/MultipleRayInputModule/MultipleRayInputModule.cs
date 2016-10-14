@@ -1,35 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Proxies;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
 	public class MultipleRayInputModule : BaseInputModule
 	{
-		private static int UILayer = -1;
-		private readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
-
-		public Camera eventCamera { get { return m_EventCamera; } set { m_EventCamera = value; } }
-		private Camera m_EventCamera;
-
-		public ActionMap actionMap { get { return m_UIActionMap; } }
-		[SerializeField]
-		private ActionMap m_UIActionMap;
-
-		public Func<Transform, float> getPointerLength { get; set; }
-
-		public bool inputBlocked { get; set; }
-
-		protected override void Awake()
-		{
-			base.Awake();
-			UILayer = LayerMask.NameToLayer("UI");
-		}
-
-		private class RaycastSource
+		class RaycastSource
 		{
 			public IProxy proxy; // Needed for checking if proxy is active
 			public Transform rayOrigin;
@@ -48,6 +29,31 @@ namespace UnityEngine.VR.Modules
 				this.node = node;
 				this.actionMapInput = actionMapInput;
 			}
+		}
+
+		private static int UILayer = -1;
+		private readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
+
+		public Camera eventCamera { get { return m_EventCamera; } set { m_EventCamera = value; } }
+		private Camera m_EventCamera;
+
+		public ActionMap actionMap { get { return m_UIActionMap; } }
+		[SerializeField]
+		private ActionMap m_UIActionMap;
+
+		public Func<Transform, float> getPointerLength { get; set; }
+
+		public bool inputBlocked { get; set; }
+
+		public event Action<GameObject, RayEventData> rayEntered = delegate {};
+		public event Action<GameObject, RayEventData> rayExited = delegate {};
+		public event Action<GameObject, RayEventData> dragStarted = delegate {};
+		public event Action<GameObject, RayEventData> dragEnded = delegate {};
+
+		protected override void Awake()
+		{
+			base.Awake();
+			UILayer = LayerMask.NameToLayer("UI");
 		}
 
 		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin = null)
@@ -170,7 +176,10 @@ namespace UnityEngine.VR.Modules
 			if (newEnterTarget == null || cachedEventData.pointerEnter == null)
 			{
 				for (var i = 0; i < cachedEventData.hovered.Count; ++i)
+				{
 					ExecuteEvents.Execute(cachedEventData.hovered[i], eventData, ExecuteRayEvents.rayExitHandler);
+					rayExited(cachedEventData.hovered[i], eventData);
+				}
 
 				if (newEnterTarget == null)
 					return;
@@ -206,6 +215,8 @@ namespace UnityEngine.VR.Modules
 						break;
 
 					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayExitHandler);
+					rayExited(t.gameObject, cachedEventData);
+
 					t = t.parent;
 				}
 			}
@@ -216,6 +227,8 @@ namespace UnityEngine.VR.Modules
 			while (t != null && t.gameObject != commonRoot)
 			{
 				ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
+				rayEntered(t.gameObject, cachedEventData);
+
 				t = t.parent;
 			}
 		}
@@ -243,10 +256,28 @@ namespace UnityEngine.VR.Modules
 					draggedObject = newPressed; // Set current pressed to gameObject that handles the pointerDown event, not the root object
 					Select(draggedObject);
 					eventData.eligibleForClick = true;
+
+					// Track clicks for double-clicking, triple-clicking, etc.
+					float time = Time.realtimeSinceStartup;
+					if (newPressed == eventData.lastPress)
+					{
+						var diffTime = time - eventData.clickTime;
+						if (U.UI.IsDoubleClick(diffTime))
+							++eventData.clickCount;
+						else
+							eventData.clickCount = 1;
+					}
+					else
+					{
+						eventData.clickCount = 1;
+					}
+					eventData.clickTime = time;
 				}
 
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.beginDragHandler);
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.beginDragHandler);
+				dragStarted(draggedObject, eventData);
+
 				eventData.pointerDrag = draggedObject;
 				source.selectedObject = draggedObject;
 			}
@@ -265,6 +296,7 @@ namespace UnityEngine.VR.Modules
 				var draggedObject = source.selectedObject;
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.endDragHandler);
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.endDragHandler);
+				dragEnded(draggedObject, eventData);
 
 				if (hoveredObject != null)
 					ExecuteEvents.ExecuteHierarchy(hoveredObject, eventData, ExecuteEvents.dropHandler);
