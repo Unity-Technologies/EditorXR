@@ -37,7 +37,10 @@ public class PropertyData : InspectorData
 			{
 				var propChild = child as PropertyData;
 				if (propChild != null && propChild.property.propertyType == SerializedPropertyType.ArraySize)
+				{
 					propChild.item = arraySizeItem;
+					arraySizeItem.data = propChild;
+				}
 			}
 		}
 

@@ -280,13 +280,11 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 			}
 		}
 
-		StartCoroutine(AnimatedHide(m_DragObject.gameObject, gridItem.m_Cube, rayOrigin));
+		StartCoroutine(AnimatedHide(m_DragObject.gameObject, gridItem.m_Cube, eventData.rayOrigin));
 	}
 
 	IEnumerator AnimatedHide(GameObject itemToHide, Renderer cubeRenderer, Transform rayOrigin)
 	{
-		setCurrentDropObject(rayOrigin, null);
-
 		var itemTransform = itemToHide.transform;
 		var currentScale = itemTransform.localScale;
 		var targetScale = Vector3.zero;
@@ -302,8 +300,6 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 		cubeRenderer.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
 		U.Object.Destroy(itemToHide);
 	}
-
-
 
 	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{

@@ -124,6 +124,10 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			item.preview = preview;
 			item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 
+			var numberItem = item as InspectorNumberItem;
+			if (numberItem)
+				numberItem.arraySizeChanged += OnArraySizeChanged;
+
 			item.setup = true;
 		}
 
@@ -133,10 +137,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			headerItem.lockToggle.isOn = getIsLocked();
 			headerItem.setLocked = setIsLocked;
 		}
-
-		var numberItem = item as InspectorNumberItem;
-		if (numberItem)
-			numberItem.arraySizeChanged += OnArraySizeChanged;
 
 		return item;
 	}
