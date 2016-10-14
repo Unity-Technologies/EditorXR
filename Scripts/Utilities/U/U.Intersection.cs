@@ -79,8 +79,6 @@ namespace UnityEngine.VR.Utilities
 						// Shoot a ray from outside the object (due to face normals) in the direction of the ray to see if it is inside
 						var forwardRay = new Ray(start, direction);
 						forwardRay.origin = forwardRay.GetPoint(-maxDistance);
-						
-						//Debug.DrawRay(forwardRay.origin, forwardRay.direction * 1000);
 
 						Vector3 forwardHit;
 						if (collisionTester.Raycast(forwardRay, out hitInfo, maxDistance * 2f))

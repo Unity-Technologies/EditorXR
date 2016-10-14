@@ -1140,7 +1140,6 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
-		CreateWorkspace<ConsoleWorkspace>();
 		CreateWorkspace<ProjectWorkspace>();
 	}
 
