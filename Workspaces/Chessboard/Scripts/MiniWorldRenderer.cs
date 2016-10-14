@@ -39,7 +39,7 @@ public class MiniWorldRenderer : MonoBehaviour
 			// If we ever support multiple mini-worlds, then we could collect them all and render them in one loop here
 			m_RenderingMiniWorlds = true;
 
-			if (m_MainCamera && miniWorld)
+			if (m_MainCamera && miniWorld && miniWorld.transform.lossyScale.magnitude > 0)
 			{
 				m_MiniCamera.CopyFrom(m_MainCamera);
 
