@@ -156,7 +156,8 @@ namespace ListView
 
 		protected virtual void UpdateItem(Transform t, int offset)
 		{
-			t.position = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.right;
+			t.localPosition = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.back;
+			t.localRotation = Quaternion.identity;
 		}
 
 		protected virtual Vector3 GetObjectSize(GameObject g)
@@ -201,6 +202,12 @@ namespace ListView
 				m_ScrollReturn = float.MaxValue;
 				m_ScrollDelta = 0;
 			}
+		}
+
+		protected void SetMaterialClip(Material material, Matrix4x4 parentMatrix)
+		{
+			material.SetMatrix("_ParentMatrix", parentMatrix);
+			material.SetVector("_ClipExtents", bounds.extents);
 		}
 	}
 }

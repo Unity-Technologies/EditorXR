@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections;
-using ListView;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Helpers;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPreview
+public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 {
-	private const float kMagnetizeDuration = 0.5f;
 	private const float kPreviewDuration = 0.1f;
 
 	private const float kRotateSpeed = 50f;
@@ -41,8 +40,6 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	private Transform m_PreviewObject;
 
 	private bool m_Setup;
-	private Transform m_GrabbedObject;
-	private float m_GrabLerp;
 	private float m_PreviewFade;
 	private Vector3 m_PreviewPrefabScale;
 	private Vector3 m_PreviewTargetScale;
@@ -70,7 +67,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 				return;
 			}
 
-			if(m_Icon)
+			if (m_Icon)
 				U.Object.Destroy(m_Icon);
 
 			m_IconPrefab = value;
@@ -88,7 +85,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			m_Sphere.sharedMaterial = value;
 			m_Sphere.gameObject.SetActive(true);
 			m_Cube.gameObject.SetActive(false);
-			if(m_Icon)
+			if (m_Icon)
 				m_Icon.gameObject.SetActive(false);
 		}
 	}
@@ -99,14 +96,14 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		{
 			m_Sphere.gameObject.SetActive(true);
 			m_Cube.gameObject.SetActive(false);
-			if(m_Icon)
+			if (m_Icon)
 				m_Icon.gameObject.SetActive(false);
 			if (!value)
 			{
 				m_Sphere.sharedMaterial.mainTexture = null;
 				return;
 			}
-			if(m_TextureMaterial)
+			if (m_TextureMaterial)
 				U.Object.Destroy(m_TextureMaterial);
 
 			m_TextureMaterial = new Material(Shader.Find("Standard")) { mainTexture = value };
@@ -118,7 +115,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 	{
 		set
 		{
-			if(value)
+			if (value)
 				value.wrapMode = TextureWrapMode.Clamp;
 
 			m_Cube.sharedMaterial.mainTexture = value;
@@ -132,24 +129,24 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
-	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
-	public PositionPreviewDelegate positionPreview { private get; set; }
-
 	public override void Setup(AssetData listData)
 	{
 		base.Setup(listData);
+
 		// First time setup
 		if (!m_Setup)
 		{
 			// Cube material might change, so we always instance it
 			U.Material.GetMaterialClone(m_Cube);
 
-			m_Handle.dragStarted += OnGrabStarted;
-			m_Handle.dragging += OnGrabDragging;
-			m_Handle.dragEnded += OnGrabEnded;
+			m_Handle.dragStarted += OnDragStarted;
+			m_Handle.dragging += OnDragging;
+			m_Handle.dragEnded += OnDragEnded;
 
 			m_Handle.hoverStarted += OnHoverStarted;
 			m_Handle.hoverEnded += OnHoverEnded;
+
+			m_Handle.getDropObject += GetDropObject;
 
 			m_Setup = true;
 		}
@@ -200,7 +197,8 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 
 		if (data.type == "Scene")
 		{
-			icon.transform.rotation = Quaternion.LookRotation(icon.transform.position - U.Camera.GetMainCamera().transform.position, Vector3.up);
+			icon.transform.rotation =
+				Quaternion.LookRotation(icon.transform.position - U.Camera.GetMainCamera().transform.position, Vector3.up);
 		}
 	}
 
@@ -236,15 +234,17 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		m_PreviewObject.localScale = Vector3.zero;
 	}
 
-	private void OnGrabStarted(BaseHandle baseHandle, HandleEventData eventData)
+	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		var clone = (GameObject) Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
+		base.OnDragStarted(baseHandle, eventData);
+
+		var clone = (GameObject)Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<AssetGridItem>();
 
 		if (cloneItem.m_PreviewObject)
 		{
 			cloneItem.m_Cube.gameObject.SetActive(false);
-			if(cloneItem.m_Icon)
+			if (cloneItem.m_Icon)
 				cloneItem.m_Icon.gameObject.SetActive(false);
 			cloneItem.m_PreviewObject.gameObject.SetActive(true);
 			cloneItem.m_PreviewObject.transform.localScale = m_PreviewTargetScale;
@@ -253,61 +253,20 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			U.Object.Destroy(cloneItem.m_TextPanel.gameObject);
 		}
 
+		m_DragObject = clone.transform;
+
 		// Disable any SmoothMotion that may be applied to a cloned Asset Grid Item now referencing input device p/r/s
 		var smoothMotion = clone.GetComponent<SmoothMotion>();
 		if (smoothMotion != null)
 			smoothMotion.enabled = false;
 
-		m_GrabbedObject = clone.transform;
-		m_GrabLerp = 0;
-		StartCoroutine(Magnetize());
 		StartCoroutine(AnimateToPreviewScale());
 	}
 
-	// Smoothly interpolate grabbed object into position, instead of "popping."
-	private IEnumerator Magnetize()
+	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		var startTime = Time.realtimeSinceStartup;
-		var currTime = 0f;
-		while (currTime < kMagnetizeDuration)
-		{
-			currTime = Time.realtimeSinceStartup - startTime;
-			m_GrabLerp = currTime / kMagnetizeDuration;
-			yield return null;
-		}
-		m_GrabLerp = 1;
-	}
+		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
-	/// <summary>
-	/// Animate the LocalScale of the asset towards a common/unified scale
-	/// used when the asset is magnetized/attached to the proxy, after grabbing it from the asset grid
-	/// </summary>
-	IEnumerator AnimateToPreviewScale()
-	{
-		var currentLocalScale = m_GrabbedObject.localScale;
-		var targetLocalScale = Vector3.one * 0.125f;
-		var currentTime = 0f;
-		var currentVelocity = 0f;
-		const float kDuration = 1f;
-		while (currentTime < kDuration)
-		{
-			if (m_GrabbedObject == null)
-				yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
-
-			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
-			m_GrabbedObject.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, currentTime);
-			yield return null;
-		}
-	}
-
-	private void OnGrabDragging(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		positionPreview(m_GrabbedObject.transform, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_GrabLerp);
-	}
-
-	private void OnGrabEnded(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		var gridItem = m_GrabbedObject.GetComponent<AssetGridItem>();
 		if (gridItem.m_PreviewObject)
 			placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
 		else
@@ -323,27 +282,7 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 			}
 		}
 
-		StartCoroutine(AnimatedHide(m_GrabbedObject.gameObject, gridItem.m_Cube));
-	}
-
-	IEnumerator AnimatedHide(GameObject itemToHide, Renderer cubeRenderer)
-	{
-		m_GrabbedObject = null;
-
-		var itemTransform = itemToHide.transform;
-		var currentScale = itemTransform.localScale;
-		var targetScale = Vector3.zero;
-		var transitionAmount = Time.unscaledDeltaTime;
-		var transitionAddMultiplier = 6;
-		while (transitionAmount < 1)
-		{
-			itemTransform.localScale = Vector3.Lerp(currentScale, targetScale, transitionAmount);
-			transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
-			yield return null;
-		}
-
-		cubeRenderer.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
-		U.Object.Destroy(itemToHide);
+		StartCoroutine(AnimatedHide(m_DragObject.gameObject, gridItem.m_Cube, eventData.rayOrigin));
 	}
 
 	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
@@ -382,8 +321,54 @@ public class AssetGridItem : ListViewItem<AssetData>, IPlaceObjects, IPositionPr
 		m_PreviewFade = endVal;
 	}
 
+	object GetDropObject(BaseHandle handle)
+	{
+		return data.asset;
+	}
+
 	private void OnDestroy()
 	{
 		U.Object.Destroy(m_Cube.sharedMaterial);
+	}
+
+	/// <summary>
+	/// Animate the LocalScale of the asset towards a common/unified scale
+	/// used when the asset is magnetized/attached to the proxy, after grabbing it from the asset grid
+	/// </summary>
+	IEnumerator AnimateToPreviewScale()
+	{
+		var currentLocalScale = m_DragObject.localScale;
+		const float smallerLocalScaleMultiplier = 0.125f;
+		var targetLocalScale = Vector3.one * smallerLocalScaleMultiplier;
+		var currentTime = 0f;
+		var currentVelocity = 0f;
+		const float kDuration = 1f;
+		while (currentTime < kDuration - 0.05f)
+		{
+			if (m_DragObject == null)
+				yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
+
+			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
+			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, currentTime);
+			yield return null;
+		}
+	}
+
+	IEnumerator AnimatedHide(GameObject itemToHide, Renderer cubeRenderer, Transform rayOrigin)
+	{
+		var itemTransform = itemToHide.transform;
+		var currentScale = itemTransform.localScale;
+		var targetScale = Vector3.zero;
+		var transitionAmount = Time.unscaledDeltaTime;
+		var transitionAddMultiplier = 6;
+		while (transitionAmount < 1)
+		{
+			itemTransform.localScale = Vector3.Lerp(currentScale, targetScale, transitionAmount);
+			transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
+			yield return null;
+		}
+
+		cubeRenderer.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
+		U.Object.Destroy(itemToHide);
 	}
 }
