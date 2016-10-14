@@ -28,7 +28,11 @@ public class ProjectUI : MonoBehaviour
 	[SerializeField]
 	private RectTransform m_AssetPanel;
 
-	public WorkspaceHighlight highlight { get { return m_WorkspaceHighlight; } }
+	public WorkspaceHighlight assetGridHighlight { get { return m_AssetGridHighlight; } }
 	[SerializeField]
-	private WorkspaceHighlight m_WorkspaceHighlight;
+	private WorkspaceHighlight m_AssetGridHighlight;
+
+	public WorkspaceHighlight folderPanelHighlight { get { return m_FolderPanelHighlight; } }
+	[SerializeField]
+	private WorkspaceHighlight m_FolderPanelHighlight;
 }
