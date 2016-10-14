@@ -83,7 +83,14 @@ namespace UnityEngine.VR.Workspaces
 
 		public Action<GameObject, bool> setHighlight { get; set; }
 
+		/// <summary>
+		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
+		/// </summary>
 		public bool dynamicFaceAdjustment { set { m_WorkspaceUI.dynamicFaceAdjustment = value; } }
+
+		/// <summary>
+		/// If true, prevent the resizing of a workspace via the front and back resize handles
+		/// </summary>
 		public bool preventFrontBackResize { set { m_WorkspaceUI.preventFrontBackResize = value; } }
 
 		/// <summary>
