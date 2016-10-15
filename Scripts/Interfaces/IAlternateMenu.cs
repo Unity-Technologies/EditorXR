@@ -4,18 +4,8 @@ using UnityEngine.VR.Actions;
 
 namespace UnityEngine.VR.Menus
 {
-	public interface IAlternateMenu
+	public interface IAlternateMenu : IMenuActions
 	{
-		/// <summary>
-		/// The menu actions populating the menu
-		/// </summary>
-		List<IAction> menuActions { set; }
-
-		/// <summary>
-		/// Delegate used peform actions from the menu
-		/// </summary>
-		Func<IAction, bool> performAction { set; }
-
 		/// <summary>
 		/// The tracked node where this menu is spawned
 		/// </summary>

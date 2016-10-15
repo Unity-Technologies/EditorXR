@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace UnityEngine.VR.Menus
 {
-	public interface IMainMenu
+	public interface IMainMenu : IMenuActions
 	{
 		/// <summary>
 		/// The menu tools that will populate the menu

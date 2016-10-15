@@ -1032,13 +1032,6 @@ public class EditorVR : MonoBehaviour
 		if (highlight != null)
 			highlight.setHighlight = m_HighlightModule.SetHighlight;
 
-		var actionsComponent = obj as IUsesActions;
-		if (actionsComponent != null)
-		{
-			actionsComponent.actions = m_AllActions;
-			actionsComponent.performAction = PerformAction;
-		}
-
 		var placeObjects = obj as IPlaceObjects;
 		if (placeObjects != null)
 			placeObjects.placeObject = PlaceObject;

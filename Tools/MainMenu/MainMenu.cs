@@ -14,7 +14,7 @@ using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins, IUsesActions
+	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -83,10 +83,10 @@ namespace UnityEngine.VR.Menus
 		public Func<Node, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
 		public Action<Type> createWorkspace { private get; set; }
+		public List<IAction> menuActions { get; set; }
+		public Func<IAction, bool> performAction { get; set; }
 		public Node? node { private get; set; }
 		public Action setup { get { return Setup; } }
-		public List<IAction> actions { private get; set; }
-		public Func<IAction, bool> performAction { get; set; }
 		public Action hide { get; private set; }
 		public Action show { get; private set; }
 
@@ -122,7 +122,6 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.instantiateUI = instantiateUI;
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
-			//m_MainMenuUI.menuButtonSelected = () => { visible = !visible; }; // allow the menu button in the UI to enable/disable the main menu
 			m_MainMenuUI.Setup();
 			
 			CreateFaceButtons(menuTools);

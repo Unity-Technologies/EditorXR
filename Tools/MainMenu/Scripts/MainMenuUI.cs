@@ -126,8 +126,6 @@ namespace UnityEngine.VR.Menus
 
 		public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
-		//public Action menuButtonSelected { set { m_MainMenuActivator.performActivation = value; } }
-
 		public float targetRotation { get; set; }
 
 		public int faceCount { get { return m_MenuFaces.Length; } }
