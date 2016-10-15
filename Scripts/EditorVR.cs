@@ -222,7 +222,6 @@ public class EditorVR : MonoBehaviour
 	{
 		while (!m_HMDReady)
 			yield return null;
-		CreateDefaultWorkspaces();
 
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
 		EditorApplication.delayCall += OnSelectionChanged;
@@ -1256,12 +1255,6 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void CreateDefaultWorkspaces()
-	{
-		CreateWorkspace<InspectorWorkspace>();
-		CreateWorkspace<ProjectWorkspace>();
-	}
-	
 	private void CreateWorkspace<T>() where T : Workspace
 	{
 		CreateWorkspace(typeof(T));

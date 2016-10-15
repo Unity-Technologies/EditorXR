@@ -5855,12 +5855,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000010604279854}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3bdb8c4c20b229641a096572d9c36567, type: 3}
+  m_Script: {fileID: 11500000, guid: d140242271ba0a94c9685339cdb66ee7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_TargetTransform: {fileID: 0}
-  m_DampingReduction: 13
+  m_SmoothRotation: 1
+  m_TightenRotation: 20
+  m_SmoothPosition: 1
+  m_TightenPosition: 20
+  m_Target: {fileID: 0}
 --- !u!114 &114000011665497816
 MonoBehaviour:
   m_ObjectHideFlags: 1

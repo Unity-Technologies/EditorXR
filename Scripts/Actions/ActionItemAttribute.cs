@@ -26,7 +26,7 @@
 		public string categoryName;
 
 		/// <summary>
-		/// Position/index/order of this action amidst other actions with the same SectionName
+		/// Position/index/order of this action amidst other actions with the same category name
 		/// </summary>
 		public int indexPosition;
 
@@ -35,7 +35,7 @@
 		/// </summary>
 		/// <param name="name">The name of this action</param>
 		/// <param name="iconResourcePath">The icon resource path for this action</param>
-		/// <param name="categoryName">The name of the section in which this aciton should reside</param>
+		/// <param name="categoryName">The name of the category in which this action should reside</param>
 		/// <param name="position">The numeric position of this action within the section it resides</param>
 		public ActionItemAttribute(string name, string iconResourcePath, string categoryName = null, int indexPosition = -1)
 		{
