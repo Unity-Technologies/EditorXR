@@ -321,21 +321,18 @@ namespace UnityEngine.VR.Workspaces
 
 			m_PreviousXRotation = currentXRotation;
 
-			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 120f);
-			if (angledAmount > 45f)
-			{
-				StopCoroutine(ref m_RotateFrontFaceBackwardCoroutine);
+			//var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 120f);
+			
+			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 100f);
+			var lerpAmount = angledAmount / 90f;
+			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));
+			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
 
-				if (m_RotateFrontFaceForwardCoroutine == null)
-					m_RotateFrontFaceForwardCoroutine = StartCoroutine(RotateFrontFaceForward());
-			}
-			else
-			{
-				StopCoroutine(ref m_RotateFrontFaceForwardCoroutine);
+			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, angledAmount);
 
-				if (m_RotateFrontFaceBackwardCoroutine == null)
-					m_RotateFrontFaceBackwardCoroutine = StartCoroutine(RotateFrontFaceBackward());
-			}
+			// offset the front resize icons to accommodate for the blendshape extending outwards
+			const float blendShapeToLerpConversionFactor = 0.1f;
+			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, angledAmount * blendShapeToLerpConversionFactor);
 		}
 
 		public void CloseClick()
@@ -347,7 +344,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			lockClicked();
 		}
-
+		/*
 		IEnumerator RotateFrontFaceForward()
 		{
 			m_AngledFrontHandleOffset = 0f; // set this value so it can be applied when manually setting bounds as well
@@ -390,5 +387,6 @@ namespace UnityEngine.VR.Workspaces
 				yield return null;
 			}
 		}
+		*/
 	}
 }
