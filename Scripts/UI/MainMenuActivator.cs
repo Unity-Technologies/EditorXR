@@ -8,18 +8,6 @@ namespace UnityEngine.VR.Menus
 	{
 		public Action<Node?, bool> activated;
 
-		//public Action<Node?> deactivated;
-
-		public void Activate()
-		{
-
-		}
-
-		public void Deactivate()
-		{
-
-		}
-
 		[SerializeField]
 		private Transform m_Icon;
 		[SerializeField]
@@ -52,8 +40,6 @@ namespace UnityEngine.VR.Menus
 
 				if (activated != null)
 					activated(node, m_Activated);
-
-				//m_ActivatorMoveCoroutine = StartCoroutine(AnimateMoveActivatorButton(!m_Activated)); // Move back towards the original position if it activates the main menu
 			}
 		}
 
@@ -63,7 +49,6 @@ namespace UnityEngine.VR.Menus
 			get { return m_AlternateMenuOrigin; }
 			set
 			{
-				Debug.LogError("<color=blue>Setting MAIN MENU ACTIVATOR position!</color>");
 				transform.SetParent(m_AlternateMenuOrigin = value);
 				transform.localPosition = m_OriginalActivatorLocalPosition;
 				transform.localRotation = Quaternion.identity;
@@ -97,8 +82,6 @@ namespace UnityEngine.VR.Menus
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			Debug.LogError("<color=green>OnPointerEnter called on MenuTrigger</color>");
-
 			if (m_HighlightCoroutine != null)
 				StopCoroutine(m_HighlightCoroutine);
 
@@ -108,7 +91,6 @@ namespace UnityEngine.VR.Menus
 
 		public void OnPointerExit(PointerEventData eventData)
 		{
-			Debug.LogError("<color=green>OnPointerExit called on MenuTrigger</color>");
 			if (m_HighlightCoroutine != null)
 				StopCoroutine(m_HighlightCoroutine);
 
@@ -118,25 +100,17 @@ namespace UnityEngine.VR.Menus
 
 		public void OnPointerClick(PointerEventData eventData)
 		{
-			Debug.LogError("<color=green>OnPointerClick called on MenuTrigger</color>");
 			selected = !selected;
-
-			/*
-			if (m_HighlightCoroutine != null)
-				StopCoroutine(m_HighlightCoroutine);
-
-			m_HighlightCoroutine = StartCoroutine(Highlight(false));
-			*/
 		}
 
 		private IEnumerator Highlight(bool transitionIn = true)
 		{
-			float amount = 0f;
-			Vector3 currentScale = m_Icon.localScale;
-			Vector3 currentPosition = m_Icon.localPosition;
-			Vector3 targetScale = transitionIn == true ? m_HighlightedActivatorIconLocalScale : m_OriginalActivatorIconLocalScale;
-			Vector3 targetLocalPosition = transitionIn == true ? m_HighlightedActivatorIconLocalPosition : m_OriginalActivatorIconLocalPosition;
-			float speed = (currentScale.x + 0.5f / targetScale.x) * 4; // perform faster is returning to original position
+			var amount = 0f;
+			var currentScale = m_Icon.localScale;
+			var currentPosition = m_Icon.localPosition;
+			var targetScale = transitionIn == true ? m_HighlightedActivatorIconLocalScale : m_OriginalActivatorIconLocalScale;
+			var targetLocalPosition = transitionIn == true ? m_HighlightedActivatorIconLocalPosition : m_OriginalActivatorIconLocalPosition;
+			var speed = (currentScale.x + 0.5f / targetScale.x) * 4; // perform faster is returning to original position
 
 			while (amount < 1f)
 			{
@@ -152,12 +126,10 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator AnimateMoveActivatorButton(bool moveAway = true)
 		{
-			Debug.LogError("Move Activator Button out of the way of the radial menu here");
-			
-			float amount = 0f;
-			Vector3 currentPosition = transform.localPosition;
-			Vector3 targetPosition = moveAway == true ? m_AlternateActivatorLocalPosition : m_OriginalActivatorLocalPosition;
-			float speed = (currentPosition.z / targetPosition.z) * (moveAway ? 10 : 3); // perform faster is returning to original position
+			var amount = 0f;
+			var currentPosition = transform.localPosition;
+			var targetPosition = moveAway == true ? m_AlternateActivatorLocalPosition : m_OriginalActivatorLocalPosition;
+			var speed = (currentPosition.z / targetPosition.z) * (moveAway ? 10 : 3); // perform faster is returning to original position
 
 			while (amount < 1f)
 			{

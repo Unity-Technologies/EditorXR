@@ -55,8 +55,6 @@ namespace UnityEngine.VR.Menus
 			get { return m_Actions; }
 			set
 			{
-				Debug.LogError("<color=orange>Setting actions in RadialMenuUI - actions are null : </color>" + (value == null));
-
 				if (value == m_Actions) // only change visual state if the actions have changed.  Reference checking for now.
 					return;
 
@@ -123,16 +121,12 @@ namespace UnityEngine.VR.Menus
 			{
 				if (Mathf.Approximately(value.magnitude, 0) && !Mathf.Approximately(m_InputDirection, 0))
 				{
-					//Debug.Log(m_InputDirection + " <---");
-					Debug.Log("<color=blue>disabling button highlighting</color>");
 					m_InputDirection = 0;
 					foreach (var buttonMinMaxRange in buttonRotationRange)
-						buttonMinMaxRange.Key.highlight = false;
+						buttonMinMaxRange.Key.highlighted = false;
 				}
 				else if (value.magnitude > 0)
 				{
-					Debug.Log("<color=cyan>enabling button highlighting - vector : " + value + "</color> - magnitude of input vector : " + value.magnitude);
-
 					m_InputMatrix = value;
 					m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
 					m_InputDirection += m_InputPhaseOffset;
@@ -146,10 +140,10 @@ namespace UnityEngine.VR.Menus
 						if (actions != null && m_InputDirection > buttonMinMaxRange.Value.x && m_InputDirection < buttonMinMaxRange.Value.y)
 						{
 							m_HighlightedButton = buttonMinMaxRange.Key;
-							m_HighlightedButton.highlight = true;
+							m_HighlightedButton.highlighted = true;
 						}
 						else
-							buttonMinMaxRange.Key.highlight = false;
+							buttonMinMaxRange.Key.highlighted = false;
 					}
 				}
 			}
@@ -162,8 +156,6 @@ namespace UnityEngine.VR.Menus
 
 		public void Setup()
 		{
-			Debug.LogError("Setting up RadialMenu UI");
-
 			m_RadialMenuSlots = new List<RadialMenuSlot>();
 			Material slotBorderMaterial = null;
 
@@ -228,13 +220,6 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator AnimateShow()
 		{
-			//if (m_ShowCoroutine == null)
-			//{
-			//	Debug.LogError("<color=red>Exiting AnimateShow in RadialMenuUI due to the coroutine reference being null!</color>");
-			//	yield break;
-			//}
-
-			Debug.LogError("<color=orange>AnimateShow called in RadialMenuUI</color>");
 			m_SlotsMask.gameObject.SetActive(true);
 
 			GradientPair gradientPair = UnityBrandColorScheme.GetRandomGradient();
@@ -288,14 +273,6 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator AnimateHide()
 		{
-			//if (m_HideCoroutine == null)
-			//{
-			//	Debug.LogError("<color=red>Exiting AnimateHide in RadialMenuUI due to the coroutine reference being null!</color>");
-			//	yield break;
-			//}
-
-			Debug.LogError("AnimateHide called in RadialMenuUI");
-
 			if (!m_SlotsMask.gameObject.activeInHierarchy)
 				yield break;
 

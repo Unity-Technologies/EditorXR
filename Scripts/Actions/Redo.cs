@@ -12,7 +12,6 @@
 
 		public bool Execute()
 		{
-			Debug.LogError("Execute Action should redo here");
 			UnityEditor.Undo.PerformRedo();
 			return true;
 		}

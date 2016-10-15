@@ -527,7 +527,6 @@ public class EditorVR : MonoBehaviour
 		if (activatorNode == null)
 			return;
 
-		Debug.Log("OnMainMenuActivatorSelected called");
 		foreach (var kvp in m_DeviceData)
 		{
 			Node? node = GetDeviceNode(kvp.Key);
@@ -1124,12 +1123,8 @@ public class EditorVR : MonoBehaviour
 
 	private bool PerformAction (IAction action)
 	{
-		Debug.LogWarning("Performing Actions in EditorVR");
 		if (action != null)
-		{
-			Debug.LogError("<color=green>Performing Action : </color>" + action.ToString());
 			return action.Execute();
-		}
 		else
 			return false;
 	}

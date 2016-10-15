@@ -9,15 +9,8 @@ using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {
-	public class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesActions, IMenuOrigins, ICustomActionMap
+	public class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IMenuOrigins, ICustomActionMap
 	{
-		//[SerializeField]
-		//private RadialMenuUI m_RadialMenuPrefab;
-
-		private Copy m_CopyAction;
-		private Paste m_PasteAction;
-		private object m_ObjectSelected;
-
 		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]
 		private ActionMap m_RadialMenuActionMap;
@@ -36,7 +29,30 @@ namespace UnityEngine.VR.Menus
 		[SerializeField]
 		private RadialMenuInput m_RadialMenuInput;
 
-		public List<IAction> menuActions { get; set; }
+		public List<IAction> menuActions
+		{
+			private get { return m_RadialMenuActions; }
+			set
+			{
+				m_RadialMenuActions = new List<IAction>();
+
+				if (value != null && value.Count > 0)
+				{
+					foreach (var action in value)
+					{
+						if (action.sectionName == kActionSectionName) // Verify that the action is in the DefaulActions category
+						{
+							m_RadialMenuActions.Add(action);
+						}
+					}
+
+					// Order DefaultActions by their indexPosition
+					m_RadialMenuActions = m_RadialMenuActions.OrderByDescending(x => x.indexPosition).ToList();
+				}
+			}
+		}
+		private List<IAction> m_RadialMenuActions;
+
 		public Node? node { get; set; }
 		public Action setup { get {return Setup; } }
 
@@ -64,41 +80,6 @@ namespace UnityEngine.VR.Menus
 		private static List<RadialMenu> sRadialMenus = new List<RadialMenu>();
 		private Func<IAction, bool> m_performAction;
 		public Func<IAction, bool> performAction { get { return m_performAction; } set { m_performAction = value; } }
-
-		private List<IAction> m_RadialMenuActions;
-		public List<IAction> actions
-		{
-			private get { return m_RadialMenuActions; }
-			set
-			{
-				Debug.Log("Setting actions in Radial Menu");
-
-				m_RadialMenuActions = new List<IAction>();
-
-				if (value != null && value.Count > 0)
-				{
-					foreach (var action in value)
-					{
-						if (action.sectionName == kActionSectionName) // Verify that the action is in the DefaulActions category
-						{
-							m_RadialMenuActions.Add(action);
-
-							var copyAction = action as Copy;
-							if (copyAction != null)
-								m_CopyAction = copyAction;
-
-							var pasteAction = action as Paste;
-							if (pasteAction != null)
-								m_PasteAction = pasteAction;
-						}
-					}
-
-					m_RadialMenuActions = m_RadialMenuActions.OrderByDescending(x => x.indexPosition).ToList(); // Order DefaultActions by their indexPosition
-				}
-			}
-		}
-
-		private List<IAction> currentlyApplicableActions { get; set; }
 
 		public Func<GameObject, GameObject> instantiateUI
 		{
@@ -142,9 +123,7 @@ namespace UnityEngine.VR.Menus
 
 					if (m_SelectMenuItem == false)
 					{
-						Debug.LogError("<color=green>Select was pressed in the radial menu!</color>");
 						m_RadialMenuUI.SelectionOccurred();
-						Selection.activeGameObject = null; // TODO remove this, and allow the menu to stay active after an action is performed
 						if(selected != null)
 							selected(node);
 					}
@@ -175,7 +154,6 @@ namespace UnityEngine.VR.Menus
 
 		private void Awake()
 		{
-			Debug.LogError("Setting up RadialMenu");
 			radialMenuUI = m_RadialMenuUI;
 			sRadialMenus.Add(this); // Add this radial menu to the collection of radial menus, allowing for "pushing" of the radial menu to another hand if the menu is opened on a hand currently displaying the radial menu
 		}
@@ -190,30 +168,12 @@ namespace UnityEngine.VR.Menus
 			selectMenuItem = m_RadialMenuInput.selectItem.wasJustReleased;
 		}
 
-		private IEnumerator DelayedTestCall()
-		{
-			float duration = 0;
-
-			while (duration < 4)
-			{
-				duration += Time.unscaledDeltaTime;
-				yield return null;
-			}
-
-			//Show();
-		}
-
 		public void Setup()
 		{
-			Debug.LogError("Setup was just called in RadialMenu");
-
-			if (m_RadialMenuUI == null) // remove null check.  This should only be called in connect interfaces once after creation
-			{
-				m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
-				m_RadialMenuUI.instantiateUI = instantiateUI;
-				m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
-				m_RadialMenuUI.performAction = performAction;
-			}
+			m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
+			m_RadialMenuUI.instantiateUI = instantiateUI;
+			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
+			m_RadialMenuUI.performAction = performAction;
 
 			m_RadialMenuUI.Setup();
 		}
@@ -221,38 +181,13 @@ namespace UnityEngine.VR.Menus
 		private void Show()
 		{
 			if (Selection.objects.Length == 0)
-			{
-				Debug.LogError("<color=red>Hide Radial Menu UI here - no objects selected</color>");
-
 				Hide();
-			}
 			else
 			{
-				m_ObjectSelected = Selection.activeGameObject;
-
 				if (onRadialMenuShow != null)
 					onRadialMenuShow(); // Raises the event that notifies the main menu to move its menu activator button
 
-				Debug.LogError("<color=green>Show Radial Menu UI here - objects are selected</color>");
-
-				currentlyApplicableActions = new List<IAction>();
-				foreach (var action in actions)
-				{
-					//if (UnityEngine.Random.Range(0, 2) > 0)
-						currentlyApplicableActions.Add(action);
-
-					currentlyApplicableActions.Add(action);
-					currentlyApplicableActions.Add(action);
-				}
-
-				//TODO delete
-				//currentlyApplicableActions = allActions;
-
-				// if list count is zero, hide UI
-				// if greather, and the icons are not the same, then hide then show with new icons
-				// if the same, dont hide, just stay showing
-
-				m_RadialMenuUI.actions = actions;
+				m_RadialMenuUI.actions = menuActions;
 			}
 		}
 
@@ -262,7 +197,6 @@ namespace UnityEngine.VR.Menus
 				onRadialMenuHide(); // Raises the event that notifies the main menu to move its menu activator button back to its original position
 
 			m_RadialMenuUI.actions = null; // Hide the radial menu
-			m_ObjectSelected = null;
 		}
 	}
 }

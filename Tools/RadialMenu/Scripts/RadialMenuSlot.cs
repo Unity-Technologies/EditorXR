@@ -30,10 +30,10 @@ namespace UnityEngine.VR.Menus
 
 		private const float m_IconHighlightedLocalYOffset = 0.006f;
 
-		private static Material sSharedInsetMaterialInstance;
-		private static UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair sOriginalInsetGradientPair;
-		
-		private Transform m_parentTransform;
+		private static Material s_SharedInsetMaterialInstance;
+		private static UnityBrandColorScheme.GradientPair s_OriginalInsetGradientPair;
+		private static readonly Vector3 kHiddenLocalScale = new Vector3(1f, 0f, 1f);
+
 		private Vector3 m_IconDirection;
 		private Material m_BorderRendererMaterial;
 		private Transform m_IconTransform;
@@ -42,11 +42,8 @@ namespace UnityEngine.VR.Menus
 		private Vector3 m_HiddenInsetLocalScale;
 		private Vector3 m_HighlightedInsetLocalScale;
 		private Vector3 m_OriginalIconLocalPosition;
-		private Vector3 m_HiddenLocalScale = new Vector3(1f, 0f, 1f);
 		private Vector3 m_IconHighlightedLocalPosition;
 		private Vector3 m_IconPressedLocalPosition;
-		private Quaternion m_OriginalIconLocalRotation;
-		private Vector3 m_OriginalForwardVector;
 		private float m_IconLookForwardOffset = 0.5f;
 		private Vector3 m_IconLookDirection;
 		
@@ -61,7 +58,7 @@ namespace UnityEngine.VR.Menus
 			get { return U.Material.GetMaterialClone(m_BorderRenderer); } // return new unique color to the RadialMenuUI for settings in each RadialMenuSlot contained in a given RadialMenu
 			set
 			{
-				m_BorderRendererMaterial = value; // TODO delete this reference if no longer needed
+				m_BorderRendererMaterial = value;
 				m_BorderRenderer.sharedMaterial = value;
 			}
 		}
@@ -96,17 +93,16 @@ namespace UnityEngine.VR.Menus
 			get { return m_Pressed; }
 			set
 			{
-				if (m_Highlighted == false)
-					value = false; // prevent pressed display if slot is not currently highlighted
-				else if (value != m_Pressed && value == true) // proceed only if value is true after previously being false
+				// Proceed only if value is true after previously being false
+				if (m_Highlighted && value != m_Pressed && value)
 				{
-					Debug.LogError("<color=green>Radial Menu Slot was just pressed</color>");
 					m_Pressed = value;
 
 					if (m_IconEndHighlightCoroutine != null)
 						StopCoroutine(m_IconEndHighlightCoroutine);
 
-					if (m_IconHighlightCoroutine != null) // dont begin a new icon highlight coroutine; allow the currently running cortoutine to finish itself according to the m_Highlighted value
+					// Don't begin a new icon highlight coroutine; Allow the currently running coroutine to finish itself according to the m_Highlighted value
+					if (m_IconHighlightCoroutine != null)
 						StopCoroutine(m_IconHighlightCoroutine);
 
 					m_IconHighlightCoroutine = StartCoroutine(IconHighlightAnimatedShow(true));
@@ -115,37 +111,34 @@ namespace UnityEngine.VR.Menus
 		}
 
 		private bool m_Highlighted;
-		public bool highlight
+		public bool highlighted
 		{
-			//get { return m_Highlighted; }
 			set
 			{
 				if (m_Highlighted == value)
 					return;
-				else
-				{
-					if (m_IconEndHighlightCoroutine != null)
-						StopCoroutine(m_IconEndHighlightCoroutine);
 
-					m_Highlighted = value;
-					Debug.LogError("<color=black>m_Highlighted set to : </color>" + m_Highlighted);
-					if (m_Highlighted == true) // only start the highlight coroutine if the highlight coroutine isnt already playing. Otherwise allow it to gracefully finish.
-					{
-						if (m_HighlightCoroutine == null)
-							m_HighlightCoroutine = StartCoroutine(Highlight());
-					}
-					else
-						m_IconEndHighlightCoroutine = StartCoroutine(IconEndHighlight());
+				if (m_IconEndHighlightCoroutine != null)
+					StopCoroutine(m_IconEndHighlightCoroutine);
+
+				m_Highlighted = value;
+				if (m_Highlighted)
+				{
+					// Only start the highlight coroutine if the highlight coroutine isnt already playing. Otherwise allow it to gracefully finish.
+					if (m_HighlightCoroutine == null)
+						m_HighlightCoroutine = StartCoroutine(Highlight());
 				}
+				else
+					m_IconEndHighlightCoroutine = StartCoroutine(IconEndHighlight());
 			}
 		}
 
-		private static UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair sGradientPair;
-		public UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair gradientPair
+		private static UnityBrandColorScheme.GradientPair s_GradientPair;
+		public UnityBrandColorScheme.GradientPair gradientPair
 		{
 			set
 			{
-				sGradientPair = value;
+				s_GradientPair = value;
 				m_BorderRendererMaterial.SetColor("_ColorTop", value.a);
 				m_BorderRendererMaterial.SetColor("_ColorBottom", value.b);
 			}
@@ -154,21 +147,17 @@ namespace UnityEngine.VR.Menus
 		private void Awake()
 		{
 			m_InsetMaterial = U.Material.GetMaterialClone(m_InsetMeshRenderer);
-			sOriginalInsetGradientPair = new Utilities.UnityBrandColorScheme.GradientPair (m_InsetMaterial.GetColor("_ColorTop"), m_InsetMaterial.GetColor("_ColorBottom"));
+			s_OriginalInsetGradientPair = new UnityBrandColorScheme.GradientPair (m_InsetMaterial.GetColor("_ColorTop"), m_InsetMaterial.GetColor("_ColorBottom"));
 			m_HiddenLocalRotation = transform.localRotation;
 			m_VisibleInsetLocalScale = m_MenuInset.localScale;
 			m_HighlightedInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_VisibleInsetLocalScale.y * 1.1f, m_VisibleInsetLocalScale.z);
 			m_VisibleInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_MenuInset.localScale.y * 0.35f, m_VisibleInsetLocalScale.z);
 			m_HiddenInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, 0f, m_VisibleInsetLocalScale.z);
 
-			m_IconTransform = m_IconContainer;// m_Icon.transform;
-			m_OriginalForwardVector = transform.forward;
+			m_IconTransform = m_IconContainer;
 			m_OriginalIconLocalPosition = m_IconTransform.localPosition;
-			m_OriginalIconLocalRotation = m_IconTransform.localRotation;
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * m_IconHighlightedLocalYOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * -m_IconHighlightedLocalYOffset;
-
-			//Debug.LogWarning("Icon original local rotation" + m_OriginalIconLocalRotation);
 		}
 
 		public void Show()
@@ -198,96 +187,40 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 
-		private void OnTransformParentChanged()
-		{
-			m_parentTransform = transform.parent;
-			//m_IconDirection = m_parentTransform.local
-			//Debug.LogError("<color=red>Radial Menu Slot Transform parent changed to : " + parentTransform.name + "</color>");
-		}
-
-		private void Update()
-		{
-			//m_IconTransform.localEulerAngles = new Vector3(m_IconTransform.localRotation.x, m_IconTransform.localRotation.y, m_IconTransform.localRotation.z);
-			//m_Icon.transform.LookAt(m_parentTransform.forward);
-			//m_IconTransform.localRotation = m_OriginalIconLocalRotation * m_parentTransform.localRotation;// Quaternion.Euler(m_OriginalIconLocalRotation.x, m_OriginalIconLocalRotation.y, m_OriginalIconLocalRotation.z);
-
-			//iconLookDir = new Vector3 (m_IconTransform.localPosition.x, m_IconTransform.localPosition.y, m_IconTransform.localPosition.z + iconLookOffset);
-			//lookDir = m_IconTransform.position + new Vector3(0f, 0f, (transform.parent.parent.forward * iconLookOffset).z);
-			//iconLookDir = new Vector3(0f, lookDir.y, 0f);
-
-			//iconLookDir = new Vector3(iconLookDir.x, m_IconTransform.position.y, iconLookDir.z);
-
-			//conLookDir = m_Icon.transform.position +  transform.parent.forward * iconLookOffset; // set a position offset above the icon, regardless of the icon's rotation
-																								  //m_IconTransform.LookAt(iconLookDir);
-
-			//m_IconTransform.LookAt(new Vector3(iconLookDir.x, m_IconTransform.localPosition.y, iconLookDir.z));
-
-			//m_IconTransform.LookAt(iconLookDir);
-			
-
-			//Quaternion relativeRotation = Quaternion.Inverse(m_IconTransform.localRotation) * m_OriginalIconLocalRotation;
-			//m_IconTransform.localRotation = relativeRotation;// m_OriginalIconLocalRotation - m_parentTransform.localRotation - m_IconTransform.localRotation;
-		}
-
-		private void LateUpdate()
-		{
-			//m_IconTransform.localEulerAngles = new Vector3 (m_IconTransform.localRotation.x, m_IconTransform.localRotation.y, m_IconTransform.localRotation.z);
-
-		}
-
 		private void CorrectIconRotation()
 		{
 			m_IconLookDirection = m_Icon.transform.position + transform.parent.forward * m_IconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
-			//m_IconTransform.LookAt(iconLookDir);
-			//m_IconTransform.LookAt(new Vector3(iconLookDir.x, m_IconTransform.localPosition.y, iconLookDir.z));
 			m_IconTransform.LookAt(m_IconLookDirection);
 			m_IconTransform.localEulerAngles = new Vector3(0f, m_IconTransform.localEulerAngles.y, 0f);
 		}
-
-		/*
-		private void OnDrawGizmos()
-		{
-			Gizmos.color = Color.yellow;
-			Gizmos.DrawSphere(iconLookDir, 0.005f);
-		}
-		*/
 
 		private IEnumerator AnimateShow()
 		{
 			m_CanvasGroup.interactable = false;
 			m_InsetMaterial.SetFloat("_Alpha", 0);
-			m_InsetMaterial.SetColor("_ColorTop", sOriginalInsetGradientPair.a);
-			m_InsetMaterial.SetColor("_ColorBottom", sOriginalInsetGradientPair.b);
+			m_InsetMaterial.SetColor("_ColorTop", s_OriginalInsetGradientPair.a);
+			m_InsetMaterial.SetColor("_ColorBottom", s_OriginalInsetGradientPair.b);
 			m_BorderRendererMaterial.SetFloat("_Expand", 0);
 			m_MenuInset.localScale = m_HiddenInsetLocalScale ;
-			transform.localScale = m_HiddenLocalScale;
+			transform.localScale = kHiddenLocalScale;
 			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
-			
+
 			StartCoroutine(ShowInset());
-			
-			float opacity = 0;
-			float positionWait = orderIndex * 0.05f;
+
+			var opacity = 0f;
+			var positionWait = orderIndex * 0.05f;
 			while (opacity < 1)
 			{
-				//if (orderIndex == 0)
-				//transform.localScale = new Vector3(opacity, 1f, 1f);
 				opacity += Time.unscaledDeltaTime / positionWait;
-				float opacityShaped = Mathf.Pow(opacity, opacity);
+				var opacityShaped = Mathf.Pow(opacity, opacity);
 
-				transform.localScale = Vector3.Lerp(m_HiddenLocalScale, Vector3.one, opacity);
-				//m_CanvasGroup.alpha = opacity * 0.25f;
+				transform.localScale = Vector3.Lerp(kHiddenLocalScale, Vector3.one, opacity);
 				m_BorderRendererMaterial.SetFloat("_Expand", 1 - opacityShaped);
-				//m_InsetMaterial.SetFloat("_Alpha", opacityShaped / 4);
-				//m_MenuInset.localScale = Vector3.Lerp(m_HiddenMenuInsetLocalScale, m_VisibleMenuInsetLocalScale, opacity / 4);
-				//m_CanvasGroup.alpha = opacity;
 				CorrectIconRotation();
 				yield return null;
 			}
 
-
 			m_BorderRendererMaterial.SetFloat("_Expand", 0);
-			//m_InsetMaterial.SetFloat("_Alpha", 1);
-			//m_MenuInset.localScale = m_VisibleMenuInsetLocalScale;
 			m_CanvasGroup.interactable = true;
 			transform.localScale = Vector3.one;
 
@@ -300,13 +233,12 @@ namespace UnityEngine.VR.Menus
 		{
 			m_CanvasGroup.alpha = 0.0001f;
 
-			float opacity = 0f;
-			float duration = 0f;
-			float positionWait = orderIndex * 0.075f;
+			var duration = 0f;
+			var positionWait = orderIndex * 0.075f;
 			while (duration < 2)
 			{
 				duration += Time.unscaledDeltaTime / positionWait;
-				opacity = duration / 2;
+				var opacity = duration / 2;
 				opacity *= opacity;
 				m_CanvasGroup.alpha = Mathf.Clamp01(duration - 1);
 				m_InsetMaterial.SetFloat("_Alpha", opacity);
@@ -314,7 +246,6 @@ namespace UnityEngine.VR.Menus
 				yield return null;
 			}
 
-			//m_CanvasGroup.alpha = 1;
 			m_InsetMaterial.SetFloat("_Alpha", 1);
 			m_MenuInset.localScale = m_VisibleInsetLocalScale;
 		}
@@ -325,15 +256,11 @@ namespace UnityEngine.VR.Menus
 			m_Pressed = false;
 			m_Highlighted = false;
 
-			//if (m_HighlightCoroutine != null)
-				//StopCoroutine(m_HighlightCoroutine);
-
-			float opacity = m_InsetMaterial.GetFloat("_Alpha");;
-			float opacityShaped = Mathf.Pow(opacity, opacity);
+			var opacity = m_InsetMaterial.GetFloat("_Alpha");;
+			var opacityShaped = Mathf.Pow(opacity, opacity);
 			while (opacity > 0)
 			{
-				//if (orderIndex == 0)
-				Vector3 newScale = Vector3.one * opacity * opacityShaped * (opacity * 0.5f);
+				var newScale = Vector3.one * opacity * opacityShaped * (opacity * 0.5f);
 				transform.localScale = newScale;
 
 				m_CanvasGroup.alpha = opacityShaped;
@@ -353,8 +280,8 @@ namespace UnityEngine.VR.Menus
 		private void FadeOutCleanup()
 		{
 			m_CanvasGroup.alpha = 0;
-			m_InsetMaterial.SetColor("_ColorTop", sOriginalInsetGradientPair.a);
-			m_InsetMaterial.SetColor("_ColorBottom", sOriginalInsetGradientPair.b);
+			m_InsetMaterial.SetColor("_ColorTop", s_OriginalInsetGradientPair.a);
+			m_InsetMaterial.SetColor("_ColorBottom", s_OriginalInsetGradientPair.b);
 			m_BorderRendererMaterial.SetFloat("_Expand", 1);
 			m_InsetMaterial.SetFloat("_Alpha", 0);
 			m_MenuInset.localScale = m_HiddenInsetLocalScale;
@@ -364,50 +291,36 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator Highlight()
 		{
-			Debug.LogError("Starting Slot Highlight");
-			
 			if (m_IconHighlightCoroutine == null)
 				m_IconHighlightCoroutine = StartCoroutine(IconHighlightAnimatedShow());
 
-			float opacity = Time.unscaledDeltaTime;
-			Color topColor = sOriginalInsetGradientPair.a;
-			Color bottomColor = sOriginalInsetGradientPair.b;
+			var opacity = Time.unscaledDeltaTime;
+			var topColor = s_OriginalInsetGradientPair.a;
+			var bottomColor = s_OriginalInsetGradientPair.b;
 			while (opacity > 0)
 			{
-				//Debug.Log(opacity + " - " + m_Highlighted.ToString());
-
 				if (m_Highlighted)
 				{
 					if (!Mathf.Approximately(opacity, 1f))
 						opacity = Mathf.Clamp01(opacity + Time.unscaledDeltaTime * 4); // stay highlighted
 				}
 				else
-					opacity = Mathf.Clamp01(opacity - Time.unscaledDeltaTime * 2); //Mathf.PingPong(opacity + Time.unscaledDeltaTime * 4, 1); // ping pong out of the hide visual state if no longer highlighted
+					opacity = Mathf.Clamp01(opacity - Time.unscaledDeltaTime * 2);
 
-				//if (orderIndex == 0)
-				//transform.localScale = new Vector3(opacity, 1f, 1f);
 
-				//transform.localScale = Vector3.Lerp(hiddenScale, Vector3.one, opacity);
-				//m_CanvasGroup.alpha = opacity;
+				topColor = Color.Lerp(s_OriginalInsetGradientPair.a, s_GradientPair.a, opacity * 2f);
+				bottomColor = Color.Lerp(s_OriginalInsetGradientPair.b, s_GradientPair.b, opacity);
 
-				topColor = Color.Lerp(sOriginalInsetGradientPair.a, sGradientPair.a, opacity * 2f);
-				bottomColor = Color.Lerp(sOriginalInsetGradientPair.b, sGradientPair.b, opacity);
-
-				//m_BorderRendererMaterial.SetFloat("_Expand", opacityShaped);
 				m_InsetMaterial.SetColor("_ColorTop", topColor);
 				m_InsetMaterial.SetColor("_ColorBottom", bottomColor);
 
-				//m_InsetMaterial.SetFloat("_Alpha", opacityShaped / 4);
 				m_MenuInset.localScale = Vector3.Lerp(m_VisibleInsetLocalScale, m_HighlightedInsetLocalScale, opacity * opacity);
-				//m_CanvasGroup.alpha = opacity;
 				yield return null;
 			}
 
 			m_BorderRendererMaterial.SetFloat("_Expand", 0);
-			m_InsetMaterial.SetColor("_ColorTop", sOriginalInsetGradientPair.a);
-			m_InsetMaterial.SetColor("_ColorBottom", sOriginalInsetGradientPair.b);
-
-			Debug.LogError("<color=green>Finished Slot Highlight</color>");
+			m_InsetMaterial.SetColor("_ColorTop", s_OriginalInsetGradientPair.a);
+			m_InsetMaterial.SetColor("_ColorBottom", s_OriginalInsetGradientPair.b);
 
 			m_HighlightCoroutine = null;
 		}
@@ -430,13 +343,12 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator IconHighlightAnimatedShow(bool pressed = false)
 		{
-			Vector3 currentPosition = m_IconTransform.localPosition;
-			Vector3 targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // Raise up for highlight; lower for press
-			float transitionAmount = Time.unscaledDeltaTime;
-			float transitionAddMultiplier = pressed == false ? 14 : 18; // Faster transition in for standard highlight; slower for pressed highlight
+			var currentPosition = m_IconTransform.localPosition;
+			var targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // Raise up for highlight; lower for press
+			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAddMultiplier = pressed == false ? 14 : 18; // Faster transition in for standard highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
-				Debug.LogError("Inside ICON HIGHLIGHT");
 				m_IconTransform.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
 				transitionAmount = transitionAmount + Time.unscaledDeltaTime * transitionAddMultiplier;
 				yield return null;
@@ -448,15 +360,12 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator IconEndHighlight()
 		{
-			Debug.LogError("<color=blue>ENDING ICON HIGHLIGHT</color> : " + m_IconTransform.localPosition);
-
-			Vector3 currentPosition = m_IconTransform.localPosition;
-			float transitionAmount = 1f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
-			float transitionSubtractMultiplier = 5f;//18;
+			var currentPosition = m_IconTransform.localPosition;
+			var transitionAmount = 1f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
+			var transitionSubtractMultiplier = 5f;
 			while (transitionAmount > 0)
 			{
 				m_IconTransform.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
-				//Debug.LogError("transition amount : " + transitionAmount + "icon position : " + m_IconTransform.localPosition);
 				transitionAmount -= Time.unscaledDeltaTime * transitionSubtractMultiplier;
 				yield return null;
 			}
