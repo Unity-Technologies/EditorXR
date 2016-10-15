@@ -196,7 +196,7 @@ namespace UnityEngine.VR.Workspaces
 				if (m_TopPanelDividerOffset != null)
 				{
 					const float kDepthCompensation = 0.1375f;
-					m_TopPanelDividerTransform.localPosition = new Vector3(boundsSize.x*0.5f*m_TopPanelDividerOffset.Value, 0f, 0f);
+					m_TopPanelDividerTransform.localPosition = new Vector3(boundsSize.x * 0.5f * m_TopPanelDividerOffset.Value, 0f, 0f);
 					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, boundsSize.z - kDepthCompensation);
 				}
 
