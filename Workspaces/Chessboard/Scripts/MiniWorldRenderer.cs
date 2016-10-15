@@ -3,6 +3,8 @@ using UnityEngine.VR.Utilities;
 
 public class MiniWorldRenderer : MonoBehaviour
 {
+	const float kMinScale = 0.001f;
+
 	private Camera m_MainCamera;
 	private Camera m_MiniCamera;
 	private bool m_RenderingMiniWorlds;
@@ -39,7 +41,7 @@ public class MiniWorldRenderer : MonoBehaviour
 			// If we ever support multiple mini-worlds, then we could collect them all and render them in one loop here
 			m_RenderingMiniWorlds = true;
 
-			if (m_MainCamera && miniWorld && miniWorld.transform.lossyScale.magnitude > 0)
+			if (m_MainCamera && miniWorld && miniWorld.transform.lossyScale.magnitude > kMinScale)
 			{
 				m_MiniCamera.CopyFrom(m_MainCamera);
 
