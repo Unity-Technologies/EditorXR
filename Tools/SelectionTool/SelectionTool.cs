@@ -95,7 +95,7 @@ namespace UnityEngine.VR.Tools
 				// Detect double click
 				var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
 				m_LastSelectTime = DateTime.Now;
-				if (U.UI.DoubleClick(timeSinceLastSelect))
+				if (U.UI.IsDoubleClick(timeSinceLastSelect))
 				{
 					s_CurrentPrefabOpened = m_HoverGameObject;
 					s_SelectedObjects.Remove(s_CurrentPrefabOpened);
