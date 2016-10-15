@@ -169,7 +169,6 @@ namespace UnityEngine.VR.Workspaces
 				m_LeftHandleTransform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f - kSideHandleOffset, m_LeftHandleYLocalPosition, 0);
 				m_LeftHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
 
-				m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -extents.z - m_HandleScale + m_AngledFrontHandleOffset);
 				m_FrontHandleTransform.localScale = m_PreventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				m_RightHandleTransform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
@@ -332,7 +331,9 @@ namespace UnityEngine.VR.Workspaces
 
 			// offset the front resize icons to accommodate for the blendshape extending outwards
 			const float blendShapeToLerpConversionFactor = 0.1f;
+			m_AngledFrontHandleOffset = Mathf.Lerp(0f, 0.125f, blendShapeToLerpConversionFactor);
 			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, angledAmount * blendShapeToLerpConversionFactor);
+			m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale + m_AngledFrontHandleOffset);
 		}
 
 		public void CloseClick()
