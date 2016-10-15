@@ -22,7 +22,7 @@ namespace UnityEngine.VR.Workspaces
 
 		protected Vector3? m_CustomStartingBounds;
 
-		public static readonly Vector3 kMinBounds = new Vector3(0.7f, 0.4f, 0.1f);
+		public static readonly Vector3 kMinBounds = new Vector3(0.55f, 0.4f, 0.1f);
 		private const float kExtraHeight = 0.15f; //Extra space for frame model
 
 		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
