@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Data;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Modules
 {

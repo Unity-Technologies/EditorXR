@@ -1,14 +1,39 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections.Generic;
-using UnityEngine.VR.Tools;
 using UnityEditor;
-using UnityEngine.VR.Utilities;
+using UnityEditor.VR.Modules;
+using UnityEngine;
 using UnityEngine.InputNew;
-using System;
 using UnityEngine.VR;
+using UnityEngine.VR.Modules;
+using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
 
 public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransformTool, ISelectionChanged, IDirectSelection, IBlockUIInput
 {
+	const float kBaseManipulatorSize = 0.3f;
+	const float kLazyFollowTranslate = 8f;
+	const float kLazyFollowRotate = 12f;
+
+	class GrabData
+	{
+		public Transform grabbedObject;
+		public Transform rayOrigin;
+		public Vector3 positionOffset;
+		public Quaternion rotationOffset;
+		public Vector3 initialScale;
+
+		public GrabData(Transform rayOrigin, Transform grabbedObject)
+		{
+			this.rayOrigin = rayOrigin;
+			this.grabbedObject = grabbedObject;
+			var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
+			positionOffset = inverseRotation * (grabbedObject.transform.position - rayOrigin.position);
+			rotationOffset = inverseRotation * grabbedObject.transform.rotation;
+			initialScale = grabbedObject.transform.localScale;
+		}
+	}
+
 	[SerializeField]
 	GameObject m_StandardManipulatorPrefab;
 
@@ -20,10 +45,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 
 	[SerializeField]
 	ActionMap m_DirectSelectActionMap;
-
-	const float kBaseManipulatorSize = 0.3f;
-	const float kLazyFollowTranslate = 8f;
-	const float kLazyFollowRotate = 12f;
 
 	readonly List<GameObject> m_AllManipulators = new List<GameObject>();
 	GameObject m_CurrentManipulator;
@@ -44,30 +65,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 	PivotRotation m_PivotRotation = PivotRotation.Local;
 	PivotMode m_PivotMode = PivotMode.Pivot;
 
-
-	class GrabData
-	{
-		public Transform grabbedObject;
-		public Transform rayOrigin;
-		public Vector3 positionOffset;
-		public Quaternion rotationOffset;
-		public Vector3 initialScale;
-
-		public GrabData(Transform rayOrigin, Transform grabbedObject)
-		{
-			this.rayOrigin = rayOrigin;
-			this.grabbedObject = grabbedObject;
-			var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
-			positionOffset = inverseRotation * (grabbedObject.transform.position - rayOrigin.position);
-			rotationOffset = inverseRotation * grabbedObject.transform.rotation;
-			initialScale = grabbedObject.transform.localScale;
-		}
-
-		public override string ToString()
-		{
-			return grabbedObject + ", " + rayOrigin + ", " + positionOffset;
-		}
-	}
 	readonly Dictionary<Node, GrabData> m_GrabData = new Dictionary<Node, GrabData>();
 	bool m_DirectSelected;
 	float m_ZoomStartDistance;
@@ -131,13 +128,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 		m_DirectSelected = false;
 
 		if (m_SelectionTransforms.Length == 0)
-		{
 			m_CurrentManipulator.SetActive(false);
-		}
 		else
-		{
 			UpdateCurrentManipulator();
-		}
 	}
 
 	void Update()
@@ -161,7 +154,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 					var grabbedObject = selection.Value.gameObject.transform;
 					var rayOrigin = selection.Key;
 
-					// Check if the other hand is already grabbing
+					// Check if the other hand is already grabbing for two-handed scale
 					foreach (var grabData in m_GrabData)
 					{
 						var otherNode = grabData.Key;
@@ -184,7 +177,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 					var grabbedObject = selection.Value.gameObject.transform;
 					var rayOrigin = selection.Key;
 
-					// Check if the other hand is already grabbing
+					// Check if the other hand is already grabbing for two-handed scale
 					foreach (var grabData in m_GrabData)
 					{
 						var otherNode = grabData.Key;
@@ -320,6 +313,16 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 		}
 	}
 
+	public void DropHeldObject(Transform obj)
+	{
+		var grabDataCopy = new Dictionary<Node, GrabData>(m_GrabData);
+		foreach (var grabData in grabDataCopy)
+		{
+			if (grabData.Value.grabbedObject == obj)
+				m_GrabData.Remove(grabData.Key);
+		}
+	}
+
 	private void Translate(Vector3 delta)
 	{
 		m_TargetPosition += delta;
@@ -391,8 +394,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 		UpdateSelectionBounds();
 		m_CurrentManipulator.SetActive(true);
 		var manipulatorTransform = m_CurrentManipulator.transform;
-		manipulatorTransform.position = (m_PivotMode == PivotMode.Pivot) ? m_SelectionTransforms[0].position : m_SelectionBounds.center;
-		manipulatorTransform.rotation = (m_PivotRotation == PivotRotation.Global) ? Quaternion.identity : m_SelectionTransforms[0].rotation;
+		manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? m_SelectionTransforms[0].position : m_SelectionBounds.center;
+		manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : m_SelectionTransforms[0].rotation;
 		m_TargetPosition = manipulatorTransform.position;
 		m_TargetRotation = manipulatorTransform.rotation;
 		m_StartRotation = m_TargetRotation;

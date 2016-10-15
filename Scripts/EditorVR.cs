@@ -106,10 +106,12 @@ public class EditorVR : MonoBehaviour
 		public IMiniWorld miniWorld;
 		public IProxy proxy;
 		public Node node;
+		public ActionMapInput uiInput;
 		public IntersectionTester tester;
 		public GameObject dragObject;
 		public Vector3 dragObjectOriginalScale;
 		public Vector3 dragObjectPreviewScale;
+		public bool wasContained;
 	}
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
@@ -637,7 +639,7 @@ public class EditorVR : MonoBehaviour
 
 	private KeyboardUI SpawnNumericKeyboard()
 	{
-		if(m_StandardKeyboard != null)
+		if (m_StandardKeyboard != null)
 			m_StandardKeyboard.gameObject.SetActive(false);
 		
 		// Check if the prefab has already been instantiated
@@ -719,6 +721,8 @@ public class EditorVR : MonoBehaviour
 			if (deviceData.uiInput != null)
 				maps.Add(deviceData.uiInput);
 		}
+
+		maps.AddRange(m_MiniWorldRays.Select(miniWorldRay => miniWorldRay.Value.uiInput));
 
 		maps.Add(m_TrackedObjectInput);
 
@@ -847,7 +851,7 @@ public class EditorVR : MonoBehaviour
 		{
 			var actionMaps = customMaps.actionMaps;
 			var inputs = new ActionMapInput[actionMaps.Length];
-			for(int i = 0; i < actionMaps.Length; i++)
+			for (int i = 0; i < actionMaps.Length; i++)
 			{
 				var input = CreateActionMapInput(actionMaps[i], device);
 				inputs[i] = input;
@@ -994,7 +998,8 @@ public class EditorVR : MonoBehaviour
 		{
 			length = dpr.pointerLength;
 			// If this is a MiniWorldRay, scale the pointer length to the correct size relative to MiniWorld objects
-			if (ray != null) {
+			if (ray != null)
+			{
 				var miniWorld = ray.miniWorld;
 				// As the miniworld gets smaller, the ray length grows, hence localScale.Inverse().
 				// Assume that both transforms have uniform scale, so we just need .x
@@ -1140,7 +1145,7 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
-		CreateWorkspace<ProjectWorkspace>();
+		CreateWorkspace<ChessboardWorkspace>();
 	}
 	
 	private void CreateWorkspace<T>() where T : Workspace
@@ -1223,8 +1228,11 @@ public class EditorVR : MonoBehaviour
 				var miniWorldRayOrigin = U.Object.Instantiate(m_MiniWorldRayPrefab).transform;
 				miniWorldRayOrigin.parent = workspace.transform;
 
+				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
+
 				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, miniWorldRayOrigin);
+				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
 
 				var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 				tester.active = false;
@@ -1236,6 +1244,7 @@ public class EditorVR : MonoBehaviour
 					miniWorld = miniWorld,
 					proxy = proxy,
 					node = rayOriginPair.Key,
+					uiInput = uiInput,
 					tester = tester
 				};
 
@@ -1266,6 +1275,8 @@ public class EditorVR : MonoBehaviour
 
 	private void UpdateMiniWorldRays()
 	{
+		if (m_TransformTool != null)
+			m_TransformTool.directManipulationEnabled = true;
 		foreach (var ray in m_MiniWorldRays)
 		{
 			var miniWorldRayOrigin = ray.Key;
@@ -1297,8 +1308,16 @@ public class EditorVR : MonoBehaviour
 			if (directInputControl.wasJustPressed)
 			{
 				var dragObject = GetDirectSelectionForRayOrigin(miniWorldRayOrigin);
-				miniWorldRay.dragObject = dragObject;
-				if (dragObject)
+				var otherRayHasObject = false;
+				foreach (var otherRay in m_MiniWorldRays.Values)
+				{
+					if (otherRay != miniWorldRay && otherRay.dragObject == dragObject)
+						otherRayHasObject = true;
+				}
+				if (!otherRayHasObject)
+					miniWorldRay.dragObject = dragObject;
+
+				if (miniWorldRay.dragObject)
 				{
 					miniWorldRay.dragObjectOriginalScale = dragObject.transform.localScale;
 					var totalBounds = U.Object.GetTotalBounds(dragObject.transform);
@@ -1308,31 +1327,41 @@ public class EditorVR : MonoBehaviour
 				}
 			}
 
-			m_TransformTool.directManipulationEnabled = true;
 			if (!miniWorldRay.dragObject)
+			{
+				miniWorldRay.wasContained = isContained;
 				continue;
+			}
 
 			m_InputModule.inputBlocked = true;
 			if (directInputControl.isHeld)
 			{
-				var selectedObjectTransform = miniWorldRay.dragObject.transform;
+				var dragObjectTransform = miniWorldRay.dragObject.transform;
 				if (isContained)
 				{
-					selectedObjectTransform.localScale = miniWorldRay.dragObjectOriginalScale;
+					if (!miniWorldRay.wasContained)
+						dragObjectTransform.localScale = miniWorldRay.dragObjectOriginalScale;
 				}
 				else
 				{
+					if (miniWorldRay.wasContained)
+						miniWorldRay.dragObjectOriginalScale = dragObjectTransform.localScale;
 					m_TransformTool.directManipulationEnabled = false;
-					selectedObjectTransform.localScale = miniWorldRay.dragObjectPreviewScale;
+					dragObjectTransform.localScale = miniWorldRay.dragObjectPreviewScale;
+					m_ObjectPlacementModule.Preview(dragObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
 				}
 			}
 
 			// Release the current object if the trigger is no longer held
 			if (directInputControl.wasJustReleased)
 			{
-				PlaceObject(miniWorldRay.dragObject.transform, miniWorldRay.dragObjectOriginalScale);
+				m_TransformTool.DropHeldObject(miniWorldRay.dragObject.transform);
+				if (!isContained)
+					PlaceObject(miniWorldRay.dragObject.transform, miniWorldRay.dragObjectOriginalScale);
 				miniWorldRay.dragObject = null;
 			}
+
+			miniWorldRay.wasContained = isContained;
 		}
 	}
 
@@ -1349,20 +1378,24 @@ public class EditorVR : MonoBehaviour
 			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
 			if (renderer)
 				return renderer.gameObject;
+		}
 
-			foreach (var ray in m_MiniWorldRays)
+		foreach (var ray in m_MiniWorldRays)
+		{
+			var miniWorldRay = ray.Value;
+			if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
 			{
-				var miniWorldRay = ray.Value;
-				if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
-				{
-					var miniWorldRayOrigin = ray.Key;
-					if (!miniWorldRayOrigin.gameObject.activeSelf)
-						continue;
+				var miniWorldRayOrigin = ray.Key;
+				if (!miniWorldRayOrigin.gameObject.activeSelf)
+					continue;
 
-					renderer = m_IntersectionModule.GetIntersectedObjectForTester(miniWorldRay.tester);
-					if (renderer)
-						return renderer.gameObject;
-				}
+				go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRayOrigin);
+				if (go)
+					return go;
+
+				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(miniWorldRay.tester);
+				if (renderer)
+					return renderer.gameObject;
 			}
 		}
 

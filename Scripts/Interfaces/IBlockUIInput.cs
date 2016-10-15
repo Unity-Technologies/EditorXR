@@ -1,6 +1,9 @@
 ﻿using System;
 
-public interface IBlockUIInput
+namespace UnityEngine.VR.Modules
 {
-	Action<bool> setInputBlocked { set; }
+	public interface IBlockUIInput
+	{
+		Action<bool> setInputBlocked { set; }
+	}
 }

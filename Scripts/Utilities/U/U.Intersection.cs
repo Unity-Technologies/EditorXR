@@ -19,18 +19,10 @@ namespace UnityEngine.VR.Utilities
 				if (mf)
 					collisionTester.sharedMesh = mf.sharedMesh;
 
-				if (!mf)
-				{
-					var smr = obj as SkinnedMeshRenderer;
-					if (smr) {
-						collisionTester.sharedMesh = smr.sharedMesh;
-					}
-				}
-
 				var transform = obj.transform;
 
 				// Try a simple test with specific rays located at vertices
-				for (int j = 0; j < tester.rays.Length; j++)
+				for (var j = 0; j < tester.rays.Length; j++)
 				{
 					var ray = tester.rays[j];
 
@@ -60,7 +52,6 @@ namespace UnityEngine.VR.Utilities
 				var vertices = tester.vertices;
 
 				float maxDistance = collisionTester.bounds.size.magnitude;
-				RaycastHit hitInfo;
 
 				var triangleVertices = new Vector3[3];
 				var testerTransform = tester.transform;
@@ -72,6 +63,8 @@ namespace UnityEngine.VR.Utilities
 
 					for (int j = 0; j < 3; j++)
 					{
+						RaycastHit hitInfo;
+
 						var start = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[j]));
 						var end = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[(j + 1) % 3]));
 						var direction = end - start;// obj.InverseTransformDirection(end - start);

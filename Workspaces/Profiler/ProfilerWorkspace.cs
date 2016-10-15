@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+﻿using UnityEditor.VR;
+using UnityEngine;
 using UnityEngine.VR.Workspaces;
-using UnityEditor.VR;
 
 public class ProfilerWorkspace : Workspace
 {
@@ -22,10 +22,10 @@ public class ProfilerWorkspace : Workspace
 			float maxX = VRView.viewerCamera.pixelRect.width * .75f;
 			float maxY = VRView.viewerCamera.pixelRect.height * .75f;
 
-			foreach(Vector3 vec in corners)
+			foreach (Vector3 vec in corners)
 			{
 				Vector3 screenPoint = VRView.viewerCamera.WorldToScreenPoint(vec);
-				if(screenPoint.x > minX && screenPoint.x < maxX && screenPoint.y > minY && screenPoint.y < maxY)
+				if (screenPoint.x > minX && screenPoint.x < maxX && screenPoint.y > minY && screenPoint.y < maxY)
 					return true;
 			}
 			return false;

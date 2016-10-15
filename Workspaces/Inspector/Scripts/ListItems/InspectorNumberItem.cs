@@ -107,7 +107,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 		if (m_ClickedField && m_ClickCount == 0)
 		{
-			foreach(var tickButton in m_TickButtons)
+			foreach (var tickButton in m_TickButtons)
 				tickButton.gameObject.SetActive(false);
 			foreach (var scrubIcon in m_ScrubIcons)
 				scrubIcon.gameObject.SetActive(true);

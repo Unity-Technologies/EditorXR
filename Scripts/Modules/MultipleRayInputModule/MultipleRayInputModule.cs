@@ -41,9 +41,27 @@ namespace UnityEngine.VR.Modules
 		[SerializeField]
 		private ActionMap m_UIActionMap;
 
-		public Func<Transform, float> getPointerLength { get; set; }
+		public bool inputBlocked
+		{
+			get
+			{
+				return m_InputBlocked;
+			}
+			set
+			{
+				m_InputBlocked = value;
+				if (m_InputBlocked)
+				{
+					foreach (var source in m_RaycastSources.Values)
+					{
+						source.actionMapInput.active = false;
+					}
+				}
+			}
+		}
+		bool m_InputBlocked;
 
-		public bool inputBlocked { get; set; }
+		public Func<Transform, float> getPointerLength { get; set; }
 
 		public event Action<GameObject, RayEventData> rayEntered = delegate {};
 		public event Action<GameObject, RayEventData> rayExited = delegate {};
@@ -84,6 +102,9 @@ namespace UnityEngine.VR.Modules
 
 		public RayEventData GetPointerEventData(Transform rayOrigin)
 		{
+			if (inputBlocked)
+				return null;
+
 			RaycastSource source;
 			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
 				return source.eventData;
