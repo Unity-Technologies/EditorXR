@@ -47,6 +47,7 @@ namespace UnityEngine.VR.Workspaces
 		Transform m_TopHighlightTransform;
 		Coroutine m_RotateFrontFaceForwardCoroutine;
 		Coroutine m_RotateFrontFaceBackwardCoroutine;
+		Coroutine m_FrameThicknessCoroutine;
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -140,9 +141,34 @@ namespace UnityEngine.VR.Workspaces
 
 		public bool dynamicFaceAdjustment { get; set; }
 
-		public bool highlightsVisible { set { m_TopHighlight.visible = value; m_FrontHighlight.visible = value; } }
+		public bool highlightsVisible
+		{
+			set
+			{
+				if (m_TopHighlight.visible == value) // All highlights will be set with this value; only need to check one highlight visibility
+					return;
 
-		public bool frontHighlightVisible { set { m_FrontHighlight.visible = value; } }
+				m_TopHighlight.visible = value;
+				m_FrontHighlight.visible = value;
+
+				StopCoroutine(ref m_FrameThicknessCoroutine);
+				m_FrameThicknessCoroutine = value == false ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
+			}
+		}
+
+		public bool frontHighlightVisible
+		{
+			set
+			{
+				if (m_FrontHighlight.visible == value)
+					return;
+
+				m_FrontHighlight.visible = value;
+
+				StopCoroutine(ref m_FrameThicknessCoroutine);
+				m_FrameThicknessCoroutine = value == false ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
+			}
+		}
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
@@ -354,49 +380,41 @@ namespace UnityEngine.VR.Workspaces
 		{
 			lockClicked();
 		}
-		/*
-		IEnumerator RotateFrontFaceForward()
+
+		IEnumerator IncreaseFrameThickness()
 		{
-			m_AngledFrontHandleOffset = 0f; // set this value so it can be applied when manually setting bounds as well
-			m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale + m_AngledFrontHandleOffset); // only the front handle needs to be repositioned
-
-			const float targetBlendAmount = 100f;
-			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kAngledFaceBlendShapeIndex);
+			const float kTargetBlendAmount = 0f;
+			const float kTargetDuration = 0.5f;
+			var currentDuration = 0f;
+			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kThinFrameBlendShapeIndex);
 			var currentVelocity = 0f;
-			while (currentBlendAmount < targetBlendAmount)
+			while (currentDuration < kTargetDuration)
 			{
-				currentBlendAmount = U.Math.SmoothDamp(currentBlendAmount, targetBlendAmount, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
-				m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, currentBlendAmount);
-
-				var lerpAmount = currentBlendAmount / 100;
-				m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, lerpAmount);
-				m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));
-				// offset the front resize icons to accommodate for the blendshape extending outwards
-				m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
+				currentDuration += Time.unscaledDeltaTime;
+				currentBlendAmount = U.Math.SmoothDamp(currentBlendAmount, kTargetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, currentBlendAmount);
 				yield return null;
 			}
+
+			m_FrameThicknessCoroutine = null;
 		}
 
-		IEnumerator RotateFrontFaceBackward()
+		IEnumerator ResetFrameThickness()
 		{
-			m_AngledFrontHandleOffset = 0.125f; // clear this offset value so it is not applied when manually setting bounds
-			m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale + m_AngledFrontHandleOffset); // only the front handle needs to be repositioned
-
-			const float targetBlendAmount = 0f;
-			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kAngledFaceBlendShapeIndex);
+			const float kTargetBlendAmount = 50f;
+			const float kTargetDuration = 0.5f;
+			var currentDuration = 0f;
+			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kThinFrameBlendShapeIndex);
 			var currentVelocity = 0f;
-			while (currentBlendAmount > targetBlendAmount)
+			while (currentDuration < kTargetDuration)
 			{
-				currentBlendAmount = U.Math.SmoothDamp(currentBlendAmount, targetBlendAmount, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
-				m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, currentBlendAmount);
-
-				var lerpAmount = currentBlendAmount / 50;
-				m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, lerpAmount);
-				m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));
-				m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
+				currentDuration += Time.unscaledDeltaTime;
+				currentBlendAmount = U.Math.SmoothDamp(currentBlendAmount, kTargetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, currentBlendAmount);
 				yield return null;
 			}
+
+			m_FrameThicknessCoroutine = null;
 		}
-		*/
 	}
 }
