@@ -140,7 +140,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public bool dynamicFaceAdjustment { get; set; }
 
-		public bool highlightVisible { set { m_TopHighlight.visible = value; m_FrontHighlight.visible = value; } }
+		public bool highlightsVisible { set { m_TopHighlight.visible = value; m_FrontHighlight.visible = value; } }
 
 		public bool frontHighlightVisible { set { m_FrontHighlight.visible = value; } }
 
