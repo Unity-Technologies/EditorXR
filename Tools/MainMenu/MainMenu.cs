@@ -120,7 +120,7 @@ namespace UnityEngine.VR.Menus
 
 		private void Update()
 		{
-			var rotationInput = m_MainMenuInput.rotate.rawValue;
+			var rotationInput = -m_MainMenuInput.rotate.rawValue;
 			if (Mathf.Approximately(rotationInput, m_LastRotationInput) && Mathf.Approximately(rotationInput, 0f))
 			{
 				m_RotationInputIdleTime += Time.unscaledDeltaTime;
