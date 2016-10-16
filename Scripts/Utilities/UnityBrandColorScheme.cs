@@ -283,7 +283,7 @@ namespace UnityEngine.VR.Utilities
 			s_RandomGradientPairColorAPosition = randomPositionA;
 
 			colorA *= Color.white;
-			colorB *= Color.white;
+			colorB *= colorB;
 			return new GradientPair(colorA, colorB);
 		}
 
