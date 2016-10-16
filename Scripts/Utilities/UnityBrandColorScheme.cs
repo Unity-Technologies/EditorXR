@@ -237,7 +237,8 @@ namespace UnityEngine.VR.Utilities
 			s_Gradients.Add(new GradientPair(s_Blue, s_Lime));
 			s_Gradients.Add(new GradientPair(s_Orange, s_Lime));
 
-			sessionGradient = GetRandomGradient();
+			// Setup basic light/dark contrasting session gradient
+			sessionGradient = new GradientPair(s_Light, s_Dark);
 		}
 
 		/// <summary>
