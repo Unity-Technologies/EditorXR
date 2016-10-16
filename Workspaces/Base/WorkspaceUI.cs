@@ -18,7 +18,7 @@ namespace UnityEngine.VR.Workspaces
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kThinFrameBlendShapeIndex = 3;
 		const int kHiddenFacesBlendShapeIndex = 4;
-		const float kFaceWidthMatchMultiplier =  7.23f; // Multiplier that sizes the face to the intended width
+		const float kFaceWidthMatchMultiplier =  7.1375f; // Multiplier that sizes the face to the intended width
 		const float kBackResizeButtonPositionOffset = -0.02f; // Offset to place the back resize buttons in their intended location
 		const float kBackHandleOffset = -0.145f; // Offset to place the back handle in the expected region behind the workspace
 		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
