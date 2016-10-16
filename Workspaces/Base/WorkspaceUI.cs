@@ -83,6 +83,10 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		private BaseHandle m_BackHandle;
 
+		public BaseHandle moveHandle { get { return m_MoveHandle; } }
+		[SerializeField]
+		private BaseHandle m_MoveHandle;
+
 		[SerializeField]
 		private SkinnedMeshRenderer m_Frame;
 
@@ -131,9 +135,14 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		Transform m_TopHighlightContainer;
 
+		[SerializeField]
+		WorkspaceHighlight m_FrontHighlight;
+
 		public bool dynamicFaceAdjustment { get; set; }
 
-		public bool highlightVisible { set { m_TopHighlight.visible = value; } }
+		public bool highlightVisible { set { m_TopHighlight.visible = value; m_FrontHighlight.visible = value; } }
+
+		public bool frontHighlightVisible { set { m_FrontHighlight.visible = value; } }
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
