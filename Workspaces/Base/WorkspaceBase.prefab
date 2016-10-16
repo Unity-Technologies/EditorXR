@@ -3144,6 +3144,7 @@ MonoBehaviour:
   m_FrontHandle: {fileID: 114000014067047110}
   m_RightHandle: {fileID: 114000012827231190}
   m_BackHandle: {fileID: 114000013854833486}
+  m_MoveHandle: {fileID: 114000011868678278}
   m_Frame: {fileID: 137000012547310740}
   m_FrameFrontFaceTransform: {fileID: 4000012134427690}
   m_TopPanelDividerTransform: {fileID: 4000011607955888}
@@ -3160,6 +3161,7 @@ MonoBehaviour:
   m_BackResizeIconsContainer: {fileID: 224000013299645382}
   m_TopHighlight: {fileID: 114000012960129082}
   m_TopHighlightContainer: {fileID: 4000012021209696}
+  m_FrontHighlight: {fileID: 114000013793407110}
 --- !u!137 &137000012547310740
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1
