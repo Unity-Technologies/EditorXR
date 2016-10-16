@@ -18,6 +18,7 @@ namespace UnityEngine.VR.UI
 
 		public bool visible
 		{
+			get { return m_HighlightVisible; }
 			set
 			{
 				if (m_HighlightVisible == value)
