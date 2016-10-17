@@ -59,8 +59,8 @@ namespace UnityEngine.VR.Modules
 						{
 							//Early-outs:
 							// Not updated yet
-							if (obj.transform.hasChanged)
-								continue;
+							//if (obj.transform.hasChanged)
+							//	continue;
 
 							//Bounds check
 							if (!obj.bounds.Intersects(testerBounds))

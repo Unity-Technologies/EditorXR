@@ -57,6 +57,9 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private KeyboardUI m_StandardKeyboardPrefab;
 
+	[SerializeField]
+	private GameObject m_PlayerModelPrefab;
+
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
 
@@ -236,6 +239,7 @@ public class EditorVR : MonoBehaviour
 		}
 
 		CreateSpatialSystem();
+		AddPlayerModel();
 		SpawnDefaultTools();
 		StartCoroutine(PrewarmAssets());
 
@@ -1480,6 +1484,13 @@ public class EditorVR : MonoBehaviour
 	void SetUIInputBlocked(bool blocked)
 	{
 		m_InputModule.inputBlocked = blocked;
+	}
+
+	void AddPlayerModel()
+	{
+		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
+		Debug.Log(playerModel.bounds);
+		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
 	}
 
 #if UNITY_EDITOR
