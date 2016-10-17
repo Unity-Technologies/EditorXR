@@ -6,6 +6,7 @@ using UnityEngine.Assertions;
 using System.Collections;
 using UnityEditor.VR.Helpers;
 using System.Reflection;
+using Valve.VR;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.VR
@@ -126,6 +127,7 @@ namespace UnityEditor.VR
 		private const string kLaunchOnExitPlaymode = "EditorVR.LaunchOnExitPlaymode";
 		private const float kHMDActivityTimeout = 3f; // in seconds
 		bool m_HMDReady;
+		bool m_VRInitialized;
 
 		public void OnEnable()
 		{
@@ -159,6 +161,8 @@ namespace UnityEditor.VR
 
 			VRSettings.StartRenderingToDevice();
 			InputTracking.Recenter();
+			// TODO: Fix VRSettings.enabled or some other API to check for missing HMD
+			m_VRInitialized =  OVRPlugin.initialized || (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
 
 			onEnable();
 		}
@@ -293,6 +297,9 @@ namespace UnityEditor.VR
 		{
 			pushedGUIClip = false;
 			if (!m_Camera.gameObject.activeInHierarchy)
+				return;
+
+			if (!m_VRInitialized)
 				return;
 			//DrawGridParameters gridParam = grid.PrepareGridRender(camera, pivot, m_Rotation.target, m_Size.value, m_Ortho.target, AnnotationUtility.showGrid);
 
