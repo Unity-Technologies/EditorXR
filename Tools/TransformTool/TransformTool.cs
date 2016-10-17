@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.VR.Modules;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
@@ -237,6 +236,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 						leftData = m_GrabData[Node.LeftHand] = new GrabData(leftData.rayOrigin, leftData.grabbedObject);
 					if (hasRight)
 						rightData = m_GrabData[Node.RightHand] = new GrabData(rightData.rayOrigin, rightData.grabbedObject);
+
 					m_WasScaling = false;
 				}
 				if (hasLeft && leftHeld)

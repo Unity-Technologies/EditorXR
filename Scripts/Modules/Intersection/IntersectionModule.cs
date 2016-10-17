@@ -41,6 +41,7 @@ namespace UnityEngine.VR.Modules
 					Renderer intersectedObject;
 					if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
 						OnIntersectionExit(tester, intersectedObject);
+
 					continue;
 				}
 

@@ -32,6 +32,7 @@ public class EditorVR : MonoBehaviour
 	private const float kWorkspaceYPadding = 0.35f;
 	private const int kMaxWorkspacePlacementAttempts = 20;
 	private const float kWorkspaceVacuumEnableDistance = 1f; // Disable vacuum bounds if workspace is close to player
+	const float kPreviewScale = 0.1f;
 
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
@@ -476,7 +477,7 @@ public class EditorVR : MonoBehaviour
 				tool = SpawnTool(locomotionTool, out devices);
 				AddToolToDeviceData(tool, devices);
 			}
-			
+
 			tool = SpawnTool(typeof(TransformTool), out devices);
 			AddToolToDeviceData(tool, devices);
 
@@ -1277,6 +1278,7 @@ public class EditorVR : MonoBehaviour
 	{
 		if (m_TransformTool != null)
 			m_TransformTool.directManipulationEnabled = true;
+
 		foreach (var ray in m_MiniWorldRays)
 		{
 			var miniWorldRayOrigin = ray.Key;
@@ -1322,7 +1324,7 @@ public class EditorVR : MonoBehaviour
 					miniWorldRay.dragObjectOriginalScale = dragObject.transform.localScale;
 					var totalBounds = U.Object.GetTotalBounds(dragObject.transform);
 					if (totalBounds != null)
-						miniWorldRay.dragObjectPreviewScale = dragObject.transform.localScale * (0.1f / totalBounds.Value.size.MaxComponent());
+						miniWorldRay.dragObjectPreviewScale = dragObject.transform.localScale * (kPreviewScale / totalBounds.Value.size.MaxComponent());
 					dragObject.transform.localScale = miniWorldRay.dragObjectOriginalScale;
 				}
 			}
@@ -1346,6 +1348,7 @@ public class EditorVR : MonoBehaviour
 				{
 					if (miniWorldRay.wasContained)
 						miniWorldRay.dragObjectOriginalScale = dragObjectTransform.localScale;
+
 					m_TransformTool.directManipulationEnabled = false;
 					dragObjectTransform.localScale = miniWorldRay.dragObjectPreviewScale;
 					m_ObjectPlacementModule.Preview(dragObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
@@ -1356,8 +1359,10 @@ public class EditorVR : MonoBehaviour
 			if (directInputControl.wasJustReleased)
 			{
 				m_TransformTool.DropHeldObject(miniWorldRay.dragObject.transform);
+
 				if (!isContained)
 					PlaceObject(miniWorldRay.dragObject.transform, miniWorldRay.dragObjectOriginalScale);
+
 				miniWorldRay.dragObject = null;
 			}
 
@@ -1404,7 +1409,7 @@ public class EditorVR : MonoBehaviour
 
 	Dictionary<Transform, DirectSelection> GetDirectSelection()
 	{
-		var result = new Dictionary<Transform, DirectSelection>();
+		var results = new Dictionary<Transform, DirectSelection>();
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
@@ -1412,7 +1417,7 @@ public class EditorVR : MonoBehaviour
 			var obj = GetDirectSelectionForRayOrigin(rayOrigin);
 			if (obj)
 			{
-				result[rayOrigin] = new DirectSelection
+				results[rayOrigin] = new DirectSelection
 				{
 					gameObject = obj,
 					node = rayOriginPair.Key
@@ -1426,14 +1431,14 @@ public class EditorVR : MonoBehaviour
 			var go = GetDirectSelectionForRayOrigin(ray.Key);
 			if (go != null)
 			{
-				result[rayOrigin] = new DirectSelection
+				results[rayOrigin] = new DirectSelection
 				{
 					gameObject = go,
 					node = ray.Value.node
 				};
 			}
 		}
-		return result;
+		return results;
 	}
 
 	GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin)
