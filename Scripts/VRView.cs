@@ -108,7 +108,11 @@ namespace UnityEditor.VR
 		public static event Action onHMDReady = delegate {};
 
 		public DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
-		
+
+		const string kShowDeviceView = "VRView.ShowDeviceView";
+		const string kLaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
+		const float kHMDActivityTimeout = 3f; // in seconds
+
 		[NonSerialized]
 		private Camera m_Camera;
 
@@ -122,9 +126,7 @@ namespace UnityEditor.VR
 		private Quaternion m_LastHeadRotation = Quaternion.identity;
 		private float m_TimeSinceLastHMDChange = 0f;
 		private bool m_LatchHMDValues = false;
-		
-		private const string kLaunchOnExitPlaymode = "EditorVR.LaunchOnExitPlaymode";
-		private const float kHMDActivityTimeout = 3f; // in seconds
+
 		bool m_HMDReady;
 
 		public void OnEnable()
@@ -154,6 +156,8 @@ namespace UnityEditor.VR
 			m_CameraPivot.position = position;
 			m_CameraPivot.rotation = Quaternion.identity;
 
+			m_ShowDeviceView = EditorPrefs.GetBool(kShowDeviceView, false);
+
 			// Disable other views to increase rendering performance for EditorVR
 			SetOtherViewsEnabled(false);
 
@@ -170,6 +174,8 @@ namespace UnityEditor.VR
 			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
 			VRSettings.StopRenderingToDevice();
+
+			EditorPrefs.SetBool(kShowDeviceView, m_ShowDeviceView);
 
 			SetOtherViewsEnabled(true);
 
