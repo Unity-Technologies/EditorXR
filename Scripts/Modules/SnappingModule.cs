@@ -34,6 +34,8 @@ public class SnappingModule : MonoBehaviour, IModule
 		internal RaycastHit targetPoint;
 		internal Vector3 closestVertex;
 		internal float startDistance;
+
+		internal Vector3? collisionPoint;
 	}
 
 	public void OnSnapStarted(Transform target, Vector3 deltaMovement, Transform[] raycastIgnore)
@@ -110,22 +112,38 @@ public class SnappingModule : MonoBehaviour, IModule
 		if (!U.Snapping.HasFlag(U.Snapping.SnappingModes.SnapToSurfaceNormal))
 			return;
 
-			Ray ray = new Ray(origin, currentOffset);
-			if (U.Snapping.GetRaySnapHit(
-				ray,
-				1000f,
-				out hit,
-				raycastIgnore))
-			{
-				var closestVertex = U.Snapping.GetClosestVertex(meshFilter, hit.point, hit.normal);
+		Vector3 transformPosition = target.position;
+		Vector3 origin = m_SnapDataTable[target].startPosition;
+		Vector3 currentOffset = transformPosition - origin;
+		RaycastHit hit;
 
-				float baseDistance = Vector3.Distance(origin, hit.point);
-				float currentDistance = Vector3.Distance(origin, transformPosition + closestVertex);
+		var snapData = m_SnapDataTable[target];
 
-				if (currentDistance > baseDistance)
-					target.position = hit.point - closestVertex;
-			}
+		Bounds meshBounds = meshFilter.GetComponent<MeshRenderer>().bounds;
+		Vector3 size = meshFilter.sharedMesh.bounds.size;
+
+		for (int i = 0; i < 3; i++)
+			size[i] *= target.lossyScale[i];
+
+		Vector3 centerOffset = meshBounds.center - transformPosition;
+		Bounds bounds = new Bounds(centerOffset, size);
+		Ray ray = new Ray(origin, currentOffset);
+
+		if (U.Snapping.GetBoxSnapHit(
+			target.rotation,
+			ray,
+			bounds,
+			currentOffset.magnitude,
+			out hit,
+			raycastIgnore))
+		{
+			if (snapData.collisionPoint.HasValue)
+				target.position = snapData.collisionPoint.Value;
+			else
+				target.position = ray.GetPoint(hit.distance);
 		}
+		else
+			snapData.collisionPoint = null;
 	}
 
 	private void HandleThrowEnd(Transform target, MeshFilter meshFilter, Transform[] raycastIgnore)

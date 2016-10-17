@@ -123,6 +123,61 @@ namespace UnityEngine.VR.Utilities
 				}
 			}
 
+			public static bool GetBoxSnapHit(Quaternion rotation, Ray ray, Bounds bounds, float distance, out RaycastHit hit, params Transform[] raycastIgnore)
+			{
+				RaycastHit[] hits = new RaycastHit[10];
+				int hitCount = Physics.BoxCastNonAlloc(
+					ray.origin + bounds.center,
+					bounds.extents,
+					ray.direction,
+					hits,
+					rotation,
+					distance,
+					VRView.viewerCamera.cullingMask,
+					QueryTriggerInteraction.Ignore);
+
+				float closestDistance = distance;
+				int closestIndex = -1;
+
+				for (int i = 0; i < hitCount; i++)
+				{
+					if (hits[i].distance < closestDistance)
+					{
+						bool skip = false;
+
+						for (int j = 0; j < raycastIgnore.Length; j++)
+						{
+							if (raycastIgnore[j].Equals(hits[i].collider.transform))
+							{
+								skip = true;
+								break;
+							}
+						}
+
+						if (!skip)
+						{
+							float directionDot = Vector3.Dot(ray.direction, hits[i].point - ray.origin);
+							if (directionDot > 0)
+							{
+								closestIndex = i;
+								closestDistance = hits[i].distance;
+							}
+						}
+					}
+				}
+
+				if (closestIndex > -1)
+				{
+					hit = hits[closestIndex];
+					return true;
+				}
+				else
+				{
+					hit = default(RaycastHit);
+					return false;
+				}
+			}
+
 			public static Vector3 GetClosestVertex(MeshFilter target, Vector3 surfacePoint, Vector3 surfaceNormal, bool singleAxisAwayFromSurface = true)
 			{
 				Vector3 closest = Vector3.zero;
