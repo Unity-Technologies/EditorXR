@@ -4,5 +4,6 @@
 	{
 		public Node node;
 		public GameObject gameObject;
+		public bool isMiniWorldRay;
 	}
 }
