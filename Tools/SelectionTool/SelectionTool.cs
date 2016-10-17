@@ -45,8 +45,6 @@ namespace UnityEngine.VR.Tools
 			}
 		}
 
-		public Transform menuInputOrigin { get; set; }
-
 		public Action<Node?> selected { get; set; }
 
 		private void Update()
