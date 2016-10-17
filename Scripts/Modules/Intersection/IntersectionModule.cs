@@ -41,6 +41,7 @@ namespace UnityEngine.VR.Modules
 					Renderer intersectedObject;
 					if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
 						OnIntersectionExit(tester, intersectedObject);
+
 					continue;
 				}
 
@@ -59,8 +60,8 @@ namespace UnityEngine.VR.Modules
 						{
 							//Early-outs:
 							// Not updated yet
-							//if (obj.transform.hasChanged)
-							//	continue;
+							if (obj.transform.hasChanged)
+								continue;
 
 							//Bounds check
 							if (!obj.bounds.Intersects(testerBounds))

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.VR.Modules;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
@@ -16,7 +14,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 	const float kBaseManipulatorSize = 0.3f;
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
-	const float kViewerPivotTransitionTime = 0.75f;
 
 	class GrabData
 	{
@@ -153,7 +150,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 			{
 				if (selection.Value.gameObject.tag == "VRPlayer" && !selection.Value.isMiniWorldRay)
 					continue;
-
 				if (selection.Value.node == Node.LeftHand && m_DirectSelectInput.selectLeft.wasJustPressed)
 				{
 					if (selection.Value.gameObject.tag == "VRPlayer")
@@ -249,6 +245,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 						leftData = m_GrabData[Node.LeftHand] = new GrabData(leftData.rayOrigin, leftData.grabbedObject);
 					if (hasRight)
 						rightData = m_GrabData[Node.RightHand] = new GrabData(rightData.rayOrigin, rightData.grabbedObject);
+
 					m_WasScaling = false;
 				}
 				if (hasLeft && leftHeld)
@@ -271,12 +268,11 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 				}
 			}
 
-			if (hasLeft && m_DirectSelectInput.selectLeft.wasJustReleased)
+			if (m_DirectSelectInput.selectLeft.wasJustReleased)
 				DropObject(Node.LeftHand);
 
-			if (hasRight && m_DirectSelectInput.selectRight.wasJustReleased)
+			if (m_DirectSelectInput.selectRight.wasJustReleased)
 				DropObject(Node.RightHand);
-		}
 
 		if (hasObject || m_DirectSelected)
 			return;
@@ -325,9 +321,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 		}
 	}
 
-	IEnumerator UpdateViewerPivot(Transform playerHead)
-	{
-		var viewerPivot = U.Camera.GetViewerPivot();
 
 		var components = viewerPivot.GetComponentsInChildren<SmoothMotion>();
 		foreach (var smoothMotion in components)
@@ -335,9 +328,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 			smoothMotion.enabled = false;
 		}
 
-		var mainCamera = U.Camera.GetMainCamera().transform;
-		var startPosition = viewerPivot.position;
-		var startRotation = viewerPivot.rotation;
 
 		var rotationDiff = U.Math.YawConstrainRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
 		var cameraDiff = viewerPivot.position - mainCamera.position;
@@ -346,29 +336,17 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 		
 		var endPosition = viewerPivot.position + (playerHead.position - mainCamera.position) + rotationOffset;
 		var endRotation = viewerPivot.rotation * rotationDiff;
-		var startTime = Time.realtimeSinceStartup;
-		var diffTime = 0f;
 
 		while (diffTime < kViewerPivotTransitionTime)
-		{
-			diffTime = Time.realtimeSinceStartup - startTime;
 			var t = diffTime / kViewerPivotTransitionTime;
 			viewerPivot.position = Vector3.Lerp(startPosition, endPosition, t);
 			viewerPivot.rotation = Quaternion.Lerp(startRotation, endRotation, t);
-			yield return null;
-		}
-
 		viewerPivot.position = endPosition;
-		playerHead.parent = mainCamera;
-		playerHead.localRotation = Quaternion.identity;
-		playerHead.localPosition = Vector3.zero;
 
 		foreach (var smoothMotion in components)
 		{
 			smoothMotion.enabled = true;
 		}
-	} 
-
 	public void DropHeldObject(Transform obj)
 	{
 		var grabDataCopy = new Dictionary<Node, GrabData>(m_GrabData);
