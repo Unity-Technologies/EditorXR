@@ -13,8 +13,6 @@ namespace UnityEngine.VR.Workspaces
 		public event Action closeClicked = delegate { };
 		public event Action lockClicked = delegate { };
 
-		const float kMaxAlternateFrontPanelLocalZOffset = -0.015f;
-		const float kMaxAlternateFrontPanelLocalYOffset = 0.0525f;
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kThinFrameBlendShapeIndex = 3;
 		const int kHiddenFacesBlendShapeIndex = 4;
@@ -245,9 +243,11 @@ namespace UnityEngine.VR.Workspaces
 
 		void ShowResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
+			StopCoroutine(ref m_FrameThicknessCoroutine);
+			m_FrameThicknessCoroutine = StartCoroutine(IncreaseFrameThickness());
+
 			const float kOpacityTarget = 0.75f;
 			const float kDuration = 0.25f;
-
 			if (baseHandle == m_FrontHandle) // in order of potential usage
 			{
 				m_FrontLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
@@ -272,9 +272,11 @@ namespace UnityEngine.VR.Workspaces
 
 		void HideResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
+			StopCoroutine(ref m_FrameThicknessCoroutine);
+			m_FrameThicknessCoroutine = StartCoroutine(ResetFrameThickness());
+
 			const float kOpacityTarget = 0f;
 			const float kDuration = 0.2f;
-
 			if (baseHandle == m_FrontHandle) // in order of potential usage
 			{
 				m_FrontLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
@@ -354,19 +356,19 @@ namespace UnityEngine.VR.Workspaces
 
 			m_PreviousXRotation = currentXRotation;
 
-			//var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 120f);
-			
-			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 100f);
-			var lerpAmount = angledAmount / 90f;
+			const float kMaxAlternateFrontPanelLocalZOffset = 0.0035f;
+			const float kMaxAlternateFrontPanelLocalYOffset = 0.0325f;
+			var lerpPadding = 1.2f; // Pads lerp values increasingly as they grow, displaying the "front face reveal" sooner
+			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 90f);
+			var lerpAmount = (angledAmount / 90f) * lerpPadding;
 			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));
 			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
 
-			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, angledAmount);
+			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, angledAmount * lerpPadding);
 
 			// offset the front resize icons to accommodate for the blendshape extending outwards
-			const float blendShapeToLerpConversionFactor = 0.1f;
-			m_AngledFrontHandleOffset = Mathf.Lerp(0f, 0.125f, blendShapeToLerpConversionFactor);
-			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, angledAmount * blendShapeToLerpConversionFactor);
+			m_AngledFrontHandleOffset = Mathf.Lerp(0f, 0.125f, lerpAmount);
+			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, lerpAmount);
 			m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale + m_AngledFrontHandleOffset);
 		}
 
