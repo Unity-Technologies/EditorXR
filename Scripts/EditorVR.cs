@@ -109,7 +109,7 @@ public class EditorVR : MonoBehaviour
 		public IMiniWorld miniWorld;
 		public IProxy proxy;
 		public Node node;
-		public ActionMapInput uiInput;
+		//public ActionMapInput uiInput;
 		public IntersectionTester tester;
 		public GameObject dragObject;
 		public Vector3 dragObjectOriginalScale;
@@ -726,7 +726,7 @@ public class EditorVR : MonoBehaviour
 				maps.Add(deviceData.uiInput);
 		}
 
-		maps.AddRange(m_MiniWorldRays.Select(miniWorldRay => miniWorldRay.Value.uiInput));
+		//maps.AddRange(m_MiniWorldRays.Select(miniWorldRay => miniWorldRay.Value.uiInput));
 
 		maps.Add(m_TrackedObjectInput);
 
@@ -1150,6 +1150,8 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultWorkspaces()
 	{
 		CreateWorkspace<ProjectWorkspace>();
+		CreateWorkspace<ChessboardWorkspace>();
+		CreateWorkspace<ConsoleWorkspace>();
 	}
 	
 	private void CreateWorkspace<T>() where T : Workspace
@@ -1232,11 +1234,11 @@ public class EditorVR : MonoBehaviour
 				var miniWorldRayOrigin = U.Object.Instantiate(m_MiniWorldRayPrefab).transform;
 				miniWorldRayOrigin.parent = workspace.transform;
 
-				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
+				//var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+				//m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
 
 				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
+				//m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
 
 				var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 				tester.active = false;
@@ -1248,7 +1250,7 @@ public class EditorVR : MonoBehaviour
 					miniWorld = miniWorld,
 					proxy = proxy,
 					node = rayOriginPair.Key,
-					uiInput = uiInput,
+					//uiInput = uiInput,
 					tester = tester
 				};
 
@@ -1433,7 +1435,8 @@ public class EditorVR : MonoBehaviour
 				result[rayOrigin] = new DirectSelection
 				{
 					gameObject = go,
-					node = ray.Value.node
+					node = ray.Value.node,
+					isMiniWorldRay = true
 				};
 			}
 		}
@@ -1489,7 +1492,6 @@ public class EditorVR : MonoBehaviour
 	void AddPlayerModel()
 	{
 		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
-		Debug.Log(playerModel.bounds);
 		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
 	}
 

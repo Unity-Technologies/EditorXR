@@ -6,6 +6,7 @@ using UnityEditor.VR.Modules;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -150,11 +151,14 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 
 			foreach (var selection in directSelection)
 			{
-				if (selection.Value.gameObject.tag == "VRPlayer")
-					selection.Value.gameObject.transform.parent = null;
+				if (selection.Value.gameObject.tag == "VRPlayer" && !selection.Value.isMiniWorldRay)
+					continue;
 
 				if (selection.Value.node == Node.LeftHand && m_DirectSelectInput.selectLeft.wasJustPressed)
 				{
+					if (selection.Value.gameObject.tag == "VRPlayer")
+						selection.Value.gameObject.transform.parent = null;
+
 					setInputBlocked(true);
 					var grabbedObject = selection.Value.gameObject.transform;
 					var rayOrigin = selection.Key;
@@ -178,6 +182,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 				}
 				if (selection.Value.node == Node.RightHand && m_DirectSelectInput.selectRight.wasJustPressed)
 				{
+					if (selection.Value.gameObject.tag == "VRPlayer")
+						selection.Value.gameObject.transform.parent = null;
+
 					setInputBlocked(true);
 					var grabbedObject = selection.Value.gameObject.transform;
 					var rayOrigin = selection.Key;
@@ -265,16 +272,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 			}
 
 			if (hasLeft && m_DirectSelectInput.selectLeft.wasJustReleased)
-			{
-				OnDrop(m_GrabData[Node.LeftHand].grabbedObject);
-				m_GrabData.Remove(Node.LeftHand);
-			}
+				DropObject(Node.LeftHand);
 
 			if (hasRight && m_DirectSelectInput.selectRight.wasJustReleased)
-			{
-				OnDrop(m_GrabData[Node.RightHand].grabbedObject);
-				m_GrabData.Remove(Node.RightHand);
-			}
+				DropObject(Node.RightHand);
 		}
 
 		if (hasObject || m_DirectSelected)
@@ -324,28 +325,48 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 		}
 	}
 
-	void OnDrop(Transform grabbedObject)
-	{
-		if (grabbedObject.tag == "VRPlayer")
-			StartCoroutine(UpdateViewerPivot(grabbedObject));
-	}
-
 	IEnumerator UpdateViewerPivot(Transform playerHead)
 	{
 		var viewerPivot = U.Camera.GetViewerPivot();
+
+		var components = viewerPivot.GetComponentsInChildren<SmoothMotion>();
+		foreach (var smoothMotion in components)
+		{
+			smoothMotion.enabled = false;
+		}
+
 		var mainCamera = U.Camera.GetMainCamera().transform;
 		var startPosition = viewerPivot.position;
-		var destination = viewerPivot.position + (playerHead.position - mainCamera.position);
+		var startRotation = viewerPivot.rotation;
+
+		var rotationDiff = U.Math.YawConstrainRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
+		var cameraDiff = viewerPivot.position - mainCamera.position;
+		cameraDiff.y = 0;
+		var rotationOffset = rotationDiff * cameraDiff - cameraDiff;
+		
+		var endPosition = viewerPivot.position + (playerHead.position - mainCamera.position) + rotationOffset;
+		var endRotation = viewerPivot.rotation * rotationDiff;
 		var startTime = Time.realtimeSinceStartup;
-		while (Time.realtimeSinceStartup - startTime > kViewerPivotTransitionTime)
+		var diffTime = 0f;
+
+		while (diffTime < kViewerPivotTransitionTime)
 		{
-			viewerPivot.position = Vector3.Lerp(startPosition, destination, (Time.realtimeSinceStartup - startTime) / kViewerPivotTransitionTime);
+			diffTime = Time.realtimeSinceStartup - startTime;
+			var t = diffTime / kViewerPivotTransitionTime;
+			viewerPivot.position = Vector3.Lerp(startPosition, endPosition, t);
+			viewerPivot.rotation = Quaternion.Lerp(startRotation, endRotation, t);
 			yield return null;
 		}
-		viewerPivot.position = destination;
+
+		viewerPivot.position = endPosition;
 		playerHead.parent = mainCamera;
 		playerHead.localRotation = Quaternion.identity;
 		playerHead.localPosition = Vector3.zero;
+
+		foreach (var smoothMotion in components)
+		{
+			smoothMotion.enabled = true;
+		}
 	} 
 
 	public void DropHeldObject(Transform obj)
@@ -354,8 +375,17 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 		foreach (var grabData in grabDataCopy)
 		{
 			if (grabData.Value.grabbedObject == obj)
-				m_GrabData.Remove(grabData.Key);
+				DropObject(grabData.Key);
 		}
+	}
+
+	void DropObject(Node inputNode)
+	{
+		var grabbedObject = m_GrabData[inputNode].grabbedObject;
+		if (grabbedObject.tag == "VRPlayer")
+			StartCoroutine(UpdateViewerPivot(grabbedObject));
+
+		m_GrabData.Remove(inputNode);
 	}
 
 	private void Translate(Vector3 delta)

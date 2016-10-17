@@ -9,6 +9,7 @@ namespace UnityEditor.VR.Modules
 	{
 		public Node node;
 		public GameObject gameObject;
+		public bool isMiniWorldRay;
 	}
 
 	public interface IDirectSelection
