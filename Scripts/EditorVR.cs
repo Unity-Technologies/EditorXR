@@ -118,6 +118,8 @@ public class EditorVR : MonoBehaviour
 
 	bool m_HMDReady;
 
+	VRSmoothCamera m_SmoothCamera;
+
 	private void Awake()
 	{
 		ClearDeveloperConsoleIfNecessary();
@@ -128,6 +130,9 @@ public class EditorVR : MonoBehaviour
 			// Steam's reference position should be at the feet and not at the head as we do with Oculus
 			VRView.viewerPivot.localPosition = Vector3.zero;
 		}
+		m_SmoothCamera = U.Object.AddComponent<VRSmoothCamera>(VRView.viewerCamera.gameObject);
+		VRView.customPreviewCamera = m_SmoothCamera.smoothCamera;
+
 		InitializePlayerHandle();
 		CreateDefaultActionMapInputs();
 		CreateAllProxies();
@@ -303,6 +308,8 @@ public class EditorVR : MonoBehaviour
 
 			// Queue up the next round
 			m_UpdatePixelRaycastModule = true;
+
+			Event.current.Use();
 		}
 	}
 
