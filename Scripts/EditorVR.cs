@@ -69,6 +69,7 @@ public class EditorVR : MonoBehaviour
 	private HighlightModule m_HighlightModule;
 	private ObjectPlacementModule m_ObjectPlacementModule;
 	private DragAndDropModule m_DragAndDropModule;
+	private MoveWorkspacesModule m_MoveWorkspacesModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
 
@@ -81,6 +82,7 @@ public class EditorVR : MonoBehaviour
 		public ActionMapInput uiInput;
 		public IMainMenu mainMenu;
 		public ITool currentTool;
+		public IMoveWorkspaces moveWorkspacesModule;
 	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
@@ -323,6 +325,7 @@ public class EditorVR : MonoBehaviour
 			var device = kvp.Key;
 			var deviceData = m_DeviceData[device];
 			var mainMenu = deviceData.mainMenu;
+			var moveWorkSpaces = deviceData.moveWorkspacesModule;
 
 			if (mainMenu == null)
 			{
@@ -338,6 +341,20 @@ public class EditorVR : MonoBehaviour
 					yield return null;
 
 				menus.Add(mainMenu);
+			}
+
+			if(moveWorkSpaces == null)
+			{
+				// HACK to workaround missing MonoScript serialized fields
+				EditorApplication.delayCall += () =>
+				{
+					moveWorkSpaces = SpawnMoveWorkspacesModule(typeof(MoveWorkspacesModule),device);
+					deviceData.moveWorkspacesModule = moveWorkSpaces;
+					UpdatePlayerHandleMaps();
+				};
+
+				while(moveWorkSpaces == null)
+					yield return null;
 			}
 		}
 
@@ -471,8 +488,7 @@ public class EditorVR : MonoBehaviour
 				if (deviceData.Key.tagIndex == -1)
 					continue;
 
-				//SelectionTool
-				tool = SpawnTool(typeof(MoveWorkspacesModule), out devices, deviceData.Key);
+				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 				AddToolToDeviceData(tool, devices);
 
 				if (locomotionTool == typeof(BlinkLocomotionTool))
@@ -488,7 +504,6 @@ public class EditorVR : MonoBehaviour
 				AddToolToDeviceData(tool, devices);
 			}
 
-			//Original TransformTool
 			tool = SpawnTool(typeof(TransformTool), out devices);
 			m_TransformTool = tool as ITransformTool;
 			AddToolToDeviceData(tool, devices);
@@ -721,15 +736,15 @@ public class EditorVR : MonoBehaviour
 		var maps = m_PlayerHandle.maps;
 		maps.Clear();
 
-		foreach (DeviceData deviceData in m_DeviceData.Values)
+		foreach(DeviceData deviceData in m_DeviceData.Values)
 		{
 			maps.Add(deviceData.showMenuInput);
 
-			if (deviceData.mainMenu != null)
-				AddActionMapInputs(deviceData.mainMenu, maps);
+			if(deviceData.mainMenu != null)
+				AddActionMapInputs(deviceData.mainMenu,maps);
 
 			// Not every tool has UI
-			if (deviceData.uiInput != null)
+			if(deviceData.uiInput != null)
 				maps.Add(deviceData.uiInput);
 		}
 
@@ -737,10 +752,16 @@ public class EditorVR : MonoBehaviour
 
 		maps.Add(m_TrackedObjectInput);
 
-		foreach (DeviceData deviceData in m_DeviceData.Values)
+		foreach(DeviceData deviceData in m_DeviceData.Values)
 		{
-			foreach (ITool tool in deviceData.tools)
-				AddActionMapInputs(tool, maps);
+			if(deviceData.moveWorkspacesModule != null)
+				AddActionMapInputs(deviceData.moveWorkspacesModule,maps);
+		}
+
+		foreach(DeviceData deviceData in m_DeviceData.Values)
+		{
+			foreach(ITool tool in deviceData.tools)
+				AddActionMapInputs(tool,maps);
 		}
 	}
 
@@ -813,6 +834,14 @@ public class EditorVR : MonoBehaviour
 		mainMenu.visible = visible;
 
 		return mainMenu;
+	}
+
+	private IMoveWorkspaces SpawnMoveWorkspacesModule(Type type,InputDevice device)
+	{
+		var workspaceModule = U.Object.AddComponent(type,gameObject) as IMoveWorkspaces;
+		ConnectActionMaps(workspaceModule,device);
+		ConnectInterfaces(workspaceModule,device);
+		return workspaceModule;
 	}
 
 	private Node? GetDeviceNode(InputDevice device)
@@ -928,9 +957,9 @@ public class EditorVR : MonoBehaviour
 		if (highlight != null)
 			highlight.setHighlight = m_HighlightModule.SetHighlight;
 
-		//var moveWorkspaces = obj as IMoveWorkspaces;
+		var moveWorkspaces = obj as IMoveWorkspaces;
 		//if(moveWorkspaces != null)
-			//moveWorkspaces.
+		//	moveWorkspaces.active = false;
 
 		var placeObjects = obj as IPlaceObjects;
 		if (placeObjects != null)

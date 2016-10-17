@@ -63,6 +63,7 @@ namespace UnityEngine.VR.Workspaces
 		private bool m_DragLocked;
 		private bool m_Vacuuming;
 		Coroutine m_VisibilityCoroutine;
+		private bool m_Hidden;
 
 		/// <summary>
 		/// Bounding box for entire workspace, including UI handles
@@ -217,8 +218,11 @@ namespace UnityEngine.VR.Workspaces
 
 		public void OnDoubleTriggerTapAboveHMD()
 		{
-			if(!m_Vacuuming)
-				StartCoroutine(VacuumToViewer());
+			if(m_Hidden)
+			{
+				MonoBehaviourExtensions.StopCoroutine(this,ref m_VisibilityCoroutine);
+				m_VisibilityCoroutine = StartCoroutine(AnimateShow());
+			}
 		}
 
 		private void Translate(Vector3 deltaPosition)
@@ -267,9 +271,11 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnCloseClicked()
 		{
-			MonoBehaviourExtensions.StopCoroutine(this, ref m_VisibilityCoroutine);
-
-			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+			if(!m_Hidden)
+			{
+				MonoBehaviourExtensions.StopCoroutine(this,ref m_VisibilityCoroutine);
+				m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+			}
 		}
 
 		public virtual void OnLockClicked()
@@ -293,7 +299,7 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator AnimateShow()
 		{
-			var kTargetScale = transform.localScale;
+			var kTargetScale = Vector3.one;
 			var scale = Vector3.zero;
 			var smoothVelocity = Vector3.zero;
 
@@ -305,6 +311,7 @@ namespace UnityEngine.VR.Workspaces
 			}
 
 			m_VisibilityCoroutine = null;
+			m_Hidden = false;
 		}
 
 		IEnumerator AnimateHide()
@@ -320,7 +327,8 @@ namespace UnityEngine.VR.Workspaces
 			}
 
 			m_VisibilityCoroutine = null;
-			U.Object.Destroy(gameObject);
-		}
+			//U.Object.Destroy(gameObject);
+			m_Hidden = true;
+        }
 	}
 }
