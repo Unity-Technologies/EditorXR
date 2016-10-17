@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.VR.Modules;
@@ -15,7 +14,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 	const float kBaseManipulatorSize = 0.3f;
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
-	const float kViewerPivotTransitionTime = 0.75f;
 
 	class GrabData
 	{
@@ -150,9 +148,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 
 			foreach (var selection in directSelection)
 			{
-				if (selection.Value.gameObject.tag == "VRPlayer")
-					selection.Value.gameObject.transform.parent = null;
-
 				if (selection.Value.node == Node.LeftHand && m_DirectSelectInput.selectLeft.wasJustPressed)
 				{
 					setInputBlocked(true);
@@ -264,17 +259,11 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 				}
 			}
 
-			if (hasLeft && m_DirectSelectInput.selectLeft.wasJustReleased)
-			{
-				OnDrop(m_GrabData[Node.LeftHand].grabbedObject);
+			if (m_DirectSelectInput.selectLeft.wasJustReleased)
 				m_GrabData.Remove(Node.LeftHand);
-			}
 
-			if (hasRight && m_DirectSelectInput.selectRight.wasJustReleased)
-			{
-				OnDrop(m_GrabData[Node.RightHand].grabbedObject);
+			if (m_DirectSelectInput.selectRight.wasJustReleased)
 				m_GrabData.Remove(Node.RightHand);
-			}
 		}
 
 		if (hasObject || m_DirectSelected)
@@ -323,30 +312,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMaps, ITransform
 			}
 		}
 	}
-
-	void OnDrop(Transform grabbedObject)
-	{
-		if (grabbedObject.tag == "VRPlayer")
-			StartCoroutine(UpdateViewerPivot(grabbedObject));
-	}
-
-	IEnumerator UpdateViewerPivot(Transform playerHead)
-	{
-		var viewerPivot = U.Camera.GetViewerPivot();
-		var mainCamera = U.Camera.GetMainCamera().transform;
-		var startPosition = viewerPivot.position;
-		var destination = viewerPivot.position + (playerHead.position - mainCamera.position);
-		var startTime = Time.realtimeSinceStartup;
-		while (Time.realtimeSinceStartup - startTime > kViewerPivotTransitionTime)
-		{
-			viewerPivot.position = Vector3.Lerp(startPosition, destination, (Time.realtimeSinceStartup - startTime) / kViewerPivotTransitionTime);
-			yield return null;
-		}
-		viewerPivot.position = destination;
-		playerHead.parent = mainCamera;
-		playerHead.localRotation = Quaternion.identity;
-		playerHead.localPosition = Vector3.zero;
-	} 
 
 	public void DropHeldObject(Transform obj)
 	{
