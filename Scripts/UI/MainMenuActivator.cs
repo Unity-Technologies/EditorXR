@@ -1,32 +1,12 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine.EventSystems;
+using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Menus
 {
 	public class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IMenuOrigins
 	{
-		public Action<Node?, bool> activated;
-
-		[SerializeField]
-		private Transform m_Icon;
-		[SerializeField]
-		private Transform m_HighlightedPRS;
-
-		private readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
-		private static readonly float kAlternateLocationOffset = 0.165f;
-
-		private Vector3 m_OriginalActivatorIconLocalScale;
-		private Vector3 m_OriginalActivatorIconLocalPosition;
-		private Vector3 m_HighlightedActivatorIconLocalScale;
-		private Vector3 m_HighlightedActivatorIconLocalPosition;
-		private Coroutine m_HighlightCoroutine;
-		private Coroutine m_ActivatorMoveCoroutine;
-		private Vector3 m_AlternateActivatorLocalPosition;
-
-		public Node? node { private get; set; }
-		public Transform menuOrigin { get; set; }
-
 		private bool m_Activated;
 		private bool selected
 		{
@@ -49,7 +29,8 @@ namespace UnityEngine.VR.Menus
 			get { return m_AlternateMenuOrigin; }
 			set
 			{
-				transform.SetParent(m_AlternateMenuOrigin = value);
+				m_AlternateMenuOrigin = value;
+				transform.SetParent(m_AlternateMenuOrigin);
 				transform.localPosition = m_OriginalActivatorLocalPosition;
 				transform.localRotation = Quaternion.identity;
 				transform.localScale = Vector3.one;
@@ -80,8 +61,35 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 
+		[SerializeField]
+		private Transform m_Icon;
+		[SerializeField]
+		private Transform m_HighlightedPRS;
+
+		private readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
+		private static readonly float kAlternateLocationOffset = 0.165f;
+
+		private Vector3 m_OriginalActivatorIconLocalScale;
+		private Vector3 m_OriginalActivatorIconLocalPosition;
+		private Vector3 m_HighlightedActivatorIconLocalScale;
+		private Vector3 m_HighlightedActivatorIconLocalPosition;
+		private Coroutine m_HighlightCoroutine;
+		private Coroutine m_ActivatorMoveCoroutine;
+		private Vector3 m_AlternateActivatorLocalPosition;
+
+		public Node? node { private get; set; }
+		public Transform menuOrigin { get; set; }
+
+		public event Action<Transform> hoverStarted = delegate {};
+		public event Action<Transform> hoverEnded = delegate {};
+		public event Action<Node?, bool> activated = delegate { };
+
 		public void OnPointerEnter(PointerEventData eventData)
 		{
+			var rayEventData = eventData as RayEventData;
+			if (rayEventData != null)
+				hoverStarted(rayEventData.rayOrigin);
+
 			if (m_HighlightCoroutine != null)
 				StopCoroutine(m_HighlightCoroutine);
 
@@ -91,6 +99,10 @@ namespace UnityEngine.VR.Menus
 
 		public void OnPointerExit(PointerEventData eventData)
 		{
+			var rayEventData = eventData as RayEventData;
+			if (rayEventData != null)
+				hoverEnded(rayEventData.rayOrigin);
+
 			if (m_HighlightCoroutine != null)
 				StopCoroutine(m_HighlightCoroutine);
 

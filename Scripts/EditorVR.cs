@@ -80,6 +80,7 @@ public class EditorVR : MonoBehaviour
 		public Stack<ITool> tools;
 		public ActionMapInput uiInput;
 		public IMainMenu mainMenu;
+		public bool restoreMainMenu;
 		public ITool currentTool;
 		public IAlternateMenu alternateMenu;
 		public MainMenuActivator mainMenuActivator;
@@ -475,7 +476,9 @@ public class EditorVR : MonoBehaviour
 
 				var mainMenuActivator = m_DeviceData[deviceData.Key].mainMenuActivator = SpawnMainMenuActivator(deviceData.Key);
 				mainMenuActivator.node = deviceNode;
-				mainMenuActivator.activated = OnMainMenuActivatorSelected;
+				mainMenuActivator.activated += OnMainMenuActivatorSelected;
+				mainMenuActivator.hoverStarted += OnMainMenuActivatorHoverStarted;
+				mainMenuActivator.hoverEnded += OnMainMenuActivatorHoverEnded;
 
 				var alternateMenu = m_DeviceData[deviceData.Key].alternateMenu = SpawnAlternateMenu(typeof(UnityEngine.VR.Menus.RadialMenu), deviceData.Key);
 				alternateMenu.selected = OnSelection;
@@ -520,6 +523,37 @@ public class EditorVR : MonoBehaviour
 					mainMenuActivator.activatorButtonMoveAway = Selection.gameObjects.Length > 0 && node.Value == selectionToolNode;
 			}
 		}
+	}
+
+	void OnMainMenuActivatorHoverStarted(Transform rayOrigin)
+	{
+		ForEachRayOrigin((p, kvp, device, deviceData) =>
+		{
+			if (kvp.Value == rayOrigin)
+			{
+				var mainMenu = deviceData.mainMenu;
+				if (mainMenu.visible)
+				{
+					mainMenu.visible = false;
+					deviceData.restoreMainMenu = true;
+				}
+			}
+		}, true);
+	}
+
+	void OnMainMenuActivatorHoverEnded(Transform rayOrigin)
+	{
+		ForEachRayOrigin((p, kvp, device, deviceData) =>
+		{
+			if (kvp.Value == rayOrigin)
+			{
+				if (deviceData.restoreMainMenu)
+				{
+					deviceData.mainMenu.visible = true;
+					deviceData.restoreMainMenu = false;
+				}
+			}
+		}, true);
 	}
 
 	private void OnMainMenuActivatorSelected(Node? activatorNode, bool showMainMenu)

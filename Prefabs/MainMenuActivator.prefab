@@ -22,7 +22,6 @@ GameObject:
   - 114: {fileID: 114000011125667836}
   - 135: {fileID: 135000013681227620}
   - 114: {fileID: 114000010478179432}
-  - 114: {fileID: 114000012461276926}
   m_Layer: 5
   m_Name: MainMenuActivator
   m_TagString: Untagged
@@ -218,7 +217,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
 --- !u!114 &114000011125667836
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -233,20 +232,6 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Icon: {fileID: 4000010854155806}
   m_HighlightedPRS: {fileID: 4000011430756646}
---- !u!114 &114000012461276926
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000010175483050}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3bdb8c4c20b229641a096572d9c36567, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_Target: {fileID: 0}
-  m_Tighten: 15
 --- !u!135 &135000013681227620
 SphereCollider:
   m_ObjectHideFlags: 1
