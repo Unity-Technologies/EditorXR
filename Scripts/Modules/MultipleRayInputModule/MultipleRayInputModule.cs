@@ -41,6 +41,10 @@ namespace UnityEngine.VR.Modules
 		[SerializeField]
 		private ActionMap m_UIActionMap;
 
+		/// <summary>
+		/// Controls input blocking state. Set to true to deactivate all ActionMapInputs and disable the Process method
+		/// Use this when dragging objects to avoid activating ActionMapInputs and, as a side-effect, dropping the object when a ray hovers over UI
+		/// </summary>
 		public bool inputBlocked
 		{
 			get
@@ -125,6 +129,7 @@ namespace UnityEngine.VR.Modules
 
 			if (inputBlocked)
 				return;
+			
 			//Process events for all different transforms in RayOrigins
 			foreach (var source in m_RaycastSources.Values)
 			{

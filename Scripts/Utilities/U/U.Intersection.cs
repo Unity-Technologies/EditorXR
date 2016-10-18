@@ -15,10 +15,6 @@ namespace UnityEngine.VR.Utilities
 			/// <returns>The result of whether the tester is in intersection with or located within the object</returns>
 			public static bool TestObject(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
 			{
-				var mf = obj.GetComponent<MeshFilter>();
-				if (mf)
-					collisionTester.sharedMesh = mf.sharedMesh;
-
 				var transform = obj.transform;
 
 				// Try a simple test with specific rays located at vertices
@@ -48,6 +44,10 @@ namespace UnityEngine.VR.Utilities
 			/// <returns>The result of whether the point/ray is intersection with or located within the object</returns>
 			public static bool TestEdges(MeshCollider collisionTester, Transform obj, IntersectionTester tester)
 			{
+				var mf = obj.GetComponent<MeshFilter>();
+				if (mf)
+					collisionTester.sharedMesh = mf.sharedMesh;
+
 				var triangles = tester.triangles;
 				var vertices = tester.vertices;
 
@@ -123,6 +123,10 @@ namespace UnityEngine.VR.Utilities
 			/// <returns>The result of whether the point/ray is intersection with or located within the object</returns>
 			public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray)
 			{
+				var mf = obj.GetComponent<MeshFilter>();
+				if (mf)
+					collisionTester.sharedMesh = mf.sharedMesh;
+
 				ray.origin = obj.InverseTransformPoint(ray.origin);
 				ray.direction = obj.InverseTransformDirection(ray.direction);
 		

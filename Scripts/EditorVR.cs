@@ -26,6 +26,9 @@ public class EditorVR : MonoBehaviour
 {
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
+	/// <summary>
+	/// Tag applied to player head model which tracks the camera (for MiniWorld locomotion)
+	/// </summary>
 	public const string kVRPlayerTag = "VRPlayer";
 
 	private const float kDefaultRayLength = 100f;
@@ -254,6 +257,7 @@ public class EditorVR : MonoBehaviour
 		SpawnDefaultTools();
 		StartCoroutine(PrewarmAssets());
 
+		// Wait for valid tracking in order to place workspaces based on head position
 		while (!m_HMDReady)
 			yield return null;
 		CreateDefaultWorkspaces();
@@ -732,7 +736,8 @@ public class EditorVR : MonoBehaviour
 		{
 			maps.Add(deviceData.showMenuInput);
 
-			AddActionMapInputs(deviceData.mainMenu, maps);
+			if (deviceData.mainMenu != null)
+				AddActionMapInputs(deviceData.mainMenu, maps);
 
 			maps.Add(deviceData.directSelectInput);
 
@@ -1166,8 +1171,7 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
-		CreateWorkspace<ChessboardWorkspace>();
-		CreateWorkspace<ConsoleWorkspace>();
+		CreateWorkspace<ProjectWorkspace>();
 	}
 	
 	private void CreateWorkspace<T>() where T : Workspace
@@ -1182,7 +1186,7 @@ public class EditorVR : MonoBehaviour
 
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 		var headPosition = cameraTransform.position;
-		var headRotation = Quaternion.Euler(0, cameraTransform.rotation.eulerAngles.y, 0);
+		var headRotation = U.Math.YawConstrainRotation(cameraTransform.rotation);
 
 		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
 			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
@@ -1250,11 +1254,11 @@ public class EditorVR : MonoBehaviour
 				var miniWorldRayOrigin = U.Object.Instantiate(m_MiniWorldRayPrefab).transform;
 				miniWorldRayOrigin.parent = workspace.transform;
 
-				var uiInput = (UIActions)CreateActionMapInput(m_InputModule.actionMap, device);
+				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
 				uiInput.active = false;
 				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
 
-				var directSelectInput = (DirectSelectInput)CreateActionMapInput(m_DirectSelectActionMap, device);
+				var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
 				directSelectInput.active = false;
 				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.directSelectInput), directSelectInput);
 
@@ -1294,10 +1298,17 @@ public class EditorVR : MonoBehaviour
 		//Clean up MiniWorldRays
 		m_MiniWorlds.Remove(miniWorld);
 		var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_MiniWorldRays);
-		foreach (var ray in miniWorldRaysCopy.Where(ray => ray.Value.miniWorld.Equals(miniWorld)))
+		foreach (var ray in miniWorldRaysCopy)
 		{
-			m_InputModule.RemoveRaycastSource(ray.Key);
-			m_MiniWorldRays.Remove(ray.Key);
+			var miniWorldRay = ray.Value;
+			if (miniWorldRay.miniWorld == miniWorld)
+			{
+				var rayOrigin = ray.Key;
+				m_PlayerHandle.maps.Remove(miniWorldRay.uiInput);
+				m_PlayerHandle.maps.Remove(miniWorldRay.directSelectInput);
+				m_InputModule.RemoveRaycastSource(rayOrigin);
+				m_MiniWorldRays.Remove(rayOrigin);
+			}
 		}
 	}
 
@@ -1514,7 +1525,7 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
-		if(!m_UIInputBlocked)
+		if (!m_UIInputBlocked)
 			input.active = false;
 
 		return null;
@@ -1550,7 +1561,6 @@ public class EditorVR : MonoBehaviour
 
 	void SetUIInputBlocked(bool blocked)
 	{
-		//Debug.Log("setblocked " + blocked);
 		m_UIInputBlocked = blocked;
 		m_InputModule.inputBlocked = blocked;
 	}
@@ -1562,7 +1572,7 @@ public class EditorVR : MonoBehaviour
 	}
 
 #if UNITY_EDITOR
-private static EditorVR s_Instance;
+	private static EditorVR s_Instance;
 	private static InputManager s_InputManager;
 
 	[MenuItem("Window/EditorVR", false)]

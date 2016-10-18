@@ -87,7 +87,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput)value; } }
 
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
-	//public Dictionary<Node, DirectSelectInput> directSelectInputs { private get; set; }
 
 	public Action<bool> setInputBlocked { get; set; }
 
@@ -368,7 +367,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			StartCoroutine(UpdateViewerPivot(grabbedObject));
 
 		m_GrabData.Remove(inputNode);
-		if(m_GrabData.Count == 0)
+		if (m_GrabData.Count == 0)
 			setInputBlocked(false);
 	}
 
