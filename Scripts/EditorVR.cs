@@ -13,6 +13,7 @@ using UnityEngine.VR.Menus;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 #if UNITY_EDITOR
@@ -43,7 +44,20 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
 
+	[SerializeField]
+	private KeyboardMallet m_KeyboardMalletPrefab;
+
+	[SerializeField]
+	private KeyboardUI m_NumericKeyboardPrefab;
+
+	[SerializeField]
+	private KeyboardUI m_StandardKeyboardPrefab;
+
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
+	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
+
+	private KeyboardUI m_NumericKeyboard;
+	private KeyboardUI m_StandardKeyboard;
 
 	private TrackedObject m_TrackedObjectInput;
 	
@@ -54,6 +68,7 @@ public class EditorVR : MonoBehaviour
 	private PixelRaycastModule m_PixelRaycastModule;
 	private HighlightModule m_HighlightModule;
 	private ObjectPlacementModule m_ObjectPlacementModule;
+	private DragAndDropModule m_DragAndDropModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
 
@@ -101,8 +116,12 @@ public class EditorVR : MonoBehaviour
 
 	private event Action m_SelectionChanged;
 
+	bool m_HMDReady;
+
 	private void Awake()
 	{
+		ClearDeveloperConsoleIfNecessary();
+
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 		if (VRSettings.loadedDeviceName == "OpenVR")
 		{
@@ -113,6 +132,9 @@ public class EditorVR : MonoBehaviour
 		CreateDefaultActionMapInputs();
 		CreateAllProxies();
 		CreateDeviceDataForInputDevices();
+
+		m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
+
 		CreateEventSystem();
 
 		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
@@ -192,8 +214,12 @@ public class EditorVR : MonoBehaviour
 
 	private IEnumerator Start()
 	{
-		// Workspaces don't need to wait until devices are active
+		while (!m_HMDReady)
+			yield return null;
 		CreateDefaultWorkspaces();
+
+		// In case we have anything selected at start, set up manipulators, inspector, etc.
+		EditorApplication.delayCall += OnSelectionChanged;
 
 		// Delay until at least one proxy initializes
 		bool proxyActive = false;
@@ -215,10 +241,8 @@ public class EditorVR : MonoBehaviour
 		SpawnDefaultTools();
 		StartCoroutine(PrewarmAssets());
 
-		// In case we have anything selected at start, set up manipulators, inspector, etc.
+		// Call OnSelectionChanged one more time for tools
 		EditorApplication.delayCall += OnSelectionChanged;
-
-		ClearDeveloperConsoleIfNecessary();
 
 		// This will be the first call to update the player handle (input) maps, sorted by priority
 		UpdatePlayerHandleMaps();
@@ -229,6 +253,7 @@ public class EditorVR : MonoBehaviour
 		Selection.selectionChanged += OnSelectionChanged;
 #if UNITY_EDITOR
 		VRView.onGUIDelegate += OnSceneGUI;
+		VRView.onHMDReady += OnHMDReady;
 #endif
 	}
 
@@ -237,7 +262,13 @@ public class EditorVR : MonoBehaviour
 		Selection.selectionChanged -= OnSelectionChanged;
 #if UNITY_EDITOR
 		VRView.onGUIDelegate -= OnSceneGUI;
+		VRView.onHMDReady -= OnHMDReady;
 #endif
+	}
+
+	void OnHMDReady()
+	{
+		m_HMDReady = true;
 	}
 
 	private void OnSceneGUI(EditorWindow obj)
@@ -245,6 +276,8 @@ public class EditorVR : MonoBehaviour
 		if (Event.current.type == EventType.ExecuteCommand)
 		{
 			var miniWorldRayHasObject = false;
+
+			m_PixelRaycastModule.UpdateIgnoreList();
 
 			foreach (var proxy in m_AllProxies)
 			{
@@ -318,7 +351,15 @@ public class EditorVR : MonoBehaviour
 	private void Update()
 	{
 		foreach (var proxy in m_AllProxies)
+		{
 			proxy.hidden = !proxy.active;
+			// TODO remove this after physics are in
+			if (proxy.active)
+			{
+				foreach (var rayOrigin in proxy.rayOrigins.Values)
+					m_KeyboardMallets[rayOrigin].CheckForKeyCollision();
+			}
+		}
 
 		foreach (var kvp in m_DeviceData)
 		{
@@ -458,10 +499,18 @@ public class EditorVR : MonoBehaviour
 			proxy.trackedObjectInput = m_TrackedObjectInput;
 			foreach (var rayOriginPair in proxy.rayOrigins)
 			{
-				var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPair.Value).transform;
-				rayTransform.position = rayOriginPair.Value.position;
-				rayTransform.rotation = rayOriginPair.Value.rotation;
-				m_DefaultRays.Add(rayOriginPair.Value, rayTransform.GetComponent<DefaultProxyRay>());
+				var rayOriginPairValue = rayOriginPair.Value;
+				var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
+				rayTransform.position = rayOriginPairValue.position;
+				rayTransform.rotation = rayOriginPairValue.rotation;
+				m_DefaultRays.Add(rayOriginPairValue, rayTransform.GetComponent<DefaultProxyRay>());
+
+				var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginPairValue).transform;
+				malletTransform.position = rayOriginPairValue.position;
+				malletTransform.rotation = rayOriginPairValue.rotation;
+				var mallet = malletTransform.GetComponent<KeyboardMallet>();
+				mallet.Hide();
+				m_KeyboardMallets.Add(rayOriginPairValue, mallet);
 			}
 			m_AllProxies.Add(proxy);
 		}
@@ -512,11 +561,19 @@ public class EditorVR : MonoBehaviour
 	{
 		// Create event system, input module, and event camera
 		U.Object.AddComponent<EventSystem>(gameObject);
+
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_InputModule.getPointerLength = GetPointerLength;
+
 		m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
 		m_InputModule.eventCamera = m_EventCamera;
+
+		m_InputModule.rayEntered += m_DragAndDropModule.OnRayEntered;
+		m_InputModule.rayExited += m_DragAndDropModule.OnRayExited;
+		m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
+		m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
+
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			// Create ui action map input for device.
@@ -575,7 +632,65 @@ public class EditorVR : MonoBehaviour
 		var go = U.Object.Instantiate(prefab, transform);
 		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = m_EventCamera;
+
+		foreach (InputField inputField in go.GetComponentsInChildren<InputField>())
+		{
+			if (inputField is NumericInputField)
+				inputField.spawnKeyboard = SpawnNumericKeyboard;
+			else if (inputField is StandardInputField)
+				inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
+		}
+
 		return go;
+	}
+
+	private KeyboardUI SpawnNumericKeyboard()
+	{
+		if(m_StandardKeyboard != null)
+			m_StandardKeyboard.gameObject.SetActive(false);
+		
+		// Check if the prefab has already been instantiated
+		if (m_NumericKeyboard == null)
+		{
+			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
+			m_NumericKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
+			m_NumericKeyboard.orientationChanged += KeyboardOrientationChanged;
+		}
+		return m_NumericKeyboard;
+	}
+
+	private KeyboardUI SpawnAlphaNumericKeyboard()
+	{
+		if (m_NumericKeyboard != null)
+			m_NumericKeyboard.gameObject.SetActive(false);
+		
+		// Check if the prefab has already been instantiated
+		if (m_StandardKeyboard == null)
+		{
+			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
+			m_StandardKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
+			m_StandardKeyboard.orientationChanged += KeyboardOrientationChanged;
+		}
+		return m_StandardKeyboard;
+	}
+
+	void KeyboardOrientationChanged(bool isHorizontal)
+	{
+		foreach (var kvp in m_KeyboardMallets)
+		{
+			var mallet = kvp.Value;
+			var dpr = kvp.Key.GetComponentInChildren<DefaultProxyRay>();
+			if (isHorizontal)
+			{
+				mallet.Show();
+				dpr.Hide();
+			}
+			else
+			{
+				mallet.Hide();
+				dpr.Show();
+			}
+		}
 	}
 
 	private ActionMapInput CreateActionMapInput(ActionMap map, InputDevice device)
@@ -813,10 +928,10 @@ public class EditorVR : MonoBehaviour
 		if (placeObjects != null)
 			placeObjects.placeObject = PlaceObject;
 
-		var positionPreview = obj as IPositionPreview;
+		var positionPreview = obj as IPreview;
 		if (positionPreview != null)
 		{
-			positionPreview.positionPreview = m_ObjectPlacementModule.PositionPreview;
+			positionPreview.preview = m_ObjectPlacementModule.Preview;
 			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 		}
 
@@ -1003,9 +1118,10 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
+		CreateWorkspace<InspectorWorkspace>();
 		CreateWorkspace<ProjectWorkspace>();
 	}
-
+	
 	private void CreateWorkspace<T>() where T : Workspace
 	{
 		CreateWorkspace(typeof(T));
@@ -1016,10 +1132,10 @@ public class EditorVR : MonoBehaviour
 		var defaultOffset = Workspace.kDefaultOffset;
 		var defaultTilt = Workspace.kDefaultTilt;
 
-		var viewerPivot = U.Camera.GetViewerPivot();
-		Vector3 position = viewerPivot.position + defaultOffset;
+		var cameraTransform = U.Camera.GetMainCamera().transform;
+		var headPosition = cameraTransform.position;
+		var headRotation = Quaternion.Euler(0, cameraTransform.rotation.eulerAngles.y, 0);
 
-		Quaternion rotation = defaultTilt;
 		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
 			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
 			+ kWorkspaceAnglePadding;													//Need some extra padding because workspaces are tilted
@@ -1032,6 +1148,9 @@ public class EditorVR : MonoBehaviour
 		int direction = 1;
 		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
 
+		Vector3 position;
+		Quaternion rotation;
+		var viewerPivot = U.Camera.GetViewerPivot();
 		// HACK to workaround missing MonoScript serialized fields
 		EditorApplication.delayCall += () =>
 		{
@@ -1040,8 +1159,8 @@ public class EditorVR : MonoBehaviour
 			{
 				//The next position will be rotated by currentRotation, as if the hands of a clock
 				Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-				position = viewerPivot.position + rotateAroundY * defaultOffset + Vector3.up * currentHeight;
-				rotation = rotateAroundY * defaultTilt;
+				position = headPosition + headRotation * rotateAroundY * defaultOffset + Vector3.up * currentHeight;
+				rotation = headRotation * rotateAroundY * defaultTilt;
 
 				//Every other iteration, rotate a little further
 				if (direction < 0)
@@ -1061,7 +1180,7 @@ public class EditorVR : MonoBehaviour
 			//While the current position is occupied, try a new one
 			while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
 
-			Workspace workspace = (Workspace) U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
+			Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
 			m_AllWorkspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			ConnectInterfaces(workspace);
@@ -1177,7 +1296,7 @@ public class EditorVR : MonoBehaviour
 				// If the object is outside, attach to controller as a preview
 				else
 				{
-					m_ObjectPlacementModule.PositionPreview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
+					m_ObjectPlacementModule.Preview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
 
 					selectedObjectTransform.transform.localScale = Vector3.one;
 					var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);
@@ -1203,15 +1322,17 @@ public class EditorVR : MonoBehaviour
 		if (go)
 			return go;
 
-		// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
-		// so in that case use the spatial hash as a final test
-		var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-		var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-		if (renderer)
+		if (m_IntersectionModule)
 		{
-			go = renderer.gameObject;
-			if (go)
-				return go;
+			// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
+			// so in that case use the spatial hash as a final test
+			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+		if (m_IntersectionModule)
+		{
+			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+			if (renderer)
+				return renderer.gameObject;
+			}
 		}
 
 		foreach (var miniWorldRay in m_MiniWorldRays)
