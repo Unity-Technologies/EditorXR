@@ -308,10 +308,13 @@ namespace UnityEngine.VR.Workspaces
 			var targetScale = transform.localScale;
 			var scale = Vector3.zero;
 			var smoothVelocity = Vector3.zero;
-			while (!Mathf.Approximately(scale.x, targetScale.x))
+			var currentDuration = 0f;
+			const float kTargetDuration = 0.75f;
+			while (currentDuration < kTargetDuration)
 			{
+				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = scale;
-				scale = Vector3.SmoothDamp(scale, targetScale, ref smoothVelocity, 0.125f, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
@@ -324,10 +327,13 @@ namespace UnityEngine.VR.Workspaces
 			var targetScale = Vector3.zero;
 			var scale = transform.localScale;
 			var smoothVelocity = Vector3.zero;
-			while (!Mathf.Approximately(scale.x, targetScale.x))
+			var currentDuration = 0f;
+			const float kTargetDuration = 0.185f;
+			while (currentDuration < kTargetDuration)
 			{
+				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = scale;
-				scale = Vector3.SmoothDamp(scale, targetScale, ref smoothVelocity, 0.06875f, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 

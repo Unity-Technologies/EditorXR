@@ -83,7 +83,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public BaseHandle moveHandle { get { return m_MoveHandle; } }
 		[SerializeField]
-		private BaseHandle m_MoveHandle;
+		BaseHandle m_MoveHandle;
 
 		[SerializeField]
 		private SkinnedMeshRenderer m_Frame;
@@ -142,7 +142,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			set
 			{
-				if (m_TopHighlight.visible == value) // All highlights will be set with this value; only need to check one highlight visibility
+				if (m_TopHighlight.visible == value) // All highlights will be set with this value; checking highlight visibility of one highlight is all that is needed
 					return;
 
 				m_TopHighlight.visible = value;
@@ -355,28 +355,41 @@ namespace UnityEngine.VR.Workspaces
 
 			m_PreviousXRotation = currentXRotation;
 
+			// a second additional value added to the y offset of the front panel when it is in mid-reveal,
+			// lerped in at the middle of the rotation/reveal, and lerped out at the beginning & end of the rotation/reveal
+			const float kCorrectiveMidFrontPanelLocalYOffset = 0.01f;
 			const int kRevealCompensationBlendShapeIndex = 5;
 			const float kMaxAlternateFrontPanelLocalZOffset = 0.0035f;
 			const float kMaxAlternateFrontPanelLocalYOffset = 0.0325f;
-			const float kCorrectiveMidFrontPanelLocalYOffset = 0.01f; // a second additional value added to the y offset of the front panel when it is in mid-reveal; lerped in at the middle of the reveal, and lerped out at the beginning and the end of the rotation/reveal
 			const float kLerpPadding = 1.2f; // pad lerp values increasingly as it increases, displaying the "front face reveal" sooner
+			const float kCorrectiveRevealShapeMultiplier = 1.85f;
 			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 90f);
-			var midRevealCorrectiveShapeAmount = Mathf.PingPong(angledAmount * 1.85f, 90);
-			var totalAlternateFrontPanelLocalYOffset = Mathf.Lerp(kMaxAlternateFrontPanelLocalYOffset, kCorrectiveMidFrontPanelLocalYOffset, midRevealCorrectiveShapeAmount * 0.01f); // blend between the target fully-revealed offset, and the rotationally mid-point-only offset for precise positioning
-			var lerpAmount = (angledAmount / 90f) * kLerpPadding; // add lerp padding to reach and maintain the target value sooner
-			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount * 1.1f));
+			var midRevealCorrectiveShapeAmount = Mathf.PingPong(angledAmount * kCorrectiveRevealShapeMultiplier, 90);
+
+			// blend between the target fully-revealed offset, and the rotationally mid-point-only offset for precise positioning of the front panel
+			const float kMidRevealCorrectiveShapeMultiplier = 0.01f;
+			var totalAlternateFrontPanelLocalYOffset = Mathf.Lerp(kMaxAlternateFrontPanelLocalYOffset, kCorrectiveMidFrontPanelLocalYOffset, midRevealCorrectiveShapeAmount * kMidRevealCorrectiveShapeMultiplier);
+			// add lerp padding to reach and maintain the target value sooner
+			var lerpAmount = (angledAmount / 90f) * kLerpPadding;
+
+			// offset front panel according to workspace rotation angle
+			const float kAdditionalFrontPanelLerpPadding = 1.1f;
+			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount * kAdditionalFrontPanelLerpPadding));
 			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, totalAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
 
+			// change blendshapes according to workspace rotation angle
 			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, angledAmount * kLerpPadding);
 			m_Frame.SetBlendShapeWeight(kRevealCompensationBlendShapeIndex, midRevealCorrectiveShapeAmount);
 
 			// offset the front resize icons to accommodate for the blendshape extending outwards
-			const float frontHandleLocalYAngledOffset = 0.1f;
-			const float frontHandleLocalZNormalOfset = 0.5f;
-			const float frontHandleLocalZAngledOfset = 0.3f;
-			var lerpedFrontHandleZAngledOffset = Mathf.Lerp(frontHandleLocalZNormalOfset, frontHandleLocalZAngledOfset, lerpAmount);
-			var lerpedFrontHandleYLocalPosition = Mathf.Lerp(m_FrontHandleYLocalPosition, m_FrontHandleYLocalPosition + frontHandleLocalYAngledOffset, lerpAmount);
 			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, lerpAmount);
+
+			// offset front handle position according to workspace rotation angle
+			const float kFrontHandleLocalYAngledOffset = 0.1f;
+			const float kFrontHandleLocalZNormalOfset = 0.5f;
+			const float kFrontHandleLocalZAngledOfset = 0.3f;
+			var lerpedFrontHandleZAngledOffset = Mathf.Lerp(kFrontHandleLocalZNormalOfset, kFrontHandleLocalZAngledOfset, lerpAmount);
+			var lerpedFrontHandleYLocalPosition = Mathf.Lerp(m_FrontHandleYLocalPosition, m_FrontHandleYLocalPosition + kFrontHandleLocalYAngledOffset, lerpAmount);
 			m_FrontHandleTransform.localPosition = new Vector3(0, lerpedFrontHandleYLocalPosition, -m_Bounds.size.z - m_HandleScale + lerpedFrontHandleZAngledOffset);
 		}
 

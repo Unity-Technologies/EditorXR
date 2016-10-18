@@ -55,14 +55,17 @@ namespace UnityEngine.VR.UI
 			const float kTargetAlpha = 1f;
 			var currentAlpha = m_TopHighlightMaterial.GetFloat(kMaterialHighlightAlphaProperty);
 			var smoothVelocity = 0f;
-
-			while (!Mathf.Approximately(currentAlpha, kTargetAlpha))
+			var currentDuration = 0f;
+			const float kTargetDuration = 0.3f;
+			while (currentDuration < kTargetDuration)
 			{
+				currentDuration += Time.unscaledDeltaTime;
+				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_TopHighlightMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
-				currentAlpha = Mathf.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, 0.15f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
+			m_TopHighlightMaterial.SetFloat(kMaterialHighlightAlphaProperty, kTargetAlpha); // set value after loop because precision matters in this case
 			m_HighlightCoroutine = null;
 		}
 
@@ -71,14 +74,17 @@ namespace UnityEngine.VR.UI
 			const float kTargetAlpha = 0f;
 			var currentAlpha = m_TopHighlightMaterial.GetFloat(kMaterialHighlightAlphaProperty);
 			var smoothVelocity = 0f;
-
-			while (!Mathf.Approximately(currentAlpha, kTargetAlpha))
+			var currentDuration = 0f;
+			const float kTargetDuration = 0.35f;
+			while (currentDuration < kTargetDuration)
 			{
+				currentDuration += Time.unscaledDeltaTime;
+				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_TopHighlightMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
-				currentAlpha = Mathf.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, 0.25f, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
+			m_TopHighlightMaterial.SetFloat(kMaterialHighlightAlphaProperty, kTargetAlpha); // set value after loop because precision matters in this case
 			m_HighlightCoroutine = null;
 		}
 	}
