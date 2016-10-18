@@ -12,16 +12,16 @@ namespace UnityEngine.VR.Workspaces
 		public event Action closeClicked = delegate { };
 		public event Action lockClicked = delegate { };
 
-		const float kMaxAlternateFrontPanelLocalZOffset = -0.136f;
+		const float kMaxAlternateFrontPanelLocalZOffset = -0.015f;
 		const float kMaxAlternateFrontPanelLocalYOffset = 0.0525f;
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kThinFrameBlendShapeIndex = 3;
 		const int kHiddenFacesBlendShapeIndex = 4;
 		const float kFaceWidthMatchMultiplier =  7.23f; // Multiplier that sizes the face to the intended width
-		const float kBackResizeButtonPositionOffset = 0.057f; // Offset to place the back resize buttons in their intended location
+		const float kBackResizeButtonPositionOffset = -0.02f; // Offset to place the back resize buttons in their intended location
 		const float kBackHandleOffset = -0.145f; // Offset to place the back handle in the expected region behind the workspace
 		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
-		const float kPanelOffset = -0.0495f; // The panel needs to be pulled back slightly
+		const float kPanelOffset = 0.0625f; // The panel needs to be pulled back slightly
 
 		// Cached for optimization
 		float m_OriginalUIContainerLocalYPos;
@@ -139,21 +139,7 @@ namespace UnityEngine.VR.Workspaces
 		}
 		float? m_TopPanelDividerOffset;
 
-		public bool workspacePanelsVisible
-		{
-			set
-			{
-				m_workspacePanelsVisible = value;
-				dynamicFaceAdjustment = false;
-
-				if (m_workspacePanelsVisible == false)
-				{
-					m_Frame.SetBlendShapeWeight(kHiddenFacesBlendShapeIndex, 100f);
-					m_FrameFrontFaceTransform.gameObject.SetActive(false);
-				}
-			}
-		}
-		bool m_workspacePanelsVisible = true;
+		public bool preventFrontBackResize { set; private get; }
 
 		public Bounds bounds
 		{
@@ -173,13 +159,13 @@ namespace UnityEngine.VR.Workspaces
 				m_LeftHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
 
 				m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -extents.z - m_HandleScale + m_AngledFrontHandleOffset);
-				m_FrontHandleTransform.localScale = new Vector3(boundsSize.x, m_HandleScale, m_HandleScale);
+				m_FrontHandleTransform.localScale = preventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				m_RightHandleTransform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
 				m_RightHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
 
 				m_BackHandleTransform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, extents.z - m_HandleScale - kBackHandleOffset);
-				m_BackHandleTransform.localScale = new Vector3(boundsSize.x, m_HandleScale, m_HandleScale);
+				m_BackHandleTransform.localScale = preventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				// Resize content container
 				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, boundsSize.x);
@@ -198,9 +184,9 @@ namespace UnityEngine.VR.Workspaces
 				// Position the separator mask if enabled
 				if (m_TopPanelDividerOffset != null)
 				{
-					const float heightCompensationMultiplier = 4.225f;
-					m_TopPanelDividerTransform.localPosition = new Vector3(boundsSize.x * 0.5f * m_TopPanelDividerOffset.Value, 0f, 0f);
-					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, boundsSize.z * heightCompensationMultiplier);
+					const float depthCompensation = 0.1375f;
+					m_TopPanelDividerTransform.localPosition = new Vector3(boundsSize.x*0.5f*m_TopPanelDividerOffset.Value, 0f, 0f);
+					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, boundsSize.z - depthCompensation);
 				}
 
 				var grabColliderSize = m_GrabCollider.size;
@@ -304,6 +290,9 @@ namespace UnityEngine.VR.Workspaces
 			m_FrontResizeIconsContainerAngledLocalPosition = new Vector3(m_FrontResizeIconsContainerOriginalLocalPosition.x, m_FrontResizeIconsContainerOriginalLocalPosition.y + frontResizeIconsContainerUpOffset, m_FrontResizeIconsContainerOriginalLocalPosition.z + frontResizeIconsContainerForwardOffset);
 
 			m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, 50f); // Set default frame thickness to be in middle for a thinner initial frame
+
+			if (m_TopPanelDividerOffset == null)
+				m_TopPanelDividerTransform.gameObject.SetActive(false);
 		}
 
 		void Update()
@@ -346,7 +335,7 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator RotateFrontFaceForward()
 		{
-			m_AngledFrontHandleOffset = -0.125f; // set this value so it can be applied when manually setting bounds as well
+			m_AngledFrontHandleOffset = 0f; // set this value so it can be applied when manually setting bounds as well
 			m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale + m_AngledFrontHandleOffset); // only the front handle needs to be repositioned
 
 			const float targetBlendAmount = 100f;
@@ -368,7 +357,7 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator RotateFrontFaceBackward()
 		{
-			m_AngledFrontHandleOffset = 0.0f; // clear this offset value so it is not applied when manually setting bounds
+			m_AngledFrontHandleOffset = 0.125f; // clear this offset value so it is not applied when manually setting bounds
 			m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale + m_AngledFrontHandleOffset); // only the front handle needs to be repositioned
 
 			const float targetBlendAmount = 0f;
