@@ -282,7 +282,7 @@ namespace UnityEngine.VR.Utilities
 			// Set the first random color position value so it can be compared to the next gradient fetch
 			s_RandomGradientPairColorAPosition = randomPositionA;
 
-			colorA *= colorA;
+			colorA *= colorA; // multiply color to increase contrast/saturation for color A between gradients
 			return new GradientPair(colorA, colorB);
 		}
 
