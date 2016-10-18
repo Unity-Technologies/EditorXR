@@ -356,15 +356,20 @@ namespace UnityEngine.VR.Workspaces
 
 			m_PreviousXRotation = currentXRotation;
 
+			const int kRevealCompensationBlendShapeIndex = 5;
 			const float kMaxAlternateFrontPanelLocalZOffset = 0.0035f;
 			const float kMaxAlternateFrontPanelLocalYOffset = 0.0325f;
-			var lerpPadding = 1.2f; // Pads lerp values increasingly as they grow, displaying the "front face reveal" sooner
+			const float kCorrectiveMidFrontPanelLocalYOffset = 0.01f; // a second additional value added to the y offset of the front panel when it is in mid-reveal; lerped in at the middle of the reveal, and lerped out at the beginning and the end of the rotation/reveal
+			const float kLerpPadding = 1.2f; // pad lerp values increasingly as it increases, displaying the "front face reveal" sooner
 			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 90f);
-			var lerpAmount = (angledAmount / 90f) * lerpPadding;
-			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));
-			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
+			var midRevealCorrectiveShapeAmount = Mathf.PingPong(angledAmount * 1.85f, 90);
+			var totalAlternateFrontPanelLocalYOffset = Mathf.Lerp(kMaxAlternateFrontPanelLocalYOffset, kCorrectiveMidFrontPanelLocalYOffset, midRevealCorrectiveShapeAmount * 0.01f); // blend between the target fully-revealed offset, and the rotationally mid-point-only offset for precise positioning
+			var lerpAmount = (angledAmount / 90f) * kLerpPadding; // add lerp padding to reach and maintain the target value sooner
+			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount * 1.1f));
+			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, totalAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
 
-			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, angledAmount * lerpPadding);
+			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, angledAmount * kLerpPadding);
+			m_Frame.SetBlendShapeWeight(kRevealCompensationBlendShapeIndex, midRevealCorrectiveShapeAmount);
 
 			// offset the front resize icons to accommodate for the blendshape extending outwards
 			m_AngledFrontHandleOffset = Mathf.Lerp(0f, 0.125f, lerpAmount);
