@@ -236,9 +236,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 				DropObject(Node.RightHand);
 		}
 
-		if(!hasObject)
-			setInputBlocked(false);
-
 		if (hasObject || m_DirectSelected)
 			return;
 
@@ -352,6 +349,18 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		}
 	}
 
+	public void TransferObjectToRayOrigin(Transform obj, Transform rayOrigin)
+	{
+		foreach (var grabData in m_GrabData.Values)
+		{
+			if (grabData.grabbedObject == obj)
+			{
+				grabData.rayOrigin = rayOrigin;
+				grabData.Reset();
+			}
+		}
+	}
+
 	void DropObject(Node inputNode)
 	{
 		var grabbedObject = m_GrabData[inputNode].grabbedObject;
@@ -359,6 +368,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			StartCoroutine(UpdateViewerPivot(grabbedObject));
 
 		m_GrabData.Remove(inputNode);
+		if(m_GrabData.Count == 0)
+			setInputBlocked(false);
 	}
 
 

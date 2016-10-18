@@ -1353,7 +1353,6 @@ public class EditorVR : MonoBehaviour
 					var totalBounds = U.Object.GetTotalBounds(dragObject.transform);
 					if (totalBounds != null)
 						miniWorldRay.dragObjectPreviewScale = dragObject.transform.localScale * (kPreviewScale / totalBounds.Value.size.MaxComponent());
-					dragObject.transform.localScale = miniWorldRay.dragObjectOriginalScale;
 				}
 			}
 
@@ -1363,7 +1362,7 @@ public class EditorVR : MonoBehaviour
 				continue;
 			}
 
-			m_InputModule.inputBlocked = true;
+			SetUIInputBlocked(true);
 
 			var dragObjectTransform = miniWorldRay.dragObject.transform;
 
@@ -1384,6 +1383,24 @@ public class EditorVR : MonoBehaviour
 					}
 					else
 					{
+						// Hand off object to other MiniWorldRays if original transform enters another MiniWorld
+						foreach (var kvp in m_MiniWorldRays)
+						{
+							var rayOrigin = kvp.Key;
+							var otherRay = kvp.Value;
+							var otherOriginalRayOrigin = otherRay.originalRayOrigin;
+							var otherPointerLength = GetPointerLength(otherOriginalRayOrigin);
+							if (otherRay != miniWorldRay && miniWorld.Contains(otherOriginalRayOrigin.position + otherOriginalRayOrigin.forward * otherPointerLength))
+							{
+								otherRay.dragObject = miniWorldRay.dragObject;
+								otherRay.dragObjectOriginalScale = miniWorldRay.dragObjectOriginalScale;
+								otherRay.dragObjectPreviewScale = miniWorldRay.dragObjectPreviewScale;
+								miniWorldRay.dragObject = null;
+								m_TransformTool.TransferObjectToRayOrigin(otherRay.dragObject.transform, rayOrigin);
+								m_TransformTool.directManipulationEnabled = true;
+								return;
+							}
+						}
 						if (miniWorldRay.wasContained)
 							miniWorldRay.dragObjectOriginalScale = dragObjectTransform.localScale;
 
@@ -1460,8 +1477,7 @@ public class EditorVR : MonoBehaviour
 				{
 					gameObject = obj,
 					node = rayOriginPair.Key,
-					input = deviceData.directSelectInput,
-					rayOrigin = rayOrigin
+					input = deviceData.directSelectInput
 				};
 			}
 		}, true);
@@ -1477,7 +1493,6 @@ public class EditorVR : MonoBehaviour
 				{
 					gameObject = go,
 					node = ray.Value.node,
-					rayOrigin = rayOrigin,
 					input = miniWorldRay.directSelectInput,
 					isMiniWorldRay = true
 				};

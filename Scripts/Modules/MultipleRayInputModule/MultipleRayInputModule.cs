@@ -55,6 +55,7 @@ namespace UnityEngine.VR.Modules
 				m_InputBlocked = value;
 				if (m_InputBlocked)
 				{
+					// Because Process will no longer control active state, deactivate all UI ActionMapInputs
 					foreach (var source in m_RaycastSources.Values)
 					{
 						source.actionMapInput.active = false;
