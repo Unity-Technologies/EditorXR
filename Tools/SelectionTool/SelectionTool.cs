@@ -52,6 +52,8 @@ namespace UnityEngine.VR.Tools
 			if (rayOrigin == null)
 				return;
 
+			var selectionChanged = false;
+
 			// Change activeGameObject selection to its parent transform when parent button is pressed 
 			if (m_SelectionInput.parent.wasJustPressed)
 			{
@@ -60,8 +62,7 @@ namespace UnityEngine.VR.Tools
 				{
 					s_SelectedObjects.Remove(go);
 					s_SelectedObjects.Add(go.transform.parent.gameObject);
-					Selection.objects = s_SelectedObjects.ToArray();
-					selected(node);
+					selectionChanged = true;
 				}
 			}
 			var newHoverGameObject = getFirstGameObject(rayOrigin);
@@ -97,13 +98,6 @@ namespace UnityEngine.VR.Tools
 				{
 					s_CurrentPrefabOpened = m_HoverGameObject;
 					s_SelectedObjects.Remove(s_CurrentPrefabOpened);
-
-					// clear the active gameobject if there are no selected objects.
-					// AlternateMenu's rely on there being no active gameobject, if there are no selected objects.
-					if (s_SelectedObjects.Count == 0)
-						Selection.activeGameObject = null;
-
-					selected(node);
 				}
 				else
 				{
@@ -119,25 +113,28 @@ namespace UnityEngine.VR.Tools
 						{
 							// Already selected, so remove from selection
 							s_SelectedObjects.Remove(m_HoverGameObject);
-							selected(node);
 						}
 						else
 						{
 							// Add to selection
 							s_SelectedObjects.Add(m_HoverGameObject);
 							Selection.activeGameObject = m_HoverGameObject;
-							selected(node);
 						}
 					}
 					else
 					{
 						s_SelectedObjects.Clear();
-						Selection.activeGameObject = m_HoverGameObject;
 						s_SelectedObjects.Add(m_HoverGameObject);
-						selected(node);
 					}
 				}
+
+				selectionChanged = true;
+			}
+
+			if (selectionChanged)
+			{
 				Selection.objects = s_SelectedObjects.ToArray();
+				selected(node);
 			}
 		}
 

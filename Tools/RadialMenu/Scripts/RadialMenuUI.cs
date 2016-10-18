@@ -149,6 +149,8 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 
+		private readonly Dictionary<RadialMenuSlot, Vector2> buttonRotationRange = new Dictionary<RadialMenuSlot, Vector2>();
+
 		private void Start()
 		{
 			m_SlotsMask.gameObject.SetActive(false);
@@ -181,9 +183,6 @@ namespace UnityEngine.VR.Menus
 			}
 			SetupRadialSlotPositions();
 		}
-
-		private Dictionary<RadialMenuSlot, Vector2> buttonRotationRange = new Dictionary<RadialMenuSlot, Vector2>();
-
 
 		private void SetupRadialSlotPositions()
 		{
@@ -299,51 +298,6 @@ namespace UnityEngine.VR.Menus
 						performAction(m_Actions[i]);
 				}
 			}
-		}
-
-		private IEnumerator AnimateSlotRevealLoop(int slotsToReveal)
-		{
-			if (m_SlotsRevealCoroutine == null)
-				yield break;
-
-			m_SlotsMask.fillAmount = 1f;
-
-			float revealAmount = 0f;
-			Quaternion hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
-
-			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
-				m_RadialMenuSlots[i].enabled = true;
-
-			while (revealAmount < 1)
-			{
-				revealAmount += Time.unscaledDeltaTime * 4;
-
-				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
-				{
-					m_RadialMenuSlots[i].enabled = true;
-					m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation,
-					m_RadialMenuSlots[i].visibleLocalRotation, revealAmount);
-				}
-
-				yield return null;
-			}
-
-			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
-				m_RadialMenuSlots[i].enabled = false;
-
-			revealAmount = 1;
-			while (revealAmount > 0)
-			{
-				revealAmount += Time.unscaledDeltaTime * 0.5f;
-				m_SlotsMask.fillAmount = Mathf.Lerp(m_SlotsMask.fillAmount, 0f, revealAmount);
-
-				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
-					m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, revealAmount);
-
-				yield return null;
-			}
-
-			m_SlotsRevealCoroutine = null;
 		}
 	}
 }

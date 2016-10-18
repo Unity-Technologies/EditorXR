@@ -476,11 +476,11 @@ public class EditorVR : MonoBehaviour
 
 				var mainMenuActivator = m_DeviceData[deviceData.Key].mainMenuActivator = SpawnMainMenuActivator(deviceData.Key);
 				mainMenuActivator.node = deviceNode;
-				mainMenuActivator.activated += OnMainMenuActivatorSelected;
+				mainMenuActivator.selected += OnMainMenuActivatorSelected;
 				mainMenuActivator.hoverStarted += OnMainMenuActivatorHoverStarted;
 				mainMenuActivator.hoverEnded += OnMainMenuActivatorHoverEnded;
 
-				var alternateMenu = m_DeviceData[deviceData.Key].alternateMenu = SpawnAlternateMenu(typeof(UnityEngine.VR.Menus.RadialMenu), deviceData.Key);
+				var alternateMenu = m_DeviceData[deviceData.Key].alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), deviceData.Key);
 				alternateMenu.selected = OnSelection;
 
 				UpdatePlayerHandleMaps();
@@ -503,26 +503,39 @@ public class EditorVR : MonoBehaviour
 		if (selectionToolNode == null)
 			return;
 
+		var updateMaps = false;
 		foreach (var kvp in m_DeviceData)
 		{
 			Node? node = GetDeviceNode(kvp.Key);
-			if (node.HasValue) //  && node.Value == selectionToolNode
+			if (node.HasValue && node.Value == selectionToolNode)
 			{
-				// Enable main menu action map input on the opposite hand, but disable them on the hand that is displaying the alternate menu
-				var mainMenuActionMap = kvp.Value.mainMenu as ICustomActionMap;
-				if (mainMenuActionMap != null)
-					mainMenuActionMap.actionMapInput.active = node.Value != selectionToolNode;
+				var deviceData = kvp.Value;
 
-				var alternateMenu = kvp.Value.alternateMenu;
+				var alternateMenu = deviceData.alternateMenu;
 				if (alternateMenu != null)
-					alternateMenu.visible = Selection.gameObjects.Length > 0 && node.Value == selectionToolNode;
+				{
+					alternateMenu.visible = Selection.gameObjects.Length > 0;
 
-				// move to alternate position if this is the node that made the selection, and the selection was not a deselect (no selected objects)
-				var mainMenuActivator = kvp.Value.mainMenuActivator;
-				if (mainMenuActivator != null)
-					mainMenuActivator.activatorButtonMoveAway = Selection.gameObjects.Length > 0 && node.Value == selectionToolNode;
+					// Hide the main menu if the alternate menu is going to be visible
+					var mainMenu = deviceData.mainMenu;
+					if (mainMenu != null)
+					{
+						mainMenu.visible = !alternateMenu.visible;
+						deviceData.restoreMainMenu = false;
+					}
+
+					// move the activator button to an alternate position if the radial menu will be shown
+					var mainMenuActivator = deviceData.mainMenuActivator;
+					if (mainMenuActivator != null)
+						mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
+
+					updateMaps = true;
+				}
 			}
 		}
+
+		if (updateMaps)
+			UpdatePlayerHandleMaps();
 	}
 
 	void OnMainMenuActivatorHoverStarted(Transform rayOrigin)
@@ -556,44 +569,57 @@ public class EditorVR : MonoBehaviour
 		}, true);
 	}
 
-	private void OnMainMenuActivatorSelected(Node? activatorNode, bool showMainMenu)
+	private void OnMainMenuActivatorSelected(Node? activatorNode)
 	{
 		if (activatorNode == null)
 			return;
 
 		foreach (var kvp in m_DeviceData)
 		{
+			var deviceData = kvp.Value;
 			Node? node = GetDeviceNode(kvp.Key);
 			if (node.HasValue)
 			{
 				if (node.Value == activatorNode)
 				{
-					var mainMenu = kvp.Value.mainMenu as IMainMenu;
+					var mainMenu = deviceData.mainMenu;
 					if (mainMenu != null)
-						mainMenu.visible = showMainMenu;
+						mainMenu.visible = !mainMenu.visible;
 
 					// move to rest position if this is the node that made the selection
-					var mainMenuActivator = kvp.Value.mainMenuActivator;
+					var mainMenuActivator = deviceData.mainMenuActivator;
 					if (mainMenuActivator != null)
-						mainMenuActivator.activatorButtonMoveAway = false;
+						mainMenuActivator.activatorButtonMoveAway = !mainMenu.visible;
 
-					var alternateMenu = kvp.Value.alternateMenu;
+					var alternateMenu = deviceData.alternateMenu;
 					if (alternateMenu != null)
 						alternateMenu.visible = false;
 				}
 				else if (Selection.gameObjects.Length > 0)
 				{
-					// Enable the alternate menu on the other hand if the menu was opened on a hand with the radial menu already enabled
-					var alternateMenu = kvp.Value.alternateMenu;
+					// Enable the alternate menu on the other hand if the menu was opened on a hand with the alternate menu already enabled
+					var alternateMenu = deviceData.alternateMenu;
 					if (alternateMenu != null)
+					{
 						alternateMenu.visible = true;
 
-					var mainMenuActivator = kvp.Value.mainMenuActivator;
-					if (mainMenuActivator != null)
-						mainMenuActivator.activatorButtonMoveAway = true;
+						var mainMenuActivator = deviceData.mainMenuActivator;
+						if (mainMenuActivator != null)
+							mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
+
+						// Close a menu if it was open, since it would conflict with the alternate menu
+						var mainMenu = deviceData.mainMenu;
+						if (mainMenu != null)
+						{
+							mainMenu.visible = false;
+							deviceData.restoreMainMenu = false;
+						}
+					}
 				}
 			}
 		}
+
+		UpdatePlayerHandleMaps();
 	}
 
 	private void SpawnActions()
@@ -605,7 +631,8 @@ public class EditorVR : MonoBehaviour
 			var action = U.Object.AddComponent(actionType, gameObject) as IAction;
 			var customActionAttribute = (ActionItemAttribute)actionType.GetCustomAttributes(typeof(ActionItemAttribute), false).FirstOrDefault();
 
-			action.icon = Resources.Load<Sprite>(customActionAttribute.iconResourcePath);
+			// HACK: This should come by default for the action, but serialization issues prevent it
+			//action.icon = Resources.Load<Sprite>(customActionAttribute.iconResourcePath);
 			action.sectionName = customActionAttribute.categoryName;
 			action.indexPosition = customActionAttribute.indexPosition;
 
@@ -842,11 +869,13 @@ public class EditorVR : MonoBehaviour
 
 		foreach (DeviceData deviceData in m_DeviceData.Values)
 		{
-			if (deviceData.mainMenu != null)
-				AddActionMapInputs(deviceData.mainMenu, maps);
+			var mainMenu = deviceData.mainMenu;
+			if (mainMenu != null && mainMenu.visible)
+				AddActionMapInputs(mainMenu, maps);
 
-			if (deviceData.alternateMenu != null)
-				AddActionMapInputs(deviceData.alternateMenu, maps);
+			var alternateMenu = deviceData.alternateMenu;
+			if (alternateMenu != null && alternateMenu.visible)
+				AddActionMapInputs(alternateMenu, maps);
 
 			// Not every tool has UI
 			if (deviceData.uiInput != null)

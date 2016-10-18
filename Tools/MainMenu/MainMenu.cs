@@ -98,7 +98,7 @@ namespace UnityEngine.VR.Menus
 				if (m_MainMenuUI.visible != value)
 				{
 					m_MainMenuUI.visible = value;
-					if (value == true)
+					if (value)
 					{
 						m_MainMenuInput.active = true; // This will be disabled outside of MainMenu when the Alternate menu is activated, so enable it when making Main Menu visible
 						hideDefaultRay();

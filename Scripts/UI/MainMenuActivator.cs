@@ -7,22 +7,6 @@ namespace UnityEngine.VR.Menus
 {
 	public class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IMenuOrigins
 	{
-		private bool m_Activated;
-		private bool selected
-		{
-			get { return m_Activated; }
-			set
-			{
-				if (m_Activated == value || m_ActivatorMoveCoroutine != null) // prevent state change if the animation is still being performed
-					return;
-
-				m_Activated = value;
-
-				if (activated != null)
-					activated(node, m_Activated);
-			}
-		}
-
 		private Transform m_AlternateMenuOrigin;
 		public Transform alternateMenuOrigin
 		{
@@ -49,7 +33,7 @@ namespace UnityEngine.VR.Menus
 			get { return m_ActivatorButtonMoveAway; }
 			set
 			{
-				if (m_ActivatorButtonMoveAway == value)
+				if (m_ActivatorButtonMoveAway)
 					return;
 
 				m_ActivatorButtonMoveAway = value;
@@ -82,7 +66,7 @@ namespace UnityEngine.VR.Menus
 
 		public event Action<Transform> hoverStarted = delegate {};
 		public event Action<Transform> hoverEnded = delegate {};
-		public event Action<Node?, bool> activated = delegate { };
+		public event Action<Node?> selected = delegate {};
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
@@ -112,7 +96,7 @@ namespace UnityEngine.VR.Menus
 
 		public void OnPointerClick(PointerEventData eventData)
 		{
-			selected = !selected;
+			selected(node);
 		}
 
 		private IEnumerator Highlight(bool transitionIn = true)
