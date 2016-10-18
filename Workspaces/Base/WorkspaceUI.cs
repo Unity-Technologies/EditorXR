@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Workspaces
@@ -12,14 +13,12 @@ namespace UnityEngine.VR.Workspaces
 		public event Action closeClicked = delegate { };
 		public event Action lockClicked = delegate { };
 
-		const float kMaxAlternateFrontPanelLocalZOffset = -0.015f;
-		const float kMaxAlternateFrontPanelLocalYOffset = 0.0525f;
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kThinFrameBlendShapeIndex = 3;
 		const int kHiddenFacesBlendShapeIndex = 4;
-		const float kFaceWidthMatchMultiplier =  7.23f; // Multiplier that sizes the face to the intended width
+		const float kFaceWidthMatchMultiplier =  7.1375f; // Multiplier that sizes the face to the intended width
 		const float kBackResizeButtonPositionOffset = -0.02f; // Offset to place the back resize buttons in their intended location
-		const float kBackHandleOffset = -0.145f; // Offset to place the back handle in the expected region behind the workspace
+		const float kBackHandleOffset = -0.045f; // Offset to place the back handle in the expected region behind the workspace
 		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
 		const float kPanelOffset = 0.0625f; // The panel needs to be pulled back slightly
 
@@ -31,7 +30,6 @@ namespace UnityEngine.VR.Workspaces
 		float m_BackHandleYLocalPosition;
 		float m_LeftHandleYLocalPosition;
 		float m_RightHandleYLocalPosition;
-		float m_AngledFrontHandleOffset;
 		Material m_FrameGradientMaterial;
 		Vector3 m_FrontResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BackResizeIconsContainerOriginalLocalPosition;
@@ -43,8 +41,10 @@ namespace UnityEngine.VR.Workspaces
 		Transform m_RightHandleTransform;
 		Transform m_FrontHandleTransform;
 		Transform m_BackHandleTransform;
+		Transform m_TopHighlightTransform;
 		Coroutine m_RotateFrontFaceForwardCoroutine;
 		Coroutine m_RotateFrontFaceBackwardCoroutine;
+		Coroutine m_FrameThicknessCoroutine;
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -80,6 +80,10 @@ namespace UnityEngine.VR.Workspaces
 		public BaseHandle backHandle { get { return m_BackHandle; } }
 		[SerializeField]
 		private BaseHandle m_BackHandle;
+
+		public BaseHandle moveHandle { get { return m_MoveHandle; } }
+		[SerializeField]
+		BaseHandle m_MoveHandle;
 
 		[SerializeField]
 		private SkinnedMeshRenderer m_Frame;
@@ -123,7 +127,45 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		Transform m_BackResizeIconsContainer;
 
+		[SerializeField]
+		WorkspaceHighlight m_TopHighlight;
+
+		[SerializeField]
+		Transform m_TopHighlightContainer;
+
+		[SerializeField]
+		WorkspaceHighlight m_FrontHighlight;
+
 		public bool dynamicFaceAdjustment { get; set; }
+
+		public bool highlightsVisible
+		{
+			set
+			{
+				if (m_TopHighlight.visible == value) // All highlights will be set with this value; checking highlight visibility of one highlight is all that is needed
+					return;
+
+				m_TopHighlight.visible = value;
+				m_FrontHighlight.visible = value;
+
+				StopCoroutine(ref m_FrameThicknessCoroutine);
+				m_FrameThicknessCoroutine = value == false ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
+			}
+		}
+
+		public bool frontHighlightVisible
+		{
+			set
+			{
+				if (m_FrontHighlight.visible == value)
+					return;
+
+				m_FrontHighlight.visible = value;
+
+				StopCoroutine(ref m_FrameThicknessCoroutine);
+				m_FrameThicknessCoroutine = value == false ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
+			}
+		}
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
@@ -158,7 +200,6 @@ namespace UnityEngine.VR.Workspaces
 				m_LeftHandleTransform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f - kSideHandleOffset, m_LeftHandleYLocalPosition, 0);
 				m_LeftHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
 
-				m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -extents.z - m_HandleScale + m_AngledFrontHandleOffset);
 				m_FrontHandleTransform.localScale = preventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				m_RightHandleTransform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
@@ -184,22 +225,28 @@ namespace UnityEngine.VR.Workspaces
 				// Position the separator mask if enabled
 				if (m_TopPanelDividerOffset != null)
 				{
-					const float depthCompensation = 0.1375f;
-					m_TopPanelDividerTransform.localPosition = new Vector3(boundsSize.x*0.5f*m_TopPanelDividerOffset.Value, 0f, 0f);
-					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, boundsSize.z - depthCompensation);
+					const float kDepthCompensation = 0.1375f;
+					m_TopPanelDividerTransform.localPosition = new Vector3(boundsSize.x * 0.5f * m_TopPanelDividerOffset.Value, 0f, 0f);
+					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, boundsSize.z - kDepthCompensation);
 				}
 
 				var grabColliderSize = m_GrabCollider.size;
 				m_GrabCollider.size = new Vector3(boundsSize.x, grabColliderSize.y, grabColliderSize.z);
+
+				const float kHighlightDepthCompensation = 0.14f;
+				const float kHighlightWidthCompensation = 0.01f;
+				m_TopHighlightContainer.localScale = new Vector3(boundsSize.x - kHighlightWidthCompensation, 1f, boundsSize.z - kHighlightDepthCompensation);
 			}
 		}
 		Bounds m_Bounds;
 
 		void ShowResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
-			const float kOpacityTarget = 0.75f;
-			const float kDuration = 0.5f;
+			StopCoroutine(ref m_FrameThicknessCoroutine);
+			m_FrameThicknessCoroutine = StartCoroutine(IncreaseFrameThickness());
 
+			const float kOpacityTarget = 0.75f;
+			const float kDuration = 0.25f;
 			if (baseHandle == m_FrontHandle) // in order of potential usage
 			{
 				m_FrontLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
@@ -224,9 +271,11 @@ namespace UnityEngine.VR.Workspaces
 
 		void HideResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
+			StopCoroutine(ref m_FrameThicknessCoroutine);
+			m_FrameThicknessCoroutine = StartCoroutine(ResetFrameThickness());
+
 			const float kOpacityTarget = 0f;
 			const float kDuration = 0.2f;
-
 			if (baseHandle == m_FrontHandle) // in order of potential usage
 			{
 				m_FrontLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
@@ -306,21 +355,42 @@ namespace UnityEngine.VR.Workspaces
 
 			m_PreviousXRotation = currentXRotation;
 
-			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 120f);
-			if (angledAmount > 45f)
-			{
-				StopCoroutine(ref m_RotateFrontFaceBackwardCoroutine);
+			// a second additional value added to the y offset of the front panel when it is in mid-reveal,
+			// lerped in at the middle of the rotation/reveal, and lerped out at the beginning & end of the rotation/reveal
+			const float kCorrectiveMidFrontPanelLocalYOffset = 0.01f;
+			const int kRevealCompensationBlendShapeIndex = 5;
+			const float kMaxAlternateFrontPanelLocalZOffset = 0.0035f;
+			const float kMaxAlternateFrontPanelLocalYOffset = 0.0325f;
+			const float kLerpPadding = 1.2f; // pad lerp values increasingly as it increases, displaying the "front face reveal" sooner
+			const float kCorrectiveRevealShapeMultiplier = 1.85f;
+			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 90f);
+			var midRevealCorrectiveShapeAmount = Mathf.PingPong(angledAmount * kCorrectiveRevealShapeMultiplier, 90);
 
-				if (m_RotateFrontFaceForwardCoroutine == null)
-					m_RotateFrontFaceForwardCoroutine = StartCoroutine(RotateFrontFaceForward());
-			}
-			else
-			{
-				StopCoroutine(ref m_RotateFrontFaceForwardCoroutine);
+			// blend between the target fully-revealed offset, and the rotationally mid-point-only offset for precise positioning of the front panel
+			const float kMidRevealCorrectiveShapeMultiplier = 0.01f;
+			var totalAlternateFrontPanelLocalYOffset = Mathf.Lerp(kMaxAlternateFrontPanelLocalYOffset, kCorrectiveMidFrontPanelLocalYOffset, midRevealCorrectiveShapeAmount * kMidRevealCorrectiveShapeMultiplier);
+			// add lerp padding to reach and maintain the target value sooner
+			var lerpAmount = (angledAmount / 90f) * kLerpPadding;
 
-				if (m_RotateFrontFaceBackwardCoroutine == null)
-					m_RotateFrontFaceBackwardCoroutine = StartCoroutine(RotateFrontFaceBackward());
-			}
+			// offset front panel according to workspace rotation angle
+			const float kAdditionalFrontPanelLerpPadding = 1.1f;
+			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount * kAdditionalFrontPanelLerpPadding));
+			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, totalAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
+
+			// change blendshapes according to workspace rotation angle
+			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, angledAmount * kLerpPadding);
+			m_Frame.SetBlendShapeWeight(kRevealCompensationBlendShapeIndex, midRevealCorrectiveShapeAmount);
+
+			// offset the front resize icons to accommodate for the blendshape extending outwards
+			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, lerpAmount);
+
+			// offset front handle position according to workspace rotation angle
+			const float kFrontHandleLocalYAngledOffset = 0.1f;
+			const float kFrontHandleLocalZNormalOfset = 0.5f;
+			const float kFrontHandleLocalZAngledOfset = 0.3f;
+			var lerpedFrontHandleZAngledOffset = Mathf.Lerp(kFrontHandleLocalZNormalOfset, kFrontHandleLocalZAngledOfset, lerpAmount);
+			var lerpedFrontHandleYLocalPosition = Mathf.Lerp(m_FrontHandleYLocalPosition, m_FrontHandleYLocalPosition + kFrontHandleLocalYAngledOffset, lerpAmount);
+			m_FrontHandleTransform.localPosition = new Vector3(0, lerpedFrontHandleYLocalPosition, -m_Bounds.size.z - m_HandleScale + lerpedFrontHandleZAngledOffset);
 		}
 
 		public void CloseClick()
@@ -333,47 +403,40 @@ namespace UnityEngine.VR.Workspaces
 			lockClicked();
 		}
 
-		IEnumerator RotateFrontFaceForward()
+		IEnumerator IncreaseFrameThickness()
 		{
-			m_AngledFrontHandleOffset = 0f; // set this value so it can be applied when manually setting bounds as well
-			m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale + m_AngledFrontHandleOffset); // only the front handle needs to be repositioned
-
-			const float targetBlendAmount = 100f;
-			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kAngledFaceBlendShapeIndex);
+			const float kTargetBlendAmount = 0f;
+			const float kTargetDuration = 0.5f;
+			var currentDuration = 0f;
+			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kThinFrameBlendShapeIndex);
 			var currentVelocity = 0f;
-			while (currentBlendAmount < targetBlendAmount)
+			while (currentDuration < kTargetDuration)
 			{
-				currentBlendAmount = U.Math.SmoothDamp(currentBlendAmount, targetBlendAmount, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
-				m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, currentBlendAmount);
-
-				var lerpAmount = currentBlendAmount / 100;
-				m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, lerpAmount);
-				m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));
-				// offset the front resize icons to accommodate for the blendshape extending outwards
-				m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
+				currentDuration += Time.unscaledDeltaTime;
+				currentBlendAmount = U.Math.SmoothDamp(currentBlendAmount, kTargetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, currentBlendAmount);
 				yield return null;
 			}
+
+			m_FrameThicknessCoroutine = null;
 		}
 
-		IEnumerator RotateFrontFaceBackward()
+		IEnumerator ResetFrameThickness()
 		{
-			m_AngledFrontHandleOffset = 0.125f; // clear this offset value so it is not applied when manually setting bounds
-			m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale + m_AngledFrontHandleOffset); // only the front handle needs to be repositioned
-
-			const float targetBlendAmount = 0f;
-			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kAngledFaceBlendShapeIndex);
+			const float kTargetBlendAmount = 50f;
+			const float kTargetDuration = 0.5f;
+			var currentDuration = 0f;
+			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kThinFrameBlendShapeIndex);
 			var currentVelocity = 0f;
-			while (currentBlendAmount > targetBlendAmount)
+			while (currentDuration < kTargetDuration)
 			{
-				currentBlendAmount = U.Math.SmoothDamp(currentBlendAmount, targetBlendAmount, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
-				m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, currentBlendAmount);
-
-				var lerpAmount = currentBlendAmount / 50;
-				m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, lerpAmount);
-				m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount));
-				m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, kMaxAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
+				currentDuration += Time.unscaledDeltaTime;
+				currentBlendAmount = U.Math.SmoothDamp(currentBlendAmount, kTargetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, currentBlendAmount);
 				yield return null;
 			}
+
+			m_FrameThicknessCoroutine = null;
 		}
 	}
 }
