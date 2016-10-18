@@ -88,7 +88,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
 
-	public Action<bool> setInputBlocked { get; set; }
+	public Action<bool> setInputBlocked { private get; set; }
 
 	void Awake()
 	{
