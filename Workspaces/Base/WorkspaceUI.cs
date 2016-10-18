@@ -18,7 +18,7 @@ namespace UnityEngine.VR.Workspaces
 		const int kHiddenFacesBlendShapeIndex = 4;
 		const float kFaceWidthMatchMultiplier =  7.1375f; // Multiplier that sizes the face to the intended width
 		const float kBackResizeButtonPositionOffset = -0.02f; // Offset to place the back resize buttons in their intended location
-		const float kBackHandleOffset = -0.145f; // Offset to place the back handle in the expected region behind the workspace
+		const float kBackHandleOffset = -0.045f; // Offset to place the back handle in the expected region behind the workspace
 		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
 		const float kPanelOffset = 0.0625f; // The panel needs to be pulled back slightly
 
@@ -30,7 +30,6 @@ namespace UnityEngine.VR.Workspaces
 		float m_BackHandleYLocalPosition;
 		float m_LeftHandleYLocalPosition;
 		float m_RightHandleYLocalPosition;
-		float m_AngledFrontHandleOffset;
 		Material m_FrameGradientMaterial;
 		Vector3 m_FrontResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BackResizeIconsContainerOriginalLocalPosition;
@@ -372,9 +371,13 @@ namespace UnityEngine.VR.Workspaces
 			m_Frame.SetBlendShapeWeight(kRevealCompensationBlendShapeIndex, midRevealCorrectiveShapeAmount);
 
 			// offset the front resize icons to accommodate for the blendshape extending outwards
-			m_AngledFrontHandleOffset = Mathf.Lerp(0f, 0.125f, lerpAmount);
+			const float frontHandleLocalYAngledOffset = 0.1f;
+			const float frontHandleLocalZNormalOfset = 0.5f;
+			const float frontHandleLocalZAngledOfset = 0.3f;
+			var lerpedFrontHandleZAngledOffset = Mathf.Lerp(frontHandleLocalZNormalOfset, frontHandleLocalZAngledOfset, lerpAmount);
+			var lerpedFrontHandleYLocalPosition = Mathf.Lerp(m_FrontHandleYLocalPosition, m_FrontHandleYLocalPosition + frontHandleLocalYAngledOffset, lerpAmount);
 			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, lerpAmount);
-			m_FrontHandleTransform.localPosition = new Vector3(0, m_FrontHandleYLocalPosition, -m_Bounds.extents.z - m_HandleScale + m_AngledFrontHandleOffset);
+			m_FrontHandleTransform.localPosition = new Vector3(0, lerpedFrontHandleYLocalPosition, -m_Bounds.size.z - m_HandleScale + lerpedFrontHandleZAngledOffset);
 		}
 
 		public void CloseClick()
