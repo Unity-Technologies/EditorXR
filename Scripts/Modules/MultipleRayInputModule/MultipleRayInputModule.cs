@@ -49,6 +49,9 @@ namespace UnityEngine.VR.Modules
 			}
 			set
 			{
+				if (m_InputBlocked == value)
+					return;
+
 				m_InputBlocked = value;
 				if (m_InputBlocked)
 				{
@@ -121,7 +124,6 @@ namespace UnityEngine.VR.Modules
 
 			if (inputBlocked)
 				return;
-
 			//Process events for all different transforms in RayOrigins
 			foreach (var source in m_RaycastSources.Values)
 			{

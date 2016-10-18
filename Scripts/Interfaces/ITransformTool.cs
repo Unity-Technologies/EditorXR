@@ -7,7 +7,6 @@ namespace UnityEngine.VR.Tools
 	/// </summary>
 	public interface ITransformTool
 	{
-		DirectSelectInput directSelectInput { get; }
 		bool directManipulationEnabled { get; set; }
 		void DropHeldObject(Transform obj);
 	}

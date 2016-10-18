@@ -26,6 +26,8 @@ public class EditorVR : MonoBehaviour
 {
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
+	public const string kVRPlayerTag = "VRPlayer";
+
 	private const float kDefaultRayLength = 100f;
 
 	private const float kWorkspaceAnglePadding = 25f;
@@ -40,6 +42,10 @@ public class EditorVR : MonoBehaviour
 	private ActionMap m_TrackedObjectActionMap;
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
+
+	[SerializeField]
+	private ActionMap m_DirectSelectActionMap;
+
 	[SerializeField]
 	private DefaultProxyRay m_ProxyRayPrefab;
 
@@ -58,6 +64,9 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private KeyboardUI m_StandardKeyboardPrefab;
 
+	[SerializeField]
+	private GameObject m_PlayerModelPrefab;
+
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
 
@@ -65,7 +74,7 @@ public class EditorVR : MonoBehaviour
 	private KeyboardUI m_StandardKeyboard;
 
 	private TrackedObject m_TrackedObjectInput;
-	
+
 	private MultipleRayInputModule m_InputModule;
 	private SpatialHashModule m_SpatialHashModule;
 	private IntersectionModule m_IntersectionModule;
@@ -84,6 +93,7 @@ public class EditorVR : MonoBehaviour
 		public Stack<ITool> tools;
 		public ShowMenu showMenuInput;
 		public ActionMapInput uiInput;
+		public ActionMapInput directSelectInput;
 		public IMainMenu mainMenu;
 		public ITool currentTool;
 	}
@@ -94,6 +104,8 @@ public class EditorVR : MonoBehaviour
 	List<Type> m_MainMenuTools;
 	private List<Type> m_AllWorkspaceTypes;
 	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
+
+	//private readonly Dictionary<Node, DirectSelectInput> m_DirectSelectInputs = new Dictionary<Node, DirectSelectInput>();
 
 	private readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 	{
@@ -107,7 +119,8 @@ public class EditorVR : MonoBehaviour
 		public IMiniWorld miniWorld;
 		public IProxy proxy;
 		public Node node;
-		//public ActionMapInput uiInput;
+		public ActionMapInput uiInput;
+		public ActionMapInput directSelectInput;
 		public IntersectionTester tester;
 		public GameObject dragObject;
 		public Vector3 dragObjectOriginalScale;
@@ -123,6 +136,8 @@ public class EditorVR : MonoBehaviour
 	bool m_HMDReady;
 
 	ITransformTool m_TransformTool;
+
+	bool m_UIInputBlocked;
 
 	private void Awake()
 	{
@@ -237,6 +252,7 @@ public class EditorVR : MonoBehaviour
 		}
 
 		CreateSpatialSystem();
+		AddPlayerModel();
 		SpawnDefaultTools();
 		StartCoroutine(PrewarmAssets());
 
@@ -572,7 +588,10 @@ public class EditorVR : MonoBehaviour
 		{
 			// Create ui action map input for device.
 			if (deviceData.uiInput == null)
+			{
 				deviceData.uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+				deviceData.directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
+			}
 
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput);
@@ -715,15 +734,18 @@ public class EditorVR : MonoBehaviour
 		{
 			maps.Add(deviceData.showMenuInput);
 
-			if (deviceData.mainMenu != null)
-				AddActionMapInputs(deviceData.mainMenu, maps);
+			AddActionMapInputs(deviceData.mainMenu, maps);
 
-			// Not every tool has UI
-			if (deviceData.uiInput != null)
-				maps.Add(deviceData.uiInput);
+			maps.Add(deviceData.directSelectInput);
+
+			maps.Add(deviceData.uiInput);
 		}
 
-		//maps.AddRange(m_MiniWorldRays.Select(miniWorldRay => miniWorldRay.Value.uiInput));
+		foreach (var ray in m_MiniWorldRays.Values)
+		{
+			maps.Add(ray.directSelectInput);
+			maps.Add(ray.uiInput);
+		}
 
 		maps.Add(m_TrackedObjectInput);
 
@@ -1146,7 +1168,6 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
-		CreateWorkspace<ProjectWorkspace>();
 		CreateWorkspace<ChessboardWorkspace>();
 		CreateWorkspace<ConsoleWorkspace>();
 	}
@@ -1231,11 +1252,14 @@ public class EditorVR : MonoBehaviour
 				var miniWorldRayOrigin = U.Object.Instantiate(m_MiniWorldRayPrefab).transform;
 				miniWorldRayOrigin.parent = workspace.transform;
 
-				//var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-				//m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
+				var uiInput = (UIActions)CreateActionMapInput(m_InputModule.actionMap, device);
+				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
+
+				var directSelectInput = (DirectSelectInput)CreateActionMapInput(m_DirectSelectActionMap, device);
+				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.directSelectInput), directSelectInput);
 
 				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-				//m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
+				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
 
 				var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 				tester.active = false;
@@ -1247,7 +1271,8 @@ public class EditorVR : MonoBehaviour
 					miniWorld = miniWorld,
 					proxy = proxy,
 					node = rayOriginPair.Key,
-					//uiInput = uiInput,
+					uiInput = uiInput,
+					directSelectInput = directSelectInput,
 					tester = tester
 				};
 
@@ -1306,12 +1331,13 @@ public class EditorVR : MonoBehaviour
 			miniWorldRayOrigin.gameObject.SetActive(isContained);
 			miniWorldRay.tester.active = isContained;
 
-			var directSelectInput = m_TransformTool.directSelectInput;
-			var directInputControl = miniWorldRay.node == Node.LeftHand ? directSelectInput.selectLeft : directSelectInput.selectRight;
+			var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
 
-			if (directInputControl.wasJustPressed)
+			if (directSelectInput.select.wasJustPressed)
 			{
-				var dragObject = GetDirectSelectionForRayOrigin(miniWorldRayOrigin);
+				var dragObject = GetDirectSelectionForRayOrigin(miniWorldRayOrigin, directSelectInput);
+
+				// If two rays are allowed to grab an object, it will be dropped for each trigger release
 				var otherRayHasObject = false;
 				foreach (var otherRay in m_MiniWorldRays.Values)
 				{
@@ -1338,9 +1364,11 @@ public class EditorVR : MonoBehaviour
 			}
 
 			m_InputModule.inputBlocked = true;
-			if (directInputControl.isHeld)
+
+			var dragObjectTransform = miniWorldRay.dragObject.transform;
+
+			if (directSelectInput.select.isHeld)
 			{
-				var dragObjectTransform = miniWorldRay.dragObject.transform;
 				if (isContained)
 				{
 					if (!miniWorldRay.wasContained)
@@ -1348,22 +1376,31 @@ public class EditorVR : MonoBehaviour
 				}
 				else
 				{
-					if (miniWorldRay.wasContained)
-						miniWorldRay.dragObjectOriginalScale = dragObjectTransform.localScale;
+					if (dragObjectTransform.tag == kVRPlayerTag)
+					{
+						// Drop player at edge of chessboard
+						m_TransformTool.DropHeldObject(dragObjectTransform.transform);
+						miniWorldRay.dragObject = null;
+					}
+					else
+					{
+						if (miniWorldRay.wasContained)
+							miniWorldRay.dragObjectOriginalScale = dragObjectTransform.localScale;
 
-					m_TransformTool.directManipulationEnabled = false;
-					dragObjectTransform.localScale = miniWorldRay.dragObjectPreviewScale;
-					m_ObjectPlacementModule.Preview(dragObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
+						m_TransformTool.directManipulationEnabled = false;
+						dragObjectTransform.localScale = miniWorldRay.dragObjectPreviewScale;
+						m_ObjectPlacementModule.Preview(dragObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
+					}
 				}
 			}
 
 			// Release the current object if the trigger is no longer held
-			if (directInputControl.wasJustReleased)
+			if (directSelectInput.select.wasJustReleased)
 			{
-				m_TransformTool.DropHeldObject(miniWorldRay.dragObject.transform);
+				m_TransformTool.DropHeldObject(dragObjectTransform);
 
 				if (!isContained)
-					PlaceObject(miniWorldRay.dragObject.transform, miniWorldRay.dragObjectOriginalScale);
+					PlaceObject(dragObjectTransform, miniWorldRay.dragObjectOriginalScale);
 
 				miniWorldRay.dragObject = null;
 			}
@@ -1416,13 +1453,15 @@ public class EditorVR : MonoBehaviour
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			var rayOrigin = rayOriginPair.Value;
-			var obj = GetDirectSelectionForRayOrigin(rayOrigin);
+			var obj = GetDirectSelectionForRayOrigin(rayOrigin, deviceData.directSelectInput);
 			if (obj)
 			{
 				results[rayOrigin] = new DirectSelection
 				{
 					gameObject = obj,
-					node = rayOriginPair.Key
+					node = rayOriginPair.Key,
+					input = deviceData.directSelectInput,
+					rayOrigin = rayOrigin
 				};
 			}
 		}, true);
@@ -1430,13 +1469,16 @@ public class EditorVR : MonoBehaviour
 		foreach (var ray in m_MiniWorldRays)
 		{
 			var rayOrigin = ray.Key;
-			var go = GetDirectSelectionForRayOrigin(ray.Key);
+			var miniWorldRay = ray.Value;
+			var go = GetDirectSelectionForRayOrigin(rayOrigin, miniWorldRay.directSelectInput);
 			if (go != null)
 			{
 				results[rayOrigin] = new DirectSelection
 				{
 					gameObject = go,
 					node = ray.Value.node,
+					rayOrigin = rayOrigin,
+					input = miniWorldRay.directSelectInput,
 					isMiniWorldRay = true
 				};
 			}
@@ -1444,15 +1486,21 @@ public class EditorVR : MonoBehaviour
 		return results;
 	}
 
-	GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin)
+	GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, ActionMapInput input)
 	{
 		if (m_IntersectionModule)
 		{
 			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
 			if (renderer)
+			{
+				input.active = true;
 				return renderer.gameObject;
+			}
 		}
+
+		if(!m_UIInputBlocked)
+			input.active = false;
 
 		return null;
 	}
@@ -1487,11 +1535,19 @@ public class EditorVR : MonoBehaviour
 
 	void SetUIInputBlocked(bool blocked)
 	{
+		//Debug.Log("setblocked " + blocked);
+		m_UIInputBlocked = blocked;
 		m_InputModule.inputBlocked = blocked;
 	}
 
+	void AddPlayerModel()
+	{
+		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
+		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
+	}
+
 #if UNITY_EDITOR
-	private static EditorVR s_Instance;
+private static EditorVR s_Instance;
 	private static InputManager s_InputManager;
 
 	[MenuItem("Window/EditorVR", false)]
