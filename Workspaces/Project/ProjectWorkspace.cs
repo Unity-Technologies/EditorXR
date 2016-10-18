@@ -21,6 +21,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	private bool m_AssetGridDragging;
 	private bool m_FolderPanelDragging;
+	Transform m_AssetGridHighlightContainer;
+	Transform m_FolderPanelHighlightContainer;
 
 	[SerializeField]
 	GameObject m_ContentPrefab;
@@ -106,6 +108,10 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		m_ProjectUI.folderScrollHandle.hoverStarted += OnFolderPanelHoverHighlightBegin;
 		m_ProjectUI.folderScrollHandle.hoverEnded += OnFolderPanelHoverHighlightEnd;
 
+		// Assign highlight references
+		m_FolderPanelHighlightContainer = m_ProjectUI.folderPanelHighlight.transform.parent.transform;
+		m_AssetGridHighlightContainer = m_ProjectUI.assetGridHighlight.transform.parent.transform;
+
 		// Propagate initial bounds
 		OnBoundsChanged();
 	}
@@ -143,6 +149,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + kPanelMargin);
 		folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
 
+		m_FolderPanelHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
+
 		size = contentBounds.size;
 		size.x -= kPaneMargin * 2;
 		size.x *= 1 - kLeftPaneRatio;
@@ -164,6 +172,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		assetPanel.transform.localPosition = xOffset * Vector3.right;
 		assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + kPanelMargin);
 		assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
+
+		m_AssetGridHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
 	}
 
 	void SelectFolder(FolderData data)
