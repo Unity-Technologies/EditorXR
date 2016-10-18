@@ -30,9 +30,9 @@ public class ProjectUI : MonoBehaviour
 
 	public WorkspaceHighlight assetGridHighlight { get { return m_AssetGridHighlight; } }
 	[SerializeField]
-	private WorkspaceHighlight m_AssetGridHighlight;
+	WorkspaceHighlight m_AssetGridHighlight;
 
 	public WorkspaceHighlight folderPanelHighlight { get { return m_FolderPanelHighlight; } }
 	[SerializeField]
-	private WorkspaceHighlight m_FolderPanelHighlight;
+	WorkspaceHighlight m_FolderPanelHighlight;
 }

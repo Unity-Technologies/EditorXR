@@ -19,8 +19,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 	const float kMinScale = 0.03f;
 	const float kMaxScale = 0.2f;
 
-	private bool m_AssetGridDragging;
-	private bool m_FolderPanelDragging;
+	bool m_AssetGridDragging;
+	bool m_FolderPanelDragging;
 	Transform m_AssetGridHighlightContainer;
 	Transform m_FolderPanelHighlightContainer;
 
