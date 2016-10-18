@@ -58,12 +58,7 @@ namespace UnityEngine.VR.Modules
 						Array.Sort(intersections, (a, b) => (a.bounds.center - testerBoundsCenter).magnitude.CompareTo((b.bounds.center - testerBoundsCenter).magnitude));
 						foreach (var obj in intersections)
 						{
-							//Early-outs:
-							// Not updated yet
-							if (obj.transform.hasChanged)
-								continue;
-
-							//Bounds check
+							// Bounds check
 							if (!obj.bounds.Intersects(testerBounds))
 								continue;
 

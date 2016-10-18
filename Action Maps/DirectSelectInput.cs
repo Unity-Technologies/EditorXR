@@ -7,7 +7,6 @@ namespace UnityEngine.InputNew
 	public class DirectSelectInput : ActionMapInput {
 		public DirectSelectInput (ActionMap actionMap) : base (actionMap) { }
 		
-		public ButtonInputControl @selectLeft { get { return (ButtonInputControl)this[0]; } }
-		public ButtonInputControl @selectRight { get { return (ButtonInputControl)this[1]; } }
+		public ButtonInputControl @select { get { return (ButtonInputControl)this[0]; } }
 	}
 }
