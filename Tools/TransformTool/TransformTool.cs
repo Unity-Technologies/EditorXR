@@ -349,16 +349,16 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		}
 	}
 
-	public void TransferObjectToRayOrigin(Transform obj, Transform rayOrigin)
+	public Transform GetHeldObject(Transform rayOrigin)
 	{
 		foreach (var grabData in m_GrabData.Values)
 		{
-			if (grabData.grabbedObject == obj)
+			if (grabData.rayOrigin == rayOrigin)
 			{
-				grabData.rayOrigin = rayOrigin;
-				grabData.Reset();
+				return grabData.grabbedObject;
 			}
 		}
+		return null;
 	}
 
 	void DropObject(Node inputNode)

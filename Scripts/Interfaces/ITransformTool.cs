@@ -9,6 +9,6 @@ namespace UnityEngine.VR.Tools
 	{
 		bool directManipulationEnabled { get; set; }
 		void DropHeldObject(Transform obj);
-		void TransferObjectToRayOrigin(Transform obj, Transform rayOrigin);
+		Transform GetHeldObject(Transform obj);
 	}
 }
