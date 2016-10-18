@@ -162,6 +162,8 @@ namespace UnityEngine.VR.Menus
 
 		public void Show()
 		{
+			gameObject.SetActive(true);
+
 			m_MenuInset.localScale = m_HiddenInsetLocalScale;
 			m_Pressed = false;
 			m_Highlighted = false;
@@ -272,6 +274,8 @@ namespace UnityEngine.VR.Menus
 				CorrectIconRotation();
 				yield return null;
 			}
+
+			gameObject.SetActive(false);
 
 			FadeOutCleanup();
 			m_FadeOutCoroutine = null;

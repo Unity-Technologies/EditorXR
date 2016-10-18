@@ -129,11 +129,12 @@ public class DefaultProxyRay : MonoBehaviour
 		float currentWidth = m_LineRenderer.widthStart;
 		const float kTargetWidth = 0f;
 		const float kSmoothTime = 0.1875f;
-		var startTime = Time.realtimeSinceStartup;
-		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
+		var currentDuration = 0f;
+		while (currentDuration < kSmoothTime)
 		{
 			float smoothVelocity = 0f;
 			currentWidth = U.Math.SmoothDamp(currentWidth, kTargetWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
 			yield return null;
 		}
@@ -150,10 +151,11 @@ public class DefaultProxyRay : MonoBehaviour
 		float currentWidth = m_LineRenderer.widthStart;
 		float smoothVelocity = 0f;
 		const float kSmoothTime = 0.3125f;
-		var startTime = Time.realtimeSinceStartup;
-		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
+		var currentDuration = 0f;
+		while (currentDuration < kSmoothTime)
 		{
 			currentWidth = U.Math.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
 			yield return null;
 		}
@@ -164,11 +166,14 @@ public class DefaultProxyRay : MonoBehaviour
 
 	private IEnumerator HideCone()
 	{
-		Vector3 currentScale = m_ConeTransform.localScale;
-		Vector3 smoothVelocity = Vector3.one;
-		while (currentScale.x > 0)
+		var currentScale = m_ConeTransform.localScale;
+		var smoothVelocity = Vector3.one;
+		const float kSmoothTime = 0.1875f;
+		var currentDuration = 0f;
+		while (currentDuration < kSmoothTime)
 		{
-			currentScale = Vector3.SmoothDamp(currentScale, Vector3.zero, ref smoothVelocity, 0.1875f, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentScale = U.Math.SmoothDamp(currentScale, Vector3.zero, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
 			m_ConeTransform.localScale = currentScale;
 			yield return null;
 		}
@@ -178,11 +183,14 @@ public class DefaultProxyRay : MonoBehaviour
 
 	private IEnumerator ShowCone()
 	{
-		Vector3 currentScale = m_ConeTransform.localScale;
-		Vector3 smoothVelocity = Vector3.one;
-		while (currentScale.x < m_OriginalConeLocalScale.x)
+		var currentScale = m_ConeTransform.localScale;
+		var smoothVelocity = Vector3.one;
+		const float kSmoothTime = 0.3125f;
+		var currentDuration = 0f;
+		while (currentDuration < kSmoothTime)
 		{
-			currentScale = Vector3.SmoothDamp(currentScale, m_OriginalConeLocalScale, ref smoothVelocity, 0.3125f, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentScale = Vector3.SmoothDamp(currentScale, m_OriginalConeLocalScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
 			m_ConeTransform.localScale = currentScale;
 			yield return null;
 		}

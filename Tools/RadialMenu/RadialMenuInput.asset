@@ -30,6 +30,8 @@ MonoBehaviour:
     - sources:
       - controlIndex: 22
         deviceKey: 1
+      - controlIndex: 3
+        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000

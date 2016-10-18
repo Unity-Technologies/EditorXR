@@ -67,7 +67,7 @@ namespace UnityEngine.VR.Menus
 		private Transform m_HighlightedPRS;
 
 		private readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
-		private static readonly float kAlternateLocationOffset = 0.165f;
+		private static readonly float kAlternateLocationOffset = 0.06f;
 
 		private Vector3 m_OriginalActivatorIconLocalScale;
 		private Vector3 m_OriginalActivatorIconLocalPosition;
@@ -140,7 +140,7 @@ namespace UnityEngine.VR.Menus
 		{
 			var amount = 0f;
 			var currentPosition = transform.localPosition;
-			var targetPosition = moveAway == true ? m_AlternateActivatorLocalPosition : m_OriginalActivatorLocalPosition;
+			var targetPosition = moveAway ? m_AlternateActivatorLocalPosition : m_OriginalActivatorLocalPosition;
 			var speed = (currentPosition.z / targetPosition.z) * (moveAway ? 10 : 3); // perform faster is returning to original position
 
 			while (amount < 1f)

@@ -240,29 +240,5 @@ namespace UnityEngine.VR.Menus
 				});
 			}
 		}
-
-		private void Show()
-		{
-			Debug.LogError("SHOW CALLED IN MAIN MENU");
-		}
-
-		private void Hide()
-		{
-			Debug.LogError("HIDE CALLED IN MAIN MENU");
-		}
-
-		/*
-		public void MenuActivatorToAlternatePosition(object sender, EventArgs eventArgs)
-		{
-			Debug.LogError("Move main menu activator to alternate position!");
-			m_MainMenuUI.activatorButtonMoveAway = true; // TODO: handle for returning button
-		}
-
-		public void MenuActivatorToOriginalPosition(object sender, EventArgs eventArgs)
-		{
-			Debug.LogError("Move main menu activator to original position!");
-			m_MainMenuUI.activatorButtonMoveAway = false; // TODO: handle for returning button
-		}
-		*/
 	}
 }

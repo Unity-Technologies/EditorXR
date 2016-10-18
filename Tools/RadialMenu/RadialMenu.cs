@@ -69,7 +69,7 @@ namespace UnityEngine.VR.Menus
 				{
 					m_RadialMenuUI.visible = value;
 
-					if (value == true)
+					if (value)
 						Show();
 					else
 						Hide();
@@ -81,18 +81,7 @@ namespace UnityEngine.VR.Menus
 		private Func<IAction, bool> m_performAction;
 		public Func<IAction, bool> performAction { get { return m_performAction; } set { m_performAction = value; } }
 
-		public Func<GameObject, GameObject> instantiateUI
-		{
-			get; set;
-			/*
-			set
-			{
-				// TODO finish removal of iinstantiateUI content, in favor of the pressing of the thumbstick button down for selecting items(performing actions)
-				m_RadialMenuUI.instantiateUI = value;
-				m_RadialMenuUI.Setup();
-			}
-			*/
-		}
+		public Func<GameObject, GameObject> instantiateUI { get; set; }
 
 		public Vector2 buttonInputDirection { set { m_RadialMenuUI.buttonInputDirection = value; } }
 
@@ -149,9 +138,6 @@ namespace UnityEngine.VR.Menus
 		}
 		private Transform m_AlternateMenuOrigin;
 
-		public Action onRadialMenuShow { get; set; }
-		public Action onRadialMenuHide { get; set; }
-
 		private void Awake()
 		{
 			radialMenuUI = m_RadialMenuUI;
@@ -183,19 +169,11 @@ namespace UnityEngine.VR.Menus
 			if (Selection.objects.Length == 0)
 				Hide();
 			else
-			{
-				if (onRadialMenuShow != null)
-					onRadialMenuShow(); // Raises the event that notifies the main menu to move its menu activator button
-
 				m_RadialMenuUI.actions = menuActions;
-			}
 		}
 
 		public void Hide()
 		{
-			if (onRadialMenuHide != null)
-				onRadialMenuHide(); // Raises the event that notifies the main menu to move its menu activator button back to its original position
-
 			m_RadialMenuUI.actions = null; // Hide the radial menu
 		}
 	}

@@ -162,12 +162,7 @@ namespace UnityEngine.VR.Menus
 			for (int i = 0; i < kSlotCount; ++i)
 			{
 				Transform menuSlot = null;
-#if UNITY_EDITOR
 				menuSlot = U.Object.Instantiate(m_RadialMenuSlotTemplate.gameObject).transform;
-#else
-				// TODO REMOVE THIS - used for testing in play mode to get around the stutter of the EVR input rate
-				menuSlot = GameObject.Instantiate(m_RadialMenuSlotTemplate.gameObject).transform;
-#endif
 				menuSlot.SetParent(m_SlotContainer);
 				menuSlot.localPosition = Vector3.zero;
 				menuSlot.localRotation = Quaternion.identity;
@@ -211,11 +206,6 @@ namespace UnityEngine.VR.Menus
 				StopCoroutine(m_HideCoroutine);
 
 			m_HideCoroutine = StartCoroutine(AnimateHide());
-		}
-
-		private void Hide()
-		{
-			Debug.LogError("Hide called in RadialMenuVisuals");
 		}
 
 		private IEnumerator AnimateShow()

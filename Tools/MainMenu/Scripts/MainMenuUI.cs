@@ -86,7 +86,6 @@ namespace UnityEngine.VR.Menus
 		private float m_LastTargetRotation;
 		private Coroutine m_VisibilityCoroutine;
 		private Coroutine m_FrameRevealCoroutine;
-		private Transform m_ShowHideUI;
 
 		private Transform[] m_MenuFaceContentTransforms;
 		private Vector3[] m_MenuFaceContentOriginalLocalPositions;
@@ -104,9 +103,6 @@ namespace UnityEngine.VR.Menus
 				transform.localPosition = Vector3.zero;
 				transform.localRotation = Quaternion.identity;
 				transform.localScale = Vector3.one;
-
-				//m_ShowHideUI = m_MainMenuActivator.transform;
-				//m_ShowHideUI.SetParent(m_MenuOrigin); // Now that the desired world position is set, change parent to the menu origin, so no unintended transform actions are performed when showing/hiding
 			}
 		}
 
@@ -119,8 +115,7 @@ namespace UnityEngine.VR.Menus
 				m_AlternateMenu.SetParent(m_AlternateMenuOrigin);
 				m_AlternateMenu.localPosition = Vector3.zero;
 				m_AlternateMenu.localRotation = Quaternion.identity;
-				m_AlternateMenu.localScale = Vector3.one;
-				m_AlternateMenuOriginOriginalLocalScale = m_AlternateMenuOrigin.localScale;
+				m_AlternateMenuOriginOriginalLocalScale = m_AlternateMenu.localScale;
 			}
 		}
 
@@ -142,6 +137,7 @@ namespace UnityEngine.VR.Menus
 						if (value)
 						{
 							this.StopCoroutine(ref m_VisibilityCoroutine);
+							gameObject.SetActive(true);
 							m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 						}
 						return;
@@ -410,18 +406,17 @@ namespace UnityEngine.VR.Menus
 			float scale = 0f;
 			float smoothVelocity = 0f;
 			const float kSmoothTime = 0.125f;
-			var startTime = Time.realtimeSinceStartup;
-			while (Time.realtimeSinceStartup < startTime + kSmoothTime)
+			var currentDuration = 0f;
+			while (currentDuration < kSmoothTime)
 			{
+				scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = Vector3.one * scale;
 				m_AlternateMenu.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
-				scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
 			m_VisibilityState = VisibilityState.Visible;
-			transform.localScale = Vector3.one;
-			m_AlternateMenu.localScale = m_AlternateMenuOriginOriginalLocalScale;
 
 			m_VisibilityCoroutine = null;
 		}
@@ -445,18 +440,19 @@ namespace UnityEngine.VR.Menus
 			float scale = transform.localScale.x;
 			float smoothVelocity = 0f;
 			const float kSmoothTime = 0.06875f;
-			var startTime = Time.realtimeSinceStartup;
-			while (Time.realtimeSinceStartup < startTime + kSmoothTime)
+			var currentDuration = 0f;
+			while (currentDuration < kSmoothTime)
 			{
+				scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = Vector3.one * scale;
 				m_AlternateMenu.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
-				scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
+			gameObject.SetActive(false);
+
 			m_VisibilityState = VisibilityState.Hidden;
-			transform.localScale = Vector3.zero;
-			m_AlternateMenu.localScale = Vector3.zero;
 
 			float snapRotation = GetRotationForFaceIndex(GetClosestFaceIndexForRotation(currentRotation));
 			m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, snapRotation, 0)); // set intended target rotation
@@ -471,10 +467,11 @@ namespace UnityEngine.VR.Menus
 			float currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
 			float targetWeight = rotationState == RotationState.Rotating ? 100f : 0f;
 			float smoothVelocity = 0f;
-			var startTime = Time.realtimeSinceStartup;
-			while (m_RotationState == rotationState && Time.realtimeSinceStartup < startTime + smoothTime)
+			var currentDuration = 0f;
+			while (m_RotationState == rotationState && currentDuration < smoothTime)
 			{
 				currentBlendShapeWeight = U.Math.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.unscaledDeltaTime;
 				m_MenuFrameRenderer.SetBlendShapeWeight(0, currentBlendShapeWeight);
 				yield return null;
 			}
@@ -494,10 +491,11 @@ namespace UnityEngine.VR.Menus
 			const float kLerpEmphasisWeight = 0.25f;
 			currentBlendShapeWeight = currentBlendShapeWeight > 0 ? currentBlendShapeWeight : zeroStartBlendShapePadding;
 
-			var startTime = Time.realtimeSinceStartup;
-			while (m_VisibilityState != VisibilityState.Hidden && Time.realtimeSinceStartup < startTime + smoothTime)
+			var currentDuration = 0f;
+			while (m_VisibilityState != VisibilityState.Hidden && currentDuration < smoothTime)
 			{
 				currentBlendShapeWeight = U.Math.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.unscaledDeltaTime;
 				m_MenuFrameRenderer.SetBlendShapeWeight(1, currentBlendShapeWeight * currentBlendShapeWeight);
 				m_MenuFacesMaterial.color = Color.Lerp(m_MenuFacesColor, kMenuFacesHiddenColor, currentBlendShapeWeight * kLerpEmphasisWeight);
 				yield return null;
