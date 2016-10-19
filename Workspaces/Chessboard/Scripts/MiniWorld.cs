@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.VR.Utilities;
 
 public class MiniWorld : MonoBehaviour, IMiniWorld
@@ -49,6 +50,8 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 	{
 		return localBounds.Contains(transform.InverseTransformPoint(position));
 	}
+
+	public List<Renderer> ignoreList { set { m_MiniWorldRenderer.ignoreList = value; } }
 
 	private void OnEnable()
 	{

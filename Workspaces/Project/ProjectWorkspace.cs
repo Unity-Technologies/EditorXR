@@ -164,6 +164,9 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		m_ScrollStart = eventData.rayOrigin.transform.position;
 		if (handle == m_ProjectUI.folderScrollHandle)
 		{
@@ -179,11 +182,17 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		Scroll(handle, eventData);
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		Scroll(handle, eventData);
 		if (handle == m_ProjectUI.folderScrollHandle)
 		{
@@ -208,11 +217,17 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		setHighlight(handle.gameObject, true);
 	}
 
 	void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		setHighlight(handle.gameObject, false);
 	}
 
