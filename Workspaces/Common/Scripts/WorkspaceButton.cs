@@ -36,6 +36,9 @@ namespace UnityEngine.VR.Workspaces
 		Color m_CustomHighlightColor = UnityBrandColorScheme.light;
 
 		[SerializeField]
+		Sprite m_ClickedAlternateIconSprite;
+
+		[SerializeField]
 		Graphic[] m_HighlightItems;
 		UnityBrandColorScheme.GradientPair? sHighlightGradientPair;
 
@@ -49,6 +52,7 @@ namespace UnityEngine.VR.Workspaces
 		Vector3 m_IconPressedLocalPosition;
 		Vector3 m_IconLookDirection;
 		Color m_OriginalColor;
+		Sprite m_OriginalIconSprite;
 
 		// The initial button reveal coroutines, before highlighting
 		Coroutine m_VisibilityCoroutine;
@@ -136,6 +140,13 @@ namespace UnityEngine.VR.Workspaces
 			StopCoroutine(ref m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
+
+			if (m_ClickedAlternateIconSprite)
+			{
+				m_OriginalIconSprite = m_Icon.sprite;
+				// Hookup button OnClick event if there is an alternate icon sprite set
+				m_Button.onClick.AddListener(SwapIconSprite);
+			}
 		}
 
 		IEnumerator AnimateShow()
@@ -335,6 +346,12 @@ namespace UnityEngine.VR.Workspaces
 		public void OnRayExit(RayEventData eventData)
 		{
 			highlight = false;
+		}
+
+		void SwapIconSprite()
+		{
+			// Alternate between the main icon and the alternate icon when the button is clicked
+			m_Icon.sprite = m_Icon.sprite == m_OriginalIconSprite ? m_ClickedAlternateIconSprite : m_OriginalIconSprite;
 		}
 	}
 }
