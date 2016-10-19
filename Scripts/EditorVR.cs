@@ -128,9 +128,6 @@ public class EditorVR : MonoBehaviour
 		public Vector3 dragObjectOriginalScale;
 		public Vector3 dragObjectPreviewScale;
 
-		public Vector3 originalDragPositionOffset;
-		public Quaternion originalDragRotationOffset;
-
 		public bool wasContained;
 	}
 
@@ -472,7 +469,7 @@ public class EditorVR : MonoBehaviour
 		EditorApplication.delayCall += () =>
 		{
 			// Spawn default tools
-			HashSet<InputDevice> devices = null;
+			HashSet<InputDevice> devices;
 			ITool tool;
 
 			var locomotionTool = typeof(BlinkLocomotionTool);
