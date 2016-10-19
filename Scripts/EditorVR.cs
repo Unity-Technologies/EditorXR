@@ -124,18 +124,14 @@ public class EditorVR : MonoBehaviour
 		public ActionMapInput directSelectInput;
 		public IntersectionTester tester;
 		public GameObject dragObject;
+
 		public Vector3 dragObjectOriginalScale;
 		public Vector3 dragObjectPreviewScale;
-		public bool wasContained;
 
-		public void GrabObject(GameObject grabbedObject)
-		{
-			dragObject = grabbedObject;
-			dragObjectOriginalScale = dragObject.transform.localScale;
-			var totalBounds = U.Object.GetTotalBounds(dragObject.transform);
-			if (totalBounds != null)
-				dragObjectPreviewScale = dragObject.transform.localScale * (kPreviewScale / totalBounds.Value.size.MaxComponent());
-		}
+		public Vector3 originalDragPositionOffset;
+		public Quaternion originalDragRotationOffset;
+
+		public bool wasContained;
 	}
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
@@ -1353,41 +1349,40 @@ public class EditorVR : MonoBehaviour
 			miniWorldRay.tester.active = isContained;
 
 			var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
+
+			var pointerLengthDiff = GetPointerLength(miniWorldRayOrigin) - GetPointerLength(originalRayOrigin);
+
 			var heldObject = m_TransformTool.GetHeldObject(originalRayOrigin);
-			if (isContained && heldObject) {
-				foreach (var deviceData in m_DeviceData)
-				{
-					var node = GetDeviceNode(deviceData.Key);
-					if (node.HasValue && node.Value == miniWorldRay.node)
-					{
-						deviceData.Value.directSelectInput.active = false;
-						break;
-					}
-				}
-				directSelectInput.active = true;
-				m_TransformTool.DropHeldObject(heldObject);
-				miniWorldRay.GrabObject(heldObject.gameObject);
+			if (heldObject && isContained && !miniWorldRay.wasContained)
+				m_TransformTool.TransferHeldObject(originalRayOrigin, miniWorldRayOrigin, pointerLengthDiff * Vector3.forward);
 
-				SetUIInputBlocked(true);
-
-				// Early out because input states have been reset
-				return;
-			}
+			heldObject = m_TransformTool.GetHeldObject(miniWorldRayOrigin);
+			if (heldObject && !isContained && miniWorldRay.wasContained)
+				m_TransformTool.TransferHeldObject(miniWorldRayOrigin, originalRayOrigin, pointerLengthDiff * Vector3.back);
 
 			if (directSelectInput.select.wasJustPressed)
 			{
 				var dragObject = GetDirectSelectionForRayOrigin(miniWorldRayOrigin, directSelectInput);
 
-				// If two rays are allowed to grab an object, it will be dropped for each trigger release
-				var otherRayHasObject = false;
-				foreach (var otherRay in m_MiniWorldRays.Values)
+				if (dragObject)
 				{
-					if (otherRay != miniWorldRay && otherRay.dragObject == dragObject)
-						otherRayHasObject = true;
-				}
+					// If two rays are allowed to grab an object, it will be dropped for each trigger release
+					var otherRayHasObject = false;
+					foreach (var otherRay in m_MiniWorldRays.Values)
+					{
+						if (otherRay != miniWorldRay && otherRay.dragObject == dragObject)
+							otherRayHasObject = true;
+					}
 
-				if (!otherRayHasObject)
-					miniWorldRay.GrabObject(dragObject);
+					if (!otherRayHasObject)
+					{
+						miniWorldRay.dragObject = dragObject;
+						miniWorldRay.dragObjectOriginalScale = dragObject.transform.localScale;
+						var totalBounds = U.Object.GetTotalBounds(dragObject.transform);
+						if (totalBounds != null)
+							miniWorldRay.dragObjectPreviewScale = dragObject.transform.localScale * (kPreviewScale / totalBounds.Value.size.MaxComponent());
+					}
+				}
 			}
 
 			if (!miniWorldRay.dragObject)
@@ -1395,8 +1390,6 @@ public class EditorVR : MonoBehaviour
 				miniWorldRay.wasContained = isContained;
 				continue;
 			}
-
-			Debug.Log(directSelectInput.select.isHeld);
 
 			SetUIInputBlocked(true);
 
@@ -1432,7 +1425,6 @@ public class EditorVR : MonoBehaviour
 			// Release the current object if the trigger is no longer held
 			if (directSelectInput.select.wasJustReleased)
 			{
-				Debug.Log("wasreleased");
 				m_TransformTool.DropHeldObject(dragObjectTransform);
 
 				if (!isContained)
@@ -1536,6 +1528,9 @@ public class EditorVR : MonoBehaviour
 			{
 				if (m_UIInputBlocked)
 				{
+					if (m_TransformTool.GetHeldObject(rayOrigin))
+						return null;
+
 					foreach (var kvp in m_MiniWorldRays)
 					{
 						var miniWorldRay = kvp.Value;

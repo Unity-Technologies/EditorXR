@@ -131,14 +131,14 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			foreach (var kvp in directSelection)
 			{
 				var selection = kvp.Value;
-				if (selection.gameObject.tag == "VRPlayer" && !selection.isMiniWorldRay)
+				if (selection.gameObject.tag == EditorVR.kVRPlayerTag && !selection.isMiniWorldRay)
 					continue;
 
 				var directSelectInput = (DirectSelectInput)selection.input;
 
 				if (directSelectInput.select.wasJustPressed)
 				{
-					if (selection.gameObject.tag == "VRPlayer")
+					if (selection.gameObject.tag == EditorVR.kVRPlayerTag)
 						selection.gameObject.transform.parent = null;
 
 					setInputBlocked(true);
@@ -353,17 +353,28 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		foreach (var grabData in m_GrabData.Values)
 		{
 			if (grabData.rayOrigin == rayOrigin)
-			{
 				return grabData.grabbedObject;
-			}
 		}
 		return null;
+	}
+
+	public void TransferHeldObject(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset = default(Vector3))
+	{
+		foreach (var grabData in m_GrabData.Values)
+		{
+			if (grabData.rayOrigin == rayOrigin)
+			{
+				grabData.rayOrigin = destRayOrigin;
+				grabData.positionOffset += deltaOffset;
+				return;
+			}
+		}
 	}
 
 	void DropObject(Node inputNode)
 	{
 		var grabbedObject = m_GrabData[inputNode].grabbedObject;
-		if (grabbedObject.tag == "VRPlayer")
+		if (grabbedObject.tag == EditorVR.kVRPlayerTag)
 			StartCoroutine(UpdateViewerPivot(grabbedObject));
 
 		m_GrabData.Remove(inputNode);

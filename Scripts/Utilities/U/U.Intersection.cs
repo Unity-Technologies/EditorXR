@@ -67,7 +67,7 @@ namespace UnityEngine.VR.Utilities
 
 						var start = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[j]));
 						var end = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[(j + 1) % 3]));
-						var direction = end - start;// obj.InverseTransformDirection(end - start);
+						var direction = end - start;
 
 						// Shoot a ray from outside the object (due to face normals) in the direction of the ray to see if it is inside
 						var forwardRay = new Ray(start, direction);

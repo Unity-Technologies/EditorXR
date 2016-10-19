@@ -22,5 +22,13 @@
 		/// <param name="rayOrigin">The rayOrigin to query</param>
 		/// <returns></returns>
 		Transform GetHeldObject(Transform rayOrigin);
+
+		/// <summary>
+		/// Transfer a held object between rayOrigins (i.e. dragging into the MiniWorld)
+		/// </summary>
+		/// <param name="rayOrigin">rayOrigin of current held object</param>
+		/// <param name="destRayOrigin">Destination rayOrigin</param>
+		/// <param name="deltaOffset">Change in position offset (added to GrabData.positionOffset)</param>
+		void TransferHeldObject(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset);
 	}
 }
