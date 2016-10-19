@@ -21,7 +21,9 @@ public class SnappingModule : MonoBehaviour, IModule
 	private class ObjectSnapData
 	{
 		internal MeshFilter meshFilter;
+		internal MeshRenderer meshRenderer;
 		internal Vector3 startPosition;
+		internal Vector3 startCenter;
 
 		internal List<Vector3> movementDirections;
 		internal List<float> movementTimestamps;
@@ -34,6 +36,7 @@ public class SnappingModule : MonoBehaviour, IModule
 		internal RaycastHit targetPoint;
 		internal Vector3 closestVertex;
 		internal float startDistance;
+		internal Ray throwRay;
 
 		internal Vector3? collisionPoint;
 	}
@@ -41,10 +44,13 @@ public class SnappingModule : MonoBehaviour, IModule
 	public void OnSnapStarted(Transform target, Vector3 deltaMovement, Transform[] raycastIgnore)
 	{
 		var meshFilter = target.GetComponent<MeshFilter>();
+		var meshRenderer = target.GetComponent<MeshRenderer>();
 		ObjectSnapData snapData = new ObjectSnapData();
 
 		snapData.meshFilter = meshFilter;
+		snapData.meshRenderer = meshRenderer;
 		snapData.startPosition = target.position;
+		snapData.startCenter = meshRenderer.bounds.center;
 		snapData.movementDirections = new List<Vector3>();
 		snapData.movementTimestamps = new List<float>();
 		m_SnapDataTable[target] = snapData;
@@ -82,20 +88,30 @@ public class SnappingModule : MonoBehaviour, IModule
 		UpdateThrow(target);
 	}
 
-	void UpdateMovementBuffers(Transform target, Vector3 deltaMovement)
+	private void UpdateMovementBuffers(Transform target, Vector3 deltaMovement)
 	{
-		if (m_SnapDataTable[target].movementDirections == null)
-			m_SnapDataTable[target].movementDirections = new List<Vector3>();
-		if (m_SnapDataTable[target].movementTimestamps == null)
-			m_SnapDataTable[target].movementTimestamps = new List<float>();
+		var snapData = m_SnapDataTable[target];
 
-		m_SnapDataTable[target].movementDirections.Add(deltaMovement);
-		m_SnapDataTable[target].movementTimestamps.Add(Time.realtimeSinceStartup);
+		CheckNullList(snapData.movementDirections);
+		CheckNullList(snapData.movementTimestamps);
 
-		while (m_SnapDataTable[target].movementDirections.Count > kFramesToKeep)
-			m_SnapDataTable[target].movementDirections.RemoveAt(0);
-		while (m_SnapDataTable[target].movementTimestamps.Count > kFramesToKeep)
-			m_SnapDataTable[target].movementTimestamps.RemoveAt(0);
+		snapData.movementDirections.Add(deltaMovement);
+		snapData.movementTimestamps.Add(Time.realtimeSinceStartup);
+
+		CheckListLength(snapData.movementDirections);
+		CheckListLength(snapData.movementTimestamps);
+	}
+
+	private void CheckNullList<T>(List<T> listToCheck)
+	{
+		if (listToCheck == null)
+			listToCheck = new List<T>();
+	}
+
+	private void CheckListLength<T>(List<T> listToCheck)
+	{
+		while (listToCheck.Count > kFramesToKeep)
+			listToCheck.RemoveAt(0);
 	}
 
 	private void HandleGroundSnap(Transform target, MeshFilter meshFilter, Vector3 deltaMovement)
@@ -107,32 +123,36 @@ public class SnappingModule : MonoBehaviour, IModule
 		U.Snapping.SnapToGroundPlane(target, deltaMovement, closestVertex);
 	}
 
+	private Vector3 GetWorldExtents(Mesh mesh, Transform target)
+	{
+		Vector3 extents = mesh.bounds.extents;
+
+		for (int i = 0; i < 3; i++)
+			extents[i] *= target.lossyScale[i];
+
+		return extents;
+	}
+
 	private void HandleSurfaceSnap(Transform target, MeshFilter meshFilter, Transform[] raycastIgnore)
 	{
 		if (!U.Snapping.HasFlag(U.Snapping.SnappingModes.SnapToSurfaceNormal))
 			return;
 
-		Vector3 transformPosition = target.position;
-		Vector3 origin = m_SnapDataTable[target].startPosition;
-		Vector3 currentOffset = transformPosition - origin;
-		RaycastHit hit;
-
 		var snapData = m_SnapDataTable[target];
 
-		Bounds meshBounds = meshFilter.GetComponent<MeshRenderer>().bounds;
-		Vector3 size = meshFilter.sharedMesh.bounds.size;
+		Bounds meshBounds = snapData.meshRenderer.bounds;
+		Vector3 extents = GetWorldExtents(meshFilter.sharedMesh, target);
 
-		for (int i = 0; i < 3; i++)
-			size[i] *= target.lossyScale[i];
+		Vector3 origin = snapData.startCenter;
+		Vector3 currentOffset = meshBounds.center - origin;
 
-		Vector3 centerOffset = meshBounds.center - transformPosition;
-		Bounds bounds = new Bounds(centerOffset, size);
+		RaycastHit hit;
 		Ray ray = new Ray(origin, currentOffset);
 
 		if (U.Snapping.GetBoxSnapHit(
-			target.rotation,
+			target,
 			ray,
-			bounds,
+			extents,
 			currentOffset.magnitude,
 			out hit,
 			raycastIgnore))
@@ -140,10 +160,17 @@ public class SnappingModule : MonoBehaviour, IModule
 			if (snapData.collisionPoint.HasValue)
 				target.position = snapData.collisionPoint.Value;
 			else
+			{
+				ray.origin = snapData.startPosition;
 				target.position = ray.GetPoint(hit.distance);
+			}
 		}
 		else
+		{
+			snapData.startCenter = meshBounds.center;
+			snapData.startPosition = target.position;
 			snapData.collisionPoint = null;
+		}
 	}
 
 	private void HandleThrowEnd(Transform target, MeshFilter meshFilter, Transform[] raycastIgnore)
@@ -187,27 +214,37 @@ public class SnappingModule : MonoBehaviour, IModule
 		float velocity = distance / throwTime;
 		if (velocity < 1)
 			return;
-
 		var snapData = m_SnapDataTable[target];
 
 		snapData.throwDirection = throwDirection;
 		snapData.startVelocity = velocity;
 		snapData.currentVelocity = velocity;
+		
+		Bounds meshBounds = snapData.meshRenderer.bounds;
+		Vector3 extents = GetWorldExtents(meshFilter.sharedMesh, target);
 
-		Vector3 transformPosition = target.position;
-		Ray ray = new Ray(transformPosition, throwDirection);
+		Vector3 origin = meshBounds.center;
 		RaycastHit hit;
 
-		snapData.hasCollision = U.Snapping.GetRaySnapHit(ray, distance * 100f, out hit, raycastIgnore);
+		Ray ray = new Ray(origin, throwDirection);
+		snapData.throwRay = ray;
+
+		snapData.hasCollision = U.Snapping.GetBoxSnapHit(
+			target,
+			ray,
+			extents,
+			distance * 100f,
+			out hit,
+			raycastIgnore);
 
 		snapData.targetPoint = hit;
 		if (snapData.hasCollision)
 		{
-			snapData.closestVertex = U.Snapping.GetClosestVertex(meshFilter, hit.point, hit.normal, true);
-			snapData.startDistance = Vector3.Distance(transformPosition, hit.point);
+			snapData.startPosition = target.position;
+			snapData.startDistance = hit.distance;
 		}
-
-		m_SnapDataTable[target] = snapData;
+		else
+			snapData.closestVertex = U.Snapping.GetClosestVertex(meshFilter, Vector3.zero, Vector3.up);
 	}
 
 	private void UpdateThrow(Transform target)
@@ -242,15 +279,18 @@ public class SnappingModule : MonoBehaviour, IModule
 
 		if (snapData.hasCollision)
 		{
-			float currentDistance = Vector3.Distance(target.position + snapData.closestVertex, snapData.targetPoint.point);
+			Ray throwRay = snapData.throwRay;
+			throwRay.origin = snapData.startPosition;
 
-			bool isClose = currentDistance < deltaVelocity;
-			bool overshot = currentDistance > snapData.startDistance;
+			Vector3 targetPoint = throwRay.GetPoint(snapData.startDistance);
+			Vector3 targetPosition = target.position;
+
+			bool isClose = Vector3.Distance(targetPosition, targetPoint) < deltaVelocity;
+			bool overshot = Vector3.Distance(targetPosition, snapData.startPosition) > snapData.startDistance;
 
 			if (isClose || overshot)
 			{
-				Vector3 targetPosition = snapData.targetPoint.point - snapData.closestVertex;
-				target.position = targetPosition;
+				target.position = targetPoint;
 				snapData.currentVelocity = -1;
 			}
 		}

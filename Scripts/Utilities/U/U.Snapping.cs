@@ -123,44 +123,75 @@ namespace UnityEngine.VR.Utilities
 				}
 			}
 
-			public static bool GetBoxSnapHit(Quaternion rotation, Ray ray, Bounds bounds, float distance, out RaycastHit hit, params Transform[] raycastIgnore)
+			public static bool GetBoxSnapHit(Transform target, Ray ray, Vector3 extents, float distance, out RaycastHit hit, params Transform[] raycastIgnore)
 			{
 				RaycastHit[] hits = new RaycastHit[10];
 				int hitCount = Physics.BoxCastNonAlloc(
-					ray.origin + bounds.center,
-					bounds.extents,
+					ray.origin,
+					extents,
 					ray.direction,
 					hits,
-					rotation,
+					target.rotation,
 					distance,
 					VRView.viewerCamera.cullingMask,
 					QueryTriggerInteraction.Ignore);
 
 				float closestDistance = distance;
 				int closestIndex = -1;
+				Vector3 zeroVector = Vector3.zero;
+				Matrix4x4 localToWorld = target.localToWorldMatrix;
 
 				for (int i = 0; i < hitCount; i++)
 				{
-					if (hits[i].distance < closestDistance)
+					var rayHit = hits[i];
+					if (rayHit.distance < closestDistance)
 					{
 						bool skip = false;
 
 						for (int j = 0; j < raycastIgnore.Length; j++)
 						{
-							if (raycastIgnore[j].Equals(hits[i].collider.transform))
+							if (raycastIgnore[j].Equals(rayHit.transform))
 							{
 								skip = true;
 								break;
 							}
 						}
 
-						if (!skip)
+						if (!skip && rayHit.distance < closestDistance)
 						{
-							float directionDot = Vector3.Dot(ray.direction, hits[i].point - ray.origin);
-							if (directionDot > 0)
+							float dot = Vector3.Dot(ray.direction, rayHit.normal);
+							bool isTouching = rayHit.point == zeroVector && dot == -1;
+
+							if (dot < 0 && !isTouching)
 							{
 								closestIndex = i;
-								closestDistance = hits[i].distance;
+								closestDistance = rayHit.distance;
+							}
+							else if (isTouching)
+							{
+								var meshFilter = target.GetComponent<MeshFilter>();
+								var mesh = meshFilter.sharedMesh;
+
+								int vertexCount = mesh.vertexCount;
+								Vector3[] vertices = mesh.vertices;
+
+								for (int v = 0; v < vertexCount; v++)
+								{
+									Ray localRay = new Ray(localToWorld.MultiplyPoint(vertices[v]), ray.direction);
+									localRay.origin = localRay.GetPoint(-distance);
+									RaycastHit localHit;
+
+									if (rayHit.collider.Raycast(localRay, out localHit, float.PositiveInfinity))
+									{
+										float localDot = Vector3.Dot(ray.direction, localHit.normal);
+										if (localDot < 0)
+										{
+											closestIndex = i;
+											closestDistance = rayHit.distance;
+										}
+										break;
+									}
+								}
 							}
 						}
 					}
