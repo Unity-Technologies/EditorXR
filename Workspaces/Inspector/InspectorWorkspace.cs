@@ -19,7 +19,6 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	bool m_IsLocked;
 
 	InspectorUI m_InspectorUI;
-
 	GameObject m_SelectedObject;
 
 	Vector3 m_ScrollStart;
@@ -264,6 +263,8 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 		var inspectorPanel = m_InspectorUI.inspectorPanel;
 		inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
 		inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
+
+		m_InspectorUI.highlight.transform.parent.transform.localScale = new Vector3(size.x, 1f, size.z);
 	}
 
 	bool GetIsLocked()
