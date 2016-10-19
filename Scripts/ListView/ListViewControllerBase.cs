@@ -94,8 +94,9 @@ namespace ListView
 
 			if (m_Scrolling)
 			{
-				// Compute current velocity
-				m_ScrollDelta = (m_ScrollOffset - m_LastScrollOffset) / Time.unscaledDeltaTime;
+				// Compute current velocity, clamping value for better appearance when applying scrolling momentum
+				const float kScrollDeltaClamp = 0.6f;
+				m_ScrollDelta = Mathf.Clamp((m_ScrollOffset - m_LastScrollOffset) / Time.unscaledDeltaTime, -kScrollDeltaClamp, kScrollDeltaClamp);
 				m_LastScrollOffset = m_ScrollOffset;
 
 				// Clamp velocity to MaxMomentum
@@ -108,11 +109,13 @@ namespace ListView
 			{
 				//Apply scrolling momentum
 				m_ScrollOffset += m_ScrollDelta * Time.unscaledDeltaTime;
+				const float kScrollMomentumShape = 2f;
 				if (m_ScrollReturn < float.MaxValue || m_ScrollOffset > 0)
 					OnScrollEnded();
+
 				if (m_ScrollDelta > 0)
 				{
-					m_ScrollDelta -= m_ScrollDamping * Time.unscaledDeltaTime;
+					m_ScrollDelta -= Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.unscaledDeltaTime;
 					if (m_ScrollDelta < 0)
 					{
 						m_ScrollDelta = 0;
@@ -121,7 +124,7 @@ namespace ListView
 				}
 				else if (m_ScrollDelta < 0)
 				{
-					m_ScrollDelta += m_ScrollDamping * Time.unscaledDeltaTime;
+					m_ScrollDelta += Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.unscaledDeltaTime;
 					if (m_ScrollDelta > 0)
 					{
 						m_ScrollDelta = 0;
