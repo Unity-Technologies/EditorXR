@@ -78,6 +78,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		m_ZoomSliderUI.sliding += OnSliding;
 		m_ZoomSliderUI.zoomSlider.maxValue = kMaxScale;
 		m_ZoomSliderUI.zoomSlider.minValue = kMinScale;
+		m_ZoomSliderUI.zoomSlider.direction = UnityEngine.UI.Slider.Direction.RightToLeft; // Invert direction for expected ux; zoom in as slider moves left to right
 		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
 
 		// Propagate initial bounds
