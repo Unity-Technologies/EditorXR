@@ -1173,8 +1173,7 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
-		CreateWorkspace<ChessboardWorkspace>();
-		CreateWorkspace<ConsoleWorkspace>();
+		CreateWorkspace<ProjectWorkspace>();
 	}
 	
 	private void CreateWorkspace<T>() where T : Workspace
