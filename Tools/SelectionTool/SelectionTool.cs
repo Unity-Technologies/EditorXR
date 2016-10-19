@@ -45,7 +45,7 @@ namespace UnityEngine.VR.Tools
 			}
 		}
 
-		public Action<Node?> selected { get; set; }
+		public event Action<Node?> selected = delegate {};
 
 		private void Update()
 		{

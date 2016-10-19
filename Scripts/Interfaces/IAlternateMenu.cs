@@ -22,6 +22,6 @@ namespace UnityEngine.VR.Menus
 		/// <summary>
 		/// Delegate called when an item is selected in the alternate menu
 		/// </summary>
-		Action<Node?> selected { get; set; }
+		event Action<Node?> itemSelected;
 	}
 }

@@ -7,10 +7,5 @@ public interface IMenuActions
 	/// <summary>
 	/// Collection of actions that can be performed
 	/// </summary>
-	List<IAction> menuActions { set; }
-
-	/// <summary>
-	/// The delegate that performs an action
-	/// </summary>
-	Func<IAction, bool> performAction { set; }
+	List<ActionMenuData> menuActions { set; }
 }

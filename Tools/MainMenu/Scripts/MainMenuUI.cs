@@ -127,7 +127,7 @@ namespace UnityEngine.VR.Menus
 
 		public bool visible
 		{
-			get { return m_VisibilityState == VisibilityState.Visible; }
+			get { return m_VisibilityState == VisibilityState.Visible || m_VisibilityState == VisibilityState.TransitioningIn; }
 			set
 			{
 				switch (m_VisibilityState)
@@ -150,7 +150,6 @@ namespace UnityEngine.VR.Menus
 						}
 						return;
 				}
-
 			}
 		}
 

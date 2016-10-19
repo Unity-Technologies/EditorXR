@@ -249,7 +249,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		UpdateCurrentManipulator();
 	}
 
-	[ToggleItem("Rotation", "Local", "ActionIcons/RotationLocalIcon", "GLobal", "ActionIcons/RotationGlobalIcon")]
+	[ToggleItem("Rotation", "Local", "Assets/EditorVR/Actions/Icons/RotationLocalIcon", "GLobal", "Assets/EditorVR/Actions/Icons/RotationGlobalIcon")]
 	public void ToggleRotationMode()
 	{
 		Debug.LogError("<color=cyan>TOGGLE ROTATION MODE SHOULD OCCUR HERE!</color>");
@@ -257,7 +257,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		//return m_PivotRotation == PivotRotation.Global;
 	}
 
-	[ToggleItem("Origin", "Pivot", "ActionIcons/OriginPivotIcon", "Center", "ActionIcons/OriginCenterIcon")]
+	[ToggleItem("Origin", "Pivot", "Assets/EditorVR/Actions/Icons/OriginPivotIcon", "Center", "Assets/EditorVR/Actions/Icons/OriginCenterIcon")]
 	public bool ToggleOriginMode()
 	{
 		Debug.LogError("<color=cyan>TOGGLE OROGIN MODE SHOULD OCCUR HERE!</color>");

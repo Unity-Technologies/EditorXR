@@ -9,7 +9,7 @@ namespace UnityEngine.VR.Menus
 	/// </summary>
 	public class ToggleItemAttribute : System.Attribute
 	{
-		//public ToggleActionItemAttribute (string groupName, string name01, string iconResourcePath01, string name02, string iconResourcePath02, string categoryName = null, int indexPosition = -1)
+		//public ToggleActionMenuItemAttribute (string groupName, string name01, string iconResourcePath01, string name02, string iconResourcePath02, string categoryName = null, int indexPosition = -1)
 		//	: base(name01, iconResourcePath01, categoryName = categoryName, indexPosition = indexPosition)
 		//{
 		//	this.groupName = groupName;

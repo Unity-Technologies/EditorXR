@@ -35,6 +35,12 @@ namespace UnityEngine.VR.Menus
 		/// </summary>
 		bool visible { get; set; }
 
+		/// <summary>
+		/// You must implement and call this event when the visibility of the menu changes
+		/// Parameters: main menu instance
+		/// </summary>
+		event Action<IMainMenu> menuVisibilityChanged;
+
 		// HACK: Awake/Start get called together in ExecuteInEditMode, so calling this method after is a workaround for order of operations
 		Action setup { get; }
 	}

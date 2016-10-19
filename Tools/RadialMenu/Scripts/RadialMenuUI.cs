@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine.UI;
 using UnityEngine.VR.Actions;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Extensions;
 using GradientPair = UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair;
 
 namespace UnityEngine.VR.Menus
@@ -28,7 +30,6 @@ namespace UnityEngine.VR.Menus
 		private Coroutine m_HideCoroutine;
 		private Coroutine m_SlotsRevealCoroutine;
 
-		public Func<IAction, bool> performAction { private get; set; }
 		public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
 		public Transform alternateMenuOrigin
@@ -47,40 +48,52 @@ namespace UnityEngine.VR.Menus
 		}
 		private Transform m_AlternateMenuOrigin;
 
-		public bool visible { get; set; }
+		public bool visible
+		{
+			get { return m_Visible; }
+			set
+			{
+				if (m_Visible != value)
+				{
+					m_Visible = value;
 
-		public List<IAction> m_Actions;
-		public List<IAction> actions
+					StopCoroutine(ref m_ShowCoroutine);
+					StopCoroutine(ref m_HideCoroutine);
+
+					if (value && actions.Count > 0)
+						m_ShowCoroutine = StartCoroutine(AnimateShow());
+					else if (m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
+						m_HideCoroutine = StartCoroutine(AnimateHide());
+				}
+			}
+		}
+		private bool m_Visible;
+
+		public List<ActionMenuData> actions
 		{
 			get { return m_Actions; }
 			set
 			{
-				if (value == m_Actions) // only change visual state if the actions have changed.  Reference checking for now.
-					return;
-
-				m_Actions = value;
-
-				if (m_ShowCoroutine != null)
+				if (value != null)
 				{
-					StopCoroutine(m_ShowCoroutine);
-					m_ShowCoroutine = null;
-				}
+					m_Actions = value
+						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.kDefaultActionSectionName)
+						.OrderByDescending(a => a.indexPosition)
+						.ToList();
 
-				if (m_HideCoroutine != null)
-				{
-					StopCoroutine(m_HideCoroutine);
-					m_HideCoroutine = null;
+					if (visible && actions.Count > 0)
+					{
+						StopCoroutine(ref m_HideCoroutine);
+						StopCoroutine(ref m_ShowCoroutine);
+						m_ShowCoroutine = StartCoroutine(AnimateShow());
+					}
 				}
-
-				//TODO validate that actions & count are the same, preventing the showing of the same actions if they are already showing
-				if (value != null && value.Count > 0)
-					m_ShowCoroutine = StartCoroutine(AnimateShow());
-				else if (m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
-					m_HideCoroutine = StartCoroutine(AnimateHide());
+				else if (visible && m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
+					visible = false;
 			}
 		}
+		private List<ActionMenuData> m_Actions;
 
-		private bool m_PressedDown;
 		public bool pressedDown
 		{
 			get { return m_PressedDown; }
@@ -107,6 +120,7 @@ namespace UnityEngine.VR.Menus
 				}
 			}
 		}
+		private bool m_PressedDown;
 
 		[SerializeField]
 		private float m_InputPhaseOffset = 75f;
@@ -214,7 +228,7 @@ namespace UnityEngine.VR.Menus
 			GradientPair gradientPair = UnityBrandColorScheme.GetRandomGradient();
 			for (int i = 0; i < m_Actions.Count && i < kSlotCount; ++i) // prevent more actions being added beyond the max slot count
 			{
-				var action = m_Actions[i];
+				var action = m_Actions[i].action;
 				var slot = m_RadialMenuSlots[i];
 				slot.gradientPair = gradientPair;
 				slot.iconSprite = m_Actions[i].icon;
@@ -222,7 +236,7 @@ namespace UnityEngine.VR.Menus
 				slot.button.onClick.RemoveAllListeners();
 				slot.button.onClick.AddListener(() =>
 				{
-					performAction(action);
+					action.ExecuteAction();
 				});
 			}
 
@@ -295,7 +309,7 @@ namespace UnityEngine.VR.Menus
 				for (int i = 0; i < kSlotCount; ++i)
 				{
 					if (m_HighlightedButton == m_RadialMenuSlots[i])
-						performAction(m_Actions[i]);
+						m_Actions[i].action.ExecuteAction();
 				}
 			}
 		}

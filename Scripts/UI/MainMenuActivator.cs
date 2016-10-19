@@ -33,7 +33,7 @@ namespace UnityEngine.VR.Menus
 			get { return m_ActivatorButtonMoveAway; }
 			set
 			{
-				if (m_ActivatorButtonMoveAway)
+				if (m_ActivatorButtonMoveAway == value)
 					return;
 
 				m_ActivatorButtonMoveAway = value;

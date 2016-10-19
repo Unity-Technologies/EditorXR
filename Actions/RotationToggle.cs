@@ -3,8 +3,7 @@ using UnityEditor;
 
 namespace UnityEngine.VR.Actions
 {
-	//[ToggleActionItem("Rotation", "Local",  "ActionIcons/RotationLocalIcon", "Global",  "ActionIcons/RotationGlobalIcon", "DefaultActions", 9)]
-	[ExecuteInEditMode]
+	//[ToggleActionMenuItem("Rotation", "Local",  "Assets/EditorVR/Actions/Icons/RotationLocalIcon", "Global",  "Assets/EditorVR/Actions/Icons/RotationGlobalIcon", ActionMenuItemAttribute.kDefaultActionSectionName, 9)]
 	public class RotationToggle : MonoBehaviour, IUsesTransformTool
 	{
 		[SerializeField]
@@ -22,7 +21,7 @@ namespace UnityEngine.VR.Actions
 		public Func<PivotMode> switchOriginMode { get; set; }
 		public Func<PivotRotation> switchRotationMode { get; set; }
 
-		public bool Execute()
+		public bool ExecuteAction()
 		{
 			Debug.LogError("Toggle Local/Global rotation Action called!");
 

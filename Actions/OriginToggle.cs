@@ -4,8 +4,7 @@ using UnityEngine.VR.Menus;
 
 namespace UnityEngine.VR.Actions
 {
-	//[ToggleActionItem("Rotation", "Center",  "ActionIcons/OriginCenterIcon", "Pivot",  "ActionIcons/OriginPivotIcon", "DefaultActions", 10)]
-	[ExecuteInEditMode]
+	//[ToggleActionMenuItem("Rotation", "Center",  "Assets/EditorVR/Actions/Icons/OriginCenterIcon", "Pivot",  "Assets/EditorVR/Actions/Icons/OriginPivotIcon", ActionMenuItemAttribute.kDefaultActionSectionName, 10)]
 	public class OriginToggle : MonoBehaviour, IUsesTransformTool
 	{
 		[SerializeField]
@@ -23,7 +22,7 @@ namespace UnityEngine.VR.Actions
 		public Func<PivotMode> switchOriginMode { get; set; }
 		public Func<PivotRotation> switchRotationMode { get; set; }
 
-		public bool Execute()
+		public bool ExecuteAction()
 		{
 			Debug.LogError("Toggle Origin Center/Pivot Action called!");
 

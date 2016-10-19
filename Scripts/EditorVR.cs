@@ -88,6 +88,7 @@ public class EditorVR : MonoBehaviour
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
 	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
+	private readonly List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
 	private List<Type> m_AllTools;
 	private List<IAction> m_AllActions;
 	List<Type> m_MainMenuTools;
@@ -245,7 +246,7 @@ public class EditorVR : MonoBehaviour
 
 		CreateSpatialSystem();
 		SpawnDefaultTools();
-		StartCoroutine(PrewarmAssets());
+		PrewarmAssets();
 
 		// Call OnSelectionChanged one more time for tools
 		EditorApplication.delayCall += OnSelectionChanged;
@@ -318,10 +319,9 @@ public class EditorVR : MonoBehaviour
 		PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
 	}
 
-	IEnumerator PrewarmAssets()
+	void PrewarmAssets()
 	{
 		// HACK: Cannot async load assets in the editor yet, so to avoid a hitch let's spawn the menu immediately and then make it invisible
-		List<IMainMenu> menus = new List<IMainMenu>();
 		foreach (var kvp in m_DeviceData)
 		{
 			var device = kvp.Key;
@@ -333,24 +333,12 @@ public class EditorVR : MonoBehaviour
 				// HACK to workaround missing MonoScript serialized fields
 				EditorApplication.delayCall += () =>
 				{
-					mainMenu = SpawnMainMenu(typeof(MainMenu), device, true);
+					mainMenu = SpawnMainMenu(typeof(MainMenu), device, false);
+					mainMenu.menuVisibilityChanged += OnMainMenuVisiblityChanged;
 					deviceData.mainMenu = mainMenu;
 					UpdatePlayerHandleMaps();
 				};
-
-				while (mainMenu == null)
-					yield return null;
-
-				menus.Add(mainMenu);
 			}
-		}
-
-		foreach (var mainMenu in menus)
-		{
-			while (!mainMenu.visible)
-				yield return null;
-
-			mainMenu.visible = false;
 		}
 	}
 
@@ -466,7 +454,7 @@ public class EditorVR : MonoBehaviour
 				AddToolToDeviceData(tool, devices);
 				var selectionTool = tool as SelectionTool;
 				selectionTool.node = deviceNode;
-				selectionTool.selected = OnSelection; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+				selectionTool.selected += OnAlternateMenuItemSelected; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 
 				if (locomotionTool == typeof(BlinkLocomotionTool))
 				{
@@ -481,7 +469,7 @@ public class EditorVR : MonoBehaviour
 				mainMenuActivator.hoverEnded += OnMainMenuActivatorHoverEnded;
 
 				var alternateMenu = m_DeviceData[deviceData.Key].alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), deviceData.Key);
-				alternateMenu.selected = OnSelection;
+				alternateMenu.itemSelected += OnAlternateMenuItemSelected;
 
 				UpdatePlayerHandleMaps();
 			}
@@ -498,7 +486,7 @@ public class EditorVR : MonoBehaviour
 		};
 	}
 
-	private void OnSelection(Node? selectionToolNode)
+	private void OnAlternateMenuItemSelected(Node? selectionToolNode)
 	{
 		if (selectionToolNode == null)
 			return;
@@ -507,24 +495,24 @@ public class EditorVR : MonoBehaviour
 		foreach (var kvp in m_DeviceData)
 		{
 			Node? node = GetDeviceNode(kvp.Key);
-			if (node.HasValue && node.Value == selectionToolNode)
+			if (node.HasValue)
 			{
 				var deviceData = kvp.Value;
 
 				var alternateMenu = deviceData.alternateMenu;
 				if (alternateMenu != null)
 				{
-					alternateMenu.visible = Selection.gameObjects.Length > 0;
+					alternateMenu.visible = (node.Value == selectionToolNode) && Selection.gameObjects.Length > 0;
 
 					// Hide the main menu if the alternate menu is going to be visible
 					var mainMenu = deviceData.mainMenu;
-					if (mainMenu != null)
+					if (mainMenu != null && alternateMenu.visible)
 					{
-						mainMenu.visible = !alternateMenu.visible;
+						mainMenu.visible = false;
 						deviceData.restoreMainMenu = false;
 					}
 
-					// move the activator button to an alternate position if the radial menu will be shown
+					// Move the activator button to an alternate position if the alternate menu will be shown
 					var mainMenuActivator = deviceData.mainMenuActivator;
 					if (mainMenuActivator != null)
 						mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
@@ -536,6 +524,11 @@ public class EditorVR : MonoBehaviour
 
 		if (updateMaps)
 			UpdatePlayerHandleMaps();
+	}
+
+	void OnMainMenuVisiblityChanged(IMainMenu mainMenu)
+	{
+		UpdatePlayerHandleMaps();
 	}
 
 	void OnMainMenuActivatorHoverStarted(Transform rayOrigin)
@@ -589,7 +582,7 @@ public class EditorVR : MonoBehaviour
 					// move to rest position if this is the node that made the selection
 					var mainMenuActivator = deviceData.mainMenuActivator;
 					if (mainMenuActivator != null)
-						mainMenuActivator.activatorButtonMoveAway = !mainMenu.visible;
+						mainMenuActivator.activatorButtonMoveAway = false;
 
 					var alternateMenu = deviceData.alternateMenu;
 					if (alternateMenu != null)
@@ -618,8 +611,6 @@ public class EditorVR : MonoBehaviour
 				}
 			}
 		}
-
-		UpdatePlayerHandleMaps();
 	}
 
 	private void SpawnActions()
@@ -629,15 +620,26 @@ public class EditorVR : MonoBehaviour
 		foreach (Type actionType in actionTypes)
 		{
 			var action = U.Object.AddComponent(actionType, gameObject) as IAction;
-			var customActionAttribute = (ActionItemAttribute)actionType.GetCustomAttributes(typeof(ActionItemAttribute), false).FirstOrDefault();
+			var attribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
 
-			// HACK: This should come by default for the action, but serialization issues prevent it
-			//action.icon = Resources.Load<Sprite>(customActionAttribute.iconResourcePath);
-			action.sectionName = customActionAttribute.categoryName;
-			action.indexPosition = customActionAttribute.indexPosition;
+			if (attribute != null)
+			{
+				var actionMenuData = new ActionMenuData()
+				{
+					name = attribute.name,
+					icon = AssetDatabase.LoadAssetAtPath<Sprite>(attribute.iconResourcePath),
+					sectionName = attribute.categoryName,
+					indexPosition = attribute.indexPosition,
+					action = action,
+				};
+
+				m_MenuActions.Add(actionMenuData);
+			}
 
 			m_AllActions.Add(action);
 		}
+
+		m_MenuActions.Sort((x,y) => y.indexPosition.CompareTo(x.indexPosition));
 	}
 
 	private void CreateAllProxies()
@@ -1124,8 +1126,7 @@ public class EditorVR : MonoBehaviour
 		var alternateMenuComponent = obj as IAlternateMenu;
 		if (alternateMenuComponent != null)
 		{
-			alternateMenuComponent.menuActions = m_AllActions;
-			alternateMenuComponent.performAction = PerformAction;
+			alternateMenuComponent.menuActions = m_MenuActions;
 			alternateMenuComponent.node = GetDeviceNode(device);
 			alternateMenuComponent.setup();
 		}
@@ -1175,14 +1176,6 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 		return null;
-	}
-
-	private bool PerformAction (IAction action)
-	{
-		if (action != null)
-			return action.Execute();
-		else
-			return false;
 	}
 
 	private bool SelectTool(Node targetNode, Type toolType)
