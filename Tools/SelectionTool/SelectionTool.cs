@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Actions;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Tools

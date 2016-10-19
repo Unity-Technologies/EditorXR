@@ -2,10 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Tools;
