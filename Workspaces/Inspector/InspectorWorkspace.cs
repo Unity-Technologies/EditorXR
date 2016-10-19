@@ -20,6 +20,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	InspectorUI m_InspectorUI;
 	GameObject m_SelectedObject;
+	bool m_Dragging;
 
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
@@ -56,6 +57,8 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		m_Dragging = true;
+		m_WorkspaceUI.topHighlight.visible = true;
 		m_ScrollStart = eventData.rayOrigin.transform.position;
 		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
 
@@ -69,25 +72,29 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		m_Dragging = false;
+		m_WorkspaceUI.topHighlight.visible = false;
+
 		Scroll(eventData);
 		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
 		m_InspectorUI.inspectorListView.OnScrollEnded();
+	}
+
+	void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	{
+		m_WorkspaceUI.topHighlight.visible = true;
+	}
+
+	void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	{
+		if (m_Dragging == false)
+			m_WorkspaceUI.topHighlight.visible = false;
 	}
 
 	void Scroll(HandleEventData eventData)
 	{
 		var scrollOffset = m_ScrollOffsetStart - Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
 		m_InspectorUI.inspectorListView.scrollOffset = scrollOffset;
-	}
-
-	void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-	{
-		setHighlight(handle.gameObject, true);
-	}
-
-	void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-	{
-		setHighlight(handle.gameObject, false);
 	}
 
 	public void OnSelectionChanged()
@@ -263,8 +270,6 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 		var inspectorPanel = m_InspectorUI.inspectorPanel;
 		inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
 		inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
-
-		m_InspectorUI.highlight.transform.parent.transform.localScale = new Vector3(size.x, 1f, size.z);
 	}
 
 	bool GetIsLocked()

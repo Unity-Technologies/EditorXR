@@ -128,13 +128,14 @@ namespace UnityEngine.VR.Workspaces
 		Transform m_BackResizeIconsContainer;
 
 		[SerializeField]
-		WorkspaceHighlight m_TopHighlight;
-
-		[SerializeField]
 		Transform m_TopHighlightContainer;
 
 		[SerializeField]
 		WorkspaceHighlight m_FrontHighlight;
+
+		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
+		[SerializeField]
+		WorkspaceHighlight m_TopHighlight;
 
 		public bool dynamicFaceAdjustment { get; set; }
 

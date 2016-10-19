@@ -15,8 +15,4 @@ public class InspectorUI : MonoBehaviour
 	public RectTransform inspectorPanel { get { return m_InspectorPanel; } }
 	[SerializeField]
 	RectTransform m_InspectorPanel;
-
-	public WorkspaceHighlight highlight { get { return m_highlight; } }
-	[SerializeField]
-	WorkspaceHighlight m_highlight;
 }
