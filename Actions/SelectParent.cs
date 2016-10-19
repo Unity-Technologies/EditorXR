@@ -2,9 +2,13 @@
 
 namespace UnityEngine.VR.Actions
 {
-	[ActionMenuItem("SelectParent", "Assets/EditorVR/Actions/Icons/SelectParentIcon.png", ActionMenuItemAttribute.kDefaultActionSectionName, 8)]
+	[ActionMenuItem("SelectParent", ActionMenuItemAttribute.kDefaultActionSectionName, 8)]
 	public class SelectParent : MonoBehaviour, IAction
 	{
+		public Sprite icon { get { return m_Icon; } }
+		[SerializeField]
+		private Sprite m_Icon;
+
 		public bool ExecuteAction()
 		{
 			var go = Selection.activeGameObject;

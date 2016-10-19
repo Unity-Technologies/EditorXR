@@ -3,9 +3,13 @@ using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Actions
 {
-	[ActionMenuItem("Clone", "Assets/EditorVR/Actions/Icons/CloneIcon.png", ActionMenuItemAttribute.kDefaultActionSectionName, 3)]
+	[ActionMenuItem("Clone", ActionMenuItemAttribute.kDefaultActionSectionName, 3)]
 	public class Clone : MonoBehaviour, IAction
 	{
+		public Sprite icon { get { return m_Icon; } }
+		[SerializeField]
+		private Sprite m_Icon;
+
 		public bool ExecuteAction()
 		{
 			const float range = 4f;

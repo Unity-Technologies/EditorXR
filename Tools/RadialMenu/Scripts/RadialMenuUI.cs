@@ -15,6 +15,9 @@ namespace UnityEngine.VR.Menus
 	public class RadialMenuUI : MonoBehaviour
 	{
 		[SerializeField]
+		private Sprite m_MissingActionIcon;
+
+		[SerializeField]
 		private Image m_SlotsMask;
 
 		[SerializeField]
@@ -58,6 +61,7 @@ namespace UnityEngine.VR.Menus
 					StopCoroutine(ref m_ShowCoroutine);
 					StopCoroutine(ref m_HideCoroutine);
 
+					gameObject.SetActive(true);
 					if (value && actions.Count > 0)
 						m_ShowCoroutine = StartCoroutine(AnimateShow());
 					else if (m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
@@ -229,7 +233,7 @@ namespace UnityEngine.VR.Menus
 				var action = m_Actions[i].action;
 				var slot = m_RadialMenuSlots[i];
 				slot.gradientPair = gradientPair;
-				slot.iconSprite = m_Actions[i].icon;
+				slot.icon = action.icon ?? m_MissingActionIcon;
 
 				slot.button.onClick.RemoveAllListeners();
 				slot.button.onClick.AddListener(() =>
@@ -297,6 +301,7 @@ namespace UnityEngine.VR.Menus
 			}
 
 			m_SlotsMask.gameObject.SetActive(false);
+			gameObject.SetActive(false);
 			m_HideCoroutine = null;
 		}
 

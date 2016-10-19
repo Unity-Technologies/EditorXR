@@ -1,8 +1,12 @@
 ﻿namespace UnityEngine.VR.Actions
 {
-	[ActionMenuItem("Paste", "Assets/EditorVR/Actions/Icons/PasteIcon.png", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
+	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
 	public class Paste : MonoBehaviour, IAction
 	{
+		public Sprite icon { get { return m_Icon; } }
+		[SerializeField]
+		private Sprite m_Icon;
+
 		public static Object buffer { get; set; }
 
 		public bool ExecuteAction()

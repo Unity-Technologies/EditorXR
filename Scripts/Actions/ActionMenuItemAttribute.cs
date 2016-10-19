@@ -11,19 +11,9 @@
 		public const string kDefaultActionSectionName = "DefaultActions";
 
 		/// <summary>
-		/// The icon path utilized if no custom iconResourcePath is defined
-		/// </summary>
-		private static readonly string kMissingIconResourcePath = "Assets/EditorVR/Actions/Icons/MissingIcon";
-
-		/// <summary>
 		/// The name of this action
 		/// </summary>
 		public string name;
-
-		/// <summary>
-		/// This action's icon resource file path
-		/// </summary>
-		public string iconResourcePath;
 
 		/// <summary>
 		/// Name of section this action should be associated with
@@ -39,13 +29,11 @@
 		/// Construct this action's attribute
 		/// </summary>
 		/// <param name="name">The name of this action</param>
-		/// <param name="iconResourcePath">The icon resource path for this action</param>
 		/// <param name="categoryName">The name of the category in which this action should reside</param>
-		/// <param name="position">The numeric position of this action within the section it resides</param>
-		public ActionMenuItemAttribute(string name, string iconResourcePath, string categoryName = null, int priority = -1)
+		/// <param name="priority">The numeric position of this action within the section it resides</param>
+		public ActionMenuItemAttribute(string name, string categoryName = null, int priority = -1)
 		{
 			this.name = name;
-			this.iconResourcePath = !string.IsNullOrEmpty(categoryName) ? iconResourcePath : kMissingIconResourcePath; // if no sectionName is passed in, assign the missing icon resource path
 			this.categoryName = categoryName;
 			this.priority = priority;
 		}

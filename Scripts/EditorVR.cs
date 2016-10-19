@@ -627,7 +627,6 @@ public class EditorVR : MonoBehaviour
 				var actionMenuData = new ActionMenuData()
 				{
 					name = attribute.name,
-					icon = AssetDatabase.LoadAssetAtPath<Sprite>(attribute.iconResourcePath),
 					sectionName = attribute.categoryName,
 					priority = attribute.priority,
 					action = action,

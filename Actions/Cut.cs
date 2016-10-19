@@ -3,9 +3,13 @@ using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Actions
 {
-	[ActionMenuItem("Cut", "Assets/EditorVR/Actions/Icons/CutIcon.png", ActionMenuItemAttribute.kDefaultActionSectionName, 4)]
+	[ActionMenuItem("Cut", ActionMenuItemAttribute.kDefaultActionSectionName, 4)]
 	public class Cut : MonoBehaviour, IAction
 	{
+		public Sprite icon { get { return m_Icon; } }
+		[SerializeField]
+		private Sprite m_Icon;
+
 		public bool ExecuteAction()
 		{
 			//bug (case 451825)

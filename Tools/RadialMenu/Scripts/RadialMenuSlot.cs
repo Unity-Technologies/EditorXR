@@ -77,14 +77,9 @@ namespace UnityEngine.VR.Menus
 			set { m_VisibleLocalRotation = value; }
 		}
 
-		private Sprite m_IconSprite;
-		public Sprite iconSprite
+		public Sprite icon
 		{
-			set
-			{
-				m_IconSprite = value;
-				m_Icon.sprite = m_IconSprite;
-			}
+			set { m_Icon.sprite = value; }
 		}
 
 		private bool m_Pressed;

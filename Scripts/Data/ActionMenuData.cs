@@ -20,11 +20,6 @@ namespace UnityEngine.VR.Actions
 		public int priority { get; set; }
 
 		/// <summary>
-		/// The icon representing this Action that can be displayed in menus
-		/// </summary>
-		public Sprite icon { get; set; }
-
-		/// <summary>
 		/// An instance of the Action that can be used for execution
 		/// </summary>
 		public IAction action { get; set; }
