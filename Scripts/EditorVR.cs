@@ -629,7 +629,7 @@ public class EditorVR : MonoBehaviour
 					name = attribute.name,
 					icon = AssetDatabase.LoadAssetAtPath<Sprite>(attribute.iconResourcePath),
 					sectionName = attribute.categoryName,
-					indexPosition = attribute.indexPosition,
+					priority = attribute.priority,
 					action = action,
 				};
 
@@ -639,7 +639,7 @@ public class EditorVR : MonoBehaviour
 			m_AllActions.Add(action);
 		}
 
-		m_MenuActions.Sort((x,y) => y.indexPosition.CompareTo(x.indexPosition));
+		m_MenuActions.Sort((x,y) => y.priority.CompareTo(x.priority));
 	}
 
 	private void CreateAllProxies()

@@ -17,7 +17,7 @@ namespace UnityEngine.VR.Actions
 		/// <summary>
 		/// The numeric position of this action within its section
 		/// </summary>
-		public int indexPosition { get; set; }
+		public int priority { get; set; }
 
 		/// <summary>
 		/// The icon representing this Action that can be displayed in menus

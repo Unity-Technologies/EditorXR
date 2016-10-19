@@ -33,7 +33,7 @@
 		/// <summary>
 		/// Position/index/order of this action amidst other actions with the same category name
 		/// </summary>
-		public int indexPosition;
+		public int priority;
 
 		/// <summary>
 		/// Construct this action's attribute
@@ -42,12 +42,12 @@
 		/// <param name="iconResourcePath">The icon resource path for this action</param>
 		/// <param name="categoryName">The name of the category in which this action should reside</param>
 		/// <param name="position">The numeric position of this action within the section it resides</param>
-		public ActionMenuItemAttribute(string name, string iconResourcePath, string categoryName = null, int indexPosition = -1)
+		public ActionMenuItemAttribute(string name, string iconResourcePath, string categoryName = null, int priority = -1)
 		{
 			this.name = name;
 			this.iconResourcePath = !string.IsNullOrEmpty(categoryName) ? iconResourcePath : kMissingIconResourcePath; // if no sectionName is passed in, assign the missing icon resource path
 			this.categoryName = categoryName;
-			this.indexPosition = indexPosition;
+			this.priority = priority;
 		}
 	}
 }

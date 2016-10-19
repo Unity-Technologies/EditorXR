@@ -12,7 +12,7 @@ using GradientPair = UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair
 
 namespace UnityEngine.VR.Menus
 {
-	public class RadialMenuUI : MonoBehaviour, IInstantiateUI
+	public class RadialMenuUI : MonoBehaviour
 	{
 		[SerializeField]
 		private Image m_SlotsMask;
@@ -29,8 +29,6 @@ namespace UnityEngine.VR.Menus
 		private Coroutine m_ShowCoroutine;
 		private Coroutine m_HideCoroutine;
 		private Coroutine m_SlotsRevealCoroutine;
-
-		public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
 		public Transform alternateMenuOrigin
 		{
@@ -78,7 +76,7 @@ namespace UnityEngine.VR.Menus
 				{
 					m_Actions = value
 						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.kDefaultActionSectionName)
-						.OrderByDescending(a => a.indexPosition)
+						.OrderByDescending(a => a.priority)
 						.ToList();
 
 					if (visible && actions.Count > 0)
