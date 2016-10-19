@@ -63,6 +63,7 @@ namespace UnityEngine.VR.Workspaces
 		private bool m_Vacuuming;
 		bool m_Moving;
 		Coroutine m_VisibilityCoroutine;
+		Coroutine m_ResetSizeCoroutine;
 
 		/// <summary>
 		/// Bounding box for entire workspace, including UI handles
@@ -117,6 +118,8 @@ namespace UnityEngine.VR.Workspaces
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
 			m_WorkspaceUI.closeClicked += OnCloseClicked;
 			m_WorkspaceUI.lockClicked += OnLockClicked;
+			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
+
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
@@ -287,6 +290,13 @@ namespace UnityEngine.VR.Workspaces
 			m_DragLocked = !m_DragLocked;
 		}
 
+		public virtual void OnResetClicked()
+		{
+			StopCoroutine(ref m_ResetSizeCoroutine);
+
+			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
+		}
+
 		private void UpdateBounds()
 		{
 			m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
@@ -374,6 +384,27 @@ namespace UnityEngine.VR.Workspaces
 				return;
 
 			m_WorkspaceUI.frontHighlightVisible = false;
+		}
+
+		IEnumerator AnimateResetSize()
+		{
+			var currentBoundsSize = contentBounds.size;
+			var currentBoundsCenter = contentBounds.center;
+			var targetBoundsSize = m_CustomStartingBounds != null ? m_CustomStartingBounds.Value : minBounds;
+			var targetBoundsCenter = Vector3.zero;
+			var smoothVelocitySize = Vector3.zero;
+			var smoothVelocityCenter = Vector3.zero;
+			var currentDuration = 0f;
+			const float kTargetDuration = 0.75f;
+			while (currentDuration < kTargetDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				currentBoundsCenter = U.Math.SmoothDamp(currentBoundsCenter, targetBoundsCenter, ref smoothVelocityCenter, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBoundsSize = U.Math.SmoothDamp(currentBoundsSize, targetBoundsSize, ref smoothVelocitySize, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				contentBounds = new Bounds(currentBoundsCenter, currentBoundsSize);
+				OnBoundsChanged();
+				yield return null;
+			}
 		}
 	}
 }

@@ -12,6 +12,7 @@ namespace UnityEngine.VR.Workspaces
 	{
 		public event Action closeClicked = delegate { };
 		public event Action lockClicked = delegate { };
+		public event Action resetSizeClicked = delegate { };
 
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kThinFrameBlendShapeIndex = 3;
@@ -402,6 +403,11 @@ namespace UnityEngine.VR.Workspaces
 		public void LockClick()
 		{
 			lockClicked();
+		}
+
+		public void ResetSizeClick()
+		{
+			resetSizeClicked();
 		}
 
 		IEnumerator IncreaseFrameThickness()
