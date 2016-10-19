@@ -2796,7 +2796,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Sprite: {fileID: 21300000, guid: bda51dfe062f45741aae4c4ac8bb3cef, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f5cf11a93d148a847986732c04258f7b, type: 3}
   m_Type: 3
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -2850,6 +2850,7 @@ MonoBehaviour:
   m_IconContainer: {fileID: 224000011275249326}
   m_Button: {fileID: 114000012007736194}
   m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_ClickedAlternateIconSprite: {fileID: 0}
   m_HighlightItems:
   - {fileID: 114000012475626578}
 --- !u!114 &114000012716726728
@@ -3146,6 +3147,8 @@ MonoBehaviour:
   m_IconContainer: {fileID: 224000012811710988}
   m_Button: {fileID: 114000011807431208}
   m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_ClickedAlternateIconSprite: {fileID: 21300000, guid: bda51dfe062f45741aae4c4ac8bb3cef,
+    type: 3}
   m_HighlightItems:
   - {fileID: 114000012576664828}
 --- !u!114 &114000013401164326
@@ -3296,6 +3299,7 @@ MonoBehaviour:
   m_IconContainer: {fileID: 224000012458543974}
   m_Button: {fileID: 114000010091343298}
   m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_ClickedAlternateIconSprite: {fileID: 0}
   m_HighlightItems:
   - {fileID: 114000012181704926}
 --- !u!114 &114000013779748066
