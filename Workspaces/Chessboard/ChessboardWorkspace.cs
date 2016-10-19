@@ -112,14 +112,15 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 	protected override void OnBoundsChanged()
 	{
 		m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
-		m_MiniWorld.localBounds = contentBounds;
-		
-		m_ChessboardUI.boundsCube.transform.localScale = contentBounds.size;
+		var correctedBounds = new Bounds(contentBounds.center, new Vector3(contentBounds.size.x, contentBounds.size.y, contentBounds.size.z - 0.14f));
+		m_MiniWorld.localBounds = correctedBounds;
 
-		m_ChessboardUI.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
+		m_ChessboardUI.boundsCube.transform.localScale = correctedBounds.size;
+
+		m_ChessboardUI.grid.transform.localScale = new Vector3(correctedBounds.size.x, correctedBounds.size.z, 1);
 
 		var controlBox = m_ChessboardUI.panZoomHandle;
-		controlBox.transform.localScale = new Vector3(contentBounds.size.x, controlBox.transform.localScale.y, contentBounds.size.z);
+		controlBox.transform.localScale = new Vector3(correctedBounds.size.x, controlBox.transform.localScale.y, correctedBounds.size.z);
 	}
 
 	private void OnSliding(float value)
