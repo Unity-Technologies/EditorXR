@@ -257,7 +257,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 		var inspectorListView = m_InspectorUI.inspectorListView;
 		var bounds = contentBounds;
 		size.y = float.MaxValue; // Add height for dropdowns
-		size.z -= 0.15f;
+		size.z -= 0.15f; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
 		bounds.size = size;
 		inspectorListView.bounds = bounds;
 
