@@ -30,6 +30,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	private readonly List<RayData> m_RayData = new List<RayData>(2);
 	private float m_ScaleStartDistance;
+	bool m_Dragging;
 
 	private class RayData
 	{
@@ -46,7 +47,8 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
-		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.27f);
+		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.25f);
+		m_CustomStartingBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.5f);
 
 		base.Setup();
 
@@ -131,6 +133,9 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	private void OnControlDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		m_Dragging = true;
+		m_WorkspaceUI.topHighlight.visible = true;
+
 		if (m_RayData.Count == 1) // On introduction of second ray
 		{
 			m_ScaleStartDistance = (m_RayData[0].rayOrigin.position - eventData.rayOrigin.position).magnitude;
@@ -172,17 +177,21 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	private void OnControlDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		m_Dragging = false;
+		m_WorkspaceUI.topHighlight.visible = false;
+
 		m_RayData.RemoveAll(rayData => rayData.rayOrigin.Equals(eventData.rayOrigin));
 	}
 
 	private void OnControlHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		setHighlight(handle.gameObject, true);
+		m_WorkspaceUI.topHighlight.visible = true;
 	}
 
 	private void OnControlHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		setHighlight(handle.gameObject, false);
+		if (m_Dragging == false)
+			m_WorkspaceUI.topHighlight.visible = false;
 	}
 
 	protected override void OnDestroy()
