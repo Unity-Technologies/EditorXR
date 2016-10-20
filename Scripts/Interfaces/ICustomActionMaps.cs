@@ -3,7 +3,7 @@
 namespace UnityEngine.VR.Tools
 {
 	/// <summary>
-	/// Decorates tools which supply their own (singular) ActionMap
+	/// Decorates tools which supply their own (multiple) ActionMaps
 	/// </summary>
 	public interface ICustomActionMaps
 	{

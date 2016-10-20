@@ -135,7 +135,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 					continue;
 
 				var directSelectInput = (DirectSelectInput)selection.input;
-
 				if (directSelectInput.select.wasJustPressed)
 				{
 					if (selection.gameObject.tag == EditorVR.kVRPlayerTag)
@@ -208,6 +207,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 					m_WasScaling = false;
 				}
+
 				if (hasLeft && leftHeld)
 				{
 					var rayOrigin = leftData.rayOrigin;

@@ -158,7 +158,8 @@
 			public static Quaternion YawConstrainRotation(Quaternion rotation)
 			{
 				var euler = rotation.eulerAngles;
-				euler.x = euler.z = 0;
+				euler.x = 0;
+				euler.z = 0;
 				return Quaternion.Euler(euler);
 			}
 		}

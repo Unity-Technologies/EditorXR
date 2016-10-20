@@ -47,10 +47,10 @@ public class EditorVR : MonoBehaviour
 	private ActionMap m_StandardToolActionMap;
 
 	[SerializeField]
-	private ActionMap m_DirectSelectActionMap;
+	ActionMap m_DirectSelectActionMap;
 
 	[SerializeField]
-	private DefaultProxyRay m_ProxyRayPrefab;
+	DefaultProxyRay m_ProxyRayPrefab;
 
 	[SerializeField]
 	GameObject m_MiniWorldRayPrefab;
@@ -262,6 +262,7 @@ public class EditorVR : MonoBehaviour
 		// Wait for valid tracking in order to place workspaces based on head position
 		while (!m_HMDReady)
 			yield return null;
+
 		CreateDefaultWorkspaces();
 
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
