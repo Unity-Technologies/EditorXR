@@ -30,6 +30,10 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	public override void Setup()
 	{
+		// Initial bounds must be set before the base.Setup() is called
+		minBounds = new Vector3(0.3f, kMinBounds.y, 0.3f);
+		m_CustomStartingBounds = new Vector3(0.35f, kMinBounds.y, 0.6f);
+
 		base.Setup();
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_InspectorUI = contentPrefab.GetComponent<InspectorUI>();
@@ -51,8 +55,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 		scrollHandle.hoverStarted += OnScrollHoverStarted;
 		scrollHandle.hoverEnded += OnScrollHoverEnded;
 
-		minBounds = kDefaultBounds;
-		contentBounds = new Bounds(Vector3.zero, kDefaultBounds);
+		contentBounds = new Bounds(Vector3.zero, m_CustomStartingBounds.Value);
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
