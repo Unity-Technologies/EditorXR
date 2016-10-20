@@ -33,6 +33,8 @@ public class EditorVR : MonoBehaviour
 	private const int kMaxWorkspacePlacementAttempts = 20;
 	private const float kWorkspaceVacuumEnableDistance = 1f; // Disable vacuum bounds if workspace is close to player
 
+	const float kMiniWorldManipulatorScale = 0.2f;
+
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
 	[SerializeField]
@@ -117,6 +119,9 @@ public class EditorVR : MonoBehaviour
 	private event Action m_SelectionChanged;
 
 	bool m_HMDReady;
+
+	StandardManipulator m_Manipulator;
+	Vector3 m_OriginalManipulatorScale;
 
 	private void Awake()
 	{
@@ -573,6 +578,10 @@ public class EditorVR : MonoBehaviour
 		m_InputModule.rayExited += m_DragAndDropModule.OnRayExited;
 		m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
 		m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
+
+		m_InputModule.preProcessRaycastSources = PreProcessRaycastSources;
+		m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
+		m_InputModule.postProcessRaycastSources = PostProcessRaycastSources;
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
@@ -1195,6 +1204,9 @@ public class EditorVR : MonoBehaviour
 
 			m_MiniWorlds.Add(miniWorld);
 
+			miniWorld.preProcessRender = PreProcessMiniWorldRender;
+			miniWorld.postProcessRender = PostProcessMiniWorldRender;
+
 			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 			{
 				// Create MiniWorld rayOrigin
@@ -1373,6 +1385,49 @@ public class EditorVR : MonoBehaviour
 				from origin in proxy.rayOrigins
 					where origin.Value.Equals(rayOrigin)
 						select proxy.previewOrigins[origin.Key]).FirstOrDefault();
+	}
+
+	bool PreProcessRaycastSources()
+	{
+		if (!m_Manipulator)
+			m_Manipulator = GetComponentInChildren<StandardManipulator>();
+
+		if (m_Manipulator)
+			m_OriginalManipulatorScale = m_Manipulator.transform.localScale;
+
+		return true;
+	}
+
+	bool PreProcessRaycastSource(Transform rayOrigin)
+	{
+		if (m_Manipulator)
+		{
+			MiniWorldRay ray;
+			if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
+				m_Manipulator.transform.localScale = ray.miniWorld.miniWorldScale * kMiniWorldManipulatorScale;
+			else
+				m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
+		}
+		return true;
+	}
+
+	void PostProcessRaycastSources()
+	{
+		if (m_Manipulator)
+			m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
+	}
+
+	bool PreProcessMiniWorldRender(IMiniWorld miniWorld)
+	{
+		if (m_Manipulator)
+			m_Manipulator.transform.localScale = miniWorld.miniWorldScale * kMiniWorldManipulatorScale;
+		return true;
+	}
+
+	void PostProcessMiniWorldRender(IMiniWorld miniWorld)
+	{
+		if (m_Manipulator)
+			m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
 	}
 
 #if UNITY_EDITOR

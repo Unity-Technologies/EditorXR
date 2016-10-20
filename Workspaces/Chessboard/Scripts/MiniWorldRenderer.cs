@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.VR.Utilities;
 
 public class MiniWorldRenderer : MonoBehaviour
@@ -9,6 +10,9 @@ public class MiniWorldRenderer : MonoBehaviour
 
 	public MiniWorld miniWorld { private get; set; }
 	public LayerMask cullingMask { private get; set; }
+
+	public Func<bool> preProcessRender { private get; set; }
+	public Action postProcessRender { private get; set; }
 
 	private void OnEnable()
 	{
@@ -49,7 +53,11 @@ public class MiniWorldRenderer : MonoBehaviour
 				Shader shader = Shader.Find("Custom/Custom Clip Planes");
 				Shader.SetGlobalVector("_GlobalClipCenter", miniWorld.referenceBounds.center);
 				Shader.SetGlobalVector("_GlobalClipExtents", miniWorld.referenceBounds.extents);
-				m_MiniCamera.RenderWithShader(shader, string.Empty);
+
+				if(preProcessRender())
+					m_MiniCamera.RenderWithShader(shader, string.Empty);
+
+				postProcessRender();
 			}
 
 			m_RenderingMiniWorlds = false;
