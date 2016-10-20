@@ -38,13 +38,13 @@ namespace UnityEngine.VR.Menus
 			get { return m_AlternateMenuOrigin; }
 			set
 			{
-				if (m_AlternateMenuOrigin != value)
-				{
-					m_AlternateMenuOrigin = value;
-					transform.SetParent(m_AlternateMenuOrigin);
-					transform.localPosition = Vector3.zero;
-					transform.localRotation = Quaternion.identity;
-				}
+				if (m_AlternateMenuOrigin == value)
+					return;
+
+				m_AlternateMenuOrigin = value;
+				transform.SetParent(m_AlternateMenuOrigin);
+				transform.localPosition = Vector3.zero;
+				transform.localRotation = Quaternion.identity;
 			}
 		}
 		private Transform m_AlternateMenuOrigin;
@@ -54,19 +54,19 @@ namespace UnityEngine.VR.Menus
 			get { return m_Visible; }
 			set
 			{
-				if (m_Visible != value)
-				{
-					m_Visible = value;
+				if (m_Visible == value)
+					return;
 
-					StopCoroutine(ref m_ShowCoroutine);
-					StopCoroutine(ref m_HideCoroutine);
+				m_Visible = value;
 
-					gameObject.SetActive(true);
-					if (value && actions.Count > 0)
-						m_ShowCoroutine = StartCoroutine(AnimateShow());
-					else if (m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
-						m_HideCoroutine = StartCoroutine(AnimateHide());
-				}
+				StopCoroutine(ref m_ShowCoroutine);
+				StopCoroutine(ref m_HideCoroutine);
+
+				gameObject.SetActive(true);
+				if (value && actions.Count > 0)
+					m_ShowCoroutine = StartCoroutine(AnimateShow());
+				else if (m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
+					m_HideCoroutine = StartCoroutine(AnimateHide());
 			}
 		}
 		private bool m_Visible;
@@ -228,8 +228,12 @@ namespace UnityEngine.VR.Menus
 			m_SlotsMask.gameObject.SetActive(true);
 
 			GradientPair gradientPair = UnityBrandColorScheme.GetRandomGradient();
-			for (int i = 0; i < m_Actions.Count && i < kSlotCount; ++i) // prevent more actions being added beyond the max slot count
+			for (int i = 0; i < m_Actions.Count; ++i)
 			{
+				// prevent more actions being added beyond the max slot count
+				if (i >= kSlotCount)
+					break;
+
 				var action = m_Actions[i].action;
 				var slot = m_RadialMenuSlots[i];
 				slot.gradientPair = gradientPair;
@@ -238,7 +242,12 @@ namespace UnityEngine.VR.Menus
 				slot.button.onClick.RemoveAllListeners();
 				slot.button.onClick.AddListener(() =>
 				{
-					action.ExecuteAction();
+					// Having to grab the index because of incorrect closure support
+					var index = m_RadialMenuSlots.IndexOf(m_HighlightedButton);
+					var selectedSlot = m_RadialMenuSlots[index];
+					var buttonAction = m_Actions[index].action;
+					buttonAction.ExecuteAction();
+					selectedSlot.icon = buttonAction.icon ?? m_MissingActionIcon;
 				});
 			}
 
@@ -308,13 +317,7 @@ namespace UnityEngine.VR.Menus
 		public void SelectionOccurred()
 		{
 			if (m_HighlightedButton != null)
-			{
-				for (int i = 0; i < kSlotCount; ++i)
-				{
-					if (m_HighlightedButton == m_RadialMenuSlots[i])
-						m_Actions[i].action.ExecuteAction();
-				}
-			}
+				m_HighlightedButton.button.onClick.Invoke();
 		}
 	}
 }

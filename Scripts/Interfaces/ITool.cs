@@ -1,6 +1,4 @@
-﻿using UnityEngine.InputNew;
-
-namespace UnityEngine.VR.Tools
+﻿namespace UnityEngine.VR.Tools
 {
 	public interface ITool
 	{

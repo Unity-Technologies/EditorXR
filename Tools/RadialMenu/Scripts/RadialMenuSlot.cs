@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Menus
 {
@@ -93,12 +94,10 @@ namespace UnityEngine.VR.Menus
 				{
 					m_Pressed = value;
 
-					if (m_IconEndHighlightCoroutine != null)
-						StopCoroutine(m_IconEndHighlightCoroutine);
+					StopCoroutine(ref m_IconEndHighlightCoroutine);
 
 					// Don't begin a new icon highlight coroutine; Allow the currently running coroutine to finish itself according to the m_Highlighted value
-					if (m_IconHighlightCoroutine != null)
-						StopCoroutine(m_IconHighlightCoroutine);
+					StopCoroutine(ref m_IconHighlightCoroutine);
 
 					m_IconHighlightCoroutine = StartCoroutine(IconHighlightAnimatedShow(true));
 				}
@@ -113,8 +112,7 @@ namespace UnityEngine.VR.Menus
 				if (m_Highlighted == value)
 					return;
 
-				if (m_IconEndHighlightCoroutine != null)
-					StopCoroutine(m_IconEndHighlightCoroutine);
+				StopCoroutine(ref m_IconEndHighlightCoroutine);
 
 				m_Highlighted = value;
 				if (m_Highlighted)
@@ -157,31 +155,22 @@ namespace UnityEngine.VR.Menus
 
 		public void Show()
 		{
-			gameObject.SetActive(true);
-
 			m_MenuInset.localScale = m_HiddenInsetLocalScale;
 			m_Pressed = false;
 			m_Highlighted = false;
 
-			if (m_FadeInCoroutine != null)
-				StopCoroutine(m_FadeInCoroutine);
-
-			if (m_FadeOutCoroutine != null)
-				StopCoroutine(m_FadeOutCoroutine);
+			StopCoroutine(ref m_FadeInCoroutine);
+			StopCoroutine(ref m_FadeOutCoroutine);
 
 			m_FadeInCoroutine = StartCoroutine(AnimateShow());
 		}
 
 		public void Hide()
 		{
-			if (gameObject.activeInHierarchy)
-			{
-				if (m_FadeInCoroutine != null)
-					StopCoroutine(m_FadeInCoroutine); // stop any fade in visuals
+			StopCoroutine(ref m_FadeInCoroutine); // stop any fade in visuals
 
-				if (m_FadeOutCoroutine == null)
-					m_FadeOutCoroutine = StartCoroutine(AnimateHide()); // perform fade if not already performing
-			}
+			if (m_FadeOutCoroutine == null)
+				m_FadeOutCoroutine = StartCoroutine(AnimateHide()); // perform fade if not already performing
 		}
 
 		private void CorrectIconRotation()
@@ -269,8 +258,6 @@ namespace UnityEngine.VR.Menus
 				CorrectIconRotation();
 				yield return null;
 			}
-
-			gameObject.SetActive(false);
 
 			FadeOutCleanup();
 			m_FadeOutCoroutine = null;

@@ -25,7 +25,18 @@ namespace UnityEngine.VR.Menus
 		[SerializeField]
 		private RadialMenuInput m_RadialMenuInput;
 
-		public List<ActionMenuData> menuActions { private get; set; }
+		public List<ActionMenuData> menuActions
+		{
+			private get { return m_MenuActions; }
+			set
+			{
+				m_MenuActions = value;
+
+				if (m_RadialMenuUI)
+					m_RadialMenuUI.actions = value;
+			}
+		}
+		private List<ActionMenuData> m_MenuActions;
 
 		public Node? node { get; set; }
 		public Action setup { get {return Setup; } }
@@ -40,26 +51,26 @@ namespace UnityEngine.VR.Menus
 
 		public Func<GameObject, GameObject> instantiateUI { get; set; }
 
-		private bool m_SelectMenuItem;
 		public bool selectMenuItem
 		{
 			get { return m_SelectMenuItem; }
 
 			set
 			{
-				if (m_SelectMenuItem != value)
-				{
-					m_SelectMenuItem = value;
+				if (m_SelectMenuItem == value)
+					return;
 
-					if (m_SelectMenuItem == false)
-					{
-						m_RadialMenuUI.SelectionOccurred();
-						if(itemSelected != null)
-							itemSelected(node);
-					}
+				m_SelectMenuItem = value;
+
+				if (m_SelectMenuItem)
+				{
+					m_RadialMenuUI.SelectionOccurred();
+					if(itemSelected != null)
+						itemSelected(node);
 				}
 			}
 		}
+		private bool m_SelectMenuItem;
 
 		public Transform menuOrigin { get; set; }
 

@@ -88,7 +88,7 @@ public class EditorVR : MonoBehaviour
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
 	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
-	private readonly List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
+	private List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
 	private List<Type> m_AllTools;
 	private List<IAction> m_AllActions;
 	List<Type> m_MainMenuTools;
@@ -619,6 +619,10 @@ public class EditorVR : MonoBehaviour
 		m_AllActions = new List<IAction>();
 		foreach (Type actionType in actionTypes)
 		{
+			// Don't treat vanilla actions or tool actions as first class actions
+			if (actionType.IsNested || !typeof(MonoBehaviour).IsAssignableFrom(actionType))
+				continue;
+
 			var action = U.Object.AddComponent(actionType, gameObject) as IAction;
 			var attribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
 
@@ -1111,23 +1115,41 @@ public class EditorVR : MonoBehaviour
 		if (selectionChanged != null)
 			m_SelectionChanged += selectionChanged.OnSelectionChanged;
 
-		var mainMenuComponent = obj as IMainMenu;
-		if (mainMenuComponent != null)
+		var toolActions = obj as IToolActions;
+		if (toolActions != null)
 		{
-			mainMenuComponent.menuTools = m_MainMenuTools;
-			mainMenuComponent.selectTool = SelectTool;
-			mainMenuComponent.menuWorkspaces = m_AllWorkspaceTypes.ToList();
-			mainMenuComponent.createWorkspace = CreateWorkspace;
-			mainMenuComponent.node = GetDeviceNode(device);
-			mainMenuComponent.setup();
+			var actions = toolActions.toolActions;
+			foreach (var action in actions)
+			{
+				var actionMenuData = new ActionMenuData()
+				{
+					name = action.GetType().Name,
+					sectionName = ActionMenuItemAttribute.kDefaultActionSectionName,
+					priority = int.MaxValue,
+					action = action,
+				};
+				m_MenuActions.Add(actionMenuData);
+			}
+			UpdateAlternateMenuActions();
 		}
 
-		var alternateMenuComponent = obj as IAlternateMenu;
-		if (alternateMenuComponent != null)
+		var mainMenu = obj as IMainMenu;
+		if (mainMenu != null)
 		{
-			alternateMenuComponent.menuActions = m_MenuActions;
-			alternateMenuComponent.node = GetDeviceNode(device);
-			alternateMenuComponent.setup();
+			mainMenu.menuTools = m_MainMenuTools;
+			mainMenu.selectTool = SelectTool;
+			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
+			mainMenu.createWorkspace = CreateWorkspace;
+			mainMenu.node = GetDeviceNode(device);
+			mainMenu.setup();
+		}
+
+		var alternateMenu = obj as IAlternateMenu;
+		if (alternateMenu != null)
+		{
+			alternateMenu.menuActions = m_MenuActions;
+			alternateMenu.node = GetDeviceNode(device);
+			alternateMenu.setup();
 		}
 	}
 
@@ -1136,6 +1158,24 @@ public class EditorVR : MonoBehaviour
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
 			m_SelectionChanged -= selectionChanged.OnSelectionChanged;
+
+		var toolActions = obj as IToolActions;
+		if (toolActions != null)
+		{
+			var actions = toolActions.toolActions;
+			m_MenuActions = m_MenuActions.Where(a => !actions.Contains(a.action)).ToList();
+			UpdateAlternateMenuActions();
+		}
+	}
+
+	private void UpdateAlternateMenuActions()
+	{
+		foreach (var deviceData in m_DeviceData.Values)
+		{
+			var altMenu = deviceData.alternateMenu;
+			if (altMenu != null)
+				altMenu.menuActions = m_MenuActions;
+		}
 	}
 
 	// NOTE: This is for the length of the pointer object, not the length of the ray coming out of the pointer

@@ -1,13 +1,37 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Actions;
 using UnityEngine.VR.Tools;
 
 [MainMenuItem("Cube", "Create", "Create cubes in the scene")]
-public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay
-{	
+public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IToolActions
+{
+	private class CubeToolAction : IAction
+	{
+		public Sprite icon { get; internal set; }
+		public bool ExecuteAction()
+		{
+			return true;
+		}
+	}
+
+	[SerializeField]
+	private Sprite m_Icon;
+
+	private CubeToolAction m_CubeToolAction = new CubeToolAction();
+
+	public List<IAction> toolActions { get; private set; }
 	public Transform rayOrigin { get; set; }
 	public Standard standardInput { get; set; }
-    
+
+	private void Awake()
+	{
+		m_CubeToolAction.icon = m_Icon;
+		toolActions = new List<IAction>() { m_CubeToolAction };
+	}
+
 	private void Update()
 	{
 		if (standardInput.action.wasJustPressed)
@@ -17,5 +41,4 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay
 				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
 		}
 	}
-
 }
