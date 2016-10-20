@@ -13,11 +13,12 @@ public class CuboidLayout : UIBehaviour
 	[SerializeField]
 	RectTransform[] m_TargetHighlightTransforms;
 
+	[Header("Prefab Templates")]
 	[SerializeField]
 	GameObject m_CubePrefab;
 
 	[SerializeField]
-	GameObject m_HighlighCubePrefab;
+	GameObject m_HighlightCubePrefab;
 
 	Transform[] m_CubeTransforms;
 	Transform[] m_HighlightCubeTransforms;
@@ -35,7 +36,7 @@ public class CuboidLayout : UIBehaviour
 		m_HighlightCubeTransforms = new Transform[m_TargetHighlightTransforms.Length];
 		for (var i = 0; i < m_TargetHighlightTransforms.Length; i++)
 		{
-			var cube = Instantiate(m_HighlighCubePrefab).transform;
+			var cube = Instantiate(m_HighlightCubePrefab).transform;
 			cube.SetParent(m_TargetHighlightTransforms[i], false);
 			m_HighlightCubeTransforms[i] = cube;
 		}
