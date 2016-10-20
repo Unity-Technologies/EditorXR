@@ -262,19 +262,20 @@ namespace UnityEngine.VR.Workspaces
 
 			var destPosition = camera.position + cameraYaw * kVacuumOffset;
 			var destRotation = cameraYaw * kDefaultTilt;
-
 			var currentValue = 0f;
 			var currentVelocity = 0f;
+			var currentDuration = 0f;
 			const float kTargetValue = 1f;
-			const float kTargetValueOvershoot = 1.1f; // overshoot target value to compensate for smoothDamp not reaching target value
-
-			while (currentValue < kTargetValue)
+			const float kTargetDuration = 0.5f;
+			while (currentDuration < kTargetDuration)
 			{
-				currentValue = U.Math.SmoothDamp(currentValue, kTargetValueOvershoot, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.unscaledDeltaTime;
+				currentValue = U.Math.SmoothDamp(currentValue, kTargetValue, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				transform.position = Vector3.Lerp(startPosition, destPosition, currentValue);
 				transform.rotation = Quaternion.Lerp(startRotation, destRotation, currentValue);
 				yield return null;
 			}
+
 			m_Vacuuming = false;
 		}
 
