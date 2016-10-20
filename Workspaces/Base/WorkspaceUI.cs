@@ -31,7 +31,6 @@ namespace UnityEngine.VR.Workspaces
 		float m_BackHandleYLocalPosition;
 		float m_LeftHandleYLocalPosition;
 		float m_RightHandleYLocalPosition;
-		Material m_FrameGradientMaterial;
 		Vector3 m_FrontResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BackResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BaseFrontPanelRotation = Vector3.zero;
@@ -46,6 +45,8 @@ namespace UnityEngine.VR.Workspaces
 		Coroutine m_RotateFrontFaceForwardCoroutine;
 		Coroutine m_RotateFrontFaceBackwardCoroutine;
 		Coroutine m_FrameThicknessCoroutine;
+		Coroutine m_TopFaceVisibleCoroutine;
+		Material m_TopFaceMaterial;
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -169,6 +170,15 @@ namespace UnityEngine.VR.Workspaces
 
 				StopCoroutine(ref m_FrameThicknessCoroutine);
 				m_FrameThicknessCoroutine = value == false ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
+			}
+		}
+
+		public bool topFaceVisible
+		{
+			set
+			{
+				StopCoroutine(ref m_TopFaceVisibleCoroutine);
+				m_TopFaceVisibleCoroutine = value ? StartCoroutine(ShowTopFace()) : StartCoroutine(HideTopFace());
 			}
 		}
 
@@ -347,6 +357,8 @@ namespace UnityEngine.VR.Workspaces
 
 			if (m_TopPanelDividerOffset == null)
 				m_TopPanelDividerTransform.gameObject.SetActive(false);
+			// TODO: setup EVR instanced material support
+			m_TopFaceMaterial = m_Frame.sharedMaterials[1];
 		}
 
 		void Update()
@@ -450,6 +462,44 @@ namespace UnityEngine.VR.Workspaces
 			}
 
 			m_FrameThicknessCoroutine = null;
+		}
+
+		IEnumerator ShowTopFace()
+		{
+			const string kMaterialHighlightAlphaProperty = "_Alpha";
+			const float kTargetAlpha = 1f;
+			const float kTargetDuration = 0.35f;
+			var currentDuration = 0f;
+			var currentAlpha = m_TopFaceMaterial.GetFloat(kMaterialHighlightAlphaProperty);
+			var currentVelocity = 0f;
+			while (currentDuration < kTargetDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_TopFaceMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
+				yield return null;
+			}
+
+			m_TopFaceVisibleCoroutine = null;
+		}
+
+		IEnumerator HideTopFace()
+		{
+			const string kMaterialHighlightAlphaProperty = "_Alpha";
+			const float kTargetAlpha = 0f;
+			const float kTargetDuration = 0.2f;
+			var currentDuration = 0f;
+			var currentAlpha = m_TopFaceMaterial.GetFloat(kMaterialHighlightAlphaProperty);
+			var currentVelocity = 0f;
+			while (currentDuration < kTargetDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_TopFaceMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
+				yield return null;
+			}
+
+			m_TopFaceVisibleCoroutine = null;
 		}
 	}
 }
