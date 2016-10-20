@@ -104,7 +104,7 @@ namespace UnityEngine.VR.Workspaces
 				{
 					m_Pressed = value;
 
-					StopCoroutine(ref m_IconHighlightCoroutine);
+					this.StopCoroutine(ref m_IconHighlightCoroutine);
 
 					m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight(true));
 				}
@@ -121,12 +121,12 @@ namespace UnityEngine.VR.Workspaces
 				else
 				{
 					// Stop any existing icon highlight coroutines
-					StopCoroutine(ref m_IconHighlightCoroutine);
+					this.StopCoroutine(ref m_IconHighlightCoroutine);
 
 					m_Highlighted = value;
 
 					// Stop any existing begin/end highlight coroutine
-					StopCoroutine(ref m_HighlightCoroutine);
+					this.StopCoroutine(ref m_HighlightCoroutine);
 
 					m_HighlightCoroutine = m_Highlighted == true ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
 				}
@@ -149,7 +149,7 @@ namespace UnityEngine.VR.Workspaces
 			if (sHighlightGradientPair == null)
 				sHighlightGradientPair = UnityBrandColorScheme.sessionGradient;
 
-			StopCoroutine(ref m_VisibilityCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 
@@ -164,7 +164,7 @@ namespace UnityEngine.VR.Workspaces
 			m_CanvasGroup.interactable = false;
 			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 0f);
 
-			StopCoroutine(ref m_ContentVisibilityCoroutine);
+			this.StopCoroutine(ref m_ContentVisibilityCoroutine);
 
 			m_ContentVisibilityCoroutine = StartCoroutine(ShowContent());
 

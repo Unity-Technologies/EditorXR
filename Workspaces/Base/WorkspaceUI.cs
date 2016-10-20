@@ -154,7 +154,7 @@ namespace UnityEngine.VR.Workspaces
 				m_TopHighlight.visible = value;
 				m_FrontHighlight.visible = value;
 
-				StopCoroutine(ref m_FrameThicknessCoroutine);
+				this.StopCoroutine(ref m_FrameThicknessCoroutine);
 				m_FrameThicknessCoroutine = value == false ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
 			}
 		}
@@ -168,7 +168,7 @@ namespace UnityEngine.VR.Workspaces
 
 				m_FrontHighlight.visible = value;
 
-				StopCoroutine(ref m_FrameThicknessCoroutine);
+				this.StopCoroutine(ref m_FrameThicknessCoroutine);
 				m_FrameThicknessCoroutine = value == false ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
 			}
 		}
@@ -177,7 +177,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			set
 			{
-				StopCoroutine(ref m_TopFaceVisibleCoroutine);
+				this.StopCoroutine(ref m_TopFaceVisibleCoroutine);
 				m_TopFaceVisibleCoroutine = value ? StartCoroutine(ShowTopFace()) : StartCoroutine(HideTopFace());
 			}
 		}
@@ -257,7 +257,7 @@ namespace UnityEngine.VR.Workspaces
 
 		void ShowResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
-			StopCoroutine(ref m_FrameThicknessCoroutine);
+			this.StopCoroutine(ref m_FrameThicknessCoroutine);
 			m_FrameThicknessCoroutine = StartCoroutine(IncreaseFrameThickness());
 
 			const float kOpacityTarget = 0.75f;
@@ -286,7 +286,7 @@ namespace UnityEngine.VR.Workspaces
 
 		void HideResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
-			StopCoroutine(ref m_FrameThicknessCoroutine);
+			this.StopCoroutine(ref m_FrameThicknessCoroutine);
 			m_FrameThicknessCoroutine = StartCoroutine(ResetFrameThickness());
 
 			const float kOpacityTarget = 0f;
