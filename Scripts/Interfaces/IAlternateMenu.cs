@@ -4,6 +4,9 @@ using UnityEngine.VR.Actions;
 
 namespace UnityEngine.VR.Menus
 {
+	/// <summary>
+	/// An alternate menu that shows on device proxies
+	/// </summary>
 	public interface IAlternateMenu : IMenuActions
 	{
 		/// <summary>

@@ -10,12 +10,12 @@ namespace UnityEngine.VR.Menus
 	{
 		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]
-		private ActionMap m_RadialMenuActionMap;
+		ActionMap m_RadialMenuActionMap;
 
 		[SerializeField]
-		private RadialMenuUI m_RadialMenuPrefab;
+		RadialMenuUI m_RadialMenuPrefab;
 		
-		private RadialMenuUI m_RadialMenuUI;
+		RadialMenuUI m_RadialMenuUI;
 
 		public ActionMapInput actionMapInput
 		{
@@ -23,11 +23,11 @@ namespace UnityEngine.VR.Menus
 			set { m_RadialMenuInput = (RadialMenuInput) value; }
 		}
 		[SerializeField]
-		private RadialMenuInput m_RadialMenuInput;
+		RadialMenuInput m_RadialMenuInput;
 
 		public List<ActionMenuData> menuActions
 		{
-			private get { return m_MenuActions; }
+			get { return m_MenuActions; }
 			set
 			{
 				m_MenuActions = value;
@@ -36,7 +36,23 @@ namespace UnityEngine.VR.Menus
 					m_RadialMenuUI.actions = value;
 			}
 		}
-		private List<ActionMenuData> m_MenuActions;
+		List<ActionMenuData> m_MenuActions;
+
+		public Transform alternateMenuOrigin
+		{
+			get
+			{
+				return m_AlternateMenuOrigin;
+			}
+			set
+			{
+				m_AlternateMenuOrigin = value;
+
+				if (m_RadialMenuUI != null)
+					m_RadialMenuUI.alternateMenuOrigin = value;
+			}
+		}
+		Transform m_AlternateMenuOrigin;
 
 		public Node? node { get; set; }
 		public Action setup { get {return Setup; } }
@@ -70,27 +86,11 @@ namespace UnityEngine.VR.Menus
 				}
 			}
 		}
-		private bool m_SelectMenuItem;
+		bool m_SelectMenuItem;
 
 		public Transform menuOrigin { get; set; }
 
-		public Transform alternateMenuOrigin
-		{
-			get
-			{
-				return m_AlternateMenuOrigin;
-			}
-			set
-			{
-				m_AlternateMenuOrigin = value;
-
-				if (m_RadialMenuUI != null)
-					m_RadialMenuUI.alternateMenuOrigin = value;
-			}
-		}
-		private Transform m_AlternateMenuOrigin;
-
-		private void Update()
+		void Update()
 		{
 			if (m_RadialMenuInput == null || !visible)
 				return;

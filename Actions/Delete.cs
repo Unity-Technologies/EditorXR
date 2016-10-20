@@ -16,6 +16,7 @@ namespace UnityEngine.VR.Actions
 			if (selection)
 			{
 				U.Object.Destroy(selection);
+				Selection.activeObject = null;
 				return true;
 			}
 

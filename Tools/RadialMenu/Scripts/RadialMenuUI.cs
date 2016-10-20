@@ -14,24 +14,23 @@ namespace UnityEngine.VR.Menus
 {
 	public class RadialMenuUI : MonoBehaviour
 	{
-		[SerializeField]
-		private Sprite m_MissingActionIcon;
+		const int kSlotCount = 16;
 
 		[SerializeField]
-		private Image m_SlotsMask;
+		Sprite m_MissingActionIcon;
 
 		[SerializeField]
-		private RadialMenuSlot m_RadialMenuSlotTemplate;
+		Image m_SlotsMask;
 
 		[SerializeField]
-		private Transform m_SlotContainer;
+		RadialMenuSlot m_RadialMenuSlotTemplate;
 
-		private const int kSlotCount = 16;
+		[SerializeField]
+		Transform m_SlotContainer;
 
-		private List<RadialMenuSlot> m_RadialMenuSlots;
-		private Coroutine m_ShowCoroutine;
-		private Coroutine m_HideCoroutine;
-		private Coroutine m_SlotsRevealCoroutine;
+		List<RadialMenuSlot> m_RadialMenuSlots;
+		Coroutine m_ShowCoroutine;
+		Coroutine m_HideCoroutine;
 
 		public Transform alternateMenuOrigin
 		{
@@ -47,7 +46,7 @@ namespace UnityEngine.VR.Menus
 				transform.localRotation = Quaternion.identity;
 			}
 		}
-		private Transform m_AlternateMenuOrigin;
+		Transform m_AlternateMenuOrigin;
 
 		public bool visible
 		{
@@ -59,8 +58,8 @@ namespace UnityEngine.VR.Menus
 
 				m_Visible = value;
 
-				StopCoroutine(ref m_ShowCoroutine);
-				StopCoroutine(ref m_HideCoroutine);
+				this.StopCoroutine(ref m_ShowCoroutine);
+				this.StopCoroutine(ref m_HideCoroutine);
 
 				gameObject.SetActive(true);
 				if (value && actions.Count > 0)
@@ -69,7 +68,7 @@ namespace UnityEngine.VR.Menus
 					m_HideCoroutine = StartCoroutine(AnimateHide());
 			}
 		}
-		private bool m_Visible;
+		bool m_Visible;
 
 		public List<ActionMenuData> actions
 		{
@@ -85,8 +84,8 @@ namespace UnityEngine.VR.Menus
 
 					if (visible && actions.Count > 0)
 					{
-						StopCoroutine(ref m_HideCoroutine);
-						StopCoroutine(ref m_ShowCoroutine);
+						this.StopCoroutine(ref m_HideCoroutine);
+						this.StopCoroutine(ref m_ShowCoroutine);
 						m_ShowCoroutine = StartCoroutine(AnimateShow());
 					}
 				}
@@ -94,7 +93,7 @@ namespace UnityEngine.VR.Menus
 					visible = false;
 			}
 		}
-		private List<ActionMenuData> m_Actions;
+		List<ActionMenuData> m_Actions;
 
 		public bool pressedDown
 		{
@@ -122,15 +121,17 @@ namespace UnityEngine.VR.Menus
 				}
 			}
 		}
-		private bool m_PressedDown;
+		bool m_PressedDown;
 
 		[SerializeField]
-		private float m_InputPhaseOffset = 75f;
+		float m_InputPhaseOffset = 75f;
 
-		private RadialMenuSlot m_HighlightedButton;
-		private Vector2 m_InputMatrix;
-		private float m_PreviousInputMagnitude;
-		private float m_InputDirection;
+		RadialMenuSlot m_HighlightedButton;
+		Vector2 m_InputMatrix;
+		float m_InputDirection;
+
+		readonly Dictionary<RadialMenuSlot, Vector2> buttonRotationRange = new Dictionary<RadialMenuSlot, Vector2>();
+
 		public Vector2 buttonInputDirection
 		{
 			set
@@ -165,9 +166,7 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 
-		private readonly Dictionary<RadialMenuSlot, Vector2> buttonRotationRange = new Dictionary<RadialMenuSlot, Vector2>();
-
-		private void Start()
+		void Start()
 		{
 			m_SlotsMask.gameObject.SetActive(false);
 		}
@@ -200,18 +199,18 @@ namespace UnityEngine.VR.Menus
 			SetupRadialSlotPositions();
 		}
 
-		private void SetupRadialSlotPositions()
+		void SetupRadialSlotPositions()
 		{
-			const float rotationSpacing = 22.5f;
+			const float kRotationSpacing = 22.5f;
 			for (int i = 0; i < kSlotCount; ++i)
 			{
 				var slot = m_RadialMenuSlots[i];
-				slot.visibleLocalRotation = Quaternion.AngleAxis(rotationSpacing * i, Vector3.up);
+				slot.visibleLocalRotation = Quaternion.AngleAxis(kRotationSpacing * i, Vector3.up);
 
-				int direction = i > 7 ? -1 : 1;
-				buttonRotationRange.Add(slot, new Vector2(direction * Mathf.PingPong(rotationSpacing * i, 180f), direction * Mathf.PingPong(rotationSpacing * i + rotationSpacing, 180f)));
+				var direction = i > 7 ? -1 : 1;
+				buttonRotationRange.Add(slot, new Vector2(direction * Mathf.PingPong(kRotationSpacing * i, 180f), direction * Mathf.PingPong(kRotationSpacing * i + kRotationSpacing, 180f)));
 
-				Vector2 range = Vector2.zero;
+				var range = Vector2.zero;
 				buttonRotationRange.TryGetValue(m_RadialMenuSlots[i], out range);
 
 				slot.Hide();
@@ -223,11 +222,11 @@ namespace UnityEngine.VR.Menus
 			m_HideCoroutine = StartCoroutine(AnimateHide());
 		}
 
-		private IEnumerator AnimateShow()
+		IEnumerator AnimateShow()
 		{
 			m_SlotsMask.gameObject.SetActive(true);
 
-			GradientPair gradientPair = UnityBrandColorScheme.GetRandomGradient();
+			var gradientPair = UnityBrandColorScheme.GetRandomGradient();
 			for (int i = 0; i < m_Actions.Count; ++i)
 			{
 				// prevent more actions being added beyond the max slot count
@@ -253,8 +252,8 @@ namespace UnityEngine.VR.Menus
 
 			m_SlotsMask.fillAmount = 1f;
 
-			float revealAmount = 0f;
-			Quaternion hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;;
+			var revealAmount = 0f;
+			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;;
 
 			while (revealAmount < 1)
 			{
@@ -285,15 +284,15 @@ namespace UnityEngine.VR.Menus
 			m_ShowCoroutine = null;
 		}
 
-		private IEnumerator AnimateHide()
+		IEnumerator AnimateHide()
 		{
 			if (!m_SlotsMask.gameObject.activeInHierarchy)
 				yield break;
 
 			m_SlotsMask.fillAmount = 1f;
 
-			float revealAmount = 0f;
-			Quaternion hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
+			var revealAmount = 0f;
+			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 
 			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				m_RadialMenuSlots[i].Hide();

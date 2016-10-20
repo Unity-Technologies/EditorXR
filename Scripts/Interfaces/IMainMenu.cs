@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace UnityEngine.VR.Menus
 {
+	/// <summary>
+	/// The main menu that can be shown on device proxies
+	/// </summary>
 	public interface IMainMenu : IMenuActions
 	{
 		/// <summary>
@@ -11,7 +14,7 @@ namespace UnityEngine.VR.Menus
 		List<Type> menuTools { set; }
 
 		/// <summary>
-		/// Delegate used select tools from the Main Menu
+		/// Delegate used to select tools from the menu
 		/// </summary>
 		Func<Node, Type, bool> selectTool { set; }
 
@@ -21,7 +24,7 @@ namespace UnityEngine.VR.Menus
 		List<Type> menuWorkspaces { set; }
 
 		/// <summary>
-		/// Delegate used for creating a workspace selected from the Main Menu
+		/// Delegate used for creating a workspace selected from menu
 		/// </summary>
 		Action<Type> createWorkspace { set; }
 

@@ -1,7 +1,7 @@
 ﻿namespace UnityEngine.VR.Actions
 {
 	/// <summary>
-	/// Attribute used to tag action items that can be added to VR menus
+	/// Attribute used to tag Action classes in order to be added to VR menus
 	/// </summary>
 	public class ActionMenuItemAttribute : System.Attribute
 	{
@@ -18,23 +18,23 @@
 		/// <summary>
 		/// Name of section this action should be associated with
 		/// </summary>
-		public string categoryName;
+		public string sectionName;
 
 		/// <summary>
-		/// Position/index/order of this action amidst other actions with the same category name
+		/// The order of this action amidst other actions within the same section
 		/// </summary>
 		public int priority;
 
 		/// <summary>
-		/// Construct this action's attribute
+		/// Constructor
 		/// </summary>
 		/// <param name="name">The name of this action</param>
-		/// <param name="categoryName">The name of the category in which this action should reside</param>
-		/// <param name="priority">The numeric position of this action within the section it resides</param>
-		public ActionMenuItemAttribute(string name, string categoryName = null, int priority = -1)
+		/// <param name="sectionName">The name of the section in which this action should reside</param>
+		/// <param name="priority">The ordinal of this action within the section it resides</param>
+		public ActionMenuItemAttribute(string name, string sectionName = null, int priority = int.MaxValue)
 		{
 			this.name = name;
-			this.categoryName = categoryName;
+			this.sectionName = sectionName;
 			this.priority = priority;
 		}
 	}

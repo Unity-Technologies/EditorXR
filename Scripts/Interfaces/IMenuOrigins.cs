@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// The transforms for various menu origins provided by device proxies
+/// </summary>
 public interface IMenuOrigins
 {
 	/// <summary>

@@ -26,8 +26,8 @@ public class DefaultProxyRay : MonoBehaviour
 
 	private State m_State;
 	private Vector3 m_TipStartScale;
-	private Transform m_ConeTransform;
-	private Vector3 m_OriginalConeLocalScale;
+	Transform m_ConeTransform;
+	Vector3 m_OriginalConeLocalScale;
 
 	/// <summary>
 	/// The object that is set when LockRay is called while the ray is unlocked.
@@ -126,7 +126,7 @@ public class DefaultProxyRay : MonoBehaviour
 		m_Tip.transform.localScale = Vector3.zero;
 
 		// cache current width for smooth animation to target value without snapping
-		float currentWidth = m_LineRenderer.widthStart;
+		var currentWidth = m_LineRenderer.widthStart;
 		const float kTargetWidth = 0f;
 		const float kSmoothTime = 0.1875f;
 		var currentDuration = 0f;
@@ -148,8 +148,8 @@ public class DefaultProxyRay : MonoBehaviour
 		m_State = State.Transitioning;
 		m_Tip.transform.localScale = m_TipStartScale;
 
-		float currentWidth = m_LineRenderer.widthStart;
-		float smoothVelocity = 0f;
+		var currentWidth = m_LineRenderer.widthStart;
+		var smoothVelocity = 0f;
 		const float kSmoothTime = 0.3125f;
 		var currentDuration = 0f;
 		while (currentDuration < kSmoothTime)
@@ -164,7 +164,7 @@ public class DefaultProxyRay : MonoBehaviour
 		m_State = State.Visible;
 	}
 
-	private IEnumerator HideCone()
+	IEnumerator HideCone()
 	{
 		var currentScale = m_ConeTransform.localScale;
 		var smoothVelocity = Vector3.one;
@@ -181,7 +181,7 @@ public class DefaultProxyRay : MonoBehaviour
 		m_ConeTransform.localScale = Vector3.zero;
 	}
 
-	private IEnumerator ShowCone()
+	IEnumerator ShowCone()
 	{
 		var currentScale = m_ConeTransform.localScale;
 		var smoothVelocity = Vector3.one;

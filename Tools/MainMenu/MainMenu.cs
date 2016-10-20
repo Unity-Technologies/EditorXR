@@ -32,9 +32,9 @@ namespace UnityEngine.VR.Menus
 		public Transform alternateMenuOrigin
 		{
 			get
-		{
+			{
 				return m_AlternateMenuOrigin;
-		}
+			}
 			set
 			{
 				m_AlternateMenuOrigin = value;
@@ -61,7 +61,6 @@ namespace UnityEngine.VR.Menus
 		private MainMenuUI m_MainMenuPrefab;
 
 		private MainMenuUI m_MainMenuUI;
-		private BaseHandle m_MenuButton;
 		private float m_RotationInputStartTime;
 		private float m_RotationInputStartValue;
 		private float m_RotationInputIdleTime;
@@ -81,8 +80,6 @@ namespace UnityEngine.VR.Menus
 		public Node? node { private get; set; }
 		public event Action<IMainMenu> menuVisibilityChanged;
 		public Action setup { get { return Setup; } }
-		public Action hide { get; private set; }
-		public Action show { get; private set; }
 
 		public bool visible
 		{
@@ -94,7 +91,6 @@ namespace UnityEngine.VR.Menus
 					m_MainMenuUI.visible = value;
 					if (value)
 					{
-						m_MainMenuInput.active = true; // This will be disabled outside of MainMenu when the Alternate menu is activated, so enable it when making Main Menu visible
 						hideDefaultRay();
 						lockRay(this);
 					}
@@ -147,7 +143,8 @@ namespace UnityEngine.VR.Menus
 
 				// Perform a quick single face rotation if a quick flick of the input axis occurred
 				float flickRotation = rotationInput - m_RotationInputStartValue;
-				if (Mathf.Abs(flickRotation) >= kFlickDeltaThreshold && (Time.realtimeSinceStartup - m_RotationInputStartTime) < kFlickDurationThreshold)
+				if (Mathf.Abs(flickRotation) >= kFlickDeltaThreshold
+					&& (Time.realtimeSinceStartup - m_RotationInputStartTime) < kFlickDurationThreshold)
 				{
 					m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex + (int) Mathf.Sign(flickRotation);
 

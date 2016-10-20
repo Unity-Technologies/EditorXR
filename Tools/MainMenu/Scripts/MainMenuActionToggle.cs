@@ -8,7 +8,7 @@ namespace UnityEngine.VR.Menus
 		private Button m_Button2;
 
 		[SerializeField]
-		private Sprite m_Icon02; // // Hide the parent sprite, as these are not shown in main menu toggles
+		private Sprite m_Icon02;
 
 		[SerializeField]
 		private Text m_NameText2;

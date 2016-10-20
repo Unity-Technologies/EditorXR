@@ -9,7 +9,7 @@ using UnityEngine.VR.Actions;
 
 public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IToolActions
 {
-	private class TransformAction : IAction
+	class TransformAction : IAction
 	{
 		internal Func<bool> execute;
 		public Sprite icon { get; internal set; }
@@ -20,13 +20,13 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	}
 
 	[SerializeField]
-	private Sprite m_OriginCenterIcon;
+	Sprite m_OriginCenterIcon;
 	[SerializeField]
-	private Sprite m_OriginPivotIcon;
+	Sprite m_OriginPivotIcon;
 	[SerializeField]
-	private Sprite m_RotationGlobalIcon;
+	Sprite m_RotationGlobalIcon;
 	[SerializeField]
-	private Sprite m_RotationLocalIcon;
+	Sprite m_RotationLocalIcon;
 
 	[SerializeField]
 	private GameObject m_StandardManipulatorPrefab;
@@ -96,10 +96,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			return m_ToolActions;
 		}
 	}
-	private List<IAction> m_ToolActions;
+	List<IAction> m_ToolActions;
 
-	private readonly TransformAction m_PivotModeToggleAction = new TransformAction();
-	private readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
+	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
+	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 
 	void Awake()
 	{
@@ -275,7 +275,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		}
 	}
 
-	private bool TogglePivotMode()
+	bool TogglePivotMode()
 	{
 		if (m_Mode == TransformMode.Direct)
 			return false;
@@ -286,12 +286,12 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		return true;
 	}
 
-	private void UpdatePivotModeToggleIcon()
+	void UpdatePivotModeToggleIcon()
 	{
 		m_PivotModeToggleAction.icon = m_PivotMode == PivotMode.Center ? m_OriginCenterIcon : m_OriginPivotIcon;
 	}
 
-	private bool TogglePivotRotation()
+	bool TogglePivotRotation()
 	{
 		if (m_Mode == TransformMode.Direct)
 			return false;
@@ -302,7 +302,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		return true;
 	}
 
-	private void UpdatePivotRotationToggleIcon()
+	void UpdatePivotRotationToggleIcon()
 	{
 		m_PivotRotationToggleAction.icon = m_PivotRotation == PivotRotation.Global ? m_RotationGlobalIcon : m_RotationLocalIcon;
 	}

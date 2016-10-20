@@ -5,9 +5,11 @@ using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IMenuOrigins
+	internal class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IMenuOrigins
 	{
-		private Transform m_AlternateMenuOrigin;
+		private readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
+		private static readonly float kAlternateLocationOffset = 0.06f;
+
 		public Transform alternateMenuOrigin
 		{
 			get { return m_AlternateMenuOrigin; }
@@ -26,8 +28,8 @@ namespace UnityEngine.VR.Menus
 				m_AlternateActivatorLocalPosition = m_OriginalActivatorLocalPosition + Vector3.back * kAlternateLocationOffset;
 			}
 		}
+		private Transform m_AlternateMenuOrigin;
 
-		private bool m_ActivatorButtonMoveAway;
 		public bool activatorButtonMoveAway
 		{
 			get { return m_ActivatorButtonMoveAway; }
@@ -44,14 +46,12 @@ namespace UnityEngine.VR.Menus
 				m_ActivatorMoveCoroutine = StartCoroutine(AnimateMoveActivatorButton(m_ActivatorButtonMoveAway));
 			}
 		}
+		private bool m_ActivatorButtonMoveAway;
 
 		[SerializeField]
 		private Transform m_Icon;
 		[SerializeField]
 		private Transform m_HighlightedPRS;
-
-		private readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
-		private static readonly float kAlternateLocationOffset = 0.06f;
 
 		private Vector3 m_OriginalActivatorIconLocalScale;
 		private Vector3 m_OriginalActivatorIconLocalPosition;

@@ -1,7 +1,7 @@
 ﻿namespace UnityEngine.VR.Actions
 {
 	/// <summary>
-	/// Interface that mandates the properties & methods that must be implemented for EditorVR Actions
+	/// Declares a class as an action that can be executed within the system
 	/// </summary>
 	public interface IAction
 	{
@@ -11,7 +11,7 @@
 		Sprite icon { get; }
 
 		/// <summary>
-		/// ExecuteAction this action
+		/// Execute this action
 		/// </summary>
 		bool ExecuteAction();
 	}

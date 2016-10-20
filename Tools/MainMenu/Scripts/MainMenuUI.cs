@@ -397,10 +397,9 @@ namespace UnityEngine.VR.Menus
 				StartCoroutine(AnimateFaceReveal(i));
 
 			const float kTargetScale = 1f;
-			
-			float scale = 0f;
-			float smoothVelocity = 0f;
 			const float kSmoothTime = 0.125f;
+			var scale = 0f;
+			var smoothVelocity = 0f;
 			var currentDuration = 0f;
 			while (currentDuration < kSmoothTime)
 			{
@@ -432,9 +431,9 @@ namespace UnityEngine.VR.Menus
 			m_FrameRevealCoroutine = StartCoroutine(AnimateFrameReveal(m_VisibilityState));
 
 			const float kTargetScale = 0f;
-			float scale = transform.localScale.x;
-			float smoothVelocity = 0f;
 			const float kSmoothTime = 0.06875f;
+			var scale = transform.localScale.x;
+			var smoothVelocity = 0f;
 			var currentDuration = 0f;
 			while (currentDuration < kSmoothTime)
 			{
@@ -458,10 +457,10 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator AnimateFrameRotationShapeChange(RotationState rotationState)
 		{
-			float smoothTime = rotationState == RotationState.Rotating ? 0.5f : 0.0375f; // slower when rotating, faster when snapping
-			float currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
-			float targetWeight = rotationState == RotationState.Rotating ? 100f : 0f;
-			float smoothVelocity = 0f;
+			var smoothTime = rotationState == RotationState.Rotating ? 0.5f : 0.0375f; // slower when rotating, faster when snapping
+			var currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
+			var targetWeight = rotationState == RotationState.Rotating ? 100f : 0f;
+			var smoothVelocity = 0f;
 			var currentDuration = 0f;
 			while (m_RotationState == rotationState && currentDuration < smoothTime)
 			{
@@ -478,12 +477,12 @@ namespace UnityEngine.VR.Menus
 		private IEnumerator AnimateFrameReveal(VisibilityState visibilityState)
 		{
 			m_MenuFrameRenderer.SetBlendShapeWeight(1, 100f);
-			float smoothTime = visibilityState == VisibilityState.TransitioningIn ? 0.1875f : 0.09375f; // slower if transitioning in
 			const float zeroStartBlendShapePadding = 20f; // start the blendShape at a point slightly above the full hidden value for better visibility
-			float currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(1);
-			float targetWeight = visibilityState == VisibilityState.TransitioningIn ? 0f : 100f;
-			float smoothVelocity = 0f;
 			const float kLerpEmphasisWeight = 0.25f;
+			var smoothTime = visibilityState == VisibilityState.TransitioningIn ? 0.1875f : 0.09375f; // slower if transitioning in
+			var currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(1);
+			var targetWeight = visibilityState == VisibilityState.TransitioningIn ? 0f : 100f;
+			var smoothVelocity = 0f;
 			currentBlendShapeWeight = currentBlendShapeWeight > 0 ? currentBlendShapeWeight : zeroStartBlendShapePadding;
 
 			var currentDuration = 0f;
@@ -510,25 +509,25 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator AnimateFaceReveal(int faceIndex)
 		{
-			Vector3 targetScale = m_MenuFaceContentOriginalLocalScale;
-			Vector3 targetPosition = m_MenuFaceContentOriginalLocalPositions[faceIndex];
-			Vector3 currentScale = m_MenuFaceContentHiddenLocalScale; // Custom initial scale
-			Vector3 currentPosition = m_MenuFaceContentOffsetLocalPositions[faceIndex]; // start the face in the cached original target position
-			Transform faceTransform = m_MenuFaceContentTransforms[faceIndex];
+			var targetScale = m_MenuFaceContentOriginalLocalScale;
+			var targetPosition = m_MenuFaceContentOriginalLocalPositions[faceIndex];
+			var currentScale = m_MenuFaceContentHiddenLocalScale; // Custom initial scale
+			var currentPosition = m_MenuFaceContentOffsetLocalPositions[faceIndex]; // start the face in the cached original target position
+			var faceTransform = m_MenuFaceContentTransforms[faceIndex];
 
 			faceTransform.localScale = currentScale;
 			faceTransform.localPosition = currentPosition;
 
-			float currentDelay = 0f;
-			float delayTarget = 0.5f + (faceIndex * 0.1f); // delay duration before starting the face reveal
 			const float kSmoothTime = 0.1f;
+			var currentDelay = 0f;
+			var delayTarget = 0.5f + (faceIndex * 0.1f); // delay duration before starting the face reveal
 			while (currentDelay < delayTarget) // delay the reveal of each face slightly more than the previous
 			{
 				currentDelay += Time.unscaledDeltaTime;
 				yield return null;
 			}
 
-			Vector3 smoothVelocity = Vector3.zero;
+			var smoothVelocity = Vector3.zero;
 			while (!Mathf.Approximately(currentScale.x, targetScale.x))
 			{
 				currentScale = Vector3.SmoothDamp(currentScale, targetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);

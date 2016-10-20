@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine.VR.Actions;
 
+/// <summary>
+/// Decorates a class that wants to receive menu actions
+/// </summary>
 public interface IMenuActions
 {
 	/// <summary>

@@ -78,13 +78,13 @@ namespace UnityEngine.VR.Menus
 		public void Show()
 		{
 			m_BorderOutlineTransform.localScale = m_BorderOutlineOriginalLocalScale;
-			StopCoroutine(ref m_VisibilityCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(true));
 		}
 
 		public void Hide()
 		{
-			StopCoroutine(ref m_VisibilityCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(false));
 		}
 
@@ -95,10 +95,10 @@ namespace UnityEngine.VR.Menus
 
 			m_CanvasGroup.interactable = false;
 			
-			float smoothTime = show ? 0.35f : 0.125f;
-			float startingOpacity = m_CanvasGroup.alpha;
-			float targetOpacity = show ? 1f : 0f;
-			float smoothVelocity = 0f;
+			var smoothTime = show ? 0.35f : 0.125f;
+			var startingOpacity = m_CanvasGroup.alpha;
+			var targetOpacity = show ? 1f : 0f;
+			var smoothVelocity = 0f;
 			var currentDuration = 0f;
 			while (currentDuration < smoothTime)
 			{
@@ -120,13 +120,13 @@ namespace UnityEngine.VR.Menus
 
 		public void BeginVisuals()
 		{
-			StopCoroutine(ref m_RotationVisualsCoroutine);
+			this.StopCoroutine(ref m_RotationVisualsCoroutine);
 			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(true));
 		}
 
 		public void EndVisuals()
 		{
-			StopCoroutine(ref m_RotationVisualsCoroutine);
+			this.StopCoroutine(ref m_RotationVisualsCoroutine);
 			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(false));
 		}
 
@@ -138,11 +138,11 @@ namespace UnityEngine.VR.Menus
 			Vector3 targetBorderLocalScale = focus ? m_BorderOutlineOriginalLocalScale * kBorderScaleMultiplier : m_BorderOutlineOriginalLocalScale;
 			Vector3 currentBorderLocalScale = m_BorderOutlineTransform.localScale;
 
-			float currentBlendShapeWeight = m_TitleIcon.GetBlendShapeWeight(0);
-			float targetWeight = focus ? 100f : 0f;
-			float smoothTime = focus ? 0.25f : 0.5f;
 			const float kLerpEmphasisWeight = 0.2f;
-			float smoothVelocity = 0f;
+			var currentBlendShapeWeight = m_TitleIcon.GetBlendShapeWeight(0);
+			var targetWeight = focus ? 100f : 0f;
+			var smoothTime = focus ? 0.25f : 0.5f;
+			var smoothVelocity = 0f;
 			var currentDuration = 0f;
 			while (currentDuration < smoothTime)
 			{

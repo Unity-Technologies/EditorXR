@@ -2,6 +2,9 @@
 
 namespace UnityEngine.VR.Actions
 {
+	/// <summary>
+	/// Used for passing action data for menu purposes
+	/// </summary>
 	public class ActionMenuData
 	{
 		/// <summary>
@@ -15,7 +18,7 @@ namespace UnityEngine.VR.Actions
 		public string sectionName { get; set; }
 
 		/// <summary>
-		/// The numeric position of this action within its section
+		/// The ordinal of this action within its section
 		/// </summary>
 		public int priority { get; set; }
 

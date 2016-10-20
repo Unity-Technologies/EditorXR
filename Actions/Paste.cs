@@ -1,4 +1,6 @@
-﻿namespace UnityEngine.VR.Actions
+﻿using UnityEngine.VR.Utilities;
+
+namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
 	public class Paste : MonoBehaviour, IAction
@@ -15,7 +17,11 @@
 
 			if (buffer != null)
 			{
-				Instantiate(buffer);
+				var pasted = Instantiate(buffer);
+				pasted.hideFlags = HideFlags.None;
+				var go = pasted as GameObject;
+				if (go)
+					go.SetActive(true);
 				return true;
 			}
 

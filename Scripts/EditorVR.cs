@@ -79,11 +79,11 @@ public class EditorVR : MonoBehaviour
 	{
 		public Stack<ITool> tools;
 		public ActionMapInput uiInput;
+		public MainMenuActivator mainMenuActivator;
 		public IMainMenu mainMenu;
 		public bool restoreMainMenu;
-		public ITool currentTool;
 		public IAlternateMenu alternateMenu;
-		public MainMenuActivator mainMenuActivator;
+		public ITool currentTool;
 	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
@@ -468,7 +468,8 @@ public class EditorVR : MonoBehaviour
 				mainMenuActivator.hoverStarted += OnMainMenuActivatorHoverStarted;
 				mainMenuActivator.hoverEnded += OnMainMenuActivatorHoverEnded;
 
-				var alternateMenu = m_DeviceData[deviceData.Key].alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), deviceData.Key);
+				var alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), deviceData.Key);
+				m_DeviceData[deviceData.Key].alternateMenu = alternateMenu;
 				alternateMenu.itemSelected += OnAlternateMenuItemSelected;
 
 				UpdatePlayerHandleMaps();
@@ -631,7 +632,7 @@ public class EditorVR : MonoBehaviour
 				var actionMenuData = new ActionMenuData()
 				{
 					name = attribute.name,
-					sectionName = attribute.categoryName,
+					sectionName = attribute.sectionName,
 					priority = attribute.priority,
 					action = action,
 				};

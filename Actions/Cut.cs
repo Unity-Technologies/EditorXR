@@ -24,6 +24,7 @@ namespace UnityEngine.VR.Actions
 				if (go)
 					go.SetActive(false);
 				Paste.buffer = selection;
+				Selection.activeObject = null;
 				return true;
 			}
 
