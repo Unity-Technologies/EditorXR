@@ -64,6 +64,15 @@ namespace UnityEngine.VR.Workspaces
 
 		public Button button { get { return m_Button; } }
 
+		public bool alternateIconVisible
+		{
+			set
+			{
+				if (m_ClickedAlternateIconSprite != null) // Only allow sprite swapping if an alternate sprite exists
+					m_Icon.sprite = value ? m_ClickedAlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
+			}
+		}
+
 		public Quaternion visibleLocalRotation
 		{
 			get { return m_VisibleLocalRotation; }

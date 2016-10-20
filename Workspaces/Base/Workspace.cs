@@ -293,6 +293,8 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnResetClicked()
 		{
+			m_DragLocked = false;
+
 			StopCoroutine(ref m_ResetSizeCoroutine);
 
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());

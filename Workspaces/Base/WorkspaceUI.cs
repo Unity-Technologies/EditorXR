@@ -129,6 +129,9 @@ namespace UnityEngine.VR.Workspaces
 		Transform m_BackResizeIconsContainer;
 
 		[SerializeField]
+		WorkspaceButton m_LockButton;
+
+		[SerializeField]
 		Transform m_TopHighlightContainer;
 
 		[SerializeField]
@@ -408,6 +411,9 @@ namespace UnityEngine.VR.Workspaces
 		public void ResetSizeClick()
 		{
 			resetSizeClicked();
+
+			// If the lock icon sprite is being displayed, swap back to the unlocked icon; the workspace is unlocked when the the size is reset
+			m_LockButton.alternateIconVisible = false;
 		}
 
 		IEnumerator IncreaseFrameThickness()

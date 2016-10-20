@@ -3552,6 +3552,7 @@ MonoBehaviour:
   m_RightSideBackResizeIcon: {fileID: 114000010732110990}
   m_FrontResizeIconsContainer: {fileID: 224000012214220868}
   m_BackResizeIconsContainer: {fileID: 224000013299645382}
+  m_LockButton: {fileID: 114000013163589872}
   m_TopHighlightContainer: {fileID: 4000012021209696}
   m_FrontHighlight: {fileID: 114000013793407110}
   m_TopHighlight: {fileID: 114000012960129082}
