@@ -23,7 +23,6 @@ public class MiniWorldRenderer : MonoBehaviour
 				m_RendererPreviousEnable = new bool[m_IgnoreList.Count];
 		}
 	}
-
 	List<Renderer> m_IgnoreList = new List<Renderer>();
 
 	private void OnEnable()
