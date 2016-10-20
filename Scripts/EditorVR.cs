@@ -853,6 +853,12 @@ public class EditorVR : MonoBehaviour
 				actionMapInputs.Add(standardMap.standardInput);
 		}
 
+		var trackedObjectMap = obj as ITrackedObjectActionMap;
+		if (trackedObjectMap != null)
+		{
+			trackedObjectMap.trackedObjectInput = m_TrackedObjectInput;
+		}
+
 		var customMap = obj as ICustomActionMap;
 		if (customMap != null)
 		{
