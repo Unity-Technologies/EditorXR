@@ -59,6 +59,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	{
 		m_Dragging = true;
 		m_WorkspaceUI.topHighlight.visible = true;
+		m_WorkspaceUI.topFaceVisible = false;
 		m_ScrollStart = eventData.rayOrigin.transform.position;
 		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
 
@@ -74,6 +75,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	{
 		m_Dragging = false;
 		m_WorkspaceUI.topHighlight.visible = false;
+		m_WorkspaceUI.topFaceVisible = true;
 
 		Scroll(eventData);
 		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
@@ -83,12 +85,16 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		m_WorkspaceUI.topHighlight.visible = true;
+		m_WorkspaceUI.topFaceVisible = false;
 	}
 
 	void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		if (m_Dragging == false)
+		{
 			m_WorkspaceUI.topHighlight.visible = false;
+			m_WorkspaceUI.topFaceVisible = true;
+		}
 	}
 
 	void Scroll(HandleEventData eventData)
