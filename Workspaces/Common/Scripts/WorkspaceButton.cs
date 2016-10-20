@@ -36,7 +36,10 @@ namespace UnityEngine.VR.Workspaces
 		Color m_CustomHighlightColor = UnityBrandColorScheme.light;
 
 		[SerializeField]
-		Sprite m_ClickedAlternateIconSprite;
+		Sprite m_AlternateIconSprite;
+
+		[SerializeField]
+		bool m_SwapIconsOnClick = true;
 
 		[SerializeField]
 		Graphic[] m_HighlightItems;
@@ -68,8 +71,8 @@ namespace UnityEngine.VR.Workspaces
 		{
 			set
 			{
-				if (m_ClickedAlternateIconSprite != null) // Only allow sprite swapping if an alternate sprite exists
-					m_Icon.sprite = value ? m_ClickedAlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
+				if (m_AlternateIconSprite != null) // Only allow sprite swapping if an alternate sprite exists
+					m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
 			}
 		}
 
@@ -150,12 +153,10 @@ namespace UnityEngine.VR.Workspaces
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 
-			if (m_ClickedAlternateIconSprite)
-			{
-				m_OriginalIconSprite = m_Icon.sprite;
-				// Hookup button OnClick event if there is an alternate icon sprite set
+			m_OriginalIconSprite = m_Icon.sprite;
+			// Hookup button OnClick event if there is an alternate icon sprite set
+			if (m_SwapIconsOnClick && m_AlternateIconSprite)
 				m_Button.onClick.AddListener(SwapIconSprite);
-			}
 		}
 
 		IEnumerator AnimateShow()
@@ -360,7 +361,7 @@ namespace UnityEngine.VR.Workspaces
 		void SwapIconSprite()
 		{
 			// Alternate between the main icon and the alternate icon when the button is clicked
-			m_Icon.sprite = m_Icon.sprite == m_OriginalIconSprite ? m_ClickedAlternateIconSprite : m_OriginalIconSprite;
+			m_Icon.sprite = m_Icon.sprite == m_OriginalIconSprite ? m_AlternateIconSprite : m_OriginalIconSprite;
 		}
 	}
 }
