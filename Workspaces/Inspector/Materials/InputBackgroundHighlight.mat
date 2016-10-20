@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: Button
+  m_Name: InputBackgroundHighlight
   m_Shader: {fileID: 4800000, guid: 59f7e0653309703449fc1f6c0defbc4f, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 1
@@ -130,10 +130,10 @@ Material:
       second: {r: 0.2146139, g: 0.20175552, b: 0.1457231, a: 1}
     - first:
         name: _ColorBottom
-      second: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+      second: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
     - first:
         name: _ColorTop
-      second: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+      second: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}
