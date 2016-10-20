@@ -12,6 +12,7 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 	private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
 	private GameObject m_HoverGameObject;
+	private GameObject m_PressedObject;
 
 	// The prefab (if any) that was double clicked, whose individual pieces can be selected
 	private static GameObject s_CurrentPrefabOpened; 
@@ -64,41 +65,49 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 
 		m_HoverGameObject = newHoverGameObject;
 
-		// TODO: Uncomment after merge with dev/schoen/bugfix-b
-		//if (m_SelectionInput.select.wasJustPressed && m_HoverGameObject)
-		//	setInputBlocked(true);
+		if (m_SelectionInput.select.wasJustPressed && m_HoverGameObject)
+		{
+			// TODO: Uncomment after merge with dev/schoen/bugfix-b
+			//	setInputBlocked(true);
+			m_PressedObject = m_HoverGameObject;
+		}
 
 		// Handle select button press
 		if (m_SelectionInput.select.wasJustReleased)
 		{
 			// TODO: Uncomment after merge with dev/schoen/bugfix-b
 			//setInputBlocked(false);
-			s_CurrentPrefabOpened = newPrefabRoot;
-			
-			// Multi-Select
-			if (m_SelectionInput.multiSelect.isHeld)
+			if (m_PressedObject == m_HoverGameObject)
 			{
-				if (s_SelectedObjects.Contains(m_HoverGameObject))
+				s_CurrentPrefabOpened = newPrefabRoot;
+
+				// Multi-Select
+				if (m_SelectionInput.multiSelect.isHeld)
 				{
-					// Already selected, so remove from selection
-					s_SelectedObjects.Remove(m_HoverGameObject);
+					if (s_SelectedObjects.Contains(m_HoverGameObject))
+					{
+						// Already selected, so remove from selection
+						s_SelectedObjects.Remove(m_HoverGameObject);
+					}
+					else
+					{
+						// Add to selection
+						s_SelectedObjects.Add(m_HoverGameObject);
+						Selection.activeGameObject = m_HoverGameObject;
+					}
 				}
 				else
 				{
-					// Add to selection
-					s_SelectedObjects.Add(m_HoverGameObject);
+					if (s_CurrentPrefabOpened && s_CurrentPrefabOpened != m_HoverGameObject)
+						s_SelectedObjects.Remove(s_CurrentPrefabOpened);
+					s_SelectedObjects.Clear();
 					Selection.activeGameObject = m_HoverGameObject;
+					s_SelectedObjects.Add(m_HoverGameObject);
 				}
+				Selection.objects = s_SelectedObjects.ToArray();
 			}
-			else
-			{
-				if (s_CurrentPrefabOpened && s_CurrentPrefabOpened != m_HoverGameObject)
-					s_SelectedObjects.Remove(s_CurrentPrefabOpened);
-				s_SelectedObjects.Clear();
-				Selection.activeGameObject = m_HoverGameObject;
-				s_SelectedObjects.Add(m_HoverGameObject);
-			}
-			Selection.objects = s_SelectedObjects.ToArray();
+
+			m_PressedObject = null;
 		}
 	}
 
