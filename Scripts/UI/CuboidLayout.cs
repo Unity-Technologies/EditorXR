@@ -65,6 +65,8 @@ public class CuboidLayout : UIBehaviour
 			return;
 
 		// Update standard cubes
+		const float kStandardCubeSideScalePadding = 0.01f;
+		const float kStandardCubeSidePositionPadding = 0.005f;
 		for (var i = 0; i < m_CubeTransforms.Length; i++)
 		{
 			var rectSize = m_TargetTransforms[i].rect.size.Abs();
@@ -77,8 +79,8 @@ public class CuboidLayout : UIBehaviour
 
 			//Offset by 0.5 * height to account for pivot in center
 			const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
-			m_CubeTransforms[i].localPosition = new Vector3(pivotOffset.x, pivotOffset.y, zOffset);
-			m_CubeTransforms[i].localScale = new Vector3(rectSize.x, rectSize.y, kLayerHeight);
+			m_CubeTransforms[i].localPosition = new Vector3(pivotOffset.x + kStandardCubeSidePositionPadding, pivotOffset.y, zOffset);
+			m_CubeTransforms[i].localScale = new Vector3(rectSize.x + kStandardCubeSideScalePadding, rectSize.y, kLayerHeight);
 		}
 
 		// Update highlight cubes
