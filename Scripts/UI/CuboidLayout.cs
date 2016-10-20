@@ -11,9 +11,16 @@ public class CuboidLayout : UIBehaviour
 	RectTransform[] m_TargetTransforms;
 
 	[SerializeField]
+	RectTransform[] m_TargetHighlightTransforms;
+
+	[SerializeField]
 	GameObject m_CubePrefab;
 
+	[SerializeField]
+	GameObject m_HighlighCubePrefab;
+
 	Transform[] m_CubeTransforms;
+	Transform[] m_HighlightCubeTransforms;
 
 	protected override void Start()
 	{
@@ -24,6 +31,15 @@ public class CuboidLayout : UIBehaviour
 			cube.SetParent(m_TargetTransforms[i], false);
 			m_CubeTransforms[i] = cube;
 		}
+
+		m_HighlightCubeTransforms = new Transform[m_TargetHighlightTransforms.Length];
+		for (var i = 0; i < m_TargetHighlightTransforms.Length; i++)
+		{
+			var cube = Instantiate(m_HighlighCubePrefab).transform;
+			cube.SetParent(m_TargetHighlightTransforms[i], false);
+			m_HighlightCubeTransforms[i] = cube;
+		}
+
 		UpdateCubes();
 	}
 
@@ -46,6 +62,8 @@ public class CuboidLayout : UIBehaviour
 	{
 		if (m_CubeTransforms == null)
 			return;
+
+		// Update standard cubes
 		for (var i = 0; i < m_CubeTransforms.Length; i++)
 		{
 			var rectSize = m_TargetTransforms[i].rect.size.Abs();
@@ -60,6 +78,23 @@ public class CuboidLayout : UIBehaviour
 			const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
 			m_CubeTransforms[i].localPosition = new Vector3(pivotOffset.x, pivotOffset.y, zOffset);
 			m_CubeTransforms[i].localScale = new Vector3(rectSize.x, rectSize.y, kLayerHeight);
+		}
+
+		// Update highlight cubes
+		for (var i = 0; i < m_HighlightCubeTransforms.Length; i++)
+		{
+			var rectSize = m_TargetHighlightTransforms[i].rect.size.Abs();
+			// Scale pivot by rect size to get correct xy local position
+			var pivotOffset = Vector2.Scale(rectSize, kCuboidPivot - m_TargetHighlightTransforms[i].pivot);
+
+			// Add space for cuboid
+			var localPosition = m_TargetHighlightTransforms[i].localPosition;
+			m_TargetHighlightTransforms[i].localPosition = new Vector3(localPosition.x, localPosition.y, -kLayerHeight);
+
+			//Offset by 0.5 * height to account for pivot in center
+			const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
+			m_HighlightCubeTransforms[i].localPosition = new Vector3(pivotOffset.x, pivotOffset.y, zOffset);
+			m_HighlightCubeTransforms[i].localScale = new Vector3(rectSize.x, rectSize.y, kLayerHeight);
 		}
 	}
 }
