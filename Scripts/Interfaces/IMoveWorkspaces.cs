@@ -6,5 +6,9 @@ namespace UnityEngine.VR.Tools
 {
 	public interface IMoveWorkspaces
 	{
+		Action resetWorkspaces
+		{
+			get; set;
+		}
 	}
 }

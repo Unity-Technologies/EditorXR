@@ -18,6 +18,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 
 	public Action hideDefaultRay { private get; set; }
 
+	public Action resetWorkspaces { get; set; }
+
 	private float m_TriggerPressedTimeStamp = 0.0f;
 	private Workspace[] m_AllWorkspaces;
 	private Vector3[] m_StartPositions;
@@ -39,14 +41,14 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 		if(standardInput == null)
 			return;
 
-		standardInput.active = IsControllerAboveHMD();
-		if(!standardInput.active)
-			return;
-
 		switch(mode)
 		{
 			case ManipulateMode.Off:
 			{
+				standardInput.active = IsControllerAboveHMD();
+				if(!standardInput.active)
+					return;
+
 				if(standardInput.action.wasJustPressed)
 				{
 					HandleDoubleTap();
@@ -95,14 +97,26 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 	void HandleDoubleTap()
 	{
 		m_StartedThrowing = false;
-		if(Time.realtimeSinceStartup - m_TriggerPressedTimeStamp < 1.5f)
+		if(Time.realtimeSinceStartup - m_TriggerPressedTimeStamp < 0.8f)
 		{
 			if(FindWorkspaces())
 			{
 				m_ThrowDownTriggered = false;
 
 				for(int i = 0; i < m_AllWorkspaces.Length; i++)
+				{
+					//workspaces should look at center on Y axis
+					Quaternion temp = m_AllWorkspaces[i].transform.rotation;
+					Vector3 look_direction = m_AllWorkspaces[i].transform.position - (VRView.viewerCamera.transform.position - new Vector3(0.0f,0.5f,0.0f));
+					temp.SetLookRotation(look_direction,Vector3.up);
+					m_AllWorkspaces[i].transform.rotation = temp;
+
 					m_AllWorkspaces[i].OnDoubleTriggerTapAboveHMD();
+				}
+			}
+			else
+			{
+				resetWorkspaces();
 			}
 		}
 		m_TriggerPressedTimeStamp = Time.realtimeSinceStartup;
@@ -169,7 +183,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 
 	void UpdateWorkspaceManipulation()
 	{
-		float deltaPosY = rayOrigin.position.y - m_RayOriginStartPos.y;
+        float deltaPosY = rayOrigin.position.y - m_RayOriginStartPos.y;
 
 		Quaternion rayOriginCurrentAngle = Quaternion.LookRotation(rayOrigin.up);
 		float deltaAngleY = rayOriginCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
@@ -177,23 +191,18 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 		for(int i = 0; i < m_AllWorkspaces.Length; i++)
 		{
 			//don't move for tiny movements
-			if(Mathf.Abs(deltaPosY) > (1.0f * Time.unscaledDeltaTime))
+			if(Mathf.Abs(deltaPosY) > 0.01f)
 			{
-				m_AllWorkspaces[i].transform.position = new Vector3(m_AllWorkspaces[i].transform.position.x,m_StartPositions[i].y + (deltaPosY * 80.0f * Time.unscaledDeltaTime),m_AllWorkspaces[i].transform.position.z);
+				m_AllWorkspaces[i].transform.position = new Vector3(m_AllWorkspaces[i].transform.position.x,m_StartPositions[i].y + deltaPosY * 1.5f,m_AllWorkspaces[i].transform.position.z);
 				m_StartPositions[i] = m_AllWorkspaces[i].transform.position;
 			}
 
 			//don't rotate for tiny rotations
 			if(Mathf.Abs(deltaAngleY) > (60.0f * Time.unscaledDeltaTime))
-				m_AllWorkspaces[i].transform.RotateAround(VRView.viewerPivot.position,Vector3.up,deltaAngleY);
-
-			//workspaces should look at center on Y axis
-			Quaternion temp = m_AllWorkspaces[i].transform.rotation;
-			temp.SetLookRotation(m_AllWorkspaces[i].transform.position,Vector3.up - VRView.viewerPivot.position);
-			m_AllWorkspaces[i].transform.rotation = temp;
+				m_AllWorkspaces[i].transform.RotateAround(VRView.viewerCamera.transform.position,Vector3.up,deltaAngleY);
 		}
 		//save current pos and angle for next frame math
 		m_RayOriginStartPos = rayOrigin.position;
 		m_RayOriginStartAngle = rayOriginCurrentAngle;
-	}
+    }
 }

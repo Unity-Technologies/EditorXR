@@ -958,8 +958,8 @@ public class EditorVR : MonoBehaviour
 			highlight.setHighlight = m_HighlightModule.SetHighlight;
 
 		var moveWorkspaces = obj as IMoveWorkspaces;
-		//if(moveWorkspaces != null)
-		//	moveWorkspaces.active = false;
+		if(moveWorkspaces != null)
+			moveWorkspaces.resetWorkspaces = CreateDefaultWorkspaces;
 
 		var placeObjects = obj as IPlaceObjects;
 		if (placeObjects != null)
@@ -1155,6 +1155,14 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
+		if(m_AllWorkspaces.Count > 0)
+		{
+			foreach(var ws in m_AllWorkspaces)
+			{
+				U.Object.Destroy(ws);
+			}
+		}
+
 		CreateWorkspace<InspectorWorkspace>();
 		CreateWorkspace<ProjectWorkspace>();
 	}
