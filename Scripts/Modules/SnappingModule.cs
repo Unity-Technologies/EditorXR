@@ -262,15 +262,7 @@ public class SnappingModule : MonoBehaviour, IModule
 		float deltaTime = Time.unscaledDeltaTime;
 		float deltaVelocity = snapData.currentVelocity * deltaTime;
 		Vector3 deltaMovement = snapData.throwDirection * deltaVelocity;
-		bool validMovement = true;
-		for (int i = 0; i < 3; i++)
-		{
-			if (float.IsInfinity(deltaMovement[i]) || float.IsNaN(deltaMovement[i]))
-			{
-				validMovement = false;
-				break;
-			}
-		}
+		bool validMovement = IsValidMovement(deltaMovement);
 
 		if (validMovement)
 			target.position += deltaMovement;
@@ -279,20 +271,7 @@ public class SnappingModule : MonoBehaviour, IModule
 
 		if (snapData.hasCollision)
 		{
-			Ray throwRay = snapData.throwRay;
-			throwRay.origin = snapData.startPosition;
-
-			Vector3 targetPoint = throwRay.GetPoint(snapData.startDistance);
-			Vector3 targetPosition = target.position;
-
-			bool isClose = Vector3.Distance(targetPosition, targetPoint) < deltaVelocity;
-			bool overshot = Vector3.Distance(targetPosition, snapData.startPosition) > snapData.startDistance;
-
-			if (isClose || overshot)
-			{
-				target.position = targetPoint;
-				snapData.currentVelocity = -1;
-			}
+			HandleThrowCollision(snapData, target, deltaVelocity);
 		}
 		else
 		{
@@ -301,6 +280,37 @@ public class SnappingModule : MonoBehaviour, IModule
 		}
 
 		m_SnapDataTable[target] = snapData;
+	}
+
+	private void HandleThrowCollision(ObjectSnapData snapData, Transform target, float deltaVelocity)
+	{
+		Ray throwRay = snapData.throwRay;
+		throwRay.origin = snapData.startPosition;
+
+		Vector3 targetPoint = throwRay.GetPoint(snapData.startDistance);
+		Vector3 targetPosition = target.position;
+
+		bool isClose = Vector3.Distance(targetPosition, targetPoint) < deltaVelocity;
+		bool overshot = Vector3.Distance(targetPosition, snapData.startPosition) > snapData.startDistance;
+
+		if (isClose || overshot)
+		{
+			target.position = targetPoint;
+			snapData.currentVelocity = -1;
+		}
+	}
+
+	private bool IsValidMovement(Vector3 movement)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			if (float.IsInfinity(movement[i]) || float.IsNaN(movement[i]))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

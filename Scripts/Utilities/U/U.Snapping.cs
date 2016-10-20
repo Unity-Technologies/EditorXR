@@ -77,13 +77,8 @@ namespace UnityEngine.VR.Utilities
 
 			public static bool GetRaySnapHit(Ray ray, float distance, out RaycastHit hit, params Transform[] raycastIgnore)
 			{
-				RaycastHit[] hits = new RaycastHit[10];
-				int hitCount = Physics.RaycastNonAlloc(
-					ray,
-					hits,
-					distance,
-					VRView.viewerCamera.cullingMask,
-					QueryTriggerInteraction.Ignore);
+				RaycastHit[] hits;
+				int hitCount = GetRaycastHits(ray, distance, out hits);
 
 				float closestDistance = distance;
 				int closestIndex = -1;
@@ -92,16 +87,7 @@ namespace UnityEngine.VR.Utilities
 				{
 					if (hits[i].distance < closestDistance)
 					{
-						bool skip = false;
-
-						for (int j = 0; j < raycastIgnore.Length; j++)
-						{
-							if (raycastIgnore[j].Equals(hits[i].collider.transform))
-							{
-								skip = true;
-								break;
-							}
-						}
+						bool skip = IsIgnored(hits[i].transform, raycastIgnore);
 
 						if (!skip)
 						{
@@ -123,79 +109,29 @@ namespace UnityEngine.VR.Utilities
 				}
 			}
 
-			public static bool GetBoxSnapHit(Transform target, Ray ray, Vector3 extents, float distance, out RaycastHit hit, params Transform[] raycastIgnore)
+			private static int GetRaycastHits(Ray ray, float distance, out RaycastHit[] hits)
 			{
-				RaycastHit[] hits = new RaycastHit[10];
-				int hitCount = Physics.BoxCastNonAlloc(
-					ray.origin,
-					extents,
-					ray.direction,
+				hits = new RaycastHit[10];
+				int hitCount = Physics.RaycastNonAlloc(
+					ray,
 					hits,
-					target.rotation,
 					distance,
 					VRView.viewerCamera.cullingMask,
 					QueryTriggerInteraction.Ignore);
 
-				float closestDistance = distance;
-				int closestIndex = -1;
-				Vector3 zeroVector = Vector3.zero;
+				return hitCount;
+			}
+
+			public static bool GetBoxSnapHit(Transform target, Ray ray, Vector3 extents, float distance, out RaycastHit hit, params Transform[] raycastIgnore)
+			{
+				RaycastHit[] hits;
+				int hitCount = GetBoxcastHits(ray, extents, target.rotation, distance, out hits);
+				
 				Matrix4x4 localToWorld = target.localToWorldMatrix;
+				var meshFilter = target.GetComponent<MeshFilter>();
+				var mesh = meshFilter.sharedMesh;
 
-				for (int i = 0; i < hitCount; i++)
-				{
-					var rayHit = hits[i];
-					if (rayHit.distance < closestDistance)
-					{
-						bool skip = false;
-
-						for (int j = 0; j < raycastIgnore.Length; j++)
-						{
-							if (raycastIgnore[j].Equals(rayHit.transform))
-							{
-								skip = true;
-								break;
-							}
-						}
-
-						if (!skip && rayHit.distance < closestDistance)
-						{
-							float dot = Vector3.Dot(ray.direction, rayHit.normal);
-							bool isTouching = rayHit.point == zeroVector && dot == -1;
-
-							if (dot < 0 && !isTouching)
-							{
-								closestIndex = i;
-								closestDistance = rayHit.distance;
-							}
-							else if (isTouching)
-							{
-								var meshFilter = target.GetComponent<MeshFilter>();
-								var mesh = meshFilter.sharedMesh;
-
-								int vertexCount = mesh.vertexCount;
-								Vector3[] vertices = mesh.vertices;
-
-								for (int v = 0; v < vertexCount; v++)
-								{
-									Ray localRay = new Ray(localToWorld.MultiplyPoint(vertices[v]), ray.direction);
-									localRay.origin = localRay.GetPoint(-distance);
-									RaycastHit localHit;
-
-									if (rayHit.collider.Raycast(localRay, out localHit, float.PositiveInfinity))
-									{
-										float localDot = Vector3.Dot(ray.direction, localHit.normal);
-										if (localDot < 0)
-										{
-											closestIndex = i;
-											closestDistance = rayHit.distance;
-										}
-										break;
-									}
-								}
-							}
-						}
-					}
-				}
+				int closestIndex = GetClosestHit(hitCount, hits, distance, ray, raycastIgnore, mesh, localToWorld);
 
 				if (closestIndex > -1)
 				{
@@ -207,6 +143,97 @@ namespace UnityEngine.VR.Utilities
 					hit = default(RaycastHit);
 					return false;
 				}
+			}
+
+			private static int GetClosestHit(int hitCount, RaycastHit[] hits, float distance, Ray ray, Transform[] raycastIgnore, Mesh mesh, Matrix4x4 localToWorld)
+			{
+				int closestIndex = -1;
+				float closestDistance = distance;
+
+				int vertexCount = mesh.vertexCount;
+				Vector3[] vertices = mesh.vertices;
+
+				for (int i = 0; i < hitCount; i++)
+				{
+					var rayHit = hits[i];
+					if (rayHit.distance < closestDistance)
+					{
+						bool skip = IsIgnored(rayHit.transform, raycastIgnore);
+
+						if (!skip && rayHit.distance < closestDistance)
+						{
+							float dot = Vector3.Dot(ray.direction, rayHit.normal);
+							bool isTouching = rayHit.point == Vector3.zero && dot == -1;
+
+							if (dot < 0 && !isTouching)
+							{
+								closestIndex = i;
+								closestDistance = rayHit.distance;
+							}
+							else if (isTouching)
+							{
+								if (IsMovementValidOnTouch(ray, rayHit, localToWorld, vertices, vertexCount, distance))
+								{
+									closestIndex = i;
+									closestDistance = rayHit.distance;
+								}
+							}
+						}
+					}
+				}
+
+				return closestIndex;
+			}
+
+			private static bool IsMovementValidOnTouch(Ray ray, RaycastHit rayHit, Matrix4x4 localToWorld, Vector3[] vertices, int vertexCount, float distance)
+			{
+				for (int v = 0; v < vertexCount; v++)
+				{
+					var worldVertex = localToWorld.MultiplyPoint(vertices[v]);
+
+					Ray localRay = new Ray(worldVertex, ray.direction);
+					localRay.origin = localRay.GetPoint(-distance);
+
+					RaycastHit localHit;
+					if (rayHit.collider.Raycast(localRay, out localHit, float.PositiveInfinity))
+					{
+						float localDot = Vector3.Dot(ray.direction, localHit.normal);
+						if (localDot < 0)
+						{
+							return true;
+						}
+						break;
+					}
+				}
+
+				return false;
+			}
+
+			private static int GetBoxcastHits(Ray ray, Vector3 extents, Quaternion rotation, float distance, out RaycastHit[] hits)
+			{
+				hits = new RaycastHit[10];
+				int hitCount = Physics.BoxCastNonAlloc(
+					ray.origin,
+					extents,
+					ray.direction,
+					hits,
+					rotation,
+					distance,
+					VRView.viewerCamera.cullingMask,
+					QueryTriggerInteraction.Ignore);
+
+				return hitCount;
+			}
+
+			private static bool IsIgnored(Transform objectToCheck, Transform[] ignoreList)
+			{
+				for (int i = 0; i < ignoreList.Length; i++)
+				{
+					if (ignoreList[i].Equals(objectToCheck))
+						return true;
+				}
+
+				return false;
 			}
 
 			public static Vector3 GetClosestVertex(MeshFilter target, Vector3 surfacePoint, Vector3 surfaceNormal, bool singleAxisAwayFromSurface = true)
