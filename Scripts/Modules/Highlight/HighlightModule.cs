@@ -1,7 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.VR;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class HighlightModule : MonoBehaviour
 {
@@ -10,7 +8,7 @@ public class HighlightModule : MonoBehaviour
 
 	private readonly Dictionary<GameObject, int> m_HighlightCounts = new Dictionary<GameObject, int>();
 
-	void Update()
+	void LateUpdate()
 	{
 		foreach (var go in m_HighlightCounts.Keys)
 		{

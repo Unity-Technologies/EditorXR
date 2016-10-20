@@ -64,7 +64,7 @@ Shader "StandardOverlay"
 
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
-			ZTest On
+			ZTest Off
 			Offset 0, -1
 
 			CGPROGRAM
