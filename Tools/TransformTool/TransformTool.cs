@@ -10,7 +10,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IDirectSelection, IBlockUIInput
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IDirectSelection, IBlockUIInput, IOverShoulderCheck, IDeleteSceneObjects
 {
 	const float kBaseManipulatorSize = 0.3f;
 	const float kLazyFollowTranslate = 8f;
@@ -90,6 +90,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
 
 	public Action<bool> setInputBlocked { private get; set; }
+
+	public Func<Transform, bool> isOverShoulder { private get; set; }
+
+	public Action<GameObject> deleteSceneObject { private get; set; }
 
 	void Awake()
 	{
@@ -386,10 +390,13 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	void DropObject(Node inputNode)
 	{
-		// Droppin the player head updates the viewer pivot
-		var grabbedObject = m_GrabData[inputNode].grabbedObject;
-		if (grabbedObject.tag == EditorVR.kVRPlayerTag)
+		var grabData = m_GrabData[inputNode];
+		var grabbedObject = grabData.grabbedObject;
+
+		if (grabbedObject.tag == EditorVR.kVRPlayerTag) // Dropping the player head updates the viewer pivot
 			StartCoroutine(UpdateViewerPivot(grabbedObject));
+		else if (isOverShoulder(grabData.rayOrigin))
+			deleteSceneObject(grabbedObject.gameObject);
 
 		m_GrabData.Remove(inputNode);
 		if (m_GrabData.Count == 0)

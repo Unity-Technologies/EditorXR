@@ -5,10 +5,11 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
+public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IOverShoulderCheck
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 	const float kPaneMargin = 0.01f;
@@ -38,6 +39,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 	public PreviewDelegate preview { private get; set; }
+
+	public Func<Transform, bool> isOverShoulder { private get; set; }
 
 	public override void Setup()
 	{
@@ -70,6 +73,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		assetListView.placeObject = placeObject;
 		assetListView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		assetListView.preview = preview;
+		assetListView.isOverShoulder = isOverShoulder;
 
 #if UNITY_EDITOR
 		EditorApplication.projectWindowChanged += SetupFolderList;

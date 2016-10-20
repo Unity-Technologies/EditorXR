@@ -994,6 +994,14 @@ public class EditorVR : MonoBehaviour
 		if (blockInput != null)
 			blockInput.setInputBlocked = SetUIInputBlocked;
 
+		var deleteSceneObjects = obj as IDeleteSceneObjects;
+		if (deleteSceneObjects != null)
+			deleteSceneObjects.deleteSceneObject = DeleteSceneObject;
+
+		var overShoulderCheck = obj as IOverShoulderCheck;
+		if (overShoulderCheck != null)
+			overShoulderCheck.isOverShoulder = IsOverShoulder;
+
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_MainMenuTools;
@@ -1434,7 +1442,7 @@ public class EditorVR : MonoBehaviour
 				m_TransformTool.DropHeldObject(dragObjectTransform);
 
 				// If the user has pulled an object out of the MiniWorld, use PlaceObject to grow it back to its original scale
-				if (!isContained)
+				if (!isContained && !IsOverShoulder(originalRayOrigin))
 					PlaceObject(dragObjectTransform, miniWorldRay.dragObjectOriginalScale);
 
 				miniWorldRay.dragObject = null;
@@ -1598,6 +1606,29 @@ public class EditorVR : MonoBehaviour
 	{
 		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
 		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
+	}
+
+	bool IsOverShoulder(Transform rayOrigin)
+	{
+		var radius = GetPointerLength(rayOrigin);
+		var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
+		foreach (var collider in colliders)
+		{
+			if (collider.tag == kVRPlayerTag)
+				return true;
+		}
+		return false;
+	}
+
+	void DeleteSceneObject(GameObject sceneObject)
+	{
+		var renderers = sceneObject.GetComponentsInChildren<Renderer>(true);
+		foreach (var renderer in renderers)
+		{
+			m_SpatialHashModule.spatialHash.RemoveObject(renderer);
+		}
+
+		U.Object.Destroy(sceneObject);
 	}
 
 #if UNITY_EDITOR

@@ -5,10 +5,10 @@ using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Helpers;
-using UnityEngine.VR.Modules;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
+public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, IOverShoulderCheck
 {
 	private const float kPreviewDuration = 0.1f;
 
@@ -128,6 +128,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 	}
 
 	public Action<Transform, Vector3> placeObject { private get; set; }
+	
+	public Func<Transform, bool> isOverShoulder { private get; set; }
 
 	public override void Setup(AssetData listData)
 	{
@@ -266,23 +268,27 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
+		var rayOrigin = eventData.rayOrigin;
 
-		if (gridItem.m_PreviewObject)
-			placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
-		else
+		if (!isOverShoulder(rayOrigin))
 		{
-			switch (data.type)
+			if (gridItem.m_PreviewObject)
+				placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
+			else
 			{
-				case "Prefab":
-					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
-					break;
-				case "Model":
-					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
-					break;
+				switch (data.type)
+				{
+					case "Prefab":
+						Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+						break;
+					case "Model":
+						Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+						break;
+				}
 			}
 		}
 
-		StartCoroutine(AnimatedHide(m_DragObject.gameObject, gridItem.m_Cube, eventData.rayOrigin));
+		StartCoroutine(AnimatedHide(m_DragObject.gameObject, gridItem.m_Cube, rayOrigin));
 	}
 
 	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
