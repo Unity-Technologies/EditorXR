@@ -34,6 +34,9 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
+	// TODO: Uncomment after merge with dev/schoen/bugfix-b
+	//public Action<bool> setInputBlocked { get; set; }
+
 	void Update()
 	{
 		if (rayOrigin == null)
@@ -119,6 +122,4 @@ public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActi
 			m_HoverGameObject = null;
 		}
 	}
-
-	public Action<bool> setInputBlocked { get; set; }
 }
