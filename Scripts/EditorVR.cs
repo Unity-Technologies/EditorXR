@@ -1324,6 +1324,7 @@ public class EditorVR : MonoBehaviour
 		{
 			var miniWorldRayOrigin = ray.Key;
 			var miniWorldRay = ray.Value;
+
 			if (!miniWorldRay.proxy.active)
 			{
 				miniWorldRayOrigin.gameObject.SetActive(false);
@@ -1349,10 +1350,13 @@ public class EditorVR : MonoBehaviour
 
 			var pointerLengthDiff = GetPointerLength(miniWorldRayOrigin) - GetPointerLength(originalRayOrigin);
 
+			// If the original ray was directly manipulating an object, we need to transfer ownership when it enters the MiniWorld
 			var heldObject = m_TransformTool.GetHeldObject(originalRayOrigin);
 			if (heldObject && isContained && !miniWorldRay.wasContained)
 				m_TransformTool.TransferHeldObject(originalRayOrigin, miniWorldRayOrigin, pointerLengthDiff * Vector3.forward);
 
+			// In the case where we have transferred an object, transfer it back if it leaves the MiniWorld
+			// This is a different case from when an object was first grabbed within the MiniWorld and becomes a preview, because miniWorldRay.dragObject is not set
 			heldObject = m_TransformTool.GetHeldObject(miniWorldRayOrigin);
 			if (heldObject && !isContained && miniWorldRay.wasContained)
 				m_TransformTool.TransferHeldObject(miniWorldRayOrigin, originalRayOrigin, pointerLengthDiff * Vector3.back);
@@ -1363,7 +1367,8 @@ public class EditorVR : MonoBehaviour
 
 				if (dragObject)
 				{
-					// If two rays are allowed to grab an object, it will be dropped for each trigger release
+					// Only one ray can grab an object, otherwise PlaceObject is called on each trigger release
+					// This does not prevent TransformTool from doing two-handed scaling
 					var otherRayHasObject = false;
 					foreach (var otherRay in m_MiniWorldRays.Values)
 					{
@@ -1396,6 +1401,7 @@ public class EditorVR : MonoBehaviour
 			{
 				if (isContained)
 				{
+					// Scale the object back to its original scale when it re-enters the MiniWorld
 					if (!miniWorldRay.wasContained)
 						dragObjectTransform.localScale = miniWorldRay.dragObjectOriginalScale;
 				}
@@ -1403,16 +1409,19 @@ public class EditorVR : MonoBehaviour
 				{
 					if (dragObjectTransform.tag == kVRPlayerTag)
 					{
-						// Drop player at edge of chessboard
+						// Drop player at edge of MiniWorld
 						m_TransformTool.DropHeldObject(dragObjectTransform.transform);
 						miniWorldRay.dragObject = null;
 					}
 					else
 					{
+						// Store the original scale in case the object re-enters the MiniWorld
 						if (miniWorldRay.wasContained)
 							miniWorldRay.dragObjectOriginalScale = dragObjectTransform.localScale;
 
+						// Disable direct manipulation to take control of object
 						m_TransformTool.directManipulationEnabled = false;
+
 						dragObjectTransform.localScale = miniWorldRay.dragObjectPreviewScale;
 						m_ObjectPlacementModule.Preview(dragObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
 					}
@@ -1424,6 +1433,7 @@ public class EditorVR : MonoBehaviour
 			{
 				m_TransformTool.DropHeldObject(dragObjectTransform);
 
+				// If the user has pulled an object out of the MiniWorld, use PlaceObject to grow it back to its original scale
 				if (!isContained)
 					PlaceObject(dragObjectTransform, miniWorldRay.dragObjectOriginalScale);
 

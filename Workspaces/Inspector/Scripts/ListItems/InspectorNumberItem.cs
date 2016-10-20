@@ -139,6 +139,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 			foreach (var tickButton in m_TickButtons)
 				tickButton.gameObject.SetActive(true);
+
 			foreach (var scrubIcon in m_ScrubIcons)
 				scrubIcon.gameObject.SetActive(false);
 		}

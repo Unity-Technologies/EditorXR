@@ -71,18 +71,19 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	PivotRotation m_PivotRotation = PivotRotation.Local;
 	PivotMode m_PivotMode = PivotMode.Pivot;
 
+	public bool directManipulationEnabled { get { return m_DirectManipulationEnabled; } set { m_DirectManipulationEnabled = value; } }
+	bool m_DirectManipulationEnabled = true;
+
 	readonly Dictionary<Node, GrabData> m_GrabData = new Dictionary<Node, GrabData>();
 	bool m_DirectSelected;
-	float m_ZoomStartDistance;
-	Node m_ZoomFirstNode;
+	float m_ScaleStartDistance;
+	Node m_ScaleFirstNode;
 	float m_ScaleFactor;
 	bool m_WasScaling;
 
 	TransformInput m_TransformInput;
 
 	public ActionMap actionMap { get { return m_TransformActionMap; } }
-
-	public bool directManipulationEnabled { get; set; }
 
 	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput)value; } }
 
@@ -92,7 +93,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	void Awake()
 	{
-		directManipulationEnabled = true;
 		// Add standard and scale manipulator prefabs to a list (because you cannot add asset references directly to a serialized list)
 		if (m_StandardManipulatorPrefab != null)
 			m_AllManipulators.Add(CreateManipulator(m_StandardManipulatorPrefab));
@@ -107,6 +107,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	public void OnSelectionChanged()
 	{
 		m_SelectionTransforms = Selection.GetTransforms(SelectionMode.Editable);
+
+		// Reset direct selection state in case of a ray selection
 		m_DirectSelected = false;
 
 		if (m_SelectionTransforms.Length == 0)
@@ -118,25 +120,29 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	void Update()
 	{
 		var hasObject = false;
-		if (directManipulationEnabled)
+		if (m_DirectManipulationEnabled)
 		{
 			var directSelection = getDirectSelection();
 			var hasLeft = m_GrabData.ContainsKey(Node.LeftHand);
 			var hasRight = m_GrabData.ContainsKey(Node.RightHand);
 			hasObject = directSelection.Count > 0 || hasLeft || hasRight;
 
+			// Disable manipulator on direct hover or drag
 			if (m_CurrentManipulator.activeSelf && hasObject)
 				m_CurrentManipulator.SetActive(false);
 
 			foreach (var kvp in directSelection)
 			{
 				var selection = kvp.Value;
+
+				// Only MiniWorldRays can grab the player head
 				if (selection.gameObject.tag == EditorVR.kVRPlayerTag && !selection.isMiniWorldRay)
 					continue;
 
 				var directSelectInput = (DirectSelectInput)selection.input;
 				if (directSelectInput.select.wasJustPressed)
 				{
+					// Detach the player head model so that 
 					if (selection.gameObject.tag == EditorVR.kVRPlayerTag)
 						selection.gameObject.transform.parent = null;
 
@@ -150,8 +156,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 						var otherNode = grabData.Key;
 						if (otherNode != selection.node)
 						{
-							m_ZoomStartDistance = (rayOrigin.position - grabData.Value.rayOrigin.position).magnitude;
-							m_ZoomFirstNode = otherNode;
+							m_ScaleStartDistance = (rayOrigin.position - grabData.Value.rayOrigin.position).magnitude;
+							m_ScaleFirstNode = otherNode;
 							grabData.Value.positionOffset = grabbedObject.position - grabData.Value.rayOrigin.position;
 							break;
 						}
@@ -160,6 +166,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 					m_GrabData[selection.node] = new GrabData(rayOrigin, grabbedObject, directSelectInput);
 
 					Selection.activeGameObject = grabbedObject.gameObject;
+
+					// A direct selection has been made. Hide the manipulator until the selection changes
+					m_DirectSelected = true;
 				}
 			}
 
@@ -171,13 +180,15 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 			var leftHeld = leftData != null && leftData.input.select.isHeld;
 			var rightHeld = rightData != null && rightData.input.select.isHeld;
-			if (hasLeft && hasRight && leftHeld && rightHeld && leftData.grabbedObject == rightData.grabbedObject)
+			if (hasLeft && hasRight && leftHeld && rightHeld && leftData.grabbedObject == rightData.grabbedObject) // Two-handed scaling
 			{
+				// Offsets will change while scaling. Whichever hand keeps holding the trigger after scaling is done will need to reset itself
 				m_WasScaling = true;
-				m_ScaleFactor = (leftData.rayOrigin.position - rightData.rayOrigin.position).magnitude / m_ZoomStartDistance;
+
+				m_ScaleFactor = (leftData.rayOrigin.position - rightData.rayOrigin.position).magnitude / m_ScaleStartDistance;
 				if (m_ScaleFactor > 0 && m_ScaleFactor < Mathf.Infinity)
 				{
-					if (m_ZoomFirstNode == Node.LeftHand)
+					if (m_ScaleFirstNode == Node.LeftHand)
 					{
 						var rayOrigin = leftData.rayOrigin;
 						var grabbedObject = leftData.grabbedObject;
@@ -192,8 +203,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 						grabbedObject.localScale = rightData.initialScale * m_ScaleFactor;
 					}
 				}
-
-				m_DirectSelected = true;
 			}
 			else
 			{
@@ -214,17 +223,14 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 					var grabbedObject = leftData.grabbedObject;
 					grabbedObject.position = rayOrigin.position + rayOrigin.rotation * leftData.positionOffset;
 					grabbedObject.rotation = rayOrigin.rotation * leftData.rotationOffset;
-
-					m_DirectSelected = true;
 				}
-				else if (hasRight && rightHeld)
+
+				if (hasRight && rightHeld)
 				{
 					var rayOrigin = rightData.rayOrigin;
 					var grabbedObject = rightData.grabbedObject;
 					grabbedObject.position = rayOrigin.position + rayOrigin.rotation * rightData.positionOffset;
 					grabbedObject.rotation = rayOrigin.rotation * rightData.rotationOffset;
-
-					m_DirectSelected = true;
 				}
 			}
 
@@ -235,6 +241,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 				DropObject(Node.RightHand);
 		}
 
+		// Manipulator is disabled while direct manipulation is happening
 		if (hasObject || m_DirectSelected)
 			return;
 
@@ -284,14 +291,16 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	{
 		var viewerPivot = U.Camera.GetViewerPivot();
 
+		// Smooth motion will cause Workspaces to lag behind camera
 		var components = viewerPivot.GetComponentsInChildren<SmoothMotion>();
 		foreach (var smoothMotion in components)
 		{
 			smoothMotion.enabled = false;
 		}
 
-		var renderers = playerHead.GetComponentsInChildren<Renderer>();
-		foreach (var renderer in renderers)
+		// Hide player head to avoid jarring impact
+		var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
+		foreach (var renderer in playerHeadRenderers)
 		{
 			renderer.enabled = false;
 		}
@@ -314,12 +323,15 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		{
 			diffTime = Time.realtimeSinceStartup - startTime;
 			var t = diffTime / kViewerPivotTransitionTime;
+			// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
 			viewerPivot.position = Vector3.Lerp(startPosition, endPosition, t);
 			viewerPivot.rotation = Quaternion.Lerp(startRotation, endRotation, t);
 			yield return null;
 		}
 
 		viewerPivot.position = endPosition;
+		viewerPivot.rotation = endRotation;
+
 		playerHead.parent = mainCamera;
 		playerHead.localRotation = Quaternion.identity;
 		playerHead.localPosition = Vector3.zero;
@@ -329,7 +341,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			smoothMotion.enabled = true;
 		}
 
-		foreach (var renderer in renderers)
+		foreach (var renderer in playerHeadRenderers)
 		{
 			renderer.enabled = true;
 		}
@@ -355,10 +367,11 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			if (grabData.rayOrigin == rayOrigin)
 				return grabData.grabbedObject;
 		}
+
 		return null;
 	}
 
-	public void TransferHeldObject(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset = default(Vector3))
+	public void TransferHeldObject(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset)
 	{
 		foreach (var grabData in m_GrabData.Values)
 		{
@@ -373,6 +386,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	void DropObject(Node inputNode)
 	{
+		// Droppin the player head updates the viewer pivot
 		var grabbedObject = m_GrabData[inputNode].grabbedObject;
 		if (grabbedObject.tag == EditorVR.kVRPlayerTag)
 			StartCoroutine(UpdateViewerPivot(grabbedObject));

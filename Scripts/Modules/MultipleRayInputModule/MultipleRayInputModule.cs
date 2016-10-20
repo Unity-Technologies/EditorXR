@@ -42,7 +42,7 @@ namespace UnityEngine.VR.Modules
 		private ActionMap m_UIActionMap;
 
 		/// <summary>
-		/// Controls input blocking state. Set to true to deactivate all ActionMapInputs and disable the Process method
+		/// Controls input blocking state. Set to true to deactivate all ActionMapInputs and stop processing events
 		/// Use this when dragging objects to avoid activating ActionMapInputs and, as a side-effect, dropping the object when a ray hovers over UI
 		/// </summary>
 		public bool inputBlocked
