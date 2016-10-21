@@ -78,7 +78,7 @@ namespace UnityEngine.VR.Menus
 		public Action<Type> createWorkspace { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
 		public Node? node { private get; set; }
-		public event Action<IMainMenu> menuVisibilityChanged;
+		public event Action<IMainMenu> menuVisibilityChanged = delegate {};
 		public Action setup { get { return Setup; } }
 
 		public bool visible
@@ -116,6 +116,9 @@ namespace UnityEngine.VR.Menus
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
 			m_MainMenuUI.SetupMenuFaces();
+
+			// Default is to show the main menu
+			visible = true;
 		}
 
 		private void Update()

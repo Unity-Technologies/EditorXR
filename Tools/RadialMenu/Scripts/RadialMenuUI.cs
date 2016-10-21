@@ -64,8 +64,10 @@ namespace UnityEngine.VR.Menus
 				gameObject.SetActive(true);
 				if (value && actions.Count > 0)
 					m_ShowCoroutine = StartCoroutine(AnimateShow());
-				else if (m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
+				else if (!value && m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
 					m_HideCoroutine = StartCoroutine(AnimateHide());
+				else if (!value)
+					gameObject.SetActive(false);
 			}
 		}
 		bool m_Visible;
