@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 9e99addd065823d4189ba97c2110682e
-timeCreated: 1472242613
+guid: 94270a0a7a3d4684d97dbbf6df9efbdf
+timeCreated: 1472242621
 licenseType: Pro
 TextureImporter:
   fileIDToRecycleName: {}
@@ -30,7 +30,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     filterMode: 2
-    aniso: 3
+    aniso: 16
     mipBias: -1
     wrapMode: 1
   nPOTScale: 0
@@ -47,18 +47,18 @@ TextureImporter:
   spritePixelsToUnits: 1000
   alphaIsTransparency: 1
   spriteTessellationDetail: -1
-  textureType: 5
+  textureType: 8
   buildTargetSettings:
   - buildTarget: Standalone
-    maxTextureSize: 256
-    textureFormat: 2
+    maxTextureSize: 512
+    textureFormat: -1
     compressionQuality: 50
     allowsAlphaSplitting: 0
   spriteSheet:
     serializedVersion: 2
     sprites: []
     outline: []
-  spritePackingTag: EditorVR
+  spritePackingTag: 
   userData: 
   assetBundleName: 
   assetBundleVariant: 
