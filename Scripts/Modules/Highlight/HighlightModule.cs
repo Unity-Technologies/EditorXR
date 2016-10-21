@@ -11,7 +11,7 @@ public class HighlightModule : MonoBehaviour
 
 	private readonly Dictionary<GameObject, int> m_HighlightCounts = new Dictionary<GameObject, int>();
 
-	void Update()
+	void LateUpdate()
 	{
 		foreach (var go in m_HighlightCounts.Keys)
 		{
