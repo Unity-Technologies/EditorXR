@@ -173,7 +173,7 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		public bool AmplifyTopHighlight
+		public bool amplifyTopHighlight
 		{
 			set
 			{
