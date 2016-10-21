@@ -1361,16 +1361,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_TargetTransforms:
+  - {fileID: 224000010411811242}
+  - {fileID: 224000012392620736}
+  - {fileID: 224000014288641190}
+  m_TargetHighlightTransforms:
   - {fileID: 224000013640895960}
   - {fileID: 224000014166192680}
   - {fileID: 224000011993244754}
   - {fileID: 224000014175291942}
   - {fileID: 224000012491029494}
   - {fileID: 224000012287518296}
-  - {fileID: 224000010411811242}
-  - {fileID: 224000012392620736}
-  - {fileID: 224000014288641190}
   m_CubePrefab: {fileID: 1000010276040456, guid: 351b9999d9db0934a9a3baecc8b9204f,
+    type: 2}
+  m_HighlightCubePrefab: {fileID: 1000010276040456, guid: 4a05b6e57f767f645b04b1f7ef6c0656,
     type: 2}
 --- !u!114 &114000011524206158
 MonoBehaviour:
