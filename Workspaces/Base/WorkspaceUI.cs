@@ -155,7 +155,7 @@ namespace UnityEngine.VR.Workspaces
 				m_FrontHighlight.visible = value;
 
 				this.StopCoroutine(ref m_FrameThicknessCoroutine);
-				m_FrameThicknessCoroutine = value == false ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
+				m_FrameThicknessCoroutine = value ? StartCoroutine(IncreaseFrameThickness()) : StartCoroutine(ResetFrameThickness());
 			}
 		}
 
@@ -173,12 +173,12 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		public bool topFaceVisible
+		public bool AmplifyTopHighlight
 		{
 			set
 			{
 				this.StopCoroutine(ref m_TopFaceVisibleCoroutine);
-				m_TopFaceVisibleCoroutine = value ? StartCoroutine(ShowTopFace()) : StartCoroutine(HideTopFace());
+				m_TopFaceVisibleCoroutine = value ? StartCoroutine(HideTopFace()) : StartCoroutine(ShowTopFace());
 			}
 		}
 
