@@ -46,7 +46,6 @@ namespace UnityEngine.VR.Workspaces
 		Coroutine m_RotateFrontFaceBackwardCoroutine;
 		Coroutine m_FrameThicknessCoroutine;
 		Coroutine m_TopFaceVisibleCoroutine;
-		Material m_TopFaceMaterial;
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -137,6 +136,9 @@ namespace UnityEngine.VR.Workspaces
 
 		[SerializeField]
 		WorkspaceHighlight m_FrontHighlight;
+
+		[SerializeField]
+		Material m_TopFaceMaterial;
 
 		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
 		[SerializeField]
@@ -357,8 +359,9 @@ namespace UnityEngine.VR.Workspaces
 
 			if (m_TopPanelDividerOffset == null)
 				m_TopPanelDividerTransform.gameObject.SetActive(false);
-			// TODO: setup EVR instanced material support
-			m_TopFaceMaterial = m_Frame.sharedMaterials[1];
+
+			m_TopFaceMaterial = Instantiate(m_TopFaceMaterial);
+			m_Frame.materials[1] = m_TopFaceMaterial;
 		}
 
 		void Update()
@@ -408,6 +411,11 @@ namespace UnityEngine.VR.Workspaces
 			var lerpedFrontHandleZAngledOffset = Mathf.Lerp(kFrontHandleLocalZNormalOfset, kFrontHandleLocalZAngledOfset, lerpAmount);
 			var lerpedFrontHandleYLocalPosition = Mathf.Lerp(m_FrontHandleYLocalPosition, m_FrontHandleYLocalPosition + kFrontHandleLocalYAngledOffset, lerpAmount);
 			m_FrontHandleTransform.localPosition = new Vector3(0, lerpedFrontHandleYLocalPosition, -m_Bounds.size.z - m_HandleScale + lerpedFrontHandleZAngledOffset);
+		}
+
+		private void OnDestroy()
+		{
+			U.Object.Destroy(m_TopFaceMaterial);
 		}
 
 		public void CloseClick()
