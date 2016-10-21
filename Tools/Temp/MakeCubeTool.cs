@@ -7,7 +7,7 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay
 {	
 	public Transform rayOrigin { get; set; }
 	public Standard standardInput { get; set; }
-    
+
 	private void Update()
 	{
 		if (standardInput.action.wasJustPressed)

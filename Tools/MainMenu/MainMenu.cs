@@ -180,13 +180,16 @@ namespace UnityEngine.VR.Menus
 		{
 			foreach (var type in types)
 			{
+				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
+				if (customMenuAttribute != null && !customMenuAttribute.shown)
+					continue;
+
 				var isTool = typeof(ITool).IsAssignableFrom(type);
 				var isWorkspace = typeof(Workspace).IsAssignableFrom(type);
 
 				var buttonData = new MainMenuUI.ButtonData();
 				buttonData.name = type.Name;
 
-				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
 				if (customMenuAttribute != null)
 				{
 					buttonData.name = customMenuAttribute.name;
