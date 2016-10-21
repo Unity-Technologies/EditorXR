@@ -13,9 +13,6 @@ namespace UnityEngine.VR.Workspaces
 		const string kMaterialColorTopProperty = "_ColorTop";
 		const string kMaterialColorBottomProperty = "_ColorBottom";
 
-		static Material sSharedMaterialInstance;
-		static UnityBrandColorScheme.GradientPair sOriginalGradientPair;
-
 		[SerializeField]
 		MeshRenderer m_ButtonMeshRenderer;
 
@@ -49,7 +46,8 @@ namespace UnityEngine.VR.Workspaces
 		[Range(0f, 2f)]
 		float m_InitialDelay = 0.5f;
 
-		UnityBrandColorScheme.GradientPair? sHighlightGradientPair;
+		UnityBrandColorScheme.GradientPair m_OriginalGradientPair;
+		UnityBrandColorScheme.GradientPair? m_HighlightGradientPair;
 		Transform m_parentTransform;
 		Vector3 m_IconDirection;
 		Material m_ButtonMaterial;
@@ -103,9 +101,9 @@ namespace UnityEngine.VR.Workspaces
 			get { return m_Pressed; }
 			set
 			{
-				if (m_Highlighted == false)
+				if (!m_Highlighted)
 					value = false;
-				else if (value != m_Pressed && value == true) // proceed only if value is true after previously being false
+				else if (value != m_Pressed && value) // proceed only if value is true after previously being false
 				{
 					m_Pressed = value;
 
@@ -133,7 +131,7 @@ namespace UnityEngine.VR.Workspaces
 					// Stop any existing begin/end highlight coroutine
 					this.StopCoroutine(ref m_HighlightCoroutine);
 
-					m_HighlightCoroutine = m_Highlighted == true ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
+					m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
 				}
 			}
 		}
@@ -143,7 +141,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			m_OriginalColor = m_Icon.color;
 			m_ButtonMaterial = U.Material.GetMaterialClone(m_ButtonMeshRenderer);
-			sOriginalGradientPair = new UnityBrandColorScheme.GradientPair (m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
+			m_OriginalGradientPair = new UnityBrandColorScheme.GradientPair(m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
 			m_VisibleLocalScale = transform.localScale;
 			m_HiddenLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, 0f);
 
@@ -151,8 +149,8 @@ namespace UnityEngine.VR.Workspaces
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * kIconHighlightedLocalZOffset;
 
-			if (sHighlightGradientPair == null)
-				sHighlightGradientPair = UnityBrandColorScheme.sessionGradient;
+			if (m_HighlightGradientPair == null)
+				m_HighlightGradientPair = UnityBrandColorScheme.sessionGradient;
 
 			m_OriginalIconSprite = m_Icon.sprite;
 			// Hookup button OnClick event if there is an alternate icon sprite set
@@ -257,8 +255,8 @@ namespace UnityEngine.VR.Workspaces
 			var bottomColor = Color.clear;
 			var currentTopColor = m_ButtonMaterial.GetColor(kMaterialColorTopProperty);
 			var currentBottomColor = m_ButtonMaterial.GetColor(kMaterialColorBottomProperty);
-			var topHighlightColor = sHighlightGradientPair.Value.a;
-			var bottomHighlightColor = sHighlightGradientPair.Value.b;
+			var topHighlightColor = m_HighlightGradientPair.Value.a;
+			var bottomHighlightColor = m_HighlightGradientPair.Value.b;
 			var currentLocalScale = transform.localScale;
 			var highlightedLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, m_VisibleLocalScale.z * 2);
 			while (transitionAmount < kTargetTransitionAmount)
@@ -292,8 +290,8 @@ namespace UnityEngine.VR.Workspaces
 			var bottomColor = Color.clear;
 			var currentTopColor = m_ButtonMaterial.GetColor(kMaterialColorTopProperty);
 			var currentBottomColor = m_ButtonMaterial.GetColor(kMaterialColorBottomProperty);
-			var topOriginalColor = sOriginalGradientPair.a;
-			var bottomOriginalColor = sOriginalGradientPair.b;
+			var topOriginalColor = m_OriginalGradientPair.a;
+			var bottomOriginalColor = m_OriginalGradientPair.b;
 			var currentLocalScale = transform.localScale;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
