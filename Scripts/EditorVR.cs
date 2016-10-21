@@ -27,6 +27,8 @@ public class EditorVR : MonoBehaviour
 {
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
+	const string kShowInMiniWorldTag = "ShowInMiniWorld";
+
 	private const float kDefaultRayLength = 100f;
 
 	private const float kWorkspaceAnglePadding = 25f;
@@ -366,7 +368,7 @@ public class EditorVR : MonoBehaviour
 		foreach (var workspace in m_AllWorkspaces)
 			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
 
-		UpdateMiniWorldRays();
+		UpdateMiniWorlds();
 
 #if UNITY_EDITOR
 		// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
@@ -1447,6 +1449,7 @@ public class EditorVR : MonoBehaviour
 			Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
 			m_AllWorkspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
+			workspace.isMiniWorldRay = IsMiniWorldRay;
 			ConnectInterfaces(workspace);
 			workspace.transform.position = position;
 			workspace.transform.rotation = rotation;
@@ -1502,8 +1505,27 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void UpdateMiniWorldRays()
+	private void UpdateMiniWorlds()
 	{
+		// Update ignore list
+		var renderers = GetComponentsInChildren<Renderer>(true);
+		var ignoreList = new List<Renderer>(renderers.Length);
+		foreach (var renderer in renderers)
+		{
+			// TODO: Uncomment this when dev/schoen/bugfix-b lands
+			//if (renderer.tag == kVRPlayer)
+			//	continue;
+			if (renderer.tag == kShowInMiniWorldTag)
+				continue;
+			ignoreList.Add(renderer);
+		}
+
+		foreach (var miniWorld in m_MiniWorlds)
+		{
+			miniWorld.ignoreList = ignoreList;
+		}
+
+		// Update MiniWorldRays
 		foreach (var ray in m_MiniWorldRays)
 		{
 			var miniWorldRayOrigin = ray.Key;
@@ -1638,6 +1660,11 @@ public class EditorVR : MonoBehaviour
 				from origin in proxy.rayOrigins
 					where origin.Value.Equals(rayOrigin)
 						select proxy.previewOrigins[origin.Key]).FirstOrDefault();
+	}
+
+	bool IsMiniWorldRay(Transform rayOrigin)
+	{
+		return m_MiniWorldRays.ContainsKey(rayOrigin);
 	}
 
 #if UNITY_EDITOR

@@ -57,6 +57,9 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		m_ScrollStart = eventData.rayOrigin.transform.position;
 		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
 
@@ -65,11 +68,17 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		Scroll(eventData);
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		Scroll(eventData);
 		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
 		m_InspectorUI.inspectorListView.OnScrollEnded();
@@ -83,11 +92,17 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		setHighlight(handle.gameObject, true);
 	}
 
 	void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		setHighlight(handle.gameObject, false);
 	}
 
