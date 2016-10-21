@@ -155,7 +155,7 @@
 				return Vector3.SmoothDamp(current, target, ref currentVelocity, correctSmoothTime, maxSpeed, deltaTime);
 			}
 
-			public static Quaternion YawConstrainRotation(Quaternion rotation)
+			public static Quaternion ConstrainYawRotation(Quaternion rotation)
 			{
 				var euler = rotation.eulerAngles;
 				euler.x = 0;

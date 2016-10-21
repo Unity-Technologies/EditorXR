@@ -1189,7 +1189,7 @@ public class EditorVR : MonoBehaviour
 
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 		var headPosition = cameraTransform.position;
-		var headRotation = U.Math.YawConstrainRotation(cameraTransform.rotation);
+		var headRotation = U.Math.ConstrainYawRotation(cameraTransform.rotation);
 
 		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
 			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
@@ -1317,8 +1317,9 @@ public class EditorVR : MonoBehaviour
 
 	private void UpdateMiniWorldRays()
 	{
-		if (m_TransformTool != null)
-			m_TransformTool.directManipulationEnabled = true;
+		var directSelection = m_TransformTool as IDirectSelection;
+		if (directSelection != null)
+			directSelection.directManipulationEnabled = true;
 
 		foreach (var ray in m_MiniWorldRays)
 		{
@@ -1350,16 +1351,19 @@ public class EditorVR : MonoBehaviour
 
 			var pointerLengthDiff = GetPointerLength(miniWorldRayOrigin) - GetPointerLength(originalRayOrigin);
 
-			// If the original ray was directly manipulating an object, we need to transfer ownership when it enters the MiniWorld
-			var heldObject = m_TransformTool.GetHeldObject(originalRayOrigin);
-			if (heldObject && isContained && !miniWorldRay.wasContained)
-				m_TransformTool.TransferHeldObject(originalRayOrigin, miniWorldRayOrigin, pointerLengthDiff * Vector3.forward);
+			if (directSelection != null)
+			{
+				// If the original ray was directly manipulating an object, we need to transfer ownership when it enters the MiniWorld
+				var heldObject = directSelection.GetHeldObject(originalRayOrigin);
+				if (heldObject && isContained && !miniWorldRay.wasContained)
+					directSelection.TransferHeldObject(originalRayOrigin, miniWorldRayOrigin, pointerLengthDiff * Vector3.forward);
 
-			// In the case where we have transferred an object, transfer it back if it leaves the MiniWorld
-			// This is a different case from when an object was first grabbed within the MiniWorld and becomes a preview, because miniWorldRay.dragObject is not set
-			heldObject = m_TransformTool.GetHeldObject(miniWorldRayOrigin);
-			if (heldObject && !isContained && miniWorldRay.wasContained)
-				m_TransformTool.TransferHeldObject(miniWorldRayOrigin, originalRayOrigin, pointerLengthDiff * Vector3.back);
+				// In the case where we have transferred an object, transfer it back if it leaves the MiniWorld
+				// This is a different case from when an object was first grabbed within the MiniWorld and becomes a preview, because miniWorldRay.dragObject is not set
+				heldObject = directSelection.GetHeldObject(miniWorldRayOrigin);
+				if (heldObject && !isContained && miniWorldRay.wasContained)
+					directSelection.TransferHeldObject(miniWorldRayOrigin, originalRayOrigin, pointerLengthDiff * Vector3.back);
+			}
 
 			if (directSelectInput.select.wasJustPressed)
 			{
@@ -1410,7 +1414,9 @@ public class EditorVR : MonoBehaviour
 					if (dragObjectTransform.tag == kVRPlayerTag)
 					{
 						// Drop player at edge of MiniWorld
-						m_TransformTool.DropHeldObject(dragObjectTransform.transform);
+						if (directSelection != null)
+							directSelection.DropHeldObject(dragObjectTransform.transform);
+
 						miniWorldRay.dragObject = null;
 					}
 					else
@@ -1420,7 +1426,8 @@ public class EditorVR : MonoBehaviour
 							miniWorldRay.dragObjectOriginalScale = dragObjectTransform.localScale;
 
 						// Disable direct manipulation to take control of object
-						m_TransformTool.directManipulationEnabled = false;
+						if (directSelection != null)
+							directSelection.directManipulationEnabled = false;
 
 						dragObjectTransform.localScale = miniWorldRay.dragObjectPreviewScale;
 						m_ObjectPlacementModule.Preview(dragObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
@@ -1431,7 +1438,8 @@ public class EditorVR : MonoBehaviour
 			// Release the current object if the trigger is no longer held
 			if (directSelectInput.select.wasJustReleased)
 			{
-				m_TransformTool.DropHeldObject(dragObjectTransform);
+				if (directSelection != null)
+					directSelection.DropHeldObject(dragObjectTransform);
 
 				// If the user has pulled an object out of the MiniWorld, use PlaceObject to grow it back to its original scale
 				if (!isContained)
@@ -1535,7 +1543,9 @@ public class EditorVR : MonoBehaviour
 			{
 				if (m_UIInputBlocked)
 				{
-					if (m_TransformTool.GetHeldObject(rayOrigin))
+					var directSelection = m_TransformTool as IDirectSelection;
+
+					if (directSelection != null && directSelection.GetHeldObject(rayOrigin))
 						return null;
 
 					foreach (var kvp in m_MiniWorldRays)
@@ -1546,7 +1556,7 @@ public class EditorVR : MonoBehaviour
 						if (miniWorldRay.dragObject && originalRayOrigin == rayOrigin)
 							return null;
 
-						if (m_TransformTool.GetHeldObject(originalRayOrigin) && miniRayOrigin == rayOrigin)
+						if (directSelection != null && directSelection.GetHeldObject(originalRayOrigin) && miniRayOrigin == rayOrigin)
 							return null;
 					}
 				}

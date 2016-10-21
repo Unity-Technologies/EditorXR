@@ -309,7 +309,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		var startPosition = viewerPivot.position;
 		var startRotation = viewerPivot.rotation;
 
-		var rotationDiff = U.Math.YawConstrainRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
+		var rotationDiff = U.Math.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
 		var cameraDiff = viewerPivot.position - mainCamera.position;
 		cameraDiff.y = 0;
 		var rotationOffset = rotationDiff * cameraDiff - cameraDiff;
