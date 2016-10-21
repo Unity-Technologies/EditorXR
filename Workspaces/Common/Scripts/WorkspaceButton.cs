@@ -154,13 +154,16 @@ namespace UnityEngine.VR.Workspaces
 			if (sHighlightGradientPair == null)
 				sHighlightGradientPair = UnityBrandColorScheme.sessionGradient;
 
-			this.StopCoroutine(ref m_VisibilityCoroutine);
-			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
-
 			m_OriginalIconSprite = m_Icon.sprite;
 			// Hookup button OnClick event if there is an alternate icon sprite set
 			if (m_SwapIconsOnClick && m_AlternateIconSprite)
 				m_Button.onClick.AddListener(SwapIconSprite);
+		}
+
+		void OnEnable()
+		{
+			this.StopCoroutine(ref m_VisibilityCoroutine);
+			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
 
 		IEnumerator AnimateShow()
@@ -202,7 +205,7 @@ namespace UnityEngine.VR.Workspaces
 				}
 
 				// Perform the button depth reveal
-				scale = Vector3.SmoothDamp(scale, m_VisibleLocalScale, ref smoothVelocity, 0.25f, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = U.Math.SmoothDamp(scale, m_VisibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
@@ -214,22 +217,27 @@ namespace UnityEngine.VR.Workspaces
 		{
 			m_CanvasGroup.interactable = true;
 
-			var delay = 0f;
-			const float kTargetDelay = 2.5f;
-			var alpha = 0f;
 			const float kTargetAlpha = 1f;
+			const float kRevealDuration = 0.4f;
+			const float kInitialDelayLengthenMultipler = 5f; // used to scale up the initial delay based on the m_InitialDelay value
+			var delay = 0f;
+			var targetDelay = Mathf.Clamp(m_InitialDelay * kInitialDelayLengthenMultipler, 0f, 2.5f); // scale the target delay, with a maximum clamp
+			var alpha = 0f;
 			var opacitySmoothVelocity = 1f;
-			while (!Mathf.Approximately(alpha, kTargetAlpha))
+			var currentDuration = 0f;
+			var targetDuration = targetDelay + kRevealDuration;
+			while (currentDuration < targetDuration)
 			{
+				currentDuration += Time.unscaledDeltaTime;
 				m_CanvasGroup.alpha = alpha;
 
-				while (delay < kTargetDelay)
+				while (delay < targetDelay)
 				{
 					delay += Time.unscaledDeltaTime;
 					yield return null;
 				}
 
-				alpha = Mathf.SmoothDamp(alpha, kTargetAlpha, ref opacitySmoothVelocity, 0.4f, Mathf.Infinity, Time.unscaledDeltaTime);
+				alpha = U.Math.SmoothDamp(alpha, kTargetAlpha, ref opacitySmoothVelocity, targetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
@@ -241,9 +249,9 @@ namespace UnityEngine.VR.Workspaces
 		{
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
-			var transitionAmount = Time.unscaledDeltaTime;
 			const float kTargetTransitionAmount = 1f;
-			float shapedTransitionAmount = 0f;
+			var transitionAmount = Time.unscaledDeltaTime;
+			var shapedTransitionAmount = 0f;
 			var topColor = Color.clear;
 			var bottomColor = Color.clear;
 			var currentTopColor = m_ButtonMaterial.GetColor(kMaterialColorTopProperty);
@@ -273,10 +281,11 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator EndHighlight()
 		{
+			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsEndHighlight());
 
-			var transitionAmount = Time.unscaledDeltaTime;
 			const float kTargetTransitionAmount = 1f;
+			var transitionAmount = Time.unscaledDeltaTime;
 			var shapedTransitionAmount = 0f;
 			var topColor = Color.clear;
 			var bottomColor = Color.clear;
