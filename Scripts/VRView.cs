@@ -272,12 +272,8 @@ namespace UnityEditor.VR
 			// Always render camera into a RT
 			var hdr = false; // SceneViewIsRenderingHDR();
 			CreateCameraTargetTexture(cameraRect, hdr);
-			var showDeviceViewOnDefaultCamera = !customPreviewCamera && m_ShowDeviceView;
 			m_Camera.targetTexture = m_ShowDeviceView ? m_SceneTargetTexture : null;
-			VRSettings.showDeviceView = showDeviceViewOnDefaultCamera;
-
-			if (customPreviewCamera)
-				customPreviewCamera.targetTexture = m_SceneTargetTexture;
+			VRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
 		}
 
 		private void OnGUI()
