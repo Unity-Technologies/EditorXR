@@ -247,6 +247,7 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
+			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
 			const float kTargetTransitionAmount = 1f;
@@ -322,6 +323,8 @@ namespace UnityEngine.VR.Workspaces
 			var transitionAddMultiplier = pressed == false ? 2 : 5; // Faster transition in for highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
+				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
+
 				foreach (var graphic in m_HighlightItems)
 				{
 					if (graphic != null)
@@ -329,8 +332,13 @@ namespace UnityEngine.VR.Workspaces
 				}
 
 				m_IconContainer.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
-				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
 				yield return null;
+			}
+
+			foreach (var graphic in m_HighlightItems)
+			{
+				if (graphic != null)
+					graphic.color = m_CustomHighlightColor;
 			}
 
 			m_IconContainer.localPosition = targetPosition;
@@ -344,6 +352,8 @@ namespace UnityEngine.VR.Workspaces
 			const float kTransitionSubtractMultiplier = 5f;//18;
 			while (transitionAmount > 0)
 			{
+				transitionAmount -= Time.unscaledDeltaTime * kTransitionSubtractMultiplier;
+
 				foreach (var graphic in m_HighlightItems)
 				{
 					if (graphic != null)
@@ -351,8 +361,13 @@ namespace UnityEngine.VR.Workspaces
 				}
 
 				m_IconContainer.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
-				transitionAmount -= Time.unscaledDeltaTime * kTransitionSubtractMultiplier;
 				yield return null;
+			}
+
+			foreach (var graphic in m_HighlightItems)
+			{
+				if (graphic != null)
+					graphic.color = m_OriginalColor;
 			}
 
 			m_IconContainer.localPosition = m_OriginalIconLocalPosition;
