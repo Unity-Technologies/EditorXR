@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Assertions;
-using UnityEngine.Events;
 using UnityEngine.InputNew;
-using UnityEngine.UI;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay
+	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay
 	{
 		public ActionMap actionMap
 		{
@@ -82,6 +78,7 @@ namespace UnityEngine.VR.Menus
 		public Action<Type> createWorkspace { private get; set; }
 		public Node? node { private get; set; }
 		public Action setup { get { return Setup; } }
+		public Action<object> connectInterfaces { private get; set; }
 
 		public bool visible
 		{
@@ -108,7 +105,7 @@ namespace UnityEngine.VR.Menus
 		public void Setup()
 		{
 			m_MainMenuUI = instantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
-			m_MainMenuUI.instantiateUI = instantiateUI;
+			connectInterfaces(m_MainMenuUI);
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();

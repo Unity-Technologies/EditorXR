@@ -870,6 +870,10 @@ public class EditorVR : MonoBehaviour
 
 	private void ConnectInterfaces(object obj, InputDevice device = null)
 	{
+		var connectInterfaces = obj as IConnectInterfaces;
+		if (connectInterfaces != null)
+			connectInterfaces.connectInterfaces = ConnectInterfaces;
+
 		var mainMenu = obj as IMainMenu;
 
 		if (device != null)
