@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 30b09caaf3dd5374bbbe8248a8a8d0dd
+timeCreated: 1476917998
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_MissingActionIcon: {fileID: 21300000, guid: 15545907e08dab74692cb3d226382ced,
+      type: 3}
+  - m_SlotsMask: {instanceID: 0}
+  - m_RadialMenuSlotTemplate: {instanceID: 0}
+  - m_SlotContainer: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -82,7 +82,7 @@ public class FilterUI : MonoBehaviour
 	{
 		if (show)
 		{
-			StopCoroutine(ref m_HideUICoroutine);
+			this.StopCoroutine(ref m_HideUICoroutine);
 
 			m_HideUICoroutine = StartCoroutine(HideUIContent());
 
@@ -90,7 +90,7 @@ public class FilterUI : MonoBehaviour
 		}
 		else
 		{
-			StopCoroutine(ref m_ShowUICoroutine);
+			this.StopCoroutine(ref m_ShowUICoroutine);
 
 			m_ShowUICoroutine = StartCoroutine(ShowUIContent());
 

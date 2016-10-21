@@ -6,21 +6,17 @@ using UnityEngine.Assertions;
 using UnityEngine.Events;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
+using UnityEngine.VR.Actions;
+using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay
+	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins
 	{
-		public ActionMap actionMap
-		{
-			get
-			{
-				return m_MainMenuActionMap;
-			}
-		}
+		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
 		private ActionMap m_MainMenuActionMap;
 
@@ -60,7 +56,7 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 		private Transform m_MenuOrigin;
-		
+
 		[SerializeField]
 		private MainMenuUI m_MainMenuPrefab;
 
@@ -69,7 +65,7 @@ namespace UnityEngine.VR.Menus
 		private float m_RotationInputStartValue;
 		private float m_RotationInputIdleTime;
 		private float m_LastRotationInput;
-		
+
 		public Func<GameObject, GameObject> instantiateUI { private get; set; }
 		public Transform rayOrigin { private get; set; }
 		public Action hideDefaultRay { private get; set; }
@@ -80,7 +76,9 @@ namespace UnityEngine.VR.Menus
 		public Func<Node, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
 		public Action<Type> createWorkspace { private get; set; }
+		public List<ActionMenuData> menuActions { get; set; }
 		public Node? node { private get; set; }
+		public event Action<IMainMenu> menuVisibilityChanged;
 		public Action setup { get { return Setup; } }
 
 		public bool visible
@@ -101,6 +99,8 @@ namespace UnityEngine.VR.Menus
 						unlockRay(this);
 						showDefaultRay();
 					}
+
+					menuVisibilityChanged(this);
 				}
 			}
 		}
@@ -112,7 +112,7 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
-
+			
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
 			m_MainMenuUI.SetupMenuFaces();
@@ -120,7 +120,7 @@ namespace UnityEngine.VR.Menus
 
 		private void Update()
 		{
-			var rotationInput = m_MainMenuInput.rotate.rawValue;
+			var rotationInput = -m_MainMenuInput.rotate.rawValue;
 			if (Mathf.Approximately(rotationInput, m_LastRotationInput) && Mathf.Approximately(rotationInput, 0f))
 			{
 				m_RotationInputIdleTime += Time.unscaledDeltaTime;
