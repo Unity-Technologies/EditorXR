@@ -43,8 +43,13 @@ namespace UnityEngine.VR.Workspaces
 
 		[SerializeField]
 		Graphic[] m_HighlightItems;
-		UnityBrandColorScheme.GradientPair? sHighlightGradientPair;
 
+		[Tooltip("Default value is 0.5")]
+		[SerializeField]
+		[Range(0f, 2f)]
+		float m_InitialDelay = 0.5f;
+
+		UnityBrandColorScheme.GradientPair? sHighlightGradientPair;
 		Transform m_parentTransform;
 		Vector3 m_IconDirection;
 		Material m_ButtonMaterial;
@@ -150,7 +155,6 @@ namespace UnityEngine.VR.Workspaces
 				sHighlightGradientPair = UnityBrandColorScheme.sessionGradient;
 
 			this.StopCoroutine(ref m_VisibilityCoroutine);
-
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 
 			m_OriginalIconSprite = m_Icon.sprite;
@@ -165,38 +169,36 @@ namespace UnityEngine.VR.Workspaces
 			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 0f);
 
 			this.StopCoroutine(ref m_ContentVisibilityCoroutine);
-
 			m_ContentVisibilityCoroutine = StartCoroutine(ShowContent());
 
+			const float kInitialRevealDuration = 0.5f;
+			const float kScaleRevealDuration = 0.25f;
 			var delay = 0f;
-			const float kTargetDelay = 0.5f;
 			var scale = m_HiddenLocalScale;
 			var smoothVelocity = Vector3.zero;
 			var hiddenLocalYScale = new Vector3(m_HiddenLocalScale.x, 0f, 0f);
-			while (!Mathf.Approximately(scale.z, m_VisibleLocalScale.z)) // Z axis scales during the reveal
+			var currentDuration = 0f;
+			var totalDuration = m_InitialDelay + kInitialRevealDuration + kScaleRevealDuration;
+			while (currentDuration < totalDuration)
 			{
+				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = scale;
 				m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, scale.z);
 
-				// Perform nested delay the first time stepping through the while loop
-				while (delay < kTargetDelay)
+				// Perform initial delay
+				while (delay < m_InitialDelay)
 				{
 					delay += Time.unscaledDeltaTime;
-					yield return null;
+					yield return null;	
+				}
 
-					// Perform the button vertical button reveal, after the initial wait
-					if (delay >= kTargetDelay)
-					{
-						delay = 0f;
-						float shapedDelayLerp = 0f;
-						while (delay < kTargetDelay)
-						{
-							delay += Time.unscaledDeltaTime;
-							shapedDelayLerp = delay / kTargetDelay;
-							transform.localScale = Vector3.Lerp(hiddenLocalYScale, m_HiddenLocalScale, shapedDelayLerp * shapedDelayLerp);
-							yield return null;
-						}
-					}
+				// Perform the button vertical button reveal, after the initial wait
+				while (delay < kInitialRevealDuration + m_InitialDelay)
+				{
+					delay += Time.unscaledDeltaTime;
+					var shapedDelayLerp = delay / m_InitialDelay;
+					transform.localScale = Vector3.Lerp(hiddenLocalYScale, m_HiddenLocalScale, shapedDelayLerp * shapedDelayLerp);
+					yield return null;
 				}
 
 				// Perform the button depth reveal
