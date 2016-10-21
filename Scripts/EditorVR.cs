@@ -1259,11 +1259,9 @@ public class EditorVR : MonoBehaviour
 
 				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
 				uiInput.active = false;
-				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
 
 				var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
 				directSelectInput.active = false;
-				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.directSelectInput), directSelectInput);
 
 				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
@@ -1284,6 +1282,8 @@ public class EditorVR : MonoBehaviour
 				};
 
 				m_IntersectionModule.AddTester(tester);
+
+				UpdatePlayerHandleMaps();
 			});
 		};
 	}
