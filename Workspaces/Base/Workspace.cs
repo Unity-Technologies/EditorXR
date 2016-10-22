@@ -106,7 +106,14 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		public bool vacuumEnabled { set { m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value); } }
+		public bool vacuumEnabled
+		{
+			set
+			{
+				if (m_WorkspaceUI)
+					m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value);
+			}
+		}
 
 		public virtual void Setup()
 		{

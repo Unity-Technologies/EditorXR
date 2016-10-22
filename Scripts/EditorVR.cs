@@ -944,6 +944,10 @@ public class EditorVR : MonoBehaviour
 		if (instantiateUI != null)
 			instantiateUI.instantiateUI = InstantiateUI;
 
+		var createWorkspace = obj as ICreateWorkspace;
+		if (createWorkspace != null)
+			createWorkspace.createWorkspace = CreateWorkspace;
+
 		var raycaster = obj as IRaycaster;
 		if (raycaster != null)
 			raycaster.getFirstGameObject = GetFirstGameObject;
@@ -972,7 +976,6 @@ public class EditorVR : MonoBehaviour
 			mainMenu.menuTools = m_MainMenuTools;
 			mainMenu.selectTool = SelectTool;
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
-			mainMenu.createWorkspace = CreateWorkspace;
 			mainMenu.node = GetDeviceNode(device);
 			mainMenu.setup();
 		}
@@ -1167,13 +1170,16 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void CreateWorkspace<T>() where T : Workspace
+	private void CreateWorkspace<T>(Action<Workspace> createdCallback = null) where T : Workspace
 	{
-		CreateWorkspace(typeof(T));
+		CreateWorkspace(typeof(T), createdCallback);
 	}
 
-	private void CreateWorkspace(Type t)
+	private void CreateWorkspace(Type t, Action<Workspace> createdCallback = null)
 	{
+		if (!typeof(Workspace).IsAssignableFrom(t))
+			return;
+
 		var defaultOffset = Workspace.kDefaultOffset;
 		var defaultTilt = Workspace.kDefaultTilt;
 
@@ -1234,6 +1240,9 @@ public class EditorVR : MonoBehaviour
 
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
+
+			if (createdCallback != null)
+				createdCallback(workspace);
 
 			var miniWorld = workspace as IMiniWorld;
 			if (miniWorld == null)

@@ -8,7 +8,7 @@ using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay
+	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, ILockRay
 	{
 		public ActionMap actionMap
 		{
@@ -75,7 +75,7 @@ namespace UnityEngine.VR.Menus
 		public List<Type> menuTools { private get; set; }
 		public Func<Node, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public Action<Type> createWorkspace { private get; set; }
+		public CreateWorkspaceDelegate createWorkspace { private get; set; }
 		public Node? node { private get; set; }
 		public Action setup { get { return Setup; } }
 		public Action<object> connectInterfaces { private get; set; }
