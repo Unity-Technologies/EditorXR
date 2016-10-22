@@ -868,7 +868,12 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void ConnectInterfaces(object obj, InputDevice device = null)
+	private void ConnectInterfaces(object obj)
+	{
+		ConnectInterfaces(obj, null);
+	}
+
+	private void ConnectInterfaces(object obj, InputDevice device)
 	{
 		var connectInterfaces = obj as IConnectInterfaces;
 		if (connectInterfaces != null)
