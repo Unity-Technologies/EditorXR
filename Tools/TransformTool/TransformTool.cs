@@ -174,8 +174,12 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 					Selection.activeGameObject = grabbedObject.gameObject;
 
-					// A direct selection has been made. Hide the manipulator until the selection changes
-					m_DirectSelected = true;
+					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
+					EditorApplication.delayCall += () =>
+					{
+						// A direct selection has been made. Hide the manipulator until the selection changes
+						m_DirectSelected = true;
+					};
 				}
 			}
 
