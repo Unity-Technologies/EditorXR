@@ -14,28 +14,20 @@ namespace UnityEngine.VR.Helpers
 		[SerializeField]
 		RectTransform m_SourceRectTransform;
 
-		protected void Awake()
-		{
-			if (m_SourceRectTransform != transform)
-			{
-				m_TargetTransform = transform;
-				m_TargetTransform.SetParent(m_SourceRectTransform, false);
-			}
-			else
-				Debug.LogError("A valid Transform could not be fetched ");
-		}
-
 		protected override void Start()
 		{
+			m_TargetTransform = transform;
+			m_TargetTransform.SetParent(m_SourceRectTransform, false);
 			DriveTransformWithRectTransform();
 		}
 
-		protected override void OnRectTransformDimensionsChange()
+		void Update()
 		{
-			DriveTransformWithRectTransform();
+			if (m_SourceRectTransform.hasChanged)
+				DriveTransformWithRectTransform();
 		}
 
-		public void DriveTransformWithRectTransform()
+		void DriveTransformWithRectTransform()
 		{
 			if (!m_SourceRectTransform || !m_TargetTransform)
 				return;
@@ -47,7 +39,7 @@ namespace UnityEngine.VR.Helpers
 			// Scale pivot by rect size to get correct xy local position
 			var pivotOffset = Vector2.Scale(rectSize, kTransformPivot - m_SourceRectTransform.pivot);
 
-			// Add space for cuboid
+			// Add space for cube
 			var localPosition = m_SourceRectTransform.localPosition;
 			m_SourceRectTransform.localPosition = new Vector3(localPosition.x, localPosition.y, -kLayerHeight);
 
