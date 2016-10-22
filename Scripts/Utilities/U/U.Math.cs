@@ -162,6 +162,19 @@
 				euler.z = 0;
 				return Quaternion.Euler(euler);
 			}
+
+			public static void GetTransformOffset(Transform from, Transform to, out Vector3 positionOffset, out Quaternion rotationOffset)
+			{
+				var inverseRotation = Quaternion.Inverse(from.rotation);
+				positionOffset = inverseRotation * (to.transform.position - from.position);
+				rotationOffset = inverseRotation * to.transform.rotation;
+			}
+
+			public static void SetTransformOffset(Transform parent, Transform child, Vector3 positionOffset, Quaternion rotationOffset)
+			{
+				child.position = parent.position + parent.rotation * positionOffset;
+				child.rotation = parent.rotation * rotationOffset;
+			}
 		}
 	}
 }

@@ -10,7 +10,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IDirectSelection, IBlockUIInput
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IDirectSelection
 {
 	const float kBaseManipulatorSize = 0.3f;
 	const float kLazyFollowTranslate = 8f;
@@ -36,10 +36,19 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 		public void Reset()
 		{
-			var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
-			positionOffset = inverseRotation * (grabbedObject.transform.position - rayOrigin.position);
-			rotationOffset = inverseRotation * grabbedObject.transform.rotation;
+			U.Math.GetTransformOffset(rayOrigin, grabbedObject, out positionOffset, out rotationOffset);
 			initialScale = grabbedObject.transform.localScale;
+		}
+
+		public void PositionObject()
+		{
+			U.Math.SetTransformOffset(rayOrigin, grabbedObject, positionOffset, rotationOffset);
+		}
+
+		public void ScaleObject(float scaleFactor)
+		{
+			grabbedObject.position = rayOrigin.position + positionOffset * scaleFactor;
+			grabbedObject.localScale = initialScale * scaleFactor;
 		}
 	}
 
@@ -52,8 +61,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	[SerializeField]
 	ActionMap m_TransformActionMap;
 
-	readonly List<GameObject> m_AllManipulators = new List<GameObject>();
-	GameObject m_CurrentManipulator;
+	readonly List<IManipulator> m_AllManipulators = new List<IManipulator>();
+	IManipulator m_CurrentManipulator;
 	int m_CurrentManipulatorIndex;
 
 	Transform[] m_SelectionTransforms;
@@ -89,8 +98,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
 
-	public Action<bool> setInputBlocked { private get; set; }
-
 	void Awake()
 	{
 		// Add standard and scale manipulator prefabs to a list (because you cannot add asset references directly to a serialized list)
@@ -112,24 +119,25 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		m_DirectSelected = false;
 
 		if (m_SelectionTransforms.Length == 0)
-			m_CurrentManipulator.SetActive(false);
+			((MonoBehaviour)m_CurrentManipulator).gameObject.SetActive(false);
 		else
 			UpdateCurrentManipulator();
 	}
 
 	void Update()
 	{
-		var hasObject = false;
-		if (m_DirectManipulationEnabled)
-		{
-			var directSelection = getDirectSelection();
-			var hasLeft = m_GrabData.ContainsKey(Node.LeftHand);
-			var hasRight = m_GrabData.ContainsKey(Node.RightHand);
-			hasObject = directSelection.Count > 0 || hasLeft || hasRight;
+		var manipulatorGameObject = ((MonoBehaviour)m_CurrentManipulator).gameObject;
 
+		var directSelection = getDirectSelection();
+		var hasLeft = m_GrabData.ContainsKey(Node.LeftHand);
+		var hasRight = m_GrabData.ContainsKey(Node.RightHand);
+		var hasObject = directSelection.Count > 0 || hasLeft || hasRight;
+
+		if (m_DirectManipulationEnabled && !m_CurrentManipulator.dragging)
+		{
 			// Disable manipulator on direct hover or drag
-			if (m_CurrentManipulator.activeSelf && hasObject)
-				m_CurrentManipulator.SetActive(false);
+			if (manipulatorGameObject.activeSelf && hasObject)
+				manipulatorGameObject.SetActive(false);
 
 			foreach (var kvp in directSelection)
 			{
@@ -146,7 +154,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 					if (selection.gameObject.tag == EditorVR.kVRPlayerTag)
 						selection.gameObject.transform.parent = null;
 
-					setInputBlocked(true);
 					var grabbedObject = selection.gameObject.transform;
 					var rayOrigin = kvp.Key;
 
@@ -189,19 +196,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 				if (m_ScaleFactor > 0 && m_ScaleFactor < Mathf.Infinity)
 				{
 					if (m_ScaleFirstNode == Node.LeftHand)
-					{
-						var rayOrigin = leftData.rayOrigin;
-						var grabbedObject = leftData.grabbedObject;
-						grabbedObject.position = rayOrigin.position + leftData.positionOffset * m_ScaleFactor;
-						grabbedObject.localScale = leftData.initialScale * m_ScaleFactor;
-					}
+						leftData.ScaleObject(m_ScaleFactor);
 					else
-					{
-						var rayOrigin = rightData.rayOrigin;
-						var grabbedObject = rightData.grabbedObject;
-						grabbedObject.position = rayOrigin.position + rightData.positionOffset * m_ScaleFactor;
-						grabbedObject.localScale = rightData.initialScale * m_ScaleFactor;
-					}
+						rightData.ScaleObject(m_ScaleFactor);
 				}
 			}
 			else
@@ -218,20 +215,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 				}
 
 				if (hasLeft && leftHeld)
-				{
-					var rayOrigin = leftData.rayOrigin;
-					var grabbedObject = leftData.grabbedObject;
-					grabbedObject.position = rayOrigin.position + rayOrigin.rotation * leftData.positionOffset;
-					grabbedObject.rotation = rayOrigin.rotation * leftData.rotationOffset;
-				}
+					leftData.PositionObject();
 
 				if (hasRight && rightHeld)
-				{
-					var rayOrigin = rightData.rayOrigin;
-					var grabbedObject = rightData.grabbedObject;
-					grabbedObject.position = rayOrigin.position + rayOrigin.rotation * rightData.positionOffset;
-					grabbedObject.rotation = rayOrigin.rotation * rightData.rotationOffset;
-				}
+					rightData.PositionObject();
 			}
 
 			if (hasLeft && leftData.input.select.wasJustReleased)
@@ -256,15 +243,14 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			if (m_TransformInput.manipulatorType.wasJustPressed)
 				SwitchManipulator();
 
-			var manipulator = m_CurrentManipulator.GetComponent<IManipulator>();
-			if (manipulator != null && !manipulator.dragging)
+			if (!m_CurrentManipulator.dragging)
 			{
 				UpdateManipulatorSize();
 				UpdateCurrentManipulator();
 			}
 
 			var deltaTime = Time.unscaledDeltaTime;
-			var manipulatorTransform = m_CurrentManipulator.transform;
+			var manipulatorTransform = manipulatorGameObject.transform;
 			manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, kLazyFollowTranslate * deltaTime);
 
 			if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
@@ -349,15 +335,27 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	public void DropHeldObject(Transform obj)
 	{
-		var grabDataCopy = new Dictionary<Node, GrabData>(m_GrabData);
-		foreach (var grabData in grabDataCopy)
+		Vector3 position;
+		Quaternion rotation;
+		DropHeldObject(obj, out position, out rotation);
+	}
+
+	public void DropHeldObject(Transform obj, out Vector3 positionOffset, out Quaternion rotationOffset)
+	{
+		foreach (var kvp in m_GrabData)
 		{
-			if (grabData.Value.grabbedObject == obj)
+			var grabData = kvp.Value;
+			if (grabData.grabbedObject == obj)
 			{
-				DropObject(grabData.Key);
+				positionOffset = grabData.positionOffset;
+				rotationOffset = grabData.rotationOffset;
+				DropObject(kvp.Key);
 				return;
 			}
 		}
+
+		positionOffset = Vector3.zero;
+		rotationOffset = Quaternion.identity;
 	}
 
 	public Transform GetHeldObject(Transform rayOrigin)
@@ -371,7 +369,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		return null;
 	}
 
-	public void TransferHeldObject(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset)
+	public void TransferHeldObject(Transform rayOrigin, ActionMapInput input, Transform destRayOrigin, Vector3 deltaOffset)
 	{
 		foreach (var grabData in m_GrabData.Values)
 		{
@@ -379,9 +377,16 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			{
 				grabData.rayOrigin = destRayOrigin;
 				grabData.positionOffset += deltaOffset;
+				grabData.input = (DirectSelectInput)input;
+				grabData.PositionObject();
 				return;
 			}
 		}
+	}
+
+	public void AddHeldObject(Node node, Transform rayOrigin, Transform grabbedObject, ActionMapInput input)
+	{
+		m_GrabData[node] = new GrabData(rayOrigin, grabbedObject, (DirectSelectInput)input);
 	}
 
 	void DropObject(Node inputNode)
@@ -392,8 +397,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			StartCoroutine(UpdateViewerPivot(grabbedObject));
 
 		m_GrabData.Remove(inputNode);
-		if (m_GrabData.Count == 0)
-			setInputBlocked(false);
 	}
 
 
@@ -446,18 +449,19 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	private void UpdateManipulatorSize()
 	{
 		var camera = U.Camera.GetMainCamera();
-		var distance = Vector3.Distance(camera.transform.position, m_CurrentManipulator.transform.position);
-		m_CurrentManipulator.transform.localScale = Vector3.one * distance * kBaseManipulatorSize;
+		var manipulator = m_CurrentManipulator as MonoBehaviour;
+		var distance = Vector3.Distance(camera.transform.position, manipulator.transform.position);
+		manipulator.transform.localScale = Vector3.one * distance * kBaseManipulatorSize;
 	}
 
-	private GameObject CreateManipulator(GameObject prefab)
+	private IManipulator CreateManipulator(GameObject prefab)
 	{
 		var go = U.Object.Instantiate(prefab, transform, active: false);
 		var manipulator = go.GetComponent<IManipulator>();
 		manipulator.translate = Translate;
 		manipulator.rotate = Rotate;
 		manipulator.scale = Scale;
-		return go;
+		return manipulator;
 	}
 
 	private void UpdateCurrentManipulator()
@@ -466,8 +470,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			return;
 
 		UpdateSelectionBounds();
-		m_CurrentManipulator.SetActive(true);
-		var manipulatorTransform = m_CurrentManipulator.transform;
+		var manipulatorGameObject = ((MonoBehaviour)m_CurrentManipulator).gameObject;
+		manipulatorGameObject.SetActive(true);
+		var manipulatorTransform = manipulatorGameObject.transform;
 		manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? m_SelectionTransforms[0].position : m_SelectionBounds.center;
 		manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : m_SelectionTransforms[0].rotation;
 		m_TargetPosition = manipulatorTransform.position;
@@ -503,7 +508,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	private void SwitchManipulator()
 	{
 		foreach (var manipulator in m_AllManipulators)
-			manipulator.SetActive(false);
+			((MonoBehaviour)manipulator).gameObject.SetActive(false);
 
 		// Go to the next manipulator type in the list
 		m_CurrentManipulatorIndex = (m_CurrentManipulatorIndex + 1) % m_AllManipulators.Count;
