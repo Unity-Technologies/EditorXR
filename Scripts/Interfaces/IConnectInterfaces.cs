@@ -1,15 +1,16 @@
 ﻿using System;
+using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Tools
 {
 	/// <summary>
 	/// Decorates types that need to connect interfaces for spawned objects
 	/// </summary>
-	public interface IInstantiateUI
+	interface IConnectInterfaces
 	{
 		/// <summary>
-		/// Method provided by the system for instantiating UI
+		/// Method provided by the system for connecting interfaces
 		/// </summary>
-		Func<GameObject, GameObject> instantiateUI { set; }
+		Action<object> connectInterfaces { set; }
 	}
 }

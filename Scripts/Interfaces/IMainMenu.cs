@@ -24,11 +24,6 @@ namespace UnityEngine.VR.Menus
 		List<Type> menuWorkspaces { set; }
 
 		/// <summary>
-		/// Delegate used for creating a workspace selected from menu
-		/// </summary>
-		Action<Type> createWorkspace { set; }
-
-		/// <summary>
 		/// The tracked node where this menu is spawned
 		/// </summary>
 		Node? node { set; }
