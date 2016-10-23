@@ -254,6 +254,10 @@ namespace UnityEngine.VR.Workspaces
 				// Scale the Top Face and the Top Face Highlight
 				const float kHighlightDepthCompensation = 0.14f;
 				const float kHighlightWidthCompensation = 0.01f;
+				const float kTopFaceDepthCompensation = 0.144f;
+				const float kTopFaceWidthCompensation = 0.014f;
+				m_TopHighlightContainer.localScale = new Vector3(boundsSize.x - kHighlightWidthCompensation, 1f, boundsSize.z - kHighlightDepthCompensation);
+				m_TopFaceContainer.localScale = new Vector3(boundsSize.x - kTopFaceWidthCompensation, 1f, boundsSize.z - kTopFaceDepthCompensation);
 			}
 		}
 		Bounds m_Bounds;
