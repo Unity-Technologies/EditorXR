@@ -14,7 +14,7 @@ namespace UnityEngine.VR.Helpers
 		[SerializeField]
 		RectTransform m_SourceRectTransform;
 
-		protected override void Start()
+		protected override void Awake()
 		{
 			m_TargetTransform = transform;
 			m_TargetTransform.SetParent(m_SourceRectTransform, false);
@@ -46,7 +46,7 @@ namespace UnityEngine.VR.Helpers
 			//Offset by 0.5 * height to account for pivot in center
 			const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
 			m_TargetTransform.localPosition = new Vector3(pivotOffset.x + kStandardCubeSidePositionPadding, pivotOffset.y, zOffset);
-			m_TargetTransform.localScale = new Vector3(rectSize.x + kStandardCubeSideScalePadding, rectSize.y, kLayerHeight);
+			m_TargetTransform.localScale = new Vector3(rectSize.x + kStandardCubeSideScalePadding, rectSize.y, transform.localScale.z);
 		}
 	}
 }
