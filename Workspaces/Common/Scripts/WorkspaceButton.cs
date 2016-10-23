@@ -53,12 +53,12 @@ namespace UnityEngine.VR.Workspaces
 		Material m_ButtonMaterial;
 		Vector3 m_OriginalIconLocalPosition;
 		Vector3 m_HiddenLocalScale;
-		Vector3 m_VisibleLocalScale;
 		Vector3 m_IconHighlightedLocalPosition;
 		Vector3 m_IconPressedLocalPosition;
 		Vector3 m_IconLookDirection;
 		Color m_OriginalColor;
 		Sprite m_OriginalIconSprite;
+		float m_VisibleLocalZScale;
 
 		// The initial button reveal coroutines, before highlighting
 		Coroutine m_VisibilityCoroutine;
@@ -142,8 +142,8 @@ namespace UnityEngine.VR.Workspaces
 			m_OriginalColor = m_Icon.color;
 			m_ButtonMaterial = U.Material.GetMaterialClone(m_ButtonMeshRenderer);
 			m_OriginalGradientPair = new UnityBrandColorScheme.GradientPair(m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
-			m_VisibleLocalScale = transform.localScale;
-			m_HiddenLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, 0f);
+			m_HiddenLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, 0f);
+			m_VisibleLocalZScale = transform.localScale.z;
 
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
@@ -180,6 +180,7 @@ namespace UnityEngine.VR.Workspaces
 			var hiddenLocalYScale = new Vector3(m_HiddenLocalScale.x, 0f, 0f);
 			var currentDuration = 0f;
 			var totalDuration = m_InitialDelay + kInitialRevealDuration + kScaleRevealDuration;
+			var visibleLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, m_VisibleLocalZScale);
 			while (currentDuration < totalDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
@@ -203,7 +204,7 @@ namespace UnityEngine.VR.Workspaces
 				}
 
 				// Perform the button depth reveal
-				scale = U.Math.SmoothDamp(scale, m_VisibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = U.Math.SmoothDamp(scale, visibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
@@ -258,7 +259,7 @@ namespace UnityEngine.VR.Workspaces
 			var topHighlightColor = m_HighlightGradientPair.Value.a;
 			var bottomHighlightColor = m_HighlightGradientPair.Value.b;
 			var currentLocalScale = transform.localScale;
-			var highlightedLocalScale = new Vector3(m_VisibleLocalScale.x, m_VisibleLocalScale.y, m_VisibleLocalScale.z * 2);
+			var highlightedLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, m_VisibleLocalZScale * 2);
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.unscaledDeltaTime * 3;
@@ -293,6 +294,7 @@ namespace UnityEngine.VR.Workspaces
 			var topOriginalColor = m_OriginalGradientPair.a;
 			var bottomOriginalColor = m_OriginalGradientPair.b;
 			var currentLocalScale = transform.localScale;
+			var targetScale = new Vector3(transform.localScale.x, transform.localScale.y, m_VisibleLocalZScale);
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.unscaledDeltaTime * 3;
@@ -303,13 +305,13 @@ namespace UnityEngine.VR.Workspaces
 				m_ButtonMaterial.SetColor(kMaterialColorTopProperty, topColor);
 				m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, bottomColor);
 
-				transform.localScale = Vector3.Lerp(currentLocalScale, m_VisibleLocalScale, shapedTransitionAmount);
+				transform.localScale = Vector3.Lerp(currentLocalScale, targetScale, shapedTransitionAmount);
 				yield return null;
 			}
 
 			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, topOriginalColor);
 			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, bottomOriginalColor);
-			transform.localScale = m_VisibleLocalScale;
+			transform.localScale = targetScale;
 			m_HighlightCoroutine = null;
 		}
 
