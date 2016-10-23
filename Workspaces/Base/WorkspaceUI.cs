@@ -46,6 +46,7 @@ namespace UnityEngine.VR.Workspaces
 		Coroutine m_RotateFrontFaceBackwardCoroutine;
 		Coroutine m_FrameThicknessCoroutine;
 		Coroutine m_TopFaceVisibleCoroutine;
+		Material m_TopFaceMaterial;
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -132,13 +133,13 @@ namespace UnityEngine.VR.Workspaces
 		WorkspaceButton m_LockButton;
 
 		[SerializeField]
+		Transform m_TopFaceContainer;
+
+		[SerializeField]
 		Transform m_TopHighlightContainer;
 
 		[SerializeField]
 		WorkspaceHighlight m_FrontHighlight;
-
-		[SerializeField]
-		Material m_TopFaceMaterial;
 
 		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
 		[SerializeField]
@@ -250,9 +251,9 @@ namespace UnityEngine.VR.Workspaces
 				var grabColliderSize = m_GrabCollider.size;
 				m_GrabCollider.size = new Vector3(boundsSize.x, grabColliderSize.y, grabColliderSize.z);
 
+				// Scale the Top Face and the Top Face Highlight
 				const float kHighlightDepthCompensation = 0.14f;
 				const float kHighlightWidthCompensation = 0.01f;
-				m_TopHighlightContainer.localScale = new Vector3(boundsSize.x - kHighlightWidthCompensation, 1f, boundsSize.z - kHighlightDepthCompensation);
 			}
 		}
 		Bounds m_Bounds;
@@ -360,8 +361,8 @@ namespace UnityEngine.VR.Workspaces
 			if (m_TopPanelDividerOffset == null)
 				m_TopPanelDividerTransform.gameObject.SetActive(false);
 
-			m_TopFaceMaterial = Instantiate(m_TopFaceMaterial);
-			m_Frame.materials[1] = m_TopFaceMaterial;
+			m_TopFaceMaterial = U.Material.GetMaterialClone(m_TopFaceContainer.GetComponentInChildren<MeshRenderer>());
+			m_TopFaceMaterial.SetFloat("_Alpha", 1f);
 		}
 
 		void Update()
