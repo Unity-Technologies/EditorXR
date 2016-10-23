@@ -19,6 +19,8 @@ public class ScaleManipulator : MonoBehaviour, IManipulator
 	public Action<Vector3> translate { private get; set; }
 	public Action<Quaternion> rotate { private get; set; }
 	public Action<Vector3> scale { private get; set; }
+	public bool active { get {return gameObject.activeSelf; } set { gameObject.SetActive(value); } }
+	public new Transform transform { get { return transform; } }
 
 	void Awake()
 	{
