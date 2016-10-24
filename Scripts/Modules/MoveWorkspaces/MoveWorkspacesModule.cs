@@ -88,10 +88,20 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 	{
 		m_AllWorkspaces = GetComponentsInChildren<Workspace>();
 
-		if(m_AllWorkspaces.Length > 0)
-			return true;
-		else
-			return false;
+		if (m_AllWorkspaces.Length > 0)
+        {
+            foreach (var ws in m_AllWorkspaces)
+            {
+				if (ws.m_Hidden)
+					return false;
+            }
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
 	}
 
 	void HandleDoubleTap()
@@ -99,25 +109,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 		m_StartedThrowing = false;
 		if(Time.realtimeSinceStartup - m_TriggerPressedTimeStamp < 0.8f)
 		{
-			if(FindWorkspaces())
-			{
-				m_ThrowDownTriggered = false;
-
-				for(int i = 0; i < m_AllWorkspaces.Length; i++)
-				{
-					//workspaces should look at center on Y axis
-					Quaternion temp = m_AllWorkspaces[i].transform.rotation;
-					Vector3 look_direction = m_AllWorkspaces[i].transform.position - (VRView.viewerCamera.transform.position - new Vector3(0.0f,0.5f,0.0f));
-					temp.SetLookRotation(look_direction,Vector3.up);
-					m_AllWorkspaces[i].transform.rotation = temp;
-
-					m_AllWorkspaces[i].OnDoubleTriggerTapAboveHMD();
-				}
-			}
-			else
-			{
-				resetWorkspaces();
-			}
+			m_ThrowDownTriggered = false;
+			resetWorkspaces();
 		}
 		m_TriggerPressedTimeStamp = Time.realtimeSinceStartup;
 	}

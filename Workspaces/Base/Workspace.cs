@@ -63,7 +63,7 @@ namespace UnityEngine.VR.Workspaces
 		private bool m_DragLocked;
 		private bool m_Vacuuming;
 		Coroutine m_VisibilityCoroutine;
-		private bool m_Hidden;
+		public bool m_Hidden;
 
 		/// <summary>
 		/// Bounding box for entire workspace, including UI handles
@@ -327,7 +327,7 @@ namespace UnityEngine.VR.Workspaces
 			}
 
 			m_VisibilityCoroutine = null;
-			U.Object.Destroy(gameObject);
+			//U.Object.Destroy(gameObject);
 			m_Hidden = true;
         }
 	}
