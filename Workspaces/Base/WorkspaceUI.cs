@@ -309,14 +309,14 @@ namespace UnityEngine.VR.Workspaces
 			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 120f);
 			if (angledAmount > 45f)
 			{
-				StopCoroutine(ref m_RotateFrontFaceBackwardCoroutine);
+				this.StopCoroutine(ref m_RotateFrontFaceBackwardCoroutine);
 
 				if (m_RotateFrontFaceForwardCoroutine == null)
 					m_RotateFrontFaceForwardCoroutine = StartCoroutine(RotateFrontFaceForward());
 			}
 			else
 			{
-				StopCoroutine(ref m_RotateFrontFaceForwardCoroutine);
+				this.StopCoroutine(ref m_RotateFrontFaceForwardCoroutine);
 
 				if (m_RotateFrontFaceBackwardCoroutine == null)
 					m_RotateFrontFaceBackwardCoroutine = StartCoroutine(RotateFrontFaceBackward());
