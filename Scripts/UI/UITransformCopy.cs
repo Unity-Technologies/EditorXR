@@ -20,10 +20,19 @@ namespace UnityEngine.VR.Helpers
 		[SerializeField]
 		float m_XScalePadding = 0.01f;
 
+		[SerializeField]
+		float m_YScalePadding = 0f;
+
+		[SerializeField]
+		bool m_ParentUnderSource = true;
+
 		protected override void Awake()
 		{
 			m_TargetTransform = transform;
-			m_TargetTransform.SetParent(m_SourceRectTransform, false);
+
+			if (m_ParentUnderSource)
+				m_TargetTransform.SetParent(m_SourceRectTransform, false);
+
 			DriveTransformWithRectTransform();
 		}
 
@@ -50,7 +59,7 @@ namespace UnityEngine.VR.Helpers
 			//Offset by 0.5 * height to account for pivot in center
 			const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
 			m_TargetTransform.localPosition = new Vector3(pivotOffset.x + m_XPositionPadding, pivotOffset.y, zOffset);
-			m_TargetTransform.localScale = new Vector3(rectSize.x + m_XScalePadding, rectSize.y, transform.localScale.z);
+			m_TargetTransform.localScale = new Vector3(rectSize.x + m_XScalePadding, rectSize.y + m_YScalePadding, transform.localScale.z);
 		}
 	}
 }
