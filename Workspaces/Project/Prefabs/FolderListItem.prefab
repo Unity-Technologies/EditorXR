@@ -284,7 +284,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
 --- !u!222 &222000012560431470
 CanvasRenderer:
   m_ObjectHideFlags: 1
