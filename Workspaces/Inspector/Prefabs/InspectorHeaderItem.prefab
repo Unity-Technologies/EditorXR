@@ -851,7 +851,6 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 224000010867083340}
-  - 114: {fileID: 114000010604477090}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -1351,7 +1350,8 @@ MonoBehaviour:
   m_HighlightItems:
   - {fileID: 114000013527977294}
   - {fileID: 114000012732893688}
-  m_InitialDelay: 0
+  m_AnimatedReveal: 0
+  m_DelayBeforeReveal: 0.5
 --- !u!114 &114000010593461330
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1373,24 +1373,6 @@ MonoBehaviour:
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
---- !u!114 &114000010604477090
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000014116023244}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19cb230e62061c541923720796701bef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_TargetTransforms: []
-  m_TargetHighlightTransforms: []
-  m_CubePrefab: {fileID: 1000010276040456, guid: 351b9999d9db0934a9a3baecc8b9204f,
-    type: 2}
-  m_HighlightCubePrefab: {fileID: 1000010276040456, guid: 4a05b6e57f767f645b04b1f7ef6c0656,
-    type: 2}
 --- !u!114 &114000010661339384
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1614,7 +1596,8 @@ MonoBehaviour:
   m_HighlightItems:
   - {fileID: 114000012993844416}
   - {fileID: 114000012886600838}
-  m_InitialDelay: 0
+  m_AnimatedReveal: 0
+  m_DelayBeforeReveal: 0.5
 --- !u!114 &114000011523287580
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1628,6 +1611,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_SourceRectTransform: {fileID: 224000011055657830}
+  m_XPositionPadding: 0.005
+  m_XScalePadding: 0.01
 --- !u!114 &114000011524206158
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2413,6 +2398,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_SourceRectTransform: {fileID: 224000012288413328}
+  m_XPositionPadding: 0.005
+  m_XScalePadding: 0.01
 --- !u!114 &114000013033683108
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2859,7 +2846,8 @@ MonoBehaviour:
   m_HighlightItems:
   - {fileID: 114000012507456822}
   - {fileID: 114000011722564450}
-  m_InitialDelay: 0
+  m_AnimatedReveal: 0
+  m_DelayBeforeReveal: 0.5
 --- !u!114 &114000013729058068
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2935,6 +2923,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_SourceRectTransform: {fileID: 224000012681466036}
+  m_XPositionPadding: 0.005
+  m_XScalePadding: 0.01
 --- !u!114 &114000013912656110
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3576,7 +3566,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010157872688}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.000000011175871}
   m_LocalScale: {x: 1, y: 1.0000005, z: 1.0000005}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
