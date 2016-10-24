@@ -91,7 +91,7 @@ GameObject:
   - 114: {fileID: 114000013866040058}
   - 225: {fileID: 225000013526934152}
   m_Layer: 5
-  m_Name: NewVisibilityButton
+  m_Name: VisibilityButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -193,7 +193,7 @@ GameObject:
   - 114: {fileID: 114000010158068876}
   - 225: {fileID: 225000013559454362}
   m_Layer: 5
-  m_Name: NewSummaryButton
+  m_Name: SummaryButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -346,7 +346,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012133731784}
-  m_LocalRotation: {x: -0, y: -0, z: -7.2512894e-18, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -7.251184e-18, w: 1}
   m_LocalPosition: {x: 0.035397947, y: 0.00000003331204, z: -0.000000077919545}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -446,9 +446,13 @@ MonoBehaviour:
   m_IconContainer: {fileID: 224000011194382768}
   m_Button: {fileID: 114000010404580652}
   m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
+  m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013668190444}
   - {fileID: 114000013883654872}
+  m_AnimatedReveal: 1
+  m_DelayBeforeReveal: 0.5
 --- !u!114 &114000010404580652
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -828,8 +832,12 @@ MonoBehaviour:
   m_IconContainer: {fileID: 224000011830306076}
   m_Button: {fileID: 114000011294446628}
   m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
+  m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013587831842}
+  m_AnimatedReveal: 1
+  m_DelayBeforeReveal: 0.5
 --- !u!114 &114000013883654872
 MonoBehaviour:
   m_ObjectHideFlags: 1
