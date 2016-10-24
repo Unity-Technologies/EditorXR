@@ -122,9 +122,6 @@ namespace UnityEngine.VR.UI
 		{
 			if (m_TextComponent != null && m_TextComponent.font != null)
 				m_TextComponent.text = m_Text;
-
-			if(m_Keyboard)
-				m_Keyboard.SetPreviewText(m_Text);
 		}
 
 		public virtual void Open()
@@ -144,8 +141,6 @@ namespace UnityEngine.VR.UI
 				m_Keyboard.transform.rotation = Quaternion.Euler(0, rotation, 0) * kKeyboardRotationOffset;
 
 				m_Keyboard.Setup(OnKeyPress);
-
-				m_Keyboard.SetPreviewText(m_Text);
 			}
 		}
 

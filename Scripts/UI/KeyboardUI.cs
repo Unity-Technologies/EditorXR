@@ -13,9 +13,6 @@ public class KeyboardUI : MonoBehaviour
 	[SerializeField]
 	DirectManipulator m_DirectManipulator;
 
-	[SerializeField]
-	Text m_PreviewText;
-
 	/// <summary>
 	/// Called when the orientation changes, parameter is whether keyboard is currently horizontal
 	/// </summary>
@@ -56,11 +53,6 @@ public class KeyboardUI : MonoBehaviour
 	{
 		foreach (var button in m_Buttons)
 			button.SetShiftModeActive(false);
-	}
-
-	public void SetPreviewText(string str)
-	{
-		m_PreviewText.text = str;
 	}
 
 	private bool IsHorizontal()
