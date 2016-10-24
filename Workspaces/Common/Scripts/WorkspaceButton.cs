@@ -41,10 +41,14 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		Graphic[] m_HighlightItems;
 
+		[Header("Animated Reveal Settings")]
+		[SerializeField]
+		bool m_AnimatedReveal;
+
 		[Tooltip("Default value is 0.5")]
 		[SerializeField]
 		[Range(0f, 2f)]
-		float m_InitialDelay = 0.5f;
+		float m_DelayBeforeReveal = 0.5f;
 
 		UnityBrandColorScheme.GradientPair m_OriginalGradientPair;
 		UnityBrandColorScheme.GradientPair? m_HighlightGradientPair;
@@ -160,8 +164,11 @@ namespace UnityEngine.VR.Workspaces
 
 		void OnEnable()
 		{
-			this.StopCoroutine(ref m_VisibilityCoroutine);
-			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
+			if (m_AnimatedReveal)
+			{
+				this.StopCoroutine(ref m_VisibilityCoroutine);
+				m_VisibilityCoroutine = StartCoroutine(AnimateShow());
+			}
 		}
 
 		IEnumerator AnimateShow()
@@ -179,7 +186,7 @@ namespace UnityEngine.VR.Workspaces
 			var smoothVelocity = Vector3.zero;
 			var hiddenLocalYScale = new Vector3(m_HiddenLocalScale.x, 0f, 0f);
 			var currentDuration = 0f;
-			var totalDuration = m_InitialDelay + kInitialRevealDuration + kScaleRevealDuration;
+			var totalDuration = m_DelayBeforeReveal + kInitialRevealDuration + kScaleRevealDuration;
 			var visibleLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, m_VisibleLocalZScale);
 			while (currentDuration < totalDuration)
 			{
@@ -188,17 +195,17 @@ namespace UnityEngine.VR.Workspaces
 				m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, scale.z);
 
 				// Perform initial delay
-				while (delay < m_InitialDelay)
+				while (delay < m_DelayBeforeReveal)
 				{
 					delay += Time.unscaledDeltaTime;
 					yield return null;	
 				}
 
 				// Perform the button vertical button reveal, after the initial wait
-				while (delay < kInitialRevealDuration + m_InitialDelay)
+				while (delay < kInitialRevealDuration + m_DelayBeforeReveal)
 				{
 					delay += Time.unscaledDeltaTime;
-					var shapedDelayLerp = delay / m_InitialDelay;
+					var shapedDelayLerp = delay / m_DelayBeforeReveal;
 					transform.localScale = Vector3.Lerp(hiddenLocalYScale, m_HiddenLocalScale, shapedDelayLerp * shapedDelayLerp);
 					yield return null;
 				}
@@ -220,7 +227,7 @@ namespace UnityEngine.VR.Workspaces
 			const float kRevealDuration = 0.4f;
 			const float kInitialDelayLengthenMultipler = 5f; // used to scale up the initial delay based on the m_InitialDelay value
 			var delay = 0f;
-			var targetDelay = Mathf.Clamp(m_InitialDelay * kInitialDelayLengthenMultipler, 0f, 2.5f); // scale the target delay, with a maximum clamp
+			var targetDelay = Mathf.Clamp(m_DelayBeforeReveal * kInitialDelayLengthenMultipler, 0f, 2.5f); // scale the target delay, with a maximum clamp
 			var alpha = 0f;
 			var opacitySmoothVelocity = 1f;
 			var currentDuration = 0f;
