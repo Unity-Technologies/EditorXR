@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.VR.Workspaces;
 using System.Collections;
 using System.Collections.Generic;
