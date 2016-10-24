@@ -18,6 +18,9 @@ namespace UnityEngine.VR.Helpers
 		float m_XPositionPadding = 0.005f;
 
 		[SerializeField]
+		float m_YPositionPadding = 0f;
+
+		[SerializeField]
 		float m_XScalePadding = 0.01f;
 
 		[SerializeField]
@@ -58,7 +61,7 @@ namespace UnityEngine.VR.Helpers
 
 			//Offset by 0.5 * height to account for pivot in center
 			const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
-			m_TargetTransform.localPosition = new Vector3(pivotOffset.x + m_XPositionPadding, pivotOffset.y, zOffset);
+			m_TargetTransform.localPosition = new Vector3(pivotOffset.x + m_XPositionPadding, pivotOffset.y + m_YPositionPadding, zOffset);
 			m_TargetTransform.localScale = new Vector3(rectSize.x + m_XScalePadding, rectSize.y + m_YScalePadding, transform.localScale.z);
 		}
 	}
