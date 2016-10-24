@@ -56,7 +56,10 @@ public class CuboidLayout : UIBehaviour
 	public void SetMaterials(Material backingCubeMaterial)
 	{
 		foreach (var cube in m_CubeTransforms)
-			cube.GetComponent<Renderer>().sharedMaterial = backingCubeMaterial;
+		{
+			if (cube)
+				cube.GetComponent<Renderer>().sharedMaterial = backingCubeMaterial;
+		}
 	}
 
 	public void UpdateObjects()
