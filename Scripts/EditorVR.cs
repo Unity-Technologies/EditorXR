@@ -53,9 +53,6 @@ public class EditorVR : MonoBehaviour
 	DefaultProxyRay m_ProxyRayPrefab;
 
 	[SerializeField]
-	GameObject m_MiniWorldRayPrefab;
-
-	[SerializeField]
 	private Camera m_EventCameraPrefab;
 
 	[SerializeField]
@@ -1253,7 +1250,7 @@ public class EditorVR : MonoBehaviour
 			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 			{
 				// Create MiniWorld rayOrigin
-				var miniWorldRayOrigin = U.Object.Instantiate(m_MiniWorldRayPrefab).transform;
+				var miniWorldRayOrigin = InstantiateMiniWorldRay();
 				miniWorldRayOrigin.parent = workspace.transform;
 
 				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
@@ -1285,6 +1282,23 @@ public class EditorVR : MonoBehaviour
 				UpdatePlayerHandleMaps();
 			});
 		};
+	}
+
+	Transform InstantiateMiniWorldRay()
+	{
+		var miniWorldRay = U.Object.Instantiate(m_ProxyRayPrefab.gameObject).transform;
+		U.Object.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());
+
+		var renderers = miniWorldRay.GetComponentsInChildren<Renderer>();
+		foreach (var renderer in renderers)
+		{
+			if (!renderer.GetComponent<IntersectionTester>())
+				U.Object.Destroy(renderer.gameObject);
+			else
+				renderer.enabled = false;
+		}
+
+		return miniWorldRay;
 	}
 
 	private void OnWorkspaceDestroyed(Workspace workspace)
