@@ -121,7 +121,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 2100000, guid: 12a15ace9ad7dd14a80ebb0712daed4b, type: 2}
+  - {fileID: 2100000, guid: 7076eefb0e29024489a88aac0cac7403, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -216,7 +216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
 --- !u!114 &114000011808048258
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -250,7 +250,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Material: {fileID: 2100000, guid: 583b7e0ffddb31c40b38c47bdfb60905, type: 2}
+  m_Material: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
@@ -284,7 +284,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 3
+  m_SelectionFlags: 2
 --- !u!222 &222000012560431470
 CanvasRenderer:
   m_ObjectHideFlags: 1
