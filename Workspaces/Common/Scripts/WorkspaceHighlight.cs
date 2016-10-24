@@ -29,7 +29,7 @@ namespace UnityEngine.VR.UI
 				if (m_HighlightCoroutine != null)
 					this.StopCoroutine(ref m_HighlightCoroutine);
 
-				if (m_HighlightVisible == true)
+				if (m_HighlightVisible)
 					m_HighlightCoroutine = StartCoroutine(ShowHighlight());
 				else
 					m_HighlightCoroutine = StartCoroutine(HideHighlight());

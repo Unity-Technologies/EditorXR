@@ -172,7 +172,7 @@ namespace UnityEngine.VR.Workspaces
 				m_FrontHighlight.visible = value;
 
 				this.StopCoroutine(ref m_FrameThicknessCoroutine);
-				m_FrameThicknessCoroutine = value == false ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
+				m_FrameThicknessCoroutine = !value ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
 			}
 		}
 

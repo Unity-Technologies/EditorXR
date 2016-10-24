@@ -89,7 +89,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (m_Dragging == false)
+		if (!m_Dragging)
 		{
 			m_WorkspaceUI.topHighlight.visible = true;
 			m_WorkspaceUI.amplifyTopHighlight = true;
@@ -98,7 +98,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (m_Dragging == false)
+		if (!m_Dragging)
 		{
 			m_WorkspaceUI.topHighlight.visible = false;
 			m_WorkspaceUI.amplifyTopHighlight = false;

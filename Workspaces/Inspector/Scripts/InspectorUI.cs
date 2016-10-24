@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.VR.Handles;
-using UnityEngine.VR.UI;
 
 public class InspectorUI : MonoBehaviour
 {

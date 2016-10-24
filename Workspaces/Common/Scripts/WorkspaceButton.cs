@@ -51,7 +51,7 @@ namespace UnityEngine.VR.Workspaces
 		float m_DelayBeforeReveal = 0.5f;
 
 		UnityBrandColorScheme.GradientPair m_OriginalGradientPair;
-		UnityBrandColorScheme.GradientPair? m_HighlightGradientPair;
+		UnityBrandColorScheme.GradientPair m_HighlightGradientPair;
 		Transform m_parentTransform;
 		Vector3 m_IconDirection;
 		Material m_ButtonMaterial;
@@ -78,7 +78,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			set
 			{
-				if (m_AlternateIconSprite != null) // Only allow sprite swapping if an alternate sprite exists
+				if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
 					m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
 			}
 		}
@@ -153,10 +153,10 @@ namespace UnityEngine.VR.Workspaces
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * kIconHighlightedLocalZOffset;
 
-			if (m_HighlightGradientPair == null)
-				m_HighlightGradientPair = UnityBrandColorScheme.sessionGradient;
+			m_HighlightGradientPair = UnityBrandColorScheme.sessionGradient;
 
 			m_OriginalIconSprite = m_Icon.sprite;
+
 			// Hookup button OnClick event if there is an alternate icon sprite set
 			if (m_SwapIconsOnClick && m_AlternateIconSprite)
 				m_Button.onClick.AddListener(SwapIconSprite);
@@ -263,8 +263,8 @@ namespace UnityEngine.VR.Workspaces
 			var bottomColor = Color.clear;
 			var currentTopColor = m_ButtonMaterial.GetColor(kMaterialColorTopProperty);
 			var currentBottomColor = m_ButtonMaterial.GetColor(kMaterialColorBottomProperty);
-			var topHighlightColor = m_HighlightGradientPair.Value.a;
-			var bottomHighlightColor = m_HighlightGradientPair.Value.b;
+			var topHighlightColor = m_HighlightGradientPair.a;
+			var bottomHighlightColor = m_HighlightGradientPair.b;
 			var currentLocalScale = transform.localScale;
 			var highlightedLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, m_VisibleLocalZScale * 2);
 			while (transitionAmount < kTargetTransitionAmount)
@@ -334,7 +334,7 @@ namespace UnityEngine.VR.Workspaces
 
 				foreach (var graphic in m_HighlightItems)
 				{
-					if (graphic != null)
+					if (graphic)
 						graphic.color = Color.Lerp(m_OriginalColor, m_CustomHighlightColor, transitionAmount);
 				}
 
@@ -344,7 +344,7 @@ namespace UnityEngine.VR.Workspaces
 
 			foreach (var graphic in m_HighlightItems)
 			{
-				if (graphic != null)
+				if (graphic)
 					graphic.color = m_CustomHighlightColor;
 			}
 

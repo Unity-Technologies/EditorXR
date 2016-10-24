@@ -190,7 +190,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	private void OnControlHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (m_Dragging == false)
+		if (!m_Dragging)
 			m_WorkspaceUI.topHighlight.visible = false;
 	}
 
