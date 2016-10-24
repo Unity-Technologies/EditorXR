@@ -1173,7 +1173,7 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
-		CreateWorkspace<ConsoleWorkspace>();
+		CreateWorkspace<ProjectWorkspace>();
 	}
 	
 	private void CreateWorkspace<T>() where T : Workspace
@@ -1267,7 +1267,6 @@ public class EditorVR : MonoBehaviour
 
 				var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 				tester.active = false;
-				miniWorldRayOrigin.gameObject.SetActive(false);
 
 				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
 				{
@@ -1326,7 +1325,6 @@ public class EditorVR : MonoBehaviour
 
 			if (!miniWorldRay.proxy.active)
 			{
-				miniWorldRayOrigin.gameObject.SetActive(false);
 				miniWorldRay.tester.active = false;
 				continue;
 			}
@@ -1342,7 +1340,6 @@ public class EditorVR : MonoBehaviour
 			// Set miniWorldRayOrigin active state based on whether controller is inside corresponding MiniWorld
 			var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * GetPointerLength(originalRayOrigin);
 			var isContained = miniWorld.Contains(originalPointerPosition);
-			miniWorldRayOrigin.gameObject.SetActive(isContained);
 			miniWorldRay.tester.active = isContained;
 
 			var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
@@ -1532,14 +1529,15 @@ public class EditorVR : MonoBehaviour
 			if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
 			{
 				var miniWorldRayOrigin = ray.Key;
-				if (!miniWorldRayOrigin.gameObject.activeSelf)
+				var tester = miniWorldRay.tester;
+				if (!tester.active)
 					continue;
 
 				go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRayOrigin);
 				if (go)
 					return go;
 
-				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(miniWorldRay.tester);
+				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
 				if (renderer)
 					return renderer.gameObject;
 			}
@@ -1623,7 +1621,8 @@ public class EditorVR : MonoBehaviour
 		}
 
 		MiniWorldRay ray;
-		input.active = (directSelection != null && directSelection.GetHeldObject(rayOrigin)) || (m_MiniWorldRays.TryGetValue(rayOrigin, out ray) && ray.dragObject);
+		input.active = (directSelection != null && directSelection.GetHeldObject(rayOrigin))
+			|| (m_MiniWorldRays.TryGetValue(rayOrigin, out ray) && ray.dragObject);
 
 		return null;
 	}
