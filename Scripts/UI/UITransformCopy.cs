@@ -14,6 +14,12 @@ namespace UnityEngine.VR.Helpers
 		[SerializeField]
 		RectTransform m_SourceRectTransform;
 
+		[SerializeField]
+		float m_XPositionPadding = 0.005f;
+
+		[SerializeField]
+		float m_XScalePadding = 0.01f;
+
 		protected override void Awake()
 		{
 			m_TargetTransform = transform;
@@ -33,8 +39,6 @@ namespace UnityEngine.VR.Helpers
 				return;
 
 			// Drive transform with source RectTransform
-			const float kStandardCubeSideScalePadding = 0.01f;
-			const float kStandardCubeSidePositionPadding = 0.005f;
 			var rectSize = m_SourceRectTransform.rect.size.Abs();
 			// Scale pivot by rect size to get correct xy local position
 			var pivotOffset = Vector2.Scale(rectSize, kTransformPivot - m_SourceRectTransform.pivot);
@@ -45,8 +49,8 @@ namespace UnityEngine.VR.Helpers
 
 			//Offset by 0.5 * height to account for pivot in center
 			const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
-			m_TargetTransform.localPosition = new Vector3(pivotOffset.x + kStandardCubeSidePositionPadding, pivotOffset.y, zOffset);
-			m_TargetTransform.localScale = new Vector3(rectSize.x + kStandardCubeSideScalePadding, rectSize.y, transform.localScale.z);
+			m_TargetTransform.localPosition = new Vector3(pivotOffset.x + m_XPositionPadding, pivotOffset.y, zOffset);
+			m_TargetTransform.localScale = new Vector3(rectSize.x + m_XScalePadding, rectSize.y, transform.localScale.z);
 		}
 	}
 }
