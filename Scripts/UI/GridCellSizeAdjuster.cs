@@ -4,8 +4,6 @@ namespace UnityEngine.VR.Helpers
 {
 	public class GridCellSizeAdjuster : MonoBehaviour
 	{
-		static readonly Vector2 kTransformPivot = new Vector2(0.5f, 0.5f);
-
 		RectTransform m_LayoutGroupTransform;
 
 		[SerializeField]
@@ -31,7 +29,7 @@ namespace UnityEngine.VR.Helpers
 			if (!m_LayoutGroupTransform)
 				return;
 
-			m_LayoutGroup.cellSize = new Vector2(m_LayoutGroupTransform.rect.left - m_LayoutGroupTransform.rect.right + m_XScalePadding, m_LayoutGroup.cellSize.y);
+			m_LayoutGroup.cellSize = new Vector2(Mathf.Abs(m_LayoutGroupTransform.rect.xMin) + Mathf.Abs(m_LayoutGroupTransform.rect.xMax) + m_XScalePadding, m_LayoutGroup.cellSize.y);
 		}
 	}
 }
