@@ -1,5 +1,5 @@
-﻿using System;
-using ListView;
+﻿using ListView;
+using System;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
 
@@ -7,20 +7,28 @@ public class FolderListViewController : NestedListViewController<FolderData>
 {
 	private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
+	[SerializeField]
 	private Material m_TextMaterial;
+
+	[SerializeField]
 	private Material m_ExpandArrowMaterial;
 
 	private Transform m_GrabbedObject;
 
-	public FolderData[] listData { get { return m_Data; } set { m_Data = value; } }
-
 	public Action<FolderData> selectFolder;
+
+	public void ClearSelected()
+	{
+		foreach (var folderData in m_Data)
+			folderData.ClearSelected();
+	}
 
 	protected override void Setup()
 	{
 		base.Setup();
-		var item = m_Templates[0].GetComponent<FolderListItem>();
-		item.GetMaterials(out m_TextMaterial, out m_ExpandArrowMaterial);
+
+		m_TextMaterial = Instantiate(m_TextMaterial);
+		m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
 	}
 
 	protected override void ComputeConditions()
@@ -28,10 +36,8 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		base.ComputeConditions();
 
 		var parentMatrix = transform.worldToLocalMatrix;
-		m_TextMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_TextMaterial.SetVector("_ClipExtents", bounds.extents);
-		m_ExpandArrowMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_ExpandArrowMaterial.SetVector("_ClipExtents", bounds.extents);
+		SetMaterialClip(m_TextMaterial, parentMatrix);
+		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
 	}
 
 	protected override void UpdateNestedItem(FolderData data, int offset, int depth)
@@ -39,18 +45,17 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		if (data.item == null)
 			data.item = GetItem(data);
 		var item = (FolderListItem)data.item;
-		item.UpdateTransforms(bounds.size.x - kClipMargin, depth);
-		item.Clip(bounds, transform.worldToLocalMatrix);
+		item.UpdateSelf(bounds.size.x - kClipMargin, depth);
 
-		var itemTransform = item.transform;
-		itemTransform.localPosition = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.back;
-		itemTransform.localRotation = Quaternion.identity;
+		SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
+
+		UpdateItem(item.transform, offset);
 	}
 
 	protected override ListViewItem<FolderData> GetItem(FolderData listData)
 	{
 		var item = (FolderListItem)base.GetItem(listData);
-		item.SwapMaterials(m_TextMaterial, m_ExpandArrowMaterial);
+		item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
 		item.selectFolder = selectFolder;
 		return item;
 	}

@@ -2,9 +2,38 @@
 {
 	public class NestedListViewController<DataType> : ListViewController<DataType, ListViewItem<DataType>> where DataType : ListViewItemNestedData<DataType>
 	{
+		public override DataType[] data
+		{
+			set
+			{
+				if (m_Data != null)
+				{
+					// Clear out visuals for old data
+					foreach (var data in m_Data)
+					{
+						RecycleRecursively(data);
+					}
+				}
+				m_Data = value;
+				scrollOffset = 0;
+			}
+		}
+		
 		protected override int dataLength { get { return m_ExpandedDataLength; } }
 
 		protected int m_ExpandedDataLength;
+
+		void RecycleRecursively(DataType data)
+		{
+			RecycleBeginning(data);
+			if (data.children != null)
+			{
+				foreach (var child in data.children)
+				{
+					RecycleRecursively(child);
+				}
+			}
+		}
 
 		protected override void UpdateItems()
 		{
@@ -18,9 +47,9 @@
 			foreach (var item in data)
 			{
 				if (count + m_DataOffset < -1)
-					CleanUpBeginning(item);
+					RecycleBeginning(item);
 				else if (count + m_DataOffset > m_NumRows - 1)
-					CleanUpEnd(item);
+					RecycleEnd(item);
 				else
 					UpdateNestedItem(item, count, depth);
 				count++;
