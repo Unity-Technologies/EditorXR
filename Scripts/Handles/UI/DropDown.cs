@@ -15,6 +15,7 @@ namespace UnityEngine.VR.UI
 		Coroutine m_HideDropdownCoroutine;
 		float m_HiddenDropdownItemYSpacing;
 		float m_VisibleDropdownItemYSpacing;
+		float m_VisibleBackgroundMeshLocalYScale;
 
 		public string[] options
 		{
@@ -49,6 +50,9 @@ namespace UnityEngine.VR.UI
 
 		[SerializeField]
 		CanvasGroup m_CanvasGroup;
+
+		[SerializeField]
+		Transform m_BackgroundMeshTransform;
 
 		public int value
 		{
@@ -85,11 +89,13 @@ namespace UnityEngine.VR.UI
 
 			m_HiddenDropdownItemYSpacing = -m_OptionsList.cellSize.y;
 			m_VisibleDropdownItemYSpacing = m_OptionsList.spacing.y;
+			m_VisibleBackgroundMeshLocalYScale = m_BackgroundMeshTransform.localScale.y;
 		}
 
 		void OnEnable()
 		{
 			m_OptionsPanel.gameObject.SetActive(false);
+			m_BackgroundMeshTransform.gameObject.SetActive(false);
 		}
 
 		void SetupOptions()
@@ -220,6 +226,7 @@ namespace UnityEngine.VR.UI
 		IEnumerator ShowDropDownContents()
 		{
 			m_OptionsPanel.gameObject.SetActive(true);
+			m_BackgroundMeshTransform.gameObject.SetActive(true);
 
 			const float kTargetDuration = 0.5f;
 			var currentAlpha = m_CanvasGroup.alpha;
@@ -227,16 +234,20 @@ namespace UnityEngine.VR.UI
 			var transitionAmount = 0f;
 			var velocity = 0f;
 			var currentDuration = 0f;
+			var currentBackgroundLocalScale = m_BackgroundMeshTransform.localScale;
+			var targetBackgroundLocalScale = new Vector3(m_BackgroundMeshTransform.localScale.x, m_VisibleBackgroundMeshLocalYScale, m_BackgroundMeshTransform.localScale.z);
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
 				transitionAmount = U.Math.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_OptionsList.spacing = new Vector2(0f, Mathf.Lerp(m_HiddenDropdownItemYSpacing, m_VisibleDropdownItemYSpacing, transitionAmount));
-				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
+				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount * transitionAmount);
+				m_BackgroundMeshTransform.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, transitionAmount);
 				yield return null;
 			}
 
 			m_OptionsList.spacing = new Vector2(0f, m_VisibleDropdownItemYSpacing);
+			m_BackgroundMeshTransform.localScale = targetBackgroundLocalScale;
 			m_CanvasGroup.alpha = 1f;
 			m_ShowDropdownCoroutine = null;
 		}
@@ -250,16 +261,20 @@ namespace UnityEngine.VR.UI
 			var currentSpacing = m_OptionsList.spacing.y;
 			var velocity = 0f;
 			var currentDuration = 0f;
+			var currentBackgroundLocalScale = m_BackgroundMeshTransform.localScale;
+			var targetBackgroundLocalScale = new Vector3(m_BackgroundMeshTransform.localScale.x, 0f, m_BackgroundMeshTransform.localScale.z);
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
 				transitionAmount = U.Math.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_OptionsList.spacing = new Vector2(0f, Mathf.Lerp(currentSpacing, m_HiddenDropdownItemYSpacing, transitionAmount));
-				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
+				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount * transitionAmount);
+				m_BackgroundMeshTransform.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, transitionAmount);
 				yield return null;
 			}
 
 			m_OptionsPanel.gameObject.SetActive(false);
+			m_BackgroundMeshTransform.gameObject.SetActive(false);
 			m_HideDropdownCoroutine = null;
 		}
 	}
