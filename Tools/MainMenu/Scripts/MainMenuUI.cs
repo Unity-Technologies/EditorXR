@@ -320,12 +320,15 @@ namespace UnityEngine.VR.Menus
 			int index = FaceNameToIndex(face);
 			if (index > -1)
 			{
+				if (submenuPrefab.GetComponent<SubmenuFace>() == null)
+					return;
+
 				var submenu = instantiateUI(submenuPrefab);
 				AddSubmenuToFace(index, submenu);
-				
-				var btn = submenu.GetComponentInChildren<UI.Button>();
-				btn.onClick.RemoveAllListeners();
-				btn.onClick.AddListener(() => { RemoveSubmenu(face, submenu); });
+
+				var submenuFace = submenu.GetComponent<SubmenuFace>();
+				if (submenuFace)
+					submenuFace.SetupBackButton(() => { RemoveSubmenu(face, submenu); });
 
 				if (!m_FaceSubmenus.ContainsKey(face))
 					m_FaceSubmenus.Add(face, new List<GameObject>() { submenu });

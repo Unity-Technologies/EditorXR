@@ -312,6 +312,7 @@ GameObject:
   - 114: {fileID: 114000010273884728}
   - 225: {fileID: 225000010337817060}
   - 114: {fileID: 114000013539263296}
+  - 114: {fileID: 114000011588365676}
   m_Layer: 5
   m_Name: MenuFaceSnapping
   m_TagString: Untagged
@@ -1114,6 +1115,19 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114000011588365676
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012006013938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cd7d931d5a6d944f94aedf08db2dea1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_BackButton: {fileID: 114000013313040984}
 --- !u!114 &114000011685081668
 MonoBehaviour:
   m_ObjectHideFlags: 1
