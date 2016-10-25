@@ -76,7 +76,7 @@ namespace ListView
 				Debug.LogWarning("Cannot get item, template " + data.template + " doesn't exist");
 				return null;
 			}
-			ItemType item = null;
+			ItemType item;
 			if (m_TemplateDictionary[data.template].pool.Count > 0)
 			{
 				item = (ItemType) m_TemplateDictionary[data.template].pool[0];
@@ -87,7 +87,7 @@ namespace ListView
 			}
 			else
 			{
-				if(instantiateUI != null)
+				if (instantiateUI != null)
 					item = instantiateUI(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
 				else
 					item = Instantiate(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();

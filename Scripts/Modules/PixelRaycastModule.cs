@@ -5,37 +5,20 @@ namespace UnityEditor.VR.Modules
 {
 	public class PixelRaycastModule : MonoBehaviour
 	{
-		private readonly Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
+		readonly Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
 
-		private GameObject[] m_IgnoreList;
+		GameObject[] m_IgnoreList;
 
 		public Transform ignoreRoot { get; set; }
 
 		/// <summary>
-		/// Must be called from OnGUI. Does raycast from given rayOrigin if its gameObject is active.
+		/// Must be called from OnGUI. Updates pixel raycast result for given rayOrigin
 		/// </summary>
 		/// <param name="rayOrigin"></param> rayOrigin to raycast from
 		/// <param name="camera"></param> Camera to use for pixel based raycast (will be moved to the proxies' ray origins
-		/// <param name="pointerLength"></param> Length of pointer used for direct selection. If zero any raycast result is returned
-		public GameObject UpdateRaycast(Transform rayOrigin, Camera camera, float pointerLength = 0f)
+		public void UpdateRaycast(Transform rayOrigin, Camera camera)
 		{
-			if (!rayOrigin.gameObject.activeSelf)
-			{
-				m_RaycastGameObjects[rayOrigin] = null;
-				return null;
-			}
-
-			float distance;
-			var result = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera, out distance);
-
-			// If a positive pointerLength is specified, use direct selection
-			if (pointerLength > 0 && rayOrigin.gameObject.activeSelf)
-			{
-				if (pointerLength > 0 && distance > pointerLength)
-					result = null;
-			}
-			m_RaycastGameObjects[rayOrigin] = result;
-			return result;
+			m_RaycastGameObjects[rayOrigin] = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera);
 		}
 
 		/// <summary>
@@ -48,8 +31,8 @@ namespace UnityEditor.VR.Modules
 			GameObject go;
 			if (m_RaycastGameObjects.TryGetValue(rayOrigin, out go))
 				return go;
-			else
-				Debug.LogError("Transform rayOrigin " + rayOrigin + " is not set to raycast from.");
+
+			Debug.LogError("Transform rayOrigin " + rayOrigin + " is not set to raycast from.");
 			return null;
 		}
 
@@ -64,7 +47,7 @@ namespace UnityEditor.VR.Modules
 				m_IgnoreList[i] = children[i].gameObject;
 		}
 
-		private GameObject Raycast(Ray ray, Camera camera, out float distance)
+		GameObject Raycast(Ray ray, Camera camera)
 		{
 #if UNITY_EDITOR
 			camera.transform.position = ray.origin;
@@ -76,17 +59,6 @@ namespace UnityEditor.VR.Modules
 			Camera.SetupCurrent(camera);
 
 			var go = HandleUtility.PickGameObject(camera.pixelRect.center, false, m_IgnoreList);
-			// Find the distance to the closest renderer to check for direct selection
-			distance = float.MaxValue;
-			if (go)
-			{
-				foreach (var renderer in go.GetComponentsInChildren<Renderer>())
-				{
-					float newDist;
-					if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
-						distance = Mathf.Min(distance, newDist);
-				}
-			}
 
 			Camera.SetupCurrent(restoreCamera);
 			RenderTexture.ReleaseTemporary(camera.targetTexture);

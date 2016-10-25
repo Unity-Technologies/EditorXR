@@ -1,10 +1,9 @@
-﻿/// <summary>
-/// Designates a tool as a Transform tool and allows for its control
-/// </summary>
-public interface ITransformTool
+﻿namespace UnityEngine.VR.Tools
 {
 	/// <summary>
-	/// Sets the transform mode on this tool
+	/// Designates a tool as a Transform tool
 	/// </summary>
-	TransformMode mode { set; }
+	public interface ITransformTool
+	{
+	}
 }

@@ -1,40 +1,46 @@
 ﻿Shader "EditorVR/Workspaces/TransparentBlurVerticalFade"
 {
-	Properties{
+	Properties
+	{
 		_Color("Main Color", Color) = (1,1,1,1)
 		_Blur("Blur", Range(0, 10)) = 1
 		_VerticalOffset("Offset", Range(-1, 1)) = 1
 		_MainTex("Texture", 2D) = "white" {}
-		}
+	}
 
 		Category
 		{
 			Tags{ "Queue" = "Transparent" "LightMode" = "Always" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
 			ZWrite On
 
-			SubShader{
+			SubShader
+			{
 
-				GrabPass{}
+				GrabPass {}
 
-				Pass{
+				Pass
+				{
 					CGPROGRAM
 					#pragma vertex vert
 					#pragma fragment frag
 					#pragma fragmentoption ARB_precision_hint_fastest
 					#include "UnityCG.cginc"
 
-					struct appdata_t {
+					struct appdata_t
+					{
 						float4 position : POSITION;
 						float2 texcoord: TEXCOORD0;
 					};
 
-					struct v2f {
+					struct v2f
+					{
 						float4 position : POSITION;
 						float4 grab : TEXCOORD0;
 						float yPos : FLOAT;
 					};
 
-					v2f vert(appdata_t v) {
+					v2f vert(appdata_t v)
+					{
 						v2f output;
 						output.position = mul(UNITY_MATRIX_MVP, v.position);
 #if UNITY_UV_STARTS_AT_TOP
@@ -86,18 +92,21 @@
 				#pragma fragmentoption ARB_precision_hint_fastest
 				#include "UnityCG.cginc"
 
-				struct appdata_t {
+				struct appdata_t
+				{
 					float4 position : POSITION;
 					float2 texcoord: TEXCOORD0;
 				};
 
-				struct v2f {
+				struct v2f
+				{
 					float4 position : POSITION;
 					float4 grab : TEXCOORD0;
 					float yPos : FLOAT;
 				};
 
-				v2f vert(appdata_t v) {
+				v2f vert(appdata_t v)
+				{
 					v2f output;
 					output.position = mul(UNITY_MATRIX_MVP, v.position);
 	#if UNITY_UV_STARTS_AT_TOP
@@ -148,19 +157,22 @@
 				#pragma fragmentoption ARB_precision_hint_fastest
 				#include "UnityCG.cginc"
 
-				struct appdata_t {
+				struct appdata_t
+				{
 					float4 position : POSITION;
 					float2 texcoord: TEXCOORD0;
 				};
 
-				struct v2f {
+				struct v2f
+				{
 					float4 position : POSITION;
 					float4 grab : TEXCOORD0;
 					float2 uvmain : TEXCOORD2;
 				};
 				float4 _MainTex_ST;
 
-				v2f vert(appdata_t v) {
+				v2f vert(appdata_t v)
+				{
 					v2f output;
 					output.position = mul(UNITY_MATRIX_MVP, v.position);
 	#if UNITY_UV_STARTS_AT_TOP
@@ -179,7 +191,8 @@
 				float4 _GrabTexture_TexelSize;
 				sampler2D _MainTex;
 
-				half4 frag(v2f i) : COLOR{
+				half4 frag(v2f i) : COLOR
+				{
 					i.grab.xy = _GrabTexture_TexelSize.xy * i.grab.z + i.grab.xy;
 					half4 col = tex2Dproj(_GrabTexture, UNITY_PROJ_COORD(i.grab));
 					half4 desatCol = dot(col, col);
