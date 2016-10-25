@@ -337,7 +337,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 					folderList.Add(CreateFolderData(assetTypes, ref hasNext, hp));
 				else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
 					assetList.Add(CreateAssetData(assetTypes, hp));
-				if(hasNext)
+				if (hasNext)
 					hasNext = hp.Next(null);
 			}
 			if (hasNext)

@@ -192,7 +192,7 @@ namespace UnityEngine.VR.UI
 			}
 			else
 			{
-				if(m_Value >= 0 && m_Value < m_Options.Length)
+				if (m_Value >= 0 && m_Value < m_Options.Length)
 					m_Label.text = m_Options[m_Value];
 			}
 		}
