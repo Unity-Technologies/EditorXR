@@ -22,7 +22,7 @@ namespace UnityEngine.VR.Workspaces
 
 		protected Vector3? m_CustomStartingBounds;
 
-		public static readonly Vector3 kMinBounds = new Vector3(0.7f, 0.4f, 0.1f);
+		public static readonly Vector3 kMinBounds = new Vector3(0.55f, 0.4f, 0.1f);
 		private const float kExtraHeight = 0.15f; //Extra space for frame model
 
 		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
@@ -61,6 +61,7 @@ namespace UnityEngine.VR.Workspaces
 		private bool m_Dragging;
 		private bool m_DragLocked;
 		private bool m_Vacuuming;
+		bool m_Moving;
 		Coroutine m_VisibilityCoroutine;
 
 		/// <summary>
@@ -122,11 +123,18 @@ namespace UnityEngine.VR.Workspaces
 			m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? kDefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
 			UpdateBounds();
 
-			//Set up DirectManipulaotr
+			//Set up DirectManipulator
 			var directManipulator = m_WorkspaceUI.directManipulator;
 			directManipulator.target = transform;
 			directManipulator.translate = Translate;
 			directManipulator.rotate = Rotate;
+
+			//Set up the front "move" handle highglight, the move handle is used to translate/rotate the workspace
+			var moveHandle = m_WorkspaceUI.moveHandle;
+			moveHandle.dragStarted += OnMoveHandleDragStarted;
+			moveHandle.dragEnded += OnMoveHandleDragEnded;
+			moveHandle.hoverStarted += OnMoveHandleHoverStarted;
+			moveHandle.hoverEnded += OnMoveHandleHoverEnded;
 
 			m_WorkspaceUI.vacuumHandle.doubleClick += OnDoubleClick;
 			m_WorkspaceUI.vacuumHandle.hoverStarted += OnHandleHoverStarted;
@@ -145,7 +153,6 @@ namespace UnityEngine.VR.Workspaces
 				handle.dragStarted += OnHandleDragStarted;
 				handle.dragging += OnHandleDragging;
 				handle.dragEnded += OnHandleDragEnded;
-
 				handle.hoverStarted += OnHandleHoverStarted;
 				handle.hoverEnded += OnHandleHoverEnded;
 			}
@@ -157,6 +164,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			m_WorkspaceUI.highlightsVisible = true;
 			m_PositionStart = transform.position;
 			m_DragStart = eventData.rayOrigin.position;
 			m_BoundSizeStart = contentBounds.size;
@@ -198,6 +206,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			m_WorkspaceUI.highlightsVisible = false;
 			m_Dragging = false;
 		}
 
@@ -294,34 +303,77 @@ namespace UnityEngine.VR.Workspaces
 
 		IEnumerator AnimateShow()
 		{
-			var kTargetScale = transform.localScale;
+			m_WorkspaceUI.highlightsVisible = true;
+
+			var targetScale = transform.localScale;
 			var scale = Vector3.zero;
 			var smoothVelocity = Vector3.zero;
-
-			while (!Mathf.Approximately(scale.x, kTargetScale.x))
+			var currentDuration = 0f;
+			const float kTargetDuration = 0.75f;
+			while (currentDuration < kTargetDuration)
 			{
+				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = scale;
-				scale = Vector3.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.125f, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
+			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateHide()
 		{
-			var kTargetScale = Vector3.zero;
+			var targetScale = Vector3.zero;
 			var scale = transform.localScale;
 			var smoothVelocity = Vector3.zero;
-			while (!Mathf.Approximately(scale.x, kTargetScale.x))
+			var currentDuration = 0f;
+			const float kTargetDuration = 0.185f;
+			while (currentDuration < kTargetDuration)
 			{
+				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = scale;
-				scale = Vector3.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.06875f, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
+			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
 			U.Object.Destroy(gameObject);
+		}
+
+		void OnMoveHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			if (m_Dragging)
+				return;
+
+			m_Moving = true;
+			m_WorkspaceUI.highlightsVisible = true;
+		}
+
+		void OnMoveHandleDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			if (m_Dragging)
+				return;
+
+			m_Moving = false;
+			m_WorkspaceUI.highlightsVisible = false;
+		}
+
+		void OnMoveHandleHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			if (m_Dragging || m_Moving)
+				return;
+
+			m_WorkspaceUI.frontHighlightVisible = true;
+		}
+
+		void OnMoveHandleHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			if (m_Dragging || m_Moving)
+				return;
+
+			m_WorkspaceUI.frontHighlightVisible = false;
 		}
 	}
 }

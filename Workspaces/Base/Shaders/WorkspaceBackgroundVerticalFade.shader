@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Workspaces/TransparentBlurVerticalFade"
+﻿Shader "EditorVR/Workspaces/WorkspaceBackgroundVerticalFade"
 {
 	Properties
 	{
