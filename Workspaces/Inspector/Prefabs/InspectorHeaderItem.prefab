@@ -299,6 +299,7 @@ GameObject:
   - 4: {fileID: 4000010782557334}
   - 33: {fileID: 33000011076564380}
   - 23: {fileID: 23000013104897804}
+  - 65: {fileID: 65000010617101100}
   m_Layer: 0
   m_Name: BackgroundMesh
   m_TagString: Untagged
@@ -332,6 +333,7 @@ GameObject:
   - 4: {fileID: 4000010821773370}
   - 33: {fileID: 33000012074022142}
   - 23: {fileID: 23000011903402370}
+  - 65: {fileID: 65000012618865192}
   m_Layer: 0
   m_Name: BackgroundMesh
   m_TagString: Untagged
@@ -1486,6 +1488,30 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010298739158}
   m_Mesh: {fileID: 4300000, guid: 778451e1d0bcdba4aa329586e9d8146e, type: 3}
+--- !u!65 &65000010617101100
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011177294180}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.019999996, y: 0.019999994, z: 0.0010000048}
+  m_Center: {x: 0, y: 0, z: 0.00049999816}
+--- !u!65 &65000012618865192
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011293319342}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.019999996, y: 0.019999994, z: 0.001}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!65 &65000014098938378
 BoxCollider:
   m_ObjectHideFlags: 1
