@@ -16,6 +16,7 @@ namespace UnityEngine.VR.UI
 		float m_HiddenDropdownItemYSpacing;
 		float m_VisibleDropdownItemYSpacing;
 		float m_VisibleBackgroundMeshLocalYScale;
+		float m_PreviousXRotation;
 
 		public string[] options
 		{
@@ -96,6 +97,28 @@ namespace UnityEngine.VR.UI
 		{
 			m_OptionsPanel.gameObject.SetActive(false);
 			m_BackgroundMeshTransform.gameObject.SetActive(false);
+		}
+
+		void Update()
+		{
+			var currentXRotation = transform.rotation.eulerAngles.x;
+			currentXRotation = Mathf.Repeat(currentXRotation - 90, 360f); // Compensate for the rotation the lerp expects
+			if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
+				return; // Exit if no x rotation change occurred for this frame
+
+			m_PreviousXRotation = currentXRotation;
+
+			const float kLerpPadding = 1.2f; // pad lerp values increasingly as it increases, reaching intended rotation sooner
+			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 90f);
+
+			// add lerp padding to reach and maintain the target value sooner
+			var lerpAmount = (angledAmount / 90f) * kLerpPadding;
+
+			// offset options panel rotation according to workspace rotation angle
+			const float kAdditionalLerpPadding = 1.1f;
+			var parallelToWorkspaceRotation = new Vector3(0f, 0f, 0f);
+			var perpendicularToWorkspaceRotation = new Vector3(-90f, 0f, 0f);
+			m_OptionsPanel.localRotation = Quaternion.Euler(Vector3.Lerp(perpendicularToWorkspaceRotation, parallelToWorkspaceRotation, lerpAmount * kAdditionalLerpPadding));
 		}
 
 		void SetupOptions()
