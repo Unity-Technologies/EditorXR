@@ -137,6 +137,12 @@ namespace UnityEngine.VR.Utilities
 		public static GradientPair sessionGradient { get; set; }
 
 		/// <summary>
+		/// A high-contrast/grayscale Unity brand color gradient, having no chroma
+		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements
+		/// </summary>
+		public static GradientPair grayscaleSessionGradient { get; private set; }
+
+		/// <summary>
 		/// Gradient pair container class
 		/// </summary>
 		[Serializable]
@@ -237,8 +243,12 @@ namespace UnityEngine.VR.Utilities
 			s_Gradients.Add(new GradientPair(s_Blue, s_Lime));
 			s_Gradients.Add(new GradientPair(s_Orange, s_Lime));
 
-			// Setup basic light/dark contrasting session gradient
+			// Setup default session gradient; can be set with a random gradient externally,
+			// allowing all UI objects fetching this gradient to have a uniform color-scheme
 			sessionGradient = new GradientPair(s_Light, s_Dark);
+			
+			// Setup grayscale light/dark contrasting session gradient
+			grayscaleSessionGradient = new GradientPair(s_Light, s_Dark);
 		}
 
 		/// <summary>
