@@ -1683,6 +1683,7 @@ MonoBehaviour:
   m_HighlightItems:
   - {fileID: 114000013527977294}
   - {fileID: 114000012732893688}
+  m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
 --- !u!114 &114000010661339384
@@ -1922,6 +1923,7 @@ MonoBehaviour:
   m_HighlightItems:
   - {fileID: 114000012993844416}
   - {fileID: 114000012886600838}
+  m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
 --- !u!114 &114000011523287580
@@ -3233,6 +3235,7 @@ MonoBehaviour:
   m_HighlightItems:
   - {fileID: 114000012507456822}
   - {fileID: 114000011722564450}
+  m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
 --- !u!114 &114000013715494506
