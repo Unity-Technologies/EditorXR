@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Handles;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.UI
@@ -17,6 +17,7 @@ namespace UnityEngine.VR.UI
 		float m_VisibleDropdownItemYSpacing;
 		float m_VisibleBackgroundMeshLocalYScale;
 		float m_PreviousXRotation;
+		Vector3 m_OptionsPanelOriginalLocalPosition;
 
 		public string[] options
 		{
@@ -91,6 +92,7 @@ namespace UnityEngine.VR.UI
 			m_HiddenDropdownItemYSpacing = -m_OptionsList.cellSize.y;
 			m_VisibleDropdownItemYSpacing = m_OptionsList.spacing.y;
 			m_VisibleBackgroundMeshLocalYScale = m_BackgroundMeshTransform.localScale.y;
+			m_OptionsPanelOriginalLocalPosition = m_OptionsPanel.localPosition;
 		}
 
 		void OnEnable()
@@ -118,7 +120,9 @@ namespace UnityEngine.VR.UI
 			const float kAdditionalLerpPadding = 1.1f;
 			var parallelToWorkspaceRotation = new Vector3(0f, 0f, 0f);
 			var perpendicularToWorkspaceRotation = new Vector3(-90f, 0f, 0f);
+			var parallelToWorkspaceLocalPosition = new Vector3(m_OptionsPanelOriginalLocalPosition.x, m_OptionsPanelOriginalLocalPosition.y + 0.015f, m_OptionsPanelOriginalLocalPosition.z - 0.0125f);
 			m_OptionsPanel.localRotation = Quaternion.Euler(Vector3.Lerp(perpendicularToWorkspaceRotation, parallelToWorkspaceRotation, lerpAmount * kAdditionalLerpPadding));
+			m_OptionsPanel.localPosition = Vector3.Lerp(m_OptionsPanelOriginalLocalPosition, parallelToWorkspaceLocalPosition, lerpAmount);
 		}
 
 		void SetupOptions()
