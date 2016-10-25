@@ -133,6 +133,10 @@ namespace UnityEngine.VR.Workspaces
 		WorkspaceButton m_LockButton;
 
 		[SerializeField]
+		GameObject m_ResetButton;
+
+		public Transform topFaceContainer { get { return m_TopFaceContainer; } }
+		[SerializeField]
 		Transform m_TopFaceContainer;
 
 		[SerializeField]
@@ -145,7 +149,7 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		WorkspaceHighlight m_TopHighlight;
 
-		public bool dynamicFaceAdjustment { get; set; }
+		public bool dynamicFaceAdjustment { get { return m_dynamicFaceAdjustment; } set { m_dynamicFaceAdjustment = value; } }
 		bool m_dynamicFaceAdjustment = true;
 
 		public bool highlightsVisible
@@ -200,7 +204,57 @@ namespace UnityEngine.VR.Workspaces
 		}
 		float? m_TopPanelDividerOffset;
 
-		public bool preventFrontBackResize { set; private get; }
+		public bool preventFrontBackResize
+		{
+			set
+			{
+				m_PreventFrontBackResize = value;
+				if (value)
+				{
+					m_FrontHandleTransform.localScale = Vector3.zero;
+					m_BackHandleTransform.localScale = Vector3.zero;
+					m_FrontHandle.enabled = false;
+					m_BackHandle.enabled = false;
+
+					if (!m_PreventLeftRightResize) // Disable reset button if no resize handles are active
+						m_ResetButton.SetActive(false);
+				}
+				else
+				{
+					m_FrontHandle.enabled = true;
+					m_BackHandle.enabled = true;
+					m_ResetButton.SetActive(true);
+				}
+			}
+			private get { return m_PreventFrontBackResize; }
+		}
+		bool m_PreventFrontBackResize;
+
+		public bool preventLeftRightResize
+		{
+			set
+			{
+				m_PreventLeftRightResize = value;
+				if (value)
+				{
+					m_LeftHandleTransform.localScale = Vector3.zero;
+					m_RightHandleTransform.localScale = Vector3.zero;
+					m_LeftHandle.enabled = false;
+					m_RightHandle.enabled = false;
+
+					if (!m_PreventFrontBackResize) // Disable reset button if no resize handles are active
+						m_ResetButton.SetActive(false);
+				}
+				else
+				{
+					m_LeftHandle.enabled = true;
+					m_RightHandle.enabled = true;
+					m_ResetButton.SetActive(true);
+				}
+			}
+			private get { return m_PreventLeftRightResize; }
+		}
+		bool m_PreventLeftRightResize;
 
 		public Bounds bounds
 		{
@@ -217,15 +271,15 @@ namespace UnityEngine.VR.Workspaces
 
 				// Resize handles
 				m_LeftHandleTransform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f - kSideHandleOffset, m_LeftHandleYLocalPosition, 0);
-				m_LeftHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
+				m_LeftHandleTransform.localScale = !preventLeftRightResize ? new Vector3(boundsSize.z, m_HandleScale, m_HandleScale) : Vector3.zero;
 
-				m_FrontHandleTransform.localScale = preventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
+				m_FrontHandleTransform.localScale = !preventFrontBackResize ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				m_RightHandleTransform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
-				m_RightHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
+				m_RightHandleTransform.localScale = !preventLeftRightResize ? new Vector3(boundsSize.z, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				m_BackHandleTransform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, extents.z - m_HandleScale - kBackHandleOffset);
-				m_BackHandleTransform.localScale = preventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
+				m_BackHandleTransform.localScale = !preventFrontBackResize ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				// Resize content container
 				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, boundsSize.x);
