@@ -1089,8 +1089,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012118498360}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.401734, y: -0.3902559, z: -0.06449816}
+  m_LocalRotation: {x: -0.000000029802322, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.401734, y: -0.3902565, z: -0.064498246}
   m_LocalScale: {x: 0.84999996, y: 0.58239585, z: 1.2352117}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -1657,6 +1657,7 @@ MonoBehaviour:
   m_MultiSelectTemplatePrefab: {fileID: 1000011005728614, guid: 44aae4eb5a02aae479e9a5b75c0591dc,
     type: 2}
   m_CanvasGroup: {fileID: 225000011463750798}
+  m_BackgroundMeshTransform: {fileID: 4000010782557334}
   m_Value: 0
   m_Values: 
 --- !u!114 &114000010554882938
@@ -2344,10 +2345,10 @@ MonoBehaviour:
   m_RunInEditMode: 1
   m_SourceRectTransform: {fileID: 224000014126425254}
   m_XPositionPadding: 0
-  m_YPositionPadding: 0
+  m_YPositionPadding: 0.0035
   m_ZPositionPadding: 0.0005
   m_XScalePadding: 0.011
-  m_YScalePadding: 0.003
+  m_YScalePadding: 0.007
   m_ParentUnderSource: 0
 --- !u!114 &114000012504767538
 MonoBehaviour:
@@ -2538,10 +2539,10 @@ MonoBehaviour:
   m_RunInEditMode: 1
   m_SourceRectTransform: {fileID: 224000011847507420}
   m_XPositionPadding: 0
-  m_YPositionPadding: 0
+  m_YPositionPadding: 0.0035
   m_ZPositionPadding: 0.0005
   m_XScalePadding: 0.011
-  m_YScalePadding: 0.003
+  m_YScalePadding: 0.007
   m_ParentUnderSource: 0
 --- !u!114 &114000012612735310
 MonoBehaviour:
@@ -2565,6 +2566,7 @@ MonoBehaviour:
   m_MultiSelectTemplatePrefab: {fileID: 1000011005728614, guid: 44aae4eb5a02aae479e9a5b75c0591dc,
     type: 2}
   m_CanvasGroup: {fileID: 225000010659659436}
+  m_BackgroundMeshTransform: {fileID: 4000010821773370}
   m_Value: 0
   m_Values: 
 --- !u!114 &114000012732893688
