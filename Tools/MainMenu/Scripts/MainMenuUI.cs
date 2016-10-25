@@ -362,7 +362,8 @@ namespace UnityEngine.VR.Menus
 				{
 					var target = m_FaceSubmenus[face].Last();
 					m_FaceSubmenus[face].Remove(target);
-					U.Object.Destroy(target);
+					target.SetActive(false);
+					U.Object.Destroy(target, .1f);
 
 					if (m_FaceSubmenus[face].Count > 1)
 						m_FaceSubmenus[face].Last().SetActive(true);
