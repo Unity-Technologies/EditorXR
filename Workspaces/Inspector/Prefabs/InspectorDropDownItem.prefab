@@ -21,6 +21,7 @@ GameObject:
   - 4: {fileID: 4000014199311910}
   - 33: {fileID: 33000010127680166}
   - 23: {fileID: 23000010650115644}
+  - 65: {fileID: 65000012656037334}
   m_Layer: 0
   m_Name: BackgroundMesh
   m_TagString: Untagged
@@ -556,6 +557,18 @@ BoxCollider:
   m_Enabled: 0
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!65 &65000012656037334
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010277044602}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.019999996, y: 0.019999994, z: 0.0010000047}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &114000010392490260
 MonoBehaviour:
