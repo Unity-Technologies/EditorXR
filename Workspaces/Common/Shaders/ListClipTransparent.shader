@@ -46,7 +46,8 @@
 		half _Metallic;
 		fixed4 _Color;
 
-		void vert(inout appdata_full v, out Input o) {
+		void vert(inout appdata_full v, out Input o)
+		{
 			UNITY_INITIALIZE_OUTPUT(Input, o);
 			o.localPos = listClipLocalPos(v.vertex);
 			o.color = v.color;
