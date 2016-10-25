@@ -146,6 +146,7 @@ namespace UnityEngine.VR.Workspaces
 		WorkspaceHighlight m_TopHighlight;
 
 		public bool dynamicFaceAdjustment { get; set; }
+		bool m_dynamicFaceAdjustment = true;
 
 		public bool highlightsVisible
 		{
@@ -234,7 +235,7 @@ namespace UnityEngine.VR.Workspaces
 				m_BackResizeIconsContainer.localPosition = new Vector3 (m_BackResizeIconsContainerOriginalLocalPosition.x, m_BackResizeIconsContainerOriginalLocalPosition.y, boundsSize.z + kBackResizeButtonPositionOffset);
 
 				// Adjust front panel position if dynamic adjustment is enabled
-				if (dynamicFaceAdjustment == false)
+				if (!m_dynamicFaceAdjustment)
 					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, kPanelOffset);
 
 				// Resize front panel
@@ -371,7 +372,7 @@ namespace UnityEngine.VR.Workspaces
 
 		void Update()
 		{
-			if (dynamicFaceAdjustment == false)
+			if (!m_dynamicFaceAdjustment)
 				return;
 
 			var currentXRotation = transform.rotation.eulerAngles.x;
