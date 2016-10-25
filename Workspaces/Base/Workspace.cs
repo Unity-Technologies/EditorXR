@@ -96,6 +96,11 @@ namespace UnityEngine.VR.Workspaces
 		public bool preventFrontBackResize { set { m_WorkspaceUI.preventFrontBackResize = value; } }
 
 		/// <summary>
+		/// If true, prevent the resizing of a workspace via the left and right resize handles
+		/// </summary>
+		public bool preventLeftRightResize { set { m_WorkspaceUI.preventLeftRightResize = value; } }
+
+		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
 		/// A value of zero will leave the mask in the center of the workspace
 		/// </summary>
@@ -312,7 +317,9 @@ namespace UnityEngine.VR.Workspaces
 			destroyed(this);
 		}
 
-		protected abstract void OnBoundsChanged();
+		protected virtual void OnBoundsChanged()
+		{
+		}
 
 		IEnumerator AnimateShow()
 		{
