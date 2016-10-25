@@ -7,7 +7,7 @@ using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.UI
 {
-	public class DropDown : BaseHandle
+	public class DropDown : MonoBehaviour
 	{
 		public string[] options
 		{
@@ -129,7 +129,7 @@ namespace UnityEngine.VR.UI
 			}
 		}
 
-		protected override void OnHandleDragEnded(HandleEventData eventData)
+		public void OpenPanel()
 		{
 			m_OptionsPanel.gameObject.SetActive(true);
 		}

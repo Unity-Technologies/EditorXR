@@ -267,12 +267,18 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	void OnFolderPanelDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		m_FolderPanelDragging = true;
 		m_ProjectUI.folderPanelHighlight.visible = true;
 	}
 
 	void OnFolderPanelDragHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		m_FolderPanelDragging = false;
 		m_ProjectUI.folderPanelHighlight.visible = false;
 	}
@@ -284,7 +290,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	void OnFolderPanelHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (m_FolderPanelDragging == false)
+		if (!m_FolderPanelDragging)
 			m_ProjectUI.folderPanelHighlight.visible = false;
 	}
 
