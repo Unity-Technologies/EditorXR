@@ -1493,25 +1493,31 @@ public class EditorVR : MonoBehaviour
 					}
 					else
 					{
-						var otherwiseContained = false;
-						foreach (var world in m_MiniWorlds)
+						if (miniWorldRay.wasContained)
 						{
-							if (world.Contains(originalPointerPosition))
-								otherwiseContained = true;
-						}
-						if (miniWorldRay.wasContained && !otherwiseContained)
-						{
-							// Store the original scale in case the object re-enters the MiniWorld
-							miniWorldRay.dragObjectOriginalScale = dragObjectTransform.localScale;
-
-							// Drop from TransformTool to take control of object
-							if (directSelection != null)
+							var otherwiseContained = false;
+							foreach (var world in m_MiniWorlds)
 							{
-								directSelection.DropHeldObject(dragObjectTransform, out miniWorldRay.originalPositionOffset, out miniWorldRay.originalRotationOffset);
-								miniWorldRay.wasHeld = true;
+								if (world.Contains(originalPointerPosition))
+								{
+									otherwiseContained = true;
+								}
 							}
 
-							dragObjectTransform.localScale = miniWorldRay.dragObjectPreviewScale;
+							if (!otherwiseContained)
+							{
+								// Store the original scale in case the object re-enters the MiniWorld
+								miniWorldRay.dragObjectOriginalScale = dragObjectTransform.localScale;
+
+								// Drop from TransformTool to take control of object
+								if (directSelection != null)
+								{
+									directSelection.DropHeldObject(dragObjectTransform, out miniWorldRay.originalPositionOffset, out miniWorldRay.originalRotationOffset);
+									miniWorldRay.wasHeld = true;
+								}
+
+								dragObjectTransform.localScale = miniWorldRay.dragObjectPreviewScale;
+							}
 						}
 
 						m_ObjectPlacementModule.Preview(dragObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
