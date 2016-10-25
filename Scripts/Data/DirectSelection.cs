@@ -21,10 +21,5 @@ namespace UnityEngine.VR.Modules
 		/// The input which is associated with the rayOrigin
 		/// </summary>
 		public ActionMapInput input;
-
-		/// <summary>
-		/// Whether this selection comes from a miniWorldRay
-		/// </summary>
-		public bool isMiniWorldRay;
 	}
 }

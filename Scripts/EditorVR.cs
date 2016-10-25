@@ -9,6 +9,7 @@ using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Menus;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
@@ -29,7 +30,7 @@ public class EditorVR : MonoBehaviour
 	/// <summary>
 	/// Tag applied to player head model which tracks the camera (for MiniWorld locomotion)
 	/// </summary>
-	public const string kVRPlayerTag = "VRPlayer";
+	const string kVRPlayerTag = "VRPlayer";
 
 	private const float kDefaultRayLength = 100f;
 
@@ -38,6 +39,8 @@ public class EditorVR : MonoBehaviour
 	private const int kMaxWorkspacePlacementAttempts = 20;
 	private const float kWorkspaceVacuumEnableDistance = 1f; // Disable vacuum bounds if workspace is close to player
 	const float kPreviewScale = 0.1f;
+
+	const float kViewerPivotTransitionTime = 0.75f;
 
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
@@ -140,7 +143,7 @@ public class EditorVR : MonoBehaviour
 
 	bool m_HMDReady;
 
-	ITransformTool m_TransformTool;
+	IGrabObjects m_TransformTool;
 
 	private void Awake()
 	{
@@ -502,7 +505,7 @@ public class EditorVR : MonoBehaviour
 			tool = SpawnTool(typeof(TransformTool), out devices);
 			AddToolToDeviceData(tool, devices);
 
-			m_TransformTool = tool as ITransformTool;
+			m_TransformTool = tool as IGrabObjects;
 		};
 	}
 
@@ -982,6 +985,7 @@ public class EditorVR : MonoBehaviour
 			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 		}
 
+
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
 			m_SelectionChanged += selectionChanged.OnSelectionChanged;
@@ -989,6 +993,14 @@ public class EditorVR : MonoBehaviour
 		var directSelection = obj as IDirectSelection;
 		if (directSelection != null)
 			directSelection.getDirectSelection = GetDirectSelection;
+
+		var grabObjects = obj as IGrabObjects;
+		if (grabObjects != null)
+		{
+			grabObjects.canGrabObject = CanGrabObject;
+			grabObjects.grabObject = GrabObject;
+			grabObjects.dropObject = DropObject;
+		}
 
 		if (mainMenu != null)
 		{
@@ -1249,7 +1261,6 @@ public class EditorVR : MonoBehaviour
 
 			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 			{
-				// Create MiniWorld rayOrigin
 				var miniWorldRayOrigin = InstantiateMiniWorldRay();
 				miniWorldRayOrigin.parent = workspace.transform;
 
@@ -1278,12 +1289,15 @@ public class EditorVR : MonoBehaviour
 				};
 
 				m_IntersectionModule.AddTester(tester);
-
-				UpdatePlayerHandleMaps();
 			});
+
+			UpdatePlayerHandleMaps();
 		};
 	}
 
+	/// <summary>
+	/// Re-use DefaultProxyRay and strip off objects and components not needed for MiniWorldRays
+	/// </summary>
 	Transform InstantiateMiniWorldRay()
 	{
 		var miniWorldRay = U.Object.Instantiate(m_ProxyRayPrefab.gameObject).transform;
@@ -1317,11 +1331,12 @@ public class EditorVR : MonoBehaviour
 		foreach (var ray in miniWorldRaysCopy)
 		{
 			var miniWorldRay = ray.Value;
+			var maps = m_PlayerHandle.maps;
 			if (miniWorldRay.miniWorld == miniWorld)
 			{
 				var rayOrigin = ray.Key;
-				m_PlayerHandle.maps.Remove(miniWorldRay.uiInput);
-				m_PlayerHandle.maps.Remove(miniWorldRay.directSelectInput);
+				maps.Remove(miniWorldRay.uiInput);
+				maps.Remove(miniWorldRay.directSelectInput);
 				m_InputModule.RemoveRaycastSource(rayOrigin);
 				m_MiniWorldRays.Remove(rayOrigin);
 			}
@@ -1330,7 +1345,7 @@ public class EditorVR : MonoBehaviour
 
 	private void UpdateMiniWorldRays()
 	{
-		var directSelection = m_TransformTool as IDirectSelection;
+		var directSelection = m_TransformTool;
 
 		foreach (var ray in m_MiniWorldRays)
 		{
@@ -1427,7 +1442,7 @@ public class EditorVR : MonoBehaviour
 								if (heldObject)
 								{
 									directSelection.TransferHeldObject(otherRayOrigin, miniWorldRay.directSelectInput, miniWorldRayOrigin,
-										Vector3.zero);
+										Vector3.zero); // Set the new offset to zero because the object will have moved (this could be improved by taking original offset into account)
 								}
 							}
 
@@ -1590,8 +1605,7 @@ public class EditorVR : MonoBehaviour
 				{
 					gameObject = go,
 					node = ray.Value.node,
-					input = miniWorldRay.directSelectInput,
-					isMiniWorldRay = true
+					input = miniWorldRay.directSelectInput
 				};
 			}
 		}
@@ -1600,35 +1614,15 @@ public class EditorVR : MonoBehaviour
 
 	GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, ActionMapInput input)
 	{
-		var directSelection = m_TransformTool as IDirectSelection;
+		var directSelection = m_TransformTool;
 
 		if (m_IntersectionModule)
 		{
 			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-			//if (!tester.active)
-			//{
-			//	input.active = false;
-			//	return null;
-			//}
 
 			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
 			if (renderer)
 			{
-				//if (directSelection != null && directSelection.GetHeldObject(rayOrigin))
-				//	return null;
-
-				//foreach (var kvp in m_MiniWorldRays)
-				//{
-				//	var miniWorldRay = kvp.Value;
-				//	var miniRayOrigin = kvp.Key;
-				//	var originalRayOrigin = miniWorldRay.originalRayOrigin;
-				//	if (miniWorldRay.dragObject && originalRayOrigin == rayOrigin)
-				//		return null;
-
-				//	if (directSelection != null && directSelection.GetHeldObject(originalRayOrigin) && miniRayOrigin == rayOrigin)
-				//		return null;
-				//}
-
 				input.active = true;
 				return renderer.gameObject;
 			}
@@ -1639,6 +1633,93 @@ public class EditorVR : MonoBehaviour
 			|| (m_MiniWorldRays.TryGetValue(rayOrigin, out ray) && ray.dragObject);
 
 		return null;
+	}
+
+	bool CanGrabObject(DirectSelection selection, Transform rayOrigin)
+	{
+		if (selection.gameObject.tag == kVRPlayerTag && !m_MiniWorldRays.ContainsKey(rayOrigin))
+			return false;
+
+		return true;
+	}
+
+	bool GrabObject(IGrabObjects grabber, DirectSelection selection, Transform rayOrigin)
+	{
+		if (!CanGrabObject(selection, rayOrigin))
+			return false;
+
+		// Detach the player head model so that it is not affected by its parent transform
+		if (selection.gameObject.tag == kVRPlayerTag)
+			selection.gameObject.transform.parent = null;
+
+		return true;
+	}
+
+	void DropObject(IGrabObjects grabber, Transform grabbedObject, Transform rayOrigin)
+	{
+		// Dropping the player head updates the viewer pivot
+		if (grabbedObject.tag == kVRPlayerTag)
+			StartCoroutine(UpdateViewerPivot(grabbedObject));
+	}
+
+	IEnumerator UpdateViewerPivot(Transform playerHead)
+	{
+		var viewerPivot = U.Camera.GetViewerPivot();
+
+		// Smooth motion will cause Workspaces to lag behind camera
+		var components = viewerPivot.GetComponentsInChildren<SmoothMotion>();
+		foreach (var smoothMotion in components)
+		{
+			smoothMotion.enabled = false;
+		}
+
+		// Hide player head to avoid jarring impact
+		var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
+		foreach (var renderer in playerHeadRenderers)
+		{
+			renderer.enabled = false;
+		}
+
+		var mainCamera = U.Camera.GetMainCamera().transform;
+		var startPosition = viewerPivot.position;
+		var startRotation = viewerPivot.rotation;
+
+		var rotationDiff = U.Math.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
+		var cameraDiff = viewerPivot.position - mainCamera.position;
+		cameraDiff.y = 0;
+		var rotationOffset = rotationDiff * cameraDiff - cameraDiff;
+
+		var endPosition = viewerPivot.position + (playerHead.position - mainCamera.position) + rotationOffset;
+		var endRotation = viewerPivot.rotation * rotationDiff;
+		var startTime = Time.realtimeSinceStartup;
+		var diffTime = 0f;
+
+		while (diffTime < kViewerPivotTransitionTime)
+		{
+			diffTime = Time.realtimeSinceStartup - startTime;
+			var t = diffTime / kViewerPivotTransitionTime;
+			// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
+			viewerPivot.position = Vector3.Lerp(startPosition, endPosition, t);
+			viewerPivot.rotation = Quaternion.Lerp(startRotation, endRotation, t);
+			yield return null;
+		}
+
+		viewerPivot.position = endPosition;
+		viewerPivot.rotation = endRotation;
+
+		playerHead.parent = mainCamera;
+		playerHead.localRotation = Quaternion.identity;
+		playerHead.localPosition = Vector3.zero;
+
+		foreach (var smoothMotion in components)
+		{
+			smoothMotion.enabled = true;
+		}
+
+		foreach (var renderer in playerHeadRenderers)
+		{
+			renderer.enabled = true;
+		}
 	}
 
 	private void PlaceObject(Transform obj, Vector3 targetScale)

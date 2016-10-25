@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
-using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IDirectSelection
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IDirectSelection, IGrabObjects
 {
 	const float kBaseManipulatorSize = 0.3f;
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
-	const float kViewerPivotTransitionTime = 0.75f;
 
 	class GrabData
 	{
@@ -80,9 +77,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	PivotRotation m_PivotRotation = PivotRotation.Local;
 	PivotMode m_PivotMode = PivotMode.Pivot;
 
-	public bool directManipulationEnabled { get { return m_DirectManipulationEnabled; } set { m_DirectManipulationEnabled = value; } }
-	bool m_DirectManipulationEnabled = true;
-
 	readonly Dictionary<Node, GrabData> m_GrabData = new Dictionary<Node, GrabData>();
 	bool m_DirectSelected;
 	float m_ScaleStartDistance;
@@ -97,6 +91,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput)value; } }
 
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
+
+	public Func<DirectSelection, Transform, bool> canGrabObject { private get; set; }
+	public Func<IGrabObjects, DirectSelection, Transform, bool> grabObject { private get; set; }
+	public Action<IGrabObjects, Transform, Transform> dropObject { private get; set; }
 
 	void Awake()
 	{
@@ -133,7 +131,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		var hasRight = m_GrabData.ContainsKey(Node.RightHand);
 		var hasObject = directSelection.Count > 0 || hasLeft || hasRight;
 
-		if (m_DirectManipulationEnabled && !m_CurrentManipulator.dragging)
+		if (!m_CurrentManipulator.dragging)
 		{
 			// Disable manipulator on direct hover or drag
 			if (manipulatorGameObject.activeSelf && hasObject)
@@ -142,20 +140,18 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			foreach (var kvp in directSelection)
 			{
 				var selection = kvp.Value;
+				var rayOrigin = kvp.Key;
 
-				// Only MiniWorldRays can grab the player head
-				if (selection.gameObject.tag == EditorVR.kVRPlayerTag && !selection.isMiniWorldRay)
+				if (!canGrabObject(selection, rayOrigin))
 					continue;
 
 				var directSelectInput = (DirectSelectInput)selection.input;
 				if (directSelectInput.select.wasJustPressed)
 				{
-					// Detach the player head model so that 
-					if (selection.gameObject.tag == EditorVR.kVRPlayerTag)
-						selection.gameObject.transform.parent = null;
+					if (!grabObject(this, selection, rayOrigin))
+						continue;
 
 					var grabbedObject = selection.gameObject.transform;
-					var rayOrigin = kvp.Key;
 
 					// Check if the other hand is already grabbing for two-handed scale
 					foreach (var grabData in m_GrabData)
@@ -277,66 +273,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		}
 	}
 
-	IEnumerator UpdateViewerPivot(Transform playerHead)
-	{
-		var viewerPivot = U.Camera.GetViewerPivot();
-
-		// Smooth motion will cause Workspaces to lag behind camera
-		var components = viewerPivot.GetComponentsInChildren<SmoothMotion>();
-		foreach (var smoothMotion in components)
-		{
-			smoothMotion.enabled = false;
-		}
-
-		// Hide player head to avoid jarring impact
-		var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
-		foreach (var renderer in playerHeadRenderers)
-		{
-			renderer.enabled = false;
-		}
-
-		var mainCamera = U.Camera.GetMainCamera().transform;
-		var startPosition = viewerPivot.position;
-		var startRotation = viewerPivot.rotation;
-
-		var rotationDiff = U.Math.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
-		var cameraDiff = viewerPivot.position - mainCamera.position;
-		cameraDiff.y = 0;
-		var rotationOffset = rotationDiff * cameraDiff - cameraDiff;
-
-		var endPosition = viewerPivot.position + (playerHead.position - mainCamera.position) + rotationOffset;
-		var endRotation = viewerPivot.rotation * rotationDiff;
-		var startTime = Time.realtimeSinceStartup;
-		var diffTime = 0f;
-
-		while (diffTime < kViewerPivotTransitionTime)
-		{
-			diffTime = Time.realtimeSinceStartup - startTime;
-			var t = diffTime / kViewerPivotTransitionTime;
-			// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
-			viewerPivot.position = Vector3.Lerp(startPosition, endPosition, t);
-			viewerPivot.rotation = Quaternion.Lerp(startRotation, endRotation, t);
-			yield return null;
-		}
-
-		viewerPivot.position = endPosition;
-		viewerPivot.rotation = endRotation;
-
-		playerHead.parent = mainCamera;
-		playerHead.localRotation = Quaternion.identity;
-		playerHead.localPosition = Vector3.zero;
-
-		foreach (var smoothMotion in components)
-		{
-			smoothMotion.enabled = true;
-		}
-
-		foreach (var renderer in playerHeadRenderers)
-		{
-			renderer.enabled = true;
-		}
-	}
-
 	public void DropHeldObject(Transform obj)
 	{
 		Vector3 position;
@@ -395,11 +331,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	void DropObject(Node inputNode)
 	{
-		// Droppin the player head updates the viewer pivot
-		var grabbedObject = m_GrabData[inputNode].grabbedObject;
-		if (grabbedObject.tag == EditorVR.kVRPlayerTag)
-			StartCoroutine(UpdateViewerPivot(grabbedObject));
-
+		var grabData = m_GrabData[inputNode];
+		dropObject(this, grabData.grabbedObject, grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
 	}
 
@@ -453,7 +386,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	private void UpdateManipulatorSize()
 	{
 		var camera = U.Camera.GetMainCamera();
-		var manipulator = m_CurrentManipulator as MonoBehaviour;
+		var manipulator = (MonoBehaviour)m_CurrentManipulator;
 		var distance = Vector3.Distance(camera.transform.position, manipulator.transform.position);
 		manipulator.transform.localScale = Vector3.one * distance * kBaseManipulatorSize;
 	}

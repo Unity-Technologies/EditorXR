@@ -155,6 +155,11 @@
 				return Vector3.SmoothDamp(current, target, ref currentVelocity, correctSmoothTime, maxSpeed, deltaTime);
 			}
 
+			/// <summary>
+			/// Returns a rotation which only contains the yaw component of the given rotation
+			/// </summary>
+			/// <param name="rotation">The rotation we would like to constrain</param>
+			/// <returns>A yaw-only rotation which matches the input's yaw</returns>
 			public static Quaternion ConstrainYawRotation(Quaternion rotation)
 			{
 				var euler = rotation.eulerAngles;
@@ -163,6 +168,13 @@
 				return Quaternion.Euler(euler);
 			}
 
+			/// <summary>
+			/// Get the position and rotatoin difference between two objects for the purpose of maintaining that offset
+			/// </summary>
+			/// <param name="from">The object whose position will be changing (parent)</param>
+			/// <param name="to">The object whose position will be updated (child)</param>
+			/// <param name="positionOffset">The position vector from "from" to "to"</param>
+			/// <param name="rotationOffset">The rotation which will rotate "from" to "to"</param>
 			public static void GetTransformOffset(Transform from, Transform to, out Vector3 positionOffset, out Quaternion rotationOffset)
 			{
 				var inverseRotation = Quaternion.Inverse(from.rotation);
@@ -170,6 +182,13 @@
 				rotationOffset = inverseRotation * to.transform.rotation;
 			}
 
+			/// <summary>
+			/// Set the position and rotation of the "child" transform given an offset from the parent (for independent transforms)
+			/// </summary>
+			/// <param name="parent">The transform we are offsetting from</param>
+			/// <param name="child">The transform whose position we are setting</param>
+			/// <param name="positionOffset">The position offset (local position)</param>
+			/// <param name="rotationOffset">The rotation offset (local rotation)</param>
 			public static void SetTransformOffset(Transform parent, Transform child, Vector3 positionOffset, Quaternion rotationOffset)
 			{
 				child.position = parent.position + parent.rotation * positionOffset;
