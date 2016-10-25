@@ -6,8 +6,6 @@ namespace UnityEngine.VR.Helpers
 	public class UITransformCopy : UIBehaviour
 	{
 		static readonly Vector2 kTransformPivot = new Vector2(0.5f, 0.5f);
-		const float kLayerHeight = 0.004f;
-		const float kExtraSpace = 0.00055f; // To avoid Z-fighting
 
 		Transform m_TargetTransform;
 
@@ -19,6 +17,9 @@ namespace UnityEngine.VR.Helpers
 
 		[SerializeField]
 		float m_YPositionPadding = 0f;
+
+		[SerializeField]
+		float m_ZPositionPadding = 0.00055f;
 
 		[SerializeField]
 		float m_XScalePadding = 0.01f;
@@ -47,7 +48,7 @@ namespace UnityEngine.VR.Helpers
 
 		void DriveTransformWithRectTransform()
 		{
-			if (!m_SourceRectTransform || !m_TargetTransform)
+			if (!m_SourceRectTransform || !m_TargetTransform || !gameObject.activeInHierarchy)
 				return;
 
 			// Drive transform with source RectTransform
@@ -55,13 +56,12 @@ namespace UnityEngine.VR.Helpers
 			// Scale pivot by rect size to get correct xy local position
 			var pivotOffset = Vector2.Scale(rectSize, kTransformPivot - m_SourceRectTransform.pivot);
 
-			// Add space for cube
+			// Add space for object
 			var localPosition = m_SourceRectTransform.localPosition;
-			m_SourceRectTransform.localPosition = new Vector3(localPosition.x, localPosition.y, -kLayerHeight);
+			m_SourceRectTransform.localPosition = new Vector3(localPosition.x, localPosition.y, -m_ZPositionPadding);
 
 			//Offset by 0.5 * height to account for pivot in center
-			const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
-			m_TargetTransform.localPosition = new Vector3(pivotOffset.x + m_XPositionPadding, pivotOffset.y + m_YPositionPadding, zOffset);
+			m_TargetTransform.localPosition = new Vector3(pivotOffset.x + m_XPositionPadding, pivotOffset.y + m_YPositionPadding, m_ZPositionPadding);
 			m_TargetTransform.localScale = new Vector3(rectSize.x + m_XScalePadding, rectSize.y + m_YScalePadding, transform.localScale.z);
 		}
 	}
