@@ -44,8 +44,5 @@ namespace UnityEngine.VR.Menus
 		/// Controls whether the menu is visible or not
 		/// </summary>
 		bool visible { get; set; }
-
-		// HACK: Awake/Start get called together in ExecuteInEditMode, so calling this method after is a workaround for order of operations
-		Action setup { get; }
 	}
 }
