@@ -22,12 +22,10 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 
 	private float m_TriggerPressedTimeStamp = 0.0f;
 	private Workspace[] m_AllWorkspaces;
-	private Vector3[] m_StartPositions;
-	private Vector3 m_RayOriginStartPos;
 	private Quaternion m_RayOriginStartAngle;
-	private Vector3 m_StartThrowPosition;
-	private bool m_StartedThrowing = false;
 	private bool m_ThrowDownTriggered = false;
+	private Vector3 m_PreviousPosition;
+	private float m_VerticalVelocity;
 
 	private enum ManipulateMode
 	{
@@ -55,18 +53,18 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 				}
 				else if(standardInput.action.isHeld)
 				{
-					HandleThrowDown();
 					HandleManipulationStart();
 				}
 				break;
 			}
 			case ManipulateMode.On:
 			{
-				if(standardInput.action.isHeld)
+				if (standardInput.action.isHeld)
 				{
+					HandleThrowDown();
 					UpdateWorkspaceManipulation();
 				}
-				else if(standardInput.action.wasJustReleased)
+				else if (standardInput.action.wasJustReleased)
 				{
 					mode = ManipulateMode.Off;
 					showDefaultRay();
@@ -106,7 +104,6 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 
 	void HandleDoubleTap()
 	{
-		m_StartedThrowing = false;
 		if(Time.realtimeSinceStartup - m_TriggerPressedTimeStamp < 0.8f)
 		{
 			m_ThrowDownTriggered = false;
@@ -117,38 +114,27 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 
 	void HandleThrowDown()
 	{
-		if(Time.realtimeSinceStartup - m_TriggerPressedTimeStamp < 0.6f)
+		if(UserThrowsDown() && !m_ThrowDownTriggered)
 		{
-			if(UserThrowsDown() && !m_ThrowDownTriggered)
+			if(FindWorkspaces())
 			{
-				if(FindWorkspaces())
-				{
-					m_ThrowDownTriggered = true;
+				m_ThrowDownTriggered = true;
 
-					for(int i = 0; i < m_AllWorkspaces.Length; i++)
-						m_AllWorkspaces[i].OnCloseClicked();
-				}
+				for(int i = 0; i < m_AllWorkspaces.Length; i++)
+					m_AllWorkspaces[i].OnCloseClicked();
 			}
 		}
 	}
 
 	bool UserThrowsDown()
 	{
-		if(!m_StartedThrowing)
-		{
-			m_StartedThrowing = true;
-			m_StartThrowPosition = rayOrigin.position;
-			return false;
-		}
+		m_VerticalVelocity = (m_PreviousPosition.y - rayOrigin.position.y) * Time.unscaledDeltaTime;
+		m_PreviousPosition = rayOrigin.position;
+
+		if (m_VerticalVelocity > 0.0025f)
+			return true;
 		else
-		{
-			float deltaY = m_StartThrowPosition.y - rayOrigin.position.y;
-			if(deltaY > 0.1f)
-			{
-				return true;
-			}
 			return false;
-		}
 	}
 
 	void HandleManipulationStart()
@@ -157,13 +143,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 		{
 			if(FindWorkspaces())
 			{
-				m_RayOriginStartPos = rayOrigin.position;
+				m_PreviousPosition = rayOrigin.position;
 				m_RayOriginStartAngle = Quaternion.LookRotation(rayOrigin.up);
-				m_StartPositions = new Vector3[m_AllWorkspaces.Length];
-
-				for(int i = 0; i < m_StartPositions.Length; i++)
-					m_StartPositions[i] = m_AllWorkspaces[i].transform.position;
-				
 				mode = ManipulateMode.On;
 				hideDefaultRay();
 			}
@@ -176,26 +157,23 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 
 	void UpdateWorkspaceManipulation()
 	{
-        float deltaPosY = rayOrigin.position.y - m_RayOriginStartPos.y;
-
 		Quaternion rayOriginCurrentAngle = Quaternion.LookRotation(rayOrigin.up);
 		float deltaAngleY = rayOriginCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
 
 		for(int i = 0; i < m_AllWorkspaces.Length; i++)
 		{
 			//don't move for tiny movements
-			if(Mathf.Abs(deltaPosY) > 0.01f)
+			if(Mathf.Abs(m_VerticalVelocity) > 0.0001f)
 			{
-				m_AllWorkspaces[i].transform.position = new Vector3(m_AllWorkspaces[i].transform.position.x,m_StartPositions[i].y + deltaPosY * 1.5f,m_AllWorkspaces[i].transform.position.z);
-				m_StartPositions[i] = m_AllWorkspaces[i].transform.position;
+				// move on Y axis with corrected direction
+				m_AllWorkspaces[i].transform.Translate(0.0f, m_VerticalVelocity * -50.0f, 0.0f);
 			}
 
 			//don't rotate for tiny rotations
 			if(Mathf.Abs(deltaAngleY) > (60.0f * Time.unscaledDeltaTime))
 				m_AllWorkspaces[i].transform.RotateAround(VRView.viewerCamera.transform.position,Vector3.up,deltaAngleY);
 		}
-		//save current pos and angle for next frame math
-		m_RayOriginStartPos = rayOrigin.position;
+		//save current rotation for next frame math
 		m_RayOriginStartAngle = rayOriginCurrentAngle;
     }
 }
