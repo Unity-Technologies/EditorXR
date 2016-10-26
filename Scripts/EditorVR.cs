@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -353,6 +353,17 @@ public class EditorVR : MonoBehaviour
 			{
 				foreach (var rayOrigin in proxy.rayOrigins.Values)
 					m_KeyboardMallets[rayOrigin].CheckForKeyCollision();
+			}
+		}
+
+		foreach (var kvp in m_DeviceData)
+		{
+			var device = kvp.Key;
+			var mainMenu = m_DeviceData[device].mainMenu;
+			if (mainMenu != null)
+			{
+				foreach (GameObject go in kvp.Value.toolMenus)
+					go.SetActive(!mainMenu.visible);
 			}
 		}
 

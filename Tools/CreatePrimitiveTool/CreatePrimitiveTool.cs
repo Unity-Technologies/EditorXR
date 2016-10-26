@@ -1,12 +1,46 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Actions;
 
 [MainMenuItem("Primitive", "Primitive", "create primitives")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateMenuUI, ICustomRay
+public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateMenuUI, ICustomRay, IToolActions
 {
+	class PrimitiveToolAction : IAction
+	{
+		public Action execute;
+		public Sprite icon { get; internal set; }
+		public bool ExecuteAction()
+		{
+			execute();
+			return true;
+		}
+	}
+
+	[SerializeField]
+	Sprite m_CubeIcon;
+	[SerializeField]
+	Sprite m_SphereIcon;
+	[SerializeField]
+	Sprite m_CapsuleIcon;
+	[SerializeField]
+	Sprite m_PlaneIcon;
+	[SerializeField]
+	Sprite m_QuadIcon;
+	[SerializeField]
+	Sprite m_CylinderIcon;
+
+	readonly PrimitiveToolAction m_CreateCubeAction = new PrimitiveToolAction();
+	readonly PrimitiveToolAction m_CreateSphereAction = new PrimitiveToolAction();
+	readonly PrimitiveToolAction m_CreateCapsuleAction = new PrimitiveToolAction();
+	readonly PrimitiveToolAction m_CreatePlaneAction = new PrimitiveToolAction();
+	readonly PrimitiveToolAction m_CreateQuadAction = new PrimitiveToolAction();
+	readonly PrimitiveToolAction m_CreateCylinderAction = new PrimitiveToolAction();
+	readonly PrimitiveToolAction m_FreeformCubeAction = new PrimitiveToolAction();
+
 	private PrimitiveType m_SelectedPrimitiveType = PrimitiveType.Cube;
 	private bool m_Freeform = false;
 
@@ -35,6 +69,10 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 
 	public Node selfNode { private get; set; }
 
+	public List<IAction> toolActions { get; private set; }
+
+	public event Action<Node?> startRadialMenu = delegate { };
+
 	private enum PrimitiveCreationStates
 	{
 		PointA,
@@ -42,10 +80,45 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 		Freeform,
 	}
 
+	void Awake()
+	{
+		m_CreateCubeAction.icon = m_CubeIcon;
+		m_CreateCubeAction.execute = SetSelectedToCube;
+
+		m_CreateSphereAction.icon = m_SphereIcon;
+		m_CreateCubeAction.execute = SetSelectedToSphere;
+
+		m_CreateCapsuleAction.icon = m_CapsuleIcon;
+		m_CreateCapsuleAction.execute = SetSelectedToCapsule;
+
+		m_CreatePlaneAction.icon = m_PlaneIcon;
+		m_CreatePlaneAction.execute = SetSelectedToPlane;
+
+		m_CreateQuadAction.icon = m_QuadIcon;
+		m_CreateQuadAction.execute = SetSelectedToQuad;
+
+		m_CreateCylinderAction.icon = m_CylinderIcon;
+		m_CreateCylinderAction.execute = SetSelectedToCylinder;
+
+		m_FreeformCubeAction.icon = m_CubeIcon;
+		m_FreeformCubeAction.execute = SetSelectedToFreeform;
+
+		toolActions = new List<IAction>() { m_CreateCubeAction,
+											m_CreateSphereAction,
+											m_CreateCapsuleAction,
+											m_CreatePlaneAction,
+											m_CreateQuadAction,
+											m_CreateCylinderAction,
+											m_FreeformCubeAction };
+
+	}
+
 	void Update()
 	{
-		if(!m_CanvasSpawned)
-			SpawnCanvas();
+		if (!m_CanvasSpawned)
+		{
+			//SpawnCanvas();
+		}
 
 		switch(m_State)
 		{
@@ -129,5 +202,47 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 	{
 		if(standardInput.action.wasJustReleased)
 			m_State = PrimitiveCreationStates.PointA;
+	}
+
+	void SetSelectedToCube()
+	{
+		m_SelectedPrimitiveType = PrimitiveType.Cube;
+		m_Freeform = false;
+	}
+
+	void SetSelectedToSphere()
+	{
+		m_SelectedPrimitiveType = PrimitiveType.Sphere;
+		m_Freeform = false;
+	}
+
+	void SetSelectedToCapsule()
+	{
+		m_SelectedPrimitiveType = PrimitiveType.Capsule;
+		m_Freeform = false;
+	}
+
+	void SetSelectedToPlane()
+	{
+		m_SelectedPrimitiveType = PrimitiveType.Plane;
+		m_Freeform = false;
+	}
+
+	void SetSelectedToQuad()
+	{
+		m_SelectedPrimitiveType = PrimitiveType.Quad;
+		m_Freeform = false;
+	}
+
+	void SetSelectedToCylinder()
+	{
+		m_SelectedPrimitiveType = PrimitiveType.Cylinder;
+		m_Freeform = false;
+	}
+
+	void SetSelectedToFreeform()
+	{
+		m_SelectedPrimitiveType = PrimitiveType.Cube;
+		m_Freeform = true;
 	}
 }
