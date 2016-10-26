@@ -4,7 +4,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-[CanEditMultipleObjects]
 [CustomEditor(typeof(KeyboardButton))]
 public class KeyboardButtonEditor : Editor
 {
@@ -33,30 +32,29 @@ public class KeyboardButtonEditor : Editor
 		m_ButtonMeshProperty = serializedObject.FindProperty("m_TargetMesh");
 		m_ButtonGraphicProperty = serializedObject.FindProperty("m_TargetGraphic");
 		m_RepeatOnHoldProperty = serializedObject.FindProperty("m_RepeatOnHold");
-    }
+	}
 
-    public override void OnInspectorGUI()
+	public override void OnInspectorGUI()
 	{
 		m_KeyboardButton = (KeyboardButton)target;
-        if (GUILayout.Button("Create layout parent"))
-        {
-            var i = 0;
-            foreach (var child in m_KeyboardButton.transform.parent)
-            {
-                if (child == m_KeyboardButton.transform)
-                    break;
-                i++;
-            }
+		if (GUILayout.Button("Create layout parent"))
+		{
+			var i = 0;
+			foreach (var child in m_KeyboardButton.transform.parent)
+			{
+				if (child == m_KeyboardButton.transform)
+					break;
+				i++;
+			}
 
-            var t = new GameObject(m_KeyboardButton.name + "_LayoutPosition", typeof(RectTransform));
-            t.transform.SetParent(m_KeyboardButton.GetComponent<RectTransform>());
-            t.transform.localPosition = Vector3.zero;
-            t.transform.localScale = Vector3.one;
-            t.GetComponent<RectTransform>().sizeDelta = m_KeyboardButton.GetComponent<RectTransform>().sizeDelta;
-            t.transform.SetParent(m_KeyboardButton.transform.parent);
-            m_KeyboardButton.transform.parent = t.transform;
-            t.transform.SetSiblingIndex(i);
-        }
+			var t = new GameObject(m_KeyboardButton.name + "_LayoutPosition");
+			t.transform.SetParent(m_KeyboardButton.transform);
+			t.transform.localPosition = Vector3.zero;
+			t.transform.SetParent(m_KeyboardButton.transform.parent);
+			t.transform.localScale = Vector3.one;
+			m_KeyboardButton.transform.parent = t.transform;
+			t.transform.SetSiblingIndex(i);
+		}
 
 		serializedObject.Update();
 

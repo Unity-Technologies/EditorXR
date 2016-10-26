@@ -653,7 +653,6 @@ public class EditorVR : MonoBehaviour
 		if (m_NumericKeyboard == null)
 		{
 			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-			m_NumericKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
 			m_NumericKeyboard.orientationChanged += KeyboardOrientationChanged;
 		}
 		return m_NumericKeyboard;
@@ -668,7 +667,6 @@ public class EditorVR : MonoBehaviour
 		if (m_StandardKeyboard == null)
 		{
 			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-			m_StandardKeyboard.GetComponent<Canvas>().worldCamera = m_EventCamera;
 			m_StandardKeyboard.orientationChanged += KeyboardOrientationChanged;
 		}
 		return m_StandardKeyboard;

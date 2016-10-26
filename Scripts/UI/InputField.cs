@@ -134,7 +134,7 @@ namespace UnityEngine.VR.UI
 			{
 				m_Keyboard.gameObject.SetActive(true);
 
-				m_Keyboard.transform.position = transform.position;
+				m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
 				var direction = U.Camera.GetMainCamera().transform.position - transform.position;
 				direction.y = 0;
 				var rotation = Vector3.Angle(Vector3.back, direction);

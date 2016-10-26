@@ -16,14 +16,15 @@ public class KeyboardButton : BaseHandle
 	}
 
 	private const float kRepeatTime = 0.35f;
+	private const float kClickTime = 0.3f;
 	private const float kPressEmission = 1f;
 	private const float kEmissionLerpTime = 0.1f;
 	private const float kKeyResponseDuration = 0.5f;
 	private const float kKeyResponseAmplitude = 0.06f;
 
-	public Text textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
+	public TextMesh textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
 	[SerializeField]
-	private Text m_TextComponent;
+	private TextMesh m_TextComponent;
 
 	[SerializeField]
 	private char m_Character;
@@ -67,6 +68,8 @@ public class KeyboardButton : BaseHandle
 	private Coroutine m_IncreaseEmissionCoroutine;
 	private Coroutine m_DecreaseEmissionCoroutine;
 
+	float m_PressDownTime;
+
 	void Awake()
 	{
 		if(!m_TargetMesh)
@@ -108,10 +111,6 @@ public class KeyboardButton : BaseHandle
 				else
 					m_TextComponent.text = m_Character.ToString();
 			}
-
-			// HACK: Toggle text component to refresh text
-			m_TextComponent.enabled = false;
-			m_TextComponent.enabled = true;
 		}
 	}
 
@@ -134,7 +133,10 @@ public class KeyboardButton : BaseHandle
 		if (m_PressOnHover())
 			return;
 
-		KeyPressed();
+		m_PressDownTime = Time.realtimeSinceStartup;
+
+		if (m_RepeatOnHold)
+			KeyPressed();
 
 		base.OnHandleDragStarted(eventData);
 	}
@@ -157,6 +159,8 @@ public class KeyboardButton : BaseHandle
 
 		if (m_RepeatOnHold)
 			EndKeyHold();
+		else if (Time.realtimeSinceStartup - m_PressDownTime < kClickTime)
+			KeyPressed();
 
 		base.OnHandleDragEnded(eventData);
 	}
