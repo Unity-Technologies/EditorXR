@@ -179,13 +179,11 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 				{
 					m_ClickedField = child.GetComponent<InputField>();
 					if (m_ClickedField)
-					{
-						StartCoroutine(CheckSingleClick());
 						break;
-					}
 				}
+				StartCoroutine(CheckSingleClick());
 			}
-
+			
 			m_ClickCount++;
 			m_SelectIsHeld = true;
 			m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
