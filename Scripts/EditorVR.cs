@@ -149,6 +149,7 @@ public class EditorVR : MonoBehaviour
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
 		m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
+		ConnectInterfaces(m_LockModule);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
