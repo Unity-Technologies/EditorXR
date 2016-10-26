@@ -840,6 +840,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013697906624}
+  m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
 --- !u!114 &114000010299238614
@@ -1235,7 +1236,11 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_SourceRectTransform: {fileID: 224000011091065718}
   m_XPositionPadding: 0
+  m_YPositionPadding: 0
+  m_ZPositionPadding: 0.00055
   m_XScalePadding: 0.01
+  m_YScalePadding: 0
+  m_ParentUnderSource: 1
 --- !u!114 &114000011897388082
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1630,6 +1635,7 @@ MonoBehaviour:
   m_HighlightItems:
   - {fileID: 114000010943776462}
   - {fileID: 114000013520611362}
+  m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
 --- !u!114 &114000013251304952
@@ -1761,6 +1767,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013398990474}
+  m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
 --- !u!114 &114000013697906624
@@ -2072,7 +2079,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011895958286}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.1414}
+  m_LocalPosition: {x: 0, y: 0, z: 0.1882}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
