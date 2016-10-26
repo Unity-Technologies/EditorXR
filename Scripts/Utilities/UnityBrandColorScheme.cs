@@ -246,9 +246,9 @@ namespace UnityEngine.VR.Utilities
 			// Setup default session gradient; can be set with a random gradient externally,
 			// allowing all UI objects fetching this gradient to have a uniform color-scheme
 			sessionGradient = new GradientPair(s_Light, s_Dark);
-			
+
 			// Setup grayscale light/dark contrasting session gradient
-			grayscaleSessionGradient = new GradientPair(s_Light, s_Dark);
+			grayscaleSessionGradient = new GradientPair(U.Material.HexToColor("898A8AFF"), s_Light);
 		}
 
 		/// <summary>
