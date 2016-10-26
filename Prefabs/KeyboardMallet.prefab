@@ -127,7 +127,7 @@ Transform:
   m_GameObject: {fileID: 1000011926010334}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0.18}
-  m_LocalScale: {x: 0.03, y: 0.03, z: 0.03}
+  m_LocalScale: {x: 0.024, y: 0.024, z: 0.024}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000010088396120}
@@ -220,7 +220,7 @@ MonoBehaviour:
   m_StemLength: 0.09
   m_StemWidth: 0.003125
   m_Bulb: {fileID: 4000013082501652}
-  m_BulbRadius: 0.015
+  m_BulbRadius: 0.012
   m_BulbCollider: {fileID: 135000012803460838}
 --- !u!135 &135000012803460838
 SphereCollider:

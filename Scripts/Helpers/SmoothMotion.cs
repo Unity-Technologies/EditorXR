@@ -60,6 +60,15 @@
 		}
 
 		/// <summary>
+		/// Set the follow transform
+		/// </summary>
+		/// <param name="target">The transform to follow</param>
+		public void SetTarget(Transform target)
+		{
+			m_Target = target;
+		}
+
+		/// <summary>
 		/// Setup rotation smoothing
 		/// </summary>
 		/// <param name="tightenAmount">A value of zero allows for full rotation smoothing, a value of 20 tightens greatly the rotation smoothing</param>

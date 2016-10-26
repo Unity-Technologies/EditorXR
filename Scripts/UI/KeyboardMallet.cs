@@ -31,7 +31,7 @@ public class KeyboardMallet : MonoBehaviour
 
 	private State m_State = State.Visible;
 
-	private Vector3 m_BulbStartScale;
+	private Vector3 m_BulbBaseScale;
 
 	private KeyboardButton m_CurrentButton;
 
@@ -44,7 +44,7 @@ public class KeyboardMallet : MonoBehaviour
 
 		m_Bulb.transform.localPosition = new Vector3(0f, 0f, m_StemLength * 2f);
 		m_Bulb.transform.localScale = Vector3.one * m_BulbRadius * 2f;
-		m_BulbStartScale = m_Bulb.transform.localScale;
+		m_BulbBaseScale = m_Bulb.transform.localScale;
 	}
 
 	/// <summary>
@@ -113,7 +113,7 @@ public class KeyboardMallet : MonoBehaviour
 
 	private void Start()
 	{
-		m_BulbStartScale = m_Bulb.localScale;
+		m_BulbBaseScale = m_Bulb.localScale;
 	}
 
 	private IEnumerator HideMallet()
@@ -131,6 +131,8 @@ public class KeyboardMallet : MonoBehaviour
 			currentLength = U.Math.SmoothDamp(currentLength, 0f, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_StemOrigin.localScale = new Vector3(stemScale.x, currentLength, stemScale.z);
 			m_Bulb.transform.localPosition = new Vector3(0f, 0f, currentLength * 2f);
+			m_Bulb.transform.localScale = m_BulbBaseScale * currentLength;
+
 			yield return null;
 		}
 
@@ -154,10 +156,11 @@ public class KeyboardMallet : MonoBehaviour
 			currentLength = U.Math.SmoothDamp(currentLength, m_StemLength, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_StemOrigin.localScale = new Vector3(stemScale.x, currentLength, stemScale.z);
 			m_Bulb.transform.localPosition = new Vector3(0f, 0f, currentLength * 2f);
+			m_Bulb.transform.localScale = m_BulbBaseScale * currentLength;
 			yield return null;
 		}
 
-		m_Bulb.transform.localScale = m_BulbStartScale;
+		m_Bulb.transform.localScale = m_BulbBaseScale;
 
 		// only set the value if another transition hasn't begun
 		m_State = State.Visible;

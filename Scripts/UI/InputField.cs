@@ -9,8 +9,6 @@ namespace UnityEngine.VR.UI
 {
 	public abstract class InputField : Selectable, IPointerClickHandler
 	{
-		private static readonly Quaternion kKeyboardRotationOffset = Quaternion.AngleAxis(15, Vector3.up);
-
 		public SelectionFlags selectionFlags
 		{
 			get { return m_SelectionFlags; }
@@ -138,7 +136,7 @@ namespace UnityEngine.VR.UI
 				var direction = U.Camera.GetMainCamera().transform.position - transform.position;
 				direction.y = 0;
 				var rotation = Vector3.Angle(Vector3.back, direction);
-				m_Keyboard.transform.rotation = Quaternion.Euler(0, rotation, 0) * kKeyboardRotationOffset;
+				m_Keyboard.transform.rotation = Quaternion.Euler(0, rotation, 0);
 
 				m_Keyboard.Setup(OnKeyPress);
 			}

@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Utilities;
 
 public class KeyboardButton : BaseHandle
@@ -23,6 +24,7 @@ public class KeyboardButton : BaseHandle
 	private const float kKeyResponseAmplitude = 0.06f;
 
 	public TextMesh textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
+
 	[SerializeField]
 	private TextMesh m_TextComponent;
 
@@ -70,10 +72,17 @@ public class KeyboardButton : BaseHandle
 
 	float m_PressDownTime;
 
+	public SmoothMotion smoothMotion { get; set; }
+
 	void Awake()
 	{
 		if(!m_TargetMesh)
 			m_TargetMesh = GetComponentInChildren<Renderer>(true);
+
+		smoothMotion = GetComponent<SmoothMotion>();
+		if (smoothMotion == null)
+			smoothMotion = gameObject.AddComponent<SmoothMotion>();
+		smoothMotion.enabled = false;
 	}
 
 	/// <summary>
@@ -130,37 +139,37 @@ public class KeyboardButton : BaseHandle
 
 	protected override void OnHandleDragStarted(HandleEventData eventData)
 	{
-		if (m_PressOnHover())
-			return;
+		if (!m_PressOnHover())
+		{
+			m_PressDownTime = Time.realtimeSinceStartup;
 
-		m_PressDownTime = Time.realtimeSinceStartup;
-
-		if (m_RepeatOnHold)
-			KeyPressed();
+			if (m_RepeatOnHold)
+				KeyPressed();
+		}
 
 		base.OnHandleDragStarted(eventData);
 	}
 
 	protected override void OnHandleDragging(HandleEventData eventData)
 	{
-		if (m_PressOnHover())
-			return;
-
-		if (m_RepeatOnHold)
-			HoldKey();
+		if (!m_PressOnHover())
+		{
+			if (m_RepeatOnHold)
+				HoldKey();
+		}
 
 		base.OnHandleDragging(eventData);
 	}
 
 	protected override void OnHandleDragEnded(HandleEventData eventData)
 	{
-		if (m_PressOnHover())
-			return;
-
-		if (m_RepeatOnHold)
-			EndKeyHold();
-		else if (Time.realtimeSinceStartup - m_PressDownTime < kClickTime)
-			KeyPressed();
+		if (!m_PressOnHover())
+		{
+			if (m_RepeatOnHold)
+				EndKeyHold();
+			else if (Time.realtimeSinceStartup - m_PressDownTime < kClickTime)
+				KeyPressed();
+		}
 
 		base.OnHandleDragEnded(eventData);
 	}
