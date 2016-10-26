@@ -89,6 +89,7 @@ public class EditorVR : MonoBehaviour
 	private PixelRaycastModule m_PixelRaycastModule;
 	private HighlightModule m_HighlightModule;
 	private ObjectPlacementModule m_ObjectPlacementModule;
+	private SnappingModule m_SnappingModule;
 	private DragAndDropModule m_DragAndDropModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
@@ -115,6 +116,8 @@ public class EditorVR : MonoBehaviour
 	List<Type> m_MainMenuTools;
 	private List<Type> m_AllWorkspaceTypes;
 	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
+
+	private List<IModule> m_MainMenuModules = new List<IModule>();
 
 	private readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 	{
@@ -183,10 +186,12 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+		m_SnappingModule = U.Object.AddComponent<SnappingModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
+		m_MainMenuModules = GetComponents<IModule>().ToList();
 
 		SpawnActions();
 
@@ -1222,10 +1227,20 @@ public class EditorVR : MonoBehaviour
 			grabObjects.dropObject = DropObject;
 		}
 
+		var snapping = obj as ISnapping;
+		if (snapping != null)
+		{
+			snapping.onSnapEnded = m_SnappingModule.OnSnapEnded;
+			snapping.onSnapHeld = m_SnappingModule.OnSnapHeld;
+			snapping.onSnapStarted = m_SnappingModule.OnSnapStarted;
+			snapping.onSnapUpdate = m_SnappingModule.OnSnapUpdate;
+		}
+
 		var mainMenu = obj as IMainMenu;
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_MainMenuTools;
+			mainMenu.menuModules = m_MainMenuModules;
 			mainMenu.selectTool = SelectTool;
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
 			mainMenu.node = GetDeviceNode(device);
