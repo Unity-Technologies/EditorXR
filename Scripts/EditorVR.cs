@@ -149,6 +149,7 @@ public class EditorVR : MonoBehaviour
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
 		m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
+		m_LockModule.openRadialMenu = DisplayAlternateMenu;
 		ConnectInterfaces(m_LockModule);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
@@ -507,6 +508,46 @@ public class EditorVR : MonoBehaviour
 				if (alternateMenu != null)
 				{
 					alternateMenu.visible = (node.Value == selectionToolNode) && Selection.gameObjects.Length > 0;
+
+					// Hide the main menu if the alternate menu is going to be visible
+					var mainMenu = deviceData.mainMenu;
+					if (mainMenu != null && alternateMenu.visible)
+					{
+						mainMenu.visible = false;
+						deviceData.restoreMainMenu = false;
+					}
+
+					// Move the activator button to an alternate position if the alternate menu will be shown
+					var mainMenuActivator = deviceData.mainMenuActivator;
+					if (mainMenuActivator != null)
+						mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
+
+					updateMaps = true;
+				}
+			}
+		}
+
+		if (updateMaps)
+			UpdatePlayerHandleMaps();
+	}
+
+	private void DisplayAlternateMenu(Node? forNode, GameObject forObject)
+	{
+		if (forNode == null)
+			return;
+
+		var updateMaps = false;
+		foreach (var kvp in m_DeviceData)
+		{
+			Node? node = GetDeviceNode(kvp.Key);
+			if (node.HasValue)
+			{
+				var deviceData = kvp.Value;
+
+				var alternateMenu = deviceData.alternateMenu;
+				if (alternateMenu != null)
+				{
+					alternateMenu.visible = (node.Value == forNode) && (forObject != null);
 
 					// Hide the main menu if the alternate menu is going to be visible
 					var mainMenu = deviceData.mainMenu;
@@ -1109,10 +1150,11 @@ public class EditorVR : MonoBehaviour
 			placeObjects.placeObject = PlaceObject;
 
 		var locking = obj as ILocking;
-		if(locking != null)
+		if (locking != null)
 		{
 			locking.setLocked = m_LockModule.SetLocked;
-			locking.getLocked= m_LockModule.GetLocked;
+			locking.getLocked = m_LockModule.GetLocked;
+			locking.checkHover = m_LockModule.CheckHover;
 		}
 
 		var positionPreview = obj as IPreview;
@@ -1554,11 +1596,11 @@ public class EditorVR : MonoBehaviour
 			// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
 			// so in that case use the spatial hash as a final test
 			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-		if (m_IntersectionModule)
-		{
-			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-			if (renderer)
-				return renderer.gameObject;
+			if (m_IntersectionModule)
+			{
+				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+				if (renderer)
+					return renderer.gameObject;
 			}
 		}
 

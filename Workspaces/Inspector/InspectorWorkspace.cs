@@ -16,6 +16,9 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	GameObject m_ContentPrefab;
 
 	[SerializeField]
+	GameObject m_LockPrefab;
+
+	[SerializeField]
 	bool m_IsLocked;
 
 	InspectorUI m_InspectorUI;
@@ -33,6 +36,8 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 		base.Setup();
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_InspectorUI = contentPrefab.GetComponent<InspectorUI>();
+		
+		U.Object.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false);
 
 		var listView = m_InspectorUI.inspectorListView;
 		listView.data = new InspectorData[0];

@@ -28,6 +28,7 @@ namespace UnityEngine.VR.Tools
 		public Node? node { private get; set; }
 		public Action<GameObject, bool> setLocked { get; set; }
 		public Func<GameObject, bool> getLocked { get; set; }
+		public Action<GameObject, Node?> checkHover { get; set; }
 
 		public ActionMapInput actionMapInput
 		{
@@ -77,12 +78,9 @@ namespace UnityEngine.VR.Tools
 					newHoverGameObject = newPrefabRoot;
 			}
 
-			//LockTEST
+			checkHover(newHoverGameObject, node);
 			if (getLocked(newHoverGameObject))
-			{
-				//check hover time
 				return;
-			}
 
 			// Handle changing highlight
 			if (newHoverGameObject != m_HoverGameObject)

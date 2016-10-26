@@ -16,5 +16,10 @@ namespace UnityEngine.VR.Tools
 			get;
 			set;
 		}
+
+		Action<GameObject, Node?> checkHover
+		{
+			set;
+		}
 	}
 }

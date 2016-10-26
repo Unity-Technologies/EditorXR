@@ -5,8 +5,11 @@ using System.Collections.Generic;
 using UnityEditor.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Actions;
+using UnityEngine.VR.Menus;
+using UnityEngine.VR;
+using System.Linq;
 
-public class LockModule : MonoBehaviour, IToolActions
+public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 {
 	class LockModuleAction : IAction
 	{
@@ -28,10 +31,15 @@ public class LockModule : MonoBehaviour, IToolActions
 	readonly LockModuleAction m_UnLockModuleAction = new LockModuleAction();
 	public List<IAction> toolActions { get; private set; }
 
+	public Action<Node?, GameObject> openRadialMenu { private get; set; }
+
 	private readonly List<GameObject> m_LockedGameObjects = new List<GameObject>();
-	private GameObject m_CurrentHoverObject;
+
+	private Dictionary<Node?, GameObject> m_CurrentHoverObjects = new Dictionary<Node?, GameObject>();
+	private Dictionary<Node?, float> m_HoverTimes = new Dictionary<Node?, float>();
 	private const float kMaxHoverTime = 2.0f;
-	private float m_HoverTime;
+
+	private GameObject m_SelectedObject;
 
 
 	void Awake()
@@ -52,27 +60,27 @@ public class LockModule : MonoBehaviour, IToolActions
 
 	public void SetLocked()
 	{
-		SetLocked(m_CurrentHoverObject, true);
+		SetLocked(m_SelectedObject, true);
 	}
 
 	public void SetUnLocked()
 	{
-		SetLocked(m_CurrentHoverObject, false);
+		SetLocked(m_SelectedObject, false);
 	}
 
-	public void SetCurrentHoverObject(GameObject go)
+	private void SetCurrentSelectedObject(GameObject go)
 	{
-		m_CurrentHoverObject = go;
+		m_SelectedObject = go;
 	}
 
-	public void SetLocked(GameObject go,bool locked)
+	public void SetLocked(GameObject go, bool locked)
 	{
-		if(go == null)
+		if (go == null)
 			return;
 
-		if(locked)
+		if (locked)
 		{
-			if(!m_LockedGameObjects.Contains(go))
+			if (!m_LockedGameObjects.Contains(go))
 			{
 				m_LockedGameObjects.Add(go);
 				Debug.Log(go.name + " locked");
@@ -80,7 +88,7 @@ public class LockModule : MonoBehaviour, IToolActions
 		}
 		else
 		{
-			if(m_LockedGameObjects.Contains(go))
+			if (m_LockedGameObjects.Contains(go))
 			{
 				m_LockedGameObjects.Remove(go);
 				Debug.Log(go.name + " unlocked");
@@ -88,21 +96,33 @@ public class LockModule : MonoBehaviour, IToolActions
 		}
 	}
 
-	public void CheckhoverTime(GameObject go)
+	public void CheckHover(GameObject go, Node? node)
 	{
-		if (go != m_CurrentHoverObject)
+		if (!m_CurrentHoverObjects.ContainsKey(node))
+			m_CurrentHoverObjects.Add(node, null);
+
+		if (go != m_CurrentHoverObjects[node])
 		{
-			m_CurrentHoverObject = go;
-			m_HoverTime = 0.0f;
-			return;
+			m_CurrentHoverObjects[node] = go;
+			m_HoverTimes[node] = 0.0f;
 		}
-		else
+		else if (GetLocked(go))
 		{
-			m_HoverTime += Time.unscaledDeltaTime;
-			if (m_HoverTime >= kMaxHoverTime)
+			m_HoverTimes[node] += Time.unscaledDeltaTime;
+			if (m_HoverTimes[node] >= kMaxHoverTime)
 			{
-				//pop up radial menu
+				var otherNode = (from item in m_HoverTimes
+								 where item.Key != node
+								 select item.Value).FirstOrDefault();
+
+				if (otherNode < 2)
+					openRadialMenu(node, go);
 			}
 		}
+	}
+
+	public void OnSelectionChanged()
+	{
+		SetCurrentSelectedObject(UnityEditor.Selection.activeGameObject);
 	}
 }
