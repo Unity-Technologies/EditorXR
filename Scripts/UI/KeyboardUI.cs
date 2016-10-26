@@ -35,6 +35,8 @@ public class KeyboardUI : MonoBehaviour
 	bool m_Horizontal;
 	Material m_HandleMaterial;
 
+    KeyboardButton m_HandleButton;
+
 	Coroutine m_ChangeDragColorsCoroutine;
 	Coroutine m_MoveKeysCoroutine;
 	Coroutine m_DragCoroutine;
@@ -45,12 +47,14 @@ public class KeyboardUI : MonoBehaviour
 	/// <param name="keyPress"></param>
 	public void Setup(Action<char> keyPress)
 	{
+	    Debug.Log("licer");
 		m_DirectManipulator.target = transform;
 		m_DirectManipulator.translate = Translate;
 		m_DirectManipulator.rotate = Rotate;
 
-		m_HandleMaterial = U.Material.GetMaterialClone(m_DirectManipulator.GetComponentInChildren<Renderer>(true));
-		m_BaseColor = m_HandleMaterial.color;
+	    m_HandleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
+	    m_HandleMaterial = m_HandleButton.targetMeshMaterial;
+	    m_BaseColor = m_HandleMaterial.color;
 
 		foreach (var handle in m_DirectManipulator.GetComponentsInChildren<BaseHandle>(true))
 		{

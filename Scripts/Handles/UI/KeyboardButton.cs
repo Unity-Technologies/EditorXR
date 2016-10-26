@@ -65,7 +65,12 @@ public class KeyboardButton : BaseHandle
 	[SerializeField]
 	private ColorBlock m_Colors = ColorBlock.defaultColorBlock;
 
-	private Material m_TargetMeshMaterial;
+    public Material targetMeshMaterial
+    {
+        get { return m_TargetMeshMaterial; }
+    }
+
+    private Material m_TargetMeshMaterial;
 
 	private Coroutine m_IncreaseEmissionCoroutine;
 	private Coroutine m_DecreaseEmissionCoroutine;
