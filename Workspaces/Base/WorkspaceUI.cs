@@ -472,7 +472,7 @@ namespace UnityEngine.VR.Workspaces
 			m_FrontHandleTransform.localPosition = new Vector3(0, lerpedFrontHandleYLocalPosition, -m_Bounds.size.z - m_HandleScale + lerpedFrontHandleZAngledOffset);
 		}
 
-		private void OnDestroy()
+		void OnDestroy()
 		{
 			U.Object.Destroy(m_TopFaceMaterial);
 		}
@@ -549,6 +549,7 @@ namespace UnityEngine.VR.Workspaces
 
 			m_TopFaceVisibleCoroutine = null;
 		}
+
 		IEnumerator HideTopFace()
 		{
 			const string kMaterialHighlightAlphaProperty = "_Alpha";
