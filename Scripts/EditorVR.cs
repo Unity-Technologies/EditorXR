@@ -145,6 +145,8 @@ public class EditorVR : MonoBehaviour
 
 	IGrabObjects m_TransformTool;
 
+	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
+
 	private void Awake()
 	{
 		ClearDeveloperConsoleIfNecessary();
@@ -257,6 +259,7 @@ public class EditorVR : MonoBehaviour
 			yield return null;
 		}
 
+		StartCoroutine(PrealodAssetTypes());
 		CreateSpatialSystem();
 		AddPlayerModel();
 		SpawnDefaultTools();
@@ -358,6 +361,20 @@ public class EditorVR : MonoBehaviour
 				yield return null;
 
 			mainMenu.visible = false;
+		}
+	}
+
+	IEnumerator PreloadAssetTypes()
+	{
+		var hp = new HierarchyProperty(HierarchyType.Assets);
+		hp.SetSearchFilter("t:object", 0);
+
+		var types = new HashSet<string>();
+
+		while (hp.Next(null))
+		{
+			types.Add(hp.pptrValue.GetType().Name);
+			yield return null;
 		}
 	}
 
@@ -1252,6 +1269,12 @@ public class EditorVR : MonoBehaviour
 
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
+
+			var filterUI = workspace as IFilterUI;
+			if (filterUI != null)
+			{
+				m_FilterUIs.Add(filterUI);
+			}
 
 			var miniWorld = workspace as IMiniWorld;
 			if (miniWorld == null)

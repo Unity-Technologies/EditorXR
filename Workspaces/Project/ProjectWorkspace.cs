@@ -8,7 +8,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
+public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IFilterUI
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 	const float kPaneMargin = 0.01f;
@@ -283,6 +283,11 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		return FilterUI.TestFilter(m_FilterUI.searchQuery, type);
 	}
 
+	public void SetFilters(List<string> filters)
+	{
+		m_FilterUI.filterTypes = filters;
+	}
+
 #if UNITY_EDITOR
 	void SetupFolderList()
 	{
@@ -292,8 +297,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		rootFolder.expanded = true;
 		m_ProjectUI.folderListView.data = new[] { rootFolder };
 
-		SelectFolder(rootFolder);
-		m_FilterUI.filterTypes = assetTypes.ToList();
+		SelectFolder(rootFolder);;
 	}
 
 	FolderData CreateFolderData(HashSet<string> assetTypes, ref bool hasNext, HierarchyProperty hp = null)
