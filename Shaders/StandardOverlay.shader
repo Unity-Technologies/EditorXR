@@ -64,7 +64,7 @@ Shader "StandardOverlay"
 
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
-			ZTest On
+			ZTest Off
 			Offset 0, -1
 
 			CGPROGRAM
@@ -129,7 +129,8 @@ Shader "StandardOverlay"
 		}
 		// ------------------------------------------------------------------
 		//  Shadow rendering pass
-		Pass {
+		Pass
+		{
 			Name "ShadowCaster"
 			Tags { "LightMode" = "ShadowCaster" }
 
@@ -284,7 +285,8 @@ Shader "StandardOverlay"
 		}
 		// ------------------------------------------------------------------
 		//  Shadow rendering pass
-		Pass {
+		Pass
+		{
 			Name "ShadowCaster"
 			Tags { "LightMode" = "ShadowCaster" }
 			

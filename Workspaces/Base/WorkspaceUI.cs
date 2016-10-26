@@ -16,7 +16,6 @@ namespace UnityEngine.VR.Workspaces
 
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kThinFrameBlendShapeIndex = 3;
-		const int kHiddenFacesBlendShapeIndex = 4;
 		const float kFaceWidthMatchMultiplier =  7.1375f; // Multiplier that sizes the face to the intended width
 		const float kBackResizeButtonPositionOffset = -0.02f; // Offset to place the back resize buttons in their intended location
 		const float kBackHandleOffset = -0.045f; // Offset to place the back handle in the expected region behind the workspace
@@ -156,7 +155,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			set
 			{
-				if (m_TopHighlight.visible == value) // All highlights will be set with this value; checking highlight visibility of one highlight is all that is needed
+				if (m_TopHighlight.visible == value && m_FrontHighlight.visible == value) // All highlights will be set with this value; checking highlight visibility of one highlight is all that is needed
 					return;
 
 				m_TopHighlight.visible = value;
@@ -550,7 +549,6 @@ namespace UnityEngine.VR.Workspaces
 
 			m_TopFaceVisibleCoroutine = null;
 		}
-
 		IEnumerator HideTopFace()
 		{
 			const string kMaterialHighlightAlphaProperty = "_Alpha";

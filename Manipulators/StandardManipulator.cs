@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.VR.Tools;
-using UnityEditor.VR;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 public class StandardManipulator : MonoBehaviour, IManipulator
@@ -89,7 +87,7 @@ public class StandardManipulator : MonoBehaviour, IManipulator
 
 	private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
 	{
-		if(gameObject.activeSelf)
+		if (gameObject.activeSelf)
 			foreach (var h in m_AllHandles)
 				h.gameObject.SetActive(true);
 
