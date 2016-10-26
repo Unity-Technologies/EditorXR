@@ -56,6 +56,11 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 		scrollHandle.hoverEnded += OnScrollHoverEnded;
 
 		contentBounds = new Bounds(Vector3.zero, m_CustomStartingBounds.Value);
+
+		var scrollHandleTransform = m_InspectorUI.inspectorScrollHandle.transform;
+		scrollHandleTransform.SetParent(m_WorkspaceUI.topFaceContainer);
+		scrollHandleTransform.localScale = new Vector3 (1.2f, 0.02f, 1.1f);
+		scrollHandleTransform.localPosition = new Vector3 (0f, -0.01f, 0f);
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -271,8 +276,8 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	protected override void OnBoundsChanged()
 	{
 		var size = contentBounds.size;
-		var inspectorScrollHandleTransform = m_InspectorUI.inspectorScrollHandle.transform;
-		inspectorScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, inspectorScrollHandleTransform.localScale.y, size.z + kScrollMargin);
+		//var inspectorScrollHandleTransform = m_InspectorUI.inspectorScrollHandle.transform;
+		//inspectorScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, inspectorScrollHandleTransform.localScale.y, size.z + kScrollMargin);
 
 		var inspectorListView = m_InspectorUI.inspectorListView;
 		var bounds = contentBounds;
