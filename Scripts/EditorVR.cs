@@ -1082,7 +1082,7 @@ public class EditorVR : MonoBehaviour
 					var iTool = obj as ITool;
 					if(iTool != null)
 					{
-						iTool.node = node.Value;
+						iTool.selfNode = node.Value;
 					}
 
 					var ray = obj as IRay;

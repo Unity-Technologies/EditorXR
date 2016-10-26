@@ -38,7 +38,7 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustom
 	}
 	private JoystickLocomotion m_JoystickLocomotionInput;
 
-	public Node node { private get; set; }
+	public Node selfNode { private get; set; }
 
 	void Start()
 	{

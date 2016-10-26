@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +47,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 	}
 	private BlinkLocomotion m_BlinkLocomotionInput;
 
-	public Node node { private get; set; }
+	public Node selfNode { private get; set; }
 
 	private void Start()
 	{

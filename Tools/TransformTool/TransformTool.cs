@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.VR.Tools;
@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Actions;
+using UnityEngine.VR;
 
 public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IToolActions
 {
@@ -78,6 +79,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	}
 	private TransformMode m_Mode;
 
+	public Node selfNode { get; set; }
 	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput) value; } }
 	private TransformInput m_TransformInput;
 

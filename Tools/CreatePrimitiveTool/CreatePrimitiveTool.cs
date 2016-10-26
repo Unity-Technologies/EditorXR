@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.VR;
 using UnityEngine.VR.Tools;
@@ -33,7 +33,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 
 	public Action showDefaultRay { private get; set; }
 
-	public Node node { private get; set; }
+	public Node selfNode { private get; set; }
 
 	private enum PrimitiveCreationStates
 	{
@@ -73,8 +73,8 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRa
 
 	void SpawnCanvas()
 	{
-		hideDefaultRay();
-		var go = instantiateMenuUI(node,MenuOrigin.Main,m_CanvasPrefab.gameObject);
+		//hideDefaultRay();
+		var go = instantiateMenuUI(selfNode,MenuOrigin.Main,m_CanvasPrefab.gameObject);
 		go.GetComponent<CreatePrimitiveMenu>().selectPrimitive += SetSelectedPrimitive;
 		m_CanvasSpawned = true;
 	}
