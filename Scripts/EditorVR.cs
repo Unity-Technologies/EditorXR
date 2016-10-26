@@ -44,6 +44,7 @@ public class EditorVR : MonoBehaviour
 	const float kPreviewScale = 0.1f;
 
 	const float kViewerPivotTransitionTime = 0.75f;
+	const float kMiniWorldManipulatorScale = 0.2f;
 
 	[SerializeField]
 	private ActionMap m_TrackedObjectActionMap;
@@ -152,6 +153,9 @@ public class EditorVR : MonoBehaviour
 
 	VRSmoothCamera m_SmoothCamera;
 	IGrabObjects m_TransformTool;
+
+	StandardManipulator m_Manipulator;
+	Vector3 m_OriginalManipulatorScale;
 
 	private void Awake()
 	{
@@ -733,6 +737,10 @@ public class EditorVR : MonoBehaviour
 		m_InputModule.rayExited += m_DragAndDropModule.OnRayExited;
 		m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
 		m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
+
+		m_InputModule.preProcessRaycastSources = PreProcessRaycastSources;
+		m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
+		m_InputModule.postProcessRaycastSources = PostProcessRaycastSources;
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
@@ -1518,6 +1526,10 @@ public class EditorVR : MonoBehaviour
 
 		m_MiniWorlds.Add(miniWorld);
 
+		miniWorld.preProcessRender = PreProcessMiniWorldRender;
+		miniWorld.postProcessRender = PostProcessMiniWorldRender;
+
+
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			var miniWorldRayOrigin = InstantiateMiniWorldRay();
@@ -1534,6 +1546,7 @@ public class EditorVR : MonoBehaviour
 
 			var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 			tester.active = false;
+
 
 			m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
 			{
@@ -2038,6 +2051,49 @@ public class EditorVR : MonoBehaviour
 	{
 		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
 		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
+	}
+
+	bool PreProcessRaycastSources()
+	{
+		if (!m_Manipulator)
+			m_Manipulator = GetComponentInChildren<StandardManipulator>();
+
+		if (m_Manipulator)
+			m_OriginalManipulatorScale = m_Manipulator.transform.localScale;
+
+		return true;
+	}
+
+	bool PreProcessRaycastSource(Transform rayOrigin)
+	{
+		if (m_Manipulator)
+		{
+			MiniWorldRay ray;
+			if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
+				m_Manipulator.transform.localScale = ray.miniWorld.miniWorldScale * kMiniWorldManipulatorScale;
+			else
+				m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
+		}
+		return true;
+	}
+
+	void PostProcessRaycastSources()
+	{
+		if (m_Manipulator)
+			m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
+	}
+
+	bool PreProcessMiniWorldRender(IMiniWorld miniWorld)
+	{
+		if (m_Manipulator)
+			m_Manipulator.transform.localScale = miniWorld.miniWorldScale * kMiniWorldManipulatorScale;
+		return true;
+	}
+
+	void PostProcessMiniWorldRender(IMiniWorld miniWorld)
+	{
+		if (m_Manipulator)
+			m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
 	}
 
 #if UNITY_EDITOR

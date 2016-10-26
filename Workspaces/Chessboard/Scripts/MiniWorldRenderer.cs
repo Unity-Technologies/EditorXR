@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
 using UnityEngine.VR.Utilities;
@@ -25,6 +26,8 @@ public class MiniWorldRenderer : MonoBehaviour
 		}
 	}
 	List<Renderer> m_IgnoreList = new List<Renderer>();
+	public Func<bool> preProcessRender { private get; set; }
+	public Action postProcessRender { private get; set; }
 
 	private void OnEnable()
 	{
@@ -66,7 +69,10 @@ public class MiniWorldRenderer : MonoBehaviour
 				hiddenRenderer.enabled = false;
 			}
 
-			m_MiniCamera.RenderWithShader(shader, string.Empty);
+			if(preProcessRender())
+				m_MiniCamera.RenderWithShader(shader, string.Empty);
+
+			postProcessRender();
 
 			for (var i = 0; i < m_IgnoreList.Count; i++)
 			{
