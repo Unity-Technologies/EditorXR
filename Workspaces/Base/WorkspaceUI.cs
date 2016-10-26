@@ -150,7 +150,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			set
 			{
-				if (m_TopHighlight.visible == value) // All highlights will be set with this value; checking highlight visibility of one highlight is all that is needed
+				if (m_TopHighlight.visible == value && m_FrontHighlight.visible == value)
 					return;
 
 				m_TopHighlight.visible = value;

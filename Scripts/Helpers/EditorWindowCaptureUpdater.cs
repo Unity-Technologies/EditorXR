@@ -58,17 +58,20 @@ public class EditorWindowCaptureUpdater : MonoBehaviour
 		}
 
 		var tex = m_EditorWindowCapture.texture;
-		if (m_RawImage && m_RawImage.texture != tex)
-			m_RawImage.texture = tex;
-		
-		if (m_Material && m_Material.mainTexture != tex)
-			m_Material.mainTexture = tex;
+		if (tex)
+		{
+			if (m_RawImage && m_RawImage.texture != tex)
+				m_RawImage.texture = tex;
 
-		var texAspect = (float)tex.width / tex.height;
+			if (m_Material && m_Material.mainTexture != tex)
+				m_Material.mainTexture = tex;
 
-		var localScale = transform.localScale;
-		var aspect = localScale.x / localScale.y;
-		localScale.y *= aspect / texAspect;
-		transform.localScale = localScale;
+			var texAspect = (float) tex.width/tex.height;
+
+			var localScale = transform.localScale;
+			var aspect = localScale.x/localScale.y;
+			localScale.y *= aspect/texAspect;
+			transform.localScale = localScale;
+		}
 	}
 }
