@@ -2950,7 +2950,9 @@ MonoBehaviour:
   m_SwapIconsOnClick: 1
   m_HighlightItems:
   - {fileID: 114000012475626578}
-  m_InitialDelay: 0.5
+  m_GrayscaleGradient: 0
+  m_AnimatedReveal: 0
+  m_DelayBeforeReveal: 0.5
 --- !u!114 &114000012716726728
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3237,7 +3239,9 @@ MonoBehaviour:
   m_SwapIconsOnClick: 1
   m_HighlightItems:
   - {fileID: 114000012576664828}
-  m_InitialDelay: 0.5
+  m_GrayscaleGradient: 0
+  m_AnimatedReveal: 0
+  m_DelayBeforeReveal: 0.5
 --- !u!114 &114000013312479136
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3403,7 +3407,9 @@ MonoBehaviour:
   m_SwapIconsOnClick: 1
   m_HighlightItems:
   - {fileID: 114000012181704926}
-  m_InitialDelay: 0.5
+  m_GrayscaleGradient: 0
+  m_AnimatedReveal: 0
+  m_DelayBeforeReveal: 0.5
 --- !u!114 &114000013779748066
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3655,6 +3661,7 @@ MonoBehaviour:
   m_FrontResizeIconsContainer: {fileID: 224000012214220868}
   m_BackResizeIconsContainer: {fileID: 224000013299645382}
   m_LockButton: {fileID: 114000013163589872}
+  m_ResetButton: {fileID: 1000011944177398}
   m_TopFaceContainer: {fileID: 4000012021209696}
   m_TopHighlightContainer: {fileID: 4000012340493516}
   m_FrontHighlight: {fileID: 114000013793407110}

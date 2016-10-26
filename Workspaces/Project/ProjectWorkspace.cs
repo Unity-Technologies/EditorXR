@@ -53,7 +53,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		base.Setup();
 
 		topPanelDividerOffset = -0.2875f; // enable & position the top-divider(mask) slightly to the left of workspace center
-		dynamicFaceAdjustment = true;
 
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();

@@ -53,8 +53,6 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 		base.Setup();
 
-		dynamicFaceAdjustment = true;
-
 		U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
 		m_GridMaterial = U.Material.GetMaterialClone(m_ChessboardUI.grid);

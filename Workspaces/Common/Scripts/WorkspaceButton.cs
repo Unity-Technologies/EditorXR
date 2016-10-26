@@ -41,6 +41,9 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		Graphic[] m_HighlightItems;
 
+		[SerializeField]
+		bool m_GrayscaleGradient = false;
+
 		[Header("Animated Reveal Settings")]
 		[SerializeField]
 		bool m_AnimatedReveal;
@@ -153,7 +156,7 @@ namespace UnityEngine.VR.Workspaces
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * kIconHighlightedLocalZOffset;
 
-			m_HighlightGradientPair = UnityBrandColorScheme.sessionGradient;
+			m_HighlightGradientPair = !m_GrayscaleGradient ? UnityBrandColorScheme.sessionGradient : UnityBrandColorScheme.grayscaleSessionGradient;
 
 			m_OriginalIconSprite = m_Icon.sprite;
 
