@@ -1,7 +1,8 @@
-﻿using UnityEngine.InputNew;
-
-namespace UnityEngine.VR.Tools
+﻿namespace UnityEngine.VR.Tools
 {
+	/// <summary>
+	/// Declares a class a tool within the system
+	/// </summary>
 	public interface ITool
 	{
 		Node node	

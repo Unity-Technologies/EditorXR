@@ -1,5 +1,5 @@
-﻿using System;
-using ListView;
+﻿using ListView;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
@@ -41,6 +41,8 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	Transform m_CubeTransform;
 
+	public Material cubeMaterial { get { return m_CubeRenderer.sharedMaterial; } }
+
 	public Action<FolderData> selectFolder;
 
 	public override void Setup(FolderData listData)
@@ -49,7 +51,7 @@ public class FolderListItem : ListViewItem<FolderData>
 		// First time setup
 		if (m_CubeRenderer == null)
 		{
-			// Cube material might change, so we always instance it
+			// Cube material might change for hover state, so we always instance it
 			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
 			m_NormalColor = m_CubeRenderer.sharedMaterial.color;
 			U.Material.GetMaterialClone(m_CubeRenderer);
@@ -72,13 +74,13 @@ public class FolderListItem : ListViewItem<FolderData>
 		m_Hovering = false;
 	}
 
-	public void SwapMaterials(Material textMaterial, Material expandArrowMaterial)
+	public void SetMaterials(Material textMaterial, Material expandArrowMaterial)
 	{
 		m_Text.material = textMaterial;
 		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
 	}
 
-	public void UpdateTransforms(float width, int depth)
+	public void UpdateSelf(float width, int depth)
 	{
 		var cubeScale = m_CubeTransform.localScale;
 		cubeScale.x = width;
@@ -108,18 +110,6 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_CubeRenderer.sharedMaterial.color = m_HoverColor;
 		else
 			m_CubeRenderer.sharedMaterial.color = m_NormalColor;
-	}
-
-	public void GetMaterials(out Material textMaterial, out Material expandArrowMaterial)
-	{
-		textMaterial = Instantiate(m_Text.material);
-		expandArrowMaterial = Instantiate(m_ExpandArrow.GetComponent<Renderer>().sharedMaterial);
-	}
-
-	public void Clip(Bounds bounds, Matrix4x4 parentMatrix)
-	{
-		m_CubeRenderer.sharedMaterial.SetMatrix("_ParentMatrix", parentMatrix);
-		m_CubeRenderer.sharedMaterial.SetVector("_ClipExtents", bounds.extents);
 	}
 
 	private void ToggleExpanded(BaseHandle handle, HandleEventData eventData)

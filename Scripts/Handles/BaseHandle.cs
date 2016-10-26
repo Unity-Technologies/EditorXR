@@ -9,18 +9,8 @@ namespace UnityEngine.VR.Handles
 	/// <summary>
 	/// Base class for providing draggable handles in 3D (requires PhysicsRaycaster)
 	/// </summary>
-	public class BaseHandle : MonoBehaviour, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler
+	public class BaseHandle : MonoBehaviour, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IDropReceiver, IDroppable
 	{
-		public event Action<BaseHandle, HandleEventData> dragStarted = delegate { };
-		public event Action<BaseHandle, HandleEventData> dragging = delegate { };
-		public event Action<BaseHandle, HandleEventData> dragEnded = delegate { };
-
-		public event Action<BaseHandle, HandleEventData> doubleClick = delegate { };
-
-		public event Action<BaseHandle, HandleEventData> hoverStarted = delegate { };
-		public event Action<BaseHandle, HandleEventData> hovering = delegate { };
-		public event Action<BaseHandle, HandleEventData> hoverEnded = delegate { };
-
 		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]
 		[FlagsProperty]
@@ -33,6 +23,28 @@ namespace UnityEngine.VR.Handles
 		protected DateTime m_LastClickTime;
 
 		public Vector3 startDragPosition { get; protected set; }
+
+		public Func<BaseHandle, object, bool> canDrop;
+		public Action<BaseHandle, object> receiveDrop;
+		public Func<BaseHandle, object> getDropObject;
+		public event Action<BaseHandle> dropHoverStarted = delegate {};
+		public event Action<BaseHandle> dropHoverEnded = delegate {};
+
+		public event Action<BaseHandle, HandleEventData> dragStarted = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragging = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragEnded = delegate { };
+
+		public event Action<BaseHandle, HandleEventData> doubleClick = delegate { };
+
+		public event Action<BaseHandle, HandleEventData> hoverStarted = delegate { };
+		public event Action<BaseHandle, HandleEventData> hovering = delegate { };
+		public event Action<BaseHandle, HandleEventData> hoverEnded = delegate { };
+
+		void Awake()
+		{
+			// Put this object in the UI layer so that it is hit by UI raycasts
+			gameObject.layer = LayerMask.NameToLayer("UI");
+		}
 
 		private void OnDisable()
 		{
@@ -67,7 +79,7 @@ namespace UnityEngine.VR.Handles
 			//Double-click logic
 			var timeSinceLastClick = (float) (DateTime.Now - m_LastClickTime).TotalSeconds;
 			m_LastClickTime = DateTime.Now;
-			if (U.UI.DoubleClick(timeSinceLastClick))
+			if (U.UI.IsDoubleClick(timeSinceLastClick))
 			{
 				OnDoubleClick(handleEventData);
 			}
@@ -181,6 +193,38 @@ namespace UnityEngine.VR.Handles
 		protected virtual void OnDoubleClick(HandleEventData eventData)
 		{
 			doubleClick(this, eventData);
+		}
+
+		public virtual bool CanDrop(object dropObject)
+		{
+			if (canDrop != null)
+				return canDrop(this, dropObject);
+
+			return false;
+		}
+
+		public virtual void ReceiveDrop(object dropObject)
+		{
+			if (receiveDrop != null)
+				receiveDrop(this, dropObject);
+		}
+
+		public virtual object GetDropObject()
+		{
+			if (getDropObject != null)
+				return getDropObject(this);
+
+			return null;
+		}
+
+		public void OnDropHoverStarted()
+		{
+			dropHoverStarted(this);
+		}
+
+		public void OnDropHoverEnded()
+		{
+			dropHoverEnded(this);
 		}
 	}
 }

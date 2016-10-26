@@ -9,7 +9,6 @@ using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-[ExecuteInEditMode]
 public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay, ICustomActionMap
 {
 	private enum State

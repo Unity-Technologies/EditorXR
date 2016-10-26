@@ -78,13 +78,13 @@ namespace UnityEngine.VR.Menus
 		public void Show()
 		{
 			m_BorderOutlineTransform.localScale = m_BorderOutlineOriginalLocalScale;
-			MonoBehaviourExtensions.StopCoroutine(this, ref m_VisibilityCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(true));
 		}
 
 		public void Hide()
 		{
-			MonoBehaviourExtensions.StopCoroutine(this,ref m_VisibilityCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(false));
 		}
 
@@ -95,14 +95,15 @@ namespace UnityEngine.VR.Menus
 
 			m_CanvasGroup.interactable = false;
 			
-			float smoothTime = show ? 0.35f : 0.125f;
-			float startingOpacity = m_CanvasGroup.alpha;
-			float targetOpacity = show ? 1f : 0f;
-			float smoothVelocity = 0f;
-			var startTime = Time.realtimeSinceStartup;
-			while (Time.realtimeSinceStartup < startTime + smoothTime)
+			var smoothTime = show ? 0.35f : 0.125f;
+			var startingOpacity = m_CanvasGroup.alpha;
+			var targetOpacity = show ? 1f : 0f;
+			var smoothVelocity = 0f;
+			var currentDuration = 0f;
+			while (currentDuration < smoothTime)
 			{
 				startingOpacity = U.Math.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.unscaledDeltaTime;
 				m_CanvasGroup.alpha = startingOpacity * startingOpacity;
 				yield return null;
 			}
@@ -119,13 +120,13 @@ namespace UnityEngine.VR.Menus
 
 		public void BeginVisuals()
 		{
-			MonoBehaviourExtensions.StopCoroutine(this,ref m_RotationVisualsCoroutine);
+			this.StopCoroutine(ref m_RotationVisualsCoroutine);
 			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(true));
 		}
 
 		public void EndVisuals()
 		{
-			MonoBehaviourExtensions.StopCoroutine(this,ref m_RotationVisualsCoroutine);
+			this.StopCoroutine(ref m_RotationVisualsCoroutine);
 			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(false));
 		}
 
@@ -137,15 +138,16 @@ namespace UnityEngine.VR.Menus
 			Vector3 targetBorderLocalScale = focus ? m_BorderOutlineOriginalLocalScale * kBorderScaleMultiplier : m_BorderOutlineOriginalLocalScale;
 			Vector3 currentBorderLocalScale = m_BorderOutlineTransform.localScale;
 
-			float currentBlendShapeWeight = m_TitleIcon.GetBlendShapeWeight(0);
-			float targetWeight = focus ? 100f : 0f;
-			float smoothTime = focus ? 0.25f : 0.5f;
 			const float kLerpEmphasisWeight = 0.2f;
-			float smoothVelocity = 0f;
-			var startTime = Time.realtimeSinceStartup;
-			while (Time.realtimeSinceStartup < startTime + smoothTime)
+			var currentBlendShapeWeight = m_TitleIcon.GetBlendShapeWeight(0);
+			var targetWeight = focus ? 100f : 0f;
+			var smoothTime = focus ? 0.25f : 0.5f;
+			var smoothVelocity = 0f;
+			var currentDuration = 0f;
+			while (currentDuration < smoothTime)
 			{
 				currentBlendShapeWeight = U.Math.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.unscaledDeltaTime;
 				currentBorderLocalScale = Vector3.Lerp(currentBorderLocalScale, targetBorderLocalScale, currentBlendShapeWeight * kLerpEmphasisWeight);
 				m_BorderOutlineTransform.localScale = currentBorderLocalScale;
 				m_TitleIcon.SetBlendShapeWeight(0, currentBlendShapeWeight);

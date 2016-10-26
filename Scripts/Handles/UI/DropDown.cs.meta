@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: e8e513a78f8352940b3b3bd81422b3f7
+timeCreated: 1476333438
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_Label: {instanceID: 0}
+  - m_OptionsPanel: {instanceID: 0}
+  - m_OptionsList: {instanceID: 0}
+  - m_TemplatePrefab: {fileID: 1000012851962796, guid: 96e9e26ba4c02c4459218e81d404980f,
+      type: 2}
+  - m_MultiSelectTemplatePrefab: {fileID: 1000011005728614, guid: 44aae4eb5a02aae479e9a5b75c0591dc,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

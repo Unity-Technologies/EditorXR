@@ -1,12 +1,12 @@
-﻿using System;
+﻿using ListView;
+using System;
 using System.Collections;
-using ListView;
-using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine.VR.Utilities;
+using UnityEngine;
+using UnityEngine.VR.Modules;
 
-public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPositionPreview
+public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPreview
 {
 	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
@@ -29,24 +29,12 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
-	public PositionPreviewDelegate positionPreview { private get; set; }
+	public PreviewDelegate preview { private get; set; }
+
+	public Func<string, bool> testFilter;
 
 	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
 	private readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
-
-	public AssetData[] listData
-	{
-		set
-		{
-			if (m_Data != null) // Clear out visuals for old data
-				foreach (var data in m_Data)
-					CleanUpBeginning(data);
-			m_ScrollOffset = m_ScaleFactor; // Reset scroll value to start
-			m_Data = value;
-		}
-	}
-
-	public Func<string, bool> testFilter;
 
 	protected override void Setup()
 	{
@@ -217,7 +205,8 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		item.transform.localPosition = m_StartPosition;
 		item.placeObject = placeObject;
 		item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
-		item.positionPreview = positionPreview;
+		item.preview = preview;
+
 		StartCoroutine(Transition(data, false));
 
 		switch (data.type)

@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-namespace UnityEngine.VR.Extensions
+﻿namespace UnityEngine.VR.Extensions
 {
 	public static class MonoBehaviourExtensions
 	{
