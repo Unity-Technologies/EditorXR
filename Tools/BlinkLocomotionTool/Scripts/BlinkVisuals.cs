@@ -184,7 +184,7 @@ public class BlinkVisuals : MonoBehaviour
 		}
 	}
 
-	public void HideVisuals()
+	public bool HideVisuals()
 	{
 		if (m_State != State.Inactive)
 		{
@@ -192,8 +192,11 @@ public class BlinkVisuals : MonoBehaviour
 			StartCoroutine(AnimateHideVisuals());
 		}
 
+		var outOfRange = m_OutOfMaxRange;
 		m_OutOfMaxRange = false;
 		enabled = false;
+
+		return outOfRange;
 	}
 
 	private IEnumerator AnimateShowVisuals()
