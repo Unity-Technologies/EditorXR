@@ -17,6 +17,7 @@ public class KeyboardButton : BaseHandle
 	}
 
 	private const float kRepeatTime = 0.35f;
+	private const float kRepeatDecayFactor = 0.75f;
 	private const float kClickTime = 0.3f;
 	private const float kPressEmission = 1f;
 	private const float kEmissionLerpTime = 0.1f;
@@ -54,9 +55,11 @@ public class KeyboardButton : BaseHandle
 	[SerializeField]
 	private bool m_RepeatOnHold;
 
-	private float m_HoldStartTime;
-	private float m_RepeatWaitTime;
-	private bool m_Holding;
+	float m_HoldStartTime;
+	float m_RepeatWaitTime;
+	bool m_Holding;
+	float m_PressDownTime;
+	bool m_Triggered;
 
 	private Action<char> m_KeyPress;
 
@@ -65,17 +68,14 @@ public class KeyboardButton : BaseHandle
 	[SerializeField]
 	private ColorBlock m_Colors = ColorBlock.defaultColorBlock;
 
-    public Material targetMeshMaterial
-    {
-        get { return m_TargetMeshMaterial; }
-    }
+	public Material targetMeshMaterial
+	{
+		get { return m_TargetMeshMaterial; }
+	}
 
-    private Material m_TargetMeshMaterial;
+	Material m_TargetMeshMaterial;
 
-	private Coroutine m_ChangeEmissionCoroutine;
-
-	float m_PressDownTime;
-    bool m_Triggered;
+	Coroutine m_ChangeEmissionCoroutine;
 
 	public SmoothMotion smoothMotion { get; set; }
 
@@ -84,15 +84,15 @@ public class KeyboardButton : BaseHandle
 		if (!m_TargetMesh)
 			m_TargetMesh = GetComponentInChildren<Renderer>(true);
 
-        if (m_TargetMesh != null)
-        {
-            var targetMeshTransform = m_TargetMesh.transform;
-            m_TargetMeshInitialLocalPosition = targetMeshTransform.localPosition;
-            m_TargetMeshInitialScale = targetMeshTransform.localScale;
-            m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
-        }
+		if (m_TargetMesh != null)
+		{
+			var targetMeshTransform = m_TargetMesh.transform;
+			m_TargetMeshInitialLocalPosition = targetMeshTransform.localPosition;
+			m_TargetMeshInitialScale = targetMeshTransform.localScale;
+			m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
+		}
 
-        smoothMotion = GetComponent<SmoothMotion>();
+		smoothMotion = GetComponent<SmoothMotion>();
 		if (smoothMotion == null)
 			smoothMotion = gameObject.AddComponent<SmoothMotion>();
 		smoothMotion.enabled = false;
@@ -192,10 +192,10 @@ public class KeyboardButton : BaseHandle
 		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
 			return;
 
-	    if (transform.InverseTransformPoint(col.transform.position).z > 0f)
-	        return;
-	    else
-	        m_Triggered = true;
+		if (transform.InverseTransformPoint(col.transform.position).z > 0f)
+			return;
+		else
+			m_Triggered = true;
 
 		KeyPressed();
 	}
@@ -217,7 +217,7 @@ public class KeyboardButton : BaseHandle
 		if (m_RepeatOnHold && m_Triggered)
 			EndKeyHold();
 
-	    m_Triggered = false;
+		m_Triggered = false;
 	}
 
 	private void KeyPressed()
@@ -263,7 +263,7 @@ public class KeyboardButton : BaseHandle
 		{
 			KeyPressed();
 			m_HoldStartTime = Time.realtimeSinceStartup;
-			m_RepeatWaitTime *= 0.75f;
+			m_RepeatWaitTime *= m_SelectionFlagsProperty;
 		}
 	}
 
@@ -275,7 +275,7 @@ public class KeyboardButton : BaseHandle
 		if (m_ChangeEmissionCoroutine != null)
 			StopCoroutine(m_ChangeEmissionCoroutine);
 
-        m_ChangeEmissionCoroutine = StartCoroutine(DecreaseEmission());
+		m_ChangeEmissionCoroutine = StartCoroutine(DecreaseEmission());
 	}
 
 	private void OnDisable()
@@ -371,7 +371,7 @@ public class KeyboardButton : BaseHandle
 		finalColor = Color.white * Mathf.LinearToGammaSpace(0f);
 		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 
-        m_ChangeEmissionCoroutine = null;
+		m_ChangeEmissionCoroutine = null;
 	}
 
 	private IEnumerator PunchKey()

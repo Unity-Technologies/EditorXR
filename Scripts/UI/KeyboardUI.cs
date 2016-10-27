@@ -135,6 +135,26 @@ public class KeyboardUI : MonoBehaviour
 		m_MoveKeysCoroutine = null;
 	}
 
+	public void ForceMoveButtonsToVerticalLayout()
+	{
+		int i = 0;
+		foreach (var button in m_Buttons)
+		{
+			button.transform.position = m_VerticalLayoutTransforms[i].position;
+			i++;
+		}
+	}
+
+	public void ForceMoveButtonsToHorizontalLayout()
+	{
+		int i = 0;
+		foreach (var button in m_Buttons)
+		{
+			button.transform.position = m_HorizontalLayoutTransforms[i].position;
+			i++;
+		}
+	}
+
 	private void Translate(Vector3 deltaPosition)
 	{
 		if (m_AllowDragging)

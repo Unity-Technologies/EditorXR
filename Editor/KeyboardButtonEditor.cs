@@ -10,6 +10,7 @@ public class KeyboardButtonEditor : Editor
 	const char kLowercaseStart = 'a';
 	const char kLowercaseEnd = 'z';
 
+	SerializedProperty m_SelectionFlagsProperty;
 	SerializedProperty m_CharacterProperty;
 	SerializedProperty m_UseShiftCharacterProperty;
 	SerializedProperty m_ShiftCharacterProperty;
@@ -24,6 +25,7 @@ public class KeyboardButtonEditor : Editor
 
 	protected void OnEnable()
 	{
+		m_SelectionFlagsProperty = serializedObject.FindProperty("m_SelectionFlags");
 		m_CharacterProperty = serializedObject.FindProperty("m_Character");
 		m_UseShiftCharacterProperty = serializedObject.FindProperty("m_UseShiftCharacter");
 		m_ShiftCharacterProperty = serializedObject.FindProperty("m_ShiftCharacter");
@@ -57,6 +59,8 @@ public class KeyboardButtonEditor : Editor
 		}
 
 		serializedObject.Update();
+
+		EditorGUILayout.PropertyField(m_SelectionFlagsProperty);
 
 		CharacterField("Primary Character", m_CharacterProperty);
 

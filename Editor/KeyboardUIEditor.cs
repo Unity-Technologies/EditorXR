@@ -11,6 +11,8 @@ public class KeyboardUIEditor : Editor
 	SerializedProperty m_HorizontalLayoutTransformsProperty;
 	SerializedProperty m_DirectManipulatorProperty;
 
+	KeyboardUI m_KeyboardUI;
+
 	protected void OnEnable()
 	{
 		m_ButtonsProperty = serializedObject.FindProperty("m_Buttons");
@@ -21,25 +23,34 @@ public class KeyboardUIEditor : Editor
 
 	public override void OnInspectorGUI()
 	{
+		m_KeyboardUI = (KeyboardUI)target;
+
 		var labelWidth = EditorGUIUtility.labelWidth;
 		EditorGUIUtility.labelWidth = 100f;
 		serializedObject.Update();
 		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.PropertyField(m_ButtonsProperty, true);
-		EditorGUILayout.PropertyField(m_VerticalLayoutTransformsProperty, true);
-		EditorGUILayout.PropertyField(m_HorizontalLayoutTransformsProperty, true);
+		EditorGUILayout.LabelField("Button");
+		EditorGUILayout.LabelField("Vertical Slots");
+		EditorGUILayout.LabelField("Horizontal Slots");
 		EditorGUILayout.EndHorizontal();
+		for (int i = 0; i < m_ButtonsProperty.arraySize - 1; i++)
+		{
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.PropertyField(m_ButtonsProperty.GetArrayElementAtIndex(i));
+			EditorGUILayout.PropertyField(m_VerticalLayoutTransformsProperty.GetArrayElementAtIndex(i), GUIContent.none);
+			EditorGUILayout.PropertyField(m_HorizontalLayoutTransformsProperty.GetArrayElementAtIndex(i), GUIContent.none);
+			EditorGUILayout.EndHorizontal();
+		}
 		EditorGUILayout.PropertyField(m_DirectManipulatorProperty);
+
+		EditorGUILayout.BeginHorizontal();
+		if (GUILayout.Button("Vertical layout"))
+			m_KeyboardUI.ForceMoveButtonsToVerticalLayout();
+		if (GUILayout.Button("Horizontal layout"))
+			m_KeyboardUI.ForceMoveButtonsToHorizontalLayout();
+		EditorGUILayout.EndHorizontal();
+
 		serializedObject.ApplyModifiedProperties();
 		EditorGUIUtility.labelWidth = labelWidth;
-	}
-
-	private static void ShowElements(SerializedProperty list)
-	{
-		for (int i = 0; i < list.arraySize; i++)
-		{
-			EditorGUILayout.PropertyField(list.GetArrayElementAtIndex(i));
-			EditorGUILayout.PropertyField(list.GetArrayElementAtIndex(i), GUIContent.none);
-		}
 	}
 }
