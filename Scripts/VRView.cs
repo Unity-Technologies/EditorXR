@@ -229,7 +229,7 @@ namespace UnityEditor.VR
 		}
 
 		// TODO: Share this between SceneView/EditorVR in SceneViewUtilies
-		public void CreateCameraTargetTexture(RenderTexture renderTexture, Rect cameraRect, bool hdr)
+		public void CreateCameraTargetTexture(ref RenderTexture renderTexture, Rect cameraRect, bool hdr)
 		{
 			bool useSRGBTarget = QualitySettings.activeColorSpace == ColorSpace.Linear;
 
@@ -254,7 +254,7 @@ namespace UnityEditor.VR
 			if (renderTexture == null)
 			{
 				renderTexture = new RenderTexture(0, 0, 24, format);
-				renderTexture.name = "SceneView RT";
+				renderTexture.name = "Scene RT";
 				renderTexture.antiAliasing = msaa;
 				renderTexture.hideFlags = HideFlags.HideAndDontSave;
 			}
@@ -271,7 +271,7 @@ namespace UnityEditor.VR
 		{
 			// Always render camera into a RT
 			var hdr = false; // SceneViewIsRenderingHDR();
-			CreateCameraTargetTexture(m_SceneTargetTexture, cameraRect, hdr);
+			CreateCameraTargetTexture(ref m_SceneTargetTexture, cameraRect, hdr);
 			m_Camera.targetTexture = m_ShowDeviceView ? m_SceneTargetTexture : null;
 			VRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
 		}
@@ -295,7 +295,7 @@ namespace UnityEditor.VR
 				DoDrawCamera(guiRect, out pushedGUIClip);
 
 				if (m_ShowDeviceView)
-					SceneViewUtilities.DrawTexture(customPreviewCamera ? customPreviewCamera.targetTexture : m_SceneTargetTexture, guiRect, pushedGUIClip);
+					SceneViewUtilities.DrawTexture(customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_SceneTargetTexture, guiRect, pushedGUIClip);
 
 				GUILayout.BeginArea(guiRect);
 				if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))

@@ -8,7 +8,6 @@ public class MiniWorldRenderer : MonoBehaviour
 {
 	const float kMinScale = 0.001f;
 
-	private Camera m_MainCamera;
 	private Camera m_MiniCamera;
 
 	bool[] m_RendererPreviousEnable = new bool[0];
@@ -35,29 +34,25 @@ public class MiniWorldRenderer : MonoBehaviour
 		go.hideFlags = HideFlags.DontSave;
 		m_MiniCamera = go.GetComponent<Camera>();
 		go.SetActive(false);
+		Camera.onPostRender += RenderMiniWorld;
 	}
 
 	private void OnDisable()
 	{
+		Camera.onPostRender -= RenderMiniWorld;
 		U.Object.Destroy(m_MiniCamera.gameObject);
 	}
 
-	private void OnPreRender()
-	{
-		if (!m_MainCamera)
-			m_MainCamera = U.Camera.GetMainCamera();
-	}
-
-	private void OnPostRender()
+	private void RenderMiniWorld(Camera camera)
 	{
 		// Do not render if miniWorld scale is too low to avoid errors in the console
-		if (m_MainCamera && miniWorld && miniWorld.transform.lossyScale.magnitude > kMinScale)
+		if (miniWorld && miniWorld.transform.lossyScale.magnitude > kMinScale)
 		{
-			m_MiniCamera.CopyFrom(m_MainCamera);
+			m_MiniCamera.CopyFrom(camera);
 
 			m_MiniCamera.cullingMask = cullingMask;
 			m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
-			m_MiniCamera.worldToCameraMatrix = m_MainCamera.worldToCameraMatrix * miniWorld.miniToReferenceMatrix;
+			m_MiniCamera.worldToCameraMatrix = camera.worldToCameraMatrix * miniWorld.miniToReferenceMatrix;
 			Shader shader = Shader.Find("Custom/Custom Clip Planes");
 			Shader.SetGlobalVector("_GlobalClipCenter", miniWorld.referenceBounds.center);
 			Shader.SetGlobalVector("_GlobalClipExtents", miniWorld.referenceBounds.extents);
