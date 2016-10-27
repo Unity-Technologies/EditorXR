@@ -21,7 +21,7 @@ public class VRSmoothCamera : MonoBehaviour
 	Camera m_VRCamera;
 	RenderTexture m_RenderTexture;
 
-	void Start()
+	void Awake()
 	{
 		m_VRCamera = GetComponent<Camera>();
 
@@ -43,11 +43,12 @@ public class VRSmoothCamera : MonoBehaviour
 
 		m_SmoothCamera.CopyFrom(m_VRCamera); // This copies the transform as well
 		var vrCameraTexture = m_VRCamera.targetTexture;
-		if (!m_RenderTexture || m_RenderTexture.width != vrCameraTexture.width || m_RenderTexture.height != vrCameraTexture.height) 
+		if (vrCameraTexture && (!m_RenderTexture || m_RenderTexture.width != vrCameraTexture.width || m_RenderTexture.height != vrCameraTexture.height))
 		{
 			Rect guiRect = new Rect(0, 0, vrCameraTexture.width, vrCameraTexture.height);
 			Rect cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
-			VRView.activeView.CreateCameraTargetTexture(m_RenderTexture, cameraRect, false);
+			VRView.activeView.CreateCameraTargetTexture(ref m_RenderTexture, cameraRect, false);
+			m_RenderTexture.name = "Smooth Camera RT";
 		}
 		m_SmoothCamera.targetTexture = m_RenderTexture;
 		m_SmoothCamera.targetDisplay = m_TargetDisplay;
