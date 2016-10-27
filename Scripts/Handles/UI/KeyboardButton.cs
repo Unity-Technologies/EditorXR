@@ -72,10 +72,10 @@ public class KeyboardButton : BaseHandle
 
     private Material m_TargetMeshMaterial;
 
-	private Coroutine m_IncreaseEmissionCoroutine;
-	private Coroutine m_DecreaseEmissionCoroutine;
+	private Coroutine m_ChangeEmissionCoroutine;
 
 	float m_PressDownTime;
+    bool m_Triggered;
 
 	public SmoothMotion smoothMotion { get; set; }
 
@@ -192,6 +192,11 @@ public class KeyboardButton : BaseHandle
 		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
 			return;
 
+	    if (transform.InverseTransformPoint(col.transform.position).z > 0f)
+	        return;
+	    else
+	        m_Triggered = true;
+
 		KeyPressed();
 	}
 
@@ -200,7 +205,7 @@ public class KeyboardButton : BaseHandle
 		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
 			return;
 
-		if (m_RepeatOnHold)
+		if (m_RepeatOnHold && m_Triggered)
 			HoldKey();
 	}
 
@@ -209,8 +214,10 @@ public class KeyboardButton : BaseHandle
 		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
 			return;
 
-		if (m_RepeatOnHold)
+		if (m_RepeatOnHold && m_Triggered)
 			EndKeyHold();
+
+	    m_Triggered = false;
 	}
 
 	private void KeyPressed()
@@ -224,11 +231,8 @@ public class KeyboardButton : BaseHandle
 		else
 			m_KeyPress(m_Character);
 
-		if (m_IncreaseEmissionCoroutine != null)
-			StopCoroutine(m_IncreaseEmissionCoroutine);
-
-		if (m_DecreaseEmissionCoroutine != null)
-			StopCoroutine(m_DecreaseEmissionCoroutine);
+		if (m_ChangeEmissionCoroutine != null)
+			StopCoroutine(m_ChangeEmissionCoroutine);
 
 		if ((KeyCode) m_Character == KeyCode.Escape) // Avoid message about starting coroutine on inactive object
 		{
@@ -238,7 +242,7 @@ public class KeyboardButton : BaseHandle
 			return;
 		}
 
-		m_IncreaseEmissionCoroutine = StartCoroutine(IncreaseEmission());
+		m_ChangeEmissionCoroutine = StartCoroutine(IncreaseEmission());
 
 		if (m_RepeatOnHold)
 			StartKeyHold();
@@ -268,13 +272,10 @@ public class KeyboardButton : BaseHandle
 		m_Holding = false;
 		DoGraphicStateTransition(SelectionState.Normal, false);
 
-		if (m_IncreaseEmissionCoroutine != null)
-			StopCoroutine(m_IncreaseEmissionCoroutine);
+		if (m_ChangeEmissionCoroutine != null)
+			StopCoroutine(m_ChangeEmissionCoroutine);
 
-		if (m_DecreaseEmissionCoroutine != null)
-			StopCoroutine(m_DecreaseEmissionCoroutine);
-
-		m_DecreaseEmissionCoroutine = StartCoroutine(DecreaseEmission());
+        m_ChangeEmissionCoroutine = StartCoroutine(DecreaseEmission());
 	}
 
 	private void OnDisable()
@@ -349,7 +350,7 @@ public class KeyboardButton : BaseHandle
 		if (!m_Holding)
 			StartCoroutine(DecreaseEmission());
 
-		m_IncreaseEmissionCoroutine = null;
+		m_ChangeEmissionCoroutine = null;
 	}
 
 	private IEnumerator DecreaseEmission()
@@ -370,7 +371,7 @@ public class KeyboardButton : BaseHandle
 		finalColor = Color.white * Mathf.LinearToGammaSpace(0f);
 		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 
-		m_DecreaseEmissionCoroutine = null;
+        m_ChangeEmissionCoroutine = null;
 	}
 
 	private IEnumerator PunchKey()

@@ -111,7 +111,7 @@ public class KeyboardMallet : MonoBehaviour
 		}
 	}
 
-	private void Start()
+	private void Awake()
 	{
 		m_BulbBaseScale = m_Bulb.localScale;
 	}
