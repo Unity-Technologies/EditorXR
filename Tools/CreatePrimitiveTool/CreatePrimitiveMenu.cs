@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CreatePrimitiveMenu : MonoBehaviour
+public class CreatePrimitiveMenu : MonoBehaviour, ISpatialHash
 {
 	[SerializeField]
 	private Slider m_ScaleSlider;
@@ -10,11 +10,15 @@ public class CreatePrimitiveMenu : MonoBehaviour
 	[SerializeField]
 	private Text m_ScaleLabel;
 
+	public System.Action<Object> addObjectToSpatialHash { get; set; }
+	public System.Action<Object> removeObjectFromSpatialHash { get; set; }
+
 	public void CreatePrimitive(int type)
 	{
 		Transform primitive = GameObject.CreatePrimitive((PrimitiveType)type).transform;
 		primitive.position = transform.position;
 		primitive.localScale = Vector3.one * m_ScaleSlider.value;
+		addObjectToSpatialHash(primitive);
 		U.Object.Destroy(gameObject);
 	}
 

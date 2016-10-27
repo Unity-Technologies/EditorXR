@@ -186,6 +186,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, ISpatialHash
 		m_ProjectUI.folderListView.ClearSelected();
 		data.selected = true;
 		m_ProjectUI.assetListView.data = data.assets;
+		Debug.Log(data.assets.Length);
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
