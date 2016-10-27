@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
+using UnityEditor.VR;
 using UnityEngine.VR.Utilities;
 
 [RequireComponent(typeof(Camera))]
@@ -17,7 +19,7 @@ public class VRSmoothCamera : MonoBehaviour
 	float m_RotationSmoothingMultiplier = 1f;
 
 	Camera m_VRCamera;
-	//RenderTexture m_RenderTexture;
+	RenderTexture m_RenderTexture;
 
 	void Start()
 	{
@@ -40,6 +42,14 @@ public class VRSmoothCamera : MonoBehaviour
 		Quaternion rotation = m_SmoothCamera.transform.rotation;
 
 		m_SmoothCamera.CopyFrom(m_VRCamera); // This copies the transform as well
+		var vrCameraTexture = m_VRCamera.targetTexture;
+		if (!m_RenderTexture || m_RenderTexture.width != vrCameraTexture.width || m_RenderTexture.height != vrCameraTexture.height) 
+		{
+			Rect guiRect = new Rect(0, 0, vrCameraTexture.width, vrCameraTexture.height);
+			Rect cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
+			VRView.activeView.CreateCameraTargetTexture(m_RenderTexture, cameraRect, false);
+		}
+		m_SmoothCamera.targetTexture = m_RenderTexture;
 		m_SmoothCamera.targetDisplay = m_TargetDisplay;
 		m_SmoothCamera.cameraType = CameraType.Game;
 		m_SmoothCamera.rect = new Rect(0, 0, 1f, 1f);
