@@ -6,7 +6,7 @@ namespace UnityEngine.VR.Tools
 {
 	public interface ILocking
 	{
-		Action<GameObject,bool> setLocked
+		Func<bool> toggleLocked
 		{
 			set;
 		}

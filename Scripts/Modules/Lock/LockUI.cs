@@ -5,45 +5,38 @@ public class LockUI : MonoBehaviour
 {
 
 	[SerializeField]
-	Button m_LockButton;
+	Image m_LockImage;
+
+	[SerializeField]
+	Sprite m_LockIcon;
+
+	[SerializeField]
+	Sprite m_UnlockIcon;
 
 	LockModule m_LockModule;
 
 	void Start()
 	{
 		m_LockModule = GetComponentInParent<LockModule>();
-		HandleColoring();
-	}
-
-	void Update()
-	{
-		HandleColoring();
+		HandleSprite();
 	}
 
 	public void OnLockButtonPressed()
 	{
 		if (m_LockModule)
 		{
-			bool isLocked = m_LockModule.GetLocked(UnityEditor.Selection.activeGameObject);
-			if (!isLocked)
-				m_LockModule.SetLocked();
-			else
-				m_LockModule.SetUnLocked();
+			m_LockModule.ToggleLocked();
+			HandleSprite();
 		}
 	}
 
-	private void HandleColoring()
+	private void HandleSprite()
 	{
 		if (m_LockModule)
 		{
 			var active = UnityEditor.Selection.activeGameObject;
-			if (active)
-			{
-				bool isLocked = m_LockModule.GetLocked(active);
-				m_LockButton.image.color = isLocked ? Color.red : Color.green;
-			}
-			else
-				m_LockButton.image.color = Color.white;
+			bool isLocked = m_LockModule.IsLocked(active);
+			m_LockImage.sprite = isLocked ? m_UnlockIcon : m_LockIcon;
 		}
 	}
 

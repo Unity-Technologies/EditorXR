@@ -13,22 +13,20 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 {
 	class LockModuleAction : IAction
 	{
-		internal Action execute;
+		internal Func<bool> execute;
 		public Sprite icon { get; internal set; }
 		public bool ExecuteAction()
 		{
-			execute();
-			return true;
+			return execute();
 		}
 	}
 
 	[SerializeField]
 	Sprite m_LockIcon;
 	[SerializeField]
-	Sprite m_UnLockIcon;
+	Sprite m_UnlockIcon;
 
 	readonly LockModuleAction m_LockModuleAction = new LockModuleAction();
-	readonly LockModuleAction m_UnLockModuleAction = new LockModuleAction();
 	public List<IAction> toolActions { get; private set; }
 
 	public Action<Node?, GameObject> openRadialMenu { private get; set; }
@@ -40,32 +38,25 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 	private const float kMaxHoverTime = 2.0f;
 
 	private GameObject m_SelectedObject;
-
-
+	
 	void Awake()
 	{
 		m_LockModuleAction.icon = m_LockIcon;
-		m_LockModuleAction.execute = SetLocked;
+		m_LockModuleAction.execute = ToggleLocked;
 
-		m_UnLockModuleAction.icon = m_UnLockIcon;
-		m_LockModuleAction.execute = SetUnLocked;
-
-		toolActions = new List<IAction>() { m_LockModuleAction, m_UnLockModuleAction };
+		toolActions = new List<IAction>() { m_LockModuleAction };
 	}
 
-	public bool GetLocked(GameObject go)
+	public bool IsLocked(GameObject go)
 	{
 		return m_LockedGameObjects.Contains(go);
 	}
 
-	public void SetLocked()
+	public bool ToggleLocked()
 	{
-		SetLocked(m_SelectedObject, true);
-	}
-
-	public void SetUnLocked()
-	{
-		SetLocked(m_SelectedObject, false);
+		bool newLockState = !IsLocked(m_SelectedObject);
+		SetLocked(m_SelectedObject, newLockState);
+		return newLockState;
 	}
 
 	private void SetCurrentSelectedObject(GameObject go)
@@ -73,7 +64,7 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 		m_SelectedObject = go;
 	}
 
-	public void SetLocked(GameObject go, bool locked)
+	private void SetLocked(GameObject go, bool locked)
 	{
 		if (go == null)
 			return;
@@ -83,7 +74,6 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 			if (!m_LockedGameObjects.Contains(go))
 			{
 				m_LockedGameObjects.Add(go);
-				Debug.Log(go.name + " locked");
 			}
 		}
 		else
@@ -91,9 +81,10 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 			if (m_LockedGameObjects.Contains(go))
 			{
 				m_LockedGameObjects.Remove(go);
-				Debug.Log(go.name + " unlocked");
 			}
 		}
+		
+		m_LockModuleAction.icon = locked ? m_UnlockIcon : m_LockIcon;
 	}
 
 	public void CheckHover(GameObject go, Node? node)
@@ -106,7 +97,7 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 			m_CurrentHoverObjects[node] = go;
 			m_HoverTimes[node] = 0.0f;
 		}
-		else if (GetLocked(go))
+		else if (IsLocked(go))
 		{
 			m_HoverTimes[node] += Time.unscaledDeltaTime;
 			if (m_HoverTimes[node] >= kMaxHoverTime)

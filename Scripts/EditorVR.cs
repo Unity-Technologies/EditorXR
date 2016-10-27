@@ -1152,8 +1152,8 @@ public class EditorVR : MonoBehaviour
 		var locking = obj as ILocking;
 		if (locking != null)
 		{
-			locking.setLocked = m_LockModule.SetLocked;
-			locking.getLocked = m_LockModule.GetLocked;
+			locking.toggleLocked = m_LockModule.ToggleLocked;
+			locking.getLocked = m_LockModule.IsLocked;
 			locking.checkHover = m_LockModule.CheckHover;
 		}
 

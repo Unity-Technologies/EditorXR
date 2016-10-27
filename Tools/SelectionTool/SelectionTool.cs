@@ -26,7 +26,7 @@ namespace UnityEngine.VR.Tools
 		public Action<GameObject, bool> setHighlight { private get; set; }
 		public Transform menuOrigin { get; set; }
 		public Node? node { private get; set; }
-		public Action<GameObject, bool> setLocked { get; set; }
+		public Func<bool> toggleLocked { get; set; }
 		public Func<GameObject, bool> getLocked { get; set; }
 		public Action<GameObject, Node?> checkHover { get; set; }
 
@@ -76,6 +76,9 @@ namespace UnityEngine.VR.Tools
 				newPrefabRoot = PrefabUtility.FindPrefabRoot(newHoverGameObject);
 				if (newPrefabRoot != s_CurrentPrefabOpened)
 					newHoverGameObject = newPrefabRoot;
+				
+				if (newHoverGameObject.isStatic)
+					return;
 			}
 
 			checkHover(newHoverGameObject, node);
