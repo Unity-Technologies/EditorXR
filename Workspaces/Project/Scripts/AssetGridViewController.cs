@@ -37,6 +37,22 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
 	private readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
 
+	public override AssetData[] data
+	{
+		set
+		{
+			if (m_Data != null)
+			{
+				foreach (var data in m_Data) // Clear out visuals for old data
+				{
+					RecycleBeginning(data);
+				}
+			}
+
+			m_Data = value;
+		}
+	}
+
 	public Action<UnityObject> addObjectToSpatialHash { get; set; }
 	public Action<UnityObject> removeObjectFromSpatialHash { get; set; }
 
