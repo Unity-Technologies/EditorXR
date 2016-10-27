@@ -37,8 +37,6 @@ namespace UnityEngine.VR.Utilities
 				}
 #endif
 
-				EditorVR.OnObjectInstantiate(go);
-
 				return go;
 			}
 
@@ -191,8 +189,6 @@ namespace UnityEngine.VR.Utilities
 
 			public static void Destroy(UnityObject o, float t = 0f)
 			{
-				EditorVR.OnObjectDestroy(o);
-
 				if (Application.isPlaying)
 				{
 					UnityObject.Destroy(o, t);

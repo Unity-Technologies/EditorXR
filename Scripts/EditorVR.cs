@@ -641,6 +641,8 @@ public class EditorVR : MonoBehaviour
 			var action = U.Object.AddComponent(actionType, gameObject) as IAction;
 			var attribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
 
+			ConnectInterfaces(action);
+
 			if (attribute != null)
 			{
 				var actionMenuData = new ActionMenuData()
@@ -2077,31 +2079,24 @@ public class EditorVR : MonoBehaviour
 
 	void AddPlayerModel()
 	{
-		U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
+		var playerHead = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
+		AddObjectToSpatialHash(playerHead);
 	}
 
 	void AddObjectToSpatialHash(UnityObject obj)
 	{
-		if(m_SpatialHashModule)
+		if (m_SpatialHashModule)
 			m_SpatialHashModule.AddObject(obj);
+		else
+			Debug.LogError("Tried to add " + obj + " to spatial hash but it doesn't exist yet");
 	}
 
 	void RemoveObjectFromSpatialHash(UnityObject obj)
 	{
 		if (m_SpatialHashModule)
 			m_SpatialHashModule.RemoveObject(obj);
-	}
-
-	public static void OnObjectInstantiate(UnityObject obj)
-	{
-		if(s_Instance)
-			s_Instance.AddObjectToSpatialHash(obj);
-	}
-
-	public static void OnObjectDestroy(UnityObject obj)
-	{
-		if(s_Instance)
-			s_Instance.RemoveObjectFromSpatialHash(obj);
+		else
+			Debug.LogError("Tried to remove " + obj + " from spatial hash but it doesn't exist yet");
 	}
 
 	bool PreProcessRaycastSources()
