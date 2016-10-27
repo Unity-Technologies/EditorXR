@@ -36,6 +36,9 @@ namespace UnityEngine.VR.Utilities
 					go.hideFlags = EditorVR.kDefaultHideFlags;
 				}
 #endif
+
+				EditorVR.OnObjectInstantiate(go);
+
 				return go;
 			}
 
@@ -189,6 +192,8 @@ namespace UnityEngine.VR.Utilities
 
 			public static void Destroy(UnityObject o, float t = 0f)
 			{
+				EditorVR.OnObjectDestroy(o);
+
 				if (Application.isPlaying)
 				{
 					UnityObject.Destroy(o, t);

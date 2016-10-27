@@ -2,13 +2,13 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Helpers;
-using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Extensions;
+using UnityObject = UnityEngine.Object;
 
-public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
+public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpatialHash
 {
 	private const float kPreviewDuration = 0.1f;
 
@@ -47,6 +47,9 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 	private Coroutine m_TransitionCoroutine;
 
 	private Material m_TextureMaterial;
+
+	public Action<UnityObject> addObjectToSpatialHash { get; set; }
+	public Action<UnityObject> removeObjectFromSpatialHash { get; set; }
 
 	public GameObject icon
 	{
@@ -268,16 +271,23 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
 		if (gridItem.m_PreviewObject)
+		{
+			addObjectToSpatialHash(gridItem.m_PreviewObject);
 			placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
+		}
 		else
 		{
 			switch (data.type)
 			{
 				case "Prefab":
-					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+					var prefab = U.Object.Instantiate((GameObject)data.asset, null, false, false);
+					prefab.transform.position = gridItem.transform.position;
+					prefab.transform.rotation = gridItem.transform.rotation;
 					break;
 				case "Model":
-					Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+					var model = U.Object.Instantiate((GameObject)data.asset, null, false, false);
+					model.transform.position = gridItem.transform.position;
+					model.transform.rotation = gridItem.transform.rotation;
 					break;
 			}
 		}
