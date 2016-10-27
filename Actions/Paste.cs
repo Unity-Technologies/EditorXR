@@ -1,15 +1,18 @@
-﻿using UnityEngine.VR.Utilities;
+﻿using System;
 
 namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
-	public class Paste : MonoBehaviour, IAction
+	public class Paste : MonoBehaviour, IAction, ISpatialHash
 	{
 		public Sprite icon { get { return m_Icon; } }
 		[SerializeField]
 		private Sprite m_Icon;
 
 		public static Object buffer { get; set; }
+
+		public Action<Object> addObjectToSpatialHash { get; set; }
+		public Action<Object> removeObjectFromSpatialHash { get; set; }
 
 		public bool ExecuteAction()
 		{
@@ -22,6 +25,9 @@ namespace UnityEngine.VR.Actions
 				var go = pasted as GameObject;
 				if (go)
 					go.SetActive(true);
+
+				addObjectToSpatialHash(pasted);
+
 				return true;
 			}
 

@@ -444,7 +444,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	private void UpdateSelectionBounds()
 	{
-		Bounds? newBounds = null;
+		var hasBounds = false;
+		Bounds newBounds = new Bounds();
 		foreach (var selectedObj in m_SelectionTransforms)
 		{
 			var renderers = selectedObj.GetComponentsInChildren<Renderer>();
@@ -453,16 +454,21 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 				if (Mathf.Approximately(r.bounds.extents.sqrMagnitude, 0f)) // Necessary because Particle Systems have renderer components with center and extents (0,0,0)
 					continue;
 
-				if (newBounds.HasValue)
+				if (hasBounds)
+				{
 					// Only use encapsulate after the first renderer, otherwise bounds will always encapsulate point (0,0,0)
-					newBounds.Value.Encapsulate(r.bounds);
+					newBounds.Encapsulate(r.bounds);
+				}
 				else
+				{
 					newBounds = r.bounds;
+					hasBounds = true;
+				}
 			}
 		}
 
 		// If we haven't encountered any Renderers, return bounds of (0,0,0) at the center of the selected objects
-		if (newBounds == null)
+		if (!hasBounds)
 		{
 			var bounds = new Bounds();
 			foreach (var selectedObj in m_SelectionTransforms)
@@ -470,7 +476,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			newBounds = bounds;
 		}
 
-		m_SelectionBounds = newBounds.Value;
+		m_SelectionBounds = newBounds;
 	}
 
 	private void UpdateManipulatorSize()

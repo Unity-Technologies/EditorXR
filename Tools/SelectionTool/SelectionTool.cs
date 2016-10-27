@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -6,8 +6,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Tools
 {
-	// TODO: Uncomment IBlockUIInput after merge with dev/schoen/bugfix-b
-	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight, IMenuOrigins //, IBlockUIInput
+	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight, IMenuOrigins, ILocking
 	{
 		private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
@@ -40,6 +39,10 @@ namespace UnityEngine.VR.Tools
 		public Transform menuOrigin { get; set; }
 		public Node? node { private get; set; }
 
+		public Func<bool> toggleLocked { get; set; }
+		public Func<GameObject, bool> getLocked { get; set; }
+		public Action<GameObject, Node?> checkHover { get; set; }
+
 		private Transform m_AlternateMenuOrigin; // TODO delete if not needed
 		public Transform alternateMenuOrigin
 		{
@@ -70,6 +73,10 @@ namespace UnityEngine.VR.Tools
 						newHoverGameObject = newPrefabRoot;
 				}
 			}
+
+			checkHover(newHoverGameObject, node);
+			if (getLocked(newHoverGameObject))
+				newHoverGameObject = null;
 
 			// Handle changing highlight
 			if (newHoverGameObject != m_HoverGameObject)
