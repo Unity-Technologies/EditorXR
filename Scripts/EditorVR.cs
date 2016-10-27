@@ -18,6 +18,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
+using UnityObject = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;
@@ -672,6 +673,8 @@ public class EditorVR : MonoBehaviour
 			var action = U.Object.AddComponent(actionType, gameObject) as IAction;
 			var attribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
 
+			ConnectInterfaces(action);
+
 			if (attribute != null)
 			{
 				var actionMenuData = new ActionMenuData()
@@ -1266,6 +1269,14 @@ public class EditorVR : MonoBehaviour
 			snapping.onSnapStarted = m_SnappingModule.OnSnapStarted;
 			snapping.onSnapUpdate = m_SnappingModule.OnSnapUpdate;
 		}
+		
+		var spatialHash = obj as ISpatialHash;
+		if (spatialHash != null)
+		{
+			spatialHash.addObjectToSpatialHash = AddObjectToSpatialHash;
+			spatialHash.removeObjectFromSpatialHash = RemoveObjectFromSpatialHash;
+		}
+
 
 		var folderList = obj as IProjectFolderList;
 		if (folderList != null)
@@ -2123,8 +2134,24 @@ public class EditorVR : MonoBehaviour
 
 	void AddPlayerModel()
 	{
-		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
-		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
+		var playerHead = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
+		AddObjectToSpatialHash(playerHead);
+	}
+
+	void AddObjectToSpatialHash(UnityObject obj)
+	{
+		if (m_SpatialHashModule)
+			m_SpatialHashModule.AddObject(obj);
+		else
+			Debug.LogError("Tried to add " + obj + " to spatial hash but it doesn't exist yet");
+	}
+
+	void RemoveObjectFromSpatialHash(UnityObject obj)
+	{
+		if (m_SpatialHashModule)
+			m_SpatialHashModule.RemoveObject(obj);
+		else
+			Debug.LogError("Tried to remove " + obj + " from spatial hash but it doesn't exist yet");
 	}
 
 	bool PreProcessRaycastSources()

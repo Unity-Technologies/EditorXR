@@ -36,6 +36,7 @@ namespace UnityEngine.VR.Utilities
 					go.hideFlags = EditorVR.kDefaultHideFlags;
 				}
 #endif
+
 				return go;
 			}
 

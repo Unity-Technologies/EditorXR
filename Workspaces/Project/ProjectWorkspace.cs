@@ -5,8 +5,9 @@ using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
+using UnityObject = UnityEngine.Object;
 
-public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFolderList, IFilterUI
+public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFolderList, IFilterUI, ISpatialHash
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 	const float kPaneMargin = 0.01f;
@@ -64,6 +65,9 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFold
 	}
 	public Func<List<string>> getFilterList { private get; set; }
 
+	public Action<UnityObject> addObjectToSpatialHash { get; set; }
+	public Action<UnityObject> removeObjectFromSpatialHash { get; set; }
+
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
@@ -95,6 +99,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFold
 		assetListView.placeObject = placeObject;
 		assetListView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		assetListView.preview = preview;
+		assetListView.addObjectToSpatialHash = addObjectToSpatialHash;
+		assetListView.removeObjectFromSpatialHash = removeObjectFromSpatialHash;
 
 		folderData = getFolderData();
 

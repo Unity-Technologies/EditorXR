@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Modules;
+using UnityObject = UnityEngine.Object;
 
-public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPreview
+public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPreview, ISpatialHash
 {
 	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
@@ -51,6 +52,9 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 			m_Data = value;
 		}
 	}
+
+	public Action<UnityObject> addObjectToSpatialHash { get; set; }
+	public Action<UnityObject> removeObjectFromSpatialHash { get; set; }
 
 	protected override void Setup()
 	{
@@ -224,6 +228,8 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		item.placeObject = placeObject;
 		item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		item.preview = preview;
+		item.addObjectToSpatialHash = addObjectToSpatialHash;
+		item.removeObjectFromSpatialHash = removeObjectFromSpatialHash;
 
 		StartCoroutine(Transition(data, false));
 
