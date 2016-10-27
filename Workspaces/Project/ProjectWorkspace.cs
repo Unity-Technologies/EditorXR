@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
+public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFolderList, IFilterUI
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 	const float kPaneMargin = 0.01f;
@@ -38,11 +36,33 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
+	FolderData m_OpenFolder;
 
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 	public PreviewDelegate preview { private get; set; }
+
+	public FolderData[] folderData
+	{
+		private get { return m_ProjectUI.folderListView.data; }
+		set
+		{
+			var oldData = m_ProjectUI.folderListView.data;
+			if (oldData != null)
+				CopyExpandStates(oldData[0], value[0]);
+
+			m_ProjectUI.folderListView.data = value;
+			SelectFolder(m_OpenFolder != null ? GetFolderDataByInstanceID(value[0], m_OpenFolder.instanceID) : value[0]);
+		}
+	}
+	public Func<FolderData[]> getFolderData { private get; set; }
+
+	public List<string> filterList
+	{
+		set { m_FilterUI.filterList = value; }
+	}
+	public Func<List<string>> getFilterList { private get; set; }
 
 	public override void Setup()
 	{
@@ -59,6 +79,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 		var filterPrefab = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false);
 		m_FilterUI = filterPrefab.GetComponent<FilterUI>();
+		m_FilterUI.filterList = getFilterList();
 
 		var sliderPrefab = U.Object.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
 		var zoomSlider = sliderPrefab.GetComponent<ZoomSliderUI>();
@@ -75,13 +96,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		assetListView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		assetListView.preview = preview;
 
-#if UNITY_EDITOR
-		EditorApplication.projectWindowChanged += SetupFolderList;
-		SetupFolderList();
-#else
-		Debug.LogWarning("Project workspace does not work in builds");
-		return;
-#endif
+		folderData = getFolderData();
+
 		var scrollHandles = new[]
 		{
 			m_ProjectUI.folderScrollHandle,
@@ -180,9 +196,14 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	void SelectFolder(FolderData data)
 	{
+		if (data == m_OpenFolder)
+			return;
+
+		m_OpenFolder = data;
 		m_ProjectUI.folderListView.ClearSelected();
 		data.selected = true;
 		m_ProjectUI.assetListView.data = data.assets;
+		m_ProjectUI.assetListView.scrollOffset = 0;
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -306,83 +327,59 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		return FilterUI.TestFilter(m_FilterUI.searchQuery, type);
 	}
 
-#if UNITY_EDITOR
-	void SetupFolderList()
+	FolderData GetFolderDataByInstanceID(FolderData data, int instanceID)
 	{
-		var assetTypes = new HashSet<string>();
-		var hasNext = true;
-		var rootFolder = CreateFolderData(assetTypes, ref hasNext);
-		rootFolder.expanded = true;
-		m_ProjectUI.folderListView.data = new[] { rootFolder };
+		if (data.instanceID == instanceID)
+			return data;
 
-		SelectFolder(rootFolder);
-		m_FilterUI.filterTypes = assetTypes.ToList();
-	}
-
-	FolderData CreateFolderData(HashSet<string> assetTypes, ref bool hasNext, HierarchyProperty hp = null)
-	{
-		if (hp == null)
+		if (data.children != null)
 		{
-			hp = new HierarchyProperty(HierarchyType.Assets);
-			hp.SetSearchFilter("t:object", 0);
-		}
-		var name = hp.name;
-		var depth = hp.depth;
-		var folderList = new List<FolderData>();
-		var assetList = new List<AssetData>();
-		if (hasNext)
-		{
-			hasNext = hp.Next(null);
-			while (hasNext && hp.depth > depth)
+			foreach (var child in data.children)
 			{
-				if (hp.isFolder)
-					folderList.Add(CreateFolderData(assetTypes, ref hasNext, hp));
-				else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
-					assetList.Add(CreateAssetData(assetTypes, hp));
-				if (hasNext)
-					hasNext = hp.Next(null);
+				var folder = GetFolderDataByInstanceID(child, instanceID);
+				if (folder != null)
+					return folder;
 			}
-			if (hasNext)
-				hp.Previous(null);
 		}
-		return new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray());
+		return null;
 	}
 
-	AssetData CreateAssetData(HashSet<string> assetTypes, HierarchyProperty hp)
+	// Not used, but could be helpful
+	bool ExpandToFolder(FolderData container, FolderData search)
 	{
-		var type = hp.pptrValue.GetType().Name;
-		switch (type)
+		if (container.instanceID == search.instanceID)
+			return true;
+
+		bool found = false;
+
+		if (container.children != null)
 		{
-			case "GameObject":
-				switch (PrefabUtility.GetPrefabType(EditorUtility.InstanceIDToObject(hp.instanceID)))
-				{
-					case PrefabType.ModelPrefab:
-						type = "Model";
-						break;
-					default:
-						type = "Prefab";
-						break;
-				}
-				break;
-			case "MonoScript":
-				type = "Script";
-				break;
-			case "SceneAsset":
-				type = "Scene";
-				break;
-			case "AudioMixerController":
-				type = "AudioMixer";
-				break;
+			foreach (var child in container.children)
+			{
+				if (ExpandToFolder(child, search))
+					found = true;
+			}
 		}
-		assetTypes.Add(type);
-		return new AssetData(hp.name, hp.instanceID, hp.icon, type);
+
+		if (found)
+			container.expanded = true;
+
+		return found;
 	}
 
-
-	protected override void OnDestroy()
+	// In case a folder was moved up the hierarchy, we must search the entire destination root for every source folder
+	void CopyExpandStates(FolderData source, FolderData destinationRoot)
 	{
-		EditorApplication.projectWindowChanged -= SetupFolderList;
-		base.OnDestroy();
+		var match = GetFolderDataByInstanceID(destinationRoot, source.instanceID);
+		if (match != null)
+			match.expanded = source.expanded;
+
+		if (source.children != null)
+		{
+			foreach (var child in source.children)
+			{
+				CopyExpandStates(child, destinationRoot);
+			}
+		}
 	}
-#endif
 }
