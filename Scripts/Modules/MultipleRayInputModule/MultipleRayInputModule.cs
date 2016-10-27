@@ -104,8 +104,8 @@ namespace UnityEngine.VR.Modules
 				return;
 
 			//Process events for all different transforms in RayOrigins
-			var iterator = m_RaycastSources.Values;
-			foreach (var source in iterator)
+			var sources = new List<RaycastSource>(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
+			foreach (var source in sources)
 			{
 				if (!(source.rayOrigin.gameObject.activeSelf || source.selectedObject) || !source.proxy.active)
 					continue;
