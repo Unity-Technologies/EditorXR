@@ -25,7 +25,7 @@ namespace UnityEngine.VR.Tools
 		public Transform rayOrigin { private get; set; }
 		public Action<GameObject, bool> setHighlight { private get; set; }
 		public Transform menuOrigin { get; set; }
-		public Node selfNode { private get; set; }
+		public Node selfNode { get; set; }
 		public Node? node { private get; set; }
 
 		public ActionMapInput actionMapInput

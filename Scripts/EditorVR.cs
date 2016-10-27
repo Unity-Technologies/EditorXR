@@ -824,8 +824,13 @@ public class EditorVR : MonoBehaviour
 		else if(node == Node.RightHand)
 			node = Node.LeftHand;
 
+		// HACK: if not using this bool, the CreatePrimitiveMenu would be attached to both nodes
+		bool once = false;
 		ForEachRayOrigin((proxy,rayOriginPair,device,deviceData) =>
 		{
+			if (once)
+				return;
+
 			Dictionary<Node,Transform> tempOrigin = null;
 
 			if(origin == MenuOrigin.Main)
@@ -836,6 +841,11 @@ public class EditorVR : MonoBehaviour
 			Transform parent;
 			if(tempOrigin != null && tempOrigin.TryGetValue(node,out parent))
 			{
+				once = true;
+
+				if (go.GetComponent<CreatePrimitiveMenu>() != null)
+					ConnectInterfaces(go.GetComponent<CreatePrimitiveMenu>(),device);
+
 				go.transform.SetParent(parent);
 				go.transform.localPosition = Vector3.zero;
 				go.transform.localRotation = Quaternion.identity;
@@ -844,6 +854,8 @@ public class EditorVR : MonoBehaviour
 				m_DeviceData[device].mainMenu.visible = false;
 			}
 		}, true);
+
+
 
 		return go;
 	}

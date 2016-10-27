@@ -8,7 +8,7 @@ using UnityEngine.VR.Tools;
 public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay
 {	
 	public Transform rayOrigin { get; set; }
-	public Node selfNode { private get; set; }
+	public Node selfNode { get; set; }
 
 	public ActionMap actionMap
 	{

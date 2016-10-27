@@ -47,7 +47,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 	}
 	private BlinkLocomotion m_BlinkLocomotionInput;
 
-	public Node selfNode { private get; set; }
+	public Node selfNode { get; set; }
 
 	private void Start()
 	{
