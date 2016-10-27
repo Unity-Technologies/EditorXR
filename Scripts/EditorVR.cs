@@ -42,6 +42,9 @@ public class EditorVR : MonoBehaviour
 
 	const float kViewerPivotTransitionTime = 0.75f;
 
+	// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time minus approximately how long one operation will take
+	const float kMaxFrameTime = 0.08f;
+
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
 	[SerializeField]
@@ -145,11 +148,24 @@ public class EditorVR : MonoBehaviour
 
 	IGrabObjects m_TransformTool;
 
+	class FolderDataIteration
+	{
+		public FolderData data;
+		public bool hasNext;
+	}
+
+	readonly List<IProjectFolderList> m_ProjectFolderLists = new List<IProjectFolderList>();
+	FolderData[] m_FolderData;
+	readonly HashSet<string> m_AssetTypes = new HashSet<string>();
+	float m_LastFolderYieldTime;
+
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
 	private void Awake()
 	{
 		ClearDeveloperConsoleIfNecessary();
+
+		StartCoroutine(LoadProjectFolders());
 
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 		if (VRSettings.loadedDeviceName == "OpenVR")
@@ -259,7 +275,6 @@ public class EditorVR : MonoBehaviour
 			yield return null;
 		}
 
-		StartCoroutine(PrealodAssetTypes());
 		CreateSpatialSystem();
 		AddPlayerModel();
 		SpawnDefaultTools();
@@ -1002,7 +1017,6 @@ public class EditorVR : MonoBehaviour
 			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 		}
 
-
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
 			m_SelectionChanged += selectionChanged.OnSelectionChanged;
@@ -1018,6 +1032,14 @@ public class EditorVR : MonoBehaviour
 			grabObjects.grabObject = GrabObject;
 			grabObjects.dropObject = DropObject;
 		}
+
+		var folderList = obj as IProjectFolderList;
+		if (folderList != null)
+			folderList.getFolderData = GetFolderData;
+
+		var filterUI = obj as IFilterUI;
+		if (filterUI != null)
+			filterUI.getFilterList = GetFilterList;
 
 		if (mainMenu != null)
 		{
@@ -1270,51 +1292,53 @@ public class EditorVR : MonoBehaviour
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
 
+			var projectFolderList = workspace as IProjectFolderList;
+			if (projectFolderList != null)
+				m_ProjectFolderLists.Add(projectFolderList);
+
 			var filterUI = workspace as IFilterUI;
 			if (filterUI != null)
-			{
 				m_FilterUIs.Add(filterUI);
-			}
 
 			var miniWorld = workspace as IMiniWorld;
-			if (miniWorld == null)
-				return;
-
-			m_MiniWorlds.Add(miniWorld);
-
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+			if (miniWorld != null)
 			{
-				var miniWorldRayOrigin = InstantiateMiniWorldRay();
-				miniWorldRayOrigin.parent = workspace.transform;
+				m_MiniWorlds.Add(miniWorld);
 
-				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-				uiInput.active = false;
-
-				var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
-				directSelectInput.active = false;
-
-				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
-
-				var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
-				tester.active = false;
-
-				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
+				ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 				{
-					originalRayOrigin = rayOriginPair.Value,
-					originalDirectSelectInput = deviceData.directSelectInput,
-					miniWorld = miniWorld,
-					proxy = proxy,
-					node = rayOriginPair.Key,
-					uiInput = uiInput,
-					directSelectInput = directSelectInput,
-					tester = tester
-				};
+					var miniWorldRayOrigin = InstantiateMiniWorldRay();
+					miniWorldRayOrigin.parent = workspace.transform;
 
-				m_IntersectionModule.AddTester(tester);
-			});
+					var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+					uiInput.active = false;
 
-			UpdatePlayerHandleMaps();
+					var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
+					directSelectInput.active = false;
+
+					// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+					m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
+
+					var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
+					tester.active = false;
+
+					m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
+					{
+						originalRayOrigin = rayOriginPair.Value,
+						originalDirectSelectInput = deviceData.directSelectInput,
+						miniWorld = miniWorld,
+						proxy = proxy,
+						node = rayOriginPair.Key,
+						uiInput = uiInput,
+						directSelectInput = directSelectInput,
+						tester = tester
+					};
+
+					m_IntersectionModule.AddTester(tester);
+				});
+
+				UpdatePlayerHandleMaps();
+			}
 		};
 	}
 
@@ -1344,24 +1368,32 @@ public class EditorVR : MonoBehaviour
 
 		DisconnectInterfaces(workspace);
 
-		var miniWorld = workspace as IMiniWorld;
-		if (miniWorld == null)
-			return;
+		var projectFolderList = workspace as IProjectFolderList;
+		if (projectFolderList != null)
+			m_ProjectFolderLists.Remove(projectFolderList);
 
-		//Clean up MiniWorldRays
-		m_MiniWorlds.Remove(miniWorld);
-		var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_MiniWorldRays);
-		foreach (var ray in miniWorldRaysCopy)
+		var filterUI = workspace as IFilterUI;
+		if (filterUI != null)
+			m_FilterUIs.Remove(filterUI);
+
+		var miniWorld = workspace as IMiniWorld;
+		if (miniWorld != null)
 		{
-			var miniWorldRay = ray.Value;
-			var maps = m_PlayerHandle.maps;
-			if (miniWorldRay.miniWorld == miniWorld)
+			//Clean up MiniWorldRays
+			m_MiniWorlds.Remove(miniWorld);
+			var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_MiniWorldRays);
+			foreach (var ray in miniWorldRaysCopy)
 			{
-				var rayOrigin = ray.Key;
-				maps.Remove(miniWorldRay.uiInput);
-				maps.Remove(miniWorldRay.directSelectInput);
-				m_InputModule.RemoveRaycastSource(rayOrigin);
-				m_MiniWorldRays.Remove(rayOrigin);
+				var miniWorldRay = ray.Value;
+				var maps = m_PlayerHandle.maps;
+				if (miniWorldRay.miniWorld == miniWorld)
+				{
+					var rayOrigin = ray.Key;
+					maps.Remove(miniWorldRay.uiInput);
+					maps.Remove(miniWorldRay.directSelectInput);
+					m_InputModule.RemoveRaycastSource(rayOrigin);
+					m_MiniWorldRays.Remove(rayOrigin);
+				}
 			}
 		}
 	}
@@ -1783,6 +1815,154 @@ public class EditorVR : MonoBehaviour
 		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
 	}
 
+	List<string> GetFilterList()
+	{
+		return m_AssetTypes.ToList();
+	}
+
+	FolderData[] GetFolderData()
+	{
+		if (m_FolderData == null)
+			return null;
+
+		var assetsFolder = new FolderData(m_FolderData[0]) { expanded = true };
+
+		return new[] { assetsFolder };
+	}
+
+	IEnumerator LoadProjectFolders(bool quickStart = true)
+	{
+		FolderDataIteration iteration = null;
+
+		if (quickStart)
+		{
+			//Start with a quick pass to get assets without types
+			foreach (var e in CreateFolderData())
+			{
+				iteration = e;
+			}
+
+			m_FolderData = new[] { iteration.data };
+
+			yield return null;
+		}
+
+		m_AssetTypes.Clear();
+
+		//Create a new list with actual types
+		foreach (var e in CreateFolderData(m_AssetTypes))
+		{
+			iteration = e;
+			yield return null;
+		}
+
+		m_FolderData = new[] { iteration.data };
+
+		// Send new data to existing folderLists
+		foreach (var list in m_ProjectFolderLists)
+		{
+			list.folderData = GetFolderData();
+		}
+
+		// Send new data to existing filterUIs
+		foreach (var filterUI in m_FilterUIs)
+		{
+			filterUI.filterList = GetFilterList();
+		}
+	}
+
+	// Call with no assetTypes for quick load (and no types)
+	IEnumerable<FolderDataIteration> CreateFolderData(HashSet<string> assetTypes = null, bool hasNext = true, HierarchyProperty hp = null)
+	{
+		if (hp == null)
+		{
+			hp = new HierarchyProperty(HierarchyType.Assets);
+			hp.SetSearchFilter("t:object", 0);
+		}
+		var name = hp.name;
+		var instanceID = hp.instanceID;
+		var depth = hp.depth;
+		var folderList = new List<FolderData>();
+		var assetList = new List<AssetData>();
+		if (hasNext)
+		{
+			hasNext = hp.Next(null);
+			while (hasNext && hp.depth > depth)
+			{
+				if (hp.isFolder)
+				{
+					FolderDataIteration folder = null;
+
+					foreach (var e in CreateFolderData(assetTypes, hasNext, hp))
+					{
+						folder = e;
+						if (assetTypes != null)
+							yield return e;
+					}
+
+					folderList.Add(folder.data);
+					hasNext = folder.hasNext;
+				}
+				else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
+					assetList.Add(CreateAssetData(hp, assetTypes));
+
+				if (hasNext)
+					hasNext = hp.Next(null);
+
+				if (assetTypes != null && Time.realtimeSinceStartup - m_LastFolderYieldTime > kMaxFrameTime)
+				{
+					m_LastFolderYieldTime = Time.realtimeSinceStartup;
+					yield return null;
+				}
+			}
+
+			if (hasNext)
+				hp.Previous(null);
+		}
+
+		yield return new FolderDataIteration
+		{
+			data = new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), instanceID),
+			hasNext = hasNext
+		};
+	}
+
+	AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
+	{
+		var type = "";
+		if (assetTypes != null)
+		{
+			type = hp.pptrValue.GetType().Name;
+			switch (type)
+			{
+				case "GameObject":
+					switch (PrefabUtility.GetPrefabType(EditorUtility.InstanceIDToObject(hp.instanceID)))
+					{
+						case PrefabType.ModelPrefab:
+							type = "Model";
+							break;
+						default:
+							type = "Prefab";
+							break;
+					}
+					break;
+				case "MonoScript":
+					type = "Script";
+					break;
+				case "SceneAsset":
+					type = "Scene";
+					break;
+				case "AudioMixerController":
+					type = "AudioMixer";
+					break;
+			}
+
+			assetTypes.Add(type);
+		}
+
+		return new AssetData(hp.name, hp.instanceID, hp.icon, type);
+	}
+
 #if UNITY_EDITOR
 	private static EditorVR s_Instance;
 	private static InputManager s_InputManager;
@@ -1810,6 +1990,7 @@ public class EditorVR : MonoBehaviour
 	{
 		InitializeInputManager();
 		s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
+		EditorApplication.projectWindowChanged += OnProjectWindowChanged;
 	}
 
 	private static void InitializeInputManager()
@@ -1842,8 +2023,14 @@ public class EditorVR : MonoBehaviour
 		U.Object.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
 	}
 
+	static void OnProjectWindowChanged()
+	{
+		s_Instance.StartCoroutine(s_Instance.LoadProjectFolders(false));
+	}
+
 	private static void OnEVRDisabled()
 	{
+		EditorApplication.projectWindowChanged -= OnProjectWindowChanged;
 		U.Object.Destroy(s_Instance.gameObject);
 		U.Object.Destroy(s_InputManager.gameObject);
 	}

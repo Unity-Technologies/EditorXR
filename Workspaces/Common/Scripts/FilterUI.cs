@@ -42,7 +42,7 @@ public class FilterUI : MonoBehaviour
 	Coroutine m_ShowUICoroutine;
 	Coroutine m_HideUICoroutine;
 
-	public List<string> filterTypes
+	public List<string> filterList
 	{
 		set
 		{

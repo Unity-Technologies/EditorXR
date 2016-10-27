@@ -10,11 +10,16 @@ namespace ListView
 	{
 		public virtual DataType[] data
 		{
+			get { return m_Data; }
 			set
 			{
-				if (m_Data != null) // Clear out visuals for old data
-					foreach (var data in m_Data)
+				if (m_Data != null)
+				{
+					foreach (var data in m_Data) // Clear out visuals for old data
+					{
 						RecycleBeginning(data);
+					}
+				}
 				m_Data = value;
 				scrollOffset = 0;
 			}

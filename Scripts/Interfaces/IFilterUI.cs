@@ -1,10 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public interface IFilterUI
 {
 	/// <summary>
-	/// Set the filter list
+	/// Set accessor for the filter list
 	/// </summary>
-	/// <param name="filters">The filter list</param>
-	void SetFilters(List<string> filters);
+	List<string> filterList { set; }
+
+	/// <summary>
+	/// Supplied by ConnectInterfaces to allow getting the current available filter list
+	/// </summary>
+	Func<List<string>> getFilterList { set; }
 }
