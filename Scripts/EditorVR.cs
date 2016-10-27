@@ -18,6 +18,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
+using UnityObject = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;
@@ -1235,6 +1236,14 @@ public class EditorVR : MonoBehaviour
 			snapping.onSnapStarted = m_SnappingModule.OnSnapStarted;
 			snapping.onSnapUpdate = m_SnappingModule.OnSnapUpdate;
 		}
+		
+		var spatialHash = obj as ISpatialHash;
+		if (spatialHash != null)
+		{
+			spatialHash.addObjectToSpatialHash = AddObjectToSpatialHash;
+			spatialHash.removeObjectFromSpatialHash = RemoveObjectFromSpatialHash;
+		}
+
 
 		var mainMenu = obj as IMainMenu;
 		if (mainMenu != null)
@@ -2068,8 +2077,31 @@ public class EditorVR : MonoBehaviour
 
 	void AddPlayerModel()
 	{
-		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
-		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
+		U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
+	}
+
+	void AddObjectToSpatialHash(UnityObject obj)
+	{
+		if(m_SpatialHashModule)
+			m_SpatialHashModule.AddObject(obj);
+	}
+
+	void RemoveObjectFromSpatialHash(UnityObject obj)
+	{
+		if (m_SpatialHashModule)
+			m_SpatialHashModule.RemoveObject(obj);
+	}
+
+	public static void OnObjectInstantiate(UnityObject obj)
+	{
+		if(s_Instance)
+			s_Instance.AddObjectToSpatialHash(obj);
+	}
+
+	public static void OnObjectDestroy(UnityObject obj)
+	{
+		if(s_Instance)
+			s_Instance.RemoveObjectFromSpatialHash(obj);
 	}
 
 	bool PreProcessRaycastSources()

@@ -7,8 +7,9 @@ using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
+using UnityObject = UnityEngine.Object;
 
-public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
+public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, ISpatialHash
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 	const float kPaneMargin = 0.01f;
@@ -44,6 +45,9 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 	public PreviewDelegate preview { private get; set; }
 
+	public Action<UnityObject> addObjectToSpatialHash { get; set; }
+	public Action<UnityObject> removeObjectFromSpatialHash { get; set; }
+
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
@@ -74,6 +78,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		assetListView.placeObject = placeObject;
 		assetListView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		assetListView.preview = preview;
+		assetListView.addObjectToSpatialHash = addObjectToSpatialHash;
+		assetListView.removeObjectFromSpatialHash = removeObjectFromSpatialHash;
 
 #if UNITY_EDITOR
 		EditorApplication.projectWindowChanged += SetupFolderList;

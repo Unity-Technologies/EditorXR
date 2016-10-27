@@ -62,11 +62,13 @@ public class MiniWorldRenderer : MonoBehaviour
 			Shader.SetGlobalVector("_GlobalClipCenter", miniWorld.referenceBounds.center);
 			Shader.SetGlobalVector("_GlobalClipExtents", miniWorld.referenceBounds.extents);
 
-			for (var i = 0; i < m_IgnoreList.Count; i++)
-			{
+			for (var i = 0; i < m_IgnoreList.Count; i++) {
 				var hiddenRenderer = m_IgnoreList[i];
-				m_RendererPreviousEnable[i] = hiddenRenderer.enabled;
-				hiddenRenderer.enabled = false;
+				if (hiddenRenderer) 
+				{
+					m_RendererPreviousEnable[i] = hiddenRenderer.enabled;
+					hiddenRenderer.enabled = false;
+				}
 			}
 
 			if(preProcessRender())
@@ -76,7 +78,9 @@ public class MiniWorldRenderer : MonoBehaviour
 
 			for (var i = 0; i < m_IgnoreList.Count; i++)
 			{
-				m_IgnoreList[i].enabled = m_RendererPreviousEnable[i];
+				var hiddenRenderer = m_IgnoreList[i];
+				if (hiddenRenderer)
+					hiddenRenderer.enabled = m_RendererPreviousEnable[i];
 			}
 		}
 	}
