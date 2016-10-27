@@ -17,11 +17,19 @@ namespace UnityEngine.VR.Actions
 
 			if (buffer != null)
 			{
-				var pasted = Instantiate(buffer);
+				var gameObject = buffer as GameObject;
+				Object pasted;
+				if (gameObject)
+				{
+					pasted = U.Object.Instantiate(gameObject);
+					((GameObject)pasted).SetActive(true);
+				}
+				else
+				{
+					pasted = Instantiate(buffer);
+				}
+
 				pasted.hideFlags = HideFlags.None;
-				var go = pasted as GameObject;
-				if (go)
-					go.SetActive(true);
 				return true;
 			}
 

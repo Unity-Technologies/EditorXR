@@ -2082,22 +2082,26 @@ public class EditorVR : MonoBehaviour
 
 	void AddObjectToSpatialHash(UnityObject obj)
 	{
-		m_SpatialHashModule.AddObject(obj);
+		if(m_SpatialHashModule)
+			m_SpatialHashModule.AddObject(obj);
 	}
 
 	void RemoveObjectFromSpatialHash(UnityObject obj)
 	{
-		m_SpatialHashModule.RemoveObject(obj);
+		if (m_SpatialHashModule)
+			m_SpatialHashModule.RemoveObject(obj);
 	}
 
 	public static void OnObjectInstantiate(UnityObject obj)
 	{
-		s_Instance.AddObjectToSpatialHash(obj);
+		if(s_Instance)
+			s_Instance.AddObjectToSpatialHash(obj);
 	}
 
 	public static void OnObjectDestroy(UnityObject obj)
 	{
-		s_Instance.RemoveObjectFromSpatialHash(obj);
+		if(s_Instance)
+			s_Instance.RemoveObjectFromSpatialHash(obj);
 	}
 
 	bool PreProcessRaycastSources()
