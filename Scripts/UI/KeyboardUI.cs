@@ -12,6 +12,11 @@ public class KeyboardUI : MonoBehaviour
 	const float kHandleChangeColorTime = 0.1f;
 	const float kHorizontalThreshold = 0.7f;
 
+	public KeyboardButton closeButton { get { return m_CloseButton; } }
+
+	[SerializeField]
+	KeyboardButton m_CloseButton;
+
 	[SerializeField]
 	List<KeyboardButton> m_Buttons = new List<KeyboardButton>();
 
@@ -66,6 +71,22 @@ public class KeyboardUI : MonoBehaviour
 		m_HandleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
 		m_HandleMaterial = m_HandleButton.targetMeshMaterial;
 		m_BaseColor = m_HandleMaterial.color;
+
+		orientationChanged(IsHorizontal());
+
+		if (IsHorizontal())
+			ForceMoveButtonsToHorizontalLayout();
+		else
+			ForceMoveButtonsToVerticalLayout();
+	}
+
+	public void ActivateShiftModeOnKey(KeyboardButton key)
+	{
+		foreach (var button in m_Buttons)
+		{
+			if (button == key)
+				button.SetShiftModeActive(true);
+		}
 	}
 
 	/// <summary>
@@ -86,12 +107,23 @@ public class KeyboardUI : MonoBehaviour
 			button.SetShiftModeActive(false);
 	}
 
+	public void DeactivateShiftModeOnKey(KeyboardButton key)
+	{
+		foreach (var button in m_Buttons)
+		{
+			if (button == key)
+				button.SetShiftModeActive(false);
+		}
+	}
+
 	private bool IsHorizontal()
 	{
 		var horizontal = Vector3.Dot(transform.up, Vector3.up) < kHorizontalThreshold;
 		if (m_Horizontal != horizontal)
 		{
 			m_Horizontal = horizontal;
+
+			orientationChanged(IsHorizontal());
 
 			if (m_MoveKeysCoroutine != null)
 				StopCoroutine(m_MoveKeysCoroutine);

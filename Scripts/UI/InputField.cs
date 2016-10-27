@@ -116,7 +116,7 @@ namespace UnityEngine.VR.UI
 				onValueChanged.Invoke(text);
 		}
 
-		protected void UpdateLabel()
+		protected virtual void UpdateLabel()
 		{
 			if (m_TextComponent != null && m_TextComponent.font != null)
 				m_TextComponent.text = m_Text;

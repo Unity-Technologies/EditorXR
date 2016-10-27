@@ -38,6 +38,8 @@ public class KeyboardButton : BaseHandle
 	[SerializeField]
 	private char m_ShiftCharacter;
 
+	public bool shiftMode { get { return m_ShiftMode; } }
+
 	private bool m_ShiftMode;
 
 	[SerializeField]
@@ -232,7 +234,7 @@ public class KeyboardButton : BaseHandle
 		if (m_ChangeEmissionCoroutine != null)
 			StopCoroutine(m_ChangeEmissionCoroutine);
 
-		if ((KeyCode) m_Character == KeyCode.Escape) // Avoid message about starting coroutine on inactive object
+		if ((!shiftMode && (KeyCode)m_Character == KeyCode.Escape) || (shiftMode && (KeyCode)m_ShiftCharacter == KeyCode.Escape)) // Avoid message about starting coroutine on inactive object
 		{
 			var targetMeshTransform = m_TargetMesh.transform;
 			targetMeshTransform.localScale = m_TargetMeshInitialScale;
