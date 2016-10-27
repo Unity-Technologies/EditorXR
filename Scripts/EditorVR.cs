@@ -395,6 +395,8 @@ public class EditorVR : MonoBehaviour
 
 	private void Update()
 	{
+		m_SmoothCamera.enabled = VRView.showDeviceView;
+
 		foreach (var proxy in m_AllProxies)
 		{
 			proxy.hidden = !proxy.active;
