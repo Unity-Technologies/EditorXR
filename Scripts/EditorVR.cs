@@ -337,13 +337,9 @@ public class EditorVR : MonoBehaviour
 
 			if (mainMenu == null)
 			{
-				// HACK to workaround missing MonoScript serialized fields
-				EditorApplication.delayCall += () =>
-				{
-					mainMenu = SpawnMainMenu(typeof(MainMenu), device, true);
-					deviceData.mainMenu = mainMenu;
-					UpdatePlayerHandleMaps();
-				};
+				mainMenu = SpawnMainMenu(typeof(MainMenu), device, true);
+				deviceData.mainMenu = mainMenu;
+				UpdatePlayerHandleMaps();
 
 				while (mainMenu == null)
 					yield return null;
@@ -468,45 +464,40 @@ public class EditorVR : MonoBehaviour
 
 	private void SpawnDefaultTools()
 	{
-		// HACK: U.AddComponent doesn't work properly from an IEnumerator (missing default references when spawned), so currently
-		// it's necessary to spawn the tools in a separate non-IEnumerator context.
-		EditorApplication.delayCall += () =>
+		// Spawn default tools
+		HashSet<InputDevice> devices;
+		ITool tool;
+
+		var locomotionTool = typeof(BlinkLocomotionTool);
+		if (VRSettings.loadedDeviceName == "Oculus")
+			locomotionTool = typeof(JoystickLocomotionTool);
+
+		foreach (var deviceData in m_DeviceData)
 		{
-			// Spawn default tools
-			HashSet<InputDevice> devices;
-			ITool tool;
+			// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
+			if (deviceData.Key.tagIndex == -1)
+				continue;
 
-			var locomotionTool = typeof(BlinkLocomotionTool);
-			if (VRSettings.loadedDeviceName == "Oculus")
-				locomotionTool = typeof(JoystickLocomotionTool);
-
-			foreach (var deviceData in m_DeviceData)
-			{
-				// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
-				if (deviceData.Key.tagIndex == -1)
-					continue;
-
-				tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
-				AddToolToDeviceData(tool, devices);
-
-				if (locomotionTool == typeof(BlinkLocomotionTool))
-				{
-					tool = SpawnTool(locomotionTool, out devices, deviceData.Key);
-					AddToolToDeviceData(tool, devices);
-				}
-			}
-
-			if (locomotionTool == typeof(JoystickLocomotionTool))
-			{
-				tool = SpawnTool(locomotionTool, out devices);
-				AddToolToDeviceData(tool, devices);
-			}
-
-			tool = SpawnTool(typeof(TransformTool), out devices);
+			tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 			AddToolToDeviceData(tool, devices);
 
-			m_TransformTool = tool as IGrabObjects;
-		};
+			if (locomotionTool == typeof(BlinkLocomotionTool))
+			{
+				tool = SpawnTool(locomotionTool, out devices, deviceData.Key);
+				AddToolToDeviceData(tool, devices);
+			}
+		}
+
+		if (locomotionTool == typeof(JoystickLocomotionTool))
+		{
+			tool = SpawnTool(locomotionTool, out devices);
+			AddToolToDeviceData(tool, devices);
+		}
+
+		tool = SpawnTool(typeof(TransformTool), out devices);
+		AddToolToDeviceData(tool, devices);
+
+		m_TransformTool = tool as IGrabObjects;
 	}
 
 	private void CreateAllProxies()
@@ -1009,7 +1000,6 @@ public class EditorVR : MonoBehaviour
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
 			mainMenu.createWorkspace = CreateWorkspace;
 			mainMenu.node = GetDeviceNode(device);
-			mainMenu.setup();
 		}
 	}
 
@@ -1076,41 +1066,37 @@ public class EditorVR : MonoBehaviour
 		if (deviceToAssignTool == null)
 			return false;
 
-		// HACK to workaround missing serialized fields coming from the MonoScript
-		EditorApplication.delayCall += () =>
+		var spawnTool = true;
+		DeviceData deviceData;
+		if (m_DeviceData.TryGetValue(deviceToAssignTool, out deviceData))
 		{
-			var spawnTool = true;
-			DeviceData deviceData;
-			if (m_DeviceData.TryGetValue(deviceToAssignTool, out deviceData))
+			// If this tool was on the current device already, then simply toggle it off
+			if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
 			{
-				// If this tool was on the current device already, then simply toggle it off
-				if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
-				{
+				DespawnTool(deviceData, deviceData.currentTool);
+
+				// Don't spawn a new tool, since we are toggling the old tool
+				spawnTool = false;
+			}
+		}
+
+		if (spawnTool)
+		{
+			// Spawn tool and collect all devices that this tool will need
+			HashSet<InputDevice> usedDevices;
+			var newTool = SpawnTool(toolType, out usedDevices, deviceToAssignTool);
+
+			foreach (var dev in usedDevices)
+			{
+				deviceData = m_DeviceData[dev];
+				if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
 					DespawnTool(deviceData, deviceData.currentTool);
 
-					// Don't spawn a new tool, since we are toggling the old tool
-					spawnTool = false;
-				}
+				AddToolToStack(dev, newTool);
 			}
+		}
 
-			if (spawnTool)
-			{
-				// Spawn tool and collect all devices that this tool will need
-				HashSet<InputDevice> usedDevices;
-				var newTool = SpawnTool(toolType, out usedDevices, deviceToAssignTool);
-
-				foreach (var dev in usedDevices)
-				{
-					deviceData = m_DeviceData[dev];
-					if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
-						DespawnTool(deviceData, deviceData.currentTool);
-
-					AddToolToStack(dev, newTool);
-				}
-			}
-
-			UpdatePlayerHandleMaps();
-		};
+		UpdatePlayerHandleMaps();
 
 		return true;
 	}
@@ -1138,6 +1124,9 @@ public class EditorVR : MonoBehaviour
 		var taggedDevicesFound = 0;
 		var nonMatchingTagIndices = 0;
 		var matchingTagIndices = 0;
+
+		if (actionMap == null)
+			return false;
 
 		foreach (var scheme in actionMap.controlSchemes)
 		{
@@ -1214,85 +1203,82 @@ public class EditorVR : MonoBehaviour
 		Vector3 position;
 		Quaternion rotation;
 		var viewerPivot = U.Camera.GetViewerPivot();
-		// HACK to workaround missing MonoScript serialized fields
-		EditorApplication.delayCall += () =>
+
+		// Spawn to one of the sides of the player instead of directly in front of the player
+		do
 		{
-			// Spawn to one of the sides of the player instead of directly in front of the player
-			do
+			//The next position will be rotated by currentRotation, as if the hands of a clock
+			Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
+			position = headPosition + headRotation * rotateAroundY * defaultOffset + Vector3.up * currentHeight;
+			rotation = headRotation * rotateAroundY * defaultTilt;
+
+			//Every other iteration, rotate a little further
+			if (direction < 0)
+				currentRotation += arcLength;
+
+			//Switch directions every iteration (left, right, left, right)
+			direction *= -1;
+
+			//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
+			if (currentRotation > 180)
 			{
-				//The next position will be rotated by currentRotation, as if the hands of a clock
-				Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-				position = headPosition + headRotation * rotateAroundY * defaultOffset + Vector3.up * currentHeight;
-				rotation = headRotation * rotateAroundY * defaultTilt;
-
-				//Every other iteration, rotate a little further
-				if (direction < 0)
-					currentRotation += arcLength;
-
-				//Switch directions every iteration (left, right, left, right)
-				direction *= -1;
-
-				//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
-				if (currentRotation > 180)
-				{
-					direction = -1;
-					currentRotation = 0;
-					currentHeight += heightOffset;
-				}
+				direction = -1;
+				currentRotation = 0;
+				currentHeight += heightOffset;
 			}
-			//While the current position is occupied, try a new one
-			while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
+		}
+		//While the current position is occupied, try a new one
+		while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
 
-			Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
-			m_AllWorkspaces.Add(workspace);
-			workspace.destroyed += OnWorkspaceDestroyed;
-			ConnectInterfaces(workspace);
-			workspace.transform.position = position;
-			workspace.transform.rotation = rotation;
+		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
+		m_AllWorkspaces.Add(workspace);
+		workspace.destroyed += OnWorkspaceDestroyed;
+		ConnectInterfaces(workspace);
+		workspace.transform.position = position;
+		workspace.transform.rotation = rotation;
 
-			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
-			workspace.Setup();
+		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
+		workspace.Setup();
 
-			var miniWorld = workspace as IMiniWorld;
-			if (miniWorld == null)
-				return;
+		var miniWorld = workspace as IMiniWorld;
+		if (miniWorld == null)
+			return;
 
-			m_MiniWorlds.Add(miniWorld);
+		m_MiniWorlds.Add(miniWorld);
 
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			var miniWorldRayOrigin = InstantiateMiniWorldRay();
+			miniWorldRayOrigin.parent = workspace.transform;
+
+			var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+			uiInput.active = false;
+
+			var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
+			directSelectInput.active = false;
+
+			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
+
+			var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
+			tester.active = false;
+
+			m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
 			{
-				var miniWorldRayOrigin = InstantiateMiniWorldRay();
-				miniWorldRayOrigin.parent = workspace.transform;
+				originalRayOrigin = rayOriginPair.Value,
+				originalDirectSelectInput = deviceData.directSelectInput,
+				miniWorld = miniWorld,
+				proxy = proxy,
+				node = rayOriginPair.Key,
+				uiInput = uiInput,
+				directSelectInput = directSelectInput,
+				tester = tester
+			};
 
-				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-				uiInput.active = false;
+			m_IntersectionModule.AddTester(tester);
+		});
 
-				var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
-				directSelectInput.active = false;
-
-				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
-
-				var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
-				tester.active = false;
-
-				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
-				{
-					originalRayOrigin = rayOriginPair.Value,
-					originalDirectSelectInput = deviceData.directSelectInput,
-					miniWorld = miniWorld,
-					proxy = proxy,
-					node = rayOriginPair.Key,
-					uiInput = uiInput,
-					directSelectInput = directSelectInput,
-					tester = tester
-				};
-
-				m_IntersectionModule.AddTester(tester);
-			});
-
-			UpdatePlayerHandleMaps();
-		};
+		UpdatePlayerHandleMaps();
 	}
 
 	/// <summary>
