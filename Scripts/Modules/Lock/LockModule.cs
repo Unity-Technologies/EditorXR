@@ -49,7 +49,7 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 
 	public bool IsLocked(GameObject go)
 	{
-		return go.isStatic || m_LockedGameObjects.Contains(go);
+		return go && (go.isStatic || m_LockedGameObjects.Contains(go));
 	}
 
 	public bool ToggleLocked()
