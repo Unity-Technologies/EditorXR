@@ -117,6 +117,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	protected override void OnBoundsChanged()
 	{
+		const float kSideScollBoundsShrinkAmount = 0.04f;
 		const float depthCompensation = 0.1375f;
 
 		Bounds bounds = contentBounds;
@@ -139,9 +140,11 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin + folderScrollHandleXScaleOffset, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var folderListView = m_ProjectUI.folderListView;
+		size.x -= kSideScollBoundsShrinkAmount; // set narrow x bounds for scrolling region on left side of folder list view
+		bounds.size = size;
 		folderListView.bounds = bounds;
 		folderListView.PreCompute(); // Compute item size
-		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0);
+		folderListView.transform.localPosition = new Vector3(xOffset + (kSideScollBoundsShrinkAmount / 3), folderListView.itemSize.y * 0.5f, 0);
 
 		var folderPanel = m_ProjectUI.folderPanel;
 		folderPanel.transform.localPosition = xOffset * Vector3.right;
