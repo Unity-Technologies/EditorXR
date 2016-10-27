@@ -94,6 +94,7 @@ public class EditorVR : MonoBehaviour
 	private HighlightModule m_HighlightModule;
 	private ObjectPlacementModule m_ObjectPlacementModule;
 	private SnappingModule m_SnappingModule;
+	private LockModule m_LockModule;
 	private DragAndDropModule m_DragAndDropModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
@@ -207,6 +208,10 @@ public class EditorVR : MonoBehaviour
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
 		ConnectInterfaces(m_ObjectPlacementModule);
 		m_SnappingModule = U.Object.AddComponent<SnappingModule>(gameObject);
+
+		m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
+		m_LockModule.openRadialMenu = DisplayAlternateMenu;
+		ConnectInterfaces(m_LockModule);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
@@ -551,6 +556,46 @@ public class EditorVR : MonoBehaviour
 				if (alternateMenu != null)
 				{
 					alternateMenu.visible = (node.Value == selectionToolNode) && Selection.gameObjects.Length > 0;
+
+					// Hide the main menu if the alternate menu is going to be visible
+					var mainMenu = deviceData.mainMenu;
+					if (mainMenu != null && alternateMenu.visible)
+					{
+						mainMenu.visible = false;
+						deviceData.restoreMainMenu = false;
+					}
+
+					// Move the activator button to an alternate position if the alternate menu will be shown
+					var mainMenuActivator = deviceData.mainMenuActivator;
+					if (mainMenuActivator != null)
+						mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
+
+					updateMaps = true;
+				}
+			}
+		}
+
+		if (updateMaps)
+			UpdatePlayerHandleMaps();
+	}
+
+	private void DisplayAlternateMenu(Node? forNode, GameObject forObject)
+	{
+		if (forNode == null)
+			return;
+
+		var updateMaps = false;
+		foreach (var kvp in m_DeviceData)
+		{
+			Node? node = GetDeviceNode(kvp.Key);
+			if (node.HasValue)
+			{
+				var deviceData = kvp.Value;
+
+				var alternateMenu = deviceData.alternateMenu;
+				if (alternateMenu != null)
+				{
+					alternateMenu.visible = (node.Value == forNode) && (forObject != null);
 
 					// Hide the main menu if the alternate menu is going to be visible
 					var mainMenu = deviceData.mainMenu;
@@ -1223,6 +1268,14 @@ public class EditorVR : MonoBehaviour
 		var placeObjects = obj as IPlaceObjects;
 		if (placeObjects != null)
 			placeObjects.placeObject = PlaceObject;
+
+		var locking = obj as ILocking;
+		if (locking != null)
+		{
+			locking.toggleLocked = m_LockModule.ToggleLocked;
+			locking.getLocked = m_LockModule.IsLocked;
+			locking.checkHover = m_LockModule.CheckHover;
+		}
 
 		var positionPreview = obj as IPreview;
 		if (positionPreview != null)
