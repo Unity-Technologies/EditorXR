@@ -9,7 +9,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Actions;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IToolActions, IDirectSelection, IGrabObjects, ISnapping
+public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionChanged, IToolActions, IDirectSelection, IGrabObjects, ISnapping
 {
 	class TransformAction : IAction
 	{
@@ -103,12 +103,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	Node m_ScaleFirstNode;
 	float m_ScaleFactor;
 	bool m_WasScaling;
-
-	TransformInput m_TransformInput;
-
-	public ActionMap actionMap { get { return m_TransformActionMap; } }
-
-	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput)value; } }
 
 	public List<IAction> toolActions
 	{
@@ -289,15 +283,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 		if (m_SelectionTransforms != null && m_SelectionTransforms.Length > 0)
 		{
-			if (m_TransformInput.pivotMode.wasJustPressed) // Switching center vs pivot
-				TogglePivotMode();
-
-			if (m_TransformInput.pivotRotation.wasJustPressed) // Switching global vs local
-				TogglePivotRotation();
-
-			if (m_TransformInput.manipulatorType.wasJustPressed)
-				SwitchManipulator();
-
 			if (!m_CurrentManipulator.dragging)
 			{
 				UpdateManipulatorSize();
