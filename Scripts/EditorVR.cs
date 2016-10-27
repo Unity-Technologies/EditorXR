@@ -1412,6 +1412,9 @@ public class EditorVR : MonoBehaviour
 		var nonMatchingTagIndices = 0;
 		var matchingTagIndices = 0;
 
+		if (actionMap == null)
+			return false;
+
 		foreach (var scheme in actionMap.controlSchemes)
 		{
 			foreach (var serializableDeviceType in scheme.deviceSlots)

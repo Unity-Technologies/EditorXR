@@ -117,6 +117,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	protected override void OnBoundsChanged()
 	{
+		const float kSideScollBoundsShrinkAmount = 0.03f;
 		const float depthCompensation = 0.1375f;
 
 		Bounds bounds = contentBounds;
@@ -139,16 +140,18 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin + folderScrollHandleXScaleOffset, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var folderListView = m_ProjectUI.folderListView;
+		size.x -= kSideScollBoundsShrinkAmount; // set narrow x bounds for scrolling region on left side of folder list view
+		bounds.size = size;
 		folderListView.bounds = bounds;
 		folderListView.PreCompute(); // Compute item size
-		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0);
+		folderListView.transform.localPosition = new Vector3(xOffset + (kSideScollBoundsShrinkAmount / 2.2f), folderListView.itemSize.y * 0.5f, 0);
 
 		var folderPanel = m_ProjectUI.folderPanel;
 		folderPanel.transform.localPosition = xOffset * Vector3.right;
 		folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + kPanelMargin);
 		folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
 
-		m_FolderPanelHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
+		m_FolderPanelHighlightContainer.localScale = new Vector3(size.x + kSideScollBoundsShrinkAmount, 1f, size.z);
 
 		size = contentBounds.size;
 		size.x -= kPaneMargin * 2;
@@ -260,7 +263,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		if (isMiniWorldRay(eventData.rayOrigin))
 			return;
 
-		if (m_AssetGridDragging == false)
+		if (!m_AssetGridDragging)
 			m_ProjectUI.assetGridHighlight.visible = false;
 	}
 
