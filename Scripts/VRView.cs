@@ -90,7 +90,7 @@ namespace UnityEditor.VR
 			}
 		}
 
-		public static Camera customPreviewCamera { set; private get; }
+		public static Camera customPreviewCamera { set; private get; } // To allow for alternate previews (e.g. smoothing)
 
 		public static event Action onEnable = delegate {};
 		public static event Action onDisable = delegate {};
