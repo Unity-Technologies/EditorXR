@@ -72,14 +72,11 @@ namespace UnityEngine.VR.Tools
 					if (newPrefabRoot != s_CurrentPrefabOpened)
 						newHoverGameObject = newPrefabRoot;
 				}
-
-				if (newHoverGameObject.isStatic)
-					return;
 			}
 
 			checkHover(newHoverGameObject, node);
 			if (getLocked(newHoverGameObject))
-				return;
+				newHoverGameObject = null;
 
 			// Handle changing highlight
 			if (newHoverGameObject != m_HoverGameObject)
