@@ -4,9 +4,10 @@ using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Actions;
 using UnityEngine.VR.Tools;
+using Object = UnityEngine.Object;
 
 [MainMenuItem("Cube", "Create", "Create cubes in the scene")]
-public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IToolActions
+public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IToolActions, ISpatialHash
 {
 	class CubeToolAction : IAction
 	{
@@ -26,6 +27,9 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IToo
 	public Transform rayOrigin { get; set; }
 	public Standard standardInput { get; set; }
 
+	public Action<Object> addObjectToSpatialHash { get; set; }
+	public Action<Object> removeObjectFromSpatialHash { get; set; }
+
 	void Awake()
 	{
 		m_CubeToolAction.icon = m_Icon;
@@ -39,6 +43,8 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IToo
 			Transform cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
 			if (rayOrigin)
 				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
+
+			addObjectToSpatialHash(cube);
 		}
 	}
 }

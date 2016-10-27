@@ -205,6 +205,7 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+		ConnectInterfaces(m_ObjectPlacementModule);
 		m_SnappingModule = U.Object.AddComponent<SnappingModule>(gameObject);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
@@ -841,16 +842,19 @@ public class EditorVR : MonoBehaviour
 	GameObject InstantiateUI(GameObject prefab)
 	{
 		var go = U.Object.Instantiate(prefab, transform);
-		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
+		foreach (var canvas in go.GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = m_EventCamera;
 
-		foreach (InputField inputField in go.GetComponentsInChildren<InputField>())
+		foreach (var inputField in go.GetComponentsInChildren<InputField>())
 		{
 			if (inputField is NumericInputField)
 				inputField.spawnKeyboard = SpawnNumericKeyboard;
 			else if (inputField is StandardInputField)
 				inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
 		}
+
+		foreach (var component in go.GetComponentsInChildren<Component>(true))
+			ConnectInterfaces(component);
 
 		return go;
 	}

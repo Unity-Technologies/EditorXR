@@ -272,7 +272,6 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 
 		if (gridItem.m_PreviewObject)
 		{
-			addObjectToSpatialHash(gridItem.m_PreviewObject);
 			placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
 		}
 		else
@@ -280,14 +279,10 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 			switch (data.type)
 			{
 				case "Prefab":
-					var prefab = U.Object.Instantiate((GameObject)data.asset, null, false, false);
-					prefab.transform.position = gridItem.transform.position;
-					prefab.transform.rotation = gridItem.transform.rotation;
+					addObjectToSpatialHash(Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
 					break;
 				case "Model":
-					var model = U.Object.Instantiate((GameObject)data.asset, null, false, false);
-					model.transform.position = gridItem.transform.position;
-					model.transform.rotation = gridItem.transform.rotation;
+					addObjectToSpatialHash(Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
 					break;
 			}
 		}
