@@ -31,8 +31,6 @@ public class KeyboardMallet : MonoBehaviour
 
 	private State m_State = State.Visible;
 
-	private Vector3 m_BulbStartScale;
-
 	private KeyboardButton m_CurrentButton;
 
 	/// <summary>
@@ -44,7 +42,6 @@ public class KeyboardMallet : MonoBehaviour
 
 		m_Bulb.transform.localPosition = new Vector3(0f, 0f, m_StemLength * 2f);
 		m_Bulb.transform.localScale = Vector3.one * m_BulbRadius * 2f;
-		m_BulbStartScale = m_Bulb.transform.localScale;
 	}
 
 	/// <summary>
@@ -52,13 +49,10 @@ public class KeyboardMallet : MonoBehaviour
 	/// </summary>
 	public void Hide()
 	{
-		if (isActiveAndEnabled)
-		{
-			if (m_State == State.Transitioning)
-				StopAllCoroutines();
+		if (m_State == State.Transitioning)
+			StopAllCoroutines();
 
-			StartCoroutine(HideMallet());
-		}
+		StartCoroutine(HideMallet());
 	}
 
 	/// <summary>
@@ -66,13 +60,11 @@ public class KeyboardMallet : MonoBehaviour
 	/// </summary>
 	public void Show()
 	{
-		if (isActiveAndEnabled)
-		{
-			if (m_State == State.Transitioning)
-				StopAllCoroutines();
+		if (m_State == State.Transitioning)
+			StopAllCoroutines();
 
-			StartCoroutine(ShowMallet());
-		}
+		gameObject.SetActive(true);
+		StartCoroutine(ShowMallet());
 	}
 
 	/// <summary>
@@ -111,30 +103,26 @@ public class KeyboardMallet : MonoBehaviour
 		}
 	}
 
-	private void Start()
-	{
-		m_BulbStartScale = m_Bulb.localScale;
-	}
-
 	private IEnumerator HideMallet()
 	{
 		m_State = State.Transitioning;
 
 		var stemScale = m_StemOrigin.localScale;
 		var currentLength = m_StemOrigin.localScale.y; // cache current length for smooth animation to target value without snapping
-			
+
 		const float kSmoothTime = 0.1875f;
-		var startTime = Time.realtimeSinceStartup;
 		float smoothVelocity = 0f;
-		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
+		var currentDuration = 0f;
+		while (currentDuration < kSmoothTime)
 		{
 			currentLength = U.Math.SmoothDamp(currentLength, 0f, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
 			m_StemOrigin.localScale = new Vector3(stemScale.x, currentLength, stemScale.z);
 			m_Bulb.transform.localPosition = new Vector3(0f, 0f, currentLength * 2f);
 			yield return null;
 		}
 
-		m_Bulb.transform.localScale = Vector3.zero;
+		gameObject.SetActive(false);
 
 		m_State = State.Hidden;
 	}
@@ -147,17 +135,16 @@ public class KeyboardMallet : MonoBehaviour
 		var currentLength = m_StemOrigin.localScale.y;
 
 		const float kSmoothTime = 0.3125f;
-		var startTime = Time.realtimeSinceStartup;
 		float smoothVelocity = 0f;
-		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
+		var currentDuration = 0f;
+		while (currentDuration < kSmoothTime)
 		{
 			currentLength = U.Math.SmoothDamp(currentLength, m_StemLength, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
 			m_StemOrigin.localScale = new Vector3(stemScale.x, currentLength, stemScale.z);
 			m_Bulb.transform.localPosition = new Vector3(0f, 0f, currentLength * 2f);
 			yield return null;
 		}
-
-		m_Bulb.transform.localScale = m_BulbStartScale;
 
 		// only set the value if another transition hasn't begun
 		m_State = State.Visible;

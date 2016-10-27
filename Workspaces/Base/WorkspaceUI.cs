@@ -12,6 +12,7 @@ namespace UnityEngine.VR.Workspaces
 	{
 		public event Action closeClicked = delegate { };
 		public event Action lockClicked = delegate { };
+		public event Action resetSizeClicked = delegate { };
 
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kThinFrameBlendShapeIndex = 3;
@@ -29,7 +30,6 @@ namespace UnityEngine.VR.Workspaces
 		float m_BackHandleYLocalPosition;
 		float m_LeftHandleYLocalPosition;
 		float m_RightHandleYLocalPosition;
-		Material m_FrameGradientMaterial;
 		Vector3 m_FrontResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BackResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BaseFrontPanelRotation = Vector3.zero;
@@ -44,6 +44,8 @@ namespace UnityEngine.VR.Workspaces
 		Coroutine m_RotateFrontFaceForwardCoroutine;
 		Coroutine m_RotateFrontFaceBackwardCoroutine;
 		Coroutine m_FrameThicknessCoroutine;
+		Coroutine m_TopFaceVisibleCoroutine;
+		Material m_TopFaceMaterial;
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -127,7 +129,14 @@ namespace UnityEngine.VR.Workspaces
 		Transform m_BackResizeIconsContainer;
 
 		[SerializeField]
-		WorkspaceHighlight m_TopHighlight;
+		WorkspaceButton m_LockButton;
+
+		[SerializeField]
+		GameObject m_ResetButton;
+
+		public Transform topFaceContainer { get { return m_TopFaceContainer; } }
+		[SerializeField]
+		Transform m_TopFaceContainer;
 
 		[SerializeField]
 		Transform m_TopHighlightContainer;
@@ -135,7 +144,12 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		WorkspaceHighlight m_FrontHighlight;
 
-		public bool dynamicFaceAdjustment { get; set; }
+		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
+		[SerializeField]
+		WorkspaceHighlight m_TopHighlight;
+
+		public bool dynamicFaceAdjustment { get { return m_dynamicFaceAdjustment; } set { m_dynamicFaceAdjustment = value; } }
+		bool m_dynamicFaceAdjustment = true;
 
 		public bool highlightsVisible
 		{
@@ -147,8 +161,8 @@ namespace UnityEngine.VR.Workspaces
 				m_TopHighlight.visible = value;
 				m_FrontHighlight.visible = value;
 
-				StopCoroutine(ref m_FrameThicknessCoroutine);
-				m_FrameThicknessCoroutine = !value ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
+				this.StopCoroutine(ref m_FrameThicknessCoroutine);
+				m_FrameThicknessCoroutine = value ? StartCoroutine(IncreaseFrameThickness()) : StartCoroutine(ResetFrameThickness());
 			}
 		}
 
@@ -161,8 +175,17 @@ namespace UnityEngine.VR.Workspaces
 
 				m_FrontHighlight.visible = value;
 
-				StopCoroutine(ref m_FrameThicknessCoroutine);
+				this.StopCoroutine(ref m_FrameThicknessCoroutine);
 				m_FrameThicknessCoroutine = !value ? StartCoroutine(ResetFrameThickness()) : StartCoroutine(IncreaseFrameThickness());
+			}
+		}
+
+		public bool amplifyTopHighlight
+		{
+			set
+			{
+				this.StopCoroutine(ref m_TopFaceVisibleCoroutine);
+				m_TopFaceVisibleCoroutine = value ? StartCoroutine(HideTopFace()) : StartCoroutine(ShowTopFace());
 			}
 		}
 
@@ -180,7 +203,57 @@ namespace UnityEngine.VR.Workspaces
 		}
 		float? m_TopPanelDividerOffset;
 
-		public bool preventFrontBackResize { set; private get; }
+		public bool preventFrontBackResize
+		{
+			set
+			{
+				m_PreventFrontBackResize = value;
+				if (value)
+				{
+					m_FrontHandleTransform.localScale = Vector3.zero;
+					m_BackHandleTransform.localScale = Vector3.zero;
+					m_FrontHandle.enabled = false;
+					m_BackHandle.enabled = false;
+
+					if (!m_PreventLeftRightResize) // Disable reset button if no resize handles are active
+						m_ResetButton.SetActive(false);
+				}
+				else
+				{
+					m_FrontHandle.enabled = true;
+					m_BackHandle.enabled = true;
+					m_ResetButton.SetActive(true);
+				}
+			}
+			private get { return m_PreventFrontBackResize; }
+		}
+		bool m_PreventFrontBackResize;
+
+		public bool preventLeftRightResize
+		{
+			set
+			{
+				m_PreventLeftRightResize = value;
+				if (value)
+				{
+					m_LeftHandleTransform.localScale = Vector3.zero;
+					m_RightHandleTransform.localScale = Vector3.zero;
+					m_LeftHandle.enabled = false;
+					m_RightHandle.enabled = false;
+
+					if (!m_PreventFrontBackResize) // Disable reset button if no resize handles are active
+						m_ResetButton.SetActive(false);
+				}
+				else
+				{
+					m_LeftHandle.enabled = true;
+					m_RightHandle.enabled = true;
+					m_ResetButton.SetActive(true);
+				}
+			}
+			private get { return m_PreventLeftRightResize; }
+		}
+		bool m_PreventLeftRightResize;
 
 		public Bounds bounds
 		{
@@ -197,15 +270,15 @@ namespace UnityEngine.VR.Workspaces
 
 				// Resize handles
 				m_LeftHandleTransform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f - kSideHandleOffset, m_LeftHandleYLocalPosition, 0);
-				m_LeftHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
+				m_LeftHandleTransform.localScale = !preventLeftRightResize ? new Vector3(boundsSize.z, m_HandleScale, m_HandleScale) : Vector3.zero;
 
-				m_FrontHandleTransform.localScale = preventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
+				m_FrontHandleTransform.localScale = !preventFrontBackResize ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				m_RightHandleTransform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
-				m_RightHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
+				m_RightHandleTransform.localScale = !preventLeftRightResize ? new Vector3(boundsSize.z, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				m_BackHandleTransform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, extents.z - m_HandleScale - kBackHandleOffset);
-				m_BackHandleTransform.localScale = preventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
+				m_BackHandleTransform.localScale = !preventFrontBackResize ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
 
 				// Resize content container
 				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, boundsSize.x);
@@ -215,7 +288,7 @@ namespace UnityEngine.VR.Workspaces
 				m_BackResizeIconsContainer.localPosition = new Vector3 (m_BackResizeIconsContainerOriginalLocalPosition.x, m_BackResizeIconsContainerOriginalLocalPosition.y, boundsSize.z + kBackResizeButtonPositionOffset);
 
 				// Adjust front panel position if dynamic adjustment is enabled
-				if (dynamicFaceAdjustment == false)
+				if (!m_dynamicFaceAdjustment)
 					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, kPanelOffset);
 
 				// Resize front panel
@@ -232,16 +305,20 @@ namespace UnityEngine.VR.Workspaces
 				var grabColliderSize = m_GrabCollider.size;
 				m_GrabCollider.size = new Vector3(boundsSize.x, grabColliderSize.y, grabColliderSize.z);
 
+				// Scale the Top Face and the Top Face Highlight
 				const float kHighlightDepthCompensation = 0.14f;
 				const float kHighlightWidthCompensation = 0.01f;
+				const float kTopFaceDepthCompensation = 0.144f;
+				const float kTopFaceWidthCompensation = 0.014f;
 				m_TopHighlightContainer.localScale = new Vector3(boundsSize.x - kHighlightWidthCompensation, 1f, boundsSize.z - kHighlightDepthCompensation);
+				m_TopFaceContainer.localScale = new Vector3(boundsSize.x - kTopFaceWidthCompensation, 1f, boundsSize.z - kTopFaceDepthCompensation);
 			}
 		}
 		Bounds m_Bounds;
 
 		void ShowResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
-			StopCoroutine(ref m_FrameThicknessCoroutine);
+			this.StopCoroutine(ref m_FrameThicknessCoroutine);
 			m_FrameThicknessCoroutine = StartCoroutine(IncreaseFrameThickness());
 
 			const float kOpacityTarget = 0.75f;
@@ -270,7 +347,7 @@ namespace UnityEngine.VR.Workspaces
 
 		void HideResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
-			StopCoroutine(ref m_FrameThicknessCoroutine);
+			this.StopCoroutine(ref m_FrameThicknessCoroutine);
 			m_FrameThicknessCoroutine = StartCoroutine(ResetFrameThickness());
 
 			const float kOpacityTarget = 0f;
@@ -341,11 +418,14 @@ namespace UnityEngine.VR.Workspaces
 
 			if (m_TopPanelDividerOffset == null)
 				m_TopPanelDividerTransform.gameObject.SetActive(false);
+
+			m_TopFaceMaterial = U.Material.GetMaterialClone(m_TopFaceContainer.GetComponentInChildren<MeshRenderer>());
+			m_TopFaceMaterial.SetFloat("_Alpha", 1f);
 		}
 
 		void Update()
 		{
-			if (dynamicFaceAdjustment == false)
+			if (!m_dynamicFaceAdjustment)
 				return;
 
 			var currentXRotation = transform.rotation.eulerAngles.x;
@@ -392,6 +472,11 @@ namespace UnityEngine.VR.Workspaces
 			m_FrontHandleTransform.localPosition = new Vector3(0, lerpedFrontHandleYLocalPosition, -m_Bounds.size.z - m_HandleScale + lerpedFrontHandleZAngledOffset);
 		}
 
+		void OnDestroy()
+		{
+			U.Object.Destroy(m_TopFaceMaterial);
+		}
+
 		public void CloseClick()
 		{
 			closeClicked();
@@ -400,6 +485,14 @@ namespace UnityEngine.VR.Workspaces
 		public void LockClick()
 		{
 			lockClicked();
+		}
+
+		public void ResetSizeClick()
+		{
+			resetSizeClicked();
+
+			// If the lock icon sprite is being displayed, swap back to the unlocked icon; the workspace is unlocked when the the size is reset
+			m_LockButton.alternateIconVisible = false;
 		}
 
 		IEnumerator IncreaseFrameThickness()
@@ -436,6 +529,44 @@ namespace UnityEngine.VR.Workspaces
 			}
 
 			m_FrameThicknessCoroutine = null;
+		}
+
+		IEnumerator ShowTopFace()
+		{
+			const string kMaterialHighlightAlphaProperty = "_Alpha";
+			const float kTargetAlpha = 1f;
+			const float kTargetDuration = 0.35f;
+			var currentDuration = 0f;
+			var currentAlpha = m_TopFaceMaterial.GetFloat(kMaterialHighlightAlphaProperty);
+			var currentVelocity = 0f;
+			while (currentDuration < kTargetDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_TopFaceMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
+				yield return null;
+			}
+
+			m_TopFaceVisibleCoroutine = null;
+		}
+
+		IEnumerator HideTopFace()
+		{
+			const string kMaterialHighlightAlphaProperty = "_Alpha";
+			const float kTargetAlpha = 0f;
+			const float kTargetDuration = 0.2f;
+			var currentDuration = 0f;
+			var currentAlpha = m_TopFaceMaterial.GetFloat(kMaterialHighlightAlphaProperty);
+			var currentVelocity = 0f;
+			while (currentDuration < kTargetDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_TopFaceMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
+				yield return null;
+			}
+
+			m_TopFaceVisibleCoroutine = null;
 		}
 	}
 }

@@ -175,7 +175,6 @@ namespace UnityEngine.VR.Utilities
 
 			public static IEnumerable<Type> GetImplementationsOfInterface(Type type)
 			{
-				
 				if (type.IsInterface)
 					return GetAssignableTypes(type);
 				else

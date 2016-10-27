@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
@@ -6,7 +7,7 @@ using UnityEngine.VR.Workspaces;
 
 public class ChessboardWorkspace : Workspace, IMiniWorld
 {
-	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 6f; // Show more space above ground than below
+	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.1f; // Show more space above ground than below
 	private const float kInitReferenceScale = 25f; // We want to see a big region by default
 
 	//TODO: replace with dynamic values once spatial hash lands
@@ -30,6 +31,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	private readonly List<RayData> m_RayData = new List<RayData>(2);
 	private float m_ScaleStartDistance;
+	bool m_Dragging;
 
 	private class RayData
 	{
@@ -40,17 +42,20 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 	}
 
 	public Transform referenceTransform { get { return m_MiniWorld.referenceTransform; } }
+	public Func<IMiniWorld, bool> preProcessRender { set { m_MiniWorld.preProcessRender = value; } }
+	public Action<IMiniWorld> postProcessRender { set { m_MiniWorld.postProcessRender = value; } }
+	public Vector3 miniWorldScale { get { return m_MiniWorld.miniWorldScale; } }
 	public Transform miniWorldTransform { get { return m_MiniWorld.miniWorldTransform; } }
 	public bool Contains(Vector3 position) { return m_MiniWorld.Contains(position); }
+	public List<Renderer> ignoreList { set { m_MiniWorld.ignoreList = value;  } } 
 
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
-		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.27f);
+		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.25f);
+		m_CustomStartingBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.5f);
 
 		base.Setup();
-
-		dynamicFaceAdjustment = true;
 
 		U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
@@ -78,6 +83,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		m_ZoomSliderUI.sliding += OnSliding;
 		m_ZoomSliderUI.zoomSlider.maxValue = kMaxScale;
 		m_ZoomSliderUI.zoomSlider.minValue = kMinScale;
+		m_ZoomSliderUI.zoomSlider.direction = UnityEngine.UI.Slider.Direction.RightToLeft; // Invert direction for expected ux; zoom in as slider moves left to right
 		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
 
 		// Propagate initial bounds
@@ -112,14 +118,15 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 	protected override void OnBoundsChanged()
 	{
 		m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
-		m_MiniWorld.localBounds = contentBounds;
-		
-		m_ChessboardUI.boundsCube.transform.localScale = contentBounds.size;
+		var correctedBounds = new Bounds(contentBounds.center, new Vector3(contentBounds.size.x, contentBounds.size.y, contentBounds.size.z - 0.14f));
+		m_MiniWorld.localBounds = correctedBounds;
 
-		m_ChessboardUI.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
+		m_ChessboardUI.boundsCube.transform.localScale = correctedBounds.size;
+
+		m_ChessboardUI.grid.transform.localScale = new Vector3(correctedBounds.size.x, correctedBounds.size.z, 1);
 
 		var controlBox = m_ChessboardUI.panZoomHandle;
-		controlBox.transform.localScale = new Vector3(contentBounds.size.x, controlBox.transform.localScale.y, contentBounds.size.z);
+		controlBox.transform.localScale = new Vector3(correctedBounds.size.x, controlBox.transform.localScale.y, correctedBounds.size.z);
 	}
 
 	private void OnSliding(float value)
@@ -129,6 +136,12 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	private void OnControlDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
+		m_Dragging = true;
+		m_WorkspaceUI.topHighlight.visible = true;
+
 		if (m_RayData.Count == 1) // On introduction of second ray
 		{
 			m_ScaleStartDistance = (m_RayData[0].rayOrigin.position - eventData.rayOrigin.position).magnitude;
@@ -145,6 +158,9 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	private void OnControlDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		var rayData = m_RayData[0];
 		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) // Do not execute for the second ray
 			return;
@@ -170,17 +186,30 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	private void OnControlDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
+		m_Dragging = false;
+		m_WorkspaceUI.topHighlight.visible = false;
+
 		m_RayData.RemoveAll(rayData => rayData.rayOrigin.Equals(eventData.rayOrigin));
 	}
 
 	private void OnControlHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		setHighlight(handle.gameObject, true);
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
+		m_WorkspaceUI.topHighlight.visible = true;
 	}
 
 	private void OnControlHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		setHighlight(handle.gameObject, false);
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
+		if (!m_Dragging)
+			m_WorkspaceUI.topHighlight.visible = false;
 	}
 
 	protected override void OnDestroy()

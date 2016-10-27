@@ -57,7 +57,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, ISpatialHash
 		base.Setup();
 
 		topPanelDividerOffset = -0.2875f; // enable & position the top-divider(mask) slightly to the left of workspace center
-		dynamicFaceAdjustment = true;
 
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
@@ -191,6 +190,9 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, ISpatialHash
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		m_ScrollStart = eventData.rayOrigin.transform.position;
 		if (handle == m_ProjectUI.folderScrollHandle)
 		{
@@ -206,11 +208,17 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, ISpatialHash
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		Scroll(handle, eventData);
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		Scroll(handle, eventData);
 		if (handle == m_ProjectUI.folderScrollHandle)
 		{
@@ -247,23 +255,35 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, ISpatialHash
 
 	void OnAssetGridHoverHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		m_ProjectUI.assetGridHighlight.visible = true;
 	}
 
 	void OnAssetGridHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		if (m_AssetGridDragging == false)
 			m_ProjectUI.assetGridHighlight.visible = false;
 	}
 
 	void OnFolderPanelDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		m_FolderPanelDragging = true;
 		m_ProjectUI.folderPanelHighlight.visible = true;
 	}
 
 	void OnFolderPanelDragHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		m_FolderPanelDragging = false;
 		m_ProjectUI.folderPanelHighlight.visible = false;
 	}
@@ -275,7 +295,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, ISpatialHash
 
 	void OnFolderPanelHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (m_FolderPanelDragging == false)
+		if (!m_FolderPanelDragging)
 			m_ProjectUI.folderPanelHighlight.visible = false;
 	}
 

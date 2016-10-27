@@ -48,6 +48,10 @@ namespace UnityEngine.VR.Modules
 		public event Action<GameObject, RayEventData> dragStarted = delegate {};
 		public event Action<GameObject, RayEventData> dragEnded = delegate {};
 
+		public Func<Transform, bool> preProcessRaycastSource = delegate { return true; };
+		public Func<bool> preProcessRaycastSources = delegate { return true; };
+		public Action postProcessRaycastSources = delegate {};
+
 		protected override void Awake()
 		{
 			base.Awake();
@@ -95,11 +99,18 @@ namespace UnityEngine.VR.Modules
 
 			if (m_EventCamera == null)
 				return;
-			
+
+			if (!preProcessRaycastSources())
+				return;
+
 			//Process events for all different transforms in RayOrigins
-			foreach (var source in m_RaycastSources.Values)
+			var sources = new List<RaycastSource>(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
+			foreach (var source in sources)
 			{
 				if (!(source.rayOrigin.gameObject.activeSelf || source.selectedObject) || !source.proxy.active)
+					continue;
+
+				if (!preProcessRaycastSource(source.rayOrigin))
 					continue;
 
 				if (source.eventData == null)
@@ -145,6 +156,8 @@ namespace UnityEngine.VR.Modules
 					ExecuteEvents.ExecuteHierarchy(scrollObject, eventData, ExecuteEvents.scrollHandler);
 				}
 			}
+
+			postProcessRaycastSources();
 		}
 
 		private RayEventData CloneEventData(RayEventData eventData)

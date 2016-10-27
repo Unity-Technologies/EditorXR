@@ -1,26 +1,18 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Assertions;
-using UnityEngine.Events;
 using UnityEngine.InputNew;
-using UnityEngine.UI;
+using UnityEngine.VR.Actions;
+using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay
+	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins
 	{
-		public ActionMap actionMap
-		{
-			get
-			{
-				return m_MainMenuActionMap;
-			}
-		}
+		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
 		private ActionMap m_MainMenuActionMap;
 
@@ -67,6 +59,7 @@ namespace UnityEngine.VR.Menus
 				if (m_Visible != value)
 				{
 					m_Visible = value;
+
 					if (m_MainMenuUI)
 						m_MainMenuUI.visible = value;
 
@@ -80,6 +73,8 @@ namespace UnityEngine.VR.Menus
 						unlockRay(this);
 						showDefaultRay();
 					}
+
+					menuVisibilityChanged(this);
 				}
 			}
 		}
@@ -93,7 +88,7 @@ namespace UnityEngine.VR.Menus
 		private float m_RotationInputStartValue;
 		private float m_RotationInputIdleTime;
 		private float m_LastRotationInput;
-		
+
 		public Func<GameObject, GameObject> instantiateUI { private get; set; }
 		public Transform rayOrigin { private get; set; }
 		public Action hideDefaultRay { private get; set; }
@@ -103,13 +98,17 @@ namespace UnityEngine.VR.Menus
 		public List<Type> menuTools { private get; set; }
 		public Func<Node, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public Action<Type> createWorkspace { private get; set; }
+		public List<IModule> menuModules { private get; set; }
+		public List<ActionMenuData> menuActions { get; set; }
+		public CreateWorkspaceDelegate createWorkspace { private get; set; }
 		public Node? node { private get; set; }
+		public event Action<IMainMenu> menuVisibilityChanged = delegate {};
+		public Action<object> connectInterfaces { private get; set; }
 
 		void Start()
 		{
 			m_MainMenuUI = instantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
-			m_MainMenuUI.instantiateUI = instantiateUI;
+			connectInterfaces(m_MainMenuUI);
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
@@ -117,6 +116,7 @@ namespace UnityEngine.VR.Menus
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
+			CreateModuleFaceButtons(menuModules);
 			m_MainMenuUI.SetupMenuFaces();
 		}
 
@@ -185,13 +185,16 @@ namespace UnityEngine.VR.Menus
 		{
 			foreach (var type in types)
 			{
+				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
+				if (customMenuAttribute != null && !customMenuAttribute.shown)
+					continue;
+
 				var isTool = typeof(ITool).IsAssignableFrom(type);
 				var isWorkspace = typeof(Workspace).IsAssignableFrom(type);
 
 				var buttonData = new MainMenuUI.ButtonData();
 				buttonData.name = type.Name;
 
-				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
 				if (customMenuAttribute != null)
 				{
 					buttonData.name = customMenuAttribute.name;
@@ -232,5 +235,36 @@ namespace UnityEngine.VR.Menus
 				});
 			}
 		}
+
+		private void CreateModuleFaceButtons(List<IModule> modules)
+		{
+			foreach (var module in modules)
+			{
+				var moduleType = module.GetType();
+				var buttonData = new MainMenuUI.ButtonData();
+				buttonData.name = moduleType.Name;
+
+				var customMenuAttribute = (MainMenuItemAttribute)moduleType.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
+				if (customMenuAttribute != null)
+				{
+					buttonData.name = customMenuAttribute.name;
+					buttonData.sectionName = customMenuAttribute.sectionName;
+					buttonData.description = customMenuAttribute.description;
+				}
+				else
+					buttonData.name = moduleType.Name.Replace("Module", string.Empty);
+
+				var currentModule = module; // Local variable for proper closure
+				m_MainMenuUI.CreateFaceButton(buttonData, (b) =>
+				{
+					b.button.onClick.RemoveAllListeners();
+					b.button.onClick.AddListener(() =>
+					{
+						m_MainMenuUI.AddSubmenu(buttonData.sectionName, currentModule.moduleMenuPrefab);
+					});
+				});
+			}
+		}
+
 	}
 }

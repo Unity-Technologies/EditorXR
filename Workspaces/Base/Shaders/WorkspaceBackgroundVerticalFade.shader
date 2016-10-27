@@ -6,12 +6,15 @@
 		_Blur("Blur", Range(0, 10)) = 1
 		_VerticalOffset("Offset", Range(-1, 1)) = 1
 		_MainTex("Texture", 2D) = "white" {}
+		_Alpha("Alpha", Range(0, 1)) = 1
 	}
 
 		Category
 		{
 			Tags{ "Queue" = "Transparent" "LightMode" = "Always" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
 			ZWrite On
+			Lighting Off
+			Blend SrcAlpha OneMinusSrcAlpha
 
 			SubShader
 			{
@@ -60,7 +63,8 @@
 					float _Blur;
 					float _VerticalOffset;
 
-					half4 frag(v2f input) : COLOR{
+					half4 frag(v2f input) : COLOR
+					{
 						half4 sum = half4(0,0,0,0);
 						#define GrabAndOffset(weight,kernelX) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x + _GrabTexture_TexelSize.x * kernelX * (_Blur * input.yPos), input.grab.y, input.grab.z, input.grab.w))) * weight
 						
@@ -126,7 +130,8 @@
 				float _Blur;
 				float _VerticalOffset;
 
-				half4 frag(v2f input) : COLOR{
+				half4 frag(v2f input) : COLOR
+				{
 					half4 sum = half4(0,0,0,0);
 					#define GrabAndOffset(weight,kernelY) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * (_Blur * input.yPos + _VerticalOffset), input.grab.z, input.grab.w))) * weight
 
@@ -169,6 +174,7 @@
 					float4 grab : TEXCOORD0;
 					float2 uvmain : TEXCOORD2;
 				};
+
 				float4 _MainTex_ST;
 
 				v2f vert(appdata_t v)
@@ -190,6 +196,7 @@
 				sampler2D _GrabTexture;
 				float4 _GrabTexture_TexelSize;
 				sampler2D _MainTex;
+				half _Alpha;
 
 				half4 frag(v2f i) : COLOR
 				{
@@ -198,7 +205,8 @@
 					half4 desatCol = dot(col, col);
 					col = lerp(col * col, desatCol, 0.2);
 					half4 tint = tex2D(_MainTex, i.uvmain) * _Color;
-
+					col.a = _Alpha;
+					tint.a = _Alpha;
 					return col * tint;
 				}
 			ENDCG

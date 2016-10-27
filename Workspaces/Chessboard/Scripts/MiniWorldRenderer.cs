@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+﻿using System;
+using UnityEngine;
+
 using UnityEngine.VR.Utilities;
 
 public class MiniWorldRenderer : MonoBehaviour
@@ -8,8 +11,23 @@ public class MiniWorldRenderer : MonoBehaviour
 	private Camera m_MainCamera;
 	private Camera m_MiniCamera;
 
+	bool[] m_RendererPreviousEnable = new bool[0];
+
 	public MiniWorld miniWorld { private get; set; }
 	public LayerMask cullingMask { private get; set; }
+
+	public List<Renderer> ignoreList
+	{
+		set
+		{
+			m_IgnoreList = value;
+			if(m_IgnoreList.Count > m_RendererPreviousEnable.Length)
+				m_RendererPreviousEnable = new bool[m_IgnoreList.Count];
+		}
+	}
+	List<Renderer> m_IgnoreList = new List<Renderer>();
+	public Func<bool> preProcessRender { private get; set; }
+	public Action postProcessRender { private get; set; }
 
 	private void OnEnable()
 	{
@@ -28,8 +46,6 @@ public class MiniWorldRenderer : MonoBehaviour
 	{
 		if (!m_MainCamera)
 			m_MainCamera = U.Camera.GetMainCamera();
-
-		m_MainCamera.cullingMask &= ~LayerMask.GetMask("MiniWorldOnly");
 	}
 
 	private void OnPostRender()
@@ -45,7 +61,27 @@ public class MiniWorldRenderer : MonoBehaviour
 			Shader shader = Shader.Find("Custom/Custom Clip Planes");
 			Shader.SetGlobalVector("_GlobalClipCenter", miniWorld.referenceBounds.center);
 			Shader.SetGlobalVector("_GlobalClipExtents", miniWorld.referenceBounds.extents);
-			m_MiniCamera.RenderWithShader(shader, string.Empty);
+
+			for (var i = 0; i < m_IgnoreList.Count; i++) {
+				var hiddenRenderer = m_IgnoreList[i];
+				if (hiddenRenderer) 
+				{
+					m_RendererPreviousEnable[i] = hiddenRenderer.enabled;
+					hiddenRenderer.enabled = false;
+				}
+			}
+
+			if(preProcessRender())
+				m_MiniCamera.RenderWithShader(shader, string.Empty);
+
+			postProcessRender();
+
+			for (var i = 0; i < m_IgnoreList.Count; i++)
+			{
+				var hiddenRenderer = m_IgnoreList[i];
+				if (hiddenRenderer)
+					hiddenRenderer.enabled = m_RendererPreviousEnable[i];
+			}
 		}
 	}
 }
