@@ -5,7 +5,8 @@ using UnityEngine.VR.Utilities;
 
 public class ObjectPlacementModule : MonoBehaviour
 {
-	const float kInstantiateFOVDifference = 20f;
+	[SerializeField]
+	float kInstantiateFOVDifference = -10f;
 
 	const float kGrowDuration = 0.5f;
 
