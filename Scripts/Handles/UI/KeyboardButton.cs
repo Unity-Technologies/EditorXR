@@ -60,6 +60,8 @@ public class KeyboardButton : BaseHandle
 	bool m_Holding;
 	float m_PressDownTime;
 	bool m_Triggered;
+	Material m_TargetMeshMaterial;
+	Coroutine m_ChangeEmissionCoroutine;
 
 	private Action<char> m_KeyPress;
 
@@ -72,10 +74,6 @@ public class KeyboardButton : BaseHandle
 	{
 		get { return m_TargetMeshMaterial; }
 	}
-
-	Material m_TargetMeshMaterial;
-
-	Coroutine m_ChangeEmissionCoroutine;
 
 	public SmoothMotion smoothMotion { get; set; }
 
@@ -263,7 +261,7 @@ public class KeyboardButton : BaseHandle
 		{
 			KeyPressed();
 			m_HoldStartTime = Time.realtimeSinceStartup;
-			m_RepeatWaitTime *= m_SelectionFlagsProperty;
+			m_RepeatWaitTime *= kRepeatDecayFactor;
 		}
 	}
 
@@ -385,7 +383,7 @@ public class KeyboardButton : BaseHandle
 			elapsedTime += Time.unscaledDeltaTime;
 			var t = Mathf.Clamp01(elapsedTime / kKeyResponseDuration);
 
-			if (Mathf.Approximately(t, 0) || Mathf.Approximately(t, 1))
+			if (Mathf.Approximately(t, 0f) || Mathf.Approximately(t, 1f))
 				break;
 
 			const float p = 0.3f;

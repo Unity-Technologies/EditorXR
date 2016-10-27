@@ -39,24 +39,6 @@ public class KeyboardButtonEditor : Editor
 	public override void OnInspectorGUI()
 	{
 		m_KeyboardButton = (KeyboardButton)target;
-		if (GUILayout.Button("Create layout parent"))
-		{
-			var i = 0;
-			foreach (var child in m_KeyboardButton.transform.parent)
-			{
-				if (child == m_KeyboardButton.transform)
-					break;
-				i++;
-			}
-
-			var t = new GameObject(m_KeyboardButton.name + "_LayoutPosition");
-			t.transform.SetParent(m_KeyboardButton.transform);
-			t.transform.localPosition = Vector3.zero;
-			t.transform.SetParent(m_KeyboardButton.transform.parent);
-			t.transform.localScale = Vector3.one;
-			m_KeyboardButton.transform.parent = t.transform;
-			t.transform.SetSiblingIndex(i);
-		}
 
 		serializedObject.Update();
 
@@ -95,17 +77,41 @@ public class KeyboardButtonEditor : Editor
 					m_ShiftCharacterProperty.intValue = m_ShiftCharIsUppercase ? upperCase[0] : 0;
 			}
 			else
+			{
 				m_ShiftCharIsUppercase = false;
+			}
 
 			if (!m_ShiftCharIsUppercase)
 				CharacterField("Shift Character", m_ShiftCharacterProperty);
 		}
 		else
+		{
 			m_ShiftCharIsUppercase = false;
+		}
 
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);
 		EditorGUILayout.PropertyField(m_ButtonGraphicProperty);
 		EditorGUILayout.PropertyField(m_RepeatOnHoldProperty);
+
+		if (GUILayout.Button("Create layout transfrom"))
+		{
+			// Get position in hierarchy
+			var siblingIndex = 0;
+			foreach (Transform child in m_KeyboardButton.transform.parent)
+			{
+				if (child == m_KeyboardButton.transform)
+					break;
+				siblingIndex++;
+			}
+
+			var t = new GameObject(m_KeyboardButton.name + "_LayoutPosition").transform;
+			t.SetParent(m_KeyboardButton.transform);
+			t.localPosition = Vector3.zero;
+			t.localRotation = Quaternion.identity;
+			t.localScale = Vector3.one;
+			t.SetParent(m_KeyboardButton.transform.parent);
+			t.transform.SetSiblingIndex(siblingIndex);
+		}
 
 		serializedObject.ApplyModifiedProperties();
 	}

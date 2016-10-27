@@ -8,6 +8,7 @@ using UnityEngine.VR.Utilities;
 public class KeyboardUI : MonoBehaviour
 {
 	const float kDragWaitTime = 0.2f;
+	const float kKeyMoveTransitionTime = 0.5f;
 	const float kHandleChangeColorTime = 0.1f;
 	const float kHorizontalThreshold = 0.7f;
 
@@ -103,14 +104,16 @@ public class KeyboardUI : MonoBehaviour
 	IEnumerator MoveKeysToNewPosition()
 	{
 		var t = 0f;
-		while (t < 0.5f)
+		while (t < kKeyMoveTransitionTime)
 		{
 			int i = 0;
 			foreach (var button in m_Buttons)
 			{
+				var horizT = m_HorizontalLayoutTransforms[i];
+				var vertT = m_VerticalLayoutTransforms[i];
 				button.transform.position = Vector3.Lerp(button.transform.position, m_Horizontal
-					? m_HorizontalLayoutTransforms[i].position
-					: m_VerticalLayoutTransforms[i].position, t / 0.5f);
+					? horizT.position
+					: vertT.position, t / kKeyMoveTransitionTime);
 
 				var target = m_Horizontal
 				? m_HorizontalLayoutTransforms[i]
@@ -123,15 +126,6 @@ public class KeyboardUI : MonoBehaviour
 			yield return null;
 		}
 
-		int k = 0;
-		foreach (var button in m_Buttons)
-		{
-			var target = m_Horizontal
-				? m_HorizontalLayoutTransforms[k]
-				: m_VerticalLayoutTransforms[k];
-			button.smoothMotion.SetTarget(target);
-		}
-
 		m_MoveKeysCoroutine = null;
 	}
 
@@ -140,7 +134,11 @@ public class KeyboardUI : MonoBehaviour
 		int i = 0;
 		foreach (var button in m_Buttons)
 		{
-			button.transform.position = m_VerticalLayoutTransforms[i].position;
+			var t = m_VerticalLayoutTransforms[i];
+			if (t)
+			{
+				button.transform.position = m_VerticalLayoutTransforms[i].position;
+			}
 			i++;
 		}
 	}
@@ -150,7 +148,11 @@ public class KeyboardUI : MonoBehaviour
 		int i = 0;
 		foreach (var button in m_Buttons)
 		{
-			button.transform.position = m_HorizontalLayoutTransforms[i].position;
+			var t = m_HorizontalLayoutTransforms[i];
+			if (t)
+			{
+				button.transform.position = t.position;
+			}
 			i++;
 		}
 	}
