@@ -89,6 +89,10 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 
 	public void CheckHover(GameObject go, Node? node)
 	{
+#if true
+		// We're disabling hovering over an object to bring up the radial menu for now
+		return;
+#else
 		if (!m_CurrentHoverObjects.ContainsKey(node))
 			m_CurrentHoverObjects.Add(node, null);
 
@@ -110,6 +114,7 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 					openRadialMenu(node, go);
 			}
 		}
+#endif
 	}
 
 	public void OnSelectionChanged()
