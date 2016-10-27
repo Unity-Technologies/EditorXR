@@ -81,10 +81,18 @@ public class KeyboardButton : BaseHandle
 
 	void Awake()
 	{
-		if(!m_TargetMesh)
+		if (!m_TargetMesh)
 			m_TargetMesh = GetComponentInChildren<Renderer>(true);
 
-		smoothMotion = GetComponent<SmoothMotion>();
+        if (m_TargetMesh != null)
+        {
+            var targetMeshTransform = m_TargetMesh.transform;
+            m_TargetMeshInitialLocalPosition = targetMeshTransform.localPosition;
+            m_TargetMeshInitialScale = targetMeshTransform.localScale;
+            m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
+        }
+
+        smoothMotion = GetComponent<SmoothMotion>();
 		if (smoothMotion == null)
 			smoothMotion = gameObject.AddComponent<SmoothMotion>();
 		smoothMotion.enabled = false;
@@ -267,17 +275,6 @@ public class KeyboardButton : BaseHandle
 			StopCoroutine(m_DecreaseEmissionCoroutine);
 
 		m_DecreaseEmissionCoroutine = StartCoroutine(DecreaseEmission());
-	}
-
-	private void Start()
-	{
-		if (m_TargetMesh != null)
-		{
-			var targetMeshTransform = m_TargetMesh.transform;
-			m_TargetMeshInitialLocalPosition = targetMeshTransform.localPosition;
-			m_TargetMeshInitialScale = targetMeshTransform.localScale;
-			m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
-		}
 	}
 
 	private void OnDisable()

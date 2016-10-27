@@ -835,7 +835,7 @@ BoxCollider:
   m_GameObject: {fileID: 1000011122323074}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -1361,16 +1361,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_TargetTransforms:
+  - {fileID: 224000010411811242}
+  - {fileID: 224000012392620736}
+  - {fileID: 224000014288641190}
+  m_TargetHighlightTransforms:
   - {fileID: 224000013640895960}
   - {fileID: 224000014166192680}
   - {fileID: 224000011993244754}
   - {fileID: 224000014175291942}
   - {fileID: 224000012491029494}
   - {fileID: 224000012287518296}
-  - {fileID: 224000010411811242}
-  - {fileID: 224000012392620736}
-  - {fileID: 224000014288641190}
   m_CubePrefab: {fileID: 1000010276040456, guid: 351b9999d9db0934a9a3baecc8b9204f,
+    type: 2}
+  m_HighlightCubePrefab: {fileID: 1000010276040456, guid: 4a05b6e57f767f645b04b1f7ef6c0656,
     type: 2}
 --- !u!114 &114000011524206158
 MonoBehaviour:
@@ -2519,7 +2522,7 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000014116023244}
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
@@ -3123,7 +3126,7 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013097437686}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.001, y: 0.001, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

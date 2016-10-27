@@ -35,7 +35,7 @@ public class KeyboardUI : MonoBehaviour
 	bool m_Horizontal;
 	Material m_HandleMaterial;
 
-    KeyboardButton m_HandleButton;
+	KeyboardButton m_HandleButton;
 
 	Coroutine m_ChangeDragColorsCoroutine;
 	Coroutine m_MoveKeysCoroutine;
@@ -47,14 +47,9 @@ public class KeyboardUI : MonoBehaviour
 	/// <param name="keyPress"></param>
 	public void Setup(Action<char> keyPress)
 	{
-	    Debug.Log("licer");
 		m_DirectManipulator.target = transform;
 		m_DirectManipulator.translate = Translate;
 		m_DirectManipulator.rotate = Rotate;
-
-	    m_HandleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
-	    m_HandleMaterial = m_HandleButton.targetMeshMaterial;
-	    m_BaseColor = m_HandleMaterial.color;
 
 		foreach (var handle in m_DirectManipulator.GetComponentsInChildren<BaseHandle>(true))
 		{
@@ -66,6 +61,10 @@ public class KeyboardUI : MonoBehaviour
 		{
 			button.Setup(keyPress, IsHorizontal);
 		}
+
+		m_HandleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
+		m_HandleMaterial = m_HandleButton.targetMeshMaterial;
+		m_BaseColor = m_HandleMaterial.color;
 	}
 
 	/// <summary>
@@ -164,25 +163,23 @@ public class KeyboardUI : MonoBehaviour
 			t += Time.unscaledDeltaTime;
 			yield return null;
 		}
+
+		m_AllowDragging = true;
+		m_DragCoroutine = null;
+
 		StartDrag();
 	}
 
 	void StartDrag()
 	{
-		m_AllowDragging = true;
-
 		if (m_ChangeDragColorsCoroutine != null)
 			StopCoroutine(m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = StartCoroutine(SetDragColors());
 
-		int i = 0;
 		foreach (var button in m_Buttons)
 		{
 			button.smoothMotion.enabled = true;
-			i++;
 		}
-
-		m_DragCoroutine = null;
 	}
 
 	IEnumerator SetDragColors()
@@ -199,7 +196,7 @@ public class KeyboardUI : MonoBehaviour
 			foreach (var button in m_Buttons)
 			{
 				var color = button.textComponent.color;
-				button.textComponent.color = new Color(color.r, color.g, color.b, 1f- t / kHandleChangeColorTime);
+				button.textComponent.color = new Color(color.r, color.g, color.b, 1f - t / kHandleChangeColorTime);
 			}
 
 			yield return null;
@@ -235,17 +232,23 @@ public class KeyboardUI : MonoBehaviour
 
 	void OnDragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
 	{
-		m_AllowDragging = false;
-		orientationChanged(IsHorizontal());
+		if (m_DragCoroutine != null)
+			StopCoroutine(m_DragCoroutine);
 
-		foreach (var button in m_Buttons)
+		if (m_AllowDragging)
 		{
-			button.smoothMotion.enabled = false;
-		}
+			m_AllowDragging = false;
+			orientationChanged(IsHorizontal());
 
-		if (m_ChangeDragColorsCoroutine != null)
-			StopCoroutine(m_ChangeDragColorsCoroutine);
-		m_ChangeDragColorsCoroutine = StartCoroutine(UnsetDragColors());
+			foreach (var button in m_Buttons)
+			{
+				button.smoothMotion.enabled = false;
+			}
+
+			if (m_ChangeDragColorsCoroutine != null)
+				StopCoroutine(m_ChangeDragColorsCoroutine);
+			m_ChangeDragColorsCoroutine = StartCoroutine(UnsetDragColors());
+		}
 	}
 
 	void OnDisable()

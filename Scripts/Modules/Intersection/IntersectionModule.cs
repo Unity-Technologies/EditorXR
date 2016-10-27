@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Data;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Modules
 {
@@ -37,7 +37,13 @@ namespace UnityEngine.VR.Modules
 			foreach (var tester in m_Testers)
 			{
 				if (!tester.active)
+				{
+					Renderer intersectedObject;
+					if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
+						OnIntersectionExit(tester, intersectedObject);
+
 					continue;
+				}
 
 				var testerTransform = tester.transform;
 				if (testerTransform.hasChanged)
@@ -52,12 +58,7 @@ namespace UnityEngine.VR.Modules
 						Array.Sort(intersections, (a, b) => (a.bounds.center - testerBoundsCenter).magnitude.CompareTo((b.bounds.center - testerBoundsCenter).magnitude));
 						foreach (var obj in intersections)
 						{
-							//Early-outs:
-							// Not updated yet
-							if (obj.transform.hasChanged)
-								continue;
-
-							//Bounds check
+							// Bounds check
 							if (!obj.bounds.Intersects(testerBounds))
 								continue;
 

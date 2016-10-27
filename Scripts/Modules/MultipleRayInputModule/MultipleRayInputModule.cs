@@ -95,7 +95,7 @@ namespace UnityEngine.VR.Modules
 
 			if (m_EventCamera == null)
 				return;
-
+			
 			//Process events for all different transforms in RayOrigins
 			foreach (var source in m_RaycastSources.Values)
 			{

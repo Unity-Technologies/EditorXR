@@ -9,6 +9,7 @@ using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Menus;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
@@ -26,12 +27,20 @@ public class EditorVR : MonoBehaviour
 {
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
+	/// <summary>
+	/// Tag applied to player head model which tracks the camera (for MiniWorld locomotion)
+	/// </summary>
+	const string kVRPlayerTag = "VRPlayer";
+
 	private const float kDefaultRayLength = 100f;
 
 	private const float kWorkspaceAnglePadding = 25f;
 	private const float kWorkspaceYPadding = 0.35f;
 	private const int kMaxWorkspacePlacementAttempts = 20;
 	private const float kWorkspaceVacuumEnableDistance = 1f; // Disable vacuum bounds if workspace is close to player
+	const float kPreviewScale = 0.1f;
+
+	const float kViewerPivotTransitionTime = 0.75f;
 
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
@@ -39,8 +48,13 @@ public class EditorVR : MonoBehaviour
 	private ActionMap m_TrackedObjectActionMap;
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
+
 	[SerializeField]
-	private DefaultProxyRay m_ProxyRayPrefab;
+	ActionMap m_DirectSelectActionMap;
+
+	[SerializeField]
+	DefaultProxyRay m_ProxyRayPrefab;
+
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
 
@@ -53,6 +67,9 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	private KeyboardUI m_StandardKeyboardPrefab;
 
+	[SerializeField]
+	private GameObject m_PlayerModelPrefab;
+
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
 
@@ -60,7 +77,7 @@ public class EditorVR : MonoBehaviour
 	private KeyboardUI m_StandardKeyboard;
 
 	private TrackedObject m_TrackedObjectInput;
-	
+
 	private MultipleRayInputModule m_InputModule;
 	private SpatialHashModule m_SpatialHashModule;
 	private IntersectionModule m_IntersectionModule;
@@ -79,6 +96,7 @@ public class EditorVR : MonoBehaviour
 		public Stack<ITool> tools;
 		public ShowMenu showMenuInput;
 		public ActionMapInput uiInput;
+		public ActionMapInput directSelectInput;
 		public IMainMenu mainMenu;
 		public ITool currentTool;
 	}
@@ -99,24 +117,33 @@ public class EditorVR : MonoBehaviour
 	private class MiniWorldRay
 	{
 		public Transform originalRayOrigin;
+		public ActionMapInput originalDirectSelectInput;
 		public IMiniWorld miniWorld;
 		public IProxy proxy;
+		public Node node;
 		public ActionMapInput uiInput;
-		public GameObject hoverObject;
+		public ActionMapInput directSelectInput;
+		public IntersectionTester tester;
 		public GameObject dragObject;
+
 		public Vector3 dragObjectOriginalScale;
-		public Vector3 dragObjectPositionOffset;
-		public Quaternion dragObjectRotationOffset;
+		public Vector3 dragObjectPreviewScale;
+
+		public bool wasHeld;
+		public Vector3 originalPositionOffset;
+		public Quaternion originalRotationOffset;
+
+		public bool wasContained;
 	}
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
 	private readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>();
 
-	private ITransformTool m_TransformTool;
-
 	private event Action m_SelectionChanged;
 
 	bool m_HMDReady;
+
+	IGrabObjects m_TransformTool;
 
 	private void Awake()
 	{
@@ -190,7 +217,7 @@ public class EditorVR : MonoBehaviour
 	private void OnSelectionChanged()
 	{
 		if (m_SelectionChanged != null)
-			m_SelectionChanged.Invoke();
+			m_SelectionChanged();
 	}
 
 	IEnumerable<InputDevice> GetSystemDevices()
@@ -214,13 +241,6 @@ public class EditorVR : MonoBehaviour
 
 	private IEnumerator Start()
 	{
-		while (!m_HMDReady)
-			yield return null;
-		CreateDefaultWorkspaces();
-
-		// In case we have anything selected at start, set up manipulators, inspector, etc.
-		EditorApplication.delayCall += OnSelectionChanged;
-
 		// Delay until at least one proxy initializes
 		bool proxyActive = false;
 		while (!proxyActive)
@@ -238,17 +258,24 @@ public class EditorVR : MonoBehaviour
 		}
 
 		CreateSpatialSystem();
+		AddPlayerModel();
 		SpawnDefaultTools();
 		StartCoroutine(PrewarmAssets());
 
-		// Call OnSelectionChanged one more time for tools
+		// Wait for valid tracking in order to place workspaces based on head position
+		while (!m_HMDReady)
+			yield return null;
+
+		CreateDefaultWorkspaces();
+
+		// In case we have anything selected at start, set up manipulators, inspector, etc.
 		EditorApplication.delayCall += OnSelectionChanged;
 
 		// This will be the first call to update the player handle (input) maps, sorted by priority
 		UpdatePlayerHandleMaps();
 	}
 
-	private void OnEnable()
+	void OnEnable()
 	{
 		Selection.selectionChanged += OnSelectionChanged;
 #if UNITY_EDITOR
@@ -257,7 +284,7 @@ public class EditorVR : MonoBehaviour
 #endif
 	}
 
-	private void OnDisable()
+	void OnDisable()
 	{
 		Selection.selectionChanged -= OnSelectionChanged;
 #if UNITY_EDITOR
@@ -271,34 +298,20 @@ public class EditorVR : MonoBehaviour
 		m_HMDReady = true;
 	}
 
-	private void OnSceneGUI(EditorWindow obj)
+	void OnSceneGUI(EditorWindow obj)
 	{
 		if (Event.current.type == EventType.ExecuteCommand)
 		{
-			var miniWorldRayHasObject = false;
-
 			m_PixelRaycastModule.UpdateIgnoreList();
 
-			foreach (var proxy in m_AllProxies)
+			ForEachRayOrigin((proxy, pair, device, deviceData) =>
 			{
-				if (!proxy.active)
-					continue;
+				m_PixelRaycastModule.UpdateRaycast(pair.Value, m_EventCamera);
+			}, true);
+						
 
-				foreach (var rayOrigin in proxy.rayOrigins.Values)
-					m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera);
-
-				foreach (var miniWorldRay in m_MiniWorldRays)
-				{
-					miniWorldRay.Value.hoverObject = m_PixelRaycastModule.UpdateRaycast(miniWorldRay.Key, m_EventCamera, GetPointerLength(miniWorldRay.Key));
-
-					if (miniWorldRay.Value.hoverObject || miniWorldRay.Value.dragObject)
-						miniWorldRayHasObject = true;
-				}
-			}
-
-			// If any active miniWorldRay hovers over a selected object, switch to the DirectManipulator
-			if (m_TransformTool != null)
-				m_TransformTool.mode = miniWorldRayHasObject ? TransformMode.Direct : TransformMode.Standard;
+			foreach (var rayOrigin in m_MiniWorldRays.Keys)
+				m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera);
 
 			UpdateDefaultProxyRays();
 
@@ -307,7 +320,7 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void OnDestroy()
+	void OnDestroy()
 	{
 		PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
 	}
@@ -426,6 +439,10 @@ public class EditorVR : MonoBehaviour
 			if (customActionMap != null)
 				actionMaps.Add(customActionMap.actionMap);
 
+			var customActionMaps = tool as ICustomActionMaps;
+			if (customActionMaps != null)
+				actionMaps.AddRange(customActionMaps.actionMaps);
+
 			var standardActionMap = tool as IStandardActionMap;
 			if (standardActionMap != null)
 				actionMaps.Add(m_StandardToolActionMap);
@@ -486,8 +503,9 @@ public class EditorVR : MonoBehaviour
 			}
 
 			tool = SpawnTool(typeof(TransformTool), out devices);
-			m_TransformTool = tool as ITransformTool;
 			AddToolToDeviceData(tool, devices);
+
+			m_TransformTool = tool as IGrabObjects;
 		};
 	}
 
@@ -578,7 +596,10 @@ public class EditorVR : MonoBehaviour
 		{
 			// Create ui action map input for device.
 			if (deviceData.uiInput == null)
+			{
 				deviceData.uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+				deviceData.directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
+			}
 
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput);
@@ -611,7 +632,7 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void CreateSpatialSystem()
+	void CreateSpatialSystem()
 	{
 		// Create event system, input module, and event camera
 		m_SpatialHashModule = U.Object.AddComponent<SpatialHashModule>(gameObject);
@@ -627,7 +648,7 @@ public class EditorVR : MonoBehaviour
 		});
 	}
 
-	private GameObject InstantiateUI(GameObject prefab)
+	GameObject InstantiateUI(GameObject prefab)
 	{
 		var go = U.Object.Instantiate(prefab, transform);
 		foreach (Canvas canvas in go.GetComponentsInChildren<Canvas>())
@@ -646,7 +667,7 @@ public class EditorVR : MonoBehaviour
 
 	private KeyboardUI SpawnNumericKeyboard()
 	{
-		if(m_StandardKeyboard != null)
+		if (m_StandardKeyboard != null)
 			m_StandardKeyboard.gameObject.SetActive(false);
 		
 		// Check if the prefab has already been instantiated
@@ -697,7 +718,7 @@ public class EditorVR : MonoBehaviour
 		if (device != null && !IsValidActionMapForDevice(map, device))
 			return null;
 
-		var devices = device == null ? m_PlayerHandle.GetApplicableDevices() : new InputDevice[] { device };
+		var devices = device == null ? GetSystemDevices() : new InputDevice[] { device };
 
 		var actionMapInput = ActionMapInput.Create(map);
 		// It's possible that there are no suitable control schemes for the device that is being initialized, 
@@ -722,12 +743,16 @@ public class EditorVR : MonoBehaviour
 			if (deviceData.mainMenu != null)
 				AddActionMapInputs(deviceData.mainMenu, maps);
 
-			// Not every tool has UI
-			if (deviceData.uiInput != null)
-				maps.Add(deviceData.uiInput);
+			maps.Add(deviceData.directSelectInput);
+
+			maps.Add(deviceData.uiInput);
 		}
 
-		maps.AddRange(m_MiniWorldRays.Select(miniWorldRay => miniWorldRay.Value.uiInput));
+		foreach (var ray in m_MiniWorldRays.Values)
+		{
+			maps.Add(ray.directSelectInput);
+			maps.Add(ray.uiInput);
+		}
 
 		maps.Add(m_TrackedObjectInput);
 
@@ -752,6 +777,16 @@ public class EditorVR : MonoBehaviour
 		{
 			if (!maps.Contains(customActionMap.actionMapInput))
 				maps.Add(customActionMap.actionMapInput);
+		}
+
+		ICustomActionMaps customActionMaps = obj as ICustomActionMaps;
+		if (customActionMaps != null)
+		{
+			foreach (var input in customActionMaps.actionMapInputs)
+			{
+				if (!maps.Contains(input))
+					maps.Add(input);
+			}
 		}
 	}
 
@@ -839,6 +874,21 @@ public class EditorVR : MonoBehaviour
 			customMap.actionMapInput = CreateActionMapInput(customMap.actionMap, device);
 			if (actionMapInputs != null)
 				actionMapInputs.Add(customMap.actionMapInput);
+		}
+
+		var customMaps = obj as ICustomActionMaps;
+		if (customMaps != null)
+		{
+			var actionMaps = customMaps.actionMaps;
+			var inputs = new ActionMapInput[actionMaps.Length];
+			for (int i = 0; i < actionMaps.Length; i++)
+			{
+				var input = CreateActionMapInput(actionMaps[i], device);
+				inputs[i] = input;
+				if (actionMapInputs != null)
+					actionMapInputs.Add(input);
+			}
+			customMaps.actionMapInputs = inputs;
 		}
 	}
 
@@ -933,9 +983,22 @@ public class EditorVR : MonoBehaviour
 			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 		}
 
+
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
 			m_SelectionChanged += selectionChanged.OnSelectionChanged;
+
+		var directSelection = obj as IDirectSelection;
+		if (directSelection != null)
+			directSelection.getDirectSelection = GetDirectSelection;
+
+		var grabObjects = obj as IGrabObjects;
+		if (grabObjects != null)
+		{
+			grabObjects.canGrabObject = CanGrabObject;
+			grabObjects.grabObject = GrabObject;
+			grabObjects.dropObject = DropObject;
+		}
 
 		if (mainMenu != null)
 		{
@@ -970,7 +1033,8 @@ public class EditorVR : MonoBehaviour
 		{
 			length = dpr.pointerLength;
 			// If this is a MiniWorldRay, scale the pointer length to the correct size relative to MiniWorld objects
-			if (ray != null) {
+			if (ray != null)
+			{
 				var miniWorld = ray.miniWorld;
 				// As the miniworld gets smaller, the ray length grows, hence localScale.Inverse().
 				// Assume that both transforms have uniform scale, so we just need .x
@@ -1117,7 +1181,6 @@ public class EditorVR : MonoBehaviour
 	private void CreateDefaultWorkspaces()
 	{
 		CreateWorkspace<InspectorWorkspace>();
-		CreateWorkspace<ProjectWorkspace>();
 	}
 	
 	private void CreateWorkspace<T>() where T : Workspace
@@ -1132,7 +1195,7 @@ public class EditorVR : MonoBehaviour
 
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 		var headPosition = cameraTransform.position;
-		var headRotation = Quaternion.Euler(0, cameraTransform.rotation.eulerAngles.y, 0);
+		var headRotation = U.Math.ConstrainYawRotation(cameraTransform.rotation);
 
 		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
 			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
@@ -1196,23 +1259,58 @@ public class EditorVR : MonoBehaviour
 
 			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 			{
-				// Create MiniWorld rayOrigin
-				var miniWorldRayOrigin = new GameObject("MiniWorldRayOrigin").transform;
+				var miniWorldRayOrigin = InstantiateMiniWorldRay();
 				miniWorldRayOrigin.parent = workspace.transform;
 
 				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
+				uiInput.active = false;
+
+				var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
+				directSelectInput.active = false;
+
 				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
-				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay()
+
+				var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
+				tester.active = false;
+
+				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
 				{
 					originalRayOrigin = rayOriginPair.Value,
+					originalDirectSelectInput = deviceData.directSelectInput,
 					miniWorld = miniWorld,
 					proxy = proxy,
-					uiInput = uiInput
+					node = rayOriginPair.Key,
+					uiInput = uiInput,
+					directSelectInput = directSelectInput,
+					tester = tester
 				};
-			}, true);
+
+				m_IntersectionModule.AddTester(tester);
+			});
+
+			UpdatePlayerHandleMaps();
 		};
+	}
+
+	/// <summary>
+	/// Re-use DefaultProxyRay and strip off objects and components not needed for MiniWorldRays
+	/// </summary>
+	Transform InstantiateMiniWorldRay()
+	{
+		var miniWorldRay = U.Object.Instantiate(m_ProxyRayPrefab.gameObject).transform;
+		U.Object.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());
+
+		var renderers = miniWorldRay.GetComponentsInChildren<Renderer>();
+		foreach (var renderer in renderers)
+		{
+			if (!renderer.GetComponent<IntersectionTester>())
+				U.Object.Destroy(renderer.gameObject);
+			else
+				renderer.enabled = false;
+		}
+
+		return miniWorldRay;
 	}
 
 	private void OnWorkspaceDestroyed(Workspace workspace)
@@ -1228,89 +1326,218 @@ public class EditorVR : MonoBehaviour
 		//Clean up MiniWorldRays
 		m_MiniWorlds.Remove(miniWorld);
 		var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_MiniWorldRays);
-		foreach (var ray in miniWorldRaysCopy.Where(ray => ray.Value.miniWorld.Equals(miniWorld)))
+		foreach (var ray in miniWorldRaysCopy)
 		{
-			m_PlayerHandle.maps.Remove(ray.Value.uiInput);
-			m_InputModule.RemoveRaycastSource(ray.Key);
-			m_MiniWorldRays.Remove(ray.Key);
+			var miniWorldRay = ray.Value;
+			var maps = m_PlayerHandle.maps;
+			if (miniWorldRay.miniWorld == miniWorld)
+			{
+				var rayOrigin = ray.Key;
+				maps.Remove(miniWorldRay.uiInput);
+				maps.Remove(miniWorldRay.directSelectInput);
+				m_InputModule.RemoveRaycastSource(rayOrigin);
+				m_MiniWorldRays.Remove(rayOrigin);
+			}
 		}
 	}
 
 	private void UpdateMiniWorldRays()
 	{
+		var directSelection = m_TransformTool;
+
 		foreach (var ray in m_MiniWorldRays)
 		{
 			var miniWorldRayOrigin = ray.Key;
-			if (!ray.Value.proxy.active)
+			var miniWorldRay = ray.Value;
+
+			if (!miniWorldRay.proxy.active)
 			{
-				miniWorldRayOrigin.gameObject.SetActive(false);
+				miniWorldRay.tester.active = false;
 				continue;
 			}
 
 			// Transform into reference space
-			var miniWorld = ray.Value.miniWorld;
-			var originalRayOrigin = ray.Value.originalRayOrigin;
+			var miniWorld = miniWorldRay.miniWorld;
+			var originalRayOrigin = miniWorldRay.originalRayOrigin;
 			var referenceTransform = miniWorld.referenceTransform;
 			miniWorldRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
 			miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
+			miniWorldRayOrigin.localScale = Vector3.Scale(miniWorld.miniWorldTransform.localScale.Inverse(), referenceTransform.localScale);
 
 			// Set miniWorldRayOrigin active state based on whether controller is inside corresponding MiniWorld
-			var pointerLength = GetPointerLength(originalRayOrigin);
-			var isContained = miniWorld.Contains(originalRayOrigin.position + originalRayOrigin.forward * pointerLength);
-			miniWorldRayOrigin.gameObject.SetActive(isContained);
+			var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * GetPointerLength(originalRayOrigin);
+			var isContained = miniWorld.Contains(originalPointerPosition);
+			miniWorldRay.tester.active = isContained;
 
-			// Keep input alive if we are dragging an object, otherwise MultipleRayInputModule will reset our control state
-			ray.Value.uiInput.active = isContained || ray.Value.dragObject;
+			var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
 
-			var uiInput = (UIActions)ray.Value.uiInput;
-			var hoverObject = ray.Value.hoverObject;
-
-			// Instead of using wasJustPressed, use isHeld to allow dragging with a single press
-			if (hoverObject && Selection.gameObjects.Contains(hoverObject) && !ray.Value.dragObject && uiInput.select.isHeld)
+			if (directSelectInput.select.wasJustPressed)
 			{
-				//Disable original ray so that it doesn't interrupt dragging by activating its ActionMapInput
-				originalRayOrigin.gameObject.SetActive(false);
+				var dragObject = GetDirectSelectionForRayOrigin(miniWorldRayOrigin, directSelectInput);
 
-				ray.Value.dragObject = hoverObject; // Capture object for later use
-				var inverseRotation = Quaternion.Inverse(ray.Key.rotation);
-				ray.Value.dragObjectRotationOffset = inverseRotation * hoverObject.transform.rotation;
-				ray.Value.dragObjectPositionOffset = inverseRotation * (hoverObject.transform.position - ray.Key.position);
-				ray.Value.dragObjectOriginalScale = hoverObject.transform.localScale;
+				if (dragObject)
+				{
+					// Only one ray can grab an object, otherwise PlaceObject is called on each trigger release
+					// This does not prevent TransformTool from doing two-handed scaling
+					var otherRayHasThisObject = false;
+					foreach (var otherRay in m_MiniWorldRays.Values)
+					{
+						if (otherRay != miniWorldRay && otherRay.dragObject == dragObject)
+							otherRayHasThisObject = true;
+					}
+
+					if (!otherRayHasThisObject)
+					{
+						miniWorldRay.dragObject = dragObject;
+						miniWorldRay.dragObjectOriginalScale = dragObject.transform.localScale;
+						var totalBounds = U.Object.GetTotalBounds(dragObject.transform);
+						if (totalBounds != null)
+							miniWorldRay.dragObjectPreviewScale = dragObject.transform.localScale * (kPreviewScale / totalBounds.Value.size.MaxComponent());
+					}
+				}
 			}
 
-			if (!ray.Value.dragObject)
-				continue;
-
-			if (uiInput.@select.isHeld)
+			// Transfer objects to and from original ray and MiniWorld ray
+			if (directSelection != null)
 			{
-				var selectedObjectTransform = ray.Value.dragObject.transform;
-				// If the pointer is inside the MiniWorld, position at an offset from controller position
-				if (ray.Key.gameObject.activeSelf)
+				var pointerLengthDiff = GetPointerLength(miniWorldRayOrigin) - GetPointerLength(originalRayOrigin);
+
+				// If the original ray was directly manipulating an object, we need to transfer ownership when it enters the MiniWorld
+				var heldObject = directSelection.GetHeldObject(originalRayOrigin);
+				if (heldObject && isContained && !miniWorldRay.wasContained)
+					directSelection.TransferHeldObject(originalRayOrigin, directSelectInput, miniWorldRayOrigin, pointerLengthDiff * Vector3.forward);
+
+				// In the case where we have transferred an object, transfer it back if it leaves the MiniWorld
+				// This is a different case from when an object was first grabbed within the MiniWorld and becomes a preview, because miniWorldRay.dragObject is not set
+				heldObject = directSelection.GetHeldObject(miniWorldRayOrigin);
+				if (heldObject && !isContained && miniWorldRay.wasContained && !miniWorldRay.dragObject)
+					directSelection.TransferHeldObject(miniWorldRayOrigin, miniWorldRay.originalDirectSelectInput, originalRayOrigin, pointerLengthDiff * Vector3.back);
+			}
+
+			// Transfer objects between MiniWorlds
+			if (!miniWorldRay.dragObject)
+			{
+				if (isContained)
 				{
-					selectedObjectTransform.localScale = ray.Value.dragObjectOriginalScale;
-					selectedObjectTransform.position = ray.Key.position + ray.Key.rotation * ray.Value.dragObjectPositionOffset;
-					selectedObjectTransform.rotation = ray.Key.rotation * ray.Value.dragObjectRotationOffset;
+					foreach (var kvp in m_MiniWorldRays)
+					{
+						var otherRayOrigin = kvp.Key;
+						var otherRay = kvp.Value;
+						var otherObject = otherRay.dragObject;
+						if (otherRay != miniWorldRay && !otherRay.wasContained && otherObject)
+						{
+							miniWorldRay.dragObject = otherObject;
+							miniWorldRay.dragObjectOriginalScale = otherRay.dragObjectOriginalScale;
+							miniWorldRay.dragObjectPreviewScale = otherRay.dragObjectPreviewScale;
+							miniWorldRay.directSelectInput.active = true;
+
+							otherRay.dragObject = null;
+							otherRay.directSelectInput.active = false;
+
+							if (directSelection != null)
+							{
+								var heldObject = directSelection.GetHeldObject(otherRayOrigin);
+								if (heldObject)
+								{
+									directSelection.TransferHeldObject(otherRayOrigin, miniWorldRay.directSelectInput, miniWorldRayOrigin,
+										Vector3.zero); // Set the new offset to zero because the object will have moved (this could be improved by taking original offset into account)
+								}
+							}
+
+							break;
+						}
+					}
 				}
-				// If the object is outside, attach to controller as a preview
+			}
+
+			if (!miniWorldRay.dragObject)
+			{
+				miniWorldRay.wasContained = isContained;
+				continue;
+			}
+
+			var dragObjectTransform = miniWorldRay.dragObject.transform;
+
+			if (directSelectInput.select.isHeld)
+			{
+				if (isContained)
+				{
+					// Scale the object back to its original scale when it re-enters the MiniWorld
+					if (!miniWorldRay.wasContained)
+					{
+						dragObjectTransform.localScale = miniWorldRay.dragObjectOriginalScale;
+
+						// Add the object (back) to TransformTool
+						if (directSelection != null)
+						{
+							if (miniWorldRay.wasHeld)
+								U.Math.SetTransformOffset(miniWorldRayOrigin, dragObjectTransform, miniWorldRay.originalPositionOffset, miniWorldRay.originalRotationOffset);
+							else
+								U.Math.SetTransformOffset(miniWorldRayOrigin, dragObjectTransform, GetPointerLength(miniWorldRayOrigin) * Vector3.forward, Quaternion.identity);
+
+							directSelection.AddHeldObject(miniWorldRay.node, miniWorldRayOrigin, dragObjectTransform, directSelectInput);
+						}
+					}
+				}
 				else
 				{
-					m_ObjectPlacementModule.Preview(selectedObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
+					if (dragObjectTransform.tag == kVRPlayerTag)
+					{
+						if (directSelection != null)
+							directSelection.DropHeldObject(dragObjectTransform.transform);
 
-					selectedObjectTransform.transform.localScale = Vector3.one;
-					var totalBounds = U.Object.GetTotalBounds(selectedObjectTransform.transform);
-					if (totalBounds != null)
-						selectedObjectTransform.transform.localScale = Vector3.one * (0.1f / totalBounds.Value.size.MaxComponent());
+						// Drop player at edge of MiniWorld
+						miniWorldRay.dragObject = null;
+					}
+					else
+					{
+						if (miniWorldRay.wasContained)
+						{
+							var otherwiseContained = false;
+							foreach (var world in m_MiniWorlds)
+							{
+								if (world.Contains(originalPointerPosition))
+								{
+									otherwiseContained = true;
+								}
+							}
+
+							if (!otherwiseContained)
+							{
+								// Store the original scale in case the object re-enters the MiniWorld
+								miniWorldRay.dragObjectOriginalScale = dragObjectTransform.localScale;
+
+								// Drop from TransformTool to take control of object
+								if (directSelection != null)
+								{
+									directSelection.DropHeldObject(dragObjectTransform, out miniWorldRay.originalPositionOffset, out miniWorldRay.originalRotationOffset);
+									miniWorldRay.wasHeld = true;
+								}
+
+								dragObjectTransform.localScale = miniWorldRay.dragObjectPreviewScale;
+							}
+						}
+
+						m_ObjectPlacementModule.Preview(dragObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
+					}
 				}
 			}
 
 			// Release the current object if the trigger is no longer held
-			if (!uiInput.@select.isHeld && ray.Value.dragObject)
+			if (directSelectInput.select.wasJustReleased)
 			{
-				originalRayOrigin.gameObject.SetActive(true);
+				if (directSelection != null)
+					directSelection.DropHeldObject(dragObjectTransform);
 
-				PlaceObject(ray.Value.dragObject.transform, ray.Value.dragObjectOriginalScale);
-				ray.Value.dragObject = null;
+				// If the user has pulled an object out of the MiniWorld, use PlaceObject to grow it back to its original scale
+				if (!isContained)
+					PlaceObject(dragObjectTransform, miniWorldRay.dragObjectOriginalScale);
+
+				miniWorldRay.dragObject = null;
+				miniWorldRay.wasHeld = false;
 			}
+
+			miniWorldRay.wasContained = isContained;
 		}
 	}
 
@@ -1320,50 +1547,201 @@ public class EditorVR : MonoBehaviour
 		if (go)
 			return go;
 
+		// If a raycast did not find an object use the spatial hash as a final test
 		if (m_IntersectionModule)
 		{
-			// If a raycast did not find an object, it's possible that the tester is completely contained within the object,
-			// so in that case use the spatial hash as a final test
 			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-		if (m_IntersectionModule)
-		{
 			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
 			if (renderer)
 				return renderer.gameObject;
-			}
 		}
 
-		foreach (var miniWorldRay in m_MiniWorldRays)
+		foreach (var ray in m_MiniWorldRays)
 		{
-			if (miniWorldRay.Value.originalRayOrigin.Equals(rayOrigin))
+			var miniWorldRay = ray.Value;
+			if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
 			{
-				go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRay.Key);
+				var miniWorldRayOrigin = ray.Key;
+				var tester = miniWorldRay.tester;
+				if (!tester.active)
+					continue;
+
+				go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRayOrigin);
 				if (go)
 					return go;
+
+				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+				if (renderer)
+					return renderer.gameObject;
 			}
 		}
 
 		return null;
 	}
 
+	Dictionary<Transform, DirectSelection> GetDirectSelection()
+	{
+		var results = new Dictionary<Transform, DirectSelection>();
+
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			var rayOrigin = rayOriginPair.Value;
+			var obj = GetDirectSelectionForRayOrigin(rayOrigin, deviceData.directSelectInput);
+			if (obj)
+			{
+				results[rayOrigin] = new DirectSelection
+				{
+					gameObject = obj,
+					node = rayOriginPair.Key,
+					input = deviceData.directSelectInput
+				};
+			}
+		}, true);
+
+		foreach (var ray in m_MiniWorldRays)
+		{
+			var rayOrigin = ray.Key;
+			var miniWorldRay = ray.Value;
+			var go = GetDirectSelectionForRayOrigin(rayOrigin, miniWorldRay.directSelectInput);
+			if (go != null)
+			{
+				results[rayOrigin] = new DirectSelection
+				{
+					gameObject = go,
+					node = ray.Value.node,
+					input = miniWorldRay.directSelectInput
+				};
+			}
+		}
+		return results;
+	}
+
+	GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, ActionMapInput input)
+	{
+		var directSelection = m_TransformTool;
+
+		if (m_IntersectionModule)
+		{
+			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+
+			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+			if (renderer)
+			{
+				input.active = true;
+				return renderer.gameObject;
+			}
+		}
+
+		MiniWorldRay ray;
+		input.active = (directSelection != null && directSelection.GetHeldObject(rayOrigin))
+			|| (m_MiniWorldRays.TryGetValue(rayOrigin, out ray) && ray.dragObject);
+
+		return null;
+	}
+
+	bool CanGrabObject(DirectSelection selection, Transform rayOrigin)
+	{
+		if (selection.gameObject.tag == kVRPlayerTag && !m_MiniWorldRays.ContainsKey(rayOrigin))
+			return false;
+
+		return true;
+	}
+
+	bool GrabObject(IGrabObjects grabber, DirectSelection selection, Transform rayOrigin)
+	{
+		if (!CanGrabObject(selection, rayOrigin))
+			return false;
+
+		// Detach the player head model so that it is not affected by its parent transform
+		if (selection.gameObject.tag == kVRPlayerTag)
+			selection.gameObject.transform.parent = null;
+
+		return true;
+	}
+
+	void DropObject(IGrabObjects grabber, Transform grabbedObject, Transform rayOrigin)
+	{
+		// Dropping the player head updates the viewer pivot
+		if (grabbedObject.tag == kVRPlayerTag)
+			StartCoroutine(UpdateViewerPivot(grabbedObject));
+	}
+
+	IEnumerator UpdateViewerPivot(Transform playerHead)
+	{
+		var viewerPivot = U.Camera.GetViewerPivot();
+
+		// Smooth motion will cause Workspaces to lag behind camera
+		var components = viewerPivot.GetComponentsInChildren<SmoothMotion>();
+		foreach (var smoothMotion in components)
+		{
+			smoothMotion.enabled = false;
+		}
+
+		// Hide player head to avoid jarring impact
+		var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
+		foreach (var renderer in playerHeadRenderers)
+		{
+			renderer.enabled = false;
+		}
+
+		var mainCamera = U.Camera.GetMainCamera().transform;
+		var startPosition = viewerPivot.position;
+		var startRotation = viewerPivot.rotation;
+
+		var rotationDiff = U.Math.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
+		var cameraDiff = viewerPivot.position - mainCamera.position;
+		cameraDiff.y = 0;
+		var rotationOffset = rotationDiff * cameraDiff - cameraDiff;
+
+		var endPosition = viewerPivot.position + (playerHead.position - mainCamera.position) + rotationOffset;
+		var endRotation = viewerPivot.rotation * rotationDiff;
+		var startTime = Time.realtimeSinceStartup;
+		var diffTime = 0f;
+
+		while (diffTime < kViewerPivotTransitionTime)
+		{
+			diffTime = Time.realtimeSinceStartup - startTime;
+			var t = diffTime / kViewerPivotTransitionTime;
+			// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
+			viewerPivot.position = Vector3.Lerp(startPosition, endPosition, t);
+			viewerPivot.rotation = Quaternion.Lerp(startRotation, endRotation, t);
+			yield return null;
+		}
+
+		viewerPivot.position = endPosition;
+		viewerPivot.rotation = endRotation;
+
+		playerHead.parent = mainCamera;
+		playerHead.localRotation = Quaternion.identity;
+		playerHead.localPosition = Vector3.zero;
+
+		foreach (var smoothMotion in components)
+		{
+			smoothMotion.enabled = true;
+		}
+
+		foreach (var renderer in playerHeadRenderers)
+		{
+			renderer.enabled = true;
+		}
+	}
+
 	private void PlaceObject(Transform obj, Vector3 targetScale)
 	{
-		var inMiniWorld = false;
 		foreach (var miniWorld in m_MiniWorlds)
 		{
 			if (!miniWorld.Contains(obj.position))
 				continue;
-
-			inMiniWorld = true;
+			
 			var referenceTransform = miniWorld.referenceTransform;
 			obj.transform.parent = null;
 			obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
 			obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
 			obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
-			break;
+			return;
 		}
-		if (!inMiniWorld)
-			m_ObjectPlacementModule.PlaceObject(obj, targetScale);
+
+		m_ObjectPlacementModule.PlaceObject(obj, targetScale);
 	}
 
 	private Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
@@ -1372,6 +1750,12 @@ public class EditorVR : MonoBehaviour
 				from origin in proxy.rayOrigins
 					where origin.Value.Equals(rayOrigin)
 						select proxy.previewOrigins[origin.Key]).FirstOrDefault();
+	}
+
+	void AddPlayerModel()
+	{
+		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
+		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
 	}
 
 #if UNITY_EDITOR
