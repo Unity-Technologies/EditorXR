@@ -17,6 +17,7 @@ public class VRSmoothCamera : MonoBehaviour
 	float m_RotationSmoothingMultiplier = 1f;
 
 	Camera m_VRCamera;
+	//RenderTexture m_RenderTexture;
 
 	void Start()
 	{
