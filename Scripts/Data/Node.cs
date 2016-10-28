@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR
+﻿namespace UnityEngine.VR.Tools
 {
 	/// <summary>
 	/// A tracked node within the system
