@@ -124,11 +124,40 @@ namespace UnityEngine.VR.UI
 			return transform.InverseTransformPoint(hitPos);
 		}
 
-		public override void Close()
+		protected override void UpdateLabel()
+		{
+			base.UpdateLabel();
+
+			if (m_Keyboard != null)
+				UpdateHandleButtonText();
+		}
+
+		public override void Open()
+		{
+			base.Open();
+
+			UpdateHandleButtonText();
+		}
+
+		void UpdateHandleButtonText()
+		{
+			if (IsExpression())
+			{
+				m_Keyboard.DeactivateShiftModeOnKey(m_Keyboard.handleButton);
+				m_Keyboard.handleButton.textComponent.text = "=";
+			}
+			else
+			{
+				m_Keyboard.ActivateShiftModeOnKey(m_Keyboard.handleButton);
+				m_Keyboard.handleButton.textComponent.text = "x";
+			}
+		}
+
+		public override void Close(bool collapse = false)
 		{
 			ParseNumberField();
 
-			base.Close();
+			base.Close(collapse);
 		}
 
 		protected override bool IsValid(char ch)
@@ -150,9 +179,7 @@ namespace UnityEngine.VR.UI
 		protected override void Append(char c)
 		{
 			var len = m_Text.Length;
-
 			text += c;
-
 			if (len != m_Text.Length)
 			{
 				if (IsOperand(c))
@@ -280,10 +307,10 @@ namespace UnityEngine.VR.UI
 					m_Text = StringExpressionEvaluator.Evaluate<int>(m_Text).ToString(kIntFieldFormatString);
 			}
 
+			m_OperandCount = 0;
+
 			if (str != m_Text)
 				SendOnValueChangedAndUpdateLabel();
-
-			m_OperandCount = 0;
 		}
 
 		private float GetNicePointerDelta(Vector3 delta)

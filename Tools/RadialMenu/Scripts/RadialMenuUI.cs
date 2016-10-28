@@ -206,7 +206,6 @@ namespace UnityEngine.VR.Menus
 			{
 				if (!value)
 				{
-					Debug.LogError("<color=cyan>ending highlight with a magnitude value of : </color>" + value);
 					m_DragMagnitude = 0f;
 					m_DragStartVector = new Vector2();
 					m_DragSelectMaxTime = 0f;
@@ -216,7 +215,6 @@ namespace UnityEngine.VR.Menus
 						return;
 					else
 					{
-						Debug.LogError("<color=blue>Disable any highlights occurring on menu buttons here</color>");
 						m_HighlightedButton = null;
 
 						foreach (var buttonMinMaxRange in buttonRotationRange)
