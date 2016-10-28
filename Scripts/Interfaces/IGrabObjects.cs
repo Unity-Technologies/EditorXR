@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Modules;
 
 // TODO: collect all IGrabObjects and keep state in EditorVR, remove query/state change methods
