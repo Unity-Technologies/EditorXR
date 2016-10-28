@@ -69,7 +69,7 @@ namespace UnityEngine.VR.Modules
 
 							// Ignore locked objects
 							if (getLocked(obj.gameObject))
-								return;
+								continue;
 
 							// Bounds check
 							if (!obj.bounds.Intersects(testerBounds))
