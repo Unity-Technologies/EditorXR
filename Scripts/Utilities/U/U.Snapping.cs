@@ -243,7 +243,7 @@ namespace UnityEngine.VR.Utilities
 				if (target)
 				{
 					var mesh = target.sharedMesh;
-					if (mesh)
+					if (mesh && mesh.isReadable)
 					{
 						var vertexCount = mesh.vertexCount;
 						var vertices = mesh.vertices;
