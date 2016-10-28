@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 1d288f1a40f3bc54bb07e9a5eb99d137
-timeCreated: 1477524840
+timeCreated: 1477630686
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
@@ -19,7 +19,7 @@ MonoImporter:
       type: 2}
   - m_KeyboardMalletPrefab: {fileID: 114000013972379212, guid: 55c3df0d3b957354fa26bae2b39cffb3,
       type: 2}
-  - m_NumericKeyboardPrefab: {fileID: 114000012169358554, guid: a8bc2b00545930b4ebcf84ad1534cfba,
+  - m_NumericKeyboardPrefab: {fileID: 114000012169358554, guid: 5f76c682f089562449adab190d7a8fc4,
       type: 2}
   - m_StandardKeyboardPrefab: {fileID: 114000012076762946, guid: 6a5c5a798b3bb39408f3dbf2bfa77923,
       type: 2}

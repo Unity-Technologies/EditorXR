@@ -33,7 +33,7 @@ public class KeyboardUIEditor : Editor
 		EditorGUILayout.LabelField("Vertical Slots");
 		EditorGUILayout.LabelField("Horizontal Slots");
 		EditorGUILayout.EndHorizontal();
-		for (int i = 0; i < m_ButtonsProperty.arraySize - 1; i++)
+		for (int i = 0; i < m_ButtonsProperty.arraySize; i++)
 		{
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.PropertyField(m_ButtonsProperty.GetArrayElementAtIndex(i));

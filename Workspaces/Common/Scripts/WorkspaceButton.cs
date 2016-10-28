@@ -75,6 +75,15 @@ namespace UnityEngine.VR.Workspaces
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
 
+		public bool autoHighlight
+		{
+			get { return m_AutoHighlight; }
+			set { m_AutoHighlight = value; }
+		}
+
+		[SerializeField]
+		bool m_AutoHighlight = true;
+
 		public Button button { get { return m_Button; } }
 
 		public bool alternateIconVisible
@@ -103,7 +112,7 @@ namespace UnityEngine.VR.Workspaces
 		}
 		Sprite m_IconSprite;
 
-		bool pressed
+		public bool pressed
 		{
 			get { return m_Pressed; }
 			set
@@ -122,7 +131,7 @@ namespace UnityEngine.VR.Workspaces
 		}
 		bool m_Pressed;
 
-		bool highlight
+		public bool highlight
 		{
 			set
 			{
@@ -386,12 +395,14 @@ namespace UnityEngine.VR.Workspaces
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			highlight = true;
+			if (autoHighlight)
+				highlight = true;
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			highlight = false;
+			if (autoHighlight)
+				highlight = false;
 		}
 
 		void SwapIconSprite()

@@ -283,6 +283,7 @@ public class KeyboardUI : MonoBehaviour
 
 	IEnumerator SetDragColors()
 	{
+		yield break;
 		if (!gameObject.activeInHierarchy) yield break;
 		var t = 0f;
 		var startColor = m_HandleMaterial.color;
@@ -303,6 +304,7 @@ public class KeyboardUI : MonoBehaviour
 
 	IEnumerator UnsetDragColors()
 	{
+		yield break;
 		if (!gameObject.activeInHierarchy) yield break;
 
 		var t = 0f;
@@ -378,11 +380,11 @@ public class KeyboardUI : MonoBehaviour
 		if (m_ChangeDragColorsCoroutine != null)
 			StopCoroutine(m_ChangeDragColorsCoroutine);
 
-		m_HandleMaterial.color = m_HandleButton.targetMeshBaseColor;
+//		m_HandleMaterial.color = m_HandleButton.targetMeshBaseColor;
 	}
 
 	void OnDestroy()
 	{
-		U.Object.Destroy(m_HandleMaterial);
+//		U.Object.Destroy(m_HandleMaterial);
 	}
 }

@@ -10,6 +10,7 @@ namespace UnityEngine.VR.UI
 {
 	public abstract class InputField : Selectable, IPointerClickHandler
 	{
+		const float kMoveKeyboardTime = 0.2f;
 		public SelectionFlags selectionFlags
 		{
 			get { return m_SelectionFlags; }
@@ -36,7 +37,7 @@ namespace UnityEngine.VR.UI
 
 		private bool m_Open;
 
-		Coroutine m_WaitThenOpenCoroutine;
+		Coroutine m_MoveKeyboardCoroutine;
 
 		public string text
 		{
@@ -132,6 +133,7 @@ namespace UnityEngine.VR.UI
 
 			m_Keyboard = spawnKeyboard();
 
+
 //			if (m_WaitThenOpenCoroutine != null)
 //				StopCoroutine(m_WaitThenOpenCoroutine);
 //			m_WaitThenOpenCoroutine = StartCoroutine(WaitThenOpen());
@@ -144,15 +146,36 @@ namespace UnityEngine.VR.UI
 //				yield return null;
 //			}
 
-			if (m_Keyboard != null)
-			{
-				m_Keyboard.gameObject.SetActive(true);
+			m_Keyboard.gameObject.SetActive(true);
 
-				m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
-				var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
-				m_Keyboard.transform.rotation = rotation;
-				m_Keyboard.Setup(OnKeyPress, true);
+			m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
+			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
+			m_Keyboard.transform.rotation = rotation;
+			m_Keyboard.Setup(OnKeyPress, true);
+
+//			if (m_MoveKeyboardCoroutine != null)
+//				StopCoroutine(m_MoveKeyboardCoroutine);
+//			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField());
+
+		}
+
+		IEnumerator MoveKeyboardToInputField()
+		{
+			var targetPosition = transform.position + Vector3.up * 0.05f;
+			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
+
+			var t = 0f;
+			while (t < kMoveKeyboardTime)
+			{
+				m_Keyboard.transform.position = Vector3.Lerp(m_Keyboard.transform.position, targetPosition, t / kMoveKeyboardTime);
+				t += Time.unscaledDeltaTime;
+				yield return null;
 			}
+			m_Keyboard.transform.position = targetPosition;
+			m_Keyboard.transform.rotation = rotation;
+			m_MoveKeyboardCoroutine = null;
+
+			m_Keyboard.Setup(OnKeyPress, true);
 		}
 
 		public virtual void Close()
