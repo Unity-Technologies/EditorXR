@@ -66,7 +66,7 @@ namespace UnityEngine.VR.Menus
 		private readonly string kRotationHighlightBottomProperty = "_ColorBottom";
 		private readonly Color kMenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
 
-		private VisibilityState m_VisibilityState;
+		private VisibilityState m_VisibilityState = VisibilityState.Visible;
 		private RotationState m_RotationState;
 		private Material m_RotationHighlightLeftMaterial;
 		private Material m_RotationHighlightRightMaterial;
