@@ -114,7 +114,7 @@ public class KeyboardMallet : MonoBehaviour
 
 		var smoothVelocity = 0f;
 		var currentDuration = 0f;
-		const float kTargetDuration = 0.5f;
+		const float kTargetDuration = 0.3f;
 		while (currentDuration < kTargetDuration)
 		{
 			currentLength = U.Math.SmoothDamp(currentLength, 0f, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
@@ -139,7 +139,7 @@ public class KeyboardMallet : MonoBehaviour
 		var targetBulbScale = Vector3.one * m_BulbRadius * 2f;
 
 		var smoothVelocity = 0f;
-		const float kTargetDuration = 0.5f;
+		const float kTargetDuration = 0.3f;
 		var currentDuration = 0f;
 		while (currentDuration < kTargetDuration)
 		{

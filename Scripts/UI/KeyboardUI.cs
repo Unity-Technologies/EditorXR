@@ -12,10 +12,7 @@ public class KeyboardUI : MonoBehaviour
 	const float kKeyExpandCollapseTime = 0.25f;
 	const float kHandleChangeColorTime = 0.1f;
 	const float kHorizontalThreshold = 0.7f;
-	static Color sDragColor = UnityBrandColorScheme.green;
-
-	[SerializeField]
-	KeyboardButton m_CloseButton;
+	static Color sHandleDragColor = UnityBrandColorScheme.green;
 
 	[SerializeField]
 	List<KeyboardButton> m_Buttons = new List<KeyboardButton>();
@@ -30,11 +27,9 @@ public class KeyboardUI : MonoBehaviour
 	DirectManipulator m_DirectManipulator;
 
 	/// <summary>
-	/// Called when the orientation changes, parameter is whether keyboard is currently horizontal
+	/// Called when the mallet should be shown/hidden
 	/// </summary>
-	public event Action<bool> orientationChanged = delegate { };
-
-	public event Action closed = delegate { };
+	public event Action<bool> malletVisibilityChanged = delegate { };
 
 	bool m_EligibleForDrag;
 	bool m_CurrentlyHorizontal;
@@ -43,6 +38,9 @@ public class KeyboardUI : MonoBehaviour
 	Coroutine m_ChangeDragColorsCoroutine;
 	Coroutine m_MoveKeysCoroutine;
 	Coroutine m_DragAfterDelayCoroutine;
+
+	Transform cachedRayOrigin;
+	bool m_MalletVisible;
 
 	public KeyboardButton handleButton { get; set; }
 
@@ -65,7 +63,6 @@ public class KeyboardUI : MonoBehaviour
 			handle.dragEnded += OnDragEnded;
 		}
 
-
 		foreach (var button in m_Buttons)
 		{
 			button.Setup(keyPress, IsHorizontal);
@@ -73,8 +70,10 @@ public class KeyboardUI : MonoBehaviour
 
 		m_HandleMaterial = handleButton.targetMeshMaterial;
 
-		orientationChanged(IsHorizontal());
-		SetButtonLayoutTargets(IsHorizontal());
+		var horizontal = IsHorizontal();
+		SetButtonLayoutTargets(horizontal);
+		malletVisibilityChanged(horizontal);
+		m_MalletVisible = horizontal;
 
 		if (m_MoveKeysCoroutine != null)
 			StopCoroutine(m_MoveKeysCoroutine);
@@ -105,7 +104,9 @@ public class KeyboardUI : MonoBehaviour
 
 	public void Collapse(Action doneCollapse)
 	{
-		closed();
+		if (m_MalletVisible)
+			malletVisibilityChanged(false);
+		m_MalletVisible = false;
 
 		if (isActiveAndEnabled)
 		{
@@ -182,7 +183,7 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
-	private bool IsHorizontal()
+	bool IsHorizontal()
 	{
 		return Vector3.Dot(transform.up, Vector3.up) < kHorizontalThreshold
 			&& Vector3.Dot(transform.forward, Vector3.up) < 0f;
@@ -211,6 +212,9 @@ public class KeyboardUI : MonoBehaviour
 		m_MoveKeysCoroutine = null;
 	}
 
+	/// <summary>
+	/// Instantly move all keys to vertical layout positions
+	/// </summary>
 	public void ForceMoveButtonsToVerticalLayout()
 	{
 		int i = 0;
@@ -225,6 +229,9 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	/// Instantly move all keys to horizontal layout positions
+	/// </summary>
 	public void ForceMoveButtonsToHorizontalLayout()
 	{
 		int i = 0;
@@ -293,14 +300,14 @@ public class KeyboardUI : MonoBehaviour
 		while (t < kHandleChangeColorTime)
 		{
 			var alpha = t / kHandleChangeColorTime;
-			m_HandleMaterial.color = Color.Lerp(startColor, sDragColor, alpha);
+			m_HandleMaterial.color = Color.Lerp(startColor, sHandleDragColor, alpha);
 			SetButtonTextAlpha(1f - alpha);
 			t += Time.unscaledDeltaTime;
 			yield return null;
 		}
 
 		SetButtonTextAlpha(0f);
-		m_HandleMaterial.color = sDragColor;
+		m_HandleMaterial.color = sHandleDragColor;
 
 		m_ChangeDragColorsCoroutine = null;
 	}
@@ -342,8 +349,6 @@ public class KeyboardUI : MonoBehaviour
 			var horizontal = IsHorizontal();
 			if (m_CurrentlyHorizontal != horizontal)
 			{
-				orientationChanged(IsHorizontal());
-
 				SetButtonLayoutTargets(IsHorizontal());
 
 				if (m_MoveKeysCoroutine != null)
@@ -376,6 +381,29 @@ public class KeyboardUI : MonoBehaviour
 
 			if (isActiveAndEnabled)
 				m_ChangeDragColorsCoroutine = StartCoroutine(UnsetDragColors());
+
+			cachedRayOrigin = handleEventData.rayOrigin;
+		}
+	}
+
+
+	void Update()
+	{
+		if (IsHorizontal() && cachedRayOrigin != null)
+		{
+			var rayOriginPos = cachedRayOrigin.position;
+			if (Vector3.Magnitude(handleButton.transform.position - rayOriginPos) < 0.03f)
+			{
+				if (m_MalletVisible)
+					malletVisibilityChanged(false);
+				m_MalletVisible = false;
+			}
+			else
+			{
+				if (!m_MalletVisible)
+					malletVisibilityChanged(true);
+				m_MalletVisible = true;
+			}
 		}
 	}
 

@@ -139,11 +139,21 @@ public class KeyboardButton : BaseHandle
 	protected override void OnHandleHoverStarted(HandleEventData eventData)
 	{
 		base.OnHandleHoverStarted(eventData);
+
+		if (!m_PressOnHover())
+		{
+			m_WorkspaceButton.highlight = true;
+		}
 	}
 
 	protected override void OnHandleHoverEnded(HandleEventData eventData)
 	{
 		base.OnHandleHoverEnded(eventData);
+
+		if (!m_PressOnHover())
+		{
+			m_WorkspaceButton.highlight = false;
+		}
 	}
 
 	protected override void OnHandleDragStarted(HandleEventData eventData)
@@ -281,6 +291,7 @@ public class KeyboardButton : BaseHandle
 		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 
 		m_TargetMeshMaterial.color = m_TargetMeshBaseColor;
+		m_WorkspaceButton.highlight = false;
 	}
 
 	private void OnDestroy()
@@ -304,7 +315,6 @@ public class KeyboardButton : BaseHandle
 
 			yield return null;
 		}
-		m_WorkspaceButton.highlight = false;
 
 		finalColor = Color.white * Mathf.LinearToGammaSpace(kPressEmission);
 		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);

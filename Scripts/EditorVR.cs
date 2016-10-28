@@ -979,8 +979,7 @@ public class EditorVR : MonoBehaviour
 		if (m_NumericKeyboard == null)
 		{
 			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-			m_NumericKeyboard.orientationChanged += KeyboardOrientationChanged;
-			m_NumericKeyboard.closed += KeyboardClosed;
+			m_NumericKeyboard.malletVisibilityChanged += SetMalletVisible;
 		}
 		return m_NumericKeyboard;
 	}
@@ -994,19 +993,18 @@ public class EditorVR : MonoBehaviour
 		if (m_StandardKeyboard == null)
 		{
 			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-			m_StandardKeyboard.orientationChanged += KeyboardOrientationChanged;
-			m_StandardKeyboard.closed += KeyboardClosed;
+			m_StandardKeyboard.malletVisibilityChanged += SetMalletVisible;
 		}
 		return m_StandardKeyboard;
 	}
 
-	void KeyboardOrientationChanged(bool isHorizontal)
+	void SetMalletVisible(bool visible)
 	{
 		foreach (var kvp in m_KeyboardMallets)
 		{
 			var mallet = kvp.Value;
 			var dpr = kvp.Key.GetComponentInChildren<DefaultProxyRay>();
-			if (isHorizontal)
+			if (visible)
 			{
 				mallet.Show();
 				dpr.Hide();
@@ -1016,17 +1014,6 @@ public class EditorVR : MonoBehaviour
 				mallet.Hide();
 				dpr.Show();
 			}
-		}
-	}
-
-	void KeyboardClosed()
-	{
-		foreach (var kvp in m_KeyboardMallets)
-		{
-			var mallet = kvp.Value;
-			var dpr = kvp.Key.GetComponentInChildren<DefaultProxyRay>();
-				mallet.Hide();
-				dpr.Show();
 		}
 	}
 
