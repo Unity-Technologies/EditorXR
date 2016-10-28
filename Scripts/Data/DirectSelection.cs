@@ -1,4 +1,5 @@
 ﻿using UnityEngine.InputNew;
+using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Modules
 {
