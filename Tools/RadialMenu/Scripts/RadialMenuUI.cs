@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,8 +64,10 @@ namespace UnityEngine.VR.Menus
 				gameObject.SetActive(true);
 				if (value && actions.Count > 0)
 					m_ShowCoroutine = StartCoroutine(AnimateShow());
-				else if (m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
+				else if (!value && m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
 					m_HideCoroutine = StartCoroutine(AnimateHide());
+				else if (!value)
+					gameObject.SetActive(false);
 			}
 		}
 		bool m_Visible;
@@ -243,6 +245,9 @@ namespace UnityEngine.VR.Menus
 				{
 					// Having to grab the index because of incorrect closure support
 					var index = m_RadialMenuSlots.IndexOf(m_HighlightedButton);
+					if (index == -1)
+						return;
+
 					var selectedSlot = m_RadialMenuSlots[index];
 					var buttonAction = m_Actions[index].action;
 					buttonAction.ExecuteAction();

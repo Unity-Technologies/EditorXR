@@ -3,12 +3,15 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
 
-public class ObjectPlacementModule : MonoBehaviour
+public class ObjectPlacementModule : MonoBehaviour, ISpatialHash
 {
 	[SerializeField]
 	float kInstantiateFOVDifference = -10f;
 
 	const float kGrowDuration = 0.5f;
+
+	public System.Action<Object> addObjectToSpatialHash { get; set; }
+	public System.Action<Object> removeObjectFromSpatialHash { get; set; }
 
 	public void Preview(Transform preview, Transform previewOrigin, float t = 1f, Quaternion? localRotation = null)
 	{
@@ -26,6 +29,9 @@ public class ObjectPlacementModule : MonoBehaviour
 
 	private IEnumerator PlaceObjectCoroutine(Transform obj, Vector3 targetScale)
 	{
+		// Don't let us direct select while placing
+		removeObjectFromSpatialHash(obj);
+
 		float start = Time.realtimeSinceStartup;
 		var currTime = 0f;
 
@@ -66,5 +72,7 @@ public class ObjectPlacementModule : MonoBehaviour
 			obj.localScale = targetScale;
 		}
 		Selection.activeGameObject = obj.gameObject;
+
+		addObjectToSpatialHash(obj);
 	}
 }

@@ -217,7 +217,7 @@ namespace UnityEngine.VR.Menus
 			m_CanvasGroup.alpha = 0.0001f;
 
 			var duration = 0f;
-			var positionWait = orderIndex * 0.075f;
+			var positionWait = (orderIndex + 1) * 0.075f;
 			while (duration < 2)
 			{
 				duration += Time.unscaledDeltaTime / positionWait;

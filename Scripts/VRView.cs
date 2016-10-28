@@ -45,10 +45,8 @@ namespace UnityEditor.VR
 				{
 					return s_ActiveView.m_CameraPivot;
 				}
-				else
-				{
-					return null;
-				}
+
+				return null;
 			}
 		}
 
@@ -60,10 +58,8 @@ namespace UnityEditor.VR
 				{
 					return s_ActiveView.m_Camera;
 				}
-				else
-				{
-					return null;
-				}
+
+				return null;
 			}
 		}
 
@@ -75,10 +71,8 @@ namespace UnityEditor.VR
 				{
 					return s_ActiveView.position;
 				}
-				else
-				{
-					return new Rect();
-				}
+
+				return new Rect();
 			}
 		}
 
@@ -88,6 +82,11 @@ namespace UnityEditor.VR
 			{
 				return s_ActiveView;
 			}
+		}
+
+		public static bool showDeviceView
+		{
+			get { return s_ActiveView && s_ActiveView.m_ShowDeviceView; }
 		}
 
 		public static Camera customPreviewCamera { set; private get; } // To allow for alternate previews (e.g. smoothing)

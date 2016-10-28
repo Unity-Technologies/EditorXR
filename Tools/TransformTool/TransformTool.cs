@@ -104,12 +104,14 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	float m_ScaleFactor;
 	bool m_WasScaling;
 
-	TransformInput m_TransformInput;
-
 	public ActionMap actionMap { get { return m_TransformActionMap; } }
 
 	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput)value; } }
+	private TransformInput m_TransformInput;
 
+	public Node selfNode { get; set; }
+
+	
 	public List<IAction> toolActions
 	{
 		get

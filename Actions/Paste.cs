@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Actions
 {
