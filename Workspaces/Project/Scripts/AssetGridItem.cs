@@ -12,6 +12,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 {
 	private const float kPreviewDuration = 0.1f;
 
+	private const float kMaxPreviewScale = 0.5f;
+
 	private const float kRotateSpeed = 50f;
 
 	[SerializeField]
@@ -43,6 +45,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 	private float m_PreviewFade;
 	private Vector3 m_PreviewPrefabScale;
 	private Vector3 m_PreviewTargetScale;
+	Vector3 m_GrabPreviewTargetScale;
+	Transform m_PreviewObjectClone;
 
 	private Coroutine m_TransitionCoroutine;
 
@@ -231,9 +235,14 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 		var pivotOffset = m_PreviewObject.position - previewTotalBounds.Value.center;
 		m_PreviewObject.SetParent(transform, false);
 
-		var scaleFactor = 1 / previewTotalBounds.Value.size.MaxComponent();
+		var maxComponent = previewTotalBounds.Value.size.MaxComponent();
+		var scaleFactor = 1 / maxComponent;
 		m_PreviewTargetScale = m_PreviewPrefabScale * scaleFactor;
 		m_PreviewObject.localPosition = pivotOffset * scaleFactor + Vector3.up * 0.5f;
+
+		m_GrabPreviewTargetScale = m_PreviewPrefabScale;
+		if (maxComponent > kMaxPreviewScale)
+			m_GrabPreviewTargetScale = m_PreviewPrefabScale * scaleFactor * kMaxPreviewScale;
 
 		m_PreviewObject.gameObject.SetActive(false);
 		m_PreviewObject.localScale = Vector3.zero;
@@ -253,6 +262,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 				cloneItem.m_Icon.gameObject.SetActive(false);
 			cloneItem.m_PreviewObject.gameObject.SetActive(true);
 			cloneItem.m_PreviewObject.transform.localScale = m_PreviewTargetScale;
+
+			m_PreviewObjectClone = cloneItem.m_PreviewObject;
 
 			// Destroy label
 			U.Object.Destroy(cloneItem.m_TextPanel.gameObject);
@@ -345,20 +356,24 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 	IEnumerator AnimateToPreviewScale()
 	{
 		var currentLocalScale = m_DragObject.localScale;
-		const float smallerLocalScaleMultiplier = 0.25f;
-		var targetLocalScale = Vector3.one * smallerLocalScaleMultiplier;
+		var currentPreviewScale = m_PreviewObjectClone.localScale;
 		var currentTime = 0f;
 		var currentVelocity = 0f;
 		const float kDuration = 1f;
+
 		while (currentTime < kDuration - 0.05f)
 		{
 			if (m_DragObject == null)
 				yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
 
 			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
-			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, currentTime);
+			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, Vector3.one, currentTime);
+			m_PreviewObjectClone.localScale = Vector3.Lerp(currentPreviewScale, m_GrabPreviewTargetScale, currentTime);
 			yield return null;
 		}
+
+		m_DragObject.localScale = Vector3.one;
+		m_PreviewObjectClone.localScale = m_GrabPreviewTargetScale;
 	}
 
 	IEnumerator AnimatedHide(GameObject itemToHide, Renderer cubeRenderer, Transform rayOrigin)

@@ -104,8 +104,6 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 	float m_ScaleFactor;
 	bool m_WasScaling;
 
-	private TransformInput m_TransformInput;
-
 	public Node selfNode { get; set; }
 
 	public List<IAction> toolActions
