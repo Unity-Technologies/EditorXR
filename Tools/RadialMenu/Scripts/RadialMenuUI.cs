@@ -15,6 +15,8 @@ namespace UnityEngine.VR.Menus
 	public class RadialMenuUI : MonoBehaviour
 	{
 		const int kSlotCount = 16;
+		const float kSelectMagnitudeThreshold = 0.5f;
+		const float kSelectDurationLimit = 0.25f;
 
 		[SerializeField]
 		Sprite m_MissingActionIcon;
@@ -31,6 +33,9 @@ namespace UnityEngine.VR.Menus
 		List<RadialMenuSlot> m_RadialMenuSlots;
 		Coroutine m_ShowCoroutine;
 		Coroutine m_HideCoroutine;
+		Vector2 m_DragStartVector;
+		float m_DragMagnitude;
+		float m_DragSelectMaxTime;
 
 		public Transform alternateMenuOrigin
 		{
@@ -138,33 +143,88 @@ namespace UnityEngine.VR.Menus
 			{
 				if (Mathf.Approximately(value.magnitude, 0) && !Mathf.Approximately(m_InputDirection, 0))
 				{
-					m_InputDirection = 0;
-					foreach (var buttonMinMaxRange in buttonRotationRange)
-						buttonMinMaxRange.Key.highlighted = false;
+					if (m_HighlightedButton && Time.realtimeSinceStartup < m_DragSelectMaxTime && m_DragMagnitude > 0 && m_DragMagnitude < kSelectMagnitudeThreshold) // check if a drag within the selection threshold occurred
+					{
+						m_HighlightedButton.button.onClick.Invoke();
+						selectItem(); // call the externally set select action
+					}
+
+					m_DragMagnitude = 0f;
+					m_DragStartVector = new Vector2();
+					m_InputDirection = 0f;
+					m_DragSelectMaxTime = 0f;
 				}
 				else if (value.magnitude > 0)
 				{
-					m_InputMatrix = value;
-					m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
-					m_InputDirection += m_InputPhaseOffset;
-
-					var angleCorrected = m_InputDirection * Mathf.Deg2Rad;
-					m_InputMatrix = new Vector2(Mathf.Cos(angleCorrected), -Mathf.Sin(angleCorrected));
-					m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
-
-					foreach (var buttonMinMaxRange in buttonRotationRange)
+					if (m_DragStartVector.magnitude == 0f)
 					{
-						if (actions != null && m_InputDirection > buttonMinMaxRange.Value.x && m_InputDirection < buttonMinMaxRange.Value.y)
+						m_DragStartVector = value; // set new starting drag vector position, if the drag start vector was previously reset
+						m_DragSelectMaxTime = Time.realtimeSinceStartup + kSelectDurationLimit;
+					}
+					else
+					{
+						// set the magnitude of starting-to-current drag positions
+						// this is used to detect the drag threshold for a tap(select) or a drag(highlight)
+						// a drag with small magnitude triggers a selection of the currently highlighted menu-item (if there exists a highlighted item)
+						// a drag beyond the small magnitude threshold triggers a highlight instead
+						m_DragMagnitude = (m_DragStartVector - value).magnitude;
+
+						m_InputMatrix = value;
+						m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
+						m_InputDirection += m_InputPhaseOffset;
+
+						if (m_DragMagnitude < 0.4f) // only begin new highlight phase if magnitude has passed the minimum threshold for a select/tap
+							return;
+
+						var angleCorrected = m_InputDirection * Mathf.Deg2Rad;
+						m_InputMatrix = new Vector2(Mathf.Cos(angleCorrected), -Mathf.Sin(angleCorrected));
+						m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
+
+						foreach (var buttonMinMaxRange in buttonRotationRange)
 						{
-							m_HighlightedButton = buttonMinMaxRange.Key;
-							m_HighlightedButton.highlighted = true;
+							if (actions != null && m_InputDirection > buttonMinMaxRange.Value.x && m_InputDirection < buttonMinMaxRange.Value.y)
+							{
+								m_HighlightedButton = buttonMinMaxRange.Key;
+								m_HighlightedButton.highlighted = true;
+							}
+							else
+							{
+								buttonMinMaxRange.Key.highlighted = false;
+							}
 						}
-						else
+					}
+
+				}
+			}
+		}
+
+		public bool highlighted
+		{
+			set
+			{
+				if (!value)
+				{
+					Debug.LogError("<color=cyan>ending highlight with a magnitude value of : </color>" + value);
+					m_DragMagnitude = 0f;
+					m_DragStartVector = new Vector2();
+					m_DragSelectMaxTime = 0f;
+					m_InputDirection = 0f;
+
+					if (!m_HighlightedButton)
+						return;
+					else
+					{
+						Debug.LogError("<color=blue>Disable any highlights occurring on menu buttons here</color>");
+						m_HighlightedButton = null;
+
+						foreach (var buttonMinMaxRange in buttonRotationRange)
 							buttonMinMaxRange.Key.highlighted = false;
 					}
 				}
 			}
 		}
+
+		public Action selectItem { private get; set; }
 
 		void Start()
 		{
@@ -311,12 +371,6 @@ namespace UnityEngine.VR.Menus
 			m_SlotsMask.gameObject.SetActive(false);
 			gameObject.SetActive(false);
 			m_HideCoroutine = null;
-		}
-
-		public void SelectionOccurred()
-		{
-			if (m_HighlightedButton != null)
-				m_HighlightedButton.button.onClick.Invoke();
 		}
 	}
 }
