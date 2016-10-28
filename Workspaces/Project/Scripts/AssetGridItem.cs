@@ -12,7 +12,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 {
 	private const float kPreviewDuration = 0.1f;
 
-	private const float kMaxPreviewScale = 0.5f;
+	private const float kMaxPreviewScale = 0.33f;
 
 	private const float kRotateSpeed = 50f;
 
@@ -46,6 +46,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 	private Vector3 m_PreviewPrefabScale;
 	private Vector3 m_PreviewTargetScale;
 	Vector3 m_GrabPreviewTargetScale;
+	Vector3 m_GrabPreviewPivotOffset;
 	Transform m_PreviewObjectClone;
 
 	private Coroutine m_TransitionCoroutine;
@@ -240,9 +241,23 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 		m_PreviewTargetScale = m_PreviewPrefabScale * scaleFactor;
 		m_PreviewObject.localPosition = pivotOffset * scaleFactor + Vector3.up * 0.5f;
 
+		// Object will preview at the same size
 		m_GrabPreviewTargetScale = m_PreviewPrefabScale;
+		var previewExtents = previewTotalBounds.Value.extents;
+		m_GrabPreviewPivotOffset = pivotOffset;
+
+		// If bounds are greater than offset, set to bounds
+		if(previewExtents.y > m_GrabPreviewPivotOffset.y)
+			m_GrabPreviewPivotOffset.y = previewExtents.y;
+		if(previewExtents.z > m_GrabPreviewPivotOffset.z)
+			m_GrabPreviewPivotOffset.z = previewExtents.z;
+
 		if (maxComponent > kMaxPreviewScale)
+		{
+			// Object will be preview at the maximum scale
 			m_GrabPreviewTargetScale = m_PreviewPrefabScale * scaleFactor * kMaxPreviewScale;
+			m_GrabPreviewPivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * kMaxPreviewScale;
+		}
 
 		m_PreviewObject.gameObject.SetActive(false);
 		m_PreviewObject.localScale = Vector3.zero;
@@ -357,6 +372,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 	{
 		var currentLocalScale = m_DragObject.localScale;
 		var currentPreviewScale = m_PreviewObjectClone.localScale;
+		var currentPreviewOffset = m_PreviewObjectClone.localPosition;
 		var currentTime = 0f;
 		var currentVelocity = 0f;
 		const float kDuration = 1f;
@@ -369,6 +385,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, Vector3.one, currentTime);
 			m_PreviewObjectClone.localScale = Vector3.Lerp(currentPreviewScale, m_GrabPreviewTargetScale, currentTime);
+			m_PreviewObjectClone.localPosition = Vector3.Lerp(currentPreviewOffset, m_GrabPreviewPivotOffset, currentTime);
 			yield return null;
 		}
 

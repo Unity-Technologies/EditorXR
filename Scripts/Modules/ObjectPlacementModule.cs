@@ -24,6 +24,14 @@ public class ObjectPlacementModule : MonoBehaviour, ISpatialHash
 
 	public void PlaceObject(Transform obj, Vector3 targetScale)
 	{
+		if(obj.localScale == targetScale) {
+			// Remove from spatial hash in case the object is already there
+			removeObjectFromSpatialHash(obj);
+			obj.parent = null;
+			Selection.activeGameObject = obj.gameObject;
+			addObjectToSpatialHash(obj);
+			return;
+		}
 		StartCoroutine(PlaceObjectCoroutine(obj, targetScale));
 	}
 
