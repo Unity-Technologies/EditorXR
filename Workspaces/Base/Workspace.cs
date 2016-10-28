@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
@@ -222,6 +222,7 @@ namespace UnityEngine.VR.Workspaces
 			{
 				MonoBehaviourExtensions.StopCoroutine(this,ref m_VisibilityCoroutine);
 				m_VisibilityCoroutine = StartCoroutine(AnimateShow());
+				m_Hidden = false;
 			}
 		}
 
@@ -275,6 +276,7 @@ namespace UnityEngine.VR.Workspaces
 			{
 				MonoBehaviourExtensions.StopCoroutine(this,ref m_VisibilityCoroutine);
 				m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+				m_Hidden = true;
 			}
 		}
 

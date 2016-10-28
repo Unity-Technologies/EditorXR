@@ -1170,59 +1170,55 @@ public class EditorVR : MonoBehaviour
 	private void ResetWorkspacePositions()
 	{
 		var defaultOffset = Workspace.kDefaultOffset;
-		var defaultTilt = Workspace.kDefaultTilt;
-
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 		var headPosition = cameraTransform.position;
-		var headRotation = Quaternion.Euler(0, cameraTransform.rotation.eulerAngles.y, 0);
-
-		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
-			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
-			+ kWorkspaceAnglePadding;													//Need some extra padding because workspaces are tilted
-		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;			//Need padding in Y as well
-
-		float currentRotation = arcLength;
-		float currentHeight = 0;
-
-		int count = 0;
-		int direction = 1;
+		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;
 		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
-
-		Vector3 position;
-		Quaternion rotation;
-		var viewerPivot = U.Camera.GetViewerPivot();
 
 		foreach (var ws in m_AllWorkspaces)
 		{
-			// Spawn to one of the sides of the player instead of directly in front of the player
+			ws.OnDoubleTriggerTapAboveHMD();
+			ws.transform.position = headPosition + defaultOffset;
+			ws.transform.LookAt(headPosition);
+			ws.transform.Rotate(Vector3.up, 180.0f);
+			ws.transform.Rotate(Vector3.right, -20.0f);
+
+			bool overlapOtherWorkspace;
+			int i = 0;
 			do
-			{ 
-				//The next position will be rotated by currentRotation, as if the hands of a clock
-				Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-				position = headPosition + headRotation * rotateAroundY * defaultOffset + Vector3.up * currentHeight;
-				rotation = headRotation * rotateAroundY * defaultTilt;
-
-				//Every other iteration, rotate a little further
-				if (direction < 0)
-					currentRotation += arcLength;
-
-				//Switch directions every iteration (left, right, left, right)
-				direction *= -1;
-
-				//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
-				if (currentRotation > 180)
+			{
+				overlapOtherWorkspace = false;
+				Collider[] colliders = Physics.OverlapBox(ws.transform.position, halfBounds, ws.transform.rotation);
+				foreach (var col in colliders)
 				{
-					direction = -1;
-					currentRotation = 0;
-					currentHeight += heightOffset;
+					foreach (var workspace in m_AllWorkspaces)
+					{
+						if (workspace == ws)
+							continue;
+
+						if (col.transform.IsChildOf(workspace.transform))
+						{
+							overlapOtherWorkspace = true;
+							break;
+						}
+					}
+
+					if (overlapOtherWorkspace)
+						break;
+				}
+
+				if (overlapOtherWorkspace)
+				{
+					//6 workspace slots around player, 60 degree slots
+					ws.transform.RotateAround(headPosition, Vector3.up, 60.0f);
+					i++;
+
+					//if no empty slot, start new level of slots higher
+					if (i % 6 == 0)
+						ws.transform.Translate(new Vector3(0.0f, heightOffset, 0.0f));
 				}
 			}
-			//While the current position is occupied, try a new one
-			while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts);
-
-			ws.transform.position = position;
-			ws.transform.rotation = rotation;
-			ws.OnDoubleTriggerTapAboveHMD();
+			while (overlapOtherWorkspace && i < 20);
 		}
 	}
 
