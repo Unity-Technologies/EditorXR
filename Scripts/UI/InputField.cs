@@ -148,34 +148,39 @@ namespace UnityEngine.VR.UI
 
 			m_Keyboard.gameObject.SetActive(true);
 
-			m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
-			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
-			m_Keyboard.transform.rotation = rotation;
+//			m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
+//			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
+//			m_Keyboard.transform.rotation = rotation;
 			m_Keyboard.Setup(OnKeyPress);
 
-//			if (m_MoveKeyboardCoroutine != null)
-//				StopCoroutine(m_MoveKeyboardCoroutine);
-//			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField());
+			if (m_MoveKeyboardCoroutine != null)
+				StopCoroutine(m_MoveKeyboardCoroutine);
+
+			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(Vector3.Magnitude(m_Keyboard.transform.position - transform.position) > 0.25f));
 
 		}
 
-		IEnumerator MoveKeyboardToInputField()
+		IEnumerator MoveKeyboardToInputField(bool instant)
 		{
 			var targetPosition = transform.position + Vector3.up * 0.05f;
-			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
 
-			var t = 0f;
-			while (t < kMoveKeyboardTime)
+			if (!instant)
 			{
-				m_Keyboard.transform.position = Vector3.Lerp(m_Keyboard.transform.position, targetPosition, t / kMoveKeyboardTime);
-				t += Time.unscaledDeltaTime;
-				yield return null;
+				var t = 0f;
+				while (t < kMoveKeyboardTime)
+				{
+					m_Keyboard.transform.position = Vector3.Lerp(m_Keyboard.transform.position, targetPosition, t / kMoveKeyboardTime);
+					m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
+					t += Time.unscaledDeltaTime;
+					yield return null;
+				}
 			}
+
 			m_Keyboard.transform.position = targetPosition;
-			m_Keyboard.transform.rotation = rotation;
+			m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
 			m_MoveKeyboardCoroutine = null;
 
-			m_Keyboard.Setup(OnKeyPress);
+//			m_Keyboard.Setup(OnKeyPress);
 		}
 
 		public virtual void Close()
