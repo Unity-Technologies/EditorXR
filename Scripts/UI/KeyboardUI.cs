@@ -415,7 +415,7 @@ public class KeyboardUI : MonoBehaviour
 
 	void EnableMallet(bool enable)
 	{
-		if (m_MalletVisible)
+		if (enable && !m_MalletVisible || !enable && m_MalletVisible)
 			malletVisibilityChanged(enable);
 		m_MalletVisible = enable;
 	}
