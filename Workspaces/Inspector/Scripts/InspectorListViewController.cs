@@ -49,7 +49,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		foreach (var template in m_TemplateDictionary)
 			m_TemplateSizes[template.Key] = GetObjectSize(template.Value.prefab);
 
-		data = new InspectorData[0];
+		if(data == null)
+			data = new InspectorData[0];
 	}
 
 	protected override void ComputeConditions()

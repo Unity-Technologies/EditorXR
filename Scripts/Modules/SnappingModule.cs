@@ -92,8 +92,8 @@ public class SnappingModule : MonoBehaviour, IModule
 	{
 		var snapData = m_SnapDataTable[target];
 
-		CheckNullList(snapData.movementDirections);
-		CheckNullList(snapData.movementTimestamps);
+		CheckNullList(ref snapData.movementDirections);
+		CheckNullList(ref snapData.movementTimestamps);
 
 		snapData.movementDirections.Add(deltaMovement);
 		snapData.movementTimestamps.Add(Time.realtimeSinceStartup);
@@ -102,7 +102,7 @@ public class SnappingModule : MonoBehaviour, IModule
 		CheckListLength(snapData.movementTimestamps);
 	}
 
-	private void CheckNullList<T>(List<T> listToCheck)
+	private void CheckNullList<T>(ref List<T> listToCheck)
 	{
 		if (listToCheck == null)
 			listToCheck = new List<T>();

@@ -6,7 +6,7 @@ using UnityEngine.VR.Utilities;
 public class ObjectPlacementModule : MonoBehaviour, ISpatialHash
 {
 	[SerializeField]
-	float kInstantiateFOVDifference = -10f;
+	float kInstantiateFOVDifference = -5f;
 
 	const float kGrowDuration = 0.5f;
 
@@ -24,6 +24,14 @@ public class ObjectPlacementModule : MonoBehaviour, ISpatialHash
 
 	public void PlaceObject(Transform obj, Vector3 targetScale)
 	{
+		if(obj.localScale == targetScale) {
+			// Remove from spatial hash in case the object is already there
+			removeObjectFromSpatialHash(obj);
+			obj.parent = null;
+			Selection.activeGameObject = obj.gameObject;
+			addObjectToSpatialHash(obj);
+			return;
+		}
 		StartCoroutine(PlaceObjectCoroutine(obj, targetScale));
 	}
 
@@ -53,7 +61,6 @@ public class ObjectPlacementModule : MonoBehaviour, ISpatialHash
 			var perspective = halfAngle + kInstantiateFOVDifference;
 			var camPosition = camera.transform.position;
 			var forward = obj.position - camPosition;
-			forward.y = 0;
 
 			var distance = totalBounds.Value.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
 			var destinationPosition = obj.position;

@@ -2363,6 +2363,8 @@ public class EditorVR : MonoBehaviour
 			yield return null;
 		}
 
+		yield break;
+
 		m_AssetTypes.Clear();
 
 		//Create a new list with actual types
