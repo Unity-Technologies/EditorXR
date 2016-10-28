@@ -75,9 +75,6 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 	[SerializeField]
 	GameObject m_ScaleManipulatorPrefab;
 
-	[SerializeField]
-	ActionMap m_TransformActionMap;
-
 	readonly List<IManipulator> m_AllManipulators = new List<IManipulator>();
 	IManipulator m_CurrentManipulator;
 	int m_CurrentManipulatorIndex;
