@@ -183,18 +183,21 @@ namespace UnityEngine.VR.UI
 //			m_Keyboard.Setup(OnKeyPress);
 		}
 
-		public virtual void Close()
+		public virtual void Close(bool collapse = false)
 		{
 			m_Open = false;
 
 			if (m_Keyboard == null) return;
 
-//			m_Keyboard.Collapse(FinalizeClose);
+//			if (collapse)
+//				m_Keyboard.Collapse(FinalizeClose);
+//			else
+//				
 //		}
 //
 //		void FinalizeClose()
 //		{
-//			m_Open = false;
+			m_Open = false;
 			m_Keyboard.gameObject.SetActive(false);
 			m_Keyboard = null;
 		}

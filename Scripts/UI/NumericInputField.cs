@@ -153,11 +153,11 @@ namespace UnityEngine.VR.UI
 			}
 		}
 
-		public override void Close()
+		public override void Close(bool collapse = false)
 		{
 			ParseNumberField();
 
-			base.Close();
+			base.Close(collapse);
 		}
 
 		protected override bool IsValid(char ch)
