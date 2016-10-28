@@ -11,9 +11,6 @@ public class EditorWindowCaptureUpdater : MonoBehaviour
 	[SerializeField]
 	private Material m_Material;
 
-	[SerializeField]
-	bool m_LockAspect = true;
-
 	void Start()
 	{
 		if (!m_EditorWindowCapture)
@@ -61,21 +58,20 @@ public class EditorWindowCaptureUpdater : MonoBehaviour
 		}
 
 		var tex = m_EditorWindowCapture.texture;
-		if (m_RawImage && m_RawImage.texture != tex)
-			m_RawImage.texture = tex;
-		
-		if (m_Material && m_Material.mainTexture != tex)
-			m_Material.mainTexture = tex;
-
-		var texAspect = (float)tex.width / tex.height;
-
-		var localScale = transform.localScale;
-		if (m_LockAspect)
+		if (tex)
 		{
-			var aspect = localScale.x / localScale.y;
-			localScale.y *= aspect / texAspect;
-		}
+			if (m_RawImage && m_RawImage.texture != tex)
+				m_RawImage.texture = tex;
 
-		transform.localScale = localScale;
+			if (m_Material && m_Material.mainTexture != tex)
+				m_Material.mainTexture = tex;
+
+			var texAspect = (float) tex.width/tex.height;
+
+			var localScale = transform.localScale;
+			var aspect = localScale.x/localScale.y;
+			localScale.y *= aspect/texAspect;
+			transform.localScale = localScale;
+		}
 	}
 }
