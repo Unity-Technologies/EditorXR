@@ -284,7 +284,6 @@ public class KeyboardUI : MonoBehaviour
 	IEnumerator SetDragColors()
 	{
 		if (!gameObject.activeInHierarchy) yield break;
-		Debug.Log("Setting drag colors");
 		var t = 0f;
 		var startColor = m_HandleMaterial.color;
 		while (t < kHandleChangeColorTime)
@@ -295,6 +294,8 @@ public class KeyboardUI : MonoBehaviour
 			t += Time.unscaledDeltaTime;
 			yield return null;
 		}
+
+		SetButtonTextAlpha(0f);
 		m_HandleMaterial.color = m_DragColor;
 
 		m_ChangeDragColorsCoroutine = null;
@@ -314,6 +315,8 @@ public class KeyboardUI : MonoBehaviour
 			t += Time.unscaledDeltaTime;
 			yield return null;
 		}
+
+		SetButtonTextAlpha(1f);
 		m_HandleMaterial.color = m_HandleButton.targetMeshBaseColor;
 
 		m_ChangeDragColorsCoroutine = null;
@@ -350,7 +353,10 @@ public class KeyboardUI : MonoBehaviour
 	void OnDragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
 	{
 		if (m_DragAfterDelayCoroutine != null)
+		{
 			StopCoroutine(m_DragAfterDelayCoroutine);
+			m_DragAfterDelayCoroutine = null;
+		}
 
 		if (m_EligibleForDrag)
 		{
