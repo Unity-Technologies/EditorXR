@@ -535,7 +535,7 @@ GameObject:
   - 114: {fileID: 114000013053352820}
   - 114: {fileID: 114000010801002698}
   m_Layer: 5
-  m_Name: Return
+  m_Name: Escape
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9002,8 +9002,8 @@ MonoBehaviour:
   m_SelectionFlags: 2
   m_TextComponent: {fileID: 114000010279381882}
   m_Character: 13
-  m_UseShiftCharacter: 0
-  m_ShiftCharacter: 0
+  m_UseShiftCharacter: 1
+  m_ShiftCharacter: 27
   m_MatchButtonTextToCharacter: 0
   m_TargetMesh: {fileID: 23000011589460270}
   m_TargetGraphic: {fileID: 0}
@@ -10384,7 +10384,7 @@ RectTransform:
   m_GameObject: {fileID: 1000012738109114}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0.15325928}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 0.7}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 4000011672292736}

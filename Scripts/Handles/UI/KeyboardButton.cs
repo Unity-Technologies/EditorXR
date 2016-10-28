@@ -88,27 +88,14 @@ public class KeyboardButton : BaseHandle
 
 	void Awake()
 	{
-		if (!m_TargetMesh)
-			m_TargetMesh = GetComponentInChildren<Renderer>(true);
-
-		if (m_TargetMesh != null)
-		{
-			var targetMeshTransform = m_TargetMesh.transform;
-			m_TargetMeshInitialLocalPosition = targetMeshTransform.localPosition;
-			m_TargetMeshInitialScale = targetMeshTransform.localScale;
-//			m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
-//			m_TargetMeshBaseColor = m_TargetMeshMaterial.color;
-		}
+		var targetMeshTransform = m_TargetMesh.transform;
+		m_TargetMeshInitialLocalPosition = targetMeshTransform.localPosition;
+		m_TargetMeshInitialScale = targetMeshTransform.localScale;
+		m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
+		m_TargetMeshBaseColor = m_TargetMeshMaterial.color;
 
 		smoothMotion = GetComponent<SmoothMotion>();
-		if (smoothMotion == null)
-			smoothMotion = gameObject.AddComponent<SmoothMotion>();
 		smoothMotion.enabled = false;
-	}
-
-	void Reset()
-	{
-		m_WorkspaceButton = GetComponentInChildren<WorkspaceButton>();
 	}
 
 	/// <summary>
@@ -303,7 +290,7 @@ public class KeyboardButton : BaseHandle
 		U.Object.Destroy(m_TargetMeshMaterial);
 	}
 
-	private IEnumerator IncreaseEmission()
+	IEnumerator IncreaseEmission()
 	{
 		m_WorkspaceButton.highlight = true;
 		if (!gameObject.activeInHierarchy) yield break;
@@ -312,28 +299,27 @@ public class KeyboardButton : BaseHandle
 		Color finalColor;
 		while (t < kEmissionLerpTime)
 		{
-//			var emission = Mathf.PingPong(t / kEmissionLerpTime, kPressEmission);
-//			finalColor = Color.white * Mathf.LinearToGammaSpace(emission);
-//			m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
+			var emission = Mathf.PingPong(t / kEmissionLerpTime, kPressEmission);
+			finalColor = Color.white * Mathf.LinearToGammaSpace(emission);
+			m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 			t += Time.unscaledDeltaTime;
 
 			yield return null;
 		}
 		m_WorkspaceButton.highlight = false;
 
-//		finalColor = Color.white * Mathf.LinearToGammaSpace(kPressEmission);
-//		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
+		finalColor = Color.white * Mathf.LinearToGammaSpace(kPressEmission);
+		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 
-//		if (!m_Holding)
-//			StartCoroutine(DecreaseEmission());
-//
-//		m_ChangeEmissionCoroutine = null;
+		if (!m_Holding)
+			m_ChangeEmissionCoroutine = StartCoroutine(DecreaseEmission());
+		else
+			m_ChangeEmissionCoroutine = null;
 	}
 
-	private IEnumerator DecreaseEmission()
+	IEnumerator DecreaseEmission()
 	{
 		m_WorkspaceButton.highlight = false;
-		yield break;
 		if (!gameObject.activeInHierarchy) yield break;
 
 		var t = 0f;
@@ -350,10 +336,10 @@ public class KeyboardButton : BaseHandle
 		finalColor = Color.white * Mathf.LinearToGammaSpace(0f);
 		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 
-//		m_ChangeEmissionCoroutine = null;
+		m_ChangeEmissionCoroutine = null;
 	}
 
-	private IEnumerator PunchKey()
+	IEnumerator PunchKey()
 	{
 		var targetMeshTransform = m_TargetMesh.transform;
 		targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;

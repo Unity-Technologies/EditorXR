@@ -33,8 +33,9 @@ public class KeyboardUI : MonoBehaviour
 	/// <summary>
 	/// Called when the orientation changes, parameter is whether keyboard is currently horizontal
 	/// </summary>
-	public event Action<bool> orientationChanged = delegate {};
-	public event Action closed = delegate {};
+	public event Action<bool> orientationChanged = delegate { };
+
+	public event Action closed = delegate { };
 
 	bool m_EligibleForDrag;
 	bool m_CurrentlyHorizontal;
@@ -45,14 +46,18 @@ public class KeyboardUI : MonoBehaviour
 	Coroutine m_MoveKeysCoroutine;
 	Coroutine m_DragAfterDelayCoroutine;
 
-	public KeyboardButton handleButton { get { return m_HandleButton;} }
+	public KeyboardButton handleButton
+	{
+		get { return m_HandleButton; }
+	}
+
 	public bool collapsing { get; set; }
 
 	/// <summary>
 	/// Initialize the keyboard and its buttons
 	/// </summary>
 	/// <param name="keyPress"></param>
-	public void Setup(Action<char> keyPress, bool expandOnOpen)
+	public void Setup(Action<char> keyPress)
 	{
 		m_DirectManipulator.target = transform;
 		m_DirectManipulator.translate = Translate;
@@ -68,9 +73,6 @@ public class KeyboardUI : MonoBehaviour
 		foreach (var button in m_Buttons)
 		{
 			button.Setup(keyPress, IsHorizontal);
-
-//			if (expandOnOpen)
-//				button.transform.position = m_HandleButton.transform.position;
 		}
 
 		m_HandleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
@@ -92,7 +94,9 @@ public class KeyboardUI : MonoBehaviour
 			var hT = m_HorizontalLayoutTransforms[i];
 			var vT = m_VerticalLayoutTransforms[i];
 
-			var target = horizontal ? hT : vT;
+			var target = horizontal
+				? hT
+				: vT;
 			button.smoothMotion.SetTarget(target);
 
 			i++;
@@ -283,7 +287,6 @@ public class KeyboardUI : MonoBehaviour
 
 	IEnumerator SetDragColors()
 	{
-		yield break;
 		if (!gameObject.activeInHierarchy) yield break;
 		var t = 0f;
 		var startColor = m_HandleMaterial.color;
@@ -304,7 +307,6 @@ public class KeyboardUI : MonoBehaviour
 
 	IEnumerator UnsetDragColors()
 	{
-		yield break;
 		if (!gameObject.activeInHierarchy) yield break;
 
 		var t = 0f;
@@ -371,7 +373,9 @@ public class KeyboardUI : MonoBehaviour
 
 			if (m_ChangeDragColorsCoroutine != null)
 				StopCoroutine(m_ChangeDragColorsCoroutine);
-			m_ChangeDragColorsCoroutine = StartCoroutine(UnsetDragColors());
+
+			if (isActiveAndEnabled)
+				m_ChangeDragColorsCoroutine = StartCoroutine(UnsetDragColors());
 		}
 	}
 
@@ -379,12 +383,6 @@ public class KeyboardUI : MonoBehaviour
 	{
 		if (m_ChangeDragColorsCoroutine != null)
 			StopCoroutine(m_ChangeDragColorsCoroutine);
-
-//		m_HandleMaterial.color = m_HandleButton.targetMeshBaseColor;
-	}
-
-	void OnDestroy()
-	{
-//		U.Object.Destroy(m_HandleMaterial);
+		m_ChangeDragColorsCoroutine = null;
 	}
 }

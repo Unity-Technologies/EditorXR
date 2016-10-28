@@ -151,7 +151,7 @@ namespace UnityEngine.VR.UI
 			m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
 			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
 			m_Keyboard.transform.rotation = rotation;
-			m_Keyboard.Setup(OnKeyPress, true);
+			m_Keyboard.Setup(OnKeyPress);
 
 //			if (m_MoveKeyboardCoroutine != null)
 //				StopCoroutine(m_MoveKeyboardCoroutine);
@@ -175,7 +175,7 @@ namespace UnityEngine.VR.UI
 			m_Keyboard.transform.rotation = rotation;
 			m_MoveKeyboardCoroutine = null;
 
-			m_Keyboard.Setup(OnKeyPress, true);
+			m_Keyboard.Setup(OnKeyPress);
 		}
 
 		public virtual void Close()
