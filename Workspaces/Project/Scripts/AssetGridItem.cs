@@ -228,10 +228,12 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 			return;
 		}
 
+		var pivotOffset = m_PreviewObject.position - previewTotalBounds.Value.center;
 		m_PreviewObject.SetParent(transform, false);
 
-		m_PreviewTargetScale = m_PreviewPrefabScale * (1 / previewTotalBounds.Value.size.MaxComponent());
-		m_PreviewObject.localPosition = Vector3.up * 0.5f;
+		var scaleFactor = 1 / previewTotalBounds.Value.size.MaxComponent();
+		m_PreviewTargetScale = m_PreviewPrefabScale * scaleFactor;
+		m_PreviewObject.localPosition = pivotOffset * scaleFactor + Vector3.up * 0.5f;
 
 		m_PreviewObject.gameObject.SetActive(false);
 		m_PreviewObject.localScale = Vector3.zero;
@@ -343,7 +345,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 	IEnumerator AnimateToPreviewScale()
 	{
 		var currentLocalScale = m_DragObject.localScale;
-		const float smallerLocalScaleMultiplier = 0.125f;
+		const float smallerLocalScaleMultiplier = 0.25f;
 		var targetLocalScale = Vector3.one * smallerLocalScaleMultiplier;
 		var currentTime = 0f;
 		var currentVelocity = 0f;
