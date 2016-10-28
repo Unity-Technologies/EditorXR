@@ -27,7 +27,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 	private GameObject m_BlinkVisualsGO;
 	private BlinkVisuals m_BlinkVisuals;
 
-	private float m_MovementSpeed = 8f;
 	private State m_State = State.Inactive;
 
 	public Transform viewerPivot { private get; set; }
