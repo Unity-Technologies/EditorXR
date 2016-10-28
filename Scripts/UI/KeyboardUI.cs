@@ -140,9 +140,8 @@ public class KeyboardUI : MonoBehaviour
 			yield return null;
 		}
 
-		doneCollapse();
-
 		collapsing = false;
+		doneCollapse();
 	}
 
 	/// <summary>
@@ -426,6 +425,6 @@ public class KeyboardUI : MonoBehaviour
 			StopCoroutine(m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = null;
 
-//		EnableMallet(false);
+		EnableMallet(false);
 	}
 }
