@@ -44,7 +44,8 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 		U.Object.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false);
 
 		var listView = m_InspectorUI.inspectorListView;
-		listView.data = new InspectorData[0];
+		if(listView.data == null)
+			listView.data = new InspectorData[0];
 		listView.instantiateUI = instantiateUI;
 		listView.preview = preview;
 		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
@@ -66,6 +67,9 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 		scrollHandleTransform.SetParent(m_WorkspaceUI.topFaceContainer);
 		scrollHandleTransform.localScale = new Vector3 (1.03f, 0.02f, 1.02f);
 		scrollHandleTransform.localPosition = new Vector3 (0f, -0.01f, 0f);
+
+		if(Selection.activeGameObject)
+			OnSelectionChanged();
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
