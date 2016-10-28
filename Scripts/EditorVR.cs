@@ -930,6 +930,17 @@ public class EditorVR : MonoBehaviour
 							continueSearching = false;
 						}
 
+						var otherRay = obj as IOtherRay;
+						if (otherRay != null)
+						{
+							Node otherNode = (Node)(1 - (int)node.Value);
+							Transform otherRayOrigin;
+							if (proxy.rayOrigins.TryGetValue(otherNode, out otherRayOrigin))
+							{
+								otherRay.otherRayOrigin = otherRayOrigin;
+							}
+						}
+
 						if (mainMenu != null)
 						{
 							Transform mainMenuOrigin;

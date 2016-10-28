@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: ecba8b13e3259e14eab642c0d0657d5c
+timeCreated: 1477664370
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_ActionMap: {fileID: 11400000, guid: 6615fd7d8b165fe43bc85867850097e5, type: 2}
+  - m_AnnotationMaterial: {fileID: 2100000, guid: 252a12e5980ef5b438bcc0dbc0d35529,
+      type: 2}
+  - m_ConeMaterial: {fileID: 2100000, guid: 0372357aa9e962f47a35f6b6350ae99c, type: 2}
+  - m_ColorPickerPrefab: {fileID: 1000014053269536, guid: da56ed8b2b72e414589b2938af94c498,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
