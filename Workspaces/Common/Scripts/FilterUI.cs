@@ -51,7 +51,7 @@ public class FilterUI : MonoBehaviour
 	Coroutine m_HideButtonListCoroutine;
 	float m_HiddenButtonListYSpacing;
 
-	public List<string> filterTypes
+	public List<string> filterList
 	{
 		set
 		{

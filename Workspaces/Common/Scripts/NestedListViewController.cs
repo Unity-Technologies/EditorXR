@@ -23,7 +23,7 @@
 
 		protected int m_ExpandedDataLength;
 
-		void RecycleRecursively(DataType data)
+		protected void RecycleRecursively(DataType data)
 		{
 			RecycleBeginning(data);
 			if (data.children != null)

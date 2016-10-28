@@ -16,6 +16,9 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	GameObject m_ContentPrefab;
 
 	[SerializeField]
+	GameObject m_LockPrefab;
+
+	[SerializeField]
 	bool m_IsLocked;
 
 	InspectorUI m_InspectorUI;
@@ -31,12 +34,14 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
-		minBounds = new Vector3(0.3f, kMinBounds.y, 0.3f);
-		m_CustomStartingBounds = new Vector3(0.35f, kMinBounds.y, 0.6f);
+		minBounds = new Vector3(0.375f, kMinBounds.y, 0.3f);
+		m_CustomStartingBounds = new Vector3(0.375f, kMinBounds.y, 0.6f);
 
 		base.Setup();
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_InspectorUI = contentPrefab.GetComponent<InspectorUI>();
+		
+		U.Object.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false);
 
 		var listView = m_InspectorUI.inspectorListView;
 		listView.data = new InspectorData[0];
@@ -56,10 +61,18 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 		scrollHandle.hoverEnded += OnScrollHoverEnded;
 
 		contentBounds = new Bounds(Vector3.zero, m_CustomStartingBounds.Value);
+
+		var scrollHandleTransform = m_InspectorUI.inspectorScrollHandle.transform;
+		scrollHandleTransform.SetParent(m_WorkspaceUI.topFaceContainer);
+		scrollHandleTransform.localScale = new Vector3 (1.03f, 0.02f, 1.02f);
+		scrollHandleTransform.localPosition = new Vector3 (0f, -0.01f, 0f);
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		m_Dragging = true;
 
 		m_WorkspaceUI.topHighlight.visible = true;
@@ -73,11 +86,17 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		Scroll(eventData);
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		m_Dragging = false;
 
 		m_WorkspaceUI.topHighlight.visible = false;
@@ -98,6 +117,9 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		if (!m_Dragging)
 		{
 			m_WorkspaceUI.topHighlight.visible = false;
@@ -107,6 +129,9 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void Scroll(HandleEventData eventData)
 	{
+		if (isMiniWorldRay(eventData.rayOrigin))
+			return;
+
 		var scrollOffset = m_ScrollOffsetStart - Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
 		m_InspectorUI.inspectorListView.scrollOffset = scrollOffset;
 	}
@@ -270,13 +295,12 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	protected override void OnBoundsChanged()
 	{
+		const float kSideScollBoundsShrinkAmount = 0.04f;
 		var size = contentBounds.size;
-		var inspectorScrollHandleTransform = m_InspectorUI.inspectorScrollHandle.transform;
-		inspectorScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, inspectorScrollHandleTransform.localScale.y, size.z + kScrollMargin);
-
 		var inspectorListView = m_InspectorUI.inspectorListView;
 		var bounds = contentBounds;
 		size.y = float.MaxValue; // Add height for dropdowns
+		size.x -= kSideScollBoundsShrinkAmount;
 		size.z -= 0.15f; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
 		bounds.size = size;
 		inspectorListView.bounds = bounds;

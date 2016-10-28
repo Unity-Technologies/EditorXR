@@ -23,7 +23,7 @@ public class CuboidLayout : UIBehaviour
 	Transform[] m_CubeTransforms;
 	Transform[] m_HighlightCubeTransforms;
 
-	protected override void Awake()
+	protected override void Start()
 	{
 		m_CubeTransforms = new Transform[m_TargetTransforms.Length];
 		for (var i = 0; i < m_CubeTransforms.Length; i++)
@@ -55,10 +55,13 @@ public class CuboidLayout : UIBehaviour
 	/// <param name="backingCubeMaterial">New material to use</param>
 	public void SetMaterials(Material backingCubeMaterial)
 	{
-		foreach (var cube in m_CubeTransforms)
+		if (m_CubeTransforms != null)
 		{
-			if (cube)
-				cube.GetComponent<Renderer>().sharedMaterial = backingCubeMaterial;
+			foreach (var cube in m_CubeTransforms)
+			{
+				if (cube)
+					cube.GetComponent<Renderer>().sharedMaterial = backingCubeMaterial;
+			}
 		}
 	}
 

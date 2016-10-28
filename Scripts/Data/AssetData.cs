@@ -1,5 +1,4 @@
 ﻿using ListView;
-using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -23,5 +22,14 @@ public class AssetData : ListViewItemData
 		this.instanceID = instanceID;
 		this.icon = icon;
 		this.type = type;
+	}
+
+	public AssetData(AssetData original)
+	{
+		template = kTemplateName;
+		name = original.name;
+		instanceID = original.instanceID;
+		icon = original.icon;
+		type = original.type;
 	}
 }

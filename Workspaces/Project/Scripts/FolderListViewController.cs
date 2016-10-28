@@ -17,6 +17,23 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	public Action<FolderData> selectFolder;
 
+	public override FolderData[] data
+	{
+		set
+		{
+			if (m_Data != null)
+			{
+				// Clear out visuals for old data
+				foreach (var data in m_Data)
+				{
+					RecycleRecursively(data);
+				}
+			}
+
+			m_Data = value;
+		}
+	}
+
 	public void ClearSelected()
 	{
 		foreach (var folderData in m_Data)

@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
+using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-[ExecuteInEditMode]
 public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay, ICustomActionMap
 {
 	private enum State
@@ -47,6 +47,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 	}
 	private BlinkLocomotion m_BlinkLocomotionInput;
 
+	public Node selfNode { get; set; }
+
 	private void Start()
 	{
 		m_BlinkVisualsGO = U.Object.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
@@ -81,10 +83,11 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 		}
 		else if (m_BlinkLocomotionInput.blink.wasJustReleased)
 		{
-			m_BlinkVisuals.HideVisuals();
+			var outOfRange = m_BlinkVisuals.HideVisuals();
 			showDefaultRay();
 
-			StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
+			if (!outOfRange)
+				StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
 		}
 	}
 

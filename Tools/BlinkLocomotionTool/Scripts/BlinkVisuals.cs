@@ -184,7 +184,7 @@ public class BlinkVisuals : MonoBehaviour
 		}
 	}
 
-	public void HideVisuals()
+	public bool HideVisuals()
 	{
 		if (m_State != State.Inactive)
 		{
@@ -192,8 +192,11 @@ public class BlinkVisuals : MonoBehaviour
 			StartCoroutine(AnimateHideVisuals());
 		}
 
+		var outOfRange = m_OutOfMaxRange;
 		m_OutOfMaxRange = false;
 		enabled = false;
+
+		return outOfRange;
 	}
 
 	private IEnumerator AnimateShowVisuals()
@@ -214,22 +217,15 @@ public class BlinkVisuals : MonoBehaviour
 		float smoothVelocity = 0f;
 
 		const float kSmoothTime = 0.75f;
-		var startTime = Time.realtimeSinceStartup;
-		while (m_State == State.TransitioningIn && Time.realtimeSinceStartup < startTime + kSmoothTime)
+		var currentDuration = 0f;
+		while (m_State == State.TransitioningIn && currentDuration < kSmoothTime)
 		{
+			scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
 			m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
 			m_LocatorRoot.localScale = Vector3.one * scale;
 			m_LineRenderer.SetWidth(scale, scale);
-
-			scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			yield return null;
-		}
-
-		if (m_State == State.TransitioningIn)
-		{
-			m_TubeTransform.localScale = new Vector3(tubeScale, kTargetScale, tubeScale);
-			m_LocatorRoot.localScale = Vector3.one * kTargetScale;
-			m_LineRenderer.SetWidth(kTargetScale, kTargetScale);
 		}
 
 		m_State = State.Active;
@@ -246,13 +242,14 @@ public class BlinkVisuals : MonoBehaviour
 		float scale = 1f;
 		float tubeScale = m_TubeTransform.localScale.x;
 		const float kSmoothTime = 0.75f;
-		var startTime = Time.realtimeSinceStartup;
-		while (m_State == State.TransitioningOut && Time.realtimeSinceStartup < startTime + kSmoothTime)
+		var currentDuration = 0f;
+		while (m_State == State.TransitioningOut && currentDuration < kSmoothTime)
 		{
+			scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
 			SetColors(Color.Lerp(validTarget == true ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
 			m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
 			m_LineRenderer.SetWidth(scale, scale);
-			scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_RingTransform.localScale = Vector3.Lerp(m_RingTransform.localScale, m_RingTransformOriginalScale, scale);
 			yield return null;
 		}
@@ -262,10 +259,8 @@ public class BlinkVisuals : MonoBehaviour
 		// set value if no additional transition has begun
 		if (m_State == State.TransitioningOut)
 		{
-			SetColors(Color.Lerp(validTarget == true ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f));
-			m_TubeTransform.localScale = new Vector3(tubeScale, kTargetScale, tubeScale);
+			// Must set the line renderer to zero to turn it completely off
 			m_LineRenderer.SetWidth(kTargetScale, kTargetScale);
-			m_RingTransform.localScale = m_RingTransformOriginalScale;
 			m_State = State.Inactive;
 			ShowLine(false);
 

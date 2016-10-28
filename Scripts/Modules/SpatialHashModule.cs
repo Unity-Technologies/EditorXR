@@ -56,5 +56,53 @@ namespace UnityEngine.VR.Modules
 				yield return null;
 			}
 		}
+
+		public void AddObject(object obj)
+		{
+			var gameObject = obj as GameObject;
+			if (gameObject)
+			{
+				if (gameObject.GetComponentInParent<EditorVR>())
+					return;
+
+				foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
+				{
+					spatialHash.AddObject(renderer, renderer.bounds);
+				}
+			}
+
+			var component = obj as Component;
+			if (component)
+			{
+				if (component.GetComponentInParent<EditorVR>())
+					return;
+
+				foreach (var renderer in component.GetComponentsInChildren<Renderer>())
+				{
+					spatialHash.AddObject(renderer, renderer.bounds);
+				}
+			}
+		}
+
+		public void RemoveObject(object obj)
+		{
+			var gameObject = obj as GameObject;
+			if (gameObject)
+			{
+				foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
+				{
+					spatialHash.RemoveObject(renderer);
+				}
+			}
+
+			var component = obj as Component;
+			if (component)
+			{
+				foreach (var renderer in component.GetComponentsInChildren<Renderer>())
+				{
+					spatialHash.RemoveObject(renderer);
+				}
+			}
+		}
 	}
 }

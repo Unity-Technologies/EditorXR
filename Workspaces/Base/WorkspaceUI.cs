@@ -18,18 +18,12 @@ namespace UnityEngine.VR.Workspaces
 		const int kThinFrameBlendShapeIndex = 3;
 		const float kFaceWidthMatchMultiplier =  7.1375f; // Multiplier that sizes the face to the intended width
 		const float kBackResizeButtonPositionOffset = -0.02f; // Offset to place the back resize buttons in their intended location
-		const float kBackHandleOffset = -0.045f; // Offset to place the back handle in the expected region behind the workspace
-		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
 		const float kPanelOffset = 0.0625f; // The panel needs to be pulled back slightly
 
 		// Cached for optimization
 		float m_OriginalUIContainerLocalYPos;
 		float m_PreviousXRotation;
-		float m_HandleScale;
-		float m_FrontHandleYLocalPosition;
-		float m_BackHandleYLocalPosition;
-		float m_LeftHandleYLocalPosition;
-		float m_RightHandleYLocalPosition;
+		Vector3 m_OriginalFrontHandleLocalPosition;
 		Vector3 m_FrontResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BackResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BaseFrontPanelRotation = Vector3.zero;
@@ -268,18 +262,6 @@ namespace UnityEngine.VR.Workspaces
 				m_Frame.SetBlendShapeWeight(0, boundsSize.x + Workspace.kHandleMargin);
 				m_Frame.SetBlendShapeWeight(1, boundsSize.z + Workspace.kHandleMargin);
 
-				// Resize handles
-				m_LeftHandleTransform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f - kSideHandleOffset, m_LeftHandleYLocalPosition, 0);
-				m_LeftHandleTransform.localScale = !preventLeftRightResize ? new Vector3(boundsSize.z, m_HandleScale, m_HandleScale) : Vector3.zero;
-
-				m_FrontHandleTransform.localScale = !preventFrontBackResize ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
-
-				m_RightHandleTransform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
-				m_RightHandleTransform.localScale = !preventLeftRightResize ? new Vector3(boundsSize.z, m_HandleScale, m_HandleScale) : Vector3.zero;
-
-				m_BackHandleTransform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, extents.z - m_HandleScale - kBackHandleOffset);
-				m_BackHandleTransform.localScale = !preventFrontBackResize ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
-
 				// Resize content container
 				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, boundsSize.x);
 				m_UIContentContainer.localPosition = new Vector3(0, m_OriginalUIContainerLocalYPos, -extents.z);
@@ -402,11 +384,7 @@ namespace UnityEngine.VR.Workspaces
 			m_FrontHandleTransform = m_FrontHandle.transform;
 			m_BackHandleTransform = m_BackHandle.transform;
 
-			m_HandleScale = m_LeftHandleTransform.localScale.z;
-			m_LeftHandleYLocalPosition = m_LeftHandleTransform.localPosition.y;
-			m_RightHandleYLocalPosition = m_LeftHandleYLocalPosition; // use the same for right as was used for left; front and back can differ
-			m_FrontHandleYLocalPosition = m_FrontHandleTransform.localPosition.y;
-			m_BackHandleYLocalPosition = m_BackHandleTransform.localPosition.y;
+			m_OriginalFrontHandleLocalPosition = m_FrontHandleTransform.localPosition;
 
 			const float frontResizeIconsContainerForwardOffset = -0.15f;
 			const float frontResizeIconsContainerUpOffset = -0.025f;
@@ -464,12 +442,10 @@ namespace UnityEngine.VR.Workspaces
 			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, lerpAmount);
 
 			// offset front handle position according to workspace rotation angle
-			const float kFrontHandleLocalYAngledOffset = 0.1f;
-			const float kFrontHandleLocalZNormalOfset = 0.5f;
-			const float kFrontHandleLocalZAngledOfset = 0.3f;
-			var lerpedFrontHandleZAngledOffset = Mathf.Lerp(kFrontHandleLocalZNormalOfset, kFrontHandleLocalZAngledOfset, lerpAmount);
-			var lerpedFrontHandleYLocalPosition = Mathf.Lerp(m_FrontHandleYLocalPosition, m_FrontHandleYLocalPosition + kFrontHandleLocalYAngledOffset, lerpAmount);
-			m_FrontHandleTransform.localPosition = new Vector3(0, lerpedFrontHandleYLocalPosition, -m_Bounds.size.z - m_HandleScale + lerpedFrontHandleZAngledOffset);
+			const float kBoundsZCompensation = -0.179f;
+			var boundsZSize = m_Bounds.size.z;
+			var frontHandleAngledPosition = new Vector3 (0f, -0.065f, -0.91f - (boundsZSize * kBoundsZCompensation));
+			m_FrontHandleTransform.localPosition = Vector3.Lerp(m_OriginalFrontHandleLocalPosition, frontHandleAngledPosition, lerpAmount);
 		}
 
 		void OnDestroy()

@@ -7,9 +7,29 @@ using UnityEngine.VR;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Actions;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IDirectSelection, IGrabObjects
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IToolActions, IDirectSelection, IGrabObjects, ISnapping
 {
+	class TransformAction : IAction
+	{
+		internal Func<bool> execute;
+		public Sprite icon { get; internal set; }
+		public bool ExecuteAction()
+		{
+			return execute();
+		}
+	}
+
+	[SerializeField]
+	Sprite m_OriginCenterIcon;
+	[SerializeField]
+	Sprite m_OriginPivotIcon;
+	[SerializeField]
+	Sprite m_RotationGlobalIcon;
+	[SerializeField]
+	Sprite m_RotationLocalIcon;
+
 	const float kBaseManipulatorSize = 0.3f;
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -84,11 +104,33 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	float m_ScaleFactor;
 	bool m_WasScaling;
 
-	TransformInput m_TransformInput;
-
 	public ActionMap actionMap { get { return m_TransformActionMap; } }
 
 	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput)value; } }
+	private TransformInput m_TransformInput;
+
+	public Node selfNode { get; set; }
+
+	
+	public List<IAction> toolActions
+	{
+		get
+		{
+			if (m_ToolActions == null)
+			{
+				m_ToolActions = new List<IAction>()
+				{
+					m_PivotModeToggleAction,
+					m_PivotRotationToggleAction
+				};
+			}
+			return m_ToolActions;
+		}
+	}
+	List<IAction> m_ToolActions;
+
+	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
+	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
 
@@ -96,8 +138,20 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	public Func<IGrabObjects, DirectSelection, Transform, bool> grabObject { private get; set; }
 	public Action<IGrabObjects, Transform, Transform> dropObject { private get; set; }
 
+	public Action<Transform, Vector3, Transform[]> onSnapStarted { private get; set; }
+	public Action<Transform, Vector3, Transform[]> onSnapEnded { private get; set; }
+	public Action<Transform, Vector3, Transform[]> onSnapHeld { private get; set; }
+	public Action<Transform> onSnapUpdate { private get; set; }
+	
+	bool m_IsDragging;
+
 	void Awake()
 	{
+		m_PivotModeToggleAction.execute = TogglePivotMode;
+		UpdatePivotModeToggleIcon();
+		m_PivotRotationToggleAction.execute = TogglePivotRotation;
+		UpdatePivotRotationToggleIcon();
+
 		// Add standard and scale manipulator prefabs to a list (because you cannot add asset references directly to a serialized list)
 		if (m_StandardManipulatorPrefab != null)
 			m_AllManipulators.Add(CreateManipulator(m_StandardManipulatorPrefab));
@@ -107,6 +161,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 		m_CurrentManipulatorIndex = 0;
 		m_CurrentManipulator = m_AllManipulators[m_CurrentManipulatorIndex];
+
+		foreach(var manipulator in m_AllManipulators)
+			((MonoBehaviour)manipulator).gameObject.SetActive(false);
 	}
 
 	public void OnSelectionChanged()
@@ -235,10 +292,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		if (m_SelectionTransforms != null && m_SelectionTransforms.Length > 0)
 		{
 			if (m_TransformInput.pivotMode.wasJustPressed) // Switching center vs pivot
-				SwitchPivotMode();
+				TogglePivotMode();
 
 			if (m_TransformInput.pivotRotation.wasJustPressed) // Switching global vs local
-				SwitchPivotRotation();
+				TogglePivotRotation();
 
 			if (m_TransformInput.manipulatorType.wasJustPressed)
 				SwitchManipulator();
@@ -251,10 +308,15 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 			var deltaTime = Time.unscaledDeltaTime;
 			var manipulatorTransform = manipulatorGameObject.transform;
+			var prevPos = manipulatorTransform.position;
 			manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, kLazyFollowTranslate * deltaTime);
+			var deltaMovement = manipulatorTransform.position - prevPos;
 
 			if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 				manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, kLazyFollowRotate * deltaTime);
+
+			var manipulatorChildren = manipulatorGameObject.GetComponentsInChildren<Transform>(true);
+			var ignoreList = new List<Transform>(manipulatorChildren);
 
 			foreach (var t in m_SelectionTransforms)
 			{
@@ -267,6 +329,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 				}
 				else
 					t.position = manipulatorTransform.position + m_PositionOffsets[t];
+				
+				ignoreList.Add(t);
+				HandleSnap(m_CurrentManipulator, t, deltaMovement, ignoreList.ToArray());
+				ignoreList.Remove(t);
 
 				t.localScale = Vector3.Lerp(t.localScale, Vector3.Scale(m_TargetScale, m_ScaleOffsets[t]), kLazyFollowTranslate * deltaTime);
 			}
@@ -336,6 +402,32 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		m_GrabData.Remove(inputNode);
 	}
 
+	private void HandleSnap(IManipulator manipulator, Transform trans, Vector3 deltaMovement, Transform[] ignoreList)
+	{
+		if (manipulator != null)
+		{
+			if (manipulator.dragging)
+			{
+				if (!m_IsDragging)
+				{
+					m_IsDragging = true;
+					onSnapStarted(trans, deltaMovement, ignoreList);
+				}
+				else
+					onSnapHeld(trans, deltaMovement, ignoreList);
+			}
+			else
+			{
+				if (m_IsDragging)
+				{
+					m_IsDragging = false;
+					onSnapEnded(trans, deltaMovement, ignoreList);
+				}
+				else
+					onSnapUpdate(trans);
+			}
+		}
+	}
 
 	private void Translate(Vector3 delta)
 	{
@@ -354,7 +446,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	private void UpdateSelectionBounds()
 	{
-		Bounds? newBounds = null;
+		var hasBounds = false;
+		Bounds newBounds = new Bounds();
 		foreach (var selectedObj in m_SelectionTransforms)
 		{
 			var renderers = selectedObj.GetComponentsInChildren<Renderer>();
@@ -363,16 +456,21 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 				if (Mathf.Approximately(r.bounds.extents.sqrMagnitude, 0f)) // Necessary because Particle Systems have renderer components with center and extents (0,0,0)
 					continue;
 
-				if (newBounds.HasValue)
+				if (hasBounds)
+				{
 					// Only use encapsulate after the first renderer, otherwise bounds will always encapsulate point (0,0,0)
-					newBounds.Value.Encapsulate(r.bounds);
+					newBounds.Encapsulate(r.bounds);
+				}
 				else
+				{
 					newBounds = r.bounds;
+					hasBounds = true;
+				}
 			}
 		}
 
 		// If we haven't encountered any Renderers, return bounds of (0,0,0) at the center of the selected objects
-		if (newBounds == null)
+		if (!hasBounds)
 		{
 			var bounds = new Bounds();
 			foreach (var selectedObj in m_SelectionTransforms)
@@ -380,7 +478,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			newBounds = bounds;
 		}
 
-		m_SelectionBounds = newBounds.Value;
+		m_SelectionBounds = newBounds;
 	}
 
 	private void UpdateManipulatorSize()
@@ -422,6 +520,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		m_PositionOffsets.Clear();
 		m_RotationOffsets.Clear();
 		m_ScaleOffsets.Clear();
+
 		foreach (var t in m_SelectionTransforms)
 		{
 			m_PositionOffsets.Add(t, t.position - manipulatorTransform.position);
@@ -430,16 +529,30 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		}
 	}
 
-	private void SwitchPivotMode()
+	bool TogglePivotMode()
 	{
 		m_PivotMode = m_PivotMode == PivotMode.Pivot ? PivotMode.Center : PivotMode.Pivot;
+		UpdatePivotModeToggleIcon();
 		UpdateCurrentManipulator();
+		return true;
 	}
 
-	private void SwitchPivotRotation()
+	void UpdatePivotModeToggleIcon()
+	{
+		m_PivotModeToggleAction.icon = m_PivotMode == PivotMode.Center ? m_OriginCenterIcon : m_OriginPivotIcon;
+	}
+
+	bool TogglePivotRotation()
 	{
 		m_PivotRotation = m_PivotRotation == PivotRotation.Global ? PivotRotation.Local : PivotRotation.Global;
+		UpdatePivotRotationToggleIcon();
 		UpdateCurrentManipulator();
+		return true;
+	}
+
+	void UpdatePivotRotationToggleIcon()
+	{
+		m_PivotRotationToggleAction.icon = m_PivotRotation == PivotRotation.Global ? m_RotationGlobalIcon : m_RotationLocalIcon;
 	}
 
 	private void SwitchManipulator()
