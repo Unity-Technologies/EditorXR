@@ -218,6 +218,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 			return;
 
 		m_PreviewObject = Instantiate(data.preview).transform;
+
 		m_PreviewObject.position = Vector3.zero;
 		m_PreviewObject.rotation = Quaternion.identity;
 
@@ -231,6 +232,20 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 		{
 			U.Object.Destroy(m_PreviewObject.gameObject);
 			return;
+		}
+
+		// Turn off expensive render settings
+		foreach(var renderer in m_PreviewObject.GetComponentsInChildren<Renderer>())
+		{
+			renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+			renderer.receiveShadows = false;
+			renderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+			renderer.motionVectors = false;
+		}
+
+		// Turn off lights
+		foreach(var light in m_PreviewObject.GetComponentsInChildren<Light>()) {
+			light.enabled = false;
 		}
 
 		var pivotOffset = m_PreviewObject.position - previewTotalBounds.Value.center;
