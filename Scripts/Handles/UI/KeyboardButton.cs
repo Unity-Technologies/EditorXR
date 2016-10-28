@@ -6,6 +6,7 @@ using UnityEngine.VR.Handles;
 using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
+using UnityEngine.VR.Extensions;
 
 public class KeyboardButton : BaseHandle
 {
@@ -68,6 +69,7 @@ public class KeyboardButton : BaseHandle
 	bool m_Triggered;
 	Material m_TargetMeshMaterial;
 	Coroutine m_ChangeEmissionCoroutine;
+	Coroutine m_PunchKeyCoroutine;
 
 	Action<char> m_KeyPress;
 	Func<bool> m_PressOnHover;
@@ -150,10 +152,7 @@ public class KeyboardButton : BaseHandle
 	{
 		base.OnHandleHoverEnded(eventData);
 
-		if (!m_PressOnHover())
-		{
-			m_WorkspaceButton.highlight = false;
-		}
+		m_WorkspaceButton.highlight = false;
 	}
 
 	protected override void OnHandleDragStarted(HandleEventData eventData)
@@ -235,6 +234,7 @@ public class KeyboardButton : BaseHandle
 		else
 			m_KeyPress(m_Character);
 
+		// Return since the escape key will disable the keyboard
 		if ((!shiftMode && (KeyCode)m_Character == KeyCode.Escape) || (shiftMode && (KeyCode)m_ShiftCharacter == KeyCode.Escape)) // Avoid message about starting coroutine on inactive object
 		{
 			var targetMeshTransform = m_TargetMesh.transform;
@@ -243,11 +243,11 @@ public class KeyboardButton : BaseHandle
 			return;
 		}
 
-		if (m_ChangeEmissionCoroutine != null)
-			StopCoroutine(m_ChangeEmissionCoroutine);
+		this.StopCoroutine(ref m_ChangeEmissionCoroutine);
 		m_ChangeEmissionCoroutine = StartCoroutine(IncreaseEmission());
 
-		StartCoroutine(PunchKey());
+		this.StopCoroutine(ref m_PunchKeyCoroutine);
+		m_PunchKeyCoroutine = StartCoroutine(PunchKey());
 
 		if (m_RepeatOnHold)
 			StartKeyHold();
@@ -274,9 +274,7 @@ public class KeyboardButton : BaseHandle
 	{
 		m_Holding = false;
 
-		if (m_ChangeEmissionCoroutine != null)
-			StopCoroutine(m_ChangeEmissionCoroutine);
-
+		this.StopCoroutine(ref m_ChangeEmissionCoroutine);
 		m_ChangeEmissionCoroutine = StartCoroutine(DecreaseEmission());
 	}
 
@@ -301,15 +299,12 @@ public class KeyboardButton : BaseHandle
 
 	IEnumerator IncreaseEmission()
 	{
-		m_WorkspaceButton.highlight = true;
-		if (!gameObject.activeInHierarchy) yield break;
-
 		var t = 0f;
 		Color finalColor;
 		while (t < kEmissionLerpTime)
 		{
-			var emission = Mathf.PingPong(t / kEmissionLerpTime, kPressEmission);
-			finalColor = Color.white * Mathf.LinearToGammaSpace(emission);
+			var emission = t / kEmissionLerpTime;
+			finalColor = Color.white * Mathf.LinearToGammaSpace(emission * kPressEmission);
 			m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 			t += Time.unscaledDeltaTime;
 
@@ -327,15 +322,12 @@ public class KeyboardButton : BaseHandle
 
 	IEnumerator DecreaseEmission()
 	{
-		m_WorkspaceButton.highlight = false;
-		if (!gameObject.activeInHierarchy) yield break;
-
 		var t = 0f;
 		Color finalColor;
 		while (t < kEmissionLerpTime)
 		{
-			var emission = Mathf.PingPong(1f - t / kEmissionLerpTime, kPressEmission);
-			finalColor = Color.white * Mathf.LinearToGammaSpace(emission);
+			var emission = 1f - t / kEmissionLerpTime;
+			finalColor = Color.white * Mathf.LinearToGammaSpace(emission * kPressEmission);
 			m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 			t += Time.unscaledDeltaTime;
 
@@ -361,8 +353,8 @@ public class KeyboardButton : BaseHandle
 			if (Mathf.Approximately(t, 0f) || Mathf.Approximately(t, 1f))
 				break;
 
-			const float p = 0.3f;
-			t = Mathf.Pow(2, -10 * t) * Mathf.Sin(t * (2 * Mathf.PI) / p);
+			const float amplitude = 0.3f;
+			t = Mathf.Pow(2f, -10f * t) * Mathf.Sin(t * (2f * Mathf.PI) / amplitude);
 
 			targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponseAmplitude;
 
@@ -376,5 +368,6 @@ public class KeyboardButton : BaseHandle
 
 		targetMeshTransform.localScale = m_TargetMeshInitialScale;
 		targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;
+		m_PunchKeyCoroutine = null;
 	}
 }

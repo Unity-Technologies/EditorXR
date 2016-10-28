@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Extensions;
 
 public class KeyboardUI : MonoBehaviour
 {
@@ -85,6 +86,11 @@ public class KeyboardUI : MonoBehaviour
 		handleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
 	}
 
+	void OnEnable()
+	{
+		m_EligibleForDrag = false;
+	}
+
 	void SetButtonLayoutTargets(bool horizontal)
 	{
 		int i = 0;
@@ -104,9 +110,7 @@ public class KeyboardUI : MonoBehaviour
 
 	public void Collapse(Action doneCollapse)
 	{
-		if (m_MalletVisible)
-			malletVisibilityChanged(false);
-		m_MalletVisible = false;
+		EnableMallet(false);
 
 		if (isActiveAndEnabled)
 		{
@@ -198,15 +202,24 @@ public class KeyboardUI : MonoBehaviour
 			int i = 0;
 			foreach (var button in m_Buttons)
 			{
-				var horizT = m_HorizontalLayoutTransforms[i];
-				var vertT = m_VerticalLayoutTransforms[i];
-				button.transform.position = Vector3.Lerp(button.transform.position, horizontal
-					? horizT.position
-					: vertT.position, t / duration);
+				var targetPos = horizontal
+					? m_HorizontalLayoutTransforms[i].position
+					: m_VerticalLayoutTransforms[i].position;
+				button.transform.position = Vector3.Lerp(button.transform.position, targetPos, t / duration);
 				i++;
 			}
 			t += Time.unscaledDeltaTime;
 			yield return null;
+		}
+
+		int k = 0;
+		foreach (var button in m_Buttons)
+		{
+			var targetPos = horizontal
+				? m_HorizontalLayoutTransforms[k].position
+				: m_VerticalLayoutTransforms[k].position;
+			button.transform.position = targetPos;
+			k++;
 		}
 
 		m_MoveKeysCoroutine = null;
@@ -361,11 +374,8 @@ public class KeyboardUI : MonoBehaviour
 
 	void OnDragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
 	{
-		if (m_DragAfterDelayCoroutine != null)
-		{
-			StopCoroutine(m_DragAfterDelayCoroutine);
-			m_DragAfterDelayCoroutine = null;
-		}
+		this.StopCoroutine(ref m_DragAfterDelayCoroutine);
+		m_DragAfterDelayCoroutine = null;
 
 		if (m_EligibleForDrag)
 		{
@@ -389,22 +399,25 @@ public class KeyboardUI : MonoBehaviour
 
 	void Update()
 	{
-		if (IsHorizontal() && cachedRayOrigin != null)
+		if (IsHorizontal() && !m_EligibleForDrag && cachedRayOrigin != null)
 		{
 			var rayOriginPos = cachedRayOrigin.position;
 			if (Vector3.Magnitude(handleButton.transform.position - rayOriginPos) < 0.03f)
 			{
-				if (m_MalletVisible)
-					malletVisibilityChanged(false);
-				m_MalletVisible = false;
+				EnableMallet(false);
 			}
 			else
 			{
-				if (!m_MalletVisible)
-					malletVisibilityChanged(true);
-				m_MalletVisible = true;
+				EnableMallet(true);
 			}
 		}
+	}
+
+	void EnableMallet(bool enable)
+	{
+		if (m_MalletVisible)
+			malletVisibilityChanged(enable);
+		m_MalletVisible = enable;
 	}
 
 	void OnDisable()
@@ -412,5 +425,7 @@ public class KeyboardUI : MonoBehaviour
 		if (m_ChangeDragColorsCoroutine != null)
 			StopCoroutine(m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = null;
+
+//		EnableMallet(false);
 	}
 }

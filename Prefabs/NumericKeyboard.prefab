@@ -7696,7 +7696,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_CloseButton: {fileID: 0}
   m_Buttons:
   - {fileID: 114000013550633790}
   - {fileID: 114000014062104170}
@@ -9350,7 +9349,8 @@ MonoBehaviour:
   m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
   m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
-  m_HighlightItems: []
+  m_HighlightItems:
+  - {fileID: 114000011519049408}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
