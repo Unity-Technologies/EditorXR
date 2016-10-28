@@ -25,7 +25,7 @@ namespace UnityEngine.VR.Utilities
 				get { return s_CurrentSnappingMode; }
 				set { s_CurrentSnappingMode = value; }
 			}
-			private static SnappingModes s_CurrentSnappingMode = SnappingModes.SnapToGround | SnappingModes.SnapToSurfaceNormal;
+			private static SnappingModes s_CurrentSnappingMode = SnappingModes.SnapToGround;
 
 			[Flags]
 			public enum SnappingModes

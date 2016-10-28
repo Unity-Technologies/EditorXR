@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
 using UnityEngine.VR.Helpers;
+using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
@@ -46,6 +47,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 		set { m_BlinkLocomotionInput = (BlinkLocomotion)value; }
 	}
 	private BlinkLocomotion m_BlinkLocomotionInput;
+
+	public Node selfNode { get; set; }
 
 	private void Start()
 	{

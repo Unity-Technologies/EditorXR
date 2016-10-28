@@ -1,3 +1,4 @@
+//#define USE_HOVER
 using System;
 using UnityEngine;
 using System.Collections;
@@ -33,9 +34,11 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 
 	private readonly List<GameObject> m_LockedGameObjects = new List<GameObject>();
 
+#if USE_HOVER
 	private Dictionary<Node?, GameObject> m_CurrentHoverObjects = new Dictionary<Node?, GameObject>();
 	private Dictionary<Node?, float> m_HoverTimes = new Dictionary<Node?, float>();
 	private const float kMaxHoverTime = 2.0f;
+#endif
 
 	private GameObject m_SelectedObject;
 	
@@ -89,6 +92,7 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 
 	public void CheckHover(GameObject go, Node? node)
 	{
+#if USE_HOVER
 		if (!m_CurrentHoverObjects.ContainsKey(node))
 			m_CurrentHoverObjects.Add(node, null);
 
@@ -110,6 +114,10 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 					openRadialMenu(node, go);
 			}
 		}
+#else
+		// We're disabling hovering over an object to bring up the radial menu for now
+		return;
+#endif
 	}
 
 	public void OnSelectionChanged()
