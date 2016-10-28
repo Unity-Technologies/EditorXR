@@ -90,16 +90,12 @@ namespace UnityEngine.VR.Tools
 
 			if (m_SelectionInput.select.wasJustPressed && m_HoverGameObject)
 			{
-				// TODO: Uncomment after merge with dev/schoen/bugfix-b
-				//	setInputBlocked(true);
 				m_PressedObject = m_HoverGameObject;
 			}
 
 			// Handle select button press
 			if (m_SelectionInput.select.wasJustReleased)
 			{
-				// TODO: Uncomment after merge with dev/schoen/bugfix-b
-				//setInputBlocked(false);
 				if (m_PressedObject == m_HoverGameObject)
 				{
 					s_CurrentPrefabOpened = newPrefabRoot;
@@ -127,6 +123,8 @@ namespace UnityEngine.VR.Tools
 						Selection.activeGameObject = m_HoverGameObject;
 						s_SelectedObjects.Add(m_HoverGameObject);
 					}
+
+					setHighlight(m_HoverGameObject, false);
 
 					Selection.objects = s_SelectedObjects.ToArray();
 					selected(node);

@@ -9,7 +9,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Actions;
 
-public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionChanged, IToolActions, IDirectSelection, IGrabObjects, ISnapping
+public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionChanged, IToolActions, IDirectSelection, IGrabObjects, ISnapping, IHighlight
 {
 	class TransformAction : IAction
 	{
@@ -136,7 +136,9 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 	public Action<Transform, Vector3, Transform[]> onSnapEnded { private get; set; }
 	public Action<Transform, Vector3, Transform[]> onSnapHeld { private get; set; }
 	public Action<Transform> onSnapUpdate { private get; set; }
-	
+
+	public Action<GameObject, bool> setHighlight { private get; set; }
+
 	bool m_IsDragging;
 
 	void Awake()
@@ -220,6 +222,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 					m_GrabData[selection.node] = new GrabData(rayOrigin, grabbedObject, directSelectInput);
 
 					Selection.activeGameObject = grabbedObject.gameObject;
+
+					setHighlight(grabbedObject.gameObject, false);
 
 					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
 					EditorApplication.delayCall += () =>
