@@ -94,14 +94,20 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 	private IEnumerator MoveTowardTarget(Vector3 targetPosition)
 	{
 		m_State = State.Moving;
-
 		targetPosition = new Vector3(targetPosition.x, viewerPivot.position.y, targetPosition.z);
-		while ((viewerPivot.position - targetPosition).magnitude > 0.1f)
+		const float kTargetDuration = 1f;
+		var currentPosition = viewerPivot.position;
+		var velocity = new Vector3();
+		var currentDuration = 0f;
+		while (currentDuration < kTargetDuration)
 		{
-			viewerPivot.position = Vector3.Lerp(viewerPivot.position, targetPosition, Time.unscaledDeltaTime * m_MovementSpeed);
+			currentDuration += Time.unscaledDeltaTime;
+			currentPosition = U.Math.SmoothDamp(currentPosition, targetPosition, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+			viewerPivot.position = currentPosition;
 			yield return null;
 		}
 
+		viewerPivot.position = targetPosition;
 		m_State = State.Inactive;
 		s_ActiveTool = null;
 	}
