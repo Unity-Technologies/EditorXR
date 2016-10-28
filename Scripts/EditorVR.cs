@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -111,7 +111,8 @@ public class EditorVR : MonoBehaviour
 		public bool restoreMainMenu;
 		public IAlternateMenu alternateMenu;
 		public ITool currentTool;
-	}
+		public List<GameObject> toolMenus;
+    }
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
 	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
@@ -280,7 +281,8 @@ public class EditorVR : MonoBehaviour
 		{
 			var deviceData = new DeviceData
 			{
-				tools = new Stack<ITool>()
+				tools = new Stack<ITool>(),
+				toolMenus = new List<GameObject>()
 			};
 			m_DeviceData.Add(device, deviceData);
 		}
@@ -405,6 +407,20 @@ public class EditorVR : MonoBehaviour
 			{
 				foreach (var rayOrigin in proxy.rayOrigins.Values)
 					m_KeyboardMallets[rayOrigin].CheckForKeyCollision();
+			}
+		}
+
+		foreach (var kvp in m_DeviceData)
+		{
+			var deviceData = kvp.Value;
+			var mainMenu = deviceData.mainMenu;
+			if (mainMenu != null)
+			{
+				deviceData.toolMenus.RemoveAll((go) => go == null);
+				foreach (GameObject go in deviceData.toolMenus)
+				{
+					go.SetActive(!mainMenu.visible);
+				}
 			}
 		}
 
@@ -903,6 +919,53 @@ public class EditorVR : MonoBehaviour
 
 		foreach (var component in go.GetComponentsInChildren<Component>(true))
 			ConnectInterfaces(component);
+		return go;
+	}
+
+	private GameObject InstantiateMenuUI(Node node,MenuOrigin origin,GameObject prefab)
+	{
+		var go = U.Object.Instantiate(prefab,transform);
+		foreach(Canvas canvas in go.GetComponentsInChildren<Canvas>())
+			canvas.worldCamera = m_EventCamera;
+
+		// the menu needs to be on the opposite hand to the tool
+		if (node == Node.LeftHand)
+			node = Node.RightHand;
+		else if(node == Node.RightHand)
+			node = Node.LeftHand;
+
+		// HACK: if not using this bool, the CreatePrimitiveMenu would be attached to both nodes
+		bool once = false;
+		ForEachRayOrigin((proxy,rayOriginPair,device,deviceData) =>
+		{
+			if (once)
+				return;
+
+			Dictionary<Node,Transform> tempOrigin = null;
+
+			if(origin == MenuOrigin.Main)
+				tempOrigin = proxy.menuOrigins;
+			else if(origin == MenuOrigin.Alternate)
+				tempOrigin = proxy.alternateMenuOrigins;
+
+			Transform parent;
+			if(tempOrigin != null && tempOrigin.TryGetValue(node,out parent))
+			{
+				once = true;
+
+				if (go.GetComponent<CreatePrimitiveMenu>() != null)
+					ConnectInterfaces(go.GetComponent<CreatePrimitiveMenu>(),device);
+
+				go.transform.SetParent(parent);
+				go.transform.localPosition = Vector3.zero;
+				go.transform.localRotation = Quaternion.identity;
+
+				deviceData.toolMenus.Add(go);
+				m_DeviceData[device].mainMenu.visible = false;
+			}
+		}, true);
+
+
 
 		return go;
 	}
@@ -1204,6 +1267,13 @@ public class EditorVR : MonoBehaviour
 					bool continueSearching = true;
 
 					Transform rayOrigin;
+
+					var iTool = obj as ITool;
+					if(iTool != null)
+					{
+						iTool.selfNode = node.Value;
+					}
+
 					var ray = obj as IRay;
 					if (ray != null && proxy.rayOrigins.TryGetValue(node.Value, out rayOrigin))
 					{
@@ -1259,6 +1329,10 @@ public class EditorVR : MonoBehaviour
 		var createWorkspace = obj as ICreateWorkspace;
 		if (createWorkspace != null)
 			createWorkspace.createWorkspace = CreateWorkspace;
+
+		var instantiateMenuUI = obj as IInstantiateMenuUI;
+		if(instantiateMenuUI != null)
+			instantiateMenuUI.instantiateMenuUI = InstantiateMenuUI;
 
 		var raycaster = obj as IRaycaster;
 		if (raycaster != null)
