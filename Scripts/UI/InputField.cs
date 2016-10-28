@@ -148,15 +148,16 @@ namespace UnityEngine.VR.UI
 
 			m_Keyboard.gameObject.SetActive(true);
 
-//			m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
-//			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
-//			m_Keyboard.transform.rotation = rotation;
+			m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
+			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
+			m_Keyboard.transform.rotation = rotation;
+
 			m_Keyboard.Setup(OnKeyPress);
 
-			if (m_MoveKeyboardCoroutine != null)
-				StopCoroutine(m_MoveKeyboardCoroutine);
-
-			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(Vector3.Magnitude(m_Keyboard.transform.position - transform.position) > 0.25f));
+//			if (m_MoveKeyboardCoroutine != null)
+//				StopCoroutine(m_MoveKeyboardCoroutine);
+//
+//			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(Vector3.Magnitude(m_Keyboard.transform.position - transform.position) > 0.25f));
 
 		}
 
@@ -197,7 +198,6 @@ namespace UnityEngine.VR.UI
 //
 //		void FinalizeClose()
 //		{
-			m_Open = false;
 			m_Keyboard.gameObject.SetActive(false);
 			m_Keyboard = null;
 		}
