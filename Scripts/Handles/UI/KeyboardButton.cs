@@ -277,8 +277,6 @@ public class KeyboardButton : BaseHandle
 
 	protected virtual void InstantClearState()
 	{
-		return;
-
 		var finalColor = Color.white * Mathf.LinearToGammaSpace(0f);
 		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 

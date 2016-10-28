@@ -12,6 +12,7 @@ public class KeyboardUI : MonoBehaviour
 	const float kKeyExpandCollapseTime = 0.25f;
 	const float kHandleChangeColorTime = 0.1f;
 	const float kHorizontalThreshold = 0.7f;
+	static Color sDragColor = UnityBrandColorScheme.green;
 
 	[SerializeField]
 	KeyboardButton m_CloseButton;
@@ -28,8 +29,6 @@ public class KeyboardUI : MonoBehaviour
 	[SerializeField]
 	DirectManipulator m_DirectManipulator;
 
-	Color m_DragColor = UnityBrandColorScheme.green;
-
 	/// <summary>
 	/// Called when the orientation changes, parameter is whether keyboard is currently horizontal
 	/// </summary>
@@ -39,17 +38,13 @@ public class KeyboardUI : MonoBehaviour
 
 	bool m_EligibleForDrag;
 	bool m_CurrentlyHorizontal;
-	KeyboardButton m_HandleButton;
 	Material m_HandleMaterial;
 
 	Coroutine m_ChangeDragColorsCoroutine;
 	Coroutine m_MoveKeysCoroutine;
 	Coroutine m_DragAfterDelayCoroutine;
 
-	public KeyboardButton handleButton
-	{
-		get { return m_HandleButton; }
-	}
+	public KeyboardButton handleButton { get; set; }
 
 	public bool collapsing { get; set; }
 
@@ -70,13 +65,13 @@ public class KeyboardUI : MonoBehaviour
 			handle.dragEnded += OnDragEnded;
 		}
 
+
 		foreach (var button in m_Buttons)
 		{
 			button.Setup(keyPress, IsHorizontal);
 		}
 
-		m_HandleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
-		m_HandleMaterial = m_HandleButton.targetMeshMaterial;
+		m_HandleMaterial = handleButton.targetMeshMaterial;
 
 		orientationChanged(IsHorizontal());
 		SetButtonLayoutTargets(IsHorizontal());
@@ -84,6 +79,11 @@ public class KeyboardUI : MonoBehaviour
 		if (m_MoveKeysCoroutine != null)
 			StopCoroutine(m_MoveKeysCoroutine);
 		m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime, true));
+	}
+
+	void Awake()
+	{
+		handleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
 	}
 
 	void SetButtonLayoutTargets(bool horizontal)
@@ -127,7 +127,7 @@ public class KeyboardUI : MonoBehaviour
 			{
 				if (button != handleButton)
 				{
-					button.transform.position = Vector3.Lerp(button.transform.position, m_HandleButton.transform.position, t / kKeyLayoutTransitionTime);
+					button.transform.position = Vector3.Lerp(button.transform.position, handleButton.transform.position, t / kKeyLayoutTransitionTime);
 					SetButtonTextAlpha(1f - t / kKeyLayoutTransitionTime);
 				}
 			}
@@ -293,14 +293,14 @@ public class KeyboardUI : MonoBehaviour
 		while (t < kHandleChangeColorTime)
 		{
 			var alpha = t / kHandleChangeColorTime;
-			m_HandleMaterial.color = Color.Lerp(startColor, m_DragColor, alpha);
+			m_HandleMaterial.color = Color.Lerp(startColor, sDragColor, alpha);
 			SetButtonTextAlpha(1f - alpha);
 			t += Time.unscaledDeltaTime;
 			yield return null;
 		}
 
 		SetButtonTextAlpha(0f);
-		m_HandleMaterial.color = m_DragColor;
+		m_HandleMaterial.color = sDragColor;
 
 		m_ChangeDragColorsCoroutine = null;
 	}
@@ -314,14 +314,14 @@ public class KeyboardUI : MonoBehaviour
 		while (t < kHandleChangeColorTime)
 		{
 			var alpha = t / kHandleChangeColorTime;
-			m_HandleMaterial.color = Color.Lerp(startColor, m_HandleButton.targetMeshBaseColor, alpha);
+			m_HandleMaterial.color = Color.Lerp(startColor, handleButton.targetMeshBaseColor, alpha);
 			SetButtonTextAlpha(alpha);
 			t += Time.unscaledDeltaTime;
 			yield return null;
 		}
 
 		SetButtonTextAlpha(1f);
-		m_HandleMaterial.color = m_HandleButton.targetMeshBaseColor;
+		m_HandleMaterial.color = handleButton.targetMeshBaseColor;
 
 		m_ChangeDragColorsCoroutine = null;
 	}
