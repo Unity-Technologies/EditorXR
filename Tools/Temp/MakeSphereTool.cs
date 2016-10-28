@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.VR;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 using Object = UnityEngine.Object;
@@ -9,6 +10,7 @@ using Object = UnityEngine.Object;
 public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ISpatialHash
 {	
 	public Transform rayOrigin { get; set; }
+	public Node selfNode { get; set; }
 
 	public ActionMap actionMap
 	{

@@ -33,10 +33,8 @@ namespace UnityEngine.VR.Tools
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
 
-		// TODO: Uncomment after merge with dev/schoen/bugfix-b
-		//public Action<bool> setInputBlocked { get; set; }
-
 		public Transform menuOrigin { get; set; }
+		public Node selfNode { get; set; }
 		public Node? node { private get; set; }
 
 		public Func<bool> toggleLocked { get; set; }

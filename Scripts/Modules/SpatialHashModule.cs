@@ -57,7 +57,7 @@ namespace UnityEngine.VR.Modules
 			}
 		}
 
-		public void AddObject(Object obj)
+		public void AddObject(object obj)
 		{
 			var gameObject = obj as GameObject;
 			if (gameObject)
