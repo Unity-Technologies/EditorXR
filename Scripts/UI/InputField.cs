@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -34,6 +35,8 @@ namespace UnityEngine.VR.UI
 		private int m_CharacterLimit = 10;
 
 		private bool m_Open;
+
+		Coroutine m_WaitThenOpenCoroutine;
 
 		public string text
 		{
@@ -128,17 +131,27 @@ namespace UnityEngine.VR.UI
 			m_Open = true;
 
 			m_Keyboard = spawnKeyboard();
+
+//			if (m_WaitThenOpenCoroutine != null)
+//				StopCoroutine(m_WaitThenOpenCoroutine);
+//			m_WaitThenOpenCoroutine = StartCoroutine(WaitThenOpen());
+//		}
+//
+//		IEnumerator WaitThenOpen()
+//		{
+//			while (m_Keyboard != null && m_Keyboard.collapsing)
+//			{
+//				yield return null;
+//			}
+
 			if (m_Keyboard != null)
 			{
 				m_Keyboard.gameObject.SetActive(true);
 
 				m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
-				var direction = U.Camera.GetMainCamera().transform.position - transform.position;
-				direction.y = 0;
-				var rotation = Vector3.Angle(Vector3.back, direction);
-				m_Keyboard.transform.rotation = Quaternion.Euler(0, rotation, 0);
-
-				m_Keyboard.Setup(OnKeyPress);
+				var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
+				m_Keyboard.transform.rotation = rotation;
+				m_Keyboard.Setup(OnKeyPress, true);
 			}
 		}
 
@@ -148,6 +161,12 @@ namespace UnityEngine.VR.UI
 
 			if (m_Keyboard == null) return;
 
+//			m_Keyboard.Collapse(FinalizeClose);
+//		}
+//
+//		void FinalizeClose()
+//		{
+//			m_Open = false;
 			m_Keyboard.gameObject.SetActive(false);
 			m_Keyboard = null;
 		}

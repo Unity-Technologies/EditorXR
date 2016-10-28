@@ -22,18 +22,11 @@ public class KeyboardMallet : MonoBehaviour
 	[SerializeField]
 	private Collider m_BulbCollider;
 
-	private enum State
-	{
-		Visible,
-		Transitioning,
-		Hidden
-	}
-
-	private State m_State = State.Visible;
-
-	private Vector3 m_BulbBaseScale;
-
 	private KeyboardButton m_CurrentButton;
+
+	Coroutine m_ShowHideCoroutine;
+
+	bool m_Open;
 
 	/// <summary>
 	/// Invoked by the editor to update the mallet components' transform data.
@@ -44,7 +37,6 @@ public class KeyboardMallet : MonoBehaviour
 
 		m_Bulb.transform.localPosition = new Vector3(0f, 0f, m_StemLength * 2f);
 		m_Bulb.transform.localScale = Vector3.one * m_BulbRadius * 2f;
-		m_BulbBaseScale = m_Bulb.transform.localScale;
 	}
 
 	/// <summary>
@@ -54,10 +46,10 @@ public class KeyboardMallet : MonoBehaviour
 	{
 		if (isActiveAndEnabled)
 		{
-			if (m_State == State.Transitioning)
-				StopAllCoroutines();
+			if (m_ShowHideCoroutine != null)
+				StopCoroutine(m_ShowHideCoroutine);
 
-			StartCoroutine(HideMallet());
+			m_ShowHideCoroutine = StartCoroutine(HideMallet());
 		}
 	}
 
@@ -68,10 +60,10 @@ public class KeyboardMallet : MonoBehaviour
 	{
 		if (isActiveAndEnabled)
 		{
-			if (m_State == State.Transitioning)
-				StopAllCoroutines();
+			if (m_ShowHideCoroutine != null)
+				StopCoroutine(m_ShowHideCoroutine);
 
-			StartCoroutine(ShowMallet());
+			m_ShowHideCoroutine = StartCoroutine(ShowMallet());
 		}
 	}
 
@@ -80,7 +72,7 @@ public class KeyboardMallet : MonoBehaviour
 	/// </summary>
 	public void CheckForKeyCollision()
 	{
-		if (m_State != State.Visible) return;
+		if (!m_Open) return;
 
 		if (m_CurrentButton != null)
 			m_CurrentButton.OnTriggerStay(m_BulbCollider);
@@ -111,58 +103,59 @@ public class KeyboardMallet : MonoBehaviour
 		}
 	}
 
-	private void Awake()
-	{
-		m_BulbBaseScale = m_Bulb.localScale;
-	}
-
 	private IEnumerator HideMallet()
 	{
-		m_State = State.Transitioning;
+		m_Open = false;
 
 		var stemScale = m_StemOrigin.localScale;
+		var startLength = m_StemOrigin.localScale.y;
 		var currentLength = m_StemOrigin.localScale.y; // cache current length for smooth animation to target value without snapping
-			
-		const float kSmoothTime = 0.1875f;
-		var startTime = Time.realtimeSinceStartup;
-		float smoothVelocity = 0f;
-		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
+		var bulbStartScale = m_Bulb.localScale;
+
+		var smoothVelocity = 0f;
+		var currentDuration = 0f;
+		const float kTargetDuration = 0.5f;
+		while (currentDuration < kTargetDuration)
 		{
-			currentLength = U.Math.SmoothDamp(currentLength, 0f, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentLength = U.Math.SmoothDamp(currentLength, 0f, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_StemOrigin.localScale = new Vector3(stemScale.x, currentLength, stemScale.z);
 			m_Bulb.transform.localPosition = new Vector3(0f, 0f, currentLength * 2f);
-			m_Bulb.transform.localScale = m_BulbBaseScale * currentLength;
-
+			var alpha = currentLength / startLength;
+			m_Bulb.transform.localScale = bulbStartScale * alpha;
+			currentDuration += Time.unscaledDeltaTime;
 			yield return null;
 		}
 
+		m_Bulb.transform.localPosition = Vector3.zero;
 		m_Bulb.transform.localScale = Vector3.zero;
 
-		m_State = State.Hidden;
+		m_ShowHideCoroutine = null;
 	}
 
 	private IEnumerator ShowMallet()
 	{
-		m_State = State.Transitioning;
-
 		var stemScale = m_StemOrigin.localScale;
 		var currentLength = m_StemOrigin.localScale.y;
+		var targetBulbScale = Vector3.one * m_BulbRadius * 2f;
 
-		const float kSmoothTime = 0.3125f;
-		var startTime = Time.realtimeSinceStartup;
-		float smoothVelocity = 0f;
-		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
+		var smoothVelocity = 0f;
+		const float kTargetDuration = 0.5f;
+		var currentDuration = 0f;
+		while (currentDuration < kTargetDuration)
 		{
-			currentLength = U.Math.SmoothDamp(currentLength, m_StemLength, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentLength = U.Math.SmoothDamp(currentLength, m_StemLength, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_StemOrigin.localScale = new Vector3(stemScale.x, currentLength, stemScale.z);
 			m_Bulb.transform.localPosition = new Vector3(0f, 0f, currentLength * 2f);
-			m_Bulb.transform.localScale = m_BulbBaseScale * currentLength;
+			var alpha = currentLength / m_StemLength;
+			m_Bulb.transform.localScale = targetBulbScale * alpha;
+			currentDuration += Time.unscaledDeltaTime;
 			yield return null;
 		}
 
-		m_Bulb.transform.localScale = m_BulbBaseScale;
+		m_Bulb.transform.localPosition = new Vector3(0f, 0f, m_StemLength * 2f);
+		m_Bulb.transform.localScale = targetBulbScale;
 
-		// only set the value if another transition hasn't begun
-		m_State = State.Visible;
+		m_Open = true;
+		m_ShowHideCoroutine = null;
 	}
 }

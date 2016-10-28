@@ -675,6 +675,7 @@ public class EditorVR : MonoBehaviour
 		{
 			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
 			m_NumericKeyboard.orientationChanged += KeyboardOrientationChanged;
+			m_NumericKeyboard.closed += KeyboardClosed;
 		}
 		return m_NumericKeyboard;
 	}
@@ -689,6 +690,7 @@ public class EditorVR : MonoBehaviour
 		{
 			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
 			m_StandardKeyboard.orientationChanged += KeyboardOrientationChanged;
+			m_StandardKeyboard.closed += KeyboardClosed;
 		}
 		return m_StandardKeyboard;
 	}
@@ -709,6 +711,17 @@ public class EditorVR : MonoBehaviour
 				mallet.Hide();
 				dpr.Show();
 			}
+		}
+	}
+
+	void KeyboardClosed()
+	{
+		foreach (var kvp in m_KeyboardMallets)
+		{
+			var mallet = kvp.Value;
+			var dpr = kvp.Key.GetComponentInChildren<DefaultProxyRay>();
+				mallet.Hide();
+				dpr.Show();
 		}
 	}
 

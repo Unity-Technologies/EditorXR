@@ -6,7 +6,6 @@ using System;
 [CustomEditor(typeof(KeyboardUI))]
 public class KeyboardUIEditor : Editor
 {
-	SerializedProperty m_CloseButtonProperty;
 	SerializedProperty m_ButtonsProperty;
 	SerializedProperty m_VerticalLayoutTransformsProperty;
 	SerializedProperty m_HorizontalLayoutTransformsProperty;
@@ -16,7 +15,6 @@ public class KeyboardUIEditor : Editor
 
 	protected void OnEnable()
 	{
-		m_CloseButtonProperty = serializedObject.FindProperty("m_CloseButton");
 		m_ButtonsProperty = serializedObject.FindProperty("m_Buttons");
 		m_VerticalLayoutTransformsProperty = serializedObject.FindProperty("m_VerticalLayoutTransforms");
 		m_HorizontalLayoutTransformsProperty = serializedObject.FindProperty("m_HorizontalLayoutTransforms");
@@ -30,7 +28,6 @@ public class KeyboardUIEditor : Editor
 		var labelWidth = EditorGUIUtility.labelWidth;
 		EditorGUIUtility.labelWidth = 100f;
 		serializedObject.Update();
-		EditorGUILayout.PropertyField(m_CloseButtonProperty);
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Button");
 		EditorGUILayout.LabelField("Vertical Slots");

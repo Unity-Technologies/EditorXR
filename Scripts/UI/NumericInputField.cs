@@ -129,31 +129,27 @@ namespace UnityEngine.VR.UI
 			base.UpdateLabel();
 
 			if (m_Keyboard != null)
-			if (IsExpression())
-			{
-				m_Keyboard.DeactivateShiftModeOnKey(m_Keyboard.closeButton);
-				m_Keyboard.closeButton.textComponent.text = "=";
-			}
-			else
-			{
-				m_Keyboard.ActivateShiftModeOnKey(m_Keyboard.closeButton);
-				m_Keyboard.closeButton.textComponent.text = "x";
-			}
+				UpdateHandleButtonText();
 		}
 
 		public override void Open()
 		{
 			base.Open();
 
+			UpdateHandleButtonText();
+		}
+
+		void UpdateHandleButtonText()
+		{
 			if (IsExpression())
 			{
-				m_Keyboard.DeactivateShiftModeOnKey(m_Keyboard.closeButton);
-				m_Keyboard.closeButton.textComponent.text = "=";
+				m_Keyboard.DeactivateShiftModeOnKey(m_Keyboard.handleButton);
+				m_Keyboard.handleButton.textComponent.text = "=";
 			}
 			else
 			{
-				m_Keyboard.ActivateShiftModeOnKey(m_Keyboard.closeButton);
-				m_Keyboard.closeButton.textComponent.text = "x";
+				m_Keyboard.ActivateShiftModeOnKey(m_Keyboard.handleButton);
+				m_Keyboard.handleButton.textComponent.text = "x";
 			}
 		}
 

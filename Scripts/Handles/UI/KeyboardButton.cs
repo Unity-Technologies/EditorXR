@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Workspaces;
 
 public class KeyboardButton : BaseHandle
 {
@@ -57,17 +58,26 @@ public class KeyboardButton : BaseHandle
 	[SerializeField]
 	private bool m_RepeatOnHold;
 
+//	[SerializeField]
+//	WorkspaceButton m_WorkspaceButton;
+
 	float m_HoldStartTime;
 	float m_RepeatWaitTime;
-	bool m_Holding;
 	float m_PressDownTime;
+	bool m_Holding;
 	bool m_Triggered;
 	Material m_TargetMeshMaterial;
 	Coroutine m_ChangeEmissionCoroutine;
 
-	private Action<char> m_KeyPress;
+	Action<char> m_KeyPress;
+	Func<bool> m_PressOnHover;
 
-	private Func<bool> m_PressOnHover;
+	public Color targetMeshBaseColor
+	{
+		get { return m_TargetMeshBaseColor; }
+	}
+
+	Color m_TargetMeshBaseColor;
 
 	[SerializeField]
 	private ColorBlock m_Colors = ColorBlock.defaultColorBlock;
@@ -90,6 +100,7 @@ public class KeyboardButton : BaseHandle
 			m_TargetMeshInitialLocalPosition = targetMeshTransform.localPosition;
 			m_TargetMeshInitialScale = targetMeshTransform.localScale;
 			m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
+			m_TargetMeshBaseColor = m_TargetMeshMaterial.color;
 		}
 
 		smoothMotion = GetComponent<SmoothMotion>();
@@ -120,18 +131,18 @@ public class KeyboardButton : BaseHandle
 
 		m_ShiftMode = active;
 
-		if (m_TextComponent != null)
+		if (textComponent != null)
 		{
 			if (m_ShiftMode && m_ShiftCharacter != 0)
 			{
-				m_TextComponent.text = m_ShiftCharacter.ToString();
+				textComponent.text = m_ShiftCharacter.ToString();
 			}
 			else
 			{
-				if (m_TextComponent.text.Length > 1)
-					m_TextComponent.text = m_TextComponent.text.ToLower();
+				if (textComponent.text.Length > 1)
+					textComponent.text = textComponent.text.ToLower();
 				else
-					m_TextComponent.text = m_Character.ToString();
+					textComponent.text = m_Character.ToString();
 			}
 		}
 	}
@@ -145,7 +156,7 @@ public class KeyboardButton : BaseHandle
 
 	protected override void OnHandleHoverEnded(HandleEventData eventData)
 	{
-		DoGraphicStateTransition(SelectionState.Highlighted, false);
+		DoGraphicStateTransition(SelectionState.Normal, false);
 
 		base.OnHandleHoverEnded(eventData);
 	}
@@ -283,6 +294,16 @@ public class KeyboardButton : BaseHandle
 		InstantClearState();
 	}
 
+	protected virtual void InstantClearState()
+	{
+		DoGraphicStateTransition(SelectionState.Normal, true);
+
+		var finalColor = Color.white * Mathf.LinearToGammaSpace(0f);
+		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
+
+		m_TargetMeshMaterial.color = m_TargetMeshBaseColor;
+	}
+
 	private void OnDestroy()
 	{
 		U.Object.Destroy(m_TargetMeshMaterial);
@@ -321,12 +342,7 @@ public class KeyboardButton : BaseHandle
 		if (m_TargetGraphic == null)
 			return;
 
-		m_TargetGraphic.CrossFadeColor(targetColor, instant ? 0f : m_Colors.fadeDuration, true, true);
-	}
-
-	protected virtual void InstantClearState()
-	{
-		DoGraphicStateTransition(SelectionState.Normal, true);
+//		m_TargetGraphic.CrossFadeColor(targetColor, instant ? 0f : m_Colors.fadeDuration, true, true);
 	}
 
 	private IEnumerator IncreaseEmission()
