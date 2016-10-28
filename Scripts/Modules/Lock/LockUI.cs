@@ -36,7 +36,7 @@ public class LockUI : MonoBehaviour
 		{
 			var active = UnityEditor.Selection.activeGameObject;
 			bool isLocked = m_LockModule.IsLocked(active);
-			m_LockImage.sprite = isLocked ? m_UnlockIcon : m_LockIcon;
+			m_LockImage.sprite = isLocked ? m_LockIcon : m_UnlockIcon;
 		}
 	}
 
