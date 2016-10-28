@@ -5989,7 +5989,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000010194139274
@@ -6014,7 +6014,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000010214840134
@@ -6039,7 +6039,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000010261139748
@@ -6238,7 +6238,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000010369100942
@@ -6661,7 +6661,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000010777117202
@@ -7086,7 +7086,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000011367987976
@@ -7111,7 +7111,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000011386775834
@@ -7625,7 +7625,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000012129850560
@@ -7867,7 +7867,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000012309604180
@@ -7892,7 +7892,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000012389248786
@@ -7917,7 +7917,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000012433406534
@@ -8227,7 +8227,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000013000075480
@@ -8649,7 +8649,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000013388538794
@@ -9048,7 +9048,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000013793755090
@@ -9073,7 +9073,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000013814945510
@@ -9268,7 +9268,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!114 &114000014229287354
@@ -9352,7 +9352,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems: []
   m_GrayscaleGradient: 1
-  m_AnimatedReveal: 1
+  m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
   m_AutoHighlight: 0
 --- !u!222 &222000010008004838

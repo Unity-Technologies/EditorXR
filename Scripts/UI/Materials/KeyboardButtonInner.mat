@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: KeyboardButtonInner
-  m_Shader: {fileID: 4800000, guid: 59f7e0653309703449fc1f6c0defbc4f, type: 3}
+  m_Shader: {fileID: 4800000, guid: 9a4899fb13d291840b3a7ae121b924d0, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
