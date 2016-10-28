@@ -60,6 +60,8 @@ public class KeyboardMallet : MonoBehaviour
 	/// </summary>
 	public void Show()
 	{
+		gameObject.SetActive(true);
+
 		if (m_State == State.Transitioning)
 			StopAllCoroutines();
 

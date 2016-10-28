@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -37,11 +38,19 @@ namespace UnityEngine.VR.Proxies
 		{
 			set
 			{
-				var renderers = GetComponentsInChildren<Renderer>();
-				foreach (var r in renderers)
-					r.enabled = !value;
+				if (value != m_Hidden)
+				{
+					m_Hidden = value;
+					m_LeftHand.gameObject.SetActive(!value);
+					m_RightHand.gameObject.SetActive(!value);
+
+					//var renderers = GetComponentsInChildren<Renderer>();
+					//foreach (var r in renderers)
+					//	r.enabled = !value;
+				}
 			}
 		}
+		private bool m_Hidden;
 
 		public Dictionary<Node, Transform> menuOrigins { get; set; }
 		public Dictionary<Node, Transform> alternateMenuOrigins { get; set; }
@@ -109,11 +118,14 @@ namespace UnityEngine.VR.Proxies
 
 		public virtual void Update()
 		{
-			m_LeftHand.localPosition = trackedObjectInput.leftPosition.vector3;
-			m_LeftHand.localRotation = trackedObjectInput.leftRotation.quaternion;
+			if (active)
+			{
+				m_LeftHand.localPosition = trackedObjectInput.leftPosition.vector3;
+				m_LeftHand.localRotation = trackedObjectInput.leftRotation.quaternion;
 
-			m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
-			m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
+				m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
+				m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
+			}
 		}
 	}
 }

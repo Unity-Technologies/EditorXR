@@ -53,10 +53,10 @@ namespace UnityEngine.VR.Menus
 
 		public bool visible
 		{
-			get { return m_Visible; }
+			get { return m_Visible.HasValue && m_Visible.Value; }
 			set
 			{
-				if (m_Visible != value)
+				if (!m_Visible.HasValue || m_Visible != value)
 				{
 					m_Visible = value;
 
@@ -78,7 +78,7 @@ namespace UnityEngine.VR.Menus
 				}
 			}
 		}
-		private bool m_Visible;
+		private bool? m_Visible;
 
 		[SerializeField]
 		private MainMenuUI m_MainMenuPrefab;
@@ -112,7 +112,7 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
-			m_MainMenuUI.visible = m_Visible;
+			m_MainMenuUI.visible = visible;
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
