@@ -12,14 +12,15 @@ public class VRSmoothCamera : MonoBehaviour
 	[SerializeField]
 	int m_TargetDisplay;
 	[SerializeField, Range(1, 180)]
-	int m_FieldOfView = 90;
+	int m_FieldOfView = 40;
 	[SerializeField]
-	float m_PositionSmoothingMultiplier = 10f;
-	[SerializeField]
-	float m_RotationSmoothingMultiplier = 1f;
+	float m_PositionSmoothingMultiplier = 3;
 
 	Camera m_VRCamera;
 	RenderTexture m_RenderTexture;
+
+	Vector3 position;
+	Vector3 forward;
 
 	void Awake()
 	{
@@ -29,6 +30,9 @@ public class VRSmoothCamera : MonoBehaviour
 		m_SmoothCamera.transform.position = m_VRCamera.transform.position;
 		m_SmoothCamera.transform.rotation = m_VRCamera.transform.rotation;
 		m_SmoothCamera.enabled = false;
+
+		position = m_SmoothCamera.transform.position;
+		forward = m_SmoothCamera.transform.forward;
 	}
 
 	void OnDestroy()
@@ -38,9 +42,6 @@ public class VRSmoothCamera : MonoBehaviour
 
 	void LateUpdate()
 	{
-		Vector3 position = m_SmoothCamera.transform.position;
-		Quaternion rotation = m_SmoothCamera.transform.rotation;
-
 		m_SmoothCamera.CopyFrom(m_VRCamera); // This copies the transform as well
 		var vrCameraTexture = m_VRCamera.targetTexture;
 		if (vrCameraTexture && (!m_RenderTexture || m_RenderTexture.width != vrCameraTexture.width || m_RenderTexture.height != vrCameraTexture.height))
@@ -56,12 +57,23 @@ public class VRSmoothCamera : MonoBehaviour
 		m_SmoothCamera.rect = new Rect(0, 0, 1f, 1f);
 		m_SmoothCamera.stereoTargetEye = StereoTargetEyeMask.None;
 		m_SmoothCamera.fieldOfView = m_FieldOfView;
-		
-		m_SmoothCamera.transform.position = Vector3.Lerp(position, m_VRCamera.transform.position, Time.unscaledDeltaTime* m_PositionSmoothingMultiplier);
-		m_SmoothCamera.transform.rotation = Quaternion.Slerp(rotation, m_VRCamera.transform.rotation, Time.unscaledDeltaTime * m_RotationSmoothingMultiplier);
+
+		position = Vector3.Lerp(position, m_VRCamera.transform.position, Time.unscaledDeltaTime * m_PositionSmoothingMultiplier);
+		forward = Vector3.Lerp(forward, m_VRCamera.transform.forward, Time.unscaledDeltaTime * m_PositionSmoothingMultiplier);
+
+		m_SmoothCamera.transform.forward = forward;
+		m_SmoothCamera.transform.position = position - m_SmoothCamera.transform.forward * 0.9f;
+
+		// Don't render any HMD-related visual proxies
+		var hidden = m_VRCamera.GetComponentsInChildren<Renderer>();
+		foreach (var h in hidden)
+			h.enabled = false;
 
 		RenderTexture.active = m_SmoothCamera.targetTexture;
 		m_SmoothCamera.Render();
 		RenderTexture.active = null;
+
+		foreach (var h in hidden)
+			h.enabled = true;
 	}
 }
