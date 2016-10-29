@@ -512,6 +512,9 @@ public class EditorVR : MonoBehaviour
 		if (VRSettings.loadedDeviceName == "Oculus")
 			locomotionTool = typeof(JoystickLocomotionTool);
 
+		var transformTool = SpawnTool(typeof(TransformTool), out devices);
+		m_TransformTool = transformTool as IGrabObjects;
+
 		foreach (var deviceData in m_DeviceData)
 		{
 			// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
@@ -525,6 +528,9 @@ public class EditorVR : MonoBehaviour
 			var selectionTool = tool as SelectionTool;
 			selectionTool.node = deviceNode;
 			selectionTool.selected += OnAlternateMenuItemSelected; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+
+			// Using a shared instance of the transform tool across all device tool stacks
+			AddToolToStack(deviceData.Key, transformTool);
 
 			if (locomotionTool == typeof(BlinkLocomotionTool))
 			{
@@ -545,17 +551,11 @@ public class EditorVR : MonoBehaviour
 			UpdatePlayerHandleMaps();
 		}
 
-
 		if (locomotionTool == typeof(JoystickLocomotionTool))
 		{
 			tool = SpawnTool(locomotionTool, out devices);
 			AddToolToDeviceData(tool, devices);
 		}
-
-		tool = SpawnTool(typeof(TransformTool), out devices);
-		AddToolToDeviceData(tool, devices);
-
-		m_TransformTool = tool as IGrabObjects;
 	}
 
 	private void OnAlternateMenuItemSelected(Node? selectionToolNode)
@@ -1532,12 +1532,12 @@ public class EditorVR : MonoBehaviour
 		DeviceData deviceData;
 		if (m_DeviceData.TryGetValue(deviceToAssignTool, out deviceData))
 		{
-			// If this tool was on the current device already, then simply toggle it off
+			// If this tool was on the current device already, then simply remove it
 			if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
 			{
 				DespawnTool(deviceData, deviceData.currentTool);
 
-				// Don't spawn a new tool, since we are toggling the old tool
+				// Don't spawn a new tool, since we are only removing the old tool
 				spawnTool = false;
 			}
 		}
@@ -1551,6 +1551,13 @@ public class EditorVR : MonoBehaviour
 			// It's possible this tool uses no action maps, so at least include the device this tool was spawned on
 			if (usedDevices.Count == 0)
 				usedDevices.Add(deviceToAssignTool);
+
+			// Exclusive mode tools always take over all tool stacks
+			if (newTool is IExclusiveMode) 
+			{
+				foreach (var dev in m_DeviceData.Keys)
+					usedDevices.Add(dev);
+			}
 
 			foreach (var dev in usedDevices)
 			{
@@ -1579,20 +1586,39 @@ public class EditorVR : MonoBehaviour
 
 				deviceData.tools.Pop();
 				deviceData.currentTool = deviceData.tools.Peek();
+
+				// Pop this tool of any other stack that references it (for single instance tools)
+				foreach (var otherDeviceData in m_DeviceData.Values) 
+				{
+					if (otherDeviceData != deviceData) 
+					{
+						if (otherDeviceData.currentTool == tool) 
+						{
+							otherDeviceData.tools.Pop();
+							otherDeviceData.currentTool = otherDeviceData.tools.Peek();
+
+							if (tool is IExclusiveMode)
+								SetToolsEnabled(otherDeviceData, true);
+						}
+					}
+				}
 			}
 			DisconnectInterfaces(tool);
 
 			// Exclusive tools disable other tools underneath, so restore those
 			if (tool is IExclusiveMode)
-			{
-				foreach (var t in deviceData.tools)
-				{
-					var mb = t as MonoBehaviour;
-					mb.enabled = true;
-				}
-			}
+				SetToolsEnabled(deviceData, true);
 
 			U.Object.Destroy(tool as MonoBehaviour);
+		}
+	}
+
+	void SetToolsEnabled(DeviceData deviceData, bool value)
+	{
+		foreach (var t in deviceData.tools) 
+		{
+			var mb = t as MonoBehaviour;
+			mb.enabled = value;
 		}
 	}
 
@@ -1646,13 +1672,7 @@ public class EditorVR : MonoBehaviour
 
 			// Exclusive tools render other tools disabled while they are on the stack
 			if (tool is IExclusiveMode)
-			{
-				foreach (var t in deviceData.tools)
-				{
-					var mb = t as MonoBehaviour;
-					mb.enabled = false;
-				}
-			}
+				SetToolsEnabled(deviceData, false);
 
 			deviceData.tools.Push(tool);
 			deviceData.currentTool = tool;
@@ -1716,7 +1736,7 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 		//While the current position is occupied, try a new one
-		while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
+		while (Physics.CheckBox(position, halfBounds, rotation, ~LayerMask.NameToLayer("UI")) && count++ < kMaxWorkspacePlacementAttempts) ;
 
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
 		m_AllWorkspaces.Add(workspace);
