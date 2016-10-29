@@ -274,7 +274,6 @@ namespace UnityEngine.VR.Menus
 
 		IEnumerator Highlight()
 		{
-			Debug.Log("Starting higlight for " + m_Icon.sprite.name);
 			HighlightIcon();
 
 			var opacity = Time.unscaledDeltaTime;

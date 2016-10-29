@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -92,6 +93,13 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 
 	private IEnumerator MoveTowardTarget(Vector3 targetPosition)
 	{
+		// Smooth motion will cause Workspaces to lag behind camera
+		var components = viewerPivot.GetComponentsInChildren<SmoothMotion>();
+		foreach (var smoothMotion in components)
+		{
+			smoothMotion.enabled = false;
+		}
+
 		m_State = State.Moving;
 		targetPosition = new Vector3(targetPosition.x, viewerPivot.position.y, targetPosition.z);
 		const float kTargetDuration = 1f;
@@ -104,6 +112,11 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 			currentPosition = U.Math.SmoothDamp(currentPosition, targetPosition, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 			viewerPivot.position = currentPosition;
 			yield return null;
+		}
+
+		foreach (var smoothMotion in components)
+		{
+			smoothMotion.enabled = true;
 		}
 
 		viewerPivot.position = targetPosition;

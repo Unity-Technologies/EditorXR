@@ -23,7 +23,7 @@ public class CuboidLayout : UIBehaviour
 	Transform[] m_CubeTransforms;
 	Transform[] m_HighlightCubeTransforms;
 
-	protected override void Start()
+	protected override void Awake()
 	{
 		m_CubeTransforms = new Transform[m_TargetTransforms.Length];
 		for (var i = 0; i < m_CubeTransforms.Length; i++)

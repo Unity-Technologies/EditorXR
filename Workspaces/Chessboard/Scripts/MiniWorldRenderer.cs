@@ -57,7 +57,8 @@ public class MiniWorldRenderer : MonoBehaviour
 			Shader.SetGlobalVector("_GlobalClipCenter", miniWorld.referenceBounds.center);
 			Shader.SetGlobalVector("_GlobalClipExtents", miniWorld.referenceBounds.extents);
 
-			for (var i = 0; i < m_IgnoreList.Count; i++) {
+			for (var i = 0; i < m_IgnoreList.Count; i++)
+			{
 				var hiddenRenderer = m_IgnoreList[i];
 				if (hiddenRenderer) 
 				{

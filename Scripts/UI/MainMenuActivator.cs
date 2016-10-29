@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {
