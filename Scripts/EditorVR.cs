@@ -2316,7 +2316,7 @@ public class EditorVR : MonoBehaviour
 	void AddPlayerModel()
 	{
 		var playerHead = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
-		AddObjectToSpatialHash(playerHead);
+		m_SpatialHashModule.spatialHash.AddObject(playerHead, playerHead.bounds);
 	}
 
 	void AddObjectToSpatialHash(UnityObject obj)
