@@ -101,7 +101,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 		}
 
 		m_State = State.Moving;
-		targetPosition = new Vector3(targetPosition.x, viewerPivot.position.y, targetPosition.z);
+		targetPosition = new Vector3(targetPosition.x, U.Camera.GetMainCamera().transform.localPosition.y, targetPosition.z);
 		const float kTargetDuration = 1f;
 		var currentPosition = viewerPivot.position;
 		var velocity = new Vector3();
