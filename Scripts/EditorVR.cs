@@ -347,10 +347,11 @@ public class EditorVR : MonoBehaviour
 			{
 				m_PixelRaycastModule.UpdateRaycast(pair.Value, m_EventCamera);
 			}, true);
-						
 
+#if ENABLE_MINIWORLD_RAY_SELECTION
 			foreach (var rayOrigin in m_MiniWorldRays.Keys)
 				m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera);
+#endif
 
 			UpdateDefaultProxyRays();
 
@@ -431,6 +432,8 @@ public class EditorVR : MonoBehaviour
 		// Enable/disable workspace vacuum bounds based on distance to camera
 		foreach (var workspace in m_AllWorkspaces)
 			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
+
+		UpdateMiniWorlds();
 
 #if UNITY_EDITOR
 		// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
@@ -2112,14 +2115,16 @@ public class EditorVR : MonoBehaviour
 			var miniWorldRay = ray.Value;
 			if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
 			{
-				var miniWorldRayOrigin = ray.Key;
 				var tester = miniWorldRay.tester;
 				if (!tester.active)
 					continue;
 
+#if ENABLE_MINIWORLD_RAY_SELECTION
+				var miniWorldRayOrigin = ray.Key;
 				go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRayOrigin);
 				if (go)
 					return go;
+#endif
 
 				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
 				if (renderer)
@@ -2127,7 +2132,7 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
-		return null;
+				return null;
 	}
 
 	Dictionary<Transform, DirectSelection> GetDirectSelection()
@@ -2311,7 +2316,7 @@ public class EditorVR : MonoBehaviour
 	void AddPlayerModel()
 	{
 		var playerHead = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
-		AddObjectToSpatialHash(playerHead);
+		m_SpatialHashModule.spatialHash.AddObject(playerHead, playerHead.bounds);
 	}
 
 	void AddObjectToSpatialHash(UnityObject obj)

@@ -9,9 +9,9 @@
 
 	SubShader
 	{
-		Tags { "Queue"="Transparent+1" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
+		Tags { "Queue"="Geometry+2" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
 		ZWrite On
-		ZTest Always
+		ZTest Greater
 		Blend SrcAlpha OneMinusSrcAlpha
 
 		Stencil{
