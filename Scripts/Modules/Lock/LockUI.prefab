@@ -210,8 +210,13 @@ MonoBehaviour:
   m_IconContainer: {fileID: 224000013543175994}
   m_Button: {fileID: 114000014132259166}
   m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
+  m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000011231580806}
+  m_GrayscaleGradient: 0
+  m_AnimatedReveal: 0
+  m_DelayBeforeReveal: 0.5
 --- !u!114 &114000010717983400
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -226,7 +231,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_LockImage: {fileID: 114000011231580806}
   m_LockIcon: {fileID: 21300000, guid: bda51dfe062f45741aae4c4ac8bb3cef, type: 3}
-  m_UnlockIcon: {fileID: 21300000, guid: 3620d4c54fcbaee4f84ef530872b00de, type: 3}
+  m_UnlockIcon: {fileID: 21300000, guid: f5cf11a93d148a847986732c04258f7b, type: 3}
 --- !u!114 &114000011231580806
 MonoBehaviour:
   m_ObjectHideFlags: 1
