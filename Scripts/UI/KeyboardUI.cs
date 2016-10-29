@@ -27,11 +27,6 @@ public class KeyboardUI : MonoBehaviour
 	[SerializeField]
 	DirectManipulator m_DirectManipulator;
 
-	/// <summary>
-	/// Called when the mallet should be shown/hidden
-	/// </summary>
-	public event Action<bool> malletVisibilityChanged = delegate { };
-
 	bool m_EligibleForDrag;
 	bool m_CurrentlyHorizontal;
 	Material m_HandleMaterial;
@@ -39,9 +34,6 @@ public class KeyboardUI : MonoBehaviour
 	Coroutine m_ChangeDragColorsCoroutine;
 	Coroutine m_MoveKeysCoroutine;
 	Coroutine m_DragAfterDelayCoroutine;
-
-	Transform cachedRayOrigin;
-	bool m_MalletVisible;
 
 	public KeyboardButton handleButton { get; set; }
 
@@ -73,8 +65,6 @@ public class KeyboardUI : MonoBehaviour
 
 		var horizontal = IsHorizontal();
 		SetButtonLayoutTargets(horizontal);
-		malletVisibilityChanged(horizontal);
-		m_MalletVisible = horizontal;
 
 		this.StopCoroutine(ref m_MoveKeysCoroutine);
 		m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime, true));
@@ -109,7 +99,7 @@ public class KeyboardUI : MonoBehaviour
 
 	public void Collapse(Action doneCollapse)
 	{
-		EnableMallet(false);
+//		EnableMallet(false);
 
 		if (isActiveAndEnabled)
 		{
@@ -185,6 +175,10 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	/// Check if the keyboard is horizontal
+	/// </summary>
+	/// <returns>Is the keyboard horizontal?</returns>
 	bool IsHorizontal()
 	{
 		return Vector3.Dot(transform.up, Vector3.up) < kHorizontalThreshold
@@ -346,8 +340,9 @@ public class KeyboardUI : MonoBehaviour
 	{
 		foreach (var button in m_Buttons)
 		{
-			var color = button.textComponent.color;
-			button.textComponent.color = new Color(color.r, color.g, color.b, alpha);
+//			var color = button.textComponent.color;
+//			button.textComponent.color = new Color(color.r, color.g, color.b, alpha);
+			button.canvasGroup.alpha = alpha;
 		}
 	}
 
@@ -385,35 +380,54 @@ public class KeyboardUI : MonoBehaviour
 
 			if (isActiveAndEnabled)
 				m_ChangeDragColorsCoroutine = StartCoroutine(UnsetDragColors());
-
-			cachedRayOrigin = handleEventData.rayOrigin;
 		}
 	}
 
-	void Update()
-	{
-		if (IsHorizontal() && !m_EligibleForDrag && cachedRayOrigin != null)
-		{
-			var rayOriginPos = cachedRayOrigin.position;
-			if (Vector3.Magnitude(handleButton.transform.position - rayOriginPos) < 0.03f)
-				EnableMallet(false);
-			else
-				EnableMallet(true);
-		}
-	}
+//	void Update()
+//	{
+//		if (IsHorizontal() && !m_EligibleForDrag && cachedRayOrigin != null)
+//		{
+//			var rayOriginPos = cachedRayOrigin.position;
+//			if (Vector3.Magnitude(handleButton.transform.position - rayOriginPos) < 0.03f)
+//				EnableMallet(false);
+//			else
+//				EnableMallet(true);
+//		}
+//	}
 
-	void EnableMallet(bool enable)
-	{
-		if (enable && !m_MalletVisible || !enable && m_MalletVisible)
-			malletVisibilityChanged(enable);
-		m_MalletVisible = enable;
-	}
+//	void EnableMallet(bool enable)
+//	{
+//		if (enable && !m_MalletVisible || !enable && m_MalletVisible)
+//			malletVisibilityChanged(enable);
+//		m_MalletVisible = enable;
+//	}
 
 	void OnDisable()
 	{
 		this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = null;
 
-		EnableMallet(false);
+//		EnableMallet(false);
+	}
+
+	public bool IsMalletVisible(Transform rayOrigin)
+	{
+		if (!isActiveAndEnabled || !IsHorizontal())
+			return false;
+
+		var rayOriginPos = rayOrigin.position;
+
+		var near = false;
+		var far = false;
+
+		const float nearDist = 0.06f;
+		if ((transform.position - rayOriginPos).magnitude < nearDist)
+			near = true;
+
+		const float farDist = 0.3f;
+		if ((transform.position - rayOriginPos).magnitude > farDist)
+			far = true;
+
+		return !(near || far);
 	}
 }

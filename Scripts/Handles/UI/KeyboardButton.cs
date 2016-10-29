@@ -86,6 +86,8 @@ public class KeyboardButton : BaseHandle
 		get { return m_TargetMeshMaterial; }
 	}
 
+	public CanvasGroup canvasGroup { get; private set; }
+
 	public SmoothMotion smoothMotion { get; set; }
 
 	void Awake()
@@ -98,6 +100,8 @@ public class KeyboardButton : BaseHandle
 
 		smoothMotion = GetComponent<SmoothMotion>();
 		smoothMotion.enabled = false;
+
+		canvasGroup = GetComponentInChildren<CanvasGroup>(true);
 	}
 
 	/// <summary>
