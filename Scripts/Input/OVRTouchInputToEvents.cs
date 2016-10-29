@@ -42,37 +42,45 @@ public class OVRTouchInputToEvents : MonoBehaviour
 		}
 	}
 
-	private float GetAxis(OVRInput.Controller controller, VRInputDevice.VRControl axis)
+	private bool GetAxis(OVRInput.Controller controller, VRInputDevice.VRControl axis, out float value)
 	{
 		switch (axis)
 		{
 			case VRInputDevice.VRControl.Trigger1:
-				return OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, controller);
+				value = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, controller);
+				return true;
 			case VRInputDevice.VRControl.LeftStickX:
-				return OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller).x;
+				value = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller).x;
+				return true;
 			case VRInputDevice.VRControl.LeftStickY:
-				return OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller).y;
+				value = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller).y;
+				return true;
 		}
 
-		return 0f;
+		value = 0f;
+		return false;
 	}
 
 	private void SendAxisEvents(OVRInput.Controller controller, int ovrIndex, int deviceIndex)
 	{
 		for (var axis = 0; axis < kAxisCount; ++axis)
 		{
-			var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
-			inputEvent.deviceType = typeof(VRInputDevice);
-			inputEvent.deviceIndex = deviceIndex;
-			inputEvent.controlIndex = axis;
-			inputEvent.value = GetAxis(controller, (VRInputDevice.VRControl)axis);
+			float value;
+			if (GetAxis(controller, (VRInputDevice.VRControl)axis, out value))
+			{
+				var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
+				inputEvent.deviceType = typeof(VRInputDevice);
+				inputEvent.deviceIndex = deviceIndex;
+				inputEvent.controlIndex = axis;
+				inputEvent.value = value;
 
-			if (Mathf.Approximately(m_LastAxisValues[ovrIndex, axis], inputEvent.value))
-				continue;
+				if (Mathf.Approximately(m_LastAxisValues[ovrIndex, axis], inputEvent.value))
+					continue;
 
-			m_LastAxisValues[ovrIndex, axis] = inputEvent.value;
+				m_LastAxisValues[ovrIndex, axis] = inputEvent.value;
 
-			InputSystem.QueueEvent(inputEvent);
+				InputSystem.QueueEvent(inputEvent);
+			}
 		}
 	}
 
@@ -104,13 +112,13 @@ public class OVRTouchInputToEvents : MonoBehaviour
 	{
 		foreach (OVRInput.Button button in Enum.GetValues(typeof(OVRInput.Button)))
 		{
-			bool isDown = OVRInput.GetDown(button, ovrController);
-			bool isUp = OVRInput.GetUp(button, ovrController);
-
-			if (isDown || isUp)
+			int buttonIndex = GetButtonIndex(button);
+			if (buttonIndex >= 0)
 			{
-				int buttonIndex = GetButtonIndex(button);
-				if (buttonIndex >= 0)
+				bool isDown = OVRInput.GetDown(button, ovrController);
+				bool isUp = OVRInput.GetUp(button, ovrController);
+
+				if (isDown || isUp)
 				{
 					var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 					inputEvent.deviceType = typeof(VRInputDevice);

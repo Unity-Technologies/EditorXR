@@ -1,3 +1,4 @@
+//#define ENABLE_MINIWORLD_RAY_SELECTION
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -138,7 +139,9 @@ public class EditorVR : MonoBehaviour
 		public IMiniWorld miniWorld;
 		public IProxy proxy;
 		public Node node;
+#if ENABLE_MINIWORLD_RAY_SELECTION
 		public ActionMapInput uiInput;
+#endif
 		public ActionMapInput directSelectInput;
 		public IntersectionTester tester;
 		public GameObject dragObject;
@@ -428,8 +431,6 @@ public class EditorVR : MonoBehaviour
 		// Enable/disable workspace vacuum bounds based on distance to camera
 		foreach (var workspace in m_AllWorkspaces)
 			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
-
-		UpdateMiniWorlds();
 
 #if UNITY_EDITOR
 		// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
@@ -776,7 +777,7 @@ public class EditorVR : MonoBehaviour
 				malletTransform.position = rayOriginPairValue.position;
 				malletTransform.rotation = rayOriginPairValue.rotation;
 				var mallet = malletTransform.GetComponent<KeyboardMallet>();
-				mallet.Hide();
+				mallet.gameObject.SetActive(false);
 				m_KeyboardMallets.Add(rayOriginPairValue, mallet);
 			}
 
@@ -842,9 +843,11 @@ public class EditorVR : MonoBehaviour
 		m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
 		m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
 
+#if ENABLE_MINIWORLD_RAY_SELECTION
 		m_InputModule.preProcessRaycastSources = PreProcessRaycastSources;
 		m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
 		m_InputModule.postProcessRaycastSources = PostProcessRaycastSources;
+#endif
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
@@ -1002,10 +1005,14 @@ public class EditorVR : MonoBehaviour
 	{
 		foreach (var kvp in m_KeyboardMallets)
 		{
+			if (!kvp.Key.gameObject.activeInHierarchy)
+				continue;
+
 			var mallet = kvp.Value;
 			var dpr = kvp.Key.GetComponentInChildren<DefaultProxyRay>();
 			if (visible)
 			{
+				mallet.gameObject.SetActive(true);
 				mallet.Show();
 				dpr.Hide();
 			}
@@ -1071,7 +1078,9 @@ public class EditorVR : MonoBehaviour
 		foreach (var ray in m_MiniWorldRays.Values)
 		{
 			maps.Add(ray.directSelectInput);
+#if ENABLE_MINIWORLD_RAY_SELECTION
 			maps.Add(ray.uiInput);
+#endif
 		}
 
 		maps.Add(m_TrackedObjectInput);
@@ -1736,22 +1745,28 @@ public class EditorVR : MonoBehaviour
 		{
 			m_MiniWorlds.Add(miniWorld);
 
+#if ENABLE_MINIWORLD_RAY_SELECTION
 			miniWorld.preProcessRender = PreProcessMiniWorldRender;
 			miniWorld.postProcessRender = PostProcessMiniWorldRender;
+#endif
 
 			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 			{
 				var miniWorldRayOrigin = InstantiateMiniWorldRay();
 				miniWorldRayOrigin.parent = workspace.transform;
 
+#if ENABLE_MINIWORLD_RAY_SELECTION
 				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
 				uiInput.active = false;
+#endif
 
 				var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
 				directSelectInput.active = false;
 
+#if ENABLE_MINIWORLD_RAY_SELECTION
 				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
+#endif
 
 				var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 				tester.active = false;
@@ -1763,7 +1778,9 @@ public class EditorVR : MonoBehaviour
 					miniWorld = miniWorld,
 					proxy = proxy,
 					node = rayOriginPair.Key,
+#if ENABLE_MINIWORLD_RAY_SELECTION
 					uiInput = uiInput,
+#endif
 					directSelectInput = directSelectInput,
 					tester = tester
 				};
@@ -1822,9 +1839,13 @@ public class EditorVR : MonoBehaviour
 				if (miniWorldRay.miniWorld == miniWorld)
 				{
 					var rayOrigin = ray.Key;
+#if ENABLE_MINIWORLD_RAY_SELECTION
 					maps.Remove(miniWorldRay.uiInput);
+#endif
 					maps.Remove(miniWorldRay.directSelectInput);
+#if ENABLE_MINIWORLD_RAY_SELECTION
 					m_InputModule.RemoveRaycastSource(rayOrigin);
+#endif
 					m_MiniWorldRays.Remove(rayOrigin);
 				}
 			}
@@ -1833,14 +1854,17 @@ public class EditorVR : MonoBehaviour
 
 	private void UpdateMiniWorlds()
 	{
+		if (m_MiniWorlds.Count == 0)
+			return;
+
 		// Update ignore list
 		var renderers = GetComponentsInChildren<Renderer>(true);
 		var ignoreList = new List<Renderer>(renderers.Length);
 		foreach (var renderer in renderers)
 		{
-			if (renderer.tag == kVRPlayerTag)
+			if (renderer.CompareTag(kVRPlayerTag))
 				continue;
-			if (renderer.tag == kShowInMiniWorldTag)
+			if (renderer.CompareTag(kShowInMiniWorldTag))
 				continue;
 			ignoreList.Add(renderer);
 		}
@@ -2537,6 +2561,9 @@ public class EditorVR : MonoBehaviour
 		s_InputManager = managers[0];
 		s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
 		U.Object.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
+
+		U.Object.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
+		U.Object.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
 	}
 
 	static void OnProjectWindowChanged()
