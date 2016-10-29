@@ -155,6 +155,9 @@ namespace UnityEngine.VR.Workspaces
 					// Stop any existing begin/end highlight coroutine
 					this.StopCoroutine(ref m_HighlightCoroutine);
 
+					if (!gameObject.activeInHierarchy)
+						return;
+
 					m_HighlightCoroutine = m_Highlighted
 						? StartCoroutine(BeginHighlight())
 						: StartCoroutine(EndHighlight());

@@ -76,8 +76,7 @@ public class KeyboardUI : MonoBehaviour
 		malletVisibilityChanged(horizontal);
 		m_MalletVisible = horizontal;
 
-		if (m_MoveKeysCoroutine != null)
-			StopCoroutine(m_MoveKeysCoroutine);
+		this.StopCoroutine(ref m_MoveKeysCoroutine);
 		m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime, true));
 	}
 
@@ -272,8 +271,7 @@ public class KeyboardUI : MonoBehaviour
 
 	void OnDragStarted(BaseHandle baseHandle, HandleEventData handleEventData)
 	{
-		if (m_DragAfterDelayCoroutine != null)
-			StopCoroutine(m_DragAfterDelayCoroutine);
+		this.StopCoroutine(ref m_DragAfterDelayCoroutine);
 		m_DragAfterDelayCoroutine = StartCoroutine(DragAfterDelay());
 	}
 
@@ -294,8 +292,7 @@ public class KeyboardUI : MonoBehaviour
 
 	void StartDrag()
 	{
-		if (m_ChangeDragColorsCoroutine != null)
-			StopCoroutine(m_ChangeDragColorsCoroutine);
+		this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = StartCoroutine(SetDragColors());
 
 		foreach (var button in m_Buttons)
@@ -363,8 +360,7 @@ public class KeyboardUI : MonoBehaviour
 			{
 				SetButtonLayoutTargets(IsHorizontal());
 
-				if (m_MoveKeysCoroutine != null)
-					StopCoroutine(m_MoveKeysCoroutine);
+				this.StopCoroutine(ref m_MoveKeysCoroutine);
 				m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime, true));
 				m_CurrentlyHorizontal = horizontal;
 			}
@@ -385,8 +381,7 @@ public class KeyboardUI : MonoBehaviour
 				button.smoothMotion.enabled = false;
 			}
 
-			if (m_ChangeDragColorsCoroutine != null)
-				StopCoroutine(m_ChangeDragColorsCoroutine);
+			this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 
 			if (isActiveAndEnabled)
 				m_ChangeDragColorsCoroutine = StartCoroutine(UnsetDragColors());
@@ -395,20 +390,15 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
-
 	void Update()
 	{
 		if (IsHorizontal() && !m_EligibleForDrag && cachedRayOrigin != null)
 		{
 			var rayOriginPos = cachedRayOrigin.position;
 			if (Vector3.Magnitude(handleButton.transform.position - rayOriginPos) < 0.03f)
-			{
 				EnableMallet(false);
-			}
 			else
-			{
 				EnableMallet(true);
-			}
 		}
 	}
 
@@ -421,8 +411,7 @@ public class KeyboardUI : MonoBehaviour
 
 	void OnDisable()
 	{
-		if (m_ChangeDragColorsCoroutine != null)
-			StopCoroutine(m_ChangeDragColorsCoroutine);
+		this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = null;
 
 		EnableMallet(false);
