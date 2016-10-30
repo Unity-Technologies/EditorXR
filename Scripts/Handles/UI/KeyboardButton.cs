@@ -211,7 +211,7 @@ public class KeyboardButton : BaseHandle
 
 	public void OnTriggerEnter(Collider col)
 	{
-		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
+		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null || m_InTransition())
 			return;
 
 		if (transform.InverseTransformPoint(col.transform.position).z > 0f)
@@ -224,7 +224,7 @@ public class KeyboardButton : BaseHandle
 
 	public void OnTriggerStay(Collider col)
 	{
-		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
+		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null || m_InTransition())
 			return;
 
 		if (m_RepeatOnHold && m_Triggered)

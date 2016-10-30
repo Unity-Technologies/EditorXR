@@ -72,22 +72,36 @@ public class KeyboardUI : MonoBehaviour
 		m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime, true));
 	}
 
-	void Awake()
+	/// <summary>
+	/// Determines if a ray origin is at the range and orientation to convert to a mallet
+	/// </summary>
+	/// <param name="rayOrigin">The ray origin to check against</param>
+	/// <returns></returns>
+	public bool ShouldShowMallet(Transform rayOrigin)
 	{
-		handleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
-	}
+		if (!isActiveAndEnabled || !IsHorizontal())
+			return false;
 
-	void OnEnable()
-	{
-		m_EligibleForDrag = false;
+		var rayOriginPos = rayOrigin.position;
 
-		this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
-		m_SetButtonTextAlphaCoroutine = StartCoroutine(SetButtonTextAlpha());
-	}
+		var grabbingHandle = false;
+		var far = false;
+		var invalidOrientation = false;
 
-	bool InTransition()
-	{
-		return collapsing || m_EligibleForDrag;
+		const float nearDist = 0.06f;
+		const float maxAngle = 0.5f;
+		if ((transform.position - rayOriginPos).magnitude < nearDist
+			&& Vector3.Dot(handleButton.transform.up, rayOrigin.forward) < maxAngle)
+			grabbingHandle = true;
+
+		const float farDist = 0.18f;
+		if ((transform.position - rayOriginPos).magnitude > farDist)
+			far = true;
+
+		if (Vector3.Dot(handleButton.transform.up, rayOrigin.forward) < maxAngle)
+			invalidOrientation = true;
+
+		return !(grabbingHandle || far || invalidOrientation);
 	}
 
 	void SetButtonLayoutTargets(bool horizontal)
@@ -97,25 +111,19 @@ public class KeyboardUI : MonoBehaviour
 		{
 			var hT = m_HorizontalLayoutTransforms[i];
 			var vT = m_VerticalLayoutTransforms[i];
-
-			var target = horizontal
-				? hT
-				: vT;
+			var target = horizontal ? hT : vT;
 			button.smoothMotion.SetTarget(target);
 
 			i++;
 		}
 	}
 
-	public void Expand()
-	{
-		
-	}
-
+	/// <summary>
+	/// Collapse the keyboard button positions into the handle position
+	/// </summary>
+	/// <param name="doneCollapse">The callback to be invoked when collapse is done</param>
 	public void Collapse(Action doneCollapse)
 	{
-		//		EnableMallet(false);
-
 		this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
 		m_SetButtonTextAlphaCoroutine = StartCoroutine(ClearButtonTextAlpha());
 
@@ -192,16 +200,6 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
-	/// <summary>
-	/// Check if the keyboard is horizontal
-	/// </summary>
-	/// <returns>Is the keyboard horizontal?</returns>
-	bool IsHorizontal()
-	{
-		return Vector3.Dot(transform.up, Vector3.up) < kHorizontalThreshold
-			&& Vector3.Dot(transform.forward, Vector3.up) < 0f;
-	}
-
 	IEnumerator MoveKeysToLayoutPositions(float duration = kKeyLayoutTransitionTime, bool setKeyTextAlpha = false)
 	{
 		var horizontal = IsHorizontal();
@@ -266,6 +264,30 @@ public class KeyboardUI : MonoBehaviour
 			}
 			i++;
 		}
+	}
+
+	void Awake()
+	{
+		handleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
+	}
+
+	void OnEnable()
+	{
+		m_EligibleForDrag = false;
+
+		this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
+		m_SetButtonTextAlphaCoroutine = StartCoroutine(SetButtonTextAlpha());
+	}
+
+	bool IsHorizontal()
+	{
+		return Vector3.Dot(transform.up, Vector3.up) < kHorizontalThreshold
+			&& Vector3.Dot(transform.forward, Vector3.up) < 0f;
+	}
+
+	bool InTransition()
+	{
+		return collapsing || m_EligibleForDrag;
 	}
 
 	private void Translate(Vector3 deltaPosition)
@@ -453,32 +475,5 @@ public class KeyboardUI : MonoBehaviour
 	{
 		this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = null;
-	}
-
-	public bool ShouldShowMallet(Transform rayOrigin)
-	{
-		if (!isActiveAndEnabled || !IsHorizontal())
-			return false;
-
-		var rayOriginPos = rayOrigin.position;
-
-		var grabbingHandle = false;
-		var far = false;
-		var invalidOrientation = false;
-
-		const float nearDist = 0.06f;
-		const float handleGrabAngle = 0.5f;
-		if ((transform.position - rayOriginPos).magnitude < nearDist
-			&& Vector3.Dot(handleButton.transform.up, rayOrigin.forward) < handleGrabAngle)
-			grabbingHandle = true;
-
-		const float farDist = 0.18f;
-		if ((transform.position - rayOriginPos).magnitude > farDist)
-			far = true;
-
-		if (Vector3.Dot(handleButton.transform.up, rayOrigin.forward) < 0.5f)
-			invalidOrientation = true;
-
-		return !(grabbingHandle || far || invalidOrientation);
 	}
 }
