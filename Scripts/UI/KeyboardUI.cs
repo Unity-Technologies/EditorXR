@@ -76,7 +76,7 @@ public class KeyboardUI : MonoBehaviour
 	/// Determines if a ray origin is at the range and orientation to convert to a mallet
 	/// </summary>
 	/// <param name="rayOrigin">The ray origin to check against</param>
-	/// <returns></returns>
+	/// <returns>True if the mallet should be shown, false otherwise</returns>
 	public bool ShouldShowMallet(Transform rayOrigin)
 	{
 		if (!isActiveAndEnabled || !IsHorizontal())
@@ -88,10 +88,10 @@ public class KeyboardUI : MonoBehaviour
 		var far = false;
 		var invalidOrientation = false;
 
-		const float nearDist = 0.06f;
+		const float nearDist = 0.04f;
 		const float maxAngle = 0.5f;
 		if ((transform.position - rayOriginPos).magnitude < nearDist
-			&& Vector3.Dot(handleButton.transform.up, rayOrigin.forward) < maxAngle)
+			&& Vector3.Dot(handleButton.transform.forward, rayOrigin.forward) > 0.4f)
 			grabbingHandle = true;
 
 		const float farDist = 0.18f;
@@ -113,7 +113,6 @@ public class KeyboardUI : MonoBehaviour
 			var vT = m_VerticalLayoutTransforms[i];
 			var target = horizontal ? hT : vT;
 			button.smoothMotion.SetTarget(target);
-
 			i++;
 		}
 	}
