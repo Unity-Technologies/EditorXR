@@ -67,6 +67,7 @@ public class KeyboardButton : BaseHandle
 	Coroutine m_ChangeEmissionCoroutine;
 	Coroutine m_PunchKeyCoroutine;
 	Coroutine m_SetTextAlphaCoroutine;
+	Coroutine m_MoveCoroutine;
 
 	Action<char> m_KeyPress;
 	Func<bool> m_PressOnHover;
@@ -150,12 +151,42 @@ public class KeyboardButton : BaseHandle
 		}
 	}
 
+	/// <summary>
+	/// Set the alpha value of the button text
+	/// </summary>
+	/// <param name="alpha">The final alpha value of the key text</param>
+	/// <param name="duration">The lerp time</param>
 	public void SetTextAlpha(float alpha, float duration)
 	{
 		this.StopCoroutine(ref m_SetTextAlphaCoroutine);
 
 		if (isActiveAndEnabled)
 			m_SetTextAlphaCoroutine = StartCoroutine(SetAlphaOverTime(alpha, duration));
+	}
+
+	public void MoveToPosition(Vector3 targetPos, float duration)
+	{
+		this.StopCoroutine(ref m_MoveCoroutine);
+		m_MoveCoroutine = StartCoroutine(MoveToPositionOverTime(targetPos, duration));
+
+	}
+
+	IEnumerator MoveToPositionOverTime(Vector3 targetPos, float duration)
+	{
+		var currentPosition = transform.position;
+		var transitionAmount = 0f;
+		var speed = 0f;
+		var currentDuration = 0f;
+		while (currentDuration < duration)
+		{
+			currentDuration += Time.unscaledDeltaTime;
+			transitionAmount = U.Math.SmoothDamp(transitionAmount, 1f, ref speed, duration, Mathf.Infinity, Time.unscaledDeltaTime);
+			transform.position = Vector3.Lerp(currentPosition, targetPos, transitionAmount);
+			yield return null;
+		}
+
+		transform.position = targetPos;
+		m_MoveCoroutine = null;
 	}
 
 	IEnumerator SetAlphaOverTime(float toAlpha, float duration)

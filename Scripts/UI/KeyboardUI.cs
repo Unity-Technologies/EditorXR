@@ -125,43 +125,40 @@ public class KeyboardUI : MonoBehaviour
 
 	IEnumerator ExpandOverTime()
 	{
+		const float kButtonMoveTimeOffset = 0.01f;
 		var horizontal = IsHorizontal();
+		var allKeysMoved = false;
 		var t = 0f;
-		while (t < kKeyLayoutTransitionTime)
+		int i = 0;
+		while (i < m_Buttons.Count)
 		{
-			int i = 0;
-			foreach (var button in m_Buttons)
+			if (t < i * kButtonMoveTimeOffset)
 			{
-				var targetPos = horizontal
-					? m_HorizontalLayoutTransforms[i].position
-					: m_VerticalLayoutTransforms[i].position;
-				var alpha = t / kKeyLayoutTransitionTime;
-//				var x = U.Math.SmoothDamp(button.transform.position.x, targetPos.x, ref currentVelocity, kKeyLayoutTransitionTime, Mathf.Infinity, Time.unscaledDeltaTime);
-				button.transform.position = Vector3.Lerp(button.transform.position, targetPos, alpha);
-				i++;
+				t += Time.unscaledDeltaTime;
+				continue;
 			}
-			t += Time.unscaledDeltaTime;
+
+			var targetPos = horizontal
+				? m_HorizontalLayoutTransforms[i].position
+				: m_VerticalLayoutTransforms[i].position;
+			m_Buttons[i].MoveToPosition(targetPos, kKeyExpandCollapseTime);
+			i++;
 			yield return null;
 		}
 
-		int k = 0;
-		foreach (var button in m_Buttons)
-		{
-			var targetPos = horizontal
-				? m_HorizontalLayoutTransforms[k].position
-				: m_VerticalLayoutTransforms[k].position;
-			button.transform.position = targetPos;
-			k++;
-		}
-
-		foreach (var button in m_Buttons)
-		{
-			button.SetTextAlpha(1f, kHandleChangeColorTime);
-		}
+		SetAllButtonsTextAlpha(1f);
 
 		collapsed = true;
 
 		m_MoveKeysCoroutine = null;
+	}
+
+	void SetAllButtonsTextAlpha(float alpha)
+	{
+		foreach (var button in m_Buttons)
+		{
+			button.SetTextAlpha(alpha, kHandleChangeColorTime);
+		}
 	}
 
 	/// <summary>
@@ -170,10 +167,7 @@ public class KeyboardUI : MonoBehaviour
 	/// <param name="doneCollapse">The callback to be invoked when collapse is done</param>
 	public void Collapse(Action doneCollapse)
 	{
-		foreach (var button in m_Buttons)
-		{
-			button.SetTextAlpha(0f, kHandleChangeColorTime);
-		}
+		SetAllButtonsTextAlpha(0f);
 
 		if (isActiveAndEnabled)
 		{
@@ -201,6 +195,12 @@ public class KeyboardUI : MonoBehaviour
 			}
 			t += Time.unscaledDeltaTime;
 			yield return null;
+		}
+
+		foreach (var button in m_Buttons)
+		{
+			if (button != handleButton)
+				button.transform.position = handleButton.transform.position;
 		}
 
 		collapsing = false;
@@ -385,8 +385,9 @@ public class KeyboardUI : MonoBehaviour
 		foreach (var button in m_Buttons)
 		{
 			button.smoothMotion.enabled = true;
-			button.SetTextAlpha(0f, kHandleChangeColorTime);
 		}
+
+		SetAllButtonsTextAlpha(0f);
 	}
 
 	IEnumerator SetDragColors()
@@ -455,8 +456,8 @@ public class KeyboardUI : MonoBehaviour
 			foreach (var button in m_Buttons)
 			{
 				button.smoothMotion.enabled = false;
-				button.SetTextAlpha(1f, kHandleChangeColorTime);
 			}
+			SetAllButtonsTextAlpha(1f);
 
 			this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 			if (isActiveAndEnabled)
