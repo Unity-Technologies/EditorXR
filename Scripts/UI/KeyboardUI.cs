@@ -124,7 +124,6 @@ public class KeyboardUI : MonoBehaviour
 	{
 		var horizontal = IsHorizontal();
 		var t = 0f;
-		float currentVelocity = 0f;
 		while (t < kKeyLayoutTransitionTime)
 		{
 			int i = 0;
@@ -317,6 +316,7 @@ public class KeyboardUI : MonoBehaviour
 	void Awake()
 	{
 		handleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
+
 		collapsed = true;
 	}
 

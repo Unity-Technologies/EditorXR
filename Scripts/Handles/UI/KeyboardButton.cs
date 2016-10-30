@@ -152,7 +152,9 @@ public class KeyboardButton : BaseHandle
 	public void SetTextAlpha(float alpha, float duration)
 	{
 		this.StopCoroutine(ref m_SetTextAlphaCoroutine);
-		m_SetTextAlphaCoroutine = StartCoroutine(SetAlphaOverTime(alpha, duration));
+
+		if (isActiveAndEnabled)
+			m_SetTextAlphaCoroutine = StartCoroutine(SetAlphaOverTime(alpha, duration));
 	}
 
 	IEnumerator SetAlphaOverTime(float toAlpha, float duration)
@@ -191,6 +193,9 @@ public class KeyboardButton : BaseHandle
 
 	protected override void OnHandleDragStarted(HandleEventData eventData)
 	{
+		if (eventData == null)
+			return;
+
 		if (!m_PressOnHover())
 		{
 			m_PressDownTime = Time.realtimeSinceStartup;
@@ -204,6 +209,9 @@ public class KeyboardButton : BaseHandle
 
 	protected override void OnHandleDragging(HandleEventData eventData)
 	{
+		if (eventData == null)
+			return;
+
 		if (!m_PressOnHover())
 		{
 			if (m_RepeatOnHold)
@@ -215,6 +223,9 @@ public class KeyboardButton : BaseHandle
 
 	protected override void OnHandleDragEnded(HandleEventData eventData)
 	{
+		if (eventData == null)
+			return;
+
 		if (!m_PressOnHover())
 		{
 			if (m_RepeatOnHold)

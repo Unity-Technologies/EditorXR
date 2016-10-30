@@ -6092,7 +6092,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000010946643492}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000013747035984}
 --- !u!114 &114000010279381882
@@ -6739,7 +6738,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000010291578726}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000010214840134}
 --- !u!114 &114000010801002698
@@ -6774,7 +6772,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000011913756988}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000010194139274}
 --- !u!114 &114000010874740900
@@ -6824,7 +6821,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000014094068594}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000010186837888}
 --- !u!114 &114000010913063674
@@ -7140,7 +7136,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000010075206638}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000012999224372}
 --- !u!114 &114000011389725596
@@ -7509,7 +7504,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000013590475304}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000013347712096}
 --- !u!114 &114000011921688878
@@ -7565,8 +7559,7 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 0
   m_TargetMesh: {fileID: 23000013124346246}
-  m_TargetGraphic: {fileID: 0}
-  m_RepeatOnHold: 0
+  m_RepeatOnHold: 1
   m_WorkspaceButton: {fileID: 114000012241023202}
 --- !u!114 &114000012045461672
 MonoBehaviour:
@@ -7849,7 +7842,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000012173838054}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000012309604180}
 --- !u!114 &114000012241023202
@@ -8170,7 +8162,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000012064637162}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000010367358728}
 --- !u!114 &114000012869419410
@@ -8337,7 +8328,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000014044360624}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000012062849506}
 --- !u!114 &114000013065317788
@@ -8410,7 +8400,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000010632663638}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000010762641440}
 --- !u!114 &114000013115134186
@@ -8798,7 +8787,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000013753092330}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000014138576998}
 --- !u!114 &114000013533394368
@@ -8890,7 +8878,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000012075212360}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000011350626312}
 --- !u!114 &114000013550633790
@@ -8912,7 +8899,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000012764189800}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000014249341742}
 --- !u!114 &114000013567075384
@@ -8962,7 +8948,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000013716219464}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000013793755090}
 --- !u!114 &114000013622744450
@@ -9018,7 +9003,6 @@ MonoBehaviour:
   m_ShiftCharacter: 27
   m_MatchButtonTextToCharacter: 0
   m_TargetMesh: {fileID: 23000011589460270}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000012389248786}
 --- !u!114 &114000013660982280
@@ -9257,7 +9241,6 @@ MonoBehaviour:
   m_ShiftCharacter: 0
   m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000011319633622}
-  m_TargetGraphic: {fileID: 0}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000011367987976}
 --- !u!114 &114000014138576998
