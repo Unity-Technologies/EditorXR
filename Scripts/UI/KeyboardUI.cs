@@ -34,7 +34,7 @@ public class KeyboardUI : MonoBehaviour
 	Coroutine m_ChangeDragColorsCoroutine;
 	Coroutine m_MoveKeysCoroutine;
 	Coroutine m_DragAfterDelayCoroutine;
-	Coroutine m_SetButtonTextAlphaCoroutine;
+	Coroutine m_CollapseExpandCoroutine;
 	float m_CurrentButtonAlpha;
 
 	public KeyboardButton handleButton { get; set; }
@@ -79,7 +79,7 @@ public class KeyboardUI : MonoBehaviour
 	/// <returns>True if the mallet should be shown, false otherwise</returns>
 	public bool ShouldShowMallet(Transform rayOrigin)
 	{
-		if (!isActiveAndEnabled || !IsHorizontal())
+		if (!isActiveAndEnabled || !IsHorizontal() || m_EligibleForDrag)
 			return false;
 
 		var rayOriginPos = rayOrigin.position;
@@ -117,19 +117,27 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
+	public void Expand()
+	{
+		
+	}
+
 	/// <summary>
 	/// Collapse the keyboard button positions into the handle position
 	/// </summary>
 	/// <param name="doneCollapse">The callback to be invoked when collapse is done</param>
 	public void Collapse(Action doneCollapse)
 	{
-		this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
-		m_SetButtonTextAlphaCoroutine = StartCoroutine(ClearButtonTextAlpha());
+		foreach (var button in m_Buttons)
+		{
+			button.SetTextAlpha(0f, kHandleChangeColorTime);
+		}
 
 		if (isActiveAndEnabled)
 		{
 			collapsing = true;
-			StartCoroutine(CollapseOverTime(doneCollapse));
+			this.StopCoroutine(ref m_CollapseExpandCoroutine);
+			m_CollapseExpandCoroutine = StartCoroutine(CollapseOverTime(doneCollapse));
 		}
 		else
 		{
@@ -228,6 +236,14 @@ public class KeyboardUI : MonoBehaviour
 			k++;
 		}
 
+		if (!m_EligibleForDrag)
+		{
+			foreach (var button in m_Buttons)
+			{
+				button.SetTextAlpha(1f, kHandleChangeColorTime);
+			}
+		}
+
 		m_MoveKeysCoroutine = null;
 	}
 
@@ -273,9 +289,11 @@ public class KeyboardUI : MonoBehaviour
 	void OnEnable()
 	{
 		m_EligibleForDrag = false;
-
-		this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
-		m_SetButtonTextAlphaCoroutine = StartCoroutine(SetButtonTextAlpha());
+//
+//		foreach (var button in m_Buttons)
+//		{
+//			button.SetTextAlpha(1f, kHandleChangeColorTime);
+//		}
 	}
 
 	bool IsHorizontal()
@@ -327,12 +345,10 @@ public class KeyboardUI : MonoBehaviour
 		this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = StartCoroutine(SetDragColors());
 
-		this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
-		m_SetButtonTextAlphaCoroutine = StartCoroutine(ClearButtonTextAlpha());
-
 		foreach (var button in m_Buttons)
 		{
 			button.smoothMotion.enabled = true;
+			button.SetTextAlpha(0f, kHandleChangeColorTime);
 		}
 	}
 
@@ -373,63 +389,6 @@ public class KeyboardUI : MonoBehaviour
 		m_ChangeDragColorsCoroutine = null;
 	}
 
-	IEnumerator SetButtonTextAlpha()
-	{
-		float[] startingAlphas = new float[m_Buttons.Count];
-
-		var i = 0;
-		foreach (var button in m_Buttons)
-		{
-			startingAlphas[i] = button.canvasGroup.alpha;
-			i++;
-		}
-
-		var t = 0f;
-		var finalAlpha = 1f;
-		while (t < kHandleChangeColorTime)
-		{
-			i = 0;
-			var alpha = t / kHandleChangeColorTime;
-			foreach (var button in m_Buttons)
-			{
-				if (button.canvasGroup.alpha > finalAlpha * alpha)
-					button.canvasGroup.alpha = Mathf.Lerp(startingAlphas[i], finalAlpha * alpha, alpha);
-				i++;
-			}
-			t += Time.unscaledDeltaTime;
-			yield return null;
-		}
-
-		foreach (var button in m_Buttons)
-		{
-			button.canvasGroup.alpha = finalAlpha;
-		}
-
-		m_SetButtonTextAlphaCoroutine = null;
-	}
-
-	IEnumerator ClearButtonTextAlpha()
-	{
-		var t = 0f;
-		while (t < kHandleChangeColorTime)
-		{
-			var alpha = 1f - t / kHandleChangeColorTime;
-			foreach (var button in m_Buttons)
-			{
-				button.canvasGroup.alpha = alpha;
-			}
-			t += Time.unscaledDeltaTime;
-			yield return null;
-		}
-
-		foreach (var button in m_Buttons)
-		{
-			button.canvasGroup.alpha = 0f;
-		}
-
-		m_SetButtonTextAlphaCoroutine = null;
-	}
-
 	void OnDrag(BaseHandle baseHandle, HandleEventData handleEventData)
 	{
 		if (m_EligibleForDrag)
@@ -459,10 +418,8 @@ public class KeyboardUI : MonoBehaviour
 			foreach (var button in m_Buttons)
 			{
 				button.smoothMotion.enabled = false;
+				button.SetTextAlpha(1f, kHandleChangeColorTime);
 			}
-
-			this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
-			m_SetButtonTextAlphaCoroutine = StartCoroutine(SetButtonTextAlpha());
 
 			this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 			if (isActiveAndEnabled)

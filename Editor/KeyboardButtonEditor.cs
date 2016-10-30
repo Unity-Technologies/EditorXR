@@ -17,7 +17,6 @@ public class KeyboardButtonEditor : Editor
 	SerializedProperty m_ButtonTextProperty;
 	SerializedProperty m_MatchButtonTextToCharacterProperty;
 	SerializedProperty m_ButtonMeshProperty;
-	SerializedProperty m_ButtonGraphicProperty;
 	SerializedProperty m_RepeatOnHoldProperty;
 	SerializedProperty m_WorkspaceButtonProperty;
 	
@@ -33,7 +32,6 @@ public class KeyboardButtonEditor : Editor
 		m_ButtonTextProperty = serializedObject.FindProperty("m_TextComponent");
 		m_MatchButtonTextToCharacterProperty = serializedObject.FindProperty("m_MatchButtonTextToCharacter");
 		m_ButtonMeshProperty = serializedObject.FindProperty("m_TargetMesh");
-		m_ButtonGraphicProperty = serializedObject.FindProperty("m_TargetGraphic");
 		m_RepeatOnHoldProperty = serializedObject.FindProperty("m_RepeatOnHold");
 		m_WorkspaceButtonProperty = serializedObject.FindProperty("m_WorkspaceButton");
 	}
@@ -92,7 +90,6 @@ public class KeyboardButtonEditor : Editor
 		}
 
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);
-		EditorGUILayout.PropertyField(m_ButtonGraphicProperty);
 		EditorGUILayout.PropertyField(m_RepeatOnHoldProperty);
 		EditorGUILayout.PropertyField(m_WorkspaceButtonProperty);
 

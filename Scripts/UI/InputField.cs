@@ -152,12 +152,14 @@ namespace UnityEngine.VR.UI
 
 			if (m_Keyboard == null) return;
 
+			this.StopCoroutine(ref m_MoveKeyboardCoroutine);
+
 			if (collapse)
 				m_Keyboard.Collapse(FinalizeClose);
 			else
 				FinalizeClose();
 		}
-//
+
 		void FinalizeClose()
 		{
 			m_Keyboard.gameObject.SetActive(false);

@@ -66,6 +66,7 @@ namespace UnityEngine.VR.Workspaces
 		Color m_OriginalColor;
 		Sprite m_OriginalIconSprite;
 		float m_VisibleLocalZScale;
+		Vector3 m_OriginalScale;
 
 		// The initial button reveal coroutines, before highlighting
 		Coroutine m_VisibilityCoroutine;
@@ -167,6 +168,17 @@ namespace UnityEngine.VR.Workspaces
 
 		bool m_Highlighted;
 
+		public void InstantClearState()
+		{
+			this.StopCoroutine(ref m_IconHighlightCoroutine);
+			this.StopCoroutine(ref m_HighlightCoroutine);
+
+			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, m_OriginalGradientPair.a);
+			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, m_OriginalGradientPair.b);
+			transform.localScale = m_OriginalScale;
+			m_HighlightCoroutine = null;
+		}
+
 		void Awake()
 		{
 			m_OriginalColor = m_Icon.color;
@@ -174,6 +186,7 @@ namespace UnityEngine.VR.Workspaces
 			m_OriginalGradientPair = new UnityBrandColorScheme.GradientPair(m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
 			m_HiddenLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, 0f);
 			m_VisibleLocalZScale = transform.localScale.z;
+			m_OriginalScale = transform.localScale;
 
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
