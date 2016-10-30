@@ -87,6 +87,7 @@ public class DefaultProxyRay : MonoBehaviour
 
 	public void Show()
 	{
+		transform.parent.gameObject.SetActive(true);
 		if (isActiveAndEnabled && m_LockRayObject == null)
 		{
 			if (m_State == State.Transitioning)
@@ -141,6 +142,8 @@ public class DefaultProxyRay : MonoBehaviour
 
 		m_LineRenderer.SetWidth(kTargetWidth, kTargetWidth);
 		m_State = State.Hidden;
+
+		transform.parent.gameObject.SetActive(false);
 	}
 
 	private IEnumerator ShowRay()
