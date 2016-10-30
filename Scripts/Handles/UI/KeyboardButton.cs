@@ -179,8 +179,21 @@ public class KeyboardButton : BaseHandle
 	{
 		base.OnHandleHoverStarted(eventData);
 
-		if (!m_PressOnHover() && !m_InTransition())
+//		if (!m_PressOnHover() && !m_InTransition())
+		if (!m_InTransition())
 		{
+			if ((KeyCode)m_Character == KeyCode.Escape || m_ShiftMode && (KeyCode)m_ShiftCharacter == KeyCode.Escape)
+			{
+				var gradient = new UnityBrandColorScheme.GradientPair();
+				gradient.a = UnityBrandColorScheme.red;
+				gradient.b = UnityBrandColorScheme.redDark;
+				m_WorkspaceButton.SetMaterialColors(gradient);
+			}
+			else
+			{
+				m_WorkspaceButton.ResetColors();
+			}
+
 			m_WorkspaceButton.highlight = true;
 		}
 	}
@@ -197,7 +210,7 @@ public class KeyboardButton : BaseHandle
 		if (eventData == null)
 			return;
 
-		if (!m_PressOnHover())
+//		if (!m_PressOnHover())
 		{
 			m_PressDownTime = Time.realtimeSinceStartup;
 
@@ -215,7 +228,7 @@ public class KeyboardButton : BaseHandle
 		if (eventData == null)
 			return;
 
-		if (!m_PressOnHover())
+//		if (!m_PressOnHover())
 		{
 			if (m_RepeatOnHold)
 				HoldKey();
@@ -231,7 +244,7 @@ public class KeyboardButton : BaseHandle
 		if (eventData == null)
 			return;
 
-		if (!m_PressOnHover())
+//		if (!m_PressOnHover())
 		{
 			if (m_RepeatOnHold)
 				EndKeyHold();

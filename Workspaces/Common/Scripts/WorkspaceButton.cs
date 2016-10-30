@@ -166,6 +166,12 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
+		public Color customHighlightColor
+		{
+			get { return m_CustomHighlightColor; }
+			set { m_CustomHighlightColor = value; }
+		}
+
 		bool m_Highlighted;
 
 		public void InstantClearState()
@@ -173,10 +179,21 @@ namespace UnityEngine.VR.Workspaces
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			this.StopCoroutine(ref m_HighlightCoroutine);
 
-			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, m_OriginalGradientPair.a);
-			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, m_OriginalGradientPair.b);
+			ResetColors();
 			transform.localScale = m_OriginalScale;
 			m_HighlightCoroutine = null;
+		}
+
+		public void SetMaterialColors(UnityBrandColorScheme.GradientPair gradientPair)
+		{
+			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, gradientPair.a);
+			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, gradientPair.b);
+		}
+
+		public void ResetColors()
+		{
+			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, m_OriginalGradientPair.a);
+			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, m_OriginalGradientPair.b);
 		}
 
 		void Awake()
@@ -385,7 +402,7 @@ namespace UnityEngine.VR.Workspaces
 				foreach (var graphic in m_HighlightItems)
 				{
 					if (graphic)
-						graphic.color = Color.Lerp(m_OriginalColor, m_CustomHighlightColor, transitionAmount);
+						graphic.color = Color.Lerp(m_OriginalColor, customHighlightColor, transitionAmount);
 				}
 
 				m_IconContainer.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
@@ -395,7 +412,7 @@ namespace UnityEngine.VR.Workspaces
 			foreach (var graphic in m_HighlightItems)
 			{
 				if (graphic)
-					graphic.color = m_CustomHighlightColor;
+					graphic.color = customHighlightColor;
 			}
 
 			m_IconContainer.localPosition = targetPosition;
@@ -414,7 +431,7 @@ namespace UnityEngine.VR.Workspaces
 				foreach (var graphic in m_HighlightItems)
 				{
 					if (graphic != null)
-						graphic.color = Color.Lerp(m_OriginalColor, m_CustomHighlightColor, transitionAmount);
+						graphic.color = Color.Lerp(m_OriginalColor, customHighlightColor, transitionAmount);
 				}
 
 				m_IconContainer.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
