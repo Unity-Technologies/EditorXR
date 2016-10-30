@@ -34,7 +34,6 @@ public class KeyboardUI : MonoBehaviour
 	Coroutine m_ChangeDragColorsCoroutine;
 	Coroutine m_MoveKeysCoroutine;
 	Coroutine m_DragAfterDelayCoroutine;
-	Coroutine m_CollapseExpandCoroutine;
 	float m_CurrentButtonAlpha;
 
 	public KeyboardButton handleButton { get; set; }
@@ -69,10 +68,10 @@ public class KeyboardUI : MonoBehaviour
 		var horizontal = IsHorizontal();
 		SetButtonLayoutTargets(horizontal);
 
-		this.StopCoroutine(ref m_CollapseExpandCoroutine);
+		this.StopCoroutine(ref m_MoveKeysCoroutine);
 
 		if (expand || collapsed)
-			m_CollapseExpandCoroutine = StartCoroutine(ExpandOverTime());
+			m_MoveKeysCoroutine = StartCoroutine(ExpandOverTime());
 	}
 
 	/// <summary>
@@ -127,7 +126,6 @@ public class KeyboardUI : MonoBehaviour
 	{
 		const float kButtonMoveTimeOffset = 0.01f;
 		var horizontal = IsHorizontal();
-		var allKeysMoved = false;
 		var t = 0f;
 		int i = 0;
 		while (i < m_Buttons.Count)
@@ -169,11 +167,12 @@ public class KeyboardUI : MonoBehaviour
 	{
 		SetAllButtonsTextAlpha(0f);
 
+		this.StopCoroutine(ref m_MoveKeysCoroutine);
+
 		if (isActiveAndEnabled)
 		{
 			collapsing = true;
-			this.StopCoroutine(ref m_CollapseExpandCoroutine);
-			m_CollapseExpandCoroutine = StartCoroutine(CollapseOverTime(doneCollapse));
+			m_MoveKeysCoroutine = StartCoroutine(CollapseOverTime(doneCollapse));
 		}
 		else
 		{
@@ -184,28 +183,27 @@ public class KeyboardUI : MonoBehaviour
 
 	IEnumerator CollapseOverTime(Action doneCollapse)
 	{
+		const float kButtonMoveTimeOffset = 0.01f;
 		var t = 0f;
-		while (t < kKeyLayoutTransitionTime)
+		int i = 0;
+		while (i < m_Buttons.Count)
 		{
-			foreach (var button in m_Buttons)
+			if (t < i * kButtonMoveTimeOffset)
 			{
-				if (button != handleButton)
-					button.transform.position = Vector3.Lerp(button.transform.position, handleButton.transform.position, 
-						t / kKeyLayoutTransitionTime);
+				t += Time.unscaledDeltaTime;
+				continue;
 			}
-			t += Time.unscaledDeltaTime;
-			yield return null;
-		}
 
-		foreach (var button in m_Buttons)
-		{
-			if (button != handleButton)
-				button.transform.position = handleButton.transform.position;
+			var targetPos = handleButton.transform.position;
+			m_Buttons[m_Buttons.Count - 1 - i].MoveToPosition(targetPos, kKeyExpandCollapseTime);
+			i++;
+			yield return null;
 		}
 
 		collapsing = false;
 		collapsed = true;
 		doneCollapse();
+		m_MoveKeysCoroutine = null;
 	}
 
 	/// <summary>
