@@ -165,18 +165,20 @@ namespace UnityEngine.VR.Menus
 					}
 					else
 					{
-						// set the magnitude of starting-to-current drag positions
-						// this is used to detect the drag threshold for a tap(select) or a drag(highlight)
-						// a drag with small magnitude triggers a selection of the currently highlighted menu-item (if there exists a highlighted item)
-						// a drag beyond the small magnitude threshold triggers a highlight instead
-						m_DragMagnitude = (m_DragStartVector - value).magnitude;
-
 						m_InputMatrix = value;
 						m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
 						m_InputDirection += m_InputPhaseOffset;
 
-						if (m_DragMagnitude < 0.4f) // only begin new highlight phase if magnitude has passed the minimum threshold for a select/tap
+						if (m_DragMagnitude < 0.4f) // only allow slot highlighting phase if magnitude has passed the minimum threshold for a select/tap
+						{
+							// set the magnitude of starting-to-current drag positions
+							// this is used to detect the drag threshold for a tap(select) or a drag(highlight)
+							// a drag with small magnitude triggers a selection of the currently highlighted menu-item (if there exists a highlighted item)
+							// a drag beyond the small magnitude threshold triggers a highlight instead
+							m_DragMagnitude = (m_DragStartVector - value).magnitude;
+
 							return;
+						}
 
 						var angleCorrected = m_InputDirection * Mathf.Deg2Rad;
 						m_InputMatrix = new Vector2(Mathf.Cos(angleCorrected), -Mathf.Sin(angleCorrected));

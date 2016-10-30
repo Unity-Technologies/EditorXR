@@ -81,7 +81,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 			hideDefaultRay();
 			m_BlinkVisuals.ShowVisuals();
 		}
-		else if (m_BlinkLocomotionInput.blink.wasJustReleased)
+		else if (s_ActiveTool == this && m_BlinkLocomotionInput.blink.wasJustReleased)
 		{
 			var outOfRange = m_BlinkVisuals.HideVisuals();
 			showDefaultRay();
@@ -101,7 +101,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 		}
 
 		m_State = State.Moving;
-		targetPosition = new Vector3(targetPosition.x, U.Camera.GetMainCamera().transform.localPosition.y, targetPosition.z);
+		targetPosition = new Vector3(targetPosition.x + (viewerPivot.position.x - U.Camera.GetMainCamera().transform.position.x), viewerPivot.position.y, targetPosition.z + (viewerPivot.position.z - U.Camera.GetMainCamera().transform.position.z));
 		const float kTargetDuration = 1f;
 		var currentPosition = viewerPivot.position;
 		var velocity = new Vector3();
