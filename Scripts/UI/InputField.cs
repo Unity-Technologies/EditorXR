@@ -5,10 +5,11 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.UI
 {
-	public abstract class InputField : Selectable, IPointerClickHandler
+	public abstract class InputField : Selectable
 	{
 		const float kMoveKeyboardTime = 0.2f;
 		public SelectionFlags selectionFlags
@@ -86,23 +87,6 @@ namespace UnityEngine.VR.UI
 			Clear();
 		}
 
-		public void OnPointerClick(PointerEventData eventData)
-		{
-			var rayEventData = eventData as RayEventData;
-			if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			{
-				if (rayEventData != null)
-				{
-					if (m_KeyboardOpen)
-						CloseKeyboard(true);
-					else
-						OpenKeyboard();
-				}
-				else if (m_KeyboardOpen)
-					CloseKeyboard(true);
-			}
-		}
-
 		public override void OnSelect(BaseEventData eventData)
 		{
 			// Don't do base functionality
@@ -148,17 +132,15 @@ namespace UnityEngine.VR.UI
 
 			m_Keyboard.gameObject.SetActive(true);
 
-			m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
-			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
-			m_Keyboard.transform.rotation = rotation;
+//			m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
+//			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
+//			m_Keyboard.transform.rotation = rotation;
 
 			m_Keyboard.Setup(OnKeyPress);
 
 //			if (m_MoveKeyboardCoroutine != null)
-//				StopCoroutine(m_MoveKeyboardCoroutine);
-//
-//			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(Vector3.Magnitude(m_Keyboard.transform.position - transform.position) > 0.25f));
-
+			this.StopCoroutine(ref m_MoveKeyboardCoroutine);
+			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(Vector3.Magnitude(m_Keyboard.transform.position - transform.position) > 0.25f));
 		}
 
 		IEnumerator MoveKeyboardToInputField(bool instant)
