@@ -192,6 +192,13 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 				var selection = kvp.Value;
 				var rayOrigin = kvp.Key;
 
+				// If gameObject is within a prefab and not the current prefab, choose prefab root
+				var prefabRoot = PrefabUtility.FindPrefabRoot(selection.gameObject);
+				if(prefabRoot)
+				{
+					selection.gameObject = prefabRoot;
+				}
+
 				if (!canGrabObject(selection, rayOrigin))
 					continue;
 
@@ -221,6 +228,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 					Selection.activeGameObject = grabbedObject.gameObject;
 
 					setHighlight(grabbedObject.gameObject, false);
+
+					rayOrigin.gameObject.SetActive(false);
 
 					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
 					EditorApplication.delayCall += () =>
@@ -386,6 +395,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 		var grabData = m_GrabData[inputNode];
 		dropObject(this, grabData.grabbedObject, grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
+
+		grabData.rayOrigin.gameObject.SetActive(true);
 	}
 
 	private void HandleSnap(IManipulator manipulator, Transform trans, Vector3 deltaMovement, Transform[] ignoreList)
