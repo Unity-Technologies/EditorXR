@@ -58,9 +58,6 @@ namespace UnityEngine.VR.Tools
 			if (rayOrigin == null)
 				return;
 
-			if (!rayOrigin.gameObject.activeInHierarchy)
-				return;
-
 			var newHoverGameObject = getFirstGameObject(rayOrigin);
 			GameObject newPrefabRoot = null;
 
