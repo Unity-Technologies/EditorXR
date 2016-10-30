@@ -33,6 +33,7 @@ namespace UnityEngine.VR.Menus
 		List<RadialMenuSlot> m_RadialMenuSlots;
 		Coroutine m_ShowCoroutine;
 		Coroutine m_HideCoroutine;
+		Coroutine m_SelectItemCoroutine;
 		Vector2 m_DragStartVector;
 		float m_DragMagnitude;
 		float m_DragSelectMaxTime;
@@ -66,11 +67,15 @@ namespace UnityEngine.VR.Menus
 				this.StopCoroutine(ref m_ShowCoroutine);
 				this.StopCoroutine(ref m_HideCoroutine);
 
-				gameObject.SetActive(true);
+				if (value)
+					gameObject.SetActive(true);
+
 				if (value && actions.Count > 0)
 					m_ShowCoroutine = StartCoroutine(AnimateShow());
-				else if (m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
+				else if (!value && m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
 					m_HideCoroutine = StartCoroutine(AnimateHide());
+				else if (!value)
+					gameObject.SetActive(false);
 			}
 		}
 		bool m_Visible;
@@ -83,7 +88,7 @@ namespace UnityEngine.VR.Menus
 				if (value != null)
 				{
 					m_Actions = value
-						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.kDefaultActionSectionName)
+						.Where(a => !string.IsNullOrEmpty(a.sectionName) && a.sectionName == ActionMenuItemAttribute.kDefaultActionSectionName)
 						.OrderByDescending(a => a.priority)
 						.ToList();
 
@@ -146,6 +151,7 @@ namespace UnityEngine.VR.Menus
 					if (m_HighlightedButton && Time.realtimeSinceStartup < m_DragSelectMaxTime && m_DragMagnitude > 0 && m_DragMagnitude < kSelectMagnitudeThreshold) // check if a drag within the selection threshold occurred
 					{
 						m_HighlightedButton.button.onClick.Invoke();
+						m_HighlightedButton.selected = true;
 						selectItem(); // call the externally set select action
 					}
 
@@ -163,18 +169,20 @@ namespace UnityEngine.VR.Menus
 					}
 					else
 					{
-						// set the magnitude of starting-to-current drag positions
-						// this is used to detect the drag threshold for a tap(select) or a drag(highlight)
-						// a drag with small magnitude triggers a selection of the currently highlighted menu-item (if there exists a highlighted item)
-						// a drag beyond the small magnitude threshold triggers a highlight instead
-						m_DragMagnitude = (m_DragStartVector - value).magnitude;
-
 						m_InputMatrix = value;
 						m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
 						m_InputDirection += m_InputPhaseOffset;
 
-						if (m_DragMagnitude < 0.4f) // only begin new highlight phase if magnitude has passed the minimum threshold for a select/tap
+						if (m_DragMagnitude < 0.4f) // only allow slot highlighting phase if magnitude has passed the minimum threshold for a select/tap
+						{
+							// set the magnitude of starting-to-current drag positions
+							// this is used to detect the drag threshold for a tap(select) or a drag(highlight)
+							// a drag with small magnitude triggers a selection of the currently highlighted menu-item (if there exists a highlighted item)
+							// a drag beyond the small magnitude threshold triggers a highlight instead
+							m_DragMagnitude = (m_DragStartVector - value).magnitude;
+
 							return;
+						}
 
 						var angleCorrected = m_InputDirection * Mathf.Deg2Rad;
 						m_InputMatrix = new Vector2(Mathf.Cos(angleCorrected), -Mathf.Sin(angleCorrected));
@@ -204,7 +212,6 @@ namespace UnityEngine.VR.Menus
 			{
 				if (!value)
 				{
-					Debug.LogError("<color=cyan>ending highlight with a magnitude value of : </color>" + value);
 					m_DragMagnitude = 0f;
 					m_DragStartVector = new Vector2();
 					m_DragSelectMaxTime = 0f;
@@ -214,7 +221,6 @@ namespace UnityEngine.VR.Menus
 						return;
 					else
 					{
-						Debug.LogError("<color=blue>Disable any highlights occurring on menu buttons here</color>");
 						m_HighlightedButton = null;
 
 						foreach (var buttonMinMaxRange in buttonRotationRange)
@@ -286,7 +292,7 @@ namespace UnityEngine.VR.Menus
 		{
 			m_SlotsMask.gameObject.SetActive(true);
 
-			var gradientPair = UnityBrandColorScheme.GetRandomGradient();
+			var gradientPair = UnityBrandColorScheme.sessionGradient;
 			for (int i = 0; i < m_Actions.Count; ++i)
 			{
 				// prevent more actions being added beyond the max slot count
@@ -303,6 +309,9 @@ namespace UnityEngine.VR.Menus
 				{
 					// Having to grab the index because of incorrect closure support
 					var index = m_RadialMenuSlots.IndexOf(m_HighlightedButton);
+					if (index == -1)
+						return;
+
 					var selectedSlot = m_RadialMenuSlots[index];
 					var buttonAction = m_Actions[index].action;
 					buttonAction.ExecuteAction();
