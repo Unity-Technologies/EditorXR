@@ -35,7 +35,7 @@ namespace UnityEngine.VR.UI
 		[SerializeField]
 		private int m_CharacterLimit = 10;
 
-		private bool m_Open;
+		private bool m_KeyboardOpen;
 
 		Coroutine m_MoveKeyboardCoroutine;
 
@@ -93,13 +93,13 @@ namespace UnityEngine.VR.UI
 			{
 				if (rayEventData != null)
 				{
-					if (m_Open)
-						Close();
+					if (m_KeyboardOpen)
+						CloseKeyboard(true);
 					else
-						Open();
+						OpenKeyboard();
 				}
-				else if (m_Open)
-					Close();
+				else if (m_KeyboardOpen)
+					CloseKeyboard(true);
 			}
 		}
 
@@ -126,10 +126,10 @@ namespace UnityEngine.VR.UI
 				m_TextComponent.text = m_Text;
 		}
 
-		public virtual void Open()
+		public virtual void OpenKeyboard()
 		{
-			if (m_Open) return;
-			m_Open = true;
+			if (m_KeyboardOpen) return;
+			m_KeyboardOpen = true;
 
 			m_Keyboard = spawnKeyboard();
 
@@ -184,20 +184,20 @@ namespace UnityEngine.VR.UI
 //			m_Keyboard.Setup(OnKeyPress);
 		}
 
-		public virtual void Close(bool collapse = false)
+		public virtual void CloseKeyboard(bool collapse = false)
 		{
-			m_Open = false;
+			m_KeyboardOpen = false;
 
 			if (m_Keyboard == null) return;
 
-//			if (collapse)
-//				m_Keyboard.Collapse(FinalizeClose);
-//			else
-//				
-//		}
+			if (collapse)
+				m_Keyboard.Collapse(FinalizeClose);
+			else
+				FinalizeClose();
+		}
 //
-//		void FinalizeClose()
-//		{
+		void FinalizeClose()
+		{
 			m_Keyboard.gameObject.SetActive(false);
 			m_Keyboard = null;
 		}
@@ -248,7 +248,7 @@ namespace UnityEngine.VR.UI
 
 		protected virtual void Escape()
 		{
-			Close();
+			CloseKeyboard(true);
 		}
 
 		protected virtual void Clear()

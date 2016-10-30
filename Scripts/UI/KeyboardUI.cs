@@ -34,6 +34,8 @@ public class KeyboardUI : MonoBehaviour
 	Coroutine m_ChangeDragColorsCoroutine;
 	Coroutine m_MoveKeysCoroutine;
 	Coroutine m_DragAfterDelayCoroutine;
+	Coroutine m_SetButtonTextAlphaCoroutine;
+	float m_CurrentButtonAlpha;
 
 	public KeyboardButton handleButton { get; set; }
 
@@ -78,6 +80,9 @@ public class KeyboardUI : MonoBehaviour
 	void OnEnable()
 	{
 		m_EligibleForDrag = false;
+
+		this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
+		m_SetButtonTextAlphaCoroutine = StartCoroutine(SetButtonTextAlpha());
 	}
 
 	void SetButtonLayoutTargets(bool horizontal)
@@ -97,9 +102,17 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
+	public void Expand()
+	{
+		
+	}
+
 	public void Collapse(Action doneCollapse)
 	{
-//		EnableMallet(false);
+		//		EnableMallet(false);
+
+		this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
+		m_SetButtonTextAlphaCoroutine = StartCoroutine(ClearButtonTextAlpha());
 
 		if (isActiveAndEnabled)
 		{
@@ -108,6 +121,7 @@ public class KeyboardUI : MonoBehaviour
 		}
 		else
 		{
+			collapsing = false;
 			doneCollapse();
 		}
 	}
@@ -122,7 +136,6 @@ public class KeyboardUI : MonoBehaviour
 				if (button != handleButton)
 				{
 					button.transform.position = Vector3.Lerp(button.transform.position, handleButton.transform.position, t / kKeyLayoutTransitionTime);
-					SetButtonTextAlpha(1f - t / kKeyLayoutTransitionTime);
 				}
 			}
 			t += Time.unscaledDeltaTime;
@@ -289,6 +302,9 @@ public class KeyboardUI : MonoBehaviour
 		this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = StartCoroutine(SetDragColors());
 
+		this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
+		m_SetButtonTextAlphaCoroutine = StartCoroutine(ClearButtonTextAlpha());
+
 		foreach (var button in m_Buttons)
 		{
 			button.smoothMotion.enabled = true;
@@ -304,12 +320,10 @@ public class KeyboardUI : MonoBehaviour
 		{
 			var alpha = t / kHandleChangeColorTime;
 			m_HandleMaterial.color = Color.Lerp(startColor, sHandleDragColor, alpha);
-			SetButtonTextAlpha(1f - alpha);
 			t += Time.unscaledDeltaTime;
 			yield return null;
 		}
 
-		SetButtonTextAlpha(0f);
 		m_HandleMaterial.color = sHandleDragColor;
 
 		m_ChangeDragColorsCoroutine = null;
@@ -325,25 +339,70 @@ public class KeyboardUI : MonoBehaviour
 		{
 			var alpha = t / kHandleChangeColorTime;
 			m_HandleMaterial.color = Color.Lerp(startColor, handleButton.targetMeshBaseColor, alpha);
-			SetButtonTextAlpha(alpha);
 			t += Time.unscaledDeltaTime;
 			yield return null;
 		}
 
-		SetButtonTextAlpha(1f);
 		m_HandleMaterial.color = handleButton.targetMeshBaseColor;
 
 		m_ChangeDragColorsCoroutine = null;
 	}
 
-	void SetButtonTextAlpha(float alpha)
+	IEnumerator SetButtonTextAlpha()
 	{
+		float[] startingAlphas = new float[m_Buttons.Count];
+
+		var i = 0;
 		foreach (var button in m_Buttons)
 		{
-//			var color = button.textComponent.color;
-//			button.textComponent.color = new Color(color.r, color.g, color.b, alpha);
-			button.canvasGroup.alpha = alpha;
+			startingAlphas[i] = button.canvasGroup.alpha;
+			i++;
 		}
+
+		var t = 0f;
+		var finalAlpha = 1f;
+		while (t < kHandleChangeColorTime)
+		{
+			i = 0;
+			var alpha = t / kHandleChangeColorTime;
+			foreach (var button in m_Buttons)
+			{
+				if (button.canvasGroup.alpha > finalAlpha * alpha)
+					button.canvasGroup.alpha = Mathf.Lerp(startingAlphas[i], finalAlpha * alpha, alpha);
+				i++;
+			}
+			t += Time.unscaledDeltaTime;
+			yield return null;
+		}
+
+		foreach (var button in m_Buttons)
+		{
+			button.canvasGroup.alpha = finalAlpha;
+		}
+
+		m_SetButtonTextAlphaCoroutine = null;
+	}
+
+	IEnumerator ClearButtonTextAlpha()
+	{
+		var t = 0f;
+		while (t < kHandleChangeColorTime)
+		{
+			var alpha = 1f - t / kHandleChangeColorTime;
+			foreach (var button in m_Buttons)
+			{
+				button.canvasGroup.alpha = alpha;
+			}
+			t += Time.unscaledDeltaTime;
+			yield return null;
+		}
+
+		foreach (var button in m_Buttons)
+		{
+			button.canvasGroup.alpha = 0f;
+		}
+
+		m_SetButtonTextAlphaCoroutine = null;
 	}
 
 	void OnDrag(BaseHandle baseHandle, HandleEventData handleEventData)
@@ -356,7 +415,8 @@ public class KeyboardUI : MonoBehaviour
 				SetButtonLayoutTargets(IsHorizontal());
 
 				this.StopCoroutine(ref m_MoveKeysCoroutine);
-				m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime, true));
+				m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime, false));
+				
 				m_CurrentlyHorizontal = horizontal;
 			}
 		}
@@ -376,8 +436,10 @@ public class KeyboardUI : MonoBehaviour
 				button.smoothMotion.enabled = false;
 			}
 
-			this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
+			this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
+			m_SetButtonTextAlphaCoroutine = StartCoroutine(SetButtonTextAlpha());
 
+			this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 			if (isActiveAndEnabled)
 				m_ChangeDragColorsCoroutine = StartCoroutine(UnsetDragColors());
 		}
@@ -423,6 +485,9 @@ public class KeyboardUI : MonoBehaviour
 		const float nearDist = 0.06f;
 		if ((transform.position - rayOriginPos).magnitude < nearDist)
 			near = true;
+
+		if (Vector3.Dot(handleButton.transform.up, rayOrigin.forward) > 0.25f)
+			near = false;
 
 		const float farDist = 0.3f;
 		if ((transform.position - rayOriginPos).magnitude > farDist)
