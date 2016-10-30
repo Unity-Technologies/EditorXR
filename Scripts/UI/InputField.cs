@@ -117,28 +117,8 @@ namespace UnityEngine.VR.UI
 
 			m_Keyboard = spawnKeyboard();
 
-
-//			if (m_WaitThenOpenCoroutine != null)
-//				StopCoroutine(m_WaitThenOpenCoroutine);
-//			m_WaitThenOpenCoroutine = StartCoroutine(WaitThenOpen());
-//		}
-//
-//		IEnumerator WaitThenOpen()
-//		{
-//			while (m_Keyboard != null && m_Keyboard.collapsing)
-//			{
-//				yield return null;
-//			}
-
 			m_Keyboard.gameObject.SetActive(true);
 
-//			m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
-//			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
-//			m_Keyboard.transform.rotation = rotation;
-
-			m_Keyboard.Setup(OnKeyPress);
-
-//			if (m_MoveKeyboardCoroutine != null)
 			this.StopCoroutine(ref m_MoveKeyboardCoroutine);
 			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(Vector3.Magnitude(m_Keyboard.transform.position - transform.position) > 0.25f));
 		}
@@ -163,7 +143,7 @@ namespace UnityEngine.VR.UI
 			m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
 			m_MoveKeyboardCoroutine = null;
 
-//			m_Keyboard.Setup(OnKeyPress);
+			m_Keyboard.Setup(OnKeyPress);
 		}
 
 		public virtual void CloseKeyboard(bool collapse = false)
