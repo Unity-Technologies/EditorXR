@@ -23,8 +23,9 @@ public class KeyboardButton : BaseHandle
 	private const float kClickTime = 0.3f;
 	private const float kPressEmission = 1f;
 	private const float kEmissionLerpTime = 0.1f;
-	private const float kKeyResponseDuration = 0.5f;
-	private const float kKeyResponseAmplitude = 0.06f;
+	private const float kKeyResponseDuration = 0.1f;
+	private const float kKeyResponsePositionAmplitude = 0.02f;
+	private const float kKeyResponseScaleAmplitude = 0.08f;
 
 	public Text textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
 
@@ -202,6 +203,8 @@ public class KeyboardButton : BaseHandle
 
 			if (m_RepeatOnHold)
 				KeyPressed();
+
+			m_WorkspaceButton.highlight = true;
 		}
 
 		base.OnHandleDragStarted(eventData);
@@ -216,6 +219,8 @@ public class KeyboardButton : BaseHandle
 		{
 			if (m_RepeatOnHold)
 				HoldKey();
+			else if (Time.realtimeSinceStartup - m_PressDownTime > kClickTime)
+				m_WorkspaceButton.highlight = false;
 		}
 
 		base.OnHandleDragging(eventData);
@@ -244,8 +249,9 @@ public class KeyboardButton : BaseHandle
 
 		if (transform.InverseTransformPoint(col.transform.position).z > 0f)
 			return;
-		else
-			m_Triggered = true;
+
+		m_Triggered = true;
+		m_WorkspaceButton.pressed = true;
 
 		KeyPressed();
 	}
@@ -266,6 +272,8 @@ public class KeyboardButton : BaseHandle
 
 		if (m_RepeatOnHold && m_Triggered)
 			EndKeyHold();
+
+		m_WorkspaceButton.pressed = false;
 
 		m_Triggered = false;
 	}
@@ -288,11 +296,14 @@ public class KeyboardButton : BaseHandle
 //			return;
 //		}
 
-		this.StopCoroutine(ref m_ChangeEmissionCoroutine);
-		m_ChangeEmissionCoroutine = StartCoroutine(IncreaseEmission());
+		if (!m_Holding)
+		{
+			this.StopCoroutine(ref m_ChangeEmissionCoroutine);
+			m_ChangeEmissionCoroutine = StartCoroutine(IncreaseEmission());
 
-		this.StopCoroutine(ref m_PunchKeyCoroutine);
-		m_PunchKeyCoroutine = StartCoroutine(PunchKey());
+			this.StopCoroutine(ref m_PunchKeyCoroutine);
+			m_PunchKeyCoroutine = StartCoroutine(PushKeyMesh());
+		}
 
 		if (m_RepeatOnHold)
 			StartKeyHold();
@@ -321,6 +332,9 @@ public class KeyboardButton : BaseHandle
 
 		this.StopCoroutine(ref m_ChangeEmissionCoroutine);
 		m_ChangeEmissionCoroutine = StartCoroutine(DecreaseEmission());
+
+		this.StopCoroutine(ref m_PunchKeyCoroutine);
+		m_PunchKeyCoroutine = StartCoroutine(LiftKeyMesh());
 	}
 
 	private void OnDisable()
@@ -334,6 +348,10 @@ public class KeyboardButton : BaseHandle
 		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 
 		m_TargetMeshMaterial.color = m_TargetMeshBaseColor;
+
+		m_TargetMesh.transform.localScale = m_TargetMeshInitialScale;
+		m_TargetMesh.transform.localPosition = m_TargetMeshInitialLocalPosition;
+
 		m_WorkspaceButton.InstantClearState();
 	}
 
@@ -384,7 +402,7 @@ public class KeyboardButton : BaseHandle
 		m_ChangeEmissionCoroutine = null;
 	}
 
-	IEnumerator PunchKey()
+	IEnumerator PushKeyMesh()
 	{
 		var targetMeshTransform = m_TargetMesh.transform;
 		targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;
@@ -395,19 +413,44 @@ public class KeyboardButton : BaseHandle
 			elapsedTime += Time.unscaledDeltaTime;
 			var t = Mathf.Clamp01(elapsedTime / kKeyResponseDuration);
 
-			if (Mathf.Approximately(t, 0f) || Mathf.Approximately(t, 1f))
-				break;
-
-			const float amplitude = 0.3f;
-			t = Mathf.Pow(2f, -10f * t) * Mathf.Sin(t * (2f * Mathf.PI) / amplitude);
-
-			targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponseAmplitude;
+			targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponsePositionAmplitude;
 
 			var pos = m_TargetMeshInitialLocalPosition;
-			pos.z = t * kKeyResponseAmplitude;
+			pos.z = t * kKeyResponsePositionAmplitude;
 			targetMeshTransform.localPosition = pos;
 
 			elapsedTime += Time.unscaledDeltaTime;
+			yield return null;
+		}
+
+		targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * kKeyResponseScaleAmplitude;
+		var finalPos = m_TargetMeshInitialLocalPosition;
+		finalPos.z = kKeyResponsePositionAmplitude;
+		targetMeshTransform.localPosition = finalPos;
+
+		if (!m_Holding)
+			m_PunchKeyCoroutine = StartCoroutine(LiftKeyMesh());
+		else
+			m_PunchKeyCoroutine = null;
+	}
+
+	IEnumerator LiftKeyMesh()
+	{
+		var targetMeshTransform = m_TargetMesh.transform;
+		targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;
+
+		var elapsedTime = 0f;
+		while (elapsedTime < kKeyResponseDuration)
+		{
+			elapsedTime += Time.unscaledDeltaTime;
+			var t = 1f - Mathf.Clamp01(elapsedTime / kKeyResponseDuration);
+
+			targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponseScaleAmplitude;
+
+			var pos = m_TargetMeshInitialLocalPosition;
+			pos.z = t * kKeyResponsePositionAmplitude;
+			targetMeshTransform.localPosition = pos;
+
 			yield return null;
 		}
 

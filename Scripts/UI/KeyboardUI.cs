@@ -88,7 +88,7 @@ public class KeyboardUI : MonoBehaviour
 		var rayOriginPos = rayOrigin.position;
 
 		var grabbingHandle = false;
-		var far = false;
+		var outOfRange = false;
 		var invalidOrientation = false;
 
 		const float nearDist = 0.04f;
@@ -99,12 +99,15 @@ public class KeyboardUI : MonoBehaviour
 
 		const float farDist = 0.18f;
 		if ((transform.position - rayOriginPos).magnitude > farDist)
-			far = true;
+			outOfRange = true;
+
+		if (transform.InverseTransformPoint(rayOrigin.position).z > 0.02f)
+			outOfRange = true;
 
 		if (Vector3.Dot(handleButton.transform.up, rayOrigin.forward) < maxAngle)
 			invalidOrientation = true;
 
-		return !(grabbingHandle || far || invalidOrientation);
+		return !(grabbingHandle || outOfRange || invalidOrientation);
 	}
 
 	void SetButtonLayoutTargets(bool horizontal)

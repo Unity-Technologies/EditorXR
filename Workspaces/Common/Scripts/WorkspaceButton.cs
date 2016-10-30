@@ -212,6 +212,11 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
+		void OnDisable()
+		{
+			InstantClearState();
+		}
+
 		IEnumerator AnimateShow()
 		{
 			m_CanvasGroup.interactable = false;
