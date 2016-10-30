@@ -148,13 +148,10 @@ namespace UnityEngine.VR.UI
 
 		public virtual bool CloseKeyboard(bool collapse = false)
 		{
-			if (!m_KeyboardOpen)
+			if (m_Keyboard == null || !m_KeyboardOpen)
 				return false;
 
 			m_KeyboardOpen = false;
-
-//			if (m_Keyboard == null)
-//				return false;
 
 			this.StopCoroutine(ref m_MoveKeyboardCoroutine);
 
