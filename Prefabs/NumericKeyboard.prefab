@@ -1830,6 +1830,7 @@ GameObject:
   - 224: {fileID: 224000012551991024}
   - 114: {fileID: 114000012169358554}
   - 223: {fileID: 223000013877737890}
+  - 114: {fileID: 114000013137861698}
   m_Layer: 0
   m_Name: NumericKeyboard
   m_TagString: Untagged
@@ -7752,6 +7753,7 @@ MonoBehaviour:
   - {fileID: 4000010011718068}
   - {fileID: 4000011868407824}
   m_DirectManipulator: {fileID: 114000013053352820}
+  m_SmoothMotion: {fileID: 114000013137861698}
 --- !u!114 &114000012223250436
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8472,6 +8474,23 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 2
+--- !u!114 &114000013137861698
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012738109114}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d140242271ba0a94c9685339cdb66ee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_SmoothRotation: 0
+  m_TightenRotation: 20
+  m_SmoothPosition: 0
+  m_TightenPosition: 20
+  m_Target: {fileID: 0}
 --- !u!114 &114000013163124872
 MonoBehaviour:
   m_ObjectHideFlags: 1

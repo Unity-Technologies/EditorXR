@@ -97,8 +97,6 @@ public class KeyboardButton : BaseHandle
 
 	CanvasGroup m_CanvasGroup;
 
-	public SmoothMotion smoothMotion { get; set; }
-
 	void Awake()
 	{
 		var targetMeshTransform = m_TargetMesh.transform;
@@ -106,9 +104,6 @@ public class KeyboardButton : BaseHandle
 		m_TargetMeshInitialScale = targetMeshTransform.localScale;
 		m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
 		m_TargetMeshBaseColor = m_TargetMeshMaterial.color;
-
-		smoothMotion = GetComponent<SmoothMotion>();
-		smoothMotion.enabled = false;
 
 		m_CanvasGroup = GetComponentInChildren<CanvasGroup>(true);
 	}

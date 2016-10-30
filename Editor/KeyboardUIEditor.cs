@@ -10,6 +10,7 @@ public class KeyboardUIEditor : Editor
 	SerializedProperty m_VerticalLayoutTransformsProperty;
 	SerializedProperty m_HorizontalLayoutTransformsProperty;
 	SerializedProperty m_DirectManipulatorProperty;
+	SerializedProperty m_SmoothMotionProperty;
 
 	KeyboardUI m_KeyboardUI;
 
@@ -19,6 +20,7 @@ public class KeyboardUIEditor : Editor
 		m_VerticalLayoutTransformsProperty = serializedObject.FindProperty("m_VerticalLayoutTransforms");
 		m_HorizontalLayoutTransformsProperty = serializedObject.FindProperty("m_HorizontalLayoutTransforms");
 		m_DirectManipulatorProperty = serializedObject.FindProperty("m_DirectManipulator");
+		m_SmoothMotionProperty = serializedObject.FindProperty("m_SmoothMotion");
 	}
 
 	public override void OnInspectorGUI()
@@ -42,6 +44,7 @@ public class KeyboardUIEditor : Editor
 			EditorGUILayout.EndHorizontal();
 		}
 		EditorGUILayout.PropertyField(m_DirectManipulatorProperty);
+		EditorGUILayout.PropertyField(m_SmoothMotionProperty);
 
 		EditorGUILayout.BeginHorizontal();
 		if (GUILayout.Button("Vertical layout"))

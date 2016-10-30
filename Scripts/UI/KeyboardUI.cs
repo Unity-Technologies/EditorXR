@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Extensions;
+using UnityEngine.VR.Helpers;
 
 public class KeyboardUI : MonoBehaviour
 {
@@ -26,6 +27,9 @@ public class KeyboardUI : MonoBehaviour
 
 	[SerializeField]
 	DirectManipulator m_DirectManipulator;
+
+	[SerializeField]
+	SmoothMotion m_SmoothMotion;
 
 	bool m_EligibleForDrag;
 	bool m_CurrentlyHorizontal;
@@ -64,9 +68,6 @@ public class KeyboardUI : MonoBehaviour
 		}
 
 		m_HandleMaterial = handleButton.targetMeshMaterial;
-
-		var horizontal = IsHorizontal();
-		SetButtonLayoutTargets(horizontal);
 
 		this.StopCoroutine(ref m_MoveKeysCoroutine);
 
@@ -107,19 +108,6 @@ public class KeyboardUI : MonoBehaviour
 			invalidOrientation = true;
 
 		return !(grabbingHandle || outOfRange || invalidOrientation);
-	}
-
-	void SetButtonLayoutTargets(bool horizontal)
-	{
-		int i = 0;
-		foreach (var button in m_Buttons)
-		{
-			var hT = m_HorizontalLayoutTransforms[i];
-			var vT = m_VerticalLayoutTransforms[i];
-			var target = horizontal ? hT : vT;
-			button.smoothMotion.SetTarget(target);
-			i++;
-		}
 	}
 
 	IEnumerator ExpandOverTime()
@@ -248,7 +236,7 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
-	IEnumerator MoveKeysToLayoutPositions(float duration = kKeyLayoutTransitionTime, bool setKeyTextAlpha = false)
+	IEnumerator MoveKeysToLayoutPositions(float duration = kKeyLayoutTransitionTime)
 	{
 		var horizontal = IsHorizontal();
 		var t = 0f;
@@ -317,13 +305,16 @@ public class KeyboardUI : MonoBehaviour
 	void Awake()
 	{
 		handleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
-
+		m_SmoothMotion = GetComponent<SmoothMotion>();
 		collapsed = true;
 	}
 
 	void OnEnable()
 	{
 		m_EligibleForDrag = false;
+
+		m_SmoothMotion.enabled = false;
+
 //
 //		foreach (var button in m_Buttons)
 //		{
@@ -380,10 +371,11 @@ public class KeyboardUI : MonoBehaviour
 		this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = StartCoroutine(SetDragColors());
 
-		foreach (var button in m_Buttons)
-		{
-			button.smoothMotion.enabled = true;
-		}
+//		foreach (var button in m_Buttons)
+//		{
+//			button.smoothMotion.enabled = true;
+//		}
+		m_SmoothMotion.enabled = true;
 
 		SetAllButtonsTextAlpha(0f);
 	}
@@ -432,10 +424,8 @@ public class KeyboardUI : MonoBehaviour
 			var horizontal = IsHorizontal();
 			if (m_CurrentlyHorizontal != horizontal)
 			{
-				SetButtonLayoutTargets(IsHorizontal());
-
 				this.StopCoroutine(ref m_MoveKeysCoroutine);
-				m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime, false));
+				m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime));
 				
 				m_CurrentlyHorizontal = horizontal;
 			}
@@ -451,10 +441,7 @@ public class KeyboardUI : MonoBehaviour
 		{
 			m_EligibleForDrag = false;
 
-			foreach (var button in m_Buttons)
-			{
-				button.smoothMotion.enabled = false;
-			}
+			m_SmoothMotion.enabled = false;
 			SetAllButtonsTextAlpha(1f);
 
 			this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
