@@ -53,10 +53,10 @@ namespace UnityEngine.VR.Menus
 
 		public bool visible
 		{
-			get { return m_Visible; }
+			get { return m_Visible.HasValue && m_Visible.Value; }
 			set
 			{
-				if (m_Visible != value)
+				if (!m_Visible.HasValue || m_Visible != value)
 				{
 					m_Visible = value;
 
@@ -78,7 +78,7 @@ namespace UnityEngine.VR.Menus
 				}
 			}
 		}
-		private bool m_Visible;
+		private bool? m_Visible;
 
 		[SerializeField]
 		private MainMenuUI m_MainMenuPrefab;
@@ -88,6 +88,8 @@ namespace UnityEngine.VR.Menus
 		private float m_RotationInputStartValue;
 		private float m_RotationInputIdleTime;
 		private float m_LastRotationInput;
+		float m_RotationDragStartValue;
+		bool m_RotationDragThresholdExceeded;
 
 		public Func<GameObject, GameObject> instantiateUI { private get; set; }
 		public Transform rayOrigin { private get; set; }
@@ -112,7 +114,7 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
-			m_MainMenuUI.visible = m_Visible;
+			m_MainMenuUI.visible = visible;
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
@@ -123,12 +125,20 @@ namespace UnityEngine.VR.Menus
 		private void Update()
 		{
 			var rotationInput = -m_MainMenuInput.rotate.rawValue;
+
+			// Flick the face when the button is released by adding this value to the flick rotation
+			if (m_MainMenuInput.flickFace.wasJustReleased)
+				m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex - (int) Mathf.Sign(-rotationInput);
+
 			if (Mathf.Approximately(rotationInput, m_LastRotationInput) && Mathf.Approximately(rotationInput, 0f))
 			{
 				m_RotationInputIdleTime += Time.unscaledDeltaTime;
+				m_RotationDragStartValue = 0f;
+				m_RotationDragThresholdExceeded = false;
 			}
 			else
 			{
+				const float kRotatationDragMoveThreshold = 0.25f;
 				const float kFlickDeltaThreshold = 0.5f;
 				const float kRotationInputIdleDurationThreshold = 0.05f; // Limits how often a flick can happen
 
@@ -141,24 +151,32 @@ namespace UnityEngine.VR.Menus
 					m_RotationInputStartValue = Mathf.Abs(rotationInput) < Mathf.Abs(m_LastRotationInput) ? rotationInput : m_LastRotationInput;
 				}
 
-				const float kFlickDurationThreshold = 0.3f;
+				if (Mathf.Approximately(m_LastRotationInput, 0))
+					m_RotationDragStartValue = 0f;
+				else if (Mathf.Approximately(m_RotationDragStartValue, 0))
+					m_RotationDragStartValue = m_LastRotationInput; // set new drag start value
 
-				// Perform a quick single face rotation if a quick flick of the input axis occurred
-				float flickRotation = rotationInput - m_RotationInputStartValue;
-				if (Mathf.Abs(flickRotation) >= kFlickDeltaThreshold
-					&& (Time.realtimeSinceStartup - m_RotationInputStartTime) < kFlickDurationThreshold)
+				if (m_RotationDragThresholdExceeded || (!Mathf.Approximately(m_RotationDragStartValue, 0) && !Mathf.Approximately(rotationInput, 0) && Mathf.Abs((Mathf.Abs(m_RotationDragStartValue) - Mathf.Abs(rotationInput))) > kRotatationDragMoveThreshold))
 				{
-					m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex + (int) Mathf.Sign(flickRotation);
+					const float kFlickDurationThreshold = 0.3f;
+					m_RotationDragThresholdExceeded = true;
+					// Perform a quick single face rotation if a quick flick of the input axis occurred
+					float flickRotation = rotationInput - m_RotationInputStartValue;
+					if (Mathf.Abs(flickRotation) >= kFlickDeltaThreshold
+						&& (Time.realtimeSinceStartup - m_RotationInputStartTime) < kFlickDurationThreshold)
+					{
+						m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex - (int) Mathf.Sign(flickRotation);
 
-					// Don't allow another flick until rotation resets
-					m_RotationInputStartTime = 0f;
-				}
-				else
-				{
-					const float kRotationSpeed = 250;
+						// Don't allow another flick until rotation resets
+						m_RotationInputStartTime = 0f;
+					}
+					else
+					{
+						const float kRotationSpeed = 250;
 
-					// Otherwise, apply manual rotation to the main menu faces
-					m_MainMenuUI.targetRotation += rotationInput * kRotationSpeed * Time.unscaledDeltaTime;
+						// Otherwise, apply manual rotation to the main menu faces
+						m_MainMenuUI.targetRotation += rotationInput * kRotationSpeed * Time.unscaledDeltaTime;
+					}
 				}
 
 				// Reset the idle time if we are no longer idle (i.e. rotation is happening)

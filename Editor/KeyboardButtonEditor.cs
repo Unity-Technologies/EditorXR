@@ -2,14 +2,15 @@ using System;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
-[CanEditMultipleObjects]
 [CustomEditor(typeof(KeyboardButton))]
 public class KeyboardButtonEditor : Editor
 {
 	const char kLowercaseStart = 'a';
 	const char kLowercaseEnd = 'z';
 
+	SerializedProperty m_SelectionFlagsProperty;
 	SerializedProperty m_CharacterProperty;
 	SerializedProperty m_UseShiftCharacterProperty;
 	SerializedProperty m_ShiftCharacterProperty;
@@ -18,12 +19,14 @@ public class KeyboardButtonEditor : Editor
 	SerializedProperty m_ButtonMeshProperty;
 	SerializedProperty m_ButtonGraphicProperty;
 	SerializedProperty m_RepeatOnHoldProperty;
+	SerializedProperty m_WorkspaceButtonProperty;
 	
 	KeyboardButton m_KeyboardButton;
 	bool m_ShiftCharIsUppercase;
 
 	protected void OnEnable()
 	{
+		m_SelectionFlagsProperty = serializedObject.FindProperty("m_SelectionFlags");
 		m_CharacterProperty = serializedObject.FindProperty("m_Character");
 		m_UseShiftCharacterProperty = serializedObject.FindProperty("m_UseShiftCharacter");
 		m_ShiftCharacterProperty = serializedObject.FindProperty("m_ShiftCharacter");
@@ -32,6 +35,7 @@ public class KeyboardButtonEditor : Editor
 		m_ButtonMeshProperty = serializedObject.FindProperty("m_TargetMesh");
 		m_ButtonGraphicProperty = serializedObject.FindProperty("m_TargetGraphic");
 		m_RepeatOnHoldProperty = serializedObject.FindProperty("m_RepeatOnHold");
+		m_WorkspaceButtonProperty = serializedObject.FindProperty("m_WorkspaceButton");
 	}
 
 	public override void OnInspectorGUI()
@@ -39,6 +43,8 @@ public class KeyboardButtonEditor : Editor
 		m_KeyboardButton = (KeyboardButton)target;
 
 		serializedObject.Update();
+
+		EditorGUILayout.PropertyField(m_SelectionFlagsProperty);
 
 		CharacterField("Primary Character", m_CharacterProperty);
 
@@ -73,17 +79,42 @@ public class KeyboardButtonEditor : Editor
 					m_ShiftCharacterProperty.intValue = m_ShiftCharIsUppercase ? upperCase[0] : 0;
 			}
 			else
+			{
 				m_ShiftCharIsUppercase = false;
+			}
 
 			if (!m_ShiftCharIsUppercase)
 				CharacterField("Shift Character", m_ShiftCharacterProperty);
 		}
 		else
+		{
 			m_ShiftCharIsUppercase = false;
+		}
 
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);
 		EditorGUILayout.PropertyField(m_ButtonGraphicProperty);
 		EditorGUILayout.PropertyField(m_RepeatOnHoldProperty);
+		EditorGUILayout.PropertyField(m_WorkspaceButtonProperty);
+
+		if (GUILayout.Button("Create layout transfrom"))
+		{
+			// Get position in hierarchy
+			var siblingIndex = 0;
+			foreach (Transform child in m_KeyboardButton.transform.parent)
+			{
+				if (child == m_KeyboardButton.transform)
+					break;
+				siblingIndex++;
+			}
+
+			var t = new GameObject(m_KeyboardButton.name + "_LayoutPosition").transform;
+			t.SetParent(m_KeyboardButton.transform);
+			t.localPosition = Vector3.zero;
+			t.localRotation = Quaternion.identity;
+			t.localScale = Vector3.one;
+			t.SetParent(m_KeyboardButton.transform.parent);
+			t.transform.SetSiblingIndex(siblingIndex);
+		}
 
 		serializedObject.ApplyModifiedProperties();
 	}

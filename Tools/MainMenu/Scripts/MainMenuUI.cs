@@ -66,7 +66,7 @@ namespace UnityEngine.VR.Menus
 		private readonly string kRotationHighlightBottomProperty = "_ColorBottom";
 		private readonly Color kMenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
 
-		private VisibilityState m_VisibilityState;
+		private VisibilityState m_VisibilityState = VisibilityState.Visible;
 		private RotationState m_RotationState;
 		private Material m_RotationHighlightLeftMaterial;
 		private Material m_RotationHighlightRightMaterial;
@@ -536,7 +536,7 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator AnimateFrameRotationShapeChange(RotationState rotationState)
 		{
-			var smoothTime = rotationState == RotationState.Rotating ? 0.5f : 0.0375f; // slower when rotating, faster when snapping
+			var smoothTime = rotationState == RotationState.Rotating ? 0.5f : 0.25f; // slower when rotating, faster when snapping
 			var currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
 			var targetWeight = rotationState == RotationState.Rotating ? 100f : 0f;
 			var smoothVelocity = 0f;
