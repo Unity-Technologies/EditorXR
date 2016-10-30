@@ -132,9 +132,9 @@ namespace UnityEngine.VR.UI
 				UpdateHandleButtonText();
 		}
 
-		public override void OpenKeyboard(bool expand)
+		public override void OpenKeyboard()
 		{
-			base.OpenKeyboard(expand);
+			base.OpenKeyboard();
 
 			UpdateHandleButtonText();
 		}

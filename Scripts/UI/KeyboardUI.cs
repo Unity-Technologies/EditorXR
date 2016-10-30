@@ -38,7 +38,6 @@ public class KeyboardUI : MonoBehaviour
 	Coroutine m_ChangeDragColorsCoroutine;
 	Coroutine m_MoveKeysCoroutine;
 	Coroutine m_DragAfterDelayCoroutine;
-	float m_CurrentButtonAlpha;
 
 	public KeyboardButton handleButton { get; set; }
 
@@ -49,7 +48,7 @@ public class KeyboardUI : MonoBehaviour
 	/// Initialize the keyboard and its buttons
 	/// </summary>
 	/// <param name="keyPress"></param>
-	public void Setup(Action<char> keyPress, bool expand)
+	public void Setup(Action<char> keyPress)
 	{
 		m_DirectManipulator.target = transform;
 		m_DirectManipulator.translate = Translate;
@@ -71,8 +70,17 @@ public class KeyboardUI : MonoBehaviour
 
 		this.StopCoroutine(ref m_MoveKeysCoroutine);
 
-		if (expand || collapsed)
+		if (collapsed)
+		{
+			foreach (var button in m_Buttons)
+			{
+				if (button != handleButton)
+					button.transform.position = handleButton.transform.position;
+				button.SetTextAlpha(0f, 0f);
+			}
+
 			m_MoveKeysCoroutine = StartCoroutine(ExpandOverTime());
+		}
 	}
 
 	/// <summary>
@@ -134,7 +142,7 @@ public class KeyboardUI : MonoBehaviour
 
 		SetAllButtonsTextAlpha(1f);
 
-		collapsed = true;
+		collapsed = false;
 
 		m_MoveKeysCoroutine = null;
 	}
@@ -305,21 +313,13 @@ public class KeyboardUI : MonoBehaviour
 	void Awake()
 	{
 		handleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
-		m_SmoothMotion = GetComponent<SmoothMotion>();
 		collapsed = true;
 	}
 
 	void OnEnable()
 	{
 		m_EligibleForDrag = false;
-
 		m_SmoothMotion.enabled = false;
-
-//
-//		foreach (var button in m_Buttons)
-//		{
-//			button.SetTextAlpha(1f, kHandleChangeColorTime);
-//		}
 	}
 
 	bool IsHorizontal()
@@ -371,10 +371,6 @@ public class KeyboardUI : MonoBehaviour
 		this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = StartCoroutine(SetDragColors());
 
-//		foreach (var button in m_Buttons)
-//		{
-//			button.smoothMotion.enabled = true;
-//		}
 		m_SmoothMotion.enabled = true;
 
 		SetAllButtonsTextAlpha(0f);

@@ -147,23 +147,14 @@ public class KeyboardButton : BaseHandle
 	}
 
 	/// <summary>
-	/// Set the alpha value of the button text
+	/// Move the key to a target position
 	/// </summary>
-	/// <param name="alpha">The final alpha value of the key text</param>
-	/// <param name="duration">The lerp time</param>
-	public void SetTextAlpha(float alpha, float duration)
-	{
-		this.StopCoroutine(ref m_SetTextAlphaCoroutine);
-
-		if (isActiveAndEnabled)
-			m_SetTextAlphaCoroutine = StartCoroutine(SetAlphaOverTime(alpha, duration));
-	}
-
+	/// <param name="targetPos">The position to move to</param>
+	/// <param name="duration">The duration of the movement</param>
 	public void MoveToPosition(Vector3 targetPos, float duration)
 	{
 		this.StopCoroutine(ref m_MoveCoroutine);
 		m_MoveCoroutine = StartCoroutine(MoveToPositionOverTime(targetPos, duration));
-
 	}
 
 	IEnumerator MoveToPositionOverTime(Vector3 targetPos, float duration)
@@ -182,6 +173,21 @@ public class KeyboardButton : BaseHandle
 
 		transform.position = targetPos;
 		m_MoveCoroutine = null;
+	}
+
+	/// <summary>
+	/// Set the alpha value of the button text
+	/// </summary>
+	/// <param name="alpha">The final alpha value of the key text</param>
+	/// <param name="duration">The lerp time</param>
+	public void SetTextAlpha(float alpha, float duration)
+	{
+		this.StopCoroutine(ref m_SetTextAlphaCoroutine);
+
+		if (isActiveAndEnabled)
+			m_SetTextAlphaCoroutine = StartCoroutine(SetAlphaOverTime(alpha, duration));
+		else
+			m_CanvasGroup.alpha = alpha;
 	}
 
 	IEnumerator SetAlphaOverTime(float toAlpha, float duration)
