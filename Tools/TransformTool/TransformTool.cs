@@ -229,8 +229,6 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 
 					setHighlight(grabbedObject.gameObject, false);
 
-					rayOrigin.gameObject.SetActive(false);
-
 					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
 					EditorApplication.delayCall += () =>
 					{
@@ -395,8 +393,6 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 		var grabData = m_GrabData[inputNode];
 		dropObject(this, grabData.grabbedObject, grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
-
-		grabData.rayOrigin.gameObject.SetActive(true);
 	}
 
 	private void HandleSnap(IManipulator manipulator, Transform trans, Vector3 deltaMovement, Transform[] ignoreList)
