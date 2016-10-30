@@ -462,12 +462,12 @@ public class EditorVR : MonoBehaviour
 					var standardKeyboardNull = false;
 
 					if (m_NumericKeyboard != null)
-						malletVisible = m_NumericKeyboard.IsMalletVisible(rayOrigin);
+						malletVisible = m_NumericKeyboard.ShouldShowMallet(rayOrigin);
 					else
 						numericKeyboardNull = true;
 
 					if (m_StandardKeyboard != null)
-						malletVisible = malletVisible || m_StandardKeyboard.IsMalletVisible(rayOrigin);
+						malletVisible = malletVisible || m_StandardKeyboard.ShouldShowMallet(rayOrigin);
 					else
 						standardKeyboardNull = true;
 

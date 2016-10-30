@@ -73,6 +73,7 @@ public class KeyboardButton : BaseHandle
 
 	Action<char> m_KeyPress;
 	Func<bool> m_PressOnHover;
+	Func<bool> m_InTransition; 
 
 	public Color targetMeshBaseColor
 	{
@@ -86,7 +87,21 @@ public class KeyboardButton : BaseHandle
 		get { return m_TargetMeshMaterial; }
 	}
 
-	public CanvasGroup canvasGroup { get; private set; }
+	public CanvasGroup canvasGroup
+	{
+		get
+		{
+			return !m_CanvasGroup
+				? GetComponentInChildren<CanvasGroup>(true)
+				: m_CanvasGroup;
+		}
+		private set
+		{
+			m_CanvasGroup = value;
+		}
+	}
+
+	CanvasGroup m_CanvasGroup;
 
 	public SmoothMotion smoothMotion { get; set; }
 
@@ -100,8 +115,6 @@ public class KeyboardButton : BaseHandle
 
 		smoothMotion = GetComponent<SmoothMotion>();
 		smoothMotion.enabled = false;
-
-		canvasGroup = GetComponentInChildren<CanvasGroup>(true);
 	}
 
 	/// <summary>
@@ -109,11 +122,11 @@ public class KeyboardButton : BaseHandle
 	/// </summary>
 	/// <param name="keyPress">Method to be invoked when the key is pressed</param>
 	/// <param name="pressOnHover">Method to be invoked to determine key behaviour</param>
-	public void Setup(Action<char> keyPress, Func<bool> pressOnHover)
+	public void Setup(Action<char> keyPress, Func<bool> pressOnHover, Func<bool> inTransition)
 	{
 		m_PressOnHover = pressOnHover;
-
 		m_KeyPress = keyPress;
+		m_InTransition = inTransition;
 	}
 
 	/// <summary>
@@ -146,7 +159,7 @@ public class KeyboardButton : BaseHandle
 	{
 		base.OnHandleHoverStarted(eventData);
 
-		if (!m_PressOnHover())
+		if (!m_PressOnHover() && !m_InTransition())
 		{
 			m_WorkspaceButton.highlight = true;
 		}
@@ -231,7 +244,7 @@ public class KeyboardButton : BaseHandle
 
 	private void KeyPressed()
 	{
-		if (m_KeyPress == null) return;
+		if (m_KeyPress == null || m_InTransition()) return;
 
 		if (m_ShiftMode && m_ShiftCharacter != 0)
 			m_KeyPress(m_ShiftCharacter);

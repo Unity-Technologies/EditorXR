@@ -60,7 +60,7 @@ public class KeyboardUI : MonoBehaviour
 
 		foreach (var button in m_Buttons)
 		{
-			button.Setup(keyPress, IsHorizontal);
+			button.Setup(keyPress, IsHorizontal, InTransition);
 		}
 
 		m_HandleMaterial = handleButton.targetMeshMaterial;
@@ -83,6 +83,11 @@ public class KeyboardUI : MonoBehaviour
 
 		this.StopCoroutine(ref m_SetButtonTextAlphaCoroutine);
 		m_SetButtonTextAlphaCoroutine = StartCoroutine(SetButtonTextAlpha());
+	}
+
+	bool InTransition()
+	{
+		return collapsing || m_EligibleForDrag;
 	}
 
 	void SetButtonLayoutTargets(bool horizontal)
@@ -134,9 +139,8 @@ public class KeyboardUI : MonoBehaviour
 			foreach (var button in m_Buttons)
 			{
 				if (button != handleButton)
-				{
-					button.transform.position = Vector3.Lerp(button.transform.position, handleButton.transform.position, t / kKeyLayoutTransitionTime);
-				}
+					button.transform.position = Vector3.Lerp(button.transform.position, handleButton.transform.position, 
+						t / kKeyLayoutTransitionTime);
 			}
 			t += Time.unscaledDeltaTime;
 			yield return null;
@@ -445,54 +449,36 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
-//	void Update()
-//	{
-//		if (IsHorizontal() && !m_EligibleForDrag && cachedRayOrigin != null)
-//		{
-//			var rayOriginPos = cachedRayOrigin.position;
-//			if (Vector3.Magnitude(handleButton.transform.position - rayOriginPos) < 0.03f)
-//				EnableMallet(false);
-//			else
-//				EnableMallet(true);
-//		}
-//	}
-
-//	void EnableMallet(bool enable)
-//	{
-//		if (enable && !m_MalletVisible || !enable && m_MalletVisible)
-//			malletVisibilityChanged(enable);
-//		m_MalletVisible = enable;
-//	}
-
 	void OnDisable()
 	{
 		this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = null;
-
-//		EnableMallet(false);
 	}
 
-	public bool IsMalletVisible(Transform rayOrigin)
+	public bool ShouldShowMallet(Transform rayOrigin)
 	{
 		if (!isActiveAndEnabled || !IsHorizontal())
 			return false;
 
 		var rayOriginPos = rayOrigin.position;
 
-		var near = false;
+		var grabbingHandle = false;
 		var far = false;
+		var invalidOrientation = false;
 
 		const float nearDist = 0.06f;
-		if ((transform.position - rayOriginPos).magnitude < nearDist)
-			near = true;
+		const float handleGrabAngle = 0.5f;
+		if ((transform.position - rayOriginPos).magnitude < nearDist
+			&& Vector3.Dot(handleButton.transform.up, rayOrigin.forward) < handleGrabAngle)
+			grabbingHandle = true;
 
-		if (Vector3.Dot(handleButton.transform.up, rayOrigin.forward) > 0.25f)
-			near = false;
-
-		const float farDist = 0.3f;
+		const float farDist = 0.18f;
 		if ((transform.position - rayOriginPos).magnitude > farDist)
 			far = true;
 
-		return !(near || far);
+		if (Vector3.Dot(handleButton.transform.up, rayOrigin.forward) < 0.5f)
+			invalidOrientation = true;
+
+		return !(grabbingHandle || far || invalidOrientation);
 	}
 }
