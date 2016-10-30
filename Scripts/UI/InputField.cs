@@ -110,7 +110,7 @@ namespace UnityEngine.VR.UI
 				m_TextComponent.text = m_Text;
 		}
 
-		public virtual void OpenKeyboard()
+		public virtual void OpenKeyboard(bool expand)
 		{
 			if (m_KeyboardOpen) return;
 			m_KeyboardOpen = true;
@@ -120,10 +120,10 @@ namespace UnityEngine.VR.UI
 			m_Keyboard.gameObject.SetActive(true);
 
 			this.StopCoroutine(ref m_MoveKeyboardCoroutine);
-			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(Vector3.Magnitude(m_Keyboard.transform.position - transform.position) > 0.25f));
+			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(Vector3.Magnitude(m_Keyboard.transform.position - transform.position) > 0.25f, expand));
 		}
 
-		IEnumerator MoveKeyboardToInputField(bool instant)
+		IEnumerator MoveKeyboardToInputField(bool instant, bool expand)
 		{
 			var targetPosition = transform.position + Vector3.up * 0.05f;
 
@@ -143,14 +143,18 @@ namespace UnityEngine.VR.UI
 			m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
 			m_MoveKeyboardCoroutine = null;
 
-			m_Keyboard.Setup(OnKeyPress);
+			m_Keyboard.Setup(OnKeyPress, expand);
 		}
 
-		public virtual void CloseKeyboard(bool collapse = false)
+		public virtual bool CloseKeyboard(bool collapse = false)
 		{
+			if (!m_KeyboardOpen)
+				return false;
+
 			m_KeyboardOpen = false;
 
-			if (m_Keyboard == null) return;
+//			if (m_Keyboard == null)
+//				return false;
 
 			this.StopCoroutine(ref m_MoveKeyboardCoroutine);
 
@@ -158,6 +162,8 @@ namespace UnityEngine.VR.UI
 				m_Keyboard.Collapse(FinalizeClose);
 			else
 				FinalizeClose();
+
+			return true;
 		}
 
 		void FinalizeClose()

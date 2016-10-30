@@ -281,11 +281,12 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 		if (m_ClickCount == 1)
 		{
+			var expandOnOpen = false;
 			foreach (var inputField in m_InputFields)
-				inputField.CloseKeyboard(m_ClickedField == null);
+				expandOnOpen = expandOnOpen || inputField.CloseKeyboard(m_ClickedField == null);
 
 			if (m_ClickedField)
-				m_ClickedField.OpenKeyboard();
+				m_ClickedField.OpenKeyboard(expandOnOpen);
 		}
 
 		m_ClickCount = 0;

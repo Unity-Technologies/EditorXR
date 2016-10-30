@@ -132,9 +132,9 @@ namespace UnityEngine.VR.UI
 				UpdateHandleButtonText();
 		}
 
-		public override void OpenKeyboard()
+		public override void OpenKeyboard(bool expand)
 		{
-			base.OpenKeyboard();
+			base.OpenKeyboard(expand);
 
 			UpdateHandleButtonText();
 		}
@@ -153,11 +153,11 @@ namespace UnityEngine.VR.UI
 			}
 		}
 
-		public override void CloseKeyboard(bool collapse = false)
+		public override bool CloseKeyboard(bool collapse = false)
 		{
 			ParseNumberField();
 
-			base.CloseKeyboard(collapse);
+			return base.CloseKeyboard(collapse);
 		}
 
 		protected override bool IsValid(char ch)

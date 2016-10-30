@@ -39,13 +39,14 @@ public class KeyboardUI : MonoBehaviour
 
 	public KeyboardButton handleButton { get; set; }
 
+	public bool collapsed { get; set; }
 	public bool collapsing { get; set; }
 
 	/// <summary>
 	/// Initialize the keyboard and its buttons
 	/// </summary>
 	/// <param name="keyPress"></param>
-	public void Setup(Action<char> keyPress)
+	public void Setup(Action<char> keyPress, bool expand)
 	{
 		m_DirectManipulator.target = transform;
 		m_DirectManipulator.translate = Translate;
@@ -68,8 +69,10 @@ public class KeyboardUI : MonoBehaviour
 		var horizontal = IsHorizontal();
 		SetButtonLayoutTargets(horizontal);
 
-		this.StopCoroutine(ref m_MoveKeysCoroutine);
-		m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime, true));
+		this.StopCoroutine(ref m_CollapseExpandCoroutine);
+
+		if (expand || collapsed)
+			m_CollapseExpandCoroutine = StartCoroutine(ExpandOverTime());
 	}
 
 	/// <summary>
@@ -117,9 +120,46 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
-	public void Expand()
+	IEnumerator ExpandOverTime()
 	{
-		
+		var horizontal = IsHorizontal();
+		var t = 0f;
+		float currentVelocity = 0f;
+		while (t < kKeyLayoutTransitionTime)
+		{
+			int i = 0;
+			foreach (var button in m_Buttons)
+			{
+				var targetPos = horizontal
+					? m_HorizontalLayoutTransforms[i].position
+					: m_VerticalLayoutTransforms[i].position;
+				var alpha = t / kKeyLayoutTransitionTime;
+//				var x = U.Math.SmoothDamp(button.transform.position.x, targetPos.x, ref currentVelocity, kKeyLayoutTransitionTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				button.transform.position = Vector3.Lerp(button.transform.position, targetPos, alpha);
+				i++;
+			}
+			t += Time.unscaledDeltaTime;
+			yield return null;
+		}
+
+		int k = 0;
+		foreach (var button in m_Buttons)
+		{
+			var targetPos = horizontal
+				? m_HorizontalLayoutTransforms[k].position
+				: m_VerticalLayoutTransforms[k].position;
+			button.transform.position = targetPos;
+			k++;
+		}
+
+		foreach (var button in m_Buttons)
+		{
+			button.SetTextAlpha(1f, kHandleChangeColorTime);
+		}
+
+		collapsed = true;
+
+		m_MoveKeysCoroutine = null;
 	}
 
 	/// <summary>
@@ -162,6 +202,7 @@ public class KeyboardUI : MonoBehaviour
 		}
 
 		collapsing = false;
+		collapsed = true;
 		doneCollapse();
 	}
 
@@ -236,14 +277,6 @@ public class KeyboardUI : MonoBehaviour
 			k++;
 		}
 
-		if (!m_EligibleForDrag)
-		{
-			foreach (var button in m_Buttons)
-			{
-				button.SetTextAlpha(1f, kHandleChangeColorTime);
-			}
-		}
-
 		m_MoveKeysCoroutine = null;
 	}
 
@@ -284,6 +317,7 @@ public class KeyboardUI : MonoBehaviour
 	void Awake()
 	{
 		handleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
+		collapsed = true;
 	}
 
 	void OnEnable()
