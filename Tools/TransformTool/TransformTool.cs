@@ -192,6 +192,13 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 				var selection = kvp.Value;
 				var rayOrigin = kvp.Key;
 
+				// If gameObject is within a prefab and not the current prefab, choose prefab root
+				var prefabRoot = PrefabUtility.FindPrefabRoot(selection.gameObject);
+				if(prefabRoot)
+				{
+					selection.gameObject = prefabRoot;
+				}
+
 				if (!canGrabObject(selection, rayOrigin))
 					continue;
 
