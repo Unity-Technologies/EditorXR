@@ -81,7 +81,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 			hideDefaultRay();
 			m_BlinkVisuals.ShowVisuals();
 		}
-		else if (m_BlinkLocomotionInput.blink.wasJustReleased)
+		else if (s_ActiveTool == this && m_BlinkLocomotionInput.blink.wasJustReleased)
 		{
 			var outOfRange = m_BlinkVisuals.HideVisuals();
 			showDefaultRay();
