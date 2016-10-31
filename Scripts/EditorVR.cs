@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor.VR.Modules;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -54,6 +53,7 @@ public class EditorVR : MonoBehaviour
 
 	[SerializeField]
 	private ActionMap m_TrackedObjectActionMap;
+
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
 
@@ -65,6 +65,7 @@ public class EditorVR : MonoBehaviour
 
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
+
 	[SerializeField]
 	private MainMenuActivator m_MainMenuActivatorPrefab;
 
@@ -79,6 +80,9 @@ public class EditorVR : MonoBehaviour
 
 	[SerializeField]
 	private GameObject m_PlayerModelPrefab;
+
+	[SerializeField]
+	private ProxyExtra m_ProxyExtra;
 
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
@@ -197,6 +201,7 @@ public class EditorVR : MonoBehaviour
 		}
 		m_SmoothCamera = U.Object.AddComponent<VRSmoothCamera>(VRView.viewerCamera.gameObject);
 		VRView.customPreviewCamera = m_SmoothCamera.smoothCamera;
+		VRView.cullingMask = Tools.visibleLayers | m_SmoothCamera.hmdOnlyLayerMask;
 
 		InitializePlayerHandle();
 		CreateDefaultActionMapInputs();
@@ -308,6 +313,18 @@ public class EditorVR : MonoBehaviour
 			}
 
 			yield return null;
+		}
+
+		if (m_ProxyExtra)
+		{
+			ForEachRayOrigin((proxy, pair, device, deviceData) =>
+			{
+				if (pair.Key == m_ProxyExtra.node)
+				{
+					var go = InstantiateUI(m_ProxyExtra.gameObject);
+					go.transform.SetParent(pair.Value, false);
+				}
+			}, true);
 		}
 
 		CreateSpatialSystem();
@@ -875,7 +892,8 @@ public class EditorVR : MonoBehaviour
 		U.Object.AddComponent<EventSystem>(gameObject);
 
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
-		m_InputModule.getPointerLength = GetPointerLength;
+		m_InputModule.layerMask |= m_SmoothCamera.hmdOnlyLayerMask;
+        m_InputModule.getPointerLength = GetPointerLength;
 
 		m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
