@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Extensions;
+using UnityEngine.VR.Helpers;
 
 public class KeyboardUI : MonoBehaviour
 {
@@ -27,10 +28,8 @@ public class KeyboardUI : MonoBehaviour
 	[SerializeField]
 	DirectManipulator m_DirectManipulator;
 
-	/// <summary>
-	/// Called when the mallet should be shown/hidden
-	/// </summary>
-	public event Action<bool> malletVisibilityChanged = delegate { };
+	[SerializeField]
+	SmoothMotion m_SmoothMotion;
 
 	bool m_EligibleForDrag;
 	bool m_CurrentlyHorizontal;
@@ -40,11 +39,9 @@ public class KeyboardUI : MonoBehaviour
 	Coroutine m_MoveKeysCoroutine;
 	Coroutine m_DragAfterDelayCoroutine;
 
-	Transform cachedRayOrigin;
-	bool m_MalletVisible;
-
 	public KeyboardButton handleButton { get; set; }
 
+	public bool collapsed { get; set; }
 	public bool collapsing { get; set; }
 
 	/// <summary>
@@ -66,82 +63,143 @@ public class KeyboardUI : MonoBehaviour
 
 		foreach (var button in m_Buttons)
 		{
-			button.Setup(keyPress, IsHorizontal);
+			button.Setup(keyPress, IsHorizontal, InTransition);
 		}
 
 		m_HandleMaterial = handleButton.targetMeshMaterial;
 
-		var horizontal = IsHorizontal();
-		SetButtonLayoutTargets(horizontal);
-		malletVisibilityChanged(horizontal);
-		m_MalletVisible = horizontal;
+		this.StopCoroutine(ref m_MoveKeysCoroutine);
 
-		if (m_MoveKeysCoroutine != null)
-			StopCoroutine(m_MoveKeysCoroutine);
-		m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime, true));
-	}
-
-	void Awake()
-	{
-		handleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
-	}
-
-	void OnEnable()
-	{
-		m_EligibleForDrag = false;
-	}
-
-	void SetButtonLayoutTargets(bool horizontal)
-	{
-		int i = 0;
-		foreach (var button in m_Buttons)
+		if (collapsed)
 		{
-			var hT = m_HorizontalLayoutTransforms[i];
-			var vT = m_VerticalLayoutTransforms[i];
+			foreach (var button in m_Buttons)
+			{
+				if (button != handleButton)
+					button.transform.position = handleButton.transform.position;
+				button.SetTextAlpha(0f, 0f);
+			}
 
-			var target = horizontal
-				? hT
-				: vT;
-			button.smoothMotion.SetTarget(target);
-
-			i++;
+			m_MoveKeysCoroutine = StartCoroutine(ExpandOverTime());
 		}
 	}
 
+	/// <summary>
+	/// Determines if a ray origin is at the range and orientation to convert to a mallet
+	/// </summary>
+	/// <param name="rayOrigin">The ray origin to check against</param>
+	/// <returns>True if the mallet should be shown, false otherwise</returns>
+	public bool ShouldShowMallet(Transform rayOrigin)
+	{
+		if (!isActiveAndEnabled || !IsHorizontal() || m_EligibleForDrag)
+			return false;
+
+		var rayOriginPos = rayOrigin.position;
+
+		var grabbingHandle = false;
+		var outOfRange = false;
+		var invalidOrientation = false;
+
+		const float nearDist = 0.04f;
+		const float maxAngle = 0.5f;
+		if ((transform.position - rayOriginPos).magnitude < nearDist
+			&& Vector3.Dot(handleButton.transform.forward, rayOrigin.forward) > 0.4f)
+			grabbingHandle = true;
+
+		const float farDist = 0.18f;
+		if ((transform.position - rayOriginPos).magnitude > farDist)
+			outOfRange = true;
+
+		if (transform.InverseTransformPoint(rayOrigin.position).z > 0.02f)
+			outOfRange = true;
+
+		if (Vector3.Dot(handleButton.transform.up, rayOrigin.forward) < maxAngle)
+			invalidOrientation = true;
+
+		return !(grabbingHandle || outOfRange || invalidOrientation);
+	}
+
+	IEnumerator ExpandOverTime()
+	{
+		const float kButtonMoveTimeOffset = 0.01f;
+		var horizontal = IsHorizontal();
+		var t = 0f;
+		int i = 0;
+		while (i < m_Buttons.Count)
+		{
+			if (t < i * kButtonMoveTimeOffset)
+			{
+				t += Time.unscaledDeltaTime;
+				continue;
+			}
+
+			var targetPos = horizontal
+				? m_HorizontalLayoutTransforms[i].position
+				: m_VerticalLayoutTransforms[i].position;
+			m_Buttons[i].MoveToPosition(targetPos, kKeyExpandCollapseTime);
+			i++;
+			yield return null;
+		}
+
+		SetAllButtonsTextAlpha(1f);
+
+		collapsed = false;
+
+		m_MoveKeysCoroutine = null;
+	}
+
+	void SetAllButtonsTextAlpha(float alpha)
+	{
+		foreach (var button in m_Buttons)
+		{
+			button.SetTextAlpha(alpha, kHandleChangeColorTime);
+		}
+	}
+
+	/// <summary>
+	/// Collapse the keyboard button positions into the handle position
+	/// </summary>
+	/// <param name="doneCollapse">The callback to be invoked when collapse is done</param>
 	public void Collapse(Action doneCollapse)
 	{
-		EnableMallet(false);
+		SetAllButtonsTextAlpha(0f);
+
+		this.StopCoroutine(ref m_MoveKeysCoroutine);
 
 		if (isActiveAndEnabled)
 		{
 			collapsing = true;
-			StartCoroutine(CollapseOverTime(doneCollapse));
+			m_MoveKeysCoroutine = StartCoroutine(CollapseOverTime(doneCollapse));
 		}
 		else
 		{
+			collapsing = false;
 			doneCollapse();
 		}
 	}
 
 	IEnumerator CollapseOverTime(Action doneCollapse)
 	{
+		const float kButtonMoveTimeOffset = 0.01f;
 		var t = 0f;
-		while (t < kKeyLayoutTransitionTime)
+		int i = 0;
+		while (i < m_Buttons.Count)
 		{
-			foreach (var button in m_Buttons)
+			if (t < i * kButtonMoveTimeOffset)
 			{
-				if (button != handleButton)
-				{
-					button.transform.position = Vector3.Lerp(button.transform.position, handleButton.transform.position, t / kKeyLayoutTransitionTime);
-					SetButtonTextAlpha(1f - t / kKeyLayoutTransitionTime);
-				}
+				t += Time.unscaledDeltaTime;
+				continue;
 			}
-			t += Time.unscaledDeltaTime;
+
+			var targetPos = handleButton.transform.position;
+			m_Buttons[m_Buttons.Count - 1 - i].MoveToPosition(targetPos, kKeyExpandCollapseTime);
+			i++;
 			yield return null;
 		}
 
 		collapsing = false;
+		collapsed = true;
 		doneCollapse();
+		m_MoveKeysCoroutine = null;
 	}
 
 	/// <summary>
@@ -186,13 +244,7 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
-	bool IsHorizontal()
-	{
-		return Vector3.Dot(transform.up, Vector3.up) < kHorizontalThreshold
-			&& Vector3.Dot(transform.forward, Vector3.up) < 0f;
-	}
-
-	IEnumerator MoveKeysToLayoutPositions(float duration = kKeyLayoutTransitionTime, bool setKeyTextAlpha = false)
+	IEnumerator MoveKeysToLayoutPositions(float duration = kKeyLayoutTransitionTime)
 	{
 		var horizontal = IsHorizontal();
 		var t = 0f;
@@ -258,6 +310,29 @@ public class KeyboardUI : MonoBehaviour
 		}
 	}
 
+	void Awake()
+	{
+		handleButton = m_DirectManipulator.GetComponent<KeyboardButton>();
+		collapsed = true;
+	}
+
+	void OnEnable()
+	{
+		m_EligibleForDrag = false;
+		m_SmoothMotion.enabled = false;
+	}
+
+	bool IsHorizontal()
+	{
+		return Vector3.Dot(transform.up, Vector3.up) < kHorizontalThreshold
+			&& Vector3.Dot(transform.forward, Vector3.up) < 0f;
+	}
+
+	bool InTransition()
+	{
+		return collapsing || m_EligibleForDrag;
+	}
+
 	private void Translate(Vector3 deltaPosition)
 	{
 		if (m_EligibleForDrag)
@@ -272,8 +347,7 @@ public class KeyboardUI : MonoBehaviour
 
 	void OnDragStarted(BaseHandle baseHandle, HandleEventData handleEventData)
 	{
-		if (m_DragAfterDelayCoroutine != null)
-			StopCoroutine(m_DragAfterDelayCoroutine);
+		this.StopCoroutine(ref m_DragAfterDelayCoroutine);
 		m_DragAfterDelayCoroutine = StartCoroutine(DragAfterDelay());
 	}
 
@@ -294,14 +368,12 @@ public class KeyboardUI : MonoBehaviour
 
 	void StartDrag()
 	{
-		if (m_ChangeDragColorsCoroutine != null)
-			StopCoroutine(m_ChangeDragColorsCoroutine);
+		this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = StartCoroutine(SetDragColors());
 
-		foreach (var button in m_Buttons)
-		{
-			button.smoothMotion.enabled = true;
-		}
+		m_SmoothMotion.enabled = true;
+
+		SetAllButtonsTextAlpha(0f);
 	}
 
 	IEnumerator SetDragColors()
@@ -313,12 +385,10 @@ public class KeyboardUI : MonoBehaviour
 		{
 			var alpha = t / kHandleChangeColorTime;
 			m_HandleMaterial.color = Color.Lerp(startColor, sHandleDragColor, alpha);
-			SetButtonTextAlpha(1f - alpha);
 			t += Time.unscaledDeltaTime;
 			yield return null;
 		}
 
-		SetButtonTextAlpha(0f);
 		m_HandleMaterial.color = sHandleDragColor;
 
 		m_ChangeDragColorsCoroutine = null;
@@ -334,24 +404,13 @@ public class KeyboardUI : MonoBehaviour
 		{
 			var alpha = t / kHandleChangeColorTime;
 			m_HandleMaterial.color = Color.Lerp(startColor, handleButton.targetMeshBaseColor, alpha);
-			SetButtonTextAlpha(alpha);
 			t += Time.unscaledDeltaTime;
 			yield return null;
 		}
 
-		SetButtonTextAlpha(1f);
 		m_HandleMaterial.color = handleButton.targetMeshBaseColor;
 
 		m_ChangeDragColorsCoroutine = null;
-	}
-
-	void SetButtonTextAlpha(float alpha)
-	{
-		foreach (var button in m_Buttons)
-		{
-			var color = button.textComponent.color;
-			button.textComponent.color = new Color(color.r, color.g, color.b, alpha);
-		}
 	}
 
 	void OnDrag(BaseHandle baseHandle, HandleEventData handleEventData)
@@ -361,11 +420,9 @@ public class KeyboardUI : MonoBehaviour
 			var horizontal = IsHorizontal();
 			if (m_CurrentlyHorizontal != horizontal)
 			{
-				SetButtonLayoutTargets(IsHorizontal());
-
-				if (m_MoveKeysCoroutine != null)
-					StopCoroutine(m_MoveKeysCoroutine);
-				m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime, true));
+				this.StopCoroutine(ref m_MoveKeysCoroutine);
+				m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime));
+				
 				m_CurrentlyHorizontal = horizontal;
 			}
 		}
@@ -380,51 +437,18 @@ public class KeyboardUI : MonoBehaviour
 		{
 			m_EligibleForDrag = false;
 
-			foreach (var button in m_Buttons)
-			{
-				button.smoothMotion.enabled = false;
-			}
+			m_SmoothMotion.enabled = false;
+			SetAllButtonsTextAlpha(1f);
 
-			if (m_ChangeDragColorsCoroutine != null)
-				StopCoroutine(m_ChangeDragColorsCoroutine);
-
+			this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 			if (isActiveAndEnabled)
 				m_ChangeDragColorsCoroutine = StartCoroutine(UnsetDragColors());
-
-			cachedRayOrigin = handleEventData.rayOrigin;
 		}
-	}
-
-
-	void Update()
-	{
-		if (IsHorizontal() && !m_EligibleForDrag && cachedRayOrigin != null)
-		{
-			var rayOriginPos = cachedRayOrigin.position;
-			if (Vector3.Magnitude(handleButton.transform.position - rayOriginPos) < 0.03f)
-			{
-				EnableMallet(false);
-			}
-			else
-			{
-				EnableMallet(true);
-			}
-		}
-	}
-
-	void EnableMallet(bool enable)
-	{
-		if (enable && !m_MalletVisible || !enable && m_MalletVisible)
-			malletVisibilityChanged(enable);
-		m_MalletVisible = enable;
 	}
 
 	void OnDisable()
 	{
-		if (m_ChangeDragColorsCoroutine != null)
-			StopCoroutine(m_ChangeDragColorsCoroutine);
+		this.StopCoroutine(ref m_ChangeDragColorsCoroutine);
 		m_ChangeDragColorsCoroutine = null;
-
-		EnableMallet(false);
 	}
 }

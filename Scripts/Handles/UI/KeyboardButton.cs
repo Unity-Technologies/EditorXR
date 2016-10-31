@@ -23,8 +23,9 @@ public class KeyboardButton : BaseHandle
 	private const float kClickTime = 0.3f;
 	private const float kPressEmission = 1f;
 	private const float kEmissionLerpTime = 0.1f;
-	private const float kKeyResponseDuration = 0.5f;
-	private const float kKeyResponseAmplitude = 0.06f;
+	private const float kKeyResponseDuration = 0.1f;
+	private const float kKeyResponsePositionAmplitude = 0.02f;
+	private const float kKeyResponseScaleAmplitude = 0.08f;
 
 	public Text textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
 
@@ -40,8 +41,6 @@ public class KeyboardButton : BaseHandle
 	[SerializeField]
 	private char m_ShiftCharacter;
 
-	public bool shiftMode { get { return m_ShiftMode; } }
-
 	private bool m_ShiftMode;
 
 	[SerializeField]
@@ -54,9 +53,6 @@ public class KeyboardButton : BaseHandle
 	private Vector3 m_TargetMeshInitialLocalPosition;
 
 	[SerializeField]
-	private Graphic m_TargetGraphic;
-
-	[SerializeField]
 	private bool m_RepeatOnHold;
 
 	[SerializeField]
@@ -66,13 +62,16 @@ public class KeyboardButton : BaseHandle
 	float m_RepeatWaitTime;
 	float m_PressDownTime;
 	bool m_Holding;
-	bool m_Triggered;
+	bool m_Triggered; // Hit by mallet
 	Material m_TargetMeshMaterial;
 	Coroutine m_ChangeEmissionCoroutine;
 	Coroutine m_PunchKeyCoroutine;
+	Coroutine m_SetTextAlphaCoroutine;
+	Coroutine m_MoveCoroutine;
 
 	Action<char> m_KeyPress;
 	Func<bool> m_PressOnHover;
+	Func<bool> m_InTransition; 
 
 	public Color targetMeshBaseColor
 	{
@@ -86,7 +85,17 @@ public class KeyboardButton : BaseHandle
 		get { return m_TargetMeshMaterial; }
 	}
 
-	public SmoothMotion smoothMotion { get; set; }
+	public CanvasGroup canvasGroup
+	{
+		get
+		{
+			return !m_CanvasGroup
+				? GetComponentInChildren<CanvasGroup>(true)
+				: m_CanvasGroup;
+		}
+	}
+
+	CanvasGroup m_CanvasGroup;
 
 	void Awake()
 	{
@@ -96,8 +105,7 @@ public class KeyboardButton : BaseHandle
 		m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
 		m_TargetMeshBaseColor = m_TargetMeshMaterial.color;
 
-		smoothMotion = GetComponent<SmoothMotion>();
-		smoothMotion.enabled = false;
+		m_CanvasGroup = GetComponentInChildren<CanvasGroup>(true);
 	}
 
 	/// <summary>
@@ -105,11 +113,11 @@ public class KeyboardButton : BaseHandle
 	/// </summary>
 	/// <param name="keyPress">Method to be invoked when the key is pressed</param>
 	/// <param name="pressOnHover">Method to be invoked to determine key behaviour</param>
-	public void Setup(Action<char> keyPress, Func<bool> pressOnHover)
+	public void Setup(Action<char> keyPress, Func<bool> pressOnHover, Func<bool> inTransition)
 	{
 		m_PressOnHover = pressOnHover;
-
 		m_KeyPress = keyPress;
+		m_InTransition = inTransition;
 	}
 
 	/// <summary>
@@ -138,12 +146,86 @@ public class KeyboardButton : BaseHandle
 		}
 	}
 
+	/// <summary>
+	/// Move the key to a target position
+	/// </summary>
+	/// <param name="targetPos">The position to move to</param>
+	/// <param name="duration">The duration of the movement</param>
+	public void MoveToPosition(Vector3 targetPos, float duration)
+	{
+		this.StopCoroutine(ref m_MoveCoroutine);
+		m_MoveCoroutine = StartCoroutine(MoveToPositionOverTime(targetPos, duration));
+	}
+
+	IEnumerator MoveToPositionOverTime(Vector3 targetPos, float duration)
+	{
+		var currentPosition = transform.position;
+		var transitionAmount = 0f;
+		var speed = 0f;
+		var currentDuration = 0f;
+		while (currentDuration < duration)
+		{
+			currentDuration += Time.unscaledDeltaTime;
+			transitionAmount = U.Math.SmoothDamp(transitionAmount, 1f, ref speed, duration, Mathf.Infinity, Time.unscaledDeltaTime);
+			transform.position = Vector3.Lerp(currentPosition, targetPos, transitionAmount);
+			yield return null;
+		}
+
+		transform.position = targetPos;
+		m_MoveCoroutine = null;
+	}
+
+	/// <summary>
+	/// Set the alpha value of the button text
+	/// </summary>
+	/// <param name="alpha">The final alpha value of the key text</param>
+	/// <param name="duration">The lerp time</param>
+	public void SetTextAlpha(float alpha, float duration)
+	{
+		this.StopCoroutine(ref m_SetTextAlphaCoroutine);
+
+		if (isActiveAndEnabled)
+			m_SetTextAlphaCoroutine = StartCoroutine(SetAlphaOverTime(alpha, duration));
+		else
+			m_CanvasGroup.alpha = alpha;
+	}
+
+	IEnumerator SetAlphaOverTime(float toAlpha, float duration)
+	{
+		var startingAlpha = canvasGroup.alpha;
+		var t = 0f;
+		while (t < duration)
+		{
+			var a = t / duration;
+			canvasGroup.alpha = Mathf.Lerp(startingAlpha, toAlpha, a);
+			t += Time.unscaledDeltaTime;
+			yield return null;
+		}
+
+		m_CanvasGroup.alpha = toAlpha;
+
+		m_SetTextAlphaCoroutine = null;
+	}
+
 	protected override void OnHandleHoverStarted(HandleEventData eventData)
 	{
 		base.OnHandleHoverStarted(eventData);
 
-		if (!m_PressOnHover())
+//		if (!m_PressOnHover() && !m_InTransition())
+		if (!m_InTransition())
 		{
+			if ((KeyCode)m_Character == KeyCode.Escape || m_ShiftMode && (KeyCode)m_ShiftCharacter == KeyCode.Escape)
+			{
+				var gradient = new UnityBrandColorScheme.GradientPair();
+				gradient.a = UnityBrandColorScheme.red;
+				gradient.b = UnityBrandColorScheme.redDark;
+				m_WorkspaceButton.SetMaterialColors(gradient);
+			}
+			else
+			{
+				m_WorkspaceButton.ResetColors();
+			}
+
 			m_WorkspaceButton.highlight = true;
 		}
 	}
@@ -157,12 +239,17 @@ public class KeyboardButton : BaseHandle
 
 	protected override void OnHandleDragStarted(HandleEventData eventData)
 	{
-		if (!m_PressOnHover())
+		if (eventData == null)
+			return;
+
+//		if (!m_PressOnHover())
 		{
 			m_PressDownTime = Time.realtimeSinceStartup;
 
 			if (m_RepeatOnHold)
 				KeyPressed();
+
+			m_WorkspaceButton.highlight = true;
 		}
 
 		base.OnHandleDragStarted(eventData);
@@ -170,10 +257,15 @@ public class KeyboardButton : BaseHandle
 
 	protected override void OnHandleDragging(HandleEventData eventData)
 	{
-		if (!m_PressOnHover())
+		if (eventData == null)
+			return;
+
+//		if (!m_PressOnHover())
 		{
 			if (m_RepeatOnHold)
 				HoldKey();
+			else if (Time.realtimeSinceStartup - m_PressDownTime > kClickTime)
+				m_WorkspaceButton.highlight = false;
 		}
 
 		base.OnHandleDragging(eventData);
@@ -181,7 +273,10 @@ public class KeyboardButton : BaseHandle
 
 	protected override void OnHandleDragEnded(HandleEventData eventData)
 	{
-		if (!m_PressOnHover())
+		if (eventData == null)
+			return;
+
+//		if (!m_PressOnHover())
 		{
 			if (m_RepeatOnHold)
 				EndKeyHold();
@@ -194,20 +289,21 @@ public class KeyboardButton : BaseHandle
 
 	public void OnTriggerEnter(Collider col)
 	{
-		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
+		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null || m_InTransition())
 			return;
 
 		if (transform.InverseTransformPoint(col.transform.position).z > 0f)
 			return;
-		else
-			m_Triggered = true;
+
+		m_Triggered = true;
+		m_WorkspaceButton.pressed = true;
 
 		KeyPressed();
 	}
 
 	public void OnTriggerStay(Collider col)
 	{
-		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null)
+		if (!m_PressOnHover() || col.GetComponentInParent<KeyboardMallet>() == null || m_InTransition())
 			return;
 
 		if (m_RepeatOnHold && m_Triggered)
@@ -222,12 +318,14 @@ public class KeyboardButton : BaseHandle
 		if (m_RepeatOnHold && m_Triggered)
 			EndKeyHold();
 
+		m_WorkspaceButton.pressed = false;
+
 		m_Triggered = false;
 	}
 
 	private void KeyPressed()
 	{
-		if (m_KeyPress == null) return;
+		if (m_KeyPress == null || m_InTransition()) return;
 
 		if (m_ShiftMode && m_ShiftCharacter != 0)
 			m_KeyPress(m_ShiftCharacter);
@@ -235,19 +333,22 @@ public class KeyboardButton : BaseHandle
 			m_KeyPress(m_Character);
 
 		// Return since the escape key will disable the keyboard
-		if ((!shiftMode && (KeyCode)m_Character == KeyCode.Escape) || (shiftMode && (KeyCode)m_ShiftCharacter == KeyCode.Escape)) // Avoid message about starting coroutine on inactive object
+//		if ((!m_ShiftMode && (KeyCode)m_Character == KeyCode.Escape) || (m_ShiftMode && (KeyCode)m_ShiftCharacter == KeyCode.Escape)) // Avoid message about starting coroutine on inactive object
+//		{
+//			var targetMeshTransform = m_TargetMesh.transform;
+//			targetMeshTransform.localScale = m_TargetMeshInitialScale;
+//			targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;
+//			return;
+//		}
+
+		if (!m_Holding)
 		{
-			var targetMeshTransform = m_TargetMesh.transform;
-			targetMeshTransform.localScale = m_TargetMeshInitialScale;
-			targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;
-			return;
+			this.StopCoroutine(ref m_ChangeEmissionCoroutine);
+			m_ChangeEmissionCoroutine = StartCoroutine(IncreaseEmission());
+
+			this.StopCoroutine(ref m_PunchKeyCoroutine);
+			m_PunchKeyCoroutine = StartCoroutine(PushKeyMesh());
 		}
-
-		this.StopCoroutine(ref m_ChangeEmissionCoroutine);
-		m_ChangeEmissionCoroutine = StartCoroutine(IncreaseEmission());
-
-		this.StopCoroutine(ref m_PunchKeyCoroutine);
-		m_PunchKeyCoroutine = StartCoroutine(PunchKey());
 
 		if (m_RepeatOnHold)
 			StartKeyHold();
@@ -276,6 +377,9 @@ public class KeyboardButton : BaseHandle
 
 		this.StopCoroutine(ref m_ChangeEmissionCoroutine);
 		m_ChangeEmissionCoroutine = StartCoroutine(DecreaseEmission());
+
+		this.StopCoroutine(ref m_PunchKeyCoroutine);
+		m_PunchKeyCoroutine = StartCoroutine(LiftKeyMesh());
 	}
 
 	private void OnDisable()
@@ -289,7 +393,11 @@ public class KeyboardButton : BaseHandle
 		m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 
 		m_TargetMeshMaterial.color = m_TargetMeshBaseColor;
-		m_WorkspaceButton.highlight = false;
+
+		m_TargetMesh.transform.localScale = m_TargetMeshInitialScale;
+		m_TargetMesh.transform.localPosition = m_TargetMeshInitialLocalPosition;
+
+		m_WorkspaceButton.InstantClearState();
 	}
 
 	private void OnDestroy()
@@ -339,7 +447,7 @@ public class KeyboardButton : BaseHandle
 		m_ChangeEmissionCoroutine = null;
 	}
 
-	IEnumerator PunchKey()
+	IEnumerator PushKeyMesh()
 	{
 		var targetMeshTransform = m_TargetMesh.transform;
 		targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;
@@ -350,19 +458,44 @@ public class KeyboardButton : BaseHandle
 			elapsedTime += Time.unscaledDeltaTime;
 			var t = Mathf.Clamp01(elapsedTime / kKeyResponseDuration);
 
-			if (Mathf.Approximately(t, 0f) || Mathf.Approximately(t, 1f))
-				break;
-
-			const float amplitude = 0.3f;
-			t = Mathf.Pow(2f, -10f * t) * Mathf.Sin(t * (2f * Mathf.PI) / amplitude);
-
-			targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponseAmplitude;
+			targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponsePositionAmplitude;
 
 			var pos = m_TargetMeshInitialLocalPosition;
-			pos.z = t * kKeyResponseAmplitude;
+			pos.z = t * kKeyResponsePositionAmplitude;
 			targetMeshTransform.localPosition = pos;
 
 			elapsedTime += Time.unscaledDeltaTime;
+			yield return null;
+		}
+
+		targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * kKeyResponseScaleAmplitude;
+		var finalPos = m_TargetMeshInitialLocalPosition;
+		finalPos.z = kKeyResponsePositionAmplitude;
+		targetMeshTransform.localPosition = finalPos;
+
+		if (!m_Holding)
+			m_PunchKeyCoroutine = StartCoroutine(LiftKeyMesh());
+		else
+			m_PunchKeyCoroutine = null;
+	}
+
+	IEnumerator LiftKeyMesh()
+	{
+		var targetMeshTransform = m_TargetMesh.transform;
+		targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;
+
+		var elapsedTime = 0f;
+		while (elapsedTime < kKeyResponseDuration)
+		{
+			elapsedTime += Time.unscaledDeltaTime;
+			var t = 1f - Mathf.Clamp01(elapsedTime / kKeyResponseDuration);
+
+			targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponseScaleAmplitude;
+
+			var pos = m_TargetMeshInitialLocalPosition;
+			pos.z = t * kKeyResponsePositionAmplitude;
+			targetMeshTransform.localPosition = pos;
+
 			yield return null;
 		}
 

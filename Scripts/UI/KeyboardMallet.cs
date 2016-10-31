@@ -28,6 +28,26 @@ public class KeyboardMallet : MonoBehaviour
 
 	bool m_Open;
 
+	public bool visible
+	{
+		get
+		{
+			return m_Visible;
+		}
+		set
+		{
+			m_Visible = value;
+			gameObject.SetActive(true);
+			if (m_ShowHideCoroutine != null)
+				StopCoroutine(m_ShowHideCoroutine);
+
+			m_ShowHideCoroutine = StartCoroutine(value
+				? ShowMallet()
+				: HideMallet());
+		}
+	}
+	bool m_Visible;
+
 	/// <summary>
 	/// Invoked by the editor to update the mallet components' transform data.
 	/// </summary>
@@ -37,34 +57,6 @@ public class KeyboardMallet : MonoBehaviour
 
 		m_Bulb.transform.localPosition = new Vector3(0f, 0f, m_StemLength * 2f);
 		m_Bulb.transform.localScale = Vector3.one * m_BulbRadius * 2f;
-	}
-
-	/// <summary>
-	/// Hide the mallet with a transition.
-	/// </summary>
-	public void Hide()
-	{
-		if (isActiveAndEnabled)
-		{
-			if (m_ShowHideCoroutine != null)
-				StopCoroutine(m_ShowHideCoroutine);
-
-			m_ShowHideCoroutine = StartCoroutine(HideMallet());
-		}
-	}
-
-	/// <summary>
-	/// Show the mallet with a transition.
-	/// </summary>
-	public void Show()
-	{
-		if (isActiveAndEnabled)
-		{
-			if (m_ShowHideCoroutine != null)
-				StopCoroutine(m_ShowHideCoroutine);
-
-			m_ShowHideCoroutine = StartCoroutine(ShowMallet());
-		}
 	}
 
 	/// <summary>
