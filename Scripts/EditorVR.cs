@@ -2081,7 +2081,7 @@ public class EditorVR : MonoBehaviour
 				}
 				else
 				{
-					if (dragObjectTransform.tag == kVRPlayerTag)
+					if (dragObjectTransform.CompareTag(kVRPlayerTag))
 					{
 						if (directSelection != null)
 							directSelection.DropHeldObject(dragObjectTransform.transform);
@@ -2152,7 +2152,7 @@ public class EditorVR : MonoBehaviour
 		{
 			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-			if (renderer)
+			if (renderer && !renderer.gameObject.CompareTag(kVRPlayerTag))
 				return renderer.gameObject;
 		}
 
@@ -2189,7 +2189,7 @@ public class EditorVR : MonoBehaviour
 		{
 			var rayOrigin = rayOriginPair.Value;
 			var obj = GetDirectSelectionForRayOrigin(rayOrigin, deviceData.directSelectInput);
-			if (obj)
+			if (obj && !obj.CompareTag(kVRPlayerTag))
 			{
 				results[rayOrigin] = new DirectSelection
 				{
@@ -2243,7 +2243,7 @@ public class EditorVR : MonoBehaviour
 
 	bool CanGrabObject(DirectSelection selection, Transform rayOrigin)
 	{
-		if (selection.gameObject.tag == kVRPlayerTag && !m_MiniWorldRays.ContainsKey(rayOrigin))
+		if (selection.gameObject.CompareTag(kVRPlayerTag) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 			return false;
 
 		return true;
@@ -2255,7 +2255,7 @@ public class EditorVR : MonoBehaviour
 			return false;
 
 		// Detach the player head model so that it is not affected by its parent transform
-		if (selection.gameObject.tag == kVRPlayerTag)
+		if (selection.gameObject.CompareTag(kVRPlayerTag))
 			selection.gameObject.transform.parent = null;
 
 		return true;
@@ -2264,7 +2264,7 @@ public class EditorVR : MonoBehaviour
 	void DropObject(IGrabObjects grabber, Transform grabbedObject, Transform rayOrigin)
 	{
 		// Dropping the player head updates the viewer pivot
-		if (grabbedObject.tag == kVRPlayerTag)
+		if (grabbedObject.CompareTag(kVRPlayerTag))
 			StartCoroutine(UpdateViewerPivot(grabbedObject));
 	}
 
