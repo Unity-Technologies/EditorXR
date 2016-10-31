@@ -396,7 +396,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 224000010483924060}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.036873158
+  m_Size: 0.41666663
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -436,81 +436,14 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Amir: Hi, everyone. I\u2019m Amir Ebrahimi, lead architect on EditorVR.\r\n\r\n\r\nTimoni:
-    And I\u2019m Timoni West, principal designer.\r\n\r\n\r\nAmir: It\u2019s been
-    quite a journey since February, hasn\u2019t it been? We showed you the beginning
-    of a new project we started to further VR creation. Since then, we\u2019ve been
-    building a strong foundation to support all of the developer tools we envision
-    coming to EditorVR.\r\n\r\n\r\nNow we\u2019d like to take a few minutes to show
-    you where the project is now, and what you can expect to see in December.\r\n\r\n\r\nTimoni:
-    Okay, ready! \r\n\r\n\r\nAmir: Take it away.\r\n\r\n\r\nTimoni: Here we go. As
-    you can see, this demo is set in the beautiful world of Campo Santo\u2019s Firewatch.
-    Special thanks to that crew for letting us use this amazing scene.\r\n\r\n\r\nI\u2019m
-    going to start in the firewatch cabin. Who here has played Firewatch before?\r\n\r\n\r\nSuch
-    a beautiful game. \r\n\r\n\r\nAs you can see, the cabin is more empty than usual.
-    I\u2019m going to start by opening up the project workspace, to get some objects
-    to add to the scene.\r\n\r\n\r\nHere\u2019s the project workspace. A workspace
-    is what we call our default UI. It\u2019s basically the equivalent of a 2D window.
-    As you can see, I have my folders on the left, items on the right, and I can grab
-    objects and start adding them to the scene.\r\n\r\n\r\nI can also resize the window
-    and move it anywhere, as well as resize the icons. \r\n\r\n\r\n[Start taking out
-    objects and putting them on the desk.]\r\n\r\n\r\nAmir: You may have noticed we
-    don\u2019t render all of the objects in the project view. VR devs already know
-    why--it\u2019s for performance reasons.\r\n\r\n\r\nThe workspace and all EditorVR
-    UI is made using Unity\u2019s UI system, so there\u2019s no need to learn a new
-    system. This is important for us, because we want you to be able to take EVR,
-    which will be released as an open-source package, and make your own interfaces.\r\n\r\n\r\nTimoni:
-    That\u2019s right. Now as you can see here, I\u2019ve got a mess of objects that
-    normally sit on the desk in Firewatch. We chose to use this scene specifically
-    because Firewatch is a 3D game, but not a VR game. We really think that EVR can
-    be useful to anyone, not just VR devs, and so I want to show off how easy it is
-    to do quick layout and prototyping in VR. \r\n\r\n\r\n[sets up desk]\r\n\r\n\r\nTada!
-    For more precise placement, we have object snapping, or you can use the inspector.
-    [bring up the inspector] As you can see here, it\u2019s another workspace.\r\n\r\n\r\nAmir:
-    Here\u2019s an example of a new VR interface: the numeric input. It\u2019s a small
-    keyboard that only has numbers so you can quickly type in values without having
-    to use a larger keyboard. \r\n\r\n\r\nTimoni: We have that too, of course, but
-    typing in VR is very different. Here\u2019s a fun thing: if I change angle of
-    the small numeric keyboard, it changes how it inputs. You can either use the trigger
-    and click, or you can angle the keyboard and type on it like a drum.\r\n\r\n\r\nAmir:
-    Nice. And of course we have the console and profiler\u2026\r\n\r\n\r\nTimoni:
-    [brings them up] Again, workspaces that can be positioned anywhere, resized, locked
-    in position or moved all together.\r\n\r\n\r\nAmir: How\u2019s the chessboard
-    looking?\r\n\r\n\r\nTimoni: Let\u2019s bring it up!  Here it is, redesigned and
-    more usable than it was back in March.\r\n\r\n\r\nHey, want to see something inceptiony?
-    [brings up second chessboard]\r\n\r\n\r\nI can take this object and drag it out
-    of the scene like this...and then put it in this chessboard...Or move objects
-    from one place to another. This especially useful if you\u2019re moving small
-    objects long distances.\r\n\r\n\r\nAmir: Trippy.\r\n\r\n\r\nTimoni: Well, that\u2019s
-    about all we have to show for now! \r\n\r\n\r\nAmir: Wait...there\u2019s more?\r\n\r\n\r\nTimoni:
-    What?\r\n\r\n\r\nAmir: Turn to the tools pane.\r\n\r\n\r\nTimoni: Ooo, what are
-    tools?\r\n\r\n\r\nAmir: Tools are VR-specific extensions for EditorVR. We have
-    an open API that allows anyone to quickly build on new functionality, or extend
-    current functionality. The first tool, EVR Sculpt, was made by Milan & Dima of
-    [...], in about two weeks. It allows you to do SDF sculpting.\r\n\r\n\r\nTimoni:
-    Whaaaaaat, I didn\u2019t know that! (Just kidding I totally knew that.) Ready
-    to see some art?  [Draws Firewatch logo]\r\n\r\n\r\nAmir: Don\u2019t quit your
-    day job.\r\n\r\n\r\nTimoni: Let\u2019s try something else. How about Tvori? \r\n\r\n\r\nAmir:
-    Sure. How many people in the audience have heard of Tvori? It\u2019s a VR animation
-    tool, which is available on Steam in early access today. Very small team in Moscow.
-    Dmitri + [...] have taken their key functionality and made a custom tool to allow
-    quick prototyping animation, directly in EVR.\r\n\r\n\r\nTimoni: [has been setting
-    up scene] So I hit the record button here, and from then on any object movement
-    is captured on a timeline. So if I move this guy back and forth, you can see it
-    both on this screen when I scrub back, and also in real life. We anticipate this
-    will be really useful when trying to describe how things should move, feel, and
-    look in VR.\r\n\r\n\r\n[Animation plays]\r\n\r\n\r\nAmir: I\u2019ve seen that
-    before, but it\u2019s so great. Never get tired of it.\r\n\r\n\r\nTimoni: Once
-    you start animating the cups it really gives a \u2018Be Our Guest\u2019 tone to
-    the whole thing. Firewatch: the animated disney musical.\r\n\r\n\r\nTimoni: [takes
-    off headset]\r\n\r\n\r\nAmir: There\u2019s a lot more functionality to explore,
-    and we\u2019ll be going over some of that tomorrow in our team talk. \r\n\r\n\r\nBut
-    we want to emphasize how we want you, the community, to take EVR and run with
-    it. We don\u2019t have all the answers--no one does. We\u2019re just getting started.
-    And that\u2019s why we\u2019ve prioritized EVR from the ground up to be fully
-    extensible, and open-source. Because we\u2019re most excited to see what amazing
-    tools you create and the answers you discover. Our goal is to support you.\r\n\r\n\r\nThank
-    you very much.\r\n"
+  m_Text: "Here we are in the beautiful world of Firewatch. Special thanks to Campo
+    Santo for letting us use\r\n- Bit empty though right? Project workspace\u2026\r\n(Amir
+    talks\u2026)\r\nMess of objects, let\u2019s clean it up.\r\nBring up inspector...\r\n(Amir
+    talks)\r\nMove keyboard up and down, close\r\n[Open console + profiler]\r\nA:
+    What about chessboard?\r\nCHESSBOARD INCEPTION\r\nOkay we\u2019re done? Not yet!
+    Tools!\r\n[Sculpt] (Intro Tvori)\r\nWho has used Tvori? Works exactly same way
+    in \_Steam + EVR: Move this guy like this...\r\n(Amir talks) [Move cup!]\r\n\u201CBe
+    Our Guest\u201D vibe right?\r\n(Amir closes)"
 --- !u!114 &114000013935593620
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -633,10 +566,10 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013216765844}
-  m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
+  m_LocalRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
   m_LocalPosition: {x: 0, y: 0, z: -100}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
   m_Children:
   - {fileID: 224000013220531612}
   m_Father: {fileID: 4000012887927348}
