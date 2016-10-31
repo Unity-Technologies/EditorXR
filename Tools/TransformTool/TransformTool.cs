@@ -194,7 +194,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 			}
 		}
 
-		foreach(var selection in directSelection.Values) {
+		foreach(var selection in directSelection.Values)
+		{
 			setHighlight(selection.gameObject, true);
 		}
 

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor.VR.Modules;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -54,6 +53,7 @@ public class EditorVR : MonoBehaviour
 
 	[SerializeField]
 	private ActionMap m_TrackedObjectActionMap;
+
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
 
@@ -65,6 +65,7 @@ public class EditorVR : MonoBehaviour
 
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
+
 	[SerializeField]
 	private MainMenuActivator m_MainMenuActivatorPrefab;
 
@@ -79,6 +80,9 @@ public class EditorVR : MonoBehaviour
 
 	[SerializeField]
 	private GameObject m_PlayerModelPrefab;
+
+	[SerializeField]
+	private ProxyExtra m_ProxyExtra;
 
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
@@ -197,6 +201,7 @@ public class EditorVR : MonoBehaviour
 		}
 		m_SmoothCamera = U.Object.AddComponent<VRSmoothCamera>(VRView.viewerCamera.gameObject);
 		VRView.customPreviewCamera = m_SmoothCamera.smoothCamera;
+		VRView.cullingMask = Tools.visibleLayers | m_SmoothCamera.hmdOnlyLayerMask;
 
 		InitializePlayerHandle();
 		CreateDefaultActionMapInputs();
@@ -308,6 +313,18 @@ public class EditorVR : MonoBehaviour
 			}
 
 			yield return null;
+		}
+
+		if (m_ProxyExtra)
+		{
+			ForEachRayOrigin((proxy, pair, device, deviceData) =>
+			{
+				if (pair.Key == m_ProxyExtra.node)
+				{
+					var go = InstantiateUI(m_ProxyExtra.gameObject);
+					go.transform.SetParent(pair.Value, false);
+				}
+			}, true);
 		}
 
 		CreateSpatialSystem();
@@ -880,6 +897,7 @@ public class EditorVR : MonoBehaviour
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_InputModule.getPointerLength = GetPointerLength;
 		m_InputModule.isRayActive = IsRayActive;
+		m_InputModule.layerMask |= m_SmoothCamera.hmdOnlyLayerMask;
 
 		m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
@@ -1309,7 +1327,6 @@ public class EditorVR : MonoBehaviour
 						var customRay = obj as ICustomRay;
 						if (customRay != null)
 						{
-							Debug.Log(obj);
 							dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 							customRay.showDefaultRay = dpr.Show;
 							customRay.hideDefaultRay = dpr.Hide;
@@ -2064,7 +2081,7 @@ public class EditorVR : MonoBehaviour
 				}
 				else
 				{
-					if (dragObjectTransform.tag == kVRPlayerTag)
+					if (dragObjectTransform.CompareTag(kVRPlayerTag))
 					{
 						if (directSelection != null)
 							directSelection.DropHeldObject(dragObjectTransform.transform);
@@ -2135,7 +2152,7 @@ public class EditorVR : MonoBehaviour
 		{
 			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-			if (renderer)
+			if (renderer && !renderer.gameObject.CompareTag(kVRPlayerTag))
 				return renderer.gameObject;
 		}
 
@@ -2172,7 +2189,7 @@ public class EditorVR : MonoBehaviour
 		{
 			var rayOrigin = rayOriginPair.Value;
 			var obj = GetDirectSelectionForRayOrigin(rayOrigin, deviceData.directSelectInput);
-			if (obj)
+			if (obj && !obj.CompareTag(kVRPlayerTag))
 			{
 				results[rayOrigin] = new DirectSelection
 				{
@@ -2226,7 +2243,7 @@ public class EditorVR : MonoBehaviour
 
 	bool CanGrabObject(DirectSelection selection, Transform rayOrigin)
 	{
-		if (selection.gameObject.tag == kVRPlayerTag && !m_MiniWorldRays.ContainsKey(rayOrigin))
+		if (selection.gameObject.CompareTag(kVRPlayerTag) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 			return false;
 
 		return true;
@@ -2238,7 +2255,7 @@ public class EditorVR : MonoBehaviour
 			return false;
 
 		// Detach the player head model so that it is not affected by its parent transform
-		if (selection.gameObject.tag == kVRPlayerTag)
+		if (selection.gameObject.CompareTag(kVRPlayerTag))
 			selection.gameObject.transform.parent = null;
 
 		return true;
@@ -2247,7 +2264,7 @@ public class EditorVR : MonoBehaviour
 	void DropObject(IGrabObjects grabber, Transform grabbedObject, Transform rayOrigin)
 	{
 		// Dropping the player head updates the viewer pivot
-		if (grabbedObject.tag == kVRPlayerTag)
+		if (grabbedObject.CompareTag(kVRPlayerTag))
 			StartCoroutine(UpdateViewerPivot(grabbedObject));
 	}
 
