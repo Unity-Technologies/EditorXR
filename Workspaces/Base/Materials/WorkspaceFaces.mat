@@ -10,7 +10,7 @@ Material:
   m_Shader: {fileID: 4800000, guid: 68eb1b178e2b7f74eb314a539c948954, type: 3}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _METALLICGLOSSMAP
   m_LightmapFlags: 1
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2999
   stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2

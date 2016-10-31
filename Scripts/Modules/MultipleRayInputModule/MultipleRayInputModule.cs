@@ -38,7 +38,7 @@ namespace UnityEngine.VR.Modules
 		private Camera m_EventCamera;
 
 		public LayerMask layerMask { get { return s_LayerMask; } set { s_LayerMask = value; } }
-		private static LayerMask s_LayerMask = LayerMask.GetMask("UI");
+		private static LayerMask s_LayerMask;
 
 		public ActionMap actionMap { get { return m_UIActionMap; } }
 		[SerializeField]
@@ -54,6 +54,13 @@ namespace UnityEngine.VR.Modules
 		public Func<Transform, bool> preProcessRaycastSource = delegate { return true; };
 		public Func<bool> preProcessRaycastSources = delegate { return true; };
 		public Action postProcessRaycastSources = delegate {};
+		public Func<Transform, bool> isRayActive = delegate { return true; };
+
+		protected override void Awake()
+		{
+			base.Awake();
+			s_LayerMask = LayerMask.GetMask("UI");
+		}
 
 		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin = null)
 		{
@@ -105,6 +112,9 @@ namespace UnityEngine.VR.Modules
 			foreach (var source in sources)
 			{
 				if (!(source.rayOrigin.gameObject.activeSelf || source.selectedObject) || !source.proxy.active)
+					continue;
+
+				if (!isRayActive(source.rayOrigin))
 					continue;
 
 				if (!preProcessRaycastSource(source.rayOrigin))
