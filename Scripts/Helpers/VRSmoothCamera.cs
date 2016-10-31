@@ -22,6 +22,8 @@ public class VRSmoothCamera : MonoBehaviour
 	Vector3 position;
 	Vector3 forward;
 
+	public int hmdOnlyLayerMask { get { return LayerMask.GetMask("HMDOnly"); } }
+
 	void Awake()
 	{
 		m_VRCamera = GetComponent<Camera>();
@@ -54,6 +56,7 @@ public class VRSmoothCamera : MonoBehaviour
 		m_SmoothCamera.targetTexture = m_RenderTexture;
 		m_SmoothCamera.targetDisplay = m_TargetDisplay;
 		m_SmoothCamera.cameraType = CameraType.Game;
+		m_SmoothCamera.cullingMask &= ~hmdOnlyLayerMask;
 		m_SmoothCamera.rect = new Rect(0, 0, 1f, 1f);
 		m_SmoothCamera.stereoTargetEye = StereoTargetEyeMask.None;
 		m_SmoothCamera.fieldOfView = m_FieldOfView;
