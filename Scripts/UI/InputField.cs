@@ -5,10 +5,11 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.UI
 {
-	public abstract class InputField : Selectable, IPointerClickHandler
+	public abstract class InputField : Selectable
 	{
 		const float kMoveKeyboardTime = 0.2f;
 		public SelectionFlags selectionFlags
@@ -35,7 +36,7 @@ namespace UnityEngine.VR.UI
 		[SerializeField]
 		private int m_CharacterLimit = 10;
 
-		private bool m_Open;
+		private bool m_KeyboardOpen;
 
 		Coroutine m_MoveKeyboardCoroutine;
 
@@ -86,23 +87,6 @@ namespace UnityEngine.VR.UI
 			Clear();
 		}
 
-		public void OnPointerClick(PointerEventData eventData)
-		{
-			var rayEventData = eventData as RayEventData;
-			if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			{
-				if (rayEventData != null)
-				{
-					if (m_Open)
-						Close();
-					else
-						Open();
-				}
-				else if (m_Open)
-					Close();
-			}
-		}
-
 		public override void OnSelect(BaseEventData eventData)
 		{
 			// Don't do base functionality
@@ -126,46 +110,31 @@ namespace UnityEngine.VR.UI
 				m_TextComponent.text = m_Text;
 		}
 
-		public virtual void Open()
+
+		/// <summary>
+		/// Open a keyboard for this input field
+		/// </summary>
+		public virtual void OpenKeyboard()
 		{
-			if (m_Open) return;
-			m_Open = true;
+			if (m_KeyboardOpen) return;
+			m_KeyboardOpen = true;
 
 			m_Keyboard = spawnKeyboard();
 
-
-//			if (m_WaitThenOpenCoroutine != null)
-//				StopCoroutine(m_WaitThenOpenCoroutine);
-//			m_WaitThenOpenCoroutine = StartCoroutine(WaitThenOpen());
-//		}
-//
-//		IEnumerator WaitThenOpen()
-//		{
-//			while (m_Keyboard != null && m_Keyboard.collapsing)
-//			{
-//				yield return null;
-//			}
-
 			m_Keyboard.gameObject.SetActive(true);
 
-			m_Keyboard.transform.position = transform.position + Vector3.up * 0.05f;
-			var rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
-			m_Keyboard.transform.rotation = rotation;
+			this.StopCoroutine(ref m_MoveKeyboardCoroutine);
 
-			m_Keyboard.Setup(OnKeyPress);
-
-//			if (m_MoveKeyboardCoroutine != null)
-//				StopCoroutine(m_MoveKeyboardCoroutine);
-//
-//			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(Vector3.Magnitude(m_Keyboard.transform.position - transform.position) > 0.25f));
-
+			var keyboardOutOfRange = (m_Keyboard.transform.position - transform.position).magnitude > 0.25f;
+			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(keyboardOutOfRange));
 		}
 
 		IEnumerator MoveKeyboardToInputField(bool instant)
 		{
-			var targetPosition = transform.position + Vector3.up * 0.05f;
+			const float kKeyboardYOffset = 0.05f;
+			var targetPosition = transform.position + Vector3.up * kKeyboardYOffset;
 
-			if (!instant)
+			if (!instant && !m_Keyboard.collapsed)
 			{
 				var t = 0f;
 				while (t < kMoveKeyboardTime)
@@ -181,23 +150,33 @@ namespace UnityEngine.VR.UI
 			m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
 			m_MoveKeyboardCoroutine = null;
 
-//			m_Keyboard.Setup(OnKeyPress);
+			m_Keyboard.Setup(OnKeyPress);
 		}
 
-		public virtual void Close(bool collapse = false)
+		/// <summary>
+		/// Close the keyboard and optionally run a collapse animation
+		/// </summary>
+		/// <param name="collapse">Should animate collapse?</param>
+		/// <returns>If a keyboard was closed</returns>
+		public virtual bool CloseKeyboard(bool collapse = false)
 		{
-			m_Open = false;
+			if (m_Keyboard == null || !m_KeyboardOpen)
+				return false;
 
-			if (m_Keyboard == null) return;
+			m_KeyboardOpen = false;
 
-//			if (collapse)
-//				m_Keyboard.Collapse(FinalizeClose);
-//			else
-//				
-//		}
-//
-//		void FinalizeClose()
-//		{
+			this.StopCoroutine(ref m_MoveKeyboardCoroutine);
+
+			if (collapse)
+				m_Keyboard.Collapse(FinalizeClose);
+			else
+				FinalizeClose();
+
+			return true;
+		}
+
+		void FinalizeClose()
+		{
 			m_Keyboard.gameObject.SetActive(false);
 			m_Keyboard = null;
 		}
@@ -248,7 +227,7 @@ namespace UnityEngine.VR.UI
 
 		protected virtual void Escape()
 		{
-			Close();
+			CloseKeyboard(true);
 		}
 
 		protected virtual void Clear()

@@ -66,6 +66,7 @@ namespace UnityEngine.VR.Workspaces
 		Color m_OriginalColor;
 		Sprite m_OriginalIconSprite;
 		float m_VisibleLocalZScale;
+		Vector3 m_OriginalScale;
 
 		// The initial button reveal coroutines, before highlighting
 		Coroutine m_VisibilityCoroutine;
@@ -155,6 +156,9 @@ namespace UnityEngine.VR.Workspaces
 					// Stop any existing begin/end highlight coroutine
 					this.StopCoroutine(ref m_HighlightCoroutine);
 
+					if (!gameObject.activeInHierarchy)
+						return;
+
 					m_HighlightCoroutine = m_Highlighted
 						? StartCoroutine(BeginHighlight())
 						: StartCoroutine(EndHighlight());
@@ -162,7 +166,35 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
+		public Color customHighlightColor
+		{
+			get { return m_CustomHighlightColor; }
+			set { m_CustomHighlightColor = value; }
+		}
+
 		bool m_Highlighted;
+
+		public void InstantClearState()
+		{
+			this.StopCoroutine(ref m_IconHighlightCoroutine);
+			this.StopCoroutine(ref m_HighlightCoroutine);
+
+			ResetColors();
+			transform.localScale = m_OriginalScale;
+			m_HighlightCoroutine = null;
+		}
+
+		public void SetMaterialColors(UnityBrandColorScheme.GradientPair gradientPair)
+		{
+			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, gradientPair.a);
+			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, gradientPair.b);
+		}
+
+		public void ResetColors()
+		{
+			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, m_OriginalGradientPair.a);
+			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, m_OriginalGradientPair.b);
+		}
 
 		void Awake()
 		{
@@ -171,6 +203,7 @@ namespace UnityEngine.VR.Workspaces
 			m_OriginalGradientPair = new UnityBrandColorScheme.GradientPair(m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
 			m_HiddenLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, 0f);
 			m_VisibleLocalZScale = transform.localScale.z;
+			m_OriginalScale = transform.localScale;
 
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
@@ -194,6 +227,11 @@ namespace UnityEngine.VR.Workspaces
 				this.StopCoroutine(ref m_VisibilityCoroutine);
 				m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 			}
+		}
+
+		void OnDisable()
+		{
+			InstantClearState();
 		}
 
 		IEnumerator AnimateShow()
@@ -364,7 +402,7 @@ namespace UnityEngine.VR.Workspaces
 				foreach (var graphic in m_HighlightItems)
 				{
 					if (graphic)
-						graphic.color = Color.Lerp(m_OriginalColor, m_CustomHighlightColor, transitionAmount);
+						graphic.color = Color.Lerp(m_OriginalColor, customHighlightColor, transitionAmount);
 				}
 
 				m_IconContainer.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
@@ -374,7 +412,7 @@ namespace UnityEngine.VR.Workspaces
 			foreach (var graphic in m_HighlightItems)
 			{
 				if (graphic)
-					graphic.color = m_CustomHighlightColor;
+					graphic.color = customHighlightColor;
 			}
 
 			m_IconContainer.localPosition = targetPosition;
@@ -393,7 +431,7 @@ namespace UnityEngine.VR.Workspaces
 				foreach (var graphic in m_HighlightItems)
 				{
 					if (graphic != null)
-						graphic.color = Color.Lerp(m_OriginalColor, m_CustomHighlightColor, transitionAmount);
+						graphic.color = Color.Lerp(m_OriginalColor, customHighlightColor, transitionAmount);
 				}
 
 				m_IconContainer.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor.VR.Modules;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -317,7 +318,7 @@ public class EditorVR : MonoBehaviour
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
 		EditorApplication.delayCall += OnSelectionChanged;
 
-		// This will be the first call to update the player handle (input) maps, sorted by priority
+		// This will be the first call to update the player keyboard (input) maps, sorted by priority
 		UpdatePlayerHandleMaps();
 	}
 
@@ -403,16 +404,7 @@ public class EditorVR : MonoBehaviour
 	{
 		m_SmoothCamera.enabled = VRView.showDeviceView;
 
-		foreach (var proxy in m_AllProxies)
-		{
-			proxy.hidden = !proxy.active;
-			// TODO remove this after physics are in
-			if (proxy.active)
-			{
-				foreach (var rayOrigin in proxy.rayOrigins.Values)
-					m_KeyboardMallets[rayOrigin].CheckForKeyCollision();
-			}
-		}
+		UpdateKeyboardMallets();
 
 		foreach (var kvp in m_DeviceData)
 		{
@@ -454,6 +446,54 @@ public class EditorVR : MonoBehaviour
 			m_UpdatePixelRaycastModule = false; // Don't allow another one to queue until the current one is processed
 		}
 #endif
+	}
+
+	void UpdateKeyboardMallets()
+	{
+		foreach (var proxy in m_AllProxies)
+		{
+			proxy.hidden = !proxy.active;
+			if (proxy.active)
+			{
+				foreach (var rayOrigin in proxy.rayOrigins.Values)
+				{
+					var malletVisible = true;
+					var numericKeyboardNull = false;
+					var standardKeyboardNull = false;
+
+					if (m_NumericKeyboard != null)
+						malletVisible = m_NumericKeyboard.ShouldShowMallet(rayOrigin);
+					else
+						numericKeyboardNull = true;
+
+					if (m_StandardKeyboard != null)
+						malletVisible = malletVisible || m_StandardKeyboard.ShouldShowMallet(rayOrigin);
+					else
+						standardKeyboardNull = true;
+
+					if (numericKeyboardNull && standardKeyboardNull)
+						malletVisible = false;
+
+					var mallet = m_KeyboardMallets[rayOrigin];
+
+					if (mallet.visible != malletVisible)
+					{
+						mallet.visible = malletVisible;
+						var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+						if (dpr)
+						{
+							if(malletVisible)
+								dpr.Hide();
+							else
+								dpr.Show();
+						}
+					}
+
+					// TODO remove this after physics are in
+					mallet.CheckForKeyCollision();
+				}
+			}
+		}
 	}
 
 	private void InitializePlayerHandle()
@@ -971,8 +1011,6 @@ public class EditorVR : MonoBehaviour
 			}
 		}, true);
 
-
-
 		return go;
 	}
 
@@ -983,10 +1021,8 @@ public class EditorVR : MonoBehaviour
 		
 		// Check if the prefab has already been instantiated
 		if (m_NumericKeyboard == null)
-		{
 			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-			m_NumericKeyboard.malletVisibilityChanged += SetMalletVisible;
-		}
+
 		return m_NumericKeyboard;
 	}
 
@@ -997,34 +1033,9 @@ public class EditorVR : MonoBehaviour
 		
 		// Check if the prefab has already been instantiated
 		if (m_StandardKeyboard == null)
-		{
 			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-			m_StandardKeyboard.malletVisibilityChanged += SetMalletVisible;
-		}
+
 		return m_StandardKeyboard;
-	}
-
-	void SetMalletVisible(bool visible)
-	{
-		foreach (var kvp in m_KeyboardMallets)
-		{
-			if (!kvp.Key.gameObject.activeInHierarchy)
-				continue;
-
-			var mallet = kvp.Value;
-			var dpr = kvp.Key.GetComponentInChildren<DefaultProxyRay>();
-			if (visible)
-			{
-				mallet.gameObject.SetActive(true);
-				mallet.Show();
-				dpr.Hide();
-			}
-			else
-			{
-				mallet.Hide();
-				dpr.Show();
-			}
-		}
 	}
 
 	private ActionMapInput CreateActionMapInput(ActionMap map, InputDevice device)
@@ -2561,7 +2572,7 @@ public class EditorVR : MonoBehaviour
 	private static void InitializeInputManager()
 	{
 		// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-		// in edit mode we need to handle lifecycle explicitly
+		// in edit mode we need to keyboard lifecycle explicitly
 		InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
 		foreach (var m in managers)
 		{
