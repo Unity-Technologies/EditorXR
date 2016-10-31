@@ -1779,6 +1779,13 @@ public class EditorVR : MonoBehaviour
 		if (filterUI != null)
 			m_FilterUIs.Add(filterUI);
 
+		var chessboard = workspace as ChessboardWorkspace;
+		if (chessboard)
+		{
+			chessboard.lockRay = LockRay;
+			chessboard.unlockRay = UnlockRay;
+		}
+
 		var miniWorld = workspace as IMiniWorld;
 		if (miniWorld != null)
 		{
@@ -2348,10 +2355,23 @@ public class EditorVR : MonoBehaviour
 			dpr.ShowRayOnly();
 	}
 
-	void HideRay(Transform rayOrigin) {
+	void HideRay(Transform rayOrigin)
+	{
 		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-		if(dpr)
+		if (dpr)
 			dpr.HideRayOnly();
+	}
+
+	bool LockRay(Transform rayOrigin, object obj)
+	{
+		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+		return dpr && dpr.LockRay(obj);
+	}
+
+	bool UnlockRay(Transform rayOrigin, object obj)
+	{
+		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+		return dpr && dpr.UnlockRay(obj);
 	}
 
 	void AddPlayerModel()
