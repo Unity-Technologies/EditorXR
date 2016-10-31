@@ -26,7 +26,7 @@ public class HighlightModule : MonoBehaviour
 
 	public void SetHighlight(GameObject go, bool active)
 	{
-		if (go == null)
+		if (go == null || go.isStatic)
 			return;
 
 		if (active) // Highlight
