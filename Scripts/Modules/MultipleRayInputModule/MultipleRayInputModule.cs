@@ -52,6 +52,7 @@ namespace UnityEngine.VR.Modules
 		public Func<Transform, bool> preProcessRaycastSource = delegate { return true; };
 		public Func<bool> preProcessRaycastSources = delegate { return true; };
 		public Action postProcessRaycastSources = delegate {};
+		public Func<Transform, bool> isRayActive = delegate { return true; };
 
 		protected override void Awake()
 		{
@@ -109,6 +110,9 @@ namespace UnityEngine.VR.Modules
 			foreach (var source in sources)
 			{
 				if (!(source.rayOrigin.gameObject.activeSelf || source.selectedObject) || !source.proxy.active)
+					continue;
+
+				if (!isRayActive(source.rayOrigin))
 					continue;
 
 				if (!preProcessRaycastSource(source.rayOrigin))

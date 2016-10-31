@@ -103,6 +103,9 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 
 	public Node selfNode { get; set; }
 
+	public Action<Transform> showRay { private get; set; }
+	public Action<Transform> hideRay { private get; set; }
+
 	public List<IAction> toolActions
 	{
 		get
@@ -122,6 +125,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 
 	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
+
+	Dictionary<Transform, DirectSelection> m_LastDirectSelection;
 
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
 
@@ -181,6 +186,20 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 		var hasRight = m_GrabData.ContainsKey(Node.RightHand);
 		var hasObject = directSelection.Count > 0 || hasLeft || hasRight;
 
+		if (m_LastDirectSelection != null)
+		{
+			foreach (var selection in m_LastDirectSelection.Values)
+			{
+				setHighlight(selection.gameObject, false);
+			}
+		}
+
+		foreach(var selection in directSelection.Values) {
+			setHighlight(selection.gameObject, true);
+		}
+
+		m_LastDirectSelection = directSelection;
+
 		if (!m_CurrentManipulator.dragging)
 		{
 			// Disable manipulator on direct hover or drag
@@ -228,6 +247,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 					Selection.activeGameObject = grabbedObject.gameObject;
 
 					setHighlight(grabbedObject.gameObject, false);
+
+					hideRay(rayOrigin);
 
 					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
 					EditorApplication.delayCall += () =>
@@ -393,6 +414,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 		var grabData = m_GrabData[inputNode];
 		dropObject(this, grabData.grabbedObject, grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
+
+		showRay(grabData.rayOrigin);
 	}
 
 	private void HandleSnap(IManipulator manipulator, Transform trans, Vector3 deltaMovement, Transform[] ignoreList)

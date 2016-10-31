@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
 public class ChessboardWorkspace : Workspace, IMiniWorld
 {
 	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below
-	private const float kInitReferenceScale = 25f; // We want to see a big region by default
+	private const float kInitReferenceScale = 15f; // We want to see a big region by default
 
 	//TODO: replace with dynamic values once spatial hash lands
 	// Scale slider min/max (maps to referenceTransform unifrom scale)
@@ -47,7 +48,10 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 	public Vector3 miniWorldScale { get { return m_MiniWorld.miniWorldScale; } }
 	public Transform miniWorldTransform { get { return m_MiniWorld.miniWorldTransform; } }
 	public bool Contains(Vector3 position) { return m_MiniWorld.Contains(position); }
-	public List<Renderer> ignoreList { set { m_MiniWorld.ignoreList = value;  } } 
+	public List<Renderer> ignoreList { set { m_MiniWorld.ignoreList = value;  } }
+
+	public Func<Transform, object, bool> lockRay { get; set; }
+	public Func<Transform, object, bool> unlockRay { get; set; }
 
 	public override void Setup()
 	{
@@ -85,6 +89,10 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		m_ZoomSliderUI.zoomSlider.minValue = kMinScale;
 		m_ZoomSliderUI.zoomSlider.direction = UnityEngine.UI.Slider.Direction.RightToLeft; // Invert direction for expected ux; zoom in as slider moves left to right
 		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
+
+		var frontHandle = m_WorkspaceUI.directManipulator.GetComponent<BaseHandle>();
+		frontHandle.dragStarted += DragStarted;
+		frontHandle.dragEnded += DragEnded;
 
 		// Propagate initial bounds
 		OnBoundsChanged();
@@ -216,6 +224,16 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 		if (!m_Dragging)
 			m_WorkspaceUI.topHighlight.visible = false;
+	}
+
+	void DragStarted(BaseHandle baseHandle, HandleEventData handleEventData)
+	{
+		lockRay(handleEventData.rayOrigin, this);
+	}
+
+	void DragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
+	{
+		unlockRay(handleEventData.rayOrigin, this);
 	}
 
 	protected override void OnDestroy()
