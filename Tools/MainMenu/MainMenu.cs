@@ -239,7 +239,11 @@ namespace UnityEngine.VR.Menus
 						b.button.onClick.AddListener(() =>
 						{
 							if (visible && b.node.HasValue)
+							{
 								selectTool(b.node.Value, selectedType);
+								// Close menu after selecting something for performance reasons
+								visible = false;
+							}
 						});
 					}
 					else if (isWorkspace)
@@ -247,7 +251,11 @@ namespace UnityEngine.VR.Menus
 						b.button.onClick.AddListener(() =>
 						{
 							if (visible && b.node.HasValue)
+							{
 								createWorkspace(selectedType);
+								// Close menu after selecting something for performance reasons
+								visible = false;
+							}
 						});
 					}
 				});
