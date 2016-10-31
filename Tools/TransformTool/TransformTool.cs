@@ -126,6 +126,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 
+	Dictionary<Transform, DirectSelection> m_LastDirectSelection;
+
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
 
 	public Func<DirectSelection, Transform, bool> canGrabObject { private get; set; }
@@ -183,6 +185,20 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 		var hasLeft = m_GrabData.ContainsKey(Node.LeftHand);
 		var hasRight = m_GrabData.ContainsKey(Node.RightHand);
 		var hasObject = directSelection.Count > 0 || hasLeft || hasRight;
+
+		if (m_LastDirectSelection != null)
+		{
+			foreach (var selection in m_LastDirectSelection.Values)
+			{
+				setHighlight(selection.gameObject, false);
+			}
+		}
+
+		foreach(var selection in directSelection.Values) {
+			setHighlight(selection.gameObject, true);
+		}
+
+		m_LastDirectSelection = directSelection;
 
 		if (!m_CurrentManipulator.dragging)
 		{
