@@ -287,7 +287,7 @@ public class BlinkVisuals : MonoBehaviour
 		// first handle -- determines how steep the first part will be
 		m_BezierControlPoints[1] = m_ToolPoint.position + m_ToolPoint.forward * pointerStrength * m_Range;
 
-		const float kArcEndHeight = -2f;
+		const float kArcEndHeight = 0f;
 		m_FinalPosition = new Vector3(m_BezierControlPoints[1].x, kArcEndHeight, m_BezierControlPoints[1].z);
 		// end point
 		m_BezierControlPoints[3] = m_FinalPosition;
