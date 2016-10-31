@@ -103,6 +103,9 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 
 	public Node selfNode { get; set; }
 
+	public Action<Transform> showRay { private get; set; }
+	public Action<Transform> hideRay { private get; set; }
+
 	public List<IAction> toolActions
 	{
 		get
@@ -228,6 +231,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 					Selection.activeGameObject = grabbedObject.gameObject;
 
 					setHighlight(grabbedObject.gameObject, false);
+
+					hideRay(rayOrigin);
 
 					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
 					EditorApplication.delayCall += () =>
@@ -393,6 +398,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionCha
 		var grabData = m_GrabData[inputNode];
 		dropObject(this, grabData.grabbedObject, grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
+
+		showRay(grabData.rayOrigin);
 	}
 
 	private void HandleSnap(IManipulator manipulator, Transform trans, Vector3 deltaMovement, Transform[] ignoreList)

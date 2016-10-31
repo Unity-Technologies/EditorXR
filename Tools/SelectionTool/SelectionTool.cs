@@ -53,9 +53,14 @@ namespace UnityEngine.VR.Tools
 
 		public event Action<Node?> selected = delegate {};
 
+		public Func<Transform, bool> isRayActive = delegate { return true; };
+
 		void Update()
 		{
 			if (rayOrigin == null)
+				return;
+
+			if (!isRayActive(rayOrigin))
 				return;
 
 			var newHoverGameObject = getFirstGameObject(rayOrigin);

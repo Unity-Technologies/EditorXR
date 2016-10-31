@@ -555,8 +555,10 @@ public class EditorVR : MonoBehaviour
 		if (VRSettings.loadedDeviceName == "Oculus")
 			locomotionTool = typeof(JoystickLocomotionTool);
 
-		var transformTool = SpawnTool(typeof(TransformTool), out devices);
-		m_TransformTool = transformTool as IGrabObjects;
+		var transformTool = SpawnTool(typeof(TransformTool), out devices) as TransformTool;
+		transformTool.showRay = ShowRay;
+		transformTool.hideRay = HideRay;
+		m_TransformTool = transformTool;
 
 		foreach (var deviceData in m_DeviceData)
 		{
@@ -571,6 +573,7 @@ public class EditorVR : MonoBehaviour
 			var selectionTool = tool as SelectionTool;
 			selectionTool.node = deviceNode;
 			selectionTool.selected += OnAlternateMenuItemSelected; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			selectionTool.isRayActive = IsRayActive;
 
 			// Using a shared instance of the transform tool across all device tool stacks
 			AddToolToStack(deviceData.Key, transformTool);
@@ -876,6 +879,7 @@ public class EditorVR : MonoBehaviour
 
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_InputModule.getPointerLength = GetPointerLength;
+		m_InputModule.isRayActive = IsRayActive;
 
 		m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
@@ -1305,6 +1309,7 @@ public class EditorVR : MonoBehaviour
 						var customRay = obj as ICustomRay;
 						if (customRay != null)
 						{
+							Debug.Log(obj);
 							dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 							customRay.showDefaultRay = dpr.Show;
 							customRay.hideDefaultRay = dpr.Hide;
@@ -1934,6 +1939,12 @@ public class EditorVR : MonoBehaviour
 			var isContained = miniWorld.Contains(originalPointerPosition);
 			miniWorldRay.tester.active = isContained;
 
+			if (isContained && !miniWorldRay.wasContained)
+				HideRay(originalRayOrigin);
+
+			if(!isContained && miniWorldRay.wasContained)
+				ShowRay(originalRayOrigin);
+
 			var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
 
 			if (directSelectInput.select.wasJustPressed)
@@ -2322,6 +2333,25 @@ public class EditorVR : MonoBehaviour
 	bool IsMiniWorldRay(Transform rayOrigin)
 	{
 		return m_MiniWorldRays.ContainsKey(rayOrigin);
+	}
+
+	bool IsRayActive(Transform rayOrigin)
+	{
+		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+		return dpr == null || dpr.visible;
+	}
+
+	void ShowRay(Transform rayOrigin)
+	{
+		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+		if (dpr)
+			dpr.ShowRayOnly();
+	}
+
+	void HideRay(Transform rayOrigin) {
+		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+		if(dpr)
+			dpr.HideRayOnly();
 	}
 
 	void AddPlayerModel()
