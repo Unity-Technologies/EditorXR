@@ -65,7 +65,7 @@ public class VRSmoothCamera : MonoBehaviour
 		forward = Vector3.Lerp(forward, m_VRCamera.transform.forward, Time.unscaledDeltaTime * m_PositionSmoothingMultiplier);
 
 		m_SmoothCamera.transform.forward = forward;
-		m_SmoothCamera.transform.position = position - m_SmoothCamera.transform.forward * 0.9f;
+		m_SmoothCamera.transform.position = position - m_SmoothCamera.transform.forward * 1.1f;
 
 		// Don't render any HMD-related visual proxies
 		var hidden = m_VRCamera.GetComponentsInChildren<Renderer>();
