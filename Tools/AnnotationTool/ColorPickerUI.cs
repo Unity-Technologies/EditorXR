@@ -12,24 +12,29 @@ public class ColorPickerUI : MonoBehaviour
 	public Action<Color> onColorPicked { private get; set; }
 
 	[SerializeField]
-	RawImage m_ColorPicker;
+	private float m_FadeTime;
 
 	[SerializeField]
-	Slider m_BrightnessSlider;
+	private RawImage m_ColorPicker;
 
 	[SerializeField]
-	RawImage m_SliderBackground;
+	private Slider m_BrightnessSlider;
 
 	[SerializeField]
-	RectTransform m_Picker;
-
-	Vector3 m_PickerTargetPosition;
+	private RawImage m_SliderBackground;
 
 	[SerializeField]
-	ColorPickerSquareUI m_ColorPickerSquare;
+	private RectTransform m_Picker;
 
-	Texture2D m_BrightnessBarTexture;
-	Texture2D m_ColorPickerTexture;
+	private Vector3 m_PickerTargetPosition;
+
+	[SerializeField]
+	private ColorPickerSquareUI m_ColorPickerSquare;
+
+	private Texture2D m_BrightnessBarTexture;
+	private Texture2D m_ColorPickerTexture;
+
+	private Coroutine m_FadeCoroutine;
 
 	void Start()
 	{
@@ -50,10 +55,54 @@ public class ColorPickerUI : MonoBehaviour
 		m_Picker.localPosition = m_PickerTargetPosition;
 	}
 
+	public void Show()
+	{
+		if (m_FadeCoroutine != null)
+			StopCoroutine(m_FadeCoroutine);
+
+		m_FadeCoroutine = StartCoroutine(FadeCanvas(false));
+	}
+
+	public void Hide()
+	{
+		if (m_FadeCoroutine != null)
+			StopCoroutine(m_FadeCoroutine);
+		
+		m_FadeCoroutine = StartCoroutine(FadeCanvas(true));
+	}
+
 	public void OnSliderChanged(float val)
 	{
 		m_ColorPicker.color = Color.Lerp(Color.black, Color.white, val);
 		PositionToColor();
+	}
+
+	private IEnumerator FadeCanvas(bool fadeOut)
+	{
+		enabled = !fadeOut;
+		m_Picker.localPosition = m_PickerTargetPosition;
+
+		var canvasGroup = GetComponent<CanvasGroup>();
+		float current = canvasGroup.alpha;
+		float start = fadeOut ? 1 : 0;
+		float target = 1 - start;
+
+		if (current == target)
+		{
+			m_FadeCoroutine = null;
+			yield break;
+		}
+
+		float ratio = fadeOut ? 1 - current : current;
+		while (ratio < 1)
+		{
+			canvasGroup.alpha = Mathf.Lerp(start, target, ratio);
+			ratio += Time.unscaledDeltaTime / m_FadeTime;
+			yield return null;
+		}
+
+		canvasGroup.alpha = target;
+		m_FadeCoroutine = null;
 	}
 
 	void OnDrag()

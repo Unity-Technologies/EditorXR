@@ -6,6 +6,7 @@ using UnityEngine.InputNew;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.VR.Utilities;
+using UnityEditor.VR;
 
 [MainMenuItem("Annotation", "Tools", "Draw in da spaaaaaace")]
 public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICustomRay, IOtherRay, IInstantiateUI
@@ -33,6 +34,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 	private List<Vector3> m_Points = new List<Vector3>(kInitialListSize);
 	private List<Vector3> m_Forwards = new List<Vector3>(kInitialListSize);
+	private List<float> m_Widths = new List<float>(kInitialListSize);
 
 	private MeshFilter m_CurrentMeshFilter;
 	private Color m_ColorToUse = Color.white;
@@ -40,28 +42,30 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 	private Matrix4x4 m_WorldToLocalMesh;
 
 	[SerializeField]
-	Material m_AnnotationMaterial;
+	private Material m_AnnotationMaterial;
 
 	[SerializeField]
-	Material m_ConeMaterial;
+	private Material m_ConeMaterial;
 
 	[SerializeField]
-	GameObject m_ColorPickerPrefab;
-	GameObject m_ColorPicker;
+	private GameObject m_ColorPickerPrefab;
+	private ColorPickerUI m_ColorPicker;
 
-	Transform m_AnnotationHolder;
+	private Transform m_AnnotationHolder;
 
-	bool m_RayHidden;
+	private bool m_RayHidden;
 
-	Mesh m_CustomPointer;
+	private Mesh m_CustomPointer;
 
-	const float kTopMinRadius = 0.001f;
-	const float kTopMaxRadius = 0.05f;
-	const float kBottomRadius = 0.01f;
-	const float kTipDistance = 0.05f;
-	const int kSides = 16;
+	private const float kTopMinRadius = 0.001f;
+	private const float kTopMaxRadius = 0.05f;
+	private const float kBottomRadius = 0.01f;
+	private const float kTipDistance = 0.05f;
+	private const int kSides = 16;
 
-	float m_CurrentRadius = kTopMinRadius;
+	private float m_CurrentRadius = kTopMinRadius;
+
+	private List<GameObject> m_UndoList = new List<GameObject>();
 
 	void OnDestroy()
 	{
@@ -102,14 +106,38 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			if (otherRayOrigin != null)
 				CheckColorPicker();
 		}
-
+		
 		if (m_AnnotationInput.draw.wasJustPressed)
 			SetupAnnotation();
-		if (m_AnnotationInput.draw.isHeld)
+		else if (m_AnnotationInput.draw.isHeld)
 			UpdateAnnotation();
+		else if (m_AnnotationInput.undo.wasJustPressed)
+			UndoLast();
+		else if (m_AnnotationInput.draw.wasJustReleased)
+			m_CurrentMesh.Optimize();
 
 		if (m_AnnotationInput.changeBrushSize.value != 0)
 			HandleBrushSize();
+	}
+
+	private void UndoLast()
+	{
+		if (m_UndoList.Count > 0)
+		{
+			var first = m_UndoList.Last();
+			DestroyImmediate(first);
+			m_UndoList.RemoveAt(m_UndoList.Count - 1);
+
+			// Clean up after the removed annotations if necessary.
+			if (m_UndoList.Count == 0 && m_AnnotationHolder.childCount == 0)
+			{
+				var root = m_AnnotationHolder.parent;
+				DestroyImmediate(m_AnnotationHolder.gameObject);
+
+				if (root.childCount == 0)
+					DestroyImmediate(root.gameObject);
+			}
+		}
 	}
 
 	private void CheckColorPicker()
@@ -120,10 +148,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		{
 			if (m_ColorPicker == null)
 			{
-				m_ColorPicker = instantiateUI(m_ColorPickerPrefab);
-				var colorPicker = m_ColorPicker.GetComponent<ColorPickerUI>();
-				colorPicker.toolRayOrigin = rayOrigin;
-				colorPicker.onColorPicked = HandleColoring;
+				var colorPickerObj = instantiateUI(m_ColorPickerPrefab);
+				m_ColorPicker = colorPickerObj.GetComponent<ColorPickerUI>();
+				m_ColorPicker.toolRayOrigin = rayOrigin;
+				m_ColorPicker.onColorPicked = HandleColoring;
 
 				var pickerTransform = m_ColorPicker.transform;
 				pickerTransform.SetParent(otherRayOrigin);
@@ -131,13 +159,11 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 				pickerTransform.localRotation = Quaternion.identity;
 			}
 
-			if (!m_ColorPicker.activeSelf)
-				m_ColorPicker.SetActive(true);
+			if (!m_ColorPicker.enabled)
+				m_ColorPicker.Show();
 		}
-		else if (m_ColorPicker && m_ColorPicker.activeSelf)
-		{
-			m_ColorPicker.SetActive(false);
-		}
+		else if (m_ColorPicker && m_ColorPicker.enabled)
+			m_ColorPicker.Hide();
 	}
 
 	private void HandleColoring(Color newColor)
@@ -156,8 +182,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			var vertices = m_CustomPointer.vertices;
 			for (int i = kSides; i < kSides * 2; i++)
 			{
-				float xPos = Mathf.Cos(i / 16f * Mathf.PI * 2) * m_CurrentRadius;
-				float yPos = Mathf.Sin(i / 16f * Mathf.PI * 2) * m_CurrentRadius;
+				float angle = (i / (float)kSides) * Mathf.PI * 2f;
+				float xPos = Mathf.Cos(angle) * m_CurrentRadius;
+				float yPos = Mathf.Sin(angle) * m_CurrentRadius;
+
 				Vector3 point = new Vector3(xPos, yPos, kTipDistance);
 				vertices[i] = point;
 			}
@@ -197,8 +225,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 			for (int i = 0; i < kSides; i++)
 			{
-				float xPos = Mathf.Cos(i / 16f * Mathf.PI * 2) * radius;
-				float yPos = Mathf.Sin(i / 16f * Mathf.PI * 2) * radius;
+				float angle = (i / (float)kSides) * Mathf.PI * 2f;
+				float xPos = Mathf.Cos(angle) * radius;
+				float yPos = Mathf.Sin(angle) * radius;
+
 				Vector3 point = new Vector3(xPos, yPos, capIndex * kTipDistance);
 				points.Add(point);
 			}
@@ -213,13 +243,13 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 	{
 		List<int> triangles = new List<int>();
 
-		GenerateSide(triangles);
-		GenerateCaps(triangles);
+		GenerateSideTriangles(triangles);
+		GenerateCapsTriangles(triangles);
 
 		return triangles.ToArray();
 	}
 
-	private void GenerateSide(List<int> triangles)
+	private void GenerateSideTriangles(List<int> triangles)
 	{
 		for (int i = 1; i < kSides; i++)
 		{
@@ -228,37 +258,27 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			int upperLeft = i + kSides - 1;
 			int upperRight = i + kSides;
 
-			triangles.Add(lowerLeft);
-			triangles.Add(lowerRight);
-			triangles.Add(upperLeft);
-
-			triangles.Add(lowerRight);
-			triangles.Add(upperRight);
-			triangles.Add(upperLeft);
+			int[] sideTriangles = VerticesToPolygon(upperRight, upperLeft, lowerRight, lowerLeft, false);
+			triangles.AddRange(sideTriangles);
 		}
 
 		// Finish the side with a polygon that loops around from the end to the start vertices.
-		triangles.Add(kSides - 1);
-		triangles.Add(0);
-		triangles.Add(kSides * 2 - 1);
-
-		triangles.Add(0);
-		triangles.Add(kSides);
-		triangles.Add(kSides * 2 - 1);
+		int[] finishTriangles = VerticesToPolygon(kSides, kSides * 2 - 1, 0, kSides - 1, false);
+		triangles.AddRange(finishTriangles);
 	}
 
-	private void GenerateCaps(List<int> triangles)
+	private void GenerateCapsTriangles(List<int> triangles)
 	{
 		// Generate the bottom circle cap.
 		for (int i = 1; i < kSides; i++)
 		{
-			int lowLeft = i - 1;
-			int lowRight = i;
-			int upLeft = kSides * 2;
-
-			triangles.Add(upLeft);
-			triangles.Add(lowRight);
-			triangles.Add(lowLeft);
+			int lowerLeft = i - 1;
+			int lowerRight = i;
+			int upperLeft = kSides * 2;
+			
+			triangles.Add(upperLeft);
+			triangles.Add(lowerRight);
+			triangles.Add(lowerLeft);
 		}
 
 		// Close the bottom circle cap with a start-end loop triangle.
@@ -269,13 +289,13 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		// Generate the top circle cap.
 		for (int i = kSides + 1; i < kSides * 2; i++)
 		{
-			int lowLeft = i - 1;
-			int lowRight = i;
-			int upLeft = kSides * 2 + 1;
+			int lowerLeft = i - 1;
+			int lowerRight = i;
+			int upperLeft = kSides * 2 + 1;
 
-			triangles.Add(lowLeft);
-			triangles.Add(lowRight);
-			triangles.Add(upLeft);
+			triangles.Add(lowerLeft);
+			triangles.Add(lowerRight);
+			triangles.Add(upperLeft);
 		}
 
 		// Close the top circle cap with a start-end loop triangle.
@@ -290,8 +310,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 		m_Points.Clear();
 		m_Forwards.Clear();
+		m_Widths.Clear();
 
 		GameObject go = new GameObject("Annotation " + m_AnnotationHolder.childCount);
+		m_UndoList.Add(go);
 
 		Transform goTrans = go.transform;
 		goTrans.SetParent(m_AnnotationHolder);
@@ -299,6 +321,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 		m_CurrentMeshFilter = go.AddComponent<MeshFilter>();
 		MeshRenderer mRenderer = go.AddComponent<MeshRenderer>();
+
 		var matToUse = Instantiate(m_AnnotationMaterial);
 		matToUse.SetColor("_EmissionColor", m_ColorToUse);
 		mRenderer.sharedMaterial = matToUse;
@@ -311,16 +334,48 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 	private void SetupHolder()
 	{
-		if (m_AnnotationHolder == null)
-		{
-			var mainHolder = GameObject.Find("Annotations");
-			if (!mainHolder)
-				mainHolder = new GameObject("Annotations");
+		var mainHolder = GameObject.Find("Annotations") ?? new GameObject("Annotations");
+		var mainHolderTrans = mainHolder.transform;
 
-			var newSession = new GameObject("Session " + DateTime.Now.ToString());
-			m_AnnotationHolder = newSession.transform;
-			m_AnnotationHolder.SetParent(mainHolder.transform);
+		GameObject newSession = GetNewSessionHolder(mainHolderTrans);
+		if (!newSession)
+			newSession = new GameObject("Group " + mainHolderTrans.childCount);
+
+		m_AnnotationHolder = newSession.transform;
+		m_AnnotationHolder.SetParent(mainHolder.transform);
+	}
+
+	private GameObject GetNewSessionHolder(Transform mainHolderTrans)
+	{
+		const float kGroupingDistance = .3f;
+		GameObject newSession = null;
+
+		for (int i = 0; i < mainHolderTrans.childCount; i++)
+		{
+			var child = mainHolderTrans.GetChild(i);
+			child.name = "Group " + i;
+
+			if (!newSession)
+			{
+				var renderers = child.GetComponentsInChildren<MeshRenderer>();
+				if (renderers.Length > 0)
+				{
+					Bounds bound = renderers[0].bounds;
+					for (int r = 1; r < renderers.Length; r++)
+						bound.Encapsulate(renderers[r].bounds);
+
+					if (bound.Contains(rayOrigin.position))
+						newSession = child.gameObject;
+					else if (bound.SqrDistance(rayOrigin.position) < kGroupingDistance)
+						newSession = child.gameObject;
+
+					if (newSession)
+						break;
+				}
+			}
 		}
+
+		return newSession;
 	}
 
 	private void UpdateAnnotation()
@@ -333,6 +388,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		{
 			m_Points.Add(localPoint);
 			m_Forwards.Add(rayForward);
+			m_Widths.Add(m_CurrentRadius);
 
 			PointsToMesh();
 		}
@@ -346,43 +402,105 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		if (m_CurrentMesh == null)
 			m_CurrentMesh = new Mesh();
 
-		List<Vector3> newVertices = new List<Vector3>(m_CurrentMesh.vertices);
-		List<int> newTriangles = new List<int>(m_CurrentMesh.triangles);
-		
-		for (int i = m_CurrentMesh.vertexCount / 2 + 1; i < m_Points.Count; i++)
-		{
-			Vector3 direction = (m_Points[i - 1] - m_Points[i]).normalized;
-			Vector3 cross = Vector3.Cross(direction, m_Forwards[i - 1]) * m_CurrentRadius;
+		List<Vector3> newVertices = new List<Vector3>();
+		List<int> newTriangles = new List<int>();
+		List<Vector2> newUvs = new List<Vector2>();
 
-			newVertices.Add(m_Points[i - 1] - cross);
-			newVertices.Add(m_Points[i - 1] + cross);
-		}
+		LineToPlane(newVertices);
+		TriangulatePlane(newTriangles, newVertices.Count);
+		CalculateUvs(newUvs, newVertices.Count);
 
-		for (int i = Mathf.Max(3, m_CurrentMesh.vertexCount - 1); i < newVertices.Count; i += 2)
-		{
-			newTriangles.Add(i - 1);
-			newTriangles.Add(i - 2);
-			newTriangles.Add(i - 3);
-
-			newTriangles.Add(i - 2);
-			newTriangles.Add(i - 1);
-			newTriangles.Add(i);
-
-			// Add the same triangles in reverse to get a two-sided mesh.
-			newTriangles.Add(i - 3);
-			newTriangles.Add(i - 2);
-			newTriangles.Add(i - 1);
-
-			newTriangles.Add(i);
-			newTriangles.Add(i - 1);
-			newTriangles.Add(i - 2);
-		}
+		m_CurrentMesh.Clear();
 
 		m_CurrentMesh.vertices = newVertices.ToArray();
 		m_CurrentMesh.triangles = newTriangles.ToArray();
+		m_CurrentMesh.uv = newUvs.ToArray();
+
 		m_CurrentMesh.UploadMeshData(false);
 
 		m_CurrentMeshFilter.sharedMesh = m_CurrentMesh;
+	}
+
+	private void LineToPlane(List<Vector3> newVertices)
+	{
+		Vector3 prevDirection = (m_Points[1] - m_Points[0]).normalized;
+
+		for (int i = 1; i < m_Points.Count; i++)
+		{
+			Vector3 nextPoint = m_Points[i];
+			Vector3 thisPoint = m_Points[i - 1];
+			Vector3 direction = (nextPoint - thisPoint).normalized;
+			Vector3 smoothNormal = (m_Forwards[i - 1] + m_Forwards[i] + m_Forwards[Mathf.Min(m_Points.Count - 1, i + 1)]) / 3f;
+
+			// For optimization, ignore inner points of an almost straight line.
+			// The last point is an exception, it is required for a smooth drawing experience.
+			if (Vector3.Angle(prevDirection, direction) < 1f && i < m_Points.Count - 1)
+				continue;
+
+			Vector3 cross = Vector3.Cross(direction, smoothNormal);
+			cross.Normalize();
+
+			float width = m_Widths[i - 1];
+			Vector3 left = thisPoint - cross * width;
+			Vector3 right = thisPoint + cross * width;
+
+			newVertices.Add(left);
+			newVertices.Add(right);
+
+			prevDirection = direction;
+		}
+	}
+
+	private void TriangulatePlane(List<int> newTriangles, int vertexCount)
+	{
+		for (int i = 3; i < vertexCount; i += 2)
+		{
+			int upperLeft = i - 1;
+			int upperRight = i;
+			int lowerLeft = i - 3;
+			int lowerRight = i - 2;
+
+			int[] triangles = VerticesToPolygon(upperLeft, upperRight, lowerLeft, lowerRight);
+			newTriangles.AddRange(triangles);
+		}
+	}
+
+	private void CalculateUvs(List<Vector2> newUvs, int vertexCount)
+	{
+		for (int i = 0; i < vertexCount; i += 2)
+		{
+			float ratio = 1 - i / (float)vertexCount;
+			newUvs.Add(new Vector2(0, ratio));
+			newUvs.Add(new Vector2(1, ratio));
+		}
+	}
+
+	private int[] VerticesToPolygon(int upperLeft, int upperRight, int lowerLeft, int lowerRight, bool doubleSided = true)
+	{
+		int triangleCount = doubleSided ? 12 : 6;
+		int[] triangles = new int[triangleCount];
+		int index = 0;
+
+		triangles[index++] = upperLeft;
+		triangles[index++] = lowerRight;
+		triangles[index++] = lowerLeft;
+
+		triangles[index++] = lowerRight;
+		triangles[index++] = upperLeft;
+		triangles[index++] = upperRight;
+
+		if (doubleSided)
+		{
+			triangles[index++] = lowerLeft;
+			triangles[index++] = lowerRight;
+			triangles[index++] = upperLeft;
+
+			triangles[index++] = upperRight;
+			triangles[index++] = upperLeft;
+			triangles[index++] = lowerRight;
+		}
+
+		return triangles;
 	}
 
 }

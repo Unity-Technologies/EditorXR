@@ -140,6 +140,7 @@ GameObject:
   - 114: {fileID: 114000012075775966}
   - 114: {fileID: 114000010288221908}
   - 114: {fileID: 114000013470492078}
+  - 225: {fileID: 225000011919119404}
   m_Layer: 5
   m_Name: ColorPickerUI
   m_TagString: Untagged
@@ -437,6 +438,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_FadeTime: 0.25
   m_ColorPicker: {fileID: 114000012154235052}
   m_BrightnessSlider: {fileID: 114000012700991384}
   m_SliderBackground: {fileID: 114000010107362308}
@@ -642,3 +644,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 50, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &225000011919119404
+CanvasGroup:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000014053269536}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
