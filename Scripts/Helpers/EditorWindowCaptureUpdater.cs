@@ -69,11 +69,10 @@ public class EditorWindowCaptureUpdater : MonoBehaviour
 			if (m_Material && m_Material.mainTexture != tex)
 				m_Material.mainTexture = tex;
 
-			var texAspect = (float) tex.width/tex.height;
-
-			var localScale = transform.localScale;
 			if (m_LockAspect)
 			{
+				var localScale = transform.localScale;
+				var texAspect = (float) tex.width/tex.height;
 				var aspect = localScale.x / localScale.y;
 				localScale.y *= aspect / texAspect;
 				transform.localScale = localScale;
