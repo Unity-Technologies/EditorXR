@@ -160,7 +160,7 @@ namespace UnityEngine.VR.Workspaces
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * kIconHighlightedLocalZOffset;
 
-			m_HighlightGradientPair = !m_GrayscaleGradient ? UnityBrandColorScheme.sessionGradient : UnityBrandColorScheme.grayscaleSessionGradient;
+			m_HighlightGradientPair = m_GrayscaleGradient ? UnityBrandColorScheme.grayscaleSessionGradient : UnityBrandColorScheme.sessionGradient;
 
 			m_OriginalIconSprite = m_Icon.sprite;
 
