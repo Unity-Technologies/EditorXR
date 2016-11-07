@@ -59,8 +59,8 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 		var scrollHandleTransform = m_InspectorUI.inspectorScrollHandle.transform;
 		scrollHandleTransform.SetParent(m_WorkspaceUI.topFaceContainer);
-		scrollHandleTransform.localScale = new Vector3 (1.03f, 0.02f, 1.02f);
-		scrollHandleTransform.localPosition = new Vector3 (0f, -0.01f, 0f);
+		scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
+		scrollHandleTransform.localPosition = new Vector3(0f, -0.01f, 0f); // Offset from content for collision purposes
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -275,12 +275,11 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	protected override void OnBoundsChanged()
 	{
-		const float kSideScollBoundsShrinkAmount = 0.04f;
 		var size = contentBounds.size;
 		var inspectorListView = m_InspectorUI.inspectorListView;
 		var bounds = contentBounds;
 		size.y = float.MaxValue; // Add height for dropdowns
-		size.x -= kSideScollBoundsShrinkAmount;
+		size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
 		size.z -= 0.15f; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
 		bounds.size = size;
 		inspectorListView.bounds = bounds;
