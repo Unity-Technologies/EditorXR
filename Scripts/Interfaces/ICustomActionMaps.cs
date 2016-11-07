@@ -3,18 +3,18 @@
 namespace UnityEngine.VR.Tools
 {
 	/// <summary>
-	/// Decorates tools which supply their own (singular) ActionMap
+	/// Decorates tools which supply their own (multiple) ActionMaps
 	/// </summary>
-	public interface ICustomActionMap
+	public interface ICustomActionMaps
 	{
 		/// <summary>
-		/// Provides access to the custom action map
+		/// Provides access to the custom action maps
 		/// </summary>
-		ActionMap actionMap { get; }
+		ActionMap[] actionMaps { get; }
 
 		/// <summary>
 		/// Provides access to the ActionMapInput created using actionMap
 		/// </summary>
-		ActionMapInput actionMapInput { set; get; }
+		ActionMapInput[] actionMapInputs { set; get; }
 	}
 }

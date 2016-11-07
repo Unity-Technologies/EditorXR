@@ -16,29 +16,34 @@
 			Lighting Off
 			Blend SrcAlpha OneMinusSrcAlpha
 
-			SubShader{
+			SubShader
+			{
 
-				GrabPass{}
+				GrabPass {}
 
-				Pass{
+				Pass
+				{
 					CGPROGRAM
 					#pragma vertex vert
 					#pragma fragment frag
 					#pragma fragmentoption ARB_precision_hint_fastest
 					#include "UnityCG.cginc"
 
-					struct appdata_t {
+					struct appdata_t
+					{
 						float4 position : POSITION;
 						float2 texcoord: TEXCOORD0;
 					};
 
-					struct v2f {
+					struct v2f
+					{
 						float4 position : POSITION;
 						float4 grab : TEXCOORD0;
 						float yPos : FLOAT;
 					};
 
-					v2f vert(appdata_t v) {
+					v2f vert(appdata_t v)
+					{
 						v2f output;
 						output.position = mul(UNITY_MATRIX_MVP, v.position);
 #if UNITY_UV_STARTS_AT_TOP
@@ -91,18 +96,21 @@
 				#pragma fragmentoption ARB_precision_hint_fastest
 				#include "UnityCG.cginc"
 
-				struct appdata_t {
+				struct appdata_t
+				{
 					float4 position : POSITION;
 					float2 texcoord: TEXCOORD0;
 				};
 
-				struct v2f {
+				struct v2f
+				{
 					float4 position : POSITION;
 					float4 grab : TEXCOORD0;
 					float yPos : FLOAT;
 				};
 
-				v2f vert(appdata_t v) {
+				v2f vert(appdata_t v)
+				{
 					v2f output;
 					output.position = mul(UNITY_MATRIX_MVP, v.position);
 	#if UNITY_UV_STARTS_AT_TOP
@@ -154,12 +162,14 @@
 				#pragma fragmentoption ARB_precision_hint_fastest
 				#include "UnityCG.cginc"
 
-				struct appdata_t {
+				struct appdata_t
+				{
 					float4 position : POSITION;
 					float2 texcoord: TEXCOORD0;
 				};
 
-				struct v2f {
+				struct v2f
+				{
 					float4 position : POSITION;
 					float4 grab : TEXCOORD0;
 					float2 uvmain : TEXCOORD2;
@@ -167,7 +177,8 @@
 
 				float4 _MainTex_ST;
 
-				v2f vert(appdata_t v) {
+				v2f vert(appdata_t v)
+				{
 					v2f output;
 					output.position = mul(UNITY_MATRIX_MVP, v.position);
 	#if UNITY_UV_STARTS_AT_TOP

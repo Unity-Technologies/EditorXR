@@ -59,14 +59,14 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 	{
 		m_ClipTexts = GetComponentsInChildren<ClipText>(true);
 		m_CuboidLayout = GetComponentInChildren<CuboidLayout>(true);
-		if(m_CuboidLayout)
+		if (m_CuboidLayout)
 			m_CuboidLayout.UpdateObjects();
 
 		var handles = GetComponentsInChildren<BaseHandle>(true);
 		foreach (var handle in handles)
 		{
 			// Ignore m_Cube for now (will be used for Reset action)
-			if(handle.Equals(m_Cube))
+			if (handle.Equals(m_Cube))
 				continue;
 
 			// Toggles can't be dragged
@@ -125,7 +125,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		var indent = kIndent * depth;
 		m_UIContainer.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, indent, width - indent);
 
-		if(m_CuboidLayout)
+		if (m_CuboidLayout)
 			m_CuboidLayout.UpdateObjects();
 	}
 
@@ -237,7 +237,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 			var numericField = m_ClickedField as NumericInputField;
 			if (numericField)
 			{
-				if(m_DragDistance > NumericInputField.kDragDeadzone)
+				if (m_DragDistance > NumericInputField.kDragDeadzone)
 					CancelSingleClick();
 
 				numericField.SliderDrag(eventData.rayOrigin);

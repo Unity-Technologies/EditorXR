@@ -294,7 +294,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	void SetIsLocked(bool isLocked)
 	{
 		m_IsLocked = isLocked;
-		if(!isLocked)
+		if (!isLocked)
 			OnSelectionChanged();
 	}
 }

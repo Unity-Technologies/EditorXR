@@ -86,6 +86,10 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		BaseHandle m_MoveHandle;
 
+		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
+		[SerializeField]
+		WorkspaceHighlight m_TopHighlight;
+
 		[SerializeField]
 		private SkinnedMeshRenderer m_Frame;
 
@@ -140,17 +144,13 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		WorkspaceHighlight m_FrontHighlight;
 
-		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
-		[SerializeField]
-		WorkspaceHighlight m_TopHighlight;
-
 		public bool dynamicFaceAdjustment { get; set; }
 
 		public bool highlightsVisible
 		{
 			set
 			{
-				if (m_TopHighlight.visible == value) // All highlights will be set with this value; checking highlight visibility of one highlight is all that is needed
+				if (m_TopHighlight.visible == value && m_FrontHighlight.visible == value)
 					return;
 
 				m_TopHighlight.visible = value;
@@ -183,6 +183,7 @@ namespace UnityEngine.VR.Workspaces
 				m_TopFaceVisibleCoroutine = value ? StartCoroutine(HideTopFace()) : StartCoroutine(ShowTopFace());
 			}
 		}
+
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
@@ -494,7 +495,6 @@ namespace UnityEngine.VR.Workspaces
 
 			m_TopFaceVisibleCoroutine = null;
 		}
-
 		IEnumerator HideTopFace()
 		{
 			const string kMaterialHighlightAlphaProperty = "_Alpha";

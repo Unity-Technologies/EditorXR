@@ -69,7 +69,7 @@ public class KeyboardButton : BaseHandle
 
 	void Awake()
 	{
-		if(!m_TargetMesh)
+		if (!m_TargetMesh)
 			m_TargetMesh = GetComponentInChildren<Renderer>(true);
 	}
 
