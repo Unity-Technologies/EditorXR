@@ -5,9 +5,10 @@ using UnityEngine.VR.Utilities;
 
 public class MiniWorldRenderer : MonoBehaviour
 {
+	const float kMinScale = 0.001f;
+
 	private Camera m_MainCamera;
 	private Camera m_MiniCamera;
-	private bool m_RenderingMiniWorlds;
 
 	bool[] m_RendererPreviousEnable = new bool[0];
 
@@ -31,7 +32,6 @@ public class MiniWorldRenderer : MonoBehaviour
 		go.hideFlags = HideFlags.DontSave;
 		m_MiniCamera = go.GetComponent<Camera>();
 		go.SetActive(false);
-		m_RenderingMiniWorlds = false;
 	}
 
 	private void OnDisable()
@@ -47,10 +47,10 @@ public class MiniWorldRenderer : MonoBehaviour
 
 	private void OnPostRender()
 	{
-		if (!m_RenderingMiniWorlds)
+		// Do not render if miniWorld scale is too low to avoid errors in the console
+		if (m_MainCamera && miniWorld && miniWorld.transform.lossyScale.magnitude > kMinScale)
 		{
-			// If we ever support multiple mini-worlds, then we could collect them all and render them in one loop here
-			m_RenderingMiniWorlds = true;
+			m_MiniCamera.CopyFrom(m_MainCamera);
 
 			if (m_MainCamera && miniWorld)
 			{
@@ -77,8 +77,6 @@ public class MiniWorldRenderer : MonoBehaviour
 					m_IgnoreList[i].enabled = m_RendererPreviousEnable[i];
 				}
 			}
-
-			m_RenderingMiniWorlds = false;
 		}
 	}
 }

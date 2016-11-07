@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 882053426a5f76d46b5505d9a20be912
-timeCreated: 1470419714
+timeCreated: 1476301859
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
@@ -9,9 +9,10 @@ MonoImporter:
       type: 2}
   - m_ScaleManipulatorPrefab: {fileID: 1000011603037920, guid: ac3ea0b5d31a9d84580ef5c806d6862e,
       type: 2}
-  - m_DirectManipulatorPrefab: {fileID: 1000014088868178, guid: 2c9cb3514c0379a418a813f8418d1dc3,
+  - m_TransformActionMap: {fileID: 11400000, guid: 56fffa69d4e55f2428bcc0a2bb0732f4,
       type: 2}
-  - m_ActionMap: {fileID: 11400000, guid: 56fffa69d4e55f2428bcc0a2bb0732f4, type: 2}
+  - m_DirectSelectActionMap: {fileID: 11400000, guid: dc1ccafeffffc62419a3265a080a94a3,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
