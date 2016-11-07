@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEngine.VR.Helpers
 {
-	public class UITransformCopy : UIBehaviour
+	public class UITransformCopy : MonoBehaviour
 	{
 		static readonly Vector2 kTransformPivot = new Vector2(0.5f, 0.5f);
 		const float kLayerHeight = 0.004f;
@@ -20,7 +20,7 @@ namespace UnityEngine.VR.Helpers
 		[SerializeField]
 		float m_XScalePadding = 0.01f;
 
-		protected override void Awake()
+		void Awake()
 		{
 			m_TargetTransform = transform;
 			m_TargetTransform.SetParent(m_SourceRectTransform, false);

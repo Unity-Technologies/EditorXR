@@ -36,7 +36,6 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 224000011709184046}
-  - 114: {fileID: 114000014116390934}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -1087,24 +1086,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 2
---- !u!114 &114000014116390934
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000010904059924}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19cb230e62061c541923720796701bef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_TargetTransforms: []
-  m_TargetHighlightTransforms: []
-  m_CubePrefab: {fileID: 1000010276040456, guid: 351b9999d9db0934a9a3baecc8b9204f,
-    type: 2}
-  m_HighlightCubePrefab: {fileID: 1000010276040456, guid: 4a05b6e57f767f645b04b1f7ef6c0656,
-    type: 2}
 --- !u!222 &222000010135782456
 CanvasRenderer:
   m_ObjectHideFlags: 1

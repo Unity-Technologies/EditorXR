@@ -20,7 +20,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	InspectorUI m_InspectorUI;
 	GameObject m_SelectedObject;
-	bool m_Dragging;
+	bool m_Scrolling;
 
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
@@ -60,7 +60,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		m_Dragging = true;
+		m_Scrolling = true;
 
 		m_WorkspaceUI.topHighlight.visible = true;
 		m_WorkspaceUI.amplifyTopHighlight = false;
@@ -78,7 +78,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		m_Dragging = false;
+		m_Scrolling = false;
 
 		m_WorkspaceUI.topHighlight.visible = false;
 
@@ -89,7 +89,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (!m_Dragging)
+		if (!m_Scrolling)
 		{
 			m_WorkspaceUI.topHighlight.visible = true;
 			m_WorkspaceUI.amplifyTopHighlight = true;
@@ -98,7 +98,7 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 
 	void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (!m_Dragging)
+		if (!m_Scrolling)
 		{
 			m_WorkspaceUI.topHighlight.visible = false;
 			m_WorkspaceUI.amplifyTopHighlight = false;
