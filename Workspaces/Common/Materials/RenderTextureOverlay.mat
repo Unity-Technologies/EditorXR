@@ -6,9 +6,9 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: InputBackgroundHighlight
-  m_Shader: {fileID: 4800000, guid: 59f7e0653309703449fc1f6c0defbc4f, type: 3}
-  m_ShaderKeywords: 
+  m_Name: RenderTextureOverlay
+  m_Shader: {fileID: 4800000, guid: f26bf4e05241eb94e9b91b347f021e42, type: 3}
+  m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -96,7 +96,7 @@ Material:
       second: 1
     - first:
         name: _InvFade
-      second: 0.01
+      second: 2.03
     - first:
         name: _Metallic
       second: 0
@@ -127,16 +127,10 @@ Material:
     m_Colors:
     - first:
         name: _Color
-      second: {r: 0.2146139, g: 0.20175552, b: 0.1457231, a: 1}
-    - first:
-        name: _ColorBottom
-      second: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
-    - first:
-        name: _ColorTop
-      second: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
+      second: {r: 1, g: 1, b: 1, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}
     - first:
         name: _TintColor
-      second: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}
+      second: {r: 1, g: 1, b: 1, a: 0.309}
