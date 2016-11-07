@@ -246,7 +246,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	void OnAssetGridHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (m_AssetGridDragging == false)
+		if (!m_AssetGridDragging)
 			m_ProjectUI.assetGridHighlight.visible = false;
 	}
 
@@ -269,7 +269,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	void OnFolderPanelHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (m_FolderPanelDragging == false)
+		if (!m_FolderPanelDragging)
 			m_ProjectUI.folderPanelHighlight.visible = false;
 	}
 
