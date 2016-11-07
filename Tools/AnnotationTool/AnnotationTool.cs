@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using UnityEngine.VR.Utilities;
 using UnityEditor.VR;
 
-[MainMenuItem("Annotation", "Tools", "Draw in da spaaaaaace")]
+[MainMenuItem("Annotation", "Tools", "Draw in the space")]
 public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICustomRay, IOtherRay, IInstantiateUI
 {
 	public Transform rayOrigin { private get; set; }
@@ -55,7 +55,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 	private bool m_RayHidden;
 
-	private Mesh m_CustomPointer;
+	private Mesh m_CustomPointerMesh;
+	private GameObject m_CustomPointerObject;
 
 	private const float kTopMinRadius = 0.001f;
 	private const float kTopMaxRadius = 0.05f;
@@ -66,6 +67,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 	private float m_CurrentRadius = kTopMinRadius;
 
 	private List<GameObject> m_UndoList = new List<GameObject>();
+
+	private Quaternion m_InitialRotation;
 
 	void OnDestroy()
 	{
@@ -80,6 +83,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		}
 
 		U.Object.Destroy(m_ColorPicker);
+		DestroyImmediate(m_CustomPointerObject);
 	}
 	
 	void Update()
@@ -143,8 +147,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 	private void CheckColorPicker()
 	{
 		var distance = Vector3.Distance(rayOrigin.position, otherRayOrigin.position);
-		float dot = Vector3.Dot(otherRayOrigin.right, rayOrigin.position - otherRayOrigin.position);
-		if (distance < .325f && dot > 0)
+		if (distance < .325f)
 		{
 			if (m_ColorPicker == null)
 			{
@@ -158,6 +161,11 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 				pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
 				pickerTransform.localRotation = Quaternion.identity;
 			}
+
+			float dot = Vector3.Dot(otherRayOrigin.right, rayOrigin.position - otherRayOrigin.position);
+			Vector3 localPos = m_ColorPicker.transform.localPosition;
+			localPos.x = Mathf.Abs(localPos.x) * Mathf.Sign(dot);
+			m_ColorPicker.transform.localPosition = localPos;
 
 			if (!m_ColorPicker.enabled)
 				m_ColorPicker.Show();
@@ -173,13 +181,13 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 	private void HandleBrushSize()
 	{
-		if (m_CustomPointer != null)
+		if (m_CustomPointerMesh != null)
 		{
 			var sign = m_AnnotationInput.changeBrushSize.value;
 			m_CurrentRadius += sign * Time.unscaledDeltaTime * .1f;
 			m_CurrentRadius = Mathf.Clamp(m_CurrentRadius, kTopMinRadius, kTopMaxRadius);
 
-			var vertices = m_CustomPointer.vertices;
+			var vertices = m_CustomPointerMesh.vertices;
 			for (int i = kSides; i < kSides * 2; i++)
 			{
 				float angle = (i / (float)kSides) * Mathf.PI * 2f;
@@ -189,25 +197,25 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 				Vector3 point = new Vector3(xPos, yPos, kTipDistance);
 				vertices[i] = point;
 			}
-			m_CustomPointer.vertices = vertices;
+			m_CustomPointerMesh.vertices = vertices;
 		}
 	}
 
 	private void GenerateCustomPointer()
 	{
-		if (m_CustomPointer != null)
+		if (m_CustomPointerMesh != null)
 			return;
 
-		m_CustomPointer = new Mesh();
-		m_CustomPointer.vertices = GenerateVertices();
-		m_CustomPointer.triangles = GenerateTriangles();
+		m_CustomPointerMesh = new Mesh();
+		m_CustomPointerMesh.vertices = GenerateVertices();
+		m_CustomPointerMesh.triangles = GenerateTriangles();
 
-		var customPointer = new GameObject("CustomPointer");
+		m_CustomPointerObject = new GameObject("CustomPointer");
 
-		customPointer.AddComponent<MeshFilter>().sharedMesh = m_CustomPointer;
-		customPointer.AddComponent<MeshRenderer>().sharedMaterial = m_ConeMaterial;
+		m_CustomPointerObject.AddComponent<MeshFilter>().sharedMesh = m_CustomPointerMesh;
+		m_CustomPointerObject.AddComponent<MeshRenderer>().sharedMaterial = m_ConeMaterial;
 
-		var pointerTrans = customPointer.transform;
+		var pointerTrans = m_CustomPointerObject.transform;
 		pointerTrans.SetParent(rayOrigin);
 
 		pointerTrans.localPosition = Vector3.zero;
@@ -329,7 +337,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		m_WorldToLocalMesh = goTrans.worldToLocalMatrix;
 
 		m_CurrentMesh = new Mesh();
-		PointsToMesh();
 	}
 
 	private void SetupHolder()
@@ -377,7 +384,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 		return newSession;
 	}
-
+	
 	private void UpdateAnnotation()
 	{
 		Vector3 rayForward = rayOrigin.forward;
@@ -393,7 +400,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			PointsToMesh();
 		}
 	}
-
+	
 	private void PointsToMesh()
 	{
 		if (m_Points.Count < 2)
@@ -402,11 +409,21 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		if (m_CurrentMesh == null)
 			m_CurrentMesh = new Mesh();
 
+		if (m_Points.Count == 2)
+		{
+			Vector3 initialDir = m_Points[1] - m_Points[0];
+			Vector3 initialNormalDir = -rayOrigin.forward;
+			m_InitialRotation = Quaternion.FromToRotation(initialDir, initialNormalDir);
+		}
+
 		List<Vector3> newVertices = new List<Vector3>();
 		List<int> newTriangles = new List<int>();
 		List<Vector2> newUvs = new List<Vector2>();
-
+		
 		LineToPlane(newVertices);
+		SmoothPlane(newVertices);
+		if (newVertices.Count > 6)
+			newVertices.RemoveRange(newVertices.Count - 5, 4);
 		TriangulatePlane(newTriangles, newVertices.Count);
 		CalculateUvs(newUvs, newVertices.Count);
 
@@ -430,15 +447,14 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			Vector3 nextPoint = m_Points[i];
 			Vector3 thisPoint = m_Points[i - 1];
 			Vector3 direction = (nextPoint - thisPoint).normalized;
-			Vector3 smoothNormal = (m_Forwards[i - 1] + m_Forwards[i] + m_Forwards[Mathf.Min(m_Points.Count - 1, i + 1)]) / 3f;
 
 			// For optimization, ignore inner points of an almost straight line.
 			// The last point is an exception, it is required for a smooth drawing experience.
 			if (Vector3.Angle(prevDirection, direction) < 1f && i < m_Points.Count - 1)
 				continue;
 
-			Vector3 cross = Vector3.Cross(direction, smoothNormal);
-			cross.Normalize();
+			Vector3 localCross = Vector3.Cross(direction, m_Forwards[i - 1]);
+			Vector3 cross = localCross.normalized;
 
 			float width = m_Widths[i - 1];
 			Vector3 left = thisPoint - cross * width;
@@ -448,6 +464,18 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			newVertices.Add(right);
 
 			prevDirection = direction;
+		}
+	}
+	
+	private void SmoothPlane(List<Vector3> newVertices)
+	{
+		for (int side = 0; side < 2; side++)
+		{
+			for (int i = 4; i < newVertices.Count - 4 - side; i++)
+			{
+				Vector3 average = (newVertices[i - 4 + side] + newVertices[i - 2 + side] + newVertices[i + 2 + side] + newVertices[i + 4 + side]) / 4f;
+				newVertices[i + side] = average;
+			}
 		}
 	}
 
