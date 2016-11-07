@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.VR.Utilities;
 
 public class CuboidLayout : UIBehaviour
 {
-	static readonly Vector2 kTargetPivot = new Vector2(0.5f, 0.5f);
+	static readonly Vector2 kCuboidPivot = new Vector2(0.5f, 0.5f);
 	const float kLayerHeight = 0.004f;
 	const float kExtraSpace = 0.00055f; // To avoid Z-fighting
 
@@ -28,17 +29,13 @@ public class CuboidLayout : UIBehaviour
 		m_CubeTransforms = new Transform[m_TargetTransforms.Length];
 		for (var i = 0; i < m_CubeTransforms.Length; i++)
 		{
-			var cube = Instantiate(m_CubePrefab).transform;
-			cube.SetParent(m_TargetTransforms[i], false);
-			m_CubeTransforms[i] = cube;
+			m_CubeTransforms[i] = U.Object.Instantiate(m_CubePrefab, m_TargetTransforms[i], false).transform;
 		}
 
 		m_HighlightCubeTransforms = new Transform[m_TargetHighlightTransforms.Length];
 		for (var i = 0; i < m_TargetHighlightTransforms.Length; i++)
 		{
-			var cube = Instantiate(m_HighlightCubePrefab).transform;
-			cube.SetParent(m_TargetHighlightTransforms[i], false);
-			m_HighlightCubeTransforms[i] = cube;
+			m_HighlightCubeTransforms[i] = U.Object.Instantiate(m_HighlightCubePrefab, m_TargetHighlightTransforms[i], false).transform;
 		}
 
 		UpdateObjects();
@@ -55,10 +52,12 @@ public class CuboidLayout : UIBehaviour
 	/// <param name="backingCubeMaterial">New material to use</param>
 	public void SetMaterials(Material backingCubeMaterial)
 	{
-		foreach (var cube in m_CubeTransforms)
+		if (m_CubeTransforms != null)
 		{
-			if (cube)
+			foreach (var cube in m_CubeTransforms)
+			{
 				cube.GetComponent<Renderer>().sharedMaterial = backingCubeMaterial;
+			}
 		}
 	}
 
@@ -73,7 +72,7 @@ public class CuboidLayout : UIBehaviour
 		{
 			var rectSize = m_TargetTransforms[i].rect.size.Abs();
 			// Scale pivot by rect size to get correct xy local position
-			var pivotOffset =  Vector2.Scale(rectSize, kTargetPivot - m_TargetTransforms[i].pivot);
+			var pivotOffset =  Vector2.Scale(rectSize, kCuboidPivot - m_TargetTransforms[i].pivot);
 
 			// Add space for target transform
 			var localPosition = m_TargetTransforms[i].localPosition;
@@ -90,7 +89,7 @@ public class CuboidLayout : UIBehaviour
 		{
 			var rectSize = m_TargetHighlightTransforms[i].rect.size.Abs();
 			// Scale pivot by rect size to get correct xy local position
-			var pivotOffset = Vector2.Scale(rectSize, kTargetPivot - m_TargetHighlightTransforms[i].pivot);
+			var pivotOffset = Vector2.Scale(rectSize, kCuboidPivot - m_TargetHighlightTransforms[i].pivot);
 
 			// Add space for target transform
 			var localPosition = m_TargetHighlightTransforms[i].localPosition;

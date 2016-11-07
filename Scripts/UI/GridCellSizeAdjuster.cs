@@ -21,7 +21,10 @@ namespace UnityEngine.VR.Helpers
 		void Update()
 		{
 			if (m_LayoutGroupTransform.hasChanged)
+			{
 				DriveCellSizeWithLayoutGroupTransform();
+				m_LayoutGroupTransform.hasChanged = false;
+			}
 		}
 
 		void DriveCellSizeWithLayoutGroupTransform()

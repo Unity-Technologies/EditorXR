@@ -84,6 +84,10 @@ namespace UnityEngine.VR.Workspaces
 				if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
 					m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
 			}
+			get
+			{
+				return m_Icon.sprite == m_AlternateIconSprite;
+			}
 		}
 
 		public Quaternion visibleLocalRotation
@@ -156,7 +160,7 @@ namespace UnityEngine.VR.Workspaces
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * kIconHighlightedLocalZOffset;
 
-			m_HighlightGradientPair = !m_GrayscaleGradient ? UnityBrandColorScheme.sessionGradient : UnityBrandColorScheme.grayscaleSessionGradient;
+			m_HighlightGradientPair = m_GrayscaleGradient ? UnityBrandColorScheme.grayscaleSessionGradient : UnityBrandColorScheme.sessionGradient;
 
 			m_OriginalIconSprite = m_Icon.sprite;
 
@@ -397,7 +401,7 @@ namespace UnityEngine.VR.Workspaces
 		void SwapIconSprite()
 		{
 			// Alternate between the main icon and the alternate icon when the button is clicked
-			m_Icon.sprite = m_Icon.sprite == m_OriginalIconSprite ? m_AlternateIconSprite : m_OriginalIconSprite;
+			alternateIconVisible = !alternateIconVisible;
 		}
 	}
 }
