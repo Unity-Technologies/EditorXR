@@ -43,8 +43,5 @@ namespace UnityEngine.VR.Menus
 		/// Parameters: main menu instance
 		/// </summary>
 		event Action<IMainMenu> menuVisibilityChanged;
-
-		// HACK: Awake/Start get called together in ExecuteInEditMode, so calling this method after is a workaround for order of operations
-		Action setup { get; }
 	}
 }

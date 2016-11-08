@@ -105,7 +105,7 @@ public class InspectorHeaderItem : InspectorListItem
 
 	public void SetStatic(bool isStatic)
 	{
-		if(m_TargetGameObject != null && m_TargetGameObject.isStatic != isStatic)
+		if (m_TargetGameObject != null && m_TargetGameObject.isStatic != isStatic)
 			m_TargetGameObject.isStatic = isStatic;
 	}
 
@@ -119,7 +119,7 @@ public class InspectorHeaderItem : InspectorListItem
 	{
 		var tags = UnityEditorInternal.InternalEditorUtility.tags;
 		var tag = tags[values[0]];
-		if(!m_TargetGameObject.tag.Equals(tag))
+		if (!m_TargetGameObject.tag.Equals(tag))
 			m_TargetGameObject.tag = tag;
 	}
 

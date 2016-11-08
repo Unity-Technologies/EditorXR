@@ -36,6 +36,12 @@
 			}
 		}
 
+		void OnEnable()
+		{
+			m_LazyPosition = transform.position;
+			m_LazyRotation = transform.rotation;
+		}
+
 		void LateUpdate ()
 		{
 			if (m_Target != transform.parent)
