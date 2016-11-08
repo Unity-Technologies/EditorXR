@@ -220,6 +220,7 @@ public class EditorVR : MonoBehaviour
 	{
 		while (!m_HMDReady)
 			yield return null;
+
 		CreateDefaultWorkspaces();
 
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
@@ -1192,9 +1193,6 @@ public class EditorVR : MonoBehaviour
 
 	private void ResetWorkspacePositions()
 	{
-		if (m_AllWorkspaces.Count == 0)
-			CreateDefaultWorkspaces();
-		
 		var defaultOffset = Workspace.kDefaultOffset;
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 		var headPosition = cameraTransform.position;
@@ -1258,8 +1256,8 @@ public class EditorVR : MonoBehaviour
 			m_AllWorkspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			ConnectInterfaces(workspace);
-			workspace.transform.position = pos;
-			workspace.transform.rotation = rot;
+			workspace.transform.localPosition = pos;
+			workspace.transform.localRotation = rot;
 			workspace.transform.localScale = scale;
 
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
