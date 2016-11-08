@@ -1,8 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.VR;
-using UnityEngine.VR.Utilities;
 
 public class HighlightModule : MonoBehaviour
 {

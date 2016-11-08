@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Tools
 {
-	// TODO: Uncomment IBlockUIInput after merge with dev/schoen/bugfix-b
-	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight //, IBlockUIInput
+	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
 	{
 		private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
@@ -17,7 +14,7 @@ namespace UnityEngine.VR.Tools
 		private GameObject m_PressedObject;
 
 		// The prefab (if any) that was double clicked, whose individual pieces can be selected
-		private static GameObject s_CurrentPrefabOpened; 
+		private static GameObject s_CurrentPrefabOpened;
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 		[SerializeField]
@@ -36,14 +33,8 @@ namespace UnityEngine.VR.Tools
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
 
-		// TODO: Uncomment after merge with dev/schoen/bugfix-b
-		//public Action<bool> setInputBlocked { get; set; }
-
 		void Update()
 		{
-			if (rayOrigin == null)
-				return;
-
 			var newHoverGameObject = getFirstGameObject(rayOrigin);
 			GameObject newPrefabRoot = null;
 
@@ -71,17 +62,11 @@ namespace UnityEngine.VR.Tools
 			m_HoverGameObject = newHoverGameObject;
 
 			if (m_SelectionInput.select.wasJustPressed && m_HoverGameObject)
-			{
-				// TODO: Uncomment after merge with dev/schoen/bugfix-b
-				//	setInputBlocked(true);
 				m_PressedObject = m_HoverGameObject;
-			}
 
 			// Handle select button press
 			if (m_SelectionInput.select.wasJustReleased)
 			{
-				// TODO: Uncomment after merge with dev/schoen/bugfix-b
-				//setInputBlocked(false);
 				if (m_PressedObject == m_HoverGameObject)
 				{
 					s_CurrentPrefabOpened = newPrefabRoot;
@@ -105,6 +90,7 @@ namespace UnityEngine.VR.Tools
 					{
 						if (s_CurrentPrefabOpened && s_CurrentPrefabOpened != m_HoverGameObject)
 							s_SelectedObjects.Remove(s_CurrentPrefabOpened);
+
 						s_SelectedObjects.Clear();
 						Selection.activeGameObject = m_HoverGameObject;
 						s_SelectedObjects.Add(m_HoverGameObject);
