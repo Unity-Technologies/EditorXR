@@ -531,12 +531,13 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 	private void SmoothPlane(List<Vector3> newVertices)
 	{
+		const float kSmoothRatio = .5f;
 		for (int side = 0; side < 2; side++)
 		{
 			for (int i = 4; i < newVertices.Count - 4 - side; i++)
 			{
 				Vector3 average = (newVertices[i - 4 + side] + newVertices[i - 2 + side] + newVertices[i + 2 + side] + newVertices[i + 4 + side]) / 4f;
-				newVertices[i + side] = average;//Vector3.Lerp(newVertices[i + side], average, .33f);
+				newVertices[i + side] = Vector3.Lerp(newVertices[i + side], average, kSmoothRatio);
 			}
 		}
 	}
@@ -559,9 +560,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 	{
 		for (int i = 0; i < vertexCount; i += 2)
 		{
-			float ratio = 1 - i / (float)vertexCount;
-			newUvs.Add(new Vector2(0, ratio));
-			newUvs.Add(new Vector2(1, ratio));
+			for (int side = 0; side < 2; side++)
+				newUvs.Add(new Vector2(side, i / 2));
 		}
 	}
 
