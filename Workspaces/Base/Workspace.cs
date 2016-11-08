@@ -83,7 +83,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public Func<GameObject, GameObject> instantiateUI { protected get; set; }
 
-		public Action<GameObject, bool> setHighlight { get; set; }
+		public Action<GameObject, bool> setHighlight { protected get; set; }
 
 		/// <summary>
 		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated

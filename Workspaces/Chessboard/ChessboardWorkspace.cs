@@ -44,6 +44,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 	public Transform referenceTransform { get { return m_MiniWorld.referenceTransform; } }
 	public Transform miniWorldTransform { get { return m_MiniWorld.miniWorldTransform; } }
 	public bool Contains(Vector3 position) { return m_MiniWorld.Contains(position); }
+	public List<Renderer> ignoreList { set { m_MiniWorld.ignoreList = value; } }
 
 	public override void Setup()
 	{
@@ -156,6 +157,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		var rayData = m_RayData[0];
 		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) // Do not execute for the second ray
 			return;
+
 		var referenceTransform = m_MiniWorld.referenceTransform;
 		var rayOrigin = eventData.rayOrigin;
 		

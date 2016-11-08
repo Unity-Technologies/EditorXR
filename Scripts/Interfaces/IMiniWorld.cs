@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// For the purpose of interacting with MiniWorlds
@@ -21,4 +22,9 @@ public interface IMiniWorld
 	/// Gets the reference transform used to represent the origin and size of the space represented within the miniWorld
 	/// </summary>
 	Transform referenceTransform { get; }
+
+	/// <summary>
+	/// Sets a list of renderers to be skipped when rendering the MiniWorld
+	/// </summary>
+	List<Renderer> ignoreList { set; }
 }
