@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Manipulators;
 
 [RequireComponent(typeof(Canvas))]
 public class KeyboardUI : MonoBehaviour

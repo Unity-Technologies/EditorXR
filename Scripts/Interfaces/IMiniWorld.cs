@@ -25,16 +25,6 @@ public interface IMiniWorld
 	Transform referenceTransform { get; }
 
 	/// <summary>
-	/// Preprocessing event that returns true if the MiniWorld should render
-	/// </summary>
-	Func<IMiniWorld, bool> preProcessRender { set; }
-
-	/// <summary>
-	/// Postprocessing event to clean up after render
-	/// </summary>
-	Action<IMiniWorld> postProcessRender { set; }
-
-	/// <summary>
 	/// The combined scale of the MiniWorld and its reference transform
 	/// </summary>
 	Vector3 miniWorldScale { get; }

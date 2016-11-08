@@ -48,9 +48,6 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 
 	public Bounds localBounds { get { return new Bounds(Vector3.zero, m_LocalBoundsSize); } set { m_LocalBoundsSize = value.size; } }
 
-	public Func<IMiniWorld, bool> preProcessRender { private get; set; }
-	public Action<IMiniWorld> postProcessRender { private get; set; }
-
 	public Vector3 miniWorldScale
 	{
 		get { return Vector3.Scale(transform.localScale.Inverse(), referenceTransform.localScale); }
@@ -71,25 +68,9 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 		m_MiniWorldRenderer = U.Object.AddComponent<MiniWorldRenderer>(U.Camera.GetMainCamera().gameObject);
 		m_MiniWorldRenderer.miniWorld = this;
 		m_MiniWorldRenderer.cullingMask = m_RendererCullingMask;
-		m_MiniWorldRenderer.preProcessRender = PreProcessRender;
-		m_MiniWorldRenderer.postProcessRender = PostProcessRender;
 
 		Transform pivot = U.Camera.GetViewerPivot();
 		referenceTransform.position = pivot.transform.position;
-	}
-
-	bool PreProcessRender()
-	{
-		if (preProcessRender != null)
-			return preProcessRender(this);
-
-		return true;
-	}
-
-	void PostProcessRender()
-	{
-		if (preProcessRender != null)
-			postProcessRender(this);
 	}
 
 	private void OnDisable()

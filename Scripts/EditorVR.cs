@@ -10,6 +10,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
 using UnityEngine.VR.Helpers;
+using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.Menus;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
@@ -1264,9 +1265,6 @@ public class EditorVR : MonoBehaviour
 
 		m_MiniWorlds.Add(miniWorld);
 
-		miniWorld.preProcessRender = PreProcessMiniWorldRender;
-		miniWorld.postProcessRender = PostProcessMiniWorldRender;
-
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			var miniWorldRayOrigin = InstantiateMiniWorldRay();
@@ -1821,19 +1819,6 @@ public class EditorVR : MonoBehaviour
 	}
 
 	void PostProcessRaycastSources()
-	{
-		if (m_Manipulator)
-			m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
-	}
-
-	bool PreProcessMiniWorldRender(IMiniWorld miniWorld)
-	{
-		if (m_Manipulator)
-			m_Manipulator.transform.localScale = miniWorld.miniWorldScale * kMiniWorldManipulatorScale;
-		return true;
-	}
-
-	void PostProcessMiniWorldRender(IMiniWorld miniWorld)
 	{
 		if (m_Manipulator)
 			m_Manipulator.transform.localScale = m_OriginalManipulatorScale;

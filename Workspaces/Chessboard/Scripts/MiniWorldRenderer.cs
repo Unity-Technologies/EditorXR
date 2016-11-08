@@ -34,9 +34,6 @@ public class MiniWorldRenderer : MonoBehaviour
 	public MiniWorld miniWorld { private get; set; }
 	public LayerMask cullingMask { private get; set; }
 
-	public Func<bool> preProcessRender { private get; set; }
-	public Action postProcessRender { private get; set; }
-
 	void Awake()
 	{
 		s_DefaultLayer = LayerMask.NameToLayer("Default");
@@ -94,10 +91,8 @@ public class MiniWorldRenderer : MonoBehaviour
 					}
 				}
 
-				if(preProcessRender())
-					m_MiniCamera.RenderWithShader(shader, string.Empty);
-
-				postProcessRender();
+				m_MiniCamera.SetReplacementShader(shader, null);
+				m_MiniCamera.Render();
 
 				for (var i = 0; i < m_IgnoreList.Count; i++)
 				{

@@ -43,8 +43,6 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 	}
 
 	public Transform referenceTransform { get { return m_MiniWorld.referenceTransform; } }
-	public Func<IMiniWorld, bool> preProcessRender { set { m_MiniWorld.preProcessRender = value; } }
-	public Action<IMiniWorld> postProcessRender { set { m_MiniWorld.postProcessRender = value; } }
 	public Vector3 miniWorldScale { get { return m_MiniWorld.miniWorldScale; } }
 	public Transform miniWorldTransform { get { return m_MiniWorld.miniWorldTransform; } }
 	public bool Contains(Vector3 position) { return m_MiniWorld.Contains(position); }
