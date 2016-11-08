@@ -51,6 +51,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 	private GameObject m_ColorPickerPrefab;
 	private ColorPickerUI m_ColorPicker;
 
+	[SerializeField]
+	private GameObject m_BrushSizePrefab;
+	private BrushSizeUI m_BrushSizeUi;
+
+	private Action<float> onBrushSizeChanged { set; get; }
+
 	private Transform m_AnnotationHolder;
 
 	private bool m_RayHidden;
@@ -68,8 +74,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 	private List<GameObject> m_UndoList = new List<GameObject>();
 
-	private Quaternion m_InitialRotation;
-
 	void OnDestroy()
 	{
 		if (m_RayHidden && showDefaultRay != null)
@@ -82,10 +86,11 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			showDefaultRay();
 		}
 
-		U.Object.Destroy(m_ColorPicker);
+		U.Object.Destroy(m_ColorPicker.gameObject);
+		U.Object.Destroy(m_BrushSizeUi.gameObject);
 		DestroyImmediate(m_CustomPointerObject);
 	}
-	
+
 	void Update()
 	{
 		if (!m_RayHidden)
@@ -109,8 +114,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 			if (otherRayOrigin != null)
 				CheckColorPicker();
+
+			CheckBrushSizeUi();
 		}
-		
+
 		if (m_AnnotationInput.draw.wasJustPressed)
 			SetupAnnotation();
 		else if (m_AnnotationInput.draw.isHeld)
@@ -118,7 +125,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		else if (m_AnnotationInput.undo.wasJustPressed)
 			UndoLast();
 		else if (m_AnnotationInput.draw.wasJustReleased)
+		{
 			m_CurrentMesh.Optimize();
+			m_CurrentMesh.UploadMeshData(true);
+		}
 
 		if (m_AnnotationInput.changeBrushSize.value != 0)
 			HandleBrushSize();
@@ -133,20 +143,51 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			m_UndoList.RemoveAt(m_UndoList.Count - 1);
 
 			// Clean up after the removed annotations if necessary.
-			if (m_UndoList.Count == 0 && m_AnnotationHolder.childCount == 0)
+			if (m_AnnotationHolder.childCount == 0)
 			{
 				var root = m_AnnotationHolder.parent;
+				int index = m_AnnotationHolder.GetSiblingIndex();
 				DestroyImmediate(m_AnnotationHolder.gameObject);
 
 				if (root.childCount == 0)
 					DestroyImmediate(root.gameObject);
+				else
+				{
+					if (index > 0)
+						m_AnnotationHolder = root.GetChild(index - 1);
+					else if (index < root.childCount)
+						m_AnnotationHolder = root.GetChild(index);
+				}
 			}
+		}
+	}
+
+	private void CheckBrushSizeUi()
+	{
+		if (m_BrushSizeUi == null)
+		{
+			var bsuiObj = instantiateUI(m_BrushSizePrefab);
+			m_BrushSizeUi = bsuiObj.GetComponent<BrushSizeUI>();
+			var trans = bsuiObj.transform;
+			trans.SetParent(rayOrigin);
+			trans.localPosition = m_BrushSizePrefab.transform.localPosition;
+			trans.localRotation = m_BrushSizePrefab.transform.localRotation;
+
+			m_BrushSizeUi.onValueChanged = (val) => 
+			{
+				m_CurrentRadius = Mathf.Lerp(kTopMinRadius, kTopMaxRadius, val);
+				ResizePointer();
+			};
+			onBrushSizeChanged = m_BrushSizeUi.ChangeSliderValue;
 		}
 	}
 
 	private void CheckColorPicker()
 	{
-		var distance = Vector3.Distance(rayOrigin.position, otherRayOrigin.position);
+		var otherRayMatrix = otherRayOrigin.worldToLocalMatrix;
+		var rayLocalPos = otherRayMatrix.MultiplyPoint3x4(rayOrigin.position);
+		var distance = Mathf.Abs(rayLocalPos.x);
+
 		if (distance < .325f)
 		{
 			if (m_ColorPicker == null)
@@ -187,18 +228,30 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			m_CurrentRadius += sign * Time.unscaledDeltaTime * .1f;
 			m_CurrentRadius = Mathf.Clamp(m_CurrentRadius, kTopMinRadius, kTopMaxRadius);
 
-			var vertices = m_CustomPointerMesh.vertices;
-			for (int i = kSides; i < kSides * 2; i++)
+			if (m_BrushSizeUi)
 			{
-				float angle = (i / (float)kSides) * Mathf.PI * 2f;
-				float xPos = Mathf.Cos(angle) * m_CurrentRadius;
-				float yPos = Mathf.Sin(angle) * m_CurrentRadius;
-
-				Vector3 point = new Vector3(xPos, yPos, kTipDistance);
-				vertices[i] = point;
+				var ratio = Mathf.InverseLerp(kTopMinRadius, kTopMaxRadius, m_CurrentRadius);
+				if (onBrushSizeChanged != null)
+					onBrushSizeChanged(ratio);
 			}
-			m_CustomPointerMesh.vertices = vertices;
+
+			ResizePointer();
 		}
+	}
+
+	private void ResizePointer()
+	{
+		var vertices = m_CustomPointerMesh.vertices;
+		for (int i = kSides; i < kSides * 2; i++)
+		{
+			float angle = (i / (float)kSides) * Mathf.PI * 2f;
+			float xPos = Mathf.Cos(angle) * m_CurrentRadius;
+			float yPos = Mathf.Sin(angle) * m_CurrentRadius;
+
+			Vector3 point = new Vector3(xPos, yPos, kTipDistance);
+			vertices[i] = point;
+		}
+		m_CustomPointerMesh.vertices = vertices;
 	}
 
 	private void GenerateCustomPointer()
@@ -337,6 +390,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		m_WorldToLocalMesh = goTrans.worldToLocalMatrix;
 
 		m_CurrentMesh = new Mesh();
+		m_CurrentMesh.name = "Annotation";
 	}
 
 	private void SetupHolder()
@@ -390,8 +444,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		Vector3 rayForward = rayOrigin.forward;
 		Vector3 worldPoint = rayOrigin.position + rayForward * kTipDistance;
 		Vector3 localPoint = m_WorldToLocalMesh.MultiplyPoint3x4(worldPoint);
-
-		if (m_Points.Count < 1 || Vector3.Distance(m_Points.Last(), localPoint) >= (m_CurrentRadius * .25f))
+		
+		if (m_Points.Count < 1 || Vector3.Distance(m_Points.Last(), localPoint) >= (m_CurrentRadius * 0.25f))
 		{
 			m_Points.Add(localPoint);
 			m_Forwards.Add(rayForward);
@@ -403,27 +457,23 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 	
 	private void PointsToMesh()
 	{
-		if (m_Points.Count < 2)
+		if (m_Points.Count < 4)
 			return;
 
 		if (m_CurrentMesh == null)
 			m_CurrentMesh = new Mesh();
 
-		if (m_Points.Count == 2)
-		{
-			Vector3 initialDir = m_Points[1] - m_Points[0];
-			Vector3 initialNormalDir = -rayOrigin.forward;
-			m_InitialRotation = Quaternion.FromToRotation(initialDir, initialNormalDir);
-		}
-
 		List<Vector3> newVertices = new List<Vector3>();
 		List<int> newTriangles = new List<int>();
 		List<Vector2> newUvs = new List<Vector2>();
-		
+
 		LineToPlane(newVertices);
 		SmoothPlane(newVertices);
-		if (newVertices.Count > 6)
-			newVertices.RemoveRange(newVertices.Count - 5, 4);
+
+		newVertices.RemoveRange(0, Mathf.Min(newVertices.Count, 4));
+		if (newVertices.Count > 4)
+			newVertices.RemoveRange(newVertices.Count - 4, 4);
+
 		TriangulatePlane(newTriangles, newVertices.Count);
 		CalculateUvs(newUvs, newVertices.Count);
 
@@ -441,6 +491,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 	private void LineToPlane(List<Vector3> newVertices)
 	{
 		Vector3 prevDirection = (m_Points[1] - m_Points[0]).normalized;
+		Vector3 prevCross = Vector3.Cross(prevDirection, m_Forwards[0]);
 
 		for (int i = 1; i < m_Points.Count; i++)
 		{
@@ -453,9 +504,19 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			if (Vector3.Angle(prevDirection, direction) < 1f && i < m_Points.Count - 1)
 				continue;
 
-			Vector3 localCross = Vector3.Cross(direction, m_Forwards[i - 1]);
-			Vector3 cross = localCross.normalized;
+			Vector3 cross;
+			float drawAngle = Vector3.Angle(direction, m_Forwards[i - 1]);
+			if (drawAngle < 10 || drawAngle > 170)
+				cross = prevCross;
+			else
+			{
+				cross = Vector3.Cross(direction, m_Forwards[i - 1]).normalized;
 
+				// Prevent sudden spins in the spline.
+				if (Vector3.Angle(prevCross, cross) > 90f)
+					cross = prevCross;
+			}
+			
 			float width = m_Widths[i - 1];
 			Vector3 left = thisPoint - cross * width;
 			Vector3 right = thisPoint + cross * width;
@@ -464,9 +525,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			newVertices.Add(right);
 
 			prevDirection = direction;
+			prevCross = cross;
 		}
 	}
-	
+
 	private void SmoothPlane(List<Vector3> newVertices)
 	{
 		for (int side = 0; side < 2; side++)
@@ -474,7 +536,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			for (int i = 4; i < newVertices.Count - 4 - side; i++)
 			{
 				Vector3 average = (newVertices[i - 4 + side] + newVertices[i - 2 + side] + newVertices[i + 2 + side] + newVertices[i + 4 + side]) / 4f;
-				newVertices[i + side] = average;
+				newVertices[i + side] = average;//Vector3.Lerp(newVertices[i + side], average, .33f);
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: ecba8b13e3259e14eab642c0d0657d5c
-timeCreated: 1478181815
+timeCreated: 1478604970
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
@@ -10,6 +10,8 @@ MonoImporter:
       type: 2}
   - m_ConeMaterial: {fileID: 2100000, guid: 0372357aa9e962f47a35f6b6350ae99c, type: 2}
   - m_ColorPickerPrefab: {fileID: 1000014053269536, guid: da56ed8b2b72e414589b2938af94c498,
+      type: 2}
+  - m_BrushSizePrefab: {fileID: 1000012251850158, guid: 76909d1f493d664469c9e0f4726790a3,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
