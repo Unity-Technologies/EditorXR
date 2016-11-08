@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.UI;
+using UnityEngine.VR.Workspaces;
 
 public class InspectorNumberItem : InspectorPropertyItem
 {
@@ -10,10 +11,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 	NumericInputField m_InputField;
 
 	[SerializeField]
-	GameObject[] m_TickButtons;
-
-	[SerializeField]
-	GameObject[] m_ScrubIcons;
+	WorkspaceButton[] m_IncrementDecrementButtons;
 
 	public SerializedPropertyType propertyType { get; private set; }
 	public event Action<PropertyData> arraySizeChanged = delegate {};
@@ -107,10 +105,8 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 		if (m_ClickedField && m_ClickCount == 0)
 		{
-			foreach (var tickButton in m_TickButtons)
-				tickButton.gameObject.SetActive(false);
-			foreach (var scrubIcon in m_ScrubIcons)
-				scrubIcon.gameObject.SetActive(true);
+			foreach (var button in m_IncrementDecrementButtons)
+				button.alternateIconVisible = true;
 		}
 	}
 
@@ -137,11 +133,8 @@ public class InspectorNumberItem : InspectorPropertyItem
 				}
 			}
 
-			foreach (var tickButton in m_TickButtons)
-				tickButton.gameObject.SetActive(true);
-
-			foreach (var scrubIcon in m_ScrubIcons)
-				scrubIcon.gameObject.SetActive(false);
+			foreach (var button in m_IncrementDecrementButtons)
+				button.alternateIconVisible = false;
 		}
 	}
 

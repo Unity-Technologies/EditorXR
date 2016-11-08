@@ -10,6 +10,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
 using UnityEngine.VR.Helpers;
+using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.Menus;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
@@ -27,9 +28,6 @@ public class EditorVR : MonoBehaviour
 {
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
-	/// <summary>
-	/// Tag applied to player head model which tracks the camera (for MiniWorld locomotion)
-	/// </summary>
 	const string kVRPlayerTag = "VRPlayer";
 
 	private const float kDefaultRayLength = 100f;
@@ -91,6 +89,7 @@ public class EditorVR : MonoBehaviour
 	private DragAndDropModule m_DragAndDropModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
+	bool m_PixelRaycastIgnoreListDirty = true;
 
 	private PlayerHandle m_PlayerHandle;
 
@@ -141,10 +140,14 @@ public class EditorVR : MonoBehaviour
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
 	private readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>();
-
+	bool m_MiniWorldIgnoreListDirty = true;
+	
 	private event Action m_SelectionChanged;
 
 	bool m_HMDReady;
+
+	StandardManipulator m_StandardManipulator;
+	ScaleManipulator m_ScaleManipulator;
 
 	IGrabObjects m_TransformTool;
 
@@ -238,6 +241,13 @@ public class EditorVR : MonoBehaviour
 			m_SelectionChanged();
 	}
 
+	// TODO: Find a better callback for when objects are created or destroyed
+	void OnHierarchyChanged()
+	{
+		m_MiniWorldIgnoreListDirty = true;
+		m_PixelRaycastIgnoreListDirty = true;
+	}
+
 	IEnumerable<InputDevice> GetSystemDevices()
 	{
 		// For now let's filter out any other devices other than VR controller devices; Eventually, we may support mouse / keyboard etc.
@@ -297,6 +307,7 @@ public class EditorVR : MonoBehaviour
 	{
 		Selection.selectionChanged += OnSelectionChanged;
 #if UNITY_EDITOR
+		EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 		VRView.onGUIDelegate += OnSceneGUI;
 		VRView.onHMDReady += OnHMDReady;
 #endif
@@ -306,6 +317,7 @@ public class EditorVR : MonoBehaviour
 	{
 		Selection.selectionChanged -= OnSelectionChanged;
 #if UNITY_EDITOR
+		EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 		VRView.onGUIDelegate -= OnSceneGUI;
 		VRView.onHMDReady -= OnHMDReady;
 #endif
@@ -320,7 +332,11 @@ public class EditorVR : MonoBehaviour
 	{
 		if (Event.current.type == EventType.ExecuteCommand)
 		{
-			m_PixelRaycastModule.UpdateIgnoreList();
+			if (m_PixelRaycastIgnoreListDirty)
+			{
+				m_PixelRaycastModule.UpdateIgnoreList();
+				m_PixelRaycastIgnoreListDirty = false;
+			}
 
 			ForEachRayOrigin((proxy, pair, device, deviceData) =>
 			{
@@ -422,7 +438,7 @@ public class EditorVR : MonoBehaviour
 		foreach (var workspace in m_AllWorkspaces)
 			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
 
-		UpdateMiniWorldRays();
+		UpdateMiniWorlds();
 
 #if UNITY_EDITOR
 		// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
@@ -615,6 +631,8 @@ public class EditorVR : MonoBehaviour
 		m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
 		m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
 
+		m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
+		
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			// Create ui action map input for device.
@@ -625,7 +643,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput);
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value);
 		});
 	}
 
@@ -1276,53 +1294,60 @@ public class EditorVR : MonoBehaviour
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
 
-			var projectFolderList = workspace as IProjectFolderList;
-			if (projectFolderList != null)
-				m_ProjectFolderLists.Add(projectFolderList);
+		var projectFolderList = workspace as IProjectFolderList;
+		if (projectFolderList != null)
+			m_ProjectFolderLists.Add(projectFolderList);
 
-			var filterUI = workspace as IFilterUI;
-			if (filterUI != null)
-				m_FilterUIs.Add(filterUI);
+		var filterUI = workspace as IFilterUI;
+		if (filterUI != null)
+			m_FilterUIs.Add(filterUI);
 
-			var miniWorld = workspace as IMiniWorld;
-			if (miniWorld != null)
+		// Chessboard is a special case that we handle due to all of the mini world interactions
+		var chessboardWorkspace = workspace as ChessboardWorkspace;
+		if (!chessboardWorkspace)
+			return;
+
+		var miniWorld = chessboardWorkspace.miniWorld;
+
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			var miniWorldRayOrigin = InstantiateMiniWorldRay();
+			miniWorldRayOrigin.parent = workspace.transform;
+
+			var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+			uiInput.active = false;
+
+			var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
+			directSelectInput.active = false;
+
+			// Use the mini world ray origin instead of the original ray origin
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
 			{
-				m_MiniWorlds.Add(miniWorld);
+				if (source.hoveredObject)
+					return !m_AllWorkspaces.Any(w => source.hoveredObject.transform.IsChildOf(w.transform));
 
-				ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-				{
-					var miniWorldRayOrigin = InstantiateMiniWorldRay();
-					miniWorldRayOrigin.parent = workspace.transform;
+				return true;
+			});
 
-					var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-					uiInput.active = false;
+			var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
+			tester.active = false;
 
-					var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
-					directSelectInput.active = false;
+			m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
+			{
+				originalRayOrigin = rayOriginPair.Value,
+				originalDirectSelectInput = deviceData.directSelectInput,
+				miniWorld = miniWorld,
+				proxy = proxy,
+				node = rayOriginPair.Key,
+				uiInput = uiInput,
+				directSelectInput = directSelectInput,
+				tester = tester
+			};
 
-					// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-					m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
+			m_IntersectionModule.AddTester(tester);
+		});
 
-					var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
-					tester.active = false;
-
-					m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
-					{
-						originalRayOrigin = rayOriginPair.Value,
-						originalDirectSelectInput = deviceData.directSelectInput,
-						miniWorld = miniWorld,
-						proxy = proxy,
-						node = rayOriginPair.Key,
-						uiInput = uiInput,
-						directSelectInput = directSelectInput,
-						tester = tester
-					};
-
-					m_IntersectionModule.AddTester(tester);
-				});
-
-				UpdatePlayerHandleMaps();
-			}
+		UpdatePlayerHandleMaps();
 	}
 
 	/// <summary>
@@ -1381,10 +1406,39 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void UpdateMiniWorldRays()
+	void UpdateMiniWorldIgnoreList()
 	{
+		var renderers = new List<Renderer>(GetComponentsInChildren<Renderer>(true));
+		var ignoreList = new List<Renderer>(renderers.Count);
+
+		foreach (var r in renderers)
+		{
+			if (r.CompareTag(kVRPlayerTag))
+				continue;
+
+			if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.kShowInMiniWorldTag))
+				continue;
+
+			ignoreList.Add(r);
+		}
+
+		foreach (var miniWorld in m_MiniWorlds)
+		{
+			miniWorld.ignoreList = ignoreList;
+		}
+	}
+
+	private void UpdateMiniWorlds()
+	{
+		if (m_MiniWorldIgnoreListDirty)
+		{
+			UpdateMiniWorldIgnoreList();
+			m_MiniWorldIgnoreListDirty = false;
+		}
+
 		var directSelection = m_TransformTool;
 
+		// Update MiniWorldRays
 		foreach (var ray in m_MiniWorldRays)
 		{
 			var miniWorldRayOrigin = ray.Key;
@@ -1790,6 +1844,28 @@ public class EditorVR : MonoBehaviour
 				from origin in proxy.rayOrigins
 					where origin.Value.Equals(rayOrigin)
 						select proxy.previewOrigins[origin.Key]).FirstOrDefault();
+	}
+
+	void PreProcessRaycastSource(Transform rayOrigin)
+	{
+		var camera = U.Camera.GetMainCamera();
+		var matrix = camera.worldToCameraMatrix;
+
+		MiniWorldRay ray;
+		if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
+			matrix = ray.miniWorld.worldToCameraMatrix;
+
+		if (!m_StandardManipulator)
+			m_StandardManipulator = GetComponentInChildren<StandardManipulator>();
+
+		if (m_StandardManipulator)
+			m_StandardManipulator.AdjustScale(camera.transform.position, matrix);
+
+		if (!m_ScaleManipulator)
+			m_ScaleManipulator = GetComponentInChildren<ScaleManipulator>();
+
+		if (m_ScaleManipulator)
+			m_ScaleManipulator.AdjustScale(camera.transform.position, matrix);
 	}
 
 	void AddPlayerModel()

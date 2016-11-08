@@ -4,13 +4,13 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
+using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IDirectSelection, IGrabObjects
 {
-	const float kBaseManipulatorSize = 0.3f;
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
 
@@ -58,8 +58,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	[SerializeField]
 	ActionMap m_TransformActionMap;
 
-	readonly List<IManipulator> m_AllManipulators = new List<IManipulator>();
-	IManipulator m_CurrentManipulator;
+	readonly List<BaseManipulator> m_AllManipulators = new List<BaseManipulator>();
+	BaseManipulator m_CurrentManipulator;
 	int m_CurrentManipulatorIndex;
 
 	Transform[] m_SelectionTransforms;
@@ -117,14 +117,14 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		m_DirectSelected = false;
 
 		if (m_SelectionTransforms.Length == 0)
-			((MonoBehaviour)m_CurrentManipulator).gameObject.SetActive(false);
+			m_CurrentManipulator.gameObject.SetActive(false);
 		else
 			UpdateCurrentManipulator();
 	}
 
 	void Update()
 	{
-		var manipulatorGameObject = ((MonoBehaviour)m_CurrentManipulator).gameObject;
+		var manipulatorGameObject = m_CurrentManipulator.gameObject;
 
 		var directSelection = getDirectSelection();
 		var hasLeft = m_GrabData.ContainsKey(Node.LeftHand);
@@ -244,11 +244,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 				SwitchManipulator();
 
 			if (!m_CurrentManipulator.dragging)
-			{
-				UpdateManipulatorSize();
 				UpdateCurrentManipulator();
-			}
-
+			
 			var deltaTime = Time.unscaledDeltaTime;
 			var manipulatorTransform = manipulatorGameObject.transform;
 			manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, kLazyFollowTranslate * deltaTime);
@@ -266,7 +263,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 					t.position = manipulatorTransform.position + m_PositionOffsetRotation * m_PositionOffsets[t];
 				}
 				else
+				{
 					t.position = manipulatorTransform.position + m_PositionOffsets[t];
+				}
 
 				t.localScale = Vector3.Lerp(t.localScale, Vector3.Scale(m_TargetScale, m_ScaleOffsets[t]), kLazyFollowTranslate * deltaTime);
 			}
@@ -383,18 +382,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		m_SelectionBounds = newBounds.Value;
 	}
 
-	private void UpdateManipulatorSize()
-	{
-		var camera = U.Camera.GetMainCamera();
-		var manipulator = (MonoBehaviour)m_CurrentManipulator;
-		var distance = Vector3.Distance(camera.transform.position, manipulator.transform.position);
-		manipulator.transform.localScale = Vector3.one * distance * kBaseManipulatorSize;
-	}
-
-	private IManipulator CreateManipulator(GameObject prefab)
+	BaseManipulator CreateManipulator(GameObject prefab)
 	{
 		var go = U.Object.Instantiate(prefab, transform, active: false);
-		var manipulator = go.GetComponent<IManipulator>();
+		var manipulator = go.GetComponent<BaseManipulator>();
 		manipulator.translate = Translate;
 		manipulator.rotate = Rotate;
 		manipulator.scale = Scale;
@@ -407,7 +398,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			return;
 
 		UpdateSelectionBounds();
-		var manipulatorGameObject = ((MonoBehaviour)m_CurrentManipulator).gameObject;
+		var manipulatorGameObject = m_CurrentManipulator.gameObject;
 		manipulatorGameObject.SetActive(true);
 		var manipulatorTransform = manipulatorGameObject.transform;
 		manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? m_SelectionTransforms[0].position : m_SelectionBounds.center;
@@ -445,7 +436,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	private void SwitchManipulator()
 	{
 		foreach (var manipulator in m_AllManipulators)
-			((MonoBehaviour)manipulator).gameObject.SetActive(false);
+			manipulator.gameObject.SetActive(false);
 
 		// Go to the next manipulator type in the list
 		m_CurrentManipulatorIndex = (m_CurrentManipulatorIndex + 1) % m_AllManipulators.Count;

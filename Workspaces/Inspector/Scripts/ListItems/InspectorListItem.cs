@@ -60,7 +60,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		m_ClipTexts = GetComponentsInChildren<ClipText>(true);
 		m_CuboidLayout = GetComponentInChildren<CuboidLayout>(true);
 		if (m_CuboidLayout)
-			m_CuboidLayout.UpdateCubes();
+			m_CuboidLayout.UpdateObjects();
 
 		var handles = GetComponentsInChildren<BaseHandle>(true);
 		foreach (var handle in handles)
@@ -126,7 +126,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		m_UIContainer.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, indent, width - indent);
 
 		if (m_CuboidLayout)
-			m_CuboidLayout.UpdateCubes();
+			m_CuboidLayout.UpdateObjects();
 	}
 
 	public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)
