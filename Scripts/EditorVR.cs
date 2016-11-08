@@ -10,6 +10,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
 using UnityEngine.VR.Helpers;
+using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.Menus;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
@@ -141,6 +142,9 @@ public class EditorVR : MonoBehaviour
 	private event Action m_SelectionChanged;
 
 	bool m_HMDReady;
+
+	StandardManipulator m_StandardManipulator;
+	ScaleManipulator m_ScaleManipulator;
 
 	IGrabObjects m_TransformTool;
 
@@ -595,6 +599,8 @@ public class EditorVR : MonoBehaviour
 		m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
 		m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
 
+		m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
+		
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			// Create ui action map input for device.
@@ -1249,10 +1255,12 @@ public class EditorVR : MonoBehaviour
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
 
-		var miniWorld = workspace as IMiniWorld;
-		if (miniWorld == null)
+		// Chessboard is a special case that we handle due to all of the mini world interactions
+		var chessboardWorkspace = workspace as ChessboardWorkspace;
+		if (!chessboardWorkspace)
 			return;
 
+		var miniWorld = chessboardWorkspace.miniWorld;
 		m_MiniWorlds.Add(miniWorld);
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
@@ -1782,6 +1790,28 @@ public class EditorVR : MonoBehaviour
 				from origin in proxy.rayOrigins
 					where origin.Value.Equals(rayOrigin)
 						select proxy.previewOrigins[origin.Key]).FirstOrDefault();
+	}
+
+	void PreProcessRaycastSource(Transform rayOrigin)
+	{
+		var camera = U.Camera.GetMainCamera();
+		var matrix = camera.worldToCameraMatrix;
+
+		MiniWorldRay ray;
+		if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
+			matrix = ray.miniWorld.worldToCameraMatrix;
+
+		if (!m_StandardManipulator)
+			m_StandardManipulator = GetComponentInChildren<StandardManipulator>();
+
+		if (m_StandardManipulator)
+			m_StandardManipulator.AdjustScale(camera.transform.position, matrix);
+
+		if (!m_ScaleManipulator)
+			m_ScaleManipulator = GetComponentInChildren<ScaleManipulator>();
+
+		if (m_ScaleManipulator)
+			m_ScaleManipulator.AdjustScale(camera.transform.position, matrix);
 	}
 
 	void AddPlayerModel()

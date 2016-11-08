@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 

@@ -50,6 +50,8 @@ namespace UnityEngine.VR.Modules
 		public event Action<GameObject, RayEventData> dragStarted = delegate {};
 		public event Action<GameObject, RayEventData> dragEnded = delegate {};
 
+		public Action<Transform> preProcessRaycastSource = delegate {};
+
 		protected override void Awake()
 		{
 			base.Awake();
@@ -83,12 +85,14 @@ namespace UnityEngine.VR.Modules
 
 			if (m_EventCamera == null)
 				return;
-			
+
 			//Process events for all different transforms in RayOrigins
 			foreach (var source in m_RaycastSources.Values)
 			{
 				if (!(source.rayOrigin.gameObject.activeSelf || source.selectedObject) || !source.proxy.active)
 					continue;
+
+				preProcessRaycastSource(source.rayOrigin);
 
 				if (source.eventData == null)
 					source.eventData = new RayEventData(base.eventSystem);
