@@ -129,7 +129,8 @@ Shader "StandardOverlay"
 		}
 		// ------------------------------------------------------------------
 		//  Shadow rendering pass
-		Pass {
+		Pass
+		{
 			Name "ShadowCaster"
 			Tags { "LightMode" = "ShadowCaster" }
 
@@ -284,7 +285,8 @@ Shader "StandardOverlay"
 		}
 		// ------------------------------------------------------------------
 		//  Shadow rendering pass
-		Pass {
+		Pass
+		{
 			Name "ShadowCaster"
 			Tags { "LightMode" = "ShadowCaster" }
 			

@@ -32,7 +32,6 @@ namespace UnityEngine.VR.Menus
 		[SerializeField]
 		private MainMenuInput m_MainMenuInput;
 
-		// HACK: As of now Awake/Start get called together, so we have to cache the value and apply it later
 		public Transform alternateMenuOrigin
 		{
 			get
@@ -48,7 +47,6 @@ namespace UnityEngine.VR.Menus
 		}
 		private Transform m_AlternateMenuOrigin;
 
-		// HACK: As of now Awake/Start get called together, so we have to cache the value and apply it later
 		public Transform menuOrigin
 		{
 			get { return m_MenuOrigin; }
@@ -60,7 +58,33 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 		private Transform m_MenuOrigin;
-		
+
+		public bool visible
+		{
+			get { return m_Visible; }
+			set
+			{
+				if (m_Visible != value)
+				{
+					m_Visible = value;
+					if (m_MainMenuUI)
+						m_MainMenuUI.visible = value;
+
+					if (value)
+					{
+						hideDefaultRay();
+						lockRay(this);
+					}
+					else
+					{
+						unlockRay(this);
+						showDefaultRay();
+					}
+				}
+			}
+		}
+		private bool m_Visible;
+
 		[SerializeField]
 		private MainMenuUI m_MainMenuPrefab;
 
@@ -81,37 +105,15 @@ namespace UnityEngine.VR.Menus
 		public List<Type> menuWorkspaces { private get; set; }
 		public Action<Type> createWorkspace { private get; set; }
 		public Node? node { private get; set; }
-		public Action setup { get { return Setup; } }
 
-		public bool visible
-		{
-			get { return m_MainMenuUI.visible; }
-			set
-			{
-				if (m_MainMenuUI.visible != value)
-				{
-					m_MainMenuUI.visible = value;
-					if (value)
-					{
-						hideDefaultRay();
-						lockRay(this);
-					}
-					else
-					{
-						unlockRay(this);
-						showDefaultRay();
-					}
-				}
-			}
-		}
-
-		public void Setup()
+		void Start()
 		{
 			m_MainMenuUI = instantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
 			m_MainMenuUI.instantiateUI = instantiateUI;
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
+			m_MainMenuUI.visible = m_Visible;
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
@@ -120,7 +122,7 @@ namespace UnityEngine.VR.Menus
 
 		private void Update()
 		{
-			var rotationInput = m_MainMenuInput.rotate.rawValue;
+			var rotationInput = -m_MainMenuInput.rotate.rawValue;
 			if (Mathf.Approximately(rotationInput, m_LastRotationInput) && Mathf.Approximately(rotationInput, 0f))
 			{
 				m_RotationInputIdleTime += Time.unscaledDeltaTime;

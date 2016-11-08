@@ -43,8 +43,10 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		m_Data = new AssetData[0]; // Start with empty list to avoid null references
 
 		for (int i = 0; i < m_IconTypes.Length; i++)
-			if(!string.IsNullOrEmpty(m_IconTypes[i]) && m_Icons[i] != null)
+		{
+			if (!string.IsNullOrEmpty(m_IconTypes[i]) && m_Icons[i] != null)
 				m_IconDictionary[m_IconTypes[i]] = m_Icons[i];
+		}
 	}
 
 	protected override void ComputeConditions()
