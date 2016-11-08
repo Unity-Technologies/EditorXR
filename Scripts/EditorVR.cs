@@ -38,8 +38,6 @@ public class EditorVR : MonoBehaviour
 	private const float kWorkspaceVacuumEnableDistance = 1f; // Disable vacuum bounds if workspace is close to player
 	const float kPreviewScale = 0.1f;
 
-	const float kMiniWorldManipulatorScale = 0.2f;
-
 	const float kViewerPivotTransitionTime = 0.75f;
 
 	[SerializeField]
@@ -145,7 +143,8 @@ public class EditorVR : MonoBehaviour
 
 	bool m_HMDReady;
 
-	StandardManipulator m_Manipulator;
+	StandardManipulator m_StandardManipulator;
+	ScaleManipulator m_ScaleManipulator;
 
 	IGrabObjects m_TransformTool;
 
@@ -1795,21 +1794,24 @@ public class EditorVR : MonoBehaviour
 
 	void PreProcessRaycastSource(Transform rayOrigin)
 	{
-		if (!m_Manipulator)
-			m_Manipulator = GetComponentInChildren<StandardManipulator>();
+		var camera = U.Camera.GetMainCamera();
+		var matrix = camera.worldToCameraMatrix;
 
-		if (m_Manipulator)
-		{
-			var camera = U.Camera.GetMainCamera();
+		MiniWorldRay ray;
+		if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
+			matrix = ray.miniWorld.worldToCameraMatrix;
 
-			var matrix = camera.worldToCameraMatrix;
+		if (!m_StandardManipulator)
+			m_StandardManipulator = GetComponentInChildren<StandardManipulator>();
 
-			MiniWorldRay ray;
-			if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
-				matrix = ray.miniWorld.worldToCameraMatrix;
+		if (m_StandardManipulator)
+			m_StandardManipulator.AdjustScale(camera.transform.position, matrix);
 
-			m_Manipulator.AdjustScale(camera.transform.position, matrix);
-		}
+		if (!m_ScaleManipulator)
+			m_ScaleManipulator = GetComponentInChildren<ScaleManipulator>();
+
+		if (m_ScaleManipulator)
+			m_ScaleManipulator.AdjustScale(camera.transform.position, matrix);
 	}
 
 	void AddPlayerModel()
