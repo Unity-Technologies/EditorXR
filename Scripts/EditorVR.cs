@@ -146,7 +146,6 @@ public class EditorVR : MonoBehaviour
 	bool m_HMDReady;
 
 	StandardManipulator m_Manipulator;
-	Vector3 m_OriginalManipulatorScale;
 
 	IGrabObjects m_TransformTool;
 
@@ -601,10 +600,8 @@ public class EditorVR : MonoBehaviour
 		m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
 		m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
 
-		m_InputModule.preProcessRaycastSources = PreProcessRaycastSources;
 		m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
-		m_InputModule.postProcessRaycastSources = PostProcessRaycastSources;
-
+		
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			// Create ui action map input for device.
@@ -1259,10 +1256,12 @@ public class EditorVR : MonoBehaviour
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
 
-		var miniWorld = workspace as IMiniWorld;
-		if (miniWorld == null)
+		// Chessboard is a special case that we handle due to all of the mini world interactions
+		var chessboardWorkspace = workspace as ChessboardWorkspace;
+		if (!chessboardWorkspace)
 			return;
 
+		var miniWorld = chessboardWorkspace.miniWorld;
 		m_MiniWorlds.Add(miniWorld);
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
@@ -1794,34 +1793,23 @@ public class EditorVR : MonoBehaviour
 						select proxy.previewOrigins[origin.Key]).FirstOrDefault();
 	}
 
-	bool PreProcessRaycastSources()
+	void PreProcessRaycastSource(Transform rayOrigin)
 	{
 		if (!m_Manipulator)
 			m_Manipulator = GetComponentInChildren<StandardManipulator>();
 
 		if (m_Manipulator)
-			m_OriginalManipulatorScale = m_Manipulator.transform.localScale;
-
-		return true;
-	}
-
-	bool PreProcessRaycastSource(Transform rayOrigin)
-	{
-		if (m_Manipulator)
 		{
+			var camera = U.Camera.GetMainCamera();
+
+			var matrix = camera.worldToCameraMatrix;
+
 			MiniWorldRay ray;
 			if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
-				m_Manipulator.transform.localScale = ray.miniWorld.miniWorldScale * kMiniWorldManipulatorScale;
-			else
-				m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
-		}
-		return true;
-	}
+				matrix = ray.miniWorld.worldToCameraMatrix;
 
-	void PostProcessRaycastSources()
-	{
-		if (m_Manipulator)
-			m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
+			m_Manipulator.AdjustScale(camera.transform.position, matrix);
+		}
 	}
 
 	void AddPlayerModel()

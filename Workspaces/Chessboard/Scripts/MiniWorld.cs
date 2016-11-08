@@ -26,15 +26,16 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 	public Transform miniWorldTransform { get { return transform; } }
 	
 	/// <summary>
-	/// RefernceTransform defines world space within the MiniWorld. When scaled up, a larger area is represented,
+	/// ReferenceTransform defines world space within the MiniWorld. When scaled up, a larger area is represented,
 	/// thus the objects in the MiniWorld get smaller.
 	/// </summary>
 	public Transform referenceTransform { get { return m_ReferenceTransform; } set { m_ReferenceTransform = value; } }
-
 	[SerializeField]
-	private Transform m_ReferenceTransform;
+	Transform m_ReferenceTransform;
 
 	public Matrix4x4 miniToReferenceMatrix { get { return transform.localToWorldMatrix * referenceTransform.worldToLocalMatrix; } }
+
+	public Matrix4x4 worldToCameraMatrix { get { return m_MiniWorldRenderer.worldToCameraMatrix; } }
 
 	public Bounds referenceBounds
 	{
@@ -47,11 +48,6 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 	}
 
 	public Bounds localBounds { get { return new Bounds(Vector3.zero, m_LocalBoundsSize); } set { m_LocalBoundsSize = value.size; } }
-
-	public Vector3 miniWorldScale
-	{
-		get { return Vector3.Scale(transform.localScale.Inverse(), referenceTransform.localScale); }
-	}
 
 	public bool Contains(Vector3 position)
 	{

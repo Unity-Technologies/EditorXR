@@ -25,10 +25,15 @@ namespace UnityEngine.VR.Manipulators
 
 		void OnCameraPreRender(Camera camera)
 		{
+			AdjustScale(camera.transform.position, camera.worldToCameraMatrix);
+		}
+
+		public void AdjustScale(Vector3 cameraPosition, Matrix4x4 worldToCameraMatrix)
+		{
 			// Adjust size of manipulator while accounting for any non-standard cameras (e.g. scaling applied to the camera)
-			var manipulatorPosition = camera.worldToCameraMatrix.MultiplyPoint3x4(transform.position);
-			var cameraPosition = camera.worldToCameraMatrix.MultiplyPoint3x4(camera.transform.position);
-			var delta = camera.cameraToWorldMatrix.MultiplyPoint3x4(cameraPosition - manipulatorPosition);
+			var manipulatorPosition = worldToCameraMatrix.MultiplyPoint3x4(transform.position);
+			cameraPosition = worldToCameraMatrix.MultiplyPoint3x4(cameraPosition);
+			var delta = worldToCameraMatrix.inverse.MultiplyPoint3x4(cameraPosition - manipulatorPosition);
 			transform.localScale = Vector3.one * delta.magnitude * kBaseManipulatorSize;
 		}
 	}

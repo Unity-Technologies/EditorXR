@@ -25,9 +25,9 @@ public interface IMiniWorld
 	Transform referenceTransform { get; }
 
 	/// <summary>
-	/// The combined scale of the MiniWorld and its reference transform
+	/// Matrix that converts from the mini world space to reference space (which may have scale and translation)
 	/// </summary>
-	Vector3 miniWorldScale { get; }
+	Matrix4x4 worldToCameraMatrix { get; }
 
 	/// <summary>
 	/// Sets a list of renderers to be skipped when rendering the MiniWorld

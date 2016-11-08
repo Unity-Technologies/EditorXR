@@ -6,7 +6,7 @@ using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ChessboardWorkspace : Workspace, IMiniWorld
+public class ChessboardWorkspace : Workspace
 {
 	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.1f; // Show more space above ground than below
 	private const float kInitReferenceScale = 25f; // We want to see a big region by default
@@ -42,11 +42,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		public Vector3 refTransformStartScale;
 	}
 
-	public Transform referenceTransform { get { return m_MiniWorld.referenceTransform; } }
-	public Vector3 miniWorldScale { get { return m_MiniWorld.miniWorldScale; } }
-	public Transform miniWorldTransform { get { return m_MiniWorld.miniWorldTransform; } }
-	public bool Contains(Vector3 position) { return m_MiniWorld.Contains(position); }
-	public List<Renderer> ignoreList { set { m_MiniWorld.ignoreList = value; } }
+	public IMiniWorld miniWorld { get { return m_MiniWorld; } }
 
 	public override void Setup()
 	{

@@ -34,6 +34,8 @@ public class MiniWorldRenderer : MonoBehaviour
 	public MiniWorld miniWorld { private get; set; }
 	public LayerMask cullingMask { private get; set; }
 
+	public Matrix4x4 worldToCameraMatrix { get { return m_MainCamera.worldToCameraMatrix * miniWorld.miniToReferenceMatrix; } }
+
 	void Awake()
 	{
 		s_DefaultLayer = LayerMask.NameToLayer("Default");
@@ -71,7 +73,7 @@ public class MiniWorldRenderer : MonoBehaviour
 
 				m_MiniCamera.cullingMask = cullingMask;
 				m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
-				m_MiniCamera.worldToCameraMatrix = m_MainCamera.worldToCameraMatrix * miniWorld.miniToReferenceMatrix;
+				m_MiniCamera.worldToCameraMatrix = worldToCameraMatrix;
 				Shader shader = Shader.Find("Custom/Custom Clip Planes");
 				Shader.SetGlobalVector("_GlobalClipCenter", miniWorld.referenceBounds.center);
 				Shader.SetGlobalVector("_GlobalClipExtents", miniWorld.referenceBounds.extents);
