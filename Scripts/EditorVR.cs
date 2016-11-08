@@ -1988,10 +1988,11 @@ public class EditorVR : MonoBehaviour
 
 	AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
 	{
+		
 		var type = "";
 		if (assetTypes != null)
 		{
-			type = hp.pptrValue.GetType().Name;
+			type = AssetDatabase.GetMainAssetTypeAtPath(AssetDatabase.GUIDToAssetPath(hp.guid)).Name;
 			switch (type)
 			{
 				case "GameObject":
