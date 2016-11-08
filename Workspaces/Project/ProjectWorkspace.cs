@@ -19,6 +19,11 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 	const float kMinScale = 0.03f;
 	const float kMaxScale = 0.2f;
 
+	bool m_AssetGridDragging;
+	bool m_FolderPanelDragging;
+	Transform m_AssetGridHighlightContainer;
+	Transform m_FolderPanelHighlightContainer;
+
 	[SerializeField]
 	GameObject m_ContentPrefab;
 
@@ -48,7 +53,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		base.Setup();
 
 		topPanelDividerOffset = -0.2875f; // enable & position the top-divider(mask) slightly to the left of workspace center
-		dynamicFaceAdjustment = true;
 
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
@@ -91,9 +95,21 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 			handle.dragStarted += OnScrollDragStarted;
 			handle.dragging += OnScrollDragging;
 			handle.dragEnded += OnScrollDragEnded;
-			handle.hoverStarted += OnScrollHoverStarted;
-			handle.hoverEnded += OnScrollHoverEnded;
 		}
+
+		// Hookup highlighting calls
+		m_ProjectUI.assetScrollHandle.dragStarted += OnAssetGridDragHighlightBegin;
+		m_ProjectUI.assetScrollHandle.dragEnded += OnAssetGridDragHighlightEnd;
+		m_ProjectUI.assetScrollHandle.hoverStarted += OnAssetGridHoverHighlightBegin;
+		m_ProjectUI.assetScrollHandle.hoverEnded += OnAssetGridHoverHighlightEnd;
+		m_ProjectUI.folderScrollHandle.dragStarted += OnFolderPanelDragHighlightBegin;
+		m_ProjectUI.folderScrollHandle.dragEnded += OnFolderPanelDragHighlightEnd;
+		m_ProjectUI.folderScrollHandle.hoverStarted += OnFolderPanelHoverHighlightBegin;
+		m_ProjectUI.folderScrollHandle.hoverEnded += OnFolderPanelHoverHighlightEnd;
+
+		// Assign highlight references
+		m_FolderPanelHighlightContainer = m_ProjectUI.folderPanelHighlight.transform.parent.transform;
+		m_AssetGridHighlightContainer = m_ProjectUI.assetGridHighlight.transform.parent.transform;
 
 		// Propagate initial bounds
 		OnBoundsChanged();
@@ -101,6 +117,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 
 	protected override void OnBoundsChanged()
 	{
+		const float kSideScrollBoundsShrinkAmount = 0.03f;
 		const float depthCompensation = 0.1375f;
 
 		Bounds bounds = contentBounds;
@@ -123,17 +140,22 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin + folderScrollHandleXScaleOffset, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 		var folderListView = m_ProjectUI.folderListView;
+		size.x -= kSideScrollBoundsShrinkAmount; // set narrow x bounds for scrolling region on left side of folder list view
+		bounds.size = size;
 		folderListView.bounds = bounds;
 		folderListView.PreCompute(); // Compute item size
-		folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0);
+		const float kFolderListShrinkAmount = kSideScrollBoundsShrinkAmount / 2.2f; // Empirically determined value to allow for scroll borders
+		folderListView.transform.localPosition = new Vector3(xOffset + kFolderListShrinkAmount, folderListView.itemSize.y * 0.5f, 0); // Center in Y
 
 		var folderPanel = m_ProjectUI.folderPanel;
 		folderPanel.transform.localPosition = xOffset * Vector3.right;
 		folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + kPanelMargin);
 		folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
 
+		m_FolderPanelHighlightContainer.localScale = new Vector3(size.x + kSideScrollBoundsShrinkAmount, 1f, size.z);
+
 		size = contentBounds.size;
-		size.x -= kPaneMargin * 2;
+		size.x -= kPaneMargin * 2; // Reserve space for scroll on both sides
 		size.x *= 1 - kLeftPaneRatio;
 		size.z = size.z - depthCompensation;
 		bounds.size = size;
@@ -153,6 +175,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 		assetPanel.transform.localPosition = xOffset * Vector3.right;
 		assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + kPanelMargin);
 		assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
+
+		m_AssetGridHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
 	}
 
 	void SelectFolder(FolderData data)
@@ -206,14 +230,50 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 			m_ProjectUI.assetListView.scrollOffset = scrollOffset;
 	}
 
-	void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnAssetGridDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		setHighlight(handle.gameObject, true);
+		m_AssetGridDragging = true;
+		m_ProjectUI.assetGridHighlight.visible = true;
 	}
 
-	void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnAssetGridDragHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		setHighlight(handle.gameObject, false);
+		m_AssetGridDragging = false;
+		m_ProjectUI.assetGridHighlight.visible = false;
+	}
+
+	void OnAssetGridHoverHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	{
+		m_ProjectUI.assetGridHighlight.visible = true;
+	}
+
+	void OnAssetGridHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	{
+		if (!m_AssetGridDragging)
+			m_ProjectUI.assetGridHighlight.visible = false;
+	}
+
+	void OnFolderPanelDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	{
+		m_FolderPanelDragging = true;
+		m_ProjectUI.folderPanelHighlight.visible = true;
+	}
+
+	void OnFolderPanelDragHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	{
+		m_FolderPanelDragging = false;
+		m_ProjectUI.folderPanelHighlight.visible = false;
+	}
+
+	void OnFolderPanelHoverHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	{
+		m_ProjectUI.folderPanelHighlight.visible = true;
+	}
+
+	void OnFolderPanelHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	{
+		if (!m_FolderPanelDragging)
+			m_ProjectUI.folderPanelHighlight.visible = false;
 	}
 
 	void Scale(float value)
@@ -259,7 +319,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview
 					folderList.Add(CreateFolderData(assetTypes, ref hasNext, hp));
 				else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
 					assetList.Add(CreateAssetData(assetTypes, hp));
-				if(hasNext)
+				if (hasNext)
 					hasNext = hp.Next(null);
 			}
 			if (hasNext)

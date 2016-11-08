@@ -40,7 +40,7 @@ public class DraggableListItem<DataType> : ListViewItem<DataType>, IPreview wher
 
 	protected virtual void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		if(m_DragObject)
+		if (m_DragObject)
 			preview(m_DragObject, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_DragLerp);
 	}
 

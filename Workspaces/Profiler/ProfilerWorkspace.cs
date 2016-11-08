@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+﻿using UnityEditor.VR;
+using UnityEngine;
 using UnityEngine.VR.Workspaces;
-using UnityEditor.VR;
 
 public class ProfilerWorkspace : Workspace
 {
@@ -22,10 +22,10 @@ public class ProfilerWorkspace : Workspace
 			float maxX = VRView.viewerCamera.pixelRect.width * .75f;
 			float maxY = VRView.viewerCamera.pixelRect.height * .75f;
 
-			foreach(Vector3 vec in corners)
+			foreach (Vector3 vec in corners)
 			{
 				Vector3 screenPoint = VRView.viewerCamera.WorldToScreenPoint(vec);
-				if(screenPoint.x > minX && screenPoint.x < maxX && screenPoint.y > minY && screenPoint.y < maxY)
+				if (screenPoint.x > minX && screenPoint.x < maxX && screenPoint.y > minY && screenPoint.y < maxY)
 					return true;
 			}
 			return false;
@@ -37,23 +37,26 @@ public class ProfilerWorkspace : Workspace
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
-		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.27f);
+		minBounds = new Vector3(0.6f, kMinBounds.y, 0.5f);
 		m_CustomStartingBounds = minBounds;
 
 		base.Setup();
 
 		preventFrontBackResize = true;
+		preventLeftRightResize = true;
+		dynamicFaceAdjustment = false;
 
 		m_ProfilerWindow = instantiateUI(m_ProfilerWindowPrefab).transform;
-		m_ProfilerWindow.SetParent(m_WorkspaceUI.sceneContainer,false);
+		m_ProfilerWindow.SetParent(m_WorkspaceUI.topFaceContainer,false);
+		m_ProfilerWindow.localPosition = new Vector3(0f, -0.007f, -0.5f);
+		m_ProfilerWindow.localRotation = Quaternion.Euler(90f, 0f, 0f);
+		m_ProfilerWindow.localScale = new Vector3(1f, 1f, 1f);
 
 		var bounds = contentBounds;
 		var size = bounds.size;
 		size.z = 0.1f;
 		bounds.size = size;
 		contentBounds = bounds;
-
-		m_ProfilerWindow.localScale = size;
 
 		UnityEditorInternal.ProfilerDriver.profileEditor = false;
 
@@ -63,11 +66,6 @@ public class ProfilerWorkspace : Workspace
 	void Update()
 	{
 		UnityEditorInternal.ProfilerDriver.profileEditor = inView;
-	}
-
-	protected override void OnBoundsChanged()
-	{
-		m_ProfilerWindow.localScale = contentBounds.size;
 	}
 
 	protected override void OnDestroy()

@@ -10,7 +10,6 @@
 		Stencil
 		{
 			Ref 1
-			Comp always
 			Pass replace
 		}
 

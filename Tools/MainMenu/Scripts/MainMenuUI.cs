@@ -171,8 +171,6 @@ namespace UnityEngine.VR.Menus
 			m_MenuFacesColor = m_MenuFacesMaterial.color;
 		}
 
-		// HACK: Cannot have this in Start because Awake/Start gets called together current in ExecuteInEditMode and
-		// we need to make use of instantiateUI
 		public void Setup()
 		{
 			m_MenuFaces = new List<MainMenuFace>();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -37,4 +38,9 @@ public interface IMiniWorld
 	/// The combined scale of the MiniWorld and its reference transform
 	/// </summary>
 	Vector3 miniWorldScale { get; }
+
+	/// <summary>
+	/// Sets a list of renderers to be skipped when rendering the MiniWorld
+	/// </summary>
+	List<Renderer> ignoreList { set; }
 }

@@ -123,7 +123,7 @@ namespace UnityEngine.VR.UI
 			if (m_TextComponent != null && m_TextComponent.font != null)
 				m_TextComponent.text = m_Text;
 
-			if(m_Keyboard)
+			if (m_Keyboard)
 				m_Keyboard.SetPreviewText(m_Text);
 		}
 
