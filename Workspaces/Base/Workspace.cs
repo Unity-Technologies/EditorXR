@@ -329,7 +329,6 @@ namespace UnityEngine.VR.Workspaces
 			}
 
 			m_VisibilityCoroutine = null;
-			//U.Object.Destroy(gameObject);
 			m_Hidden = true;
         }
 	}
