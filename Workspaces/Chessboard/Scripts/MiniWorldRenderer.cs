@@ -1,30 +1,42 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-
 using UnityEngine.VR.Utilities;
 
 public class MiniWorldRenderer : MonoBehaviour
 {
+	public const string kShowInMiniWorldTag = "ShowInMiniWorld";
 	const float kMinScale = 0.001f;
 
-	private Camera m_MainCamera;
-	private Camera m_MiniCamera;
-
-	bool[] m_RendererPreviousEnable = new bool[0];
-
-	public MiniWorld miniWorld { private get; set; }
-	public LayerMask cullingMask { private get; set; }
+	static int s_DefaultLayer;
 
 	public List<Renderer> ignoreList
 	{
 		set
 		{
 			m_IgnoreList = value;
-			if(m_IgnoreList.Count > m_RendererPreviousEnable.Length)
-				m_RendererPreviousEnable = new bool[m_IgnoreList.Count];
+			var count = m_IgnoreList == null ? 0 : m_IgnoreList.Count;
+			if (m_IgnoreObjectRendererEnabled == null || count > m_IgnoreObjectRendererEnabled.Length)
+			{
+				m_IgnoredObjectLayer = new int[count];
+				m_IgnoreObjectRendererEnabled = new bool[count];
+			}
 		}
 	}
 	List<Renderer> m_IgnoreList = new List<Renderer>();
+
+	Camera m_MainCamera;
+	Camera m_MiniCamera;
+
+	int[] m_IgnoredObjectLayer;
+	bool[] m_IgnoreObjectRendererEnabled;
+
+	public MiniWorld miniWorld { private get; set; }
+	public LayerMask cullingMask { private get; set; }
+
+	void Awake()
+	{
+		s_DefaultLayer = LayerMask.NameToLayer("Default");
+	}
 
 	private void OnEnable()
 	{
@@ -66,15 +78,27 @@ public class MiniWorldRenderer : MonoBehaviour
 				for (var i = 0; i < m_IgnoreList.Count; i++)
 				{
 					var hiddenRenderer = m_IgnoreList[i];
-					m_RendererPreviousEnable[i] = hiddenRenderer.enabled;
-					hiddenRenderer.enabled = false;
+					if (hiddenRenderer.CompareTag(kShowInMiniWorldTag))
+					{
+						m_IgnoredObjectLayer[i] = hiddenRenderer.gameObject.layer;
+						hiddenRenderer.gameObject.layer = s_DefaultLayer;
+					}
+					else
+					{
+						m_IgnoreObjectRendererEnabled[i] = hiddenRenderer.enabled;
+						hiddenRenderer.enabled = false;
+					}
 				}
 
 				m_MiniCamera.RenderWithShader(shader, string.Empty);
 
 				for (var i = 0; i < m_IgnoreList.Count; i++)
 				{
-					m_IgnoreList[i].enabled = m_RendererPreviousEnable[i];
+					var hiddenRenderer = m_IgnoreList[i];
+					if (hiddenRenderer.CompareTag(kShowInMiniWorldTag))
+						hiddenRenderer.gameObject.layer = m_IgnoredObjectLayer[i];
+					else
+						m_IgnoreList[i].enabled = m_IgnoreObjectRendererEnabled[i];
 				}
 			}
 		}

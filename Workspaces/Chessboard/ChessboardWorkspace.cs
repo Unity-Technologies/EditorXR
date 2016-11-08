@@ -44,7 +44,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 	public Transform referenceTransform { get { return m_MiniWorld.referenceTransform; } }
 	public Transform miniWorldTransform { get { return m_MiniWorld.miniWorldTransform; } }
 	public bool Contains(Vector3 position) { return m_MiniWorld.Contains(position); }
-	public List<Renderer> ignoreList { set { m_MiniWorld.ignoreList = value;  } } 
+	public List<Renderer> ignoreList { set { m_MiniWorld.ignoreList = value; } }
 
 	public override void Setup()
 	{
@@ -135,9 +135,6 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	void OnPanZoomDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (isMiniWorldRay(eventData.rayOrigin))
-			return;
-
 		m_PanZooming = true;
 		m_WorkspaceUI.topHighlight.visible = true;
 
@@ -157,12 +154,10 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	void OnPanZoomDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (isMiniWorldRay(eventData.rayOrigin))
-			return;
-
 		var rayData = m_RayData[0];
 		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) // Do not execute for the second ray
 			return;
+
 		var referenceTransform = m_MiniWorld.referenceTransform;
 		var rayOrigin = eventData.rayOrigin;
 		
@@ -185,8 +180,6 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	void OnPanZoomDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (isMiniWorldRay(eventData.rayOrigin))
-			return;
 		m_PanZooming = false;
 		m_WorkspaceUI.topHighlight.visible = false;
 
@@ -195,17 +188,11 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	void OnPanZoomHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (isMiniWorldRay(eventData.rayOrigin))
-			return;
-
 		m_WorkspaceUI.topHighlight.visible = true;
 	}
 
 	void OnPanZoomHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (isMiniWorldRay(eventData.rayOrigin))
-			return;
-
 		if (!m_PanZooming)
 			m_WorkspaceUI.topHighlight.visible = false;
 	}

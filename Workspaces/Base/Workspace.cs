@@ -85,8 +85,6 @@ namespace UnityEngine.VR.Workspaces
 
 		public Action<GameObject, bool> setHighlight { protected get; set; }
 
-		public Func<Transform, bool> isMiniWorldRay { protected get; set; } 
-
 		/// <summary>
 		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
 		/// </summary>
@@ -174,9 +172,6 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			if (isMiniWorldRay(eventData.rayOrigin))
-				return;
-
 			m_WorkspaceUI.highlightsVisible = true;
 			m_PositionStart = transform.position;
 			m_DragStart = eventData.rayOrigin.position;
@@ -186,9 +181,6 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			if (isMiniWorldRay(eventData.rayOrigin))
-				return;
-
 			if (m_Dragging && !m_DragLocked)
 			{
 				Vector3 dragVector = eventData.rayOrigin.position - m_DragStart;
@@ -222,9 +214,6 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			if (isMiniWorldRay(eventData.rayOrigin))
-				return;
-
 			m_WorkspaceUI.highlightsVisible = false;
 			m_Dragging = false;
 		}
@@ -245,8 +234,6 @@ namespace UnityEngine.VR.Workspaces
 
 		private void OnDoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			if (isMiniWorldRay(eventData.rayOrigin))
-				return;
 			if (!m_Vacuuming)
 				StartCoroutine(VacuumToViewer());
 		}

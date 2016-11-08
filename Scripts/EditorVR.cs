@@ -27,7 +27,6 @@ public class EditorVR : MonoBehaviour
 {
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
-	const string kShowInMiniWorldTag = "ShowInMiniWorld";
 	const string kVRPlayerTag = "VRPlayer";
 
 	private const float kDefaultRayLength = 100f;
@@ -86,6 +85,7 @@ public class EditorVR : MonoBehaviour
 	private DragAndDropModule m_DragAndDropModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
+	bool m_PixelRaycastIgnoreListDirty = true;
 
 	private PlayerHandle m_PlayerHandle;
 
@@ -136,7 +136,8 @@ public class EditorVR : MonoBehaviour
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
 	private readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>();
-
+	bool m_MiniWorldIgnoreListDirty = true;
+	
 	private event Action m_SelectionChanged;
 
 	bool m_HMDReady;
@@ -218,6 +219,13 @@ public class EditorVR : MonoBehaviour
 			m_SelectionChanged();
 	}
 
+	// TODO: Find a better callback for when objects are created or destroyed
+	void OnHierarchyChanged()
+	{
+		m_MiniWorldIgnoreListDirty = true;
+		m_PixelRaycastIgnoreListDirty = true;
+	}
+
 	IEnumerable<InputDevice> GetSystemDevices()
 	{
 		// For now let's filter out any other devices other than VR controller devices; Eventually, we may support mouse / keyboard etc.
@@ -277,6 +285,7 @@ public class EditorVR : MonoBehaviour
 	{
 		Selection.selectionChanged += OnSelectionChanged;
 #if UNITY_EDITOR
+		EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 		VRView.onGUIDelegate += OnSceneGUI;
 		VRView.onHMDReady += OnHMDReady;
 #endif
@@ -286,6 +295,7 @@ public class EditorVR : MonoBehaviour
 	{
 		Selection.selectionChanged -= OnSelectionChanged;
 #if UNITY_EDITOR
+		EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 		VRView.onGUIDelegate -= OnSceneGUI;
 		VRView.onHMDReady -= OnHMDReady;
 #endif
@@ -300,7 +310,11 @@ public class EditorVR : MonoBehaviour
 	{
 		if (Event.current.type == EventType.ExecuteCommand)
 		{
-			m_PixelRaycastModule.UpdateIgnoreList();
+			if (m_PixelRaycastIgnoreListDirty)
+			{
+				m_PixelRaycastModule.UpdateIgnoreList();
+				m_PixelRaycastIgnoreListDirty = false;
+			}
 
 			ForEachRayOrigin((proxy, pair, device, deviceData) =>
 			{
@@ -591,7 +605,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput);
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value);
 		});
 	}
 
@@ -1228,7 +1242,6 @@ public class EditorVR : MonoBehaviour
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
 		m_AllWorkspaces.Add(workspace);
 		workspace.destroyed += OnWorkspaceDestroyed;
-		workspace.isMiniWorldRay = IsMiniWorldRay;
 		ConnectInterfaces(workspace);
 		workspace.transform.position = position;
 		workspace.transform.rotation = rotation;
@@ -1253,8 +1266,14 @@ public class EditorVR : MonoBehaviour
 			var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
 			directSelectInput.active = false;
 
-			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
+			// Use the mini world ray origin instead of the original ray origin
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
+			{
+				if (source.hoveredObject)
+					return !m_AllWorkspaces.Any(w => source.hoveredObject.transform.IsChildOf(w.transform));
+
+				return true;
+			});
 
 			var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 			tester.active = false;
@@ -1325,23 +1344,34 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void UpdateMiniWorlds()
+	void UpdateMiniWorldIgnoreList()
 	{
-		// Update ignore list
-		var renderers = GetComponentsInChildren<Renderer>(true);
-		var ignoreList = new List<Renderer>(renderers.Length);
-		foreach (var renderer in renderers)
+		var renderers = new List<Renderer>(GetComponentsInChildren<Renderer>(true));
+		var ignoreList = new List<Renderer>(renderers.Count);
+
+		foreach (var r in renderers)
 		{
-			if (renderer.CompareTag(kVRPlayerTag))
+			if (r.CompareTag(kVRPlayerTag))
 				continue;
-			if (renderer.CompareTag(kShowInMiniWorldTag))
+
+			if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.kShowInMiniWorldTag))
 				continue;
-			ignoreList.Add(renderer);
+
+			ignoreList.Add(r);
 		}
-		
+
 		foreach (var miniWorld in m_MiniWorlds)
 		{
 			miniWorld.ignoreList = ignoreList;
+		}
+	}
+
+	private void UpdateMiniWorlds()
+	{
+		if (m_MiniWorldIgnoreListDirty)
+		{
+			UpdateMiniWorldIgnoreList();
+			m_MiniWorldIgnoreListDirty = false;
 		}
 
 		var directSelection = m_TransformTool;
@@ -1752,11 +1782,6 @@ public class EditorVR : MonoBehaviour
 				from origin in proxy.rayOrigins
 					where origin.Value.Equals(rayOrigin)
 						select proxy.previewOrigins[origin.Key]).FirstOrDefault();
-	}
-
-	bool IsMiniWorldRay(Transform rayOrigin)
-	{
-		return m_MiniWorldRays.ContainsKey(rayOrigin);
 	}
 
 	void AddPlayerModel()
