@@ -327,9 +327,9 @@ public class EditorVR : MonoBehaviour
 		{
 			workspaceSaves.m_Workspaces[i] = new WorkspaceSaveData();
 			workspaceSaves.m_Workspaces[i].workspaceName = ws.GetType().ToString();
-			workspaceSaves.m_Workspaces[i].position = ws.transform.position;
-			workspaceSaves.m_Workspaces[i].rotation = ws.transform.rotation;
-			workspaceSaves.m_Workspaces[i].scale = ws.transform.localScale;
+			workspaceSaves.m_Workspaces[i].localPosition = ws.transform.localPosition;
+			workspaceSaves.m_Workspaces[i].localRotation = ws.transform.localRotation;
+			workspaceSaves.m_Workspaces[i].localScale = ws.transform.localScale;
 			i++;
 		}
 
@@ -1182,16 +1182,19 @@ public class EditorVR : MonoBehaviour
 		if (inputString == "")
 			return;
 
-		WorkspaceSave inputJson = JsonUtility.FromJson<WorkspaceSave>(inputString);
-		if (inputJson.m_Workspaces.Length > 0)
+		WorkspaceSave savedData = JsonUtility.FromJson<WorkspaceSave>(inputString);
+		if (savedData.m_Workspaces.Length > 0)
 		{
-			foreach (var b in inputJson.m_Workspaces)
-				CreateWorkspace(Type.GetType(b.workspaceName), b.position, b.rotation, b.scale);
+			foreach (var ws in savedData.m_Workspaces)
+				CreateWorkspace(Type.GetType(ws.workspaceName), ws.localPosition, ws.localRotation, ws.localScale);
 		}
 	}
 
 	private void ResetWorkspacePositions()
 	{
+		if (m_AllWorkspaces.Count == 0)
+			CreateDefaultWorkspaces();
+		
 		var defaultOffset = Workspace.kDefaultOffset;
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 		var headPosition = cameraTransform.position;
@@ -1291,63 +1294,14 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateWorkspace(Type t)
 	{
-		//var defaultOffset = Workspace.kDefaultOffset;
-		//var defaultTilt = Workspace.kDefaultTilt;
-
-		//var cameraTransform = U.Camera.GetMainCamera().transform;
-		//var headPosition = cameraTransform.position;
-		//var headRotation = Quaternion.Euler(0, cameraTransform.rotation.eulerAngles.y, 0);
-
-		//float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
-		//	(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg      //Calculate arc length at front of workspace
-		//	+ kWorkspaceAnglePadding;                                                   //Need some extra padding because workspaces are tilted
-		//float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;           //Need padding in Y as well
-
-		//float currentRotation = arcLength;
-		//float currentHeight = 0;
-
-		//int count = 0;
-		//int direction = 1;
-		//Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
-
-		//Vector3 position;
-		//Quaternion rotation;
 		var viewerPivot = U.Camera.GetViewerPivot();
 		// HACK to workaround missing MonoScript serialized fields
 		EditorApplication.delayCall += () =>
 		{
-			// Spawn to one of the sides of the player instead of directly in front of the player
-			//do
-			//{
-			//	//The next position will be rotated by currentRotation, as if the hands of a clock
-			//	Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-			//	position = headPosition + headRotation * rotateAroundY * defaultOffset + Vector3.up * currentHeight;
-			//	rotation = headRotation * rotateAroundY * defaultTilt;
-
-			//	//Every other iteration, rotate a little further
-			//	if (direction < 0)
-			//		currentRotation += arcLength;
-
-			//	//Switch directions every iteration (left, right, left, right)
-			//	direction *= -1;
-
-			//	//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
-			//	if (currentRotation > 180)
-			//	{
-			//		direction = -1;
-			//		currentRotation = 0;
-			//		currentHeight += heightOffset;
-			//	}
-			//}
-			////While the current position is occupied, try a new one
-			//while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts);
-
 			Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
 			m_AllWorkspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			ConnectInterfaces(workspace);
-			//workspace.transform.position = position;
-			//workspace.transform.rotation = rotation;
 
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
@@ -1384,7 +1338,7 @@ public class EditorVR : MonoBehaviour
 	private void OnWorkspaceDestroyed(Workspace workspace)
 	{
 		m_AllWorkspaces.Remove(workspace);
-
+		
 		DisconnectInterfaces(workspace);
 
 		var miniWorld = workspace as IMiniWorld;

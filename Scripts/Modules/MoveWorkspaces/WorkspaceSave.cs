@@ -14,7 +14,7 @@ public class WorkspaceSave
 public struct WorkspaceSaveData
 {
 	public string workspaceName;
-	public Vector3 position;
-	public Quaternion rotation;
-	public Vector3 scale;
+	public Vector3 localPosition;
+	public Quaternion localRotation;
+	public Vector3 localScale;
 }
