@@ -19,12 +19,9 @@ namespace UnityEngine.VR.Menus
 		/// </summary>
 		bool visible { get; set; }
 
-		// HACK: Awake/Start get called together in ExecuteInEditMode, so calling this method after is a workaround for order of operations
-		Action setup { get; }
-
 		/// <summary>
-		/// Delegate called when an item is selected in the alternate menu
+		/// Delegate called when any item was selected in the alternate menu
 		/// </summary>
-		event Action<Node?> itemSelected;
+		event Action<Node?> itemWasSelected;
 	}
 }

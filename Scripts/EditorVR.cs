@@ -495,7 +495,7 @@ public class EditorVR : MonoBehaviour
 			AddToolToDeviceData(tool, devices);
 			var selectionTool = tool as SelectionTool;
 			selectionTool.node = deviceNode;
-			selectionTool.selected += OnAlternateMenuItemSelected; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			selectionTool.selected += UpdateAlternateMenuOnSelectionChanged; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 
 			if (locomotionTool == typeof(BlinkLocomotionTool))
 			{
@@ -511,7 +511,7 @@ public class EditorVR : MonoBehaviour
 
 			var alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), deviceData.Key);
 			m_DeviceData[deviceData.Key].alternateMenu = alternateMenu;
-			alternateMenu.itemSelected += OnAlternateMenuItemSelected;
+			alternateMenu.itemWasSelected += UpdateAlternateMenuOnSelectionChanged;
 
 			UpdatePlayerHandleMaps();
 		}
@@ -528,39 +528,33 @@ public class EditorVR : MonoBehaviour
 		m_TransformTool = tool as IGrabObjects;
 	}
 
-	private void OnAlternateMenuItemSelected(Node? selectionToolNode)
+	void UpdateAlternateMenuOnSelectionChanged(Node? selectionToolNode)
 	{
-		if (selectionToolNode == null)
-			return;
-
 		var updateMaps = false;
 		foreach (var kvp in m_DeviceData)
 		{
 			Node? node = GetDeviceNode(kvp.Key);
-			if (node.HasValue)
+			var deviceData = kvp.Value; 
+
+			var alternateMenu = deviceData.alternateMenu;
+			if (alternateMenu != null)
 			{
-				var deviceData = kvp.Value;
+				alternateMenu.visible = (node == selectionToolNode) && Selection.gameObjects.Length > 0;
 
-				var alternateMenu = deviceData.alternateMenu;
-				if (alternateMenu != null)
+				// Hide the main menu if the alternate menu is going to be visible
+				var mainMenu = deviceData.mainMenu;
+				if (mainMenu != null && alternateMenu.visible)
 				{
-					alternateMenu.visible = (node.Value == selectionToolNode) && Selection.gameObjects.Length > 0;
-
-					// Hide the main menu if the alternate menu is going to be visible
-					var mainMenu = deviceData.mainMenu;
-					if (mainMenu != null && alternateMenu.visible)
-					{
-						mainMenu.visible = false;
-						deviceData.restoreMainMenu = false;
-					}
-
-					// Move the activator button to an alternate position if the alternate menu will be shown
-					var mainMenuActivator = deviceData.mainMenuActivator;
-					if (mainMenuActivator != null)
-						mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
-
-					updateMaps = true;
+					mainMenu.visible = false;
+					deviceData.restoreMainMenu = false;
 				}
+
+				// Move the activator button to an alternate position if the alternate menu will be shown
+				var mainMenuActivator = deviceData.mainMenuActivator;
+				if (mainMenuActivator != null)
+					mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
+
+				updateMaps = true;
 			}
 		}
 
@@ -1235,7 +1229,6 @@ public class EditorVR : MonoBehaviour
 		{
 			alternateMenu.menuActions = m_MenuActions;
 			alternateMenu.node = GetDeviceNode(device);
-			alternateMenu.setup();
 		}
 	}
 
