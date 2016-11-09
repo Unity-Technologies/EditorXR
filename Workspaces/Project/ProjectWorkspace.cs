@@ -319,29 +319,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFold
 		return null;
 	}
 
-	// Not used, but could be helpful
-	bool ExpandToFolder(FolderData container, FolderData search)
-	{
-		if (container.instanceID == search.instanceID)
-			return true;
-
-		bool found = false;
-
-		if (container.children != null)
-		{
-			foreach (var child in container.children)
-			{
-				if (ExpandToFolder(child, search))
-					found = true;
-			}
-		}
-
-		if (found)
-			container.expanded = true;
-
-		return found;
-	}
-
 	// In case a folder was moved up the hierarchy, we must search the entire destination root for every source folder
 	void CopyExpandStates(FolderData source, FolderData destinationRoot)
 	{
