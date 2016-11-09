@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Utilities;
 using Button = UnityEngine.VR.UI.Button;
 
 public class InspectorComponentItem : InspectorListItem
@@ -31,30 +32,13 @@ public class InspectorComponentItem : InspectorListItem
 		m_NameText.text = type.Name;
 
 		StopAllCoroutines();
-		StartCoroutine(GetAssetPreview());
+		StartCoroutine(U.Object.GetAssetPreview(target, texture => m_Icon.texture = texture));
 
 		var enabled = EditorUtility.GetObjectEnabled(target);
 		m_EnabledToggle.gameObject.SetActive(enabled != -1);
 		m_EnabledToggle.isOn = enabled == 1;
 
 		m_ExpandArrow.gameObject.SetActive(data.children != null);
-	}
-
-	IEnumerator GetAssetPreview()
-	{
-		m_Icon.texture = null;
-
-		var target = data.serializedObject.targetObject;
-		m_Icon.texture = AssetPreview.GetAssetPreview(target);
-
-		while (AssetPreview.IsLoadingAssetPreview(target.GetInstanceID()))
-		{
-			m_Icon.texture = AssetPreview.GetAssetPreview(target);
-			yield return null;
-		}
-
-		if (!m_Icon.texture)
-			m_Icon.texture = AssetPreview.GetMiniThumbnail(target);
 	}
 
 	public override void UpdateSelf(float width, int depth)
