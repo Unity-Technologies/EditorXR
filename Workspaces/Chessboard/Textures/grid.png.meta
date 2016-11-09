@@ -6,7 +6,7 @@ TextureImporter:
   fileIDToRecycleName: {}
   serializedVersion: 2
   mipmaps:
-    mipMapMode: 1
+    mipMapMode: 0
     enableMipMap: 0
     linearTexture: 0
     correctGamma: 0
@@ -30,7 +30,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     filterMode: 1
-    aniso: -1
+    aniso: 3
     mipBias: -1
     wrapMode: 0
   nPOTScale: 1
@@ -45,10 +45,15 @@ TextureImporter:
   spritePivot: {x: 0.5, y: 0.5}
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spritePixelsToUnits: 100
-  alphaIsTransparency: 0
+  alphaIsTransparency: 1
   spriteTessellationDetail: -1
   textureType: 5
-  buildTargetSettings: []
+  buildTargetSettings:
+  - buildTarget: Standalone
+    maxTextureSize: 256
+    textureFormat: 2
+    compressionQuality: 50
+    allowsAlphaSplitting: 0
   spriteSheet:
     serializedVersion: 2
     sprites: []

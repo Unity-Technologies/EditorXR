@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.VR;
 
 public class HighlightModule : MonoBehaviour
 {
@@ -10,7 +8,7 @@ public class HighlightModule : MonoBehaviour
 
 	private readonly Dictionary<GameObject, int> m_HighlightCounts = new Dictionary<GameObject, int>();
 
-	void Update()
+	void LateUpdate()
 	{
 		foreach (var go in m_HighlightCounts.Keys)
 		{
@@ -19,7 +17,7 @@ public class HighlightModule : MonoBehaviour
 			foreach (var m in go.GetComponentsInChildren<MeshFilter>())
 			{
 				for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
-					Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, m_HighlightMaterial, 0, null, i);
+					Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, m_HighlightMaterial, m.gameObject.layer, null, i);
 			}
 		}
 	}

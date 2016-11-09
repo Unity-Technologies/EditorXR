@@ -38,11 +38,20 @@ public class FilterUI : MonoBehaviour
 	[SerializeField]
 	CanvasGroup m_CanvasGroup;
 
+	[SerializeField]
+	GridLayoutGroup m_ButtonListGrid;
+
+	[SerializeField]
+	CanvasGroup m_ButtonListCanvasGroup;
+
 	private FilterButtonUI[] m_VisibilityButtons;
 	Coroutine m_ShowUICoroutine;
 	Coroutine m_HideUICoroutine;
+	Coroutine m_ShowButtonListCoroutine;
+	Coroutine m_HideButtonListCoroutine;
+	float m_HiddenButtonListYSpacing;
 
-	public List<string> filterTypes
+	public List<string> filterList
 	{
 		set
 		{
@@ -78,23 +87,29 @@ public class FilterUI : MonoBehaviour
 	public string searchQuery { get { return m_SearchQuery; } }
 	private string m_SearchQuery = string.Empty;
 
+
+	void Awake()
+	{
+		m_HiddenButtonListYSpacing = -m_ButtonListGrid.cellSize.y;
+	}
+
 	public void SetListVisibility(bool show)
 	{
 		if (show)
 		{
-			MonoBehaviourExtensions.StopCoroutine(this, ref m_HideUICoroutine);
-
+			this.StopCoroutine(ref m_HideUICoroutine);
 			m_HideUICoroutine = StartCoroutine(HideUIContent());
 
-			m_ButtonList.gameObject.SetActive(true);
+			this.StopCoroutine(ref m_ShowButtonListCoroutine);
+			m_ShowButtonListCoroutine = StartCoroutine(ShowButtonList());
 		}
 		else
 		{
-			MonoBehaviourExtensions.StopCoroutine(this, ref m_ShowUICoroutine);
-
+			this.StopCoroutine(ref m_ShowUICoroutine);
 			m_ShowUICoroutine = StartCoroutine(ShowUIContent());
 
-			m_ButtonList.gameObject.SetActive(false);
+			this.StopCoroutine(ref m_HideButtonListCoroutine);
+			m_HideButtonListCoroutine = StartCoroutine(HideButtonList());
 		}
 	}
 
@@ -170,5 +185,51 @@ public class FilterUI : MonoBehaviour
 
 		m_CanvasGroup.alpha = kTargetAlpha;
 		m_HideUICoroutine = null;
+	}
+
+	IEnumerator ShowButtonList()
+	{
+		m_ButtonList.gameObject.SetActive(true);
+
+		const float kTargetDuration = 0.5f;
+		var currentAlpha = m_ButtonListCanvasGroup.alpha;
+		var kTargetAlpha = 1f;
+		var transitionAmount = 0f;
+		var velocity = 0f;
+		var currentDuration = 0f;
+		while (currentDuration < kTargetDuration)
+		{
+			currentDuration += Time.unscaledDeltaTime;
+			transitionAmount = U.Math.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+			m_ButtonListGrid.spacing = new Vector2(0f, Mathf.Lerp(m_HiddenButtonListYSpacing, 0f, transitionAmount));
+			m_ButtonListCanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
+			yield return null;
+		}
+
+		m_ButtonListGrid.spacing = new Vector2(0f, 0f);
+		m_ButtonListCanvasGroup.alpha = 1f;
+		m_ShowButtonListCoroutine = null;
+	}
+
+	IEnumerator HideButtonList()
+	{
+		const float kTargetDuration = 0.25f;
+		var currentAlpha = m_ButtonListCanvasGroup.alpha;
+		var kTargetAlpha = 0f;
+		var transitionAmount = 0f;
+		var currentSpacing = m_ButtonListGrid.spacing.y;
+		var velocity = 0f;
+		var currentDuration = 0f;
+		while (currentDuration < kTargetDuration)
+		{
+			currentDuration += Time.unscaledDeltaTime;
+			transitionAmount = U.Math.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+			m_ButtonListGrid.spacing = new Vector2(0f, Mathf.Lerp(currentSpacing, m_HiddenButtonListYSpacing, transitionAmount));
+			m_ButtonListCanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
+			yield return null;
+		}
+
+		m_ButtonList.gameObject.SetActive(false);
+		m_HideButtonListCoroutine = null;
 	}
 }

@@ -48,8 +48,8 @@ Material:
     - first:
         name: _MainTex
       second:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: 1ca6a1aaddd98404087f4eaa766b4119, type: 3}
+        m_Scale: {x: 16, y: 16}
         m_Offset: {x: 0, y: 0}
     - first:
         name: _MetallicGlossMap
@@ -76,6 +76,9 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - first:
+        name: _Alpha
+      second: 1
     - first:
         name: _Blur
       second: 2.29
@@ -145,7 +148,7 @@ Material:
     m_Colors:
     - first:
         name: _Color
-      second: {r: 0.7941176, g: 0.7941176, b: 0.7941176, a: 1}
+      second: {r: 0.46323532, g: 0.46323532, b: 0.46323532, a: 1}
     - first:
         name: _EmisColor
       second: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 0}
