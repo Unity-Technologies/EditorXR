@@ -40,8 +40,10 @@ public class EditorVR : MonoBehaviour
 
 	const float kViewerPivotTransitionTime = 0.75f;
 
-	// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time minus approximately how long one operation will take
-	const float kMaxFrameTime = 0.08f;
+	// Minimum time to spend loading the project folder before yielding
+	const float kMinProjectFolderLoadTime = 0.005f;
+	// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
+	const float kMaxFrameTime = 0.01f;
 
 	[SerializeField]
 	private ActionMap m_ShowMenuActionMap;
@@ -151,16 +153,11 @@ public class EditorVR : MonoBehaviour
 
 	IGrabObjects m_TransformTool;
 
-	class FolderDataIteration
-	{
-		public FolderData data;
-		public bool hasNext;
-	}
-
 	readonly List<IProjectFolderList> m_ProjectFolderLists = new List<IProjectFolderList>();
 	FolderData[] m_FolderData;
 	readonly HashSet<string> m_AssetTypes = new HashSet<string>();
-	float m_LastFolderYieldTime;
+	float m_ProjectFolderLoadStartTime;
+	float m_ProjectFolderLoadYieldTime;
 
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
@@ -168,7 +165,7 @@ public class EditorVR : MonoBehaviour
 	{
 		ClearDeveloperConsoleIfNecessary();
 
-		StartCoroutine(LoadProjectFolders());
+		LoadProjectFolders();
 
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 		if (VRSettings.loadedDeviceName == "OpenVR")
@@ -310,6 +307,7 @@ public class EditorVR : MonoBehaviour
 		EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 		VRView.onGUIDelegate += OnSceneGUI;
 		VRView.onHMDReady += OnHMDReady;
+		EditorApplication.projectWindowChanged += LoadProjectFolders;
 #endif
 	}
 
@@ -320,6 +318,7 @@ public class EditorVR : MonoBehaviour
 		EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 		VRView.onGUIDelegate -= OnSceneGUI;
 		VRView.onHMDReady -= OnHMDReady;
+		EditorApplication.projectWindowChanged -= LoadProjectFolders;
 #endif
 	}
 
@@ -1042,14 +1041,6 @@ public class EditorVR : MonoBehaviour
 			grabObjects.dropObject = DropObject;
 		}
 
-		var folderList = obj as IProjectFolderList;
-		if (folderList != null)
-			folderList.getFolderData = GetFolderData;
-
-		var filterUI = obj as IFilterUI;
-		if (filterUI != null)
-			filterUI.getFilterList = GetFilterList;
-
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_MainMenuTools;
@@ -1296,11 +1287,17 @@ public class EditorVR : MonoBehaviour
 
 		var projectFolderList = workspace as IProjectFolderList;
 		if (projectFolderList != null)
+		{
+			projectFolderList.folderData = GetFolderData();
 			m_ProjectFolderLists.Add(projectFolderList);
+		}
 
 		var filterUI = workspace as IFilterUI;
 		if (filterUI != null)
+		{
+			filterUI.filterList = GetFilterList();
 			m_FilterUIs.Add(filterUI);
+		}
 
 		// Chessboard is a special case that we handle due to all of the mini world interactions
 		var chessboardWorkspace = workspace as ChessboardWorkspace;
@@ -1882,56 +1879,37 @@ public class EditorVR : MonoBehaviour
 	FolderData[] GetFolderData()
 	{
 		if (m_FolderData == null)
-			return null;
+			return new FolderData[0];
 
 		var assetsFolder = new FolderData(m_FolderData[0]) { expanded = true };
 
 		return new[] { assetsFolder };
 	}
 
-	IEnumerator LoadProjectFolders(bool quickStart = true)
+	void LoadProjectFolders()
 	{
-		FolderDataIteration iteration = null;
-
-		if (quickStart)
-		{
-			//Start with a quick pass to get assets without types
-			foreach (var e in CreateFolderData())
-			{
-				iteration = e;
-			}
-
-			m_FolderData = new[] { iteration.data };
-
-			yield return null;
-		}
-
 		m_AssetTypes.Clear();
 
-		//Create a new list with actual types
-		foreach (var e in CreateFolderData(m_AssetTypes))
+		StartCoroutine(CreateFolderData((folderData, hasNext) =>
 		{
-			iteration = e;
-			yield return null;
-		}
+			m_FolderData = new[] { folderData };
 
-		m_FolderData = new[] { iteration.data };
+			// Send new data to existing folderLists
+			foreach (var list in m_ProjectFolderLists)
+			{
+				list.folderData = GetFolderData();
+			}
 
-		// Send new data to existing folderLists
-		foreach (var list in m_ProjectFolderLists)
-		{
-			list.folderData = GetFolderData();
-		}
-
-		// Send new data to existing filterUIs
-		foreach (var filterUI in m_FilterUIs)
-		{
-			filterUI.filterList = GetFilterList();
-		}
+			// Send new data to existing filterUIs
+			foreach (var filterUI in m_FilterUIs)
+			{
+				filterUI.filterList = GetFilterList();
+			}
+		}, m_AssetTypes));
 	}
 
 	// Call with no assetTypes for quick load (and no types)
-	IEnumerable<FolderDataIteration> CreateFolderData(HashSet<string> assetTypes = null, bool hasNext = true, HierarchyProperty hp = null)
+	IEnumerator CreateFolderData(Action<FolderData, bool> callback, HashSet<string> assetTypes, bool hasNext = true, HierarchyProperty hp = null)
 	{
 		if (hp == null)
 		{
@@ -1950,17 +1928,11 @@ public class EditorVR : MonoBehaviour
 			{
 				if (hp.isFolder)
 				{
-					FolderDataIteration folder = null;
-
-					foreach (var e in CreateFolderData(assetTypes, hasNext, hp))
+					yield return StartCoroutine(CreateFolderData((data, next) =>
 					{
-						folder = e;
-						if (assetTypes != null)
-							yield return e;
-					}
-
-					folderList.Add(folder.data);
-					hasNext = folder.hasNext;
+						folderList.Add(data);
+						hasNext = next;
+					}, assetTypes, hasNext, hp));
 				}
 				else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
 					assetList.Add(CreateAssetData(hp, assetTypes));
@@ -1968,10 +1940,13 @@ public class EditorVR : MonoBehaviour
 				if (hasNext)
 					hasNext = hp.Next(null);
 
-				if (assetTypes != null && Time.realtimeSinceStartup - m_LastFolderYieldTime > kMaxFrameTime)
+				// Spend a minimum amount of time in this function, and if we have extra time in the frame, use it
+				if (Time.realtimeSinceStartup - m_ProjectFolderLoadYieldTime > kMaxFrameTime
+					&& Time.realtimeSinceStartup - m_ProjectFolderLoadStartTime > kMinProjectFolderLoadTime)
 				{
-					m_LastFolderYieldTime = Time.realtimeSinceStartup;
+					m_ProjectFolderLoadYieldTime = Time.realtimeSinceStartup;
 					yield return null;
+					m_ProjectFolderLoadStartTime = Time.realtimeSinceStartup;
 				}
 			}
 
@@ -1979,11 +1954,7 @@ public class EditorVR : MonoBehaviour
 				hp.Previous(null);
 		}
 
-		yield return new FolderDataIteration
-		{
-			data = new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), instanceID),
-			hasNext = hasNext
-		};
+		callback(new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), instanceID), hasNext);
 	}
 
 	AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
@@ -2020,7 +1991,7 @@ public class EditorVR : MonoBehaviour
 			assetTypes.Add(type);
 		}
 
-		return new AssetData(hp.name, hp.instanceID, hp.icon, type);
+		return new AssetData(hp.name, hp.instanceID, type);
 	}
 
 #if UNITY_EDITOR
@@ -2050,7 +2021,6 @@ public class EditorVR : MonoBehaviour
 	{
 		InitializeInputManager();
 		s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
-		EditorApplication.projectWindowChanged += OnProjectWindowChanged;
 	}
 
 	private static void InitializeInputManager()
@@ -2083,14 +2053,8 @@ public class EditorVR : MonoBehaviour
 		U.Object.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
 	}
 
-	static void OnProjectWindowChanged()
-	{
-		s_Instance.StartCoroutine(s_Instance.LoadProjectFolders(false));
-	}
-
 	private static void OnEVRDisabled()
 	{
-		EditorApplication.projectWindowChanged -= OnProjectWindowChanged;
 		U.Object.Destroy(s_Instance.gameObject);
 		U.Object.Destroy(s_InputManager.gameObject);
 	}

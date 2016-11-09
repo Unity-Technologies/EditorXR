@@ -172,7 +172,7 @@ namespace UnityEngine.VR.Utilities
 
 			public static IEnumerable<Type> GetImplementationsOfInterface(Type type)
 			{
-				
+
 				if (type.IsInterface)
 					return GetAssignableTypes(type);
 				else
@@ -219,6 +219,7 @@ namespace UnityEngine.VR.Utilities
 			{
 				// spawn ghost
 				GameObject ghostObj = Instantiate(obj, obj.transform.parent);
+
 				// generate wireframe for objects in tree containing renderers
 				Renderer[] children = ghostObj.GetComponentsInChildren<Renderer>();
 				foreach (Renderer r in children)
@@ -297,8 +298,28 @@ namespace UnityEngine.VR.Utilities
 			public static Type TypeNameToType(string name)
 			{
 				return AppDomain.CurrentDomain.GetAssemblies()
-								 .SelectMany(x => x.GetTypes())
-								 .FirstOrDefault(x => x.Name.Equals(name) && typeof(UnityObject).IsAssignableFrom(x));
+					.SelectMany(x => x.GetTypes())
+					.FirstOrDefault(x => x.Name.Equals(name) && typeof(UnityObject).IsAssignableFrom(x));
+			}
+
+			public static IEnumerator GetAssetPreview(UnityObject obj, Action<Texture> callback)
+			{
+				Texture texture = null;
+
+#if UNITY_EDITOR
+				texture = AssetPreview.GetAssetPreview(obj);
+
+				while (AssetPreview.IsLoadingAssetPreview(obj.GetInstanceID()))
+				{
+					texture = AssetPreview.GetAssetPreview(obj);
+					yield return null;
+				}
+
+				if (!texture)
+					texture = AssetPreview.GetMiniThumbnail(obj);
+#endif
+
+				callback(texture);
 			}
 		}
 	}
