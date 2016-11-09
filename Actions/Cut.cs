@@ -4,13 +4,9 @@ using UnityEngine.VR.Tools;
 namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Cut", ActionMenuItemAttribute.kDefaultActionSectionName, 4)]
-	public class Cut : MonoBehaviour, IAction
+	public class Cut : BaseAction
 	{
-		public Sprite icon { get { return m_Icon; } }
-		[SerializeField]
-		Sprite m_Icon;
-
-		public bool ExecuteAction()
+		public override void ExecuteAction()
 		{
 			//bug (case 451825)
 			//http://forum.unity3d.com/threads/editorapplication-ExecuteActionmenuitem-dont-include-edit-menu.148215/
@@ -25,10 +21,7 @@ namespace UnityEngine.VR.Actions
 					go.SetActive(false);
 				Paste.buffer = selection;
 				Selection.activeObject = null;
-				return true;
 			}
-
-			return false;
 		}
 	}
 }

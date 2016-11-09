@@ -13,6 +13,6 @@
 		/// <summary>
 		/// Execute this action
 		/// </summary>
-		bool ExecuteAction();
+		void ExecuteAction();
 	}
 }

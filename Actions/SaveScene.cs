@@ -1,16 +1,11 @@
 ﻿namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("SaveScene", "Scene")]
-	public class SaveScene : MonoBehaviour, IAction
+	public class SaveScene : BaseAction
 	{
-		public Sprite icon { get { return m_Icon; } }
-		[SerializeField]
-		Sprite m_Icon;
-
-		public bool ExecuteAction()
+		public override void ExecuteAction()
 		{
 			Debug.LogError("ExecuteAction Action should save a scene here");
-			return true;
 		}
 	}
 }

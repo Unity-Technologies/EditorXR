@@ -1,16 +1,11 @@
 ﻿namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Redo", ActionMenuItemAttribute.kDefaultActionSectionName, 1)]
-	public class Redo : MonoBehaviour, IAction
+	public class Redo : BaseAction
 	{
-		public Sprite icon { get { return m_Icon; } }
-		[SerializeField]
-		Sprite m_Icon;
-
-		public bool ExecuteAction()
+		public override void ExecuteAction()
 		{
 			UnityEditor.Undo.PerformRedo();
-			return true;
 		}
 	}
 }

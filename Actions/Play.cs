@@ -3,16 +3,11 @@
 namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Play")]
-	public class Play : MonoBehaviour, IAction
+	public class Play : BaseAction
 	{
-		public Sprite icon { get { return m_Icon; } }
-		[SerializeField]
-		Sprite m_Icon;
-
-		public bool ExecuteAction()
+		public override void ExecuteAction()
 		{
 			EditorApplication.isPlaying = true;
-			return EditorApplication.isPlayingOrWillChangePlaymode;
 		}
 	}
 }

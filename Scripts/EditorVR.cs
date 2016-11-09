@@ -59,6 +59,7 @@ public class EditorVR : MonoBehaviour
 
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
+
 	[SerializeField]
 	MainMenuActivator m_MainMenuActivatorPrefab;
 

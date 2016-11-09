@@ -54,9 +54,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	{
 		internal Func<bool> execute;
 		public Sprite icon { get; internal set; }
-		public bool ExecuteAction()
+		public void ExecuteAction()
 		{
-			return execute();
+			execute();
 		}
 	}
 

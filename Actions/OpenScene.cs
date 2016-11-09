@@ -1,16 +1,11 @@
 ﻿namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("OpenScene", "Scene")]
-	public class OpenScene : MonoBehaviour, IAction
+	public class OpenScene : BaseAction
 	{
-		public Sprite icon { get { return m_Icon; } }
-		[SerializeField]
-		Sprite m_Icon;
-
-		public bool ExecuteAction()
+		public override void ExecuteAction()
 		{
 			Debug.LogError("ExecuteAction Action should open a sub-panel showing available scenes to open, if any are found");
-			return true;
 		}
 	}
 }
