@@ -103,6 +103,7 @@ public class EditorVR : MonoBehaviour
 		public ActionMapInput directSelectInput;
 		public IMainMenu mainMenu;
 		public ITool currentTool;
+		public IMoveWorkspaces moveWorkspacesModule;
 	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
@@ -355,7 +356,28 @@ public class EditorVR : MonoBehaviour
 
 	void OnDestroy()
 	{
+		SaveWorkspacePositions();
 		PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
+	}
+
+	void SaveWorkspacePositions()
+	{
+		string writeToEditorPrefs = "";
+		WorkspaceSave workspaceSaves = new WorkspaceSave(m_AllWorkspaces.Count);
+
+		int i = 0;
+		foreach (var ws in m_AllWorkspaces)
+		{
+			workspaceSaves.m_Workspaces[i] = new WorkspaceSaveData();
+			workspaceSaves.m_Workspaces[i].workspaceName = ws.GetType().ToString();
+			workspaceSaves.m_Workspaces[i].localPosition = ws.transform.localPosition;
+			workspaceSaves.m_Workspaces[i].localRotation = ws.transform.localRotation;
+			workspaceSaves.m_Workspaces[i].localScale = ws.transform.localScale;
+			i++;
+		}
+
+		writeToEditorPrefs = JsonUtility.ToJson(workspaceSaves);
+		EditorPrefs.SetString("WorkspaceSavePositions", writeToEditorPrefs);
 	}
 
 	IEnumerator PrewarmAssets()
@@ -367,6 +389,7 @@ public class EditorVR : MonoBehaviour
 			var device = kvp.Key;
 			var deviceData = m_DeviceData[device];
 			var mainMenu = deviceData.mainMenu;
+			var moveWorkSpaces = deviceData.moveWorkspacesModule;
 
 			if (mainMenu == null)
 			{
@@ -378,6 +401,16 @@ public class EditorVR : MonoBehaviour
 					yield return null;
 
 				menus.Add(mainMenu);
+			}
+
+			if (moveWorkSpaces == null)
+			{
+				moveWorkSpaces = SpawnMoveWorkspacesModule(typeof(MoveWorkspacesModule), device);
+				deviceData.moveWorkspacesModule = moveWorkSpaces;
+				UpdatePlayerHandleMaps();
+
+				while (moveWorkSpaces == null)
+					yield return null;
 			}
 		}
 
@@ -786,6 +819,12 @@ public class EditorVR : MonoBehaviour
 
 		foreach (DeviceData deviceData in m_DeviceData.Values)
 		{
+			if (deviceData.moveWorkspacesModule != null)
+				AddActionMapInputs(deviceData.moveWorkspacesModule, maps);
+		}
+
+		foreach (DeviceData deviceData in m_DeviceData.Values)
+		{
 			foreach (ITool tool in deviceData.tools)
 				AddActionMapInputs(tool, maps);
 		}
@@ -870,6 +909,14 @@ public class EditorVR : MonoBehaviour
 		mainMenu.visible = visible;
 
 		return mainMenu;
+	}
+
+	private IMoveWorkspaces SpawnMoveWorkspacesModule(Type type, InputDevice device)
+	{
+		var workspaceModule = U.Object.AddComponent(type, gameObject) as IMoveWorkspaces;
+		ConnectActionMaps(workspaceModule, device);
+		ConnectInterfaces(workspaceModule, device);
+		return workspaceModule;
 	}
 
 	private Node? GetDeviceNode(InputDevice device)
@@ -999,6 +1046,10 @@ public class EditorVR : MonoBehaviour
 		var highlight = obj as IHighlight;
 		if (highlight != null)
 			highlight.setHighlight = m_HighlightModule.SetHighlight;
+
+		var moveWorkspaces = obj as IMoveWorkspaces;
+		if (moveWorkspaces != null)
+			moveWorkspaces.resetWorkspaces = ResetWorkspacePositions;
 
 		var placeObjects = obj as IPlaceObjects;
 		if (placeObjects != null)
@@ -1202,74 +1253,162 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
-		CreateWorkspace<ProjectWorkspace>();
-	}
-	
-	private void CreateWorkspace<T>() where T : Workspace
-	{
-		CreateWorkspace(typeof(T));
+		string inputString = EditorPrefs.GetString("WorkspaceSavePositions");
+
+		if (inputString == "")
+			return;
+
+		WorkspaceSave savedData = JsonUtility.FromJson<WorkspaceSave>(inputString);
+		if (savedData.m_Workspaces.Length > 0)
+		{
+			foreach (var ws in savedData.m_Workspaces)
+				CreateWorkspace(Type.GetType(ws.workspaceName), ws.localPosition, ws.localRotation, ws.localScale);
+		}
 	}
 
-	private void CreateWorkspace(Type t)
+	private void ResetWorkspacePositions()
 	{
 		var defaultOffset = Workspace.kDefaultOffset;
-		var defaultTilt = Workspace.kDefaultTilt;
-
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 		var headPosition = cameraTransform.position;
-		var headRotation = U.Math.ConstrainYawRotation(cameraTransform.rotation);
-
-		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
-			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
-			+ kWorkspaceAnglePadding;													//Need some extra padding because workspaces are tilted
-		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;			//Need padding in Y as well
-
-		float currentRotation = arcLength;
-		float currentHeight = 0;
-
-		int count = 0;
-		int direction = 1;
+		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;
 		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
 
-		Vector3 position;
-		Quaternion rotation;
-		var viewerPivot = U.Camera.GetViewerPivot();
-
-		// Spawn to one of the sides of the player instead of directly in front of the player
-		do
+		foreach (var ws in m_AllWorkspaces)
 		{
-			//The next position will be rotated by currentRotation, as if the hands of a clock
-			Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-			position = headPosition + headRotation * rotateAroundY * defaultOffset + Vector3.up * currentHeight;
-			rotation = headRotation * rotateAroundY * defaultTilt;
+			ws.OnDoubleTriggerTapAboveHMD();
+			ws.transform.position = headPosition + defaultOffset;
+			ws.transform.LookAt(headPosition);
+			ws.transform.Rotate(Vector3.up, 180.0f);
+			ws.transform.Rotate(Vector3.right, -20.0f);
 
-			//Every other iteration, rotate a little further
-			if (direction < 0)
-				currentRotation += arcLength;
-
-			//Switch directions every iteration (left, right, left, right)
-			direction *= -1;
-
-			//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
-			if (currentRotation > 180)
+			bool overlapOtherWorkspace;
+			int i = 0;
+			do
 			{
-				direction = -1;
-				currentRotation = 0;
-				currentHeight += heightOffset;
-			}
-		}
-		//While the current position is occupied, try a new one
-		while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
+				overlapOtherWorkspace = false;
+				Collider[] colliders = Physics.OverlapBox(ws.transform.position, halfBounds, ws.transform.rotation);
+				foreach (var col in colliders)
+				{
+					foreach (var workspace in m_AllWorkspaces)
+					{
+						if (workspace == ws)
+							continue;
 
+						if (col.transform.IsChildOf(workspace.transform))
+						{
+							overlapOtherWorkspace = true;
+							break;
+						}
+					}
+
+					if (overlapOtherWorkspace)
+						break;
+				}
+
+				if (overlapOtherWorkspace)
+				{
+					//6 workspace slots around player, 60 degree slots
+					ws.transform.RotateAround(headPosition, Vector3.up, 60.0f);
+					i++;
+
+					//if no empty slot, start new level of slots higher
+					if (i % 6 == 0)
+						ws.transform.Translate(new Vector3(0.0f, heightOffset, 0.0f));
+				}
+			}
+			while (overlapOtherWorkspace && i < 20);
+		}
+	}
+
+	private void CreateWorkspace(Type t, Vector3 pos, Quaternion rot, Vector3 scale)
+	{
+		var viewerPivot = U.Camera.GetViewerPivot();
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
 		m_AllWorkspaces.Add(workspace);
 		workspace.destroyed += OnWorkspaceDestroyed;
 		ConnectInterfaces(workspace);
-		workspace.transform.position = position;
-		workspace.transform.rotation = rotation;
+		workspace.transform.localPosition = pos;
+		workspace.transform.localRotation = rot;
+		workspace.transform.localScale = scale;
 
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
+
+		var projectFolderList = workspace as IProjectFolderList;
+		if (projectFolderList != null)
+		{
+			projectFolderList.folderData = GetFolderData();
+			m_ProjectFolderLists.Add(projectFolderList);
+		}
+
+		var filterUI = workspace as IFilterUI;
+		if (filterUI != null)
+		{
+			filterUI.filterList = GetFilterList();
+			m_FilterUIs.Add(filterUI);
+		}
+
+		// Chessboard is a special case that we handle due to all of the mini world interactions
+		var chessboardWorkspace = workspace as ChessboardWorkspace;
+		if (!chessboardWorkspace)
+			return;
+
+		var miniWorld = chessboardWorkspace.miniWorld;
+
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			var miniWorldRayOrigin = InstantiateMiniWorldRay();
+			miniWorldRayOrigin.parent = workspace.transform;
+
+			var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+			uiInput.active = false;
+
+			var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
+			directSelectInput.active = false;
+
+			// Use the mini world ray origin instead of the original ray origin
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
+			{
+				if (source.hoveredObject)
+					return !m_AllWorkspaces.Any(w => source.hoveredObject.transform.IsChildOf(w.transform));
+
+				return true;
+			});
+
+			var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
+			tester.active = false;
+
+			m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
+			{
+				originalRayOrigin = rayOriginPair.Value,
+				originalDirectSelectInput = deviceData.directSelectInput,
+				miniWorld = miniWorld,
+				proxy = proxy,
+				node = rayOriginPair.Key,
+				uiInput = uiInput,
+				directSelectInput = directSelectInput,
+				tester = tester
+			};
+
+			m_IntersectionModule.AddTester(tester);
+		});
+
+		UpdatePlayerHandleMaps();
+	}
+
+	private void CreateWorkspace(Type t)
+	{
+		var viewerPivot = U.Camera.GetViewerPivot();
+		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
+		m_AllWorkspaces.Add(workspace);
+		workspace.destroyed += OnWorkspaceDestroyed;
+		ConnectInterfaces(workspace);
+
+		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
+		workspace.Setup();
+
+		ResetWorkspacePositions();
 
 		var projectFolderList = workspace as IProjectFolderList;
 		if (projectFolderList != null)

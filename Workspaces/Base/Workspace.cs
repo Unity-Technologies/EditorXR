@@ -351,6 +351,7 @@ namespace UnityEngine.VR.Workspaces
 				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
+			transform.localScale = targetScale;
 
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
@@ -371,11 +372,12 @@ namespace UnityEngine.VR.Workspaces
 				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
+			transform.localScale = targetScale;
 
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
 			m_Hidden = true;
-        }
+		}
 
 		void OnMoveHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
