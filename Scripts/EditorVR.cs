@@ -390,20 +390,6 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	IEnumerator PreloadAssetTypes()
-	{
-		var hp = new HierarchyProperty(HierarchyType.Assets);
-		hp.SetSearchFilter("t:object", 0);
-
-		var types = new HashSet<string>();
-
-		while (hp.Next(null))
-		{
-			types.Add(hp.pptrValue.GetType().Name);
-			yield return null;
-		}
-	}
-
 	private void Update()
 	{
 		foreach (var proxy in m_AllProxies)
@@ -1381,9 +1367,11 @@ public class EditorVR : MonoBehaviour
 		if (filterUI != null)
 			m_FilterUIs.Remove(filterUI);
 
-		var miniWorld = workspace as IMiniWorld;
-		if (miniWorld != null)
+		var chessboard = workspace as ChessboardWorkspace;
+		if (chessboard != null)
 		{
+			var miniWorld = chessboard.miniWorld;
+
 			//Clean up MiniWorldRays
 			m_MiniWorlds.Remove(miniWorld);
 			var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_MiniWorldRays);
@@ -1908,7 +1896,6 @@ public class EditorVR : MonoBehaviour
 		}, m_AssetTypes));
 	}
 
-	// Call with no assetTypes for quick load (and no types)
 	IEnumerator CreateFolderData(Action<FolderData, bool> callback, HashSet<string> assetTypes, bool hasNext = true, HierarchyProperty hp = null)
 	{
 		if (hp == null)

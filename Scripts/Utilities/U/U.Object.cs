@@ -172,7 +172,6 @@ namespace UnityEngine.VR.Utilities
 
 			public static IEnumerable<Type> GetImplementationsOfInterface(Type type)
 			{
-
 				if (type.IsInterface)
 					return GetAssignableTypes(type);
 				else
@@ -213,51 +212,6 @@ namespace UnityEngine.VR.Utilities
 					yield return null;
 
 				UnityObject.DestroyImmediate(o);
-			}
-
-			public static GameObject SpawnGhostWireframe(GameObject obj, UnityMaterial ghostMaterial, bool enableRenderers = true)
-			{
-				// spawn ghost
-				GameObject ghostObj = Instantiate(obj, obj.transform.parent);
-
-				// generate wireframe for objects in tree containing renderers
-				Renderer[] children = ghostObj.GetComponentsInChildren<Renderer>();
-				foreach (Renderer r in children)
-				{
-					GenerateWireframe(r, ghostMaterial);
-					r.enabled = enableRenderers;
-				}
-				ghostObj.transform.position = obj.transform.position;
-				ghostObj.transform.rotation = obj.transform.rotation;
-				ghostObj.transform.localScale = obj.transform.localScale;
-
-				// remove colliders if there are any
-				Collider[] colliders = ghostObj.GetComponents<Collider>();
-				foreach (Collider c in colliders)
-					Destroy(c);
-
-				return ghostObj;
-			}
-
-			// generates wireframe if contains a renderer 
-			private static void GenerateWireframe(Renderer r, UnityMaterial ghostMaterial)
-			{
-				if (r)
-				{
-					UnityMaterial[] materials = r.sharedMaterials;
-					for (int i = 0; i < materials.Length; i++)
-						materials[i] = ghostMaterial;
-					r.sharedMaterials = materials;
-
-					// generate wireframe
-					MeshFilter mf = r.GetComponent<MeshFilter>();
-					if (mf)
-					{
-						// TODO: Replace with new wireframe generator
-						//Mesh mesh = mf.sharedMesh;
-						// mf.mesh = WireframeGenerator.Generate(ref mesh, WIRE_INSIDE.Color);
-					}
-				}
 			}
 
 			public static Bounds? GetTotalBounds(Transform t)
