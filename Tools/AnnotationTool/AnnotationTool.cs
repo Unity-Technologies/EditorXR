@@ -86,11 +86,14 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			showDefaultRay();
 		}
 
-		U.Object.Destroy(m_ColorPicker.gameObject);
-		U.Object.Destroy(m_BrushSizeUi.gameObject);
-		DestroyImmediate(m_CustomPointerObject);
+		if (m_ColorPicker)
+			U.Object.Destroy(m_ColorPicker.gameObject);
+		if (m_BrushSizeUi)
+			U.Object.Destroy(m_BrushSizeUi.gameObject);
+		if (m_CustomPointerObject)
+			DestroyImmediate(m_CustomPointerObject);
 	}
-
+	
 	void Update()
 	{
 		if (!m_RayHidden)
@@ -444,7 +447,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		Vector3 rayForward = rayOrigin.forward;
 		Vector3 worldPoint = rayOrigin.position + rayForward * kTipDistance;
 		Vector3 localPoint = m_WorldToLocalMesh.MultiplyPoint3x4(worldPoint);
-		
+
 		if (m_Points.Count < 1 || Vector3.Distance(m_Points.Last(), localPoint) >= (m_CurrentRadius * 0.25f))
 		{
 			m_Points.Add(localPoint);
@@ -475,7 +478,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			newVertices.RemoveRange(newVertices.Count - 4, 4);
 
 		TriangulatePlane(newTriangles, newVertices.Count);
-		CalculateUvs(newUvs, newVertices.Count);
+		CalculateUvs(newUvs, newVertices);
 
 		m_CurrentMesh.Clear();
 
@@ -491,7 +494,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 	private void LineToPlane(List<Vector3> newVertices)
 	{
 		Vector3 prevDirection = (m_Points[1] - m_Points[0]).normalized;
-		Vector3 prevCross = Vector3.Cross(prevDirection, m_Forwards[0]);
 
 		for (int i = 1; i < m_Points.Count; i++)
 		{
@@ -507,15 +509,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			Vector3 cross;
 			float drawAngle = Vector3.Angle(direction, m_Forwards[i - 1]);
 			if (drawAngle < 10 || drawAngle > 170)
-				cross = prevCross;
+				cross = Vector3.Cross(direction, Quaternion.Euler(-180, 0, 0) * m_Forwards[i - 1]).normalized;
 			else
-			{
 				cross = Vector3.Cross(direction, m_Forwards[i - 1]).normalized;
-
-				// Prevent sudden spins in the spline.
-				if (Vector3.Angle(prevCross, cross) > 90f)
-					cross = prevCross;
-			}
 			
 			float width = m_Widths[i - 1];
 			Vector3 left = thisPoint - cross * width;
@@ -525,7 +521,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			newVertices.Add(right);
 
 			prevDirection = direction;
-			prevCross = cross;
 		}
 	}
 
@@ -555,13 +550,16 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			newTriangles.AddRange(triangles);
 		}
 	}
-
-	private void CalculateUvs(List<Vector2> newUvs, int vertexCount)
+	
+	private void CalculateUvs(List<Vector2> newUvs, List<Vector3> newVertices)
 	{
-		for (int i = 0; i < vertexCount; i += 2)
+		for (int i = 0; i < newVertices.Count; i += 2)
 		{
 			for (int side = 0; side < 2; side++)
-				newUvs.Add(new Vector2(side, i / 2));
+			{
+				float distance = i > 0 ? Vector3.Distance(newVertices[i - 2 + side], newVertices[i + side]) : 0;
+				newUvs.Add(new Vector2(side, distance));
+			}
 		}
 	}
 
