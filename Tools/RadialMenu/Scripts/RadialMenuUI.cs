@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine.UI;
 using UnityEngine.VR.Actions;
-using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Extensions;
 using GradientPair = UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair;
@@ -27,6 +25,9 @@ namespace UnityEngine.VR.Menus
 
 		[SerializeField]
 		Transform m_SlotContainer;
+
+		[SerializeField]
+		float m_InputPhaseOffset = 75f;
 
 		List<RadialMenuSlot> m_RadialMenuSlots;
 		Coroutine m_ShowCoroutine;
@@ -124,9 +125,6 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 		bool m_PressedDown;
-
-		[SerializeField]
-		float m_InputPhaseOffset = 75f;
 
 		RadialMenuSlot m_HighlightedButton;
 		Vector2 m_InputMatrix;

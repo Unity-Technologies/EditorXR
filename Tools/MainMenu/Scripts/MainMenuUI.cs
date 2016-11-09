@@ -81,13 +81,13 @@ namespace UnityEngine.VR.Menus
 		private float m_RotationRate;
 		private float m_LastTargetRotation;
 		private Coroutine m_VisibilityCoroutine;
-		private Coroutine m_FrameRevealCoroutine;
+		Coroutine m_FrameRevealCoroutine;
 
-		private Transform[] m_MenuFaceContentTransforms;
-		private Vector3[] m_MenuFaceContentOriginalLocalPositions;
-		private Vector3[] m_MenuFaceContentOffsetLocalPositions;
-		private Vector3 m_MenuFaceContentOriginalLocalScale;
-		private Vector3 m_MenuFaceContentHiddenLocalScale;
+		Transform[] m_MenuFaceContentTransforms;
+		Vector3[] m_MenuFaceContentOriginalLocalPositions;
+		Vector3[] m_MenuFaceContentOffsetLocalPositions;
+		Vector3 m_MenuFaceContentOriginalLocalScale;
+		Vector3 m_MenuFaceContentHiddenLocalScale;
 
 		public Transform menuOrigin
 		{
@@ -505,7 +505,7 @@ namespace UnityEngine.VR.Menus
 			m_FrameRevealCoroutine = null;
 		}
 
-		private IEnumerator AnimateFaceReveal(int faceIndex)
+		IEnumerator AnimateFaceReveal(int faceIndex)
 		{
 			var targetScale = m_MenuFaceContentOriginalLocalScale;
 			var targetPosition = m_MenuFaceContentOriginalLocalPositions[faceIndex];

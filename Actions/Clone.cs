@@ -8,7 +8,7 @@ namespace UnityEngine.VR.Actions
 	{
 		public Sprite icon { get { return m_Icon; } }
 		[SerializeField]
-		private Sprite m_Icon;
+		Sprite m_Icon;
 
 		public bool ExecuteAction()
 		{
@@ -17,7 +17,9 @@ namespace UnityEngine.VR.Actions
 			foreach (var s in selection)
 			{
 				var clone = U.Object.Instantiate(s.gameObject);
-				Vector3 cloneOffset = new Vector3(s.position.x + Random.Range(-range, range), s.position.y + Random.Range(-range, range), s.position.z + Random.Range(-range, range)) + (Vector3.one * 0.5f);
+				var cloneOffset = new Vector3(s.position.x + Random.Range(-range, range), 
+					s.position.y + Random.Range(-range, range), 
+					s.position.z + Random.Range(-range, range)) + (Vector3.one * 0.5f);
 				clone.transform.position = s.position + cloneOffset;
 			}
 

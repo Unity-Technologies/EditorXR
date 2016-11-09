@@ -5,7 +5,7 @@
 	{
 		public Sprite icon { get { return m_Icon; } }
 		[SerializeField]
-		private Sprite m_Icon;
+		Sprite m_Icon;
 
 		public bool ExecuteAction()
 		{

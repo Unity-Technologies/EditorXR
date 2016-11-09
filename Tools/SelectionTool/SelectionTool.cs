@@ -8,25 +8,25 @@ namespace UnityEngine.VR.Tools
 {
 	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
 	{
-		private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
+		static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
-		private GameObject m_HoverGameObject;
-		private GameObject m_PressedObject;
-		private DateTime m_LastSelectTime;
+		GameObject m_HoverGameObject;
+		GameObject m_PressedObject;
+		DateTime m_LastSelectTime;
 
 		// The prefab (if any) that was double clicked, whose individual pieces can be selected
-		private static GameObject s_CurrentPrefabOpened;
+		static GameObject s_CurrentPrefabOpened;
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 		[SerializeField]
-		private ActionMap m_ActionMap;
+		ActionMap m_ActionMap;
 
 		public ActionMapInput actionMapInput
 		{
 			get { return m_SelectionInput; }
 			set { m_SelectionInput = (SelectionInput)value; }
 		}
-		private SelectionInput m_SelectionInput;
+		SelectionInput m_SelectionInput;
 
 		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 		public Transform rayOrigin { private get; set; }
