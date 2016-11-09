@@ -1177,7 +1177,6 @@ public class EditorVR : MonoBehaviour
 
 	private void CreateDefaultWorkspaces()
 	{
-		// Create the type of workspaces that were saved (if any)
 		string inputString = EditorPrefs.GetString("WorkspaceSavePositions");
 
 		if (inputString == "")
@@ -1263,30 +1262,7 @@ public class EditorVR : MonoBehaviour
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
 
-			var miniWorld = workspace as IMiniWorld;
-			if (miniWorld == null)
-				return;
-
-			m_MiniWorlds.Add(miniWorld);
-
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-			{
-				// Create MiniWorld rayOrigin
-				var miniWorldRayOrigin = new GameObject("MiniWorldRayOrigin").transform;
-				miniWorldRayOrigin.parent = workspace.transform;
-
-				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
-				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
-				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay()
-				{
-					originalRayOrigin = rayOriginPair.Value,
-					miniWorld = miniWorld,
-					proxy = proxy,
-					uiInput = uiInput
-				};
-			}, true);
+			SetupMiniWorldForWorkspace(workspace);
 		};
 	}
 
@@ -1306,31 +1282,36 @@ public class EditorVR : MonoBehaviour
 
 			ResetWorkspacePositions();
 
-			var miniWorld = workspace as IMiniWorld;
-			if (miniWorld == null)
-				return;
-
-			m_MiniWorlds.Add(miniWorld);
-
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-			{
-				// Create MiniWorld rayOrigin
-				var miniWorldRayOrigin = new GameObject("MiniWorldRayOrigin").transform;
-				miniWorldRayOrigin.parent = workspace.transform;
-
-				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-				m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
-				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
-				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay()
-				{
-					originalRayOrigin = rayOriginPair.Value,
-					miniWorld = miniWorld,
-					proxy = proxy,
-					uiInput = uiInput
-				};
-			}, true);
+			SetupMiniWorldForWorkspace(workspace);
 		};
+	}
+
+	private void SetupMiniWorldForWorkspace(Workspace workspace)
+	{
+		var miniWorld = workspace as IMiniWorld;
+		if (miniWorld == null)
+			return;
+
+		m_MiniWorlds.Add(miniWorld);
+
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			// Create MiniWorld rayOrigin
+			var miniWorldRayOrigin = new GameObject("MiniWorldRayOrigin").transform;
+			miniWorldRayOrigin.parent = workspace.transform;
+
+			var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+			m_PlayerHandle.maps.Insert(m_PlayerHandle.maps.IndexOf(deviceData.uiInput), uiInput);
+			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
+			m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay()
+			{
+				originalRayOrigin = rayOriginPair.Value,
+				miniWorld = miniWorld,
+				proxy = proxy,
+				uiInput = uiInput
+			};
+		}, true);
 	}
 
 	private void OnWorkspaceDestroyed(Workspace workspace)

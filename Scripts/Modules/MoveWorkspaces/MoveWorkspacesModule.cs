@@ -48,13 +48,10 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 					return;
 
 				if(standardInput.action.wasJustPressed)
-				{
 					HandleDoubleTap();
-				}
 				else if(standardInput.action.isHeld)
-				{
 					HandleManipulationStart();
-				}
+
 				break;
 			}
 			case ManipulateMode.On:
@@ -87,19 +84,19 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 		m_AllWorkspaces = GetComponentsInChildren<Workspace>();
 
 		if (m_AllWorkspaces.Length > 0)
-        {
-            foreach (var ws in m_AllWorkspaces)
-            {
+		{
+			foreach (var ws in m_AllWorkspaces)
+			{
 				if (ws.m_Hidden)
 					return false;
-            }
+			}
 
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	void HandleDoubleTap()
