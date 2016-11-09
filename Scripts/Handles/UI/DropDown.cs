@@ -1,14 +1,24 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
-using UnityEngine.VR.Handles;
+using UnityEngine.VR.Extensions;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.UI
 {
-	public class DropDown : BaseHandle
+	public class DropDown : MonoBehaviour
 	{
+		Coroutine m_ShowDropdownCoroutine;
+		Coroutine m_HideDropdownCoroutine;
+		float m_HiddenDropdownItemYSpacing;
+		float m_VisibleDropdownItemYSpacing;
+		float m_VisibleBackgroundMeshLocalYScale;
+		float m_PreviousXRotation;
+		Vector3 m_OptionsPanelOriginalLocalPosition;
+
 		public string[] options
 		{
 			get { return m_Options; }
@@ -32,13 +42,19 @@ namespace UnityEngine.VR.UI
 		RectTransform m_OptionsPanel;
 
 		[SerializeField]
-		LayoutGroup m_OptionsList;
+		GridLayoutGroup m_OptionsList;
 
 		[SerializeField]
 		GameObject m_TemplatePrefab;
 
 		[SerializeField]
 		GameObject m_MultiSelectTemplatePrefab;
+
+		[SerializeField]
+		CanvasGroup m_CanvasGroup;
+
+		[SerializeField]
+		Transform m_BackgroundMeshTransform;
 
 		public int value
 		{
@@ -72,11 +88,41 @@ namespace UnityEngine.VR.UI
 		void Awake()
 		{
 			SetupOptions();
+
+			m_HiddenDropdownItemYSpacing = -m_OptionsList.cellSize.y;
+			m_VisibleDropdownItemYSpacing = m_OptionsList.spacing.y;
+			m_VisibleBackgroundMeshLocalYScale = m_BackgroundMeshTransform.localScale.y;
+			m_OptionsPanelOriginalLocalPosition = m_OptionsPanel.localPosition;
 		}
 
 		void OnEnable()
 		{
 			m_OptionsPanel.gameObject.SetActive(false);
+			m_BackgroundMeshTransform.gameObject.SetActive(false);
+		}
+
+		void Update()
+		{
+			var currentXRotation = transform.rotation.eulerAngles.x;
+			currentXRotation = Mathf.Repeat(currentXRotation - 90, 360f); // Compensate for the rotation the lerp expects
+			if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
+				return; // Exit if no x rotation change occurred for this frame
+
+			m_PreviousXRotation = currentXRotation;
+
+			const float kLerpPadding = 1.2f; // pad lerp values increasingly as it increases, reaching intended rotation sooner
+			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 90f);
+
+			// add lerp padding to reach and maintain the target value sooner
+			var lerpAmount = (angledAmount / 90f) * kLerpPadding;
+
+			// offset options panel rotation according to workspace rotation angle
+			const float kAdditionalLerpPadding = 1.1f;
+			var parallelToWorkspaceRotation = new Vector3(0f, 0f, 0f);
+			var perpendicularToWorkspaceRotation = new Vector3(-90f, 0f, 0f);
+			var parallelToWorkspaceLocalPosition = new Vector3(m_OptionsPanelOriginalLocalPosition.x, m_OptionsPanelOriginalLocalPosition.y + 0.015f, m_OptionsPanelOriginalLocalPosition.z - 0.0125f);
+			m_OptionsPanel.localRotation = Quaternion.Euler(Vector3.Lerp(perpendicularToWorkspaceRotation, parallelToWorkspaceRotation, lerpAmount * kAdditionalLerpPadding));
+			m_OptionsPanel.localPosition = Vector3.Lerp(m_OptionsPanelOriginalLocalPosition, parallelToWorkspaceLocalPosition, lerpAmount);
 		}
 
 		void SetupOptions()
@@ -104,6 +150,9 @@ namespace UnityEngine.VR.UI
 				{
 					var optionObject = (GameObject)Instantiate(template, listTransform.position, listTransform.rotation, listTransform);
 
+					// Zero out Z local position
+					optionObject.transform.localPosition = new Vector3(optionObject.transform.localPosition.x, optionObject.transform.localPosition.y, 0f);
+
 					var optionText = optionObject.GetComponentInChildren<Text>();
 					if (optionText)
 						optionText.text = m_Options[i];
@@ -129,14 +178,18 @@ namespace UnityEngine.VR.UI
 			}
 		}
 
-		protected override void OnHandleDragEnded(HandleEventData eventData)
+		public void OpenPanel()
 		{
-			m_OptionsPanel.gameObject.SetActive(true);
+			this.StopCoroutine(ref m_HideDropdownCoroutine);
+			this.StopCoroutine(ref m_ShowDropdownCoroutine);
+			m_ShowDropdownCoroutine = StartCoroutine(ShowDropDownContents());
 		}
 
 		public void ClosePanel()
 		{
-			m_OptionsPanel.gameObject.SetActive(false);
+			this.StopCoroutine(ref m_ShowDropdownCoroutine);
+			this.StopCoroutine(ref m_HideDropdownCoroutine);
+			m_HideDropdownCoroutine = StartCoroutine(HideDropDownContents());
 		}
 
 		public void LabelOverride(string text)
@@ -192,9 +245,64 @@ namespace UnityEngine.VR.UI
 			}
 			else
 			{
-				if(m_Value >= 0 && m_Value < m_Options.Length)
+				if (m_Value >= 0 && m_Value < m_Options.Length)
 					m_Label.text = m_Options[m_Value];
 			}
+		}
+
+		IEnumerator ShowDropDownContents()
+		{
+			m_OptionsPanel.gameObject.SetActive(true);
+			m_BackgroundMeshTransform.gameObject.SetActive(true);
+
+			const float kTargetDuration = 0.5f;
+			var currentAlpha = m_CanvasGroup.alpha;
+			var kTargetAlpha = 1f;
+			var transitionAmount = 0f;
+			var velocity = 0f;
+			var currentDuration = 0f;
+			var currentBackgroundLocalScale = m_BackgroundMeshTransform.localScale;
+			var targetBackgroundLocalScale = new Vector3(m_BackgroundMeshTransform.localScale.x, m_VisibleBackgroundMeshLocalYScale, m_BackgroundMeshTransform.localScale.z);
+			while (currentDuration < kTargetDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				transitionAmount = U.Math.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_OptionsList.spacing = new Vector2(0f, Mathf.Lerp(m_HiddenDropdownItemYSpacing, m_VisibleDropdownItemYSpacing, transitionAmount));
+				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount * transitionAmount);
+				m_BackgroundMeshTransform.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, transitionAmount);
+				yield return null;
+			}
+
+			m_OptionsList.spacing = new Vector2(0f, m_VisibleDropdownItemYSpacing);
+			m_BackgroundMeshTransform.localScale = targetBackgroundLocalScale;
+			m_CanvasGroup.alpha = 1f;
+			m_ShowDropdownCoroutine = null;
+		}
+
+		IEnumerator HideDropDownContents()
+		{
+			const float kTargetDuration = 0.25f;
+			var currentAlpha = m_CanvasGroup.alpha;
+			var kTargetAlpha = 0f;
+			var transitionAmount = 0f;
+			var currentSpacing = m_OptionsList.spacing.y;
+			var velocity = 0f;
+			var currentDuration = 0f;
+			var currentBackgroundLocalScale = m_BackgroundMeshTransform.localScale;
+			var targetBackgroundLocalScale = new Vector3(m_BackgroundMeshTransform.localScale.x, 0f, m_BackgroundMeshTransform.localScale.z);
+			while (currentDuration < kTargetDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				transitionAmount = U.Math.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_OptionsList.spacing = new Vector2(0f, Mathf.Lerp(currentSpacing, m_HiddenDropdownItemYSpacing, transitionAmount));
+				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount * transitionAmount);
+				m_BackgroundMeshTransform.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, transitionAmount);
+				yield return null;
+			}
+
+			m_OptionsPanel.gameObject.SetActive(false);
+			m_BackgroundMeshTransform.gameObject.SetActive(false);
+			m_HideDropdownCoroutine = null;
 		}
 	}
 }

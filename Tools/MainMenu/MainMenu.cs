@@ -2,21 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Actions;
+using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, ILockRay
+	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins
 	{
-		public ActionMap actionMap
-		{
-			get
-			{
-				return m_MainMenuActionMap;
-			}
-		}
+		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
 		private ActionMap m_MainMenuActionMap;
 
@@ -28,7 +24,6 @@ namespace UnityEngine.VR.Menus
 		[SerializeField]
 		private MainMenuInput m_MainMenuInput;
 
-		// HACK: As of now Awake/Start get called together, so we have to cache the value and apply it later
 		public Transform alternateMenuOrigin
 		{
 			get
@@ -44,7 +39,6 @@ namespace UnityEngine.VR.Menus
 		}
 		private Transform m_AlternateMenuOrigin;
 
-		// HACK: As of now Awake/Start get called together, so we have to cache the value and apply it later
 		public Transform menuOrigin
 		{
 			get { return m_MenuOrigin; }
@@ -56,38 +50,18 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 		private Transform m_MenuOrigin;
-		
-		[SerializeField]
-		private MainMenuUI m_MainMenuPrefab;
-
-		private MainMenuUI m_MainMenuUI;
-		private float m_RotationInputStartTime;
-		private float m_RotationInputStartValue;
-		private float m_RotationInputIdleTime;
-		private float m_LastRotationInput;
-		
-		public Func<GameObject, GameObject> instantiateUI { private get; set; }
-		public Transform rayOrigin { private get; set; }
-		public Action hideDefaultRay { private get; set; }
-		public Action showDefaultRay { private get; set; }
-		public Func<object, bool> lockRay { private get; set; }
-		public Func<object, bool> unlockRay { private get; set; }
-		public List<Type> menuTools { private get; set; }
-		public Func<Node, Type, bool> selectTool { private get; set; }
-		public List<Type> menuWorkspaces { private get; set; }
-		public CreateWorkspaceDelegate createWorkspace { private get; set; }
-		public Node? node { private get; set; }
-		public Action setup { get { return Setup; } }
-		public Action<object> connectInterfaces { private get; set; }
 
 		public bool visible
 		{
-			get { return m_MainMenuUI.visible; }
+			get { return m_Visible; }
 			set
 			{
-				if (m_MainMenuUI.visible != value)
+				if (m_Visible != value)
 				{
-					m_MainMenuUI.visible = value;
+					m_Visible = value;
+					if (m_MainMenuUI)
+						m_MainMenuUI.visible = value;
+
 					if (value)
 					{
 						hideDefaultRay();
@@ -98,17 +72,45 @@ namespace UnityEngine.VR.Menus
 						unlockRay(this);
 						showDefaultRay();
 					}
+
+					menuVisibilityChanged(this);
 				}
 			}
 		}
+		private bool m_Visible;
 
-		public void Setup()
+		[SerializeField]
+		private MainMenuUI m_MainMenuPrefab;
+
+		private MainMenuUI m_MainMenuUI;
+		private float m_RotationInputStartTime;
+		private float m_RotationInputStartValue;
+		private float m_RotationInputIdleTime;
+		private float m_LastRotationInput;
+
+		public Func<GameObject, GameObject> instantiateUI { private get; set; }
+		public Transform rayOrigin { private get; set; }
+		public Action hideDefaultRay { private get; set; }
+		public Action showDefaultRay { private get; set; }
+		public Func<object, bool> lockRay { private get; set; }
+		public Func<object, bool> unlockRay { private get; set; }
+		public List<Type> menuTools { private get; set; }
+		public Func<Node, Type, bool> selectTool { private get; set; }
+		public List<Type> menuWorkspaces { private get; set; }
+		public CreateWorkspaceDelegate createWorkspace { private get; set; }
+		public List<ActionMenuData> menuActions { get; set; }
+		public Node? node { private get; set; }
+		public Action<object> connectInterfaces { private get; set; }
+		public event Action<IMainMenu> menuVisibilityChanged = delegate {};
+
+		void Start()
 		{
 			m_MainMenuUI = instantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
 			connectInterfaces(m_MainMenuUI);
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
+			m_MainMenuUI.visible = m_Visible;
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
@@ -117,7 +119,7 @@ namespace UnityEngine.VR.Menus
 
 		private void Update()
 		{
-			var rotationInput = m_MainMenuInput.rotate.rawValue;
+			var rotationInput = -m_MainMenuInput.rotate.rawValue;
 			if (Mathf.Approximately(rotationInput, m_LastRotationInput) && Mathf.Approximately(rotationInput, 0f))
 			{
 				m_RotationInputIdleTime += Time.unscaledDeltaTime;

@@ -44,7 +44,7 @@ GameObject:
   - 114: {fileID: 114000013109644058}
   m_Layer: 5
   m_Name: RotateY
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -63,7 +63,7 @@ GameObject:
   - 114: {fileID: 114000012004783302}
   m_Layer: 5
   m_Name: RotateX
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -78,7 +78,7 @@ GameObject:
   - 4: {fileID: 4000012837354530}
   m_Layer: 5
   m_Name: PlaneHandles
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -95,7 +95,7 @@ GameObject:
   - 23: {fileID: 23000012973351642}
   m_Layer: 5
   m_Name: TranslateArrowZ
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -133,7 +133,7 @@ GameObject:
   - 114: {fileID: 114000012043475194}
   m_Layer: 5
   m_Name: RotateZ
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -150,7 +150,7 @@ GameObject:
   - 23: {fileID: 23000011512687970}
   m_Layer: 5
   m_Name: RotateArrowY
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -169,7 +169,7 @@ GameObject:
   - 136: {fileID: 136000011415012526}
   m_Layer: 5
   m_Name: TranslateY
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -186,7 +186,7 @@ GameObject:
   - 23: {fileID: 23000012097216674}
   m_Layer: 5
   m_Name: TranslateArrowX
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -202,7 +202,7 @@ GameObject:
   - 114: {fileID: 114000012657926048}
   m_Layer: 5
   m_Name: StandardManipulator
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -219,7 +219,7 @@ GameObject:
   - 23: {fileID: 23000010728977110}
   m_Layer: 5
   m_Name: TranslateArrowY
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -238,7 +238,7 @@ GameObject:
   - 114: {fileID: 114000013220464894}
   m_Layer: 5
   m_Name: Grab
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -255,7 +255,7 @@ GameObject:
   - 23: {fileID: 23000010522627972}
   m_Layer: 5
   m_Name: RotateArrowX
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -274,7 +274,7 @@ GameObject:
   - 136: {fileID: 136000011845933296}
   m_Layer: 5
   m_Name: TranslateX
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -293,7 +293,7 @@ GameObject:
   - 136: {fileID: 136000014012623966}
   m_Layer: 5
   m_Name: TranslateZ
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -310,7 +310,7 @@ GameObject:
   - 23: {fileID: 23000011923190926}
   m_Layer: 5
   m_Name: RotateArrowZ
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1245,7 +1245,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
   m_PlaneMaterial: {fileID: 2100000, guid: faae2cd60c5292c48a46def9df717604, type: 2}
 --- !u!114 &114000011169532704
 MonoBehaviour:
@@ -1259,7 +1259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
   m_PlaneMaterial: {fileID: 2100000, guid: faae2cd60c5292c48a46def9df717604, type: 2}
 --- !u!114 &114000011250465190
 MonoBehaviour:
@@ -1273,7 +1273,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
   m_HandleTip: {fileID: 4000014115655252}
 --- !u!114 &114000011261594914
 MonoBehaviour:
@@ -1287,7 +1287,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
   m_HandleTip: {fileID: 4000013116023314}
 --- !u!114 &114000011660595710
 MonoBehaviour:
@@ -1301,7 +1301,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
   m_HandleTip: {fileID: 4000012695962256}
 --- !u!114 &114000012004783302
 MonoBehaviour:
@@ -1315,7 +1315,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
   m_TurnSpeed: 4
   m_HandleTip: {fileID: 4000010934639446}
 --- !u!114 &114000012043475194
@@ -1330,7 +1330,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
   m_TurnSpeed: 4
   m_HandleTip: {fileID: 4000010059661420}
 --- !u!114 &114000012656813054
@@ -1345,7 +1345,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
   m_PlaneMaterial: {fileID: 2100000, guid: faae2cd60c5292c48a46def9df717604, type: 2}
 --- !u!114 &114000012657926048
 MonoBehaviour:
@@ -1383,7 +1383,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
   m_TurnSpeed: 4
   m_HandleTip: {fileID: 4000012613258266}
 --- !u!114 &114000013220464894
@@ -1398,7 +1398,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_HandleFlags: -1
+  m_SelectionFlags: 3
 --- !u!135 &135000012924084782
 SphereCollider:
   m_ObjectHideFlags: 1

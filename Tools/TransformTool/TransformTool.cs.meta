@@ -1,17 +1,26 @@
 fileFormatVersion: 2
 guid: 882053426a5f76d46b5505d9a20be912
-timeCreated: 1470419714
+timeCreated: 1476301859
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
+  - m_OriginCenterIcon: {fileID: 21300000, guid: 5dc98af17e3735d43acf2a4b394fad4a,
+      type: 3}
+  - m_OriginPivotIcon: {fileID: 21300000, guid: 091d9476ed565fa44beb197d2bfb5428,
+      type: 3}
+  - m_RotationGlobalIcon: {fileID: 21300000, guid: 0cd62a86ee35a5e45b597acc8a08926a,
+      type: 3}
+  - m_RotationLocalIcon: {fileID: 21300000, guid: c4972e7fe0be6d845af2fd3754d5b252,
+      type: 3}
   - m_StandardManipulatorPrefab: {fileID: 1000013053252988, guid: 29783bde356a0044180058ec328b8f43,
       type: 2}
   - m_ScaleManipulatorPrefab: {fileID: 1000011603037920, guid: ac3ea0b5d31a9d84580ef5c806d6862e,
       type: 2}
-  - m_DirectManipulatorPrefab: {fileID: 1000014088868178, guid: 2c9cb3514c0379a418a813f8418d1dc3,
+  - m_TransformActionMap: {fileID: 11400000, guid: 56fffa69d4e55f2428bcc0a2bb0732f4,
       type: 2}
-  - m_ActionMap: {fileID: 11400000, guid: 56fffa69d4e55f2428bcc0a2bb0732f4, type: 2}
+  - m_DirectSelectActionMap: {fileID: 11400000, guid: dc1ccafeffffc62419a3265a080a94a3,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

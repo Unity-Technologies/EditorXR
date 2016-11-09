@@ -10,11 +10,16 @@ namespace ListView
 	{
 		public virtual DataType[] data
 		{
+			get { return m_Data; }
 			set
 			{
-				if (m_Data != null) // Clear out visuals for old data
-					foreach (var data in m_Data)
+				if (m_Data != null)
+				{
+					foreach (var data in m_Data) // Clear out visuals for old data
+					{
 						RecycleBeginning(data);
+					}
+				}
 				m_Data = value;
 				scrollOffset = 0;
 			}
@@ -76,7 +81,7 @@ namespace ListView
 				Debug.LogWarning("Cannot get item, template " + data.template + " doesn't exist");
 				return null;
 			}
-			ItemType item = null;
+			ItemType item;
 			if (m_TemplateDictionary[data.template].pool.Count > 0)
 			{
 				item = (ItemType) m_TemplateDictionary[data.template].pool[0];
@@ -87,7 +92,7 @@ namespace ListView
 			}
 			else
 			{
-				if(instantiateUI != null)
+				if (instantiateUI != null)
 					item = instantiateUI(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
 				else
 					item = Instantiate(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
