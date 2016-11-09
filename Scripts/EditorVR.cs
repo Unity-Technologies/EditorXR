@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -902,9 +902,17 @@ public class EditorVR : MonoBehaviour
 			}
 		}, true);
 
-
-
 		return go;
+	}
+
+	private void DestroyMenuUI(GameObject go)
+	{
+		foreach (var kvp in m_DeviceData)
+		{
+			if (kvp.Value.toolMenus.Contains(go))
+				kvp.Value.toolMenus.Remove(go);
+		}
+		U.Object.Destroy(go);
 	}
 
 	private KeyboardUI SpawnNumericKeyboard()
@@ -1235,9 +1243,12 @@ public class EditorVR : MonoBehaviour
 		if (instantiateUI != null)
 			instantiateUI.instantiateUI = InstantiateUI;
 
-		var instantiateMenuUI = obj as IInstantiateMenuUI;
-		if(instantiateMenuUI != null)
-			instantiateMenuUI.instantiateMenuUI = InstantiateMenuUI;
+		var handleToolMenuUI = obj as IHandleToolMenuUI;
+		if (handleToolMenuUI != null)
+		{
+			handleToolMenuUI.instantiateMenuUI = InstantiateMenuUI;
+			handleToolMenuUI.destroyMenuUI = DestroyMenuUI;
+		}
 
 		var raycaster = obj as IRaycaster;
 		if (raycaster != null)

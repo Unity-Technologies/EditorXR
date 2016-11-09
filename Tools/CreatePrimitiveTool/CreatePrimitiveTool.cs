@@ -5,9 +5,10 @@ using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Actions;
+using UnityEngine.VR.Utilities;
 
 [MainMenuItem("Primitive", "Primitive", "create primitives")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IInstantiateMenuUI, ICustomRay, IToolActions
+public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IHandleToolMenuUI, ICustomRay, IToolActions
 {
 	class PrimitiveToolAction : IAction
 	{
@@ -27,6 +28,8 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IIn
 
 	private GameObject m_CurrentGameObject = null;
 
+	private GameObject m_ToolMenu = null;
+
 	private const float kDrawDistance = 0.075f;
 
 	private Vector3 m_PointA = Vector3.zero;
@@ -39,6 +42,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IIn
 	public Standard standardInput {	get; set; }
 
 	public Func<Node,MenuOrigin,GameObject,GameObject> instantiateMenuUI { private get; set; }
+	public Action<GameObject> destroyMenuUI { private get; set; }
 
 	public Transform rayOrigin { get; set; }
 	public Action hideDefaultRay { private get; set; }
@@ -92,9 +96,8 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IIn
 
 	void SpawnCanvas()
 	{
-		//hideDefaultRay();
-		var go = instantiateMenuUI(selfNode,MenuOrigin.Main,m_CanvasPrefab.gameObject);
-		go.GetComponent<CreatePrimitiveMenu>().selectPrimitive += SetSelectedPrimitive;
+		m_ToolMenu = instantiateMenuUI(selfNode,MenuOrigin.Main,m_CanvasPrefab.gameObject);
+		m_ToolMenu.GetComponent<CreatePrimitiveMenu>().selectPrimitive += SetSelectedPrimitive;
 		m_CanvasSpawned = true;
 	}
 
@@ -148,5 +151,10 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IIn
 	{
 		if(standardInput.action.wasJustReleased)
 			m_State = PrimitiveCreationStates.PointA;
+	}
+
+	void OnDestroy()
+	{
+		destroyMenuUI(m_ToolMenu);
 	}
 }

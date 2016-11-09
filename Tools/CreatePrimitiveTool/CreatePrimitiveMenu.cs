@@ -31,7 +31,7 @@ public class CreatePrimitiveMenu : MonoBehaviour, ICustomRay
 
 	void Update()
 	{
-		//interface is connected after OnEnalbe can run first time
+		//interface is connected after OnEnable can run first time
 		if (m_HideRayFirstFrame && hideDefaultRay != null)
 		{
 			hideDefaultRay();
