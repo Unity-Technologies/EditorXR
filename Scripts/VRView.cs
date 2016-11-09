@@ -90,8 +90,6 @@ namespace UnityEditor.VR
 			}
 		}
 
-		public static Camera customPreviewCamera { set; private get; }
-
 		public static event Action onEnable = delegate {};
 		public static event Action onDisable = delegate {};
 		public static event Action<EditorWindow> onGUIDelegate = delegate {};
@@ -273,7 +271,7 @@ namespace UnityEditor.VR
 			var hdr = false; // SceneViewIsRenderingHDR();
 			CreateCameraTargetTexture(cameraRect, hdr);
 			m_Camera.targetTexture = m_ShowDeviceView ? m_SceneTargetTexture : null;
-			VRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
+			VRSettings.showDeviceView = m_ShowDeviceView;
 		}
 
 		private void OnGUI()
