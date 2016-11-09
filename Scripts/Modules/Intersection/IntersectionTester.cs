@@ -1,6 +1,5 @@
 ﻿namespace UnityEngine.VR.Modules
 {
-	[ExecuteInEditMode]
 	public class IntersectionTester : MonoBehaviour
 	{
 		[SerializeField]

@@ -289,7 +289,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 	{
 		if (gameObject.activeInHierarchy)
 		{
-			StopCoroutine(ref m_TransitionCoroutine);
+			this.StopCoroutine(ref m_TransitionCoroutine);
 			m_TransitionCoroutine = StartCoroutine(AnimatePreview(false));
 		}
 	}
@@ -298,7 +298,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects
 	{
 		if (gameObject.activeInHierarchy)
 		{
-			StopCoroutine(ref m_TransitionCoroutine);
+			this.StopCoroutine(ref m_TransitionCoroutine);
 			m_TransitionCoroutine = StartCoroutine(AnimatePreview(true));
 		}
 	}
