@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.UI;
 
@@ -16,9 +17,9 @@ public class ProjectUI : MonoBehaviour
 	[SerializeField]
 	private RectTransform m_FolderPanel;
 
-	public AssetGridViewController assetListView { get { return m_AssetListView; } }
+	public AssetGridViewController assetGridView { get { return m_AssetGridView; } }
 	[SerializeField]
-	private AssetGridViewController m_AssetListView;
+	private AssetGridViewController m_AssetGridView;
 
 	public BaseHandle assetScrollHandle { get { return m_AssetScrollHandle; } }
 	[SerializeField]

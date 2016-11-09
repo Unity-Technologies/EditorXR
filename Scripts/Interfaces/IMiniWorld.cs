@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -22,6 +23,11 @@ public interface IMiniWorld
 	/// Gets the reference transform used to represent the origin and size of the space represented within the miniWorld
 	/// </summary>
 	Transform referenceTransform { get; }
+
+	/// <summary>
+	/// Matrix that converts from the mini world space to reference space (which may have scale and translation)
+	/// </summary>
+	Matrix4x4 worldToCameraMatrix { get; }
 
 	/// <summary>
 	/// Sets a list of renderers to be skipped when rendering the MiniWorld

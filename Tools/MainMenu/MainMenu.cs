@@ -76,6 +76,8 @@ namespace UnityEngine.VR.Menus
 						unlockRay(this);
 						showDefaultRay();
 					}
+
+					menuVisibilityChanged(this);
 				}
 			}
 		}
