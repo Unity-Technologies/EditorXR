@@ -578,7 +578,7 @@ MonoBehaviour:
   m_FolderListView: {fileID: 114000011426645376}
   m_FolderScrollHandle: {fileID: 114000011690277160}
   m_FolderPanel: {fileID: 224000013355792080}
-  m_AssetListView: {fileID: 114000011974647448}
+  m_AssetGridView: {fileID: 114000011974647448}
   m_AssetScrollHandle: {fileID: 114000013168122432}
   m_AssetPanel: {fileID: 224000010405483644}
   m_AssetGridHighlight: {fileID: 114000013337603310}

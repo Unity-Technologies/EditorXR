@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.VR.Utilities;
 
 public class CuboidLayout : UIBehaviour
 {
@@ -11,25 +12,38 @@ public class CuboidLayout : UIBehaviour
 	RectTransform[] m_TargetTransforms;
 
 	[SerializeField]
+	RectTransform[] m_TargetHighlightTransforms;
+
+	[Header("Prefab Templates")]
+	[SerializeField]
 	GameObject m_CubePrefab;
 
+	[SerializeField]
+	GameObject m_HighlightCubePrefab;
+
 	Transform[] m_CubeTransforms;
+	Transform[] m_HighlightCubeTransforms;
 
 	protected override void Start()
 	{
 		m_CubeTransforms = new Transform[m_TargetTransforms.Length];
 		for (var i = 0; i < m_CubeTransforms.Length; i++)
 		{
-			var cube = Instantiate(m_CubePrefab).transform;
-			cube.SetParent(m_TargetTransforms[i], false);
-			m_CubeTransforms[i] = cube;
+			m_CubeTransforms[i] = U.Object.Instantiate(m_CubePrefab, m_TargetTransforms[i], false).transform;
 		}
-		UpdateCubes();
+
+		m_HighlightCubeTransforms = new Transform[m_TargetHighlightTransforms.Length];
+		for (var i = 0; i < m_TargetHighlightTransforms.Length; i++)
+		{
+			m_HighlightCubeTransforms[i] = U.Object.Instantiate(m_HighlightCubePrefab, m_TargetHighlightTransforms[i], false).transform;
+		}
+
+		UpdateObjects();
 	}
 
 	protected override void OnRectTransformDimensionsChange()
 	{
-		UpdateCubes();
+		UpdateObjects();
 	}
 
 	/// <summary>
@@ -38,28 +52,53 @@ public class CuboidLayout : UIBehaviour
 	/// <param name="backingCubeMaterial">New material to use</param>
 	public void SetMaterials(Material backingCubeMaterial)
 	{
-		foreach (var cube in m_CubeTransforms)
-			cube.GetComponent<Renderer>().sharedMaterial = backingCubeMaterial;
+		if (m_CubeTransforms != null)
+		{
+			foreach (var cube in m_CubeTransforms)
+			{
+				cube.GetComponent<Renderer>().sharedMaterial = backingCubeMaterial;
+			}
+		}
 	}
 
-	public void UpdateCubes()
+	public void UpdateObjects()
 	{
 		if (m_CubeTransforms == null)
 			return;
+
+		// Update standard objects
+		const float kStandardObjectSideScalePadding = 0.005f;
 		for (var i = 0; i < m_CubeTransforms.Length; i++)
 		{
 			var rectSize = m_TargetTransforms[i].rect.size.Abs();
 			// Scale pivot by rect size to get correct xy local position
 			var pivotOffset =  Vector2.Scale(rectSize, kCuboidPivot - m_TargetTransforms[i].pivot);
 
-			// Add space for cuboid
+			// Add space for target transform
 			var localPosition = m_TargetTransforms[i].localPosition;
 			m_TargetTransforms[i].localPosition = new Vector3(localPosition.x, localPosition.y, -kLayerHeight);
 
 			//Offset by 0.5 * height to account for pivot in center
 			const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
 			m_CubeTransforms[i].localPosition = new Vector3(pivotOffset.x, pivotOffset.y, zOffset);
-			m_CubeTransforms[i].localScale = new Vector3(rectSize.x, rectSize.y, kLayerHeight);
+			m_CubeTransforms[i].localScale = new Vector3(rectSize.x + kStandardObjectSideScalePadding, rectSize.y, kLayerHeight);
+		}
+
+		// Update highlight objects
+		for (var i = 0; i < m_HighlightCubeTransforms.Length; i++)
+		{
+			var rectSize = m_TargetHighlightTransforms[i].rect.size.Abs();
+			// Scale pivot by rect size to get correct xy local position
+			var pivotOffset = Vector2.Scale(rectSize, kCuboidPivot - m_TargetHighlightTransforms[i].pivot);
+
+			// Add space for target transform
+			var localPosition = m_TargetHighlightTransforms[i].localPosition;
+			m_TargetHighlightTransforms[i].localPosition = new Vector3(localPosition.x, localPosition.y, -kLayerHeight);
+
+			//Offset by 0.5 * height to account for pivot in center
+			const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
+			m_HighlightCubeTransforms[i].localPosition = new Vector3(pivotOffset.x, pivotOffset.y, zOffset);
+			m_HighlightCubeTransforms[i].localScale = new Vector3(rectSize.x, rectSize.y, kLayerHeight);
 		}
 	}
 }

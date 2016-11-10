@@ -58,6 +58,7 @@ public class FolderListItem : ListViewItem<FolderData>
 
 			m_ExpandArrow.dragEnded += ToggleExpanded;
 			m_Cube.dragStarted += SelectFolder;
+			m_Cube.dragEnded += ToggleExpanded;
 
 			m_Cube.hoverStarted += OnHoverStarted;
 			m_Cube.hoverEnded += OnHoverEnded;
