@@ -1,9 +1,14 @@
+using System;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR;
+using UnityEngine.VR.Tools;
 
-public class LockUI : MonoBehaviour
+public class LockUI : MonoBehaviour, ILocking
 {
-
 	[SerializeField]
 	Image m_LockImage;
 
@@ -13,31 +18,30 @@ public class LockUI : MonoBehaviour
 	[SerializeField]
 	Sprite m_UnlockIcon;
 
-	LockModule m_LockModule;
+	public Action<GameObject, bool> setLocked { private get; set; }
+	public Func<GameObject, bool> isLocked { private get; set; }
+	public Action<GameObject, Transform> checkHover { private get; set; }
 
 	void Start()
 	{
-		m_LockModule = GetComponentInParent<LockModule>();
-		HandleSprite();
+		UpdateIcon();
 	}
 
 	public void OnLockButtonPressed()
 	{
-		if (m_LockModule)
-		{
-			m_LockModule.ToggleLocked();
-			HandleSprite();
-		}
+#if UNITY_EDITOR
+		var go = Selection.activeGameObject;
+		setLocked(go, !isLocked(go));
+#endif
+		UpdateIcon();
 	}
 
-	private void HandleSprite()
+	void UpdateIcon()
 	{
-		if (m_LockModule)
-		{
-			var active = UnityEditor.Selection.activeGameObject;
-			bool isLocked = m_LockModule.IsLocked(active);
-			m_LockImage.sprite = isLocked ? m_UnlockIcon : m_LockIcon;
-		}
+		var locked = false;
+#if UNITY_EDITOR
+		locked = isLocked(Selection.activeGameObject);
+#endif
+		m_LockImage.sprite = locked ? m_LockIcon : m_UnlockIcon;
 	}
-
 }

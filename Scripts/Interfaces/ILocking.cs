@@ -1,25 +1,22 @@
 ﻿using System;
-using UnityEngine;
-using System.Collections;
 
 namespace UnityEngine.VR.Tools
 {
+	/// <summary>
+	/// Get access to locking features
+	/// </summary>
 	public interface ILocking
 	{
-		Func<bool> toggleLocked
-		{
-			set;
-		}
+		/// <summary>
+		/// Set a GameObject's locked status
+		/// </summary>
+		Action<GameObject, bool> setLocked { set; }
 
-		Func<GameObject,bool> getLocked
-		{
-			get;
-			set;
-		}
+		/// <summary>
+		/// Check whether a GameObject is locked
+		/// </summary>
+		Func<GameObject,bool> isLocked { set; }
 
-		Action<GameObject, Node?> checkHover
-		{
-			set;
-		}
+		Action<GameObject, Transform> checkHover { set; }
 	}
 }

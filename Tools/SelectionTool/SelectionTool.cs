@@ -31,12 +31,11 @@ namespace UnityEngine.VR.Tools
 		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 		public Transform rayOrigin { private get; set; }
 		public Action<GameObject, bool> setHighlight { private get; set; }
-		public Node? node { private get; set; }
-		public Func<bool> toggleLocked { get; set; }
-		public Func<GameObject, bool> getLocked { get; set; }
-		public Action<GameObject, Node?> checkHover { get; set; }
+		public Action<GameObject, bool> setLocked { get; set; }
+		public Func<GameObject, bool> isLocked { get; set; }
+		public Action<GameObject, Transform> checkHover { get; set; }
 
-		public event Action<Node?> selected = delegate {};
+		public event Action<Transform> selected = delegate {};
 
 		void Update()
 		{
@@ -57,8 +56,8 @@ namespace UnityEngine.VR.Tools
 					return;
 			}
 
-			checkHover(newHoverGameObject, node);
-			if (getLocked(newHoverGameObject))
+			checkHover(newHoverGameObject, rayOrigin);
+			if (isLocked(newHoverGameObject))
 				return;
 
 			// Handle changing highlight
@@ -108,7 +107,7 @@ namespace UnityEngine.VR.Tools
 					}
 
 					Selection.objects = s_SelectedObjects.ToArray();
-					selected(node);
+					selected(rayOrigin);
 				}
 
 				m_PressedObject = null;

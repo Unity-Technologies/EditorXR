@@ -1,13 +1,10 @@
 using System;
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Actions;
-using UnityEngine.VR.Menus;
-using UnityEngine.VR;
 using System.Linq;
+using UnityEditor;
 
 public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 {
@@ -29,20 +26,22 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 	readonly LockModuleAction m_LockModuleAction = new LockModuleAction();
 	public List<IAction> toolActions { get; private set; }
 
-	public Action<Node?, GameObject> openRadialMenu { private get; set; }
+	// TODO: This should go away once the alternate menu stays open or if locking/unlocking from alternate menu goes 
+	// away entirely (e.g. because of HierarchyWorkspace)
+	public Action<Transform, GameObject> updateAlternateMenu { private get; set; }
 
-	private readonly List<GameObject> m_LockedGameObjects = new List<GameObject>();
+	readonly List<GameObject> m_LockedGameObjects = new List<GameObject>();
 
-	private Dictionary<Node?, GameObject> m_CurrentHoverObjects = new Dictionary<Node?, GameObject>();
-	private Dictionary<Node?, float> m_HoverTimes = new Dictionary<Node?, float>();
-	private const float kMaxHoverTime = 2.0f;
+	Dictionary<Transform, GameObject> m_CurrentHoverObjects = new Dictionary<Transform, GameObject>();
+	Dictionary<Transform, float> m_HoverTimes = new Dictionary<Transform, float>();
+	const float kMaxHoverTime = 2.0f;
 
-	private GameObject m_SelectedObject;
+	GameObject m_SelectedObject;
 	
 	void Awake()
 	{
-		m_LockModuleAction.icon = m_LockIcon;
 		m_LockModuleAction.execute = ToggleLocked;
+		UpdateActionIcon(null);
 
 		toolActions = new List<IAction>() { m_LockModuleAction };
 	}
@@ -52,68 +51,74 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 		return m_LockedGameObjects.Contains(go);
 	}
 
-	public bool ToggleLocked()
+	bool ToggleLocked()
 	{
-		bool newLockState = !IsLocked(m_SelectedObject);
+		var newLockState = !IsLocked(m_SelectedObject);
 		SetLocked(m_SelectedObject, newLockState);
 		return newLockState;
 	}
 
-	private void SetCurrentSelectedObject(GameObject go)
+	void SetCurrentSelectedObject(GameObject go)
 	{
 		m_SelectedObject = go;
+		UpdateActionIcon(go);
 	}
 
-	private void SetLocked(GameObject go, bool locked)
+	public void SetLocked(GameObject go, bool locked)
 	{
-		if (go == null)
+		if (!go)
 			return;
 
 		if (locked)
 		{
 			if (!m_LockedGameObjects.Contains(go))
-			{
 				m_LockedGameObjects.Add(go);
-			}
 		}
 		else
 		{
 			if (m_LockedGameObjects.Contains(go))
-			{
 				m_LockedGameObjects.Remove(go);
-			}
 		}
-		
-		m_LockModuleAction.icon = locked ? m_UnlockIcon : m_LockIcon;
+	
+		UpdateActionIcon(go);
 	}
 
-	public void CheckHover(GameObject go, Node? node)
+	void UpdateActionIcon(GameObject go)
 	{
-		if (!m_CurrentHoverObjects.ContainsKey(node))
-			m_CurrentHoverObjects.Add(node, null);
+		m_LockModuleAction.icon = IsLocked(go) ? m_LockIcon : m_UnlockIcon;
+	}
 
-		if (go != m_CurrentHoverObjects[node])
+	public void CheckHover(GameObject go, Transform rayOrigin)
+	{
+		if (!m_CurrentHoverObjects.ContainsKey(rayOrigin))
+			m_CurrentHoverObjects.Add(rayOrigin, null);
+
+		if (go != m_CurrentHoverObjects[rayOrigin])
 		{
-			m_CurrentHoverObjects[node] = go;
-			m_HoverTimes[node] = 0.0f;
+			m_CurrentHoverObjects[rayOrigin] = go;
+			m_HoverTimes[rayOrigin] = 0.0f;
 		}
 		else if (IsLocked(go))
 		{
-			m_HoverTimes[node] += Time.unscaledDeltaTime;
-			if (m_HoverTimes[node] >= kMaxHoverTime)
+			m_HoverTimes[rayOrigin] += Time.unscaledDeltaTime;
+			if (m_HoverTimes[rayOrigin] >= kMaxHoverTime)
 			{
 				var otherNode = (from item in m_HoverTimes
-								 where item.Key != node
+								 where item.Key != rayOrigin
 								 select item.Value).FirstOrDefault();
 
 				if (otherNode < 2)
-					openRadialMenu(node, go);
+				{
+					SetCurrentSelectedObject(go);
+					updateAlternateMenu(rayOrigin, go);
+				}
 			}
 		}
 	}
 
 	public void OnSelectionChanged()
 	{
-		SetCurrentSelectedObject(UnityEditor.Selection.activeGameObject);
+		var go = Selection.activeGameObject;
+		SetCurrentSelectedObject(go);
 	}
 }
