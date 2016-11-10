@@ -100,7 +100,7 @@ namespace UnityEngine.VR.Menus
 		public CreateWorkspaceDelegate createWorkspace { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
 		public Node? node { private get; set; }
-		public Action<object> connectInterfaces { private get; set; }
+		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 		public event Action<IMainMenu> menuVisibilityChanged = delegate {};
 
 		void Start()

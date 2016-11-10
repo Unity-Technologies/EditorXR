@@ -24,11 +24,6 @@ namespace UnityEngine.VR.Menus
 		List<Type> menuWorkspaces { set; }
 
 		/// <summary>
-		/// The tracked node where this menu is spawned
-		/// </summary>
-		Node? node { set; }
-
-		/// <summary>
 		/// Controls whether the menu is visible or not
 		/// </summary>
 		bool visible { get; set; }

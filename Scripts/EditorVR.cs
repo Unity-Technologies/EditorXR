@@ -373,7 +373,7 @@ public class EditorVR : MonoBehaviour
 		foreach (var kvp in m_DeviceData)
 		{
 			var device = kvp.Key;
-			var deviceData = m_DeviceData[device];
+			var deviceData = kvp.Value;
 			var mainMenu = deviceData.mainMenu;
 
 			if (mainMenu == null)
@@ -898,7 +898,7 @@ public class EditorVR : MonoBehaviour
 		if (device != null && !IsValidActionMapForDevice(map, device))
 			return null;
 
-		var devices = device == null ? GetSystemDevices() : new InputDevice[] { device };
+		var devices = device == null ? GetSystemDevices() : new [] { device };
 
 		var actionMapInput = ActionMapInput.Create(map);
 		// It's possible that there are no suitable control schemes for the device that is being initialized, 
@@ -1073,6 +1073,18 @@ public class EditorVR : MonoBehaviour
 		return null;
 	}
 
+	Node? GetNodeForRayOrigin(Transform rayOrigin)
+	{
+		Node? result = null;
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			if (rayOriginPair.Value == rayOrigin)
+				result = rayOriginPair.Key;
+		}, true);
+
+		return result;
+	}
+
 	private void ConnectActionMaps(object obj, InputDevice device, List<ActionMapInput> actionMapInputs = null)
 	{
 		var standardMap = obj as IStandardActionMap;
@@ -1085,9 +1097,7 @@ public class EditorVR : MonoBehaviour
 
 		var trackedObjectMap = obj as ITrackedObjectActionMap;
 		if (trackedObjectMap != null)
-		{
 			trackedObjectMap.trackedObjectInput = m_TrackedObjectInput;
-		}
 
 		var customMap = obj as ICustomActionMap;
 		if (customMap != null)
@@ -1113,72 +1123,61 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void ConnectInterfaces(object obj)
+	void ConnectInterfaces(object obj, InputDevice device)
 	{
-		ConnectInterfaces(obj, null);
+		Transform rayOrigin = null;
+		ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
+		{
+			if (rayOriginDevice == device)
+				rayOrigin = rayOriginPair.Value;
+		}, true);
+
+		ConnectInterfaces(obj, rayOrigin);
 	}
 
-	private void ConnectInterfaces(object obj, InputDevice device)
+	void ConnectInterfaces(object obj, Transform rayOrigin = null)
 	{
 		var connectInterfaces = obj as IConnectInterfaces;
 		if (connectInterfaces != null)
 			connectInterfaces.connectInterfaces = ConnectInterfaces;
 
-		var menuOrigins = obj as IMenuOrigins;
-
-		if (device != null)
+		if (rayOrigin)
 		{
-			foreach (var proxy in m_AllProxies)
+			var ray = obj as IRay;
+			if (ray != null)
 			{
-				if (!proxy.active)
-					continue;
+				ray.rayOrigin = rayOrigin;
 
-				var node = GetDeviceNode(device);
-				if (node.HasValue)
+				// Specific proxy ray setting
+				DefaultProxyRay dpr = null;
+				var customRay = obj as ICustomRay;
+				if (customRay != null)
 				{
-					bool continueSearching = true;
+					dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+					customRay.showDefaultRay = dpr.Show;
+					customRay.hideDefaultRay = dpr.Hide;
+				}
 
-					Transform rayOrigin;
-					var ray = obj as IRay;
-					if (ray != null && proxy.rayOrigins.TryGetValue(node.Value, out rayOrigin))
-					{
-						ray.rayOrigin = rayOrigin;
+				var lockableRay = obj as ILockRay;
+				if (lockableRay != null)
+				{
+					dpr = dpr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+					lockableRay.lockRay = dpr.LockRay;
+					lockableRay.unlockRay = dpr.UnlockRay;
+				}
+			}
 
-						// Specific proxy ray setting
-						DefaultProxyRay dpr = null;
-						var customRay = obj as ICustomRay;
-						if (customRay != null)
-						{
-							dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-							customRay.showDefaultRay = dpr.Show;
-							customRay.hideDefaultRay = dpr.Hide;
-						}
-
-						var lockableRay = obj as ILockRay;
-						if (lockableRay != null)
-						{
-							dpr = dpr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-							lockableRay.lockRay = dpr.LockRay;
-							lockableRay.unlockRay = dpr.UnlockRay;
-						}
-
-						continueSearching = false;
-					}
-
-					if (menuOrigins != null)
-					{
-						Transform mainMenuOrigin;
-						if (proxy.menuOrigins.TryGetValue(node.Value, out mainMenuOrigin))
-						{
-							menuOrigins.menuOrigin = mainMenuOrigin;
-							Transform alternateMenuOrigin;
-							if (proxy.alternateMenuOrigins.TryGetValue(node.Value, out alternateMenuOrigin))
-								menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
-						}
-					}
-
-					if (!continueSearching)
-						break;
+			var menuOrigins = obj as IMenuOrigins;
+			if (menuOrigins != null)
+			{
+				Transform mainMenuOrigin;
+				var proxy = GetProxyForRayOrigin(rayOrigin);
+				if (proxy != null && proxy.menuOrigins.TryGetValue(rayOrigin, out mainMenuOrigin))
+				{
+					menuOrigins.menuOrigin = mainMenuOrigin;
+					Transform alternateMenuOrigin;
+					if (proxy.alternateMenuOrigins.TryGetValue(rayOrigin, out alternateMenuOrigin))
+						menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
 				}
 			}
 		}
@@ -1254,14 +1253,13 @@ public class EditorVR : MonoBehaviour
 			mainMenu.menuTools = m_MainMenuTools;
 			mainMenu.selectTool = SelectTool;
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
-			mainMenu.node = GetDeviceNode(device);
 		}
 
 		var alternateMenu = obj as IAlternateMenu;
 		if (alternateMenu != null)
 		{
 			alternateMenu.menuActions = m_MenuActions;
-			alternateMenu.node = GetDeviceNode(device);
+			alternateMenu.node = GetNodeForRayOrigin(rayOrigin);
 		}
 	}
 
@@ -1315,6 +1313,18 @@ public class EditorVR : MonoBehaviour
 		}
 
 		return length;
+	}
+
+	IProxy GetProxyForRayOrigin(Transform rayOrigin)
+	{
+		IProxy result = null;
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			if (rayOriginPair.Value == rayOrigin)
+				result = proxy;
+		}, true);
+
+		return result;
 	}
 
 	private InputDevice GetInputDeviceForTool(ITool tool)
@@ -2091,12 +2101,16 @@ public class EditorVR : MonoBehaviour
 		m_ObjectPlacementModule.PlaceObject(obj, targetScale);
 	}
 
-	private Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
+	Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
 	{
-		return (from proxy in m_AllProxies
-				from origin in proxy.rayOrigins
-					where origin.Value.Equals(rayOrigin)
-						select proxy.previewOrigins[origin.Key]).FirstOrDefault();
+		foreach (var proxy in m_AllProxies)
+		{
+			Transform previewOrigin;
+			if (proxy.previewOrigins.TryGetValue(rayOrigin, out previewOrigin))
+				return previewOrigin;
+		}
+		
+		return null;
 	}
 
 	void PreProcessRaycastSource(Transform rayOrigin)
