@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
+using UnityEngine.VR.Helpers;
+using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
@@ -26,7 +28,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 	private GameObject m_BlinkVisualsGO;
 	private BlinkVisuals m_BlinkVisuals;
 
-	private float m_MovementSpeed = 8f;
 	private State m_State = State.Inactive;
 
 	public Transform viewerPivot { private get; set; }
@@ -45,6 +46,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 		set { m_BlinkLocomotionInput = (BlinkLocomotion)value; }
 	}
 	private BlinkLocomotion m_BlinkLocomotionInput;
+
+	public Node selfNode { get; set; }
 
 	private void Start()
 	{
@@ -78,26 +81,45 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 			hideDefaultRay();
 			m_BlinkVisuals.ShowVisuals();
 		}
-		else if (m_BlinkLocomotionInput.blink.wasJustReleased)
+		else if (s_ActiveTool == this && m_BlinkLocomotionInput.blink.wasJustReleased)
 		{
-			m_BlinkVisuals.HideVisuals();
+			var outOfRange = m_BlinkVisuals.HideVisuals();
 			showDefaultRay();
 
-			StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
+			if (!outOfRange)
+				StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
 		}
 	}
 
 	private IEnumerator MoveTowardTarget(Vector3 targetPosition)
 	{
-		m_State = State.Moving;
-
-		targetPosition = new Vector3(targetPosition.x, viewerPivot.position.y, targetPosition.z);
-		while ((viewerPivot.position - targetPosition).magnitude > 0.1f)
+		// Smooth motion will cause Workspaces to lag behind camera
+		var components = viewerPivot.GetComponentsInChildren<SmoothMotion>();
+		foreach (var smoothMotion in components)
 		{
-			viewerPivot.position = Vector3.Lerp(viewerPivot.position, targetPosition, Time.unscaledDeltaTime * m_MovementSpeed);
+			smoothMotion.enabled = false;
+		}
+
+		m_State = State.Moving;
+		targetPosition = new Vector3(targetPosition.x + (viewerPivot.position.x - U.Camera.GetMainCamera().transform.position.x), viewerPivot.position.y, targetPosition.z + (viewerPivot.position.z - U.Camera.GetMainCamera().transform.position.z));
+		const float kTargetDuration = 1f;
+		var currentPosition = viewerPivot.position;
+		var velocity = new Vector3();
+		var currentDuration = 0f;
+		while (currentDuration < kTargetDuration)
+		{
+			currentDuration += Time.unscaledDeltaTime;
+			currentPosition = U.Math.SmoothDamp(currentPosition, targetPosition, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+			viewerPivot.position = currentPosition;
 			yield return null;
 		}
 
+		foreach (var smoothMotion in components)
+		{
+			smoothMotion.enabled = true;
+		}
+
+		viewerPivot.position = targetPosition;
 		m_State = State.Inactive;
 		s_ActiveTool = null;
 	}

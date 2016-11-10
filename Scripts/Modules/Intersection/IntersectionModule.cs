@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine.VR.Data;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Modules
 {
-	public class IntersectionModule : MonoBehaviour
+	public class IntersectionModule : MonoBehaviour, ILocking
 	{
 		private readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		private readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
@@ -19,6 +20,10 @@ namespace UnityEngine.VR.Modules
 		public List<Renderer> allObjects { get { return m_SpatialHash == null ? null : m_SpatialHash.allObjects; } }
 		public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
 #endif
+
+		public Func<bool> toggleLocked { get; set; }
+		public Func<GameObject, bool> getLocked { get; set; }
+		public Action<GameObject, Node?> checkHover { get; set; }
 
 		public void Setup(SpatialHash<Renderer> hash)
 		{
@@ -60,6 +65,10 @@ namespace UnityEngine.VR.Modules
 						{
 							// Ignore inactive objects
 							if (!obj.gameObject.activeInHierarchy)
+								continue;
+
+							// Ignore locked objects
+							if (getLocked(obj.gameObject))
 								continue;
 
 							// Bounds check

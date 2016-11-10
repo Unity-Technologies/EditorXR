@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -288,11 +288,10 @@ namespace UnityEngine.VR.Menus
 			m_HideCoroutine = StartCoroutine(AnimateHide());
 		}
 
-		IEnumerator AnimateShow()
+		void UpdateRadialSlots()
 		{
-			m_SlotsMask.gameObject.SetActive(true);
-
 			var gradientPair = UnityBrandColorScheme.sessionGradient;
+
 			for (int i = 0; i < m_Actions.Count; ++i)
 			{
 				// prevent more actions being added beyond the max slot count
@@ -304,20 +303,25 @@ namespace UnityEngine.VR.Menus
 				slot.gradientPair = gradientPair;
 				slot.icon = action.icon ?? m_MissingActionIcon;
 
+				var index = i; // Closure
 				slot.button.onClick.RemoveAllListeners();
 				slot.button.onClick.AddListener(() =>
 				{
-					// Having to grab the index because of incorrect closure support
-					var index = m_RadialMenuSlots.IndexOf(m_HighlightedButton);
-					if (index == -1)
-						return;
-
 					var selectedSlot = m_RadialMenuSlots[index];
 					var buttonAction = m_Actions[index].action;
 					buttonAction.ExecuteAction();
 					selectedSlot.icon = buttonAction.icon ?? m_MissingActionIcon;
 				});
 			}
+
+
+		}
+
+		IEnumerator AnimateShow()
+		{
+			m_SlotsMask.gameObject.SetActive(true);
+
+			UpdateRadialSlots();
 
 			m_SlotsMask.fillAmount = 1f;
 

@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using UnityEngine.VR.Actions;
+using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {

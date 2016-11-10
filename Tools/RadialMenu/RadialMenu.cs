@@ -80,8 +80,7 @@ namespace UnityEngine.VR.Menus
 
 				if (m_SelectMenuItem)
 				{
-					if(itemSelected != null)
-						itemSelected(node);
+					itemSelected(node);
 				}
 			}
 		}
@@ -106,6 +105,9 @@ namespace UnityEngine.VR.Menus
 			m_RadialMenuUI.selectItem = () => selectMenuItem = true;
 
 			m_RadialMenuUI.Setup();
+
+			// Default is to show the radial menu
+			visible = true;
 		}
 	}
 }

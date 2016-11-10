@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -6,8 +6,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Tools
 {
-	// TODO: Uncomment IBlockUIInput after merge with dev/schoen/bugfix-b
-	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight, IMenuOrigins //, IBlockUIInput
+	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight, IMenuOrigins, ILocking
 	{
 		private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
@@ -34,11 +33,13 @@ namespace UnityEngine.VR.Tools
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
 
-		// TODO: Uncomment after merge with dev/schoen/bugfix-b
-		//public Action<bool> setInputBlocked { get; set; }
-
 		public Transform menuOrigin { get; set; }
+		public Node selfNode { get; set; }
 		public Node? node { private get; set; }
+
+		public Func<bool> toggleLocked { get; set; }
+		public Func<GameObject, bool> getLocked { get; set; }
+		public Action<GameObject, Node?> checkHover { get; set; }
 
 		private Transform m_AlternateMenuOrigin; // TODO delete if not needed
 		public Transform alternateMenuOrigin
@@ -52,9 +53,14 @@ namespace UnityEngine.VR.Tools
 
 		public event Action<Node?> selected = delegate {};
 
+		public Func<Transform, bool> isRayActive = delegate { return true; };
+
 		void Update()
 		{
 			if (rayOrigin == null)
+				return;
+
+			if (!isRayActive(rayOrigin))
 				return;
 
 			var newHoverGameObject = getFirstGameObject(rayOrigin);
@@ -71,6 +77,10 @@ namespace UnityEngine.VR.Tools
 				}
 			}
 
+			checkHover(newHoverGameObject, node);
+			if (getLocked(newHoverGameObject))
+				newHoverGameObject = null;
+
 			// Handle changing highlight
 			if (newHoverGameObject != m_HoverGameObject)
 			{
@@ -85,16 +95,12 @@ namespace UnityEngine.VR.Tools
 
 			if (m_SelectionInput.select.wasJustPressed && m_HoverGameObject)
 			{
-				// TODO: Uncomment after merge with dev/schoen/bugfix-b
-				//	setInputBlocked(true);
 				m_PressedObject = m_HoverGameObject;
 			}
 
 			// Handle select button press
 			if (m_SelectionInput.select.wasJustReleased)
 			{
-				// TODO: Uncomment after merge with dev/schoen/bugfix-b
-				//setInputBlocked(false);
 				if (m_PressedObject == m_HoverGameObject)
 				{
 					s_CurrentPrefabOpened = newPrefabRoot;
@@ -122,6 +128,8 @@ namespace UnityEngine.VR.Tools
 						Selection.activeGameObject = m_HoverGameObject;
 						s_SelectedObjects.Add(m_HoverGameObject);
 					}
+
+					setHighlight(m_HoverGameObject, false);
 
 					Selection.objects = s_SelectedObjects.ToArray();
 					selected(node);

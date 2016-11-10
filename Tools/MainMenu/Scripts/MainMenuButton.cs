@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {

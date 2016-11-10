@@ -26,35 +26,29 @@ public class ViveInputToEvents : MonoBehaviour
 			poses = render.poses;
 		}
 
+		var leftSteamDeviceIndex = SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost);
+		var rightSteamDeviceIndex = SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost);
+
+		if (leftSteamDeviceIndex == -1 || rightSteamDeviceIndex == -1 || leftSteamDeviceIndex == rightSteamDeviceIndex)
+			return;
+
 		for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++)
 		{
 			var steamDeviceIndex = steamDeviceIndices[(int)hand];
 
 			if (steamDeviceIndex == -1)
 			{
-				steamDeviceIndex = SteamVR_Controller.GetDeviceIndex(hand == VRInputDevice.Handedness.Left
-					? SteamVR_Controller.DeviceRelation.Leftmost
-					: SteamVR_Controller.DeviceRelation.Rightmost);
-
-				if (steamDeviceIndex == -1)
-					continue;
-
-				if (hand == VRInputDevice.Handedness.Left)
-					steamDeviceIndices[(int)hand] = steamDeviceIndex;
-				else if (steamDeviceIndex != steamDeviceIndices[(int)VRInputDevice.Handedness.Left]) // Do not assign device to right hand if it is same device as left hand
-					steamDeviceIndices[(int)hand] = steamDeviceIndex;
-				else
-					continue;
+				steamDeviceIndices[(int)hand] = hand == VRInputDevice.Handedness.Left ? leftSteamDeviceIndex : rightSteamDeviceIndex;
+				steamDeviceIndex = steamDeviceIndices[(int)hand];
 			}
-			active = true;
 
+			active = true;
 
 			int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
 			SendButtonEvents(steamDeviceIndex, deviceIndex);
 			SendAxisEvents(steamDeviceIndex, deviceIndex);
 			SendTrackingEvents(steamDeviceIndex, deviceIndex, poses);
 		}
-
 	}
 
 	public const int controllerCount = 10;

@@ -8,5 +8,6 @@ namespace UnityEngine.InputNew
 		public MainMenuInput (ActionMap actionMap) : base (actionMap) { }
 		
 		public AxisInputControl @rotate { get { return (AxisInputControl)this[0]; } }
+		public ButtonInputControl @flickFace { get { return (ButtonInputControl)this[1]; } }
 	}
 }

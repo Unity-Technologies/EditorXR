@@ -1,11 +1,17 @@
 fileFormatVersion: 2
 guid: a88637e6fe98dcd4da6c6238d3cfc5a4
-timeCreated: 1467063996
+timeCreated: 1477489062
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
-  - CanvasPrefab: {fileID: 223000013217348412, guid: e7802aaeab4fbb8499979706e954f478,
+  - m_CubeIcon: {fileID: 21300000, guid: c8acddcc69c61d54ba756c1766455e66, type: 3}
+  - m_SphereIcon: {fileID: 21300000, guid: 5503d76563adcf9409a3089456913bcb, type: 3}
+  - m_CapsuleIcon: {fileID: 21300000, guid: f6795a8a6b68b34438d51aaa21d8b399, type: 3}
+  - m_PlaneIcon: {fileID: 21300000, guid: 9eceaf4a35d38a8439cfef7df9cfe3b1, type: 3}
+  - m_QuadIcon: {fileID: 21300000, guid: e2f03eba5a62eae488e7c1e13dfb665e, type: 3}
+  - m_CylinderIcon: {fileID: 21300000, guid: 3417dea4f93a8aa47a6f467df41239a7, type: 3}
+  - m_CanvasPrefab: {fileID: 223000012660392470, guid: 86d6b2e01d02faf42be52ce94b33817b,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}

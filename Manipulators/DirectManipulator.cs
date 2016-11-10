@@ -44,8 +44,6 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 
 	private void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
 	{
-		foreach (var h in m_AllHandles)
-			h.gameObject.SetActive(h == handle);
 		dragging = true;
 
 		var target = m_Target == null ? transform : m_Target;
@@ -61,16 +59,16 @@ public class DirectManipulator : MonoBehaviour, IManipulator
 		var target = m_Target == null ? transform : m_Target;
 
 		var rayOrigin = eventData.rayOrigin;
-		translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
-		rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
+
+		if (translate != null)
+			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
+
+		if (rotate != null)
+			rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
 	}
 
 	private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
 	{
-		if (gameObject.activeSelf)
-			foreach (var h in m_AllHandles)
-				h.gameObject.SetActive(true);
-
 		dragging = false;
 	}
 }

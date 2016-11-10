@@ -9,7 +9,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Actions;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IToolActions, IDirectSelection, IGrabObjects, ISnapping
+public class TransformTool : MonoBehaviour, ITool, ITransformTool, ISelectionChanged, IToolActions, IDirectSelection, IGrabObjects, ISnapping, IHighlight
 {
 	class TransformAction : IAction
 	{
@@ -75,9 +75,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	[SerializeField]
 	GameObject m_ScaleManipulatorPrefab;
 
-	[SerializeField]
-	ActionMap m_TransformActionMap;
-
 	readonly List<IManipulator> m_AllManipulators = new List<IManipulator>();
 	IManipulator m_CurrentManipulator;
 	int m_CurrentManipulatorIndex;
@@ -104,11 +101,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	float m_ScaleFactor;
 	bool m_WasScaling;
 
-	TransformInput m_TransformInput;
+	public Node selfNode { get; set; }
 
-	public ActionMap actionMap { get { return m_TransformActionMap; } }
-
-	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput)value; } }
+	public Action<Transform> showRay { private get; set; }
+	public Action<Transform> hideRay { private get; set; }
 
 	public List<IAction> toolActions
 	{
@@ -130,6 +126,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 
+	Dictionary<Transform, DirectSelection> m_LastDirectSelection;
+
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
 
 	public Func<DirectSelection, Transform, bool> canGrabObject { private get; set; }
@@ -140,7 +138,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	public Action<Transform, Vector3, Transform[]> onSnapEnded { private get; set; }
 	public Action<Transform, Vector3, Transform[]> onSnapHeld { private get; set; }
 	public Action<Transform> onSnapUpdate { private get; set; }
-	
+
+	public Action<GameObject, bool> setHighlight { private get; set; }
+
 	bool m_IsDragging;
 
 	void Awake()
@@ -186,6 +186,21 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		var hasRight = m_GrabData.ContainsKey(Node.RightHand);
 		var hasObject = directSelection.Count > 0 || hasLeft || hasRight;
 
+		if (m_LastDirectSelection != null)
+		{
+			foreach (var selection in m_LastDirectSelection.Values)
+			{
+				setHighlight(selection.gameObject, false);
+			}
+		}
+
+		foreach(var selection in directSelection.Values)
+		{
+			setHighlight(selection.gameObject, true);
+		}
+
+		m_LastDirectSelection = directSelection;
+
 		if (!m_CurrentManipulator.dragging)
 		{
 			// Disable manipulator on direct hover or drag
@@ -196,6 +211,13 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			{
 				var selection = kvp.Value;
 				var rayOrigin = kvp.Key;
+
+				// If gameObject is within a prefab and not the current prefab, choose prefab root
+				var prefabRoot = PrefabUtility.FindPrefabRoot(selection.gameObject);
+				if(prefabRoot)
+				{
+					selection.gameObject = prefabRoot;
+				}
 
 				if (!canGrabObject(selection, rayOrigin))
 					continue;
@@ -224,6 +246,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 					m_GrabData[selection.node] = new GrabData(rayOrigin, grabbedObject, directSelectInput);
 
 					Selection.activeGameObject = grabbedObject.gameObject;
+
+					setHighlight(grabbedObject.gameObject, false);
+
+					hideRay(rayOrigin);
 
 					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
 					EditorApplication.delayCall += () =>
@@ -289,15 +315,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 		if (m_SelectionTransforms != null && m_SelectionTransforms.Length > 0)
 		{
-			if (m_TransformInput.pivotMode.wasJustPressed) // Switching center vs pivot
-				TogglePivotMode();
-
-			if (m_TransformInput.pivotRotation.wasJustPressed) // Switching global vs local
-				TogglePivotRotation();
-
-			if (m_TransformInput.manipulatorType.wasJustPressed)
-				SwitchManipulator();
-
 			if (!m_CurrentManipulator.dragging)
 			{
 				UpdateManipulatorSize();
@@ -398,6 +415,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		var grabData = m_GrabData[inputNode];
 		dropObject(this, grabData.grabbedObject, grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
+
+		showRay(grabData.rayOrigin);
 	}
 
 	private void HandleSnap(IManipulator manipulator, Transform trans, Vector3 deltaMovement, Transform[] ignoreList)

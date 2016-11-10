@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.VR;
-using UnityEngine.VR.Utilities;
+using UnityEditor;
+using System.Linq;
 
 public class HighlightModule : MonoBehaviour
 {
@@ -27,11 +26,14 @@ public class HighlightModule : MonoBehaviour
 
 	public void SetHighlight(GameObject go, bool active)
 	{
-		if (go == null)
+		if (go == null || go.isStatic)
 			return;
 
 		if (active) // Highlight
 		{
+			if(Selection.gameObjects.Contains(go))
+				return;
+
 			if (!m_HighlightCounts.ContainsKey(go))
 				m_HighlightCounts.Add(go, 1);
 			else
@@ -39,16 +41,14 @@ public class HighlightModule : MonoBehaviour
 		}
 		else // Unhighlight
 		{
-			if (!m_HighlightCounts.ContainsKey(go))
-			{
-				Debug.LogError("Unhighlight called on object that is not currently highlighted: " + go);
-				return;
-			}
-			else
-				m_HighlightCounts[go]--;
+			int count;
+			if(m_HighlightCounts.TryGetValue(go, out count)) {
+				count--;
+				m_HighlightCounts[go] = count;
 
-			if (m_HighlightCounts[go] == 0)
-				m_HighlightCounts.Remove(go);
+				if(count == 0)
+					m_HighlightCounts.Remove(go);
+			}
 		}
 	}
 }
