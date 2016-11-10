@@ -1180,6 +1180,7 @@ public class EditorVR : MonoBehaviour
 					Transform alternateMenuOrigin;
 					if (proxy.alternateMenuOrigins.TryGetValue(rayOrigin, out alternateMenuOrigin))
 						menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
+
 					var otherRay = obj as IOtherRay;
 					if (otherRay != null)
 					{

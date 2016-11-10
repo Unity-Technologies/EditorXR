@@ -77,14 +77,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 	void OnDestroy()
 	{
 		if (m_RayHidden && showDefaultRay != null)
-		{
-			// HACK: In the previous dev version, hideDefaultRay also disabled the cone.
-			var proxyRay = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-			if (proxyRay)
-				proxyRay.transform.Find("Cone").gameObject.SetActive(true);
-
 			showDefaultRay();
-		}
 
 		if (m_ColorPicker)
 			U.Object.Destroy(m_ColorPicker.gameObject);
@@ -101,12 +94,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			if (hideDefaultRay != null)
 			{
 				hideDefaultRay();
-
-				// HACK: In the previous dev version, hideDefaultRay also disabled the cone.
-				var proxyRay = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-				if (proxyRay)
-					proxyRay.transform.Find("Cone").gameObject.SetActive(false);
-
 				m_RayHidden = true;
 			}
 		}
@@ -231,11 +218,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			m_CurrentRadius += sign * Time.unscaledDeltaTime * .1f;
 			m_CurrentRadius = Mathf.Clamp(m_CurrentRadius, kTopMinRadius, kTopMaxRadius);
 
-			if (m_BrushSizeUi)
+			if (m_BrushSizeUi && onBrushSizeChanged != null)
 			{
 				var ratio = Mathf.InverseLerp(kTopMinRadius, kTopMaxRadius, m_CurrentRadius);
-				if (onBrushSizeChanged != null)
-					onBrushSizeChanged(ratio);
+				onBrushSizeChanged(ratio);
 			}
 
 			ResizePointer();
@@ -448,7 +434,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		Vector3 worldPoint = rayOrigin.position + rayForward * kTipDistance;
 		Vector3 localPoint = m_WorldToLocalMesh.MultiplyPoint3x4(worldPoint);
 
-		if (m_Points.Count < 1 || Vector3.Distance(m_Points.Last(), localPoint) >= (m_CurrentRadius * 0.25f))
+		//if (m_Points.Count < 1 || Vector3.Distance(m_Points.Last(), localPoint) >= (m_CurrentRadius * 0.25f))
 		{
 			m_Points.Add(localPoint);
 			m_Forwards.Add(rayForward);
@@ -509,7 +495,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 			Vector3 cross;
 			float drawAngle = Vector3.Angle(direction, m_Forwards[i - 1]);
 			if (drawAngle < 10 || drawAngle > 170)
-				cross = Vector3.Cross(direction, Quaternion.Euler(-180, 0, 0) * m_Forwards[i - 1]).normalized;
+				cross = Vector3.Cross(direction, Quaternion.Euler(-90, 0, 0) * m_Forwards[i - 1]).normalized;
 			else
 				cross = Vector3.Cross(direction, m_Forwards[i - 1]).normalized;
 			
