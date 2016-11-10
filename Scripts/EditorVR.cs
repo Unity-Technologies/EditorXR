@@ -905,7 +905,9 @@ public class EditorVR : MonoBehaviour
 		// so ActionMapInput can't be marked active
 		var successfulInitialization = false;
 		if (actionMapInput.TryInitializeWithDevices(devices))
+		{
 			successfulInitialization = true;
+		}
 		else
 		{
 			// For two-handed tools, the single device won't work, so collect the devices from the action map

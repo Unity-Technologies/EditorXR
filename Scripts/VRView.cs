@@ -104,7 +104,7 @@ namespace UnityEditor.VR
 		{
 			if (s_ActiveView && s_ActiveView.m_CameraPivot)
 			{
-				EditorMonoBehaviour mb = s_ActiveView.m_CameraPivot.GetComponent<EditorMonoBehaviour>();
+				var mb = s_ActiveView.m_CameraPivot.GetComponent<EditorMonoBehaviour>();
 				return mb.StartCoroutine(routine);
 			}
 
@@ -281,8 +281,8 @@ namespace UnityEditor.VR
 			{
 				SceneViewUtilities.ResetOnGUIState();
 
-				Rect guiRect = new Rect(0, 0, position.width, position.height);
-				Rect cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
+				var guiRect = new Rect(0, 0, position.width, position.height);
+				var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
 				PrepareCameraTargetTexture(cameraRect);
 
 				m_Camera.cullingMask = Tools.visibleLayers;
