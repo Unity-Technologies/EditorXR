@@ -41,7 +41,7 @@ namespace UnityEngine.VR.Menus
 				{
 					m_Pressed = value;
 
-					this.StopCoroutine(ref m_IconEndHighlightCoroutine);
+					this.StopCoroutine(ref m_IconHighlightCoroutine);
 
 					// Don't begin a new icon highlight coroutine; Allow the currently running coroutine to finish itself according to the m_Highlighted value
 					SetIconPressed();
@@ -57,7 +57,7 @@ namespace UnityEngine.VR.Menus
 				if (m_Highlighted == value)
 					return;
 
-				this.StopCoroutine(ref m_IconEndHighlightCoroutine);
+				this.StopCoroutine(ref m_IconHighlightCoroutine);
 
 				m_Highlighted = value;
 				if (m_Highlighted)
@@ -67,7 +67,7 @@ namespace UnityEngine.VR.Menus
 						m_HighlightCoroutine = StartCoroutine(Highlight());
 				}
 				else
-					m_IconEndHighlightCoroutine = StartCoroutine(IconEndHighlight());
+					m_IconHighlightCoroutine = StartCoroutine(IconEndHighlight());
 			}
 		}
 		bool m_Highlighted;
@@ -85,11 +85,9 @@ namespace UnityEngine.VR.Menus
 		float m_IconLookForwardOffset = 0.5f;
 		Vector3 m_IconLookDirection;
 		
-		Coroutine m_FadeInCoroutine;
-		Coroutine m_FadeOutCoroutine;
+		Coroutine m_FadeCoroutine;
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
-		Coroutine m_IconEndHighlightCoroutine;
 		
 		public Material borderRendererMaterial
 		{
@@ -141,13 +139,11 @@ namespace UnityEngine.VR.Menus
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * -m_IconHighlightedLocalYOffset;
 		}
 
-		private void OnDisable()
+		void OnDisable()
 		{
-			this.StopCoroutine(ref m_FadeInCoroutine);
-			this.StopCoroutine(ref m_FadeOutCoroutine);
+			this.StopCoroutine(ref m_FadeCoroutine);
 			this.StopCoroutine(ref m_HighlightCoroutine);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
-			this.StopCoroutine(ref m_IconEndHighlightCoroutine);
 		}
 
 		public void Show()
@@ -156,18 +152,15 @@ namespace UnityEngine.VR.Menus
 			m_Pressed = false;
 			m_Highlighted = false;
 
-			this.StopCoroutine(ref m_FadeInCoroutine);
-			this.StopCoroutine(ref m_FadeOutCoroutine);
-
-			m_FadeInCoroutine = StartCoroutine(AnimateShow());
+			this.StopCoroutine(ref m_FadeCoroutine);
+		
+			m_FadeCoroutine = StartCoroutine(AnimateShow());
 		}
 
 		public void Hide()
 		{
-			this.StopCoroutine(ref m_FadeInCoroutine); // stop any fade in visuals
-
-			if (m_FadeOutCoroutine == null)
-				m_FadeOutCoroutine = StartCoroutine(AnimateHide()); // perform fade if not already performing
+			this.StopCoroutine(ref m_FadeCoroutine);
+			m_FadeCoroutine = StartCoroutine(AnimateHide());
 		}
 
 		void CorrectIconRotation()
@@ -209,7 +202,7 @@ namespace UnityEngine.VR.Menus
 
 			CorrectIconRotation();
 
-			m_FadeInCoroutine = null;
+			m_FadeCoroutine = null;
 		}
 
 		IEnumerator ShowInset()
@@ -257,7 +250,7 @@ namespace UnityEngine.VR.Menus
 			}
 
 			FadeOutCleanup();
-			m_FadeOutCoroutine = null;
+			m_FadeCoroutine = null;
 		}
 
 		void FadeOutCleanup()
@@ -274,7 +267,6 @@ namespace UnityEngine.VR.Menus
 
 		IEnumerator Highlight()
 		{
-			Debug.Log("Starting higlight for " + m_Icon.sprite.name);
 			HighlightIcon();
 
 			var opacity = Time.unscaledDeltaTime;
@@ -347,7 +339,7 @@ namespace UnityEngine.VR.Menus
 			}
 
 			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
-			m_IconEndHighlightCoroutine = null;
+			m_IconHighlightCoroutine = null;
 		}
 	}
 }

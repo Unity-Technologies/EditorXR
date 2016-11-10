@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Assertions;
-using UnityEngine.Events;
 using UnityEngine.InputNew;
-using UnityEngine.UI;
 using UnityEngine.VR.Actions;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
@@ -14,7 +10,7 @@ using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins
+	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -101,15 +97,16 @@ namespace UnityEngine.VR.Menus
 		public List<Type> menuTools { private get; set; }
 		public Func<Node, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public Action<Type> createWorkspace { private get; set; }
+		public CreateWorkspaceDelegate createWorkspace { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
 		public Node? node { private get; set; }
+		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 		public event Action<IMainMenu> menuVisibilityChanged = delegate {};
 
 		void Start()
 		{
 			m_MainMenuUI = instantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
-			m_MainMenuUI.instantiateUI = instantiateUI;
+			connectInterfaces(m_MainMenuUI);
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
@@ -185,13 +182,16 @@ namespace UnityEngine.VR.Menus
 		{
 			foreach (var type in types)
 			{
+				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
+				if (customMenuAttribute != null && !customMenuAttribute.shown)
+					continue;
+
 				var isTool = typeof(ITool).IsAssignableFrom(type);
 				var isWorkspace = typeof(Workspace).IsAssignableFrom(type);
 
 				var buttonData = new MainMenuUI.ButtonData();
 				buttonData.name = type.Name;
 
-				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
 				if (customMenuAttribute != null)
 				{
 					buttonData.name = customMenuAttribute.name;

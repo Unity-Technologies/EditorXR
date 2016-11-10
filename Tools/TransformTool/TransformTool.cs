@@ -54,11 +54,13 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	{
 		internal Func<bool> execute;
 		public Sprite icon { get; internal set; }
-		public bool ExecuteAction()
+		public void ExecuteAction()
 		{
-			return execute();
+			execute();
 		}
 	}
+
+	static Transform[] selectionTransforms { get { return Selection.GetTransforms(SelectionMode.Editable); } }
 
 	public ActionMap actionMap { get { return m_TransformActionMap; } }
 	[SerializeField]
@@ -102,7 +104,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	BaseManipulator m_CurrentManipulator;
 	int m_CurrentManipulatorIndex;
 
-	Transform[] m_SelectionTransforms;
 	Bounds m_SelectionBounds;
 	Vector3 m_TargetPosition;
 	Quaternion m_TargetRotation;
@@ -158,12 +159,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	public void OnSelectionChanged()
 	{
-		m_SelectionTransforms = Selection.GetTransforms(SelectionMode.Editable);
-
 		// Reset direct selection state in case of a ray selection
 		m_DirectSelected = false;
 
-		if (m_SelectionTransforms.Length == 0)
+		if (selectionTransforms.Length == 0)
 			m_CurrentManipulator.gameObject.SetActive(false);
 		else
 			UpdateCurrentManipulator();
@@ -279,7 +278,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		if (hasObject || m_DirectSelected)
 			return;
 
-		if (m_SelectionTransforms != null && m_SelectionTransforms.Length > 0)
+		if (selectionTransforms != null && selectionTransforms.Length > 0)
 		{
 			if (m_TransformInput.pivotMode.wasJustPressed) // Switching center vs pivot
 				TogglePivotMode();
@@ -300,7 +299,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 				manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, kLazyFollowRotate * deltaTime);
 
-			foreach (var t in m_SelectionTransforms)
+			foreach (var t in selectionTransforms)
 			{
 				t.rotation = Quaternion.Slerp(t.rotation, m_TargetRotation * m_RotationOffsets[t], kLazyFollowRotate * deltaTime);
 
@@ -400,7 +399,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	private void UpdateSelectionBounds()
 	{
 		Bounds? newBounds = null;
-		foreach (var selectedObj in m_SelectionTransforms)
+		foreach (var selectedObj in selectionTransforms)
 		{
 			var renderers = selectedObj.GetComponentsInChildren<Renderer>();
 			foreach (var r in renderers)
@@ -420,8 +419,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		if (newBounds == null)
 		{
 			var bounds = new Bounds();
-			foreach (var selectedObj in m_SelectionTransforms)
-				bounds.center += selectedObj.transform.position / m_SelectionTransforms.Length;
+			foreach (var selectedObj in selectionTransforms)
+				bounds.center += selectedObj.transform.position / selectionTransforms.Length;
 			newBounds = bounds;
 		}
 
@@ -440,15 +439,15 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	private void UpdateCurrentManipulator()
 	{
-		if (m_SelectionTransforms.Length <= 0)
+		if (selectionTransforms.Length <= 0)
 			return;
 
 		UpdateSelectionBounds();
 		var manipulatorGameObject = m_CurrentManipulator.gameObject;
 		manipulatorGameObject.SetActive(true);
 		var manipulatorTransform = manipulatorGameObject.transform;
-		manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? m_SelectionTransforms[0].position : m_SelectionBounds.center;
-		manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : m_SelectionTransforms[0].rotation;
+		manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? selectionTransforms[0].position : m_SelectionBounds.center;
+		manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : selectionTransforms[0].rotation;
 		m_TargetPosition = manipulatorTransform.position;
 		m_TargetRotation = manipulatorTransform.rotation;
 		m_StartRotation = m_TargetRotation;
@@ -460,7 +459,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		m_RotationOffsets.Clear();
 		m_ScaleOffsets.Clear();
 
-		foreach (var t in m_SelectionTransforms)
+		foreach (var t in selectionTransforms)
 		{
 			m_PositionOffsets.Add(t, t.position - manipulatorTransform.position);
 			m_ScaleOffsets.Add(t, t.localScale);

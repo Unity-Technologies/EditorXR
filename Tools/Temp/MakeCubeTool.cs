@@ -12,9 +12,8 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IToo
 	class CubeToolAction : IAction
 	{
 		public Sprite icon { get; internal set; }
-		public bool ExecuteAction()
+		public void ExecuteAction()
 		{
-			return true;
 		}
 	}
 

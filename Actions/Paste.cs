@@ -3,15 +3,11 @@
 namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
-	public class Paste : MonoBehaviour, IAction
+	public class Paste : BaseAction
 	{
-		public Sprite icon { get { return m_Icon; } }
-		[SerializeField]
-		private Sprite m_Icon;
-
 		public static Object buffer { get; set; }
 
-		public bool ExecuteAction()
+		public override void ExecuteAction()
 		{
 			//return EditorApplication.ExecuteActionMenuItem("Edit/Paste");
 
@@ -22,10 +18,7 @@ namespace UnityEngine.VR.Actions
 				var go = pasted as GameObject;
 				if (go)
 					go.SetActive(true);
-				return true;
 			}
-
-			return false;
 		}
 	}
 }

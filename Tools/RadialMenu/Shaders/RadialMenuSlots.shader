@@ -40,7 +40,8 @@
 			{
 				v2f output;
 				output.position = mul(UNITY_MATRIX_MVP, v.vertex);
-				output.color = lerp(_ColorBottom, _ColorTop, v.texcoord.y *  saturate(dot(v.normal * 1.5, _WorldSpaceLightPos0)));
+				// A stylistic lerp for aesthetic purposes as a stylized gradient mapping (mesh has specific UVs) in combination with NdotL
+				output.color = lerp(_ColorBottom, _ColorTop, v.texcoord.y * saturate(dot(v.normal * 1.5, _WorldSpaceLightPos0)));
 				return output;
 			}
 

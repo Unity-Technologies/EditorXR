@@ -2,13 +2,14 @@
 using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Menus
 {
 	internal class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IMenuOrigins
 	{
-		private readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
-		private static readonly float kAlternateLocationOffset = 0.06f;
+		readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
+		static readonly float kAlternateLocationOffset = 0.06f;
 
 		public Transform alternateMenuOrigin
 		{
@@ -28,7 +29,7 @@ namespace UnityEngine.VR.Menus
 				m_AlternateActivatorLocalPosition = m_OriginalActivatorLocalPosition + Vector3.back * kAlternateLocationOffset;
 			}
 		}
-		private Transform m_AlternateMenuOrigin;
+		Transform m_AlternateMenuOrigin;
 
 		public bool activatorButtonMoveAway
 		{
@@ -40,26 +41,25 @@ namespace UnityEngine.VR.Menus
 
 				m_ActivatorButtonMoveAway = value;
 
-				if (m_ActivatorMoveCoroutine != null)
-					StopCoroutine(m_ActivatorMoveCoroutine);
+				this.StopCoroutine(ref m_ActivatorMoveCoroutine);
 
 				m_ActivatorMoveCoroutine = StartCoroutine(AnimateMoveActivatorButton(m_ActivatorButtonMoveAway));
 			}
 		}
-		private bool m_ActivatorButtonMoveAway;
+		bool m_ActivatorButtonMoveAway;
 
 		[SerializeField]
-		private Transform m_Icon;
+		Transform m_Icon;
 		[SerializeField]
-		private Transform m_HighlightedPRS;
+		Transform m_HighlightedPRS;
 
-		private Vector3 m_OriginalActivatorIconLocalScale;
-		private Vector3 m_OriginalActivatorIconLocalPosition;
-		private Vector3 m_HighlightedActivatorIconLocalScale;
-		private Vector3 m_HighlightedActivatorIconLocalPosition;
-		private Coroutine m_HighlightCoroutine;
-		private Coroutine m_ActivatorMoveCoroutine;
-		private Vector3 m_AlternateActivatorLocalPosition;
+		Vector3 m_OriginalActivatorIconLocalScale;
+		Vector3 m_OriginalActivatorIconLocalPosition;
+		Vector3 m_HighlightedActivatorIconLocalScale;
+		Vector3 m_HighlightedActivatorIconLocalPosition;
+		Coroutine m_HighlightCoroutine;
+		Coroutine m_ActivatorMoveCoroutine;
+		Vector3 m_AlternateActivatorLocalPosition;
 
 		public Node? node { private get; set; }
 		public Transform menuOrigin { get; set; }
@@ -99,7 +99,7 @@ namespace UnityEngine.VR.Menus
 			selected(node);
 		}
 
-		private IEnumerator Highlight(bool transitionIn = true)
+		IEnumerator Highlight(bool transitionIn = true)
 		{
 			var amount = 0f;
 			var currentScale = m_Icon.localScale;
@@ -120,7 +120,7 @@ namespace UnityEngine.VR.Menus
 			m_Icon.localPosition = targetLocalPosition;
 		}
 
-		private IEnumerator AnimateMoveActivatorButton(bool moveAway = true)
+		IEnumerator AnimateMoveActivatorButton(bool moveAway = true)
 		{
 			var amount = 0f;
 			var currentPosition = transform.localPosition;
