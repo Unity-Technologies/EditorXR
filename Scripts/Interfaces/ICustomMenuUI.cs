@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.VR.Tools
 {
-	public interface IHandleToolMenuUI
+	public interface ICustomMenuUI
 	{
 		Func<Transform, MenuOrigin, GameObject, GameObject> instantiateMenuUI
 		{

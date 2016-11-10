@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -858,7 +858,7 @@ public class EditorVR : MonoBehaviour
 
 	private GameObject InstantiateMenuUI(Transform rayOrigin,MenuOrigin origin,GameObject prefab)
 	{
-		var go = U.Object.Instantiate(prefab,transform);
+		var go = U.Object.Instantiate(prefab.gameObject,transform);
 		foreach(Canvas canvas in go.GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = m_EventCamera;
 
@@ -869,11 +869,11 @@ public class EditorVR : MonoBehaviour
 		else if(node == Node.RightHand)
 			node = Node.LeftHand;
 
-		// HACK: if not using this bool, the CreatePrimitiveMenu would be attached to both nodes
-		bool once = false;
+		// use this bool to attach the menu only to the correct proxy
+		bool parentFound = false;
 		ForEachRayOrigin((proxy,rayOriginPair,device,deviceData) =>
 		{
-			if (once)
+			if (parentFound)
 				return;
 
 			Dictionary<Transform,Transform> tempOrigin = null;
@@ -884,15 +884,14 @@ public class EditorVR : MonoBehaviour
 				tempOrigin = proxy.alternateMenuOrigins;
 
 			Transform parent;
-
 			Transform otherRayOrigin;
 			proxy.rayOrigins.TryGetValue(node, out otherRayOrigin);
 			if(tempOrigin != null && tempOrigin.TryGetValue(otherRayOrigin, out parent))
 			{
-				once = true;
+				parentFound = true;
 
 				if (go.GetComponent<CreatePrimitiveMenu>() != null)
-					ConnectInterfaces(go.GetComponent<CreatePrimitiveMenu>(),device);
+					ConnectInterfaces(go.GetComponent<CreatePrimitiveMenu>(), device);
 
 				go.transform.SetParent(parent);
 				go.transform.localPosition = Vector3.zero;
@@ -1269,7 +1268,7 @@ public class EditorVR : MonoBehaviour
 		if (createWorkspace != null)
 			createWorkspace.createWorkspace = CreateWorkspace;
 
-		var handleToolMenuUI = obj as IHandleToolMenuUI;
+		var handleToolMenuUI = obj as ICustomMenuUI;
 		if (handleToolMenuUI != null)
 		{
 			handleToolMenuUI.instantiateMenuUI = InstantiateMenuUI;

@@ -8,27 +8,18 @@ using UnityEngine.VR.Actions;
 using UnityEngine.VR.Utilities;
 
 [MainMenuItem("Primitive", "Primitive", "create primitives")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IHandleToolMenuUI, ICustomRay, IToolActions
+public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICustomMenuUI, ICustomRay, IToolActions
 {
-	class PrimitiveToolAction : IAction
-	{
-		public Sprite icon { get; internal set; }
-		public void ExecuteAction()
-		{
-			return;
-		}
-	}
-
 	private PrimitiveType m_SelectedPrimitiveType = PrimitiveType.Cube;
 	private bool m_Freeform = false;
 
 	[SerializeField]
-	private Canvas m_CanvasPrefab;
-	private bool m_CanvasSpawned;
-
-	private GameObject m_CurrentGameObject = null;
+	private CreatePrimitiveMenu m_MenuPrefab;
+	private bool m_MenuSpawned;
 
 	private GameObject m_ToolMenu = null;
+
+	private GameObject m_CurrentGameObject = null;
 
 	private const float kDrawDistance = 0.075f;
 
@@ -36,8 +27,6 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IHa
 	private Vector3 m_PointB = Vector3.zero;
 
 	private PrimitiveCreationStates m_State = PrimitiveCreationStates.PointA;
-
-	public Node selfNode { get; set; }
 
 	public Standard standardInput {	get; set; }
 
@@ -49,7 +38,6 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IHa
 	public Action showDefaultRay { private get; set; }
 
 	public List<IAction> toolActions { get; private set; }
-	public event Action<Node?> startRadialMenu = delegate { };
 
 	private enum PrimitiveCreationStates
 	{
@@ -60,15 +48,13 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IHa
 
 	void Awake()
 	{
-		toolActions = new List<IAction>() {};
+		toolActions = new List<IAction>();
 	}
 
 	void Update()
 	{
-		if (!m_CanvasSpawned)
-		{
-			SpawnCanvas();
-		}
+		if (!m_MenuSpawned)
+			SpawnMenu();
 
 		switch(m_State)
 		{
@@ -94,11 +80,11 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IHa
 		}
 	}
 
-	void SpawnCanvas()
+	void SpawnMenu()
 	{
-		m_ToolMenu = instantiateMenuUI(rayOrigin, MenuOrigin.Main,m_CanvasPrefab.gameObject);
+		m_ToolMenu = instantiateMenuUI(rayOrigin, MenuOrigin.Main, m_MenuPrefab.gameObject);
 		m_ToolMenu.GetComponent<CreatePrimitiveMenu>().selectPrimitive += SetSelectedPrimitive;
-		m_CanvasSpawned = true;
+		m_MenuSpawned = true;
 	}
 
 	void SetSelectedPrimitive(PrimitiveType type,bool isFreeform)
@@ -112,6 +98,8 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IHa
 		if(standardInput.action.wasJustPressed)
 		{
 			m_CurrentGameObject = GameObject.CreatePrimitive(m_SelectedPrimitiveType);
+			
+			//set starting minimum scale (don't allow zero scale object to be created)
 			m_CurrentGameObject.transform.localScale = new Vector3(0.0025f,0.0025f,0.0025f);
 			m_PointA = rayOrigin.position + rayOrigin.forward * kDrawDistance;
 			m_CurrentGameObject.transform.position = m_PointA;
@@ -149,6 +137,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IHa
 
 	void CheckForTriggerRelease()
 	{
+		//ready for next object to be created
 		if(standardInput.action.wasJustReleased)
 			m_State = PrimitiveCreationStates.PointA;
 	}
