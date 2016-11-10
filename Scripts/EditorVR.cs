@@ -1378,6 +1378,10 @@ public class EditorVR : MonoBehaviour
 			HashSet<InputDevice> usedDevices;
 			var newTool = SpawnTool(toolType, out usedDevices, deviceToAssignTool);
 
+			// It's possible this tool uses no action maps, so at least include the device this tool was spawned on
+			if (usedDevices.Count == 0)
+				usedDevices.Add(deviceToAssignTool);
+
 			foreach (var dev in usedDevices)
 			{
 				deviceData = m_DeviceData[dev];
