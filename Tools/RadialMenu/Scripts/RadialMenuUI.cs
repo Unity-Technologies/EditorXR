@@ -169,6 +169,21 @@ namespace UnityEngine.VR.Menus
 			m_SlotsMask.gameObject.SetActive(false);
 		}
 
+		void Update()
+		{
+			if (m_Actions != null)
+			{
+				// Action icons can update after being displayed
+				for (int i = 0; i < m_Actions.Count; ++i)
+				{
+					var action = m_Actions[i].action;
+					var radialMenuSlot = m_RadialMenuSlots[i];
+					if (radialMenuSlot.icon != action.icon)
+						radialMenuSlot.icon = action.icon;
+				}
+			}
+		}
+
 		public void Setup()
 		{
 			m_RadialMenuSlots = new List<RadialMenuSlot>();

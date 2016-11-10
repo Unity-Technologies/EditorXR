@@ -7,7 +7,7 @@ using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {
-	internal class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IMenuOrigins, IRay
+	internal class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IMenuOrigins, IUsesRayOrigin
 	{
 		readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
 		static readonly float kAlternateLocationOffset = 0.06f;

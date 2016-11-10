@@ -6,7 +6,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Tools
 {
-	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight, ILocking
+	public class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, ISetHighlight, IGameObjectLocking
 	{
 		static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
@@ -35,7 +35,8 @@ namespace UnityEngine.VR.Tools
 		public Func<GameObject, bool> isLocked { get; set; }
 		public Action<GameObject, Transform> checkHover { get; set; }
 
-		public event Action<Transform> selected = delegate {};
+		public event Action<GameObject, Transform> hovered;
+		public event Action<Transform> selected;
 
 		void Update()
 		{
@@ -56,7 +57,10 @@ namespace UnityEngine.VR.Tools
 					return;
 			}
 
-			checkHover(newHoverGameObject, rayOrigin);
+
+			if (hovered != null)
+				hovered(newHoverGameObject, rayOrigin);
+
 			if (isLocked(newHoverGameObject))
 				return;
 
@@ -107,7 +111,8 @@ namespace UnityEngine.VR.Tools
 					}
 
 					Selection.objects = s_SelectedObjects.ToArray();
-					selected(rayOrigin);
+					if (selected != null)
+						selected(rayOrigin);
 				}
 
 				m_PressedObject = null;

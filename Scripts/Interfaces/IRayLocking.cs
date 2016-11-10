@@ -2,7 +2,7 @@
 
 namespace UnityEngine.VR.Tools
 {
-	public interface ILockRay
+	public interface IRayLocking
 	{
 		/// <summary>
 		/// Lock the default ray's show/hide state.

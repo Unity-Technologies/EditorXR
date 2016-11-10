@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 
-public class LockUI : MonoBehaviour, ILocking
+public class LockUI : MonoBehaviour, IGameObjectLocking
 {
 	[SerializeField]
 	Image m_LockImage;

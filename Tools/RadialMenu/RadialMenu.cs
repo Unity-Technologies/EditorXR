@@ -69,7 +69,7 @@ namespace UnityEngine.VR.Menus
 		}
 		bool m_Visible;
 
-		public event Action<Transform> itemWasSelected = delegate { };
+		public event Action<Transform> itemWasSelected;
 
 		public Transform rayOrigin { private get; set; }
 
@@ -97,7 +97,9 @@ namespace UnityEngine.VR.Menus
 			if (m_RadialMenuInput.selectItem.wasJustReleased)
 			{
 				m_RadialMenuUI.SelectionOccurred();
-				itemWasSelected(rayOrigin);
+
+				if (itemWasSelected != null)
+					itemWasSelected(rayOrigin);
 			}
 		}
 	}

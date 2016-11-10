@@ -7,7 +7,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
+public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChanged
 {
 	public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 	const float kScrollMargin = 0.03f;
@@ -28,7 +28,6 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
 
-	public PreviewDelegate preview { private get; set; }
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
 	public override void Setup()
@@ -46,7 +45,6 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 		var listView = m_InspectorUI.inspectorListView;
 		listView.data = new InspectorData[0];
 		listView.instantiateUI = instantiateUI;
-		listView.preview = preview;
 		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		listView.setHighlight = setHighlight;
 		listView.getIsLocked = GetIsLocked;

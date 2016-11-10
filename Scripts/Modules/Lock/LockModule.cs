@@ -1,12 +1,12 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Actions;
-using System.Linq;
 using UnityEditor;
 
-public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
+public class LockModule : MonoBehaviour, IActions, ISelectionChanged
 {
 	class LockModuleAction : IAction
 	{
@@ -24,7 +24,7 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 	Sprite m_UnlockIcon;
 
 	readonly LockModuleAction m_LockModuleAction = new LockModuleAction();
-	public List<IAction> toolActions { get; private set; }
+	public List<IAction> actions { get; private set; }
 
 	// TODO: This should go away once the alternate menu stays open or if locking/unlocking from alternate menu goes 
 	// away entirely (e.g. because of HierarchyWorkspace)
@@ -32,18 +32,17 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 
 	readonly List<GameObject> m_LockedGameObjects = new List<GameObject>();
 
-	Dictionary<Transform, GameObject> m_CurrentHoverObjects = new Dictionary<Transform, GameObject>();
-	Dictionary<Transform, float> m_HoverTimes = new Dictionary<Transform, float>();
+	GameObject m_CurrentHoverObject;
+	Transform m_HoverRayOrigin;
+	float m_HoverDuration;
 	const float kMaxHoverTime = 2.0f;
-
-	GameObject m_SelectedObject;
 	
 	void Awake()
 	{
 		m_LockModuleAction.execute = ToggleLocked;
 		UpdateActionIcon(null);
 
-		toolActions = new List<IAction>() { m_LockModuleAction };
+		actions = new List<IAction>() { m_LockModuleAction };
 	}
 
 	public bool IsLocked(GameObject go)
@@ -53,15 +52,10 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 
 	bool ToggleLocked()
 	{
-		var newLockState = !IsLocked(m_SelectedObject);
-		SetLocked(m_SelectedObject, newLockState);
+		var go = Selection.activeGameObject ?? m_CurrentHoverObject;
+		var newLockState = !IsLocked(go);
+		SetLocked(go, newLockState);
 		return newLockState;
-	}
-
-	void SetCurrentSelectedObject(GameObject go)
-	{
-		m_SelectedObject = go;
-		UpdateActionIcon(go);
 	}
 
 	public void SetLocked(GameObject go, bool locked)
@@ -73,13 +67,16 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 		{
 			if (!m_LockedGameObjects.Contains(go))
 				m_LockedGameObjects.Add(go);
+
+			// You shouldn't be able to keep an object selected if you are locking it
+			Selection.objects = Selection.objects.Where(o => o != go).ToArray();
 		}
 		else
 		{
 			if (m_LockedGameObjects.Contains(go))
 				m_LockedGameObjects.Remove(go);
 		}
-	
+
 		UpdateActionIcon(go);
 	}
 
@@ -88,37 +85,53 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 		m_LockModuleAction.icon = IsLocked(go) ? m_LockIcon : m_UnlockIcon;
 	}
 
-	public void CheckHover(GameObject go, Transform rayOrigin)
+	public void OnHovered(GameObject go, Transform rayOrigin)
 	{
-		if (!m_CurrentHoverObjects.ContainsKey(rayOrigin))
-			m_CurrentHoverObjects.Add(rayOrigin, null);
-
-		if (go != m_CurrentHoverObjects[rayOrigin])
+		// Latch a new ray origin only when nothing is being hovered over
+		if (Selection.activeGameObject || !m_HoverRayOrigin)
 		{
-			m_CurrentHoverObjects[rayOrigin] = go;
-			m_HoverTimes[rayOrigin] = 0.0f;
+			m_HoverRayOrigin = rayOrigin;
+			m_CurrentHoverObject = go;
+			m_HoverDuration = 0f;
 		}
-		else if (IsLocked(go))
+		else if (m_HoverRayOrigin == rayOrigin)
 		{
-			m_HoverTimes[rayOrigin] += Time.unscaledDeltaTime;
-			if (m_HoverTimes[rayOrigin] >= kMaxHoverTime)
+			if (!go) // Ray origin is no longer hovering over any object
 			{
-				var otherNode = (from item in m_HoverTimes
-								 where item.Key != rayOrigin
-								 select item.Value).FirstOrDefault();
+				// Turn off menu if it was previously shown
+				if (IsLocked(m_CurrentHoverObject))
+					updateAlternateMenu(rayOrigin, null);
 
-				if (otherNode < 2)
+				m_HoverRayOrigin = null;
+				m_CurrentHoverObject = null;
+			}
+			else if (m_CurrentHoverObject == go) // Keep track of existing hover object
+			{
+				m_HoverDuration += Time.unscaledDeltaTime;
+
+				// Don't allow hover menu if over a selected game object
+				if (IsLocked(go) && m_HoverDuration >= kMaxHoverTime)
 				{
-					SetCurrentSelectedObject(go);
+					UpdateActionIcon(go);
+
+					// Open up the menu, so that locking can be changed
 					updateAlternateMenu(rayOrigin, go);
 				}
+			}
+			else // Switch to new hover object on the same ray origin
+			{
+				// Turn off menu if it was previously shown
+				if (IsLocked(m_CurrentHoverObject))
+					updateAlternateMenu(rayOrigin, null);
+
+				m_CurrentHoverObject = go;
+				m_HoverDuration = 0f;
 			}
 		}
 	}
 
 	public void OnSelectionChanged()
 	{
-		var go = Selection.activeGameObject;
-		SetCurrentSelectedObject(go);
+		UpdateActionIcon(Selection.activeGameObject);
 	}
 }

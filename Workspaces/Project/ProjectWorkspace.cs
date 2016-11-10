@@ -6,7 +6,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFolderList, IFilterUI
+public class ProjectWorkspace : Workspace, IPlaceObject, IGetPreviewOrigin, IUsesProjectFolderData, IFilterUI
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 	const float kPaneMargin = 0.01f;
@@ -41,7 +41,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFold
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
-	public PreviewDelegate preview { private get; set; }
 
 	public FolderData[] folderData
 	{
@@ -90,7 +89,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFold
 		assetGridView.testFilter = TestFilter;
 		assetGridView.placeObject = placeObject;
 		assetGridView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
-		assetGridView.preview = preview;
 		assetGridView.data = new AssetData[0];
 
 		var scrollHandles = new[]

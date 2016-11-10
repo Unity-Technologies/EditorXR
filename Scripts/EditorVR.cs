@@ -158,9 +158,9 @@ public class EditorVR : MonoBehaviour
 	StandardManipulator m_StandardManipulator;
 	ScaleManipulator m_ScaleManipulator;
 
-	IGrabObjects m_TransformTool;
+	IGrabObject m_TransformTool;
 
-	readonly List<IProjectFolderList> m_ProjectFolderLists = new List<IProjectFolderList>();
+	readonly List<IUsesProjectFolderData> m_ProjectFolderLists = new List<IUsesProjectFolderData>();
 	FolderData[] m_FolderData;
 	readonly HashSet<string> m_AssetTypes = new HashSet<string>();
 	float m_ProjectFolderLoadStartTime;
@@ -475,9 +475,9 @@ public class EditorVR : MonoBehaviour
 
 	bool IsPermanentTool(Type type)
 	{
-		return typeof(ITransformTool).IsAssignableFrom(type)
+		return typeof(ITransformer).IsAssignableFrom(type)
 			|| typeof(SelectionTool).IsAssignableFrom(type)
-			|| typeof(ILocomotion).IsAssignableFrom(type);
+			|| typeof(ILocomotor).IsAssignableFrom(type);
 	}
 
 	private void SpawnDefaultTools()
@@ -500,6 +500,7 @@ public class EditorVR : MonoBehaviour
 			AddToolToDeviceData(tool, devices);
 			var selectionTool = tool as SelectionTool;
 			selectionTool.selected += UpdateAlternateMenuOnSelectionChanged; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			selectionTool.hovered += m_LockModule.OnHovered;
 
 			if (locomotionTool == typeof(BlinkLocomotionTool))
 			{
@@ -528,7 +529,7 @@ public class EditorVR : MonoBehaviour
 		tool = SpawnTool(typeof(TransformTool), out devices);
 		AddToolToDeviceData(tool, devices);
 
-		m_TransformTool = tool as IGrabObjects;
+		m_TransformTool = tool as IGrabObject;
 	}
 
 	void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)
@@ -1145,7 +1146,7 @@ public class EditorVR : MonoBehaviour
 
 		if (rayOrigin)
 		{
-			var ray = obj as IRay;
+			var ray = obj as IUsesRayOrigin;
 			if (ray != null)
 			{
 				ray.rayOrigin = rayOrigin;
@@ -1160,7 +1161,7 @@ public class EditorVR : MonoBehaviour
 					customRay.hideDefaultRay = dpr.Hide;
 				}
 
-				var lockableRay = obj as ILockRay;
+				var lockableRay = obj as IRayLocking;
 				if (lockableRay != null)
 				{
 					dpr = dpr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
@@ -1184,7 +1185,7 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
-		var locomotion = obj as ILocomotion;
+		var locomotion = obj as ILocomotor;
 		if (locomotion != null)
 			locomotion.viewerPivot = VRView.viewerPivot;
 
@@ -1196,41 +1197,37 @@ public class EditorVR : MonoBehaviour
 		if (createWorkspace != null)
 			createWorkspace.createWorkspace = CreateWorkspace;
 
-		var raycaster = obj as IRaycaster;
+		var raycaster = obj as IUsesRaycastResults;
 		if (raycaster != null)
 			raycaster.getFirstGameObject = GetFirstGameObject;
 
-		var highlight = obj as IHighlight;
+		var highlight = obj as ISetHighlight;
 		if (highlight != null)
 			highlight.setHighlight = m_HighlightModule.SetHighlight;
 
-		var placeObjects = obj as IPlaceObjects;
+		var placeObjects = obj as IPlaceObject;
 		if (placeObjects != null)
 			placeObjects.placeObject = PlaceObject;
 
-		var locking = obj as ILocking;
+		var locking = obj as IGameObjectLocking;
 		if (locking != null)
 		{
 			locking.setLocked = m_LockModule.SetLocked;
 			locking.isLocked = m_LockModule.IsLocked;
-			locking.checkHover = m_LockModule.CheckHover;
 		}
 
-		var positionPreview = obj as IPreview;
+		var positionPreview = obj as IGetPreviewOrigin;
 		if (positionPreview != null)
-		{
-			positionPreview.preview = m_ObjectPlacementModule.Preview;
 			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
-		}
 
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
 			m_SelectionChanged += selectionChanged.OnSelectionChanged;
 
-		var toolActions = obj as IToolActions;
+		var toolActions = obj as IActions;
 		if (toolActions != null)
 		{
-			var actions = toolActions.toolActions;
+			var actions = toolActions.actions;
 			foreach (var action in actions)
 			{
 				var actionMenuData = new ActionMenuData()
@@ -1249,7 +1246,7 @@ public class EditorVR : MonoBehaviour
 		if (directSelection != null)
 			directSelection.getDirectSelection = GetDirectSelection;
 
-		var grabObjects = obj as IGrabObjects;
+		var grabObjects = obj as IGrabObject;
 		if (grabObjects != null)
 		{
 			grabObjects.canGrabObject = CanGrabObject;
@@ -1276,10 +1273,10 @@ public class EditorVR : MonoBehaviour
 		if (selectionChanged != null)
 			m_SelectionChanged -= selectionChanged.OnSelectionChanged;
 
-		var toolActions = obj as IToolActions;
+		var toolActions = obj as IActions;
 		if (toolActions != null)
 		{
-			var actions = toolActions.toolActions;
+			var actions = toolActions.actions;
 			m_MenuActions = m_MenuActions.Where(a => !actions.Contains(a.action)).ToList();
 			UpdateAlternateMenuActions();
 		}
@@ -1539,7 +1536,7 @@ public class EditorVR : MonoBehaviour
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
 
-		var projectFolderList = workspace as IProjectFolderList;
+		var projectFolderList = workspace as IUsesProjectFolderData;
 		if (projectFolderList != null)
 		{
 			projectFolderList.folderData = GetFolderData();
@@ -1631,7 +1628,7 @@ public class EditorVR : MonoBehaviour
 
 		DisconnectInterfaces(workspace);
 
-		var projectFolderList = workspace as IProjectFolderList;
+		var projectFolderList = workspace as IUsesProjectFolderData;
 		if (projectFolderList != null)
 			m_ProjectFolderLists.Remove(projectFolderList);
 
@@ -1869,7 +1866,8 @@ public class EditorVR : MonoBehaviour
 							}
 						}
 
-						m_ObjectPlacementModule.Preview(dragObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
+						var previewOrigin = GetPreviewOriginForRayOrigin(originalRayOrigin);
+						U.Math.LerpTransform(dragObjectTransform, previewOrigin.position, previewOrigin.rotation);
 					}
 				}
 			}
@@ -1902,11 +1900,9 @@ public class EditorVR : MonoBehaviour
 		if (m_IntersectionModule)
 		{
 			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-			{
-				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-				if (renderer)
-					return renderer.gameObject;
-			}
+			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+			if (renderer)
+				return renderer.gameObject;
 		}
 
 		foreach (var ray in m_MiniWorldRays)
@@ -2000,7 +1996,7 @@ public class EditorVR : MonoBehaviour
 		return true;
 	}
 
-	bool GrabObject(IGrabObjects grabber, DirectSelection selection, Transform rayOrigin)
+	bool GrabObject(IGrabObject grabber, DirectSelection selection, Transform rayOrigin)
 	{
 		if (!CanGrabObject(selection, rayOrigin))
 			return false;
@@ -2012,7 +2008,7 @@ public class EditorVR : MonoBehaviour
 		return true;
 	}
 
-	void DropObject(IGrabObjects grabber, Transform grabbedObject, Transform rayOrigin)
+	void DropObject(IGrabObject grabber, Transform grabbedObject, Transform rayOrigin)
 	{
 		// Dropping the player head updates the viewer pivot
 		if (grabbedObject.tag == kVRPlayerTag)

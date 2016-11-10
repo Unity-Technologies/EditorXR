@@ -5,7 +5,7 @@ namespace UnityEngine.VR.Tools
 	/// <summary>
 	/// Get access to locking features
 	/// </summary>
-	public interface ILocking
+	public interface IGameObjectLocking
 	{
 		/// <summary>
 		/// Set a GameObject's locked status
@@ -16,7 +16,5 @@ namespace UnityEngine.VR.Tools
 		/// Check whether a GameObject is locked
 		/// </summary>
 		Func<GameObject,bool> isLocked { set; }
-
-		Action<GameObject, Transform> checkHover { set; }
 	}
 }
