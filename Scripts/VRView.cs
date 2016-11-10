@@ -14,42 +14,29 @@ namespace UnityEditor.VR
 	[InitializeOnLoad]
 	public class VRView : EditorWindow
 	{
-		public static VRView GetWindow()
-		{
-			return EditorWindow.GetWindow<VRView>(true);
-		}
+		const string kShowDeviceView = "VRView.ShowDeviceView";
+		const string kLaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
+		const float kHMDActivityTimeout = 3f; // in seconds
 
-		public static Coroutine StartCoroutine(IEnumerator routine)
-		{
-			if (s_ActiveView && s_ActiveView.m_CameraPivot)
-			{
-				EditorMonoBehaviour mb = s_ActiveView.m_CameraPivot.GetComponent<EditorMonoBehaviour>();
-				return mb.StartCoroutine(routine);
-			}
+		DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 
-			return null;
-		}
+		[NonSerialized]
+		private Camera m_Camera;
 
-		// Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
-		// EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
-		// we watch until playmode is done and then relaunch.  
-		static VRView()
-		{
-			EditorApplication.update += ReopenOnExitPlaymode;
-		}
+		private RenderTexture m_SceneTargetTexture;
+		private bool m_ShowDeviceView;
+		private bool m_SceneViewsEnabled;
 
-		private static void ReopenOnExitPlaymode()
-		{
-			bool launch = EditorPrefs.GetBool(kLaunchOnExitPlaymode, false);
-			if (!launch || !EditorApplication.isPlaying)
-			{
-				EditorPrefs.DeleteKey(kLaunchOnExitPlaymode);
-				EditorApplication.update -= ReopenOnExitPlaymode;
-				if (launch)
-					GetWindow();
-			}
-		}
-		
+		private static VRView s_ActiveView;
+
+		private Transform m_CameraPivot;
+		private Quaternion m_LastHeadRotation = Quaternion.identity;
+		private float m_TimeSinceLastHMDChange;
+		private bool m_LatchHMDValues;
+
+		bool m_HMDReady;
+		bool m_VRInitialized;
+
 		public static Transform viewerPivot
 		{
 			get
@@ -108,26 +95,41 @@ namespace UnityEditor.VR
 		public static event Action<EditorWindow> onGUIDelegate = delegate {};
 		public static event Action onHMDReady = delegate {};
 
-		public DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
-		
-		[NonSerialized]
-		private Camera m_Camera;
+		public static VRView GetWindow()
+		{
+			return EditorWindow.GetWindow<VRView>(true);
+		}
 
-		private RenderTexture m_SceneTargetTexture;
-		private bool m_ShowDeviceView;
-		private bool m_SceneViewsEnabled;
-		
-		private static VRView s_ActiveView = null;
+		public static Coroutine StartCoroutine(IEnumerator routine)
+		{
+			if (s_ActiveView && s_ActiveView.m_CameraPivot)
+			{
+				var mb = s_ActiveView.m_CameraPivot.GetComponent<EditorMonoBehaviour>();
+				return mb.StartCoroutine(routine);
+			}
 
-		private Transform m_CameraPivot = null;
-		private Quaternion m_LastHeadRotation = Quaternion.identity;
-		private float m_TimeSinceLastHMDChange = 0f;
-		private bool m_LatchHMDValues = false;
-		
-		private const string kLaunchOnExitPlaymode = "EditorVR.LaunchOnExitPlaymode";
-		private const float kHMDActivityTimeout = 3f; // in seconds
-		bool m_HMDReady;
-		bool m_VRInitialized;
+			return null;
+		}
+
+		// Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
+		// EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
+		// we watch until playmode is done and then relaunch.  
+		static VRView()
+		{
+			EditorApplication.update += ReopenOnExitPlaymode;
+		}
+
+		private static void ReopenOnExitPlaymode()
+		{
+			bool launch = EditorPrefs.GetBool(kLaunchOnExitPlaymode, false);
+			if (!launch || !EditorApplication.isPlaying)
+			{
+				EditorPrefs.DeleteKey(kLaunchOnExitPlaymode);
+				EditorApplication.update -= ReopenOnExitPlaymode;
+				if (launch)
+					GetWindow();
+			}
+		}
 
 		public void OnEnable()
 		{
@@ -156,6 +158,8 @@ namespace UnityEditor.VR
 			m_CameraPivot.position = position;
 			m_CameraPivot.rotation = Quaternion.identity;
 
+			m_ShowDeviceView = EditorPrefs.GetBool(kShowDeviceView, false);
+
 			// Disable other views to increase rendering performance for EditorVR
 			SetOtherViewsEnabled(false);
 
@@ -174,6 +178,8 @@ namespace UnityEditor.VR
 			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
 			VRSettings.StopRenderingToDevice();
+
+			EditorPrefs.SetBool(kShowDeviceView, m_ShowDeviceView);
 
 			SetOtherViewsEnabled(true);
 
@@ -239,7 +245,7 @@ namespace UnityEditor.VR
 				}
 			}
 
-			Rect actualCameraRect = cameraRect; // Handles.GetCameraRect(cameraRect);
+			Rect actualCameraRect = cameraRect;
 			int width = (int)actualCameraRect.width;
 			int height = (int)actualCameraRect.height;
 
@@ -259,12 +265,10 @@ namespace UnityEditor.VR
 			m_SceneTargetTexture.Create();
 		}
 
-
 		private void PrepareCameraTargetTexture(Rect cameraRect)
 		{
 			// Always render camera into a RT
-			bool hdr = false; // SceneViewIsRenderingHDR();
-			CreateCameraTargetTexture(cameraRect, hdr);
+			CreateCameraTargetTexture(cameraRect, false);
 			m_Camera.targetTexture = m_ShowDeviceView ? m_SceneTargetTexture : null;
 			VRSettings.showDeviceView = m_ShowDeviceView;
 		}
@@ -272,25 +276,31 @@ namespace UnityEditor.VR
 		private void OnGUI()
 		{
 			onGUIDelegate(this);
-			SceneViewUtilities.ResetOnGUIState();
+			var e = Event.current;
+			if (e.type != EventType.ExecuteCommand && e.type != EventType.used)
+			{
+				SceneViewUtilities.ResetOnGUIState();
 
-			Rect guiRect = new Rect(0, 0, position.width, position.height);
-			Rect cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
-			PrepareCameraTargetTexture(cameraRect);
-			
-			m_Camera.cullingMask = Tools.visibleLayers;
+				var guiRect = new Rect(0, 0, position.width, position.height);
+				var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
+				PrepareCameraTargetTexture(cameraRect);
 
-			// Draw camera
-			bool pushedGUIClip;
-			DoDrawCamera(guiRect, out pushedGUIClip);
+				m_Camera.cullingMask = Tools.visibleLayers;
 
-			if (m_ShowDeviceView)
-				SceneViewUtilities.DrawTexture(m_SceneTargetTexture, guiRect, pushedGUIClip);
+				// Draw camera
+				bool pushedGUIClip;
+				DoDrawCamera(guiRect, out pushedGUIClip);
 
-			GUILayout.BeginArea(guiRect);
-			if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))
-				m_ShowDeviceView = !m_ShowDeviceView;
-			GUILayout.EndArea();
+				if (m_ShowDeviceView)
+					SceneViewUtilities.DrawTexture(m_SceneTargetTexture, guiRect, pushedGUIClip);
+
+				GUILayout.BeginArea(guiRect);
+				{
+					if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))
+						m_ShowDeviceView = !m_ShowDeviceView;
+				}
+				GUILayout.EndArea();
+			}
 		}
 
 		private void DoDrawCamera(Rect cameraRect, out bool pushedGUIClip)
@@ -301,8 +311,6 @@ namespace UnityEditor.VR
 
 			if (!m_VRInitialized)
 				return;
-
-			//DrawGridParameters gridParam = grid.PrepareGridRender(camera, pivot, m_Rotation.target, m_Size.value, m_Ortho.target, AnnotationUtility.showGrid);
 
 			SceneViewUtilities.DrawCamera(m_Camera, cameraRect, position, m_RenderMode, out pushedGUIClip);
 		}
@@ -356,5 +364,5 @@ namespace UnityEditor.VR
 			SetSceneViewsEnabled(enabled);
 		}
 	}
-} // namespace
+}
 #endif
