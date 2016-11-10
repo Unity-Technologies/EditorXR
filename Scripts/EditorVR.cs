@@ -1480,12 +1480,8 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-
-	private void CreateWorkspace(Type t, Action<Workspace> createdCallback = null)
+	void CreateWorkspace(Type t, Action<Workspace> createdCallback = null)
 	{
-		if (!typeof(Workspace).IsAssignableFrom(t))
-			return;
-
 		var defaultOffset = Workspace.kDefaultOffset;
 		var defaultTilt = Workspace.kDefaultTilt;
 

@@ -245,7 +245,7 @@ namespace UnityEditor.VR
 				}
 			}
 
-			Rect actualCameraRect = cameraRect; // Handles.GetCameraRect(cameraRect);
+			Rect actualCameraRect = cameraRect;
 			int width = (int)actualCameraRect.width;
 			int height = (int)actualCameraRect.height;
 
@@ -268,8 +268,7 @@ namespace UnityEditor.VR
 		private void PrepareCameraTargetTexture(Rect cameraRect)
 		{
 			// Always render camera into a RT
-			var hdr = false; // SceneViewIsRenderingHDR();
-			CreateCameraTargetTexture(cameraRect, hdr);
+			CreateCameraTargetTexture(cameraRect, false);
 			m_Camera.targetTexture = m_ShowDeviceView ? m_SceneTargetTexture : null;
 			VRSettings.showDeviceView = m_ShowDeviceView;
 		}
@@ -296,8 +295,10 @@ namespace UnityEditor.VR
 					SceneViewUtilities.DrawTexture(m_SceneTargetTexture, guiRect, pushedGUIClip);
 
 				GUILayout.BeginArea(guiRect);
-				if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))
-					m_ShowDeviceView = !m_ShowDeviceView;
+				{
+					if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))
+						m_ShowDeviceView = !m_ShowDeviceView;
+				}
 				GUILayout.EndArea();
 			}
 		}
@@ -310,8 +311,6 @@ namespace UnityEditor.VR
 
 			if (!m_VRInitialized)
 				return;
-
-			//DrawGridParameters gridParam = grid.PrepareGridRender(camera, pivot, m_Rotation.target, m_Size.value, m_Ortho.target, AnnotationUtility.showGrid);
 
 			SceneViewUtilities.DrawCamera(m_Camera, cameraRect, position, m_RenderMode, out pushedGUIClip);
 		}
@@ -365,5 +364,5 @@ namespace UnityEditor.VR
 			SetSceneViewsEnabled(enabled);
 		}
 	}
-} // namespace
+}
 #endif
