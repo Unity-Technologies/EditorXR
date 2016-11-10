@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Utilities;
 
 public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPreview
 {
@@ -35,6 +36,22 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
 	private readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
+
+	public override AssetData[] data
+	{
+		set
+		{
+			if (m_Data != null)
+			{
+				foreach (var data in m_Data) // Clear out visuals for old data
+				{
+					RecycleBeginning(data);
+				}
+			}
+
+			m_Data = value;
+		}
+	}
 
 	protected override void Setup()
 	{
@@ -218,7 +235,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 				if (material)
 					item.material = material;
 				else
-					item.fallbackTexture = data.icon;
+					LoadFallbackTexture(item, data);
 				break;
 			case "Texture2D":
 				goto case "Texture";
@@ -227,16 +244,24 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 				if (texture)
 					item.texture = texture;
 				else
-					item.fallbackTexture = data.icon;
+					LoadFallbackTexture(item, data);
 				break;
 			default:
 				GameObject icon;
 				if (m_IconDictionary.TryGetValue(data.type, out icon))
 					item.icon = icon;
 				else
-					item.fallbackTexture = data.icon;
+					LoadFallbackTexture(item, data);
 				break;
 		}
 		return item;
+	}
+
+	static void LoadFallbackTexture(AssetGridItem item, AssetData data)
+	{
+		item.fallbackTexture = null;
+		item.StartCoroutine(U.Object.GetAssetPreview(
+			AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GetAssetPath(data.instanceID)), 
+			texture => item.fallbackTexture = texture));
 	}
 }

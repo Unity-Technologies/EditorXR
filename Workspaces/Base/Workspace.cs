@@ -63,6 +63,7 @@ namespace UnityEngine.VR.Workspaces
 		private bool m_Vacuuming;
 		bool m_Moving;
 		Coroutine m_VisibilityCoroutine;
+		Coroutine m_ResetSizeCoroutine;
 
 		/// <summary>
 		/// Bounding box for entire workspace, including UI handles
@@ -82,7 +83,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public Func<GameObject, GameObject> instantiateUI { protected get; set; }
 
-		public Action<GameObject, bool> setHighlight { get; set; }
+		public Action<GameObject, bool> setHighlight { protected get; set; }
 
 		/// <summary>
 		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
@@ -93,6 +94,11 @@ namespace UnityEngine.VR.Workspaces
 		/// If true, prevent the resizing of a workspace via the front and back resize handles
 		/// </summary>
 		public bool preventFrontBackResize { set { m_WorkspaceUI.preventFrontBackResize = value; } }
+
+		/// <summary>
+		/// If true, prevent the resizing of a workspace via the left and right resize handles
+		/// </summary>
+		public bool preventLeftRightResize { set { m_WorkspaceUI.preventLeftRightResize = value; } }
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
@@ -117,6 +123,8 @@ namespace UnityEngine.VR.Workspaces
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
 			m_WorkspaceUI.closeClicked += OnCloseClicked;
 			m_WorkspaceUI.lockClicked += OnLockClicked;
+			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
+
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
@@ -157,7 +165,7 @@ namespace UnityEngine.VR.Workspaces
 				handle.hoverEnded += OnHandleHoverEnded;
 			}
 
-			StopCoroutine(ref m_VisibilityCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
@@ -259,25 +267,26 @@ namespace UnityEngine.VR.Workspaces
 
 			var destPosition = camera.position + cameraYaw * kVacuumOffset;
 			var destRotation = cameraYaw * kDefaultTilt;
-
 			var currentValue = 0f;
 			var currentVelocity = 0f;
+			var currentDuration = 0f;
 			const float kTargetValue = 1f;
-			const float kTargetValueOvershoot = 1.1f; // overshoot target value to compensate for smoothDamp not reaching target value
-
-			while (currentValue < kTargetValue)
+			const float kTargetDuration = 0.5f;
+			while (currentDuration < kTargetDuration)
 			{
-				currentValue = U.Math.SmoothDamp(currentValue, kTargetValueOvershoot, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.unscaledDeltaTime;
+				currentValue = U.Math.SmoothDamp(currentValue, kTargetValue, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				transform.position = Vector3.Lerp(startPosition, destPosition, currentValue);
 				transform.rotation = Quaternion.Lerp(startRotation, destRotation, currentValue);
 				yield return null;
 			}
+
 			m_Vacuuming = false;
 		}
 
 		public virtual void OnCloseClicked()
 		{
-			StopCoroutine(ref m_VisibilityCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
@@ -285,6 +294,15 @@ namespace UnityEngine.VR.Workspaces
 		public virtual void OnLockClicked()
 		{
 			m_DragLocked = !m_DragLocked;
+		}
+
+		public virtual void OnResetClicked()
+		{
+			m_DragLocked = false;
+
+			this.StopCoroutine(ref m_ResetSizeCoroutine);
+
+			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
 		}
 
 		private void UpdateBounds()
@@ -299,7 +317,9 @@ namespace UnityEngine.VR.Workspaces
 			destroyed(this);
 		}
 
-		protected abstract void OnBoundsChanged();
+		protected virtual void OnBoundsChanged()
+		{
+		}
 
 		IEnumerator AnimateShow()
 		{
@@ -374,6 +394,27 @@ namespace UnityEngine.VR.Workspaces
 				return;
 
 			m_WorkspaceUI.frontHighlightVisible = false;
+		}
+
+		IEnumerator AnimateResetSize()
+		{
+			var currentBoundsSize = contentBounds.size;
+			var currentBoundsCenter = contentBounds.center;
+			var targetBoundsSize = m_CustomStartingBounds != null ? m_CustomStartingBounds.Value : minBounds;
+			var targetBoundsCenter = Vector3.zero;
+			var smoothVelocitySize = Vector3.zero;
+			var smoothVelocityCenter = Vector3.zero;
+			var currentDuration = 0f;
+			const float kTargetDuration = 0.75f;
+			while (currentDuration < kTargetDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				currentBoundsCenter = U.Math.SmoothDamp(currentBoundsCenter, targetBoundsCenter, ref smoothVelocityCenter, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBoundsSize = U.Math.SmoothDamp(currentBoundsSize, targetBoundsSize, ref smoothVelocitySize, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				contentBounds = new Bounds(currentBoundsCenter, currentBoundsSize);
+				OnBoundsChanged();
+				yield return null;
+			}
 		}
 	}
 }
