@@ -6,7 +6,7 @@ using UnityEngine.VR.Utilities;
 using UnityEngine.InputNew;
 
 [MainMenuItem("Primitive", "Primitive", "Create primitives in the scene")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateUI
+public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IInstantiateUI
 {
 	[SerializeField]
 	private Canvas CanvasPrefab;

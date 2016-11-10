@@ -1,6 +1,6 @@
 ﻿using System;
 
-public interface IProjectFolderList
+public interface IUsesProjectFolderData
 {
 	/// <summary>
 	/// Set accessor for folder list data

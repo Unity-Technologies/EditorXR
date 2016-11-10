@@ -107,10 +107,7 @@ namespace UnityEngine.VR.Menus
 
 		public Quaternion visibleLocalRotation { get; set; }
 
-		public Sprite icon
-		{
-			set { m_Icon.sprite = value; }
-		}
+		public Sprite icon { set { m_Icon.sprite = value; } get { return m_Icon.sprite; } }
 
 		public UnityBrandColorScheme.GradientPair gradientPair
 		{
