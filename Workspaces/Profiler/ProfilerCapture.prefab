@@ -61,7 +61,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: a10189316c1739a4a8b2dbb47096d8c3, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
@@ -91,6 +91,7 @@ MonoBehaviour:
   m_EditorWindowCapture: {fileID: 114000011104356316}
   m_RawImage: {fileID: 114000012014650434}
   m_Material: {fileID: 0}
+  m_LockAspect: 0
 --- !u!222 &222000010724325418
 CanvasRenderer:
   m_ObjectHideFlags: 1

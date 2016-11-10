@@ -67,7 +67,7 @@ public class EditorWindowCapture : MonoBehaviour
 	{
 		if (m_Window && capture)
 		{
-			Rect rect = m_Window.position;
+			Rect rect = m_Position;
 			// GrabPixels is relative to the GUIView and not the desktop, so we don't care about the offset
 			rect.x = 0f;
 			rect.y = 0f;

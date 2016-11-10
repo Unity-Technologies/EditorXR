@@ -55,39 +55,36 @@ namespace UnityEngine.VR.Menus
 		Transform m_AlternateMenuOrigin;
 
 		public Node? node { get; set; }
-		public Action setup { get {return Setup; } }
 
-		public event Action<Node?> itemSelected = delegate {};
+		public event Action<Node?> itemWasSelected = delegate {};
 
 		public bool visible
 		{
-			get { return m_RadialMenuUI.visible; }
-			set { m_RadialMenuUI.visible = value; }
-		}
-
-		public Func<GameObject, GameObject> instantiateUI { get; set; }
-
-		public bool selectMenuItem
-		{
-			get { return m_SelectMenuItem; }
-
+			get { return m_Visible; }
 			set
 			{
-				if (m_SelectMenuItem == value)
-					return;
-
-				m_SelectMenuItem = value;
-
-				if (m_SelectMenuItem)
+				if (m_Visible != value)
 				{
-					m_RadialMenuUI.SelectionOccurred();
-					itemSelected(node);
+					m_Visible = value;
+					if (m_RadialMenuUI)
+						m_RadialMenuUI.visible = value;
 				}
 			}
 		}
-		bool m_SelectMenuItem;
+		bool m_Visible;
+
+		public Func<GameObject, GameObject> instantiateUI { get; set; }
 
 		public Transform menuOrigin { get; set; }
+
+		void Start()
+		{
+			m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
+			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
+			m_RadialMenuUI.actions = menuActions;
+			m_RadialMenuUI.Setup();
+			m_RadialMenuUI.visible = m_Visible;
+		}
 
 		void Update()
 		{
@@ -96,19 +93,12 @@ namespace UnityEngine.VR.Menus
 
 			m_RadialMenuUI.buttonInputDirection = m_RadialMenuInput.navigate.vector2;
 			m_RadialMenuUI.pressedDown = m_RadialMenuInput.selectItem.wasJustPressed;
-			selectMenuItem = m_RadialMenuInput.selectItem.wasJustReleased;
-		}
 
-		public void Setup()
-		{
-			m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
-			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
-			m_RadialMenuUI.actions = menuActions;
-			
-			m_RadialMenuUI.Setup();
-
-			// Default is to show the radial menu
-			visible = true;
+			if (m_RadialMenuInput.selectItem.wasJustReleased)
+			{
+				m_RadialMenuUI.SelectionOccurred();
+				itemWasSelected(node);
+			}
 		}
 	}
 }

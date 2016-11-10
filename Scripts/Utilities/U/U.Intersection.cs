@@ -15,8 +15,10 @@ namespace UnityEngine.VR.Utilities
 			/// <returns>The result of whether the tester is in intersection with or located within the object</returns>
 			public static bool TestObject(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
 			{
+				var transform = obj.transform;
+
 				// Try a simple test with specific rays located at vertices
-				for (int j = 0; j < tester.rays.Length; j++)
+				for (var j = 0; j < tester.rays.Length; j++)
 				{
 					var ray = tester.rays[j];
 
@@ -25,12 +27,12 @@ namespace UnityEngine.VR.Utilities
 					ray.origin = testerTransform.TransformPoint(ray.origin);
 					ray.direction = testerTransform.TransformDirection(ray.direction);
 
-					if (TestRay(collisionTester, obj, ray))
+					if (TestRay(collisionTester, transform, ray))
 						return true;
 				}
 
 				// Try a more robust version with all edges
-				return TestEdges(collisionTester, obj, tester);
+				return TestEdges(collisionTester, transform, tester);
 			}
 
 			/// <summary>
@@ -40,19 +42,18 @@ namespace UnityEngine.VR.Utilities
 			/// <param name="obj">The object to test collision on</param>
 			/// <param name="tester">The tester object</param>
 			/// <returns>The result of whether the point/ray is intersection with or located within the object</returns>
-			public static bool TestEdges(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
+			public static bool TestEdges(MeshCollider collisionTester, Transform obj, IntersectionTester tester)
 			{
 				var mf = obj.GetComponent<MeshFilter>();
+				if (mf)
+					collisionTester.sharedMesh = mf.sharedMesh;
+
 				var triangles = tester.triangles;
 				var vertices = tester.vertices;
 
-				collisionTester.sharedMesh = mf.sharedMesh;
-
 				float maxDistance = collisionTester.bounds.size.magnitude;
-				RaycastHit hitInfo;
 
 				var triangleVertices = new Vector3[3];
-				var mfTransform = mf.transform;
 				var testerTransform = tester.transform;
 				for (int i = 0; i < triangles.Length; i += 3)
 				{
@@ -62,13 +63,20 @@ namespace UnityEngine.VR.Utilities
 
 					for (int j = 0; j < 3; j++)
 					{
-						var start = mfTransform.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[j]));
-						var end = mfTransform.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[(j + 1) % 3]));
-						var direction = mfTransform.InverseTransformDirection(end - start);
+						RaycastHit hitInfo;
+
+						var start = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[j]));
+						var end = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[(j + 1) % 3]));
+						var direction = end - start;
+
+						// Handle degenerate triangles
+						if (Mathf.Approximately(direction.sqrMagnitude, 0f))
+							continue;
 
 						// Shoot a ray from outside the object (due to face normals) in the direction of the ray to see if it is inside
 						var forwardRay = new Ray(start, direction);
 						forwardRay.origin = forwardRay.GetPoint(-maxDistance);
+
 						Vector3 forwardHit;
 
 						if (forwardRay.direction == Vector3.zero)
@@ -121,14 +129,14 @@ namespace UnityEngine.VR.Utilities
 			/// <param name="obj">The object to test collision on</param>
 			/// <param name="ray">A ray positioned at a vertex of the tester's collider</param>
 			/// <returns>The result of whether the point/ray is intersection with or located within the object</returns>
-			public static bool TestRay(MeshCollider collisionTester, Renderer obj, Ray ray)
+			public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray)
 			{
 				var mf = obj.GetComponent<MeshFilter>();
+				if (mf)
+					collisionTester.sharedMesh = mf.sharedMesh;
 
-				collisionTester.sharedMesh = mf.sharedMesh;
-
-				ray.origin = mf.transform.InverseTransformPoint(ray.origin);
-				ray.direction = mf.transform.InverseTransformDirection(ray.direction);
+				ray.origin = obj.InverseTransformPoint(ray.origin);
+				ray.direction = obj.InverseTransformDirection(ray.direction);
 		
 				var boundsSize = collisionTester.bounds.size.magnitude;
 				var maxDistance = boundsSize * 2f;
@@ -137,6 +145,7 @@ namespace UnityEngine.VR.Utilities
 				// Shoot a ray from outside the object (due to face normals) in the direction of the ray to see if it is inside
 				var forwardRay = new Ray(ray.origin, ray.direction);
 				forwardRay.origin = forwardRay.GetPoint(-boundsSize);
+
 				Vector3 forwardHit;
 				if (collisionTester.Raycast(forwardRay, out hitInfo, maxDistance))
 					forwardHit = hitInfo.point;

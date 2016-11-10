@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: GradientBorder
+  m_Name: WorkspaceBackgroundHighlight
   m_Shader: {fileID: 4800000, guid: 5f9d660c9f799ae4bb3b48b69255f019, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 1
@@ -77,6 +77,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - first:
+        name: _Alpha
+      second: 0
+    - first:
         name: _BumpScale
       second: 1.5
     - first:
@@ -93,7 +96,7 @@ Material:
       second: 0
     - first:
         name: _Expand
-      second: 0
+      second: 1
     - first:
         name: _GlossMapScale
       second: 0.539
@@ -139,10 +142,10 @@ Material:
       second: {r: 1, g: 1, b: 1, a: 1}
     - first:
         name: _ColorBottom
-      second: {r: 0, g: 0, b: 0, a: 1}
+      second: {r: 0.8039216, g: 0.8627451, b: 0.22352941, a: 1}
     - first:
         name: _ColorTop
-      second: {r: 1, g: 1, b: 1, a: 1}
+      second: {r: 0.011764706, g: 0.6627451, b: 0.95686275, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 1, g: 1, b: 1, a: 1}

@@ -214,50 +214,6 @@ namespace UnityEngine.VR.Utilities
 				UnityObject.DestroyImmediate(o);
 			}
 
-			public static GameObject SpawnGhostWireframe(GameObject obj, UnityMaterial ghostMaterial, bool enableRenderers = true)
-			{
-				// spawn ghost
-				GameObject ghostObj = Instantiate(obj, obj.transform.parent);
-				// generate wireframe for objects in tree containing renderers
-				Renderer[] children = ghostObj.GetComponentsInChildren<Renderer>();
-				foreach (Renderer r in children)
-				{
-					GenerateWireframe(r, ghostMaterial);
-					r.enabled = enableRenderers;
-				}
-				ghostObj.transform.position = obj.transform.position;
-				ghostObj.transform.rotation = obj.transform.rotation;
-				ghostObj.transform.localScale = obj.transform.localScale;
-
-				// remove colliders if there are any
-				Collider[] colliders = ghostObj.GetComponents<Collider>();
-				foreach (Collider c in colliders)
-					Destroy(c);
-
-				return ghostObj;
-			}
-
-			// generates wireframe if contains a renderer 
-			private static void GenerateWireframe(Renderer r, UnityMaterial ghostMaterial)
-			{
-				if (r)
-				{
-					UnityMaterial[] materials = r.sharedMaterials;
-					for (int i = 0; i < materials.Length; i++)
-						materials[i] = ghostMaterial;
-					r.sharedMaterials = materials;
-
-					// generate wireframe
-					MeshFilter mf = r.GetComponent<MeshFilter>();
-					if (mf)
-					{
-						// TODO: Replace with new wireframe generator
-						//Mesh mesh = mf.sharedMesh;
-						// mf.mesh = WireframeGenerator.Generate(ref mesh, WIRE_INSIDE.Color);
-					}
-				}
-			}
-
 			public static Bounds? GetTotalBounds(Transform t)
 			{
 				Bounds? bounds = null;
@@ -296,8 +252,28 @@ namespace UnityEngine.VR.Utilities
 			public static Type TypeNameToType(string name)
 			{
 				return AppDomain.CurrentDomain.GetAssemblies()
-								 .SelectMany(x => x.GetTypes())
-								 .FirstOrDefault(x => x.Name.Equals(name) && typeof(UnityObject).IsAssignableFrom(x));
+					.SelectMany(x => x.GetTypes())
+					.FirstOrDefault(x => x.Name.Equals(name) && typeof(UnityObject).IsAssignableFrom(x));
+			}
+
+			public static IEnumerator GetAssetPreview(UnityObject obj, Action<Texture> callback)
+			{
+				Texture texture = null;
+
+#if UNITY_EDITOR
+				texture = AssetPreview.GetAssetPreview(obj);
+
+				while (AssetPreview.IsLoadingAssetPreview(obj.GetInstanceID()))
+				{
+					texture = AssetPreview.GetAssetPreview(obj);
+					yield return null;
+				}
+
+				if (!texture)
+					texture = AssetPreview.GetMiniThumbnail(obj);
+#endif
+
+				callback(texture);
 			}
 		}
 	}

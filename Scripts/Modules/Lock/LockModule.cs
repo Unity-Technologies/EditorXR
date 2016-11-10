@@ -15,9 +15,9 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 	{
 		internal Func<bool> execute;
 		public Sprite icon { get; internal set; }
-		public bool ExecuteAction()
+		public void ExecuteAction()
 		{
-			return execute();
+			execute();
 		}
 	}
 
