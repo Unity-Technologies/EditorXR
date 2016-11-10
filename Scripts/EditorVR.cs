@@ -1167,6 +1167,16 @@ public class EditorVR : MonoBehaviour
 					lockableRay.lockRay = dpr.LockRay;
 					lockableRay.unlockRay = dpr.UnlockRay;
 				}
+
+				var otherRay = obj as IOtherRay;
+				if (otherRay != null)
+				{
+					Node otherNode = (Node)(1 - (int)GetNodeForRayOrigin(rayOrigin).Value);
+					Transform otherRayOrigin;
+					var proxy = GetProxyForRayOrigin(rayOrigin);
+					if (proxy != null && proxy.rayOrigins.TryGetValue(otherNode, out otherRayOrigin))
+						otherRay.otherRayOrigin = otherRayOrigin;
+				}
 			}
 
 			var menuOrigins = obj as IMenuOrigins;
@@ -1180,15 +1190,6 @@ public class EditorVR : MonoBehaviour
 					Transform alternateMenuOrigin;
 					if (proxy.alternateMenuOrigins.TryGetValue(rayOrigin, out alternateMenuOrigin))
 						menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
-
-					var otherRay = obj as IOtherRay;
-					if (otherRay != null)
-					{
-						Node otherNode = (Node)(1 - (int)GetNodeForRayOrigin(rayOrigin).Value);
-						Transform otherRayOrigin;
-						if (proxy.rayOrigins.TryGetValue(otherNode, out otherRayOrigin))
-							otherRay.otherRayOrigin = otherRayOrigin;
-					}
 				}
 			}
 		}
