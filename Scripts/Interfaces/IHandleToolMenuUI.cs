@@ -4,7 +4,7 @@ namespace UnityEngine.VR.Tools
 {
 	public interface IHandleToolMenuUI
 	{
-		Func<Node, MenuOrigin, GameObject, GameObject> instantiateMenuUI
+		Func<Transform, MenuOrigin, GameObject, GameObject> instantiateMenuUI
 		{
 			set;
 		}

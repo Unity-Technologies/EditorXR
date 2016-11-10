@@ -5,9 +5,5 @@
 	/// </summary>
 	public interface ITool
 	{
-		Node selfNode	
-		{
-			set;
-		}
 	}
 }

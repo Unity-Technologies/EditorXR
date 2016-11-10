@@ -856,12 +856,13 @@ public class EditorVR : MonoBehaviour
 		return go;
 	}
 
-	private GameObject InstantiateMenuUI(Node node,MenuOrigin origin,GameObject prefab)
+	private GameObject InstantiateMenuUI(Transform rayOrigin,MenuOrigin origin,GameObject prefab)
 	{
 		var go = U.Object.Instantiate(prefab,transform);
 		foreach(Canvas canvas in go.GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = m_EventCamera;
 
+		Node node = GetNodeForRayOrigin(rayOrigin).Value;
 		// the menu needs to be on the opposite hand to the tool
 		if(node == Node.LeftHand)
 			node = Node.RightHand;
@@ -875,7 +876,7 @@ public class EditorVR : MonoBehaviour
 			if (once)
 				return;
 
-			Dictionary<Node,Transform> tempOrigin = null;
+			Dictionary<Transform,Transform> tempOrigin = null;
 
 			if(origin == MenuOrigin.Main)
 				tempOrigin = proxy.menuOrigins;
@@ -883,7 +884,10 @@ public class EditorVR : MonoBehaviour
 				tempOrigin = proxy.alternateMenuOrigins;
 
 			Transform parent;
-			if(tempOrigin != null && tempOrigin.TryGetValue(node,out parent))
+
+			Transform otherRayOrigin;
+			proxy.rayOrigins.TryGetValue(node, out otherRayOrigin);
+			if(tempOrigin != null && tempOrigin.TryGetValue(otherRayOrigin, out parent))
 			{
 				once = true;
 
@@ -1227,12 +1231,6 @@ public class EditorVR : MonoBehaviour
 					dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 					customRay.showDefaultRay = dpr.Show;
 					customRay.hideDefaultRay = dpr.Hide;
-				}
-
-				var iTool = obj as ITool;
-				if(iTool != null)
-				{
-					iTool.selfNode = node.Value;
 				}
 
 				var lockableRay = obj as ILockRay;

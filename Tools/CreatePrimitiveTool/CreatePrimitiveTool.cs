@@ -13,9 +13,9 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IHa
 	class PrimitiveToolAction : IAction
 	{
 		public Sprite icon { get; internal set; }
-		public bool ExecuteAction()
+		public void ExecuteAction()
 		{
-			return true;
+			return;
 		}
 	}
 
@@ -41,7 +41,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IHa
 
 	public Standard standardInput {	get; set; }
 
-	public Func<Node,MenuOrigin,GameObject,GameObject> instantiateMenuUI { private get; set; }
+	public Func<Transform,MenuOrigin,GameObject,GameObject> instantiateMenuUI { private get; set; }
 	public Action<GameObject> destroyMenuUI { private get; set; }
 
 	public Transform rayOrigin { get; set; }
@@ -96,7 +96,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IHa
 
 	void SpawnCanvas()
 	{
-		m_ToolMenu = instantiateMenuUI(selfNode,MenuOrigin.Main,m_CanvasPrefab.gameObject);
+		m_ToolMenu = instantiateMenuUI(rayOrigin, MenuOrigin.Main,m_CanvasPrefab.gameObject);
 		m_ToolMenu.GetComponent<CreatePrimitiveMenu>().selectPrimitive += SetSelectedPrimitive;
 		m_CanvasSpawned = true;
 	}
