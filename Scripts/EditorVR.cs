@@ -405,17 +405,6 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
-		foreach (var kvp in m_DeviceData)
-		{
-			var device = kvp.Key;
-			var mainMenu = m_DeviceData[device].mainMenu;
-			if (mainMenu != null)
-			{
-				foreach (GameObject go in kvp.Value.customMenus)
-					go.SetActive(!mainMenu.visible);
-			}
-		}
-
 		var camera = U.Camera.GetMainCamera();
 		// Enable/disable workspace vacuum bounds based on distance to camera
 		foreach (var workspace in m_AllWorkspaces)
@@ -584,6 +573,28 @@ public class EditorVR : MonoBehaviour
 
 	void OnMainMenuVisiblityChanged(IMainMenu mainMenu)
 	{
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			if (mainMenu == deviceData.mainMenu)
+			{
+				// Clean up any stale menus
+				deviceData.customMenus.RemoveAll((go) => go == null);
+
+				// Toggle visibility between custom menus and the main menu
+				foreach (GameObject go in deviceData.customMenus)
+					go.SetActive(!mainMenu.visible);
+
+				if (deviceData.customMenus.Count > 0)
+				{
+					var dpr = rayOriginPair.Value.GetComponentInChildren<DefaultProxyRay>();
+					if (mainMenu.visible)
+						dpr.Show();
+					else
+						dpr.Hide();
+				}
+			}
+		}, true);
+
 		UpdatePlayerHandleMaps();
 	}
 
@@ -876,16 +887,6 @@ public class EditorVR : MonoBehaviour
 		}, true);
 
 		return go;
-	}
-
-	private void DestroyMenuUI(GameObject go)
-	{
-		foreach (var kvp in m_DeviceData)
-		{
-			if (kvp.Value.customMenus.Contains(go))
-				kvp.Value.customMenus.Remove(go);
-		}
-		U.Object.Destroy(go);
 	}
 
 	private KeyboardUI SpawnNumericKeyboard()
@@ -1245,12 +1246,9 @@ public class EditorVR : MonoBehaviour
 		if (createWorkspace != null)
 			createWorkspace.createWorkspace = CreateWorkspace;
 
-		var handleToolMenuUI = obj as ICustomMenuUI;
+		var handleToolMenuUI = obj as IInstantiateMenuUI;
 		if (handleToolMenuUI != null)
-		{
 			handleToolMenuUI.instantiateMenuUI = InstantiateMenuUI;
-			handleToolMenuUI.destroyMenuUI = DestroyMenuUI;
-		}
 
 		var raycaster = obj as IUsesRaycastResults;
 		if (raycaster != null)

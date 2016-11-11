@@ -131,8 +131,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 	public Func<IGrabObject, DirectSelection, Transform, bool> grabObject { private get; set; }
 	public Action<IGrabObject, Transform, Transform> dropObject { private get; set; }
 
-	public Node selfNode { get; set; }
-
 	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 

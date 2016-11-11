@@ -1,60 +1,32 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.VR.Tools;
 
-public class CreatePrimitiveMenu : MonoBehaviour, ICustomRay
+public class CreatePrimitiveMenu : MonoBehaviour
 {
 	[SerializeField]
 	GameObject[] m_HighlightObjects;
 
-	public Transform rayOrigin { get; set; }
-
-	public Action hideDefaultRay { private get; set; }
-
-	public Action showDefaultRay { private get; set; }
-
 	public Action<PrimitiveType, bool> selectPrimitive;
-
-	bool m_HideRayFirstFrame = true;
-
-	void OnEnable()
-	{
-		if(hideDefaultRay != null)
-			hideDefaultRay();
-	}
-
-	void OnDisable()
-	{
-		if(showDefaultRay != null)
-			showDefaultRay();
-	}
-
-	void Update()
-	{
-		//interface is connected after OnEnable can run first time
-		if (m_HideRayFirstFrame && hideDefaultRay != null)
-		{
-			hideDefaultRay();
-			m_HideRayFirstFrame = false;
-		}
-	}
 
 	public void CreatePrimitive(int type)
 	{
-		selectPrimitive((PrimitiveType)type,false);
-
-		foreach(GameObject go in m_HighlightObjects)
-			go.SetActive(false);
+		selectPrimitive((PrimitiveType)type, false);
 
 		// the order of the objects in m_HighlightObjects is matched to the values of the PrimitiveType enum elements
-		m_HighlightObjects[type].SetActive(true);
+		for (var i = 0; i < m_HighlightObjects.Length; i++)
+		{
+			var go = m_HighlightObjects[i];
+			go.SetActive(i == type);
+		}
 	}
 
 	public void CreateFreeformCube()
 	{
-		selectPrimitive(PrimitiveType.Cube,true);
+		selectPrimitive(PrimitiveType.Cube, true);
 
-		foreach(GameObject go in m_HighlightObjects)
+		foreach (GameObject go in m_HighlightObjects)
 			go.SetActive(false);
 	}
 }

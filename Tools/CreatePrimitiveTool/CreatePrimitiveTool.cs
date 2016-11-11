@@ -1,62 +1,54 @@
 using System;
 using UnityEngine;
-using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Utilities;
 
 [MainMenuItem("Primitive", "Primitive", "Create primitives in the scene")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IUsesRayOrigin, ICustomMenuUI, ICustomRay
+public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin
 {
-	private PrimitiveType m_SelectedPrimitiveType = PrimitiveType.Cube;
-	private bool m_Freeform = false;
-
 	[SerializeField]
-	private CreatePrimitiveMenu m_MenuPrefab;
-	private bool m_MenuSpawned;
+	CreatePrimitiveMenu m_MenuPrefab;
 
-	private GameObject m_ToolMenu = null;
+	const float kDrawDistance = 0.075f;
 
-	private GameObject m_CurrentGameObject = null;
+	GameObject m_ToolMenu;
 
-	private const float kDrawDistance = 0.075f;
+	PrimitiveType m_SelectedPrimitiveType = PrimitiveType.Cube;
+	bool m_Freeform;
 
-	private Vector3 m_PointA = Vector3.zero;
-	private Vector3 m_PointB = Vector3.zero;
+	GameObject m_CurrentGameObject;
 
-	private PrimitiveCreationStates m_State = PrimitiveCreationStates.PointA;
+	Vector3 m_StartPoint = Vector3.zero;
+	Vector3 m_EndPoint = Vector3.zero;
+
+	PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
 	public Standard standardInput {	get; set; }
 
 	public Func<Transform, GameObject, GameObject> instantiateMenuUI { private get; set; }
-	public Action<GameObject> destroyMenuUI { private get; set; }
 
 	public Transform rayOrigin { get; set; }
 
-	public Action hideDefaultRay { private get; set; }
-	public Action showDefaultRay { private get; set; }
-
 	public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 
-	private enum PrimitiveCreationStates
+	enum PrimitiveCreationStates
 	{
-		PointA,
-		PointB,
+		StartPoint,
+		EndPoint,
 		Freeform,
 	}
 
 	void Update()
 	{
-		if (!m_MenuSpawned)
-			SpawnMenu();
-
-		switch(m_State)
+		switch (m_State)
 		{
-			case PrimitiveCreationStates.PointA:
+			case PrimitiveCreationStates.StartPoint:
 			{
-				HandlePointA();
+				HandleStartPoint();
 				break;
 			}
-			case PrimitiveCreationStates.PointB:
+			case PrimitiveCreationStates.EndPoint:
 			{
 				UpdatePositions();
 				SetScalingForObjectType();
@@ -73,45 +65,42 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 		}
 	}
 
-	void SpawnMenu()
+	void Start()
 	{
 		m_ToolMenu = instantiateMenuUI(rayOrigin, m_MenuPrefab.gameObject);
 		var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
 		connectInterfaces(createPrimitiveMenu, rayOrigin);
 		createPrimitiveMenu.selectPrimitive += SetSelectedPrimitive;
-		m_MenuSpawned = true;
 	}
 
-	void SetSelectedPrimitive(PrimitiveType type,bool isFreeform)
+	void SetSelectedPrimitive(PrimitiveType type, bool isFreeform)
 	{
 		m_SelectedPrimitiveType = type;
 		m_Freeform = isFreeform;
 	}
 
-	void HandlePointA()
+	void HandleStartPoint()
 	{
-		if(standardInput.action.wasJustPressed)
+		if (standardInput.action.wasJustPressed)
 		{
 			m_CurrentGameObject = GameObject.CreatePrimitive(m_SelectedPrimitiveType);
 			
-			//set starting minimum scale (don't allow zero scale object to be created)
-			m_CurrentGameObject.transform.localScale = new Vector3(0.0025f,0.0025f,0.0025f);
-			m_PointA = rayOrigin.position + rayOrigin.forward * kDrawDistance;
-			m_CurrentGameObject.transform.position = m_PointA;
+			// Set starting minimum scale (don't allow zero scale object to be created)
+			const float kMinScale = 0.0025f;
+			m_CurrentGameObject.transform.localScale = Vector3.one * kMinScale;
+			m_StartPoint = rayOrigin.position + rayOrigin.forward * kDrawDistance;
+			m_CurrentGameObject.transform.position = m_StartPoint;
 
-			if(m_Freeform)
-				m_State = PrimitiveCreationStates.Freeform;
-			else
-				m_State = PrimitiveCreationStates.PointB;
+			m_State = m_Freeform ? PrimitiveCreationStates.Freeform : PrimitiveCreationStates.EndPoint;
 		}
 	}
 
 	void SetScalingForObjectType()
 	{
-		var corner = (m_PointA - m_PointB).magnitude;
+		var corner = (m_EndPoint - m_StartPoint).magnitude;
 
-		// it feels better to scale the capsule and cylinder type primitives vertically with the drawpoint
-		if(m_SelectedPrimitiveType == PrimitiveType.Capsule || m_SelectedPrimitiveType == PrimitiveType.Cylinder)
+		// it feels better to scale these primitives vertically with the drawpoint
+		if (m_SelectedPrimitiveType == PrimitiveType.Capsule || m_SelectedPrimitiveType == PrimitiveType.Cylinder || m_SelectedPrimitiveType == PrimitiveType.Cube)
 			m_CurrentGameObject.transform.localScale = Vector3.one * corner * 0.5f;
 		else
 			m_CurrentGameObject.transform.localScale = Vector3.one * corner;
@@ -119,26 +108,26 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 
 	void UpdatePositions()
 	{
-		m_PointB = rayOrigin.position + rayOrigin.forward * kDrawDistance;
-		m_CurrentGameObject.transform.position = (m_PointA + m_PointB) * 0.5f;
+		m_EndPoint = rayOrigin.position + rayOrigin.forward * kDrawDistance;
+		m_CurrentGameObject.transform.position = (m_StartPoint + m_EndPoint) * 0.5f;
 	}
 
 	void UpdateFreeformScale()
 	{
-		Vector3 maxCorner = Vector3.Max(m_PointA,m_PointB);
-		Vector3 minCorner = Vector3.Min(m_PointA,m_PointB);
+		var maxCorner = Vector3.Max(m_StartPoint,m_EndPoint);
+		var minCorner = Vector3.Min(m_StartPoint,m_EndPoint);
 		m_CurrentGameObject.transform.localScale = (maxCorner - minCorner);
 	}
 
 	void CheckForTriggerRelease()
 	{
-		//ready for next object to be created
-		if(standardInput.action.wasJustReleased)
-			m_State = PrimitiveCreationStates.PointA;
+		// Ready for next object to be created
+		if (standardInput.action.wasJustReleased)
+			m_State = PrimitiveCreationStates.StartPoint;
 	}
 
 	void OnDestroy()
 	{
-		destroyMenuUI(m_ToolMenu);
+		U.Object.Destroy(m_ToolMenu);
 	}
 }

@@ -31,7 +31,6 @@ namespace UnityEngine.VR.Tools
 		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 		public Transform rayOrigin { private get; set; }
 		public Action<GameObject, bool> setHighlight { private get; set; }
-		public Node selfNode { get; set; }
 		public Action<GameObject, bool> setLocked { get; set; }
 		public Func<GameObject, bool> isLocked { get; set; }
 
