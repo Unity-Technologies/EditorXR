@@ -10,15 +10,9 @@ namespace UnityEngine.VR.Menus
 	public interface IMainMenu : IMenuActions
 	{
 		/// <summary>
-		/// <summary>
 		/// The menu tools that will populate the menu
 		/// </summary>
 		List<Type> menuTools { set; }
-
-		/// <summary>
-		/// The menu modules that will populate the menu
-		/// </summary>
-		List<IModule> menuModules { set; }
 
 		/// <summary>
 		/// Delegate used to select tools from the menu

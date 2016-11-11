@@ -100,7 +100,6 @@ namespace UnityEngine.VR.Menus
 		public List<Type> menuTools { private get; set; }
 		public Func<Node, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public List<IModule> menuModules { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
 		public CreateWorkspaceDelegate createWorkspace { private get; set; }
 		public Node? node { private get; set; }
@@ -118,7 +117,6 @@ namespace UnityEngine.VR.Menus
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
-			CreateModuleFaceButtons(menuModules);
 			m_MainMenuUI.SetupMenuFaces();
 		}
 
@@ -261,36 +259,5 @@ namespace UnityEngine.VR.Menus
 				});
 			}
 		}
-
-		private void CreateModuleFaceButtons(List<IModule> modules)
-		{
-			foreach (var module in modules)
-			{
-				var moduleType = module.GetType();
-				var buttonData = new MainMenuUI.ButtonData();
-				buttonData.name = moduleType.Name;
-
-				var customMenuAttribute = (MainMenuItemAttribute)moduleType.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
-				if (customMenuAttribute != null)
-				{
-					buttonData.name = customMenuAttribute.name;
-					buttonData.sectionName = customMenuAttribute.sectionName;
-					buttonData.description = customMenuAttribute.description;
-				}
-				else
-					buttonData.name = moduleType.Name.Replace("Module", string.Empty);
-
-				var currentModule = module; // Local variable for proper closure
-				m_MainMenuUI.CreateFaceButton(buttonData, (b) =>
-				{
-					b.button.onClick.RemoveAllListeners();
-					b.button.onClick.AddListener(() =>
-					{
-						m_MainMenuUI.AddSubmenu(buttonData.sectionName, currentModule.moduleMenuPrefab);
-					});
-				});
-			}
-		}
-
 	}
 }
