@@ -1,12 +1,11 @@
-﻿using System;
-using UnityEngine;
-using System.Collections;
+using System;
+using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Tools
 {
 	public interface IMoveWorkspaces
 	{
-		Action resetWorkspaces
+		Action<Workspace> resetWorkspaces
 		{
 			get; set;
 		}

@@ -18,7 +18,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 
 	public Action hideDefaultRay { private get; set; }
 
-	public Action resetWorkspaces { get; set; }
+	public Action<Workspace> resetWorkspaces { get; set; }
 
 	private float m_TriggerPressedTimeStamp = 0.0f;
 	private Workspace[] m_AllWorkspaces;
@@ -104,7 +104,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICu
 		if(Time.realtimeSinceStartup - m_TriggerPressedTimeStamp < 0.8f)
 		{
 			m_ThrowDownTriggered = false;
-			resetWorkspaces();
+			resetWorkspaces(null);
 		}
 		m_TriggerPressedTimeStamp = Time.realtimeSinceStartup;
 	}

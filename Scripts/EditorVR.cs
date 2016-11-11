@@ -373,7 +373,6 @@ public class EditorVR : MonoBehaviour
 
 	void SaveWorkspacePositions()
 	{
-		string writeToEditorPrefs = "";
 		WorkspaceSave workspaceSaves = new WorkspaceSave(m_AllWorkspaces.Count);
 
 		int i = 0;
@@ -387,8 +386,7 @@ public class EditorVR : MonoBehaviour
 			i++;
 		}
 
-		writeToEditorPrefs = JsonUtility.ToJson(workspaceSaves);
-		EditorPrefs.SetString("WorkspaceSavePositions", writeToEditorPrefs);
+		EditorPrefs.SetString("WorkspaceSavePositions", JsonUtility.ToJson(workspaceSaves));
 	}
 
 	void PrewarmAssets()
@@ -1547,11 +1545,22 @@ public class EditorVR : MonoBehaviour
 		if (savedData.m_Workspaces.Length > 0)
 		{
 			foreach (var ws in savedData.m_Workspaces)
-				CreateWorkspace(Type.GetType(ws.workspaceName), ws.localPosition, ws.localRotation, ws.localScale);
+			{
+				CreateWorkspace(Type.GetType(ws.workspaceName), (workSpace) =>
+				{
+					workSpace.transform.localPosition = ws.localPosition;
+					workSpace.transform.localRotation = ws.localRotation;
+					workSpace.transform.localScale = ws.localScale;
+				});
+			}
 		}
 	}
 
-	private void ResetWorkspacePositions()
+	/// <summary>
+	/// Use this method to reset all workspaces to a default layout around the HMD
+	/// </summary>
+	/// <param name="instance"> If using this parameter, the method resets the position only for the workspace passed in </param>
+	private void ResetWorkspacePositions(Workspace instance = null)
 	{
 		var defaultOffset = Workspace.kDefaultOffset;
 		var cameraTransform = U.Camera.GetMainCamera().transform;
@@ -1561,6 +1570,9 @@ public class EditorVR : MonoBehaviour
 
 		foreach (var ws in m_AllWorkspaces)
 		{
+			if (instance != null && instance != ws)
+				continue;
+
 			ws.OnDoubleTriggerTapAboveHMD();
 			ws.transform.position = headPosition + defaultOffset;
 			ws.transform.LookAt(headPosition);
@@ -1606,139 +1618,14 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void CreateWorkspace(Type t, Vector3 pos, Quaternion rot, Vector3 scale)
-	{
-		var viewerPivot = U.Camera.GetViewerPivot();
-		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
-		m_AllWorkspaces.Add(workspace);
-		workspace.destroyed += OnWorkspaceDestroyed;
-		ConnectInterfaces(workspace);
-		workspace.transform.localPosition = pos;
-		workspace.transform.localRotation = rot;
-		workspace.transform.localScale = scale;
-
-		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
-		workspace.Setup();
-
-		var projectFolderList = workspace as IProjectFolderList;
-		if (projectFolderList != null)
-		{
-			projectFolderList.folderData = GetFolderData();
-			m_ProjectFolderLists.Add(projectFolderList);
-		}
-
-		var filterUI = workspace as IFilterUI;
-		if (filterUI != null)
-		{
-			filterUI.filterList = GetFilterList();
-			m_FilterUIs.Add(filterUI);
-		}
-
-		// Chessboard is a special case that we handle due to all of the mini world interactions
-		var chessboardWorkspace = workspace as ChessboardWorkspace;
-		if (!chessboardWorkspace)
-			return;
-
-		var miniWorld = chessboardWorkspace.miniWorld;
-
-		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-		{
-			var miniWorldRayOrigin = InstantiateMiniWorldRay();
-			miniWorldRayOrigin.parent = workspace.transform;
-
-			var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-			uiInput.active = false;
-
-			var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
-			directSelectInput.active = false;
-
-			// Use the mini world ray origin instead of the original ray origin
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
-			{
-				if (source.hoveredObject)
-					return !m_AllWorkspaces.Any(w => source.hoveredObject.transform.IsChildOf(w.transform));
-
-				return true;
-			});
-
-			var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
-			tester.active = false;
-
-			m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
-			{
-				originalRayOrigin = rayOriginPair.Value,
-				originalDirectSelectInput = deviceData.directSelectInput,
-				miniWorld = miniWorld,
-				proxy = proxy,
-				node = rayOriginPair.Key,
-				uiInput = uiInput,
-				directSelectInput = directSelectInput,
-				tester = tester
-			};
-
-			m_IntersectionModule.AddTester(tester);
-		});
-
-		UpdatePlayerHandleMaps();
-	}
-
 	void CreateWorkspace(Type t, Action<Workspace> createdCallback = null)
 	{
-		var defaultOffset = Workspace.kDefaultOffset;
-		var defaultTilt = Workspace.kDefaultTilt;
-
-		var cameraTransform = U.Camera.GetMainCamera().transform;
-		var headPosition = cameraTransform.position;
-		var headRotation = U.Math.ConstrainYawRotation(cameraTransform.rotation);
-
-		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
-			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
-			+ kWorkspaceAnglePadding;													//Need some extra padding because workspaces are tilted
-		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;			//Need padding in Y as well
-
-		float currentRotation = arcLength;
-		float currentHeight = 0;
-
-		int count = 0;
-		int direction = 1;
-		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
-
-		Vector3 position;
-		Quaternion rotation;
 		var viewerPivot = U.Camera.GetViewerPivot();
-
-		// Spawn to one of the sides of the player instead of directly in front of the player
-		do
-		{
-			//The next position will be rotated by currentRotation, as if the hands of a clock
-			Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-			position = headPosition + headRotation * rotateAroundY * defaultOffset + Vector3.up * currentHeight;
-			rotation = headRotation * rotateAroundY * defaultTilt;
-
-			//Every other iteration, rotate a little further
-			if (direction < 0)
-				currentRotation += arcLength;
-
-			//Switch directions every iteration (left, right, left, right)
-			direction *= -1;
-
-			//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
-			if (currentRotation > 180)
-			{
-				direction = -1;
-				currentRotation = 0;
-				currentHeight += heightOffset;
-			}
-		}
-		//While the current position is occupied, try a new one
-		while (Physics.CheckBox(position, halfBounds, rotation) && count++ < kMaxWorkspacePlacementAttempts) ;
-
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
 		m_AllWorkspaces.Add(workspace);
 		workspace.destroyed += OnWorkspaceDestroyed;
 		ConnectInterfaces(workspace);
-		workspace.transform.position = position;
-		workspace.transform.rotation = rotation;
+		ResetWorkspacePositions(workspace);
 
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
