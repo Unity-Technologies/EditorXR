@@ -7,7 +7,7 @@ using UnityEngine.VR;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 
-public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomActionMap
+public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomActionMap
 {
 
 	[SerializeField]

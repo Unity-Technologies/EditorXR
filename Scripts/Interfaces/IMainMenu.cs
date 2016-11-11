@@ -6,7 +6,7 @@ namespace UnityEngine.VR.Menus
 	/// <summary>
 	/// The main menu that can be shown on device proxies
 	/// </summary>
-	public interface IMainMenu : IMenuActions
+	public interface IMainMenu : IUsesMenuActions
 	{
 		/// <summary>
 		/// The menu tools that will populate the menu

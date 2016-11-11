@@ -10,7 +10,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Actions;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IToolActions, IDirectSelection, IGrabObjects
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -69,22 +69,22 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput)value; } }
 	TransformInput m_TransformInput;
 
-	public List<IAction> toolActions
+	public List<IAction> actions
 	{
 		get
 		{
-			if (m_ToolActions == null)
+			if (m_Actions == null)
 			{
-				m_ToolActions = new List<IAction>()
+				m_Actions = new List<IAction>()
 				{
 					m_PivotModeToggleAction,
 					m_PivotRotationToggleAction
 				};
 			}
-			return m_ToolActions;
+			return m_Actions;
 		}
 	}
-	List<IAction> m_ToolActions;
+	List<IAction> m_Actions;
 
 	[SerializeField]
 	Sprite m_OriginCenterIcon;
@@ -128,8 +128,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
 
 	public Func<DirectSelection, Transform, bool> canGrabObject { private get; set; }
-	public Func<IGrabObjects, DirectSelection, Transform, bool> grabObject { private get; set; }
-	public Action<IGrabObjects, Transform, Transform> dropObject { private get; set; }
+	public Func<IGrabObject, DirectSelection, Transform, bool> grabObject { private get; set; }
+	public Action<IGrabObject, Transform, Transform> dropObject { private get; set; }
 
 	public Node selfNode { get; set; }
 

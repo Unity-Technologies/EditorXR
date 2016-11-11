@@ -4,14 +4,8 @@ namespace UnityEngine.VR.Tools
 {
 	public interface ICustomMenuUI
 	{
-		Func<Transform, MenuOrigin, GameObject, GameObject> instantiateMenuUI
-		{
-			set;
-		}
+		Func<Transform, GameObject, GameObject> instantiateMenuUI { set; }
 
-		Action<GameObject> destroyMenuUI
-		{
-			set;
-		}
+		Action<GameObject> destroyMenuUI { set; }
 	}
 }

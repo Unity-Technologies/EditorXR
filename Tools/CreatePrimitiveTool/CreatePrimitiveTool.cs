@@ -1,14 +1,11 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR;
 using UnityEngine.VR.Tools;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Actions;
-using UnityEngine.VR.Utilities;
 
-[MainMenuItem("Primitive", "Primitive", "create primitives")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICustomMenuUI, ICustomRay, IToolActions
+[MainMenuItem("Primitive", "Primitive", "Create primitives in the scene")]
+public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IUsesRayOrigin, ICustomMenuUI, ICustomRay
 {
 	private PrimitiveType m_SelectedPrimitiveType = PrimitiveType.Cube;
 	private bool m_Freeform = false;
@@ -30,25 +27,21 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICu
 
 	public Standard standardInput {	get; set; }
 
-	public Func<Transform,MenuOrigin,GameObject,GameObject> instantiateMenuUI { private get; set; }
+	public Func<Transform, GameObject, GameObject> instantiateMenuUI { private get; set; }
 	public Action<GameObject> destroyMenuUI { private get; set; }
 
 	public Transform rayOrigin { get; set; }
+
 	public Action hideDefaultRay { private get; set; }
 	public Action showDefaultRay { private get; set; }
 
-	public List<IAction> toolActions { get; private set; }
+	public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 
 	private enum PrimitiveCreationStates
 	{
 		PointA,
 		PointB,
 		Freeform,
-	}
-
-	void Awake()
-	{
-		toolActions = new List<IAction>();
 	}
 
 	void Update()
@@ -82,8 +75,10 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICu
 
 	void SpawnMenu()
 	{
-		m_ToolMenu = instantiateMenuUI(rayOrigin, MenuOrigin.Main, m_MenuPrefab.gameObject);
-		m_ToolMenu.GetComponent<CreatePrimitiveMenu>().selectPrimitive += SetSelectedPrimitive;
+		m_ToolMenu = instantiateMenuUI(rayOrigin, m_MenuPrefab.gameObject);
+		var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
+		connectInterfaces(createPrimitiveMenu, rayOrigin);
+		createPrimitiveMenu.selectPrimitive += SetSelectedPrimitive;
 		m_MenuSpawned = true;
 	}
 

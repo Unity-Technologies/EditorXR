@@ -4,10 +4,6 @@ namespace UnityEngine.VR.Tools
 {
 	public interface IStandardActionMap
 	{
-		Standard standardInput
-		{
-			set;
-			get;
-		}
+		Standard standardInput { set; get; }
 	}
 }

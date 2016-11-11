@@ -3,10 +3,11 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Extensions;
+using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {
-	internal class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IMenuOrigins
+	internal class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IMenuOrigins, IUsesRayOrigin
 	{
 		readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
 		static readonly float kAlternateLocationOffset = 0.06f;
@@ -61,12 +62,12 @@ namespace UnityEngine.VR.Menus
 		Coroutine m_ActivatorMoveCoroutine;
 		Vector3 m_AlternateActivatorLocalPosition;
 
-		public Node? node { private get; set; }
-		public Transform menuOrigin { get; set; }
+		public Transform rayOrigin { private get; set; }
+		public Transform menuOrigin { private get; set; }
 
 		public event Action<Transform> hoverStarted = delegate {};
 		public event Action<Transform> hoverEnded = delegate {};
-		public event Action<Node?> selected = delegate {};
+		public event Action<Transform> selected = delegate {};
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
@@ -96,7 +97,7 @@ namespace UnityEngine.VR.Menus
 
 		public void OnPointerClick(PointerEventData eventData)
 		{
-			selected(node);
+			selected(rayOrigin);
 		}
 
 		IEnumerator Highlight(bool transitionIn = true)

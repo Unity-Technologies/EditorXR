@@ -7,7 +7,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR;
 
 [MainMenuItem("Cube", "Create", "Create cubes in the scene")]
-public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IToolActions
+public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IActions
 {
 	class CubeToolAction : IAction
 	{
@@ -22,7 +22,7 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IToo
 
 	readonly CubeToolAction m_CubeToolAction = new CubeToolAction();
 
-	public List<IAction> toolActions { get; private set; }
+	public List<IAction> actions { get; private set; }
 	public Transform rayOrigin { get; set; }
 	public Standard standardInput { get; set; }
 	public Node selfNode { get; set; }
@@ -30,7 +30,7 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IToo
 	void Awake()
 	{
 		m_CubeToolAction.icon = m_Icon;
-		toolActions = new List<IAction>() { m_CubeToolAction };
+		actions = new List<IAction>() { m_CubeToolAction };
 	}
 
 	private void Update()

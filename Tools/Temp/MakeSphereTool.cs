@@ -5,7 +5,7 @@ using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 
 [MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
-public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay
+public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin
 {	
 	public Transform rayOrigin { get; set; }
 	public Node selfNode { get; set; }
