@@ -7,7 +7,7 @@ namespace UnityEngine.VR.Menus
 	/// <summary>
 	/// The main menu that can be shown on device proxies
 	/// </summary>
-	public interface IMainMenu : IMenuActions
+	public interface IMainMenu : IUsesMenuActions
 	{
 		/// <summary>
 		/// The menu tools that will populate the menu
@@ -25,7 +25,6 @@ namespace UnityEngine.VR.Menus
 		List<Type> menuWorkspaces { set; }
 
 		/// <summary>
-		/// The tracked node where this menu is spawned
 		/// </summary>
 		Node? node { set; }
 

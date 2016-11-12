@@ -7,7 +7,7 @@ using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Workspaces
 {
-	public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
+	public abstract class Workspace : MonoBehaviour, IInstantiateUI, ISetHighlight
 	{
 		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 		public static readonly Vector3 kDefaultOffset = new Vector3(0, -0.15f, 1f);
@@ -84,8 +84,6 @@ namespace UnityEngine.VR.Workspaces
 		public Func<GameObject, GameObject> instantiateUI { protected get; set; }
 
 		public Action<GameObject, bool> setHighlight { protected get; set; }
-
-		public Func<Transform, bool> isMiniWorldRay { protected get; set; } 
 
 		/// <summary>
 		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
@@ -181,9 +179,6 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			if (isMiniWorldRay(eventData.rayOrigin))
-				return;
-
 			m_WorkspaceUI.highlightsVisible = true;
 			m_PositionStart = transform.position;
 			m_DragStart = eventData.rayOrigin.position;
@@ -193,9 +188,6 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			if (isMiniWorldRay(eventData.rayOrigin))
-				return;
-
 			if (m_Dragging && !m_DragLocked)
 			{
 				Vector3 dragVector = eventData.rayOrigin.position - m_DragStart;
@@ -229,9 +221,6 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			if (isMiniWorldRay(eventData.rayOrigin))
-				return;
-
 			m_WorkspaceUI.highlightsVisible = false;
 			m_Dragging = false;
 		}
@@ -252,8 +241,6 @@ namespace UnityEngine.VR.Workspaces
 
 		private void OnDoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			if (isMiniWorldRay(eventData.rayOrigin))
-				return;
 			if (!m_Vacuuming)
 				StartCoroutine(VacuumToViewer());
 		}

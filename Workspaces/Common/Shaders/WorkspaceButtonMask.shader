@@ -13,6 +13,6 @@
 			Pass replace
 		}
 
-		Pass{}
+		Pass {}
 	}
 }

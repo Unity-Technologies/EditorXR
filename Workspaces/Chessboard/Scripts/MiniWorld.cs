@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
 
@@ -26,15 +26,16 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 	public Transform miniWorldTransform { get { return transform; } }
 	
 	/// <summary>
-	/// RefernceTransform defines world space within the MiniWorld. When scaled up, a larger area is represented,
+	/// ReferenceTransform defines world space within the MiniWorld. When scaled up, a larger area is represented,
 	/// thus the objects in the MiniWorld get smaller.
 	/// </summary>
 	public Transform referenceTransform { get { return m_ReferenceTransform; } set { m_ReferenceTransform = value; } }
-
 	[SerializeField]
-	private Transform m_ReferenceTransform;
+	Transform m_ReferenceTransform;
 
 	public Matrix4x4 miniToReferenceMatrix { get { return transform.localToWorldMatrix * referenceTransform.worldToLocalMatrix; } }
+
+	public Func<Camera, Matrix4x4> getWorldToCameraMatrix { get { return m_MiniWorldRenderer.GetWorldToCameraMatrix; } }
 
 	public Bounds referenceBounds
 	{
@@ -47,14 +48,6 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 	}
 
 	public Bounds localBounds { get { return new Bounds(Vector3.zero, m_LocalBoundsSize); } set { m_LocalBoundsSize = value.size; } }
-
-	public Func<IMiniWorld, bool> preProcessRender { private get; set; }
-	public Action<IMiniWorld> postProcessRender { private get; set; }
-
-	public Vector3 miniWorldScale
-	{
-		get { return Vector3.Scale(transform.localScale.Inverse(), referenceTransform.localScale); }
-	}
 
 	public bool Contains(Vector3 position)
 	{
@@ -71,25 +64,9 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 		m_MiniWorldRenderer = U.Object.AddComponent<MiniWorldRenderer>(U.Camera.GetMainCamera().gameObject);
 		m_MiniWorldRenderer.miniWorld = this;
 		m_MiniWorldRenderer.cullingMask = m_RendererCullingMask;
-		m_MiniWorldRenderer.preProcessRender = PreProcessRender;
-		m_MiniWorldRenderer.postProcessRender = PostProcessRender;
 
 		Transform pivot = U.Camera.GetViewerPivot();
 		referenceTransform.position = pivot.transform.position;
-	}
-
-	bool PreProcessRender()
-	{
-		if (preProcessRender != null)
-			return preProcessRender(this);
-
-		return true;
-	}
-
-	void PostProcessRender()
-	{
-		if (preProcessRender != null)
-			postProcessRender(this);
 	}
 
 	private void OnDisable()

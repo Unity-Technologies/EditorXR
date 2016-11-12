@@ -8,19 +8,18 @@ public class AssetData : ListViewItemData
 
 	public string name { get; private set; }
 	public int instanceID { get; private set; }
-	public Texture2D icon { get; private set; }
+
 	public string type { get; private set; }
 
 	public bool animating { get; set; }
 	public Object asset { get; set; }
 	public GameObject preview { get; set; }
 
-	public AssetData(string name, int instanceID, Texture2D icon, string type)
+	public AssetData(string name, int instanceID, string type)
 	{
 		template = kTemplateName;
 		this.name = name;
 		this.instanceID = instanceID;
-		this.icon = icon;
 		this.type = type;
 	}
 
@@ -29,7 +28,6 @@ public class AssetData : ListViewItemData
 		template = kTemplateName;
 		name = original.name;
 		instanceID = original.instanceID;
-		icon = original.icon;
 		type = original.type;
 	}
 }

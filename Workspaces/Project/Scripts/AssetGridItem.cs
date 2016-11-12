@@ -8,7 +8,7 @@ using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Extensions;
 using UnityObject = UnityEngine.Object;
 
-public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpatialHash
+public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, ISpatialHash
 {
 	private const float kPreviewDuration = 0.1f;
 

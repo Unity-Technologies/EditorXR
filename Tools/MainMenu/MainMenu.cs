@@ -10,7 +10,7 @@ using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins
+	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, IRayLocking, IMenuOrigins
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -100,11 +100,11 @@ namespace UnityEngine.VR.Menus
 		public List<Type> menuTools { private get; set; }
 		public Func<Node, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public List<ActionMenuData> menuActions { get; set; }
 		public CreateWorkspaceDelegate createWorkspace { private get; set; }
+		public List<ActionMenuData> menuActions { get; set; }
 		public Node? node { private get; set; }
+		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 		public event Action<IMainMenu> menuVisibilityChanged = delegate {};
-		public Action<object> connectInterfaces { private get; set; }
 
 		void Start()
 		{

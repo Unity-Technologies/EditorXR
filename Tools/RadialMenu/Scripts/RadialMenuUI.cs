@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine.UI;
 using UnityEngine.VR.Actions;
-using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Extensions;
 using GradientPair = UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair;
@@ -30,9 +29,11 @@ namespace UnityEngine.VR.Menus
 		[SerializeField]
 		Transform m_SlotContainer;
 
+		[SerializeField]
+		float m_InputPhaseOffset = 75f;
+
 		List<RadialMenuSlot> m_RadialMenuSlots;
-		Coroutine m_ShowCoroutine;
-		Coroutine m_HideCoroutine;
+		Coroutine m_VisibilityCoroutine;
 		Coroutine m_SelectItemCoroutine;
 		Vector2 m_DragStartVector;
 		float m_DragMagnitude;
@@ -64,16 +65,13 @@ namespace UnityEngine.VR.Menus
 
 				m_Visible = value;
 
-				this.StopCoroutine(ref m_ShowCoroutine);
-				this.StopCoroutine(ref m_HideCoroutine);
+				this.StopCoroutine(ref m_VisibilityCoroutine);
 
-				if (value)
-					gameObject.SetActive(true);
-
+				gameObject.SetActive(true);
 				if (value && actions.Count > 0)
-					m_ShowCoroutine = StartCoroutine(AnimateShow());
+					m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 				else if (!value && m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
-					m_HideCoroutine = StartCoroutine(AnimateHide());
+					m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 				else if (!value)
 					gameObject.SetActive(false);
 			}
@@ -88,15 +86,14 @@ namespace UnityEngine.VR.Menus
 				if (value != null)
 				{
 					m_Actions = value
-						.Where(a => !string.IsNullOrEmpty(a.sectionName) && a.sectionName == ActionMenuItemAttribute.kDefaultActionSectionName)
+						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.kDefaultActionSectionName)
 						.OrderByDescending(a => a.priority)
 						.ToList();
 
 					if (visible && actions.Count > 0)
 					{
-						this.StopCoroutine(ref m_HideCoroutine);
-						this.StopCoroutine(ref m_ShowCoroutine);
-						m_ShowCoroutine = StartCoroutine(AnimateShow());
+						this.StopCoroutine(ref m_VisibilityCoroutine);
+						m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 					}
 				}
 				else if (visible && m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
@@ -132,9 +129,6 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 		bool m_PressedDown;
-
-		[SerializeField]
-		float m_InputPhaseOffset = 75f;
 
 		RadialMenuSlot m_HighlightedButton;
 		Vector2 m_InputMatrix;
@@ -201,7 +195,6 @@ namespace UnityEngine.VR.Menus
 							}
 						}
 					}
-
 				}
 			}
 		}
@@ -235,6 +228,21 @@ namespace UnityEngine.VR.Menus
 		void Start()
 		{
 			m_SlotsMask.gameObject.SetActive(false);
+		}
+
+		void Update()
+		{
+			if (m_Actions != null)
+			{
+				// Action icons can update after being displayed
+				for (int i = 0; i < m_Actions.Count; ++i)
+				{
+					var action = m_Actions[i].action;
+					var radialMenuSlot = m_RadialMenuSlots[i];
+					if (radialMenuSlot.icon != action.icon)
+						radialMenuSlot.icon = action.icon;
+				}
+			}
 		}
 
 		public void Setup()
@@ -282,10 +290,8 @@ namespace UnityEngine.VR.Menus
 				slot.Hide();
 			}
 
-			if (m_HideCoroutine != null)
-				StopCoroutine(m_HideCoroutine);
-
-			m_HideCoroutine = StartCoroutine(AnimateHide());
+			this.StopCoroutine(ref m_VisibilityCoroutine);
+			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
 		void UpdateRadialSlots()
@@ -313,8 +319,6 @@ namespace UnityEngine.VR.Menus
 					selectedSlot.icon = buttonAction.icon ?? m_MissingActionIcon;
 				});
 			}
-
-
 		}
 
 		IEnumerator AnimateShow()
@@ -354,7 +358,7 @@ namespace UnityEngine.VR.Menus
 				yield return null;
 			}
 
-			m_ShowCoroutine = null;
+			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateHide()
@@ -383,7 +387,13 @@ namespace UnityEngine.VR.Menus
 
 			m_SlotsMask.gameObject.SetActive(false);
 			gameObject.SetActive(false);
-			m_HideCoroutine = null;
+			m_VisibilityCoroutine = null;
+		}
+
+		public void SelectionOccurred()
+		{
+			if (m_HighlightedButton != null)
+				m_HighlightedButton.button.onClick.Invoke();
 		}
 	}
 }

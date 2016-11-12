@@ -17,6 +17,8 @@ MonoImporter:
       type: 2}
   - m_MainMenuActivatorPrefab: {fileID: 114000011125667836, guid: a943a77cb6a6bd04da2b86b34ade4596,
       type: 2}
+  - m_MainMenuActivatorPrefab: {fileID: 114000011125667836, guid: a943a77cb6a6bd04da2b86b34ade4596,
+      type: 2}
   - m_KeyboardMalletPrefab: {fileID: 114000013972379212, guid: 55c3df0d3b957354fa26bae2b39cffb3,
       type: 2}
   - m_NumericKeyboardPrefab: {fileID: 114000012169358554, guid: 5f76c682f089562449adab190d7a8fc4,

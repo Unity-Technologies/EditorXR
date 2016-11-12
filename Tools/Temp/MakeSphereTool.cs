@@ -7,10 +7,9 @@ using Object = UnityEngine.Object;
 
 //[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
 [MainMenuItem(false)]
-public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ISpatialHash
+public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ISpatialHash
 {	
 	public Transform rayOrigin { get; set; }
-	public Node selfNode { get; set; }
 
 	public ActionMap actionMap
 	{
@@ -40,6 +39,8 @@ public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ISpa
 	private ActionMap m_ActionMap;
 	[SerializeField]
 	private StandardAlt m_Standard;
+
+	public Node selfNode { get; set; }
 
 	public Action<Object> addObjectToSpatialHash { get; set; }
 	public Action<Object> removeObjectFromSpatialHash { get; set; }

@@ -25,7 +25,7 @@ GameObject:
   - 65: {fileID: 65000011863041570}
   m_Layer: 5
   m_Name: UniformScale
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -44,7 +44,7 @@ GameObject:
   - 136: {fileID: 136000011656394868}
   m_Layer: 5
   m_Name: ScaleZ
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -60,7 +60,7 @@ GameObject:
   - 114: {fileID: 114000013616855498}
   m_Layer: 5
   m_Name: ScaleManipulator
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -79,7 +79,7 @@ GameObject:
   - 136: {fileID: 136000010633764816}
   m_Layer: 5
   m_Name: ScaleY
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -98,7 +98,7 @@ GameObject:
   - 136: {fileID: 136000010215347092}
   m_Layer: 5
   m_Name: ScaleX
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -115,7 +115,7 @@ GameObject:
   - 23: {fileID: 23000013012300180}
   m_Layer: 5
   m_Name: HandleTipX
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -132,7 +132,7 @@ GameObject:
   - 23: {fileID: 23000013583508080}
   m_Layer: 5
   m_Name: HandleTipY
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -149,7 +149,7 @@ GameObject:
   - 23: {fileID: 23000012040466492}
   m_Layer: 5
   m_Name: HandleTipZ
-  m_TagString: Untagged
+  m_TagString: ShowInMiniWorld
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

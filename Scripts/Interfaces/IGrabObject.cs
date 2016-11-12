@@ -4,8 +4,7 @@ using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Modules;
 
-// TODO: collect all IGrabObjects and keep state in EditorVR, remove query/state change methods
-public interface IGrabObjects
+public interface IGrabObject
 {
 	/// <summary>
 	/// Drop a currently held object
@@ -56,11 +55,11 @@ public interface IGrabObjects
 	/// Informs EditorVR 
 	/// Params: the implementor, the selection, the rayOrigin, returns whether the grab succeeded
 	/// </summary>
-	Func<IGrabObjects, DirectSelection, Transform, bool> grabObject { set; }
+	Func<IGrabObject, DirectSelection, Transform, bool> grabObject { set; }
 
 	/// <summary>
 	/// Informs EditorVR 
 	/// Params: the implementor, the selected object, the rayOrigin
 	/// </summary>
-	Action<IGrabObjects, Transform, Transform> dropObject { set; }
+	Action<IGrabObject, Transform, Transform> dropObject { set; }
 }

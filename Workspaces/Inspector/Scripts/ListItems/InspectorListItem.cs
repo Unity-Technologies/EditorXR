@@ -9,7 +9,7 @@ using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using InputField = UnityEngine.VR.UI.InputField;
 
-public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHighlight
+public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight
 {
 	const float kIndent = 0.02f;
 
@@ -243,7 +243,10 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		}
 
 		if (m_DragObject)
-			preview(m_DragObject, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_DragLerp, kPreviewRotation);
+		{
+			var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
+			U.Math.LerpTransform(m_DragObject, previewOrigin.position, kPreviewRotation, m_DragLerp);
+		}
 	}
 
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)

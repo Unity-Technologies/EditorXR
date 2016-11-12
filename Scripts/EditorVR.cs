@@ -1,4 +1,4 @@
-//#define ENABLE_MINIWORLD_RAY_SELECTION
+#define ENABLE_MINIWORLD_RAY_SELECTION
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,6 +12,7 @@ using UnityEngine.InputNew;
 using UnityEngine.VR;
 using UnityEngine.VR.Actions;
 using UnityEngine.VR.Helpers;
+using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.Menus;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Proxies;
@@ -31,10 +32,6 @@ public class EditorVR : MonoBehaviour
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
 	const string kShowInMiniWorldTag = "ShowInMiniWorld";
-
-	/// <summary>
-	/// Tag applied to player head model which tracks the camera (for MiniWorld locomotion)
-	/// </summary>
 	const string kVRPlayerTag = "VRPlayer";
 
 	private const float kDefaultRayLength = 100f;
@@ -48,8 +45,10 @@ public class EditorVR : MonoBehaviour
 	const float kViewerPivotTransitionTime = 0.75f;
 	const float kMiniWorldManipulatorScale = 0.2f;
 
-	// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time minus approximately how long one operation will take
-	const float kMaxFrameTime = 0.08f;
+	// Minimum time to spend loading the project folder before yielding
+	const float kMinProjectFolderLoadTime = 0.005f;
+	// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
+	const float kMaxFrameTime = 0.01f;
 
 	[SerializeField]
 	private ActionMap m_TrackedObjectActionMap;
@@ -67,7 +66,7 @@ public class EditorVR : MonoBehaviour
 	private Camera m_EventCameraPrefab;
 
 	[SerializeField]
-	private MainMenuActivator m_MainMenuActivatorPrefab;
+	MainMenuActivator m_MainMenuActivatorPrefab;
 
 	[SerializeField]
 	private KeyboardMallet m_KeyboardMalletPrefab;
@@ -103,6 +102,7 @@ public class EditorVR : MonoBehaviour
 	private DragAndDropModule m_DragAndDropModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
+	bool m_PixelRaycastIgnoreListDirty = true;
 
 	private PlayerHandle m_PlayerHandle;
 
@@ -160,27 +160,23 @@ public class EditorVR : MonoBehaviour
 
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
 	private readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>();
-
+	bool m_MiniWorldIgnoreListDirty = true;
+	
 	private event Action m_SelectionChanged;
 
-	bool m_HMDReady;
-
 	VRSmoothCamera m_SmoothCamera;
-	IGrabObjects m_TransformTool;
 
-	StandardManipulator m_Manipulator;
+	StandardManipulator m_StandardManipulator;
+	ScaleManipulator m_ScaleManipulator;
 	Vector3 m_OriginalManipulatorScale;
 
-	class FolderDataIteration
-	{
-		public FolderData data;
-		public bool hasNext;
-	}
+	IGrabObject m_TransformTool;
 
-	readonly List<IProjectFolderList> m_ProjectFolderLists = new List<IProjectFolderList>();
+	readonly List<IUsesProjectFolderData> m_ProjectFolderLists = new List<IUsesProjectFolderData>();
 	FolderData[] m_FolderData;
 	readonly HashSet<string> m_AssetTypes = new HashSet<string>();
-	float m_LastFolderYieldTime;
+	float m_ProjectFolderLoadStartTime;
+	float m_ProjectFolderLoadYieldTime;
 
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
@@ -188,7 +184,7 @@ public class EditorVR : MonoBehaviour
 	{
 		ClearDeveloperConsoleIfNecessary();
 
-		StartCoroutine(LoadProjectFolders());
+		LoadProjectFolders();
 
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 		if (VRSettings.loadedDeviceName == "OpenVR")
@@ -216,7 +212,7 @@ public class EditorVR : MonoBehaviour
 		ConnectInterfaces(m_ObjectPlacementModule);
 
 		m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
-		m_LockModule.openRadialMenu = DisplayAlternateMenu;
+		m_LockModule.updateAlternateMenu = (rayOrigin, o) => SetAlternateMenuVisibility(rayOrigin, o != null);
 		ConnectInterfaces(m_LockModule);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
@@ -271,6 +267,13 @@ public class EditorVR : MonoBehaviour
 	{
 		if (m_SelectionChanged != null)
 			m_SelectionChanged();
+	}
+
+	// TODO: Find a better callback for when objects are created or destroyed
+	void OnHierarchyChanged()
+	{
+		m_MiniWorldIgnoreListDirty = true;
+		m_PixelRaycastIgnoreListDirty = true;
 	}
 
 	IEnumerable<InputDevice> GetSystemDevices()
@@ -330,7 +333,7 @@ public class EditorVR : MonoBehaviour
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
 		EditorApplication.delayCall += OnSelectionChanged;
 
-		// This will be the first call to update the player keyboard (input) maps, sorted by priority
+		// This will be the first call to update the player handle (input) maps, sorted by priority
 		UpdatePlayerHandleMaps();
 	}
 
@@ -338,7 +341,9 @@ public class EditorVR : MonoBehaviour
 	{
 		Selection.selectionChanged += OnSelectionChanged;
 #if UNITY_EDITOR
+		EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 		VRView.onGUIDelegate += OnSceneGUI;
+		EditorApplication.projectWindowChanged += LoadProjectFolders;
 #endif
 	}
 
@@ -346,7 +351,9 @@ public class EditorVR : MonoBehaviour
 	{
 		Selection.selectionChanged -= OnSelectionChanged;
 #if UNITY_EDITOR
+		EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 		VRView.onGUIDelegate -= OnSceneGUI;
+		EditorApplication.projectWindowChanged -= LoadProjectFolders;
 #endif
 	}
 
@@ -354,7 +361,11 @@ public class EditorVR : MonoBehaviour
 	{
 		if (Event.current.type == EventType.ExecuteCommand)
 		{
-			m_PixelRaycastModule.UpdateIgnoreList();
+			if (m_PixelRaycastIgnoreListDirty)
+			{
+				m_PixelRaycastModule.UpdateIgnoreList();
+				m_PixelRaycastIgnoreListDirty = false;
+			}
 
 			ForEachRayOrigin((proxy, pair, device, deviceData) =>
 			{
@@ -386,29 +397,16 @@ public class EditorVR : MonoBehaviour
 		foreach (var kvp in m_DeviceData)
 		{
 			var device = kvp.Key;
-			var deviceData = m_DeviceData[device];
+			var deviceData = kvp.Value;
 			var mainMenu = deviceData.mainMenu;
 
 			if (mainMenu == null)
 			{
 				mainMenu = SpawnMainMenu(typeof(MainMenu), device, false);
+				mainMenu.menuVisibilityChanged += OnMainMenuVisiblityChanged;
 				deviceData.mainMenu = mainMenu;
 				UpdatePlayerHandleMaps();
 			}
-		}
-	}
-
-	IEnumerator PreloadAssetTypes()
-	{
-		var hp = new HierarchyProperty(HierarchyType.Assets);
-		hp.SetSearchFilter("t:object", 0);
-
-		var types = new HashSet<string>();
-
-		while (hp.Next(null))
-		{
-			types.Add(hp.pptrValue.GetType().Name);
-			yield return null;
 		}
 	}
 
@@ -552,9 +550,9 @@ public class EditorVR : MonoBehaviour
 
 	bool IsPermanentTool(Type type)
 	{
-		return typeof(ITransformTool).IsAssignableFrom(type)
+		return typeof(ITransformer).IsAssignableFrom(type)
 			|| typeof(SelectionTool).IsAssignableFrom(type)
-			|| typeof(ILocomotion).IsAssignableFrom(type);
+			|| typeof(ILocomotor).IsAssignableFrom(type);
 	}
 
 	private void SpawnDefaultTools()
@@ -578,13 +576,11 @@ public class EditorVR : MonoBehaviour
 			if (deviceData.Key.tagIndex == -1)
 				continue;
 
-			Node? deviceNode = GetDeviceNode(deviceData.Key);
-
 			tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 			AddToolToDeviceData(tool, devices);
 			var selectionTool = tool as SelectionTool;
-			selectionTool.node = deviceNode;
-			selectionTool.selected += OnAlternateMenuItemSelected; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			selectionTool.selected += UpdateAlternateMenuOnSelectionChanged; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			selectionTool.hovered += m_LockModule.OnHovered;
 			selectionTool.isRayActive = IsRayActive;
 
 			// Using a shared instance of the transform tool across all device tool stacks
@@ -597,14 +593,13 @@ public class EditorVR : MonoBehaviour
 			}
 
 			var mainMenuActivator = m_DeviceData[deviceData.Key].mainMenuActivator = SpawnMainMenuActivator(deviceData.Key);
-			mainMenuActivator.node = deviceNode;
 			mainMenuActivator.selected += OnMainMenuActivatorSelected;
 			mainMenuActivator.hoverStarted += OnMainMenuActivatorHoverStarted;
 			mainMenuActivator.hoverEnded += OnMainMenuActivatorHoverEnded;
 
 			var alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), deviceData.Key);
 			m_DeviceData[deviceData.Key].alternateMenu = alternateMenu;
-			alternateMenu.itemSelected += OnAlternateMenuItemSelected;
+			alternateMenu.itemWasSelected += UpdateAlternateMenuOnSelectionChanged;
 
 			UpdatePlayerHandleMaps();
 		}
@@ -783,6 +778,87 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
+	void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)
+	{
+		SetAlternateMenuVisibility(rayOrigin, Selection.gameObjects.Length > 0);
+	}
+
+	void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
+	{
+		var updateMaps = false;
+
+		ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
+		{
+			var alternateMenu = deviceData.alternateMenu;
+			if (alternateMenu != null)
+			{
+				alternateMenu.visible = (rayOriginPair.Value == rayOrigin) && visible;
+
+				// Hide the main menu if the alternate menu is going to be visible
+				var mainMenu = deviceData.mainMenu;
+				if (mainMenu != null && alternateMenu.visible)
+				{
+					mainMenu.visible = false;
+					deviceData.restoreMainMenu = false;
+				}
+
+				// Move the activator button to an alternate position if the alternate menu will be shown
+				var mainMenuActivator = deviceData.mainMenuActivator;
+				if (mainMenuActivator != null)
+					mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
+
+				updateMaps = true;
+			}
+		}, true);
+
+		if (updateMaps)
+			UpdatePlayerHandleMaps();
+	}
+
+	void OnMainMenuActivatorSelected(Transform rayOrigin)
+	{
+		ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
+		{
+			if (rayOriginPair.Value == rayOrigin)
+			{
+				var mainMenu = deviceData.mainMenu;
+				if (mainMenu != null)
+					mainMenu.visible = !mainMenu.visible;
+
+				// move to rest position if this is the node that made the selection
+				var mainMenuActivator = deviceData.mainMenuActivator;
+				if (mainMenuActivator != null)
+					mainMenuActivator.activatorButtonMoveAway = false;
+
+				var alternateMenu = deviceData.alternateMenu;
+				if (alternateMenu != null)
+					alternateMenu.visible = false;
+			}
+			else if (Selection.gameObjects.Length > 0)
+			{
+				// Enable the alternate menu on the other hand if the menu was opened on a hand with the alternate menu already enabled
+				var alternateMenu = deviceData.alternateMenu;
+				if (alternateMenu != null)
+				{
+					alternateMenu.visible = true;
+
+					var mainMenuActivator = deviceData.mainMenuActivator;
+					if (mainMenuActivator != null)
+						mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
+
+					// Close a menu if it was open, since it would conflict with the alternate menu
+					var mainMenu = deviceData.mainMenu;
+					if (mainMenu != null)
+					{
+						mainMenu.visible = false;
+						deviceData.restoreMainMenu = false;
+					}
+				}
+			}
+
+		}, true);
+	}
+
 	private void SpawnActions()
 	{
 		IEnumerable<Type> actionTypes = U.Object.GetImplementationsOfInterface(typeof(IAction));
@@ -904,9 +980,7 @@ public class EditorVR : MonoBehaviour
 		m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
-		m_InputModule.preProcessRaycastSources = PreProcessRaycastSources;
 		m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
-		m_InputModule.postProcessRaycastSources = PostProcessRaycastSources;
 #endif
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
@@ -919,7 +993,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput);
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value);
 		});
 	}
 
@@ -982,6 +1056,7 @@ public class EditorVR : MonoBehaviour
 
 		foreach (var component in go.GetComponentsInChildren<Component>(true))
 			ConnectInterfaces(component);
+
 		return go;
 	}
 
@@ -1004,7 +1079,7 @@ public class EditorVR : MonoBehaviour
 			if (once)
 				return;
 
-			Dictionary<Node,Transform> tempOrigin = null;
+			Dictionary<Transform,Transform> tempOrigin = null;
 
 			if(origin == MenuOrigin.Main)
 				tempOrigin = proxy.menuOrigins;
@@ -1012,7 +1087,7 @@ public class EditorVR : MonoBehaviour
 				tempOrigin = proxy.alternateMenuOrigins;
 
 			Transform parent;
-			if(tempOrigin != null && tempOrigin.TryGetValue(node,out parent))
+			if(tempOrigin != null && tempOrigin.TryGetValue(rayOriginPair.Value,out parent))
 			{
 				once = true;
 
@@ -1061,14 +1136,16 @@ public class EditorVR : MonoBehaviour
 		if (device != null && !IsValidActionMapForDevice(map, device))
 			return null;
 
-		var devices = device == null ? GetSystemDevices() : new InputDevice[] { device };
+		var devices = device == null ? GetSystemDevices() : new [] { device };
 
 		var actionMapInput = ActionMapInput.Create(map);
 		// It's possible that there are no suitable control schemes for the device that is being initialized, 
 		// so ActionMapInput can't be marked active
 		var successfulInitialization = false;
 		if (actionMapInput.TryInitializeWithDevices(devices))
+		{
 			successfulInitialization = true;
+		}
 		else
 		{
 			// For two-handed tools, the single device won't work, so collect the devices from the action map
@@ -1094,15 +1171,30 @@ public class EditorVR : MonoBehaviour
 		foreach (DeviceData deviceData in m_DeviceData.Values)
 		{
 			var mainMenu = deviceData.mainMenu;
-			if (mainMenu != null && mainMenu.visible)
-				AddActionMapInputs(mainMenu, maps);
+			if (mainMenu != null)
+			{
+				var mainMenuMaps = new List<ActionMapInput>();
+				AddActionMapInputs(mainMenu, mainMenuMaps);
+
+				foreach (var input in mainMenuMaps)
+					input.active = mainMenu.visible;
+
+				maps.AddRange(mainMenuMaps);
+			}
 
 			var alternateMenu = deviceData.alternateMenu;
-			if (alternateMenu != null && alternateMenu.visible)
-				AddActionMapInputs(alternateMenu, maps);
+			if (alternateMenu != null)
+			{
+				var alternateMenuMaps = new List<ActionMapInput>();
+				AddActionMapInputs(alternateMenu, alternateMenuMaps);
+
+				foreach (var input in alternateMenuMaps)
+					input.active = alternateMenu.visible;
+
+				maps.AddRange(alternateMenuMaps);
+			}
 
 			maps.Add(deviceData.directSelectInput);
-
 			maps.Add(deviceData.uiInput);
 		}
 
@@ -1251,9 +1343,7 @@ public class EditorVR : MonoBehaviour
 
 		var trackedObjectMap = obj as ITrackedObjectActionMap;
 		if (trackedObjectMap != null)
-		{
 			trackedObjectMap.trackedObjectInput = m_TrackedObjectInput;
-		}
 
 		var customMap = obj as ICustomActionMap;
 		if (customMap != null)
@@ -1279,84 +1369,76 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void ConnectInterfaces(object obj)
+	void ConnectInterfaces(object obj, InputDevice device)
 	{
-		ConnectInterfaces(obj, null);
+		Transform rayOrigin = null;
+		ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
+		{
+			if (rayOriginDevice == device)
+				rayOrigin = rayOriginPair.Value;
+		}, true);
+
+		ConnectInterfaces(obj, rayOrigin);
 	}
 
-	private void ConnectInterfaces(object obj, InputDevice device)
+	void ConnectInterfaces(object obj, Transform rayOrigin = null)
 	{
 		var connectInterfaces = obj as IConnectInterfaces;
 		if (connectInterfaces != null)
 			connectInterfaces.connectInterfaces = ConnectInterfaces;
 
-		var menuOrigins = obj as IMenuOrigins;
-
-		if (device != null)
+		if (rayOrigin)
 		{
-			foreach (var proxy in m_AllProxies)
+			var ray = obj as IUsesRayOrigin;
+			if (ray != null)
 			{
-				if (!proxy.active)
-					continue;
+				ray.rayOrigin = rayOrigin;
 
-				var node = GetDeviceNode(device);
-				if (node.HasValue)
+				// Specific proxy ray setting
+				DefaultProxyRay dpr = null;
+				var customRay = obj as ICustomRay;
+				if (customRay != null)
 				{
-					bool continueSearching = true;
+					dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+					customRay.showDefaultRay = dpr.Show;
+					customRay.hideDefaultRay = dpr.Hide;
+				}
 
-					Transform rayOrigin;
+				var lockableRay = obj as IRayLocking;
+				if (lockableRay != null)
+				{
+					dpr = dpr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+					lockableRay.lockRay = dpr.LockRay;
+					lockableRay.unlockRay = dpr.UnlockRay;
+				}
+			}
 
-					var iTool = obj as ITool;
-					if(iTool != null)
-					{
-						iTool.selfNode = node.Value;
-					}
+			var iTool = obj as ITool;
+			if(iTool != null)
+			{
+				ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+				{
+					if (rayOrigin == rayOriginPair.Value)
+						iTool.selfNode = rayOriginPair.Key;
+				}, true);
+			}
 
-					var ray = obj as IRay;
-					if (ray != null && proxy.rayOrigins.TryGetValue(node.Value, out rayOrigin))
-					{
-						ray.rayOrigin = rayOrigin;
-
-						// Specific proxy ray setting
-						DefaultProxyRay dpr = null;
-						var customRay = obj as ICustomRay;
-						if (customRay != null)
-						{
-							dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-							customRay.showDefaultRay = dpr.Show;
-							customRay.hideDefaultRay = dpr.Hide;
-						}
-
-						var lockableRay = obj as ILockRay;
-						if (lockableRay != null)
-						{
-							dpr = dpr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-							lockableRay.lockRay = dpr.LockRay;
-							lockableRay.unlockRay = dpr.UnlockRay;
-						}
-
-						continueSearching = false;
-					}
-
-					if (menuOrigins != null)
-					{
-						Transform mainMenuOrigin;
-						if (proxy.menuOrigins.TryGetValue(node.Value, out mainMenuOrigin))
-						{
-							menuOrigins.menuOrigin = mainMenuOrigin;
-							Transform alternateMenuOrigin;
-							if (proxy.alternateMenuOrigins.TryGetValue(node.Value, out alternateMenuOrigin))
-								menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
-						}
-					}
-
-					if (!continueSearching)
-						break;
+			var menuOrigins = obj as IMenuOrigins;
+			if (menuOrigins != null)
+			{
+				Transform mainMenuOrigin;
+				var proxy = GetProxyForRayOrigin(rayOrigin);
+				if (proxy != null && proxy.menuOrigins.TryGetValue(rayOrigin, out mainMenuOrigin))
+				{
+					menuOrigins.menuOrigin = mainMenuOrigin;
+					Transform alternateMenuOrigin;
+					if (proxy.alternateMenuOrigins.TryGetValue(rayOrigin, out alternateMenuOrigin))
+						menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
 				}
 			}
 		}
 
-		var locomotion = obj as ILocomotion;
+		var locomotion = obj as ILocomotor;
 		if (locomotion != null)
 			locomotion.viewerPivot = VRView.viewerPivot;
 
@@ -1369,44 +1451,40 @@ public class EditorVR : MonoBehaviour
 			createWorkspace.createWorkspace = CreateWorkspace;
 
 		var instantiateMenuUI = obj as IInstantiateMenuUI;
-		if(instantiateMenuUI != null)
+		if (instantiateMenuUI != null)
 			instantiateMenuUI.instantiateMenuUI = InstantiateMenuUI;
 
-		var raycaster = obj as IRaycaster;
+		var raycaster = obj as IUsesRaycastResults;
 		if (raycaster != null)
 			raycaster.getFirstGameObject = GetFirstGameObject;
 
-		var highlight = obj as IHighlight;
+		var highlight = obj as ISetHighlight;
 		if (highlight != null)
 			highlight.setHighlight = m_HighlightModule.SetHighlight;
 
-		var placeObjects = obj as IPlaceObjects;
+		var placeObjects = obj as IPlaceObject;
 		if (placeObjects != null)
 			placeObjects.placeObject = PlaceObject;
 
-		var locking = obj as ILocking;
+		var locking = obj as IGameObjectLocking;
 		if (locking != null)
 		{
-			locking.toggleLocked = m_LockModule.ToggleLocked;
-			locking.getLocked = m_LockModule.IsLocked;
-			locking.checkHover = m_LockModule.CheckHover;
+			locking.setLocked = m_LockModule.SetLocked;
+			locking.isLocked = m_LockModule.IsLocked;
 		}
 
-		var positionPreview = obj as IPreview;
+		var positionPreview = obj as IGetPreviewOrigin;
 		if (positionPreview != null)
-		{
-			positionPreview.preview = m_ObjectPlacementModule.Preview;
 			positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
-		}
 
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
 			m_SelectionChanged += selectionChanged.OnSelectionChanged;
 
-		var toolActions = obj as IToolActions;
+		var toolActions = obj as IActions;
 		if (toolActions != null)
 		{
-			var actions = toolActions.toolActions;
+			var actions = toolActions.actions;
 			foreach (var action in actions)
 			{
 				var actionMenuData = new ActionMenuData()
@@ -1425,7 +1503,7 @@ public class EditorVR : MonoBehaviour
 		if (directSelection != null)
 			directSelection.getDirectSelection = GetDirectSelection;
 
-		var grabObjects = obj as IGrabObjects;
+		var grabObjects = obj as IGrabObject;
 		if (grabObjects != null)
 		{
 			grabObjects.canGrabObject = CanGrabObject;
@@ -1440,32 +1518,18 @@ public class EditorVR : MonoBehaviour
 			spatialHash.removeObjectFromSpatialHash = RemoveObjectFromSpatialHash;
 		}
 
-
-		var folderList = obj as IProjectFolderList;
-		if (folderList != null)
-			folderList.getFolderData = GetFolderData;
-
-		var filterUI = obj as IFilterUI;
-		if (filterUI != null)
-			filterUI.getFilterList = GetFilterList;
-
 		var mainMenu = obj as IMainMenu;
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_MainMenuTools;
 			mainMenu.selectTool = SelectTool;
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
-			mainMenu.node = GetDeviceNode(device);
 			mainMenu.menuVisibilityChanged += OnMainMenuVisiblityChanged;
 		}
 
 		var alternateMenu = obj as IAlternateMenu;
 		if (alternateMenu != null)
-		{
 			alternateMenu.menuActions = m_MenuActions;
-			alternateMenu.node = GetDeviceNode(device);
-			alternateMenu.setup();
-		}
 	}
 
 	private void DisconnectInterfaces(object obj)
@@ -1474,10 +1538,10 @@ public class EditorVR : MonoBehaviour
 		if (selectionChanged != null)
 			m_SelectionChanged -= selectionChanged.OnSelectionChanged;
 
-		var toolActions = obj as IToolActions;
+		var toolActions = obj as IActions;
 		if (toolActions != null)
 		{
-			var actions = toolActions.toolActions;
+			var actions = toolActions.actions;
 			m_MenuActions = m_MenuActions.Where(a => !actions.Contains(a.action)).ToList();
 			UpdateAlternateMenuActions();
 		}
@@ -1520,17 +1584,16 @@ public class EditorVR : MonoBehaviour
 		return length;
 	}
 
-	private InputDevice GetInputDeviceForTool(ITool tool)
+	IProxy GetProxyForRayOrigin(Transform rayOrigin)
 	{
-		foreach (var kvp in m_DeviceData)
+		IProxy result = null;
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
-			foreach (var t in kvp.Value.tools)
-			{
-				if (t == tool)
-					return kvp.Key;
-			}
-		}
-		return null;
+			if (rayOriginPair.Value == rayOrigin)
+				result = proxy;
+		}, true);
+
+		return result;
 	}
 
 	private bool SelectTool(Node targetNode, Type toolType)
@@ -1700,16 +1763,8 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void CreateWorkspace<T>(Action<Workspace> createdCallback = null) where T : Workspace
+	void CreateWorkspace(Type t, Action<Workspace> createdCallback = null)
 	{
-		CreateWorkspace(typeof(T), createdCallback);
-	}
-
-	private void CreateWorkspace(Type t, Action<Workspace> createdCallback = null)
-	{
-		if (!typeof(Workspace).IsAssignableFrom(t))
-			return;
-
 		var defaultOffset = Workspace.kDefaultOffset;
 		var defaultTilt = Workspace.kDefaultTilt;
 
@@ -1757,12 +1812,11 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 		//While the current position is occupied, try a new one
-		while (Physics.CheckBox(position, halfBounds, rotation, ~LayerMask.NameToLayer("UI")) && count++ < kMaxWorkspacePlacementAttempts) ;
+		while (Physics.CheckBox(position, halfBounds, rotation, ~LayerMask.NameToLayer("UI")) && count++ < kMaxWorkspacePlacementAttempts);
 
 		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
 		m_AllWorkspaces.Add(workspace);
 		workspace.destroyed += OnWorkspaceDestroyed;
-		workspace.isMiniWorldRay = IsMiniWorldRay;
 		ConnectInterfaces(workspace);
 		workspace.transform.position = position;
 		workspace.transform.rotation = rotation;
@@ -1770,73 +1824,74 @@ public class EditorVR : MonoBehaviour
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
 
-		if (createdCallback != null)
-			createdCallback(workspace);
-
-		var projectFolderList = workspace as IProjectFolderList;
+		var projectFolderList = workspace as IUsesProjectFolderData;
 		if (projectFolderList != null)
+		{
+			projectFolderList.folderData = GetFolderData();
 			m_ProjectFolderLists.Add(projectFolderList);
+		}
 
 		var filterUI = workspace as IFilterUI;
 		if (filterUI != null)
+		{
+			filterUI.filterList = GetFilterList();
 			m_FilterUIs.Add(filterUI);
-
-		var chessboard = workspace as ChessboardWorkspace;
-		if (chessboard)
-		{
-			chessboard.lockRay = LockRay;
-			chessboard.unlockRay = UnlockRay;
 		}
 
-		var miniWorld = workspace as IMiniWorld;
-		if (miniWorld != null)
+		if (createdCallback != null)
+			createdCallback(workspace);
+
+		// Chessboard is a special case that we handle due to all of the mini world interactions
+		var chessboardWorkspace = workspace as ChessboardWorkspace;
+		if (!chessboardWorkspace)
+			return;
+
+		var miniWorld = chessboardWorkspace.miniWorld;
+		m_MiniWorlds.Add(miniWorld);
+
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
-			m_MiniWorlds.Add(miniWorld);
+			var miniWorldRayOrigin = InstantiateMiniWorldRay();
+			miniWorldRayOrigin.parent = workspace.transform;
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
-			miniWorld.preProcessRender = PreProcessMiniWorldRender;
-			miniWorld.postProcessRender = PostProcessMiniWorldRender;
+			var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+			uiInput.active = false;
 #endif
 
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+			var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
+			directSelectInput.active = false;
+
+#if ENABLE_MINIWORLD_RAY_SELECTION
+			// Use the mini world ray origin instead of the original ray origin
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
 			{
-				var miniWorldRayOrigin = InstantiateMiniWorldRay();
-				miniWorldRayOrigin.parent = workspace.transform;
+				if (source.hoveredObject)
+					return !m_AllWorkspaces.Any(w => source.hoveredObject.transform.IsChildOf(w.transform));
 
-#if ENABLE_MINIWORLD_RAY_SELECTION
-				var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-				uiInput.active = false;
-#endif
-
-				var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
-				directSelectInput.active = false;
-
-#if ENABLE_MINIWORLD_RAY_SELECTION
-				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin);
-#endif
-
-				var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
-				tester.active = false;
-
-				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
-				{
-					originalRayOrigin = rayOriginPair.Value,
-					originalDirectSelectInput = deviceData.directSelectInput,
-					miniWorld = miniWorld,
-					proxy = proxy,
-					node = rayOriginPair.Key,
-#if ENABLE_MINIWORLD_RAY_SELECTION
-					uiInput = uiInput,
-#endif
-					directSelectInput = directSelectInput,
-					tester = tester
-				};
-
-				m_IntersectionModule.AddTester(tester);
+				return true;
 			});
-		}
+#endif
 
+			var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
+			tester.active = false;
+
+			m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
+			{
+				originalRayOrigin = rayOriginPair.Value,
+				originalDirectSelectInput = deviceData.directSelectInput,
+				miniWorld = miniWorld,
+				proxy = proxy,
+				node = rayOriginPair.Key,
+#if ENABLE_MINIWORLD_RAY_SELECTION
+				uiInput = uiInput,
+#endif
+				directSelectInput = directSelectInput,
+				tester = tester
+			};
+
+			m_IntersectionModule.AddTester(tester);
+		});
 		UpdatePlayerHandleMaps();
 	}
 
@@ -1866,7 +1921,7 @@ public class EditorVR : MonoBehaviour
 
 		DisconnectInterfaces(workspace);
 
-		var projectFolderList = workspace as IProjectFolderList;
+		var projectFolderList = workspace as IUsesProjectFolderData;
 		if (projectFolderList != null)
 			m_ProjectFolderLists.Remove(projectFolderList);
 
@@ -1874,9 +1929,11 @@ public class EditorVR : MonoBehaviour
 		if (filterUI != null)
 			m_FilterUIs.Remove(filterUI);
 
-		var miniWorld = workspace as IMiniWorld;
-		if (miniWorld != null)
+		var chessboard = workspace as ChessboardWorkspace;
+		if (chessboard != null)
 		{
+			var miniWorld = chessboard.miniWorld;
+
 			//Clean up MiniWorldRays
 			m_MiniWorlds.Remove(miniWorld);
 			var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_MiniWorldRays);
@@ -1900,28 +1957,37 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void UpdateMiniWorlds()
+	void UpdateMiniWorldIgnoreList()
 	{
-		if (m_MiniWorlds.Count == 0)
-			return;
+		var renderers = new List<Renderer>(GetComponentsInChildren<Renderer>(true));
+		var ignoreList = new List<Renderer>(renderers.Count);
 
-		// Update ignore list
-		var renderers = GetComponentsInChildren<Renderer>(true);
-		var ignoreList = new List<Renderer>(renderers.Length);
-		foreach (var renderer in renderers)
+		foreach (var r in renderers)
 		{
-			if (renderer.CompareTag(kVRPlayerTag))
+			if (r.CompareTag(kVRPlayerTag))
 				continue;
-			if (renderer.CompareTag(kShowInMiniWorldTag))
+
+			if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.kShowInMiniWorldTag))
 				continue;
-			ignoreList.Add(renderer);
+
+			ignoreList.Add(r);
 		}
 
-		var directSelection = m_TransformTool;
 		foreach (var miniWorld in m_MiniWorlds)
 		{
 			miniWorld.ignoreList = ignoreList;
 		}
+	}
+
+	private void UpdateMiniWorlds()
+	{
+		if (m_MiniWorldIgnoreListDirty)
+		{
+			UpdateMiniWorldIgnoreList();
+			m_MiniWorldIgnoreListDirty = false;
+		}
+
+		var directSelection = m_TransformTool;
 
 		// Update MiniWorldRays
 		foreach (var ray in m_MiniWorldRays)
@@ -2103,7 +2169,8 @@ public class EditorVR : MonoBehaviour
 							}
 						}
 
-						m_ObjectPlacementModule.Preview(dragObjectTransform, GetPreviewOriginForRayOrigin(originalRayOrigin));
+						var previewOrigin = GetPreviewOriginForRayOrigin(originalRayOrigin);
+						U.Math.LerpTransform(dragObjectTransform, previewOrigin.position, previewOrigin.rotation);
 					}
 				}
 			}
@@ -2234,7 +2301,7 @@ public class EditorVR : MonoBehaviour
 		return true;
 	}
 
-	bool GrabObject(IGrabObjects grabber, DirectSelection selection, Transform rayOrigin)
+	bool GrabObject(IGrabObject grabber, DirectSelection selection, Transform rayOrigin)
 	{
 		if (!CanGrabObject(selection, rayOrigin))
 			return false;
@@ -2246,7 +2313,7 @@ public class EditorVR : MonoBehaviour
 		return true;
 	}
 
-	void DropObject(IGrabObjects grabber, Transform grabbedObject, Transform rayOrigin)
+	void DropObject(IGrabObject grabber, Transform grabbedObject, Transform rayOrigin)
 	{
 		// Dropping the player head updates the viewer pivot
 		if (grabbedObject.CompareTag(kVRPlayerTag))
@@ -2319,7 +2386,7 @@ public class EditorVR : MonoBehaviour
 		{
 			if (!miniWorld.Contains(obj.position))
 				continue;
-			
+
 			var referenceTransform = miniWorld.referenceTransform;
 			obj.transform.parent = null;
 			obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
@@ -2331,17 +2398,16 @@ public class EditorVR : MonoBehaviour
 		m_ObjectPlacementModule.PlaceObject(obj, targetScale);
 	}
 
-	private Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
+	Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
 	{
-		return (from proxy in m_AllProxies
-				from origin in proxy.rayOrigins
-					where origin.Value.Equals(rayOrigin)
-						select proxy.previewOrigins[origin.Key]).FirstOrDefault();
-	}
-
-	bool IsMiniWorldRay(Transform rayOrigin)
-	{
-		return m_MiniWorldRays.ContainsKey(rayOrigin);
+		foreach (var proxy in m_AllProxies)
+		{
+			Transform previewOrigin;
+			if (proxy.previewOrigins.TryGetValue(rayOrigin, out previewOrigin))
+				return previewOrigin;
+		}
+		
+		return null;
 	}
 
 	bool IsRayActive(Transform rayOrigin)
@@ -2376,6 +2442,30 @@ public class EditorVR : MonoBehaviour
 		return dpr && dpr.UnlockRay(obj);
 	}
 
+#if ENABLE_MINIWORLD_RAY_SELECTION
+	void PreProcessRaycastSource(Transform rayOrigin)
+	{
+		var camera = U.Camera.GetMainCamera();
+		var matrix = camera.worldToCameraMatrix;
+
+		MiniWorldRay ray;
+		if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
+			matrix = ray.miniWorld.getWorldToCameraMatrix(camera);
+
+		if (!m_StandardManipulator)
+			m_StandardManipulator = GetComponentInChildren<StandardManipulator>();
+
+		if (m_StandardManipulator)
+			m_StandardManipulator.AdjustScale(camera.transform.position, matrix);
+
+		if (!m_ScaleManipulator)
+			m_ScaleManipulator = GetComponentInChildren<ScaleManipulator>();
+
+		if (m_ScaleManipulator)
+			m_ScaleManipulator.AdjustScale(camera.transform.position, matrix);
+	}
+#endif
+
 	void AddPlayerModel()
 	{
 		var playerHead = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
@@ -2398,49 +2488,6 @@ public class EditorVR : MonoBehaviour
 			Debug.LogError("Tried to remove " + obj + " from spatial hash but it doesn't exist yet");
 	}
 
-	bool PreProcessRaycastSources()
-	{
-		if (!m_Manipulator)
-			m_Manipulator = GetComponentInChildren<StandardManipulator>();
-
-		if (m_Manipulator)
-			m_OriginalManipulatorScale = m_Manipulator.transform.localScale;
-
-		return true;
-	}
-
-	bool PreProcessRaycastSource(Transform rayOrigin)
-	{
-		if (m_Manipulator)
-		{
-			MiniWorldRay ray;
-			if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
-				m_Manipulator.transform.localScale = ray.miniWorld.miniWorldScale * kMiniWorldManipulatorScale;
-			else
-				m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
-		}
-		return true;
-	}
-
-	void PostProcessRaycastSources()
-	{
-		if (m_Manipulator)
-			m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
-	}
-
-	bool PreProcessMiniWorldRender(IMiniWorld miniWorld)
-	{
-		if (m_Manipulator)
-			m_Manipulator.transform.localScale = miniWorld.miniWorldScale * kMiniWorldManipulatorScale;
-		return true;
-	}
-
-	void PostProcessMiniWorldRender(IMiniWorld miniWorld)
-	{
-		if (m_Manipulator)
-			m_Manipulator.transform.localScale = m_OriginalManipulatorScale;
-	}
-
 	List<string> GetFilterList()
 	{
 		return m_AssetTypes.ToList();
@@ -2449,58 +2496,36 @@ public class EditorVR : MonoBehaviour
 	FolderData[] GetFolderData()
 	{
 		if (m_FolderData == null)
-			return null;
+			return new FolderData[0];
 
 		var assetsFolder = new FolderData(m_FolderData[0]) { expanded = true };
 
 		return new[] { assetsFolder };
 	}
 
-	IEnumerator LoadProjectFolders(bool quickStart = true)
+	void LoadProjectFolders()
 	{
-		FolderDataIteration iteration = null;
-
-		if (quickStart)
-		{
-			//Start with a quick pass to get assets without types
-			foreach (var e in CreateFolderData())
-			{
-				iteration = e;
-			}
-
-			m_FolderData = new[] { iteration.data };
-
-			yield return null;
-		}
-
-		yield break;
-
 		m_AssetTypes.Clear();
 
-		//Create a new list with actual types
-		foreach (var e in CreateFolderData(m_AssetTypes))
+		StartCoroutine(CreateFolderData((folderData, hasNext) =>
 		{
-			iteration = e;
-			yield return null;
-		}
+			m_FolderData = new[] { folderData };
 
-		m_FolderData = new[] { iteration.data };
+			// Send new data to existing folderLists
+			foreach (var list in m_ProjectFolderLists)
+			{
+				list.folderData = GetFolderData();
+			}
 
-		// Send new data to existing folderLists
-		foreach (var list in m_ProjectFolderLists)
-		{
-			list.folderData = GetFolderData();
-		}
-
-		// Send new data to existing filterUIs
-		foreach (var filterUI in m_FilterUIs)
-		{
-			filterUI.filterList = GetFilterList();
-		}
+			// Send new data to existing filterUIs
+			foreach (var filterUI in m_FilterUIs)
+			{
+				filterUI.filterList = GetFilterList();
+			}
+		}, m_AssetTypes));
 	}
 
-	// Call with no assetTypes for quick load (and no types)
-	IEnumerable<FolderDataIteration> CreateFolderData(HashSet<string> assetTypes = null, bool hasNext = true, HierarchyProperty hp = null)
+	IEnumerator CreateFolderData(Action<FolderData, bool> callback, HashSet<string> assetTypes, bool hasNext = true, HierarchyProperty hp = null)
 	{
 		if (hp == null)
 		{
@@ -2519,17 +2544,11 @@ public class EditorVR : MonoBehaviour
 			{
 				if (hp.isFolder)
 				{
-					FolderDataIteration folder = null;
-
-					foreach (var e in CreateFolderData(assetTypes, hasNext, hp))
+					yield return StartCoroutine(CreateFolderData((data, next) =>
 					{
-						folder = e;
-						if (assetTypes != null)
-							yield return e;
-					}
-
-					folderList.Add(folder.data);
-					hasNext = folder.hasNext;
+						folderList.Add(data);
+						hasNext = next;
+					}, assetTypes, hasNext, hp));
 				}
 				else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
 					assetList.Add(CreateAssetData(hp, assetTypes));
@@ -2537,10 +2556,13 @@ public class EditorVR : MonoBehaviour
 				if (hasNext)
 					hasNext = hp.Next(null);
 
-				if (assetTypes != null && Time.realtimeSinceStartup - m_LastFolderYieldTime > kMaxFrameTime)
+				// Spend a minimum amount of time in this function, and if we have extra time in the frame, use it
+				if (Time.realtimeSinceStartup - m_ProjectFolderLoadYieldTime > kMaxFrameTime
+					&& Time.realtimeSinceStartup - m_ProjectFolderLoadStartTime > kMinProjectFolderLoadTime)
 				{
-					m_LastFolderYieldTime = Time.realtimeSinceStartup;
+					m_ProjectFolderLoadYieldTime = Time.realtimeSinceStartup;
 					yield return null;
+					m_ProjectFolderLoadStartTime = Time.realtimeSinceStartup;
 				}
 			}
 
@@ -2548,19 +2570,16 @@ public class EditorVR : MonoBehaviour
 				hp.Previous(null);
 		}
 
-		yield return new FolderDataIteration
-		{
-			data = new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), instanceID),
-			hasNext = hasNext
-		};
+		callback(new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), instanceID), hasNext);
 	}
 
 	AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
 	{
+		
 		var type = "";
 		if (assetTypes != null)
 		{
-			type = hp.pptrValue.GetType().Name;
+			type = AssetDatabase.GetMainAssetTypeAtPath(AssetDatabase.GUIDToAssetPath(hp.guid)).Name;
 			switch (type)
 			{
 				case "GameObject":
@@ -2588,7 +2607,7 @@ public class EditorVR : MonoBehaviour
 			assetTypes.Add(type);
 		}
 
-		return new AssetData(hp.name, hp.instanceID, hp.icon, type);
+		return new AssetData(hp.name, hp.instanceID, type);
 	}
 
 #if UNITY_EDITOR
@@ -2618,7 +2637,6 @@ public class EditorVR : MonoBehaviour
 	{
 		InitializeInputManager();
 		s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
-		EditorApplication.projectWindowChanged += OnProjectWindowChanged;
 	}
 
 	private static void InitializeInputManager()
@@ -2654,14 +2672,8 @@ public class EditorVR : MonoBehaviour
 		U.Object.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
 	}
 
-	static void OnProjectWindowChanged()
-	{
-		s_Instance.StartCoroutine(s_Instance.LoadProjectFolders(false));
-	}
-
 	private static void OnEVRDisabled()
 	{
-		EditorApplication.projectWindowChanged -= OnProjectWindowChanged;
 		U.Object.Destroy(s_Instance.gameObject);
 		U.Object.Destroy(s_InputManager.gameObject);
 	}

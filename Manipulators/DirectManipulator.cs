@@ -1,74 +1,89 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
 
-public class DirectManipulator : MonoBehaviour, IManipulator
+namespace UnityEngine.VR.Manipulators
 {
-	public Transform target { set { m_Target = value; } }
-	[SerializeField]
-	private Transform m_Target;
-
-	[SerializeField]
-	private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
-
-	public bool dragging { get; private set; }
-
-	private Vector3 m_PositionOffset;
-	private Quaternion m_RotationOffset;
-
-	public Action<Vector3> translate { private get; set; }
-	public Action<Quaternion> rotate { private get; set; }
-	public Action<Vector3> scale { private get; set; }
-
-	void OnEnable()
+	public class DirectManipulator : MonoBehaviour, IManipulator
 	{
-		foreach (var h in m_AllHandles)
+		public Transform target
 		{
-			h.dragStarted += OnHandleDragStarted;
-			h.dragging += OnHandleDragging;
-			h.dragEnded += OnHandleDragEnded;
+			set { m_Target = value; }
 		}
-	}
 
-	void OnDisable()
-	{
-		foreach (var h in m_AllHandles)
+		[SerializeField]
+		private Transform m_Target;
+
+		[SerializeField]
+		private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
+
+		public bool dragging { get; private set; }
+
+		private Vector3 m_PositionOffset;
+		private Quaternion m_RotationOffset;
+
+		public Action<Vector3> translate { private get; set; }
+		public Action<Quaternion> rotate { private get; set; }
+		public Action<Vector3> scale { private get; set; }
+
+		void OnEnable()
 		{
-			h.dragStarted -= OnHandleDragStarted;
-			h.dragging -= OnHandleDragging;
-			h.dragEnded -= OnHandleDragEnded;
+			foreach (var h in m_AllHandles)
+			{
+				h.dragStarted += OnHandleDragStarted;
+				h.dragging += OnHandleDragging;
+				h.dragEnded += OnHandleDragEnded;
+			}
 		}
-	}
 
-	private void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
-	{
-		dragging = true;
+		void OnDisable()
+		{
+			foreach (var h in m_AllHandles)
+			{
+				h.dragStarted -= OnHandleDragStarted;
+				h.dragging -= OnHandleDragging;
+				h.dragEnded -= OnHandleDragEnded;
+			}
+		}
 
-		var target = m_Target == null ? transform : m_Target;
+		private void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
+		{
+			foreach (var h in m_AllHandles)
+				h.gameObject.SetActive(h == handle);
+			dragging = true;
 
-		var rayOrigin = eventData.rayOrigin;
-		var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
-		m_PositionOffset = inverseRotation * (target.transform.position - rayOrigin.position);
-		m_RotationOffset = inverseRotation * target.transform.rotation;
-	}
+			var target = m_Target == null
+				? transform
+				: m_Target;
 
-	private void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
-	{
-		var target = m_Target == null ? transform : m_Target;
+			var rayOrigin = eventData.rayOrigin;
+			var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
+			m_PositionOffset = inverseRotation * (target.transform.position - rayOrigin.position);
+			m_RotationOffset = inverseRotation * target.transform.rotation;
+		}
 
-		var rayOrigin = eventData.rayOrigin;
+		private void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
+		{
+			var target = m_Target == null
+				? transform
+				: m_Target;
 
-		if (translate != null)
-			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
+			var rayOrigin = eventData.rayOrigin;
+			if (translate != null)
+				translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
 
-		if (rotate != null)
-			rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
-	}
+			if (rotate != null)
+				rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
+		}
 
-	private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
-	{
-		dragging = false;
+		private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
+		{
+			if (gameObject.activeSelf)
+				foreach (var h in m_AllHandles)
+					h.gameObject.SetActive(true);
+
+			dragging = false;
+		}
 	}
 }

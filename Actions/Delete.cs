@@ -5,16 +5,12 @@ using UnityEngine.VR.Utilities;
 namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Delete", ActionMenuItemAttribute.kDefaultActionSectionName, 7)]
-	public class Delete : MonoBehaviour, IAction, ISpatialHash
+	public class Delete : BaseAction, ISpatialHash
 	{
-		public Sprite icon { get { return m_Icon; } }
-		[SerializeField]
-		private Sprite m_Icon;
-
 		public Action<Object> addObjectToSpatialHash { get; set; }
 		public Action<Object> removeObjectFromSpatialHash { get; set; }
 
-		public bool ExecuteAction()
+		public override void ExecuteAction()
 		{
 			var selection = Selection.activeObject;
 			if (selection)
@@ -22,10 +18,7 @@ namespace UnityEngine.VR.Actions
 				removeObjectFromSpatialHash(selection);
 				U.Object.Destroy(selection);
 				Selection.activeObject = null;
-				return true;
 			}
-
-			return false;
 		}
 	}
 }

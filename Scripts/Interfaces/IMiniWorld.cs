@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
 ﻿using System;
-using UnityEngine;
+using System.Collections.Generic;
+﻿using UnityEngine;
 
 /// <summary>
 /// For the purpose of interacting with MiniWorlds
@@ -25,21 +25,12 @@ public interface IMiniWorld
 	Transform referenceTransform { get; }
 
 	/// <summary>
+	/// Matrix that converts from the mini world space to reference space (which may have scale and translation)
+	/// </summary>
+	Func<Camera, Matrix4x4> getWorldToCameraMatrix { get; }
+
+	/// <summary>
 	/// Sets a list of renderers to be skipped when rendering the MiniWorld
 	/// </summary>
 	List<Renderer> ignoreList { set; }
-
-	/// Preprocessing event that returns true if the MiniWorld should render
-	/// </summary>
-	Func<IMiniWorld, bool> preProcessRender { set; }
-
-	/// <summary>
-	/// Postprocessing event to clean up after render
-	/// </summary>
-	Action<IMiniWorld> postProcessRender { set; }
-
-	/// <summary>
-	/// The combined scale of the MiniWorld and its reference transform
-	/// </summary>
-	Vector3 miniWorldScale { get; }
 }

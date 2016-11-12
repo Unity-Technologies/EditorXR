@@ -8,15 +8,14 @@ using UnityEngine.VR.Actions;
 using UnityEngine.VR.Utilities;
 using UnityObject = UnityEngine.Object;
 
-[MainMenuItem("Primitives", "Create", "Create standard primitives")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IInstantiateMenuUI, ICustomRay, IToolActions, ISpatialHash
+[MainMenuItem("Primitive", "Primitive", "Create primitives in the scene")]
+public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IInstantiateMenuUI, ICustomRay, ISpatialHash
 {
 	class PrimitiveToolAction : IAction
 	{
 		public Sprite icon { get; internal set; }
-		public bool ExecuteAction()
+		public void ExecuteAction()
 		{
-			return true;
 		}
 	}
 

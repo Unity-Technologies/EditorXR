@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEngine.VR.Helpers
 {
-	public class UITransformCopy : UIBehaviour
+	public class UITransformCopy : MonoBehaviour
 	{
 		static readonly Vector2 kTransformPivot = new Vector2(0.5f, 0.5f);
 
@@ -30,7 +30,7 @@ namespace UnityEngine.VR.Helpers
 		[SerializeField]
 		bool m_ParentUnderSource = true;
 
-		protected override void Awake()
+		void Awake()
 		{
 			m_TargetTransform = transform;
 

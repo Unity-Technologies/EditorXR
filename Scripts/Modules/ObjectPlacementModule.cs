@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
+using UnityObject = UnityEngine.Object;
 
 public class ObjectPlacementModule : MonoBehaviour, ISpatialHash
 {
@@ -10,17 +12,8 @@ public class ObjectPlacementModule : MonoBehaviour, ISpatialHash
 
 	const float kGrowDuration = 0.5f;
 
-	public System.Action<Object> addObjectToSpatialHash { get; set; }
-	public System.Action<Object> removeObjectFromSpatialHash { get; set; }
-
-	public void Preview(Transform preview, Transform previewOrigin, float t = 1f, Quaternion? localRotation = null)
-	{
-		preview.transform.position = Vector3.Lerp(preview.transform.position, previewOrigin.position, t);
-		preview.transform.rotation = Quaternion.Lerp(
-									preview.transform.rotation,
-									localRotation != null ? previewOrigin.rotation * localRotation.Value : previewOrigin.rotation,
-									t);
-	}
+	public Action<UnityObject> addObjectToSpatialHash { private get; set; }
+	public Action<UnityObject> removeObjectFromSpatialHash { private get; set; }
 
 	public void PlaceObject(Transform obj, Vector3 targetScale)
 	{

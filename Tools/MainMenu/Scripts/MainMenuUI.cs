@@ -81,13 +81,13 @@ namespace UnityEngine.VR.Menus
 		private float m_RotationRate;
 		private float m_LastTargetRotation;
 		private Coroutine m_VisibilityCoroutine;
-		private Coroutine m_FrameRevealCoroutine;
+		Coroutine m_FrameRevealCoroutine;
 
-		private Transform[] m_MenuFaceContentTransforms;
-		private Vector3[] m_MenuFaceContentOriginalLocalPositions;
-		private Vector3[] m_MenuFaceContentOffsetLocalPositions;
-		private Vector3 m_MenuFaceContentOriginalLocalScale;
-		private Vector3 m_MenuFaceContentHiddenLocalScale;
+		Transform[] m_MenuFaceContentTransforms;
+		Vector3[] m_MenuFaceContentOriginalLocalPositions;
+		Vector3[] m_MenuFaceContentOffsetLocalPositions;
+		Vector3 m_MenuFaceContentOriginalLocalScale;
+		Vector3 m_MenuFaceContentHiddenLocalScale;
 
 		public Transform menuOrigin
 		{
@@ -455,7 +455,7 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator AnimateFrameRotationShapeChange(RotationState rotationState)
 		{
-			var smoothTime = rotationState == RotationState.Rotating ? 0.5f : 0.25f; // slower when rotating, faster when snapping
+			var smoothTime = rotationState == RotationState.Rotating ? 0.5f : 0.0375f; // slower when rotating, faster when snapping
 			var currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
 			var targetWeight = rotationState == RotationState.Rotating ? 100f : 0f;
 			var smoothVelocity = 0f;
@@ -505,7 +505,7 @@ namespace UnityEngine.VR.Menus
 			m_FrameRevealCoroutine = null;
 		}
 
-		private IEnumerator AnimateFaceReveal(int faceIndex)
+		IEnumerator AnimateFaceReveal(int faceIndex)
 		{
 			var targetScale = m_MenuFaceContentOriginalLocalScale;
 			var targetPosition = m_MenuFaceContentOriginalLocalPositions[faceIndex];

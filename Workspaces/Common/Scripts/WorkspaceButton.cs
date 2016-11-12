@@ -95,9 +95,11 @@ namespace UnityEngine.VR.Workspaces
 			set
 			{
 				if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
-					m_Icon.sprite = value
-						? m_AlternateIconSprite
-						: m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
+					m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
+			}
+			get
+			{
+				return m_Icon.sprite == m_AlternateIconSprite;
 			}
 		}
 
@@ -159,9 +161,7 @@ namespace UnityEngine.VR.Workspaces
 					if (!gameObject.activeInHierarchy)
 						return;
 
-					m_HighlightCoroutine = m_Highlighted
-						? StartCoroutine(BeginHighlight())
-						: StartCoroutine(EndHighlight());
+					m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
 				}
 			}
 		}
@@ -209,9 +209,7 @@ namespace UnityEngine.VR.Workspaces
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * kIconHighlightedLocalZOffset;
 
-			m_HighlightGradientPair = !m_GrayscaleGradient
-				? UnityBrandColorScheme.sessionGradient
-				: UnityBrandColorScheme.grayscaleSessionGradient;
+			m_HighlightGradientPair = m_GrayscaleGradient ? UnityBrandColorScheme.grayscaleSessionGradient : UnityBrandColorScheme.sessionGradient;
 
 			m_OriginalIconSprite = m_Icon.sprite;
 
@@ -261,6 +259,7 @@ namespace UnityEngine.VR.Workspaces
 				while (delay < m_DelayBeforeReveal)
 				{
 					delay += Time.unscaledDeltaTime;
+					yield return null;	
 					yield return null;
 				}
 
@@ -412,7 +411,7 @@ namespace UnityEngine.VR.Workspaces
 			foreach (var graphic in m_HighlightItems)
 			{
 				if (graphic)
-					graphic.color = customHighlightColor;
+					graphic.color = m_CustomHighlightColor;
 			}
 
 			m_IconContainer.localPosition = targetPosition;
@@ -463,9 +462,7 @@ namespace UnityEngine.VR.Workspaces
 		void SwapIconSprite()
 		{
 			// Alternate between the main icon and the alternate icon when the button is clicked
-			m_Icon.sprite = m_Icon.sprite == m_OriginalIconSprite
-				? m_AlternateIconSprite
-				: m_OriginalIconSprite;
+			alternateIconVisible = !alternateIconVisible;
 		}
 	}
 }

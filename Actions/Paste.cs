@@ -4,7 +4,7 @@ using UnityEngine.VR.Utilities;
 namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
-	public class Paste : MonoBehaviour, IAction, ISpatialHash
+	public class Paste : BaseAction, ISpatialHash
 	{
 		const int directionCount = 6;
 		static int directionCounter;
@@ -12,16 +12,12 @@ namespace UnityEngine.VR.Actions
 		[SerializeField]
 		float positionOffset = 1.5f;
 
-		public Sprite icon { get { return m_Icon; } }
-		[SerializeField]
-		private Sprite m_Icon;
-
 		public static Object buffer { get; set; }
 
 		public Action<Object> addObjectToSpatialHash { get; set; }
 		public Action<Object> removeObjectFromSpatialHash { get; set; }
 
-		public bool ExecuteAction()
+		public override void ExecuteAction()
 		{
 			//return EditorApplication.ExecuteActionMenuItem("Edit/Paste");
 
@@ -40,7 +36,9 @@ namespace UnityEngine.VR.Actions
 						var camera = U.Camera.GetMainCamera();
 						var viewDirection = camera.transform.position - transform.position;
 						viewDirection.y = 0;
-						offset = Quaternion.LookRotation(viewDirection) * Quaternion.AngleAxis((float)directionCounter / directionCount * 360, Vector3.forward) * Vector3.left * bounds.Value.size.magnitude * positionOffset;
+						offset = Quaternion.LookRotation(viewDirection) 
+							* Quaternion.AngleAxis((float)directionCounter / directionCount * 360, Vector3.forward) 
+							* Vector3.left * bounds.Value.size.magnitude * positionOffset;
 						directionCounter++;
 					}
 					go.transform.position += offset;
@@ -48,11 +46,7 @@ namespace UnityEngine.VR.Actions
 				}
 
 				addObjectToSpatialHash(pasted);
-
-				return true;
 			}
-
-			return false;
 		}
 	}
 }
