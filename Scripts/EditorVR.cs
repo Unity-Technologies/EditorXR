@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -108,6 +108,7 @@ public class EditorVR : MonoBehaviour
 		public bool restoreMainMenu;
 		public IAlternateMenu alternateMenu;
 		public ITool currentTool;
+		public List<GameObject> customMenus;
 	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
@@ -271,7 +272,8 @@ public class EditorVR : MonoBehaviour
 		{
 			var deviceData = new DeviceData
 			{
-				tools = new Stack<ITool>()
+				tools = new Stack<ITool>(),
+				customMenus = new List<GameObject>()
 			};
 			m_DeviceData.Add(device, deviceData);
 		}
@@ -571,6 +573,28 @@ public class EditorVR : MonoBehaviour
 
 	void OnMainMenuVisiblityChanged(IMainMenu mainMenu)
 	{
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			if (mainMenu == deviceData.mainMenu)
+			{
+				// Clean up any stale menus
+				deviceData.customMenus.RemoveAll((go) => go == null);
+
+				// Toggle visibility between custom menus and the main menu
+				foreach (GameObject go in deviceData.customMenus)
+					go.SetActive(!mainMenu.visible);
+
+				if (deviceData.customMenus.Count > 0)
+				{
+					var dpr = rayOriginPair.Value.GetComponentInChildren<DefaultProxyRay>();
+					if (mainMenu.visible)
+						dpr.Show();
+					else
+						dpr.Hide();
+				}
+			}
+		}, true);
+
 		UpdatePlayerHandleMaps();
 	}
 
@@ -836,6 +860,31 @@ public class EditorVR : MonoBehaviour
 			else if (inputField is StandardInputField)
 				inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
 		}
+
+		return go;
+	}
+
+	private GameObject InstantiateMenuUI(Transform rayOrigin, GameObject prefab)
+	{
+		var go = InstantiateUI(prefab);
+
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			if (proxy.rayOrigins.ContainsValue(rayOrigin) && rayOriginPair.Value != rayOrigin)
+			{
+				var otherRayOrigin = rayOriginPair.Value;
+				Transform menuOrigin;
+				if (proxy.menuOrigins.TryGetValue(otherRayOrigin, out menuOrigin))
+				{
+					go.transform.SetParent(menuOrigin);
+					go.transform.localPosition = Vector3.zero;
+					go.transform.localRotation = Quaternion.identity;
+
+					deviceData.customMenus.Add(go);
+					deviceData.mainMenu.visible = false;
+				}
+			}
+		}, true);
 
 		return go;
 	}
@@ -1196,6 +1245,10 @@ public class EditorVR : MonoBehaviour
 		var createWorkspace = obj as ICreateWorkspace;
 		if (createWorkspace != null)
 			createWorkspace.createWorkspace = CreateWorkspace;
+
+		var instantiateMenuUI = obj as IInstantiateMenuUI;
+		if (instantiateMenuUI != null)
+			instantiateMenuUI.instantiateMenuUI = InstantiateMenuUI;
 
 		var raycaster = obj as IUsesRaycastResults;
 		if (raycaster != null)

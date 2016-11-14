@@ -1,9 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor.VR;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 
 public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomActionMap
@@ -36,7 +33,6 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomA
 		set { m_JoystickLocomotionInput = (JoystickLocomotion)value; }
 	}
 	private JoystickLocomotion m_JoystickLocomotionInput;
-
 
 	void Start()
 	{

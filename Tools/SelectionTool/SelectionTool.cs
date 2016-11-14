@@ -33,7 +33,6 @@ namespace UnityEngine.VR.Tools
 		public Action<GameObject, bool> setHighlight { private get; set; }
 		public Action<GameObject, bool> setLocked { get; set; }
 		public Func<GameObject, bool> isLocked { get; set; }
-		public Action<GameObject, Transform> checkHover { get; set; }
 
 		public event Action<GameObject, Transform> hovered;
 		public event Action<Transform> selected;
@@ -57,7 +56,6 @@ namespace UnityEngine.VR.Tools
 					return;
 			}
 
-
 			if (hovered != null)
 				hovered(newHoverGameObject, rayOrigin);
 
@@ -78,7 +76,6 @@ namespace UnityEngine.VR.Tools
 
 			if (m_SelectionInput.select.wasJustPressed && m_HoverGameObject)
 				m_PressedObject = m_HoverGameObject;
-
 			// Handle select button press
 			if (m_SelectionInput.select.wasJustReleased)
 			{
@@ -93,7 +90,8 @@ namespace UnityEngine.VR.Tools
 						{
 							// Already selected, so remove from selection
 							s_SelectedObjects.Remove(m_HoverGameObject);
-						} else
+						}
+						else
 						{
 							// Add to selection
 							s_SelectedObjects.Add(m_HoverGameObject);
