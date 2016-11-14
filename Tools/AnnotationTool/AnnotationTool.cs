@@ -9,10 +9,10 @@ using UnityEngine.VR.Utilities;
 using UnityEditor.VR;
 
 [MainMenuItem("Annotation", "Tools", "Draw in the space")]
-public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICustomRay, IOtherRay, IInstantiateUI
+public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI
 {
 	public Transform rayOrigin { private get; set; }
-	public Transform otherRayOrigin { private get; set; }
+	public List<Transform> otherRayOrigins { private get; set; }
 
 	public Action showDefaultRay { get; set; }
 	public Action hideDefaultRay { get; set; }
@@ -102,7 +102,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 		{
 			GenerateCustomPointer();
 
-			if (otherRayOrigin != null)
+			if (otherRayOrigins != null)
 				CheckColorPicker();
 
 			CheckBrushSizeUi();
@@ -174,35 +174,45 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ICus
 
 	private void CheckColorPicker()
 	{
-		var otherRayMatrix = otherRayOrigin.worldToLocalMatrix;
-		var rayLocalPos = otherRayMatrix.MultiplyPoint3x4(rayOrigin.position);
-		var distance = Mathf.Abs(rayLocalPos.x);
-
-		if (distance < .325f)
+		foreach (var otherRayOrigin in otherRayOrigins)
 		{
-			if (m_ColorPicker == null)
+			var otherRayMatrix = otherRayOrigin.worldToLocalMatrix;
+			var rayLocalPos = otherRayMatrix.MultiplyPoint3x4(rayOrigin.position);
+			var distance = Mathf.Abs(rayLocalPos.x);
+
+			if (distance < .325f)
 			{
-				var colorPickerObj = instantiateUI(m_ColorPickerPrefab);
-				m_ColorPicker = colorPickerObj.GetComponent<ColorPickerUI>();
-				m_ColorPicker.toolRayOrigin = rayOrigin;
-				m_ColorPicker.onColorPicked = HandleColoring;
+				if (m_ColorPicker == null)
+				{
+					var colorPickerObj = instantiateUI(m_ColorPickerPrefab);
+					m_ColorPicker = colorPickerObj.GetComponent<ColorPickerUI>();
+					m_ColorPicker.toolRayOrigin = rayOrigin;
+					m_ColorPicker.onColorPicked = HandleColoring;
 
-				var pickerTransform = m_ColorPicker.transform;
-				pickerTransform.SetParent(otherRayOrigin);
-				pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
-				pickerTransform.localRotation = Quaternion.identity;
+					var pickerTransform = m_ColorPicker.transform;
+					pickerTransform.SetParent(otherRayOrigin);
+					pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
+					pickerTransform.localRotation = Quaternion.identity;
+				}
+				else if (m_ColorPicker.transform.parent != otherRayOrigin)
+				{
+					var pickerTransform = m_ColorPicker.transform;
+					pickerTransform.SetParent(otherRayOrigin);
+					pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
+					pickerTransform.localRotation = Quaternion.identity;
+				}
+
+				float dot = Vector3.Dot(otherRayOrigin.right, rayOrigin.position - otherRayOrigin.position);
+				Vector3 localPos = m_ColorPicker.transform.localPosition;
+				localPos.x = Mathf.Abs(localPos.x) * Mathf.Sign(dot);
+				m_ColorPicker.transform.localPosition = localPos;
+
+				if (!m_ColorPicker.enabled)
+					m_ColorPicker.Show();
 			}
-
-			float dot = Vector3.Dot(otherRayOrigin.right, rayOrigin.position - otherRayOrigin.position);
-			Vector3 localPos = m_ColorPicker.transform.localPosition;
-			localPos.x = Mathf.Abs(localPos.x) * Mathf.Sign(dot);
-			m_ColorPicker.transform.localPosition = localPos;
-
-			if (!m_ColorPicker.enabled)
-				m_ColorPicker.Show();
+			else if (m_ColorPicker && m_ColorPicker.enabled)
+				m_ColorPicker.Hide();
 		}
-		else if (m_ColorPicker && m_ColorPicker.enabled)
-			m_ColorPicker.Hide();
 	}
 
 	private void HandleColoring(Color newColor)

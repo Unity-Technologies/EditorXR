@@ -1169,14 +1169,16 @@ public class EditorVR : MonoBehaviour
 					lockableRay.unlockRay = dpr.UnlockRay;
 				}
 
-				var otherRay = obj as IOtherRay;
-				if (otherRay != null)
+				var rayOrigins = obj as IUsesRayOrigins;
+				if (rayOrigins != null)
 				{
-					Node otherNode = (Node)(1 - (int)GetNodeForRayOrigin(rayOrigin).Value);
-					Transform otherRayOrigin;
-					var proxy = GetProxyForRayOrigin(rayOrigin);
-					if (proxy != null && proxy.rayOrigins.TryGetValue(otherNode, out otherRayOrigin))
-						otherRay.otherRayOrigin = otherRayOrigin;
+					List<Transform> otherRayOrigins = new List<Transform>();
+					ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
+					{
+						if (rayOriginPair.Value != rayOrigin)
+							otherRayOrigins.Add(rayOriginPair.Value);
+					}, true);
+					rayOrigins.otherRayOrigins = otherRayOrigins;
 				}
 			}
 
