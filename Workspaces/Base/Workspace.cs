@@ -7,7 +7,7 @@ using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Workspaces
 {
-	public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
+	public abstract class Workspace : MonoBehaviour, IInstantiateUI, ISetHighlight
 	{
 		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 		public static readonly Vector3 kDefaultOffset = new Vector3(0, -0.15f, 1f);

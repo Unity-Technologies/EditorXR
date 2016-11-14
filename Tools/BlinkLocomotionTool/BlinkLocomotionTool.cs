@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay, ICustomActionMap
+public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, ICustomActionMap
 {
 	private enum State
 	{

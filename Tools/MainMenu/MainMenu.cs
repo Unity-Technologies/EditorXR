@@ -10,7 +10,7 @@ using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins
+	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, IRayLocking, IMenuOrigins
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]

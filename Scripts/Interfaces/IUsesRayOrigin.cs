@@ -1,6 +1,6 @@
 ﻿namespace UnityEngine.VR.Tools
 {
-    public interface IRay
+	public interface IUsesRayOrigin
 	{
 		Transform rayOrigin
 		{

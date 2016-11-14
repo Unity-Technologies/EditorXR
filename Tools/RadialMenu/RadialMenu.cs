@@ -54,10 +54,6 @@ namespace UnityEngine.VR.Menus
 		}
 		Transform m_AlternateMenuOrigin;
 
-		public Node? node { get; set; }
-
-		public event Action<Node?> itemWasSelected = delegate {};
-
 		public bool visible
 		{
 			get { return m_Visible; }
@@ -72,6 +68,10 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 		bool m_Visible;
+
+		public event Action<Transform> itemWasSelected;
+
+		public Transform rayOrigin { private get; set; }
 
 		public Func<GameObject, GameObject> instantiateUI { get; set; }
 
@@ -97,7 +97,9 @@ namespace UnityEngine.VR.Menus
 			if (m_RadialMenuInput.selectItem.wasJustReleased)
 			{
 				m_RadialMenuUI.SelectionOccurred();
-				itemWasSelected(node);
+
+				if (itemWasSelected != null)
+					itemWasSelected(rayOrigin);
 			}
 		}
 	}
