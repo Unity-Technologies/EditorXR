@@ -1,4 +1,4 @@
-﻿using UnityEngine.VR.Modules;
+using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Utilities
 {
@@ -78,6 +78,7 @@ namespace UnityEngine.VR.Utilities
 						forwardRay.origin = forwardRay.GetPoint(-maxDistance);
 
 						Vector3 forwardHit;
+
 						if (collisionTester.Raycast(forwardRay, out hitInfo, maxDistance * 2f))
 							forwardHit = hitInfo.point;
 						else

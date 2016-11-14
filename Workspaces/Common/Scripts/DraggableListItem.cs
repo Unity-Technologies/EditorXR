@@ -4,8 +4,9 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Utilities;
 
-public class DraggableListItem<DataType> : ListViewItem<DataType>, IPreview where DataType : ListViewItemData
+public class DraggableListItem<DataType> : ListViewItem<DataType>, IGetPreviewOrigin where DataType : ListViewItemData
 {
 	const float kMagnetizeDuration = 0.5f;
 
@@ -14,8 +15,6 @@ public class DraggableListItem<DataType> : ListViewItem<DataType>, IPreview wher
 	protected float m_DragLerp;
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { set; protected get; }
-
-	public PreviewDelegate preview { set; protected get; }
 
 	protected virtual void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
@@ -41,7 +40,10 @@ public class DraggableListItem<DataType> : ListViewItem<DataType>, IPreview wher
 	protected virtual void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		if (m_DragObject)
-			preview(m_DragObject, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_DragLerp);
+		{
+			var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
+			U.Math.LerpTransform(m_DragObject, previewOrigin.position, previewOrigin.rotation, m_DragLerp);
+		}
 	}
 
 	protected virtual void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)

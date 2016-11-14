@@ -194,6 +194,19 @@
 				child.position = parent.position + parent.rotation * positionOffset;
 				child.rotation = parent.rotation * rotationOffset;
 			}
+
+			/// <summary>
+			/// Interpolates a source transform towards a destination
+			/// </summary>
+			/// <param name="source">The source Transform we are interpolating</param>
+			/// <param name="targetPosition">The target position</param>
+			/// <param name="targetRotation">The target rotation</param>
+			/// <param name="t">Interpolation parameter for smooth transitions (Optional)</param>
+			public static void LerpTransform(Transform source, Vector3 targetPosition, Quaternion targetRotation, float t = 1f)
+			{
+				source.position = Vector3.Lerp(source.position, targetPosition, t);
+				source.rotation = Quaternion.Slerp(source.rotation, targetRotation, t);
+			}
 		}
 	}
 }
