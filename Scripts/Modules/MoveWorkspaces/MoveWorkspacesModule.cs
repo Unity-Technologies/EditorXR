@@ -8,7 +8,7 @@ using UnityEditor.VR;
 using System;
 
 [ExecuteInEditMode]
-public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IRay, ICustomRay, IMoveWorkspaces
+public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayOrigin, ICustomRay, IMoveWorkspaces
 {
 	public Standard standardInput { set; get; }
 
