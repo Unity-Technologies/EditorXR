@@ -70,7 +70,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 		m_ToolMenu = instantiateMenuUI(rayOrigin, m_MenuPrefab.gameObject);
 		var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
 		connectInterfaces(createPrimitiveMenu, rayOrigin);
-		createPrimitiveMenu.selectPrimitive += SetSelectedPrimitive;
+		createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
 	}
 
 	void SetSelectedPrimitive(PrimitiveType type, bool isFreeform)
@@ -114,8 +114,8 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 
 	void UpdateFreeformScale()
 	{
-		var maxCorner = Vector3.Max(m_StartPoint,m_EndPoint);
-		var minCorner = Vector3.Min(m_StartPoint,m_EndPoint);
+		var maxCorner = Vector3.Max(m_StartPoint, m_EndPoint);
+		var minCorner = Vector3.Min(m_StartPoint, m_EndPoint);
 		m_CurrentGameObject.transform.localScale = (maxCorner - minCorner);
 	}
 

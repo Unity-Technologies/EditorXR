@@ -125,14 +125,14 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 	float m_ScaleFactor;
 	bool m_WasScaling;
 
+	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
+	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
+
 	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
 
 	public Func<DirectSelection, Transform, bool> canGrabObject { private get; set; }
 	public Func<IGrabObject, DirectSelection, Transform, bool> grabObject { private get; set; }
 	public Action<IGrabObject, Transform, Transform> dropObject { private get; set; }
-
-	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
-	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 
 	void Awake()
 	{

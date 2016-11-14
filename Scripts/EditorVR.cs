@@ -1246,9 +1246,9 @@ public class EditorVR : MonoBehaviour
 		if (createWorkspace != null)
 			createWorkspace.createWorkspace = CreateWorkspace;
 
-		var handleToolMenuUI = obj as IInstantiateMenuUI;
-		if (handleToolMenuUI != null)
-			handleToolMenuUI.instantiateMenuUI = InstantiateMenuUI;
+		var instantiateMenuUI = obj as IInstantiateMenuUI;
+		if (instantiateMenuUI != null)
+			instantiateMenuUI.instantiateMenuUI = InstantiateMenuUI;
 
 		var raycaster = obj as IUsesRaycastResults;
 		if (raycaster != null)

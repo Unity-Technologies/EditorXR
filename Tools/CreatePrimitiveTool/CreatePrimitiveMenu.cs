@@ -10,7 +10,7 @@ public class CreatePrimitiveMenu : MonoBehaviour
 
 	public Action<PrimitiveType, bool> selectPrimitive;
 
-	public void CreatePrimitive(int type)
+	public void SelectPrimitive(int type)
 	{
 		selectPrimitive((PrimitiveType)type, false);
 
@@ -22,7 +22,7 @@ public class CreatePrimitiveMenu : MonoBehaviour
 		}
 	}
 
-	public void CreateFreeformCube()
+	public void SelectFreeformCuboid()
 	{
 		selectPrimitive(PrimitiveType.Cube, true);
 
