@@ -2153,9 +2153,7 @@ public class EditorVR : MonoBehaviour
 		if (m_FolderData == null)
 			return new FolderData[0];
 
-		var assetsFolder = new FolderData(m_FolderData[0]) { expanded = true };
-
-		return new[] { assetsFolder };
+		return m_FolderData;
 	}
 
 	void LoadProjectFolders()
@@ -2182,6 +2180,8 @@ public class EditorVR : MonoBehaviour
 
 	IEnumerator CreateFolderData(Action<FolderData, bool> callback, HashSet<string> assetTypes, bool hasNext = true, HierarchyProperty hp = null)
 	{
+		var defaultToExpanded = hp == null; // First folder (Assets) defaults expanded
+
 		if (hp == null)
 		{
 			hp = new HierarchyProperty(HierarchyType.Assets);
@@ -2225,12 +2225,11 @@ public class EditorVR : MonoBehaviour
 				hp.Previous(null);
 		}
 
-		callback(new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), instanceID), hasNext);
+		callback(new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), instanceID, defaultToExpanded), hasNext);
 	}
 
 	AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
 	{
-		
 		var type = "";
 		if (assetTypes != null)
 		{

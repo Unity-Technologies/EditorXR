@@ -27,6 +27,17 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
 
+	readonly Dictionary<int, bool> m_ExpandStates = new Dictionary<int, bool>(); 
+
+	public override InspectorData[] data
+	{
+		set
+		{
+			base.data = value;
+			m_ExpandStates.Clear();
+		}
+	}
+
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
 	public PreviewDelegate preview { private get; set; }
@@ -76,32 +87,39 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	void UpdateRecursively(InspectorData[] data, ref float totalOffset, int depth = 0)
 	{
-		foreach (var item in data)
+		foreach (var datum in data)
 		{
-			m_ItemSize = m_TemplateSizes[item.template];
-			if (totalOffset + scrollOffset + m_ItemSize.z < 0)
-				RecycleBeginning(item);
-			else if (totalOffset + scrollOffset > bounds.size.z)
-				RecycleEnd(item);
-			else
-				UpdateItemRecursive(item, totalOffset, depth);
-			totalOffset += m_ItemSize.z;
-			if (item.children != null)
+			bool expanded;
+			if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
 			{
-				if (item.expanded)
-					UpdateRecursively(item.children, ref totalOffset, depth + 1);
+				expanded = datum.defaultToExpanded;
+				m_ExpandStates[datum.instanceID] = expanded;
+			}
+
+			m_ItemSize = m_TemplateSizes[datum.template];
+			if (totalOffset + scrollOffset + m_ItemSize.z < 0)
+				RecycleBeginning(datum);
+			else if (totalOffset + scrollOffset > bounds.size.z)
+				RecycleEnd(datum);
+			else
+				UpdateItemRecursive(datum, totalOffset, depth, expanded);
+			totalOffset += m_ItemSize.z;
+			if (datum.children != null)
+			{
+				if (expanded)
+					UpdateRecursively(datum.children, ref totalOffset, depth + 1);
 				else
-					RecycleChildren(item);
+					RecycleChildren(datum);
 			}
 		}
 	}
 
-	void UpdateItemRecursive(InspectorData data, float offset, int depth)
+	void UpdateItemRecursive(InspectorData data, float offset, int depth, bool expanded)
 	{
 		if (data.item == null)
 			data.item = GetItem(data);
 		var item = (InspectorListItem)data.item;
-		item.UpdateSelf(bounds.size.x - kClipMargin, depth);
+		item.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded);
 		item.UpdateClipTexts(transform.worldToLocalMatrix, bounds.extents);
 
 		UpdateItem(item.transform, offset);
@@ -138,7 +156,14 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			headerItem.setLocked = setIsLocked;
 		}
 
+		item.toggleExpanded = ToggleExpanded;
+
 		return item;
+	}
+
+	void ToggleExpanded(InspectorData data)
+	{
+		m_ExpandStates[data.instanceID] = !m_ExpandStates[data.instanceID];
 	}
 
 	void OnArraySizeChanged(PropertyData element)

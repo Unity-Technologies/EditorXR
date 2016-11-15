@@ -35,17 +35,18 @@ namespace ListView
 		{
 			for (int i = 0; i < m_Data.Length; i++)
 			{
+				var datum = m_Data[i];
 				if (i + m_DataOffset < -1)
 				{
-					RecycleBeginning(m_Data[i]);
+					RecycleBeginning(datum);
 				}
 				else if (i + m_DataOffset > m_NumRows - 1)
 				{
-					RecycleEnd(m_Data[i]);
+					RecycleEnd(datum);
 				}
 				else
 				{
-					UpdateVisibleItem(m_Data[i], i);
+					UpdateVisibleItem(datum, i);
 				}
 			}
 		}

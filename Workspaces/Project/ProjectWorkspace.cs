@@ -36,27 +36,13 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFold
 
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
-	FolderData m_OpenFolder;
 
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 	public PreviewDelegate preview { private get; set; }
 
-	public FolderData[] folderData
-	{
-		private get { return m_ProjectUI.folderListView.data; }
-		set
-		{
-			var oldData = m_ProjectUI.folderListView.data;
-			if (oldData.Length > 0)
-				CopyExpandStates(oldData[0], value[0]);
-
-			m_ProjectUI.folderListView.data = value;
-			if (value.Length > 0)
-				SelectFolder(m_OpenFolder != null ? GetFolderDataByInstanceID(value[0], m_OpenFolder.instanceID) : value[0]);
-		}
-	}
+	public FolderData[] folderData { set { m_ProjectUI.folderListView.data = value; } }
 
 	public List<string> filterList { set { m_FilterUI.filterList = value; } }
 
@@ -192,12 +178,6 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFold
 
 	void SelectFolder(FolderData data)
 	{
-		if (data == m_OpenFolder)
-			return;
-
-		m_OpenFolder = data;
-		m_ProjectUI.folderListView.ClearSelected();
-		data.selected = true;
 		m_ProjectUI.assetGridView.data = data.assets;
 		m_ProjectUI.assetGridView.scrollOffset = 0;
 	}
@@ -300,38 +280,5 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFold
 	bool TestFilter(string type)
 	{
 		return FilterUI.TestFilter(m_FilterUI.searchQuery, type);
-	}
-
-	FolderData GetFolderDataByInstanceID(FolderData data, int instanceID)
-	{
-		if (data.instanceID == instanceID)
-			return data;
-
-		if (data.children != null)
-		{
-			foreach (var child in data.children)
-			{
-				var folder = GetFolderDataByInstanceID(child, instanceID);
-				if (folder != null)
-					return folder;
-			}
-		}
-		return null;
-	}
-
-	// In case a folder was moved up the hierarchy, we must search the entire destination root for every source folder
-	void CopyExpandStates(FolderData source, FolderData destinationRoot)
-	{
-		var match = GetFolderDataByInstanceID(destinationRoot, source.instanceID);
-		if (match != null)
-			match.expanded = source.expanded;
-
-		if (source.children != null)
-		{
-			foreach (var child in source.children)
-			{
-				CopyExpandStates(child, destinationRoot);
-			}
-		}
 	}
 }

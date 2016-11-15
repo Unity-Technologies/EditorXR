@@ -22,12 +22,4 @@ public class AssetData : ListViewItemData
 		this.instanceID = instanceID;
 		this.type = type;
 	}
-
-	public AssetData(AssetData original)
-	{
-		template = kTemplateName;
-		name = original.name;
-		instanceID = original.instanceID;
-		type = original.type;
-	}
 }

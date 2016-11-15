@@ -1,13 +1,17 @@
-﻿using System;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine.VR.Utilities;
 
 public class PropertyData : InspectorData
 {
 	public SerializedProperty property { get; private set; }
 
-	public PropertyData(string template, SerializedObject serializedObject, InspectorData[] children, SerializedProperty property)
-		: base(template, serializedObject, children)
+	public override int instanceID
+	{
+		get { return property.GetHashCode(); }
+	}
+
+	public PropertyData(string template, SerializedObject serializedObject, InspectorData[] children, SerializedProperty property, bool defaultToExpanded = false)
+		: base(template, serializedObject, children, defaultToExpanded)
 	{
 		this.property = property;
 	}

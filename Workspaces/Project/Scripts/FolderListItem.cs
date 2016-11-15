@@ -43,7 +43,8 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	public Material cubeMaterial { get { return m_CubeRenderer.sharedMaterial; } }
 
-	public Action<FolderData> selectFolder;
+	public Action<FolderData> toggleExpanded { private get; set; }
+	public Action<FolderData> selectFolder { private get; set; }
 
 	public override void Setup(FolderData listData)
 	{
@@ -81,7 +82,7 @@ public class FolderListItem : ListViewItem<FolderData>
 		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
 	}
 
-	public void UpdateSelf(float width, int depth)
+	public void UpdateSelf(float width, int depth, bool expanded, bool selected)
 	{
 		var cubeScale = m_CubeTransform.localScale;
 		cubeScale.x = width;
@@ -101,11 +102,11 @@ public class FolderListItem : ListViewItem<FolderData>
 
 		// Rotate arrow for expand state
 		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-												Quaternion.AngleAxis(90f, Vector3.right) * (data.expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
-												kExpandArrowRotateSpeed);
+			Quaternion.AngleAxis(90f, Vector3.right) * (expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
+			kExpandArrowRotateSpeed);
 
 		// Set selected/hover/normal color
-		if (data.selected)
+		if (selected)
 			m_CubeRenderer.sharedMaterial.color = m_SelectedColor;
 		else if (m_Hovering)
 			m_CubeRenderer.sharedMaterial.color = m_HoverColor;
@@ -113,15 +114,14 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_CubeRenderer.sharedMaterial.color = m_NormalColor;
 	}
 
-	private void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
+	void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
 	{
-		data.expanded = !data.expanded;
+		toggleExpanded(data);
 	}
 
-	private void SelectFolder(BaseHandle baseHandle, HandleEventData eventData)
+	void SelectFolder(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		var folderItem = baseHandle.GetComponentInParent<FolderListItem>();
-		selectFolder(folderItem.data);
+		selectFolder(data);
 	}
 
 	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)

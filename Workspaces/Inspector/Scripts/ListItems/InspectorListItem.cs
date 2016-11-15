@@ -44,6 +44,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
+	public Action<InspectorData> toggleExpanded { private get; set; }
+
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -113,7 +115,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 			mask.graphic.material = null;
 	}
 
-	public virtual void UpdateSelf(float width, int depth)
+	public virtual void UpdateSelf(float width, int depth, bool expanded)
 	{
 		var cubeScale = m_Cube.transform.localScale;
 		cubeScale.x = width;
@@ -305,5 +307,10 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 
 	protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
+	}
+
+	public void ToggleExpanded()
+	{
+		toggleExpanded(data);
 	}
 }
