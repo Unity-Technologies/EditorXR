@@ -75,6 +75,9 @@ public class MiniWorldRenderer : MonoBehaviour
 			for (var i = 0; i < m_IgnoreList.Count; i++)
 			{
 				var hiddenRenderer = m_IgnoreList[i];
+				if (!hiddenRenderer)
+					continue;
+
 				if (hiddenRenderer.CompareTag(kShowInMiniWorldTag))
 				{
 					m_IgnoredObjectLayer[i] = hiddenRenderer.gameObject.layer;
@@ -93,6 +96,9 @@ public class MiniWorldRenderer : MonoBehaviour
 			for (var i = 0; i < m_IgnoreList.Count; i++)
 			{
 				var hiddenRenderer = m_IgnoreList[i];
+				if (!hiddenRenderer)
+					continue;
+
 				if (hiddenRenderer.CompareTag(kShowInMiniWorldTag))
 					hiddenRenderer.gameObject.layer = m_IgnoredObjectLayer[i];
 				else

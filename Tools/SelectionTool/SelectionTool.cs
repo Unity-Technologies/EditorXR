@@ -28,19 +28,15 @@ namespace UnityEngine.VR.Tools
 		}
 		SelectionInput m_SelectionInput;
 
-		public Node selfNode { get; set; }
-
 		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 		public Transform rayOrigin { private get; set; }
 		public Action<GameObject, bool> setHighlight { private get; set; }
 		public Action<GameObject, bool> setLocked { get; set; }
 		public Func<GameObject, bool> isLocked { get; set; }
-		public Action<GameObject, Transform> checkHover { get; set; }
-
-		public event Action<GameObject, Transform> hovered;
-		public event Action<Transform> selected;
 
 		public Func<Transform, bool> isRayActive = delegate { return true; };
+		public event Action<GameObject, Transform> hovered;
+		public event Action<Transform> selected;
 
 		void Update()
 		{
@@ -61,6 +57,7 @@ namespace UnityEngine.VR.Tools
 					if (newPrefabRoot != s_CurrentPrefabOpened)
 						newHoverGameObject = newPrefabRoot;
 				}
+
 				if (newHoverGameObject.isStatic)
 					return;
 			}

@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.InputNew;
+using UnityEngine.VR;
 using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
@@ -117,8 +118,6 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	float m_ScaleFactor;
 	bool m_WasScaling;
 
-	public Node selfNode { get; set; }
-
 	public Action<Transform> showRay { private get; set; }
 	public Action<Transform> hideRay { private get; set; }
 
@@ -133,8 +132,6 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	public Action<IGrabObject, Transform, Transform> dropObject { private get; set; }
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
-
-	bool m_IsDragging;
 
 	void Awake()
 	{
@@ -191,6 +188,105 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		}
 
 		m_LastDirectSelection = directSelection;
+		if (!m_CurrentManipulator.dragging)
+		{
+			// Disable manipulator on direct hover or drag
+			if (manipulatorGameObject.activeSelf && hasObject)
+				manipulatorGameObject.SetActive(false);
+
+			foreach (var kvp in directSelection)
+			{
+				var selection = kvp.Value;
+				var rayOrigin = kvp.Key;
+
+				if (!canGrabObject(selection, rayOrigin))
+					continue;
+
+				var directSelectInput = (DirectSelectInput)selection.input;
+				if (directSelectInput.select.wasJustPressed)
+				{
+					if (!grabObject(this, selection, rayOrigin))
+						continue;
+
+					var grabbedObject = selection.gameObject.transform;
+
+					// Check if the other hand is already grabbing for two-handed scale
+					foreach (var grabData in m_GrabData)
+					{
+						var otherNode = grabData.Key;
+						if (otherNode != selection.node)
+						{
+							m_ScaleStartDistance = (rayOrigin.position - grabData.Value.rayOrigin.position).magnitude;
+							m_ScaleFirstNode = otherNode;
+							grabData.Value.positionOffset = grabbedObject.position - grabData.Value.rayOrigin.position;
+							break;
+						}
+					}
+
+					m_GrabData[selection.node] = new GrabData(rayOrigin, grabbedObject, directSelectInput);
+
+					Selection.activeGameObject = grabbedObject.gameObject;
+
+					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
+					EditorApplication.delayCall += () =>
+					{
+						// A direct selection has been made. Hide the manipulator until the selection changes
+						m_DirectSelected = true;
+					};
+				}
+			}
+
+			GrabData leftData;
+			hasLeft = m_GrabData.TryGetValue(Node.LeftHand, out leftData);
+
+			GrabData rightData;
+			hasRight = m_GrabData.TryGetValue(Node.RightHand, out rightData);
+
+			var leftHeld = leftData != null && leftData.input.select.isHeld;
+			var rightHeld = rightData != null && rightData.input.select.isHeld;
+			if (hasLeft && hasRight && leftHeld && rightHeld && leftData.grabbedObject == rightData.grabbedObject) // Two-handed scaling
+			{
+				// Offsets will change while scaling. Whichever hand keeps holding the trigger after scaling is done will need to reset itself
+				m_WasScaling = true;
+
+				m_ScaleFactor = (leftData.rayOrigin.position - rightData.rayOrigin.position).magnitude / m_ScaleStartDistance;
+				if (m_ScaleFactor > 0 && m_ScaleFactor < Mathf.Infinity)
+				{
+					if (m_ScaleFirstNode == Node.LeftHand)
+						leftData.ScaleObject(m_ScaleFactor);
+					else
+						rightData.ScaleObject(m_ScaleFactor);
+				}
+			}
+			else
+			{
+				if (m_WasScaling)
+				{
+					// Reset initial conditions
+					if (hasLeft)
+						leftData.Reset();
+					if (hasRight)
+						rightData.Reset();
+
+					m_WasScaling = false;
+				}
+
+				if (hasLeft && leftHeld)
+					leftData.PositionObject();
+
+				if (hasRight && rightHeld)
+					rightData.PositionObject();
+			}
+
+			if (hasLeft && leftData.input.select.wasJustReleased)
+				DropObject(Node.LeftHand);
+
+			if (hasRight && rightData.input.select.wasJustReleased)
+				DropObject(Node.RightHand);
+		}
+
+		// Manipulator is disabled while direct manipulation is happening
+		if (hasObject || m_DirectSelected)
 
 		if (!m_CurrentManipulator.dragging)
 		{

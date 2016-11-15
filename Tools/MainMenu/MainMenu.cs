@@ -53,24 +53,23 @@ namespace UnityEngine.VR.Menus
 
 		public bool visible
 		{
-			get { return m_Visible.HasValue && m_Visible.Value; }
+			get { return m_Visible; }
 			set
 			{
-				if (!m_Visible.HasValue || m_Visible != value)
+				if (m_Visible != value)
 				{
 					m_Visible = value;
-
 					if (m_MainMenuUI)
 						m_MainMenuUI.visible = value;
 
 					if (value)
 					{
 						hideDefaultRay();
-						lockRay(this);
+						lockRay(rayOrigin, this);
 					}
 					else
 					{
-						unlockRay(this);
+						unlockRay(rayOrigin, this);
 						showDefaultRay();
 					}
 
@@ -78,7 +77,7 @@ namespace UnityEngine.VR.Menus
 				}
 			}
 		}
-		private bool? m_Visible;
+		private bool m_Visible;
 
 		[SerializeField]
 		private MainMenuUI m_MainMenuPrefab;
@@ -95,8 +94,8 @@ namespace UnityEngine.VR.Menus
 		public Transform rayOrigin { private get; set; }
 		public Action hideDefaultRay { private get; set; }
 		public Action showDefaultRay { private get; set; }
-		public Func<object, bool> lockRay { private get; set; }
-		public Func<object, bool> unlockRay { private get; set; }
+		public Func<Transform, object, bool> lockRay { private get; set; }
+		public Func<Transform, object, bool> unlockRay { private get; set; }
 		public List<Type> menuTools { private get; set; }
 		public Func<Node, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
@@ -113,7 +112,7 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
-			m_MainMenuUI.visible = visible;
+			m_MainMenuUI.visible = m_Visible;
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
@@ -186,14 +185,14 @@ namespace UnityEngine.VR.Menus
 
 		private void OnDisable()
 		{
-			unlockRay(this);
+			unlockRay(rayOrigin, this);
 		}
 
 		private void OnDestroy()
 		{
 			U.Object.Destroy(m_MainMenuUI.gameObject);
 
-			unlockRay(this);
+			unlockRay(rayOrigin, this);
 			showDefaultRay();
 		}
 

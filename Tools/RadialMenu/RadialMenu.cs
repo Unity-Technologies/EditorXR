@@ -82,6 +82,7 @@ namespace UnityEngine.VR.Menus
 			m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
 			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_RadialMenuUI.actions = menuActions;
+			m_RadialMenuUI.selectItem = () => itemWasSelected(rayOrigin);
 			m_RadialMenuUI.Setup();
 			m_RadialMenuUI.visible = m_Visible;
 		}

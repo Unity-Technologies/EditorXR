@@ -146,7 +146,6 @@ namespace UnityEngine.VR.Menus
 					{
 						m_HighlightedButton.button.onClick.Invoke();
 						m_HighlightedButton.selected = true;
-						selectItem(); // call the externally set select action
 					}
 
 					m_DragMagnitude = 0f;
@@ -317,6 +316,7 @@ namespace UnityEngine.VR.Menus
 					var buttonAction = m_Actions[index].action;
 					buttonAction.ExecuteAction();
 					selectedSlot.icon = buttonAction.icon ?? m_MissingActionIcon;
+					selectItem();
 				});
 			}
 		}

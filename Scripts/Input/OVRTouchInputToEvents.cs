@@ -49,6 +49,9 @@ public class OVRTouchInputToEvents : MonoBehaviour
 			case VRInputDevice.VRControl.Trigger1:
 				value = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, controller);
 				return true;
+			case VRInputDevice.VRControl.Trigger2:
+				value = OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger, controller);
+				return true;
 			case VRInputDevice.VRControl.LeftStickX:
 				value = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller).x;
 				return true;
@@ -93,12 +96,6 @@ public class OVRTouchInputToEvents : MonoBehaviour
 
 			case OVRInput.Button.Two:
 				return (int)VRInputDevice.VRControl.Action2;
-
-			case OVRInput.Button.PrimaryIndexTrigger:
-				return (int)VRInputDevice.VRControl.Trigger1;
-
-			case OVRInput.Button.PrimaryHandTrigger:
-				return (int)VRInputDevice.VRControl.Trigger2;
 
 			case OVRInput.Button.PrimaryThumbstick:
 				return (int)VRInputDevice.VRControl.LeftStickButton;

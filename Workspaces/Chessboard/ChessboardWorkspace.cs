@@ -43,8 +43,8 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 		public Vector3 refTransformStartScale;
 	}
 
-	public Func<object, bool> lockRay { get; set; }
-	public Func<object, bool> unlockRay { get; set; }
+	public Func<Transform, object, bool> lockRay { get; set; }
+	public Func<Transform, object, bool> unlockRay { get; set; }
 
 	public IMiniWorld miniWorld { get { return m_MiniWorld; } }
 
@@ -211,12 +211,12 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 
 	void DragStarted(BaseHandle baseHandle, HandleEventData handleEventData)
 	{
-		lockRay(this);
+		lockRay(handleEventData.rayOrigin, this);
 	}
 
 	void DragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
 	{
-		unlockRay(this);
+		unlockRay(handleEventData.rayOrigin, this);
 	}
 
 	protected override void OnDestroy()

@@ -31,7 +31,6 @@ public class EditorVR : MonoBehaviour
 {
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
-	const string kShowInMiniWorldTag = "ShowInMiniWorld";
 	const string kVRPlayerTag = "VRPlayer";
 
 	private const float kDefaultRayLength = 100f;
@@ -43,7 +42,6 @@ public class EditorVR : MonoBehaviour
 	const float kPreviewScale = 0.1f;
 
 	const float kViewerPivotTransitionTime = 0.75f;
-	const float kMiniWorldManipulatorScale = 0.2f;
 
 	// Minimum time to spend loading the project folder before yielding
 	const float kMinProjectFolderLoadTime = 0.005f;
@@ -116,8 +114,8 @@ public class EditorVR : MonoBehaviour
 		public bool restoreMainMenu;
 		public IAlternateMenu alternateMenu;
 		public ITool currentTool;
-		public List<GameObject> toolMenus;
-    }
+		public List<GameObject> customMenus;
+	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
 	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
@@ -289,7 +287,7 @@ public class EditorVR : MonoBehaviour
 			var deviceData = new DeviceData
 			{
 				tools = new Stack<ITool>(),
-				toolMenus = new List<GameObject>()
+				customMenus = new List<GameObject>()
 			};
 			m_DeviceData.Add(device, deviceData);
 		}
@@ -403,7 +401,6 @@ public class EditorVR : MonoBehaviour
 			if (mainMenu == null)
 			{
 				mainMenu = SpawnMainMenu(typeof(MainMenu), device, false);
-				mainMenu.menuVisibilityChanged += OnMainMenuVisiblityChanged;
 				deviceData.mainMenu = mainMenu;
 				UpdatePlayerHandleMaps();
 			}
@@ -415,20 +412,6 @@ public class EditorVR : MonoBehaviour
 		m_SmoothCamera.enabled = VRView.showDeviceView;
 
 		UpdateKeyboardMallets();
-
-		foreach (var kvp in m_DeviceData)
-		{
-			var deviceData = kvp.Value;
-			var mainMenu = deviceData.mainMenu;
-			if (mainMenu != null)
-			{
-				deviceData.toolMenus.RemoveAll((go) => go == null);
-				foreach (GameObject go in deviceData.toolMenus)
-				{
-					go.SetActive(!mainMenu.visible);
-				}
-			}
-		}
 
 		var camera = U.Camera.GetMainCamera();
 		// Enable/disable workspace vacuum bounds based on distance to camera
@@ -611,88 +594,34 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	private void OnAlternateMenuItemSelected(Node? selectionToolNode)
+	void UpdateCustomMenus(IMainMenu mainMenu)
 	{
-		if (selectionToolNode == null)
-			return;
-
-		var updateMaps = false;
-		foreach (var kvp in m_DeviceData)
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
-			Node? node = GetDeviceNode(kvp.Key);
-			if (node.HasValue)
+			if (mainMenu == deviceData.mainMenu)
 			{
-				var deviceData = kvp.Value;
+				// Clean up any stale menus
+				deviceData.customMenus.RemoveAll((go) => go == null);
 
-				var alternateMenu = deviceData.alternateMenu;
-				if (alternateMenu != null)
+				// Toggle visibility between custom menus and the main menu
+				foreach (GameObject go in deviceData.customMenus)
+					go.SetActive(!mainMenu.visible);
+
+				if (deviceData.customMenus.Count > 0)
 				{
-					alternateMenu.visible = (node.Value == selectionToolNode) && Selection.gameObjects.Length > 0;
-
-					// Hide the main menu if the alternate menu is going to be visible
-					var mainMenu = deviceData.mainMenu;
-					if (mainMenu != null && alternateMenu.visible)
-					{
-						mainMenu.visible = false;
-						deviceData.restoreMainMenu = false;
-					}
-
-					// Move the activator button to an alternate position if the alternate menu will be shown
-					var mainMenuActivator = deviceData.mainMenuActivator;
-					if (mainMenuActivator != null)
-						mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
-
-					updateMaps = true;
+					var dpr = rayOriginPair.Value.GetComponentInChildren<DefaultProxyRay>();
+					if (mainMenu.visible)
+						dpr.Show();
+					else
+						dpr.Hide();
 				}
 			}
-		}
-
-		if (updateMaps)
-			UpdatePlayerHandleMaps();
+		}, true);
 	}
 
-	private void DisplayAlternateMenu(Node? forNode, GameObject forObject)
+	void OnMainMenuVisibilityChanged(IMainMenu mainMenu)
 	{
-		if (forNode == null)
-			return;
-
-		var updateMaps = false;
-		foreach (var kvp in m_DeviceData)
-		{
-			Node? node = GetDeviceNode(kvp.Key);
-			if (node.HasValue)
-			{
-				var deviceData = kvp.Value;
-
-				var alternateMenu = deviceData.alternateMenu;
-				if (alternateMenu != null)
-				{
-					alternateMenu.visible = (node.Value == forNode) && (forObject != null);
-
-					// Hide the main menu if the alternate menu is going to be visible
-					var mainMenu = deviceData.mainMenu;
-					if (mainMenu != null && alternateMenu.visible)
-					{
-						mainMenu.visible = false;
-						deviceData.restoreMainMenu = false;
-					}
-
-					// Move the activator button to an alternate position if the alternate menu will be shown
-					var mainMenuActivator = deviceData.mainMenuActivator;
-					if (mainMenuActivator != null)
-						mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
-
-					updateMaps = true;
-				}
-			}
-		}
-
-		if (updateMaps)
-			UpdatePlayerHandleMaps();
-	}
-
-	void OnMainMenuVisiblityChanged(IMainMenu mainMenu)
-	{
+		UpdateCustomMenus(mainMenu);
 		UpdatePlayerHandleMaps();
 	}
 
@@ -725,57 +654,6 @@ public class EditorVR : MonoBehaviour
 				}
 			}
 		}, true);
-	}
-
-	private void OnMainMenuActivatorSelected(Node? activatorNode)
-	{
-		if (activatorNode == null)
-			return;
-
-		foreach (var kvp in m_DeviceData)
-		{
-			var deviceData = kvp.Value;
-			Node? node = GetDeviceNode(kvp.Key);
-			if (node.HasValue)
-			{
-				if (node.Value == activatorNode)
-				{
-					var mainMenu = deviceData.mainMenu;
-					if (mainMenu != null)
-						mainMenu.visible = !mainMenu.visible;
-
-					// move to rest position if this is the node that made the selection
-					var mainMenuActivator = deviceData.mainMenuActivator;
-					if (mainMenuActivator != null)
-						mainMenuActivator.activatorButtonMoveAway = false;
-
-					var alternateMenu = deviceData.alternateMenu;
-					if (alternateMenu != null)
-						alternateMenu.visible = false;
-				}
-				else if (Selection.gameObjects.Length > 0)
-				{
-					// Enable the alternate menu on the other hand if the menu was opened on a hand with the alternate menu already enabled
-					var alternateMenu = deviceData.alternateMenu;
-					if (alternateMenu != null)
-					{
-						alternateMenu.visible = true;
-
-						var mainMenuActivator = deviceData.mainMenuActivator;
-						if (mainMenuActivator != null)
-							mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
-
-						// Close a menu if it was open, since it would conflict with the alternate menu
-						var mainMenu = deviceData.mainMenu;
-						if (mainMenu != null)
-						{
-							mainMenu.visible = false;
-							deviceData.restoreMainMenu = false;
-						}
-					}
-				}
-			}
-		}
 	}
 
 	void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)
@@ -1060,46 +938,26 @@ public class EditorVR : MonoBehaviour
 		return go;
 	}
 
-	private GameObject InstantiateMenuUI(Node node,MenuOrigin origin,GameObject prefab)
+	private GameObject InstantiateMenuUI(Transform rayOrigin, GameObject prefab)
 	{
-		var go = U.Object.Instantiate(prefab,transform);
-		foreach(Canvas canvas in go.GetComponentsInChildren<Canvas>())
-			canvas.worldCamera = m_EventCamera;
+		var go = InstantiateUI(prefab);
 
-		// the menu needs to be on the opposite hand to the tool
-		if (node == Node.LeftHand)
-			node = Node.RightHand;
-		else if(node == Node.RightHand)
-			node = Node.LeftHand;
-
-		// HACK: if not using this bool, the CreatePrimitiveMenu would be attached to both nodes
-		bool once = false;
-		ForEachRayOrigin((proxy,rayOriginPair,device,deviceData) =>
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
-			if (once)
-				return;
-
-			Dictionary<Transform,Transform> tempOrigin = null;
-
-			if(origin == MenuOrigin.Main)
-				tempOrigin = proxy.menuOrigins;
-			else if(origin == MenuOrigin.Alternate)
-				tempOrigin = proxy.alternateMenuOrigins;
-
-			Transform parent;
-			if(tempOrigin != null && tempOrigin.TryGetValue(rayOriginPair.Value,out parent))
+			if (proxy.rayOrigins.ContainsValue(rayOrigin) && rayOriginPair.Value != rayOrigin)
 			{
-				once = true;
+				var otherRayOrigin = rayOriginPair.Value;
+				Transform menuOrigin;
+				if (proxy.menuOrigins.TryGetValue(otherRayOrigin, out menuOrigin))
+				{
+					go.transform.SetParent(menuOrigin);
+					go.transform.localPosition = Vector3.zero;
+					go.transform.localRotation = Quaternion.identity;
 
-				if (go.GetComponent<CreatePrimitiveMenu>() != null)
-					ConnectInterfaces(go.GetComponent<CreatePrimitiveMenu>(),device);
-
-				go.transform.SetParent(parent);
-				go.transform.localPosition = Vector3.zero;
-				go.transform.localRotation = Quaternion.identity;
-
-				deviceData.toolMenus.Add(go);
-				m_DeviceData[device].mainMenu.visible = false;
+					deviceData.customMenus.Add(go);
+					deviceData.mainMenu.visible = false;
+					UpdateCustomMenus(deviceData.mainMenu);
+				}
 			}
 		}, true);
 
@@ -1177,7 +1035,9 @@ public class EditorVR : MonoBehaviour
 				AddActionMapInputs(mainMenu, mainMenuMaps);
 
 				foreach (var input in mainMenuMaps)
+				{
 					input.active = mainMenu.visible;
+				}
 
 				maps.AddRange(mainMenuMaps);
 			}
@@ -1189,7 +1049,9 @@ public class EditorVR : MonoBehaviour
 				AddActionMapInputs(alternateMenu, alternateMenuMaps);
 
 				foreach (var input in alternateMenuMaps)
+				{
 					input.active = alternateMenu.visible;
+				}
 
 				maps.AddRange(alternateMenuMaps);
 			}
@@ -1403,24 +1265,6 @@ public class EditorVR : MonoBehaviour
 					customRay.showDefaultRay = dpr.Show;
 					customRay.hideDefaultRay = dpr.Hide;
 				}
-
-				var lockableRay = obj as IRayLocking;
-				if (lockableRay != null)
-				{
-					dpr = dpr ?? rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-					lockableRay.lockRay = dpr.LockRay;
-					lockableRay.unlockRay = dpr.UnlockRay;
-				}
-			}
-
-			var iTool = obj as ITool;
-			if(iTool != null)
-			{
-				ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-				{
-					if (rayOrigin == rayOriginPair.Value)
-						iTool.selfNode = rayOriginPair.Key;
-				}, true);
 			}
 
 			var menuOrigins = obj as IMenuOrigins;
@@ -1436,6 +1280,13 @@ public class EditorVR : MonoBehaviour
 						menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
 				}
 			}
+		}
+
+		var lockableRay = obj as IRayLocking;
+		if (lockableRay != null)
+		{
+			lockableRay.lockRay = LockRay;
+			lockableRay.unlockRay = UnlockRay;
 		}
 
 		var locomotion = obj as ILocomotor;
@@ -1524,7 +1375,7 @@ public class EditorVR : MonoBehaviour
 			mainMenu.menuTools = m_MainMenuTools;
 			mainMenu.selectTool = SelectTool;
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
-			mainMenu.menuVisibilityChanged += OnMainMenuVisiblityChanged;
+			mainMenu.menuVisibilityChanged += OnMainMenuVisibilityChanged;
 		}
 
 		var alternateMenu = obj as IAlternateMenu;
@@ -2230,7 +2081,7 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
-				return null;
+		return null;
 	}
 
 	Dictionary<Transform, DirectSelection> GetDirectSelection()
@@ -2468,8 +2319,8 @@ public class EditorVR : MonoBehaviour
 
 	void AddPlayerModel()
 	{
-		var playerHead = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
-		m_SpatialHashModule.spatialHash.AddObject(playerHead, playerHead.bounds);
+		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
+		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
 	}
 
 	void AddObjectToSpatialHash(UnityObject obj)

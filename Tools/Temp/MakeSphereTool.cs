@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.VR;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 using Object = UnityEngine.Object;
@@ -39,8 +38,6 @@ public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	private ActionMap m_ActionMap;
 	[SerializeField]
 	private StandardAlt m_Standard;
-
-	public Node selfNode { get; set; }
 
 	public Action<Object> addObjectToSpatialHash { get; set; }
 	public Action<Object> removeObjectFromSpatialHash { get; set; }
