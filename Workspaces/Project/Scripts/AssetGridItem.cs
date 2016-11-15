@@ -39,7 +39,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 
 	[HideInInspector]
 	[SerializeField] // Serialized so that this remains set after cloning
-	private Transform m_PreviewObject;
+	private Transform m_PreviewObjectTransform;
 
 	private bool m_Setup;
 	private float m_PreviewFade;
@@ -177,26 +177,26 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		m_TextPanel.transform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
 
 		// Handle preview fade
-		if (m_PreviewObject)
+		if (m_PreviewObjectTransform)
 		{
 			if (m_PreviewFade == 0)
 			{
-				m_PreviewObject.gameObject.SetActive(false);
+				m_PreviewObjectTransform.gameObject.SetActive(false);
 				icon.SetActive(true);
 				icon.transform.localScale = Vector3.one;
 			}
 			else if (m_PreviewFade == 1)
 			{
-				m_PreviewObject.gameObject.SetActive(true);
+				m_PreviewObjectTransform.gameObject.SetActive(true);
 				icon.SetActive(false);
-				m_PreviewObject.transform.localScale = m_PreviewTargetScale;
+				m_PreviewObjectTransform.transform.localScale = m_PreviewTargetScale;
 			}
 			else
 			{
 				icon.SetActive(true);
-				m_PreviewObject.gameObject.SetActive(true);
+				m_PreviewObjectTransform.gameObject.SetActive(true);
 				icon.transform.localScale = Vector3.one * (1 - m_PreviewFade);
-				m_PreviewObject.transform.localScale = Vector3.Lerp(Vector3.zero, m_PreviewTargetScale, m_PreviewFade);
+				m_PreviewObjectTransform.transform.localScale = Vector3.Lerp(Vector3.zero, m_PreviewTargetScale, m_PreviewFade);
 			}
 		}
 
@@ -212,30 +212,30 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 
 	private void InstantiatePreview()
 	{
-		if (m_PreviewObject)
-			U.Object.Destroy(m_PreviewObject.gameObject);
+		if (m_PreviewObjectTransform)
+			U.Object.Destroy(m_PreviewObjectTransform.gameObject);
 		if (!data.preview)
 			return;
 
-		m_PreviewObject = Instantiate(data.preview).transform;
+		m_PreviewObjectTransform = Instantiate(data.preview).transform;
 
-		m_PreviewObject.position = Vector3.zero;
-		m_PreviewObject.rotation = Quaternion.identity;
+		m_PreviewObjectTransform.position = Vector3.zero;
+		m_PreviewObjectTransform.rotation = Quaternion.identity;
 
-		m_PreviewPrefabScale = m_PreviewObject.localScale;
+		m_PreviewPrefabScale = m_PreviewObjectTransform.localScale;
 
 		// Normalize total scale to 1
-		var previewTotalBounds = U.Object.GetTotalBounds(m_PreviewObject);
+		var previewTotalBounds = U.Object.GetBounds(m_PreviewObjectTransform.gameObject);
 
 		// Don't show a preview if there are no renderers
-		if (previewTotalBounds == null)
+		if (previewTotalBounds.size == Vector3.zero)
 		{
-			U.Object.Destroy(m_PreviewObject.gameObject);
+			U.Object.Destroy(m_PreviewObjectTransform.gameObject);
 			return;
 		}
 
 		// Turn off expensive render settings
-		foreach(var renderer in m_PreviewObject.GetComponentsInChildren<Renderer>())
+		foreach(var renderer in m_PreviewObjectTransform.GetComponentsInChildren<Renderer>())
 		{
 			renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 			renderer.receiveShadows = false;
@@ -244,21 +244,21 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		}
 
 		// Turn off lights
-		foreach(var light in m_PreviewObject.GetComponentsInChildren<Light>()) {
+		foreach(var light in m_PreviewObjectTransform.GetComponentsInChildren<Light>()) {
 			light.enabled = false;
 		}
 
-		var pivotOffset = m_PreviewObject.position - previewTotalBounds.Value.center;
-		m_PreviewObject.SetParent(transform, false);
+		var pivotOffset = m_PreviewObjectTransform.position - previewTotalBounds.center;
+		m_PreviewObjectTransform.SetParent(transform, false);
 
-		var maxComponent = previewTotalBounds.Value.size.MaxComponent();
+		var maxComponent = previewTotalBounds.size.MaxComponent();
 		var scaleFactor = 1 / maxComponent;
 		m_PreviewTargetScale = m_PreviewPrefabScale * scaleFactor;
-		m_PreviewObject.localPosition = pivotOffset * scaleFactor + Vector3.up * 0.5f;
+		m_PreviewObjectTransform.localPosition = pivotOffset * scaleFactor + Vector3.up * 0.5f;
 
 		// Object will preview at the same size
 		m_GrabPreviewTargetScale = m_PreviewPrefabScale;
-		var previewExtents = previewTotalBounds.Value.extents;
+		var previewExtents = previewTotalBounds.extents;
 		m_GrabPreviewPivotOffset = pivotOffset;
 
 		// If bounds are greater than offset, set to bounds
@@ -274,8 +274,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 			m_GrabPreviewPivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * kMaxPreviewScale;
 		}
 
-		m_PreviewObject.gameObject.SetActive(false);
-		m_PreviewObject.localScale = Vector3.zero;
+		m_PreviewObjectTransform.gameObject.SetActive(false);
+		m_PreviewObjectTransform.localScale = Vector3.zero;
 	}
 
 	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
@@ -285,15 +285,15 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		var clone = (GameObject)Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<AssetGridItem>();
 
-		if (cloneItem.m_PreviewObject)
+		if (cloneItem.m_PreviewObjectTransform)
 		{
 			cloneItem.m_Cube.gameObject.SetActive(false);
 			if (cloneItem.m_Icon)
 				cloneItem.m_Icon.gameObject.SetActive(false);
-			cloneItem.m_PreviewObject.gameObject.SetActive(true);
-			cloneItem.m_PreviewObject.transform.localScale = m_PreviewTargetScale;
+			cloneItem.m_PreviewObjectTransform.gameObject.SetActive(true);
+			cloneItem.m_PreviewObjectTransform.transform.localScale = m_PreviewTargetScale;
 
-			m_PreviewObjectClone = cloneItem.m_PreviewObject;
+			m_PreviewObjectClone = cloneItem.m_PreviewObjectTransform;
 
 			// Destroy label
 			U.Object.Destroy(cloneItem.m_TextPanel.gameObject);
@@ -313,9 +313,9 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	{
 		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
-		if (gridItem.m_PreviewObject)
+		if (gridItem.m_PreviewObjectTransform)
 		{
-			placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
+			placeObject(gridItem.m_PreviewObjectTransform, m_PreviewPrefabScale);
 		}
 		else
 		{

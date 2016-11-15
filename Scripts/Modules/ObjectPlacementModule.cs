@@ -43,34 +43,31 @@ public class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 		//Get bounds at target scale
 		var origScale = obj.localScale;
 		obj.localScale = targetScale;
-		var totalBounds = U.Object.GetTotalBounds(obj);
+		var totalBounds = U.Object.GetBounds(obj.gameObject);
 		obj.localScale = origScale;
 
-		if (totalBounds != null)
+		// We want to position the object so that it fits within the camera perspective at its original scale
+		var camera = U.Camera.GetMainCamera();
+		var halfAngle = camera.fieldOfView * 0.5f;
+		var perspective = halfAngle + kInstantiateFOVDifference;
+		var camPosition = camera.transform.position;
+		var forward = obj.position - camPosition;
+
+		var distance = totalBounds.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
+		var destinationPosition = obj.position;
+		if (distance > forward.magnitude)
+			destinationPosition = camPosition + forward.normalized * distance;
+
+		while (currTime < kGrowDuration)
 		{
-			// We want to position the object so that it fits within the camera perspective at its original scale
-			var camera = U.Camera.GetMainCamera();
-			var halfAngle = camera.fieldOfView * 0.5f;
-			var perspective = halfAngle + kInstantiateFOVDifference;
-			var camPosition = camera.transform.position;
-			var forward = obj.position - camPosition;
-
-			var distance = totalBounds.Value.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
-			var destinationPosition = obj.position;
-			if (distance > forward.magnitude)
-				destinationPosition = camPosition + forward.normalized * distance;
-
-			while (currTime < kGrowDuration)
-			{
-				currTime = Time.realtimeSinceStartup - start;
-				var t = currTime / kGrowDuration;
-				var tSquared = t * t;
-				obj.localScale = Vector3.Lerp(startScale, targetScale, tSquared);
-				obj.position = Vector3.Lerp(startPosition, destinationPosition, tSquared);
-				yield return null;
-			}
-			obj.localScale = targetScale;
+			currTime = Time.realtimeSinceStartup - start;
+			var t = currTime / kGrowDuration;
+			var tSquared = t * t;
+			obj.localScale = Vector3.Lerp(startScale, targetScale, tSquared);
+			obj.position = Vector3.Lerp(startPosition, destinationPosition, tSquared);
+			yield return null;
 		}
+		obj.localScale = targetScale;
 		Selection.activeGameObject = obj.gameObject;
 
 		addToSpatialHash(obj.gameObject);

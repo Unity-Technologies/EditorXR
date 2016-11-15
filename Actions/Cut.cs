@@ -12,15 +12,17 @@ namespace UnityEngine.VR.Actions
 			//http://forum.unity3d.com/threads/editorapplication-ExecuteActionmenuitem-dont-include-edit-menu.148215/
 			//return EditorApplication.ExecuteActionMenuItem("Edit/Cut");
 
-			var selection = Selection.activeObject;
+			var selection = Selection.gameObjects;
 			if (selection != null)
 			{
-				selection.hideFlags = HideFlags.HideAndDontSave;
-				var go = selection as GameObject;
-				if (go)
+				foreach (var go in selection)
+				{
+					go.hideFlags = HideFlags.HideAndDontSave;
 					go.SetActive(false);
+				}
+
 				Paste.buffer = selection;
-				Selection.activeObject = null;
+				Selection.objects = null;
 			}
 		}
 	}

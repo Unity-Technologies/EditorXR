@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using UnityEngine.Networking;
 
 namespace UnityEngine.VR.Utilities
 {
@@ -100,14 +101,41 @@ namespace UnityEngine.VR.Utilities
 					transforms[i].gameObject.layer = layer;
 			}
 
+			public static Bounds GetBounds(GameObject[] gameObjects)
+			{
+				Bounds? bounds = null;
+				foreach (var go in gameObjects)
+				{
+					var goBounds = GetBounds(go);
+					if (!bounds.HasValue)
+					{
+						bounds = goBounds;
+					} else
+					{
+						goBounds.Encapsulate(bounds.Value);
+						bounds = goBounds;
+					}
+				}
+				return bounds ?? new Bounds();
+			}
+
 			public static Bounds GetBounds(GameObject obj)
 			{
 				Bounds b = new Bounds(obj.transform.position, Vector3.zero);
-				Renderer[] childrenR = obj.GetComponentsInChildren<Renderer>();
-				foreach (Renderer childR in childrenR)
+				Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+				foreach (Renderer r in renderers)
 				{
-					b.Encapsulate(childR.bounds);
+					b.Encapsulate(r.bounds);
 				}
+
+				// As a fallback when there are no bounds, collect all transform positions
+				if (b.size == Vector3.zero)
+				{
+					var transforms = obj.GetComponentsInChildren<Transform>();
+					foreach (var t in transforms)
+						b.Encapsulate(t.position);
+				}
+
 				return b;
 			}
 
@@ -213,24 +241,6 @@ namespace UnityEngine.VR.Utilities
 					yield return null;
 
 				UnityObject.DestroyImmediate(o);
-			}
-
-			public static Bounds? GetTotalBounds(Transform t)
-			{
-				Bounds? bounds = null;
-				var renderers = t.GetComponentsInChildren<Renderer>(true);
-				foreach (var renderer in renderers)
-				{
-					if (bounds == null)
-						bounds = renderer.bounds;
-					else
-					{
-						Bounds b = bounds.Value;
-						b.Encapsulate(renderer.bounds);
-						bounds = b;
-					}
-				}
-				return bounds;
 			}
 
 			/// <summary>

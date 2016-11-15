@@ -33,12 +33,9 @@ public class EditorVR : MonoBehaviour
 
 	const string kVRPlayerTag = "VRPlayer";
 
-	private const float kDefaultRayLength = 100f;
+	const float kDefaultRayLength = 100f;
 
-	private const float kWorkspaceAnglePadding = 25f;
-	private const float kWorkspaceYPadding = 0.35f;
-	private const int kMaxWorkspacePlacementAttempts = 20;
-	private const float kWorkspaceVacuumEnableDistance = 1f; // Disable vacuum bounds if workspace is close to player
+	const float kWorkspaceVacuumEnableDistance = 0.6f; // Disable vacuum bounds if workspace is close to player
 	const float kPreviewScale = 0.1f;
 
 	const float kViewerPivotTransitionTime = 0.75f;
@@ -1617,61 +1614,16 @@ public class EditorVR : MonoBehaviour
 
 	void CreateWorkspace(Type t, Action<Workspace> createdCallback = null)
 	{
-		var defaultOffset = Workspace.kDefaultOffset;
-		var defaultTilt = Workspace.kDefaultTilt;
-
+		var defaultOffset = new Vector3(0, -0.15f, 0.6f);		
 		var cameraTransform = U.Camera.GetMainCamera().transform;
-		var headPosition = cameraTransform.position;
-		var headRotation = U.Math.ConstrainYawRotation(cameraTransform.rotation);
 
-		float arcLength = Mathf.Atan(Workspace.kDefaultBounds.x /
-			(defaultOffset.z - Workspace.kDefaultBounds.z * 0.5f)) * Mathf.Rad2Deg		//Calculate arc length at front of workspace
-			+ kWorkspaceAnglePadding;													//Need some extra padding because workspaces are tilted
-		float heightOffset = Workspace.kDefaultBounds.y + kWorkspaceYPadding;			//Need padding in Y as well
-
-		float currentRotation = arcLength;
-		float currentHeight = 0;
-
-		int count = 0;
-		int direction = 1;
-		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
-
-		Vector3 position;
-		Quaternion rotation;
-		var viewerPivot = U.Camera.GetViewerPivot();
-
-		// Spawn to one of the sides of the player instead of directly in front of the player
-		do
-		{
-			//The next position will be rotated by currentRotation, as if the hands of a clock
-			Quaternion rotateAroundY = Quaternion.AngleAxis(currentRotation * direction, Vector3.up);
-			position = headPosition + headRotation * rotateAroundY * defaultOffset + Vector3.up * currentHeight;
-			rotation = headRotation * rotateAroundY * defaultTilt;
-
-			//Every other iteration, rotate a little further
-			if (direction < 0)
-				currentRotation += arcLength;
-
-			//Switch directions every iteration (left, right, left, right)
-			direction *= -1;
-
-			//If we've one more than half way around, we have tried the whole circle, bump up one level and keep trying
-			if (currentRotation > 180)
-			{
-				direction = -1;
-				currentRotation = 0;
-				currentHeight += heightOffset;
-			}
-		}
-		//While the current position is occupied, try a new one
-		while (Physics.CheckBox(position, halfBounds, rotation, ~LayerMask.NameToLayer("UI")) && count++ < kMaxWorkspacePlacementAttempts);
-
-		Workspace workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, viewerPivot);
+		var workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
 		m_AllWorkspaces.Add(workspace);
 		workspace.destroyed += OnWorkspaceDestroyed;
 		ConnectInterfaces(workspace);
-		workspace.transform.position = position;
-		workspace.transform.rotation = rotation;
+		var workspaceTransform = workspace.transform;
+		workspaceTransform.position = cameraTransform.TransformPoint(defaultOffset);
+		workspaceTransform.rotation *= Quaternion.LookRotation(cameraTransform.forward) * Workspace.kDefaultTilt;
 
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
@@ -1893,9 +1845,10 @@ public class EditorVR : MonoBehaviour
 					{
 						miniWorldRay.dragObject = dragObject;
 						miniWorldRay.dragObjectOriginalScale = dragObject.transform.localScale;
-						var totalBounds = U.Object.GetTotalBounds(dragObject.transform);
-						if (totalBounds != null)
-							miniWorldRay.dragObjectPreviewScale = dragObject.transform.localScale * (kPreviewScale / totalBounds.Value.size.MaxComponent());
+						var totalBounds = U.Object.GetBounds(dragObject);
+						var maxSizeComponent = totalBounds.size.MaxComponent();
+						if (!Mathf.Approximately(maxSizeComponent, 0f))
+							miniWorldRay.dragObjectPreviewScale = dragObject.transform.localScale * (kPreviewScale / maxSizeComponent);
 					}
 				}
 			}
