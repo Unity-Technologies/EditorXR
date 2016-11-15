@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Actions;
@@ -31,7 +30,7 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOr
 		actions = new List<IAction>() { m_CubeToolAction };
 	}
 
-	private void Update()
+	void Update()
 	{
 		if (standardInput.action.wasJustPressed)
 		{

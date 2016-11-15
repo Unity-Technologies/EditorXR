@@ -1,25 +1,32 @@
-﻿using UnityEngine.VR.Utilities;
+using System;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.VR.Tools;
 
 public class CreatePrimitiveMenu : MonoBehaviour
 {
 	[SerializeField]
-	private Slider m_ScaleSlider;
+	GameObject[] m_HighlightObjects;
 
-	[SerializeField]
-	private Text m_ScaleLabel;
+	public Action<PrimitiveType, bool> selectPrimitive;
 
-	public void CreatePrimitive(int type)
+	public void SelectPrimitive(int type)
 	{
-		Transform primitive = GameObject.CreatePrimitive((PrimitiveType)type).transform;
-		primitive.position = transform.position;
-		primitive.localScale = Vector3.one * m_ScaleSlider.value;
-		U.Object.Destroy(gameObject);
+		selectPrimitive((PrimitiveType)type, false);
+
+		// the order of the objects in m_HighlightObjects is matched to the values of the PrimitiveType enum elements
+		for (var i = 0; i < m_HighlightObjects.Length; i++)
+		{
+			var go = m_HighlightObjects[i];
+			go.SetActive(i == type);
+		}
 	}
 
-	public void UpdateScaleValue()
+	public void SelectFreeformCuboid()
 	{
-		m_ScaleLabel.text = m_ScaleSlider.value.ToString("0.0");
+		selectPrimitive(PrimitiveType.Cube, true);
+
+		foreach (GameObject go in m_HighlightObjects)
+			go.SetActive(false);
 	}
 }

@@ -11,7 +11,7 @@ namespace UnityEngine.VR.Tools
 	public delegate void CreateWorkspaceDelegate(Type type, Action<Workspace> createdCallback = null);
 
 	/// <summary>
-	/// Decorates types that need to create workspaces
+	/// Create workspaces
 	/// </summary>
 	public interface ICreateWorkspace
 	{
