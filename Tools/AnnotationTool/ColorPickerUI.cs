@@ -177,15 +177,17 @@ public class ColorPickerUI : MonoBehaviour
 
 	private void PositionToColor()
 	{
-		var rect = m_ColorPicker.rectTransform.rect;
-
-		float hue = (m_PickerTargetPosition.x + rect.width / 2f) / rect.width;
-		float saturation = (m_PickerTargetPosition.y + rect.height / 2f) / rect.height;
-		float brightness = m_BrightnessSlider.value;
-		
-		Color col = Color.HSVToRGB(hue, saturation, brightness);
 		if (onColorPicked != null)
+		{
+			var rect = m_ColorPicker.rectTransform.rect;
+
+			float hue = (m_PickerTargetPosition.x + rect.width / 2f) / rect.width;
+			float saturation = (m_PickerTargetPosition.y + rect.height / 2f) / rect.height;
+			float brightness = m_BrightnessSlider.value;
+
+			Color col = Color.HSVToRGB(hue, saturation, brightness);
 			onColorPicked(col);
+		}
 	}
 	
 }

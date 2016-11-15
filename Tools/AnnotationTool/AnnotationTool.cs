@@ -180,26 +180,26 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			var rayLocalPos = otherRayMatrix.MultiplyPoint3x4(rayOrigin.position);
 			var distance = Mathf.Abs(rayLocalPos.x);
 
-			if (distance < .325f)
+			if (distance < .1625f)
 			{
 				if (m_ColorPicker == null)
 				{
 					var colorPickerObj = instantiateUI(m_ColorPickerPrefab);
 					m_ColorPicker = colorPickerObj.GetComponent<ColorPickerUI>();
 					m_ColorPicker.toolRayOrigin = rayOrigin;
-					m_ColorPicker.onColorPicked = HandleColoring;
+					m_ColorPicker.onColorPicked = (col) => { m_ColorToUse = col; };
 
 					var pickerTransform = m_ColorPicker.transform;
 					pickerTransform.SetParent(otherRayOrigin);
 					pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
-					pickerTransform.localRotation = Quaternion.identity;
+					pickerTransform.localRotation = m_ColorPickerPrefab.transform.localRotation;
 				}
 				else if (m_ColorPicker.transform.parent != otherRayOrigin)
 				{
 					var pickerTransform = m_ColorPicker.transform;
 					pickerTransform.SetParent(otherRayOrigin);
 					pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
-					pickerTransform.localRotation = Quaternion.identity;
+					pickerTransform.localRotation = m_ColorPickerPrefab.transform.localRotation;
 				}
 
 				float dot = Vector3.Dot(otherRayOrigin.right, rayOrigin.position - otherRayOrigin.position);
@@ -213,11 +213,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			else if (m_ColorPicker && m_ColorPicker.enabled)
 				m_ColorPicker.Hide();
 		}
-	}
-
-	private void HandleColoring(Color newColor)
-	{
-		m_ColorToUse = newColor;
 	}
 
 	private void HandleBrushSize()
