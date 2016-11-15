@@ -386,8 +386,14 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, ISpatia
 	IEnumerator AnimateToPreviewScale()
 	{
 		var currentLocalScale = m_DragObject.localScale;
-		var currentPreviewScale = m_PreviewObjectClone.localScale;
-		var currentPreviewOffset = m_PreviewObjectClone.localPosition;
+		var currentPreviewScale = Vector3.one;
+		var currentPreviewOffset = Vector3.zero;
+
+		if (m_PreviewObjectClone) {
+			currentPreviewScale = m_PreviewObjectClone.localScale;
+			currentPreviewOffset = m_PreviewObjectClone.localPosition;
+		}
+
 		var currentTime = 0f;
 		var currentVelocity = 0f;
 		const float kDuration = 1f;
@@ -399,8 +405,13 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, ISpatia
 
 			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, Vector3.one, currentTime);
-			m_PreviewObjectClone.localScale = Vector3.Lerp(currentPreviewScale, m_GrabPreviewTargetScale, currentTime);
-			m_PreviewObjectClone.localPosition = Vector3.Lerp(currentPreviewOffset, m_GrabPreviewPivotOffset, currentTime);
+
+			if (m_PreviewObjectClone)
+			{
+				m_PreviewObjectClone.localScale = Vector3.Lerp(currentPreviewScale, m_GrabPreviewTargetScale, currentTime);
+				m_PreviewObjectClone.localPosition = Vector3.Lerp(currentPreviewOffset, m_GrabPreviewPivotOffset, currentTime);
+			}
+
 			yield return null;
 		}
 
