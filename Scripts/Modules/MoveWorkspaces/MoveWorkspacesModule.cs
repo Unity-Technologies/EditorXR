@@ -6,6 +6,7 @@ using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 using UnityEditor.VR;
 using System;
+using UnityEngine.VR.Utilities;
 
 [ExecuteInEditMode]
 public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayOrigin, ICustomRay, IMoveWorkspaces
@@ -27,12 +28,28 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	private Vector3 m_PreviousPosition;
 	private float m_VerticalVelocity;
 
+	GameObject m_TopHat;
+
 	private enum ManipulateMode
 	{
 		On,
 		Off,
 	}
 	private ManipulateMode mode = ManipulateMode.Off;
+
+	void Start()
+	{
+		m_TopHat = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+		m_TopHat.transform.position = VRView.viewerCamera.transform.position;
+		m_TopHat.transform.rotation = VRView.viewerCamera.transform.rotation;
+		m_TopHat.transform.parent = VRView.viewerCamera.transform;
+
+		//set cylinder on top of head
+		m_TopHat.transform.localScale = new Vector3(0.3f, 0.2f, 0.3f);
+		m_TopHat.transform.Translate(Vector3.up * 0.3f);
+		m_TopHat.GetComponent<Collider>().isTrigger = true;
+		m_TopHat.GetComponent<MeshRenderer>().enabled = false;
+	}
 
 	void Update()
 	{
@@ -49,19 +66,20 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 				if(standardInput.action.wasJustPressed)
 					HandleDoubleTap();
-				else if(standardInput.action.isHeld)
+
+				if(standardInput.action.isHeld)
 					HandleManipulationStart();
 
 				break;
 			}
 			case ManipulateMode.On:
 			{
-				if (standardInput.action.isHeld)
+				if(standardInput.action.isHeld)
 				{
 					HandleThrowDown();
 					UpdateWorkspaceManipulation();
 				}
-				else if (standardInput.action.wasJustReleased)
+				else if(standardInput.action.wasJustReleased)
 				{
 					mode = ManipulateMode.Off;
 					showDefaultRay();
@@ -73,7 +91,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	bool IsControllerAboveHMD()
 	{
-		if(rayOrigin.position.y > VRView.viewerCamera.transform.position.y)
+		if(m_TopHat.GetComponent<Collider>().bounds.Contains(rayOrigin.position))
 			return true;
 
 		return false;
@@ -83,14 +101,13 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	{
 		m_AllWorkspaces = GetComponentsInChildren<Workspace>();
 
-		if (m_AllWorkspaces.Length > 0)
+		if(m_AllWorkspaces.Length > 0)
 		{
-			foreach (var ws in m_AllWorkspaces)
+			foreach(var ws in m_AllWorkspaces)
 			{
-				if (ws.m_Hidden)
+				if(ws.m_Hidden)
 					return false;
 			}
-
 			return true;
 		}
 		else
@@ -128,7 +145,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		m_VerticalVelocity = (m_PreviousPosition.y - rayOrigin.position.y) * Time.unscaledDeltaTime;
 		m_PreviousPosition = rayOrigin.position;
 
-		if (m_VerticalVelocity > 0.0025f)
+		if(m_VerticalVelocity > 0.005f)
 			return true;
 		else
 			return false;
@@ -159,11 +176,17 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 		for(int i = 0; i < m_AllWorkspaces.Length; i++)
 		{
+			if(m_AllWorkspaces[i] == null)
+			{
+				FindWorkspaces();
+				break;
+			}
+
 			//don't move for tiny movements
-			if(Mathf.Abs(m_VerticalVelocity) > 0.0001f)
+			if(Mathf.Abs(m_VerticalVelocity) > 0.00005f)
 			{
 				// move on Y axis with corrected direction
-				m_AllWorkspaces[i].transform.Translate(0.0f, m_VerticalVelocity * -50.0f, 0.0f);
+				m_AllWorkspaces[i].transform.Translate(0.0f, m_VerticalVelocity * -50.0f, 0.0f, Space.World);
 			}
 
 			//don't rotate for tiny rotations
@@ -173,4 +196,9 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		//save current rotation for next frame math
 		m_RayOriginStartAngle = rayOriginCurrentAngle;
     }
+
+	void OnDestroy()
+	{
+		U.Object.Destroy(m_TopHat);
+	}
 }

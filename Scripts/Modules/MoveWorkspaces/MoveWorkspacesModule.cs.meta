@@ -1,11 +1,11 @@
 fileFormatVersion: 2
 guid: 49e533569ecea994c856e43af713e5be
-timeCreated: 1476361759
+timeCreated: 1479221369
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
-  - m_MoveWorkspacesModuleActionMap: {fileID: 11400000, guid: 294250dc3c5ace44399da0e1096205f3,
+  - m_MoveWorkspacesActionMap: {fileID: 11400000, guid: c538e1fbb9889a8449e91e4ada56dab2,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}

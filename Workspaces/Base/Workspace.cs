@@ -377,6 +377,7 @@ namespace UnityEngine.VR.Workspaces
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
 			m_Hidden = true;
+			U.Object.Destroy(gameObject);
 		}
 
 		void OnMoveHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
