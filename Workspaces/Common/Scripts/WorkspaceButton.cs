@@ -48,10 +48,10 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		bool m_AnimatedReveal;
 
-		[Tooltip("Default value is 0.5")]
+		[Tooltip("Default value is 0.25")]
 		[SerializeField]
 		[Range(0f, 2f)]
-		float m_DelayBeforeReveal = 0.5f;
+		float m_DelayBeforeReveal = 0.25f;
 
 		UnityBrandColorScheme.GradientPair m_OriginalGradientPair;
 		UnityBrandColorScheme.GradientPair m_HighlightGradientPair;
@@ -259,7 +259,6 @@ namespace UnityEngine.VR.Workspaces
 				while (delay < m_DelayBeforeReveal)
 				{
 					delay += Time.unscaledDeltaTime;
-					yield return null;	
 					yield return null;
 				}
 

@@ -4,7 +4,7 @@ using UnityEngine.VR.Utilities;
 namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
-	public class Paste : BaseAction, ISpatialHash
+	public class Paste : BaseAction, IUsesSpatialHash
 	{
 		const int directionCount = 6;
 		static int directionCounter;
@@ -14,8 +14,8 @@ namespace UnityEngine.VR.Actions
 
 		public static Object buffer { get; set; }
 
-		public Action<Object> addObjectToSpatialHash { get; set; }
-		public Action<Object> removeObjectFromSpatialHash { get; set; }
+		public Action<GameObject> addToSpatialHash { get; set; }
+		public Action<GameObject> removeFromSpatialHash { get; set; }
 
 		public override void ExecuteAction()
 		{
@@ -43,9 +43,8 @@ namespace UnityEngine.VR.Actions
 					}
 					go.transform.position += offset;
 					go.SetActive(true);
+					addToSpatialHash(go);
 				}
-
-				addObjectToSpatialHash(pasted);
 			}
 		}
 	}

@@ -5,20 +5,21 @@ using UnityEngine.VR.Utilities;
 namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Delete", ActionMenuItemAttribute.kDefaultActionSectionName, 7)]
-	public class Delete : BaseAction, ISpatialHash
+	public class Delete : BaseAction, IUsesSpatialHash
 	{
-		public Action<Object> addObjectToSpatialHash { get; set; }
-		public Action<Object> removeObjectFromSpatialHash { get; set; }
+		public Action<GameObject> addToSpatialHash { get; set; }
+		public Action<GameObject> removeFromSpatialHash { get; set; }
 
 		public override void ExecuteAction()
 		{
-			var selection = Selection.activeObject;
-			if (selection)
+			var gameObjects = Selection.gameObjects;
+			foreach (var go in gameObjects)
 			{
-				removeObjectFromSpatialHash(selection);
-				U.Object.Destroy(selection);
-				Selection.activeObject = null;
+				removeFromSpatialHash(go);
+				U.Object.Destroy(go);
 			}
+
+			Selection.objects = null;
 		}
 	}
 }

@@ -123,7 +123,7 @@ namespace UnityEngine.VR.Menus
 					{
 						// No button was selected on the Radial Menu. Close the radial menu, and deselect.
 						Selection.activeGameObject = null;
-						actions = null;
+						visible = false;
 					}
 				}
 			}

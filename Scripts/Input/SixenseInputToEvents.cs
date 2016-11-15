@@ -114,9 +114,6 @@ public class SixenseInputToEvents : MonoBehaviour
 			case SixenseButtons.BUMPER:
 				return (int)VRInputDevice.VRControl.Action5;
 
-			case SixenseButtons.TRIGGER:
-				return (int)VRInputDevice.VRControl.Trigger1;
-
 			case SixenseButtons.START:
 				return (int)VRInputDevice.VRControl.Start;
 

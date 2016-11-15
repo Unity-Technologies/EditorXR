@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 using UnityObject = UnityEngine.Object;
 
-public class ProjectWorkspace : Workspace, IPlaceObject, IGetPreviewOrigin, IUsesProjectFolderData, IFilterUI, ISpatialHash
+public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IConnectInterfaces
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 	const float kPaneMargin = 0.01f;
@@ -39,9 +40,7 @@ public class ProjectWorkspace : Workspace, IPlaceObject, IGetPreviewOrigin, IUse
 	float m_ScrollOffsetStart;
 	FolderData m_OpenFolder;
 
-	public Action<Transform, Vector3> placeObject { private get; set; }
-
-	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
+	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 	public FolderData[] folderData
 	{
@@ -59,9 +58,6 @@ public class ProjectWorkspace : Workspace, IPlaceObject, IGetPreviewOrigin, IUse
 	}
 
 	public List<string> filterList { set { m_FilterUI.filterList = value; } }
-
-	public Action<UnityObject> addObjectToSpatialHash { get; set; }
-	public Action<UnityObject> removeObjectFromSpatialHash { get; set; }
 
 	public override void Setup()
 	{
@@ -91,11 +87,8 @@ public class ProjectWorkspace : Workspace, IPlaceObject, IGetPreviewOrigin, IUse
 
 		var assetGridView = m_ProjectUI.assetGridView;
 		assetGridView.testFilter = TestFilter;
-		assetGridView.placeObject = placeObject;
-		assetGridView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		assetGridView.data = new AssetData[0];
-		assetGridView.addObjectToSpatialHash = addObjectToSpatialHash;
-		assetGridView.removeObjectFromSpatialHash = removeObjectFromSpatialHash;
+		connectInterfaces(assetGridView);
 
 		var scrollHandles = new[]
 		{

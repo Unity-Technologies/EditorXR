@@ -8,7 +8,7 @@ using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Extensions;
 using UnityObject = UnityEngine.Object;
 
-public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, ISpatialHash
+public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash
 {
 	private const float kPreviewDuration = 0.1f;
 
@@ -53,8 +53,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, ISpatia
 
 	private Material m_TextureMaterial;
 
-	public Action<UnityObject> addObjectToSpatialHash { get; set; }
-	public Action<UnityObject> removeObjectFromSpatialHash { get; set; }
+	public Action<GameObject> addToSpatialHash { get; set; }
+	public Action<GameObject> removeFromSpatialHash { get; set; }
 
 	public GameObject icon
 	{
@@ -322,10 +322,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, ISpatia
 			switch (data.type)
 			{
 				case "Prefab":
-					addObjectToSpatialHash(Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
-					break;
 				case "Model":
-					addObjectToSpatialHash(Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
+					addToSpatialHash((GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
 					break;
 			}
 		}

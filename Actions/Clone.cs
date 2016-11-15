@@ -5,7 +5,7 @@ using UnityEngine.VR.Utilities;
 namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Clone", ActionMenuItemAttribute.kDefaultActionSectionName, 3)]
-	public class Clone : BaseAction, ISpatialHash
+	public class Clone : BaseAction, IUsesSpatialHash
 	{
 		[SerializeField]
 		const int directionCount = 6;
@@ -14,8 +14,8 @@ namespace UnityEngine.VR.Actions
 		[SerializeField]
 		float positionOffset = 1.5f;
 
-		public Action<Object> addObjectToSpatialHash { get; set; }
-		public Action<Object> removeObjectFromSpatialHash { get; set; }
+		public Action<GameObject> addToSpatialHash { get; set; }
+		public Action<GameObject> removeFromSpatialHash { get; set; }
 
 		public override void ExecuteAction()
 		{
@@ -37,7 +37,7 @@ namespace UnityEngine.VR.Actions
 					directionCounter++;
 				}
 				clone.transform.position += offset;
-				addObjectToSpatialHash(clone);
+				addToSpatialHash(clone);
 			}
 		}
 	}

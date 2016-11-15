@@ -57,51 +57,22 @@ namespace UnityEngine.VR.Modules
 			}
 		}
 
-		public void AddObject(object obj)
+		public void AddObject(GameObject gameObject)
 		{
-			var gameObject = obj as GameObject;
-			if (gameObject)
+			if (gameObject.GetComponentInParent<EditorVR>())
+				return;
+
+			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
 			{
-				if (gameObject.GetComponentInParent<EditorVR>())
-					return;
-
-				foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
-				{
-					spatialHash.AddObject(renderer, renderer.bounds);
-				}
-			}
-
-			var component = obj as Component;
-			if (component)
-			{
-				if (component.GetComponentInParent<EditorVR>())
-					return;
-
-				foreach (var renderer in component.GetComponentsInChildren<Renderer>())
-				{
-					spatialHash.AddObject(renderer, renderer.bounds);
-				}
+				spatialHash.AddObject(renderer, renderer.bounds);
 			}
 		}
 
-		public void RemoveObject(object obj)
+		public void RemoveObject(GameObject gameObject)
 		{
-			var gameObject = obj as GameObject;
-			if (gameObject)
+			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
 			{
-				foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
-				{
-					spatialHash.RemoveObject(renderer);
-				}
-			}
-
-			var component = obj as Component;
-			if (component)
-			{
-				foreach (var renderer in component.GetComponentsInChildren<Renderer>())
-				{
-					spatialHash.RemoveObject(renderer);
-				}
+				spatialHash.RemoveObject(renderer);
 			}
 		}
 	}

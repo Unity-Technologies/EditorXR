@@ -3,26 +3,26 @@ using System.Collections;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
-using UnityObject = UnityEngine.Object;
 
-public class ObjectPlacementModule : MonoBehaviour, ISpatialHash
+public class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 {
 	[SerializeField]
 	float kInstantiateFOVDifference = -5f;
 
 	const float kGrowDuration = 0.5f;
 
-	public Action<UnityObject> addObjectToSpatialHash { private get; set; }
-	public Action<UnityObject> removeObjectFromSpatialHash { private get; set; }
+	public Action<GameObject> addToSpatialHash { get; set; }
+	public Action<GameObject> removeFromSpatialHash { get; set; }
 
 	public void PlaceObject(Transform obj, Vector3 targetScale)
 	{
-		if(obj.localScale == targetScale) {
+		if (obj.localScale == targetScale)
+		{
 			// Remove from spatial hash in case the object is already there
-			removeObjectFromSpatialHash(obj);
+			removeFromSpatialHash(obj.gameObject);
 			obj.parent = null;
 			Selection.activeGameObject = obj.gameObject;
-			addObjectToSpatialHash(obj);
+			addToSpatialHash(obj.gameObject);
 			return;
 		}
 		StartCoroutine(PlaceObjectCoroutine(obj, targetScale));
@@ -31,7 +31,7 @@ public class ObjectPlacementModule : MonoBehaviour, ISpatialHash
 	private IEnumerator PlaceObjectCoroutine(Transform obj, Vector3 targetScale)
 	{
 		// Don't let us direct select while placing
-		removeObjectFromSpatialHash(obj);
+		removeFromSpatialHash(obj.gameObject);
 
 		float start = Time.realtimeSinceStartup;
 		var currTime = 0f;
@@ -73,6 +73,6 @@ public class ObjectPlacementModule : MonoBehaviour, ISpatialHash
 		}
 		Selection.activeGameObject = obj.gameObject;
 
-		addObjectToSpatialHash(obj);
+		addToSpatialHash(obj.gameObject);
 	}
 }

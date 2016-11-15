@@ -4,11 +4,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Modules;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityObject = UnityEngine.Object;
 
-public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObject, IGetPreviewOrigin, ISpatialHash
+public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IConnectInterfaces
 {
 	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
@@ -28,9 +28,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	[SerializeField]
 	private GameObject[] m_Icons;
 
-	public Action<Transform, Vector3> placeObject { private get; set; }
-
-	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
+	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 	public Func<string, bool> testFilter;
 
@@ -52,9 +50,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 			m_Data = value;
 		}
 	}
-
-	public Action<UnityObject> addObjectToSpatialHash { get; set; }
-	public Action<UnityObject> removeObjectFromSpatialHash { get; set; }
 
 	protected override void Setup()
 	{
@@ -226,10 +221,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		var item = base.GetItem(data);
 
 		item.transform.localPosition = m_StartPosition;
-		item.placeObject = placeObject;
-		item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
-		item.addObjectToSpatialHash = addObjectToSpatialHash;
-		item.removeObjectFromSpatialHash = removeObjectFromSpatialHash;
+		connectInterfaces(item);
 
 		StartCoroutine(Transition(data, false));
 

@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 //[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
 [MainMenuItem(false)]
-public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ISpatialHash
+public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesSpatialHash
 {	
 	public Transform rayOrigin { get; set; }
 
@@ -39,18 +39,18 @@ public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	[SerializeField]
 	private StandardAlt m_Standard;
 
-	public Action<Object> addObjectToSpatialHash { get; set; }
-	public Action<Object> removeObjectFromSpatialHash { get; set; }
+	public Action<GameObject> addToSpatialHash { get; set; }
+	public Action<GameObject> removeFromSpatialHash { get; set; }
 
 	private void Update()
 	{
 		if (m_Standard.action.wasJustPressed)
 		{
-			Transform cube = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+			Transform sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
 			if (rayOrigin)
-				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
+				sphere.position = rayOrigin.position + rayOrigin.forward * 5f;
 
-			addObjectToSpatialHash(cube);
+			addToSpatialHash(sphere.gameObject);
 		}
 	}
 }

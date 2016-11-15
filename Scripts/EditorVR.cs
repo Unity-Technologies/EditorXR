@@ -206,8 +206,6 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
-		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
-		ConnectInterfaces(m_ObjectPlacementModule);
 
 		m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
 		m_LockModule.updateAlternateMenu = (rayOrigin, o) => SetAlternateMenuVisibility(rayOrigin, o != null);
@@ -216,8 +214,6 @@ public class EditorVR : MonoBehaviour
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
-
-		SpawnActions();
 
 		UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
@@ -324,8 +320,13 @@ public class EditorVR : MonoBehaviour
 		}
 
 		CreateSpatialSystem();
-		AddPlayerModel();
+
+		m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+		ConnectInterfaces(m_ObjectPlacementModule);
+
+		SpawnActions();
 		SpawnDefaultTools();
+		AddPlayerModel();
 		PrewarmAssets();
 
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
@@ -1362,11 +1363,11 @@ public class EditorVR : MonoBehaviour
 			grabObjects.dropObject = DropObject;
 		}
 
-		var spatialHash = obj as ISpatialHash;
+		var spatialHash = obj as IUsesSpatialHash;
 		if (spatialHash != null)
 		{
-			spatialHash.addObjectToSpatialHash = AddObjectToSpatialHash;
-			spatialHash.removeObjectFromSpatialHash = RemoveObjectFromSpatialHash;
+			spatialHash.addToSpatialHash = m_SpatialHashModule.AddObject;
+			spatialHash.removeFromSpatialHash = m_SpatialHashModule.RemoveObject;
 		}
 
 		var mainMenu = obj as IMainMenu;
@@ -2321,22 +2322,6 @@ public class EditorVR : MonoBehaviour
 	{
 		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
 		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
-	}
-
-	void AddObjectToSpatialHash(UnityObject obj)
-	{
-		if (m_SpatialHashModule)
-			m_SpatialHashModule.AddObject(obj);
-		else
-			Debug.LogError("Tried to add " + obj + " to spatial hash but it doesn't exist yet");
-	}
-
-	void RemoveObjectFromSpatialHash(UnityObject obj)
-	{
-		if (m_SpatialHashModule)
-			m_SpatialHashModule.RemoveObject(obj);
-		else
-			Debug.LogError("Tried to remove " + obj + " from spatial hash but it doesn't exist yet");
 	}
 
 	List<string> GetFilterList()
