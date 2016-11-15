@@ -10,7 +10,7 @@ using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, ILockRay, IMenuOrigins
+	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, IRayLocking, IMenuOrigins
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -53,24 +53,23 @@ namespace UnityEngine.VR.Menus
 
 		public bool visible
 		{
-			get { return m_Visible.HasValue && m_Visible.Value; }
+			get { return m_Visible; }
 			set
 			{
-				if (!m_Visible.HasValue || m_Visible != value)
+				if (m_Visible != value)
 				{
 					m_Visible = value;
-
 					if (m_MainMenuUI)
 						m_MainMenuUI.visible = value;
 
 					if (value)
 					{
 						hideDefaultRay();
-						lockRay(this);
+						lockRay(rayOrigin, this);
 					}
 					else
 					{
-						unlockRay(this);
+						unlockRay(rayOrigin, this);
 						showDefaultRay();
 					}
 
@@ -78,7 +77,7 @@ namespace UnityEngine.VR.Menus
 				}
 			}
 		}
-		private bool? m_Visible;
+		private bool m_Visible;
 
 		[SerializeField]
 		private MainMenuUI m_MainMenuPrefab;
@@ -95,17 +94,16 @@ namespace UnityEngine.VR.Menus
 		public Transform rayOrigin { private get; set; }
 		public Action hideDefaultRay { private get; set; }
 		public Action showDefaultRay { private get; set; }
-		public Func<object, bool> lockRay { private get; set; }
-		public Func<object, bool> unlockRay { private get; set; }
+		public Func<Transform, object, bool> lockRay { private get; set; }
+		public Func<Transform, object, bool> unlockRay { private get; set; }
 		public List<Type> menuTools { private get; set; }
 		public Func<Node, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public List<IModule> menuModules { private get; set; }
-		public List<ActionMenuData> menuActions { get; set; }
 		public CreateWorkspaceDelegate createWorkspace { private get; set; }
+		public List<ActionMenuData> menuActions { get; set; }
 		public Node? node { private get; set; }
+		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 		public event Action<IMainMenu> menuVisibilityChanged = delegate {};
-		public Action<object> connectInterfaces { private get; set; }
 
 		void Start()
 		{
@@ -114,11 +112,10 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
-			m_MainMenuUI.visible = visible;
+			m_MainMenuUI.visible = m_Visible;
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
-			CreateModuleFaceButtons(menuModules);
 			m_MainMenuUI.SetupMenuFaces();
 		}
 
@@ -188,14 +185,14 @@ namespace UnityEngine.VR.Menus
 
 		private void OnDisable()
 		{
-			unlockRay(this);
+			unlockRay(rayOrigin, this);
 		}
 
 		private void OnDestroy()
 		{
 			U.Object.Destroy(m_MainMenuUI.gameObject);
 
-			unlockRay(this);
+			unlockRay(rayOrigin, this);
 			showDefaultRay();
 		}
 
@@ -261,36 +258,5 @@ namespace UnityEngine.VR.Menus
 				});
 			}
 		}
-
-		private void CreateModuleFaceButtons(List<IModule> modules)
-		{
-			foreach (var module in modules)
-			{
-				var moduleType = module.GetType();
-				var buttonData = new MainMenuUI.ButtonData();
-				buttonData.name = moduleType.Name;
-
-				var customMenuAttribute = (MainMenuItemAttribute)moduleType.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
-				if (customMenuAttribute != null)
-				{
-					buttonData.name = customMenuAttribute.name;
-					buttonData.sectionName = customMenuAttribute.sectionName;
-					buttonData.description = customMenuAttribute.description;
-				}
-				else
-					buttonData.name = moduleType.Name.Replace("Module", string.Empty);
-
-				var currentModule = module; // Local variable for proper closure
-				m_MainMenuUI.CreateFaceButton(buttonData, (b) =>
-				{
-					b.button.onClick.RemoveAllListeners();
-					b.button.onClick.AddListener(() =>
-					{
-						m_MainMenuUI.AddSubmenu(buttonData.sectionName, currentModule.moduleMenuPrefab);
-					});
-				});
-			}
-		}
-
 	}
 }

@@ -1,13 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor.VR;
 using UnityEngine.InputNew;
-using UnityEngine.VR;
-using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
 
-public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomActionMap
+public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomActionMap
 {
 
 	[SerializeField]
@@ -37,8 +33,6 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustom
 		set { m_JoystickLocomotionInput = (JoystickLocomotion)value; }
 	}
 	private JoystickLocomotion m_JoystickLocomotionInput;
-
-	public Node selfNode { get; set; }
 
 	void Start()
 	{

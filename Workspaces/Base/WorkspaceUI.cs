@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 
@@ -10,9 +11,9 @@ namespace UnityEngine.VR.Workspaces
 {
 	public class WorkspaceUI : MonoBehaviour
 	{
-		public event Action closeClicked = delegate { };
-		public event Action lockClicked = delegate { };
-		public event Action resetSizeClicked = delegate { };
+		public event Action closeClicked = delegate {};
+		public event Action lockClicked = delegate {};
+		public event Action resetSizeClicked = delegate {};
 
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kThinFrameBlendShapeIndex = 3;
@@ -80,6 +81,17 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		BaseHandle m_MoveHandle;
 
+		public Transform topFaceContainer { get { return m_TopFaceContainer; } }
+		[SerializeField]
+		Transform m_TopFaceContainer;
+
+		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
+		[SerializeField]
+		WorkspaceHighlight m_TopHighlight;
+
+		public bool dynamicFaceAdjustment { get { return m_DynamicFaceAdjustment; } set { m_DynamicFaceAdjustment = value; } }
+		bool m_DynamicFaceAdjustment = true;
+
 		[SerializeField]
 		private SkinnedMeshRenderer m_Frame;
 
@@ -128,28 +140,17 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		GameObject m_ResetButton;
 
-		public Transform topFaceContainer { get { return m_TopFaceContainer; } }
-		[SerializeField]
-		Transform m_TopFaceContainer;
-
 		[SerializeField]
 		Transform m_TopHighlightContainer;
 
 		[SerializeField]
 		WorkspaceHighlight m_FrontHighlight;
 
-		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
-		[SerializeField]
-		WorkspaceHighlight m_TopHighlight;
-
-		public bool dynamicFaceAdjustment { get { return m_dynamicFaceAdjustment; } set { m_dynamicFaceAdjustment = value; } }
-		bool m_dynamicFaceAdjustment = true;
-
 		public bool highlightsVisible
 		{
 			set
 			{
-				if (m_TopHighlight.visible == value && m_FrontHighlight.visible == value) // All highlights will be set with this value; checking highlight visibility of one highlight is all that is needed
+				if (m_TopHighlight.visible == value && m_FrontHighlight.visible == value)
 					return;
 
 				m_TopHighlight.visible = value;
@@ -182,6 +183,7 @@ namespace UnityEngine.VR.Workspaces
 				m_TopFaceVisibleCoroutine = value ? StartCoroutine(HideTopFace()) : StartCoroutine(ShowTopFace());
 			}
 		}
+
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
@@ -270,7 +272,7 @@ namespace UnityEngine.VR.Workspaces
 				m_BackResizeIconsContainer.localPosition = new Vector3 (m_BackResizeIconsContainerOriginalLocalPosition.x, m_BackResizeIconsContainerOriginalLocalPosition.y, boundsSize.z + kBackResizeButtonPositionOffset);
 
 				// Adjust front panel position if dynamic adjustment is enabled
-				if (!m_dynamicFaceAdjustment)
+				if (!m_DynamicFaceAdjustment)
 					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, kPanelOffset);
 
 				// Resize front panel
@@ -403,7 +405,7 @@ namespace UnityEngine.VR.Workspaces
 
 		void Update()
 		{
-			if (!m_dynamicFaceAdjustment)
+			if (!m_DynamicFaceAdjustment)
 				return;
 
 			var currentXRotation = transform.rotation.eulerAngles.x;

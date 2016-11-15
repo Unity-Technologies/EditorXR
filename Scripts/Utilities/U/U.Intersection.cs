@@ -70,7 +70,7 @@ namespace UnityEngine.VR.Utilities
 						var direction = end - start;
 
 						// Handle degenerate triangles
-						if (Mathf.Approximately(direction.sqrMagnitude, 0f))
+						if (Mathf.Approximately(direction.magnitude, 0f))
 							continue;
 
 						// Shoot a ray from outside the object (due to face normals) in the direction of the ray to see if it is inside
@@ -78,9 +78,6 @@ namespace UnityEngine.VR.Utilities
 						forwardRay.origin = forwardRay.GetPoint(-maxDistance);
 
 						Vector3 forwardHit;
-
-						if (forwardRay.direction == Vector3.zero)
-							continue;
 
 						if (collisionTester.Raycast(forwardRay, out hitInfo, maxDistance * 2f))
 							forwardHit = hitInfo.point;

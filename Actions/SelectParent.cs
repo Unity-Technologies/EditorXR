@@ -3,13 +3,9 @@
 namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("SelectParent", ActionMenuItemAttribute.kDefaultActionSectionName, 8)]
-	public class SelectParent : MonoBehaviour, IAction
+	public class SelectParent : BaseAction
 	{
-		public Sprite icon { get { return m_Icon; } }
-		[SerializeField]
-		private Sprite m_Icon;
-
-		public bool ExecuteAction()
+		public override void ExecuteAction()
 		{
 			var go = Selection.activeGameObject;
 			if (go != null)
@@ -21,12 +17,9 @@ namespace UnityEngine.VR.Actions
 					if (parentGO)
 					{
 						Selection.activeGameObject = parentGO;
-						return true;
 					}
 				}
 			}
-
-			return false;
 		}
 	}
 }

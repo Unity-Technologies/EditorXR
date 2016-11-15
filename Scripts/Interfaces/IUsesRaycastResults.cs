@@ -1,10 +1,8 @@
 ﻿using System;
-using UnityEngine;
-using System.Collections;
 
 namespace UnityEngine.VR.Tools
 {
-	public interface IRaycaster
+	public interface IUsesRaycastResults
 	{
 		Func<Transform, GameObject> getFirstGameObject { set; }
 	}

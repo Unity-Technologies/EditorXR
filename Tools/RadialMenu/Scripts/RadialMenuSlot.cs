@@ -58,21 +58,17 @@ namespace UnityEngine.VR.Menus
 				if (m_Highlighted == value)
 					return;
 
-				this.StopCoroutine(ref m_HighlightCoroutine);
 				this.StopCoroutine(ref m_IconHighlightCoroutine);
-				this.StopCoroutine(ref m_SelectSlotCoroutine);
 
 				m_Highlighted = value;
 				if (m_Highlighted)
 				{
 					// Only start the highlight coroutine if the highlight coroutine isnt already playing. Otherwise allow it to gracefully finish.
-					m_HighlightCoroutine = StartCoroutine(StartHighlight());
+					if (m_HighlightCoroutine == null)
+						m_HighlightCoroutine = StartCoroutine(Highlight());
 				}
 				else
-				{
-					m_HighlightCoroutine = StartCoroutine(EndHighlight());
 					m_IconHighlightCoroutine = StartCoroutine(IconEndHighlight());
-				}
 			}
 		}
 		bool m_Highlighted;
@@ -102,13 +98,13 @@ namespace UnityEngine.VR.Menus
 		float m_IconLookForwardOffset = 0.5f;
 		Vector3 m_IconLookDirection;
 		Color m_OriginalIconColor;
-		
-		Coroutine m_VislbilityCoroutine;
+
+		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
 		Coroutine m_InsetVisibilityCoroutine;
 		Coroutine m_SelectSlotCoroutine;
-
+		
 		public Material borderRendererMaterial
 		{
 			get { return U.Material.GetMaterialClone(m_BorderRenderer); } // return new unique color to the RadialMenuUI for settings in each RadialMenuSlot contained in a given RadialMenu
@@ -127,10 +123,7 @@ namespace UnityEngine.VR.Menus
 
 		public Quaternion visibleLocalRotation { get; set; }
 
-		public Sprite icon
-		{
-			set { m_Icon.sprite = value; }
-		}
+		public Sprite icon { set { m_Icon.sprite = value; } get { return m_Icon.sprite; } }
 
 		public UnityBrandColorScheme.GradientPair gradientPair
 		{
@@ -160,9 +153,9 @@ namespace UnityEngine.VR.Menus
 			m_OriginalIconColor = m_Icon.color;
 		}
 
-		private void OnDisable()
+		void OnDisable()
 		{
-			this.StopCoroutine(ref m_VislbilityCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 			this.StopCoroutine(ref m_HighlightCoroutine);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 		}
@@ -173,17 +166,15 @@ namespace UnityEngine.VR.Menus
 			m_Pressed = false;
 			m_Highlighted = false;
 
-			this.StopCoroutine(ref m_VislbilityCoroutine);
-
-			m_VislbilityCoroutine = StartCoroutine(AnimateShow());
+			this.StopCoroutine(ref m_VisibilityCoroutine);
+		
+			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
 
 		public void Hide()
 		{
-			this.StopCoroutine(ref m_VislbilityCoroutine); // stop any fade in visuals
-
-			if (m_VislbilityCoroutine == null)
-				m_VislbilityCoroutine = StartCoroutine(AnimateHide()); // perform fade if not already performing
+			this.StopCoroutine(ref m_VisibilityCoroutine);
+			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
 		void CorrectIconRotation()
@@ -204,8 +195,7 @@ namespace UnityEngine.VR.Menus
 			transform.localScale = kHiddenLocalScale;
 			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
 
-			this.StopCoroutine(ref m_InsetVisibilityCoroutine);
-			m_InsetVisibilityCoroutine = StartCoroutine(ShowInset());
+			StartCoroutine(ShowInset());
 
 			var opacity = 0f;
 			var positionWait = orderIndex * 0.05f;
@@ -226,7 +216,7 @@ namespace UnityEngine.VR.Menus
 
 			CorrectIconRotation();
 
-			m_VislbilityCoroutine = null;
+			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator ShowInset()
@@ -246,7 +236,6 @@ namespace UnityEngine.VR.Menus
 				yield return null;
 			}
 
-			m_InsetVisibilityCoroutine = null;
 			m_InsetMaterial.SetFloat("_Alpha", 1);
 			m_MenuInset.localScale = m_VisibleInsetLocalScale;
 		}
@@ -275,7 +264,7 @@ namespace UnityEngine.VR.Menus
 			}
 
 			FadeOutCleanup();
-			m_VislbilityCoroutine = null;
+			m_VisibilityCoroutine = null;
 		}
 
 		void FadeOutCleanup()
@@ -290,63 +279,30 @@ namespace UnityEngine.VR.Menus
 			transform.localScale = Vector3.zero;
 		}
 
-		IEnumerator StartHighlight()
+		IEnumerator Highlight()
 		{
 			HighlightIcon();
-			m_Icon.color = m_OriginalIconColor;
 
-			var topColor = m_InsetMaterial.GetColor("_ColorTop");
-			var bottomColor = m_InsetMaterial.GetColor("_ColorBottom");
-			var blendAmount = 0f;
-			var velocity = 0f;
-			var duration = 0f;
-			const float kTargetDuration = 0.125f;
-			while (duration > kTargetDuration)
+			var opacity = Time.unscaledDeltaTime;
+			var topColor = m_OriginalInsetGradientPair.a;
+			var bottomColor = m_OriginalInsetGradientPair.b;
+			while (opacity > 0)
 			{
-				duration += Time.unscaledDeltaTime;
-				blendAmount = U.Math.SmoothDamp(0f, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
-				topColor = Color.Lerp(m_OriginalInsetGradientPair.a, s_GradientPair.a, blendAmount);
-				bottomColor = Color.Lerp(m_OriginalInsetGradientPair.b, s_GradientPair.b, blendAmount);
+				if (m_Highlighted)
+					opacity = Mathf.Clamp01(opacity + Time.unscaledDeltaTime * 4); // stay highlighted
+				else
+					opacity = Mathf.Clamp01(opacity - Time.unscaledDeltaTime * 2);
+
+
+				topColor = Color.Lerp(m_OriginalInsetGradientPair.a, s_GradientPair.a, opacity * 2f);
+				bottomColor = Color.Lerp(m_OriginalInsetGradientPair.b, s_GradientPair.b, opacity);
 
 				m_InsetMaterial.SetColor("_ColorTop", topColor);
 				m_InsetMaterial.SetColor("_ColorBottom", bottomColor);
 
-				m_MenuInset.localScale = Vector3.Lerp(m_VisibleInsetLocalScale, m_HighlightedInsetLocalScale, blendAmount);
+				m_MenuInset.localScale = Vector3.Lerp(m_VisibleInsetLocalScale, m_HighlightedInsetLocalScale, opacity * opacity);
 				yield return null;
 			}
-
-			m_MenuInset.localScale = m_HighlightedInsetLocalScale;
-
-			m_BorderRendererMaterial.SetFloat("_Expand", 0);
-			m_InsetMaterial.SetColor("_ColorTop", s_GradientPair.a);
-			m_InsetMaterial.SetColor("_ColorBottom", s_GradientPair.b);
-
-			m_HighlightCoroutine = null;
-		}
-
-		IEnumerator EndHighlight()
-		{
-			var topColor = m_InsetMaterial.GetColor("_ColorTop");
-			var bottomColor = m_InsetMaterial.GetColor("_ColorBottom");
-			var blendAmount = 0f;
-			var velocity = 0f;
-			var duration = 0f;
-			const float kTargetDuration = 0.25f;
-			while (duration > kTargetDuration)
-			{
-				duration += Time.unscaledDeltaTime;
-				blendAmount = U.Math.SmoothDamp(0f, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
-				topColor = Color.Lerp(s_GradientPair.a, m_OriginalInsetGradientPair.a, blendAmount);
-				bottomColor = Color.Lerp(s_GradientPair.b, m_OriginalInsetGradientPair.a, blendAmount);
-
-				m_InsetMaterial.SetColor("_ColorTop", topColor);
-				m_InsetMaterial.SetColor("_ColorBottom", bottomColor);
-
-				m_MenuInset.localScale = Vector3.Lerp(m_HighlightedInsetLocalScale, m_VisibleInsetLocalScale, blendAmount);
-				yield return null;
-			}
-
-			m_MenuInset.localScale = m_VisibleInsetLocalScale;
 
 			m_BorderRendererMaterial.SetFloat("_Expand", 0);
 			m_InsetMaterial.SetColor("_ColorTop", m_OriginalInsetGradientPair.a);
@@ -369,8 +325,6 @@ namespace UnityEngine.VR.Menus
 
 		IEnumerator IconHighlightAnimatedShow(bool pressed = false)
 		{
-			m_Icon.color = m_OriginalIconColor;
-
 			var currentPosition = m_IconTransform.localPosition;
 			var targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // Raise up for highlight; lower for press
 			var transitionAmount = Time.unscaledDeltaTime;
@@ -388,11 +342,9 @@ namespace UnityEngine.VR.Menus
 
 		IEnumerator IconEndHighlight()
 		{
-			m_Icon.color = m_OriginalIconColor;
-
 			var currentPosition = m_IconTransform.localPosition;
 			var transitionAmount = 1f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
-			var transitionSubtractMultiplier = 10f;
+			var transitionSubtractMultiplier = 5f;
 			while (transitionAmount > 0)
 			{
 				m_IconTransform.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);

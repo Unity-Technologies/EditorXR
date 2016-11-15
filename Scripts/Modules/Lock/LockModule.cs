@@ -1,24 +1,20 @@
-//#define USE_HOVER
 using System;
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.VR;
+using System.Linq;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Actions;
-using UnityEngine.VR.Menus;
-using UnityEngine.VR;
-using System.Linq;
+using UnityEditor;
 
-public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
+public class LockModule : MonoBehaviour, IActions, ISelectionChanged
 {
 	class LockModuleAction : IAction
 	{
 		internal Func<bool> execute;
 		public Sprite icon { get; internal set; }
-		public bool ExecuteAction()
+		public void ExecuteAction()
 		{
-			return execute();
+			execute();
 		}
 	}
 
@@ -28,100 +24,114 @@ public class LockModule : MonoBehaviour, IToolActions, ISelectionChanged
 	Sprite m_UnlockIcon;
 
 	readonly LockModuleAction m_LockModuleAction = new LockModuleAction();
-	public List<IAction> toolActions { get; private set; }
+	public List<IAction> actions { get; private set; }
 
-	public Action<Node?, GameObject> openRadialMenu { private get; set; }
+	// TODO: This should go away once the alternate menu stays open or if locking/unlocking from alternate menu goes 
+	// away entirely (e.g. because of HierarchyWorkspace)
+	public Action<Transform, GameObject> updateAlternateMenu { private get; set; }
 
-	private readonly List<GameObject> m_LockedGameObjects = new List<GameObject>();
+	readonly List<GameObject> m_LockedGameObjects = new List<GameObject>();
 
-#if USE_HOVER
-	private Dictionary<Node?, GameObject> m_CurrentHoverObjects = new Dictionary<Node?, GameObject>();
-	private Dictionary<Node?, float> m_HoverTimes = new Dictionary<Node?, float>();
-	private const float kMaxHoverTime = 2.0f;
-#endif
-
-	private GameObject m_SelectedObject;
+	GameObject m_CurrentHoverObject;
+	Transform m_HoverRayOrigin;
+	float m_HoverDuration;
+	const float kMaxHoverTime = 2.0f;
 	
 	void Awake()
 	{
-		m_LockModuleAction.icon = m_LockIcon;
 		m_LockModuleAction.execute = ToggleLocked;
+		UpdateActionIcon(null);
 
-		toolActions = new List<IAction>() { m_LockModuleAction };
+		actions = new List<IAction>() { m_LockModuleAction };
 	}
 
 	public bool IsLocked(GameObject go)
 	{
-		return go && (go.isStatic || m_LockedGameObjects.Contains(go));
+		return m_LockedGameObjects.Contains(go);
 	}
 
-	public bool ToggleLocked()
+	bool ToggleLocked()
 	{
-		bool newLockState = !IsLocked(m_SelectedObject);
-		SetLocked(m_SelectedObject, newLockState);
+		var go = Selection.activeGameObject ?? m_CurrentHoverObject;
+		var newLockState = !IsLocked(go);
+		SetLocked(go, newLockState);
 		return newLockState;
 	}
 
-	private void SetCurrentSelectedObject(GameObject go)
+	public void SetLocked(GameObject go, bool locked)
 	{
-		m_SelectedObject = go;
-	}
-
-	private void SetLocked(GameObject go, bool locked)
-	{
-		if (go == null)
+		if (!go)
 			return;
 
 		if (locked)
 		{
 			if (!m_LockedGameObjects.Contains(go))
-			{
 				m_LockedGameObjects.Add(go);
-			}
+
+			// You shouldn't be able to keep an object selected if you are locking it
+			Selection.objects = Selection.objects.Where(o => o != go).ToArray();
 		}
 		else
 		{
 			if (m_LockedGameObjects.Contains(go))
-			{
 				m_LockedGameObjects.Remove(go);
-			}
 		}
-		
-		m_LockModuleAction.icon = locked ? m_UnlockIcon : m_LockIcon;
+
+		UpdateActionIcon(go);
 	}
 
-	public void CheckHover(GameObject go, Node? node)
+	void UpdateActionIcon(GameObject go)
 	{
-#if USE_HOVER
-		if (!m_CurrentHoverObjects.ContainsKey(node))
-			m_CurrentHoverObjects.Add(node, null);
+		m_LockModuleAction.icon = IsLocked(go) ? m_LockIcon : m_UnlockIcon;
+	}
 
-		if (go != m_CurrentHoverObjects[node])
+	public void OnHovered(GameObject go, Transform rayOrigin)
+	{
+		// Latch a new ray origin only when nothing is being hovered over
+		if (Selection.activeGameObject || !m_HoverRayOrigin)
 		{
-			m_CurrentHoverObjects[node] = go;
-			m_HoverTimes[node] = 0.0f;
+			m_HoverRayOrigin = rayOrigin;
+			m_CurrentHoverObject = go;
+			m_HoverDuration = 0f;
 		}
-		else if (IsLocked(go))
+		else if (m_HoverRayOrigin == rayOrigin)
 		{
-			m_HoverTimes[node] += Time.unscaledDeltaTime;
-			if (m_HoverTimes[node] >= kMaxHoverTime)
+			if (!go) // Ray origin is no longer hovering over any object
 			{
-				var otherNode = (from item in m_HoverTimes
-								 where item.Key != node
-								 select item.Value).FirstOrDefault();
+				// Turn off menu if it was previously shown
+				if (IsLocked(m_CurrentHoverObject))
+					updateAlternateMenu(rayOrigin, null);
 
-				if (otherNode < 2)
-					openRadialMenu(node, go);
+				m_HoverRayOrigin = null;
+				m_CurrentHoverObject = null;
+			}
+			else if (m_CurrentHoverObject == go) // Keep track of existing hover object
+			{
+				m_HoverDuration += Time.unscaledDeltaTime;
+
+				// Don't allow hover menu if over a selected game object
+				if (IsLocked(go) && m_HoverDuration >= kMaxHoverTime)
+				{
+					UpdateActionIcon(go);
+
+					// Open up the menu, so that locking can be changed
+					updateAlternateMenu(rayOrigin, go);
+				}
+			}
+			else // Switch to new hover object on the same ray origin
+			{
+				// Turn off menu if it was previously shown
+				if (IsLocked(m_CurrentHoverObject))
+					updateAlternateMenu(rayOrigin, null);
+
+				m_CurrentHoverObject = go;
+				m_HoverDuration = 0f;
 			}
 		}
-#else
-		// We're disabling hovering over an object to bring up the radial menu for now
-		return;
-#endif
 	}
 
 	public void OnSelectionChanged()
 	{
-		SetCurrentSelectedObject(UnityEditor.Selection.activeGameObject);
+		UpdateActionIcon(Selection.activeGameObject);
 	}
 }

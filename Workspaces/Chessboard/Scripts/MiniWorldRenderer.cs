@@ -1,34 +1,49 @@
-﻿using System.Collections.Generic;
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
-
 using UnityEngine.VR.Utilities;
 
 public class MiniWorldRenderer : MonoBehaviour
 {
+	public const string kShowInMiniWorldTag = "ShowInMiniWorld";
 	const float kMinScale = 0.001f;
 
-	private Camera m_MiniCamera;
-
-	bool[] m_RendererPreviousEnable = new bool[0];
-
-	public MiniWorld miniWorld { private get; set; }
-	public LayerMask cullingMask { private get; set; }
+	static int s_DefaultLayer;
 
 	public List<Renderer> ignoreList
 	{
 		set
 		{
 			m_IgnoreList = value;
-			if(m_IgnoreList.Count > m_RendererPreviousEnable.Length)
-				m_RendererPreviousEnable = new bool[m_IgnoreList.Count];
+			var count = m_IgnoreList == null ? 0 : m_IgnoreList.Count;
+			if (m_IgnoreObjectRendererEnabled == null || count > m_IgnoreObjectRendererEnabled.Length)
+			{
+				m_IgnoredObjectLayer = new int[count];
+				m_IgnoreObjectRendererEnabled = new bool[count];
+			}
 		}
 	}
 	List<Renderer> m_IgnoreList = new List<Renderer>();
-	public Func<bool> preProcessRender { private get; set; }
-	public Action postProcessRender { private get; set; }
 
-	private void OnEnable()
+	Camera m_MiniCamera;
+
+	int[] m_IgnoredObjectLayer;
+	bool[] m_IgnoreObjectRendererEnabled;
+
+	public MiniWorld miniWorld { private get; set; }
+	public LayerMask cullingMask { private get; set; }
+
+	public Matrix4x4 GetWorldToCameraMatrix(Camera camera)
+	{
+		return camera.worldToCameraMatrix * miniWorld.miniToReferenceMatrix;
+	}
+
+	void Awake()
+	{
+		s_DefaultLayer = LayerMask.NameToLayer("Default");
+	}
+
+	void OnEnable()
 	{
 		GameObject go = new GameObject("MiniWorldCamera", typeof(Camera));
 		go.hideFlags = HideFlags.DontSave;
@@ -37,22 +52,22 @@ public class MiniWorldRenderer : MonoBehaviour
 		Camera.onPostRender += RenderMiniWorld;
 	}
 
-	private void OnDisable()
+	void OnDisable()
 	{
 		Camera.onPostRender -= RenderMiniWorld;
 		U.Object.Destroy(m_MiniCamera.gameObject);
 	}
 
-	private void RenderMiniWorld(Camera camera)
+	void RenderMiniWorld(Camera camera)
 	{
 		// Do not render if miniWorld scale is too low to avoid errors in the console
-		if (miniWorld && miniWorld.transform.lossyScale.magnitude > kMinScale)
+		if (camera != m_MiniCamera && miniWorld && miniWorld.transform.lossyScale.magnitude > kMinScale)
 		{
 			m_MiniCamera.CopyFrom(camera);
 
 			m_MiniCamera.cullingMask = cullingMask;
 			m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
-			m_MiniCamera.worldToCameraMatrix = camera.worldToCameraMatrix * miniWorld.miniToReferenceMatrix;
+			m_MiniCamera.worldToCameraMatrix = GetWorldToCameraMatrix(camera);
 			Shader shader = Shader.Find("Custom/Custom Clip Planes");
 			Shader.SetGlobalVector("_GlobalClipCenter", miniWorld.referenceBounds.center);
 			Shader.SetGlobalVector("_GlobalClipExtents", miniWorld.referenceBounds.extents);
@@ -60,23 +75,34 @@ public class MiniWorldRenderer : MonoBehaviour
 			for (var i = 0; i < m_IgnoreList.Count; i++)
 			{
 				var hiddenRenderer = m_IgnoreList[i];
-				if (hiddenRenderer) 
+				if (!hiddenRenderer)
+					continue;
+
+				if (hiddenRenderer.CompareTag(kShowInMiniWorldTag))
 				{
-					m_RendererPreviousEnable[i] = hiddenRenderer.enabled;
+					m_IgnoredObjectLayer[i] = hiddenRenderer.gameObject.layer;
+					hiddenRenderer.gameObject.layer = s_DefaultLayer;
+				}
+				else
+				{
+					m_IgnoreObjectRendererEnabled[i] = hiddenRenderer.enabled;
 					hiddenRenderer.enabled = false;
 				}
 			}
 
-			if(preProcessRender())
-				m_MiniCamera.RenderWithShader(shader, string.Empty);
-
-			postProcessRender();
+			m_MiniCamera.SetReplacementShader(shader, null);
+			m_MiniCamera.Render();
 
 			for (var i = 0; i < m_IgnoreList.Count; i++)
 			{
 				var hiddenRenderer = m_IgnoreList[i];
-				if (hiddenRenderer)
-					hiddenRenderer.enabled = m_RendererPreviousEnable[i];
+				if (!hiddenRenderer)
+					continue;
+
+				if (hiddenRenderer.CompareTag(kShowInMiniWorldTag))
+					hiddenRenderer.gameObject.layer = m_IgnoredObjectLayer[i];
+				else
+					m_IgnoreList[i].enabled = m_IgnoreObjectRendererEnabled[i];
 			}
 		}
 	}

@@ -1,16 +1,14 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.VR;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 using Object = UnityEngine.Object;
 
 //[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
 [MainMenuItem(false)]
-public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay, ISpatialHash
+public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ISpatialHash
 {	
 	public Transform rayOrigin { get; set; }
-	public Node selfNode { get; set; }
 
 	public ActionMap actionMap
 	{

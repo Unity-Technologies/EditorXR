@@ -2,7 +2,7 @@
 
 namespace UnityEngine.VR.Tools
 {
-	public interface ICustomRay : IRay
+	public interface ICustomRay : IUsesRayOrigin
 	{
 		/// <summary>
 		/// Method handling the enabling & showing of the default proxy ray

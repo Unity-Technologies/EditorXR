@@ -6,11 +6,11 @@ namespace UnityEngine.VR.Tools
 	/// <summary>
 	/// Declares that a class has tool actions that should be picked up by the system
 	/// </summary>
-	public interface IToolActions
+	public interface IActions
 	{
 		/// <summary>
-		/// Collection of actions that can be performed when the tool is selected
+		/// Collection of actions that the tool, module, etc. offers
 		/// </summary>
-		List<IAction> toolActions { get; }
+		List<IAction> actions { get; }
 	}
 }

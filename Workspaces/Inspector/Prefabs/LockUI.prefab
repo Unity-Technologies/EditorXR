@@ -211,7 +211,7 @@ MonoBehaviour:
   m_Button: {fileID: 114000014132259166}
   m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
   m_AlternateIconSprite: {fileID: 0}
-  m_SwapIconsOnClick: 0
+  m_SwapIconsOnClick: 1
   m_HighlightItems:
   - {fileID: 114000011231580806}
   m_GrayscaleGradient: 0
