@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 1d288f1a40f3bc54bb07e9a5eb99d137
-timeCreated: 1479255698
+timeCreated: 1479259670
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
@@ -24,6 +24,8 @@ MonoImporter:
   - m_StandardKeyboardPrefab: {fileID: 114000012076762946, guid: 6a5c5a798b3bb39408f3dbf2bfa77923,
       type: 2}
   - m_PlayerModelPrefab: {fileID: 1000013280737546, guid: 3dbbb2baa83f3994e94fe56a60c73252,
+      type: 2}
+  - m_PreviewCameraPrefab: {fileID: 1000010893495554, guid: 66d2f6b9efc6b7842bea782607a65bd2,
       type: 2}
   - m_ProxyExtras: {instanceID: 0}
   executionOrder: 0

@@ -15,10 +15,27 @@ namespace UnityEditor.VR
 	public class VRView : EditorWindow
 	{
 		const string kShowDeviceView = "VRView.ShowDeviceView";
+		const string kUseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
 		const string kLaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
 		const float kHMDActivityTimeout = 3f; // in seconds
 
 		DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
+
+		// To allow for alternate previews (e.g. smoothing)
+		public static Camera customPreviewCamera
+		{
+			set
+			{
+				if (s_ActiveView)
+					s_ActiveView.m_CustomPreviewCamera = value;
+			}
+			private get
+			{
+				return s_ActiveView && s_ActiveView.m_UseCustomPreviewCamera ?
+					s_ActiveView.m_CustomPreviewCamera : null;
+			}
+		}
+		Camera m_CustomPreviewCamera;
 
 		[NonSerialized]
 		private Camera m_Camera;
@@ -37,6 +54,7 @@ namespace UnityEditor.VR
 
 		bool m_HMDReady;
 		bool m_VRInitialized;
+		bool m_UseCustomPreviewCamera;
 
 		public static Transform viewerPivot
 		{
@@ -98,8 +116,6 @@ namespace UnityEditor.VR
 					s_ActiveView.m_LayerMask = value;
 			}
 		}
-		
-		public static Camera customPreviewCamera { set; private get; } // To allow for alternate previews (e.g. smoothing)
 
 		public static event Action onEnable = delegate {};
 		public static event Action onDisable = delegate {};
@@ -170,6 +186,7 @@ namespace UnityEditor.VR
 			m_CameraPivot.rotation = Quaternion.identity;
 
 			m_ShowDeviceView = EditorPrefs.GetBool(kShowDeviceView, false);
+			m_UseCustomPreviewCamera = EditorPrefs.GetBool(kUseCustomPreviewCamera, false);
 
 			// Disable other views to increase rendering performance for EditorVR
 			SetOtherViewsEnabled(false);
@@ -191,6 +208,7 @@ namespace UnityEditor.VR
 			VRSettings.StopRenderingToDevice();
 
 			EditorPrefs.SetBool(kShowDeviceView, m_ShowDeviceView);
+			EditorPrefs.SetBool(kUseCustomPreviewCamera, m_UseCustomPreviewCamera);
 
 			SetOtherViewsEnabled(true);
 
@@ -309,6 +327,17 @@ namespace UnityEditor.VR
 				{
 					if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))
 						m_ShowDeviceView = !m_ShowDeviceView;
+
+					if (m_CustomPreviewCamera)
+					{
+						GUILayout.FlexibleSpace();
+						GUILayout.BeginHorizontal();
+						{
+							GUILayout.FlexibleSpace();
+							m_UseCustomPreviewCamera = GUILayout.Toggle(m_UseCustomPreviewCamera, "Use Presentation Camera");
+						}
+						GUILayout.EndHorizontal();
+					}
 				}
 				GUILayout.EndArea();
 			}

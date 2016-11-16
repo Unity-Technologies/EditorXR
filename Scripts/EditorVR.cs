@@ -76,6 +76,9 @@ public class EditorVR : MonoBehaviour
 	private GameObject m_PlayerModelPrefab;
 
 	[SerializeField]
+	GameObject m_PreviewCameraPrefab;
+
+	[SerializeField]
 	ProxyExtras m_ProxyExtras;
 
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
@@ -159,7 +162,7 @@ public class EditorVR : MonoBehaviour
 	
 	private event Action m_SelectionChanged;
 
-	VRSmoothCamera m_SmoothCamera;
+	IPreviewCamera m_PreviewCamera;
 
 	StandardManipulator m_StandardManipulator;
 	ScaleManipulator m_ScaleManipulator;
@@ -187,9 +190,20 @@ public class EditorVR : MonoBehaviour
 			// Steam's reference position should be at the feet and not at the head as we do with Oculus
 			VRView.viewerPivot.localPosition = Vector3.zero;
 		}
-		m_SmoothCamera = U.Object.AddComponent<VRSmoothCamera>(VRView.viewerCamera.gameObject);
-		VRView.customPreviewCamera = m_SmoothCamera.smoothCamera;
-		VRView.cullingMask = Tools.visibleLayers | m_SmoothCamera.hmdOnlyLayerMask;
+
+		var hmdOnlyLayerMask = 0;
+		if (m_PreviewCameraPrefab)
+		{
+			var go = U.Object.Instantiate(m_PreviewCameraPrefab);
+			m_PreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
+			if (m_PreviewCamera != null)
+			{
+				VRView.customPreviewCamera = m_PreviewCamera.previewCamera;
+				m_PreviewCamera.vrCamera = VRView.viewerCamera;
+				hmdOnlyLayerMask = m_PreviewCamera.hmdOnlyLayerMask;
+			}
+		}
+		VRView.cullingMask = Tools.visibleLayers | hmdOnlyLayerMask;
 
 		InitializePlayerHandle();
 		CreateDefaultActionMapInputs();
@@ -389,6 +403,9 @@ public class EditorVR : MonoBehaviour
 
 	void OnDestroy()
 	{
+		if (m_PreviewCamera != null)
+			U.Object.Destroy(((MonoBehaviour)m_PreviewCamera).gameObject);
+
 		PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
 	}
 
@@ -412,7 +429,8 @@ public class EditorVR : MonoBehaviour
 
 	private void Update()
 	{
-		m_SmoothCamera.enabled = VRView.showDeviceView;
+		if (m_PreviewCamera != null)
+			m_PreviewCamera.enabled = VRView.showDeviceView;
 
 		UpdateKeyboardMallets();
 
@@ -849,7 +867,8 @@ public class EditorVR : MonoBehaviour
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_InputModule.getPointerLength = GetPointerLength;
 		m_InputModule.isRayActive = IsRayActive;
-		m_InputModule.layerMask |= m_SmoothCamera.hmdOnlyLayerMask;
+		if (m_PreviewCamera != null)
+			m_InputModule.layerMask |= m_PreviewCamera.hmdOnlyLayerMask;
 
 		m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
