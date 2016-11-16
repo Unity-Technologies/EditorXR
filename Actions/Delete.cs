@@ -19,7 +19,7 @@ namespace UnityEngine.VR.Actions
 				U.Object.Destroy(go);
 			}
 
-			Selection.objects = null;
+			Selection.activeGameObject = null;
 		}
 	}
 }

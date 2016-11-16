@@ -60,8 +60,6 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		}
 	}
 
-	static Transform[] selectionTransforms { get { return Selection.GetTransforms(SelectionMode.Editable); } }
-
 	public List<IAction> actions
 	{
 		get
@@ -161,7 +159,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		// Reset direct selection state in case of a ray selection
 		m_DirectSelected = false;
 
-		if (selectionTransforms.Length == 0)
+		if (Selection.gameObjects.Length == 0)
 			m_CurrentManipulator.gameObject.SetActive(false);
 		else
 			UpdateCurrentManipulator();
@@ -302,7 +300,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		if (hasObject || m_DirectSelected)
 			return;
 
-		if (selectionTransforms != null && selectionTransforms.Length > 0)
+		if (Selection.gameObjects.Length > 0)
 		{
 			if (!m_CurrentManipulator.dragging)
 				UpdateCurrentManipulator();
@@ -314,7 +312,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 			if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 				manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, kLazyFollowRotate * deltaTime);
 
-			foreach (var t in selectionTransforms)
+			foreach (var t in Selection.transforms)
 			{
 				t.rotation = Quaternion.Slerp(t.rotation, m_TargetRotation * m_RotationOffsets[t], kLazyFollowRotate * deltaTime);
 
@@ -414,40 +412,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	}
 
 	private void UpdateSelectionBounds()
-	{
-		var hasBounds = false;
-		Bounds newBounds = new Bounds();
-		foreach (var selectedObj in selectionTransforms)
-		{
-			var renderers = selectedObj.GetComponentsInChildren<Renderer>();
-			foreach (var r in renderers)
-			{
-				if (Mathf.Approximately(r.bounds.extents.sqrMagnitude, 0f)) // Necessary because Particle Systems have renderer components with center and extents (0,0,0)
-					continue;
-
-				if (hasBounds)
-				{
-					// Only use encapsulate after the first renderer, otherwise bounds will always encapsulate point (0,0,0)
-					newBounds.Encapsulate(r.bounds);
-				}
-				else
-				{
-					newBounds = r.bounds;
-					hasBounds = true;
-				}
-			}
-		}
-
-		// If we haven't encountered any Renderers, return bounds of (0,0,0) at the center of the selected objects
-		if (!hasBounds)
-		{
-			var bounds = new Bounds();
-			foreach (var selectedObj in selectionTransforms)
-				bounds.center += selectedObj.transform.position / selectionTransforms.Length;
-			newBounds = bounds;
-		}
-
-		m_SelectionBounds = newBounds;
+	{		
+		m_SelectionBounds = U.Object.GetBounds(Selection.gameObjects);
 	}
 
 	BaseManipulator CreateManipulator(GameObject prefab)
@@ -462,6 +428,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 	private void UpdateCurrentManipulator()
 	{
+		var selectionTransforms = Selection.transforms;
 		if (selectionTransforms.Length <= 0)
 			return;
 
@@ -469,8 +436,9 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		var manipulatorGameObject = m_CurrentManipulator.gameObject;
 		manipulatorGameObject.SetActive(true);
 		var manipulatorTransform = manipulatorGameObject.transform;
-		manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? selectionTransforms[0].position : m_SelectionBounds.center;
-		manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : selectionTransforms[0].rotation;
+		var activeTransform = Selection.activeTransform;
+		manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? activeTransform.position : m_SelectionBounds.center;
+		manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : activeTransform.rotation;
 		m_TargetPosition = manipulatorTransform.position;
 		m_TargetRotation = manipulatorTransform.rotation;
 		m_StartRotation = m_TargetRotation;

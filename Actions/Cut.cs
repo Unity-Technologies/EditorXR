@@ -22,7 +22,7 @@ namespace UnityEngine.VR.Actions
 				}
 
 				Paste.buffer = selection;
-				Selection.objects = null;
+				Selection.activeGameObject = null;
 			}
 		}
 	}
