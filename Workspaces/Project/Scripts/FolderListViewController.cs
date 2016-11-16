@@ -14,9 +14,9 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	[SerializeField]
 	private Material m_ExpandArrowMaterial;
 
-	int m_SelectedFolder;
+	string m_SelectedFolder;
 
-	readonly Dictionary<int, bool> m_ExpandStates = new Dictionary<int, bool>();
+	readonly Dictionary<string, bool> m_ExpandStates = new Dictionary<string, bool>();
 
 	public Action<FolderData> selectFolder { private get; set; }
 
@@ -34,8 +34,8 @@ public class FolderListViewController : NestedListViewController<FolderData>
 			}
 
 			m_Data = value;
-			if (m_SelectedFolder != 0 && m_Data.Length > 0)
-				SelectFolder(GetFolderDataByInstanceID(m_Data[0], m_SelectedFolder));
+			if (m_Data.Length > 0 && !string.IsNullOrEmpty(m_SelectedFolder))
+				SelectFolder(GetFolderDataByGUID(m_Data[0], m_SelectedFolder));
 		}
 	}
 
@@ -61,7 +61,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		if (data.item == null)
 			data.item = GetItem(data);
 		var item = (FolderListItem)data.item;
-		item.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.instanceID == m_SelectedFolder);
+		item.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.guid == m_SelectedFolder);
 
 		SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 
@@ -73,10 +73,10 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		foreach (var datum in data)
 		{
 			bool expanded;
-			if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
+			if (!m_ExpandStates.TryGetValue(datum.guid, out expanded))
 			{
 				expanded = datum.defaultToExpanded;
-				m_ExpandStates[datum.instanceID] = expanded;
+				m_ExpandStates[datum.guid] = expanded;
 			}
 
 			if (count + m_DataOffset < -1)
@@ -111,26 +111,26 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	void ToggleExpanded(FolderData data)
 	{
-		var instanceID = data.instanceID;
+		var instanceID = data.guid;
 		m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
 	}
 
 	void SelectFolder(FolderData data)
 	{
-		m_SelectedFolder = data.instanceID;
+		m_SelectedFolder = data.guid;
 		selectFolder(data);
 	}
 
-	FolderData GetFolderDataByInstanceID(FolderData data, int instanceID)
+	FolderData GetFolderDataByGUID(FolderData data, string guid)
 	{
-		if (data.instanceID == instanceID)
+		if (data.guid == guid)
 			return data;
 
 		if (data.children != null)
 		{
 			foreach (var child in data.children)
 			{
-				var folder = GetFolderDataByInstanceID(child, instanceID);
+				var folder = GetFolderDataByGUID(child, guid);
 				if (folder != null)
 					return folder;
 			}

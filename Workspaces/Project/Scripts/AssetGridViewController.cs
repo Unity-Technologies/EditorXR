@@ -215,7 +215,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		// If this AssetData hasn't fetched its asset yet, do so now
 		if (data.asset == null)
 		{
-			data.asset = EditorUtility.InstanceIDToObject(data.instanceID);
+			data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid));
 			data.preview = data.asset as GameObject;
 		}
 
@@ -261,7 +261,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	{
 		item.fallbackTexture = null;
 		item.StartCoroutine(U.Object.GetAssetPreview(
-			AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GetAssetPath(data.instanceID)), 
+			AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid)),
 			texture => item.fallbackTexture = texture));
 	}
 }

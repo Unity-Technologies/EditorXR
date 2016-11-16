@@ -7,17 +7,17 @@ public class FolderData : ListViewItemNestedData<FolderData>
 	public string name { get { return m_Name; } }
 	readonly string m_Name;
 
-	public int instanceID { get { return m_InstanceID; } }
-	readonly int m_InstanceID;
+	public string guid { get { return m_Guid; } }
+	readonly string m_Guid;
 
 	public AssetData[] assets { get { return m_Assets; } }
 	readonly AssetData[] m_Assets;
 
-	public FolderData(string name, FolderData[] children, AssetData[] assets, int instanceID, bool defaultToExpanded = false) : base(defaultToExpanded)
+	public FolderData(string name, FolderData[] children, AssetData[] assets, string guid, bool defaultToExpanded = false) : base(defaultToExpanded)
 	{
 		template = kTemplateName;
 		m_Name = name;
-		m_InstanceID = instanceID;
+		m_Guid = guid;
 		this.children = children;
 		m_Assets = assets;
 	}
