@@ -6,9 +6,7 @@ using UnityEngine.VR.Utilities;
 
 public class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 {
-	[SerializeField]
-	float kInstantiateFOVDifference = -5f;
-
+	const float kInstantiateFOVDifference = -5f;
 	const float kGrowDuration = 0.5f;
 
 	public Action<GameObject> addToSpatialHash { get; set; }
@@ -43,7 +41,7 @@ public class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 		//Get bounds at target scale
 		var origScale = obj.localScale;
 		obj.localScale = targetScale;
-		var totalBounds = U.Object.GetBounds(obj.gameObject);
+		var bounds = U.Object.GetBounds(obj.gameObject);
 		obj.localScale = origScale;
 
 		// We want to position the object so that it fits within the camera perspective at its original scale
@@ -53,7 +51,7 @@ public class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 		var camPosition = camera.transform.position;
 		var forward = obj.position - camPosition;
 
-		var distance = totalBounds.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
+		var distance = bounds.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
 		var destinationPosition = obj.position;
 		if (distance > forward.magnitude)
 			destinationPosition = camPosition + forward.normalized * distance;

@@ -866,7 +866,6 @@ public class EditorVR : MonoBehaviour
 
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_InputModule.getPointerLength = GetPointerLength;
-		m_InputModule.isRayActive = IsRayActive;
 		if (m_PreviewCamera != null)
 			m_InputModule.layerMask |= m_PreviewCamera.hmdOnlyLayerMask;
 
@@ -1687,6 +1686,9 @@ public class EditorVR : MonoBehaviour
 			// Use the mini world ray origin instead of the original ray origin
 			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
 			{
+				if (!IsRayActive(source.rayOrigin))
+					return false;
+
 				if (source.hoveredObject)
 					return !m_AllWorkspaces.Any(w => source.hoveredObject.transform.IsChildOf(w.transform));
 

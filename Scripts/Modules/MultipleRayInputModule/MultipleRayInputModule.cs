@@ -53,8 +53,7 @@ namespace UnityEngine.VR.Modules
 		public event Action<GameObject, RayEventData> dragStarted = delegate {};
 		public event Action<GameObject, RayEventData> dragEnded = delegate {};
 
-		public Action<Transform> preProcessRaycastSource = delegate {};
-		public Func<Transform, bool> isRayActive = delegate { return true; };
+		public Action<Transform> preProcessRaycastSource;
 
 		protected override void Awake()
 		{
@@ -97,10 +96,8 @@ namespace UnityEngine.VR.Modules
 				if (!(source.rayOrigin.gameObject.activeSelf || source.selectedObject) || !source.proxy.active)
 					continue;
 
-				if (!isRayActive(source.rayOrigin))
-					continue;
-
-				preProcessRaycastSource(source.rayOrigin);
+				if (preProcessRaycastSource != null)
+					preProcessRaycastSource(source.rayOrigin);
 
 				if (source.eventData == null)
 					source.eventData = new RayEventData(base.eventSystem);

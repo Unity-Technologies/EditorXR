@@ -34,7 +34,7 @@ namespace UnityEngine.VR.Tools
 		public Action<GameObject, bool> setLocked { get; set; }
 		public Func<GameObject, bool> isLocked { get; set; }
 
-		public Func<Transform, bool> isRayActive = delegate { return true; };
+		public Func<Transform, bool> isRayActive;
 		public event Action<GameObject, Transform> hovered;
 		public event Action<Transform> selected;
 

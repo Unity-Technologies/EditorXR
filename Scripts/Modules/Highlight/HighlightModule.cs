@@ -31,7 +31,7 @@ public class HighlightModule : MonoBehaviour
 
 		if (active) // Highlight
 		{
-			if(Selection.gameObjects.Contains(go))
+			if (Selection.gameObjects.Contains(go))
 				return;
 
 			if (!m_HighlightCounts.ContainsKey(go))
@@ -42,12 +42,13 @@ public class HighlightModule : MonoBehaviour
 		else // Unhighlight
 		{
 			int count;
-			if(m_HighlightCounts.TryGetValue(go, out count)) {
+			if(m_HighlightCounts.TryGetValue(go, out count))
+			{
 				count--;
-				m_HighlightCounts[go] = count;
-
-				if(count == 0)
+				if (count <= 0)
 					m_HighlightCounts.Remove(go);
+				else
+					m_HighlightCounts[go] = count;
 			}
 		}
 	}
