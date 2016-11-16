@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -42,6 +42,15 @@ public class ChessboardWorkspace : Workspace
 		public Vector3 refTransformStartScale;
 	}
 
+	[Serializable]
+	private struct ChessBoardUniqueSave
+	{
+		public Vector3 miniWorldRefScale;
+		public Vector3 miniWorldRefPos;
+		public float zoomSliderValue;
+	}
+	ChessBoardUniqueSave m_UniqueSave = new ChessBoardUniqueSave();
+
 	public IMiniWorld miniWorld { get { return m_MiniWorld; } }
 
 	public override void Setup()
@@ -83,6 +92,19 @@ public class ChessboardWorkspace : Workspace
 
 		// Propagate initial bounds
 		OnBoundsChanged();
+	}
+
+	public override string GetExtraSave()
+	{
+		return JsonUtility.ToJson(m_UniqueSave);
+	}
+
+	public override void SetExtraSave(string data)
+	{
+		m_UniqueSave = JsonUtility.FromJson<ChessBoardUniqueSave>(data);
+		m_MiniWorld.referenceTransform.localScale = m_UniqueSave.miniWorldRefScale;
+		m_MiniWorld.referenceTransform.position = m_UniqueSave.miniWorldRefPos;
+		m_ZoomSliderUI.zoomSlider.value = m_UniqueSave.zoomSliderValue;
 	}
 
 	private void Update()
@@ -129,6 +151,9 @@ public class ChessboardWorkspace : Workspace
 	private void OnSliding(float value)
 	{
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
+
+		m_UniqueSave.miniWorldRefScale = m_MiniWorld.referenceTransform.localScale;
+		m_UniqueSave.zoomSliderValue = m_ZoomSliderUI.zoomSlider.value;
 	}
 
 	void OnPanZoomDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -174,6 +199,9 @@ public class ChessboardWorkspace : Workspace
 
 			m_ZoomSliderUI.zoomSlider.value = referenceTransform.localScale.x;
 		}
+
+		m_UniqueSave.miniWorldRefPos = referenceTransform.position;
+		m_UniqueSave.zoomSliderValue = m_ZoomSliderUI.zoomSlider.value;
 	}
 
 	void OnPanZoomDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

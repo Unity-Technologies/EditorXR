@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
@@ -64,6 +64,7 @@ namespace UnityEngine.VR.Workspaces
 		bool m_Moving;
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ResetSizeCoroutine;
+
 		public bool m_Hidden;
 
 		/// <summary>
@@ -317,6 +318,15 @@ namespace UnityEngine.VR.Workspaces
 			this.StopCoroutine(ref m_ResetSizeCoroutine);
 
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
+		}
+
+		public virtual string GetExtraSave()
+		{
+			return "";
+		}
+
+		public virtual void SetExtraSave(string data)
+		{
 		}
 
 		private void UpdateBounds()

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Handles;
@@ -58,6 +58,13 @@ public class ProjectWorkspace : Workspace, IPlaceObject, IGetPreviewOrigin, IUse
 	}
 
 	public List<string> filterList { set { m_FilterUI.filterList = value; } }
+
+	[Serializable]
+	private struct ProjectWorkspaceUniqueSave
+	{
+		public float scaleFactor;
+	}
+	ProjectWorkspaceUniqueSave m_UniqueSave = new ProjectWorkspaceUniqueSave();
 
 	public override void Setup()
 	{
@@ -188,6 +195,18 @@ public class ProjectWorkspace : Workspace, IPlaceObject, IGetPreviewOrigin, IUse
 		m_AssetGridHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
 	}
 
+	public override string GetExtraSave()
+	{
+		return JsonUtility.ToJson(m_UniqueSave);
+	}
+
+	public override void SetExtraSave(string data)
+	{
+		m_UniqueSave = JsonUtility.FromJson<ProjectWorkspaceUniqueSave>(data);
+		m_ProjectUI.assetGridView.scaleFactor = m_UniqueSave.scaleFactor;
+		m_SliderPrefab.GetComponent<ZoomSliderUI>().zoomSlider.value = m_UniqueSave.scaleFactor;
+	}
+
 	void SelectFolder(FolderData data)
 	{
 		if (data == m_OpenFolder)
@@ -293,6 +312,7 @@ public class ProjectWorkspace : Workspace, IPlaceObject, IGetPreviewOrigin, IUse
 	void Scale(float value)
 	{
 		m_ProjectUI.assetGridView.scaleFactor = value;
+		m_UniqueSave.scaleFactor = m_ProjectUI.assetGridView.scaleFactor;
 	}
 
 	bool TestFilter(string type)

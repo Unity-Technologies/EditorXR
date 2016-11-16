@@ -382,13 +382,14 @@ public class EditorVR : MonoBehaviour
 		WorkspaceSave workspaceSaves = new WorkspaceSave(m_AllWorkspaces.Count);
 
 		int i = 0;
-		foreach (var ws in m_AllWorkspaces)
+		foreach(var ws in m_AllWorkspaces)
 		{
 			workspaceSaves.m_Workspaces[i] = new WorkspaceSaveData();
 			workspaceSaves.m_Workspaces[i].workspaceName = ws.GetType().ToString();
 			workspaceSaves.m_Workspaces[i].localPosition = ws.transform.localPosition;
 			workspaceSaves.m_Workspaces[i].localRotation = ws.transform.localRotation;
-			workspaceSaves.m_Workspaces[i].localScale = ws.transform.localScale;
+			workspaceSaves.m_Workspaces[i].bounds = ws.contentBounds;
+			workspaceSaves.m_Workspaces[i].extra = ws.GetExtraSave();
 			i++;
 		}
 
@@ -1583,13 +1584,15 @@ public class EditorVR : MonoBehaviour
 		WorkspaceSave savedData = JsonUtility.FromJson<WorkspaceSave>(inputString);
 		if (savedData.m_Workspaces.Length > 0)
 		{
-			foreach (var ws in savedData.m_Workspaces)
+			foreach(var ws in savedData.m_Workspaces)
 			{
 				CreateWorkspace(Type.GetType(ws.workspaceName), (workSpace) =>
 				{
 					workSpace.transform.localPosition = ws.localPosition;
 					workSpace.transform.localRotation = ws.localRotation;
-					workSpace.transform.localScale = ws.localScale;
+					workSpace.contentBounds = ws.bounds;
+					if(ws.extra != "")
+						workSpace.SetExtraSave(ws.extra);
 				});
 			}
 		}
