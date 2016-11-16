@@ -19,9 +19,9 @@ namespace UnityEngine.VR.Menus
 		public Action clicked;
 
 		/// <summary>
-		/// The node of the ray that hovering over the button
+		/// The ray that is hovering over the button
 		/// </summary>
-		public Node? node { get; private set; }
+		public Transform hoveringRayOrigin { get; private set; }
 
 		private void Awake()
 		{
@@ -48,13 +48,13 @@ namespace UnityEngine.VR.Menus
 		public void OnRayEnter(RayEventData eventData)
 		{
 			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
-			node = eventData.node;
+			hoveringRayOrigin = eventData.rayOrigin;
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			if (node == eventData.node)
-				node = null;
+			if (hoveringRayOrigin == eventData.rayOrigin)
+				hoveringRayOrigin = null;
 		}
 	}
 }

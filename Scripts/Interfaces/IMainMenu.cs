@@ -16,17 +16,16 @@ namespace UnityEngine.VR.Menus
 
 		/// <summary>
 		/// Delegate used to select tools from the menu
+		/// Transform = ray origin
+		/// Type = type of tool
+		/// Returns whether the tool was successfully selected
 		/// </summary>
-		Func<Node, Type, bool> selectTool { set; }
+		Func<Transform, Type, bool> selectTool { set; }
 
 		/// <summary>
 		/// The workspaces that are selectable from the menu
 		/// </summary>
 		List<Type> menuWorkspaces { set; }
-
-		/// <summary>
-		/// </summary>
-		Node? node { set; }
 
 		/// <summary>
 		/// Controls whether the menu is visible or not
@@ -35,7 +34,7 @@ namespace UnityEngine.VR.Menus
 
 		/// <summary>
 		/// You must implement and call this event when the visibility of the menu changes
-		/// Parameters: main menu instance
+		/// IMainMenu: main menu instance
 		/// </summary>
 		event Action<IMainMenu> menuVisibilityChanged;
 	}

@@ -1469,66 +1469,59 @@ public class EditorVR : MonoBehaviour
 		return result;
 	}
 
-	private bool SelectTool(Node targetNode, Type toolType)
+	private bool SelectTool(Transform rayOrigin, Type toolType)
 	{
-		InputDevice deviceToAssignTool = null;
-		foreach (var kvp in m_DeviceData)
+		var result = false;
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
-			Node? node = GetDeviceNode(kvp.Key);
-			if (node.HasValue && node.Value == targetNode)
+			if (rayOriginPair.Value == rayOrigin)
 			{
-				deviceToAssignTool = kvp.Key;
-				break;
-			}
-		}
+				var spawnTool = true;
 
-		if (deviceToAssignTool == null)
-			return false;
-
-		var spawnTool = true;
-		DeviceData deviceData;
-		if (m_DeviceData.TryGetValue(deviceToAssignTool, out deviceData))
-		{
-			// If this tool was on the current device already, then simply remove it
-			if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
-			{
-				DespawnTool(deviceData, deviceData.currentTool);
-
-				// Don't spawn a new tool, since we are only removing the old tool
-				spawnTool = false;
-			}
-		}
-
-		if (spawnTool)
-		{
-			// Spawn tool and collect all devices that this tool will need
-			HashSet<InputDevice> usedDevices;
-			var newTool = SpawnTool(toolType, out usedDevices, deviceToAssignTool);
-
-			// It's possible this tool uses no action maps, so at least include the device this tool was spawned on
-			if (usedDevices.Count == 0)
-				usedDevices.Add(deviceToAssignTool);
-
-			// Exclusive mode tools always take over all tool stacks
-			if (newTool is IExclusiveMode) 
-			{
-				foreach (var dev in m_DeviceData.Keys)
-					usedDevices.Add(dev);
-			}
-
-			foreach (var dev in usedDevices)
-			{
-				deviceData = m_DeviceData[dev];
-				if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
+				// If this tool was on the current device already, then simply remove it
+				if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
+				{
 					DespawnTool(deviceData, deviceData.currentTool);
 
-				AddToolToStack(dev, newTool);
+					// Don't spawn a new tool, since we are only removing the old tool
+					spawnTool = false;
+				}
+
+				if (spawnTool)
+				{
+					// Spawn tool and collect all devices that this tool will need
+					HashSet<InputDevice> usedDevices;
+					var newTool = SpawnTool(toolType, out usedDevices, device);
+
+					// It's possible this tool uses no action maps, so at least include the device this tool was spawned on
+					if (usedDevices.Count == 0)
+						usedDevices.Add(device);
+
+					// Exclusive mode tools always take over all tool stacks
+					if (newTool is IExclusiveMode)
+					{
+						foreach (var dev in m_DeviceData.Keys)
+						{
+							usedDevices.Add(dev);
+						}
+					}
+
+					foreach (var dev in usedDevices)
+					{
+						deviceData = m_DeviceData[dev];
+						if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
+							DespawnTool(deviceData, deviceData.currentTool);
+
+						AddToolToStack(dev, newTool);
+					}
+				}
+
+				UpdatePlayerHandleMaps();
+				result = true;
 			}
-		}
+		}, true);
 
-		UpdatePlayerHandleMaps();
-
-		return true;
+		return result;
 	}
 
 	private void DespawnTool(DeviceData deviceData, ITool tool)

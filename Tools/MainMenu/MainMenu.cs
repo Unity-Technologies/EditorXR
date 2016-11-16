@@ -97,7 +97,7 @@ namespace UnityEngine.VR.Menus
 		public Func<Transform, object, bool> lockRay { private get; set; }
 		public Func<Transform, object, bool> unlockRay { private get; set; }
 		public List<Type> menuTools { private get; set; }
-		public Func<Node, Type, bool> selectTool { private get; set; }
+		public Func<Transform, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
 		public CreateWorkspaceDelegate createWorkspace { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
@@ -235,9 +235,9 @@ namespace UnityEngine.VR.Menus
 					{
 						b.button.onClick.AddListener(() =>
 						{
-							if (visible && b.node.HasValue)
+							if (visible && b.hoveringRayOrigin)
 							{
-								selectTool(b.node.Value, selectedType);
+								selectTool(b.hoveringRayOrigin, selectedType);
 								// Close menu after selecting something for performance reasons
 								visible = false;
 							}
@@ -247,7 +247,7 @@ namespace UnityEngine.VR.Menus
 					{
 						b.button.onClick.AddListener(() =>
 						{
-							if (visible && b.node.HasValue)
+							if (visible && b.hoveringRayOrigin)
 							{
 								createWorkspace(selectedType);
 								// Close menu after selecting something for performance reasons
