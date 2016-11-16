@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 1d288f1a40f3bc54bb07e9a5eb99d137
-timeCreated: 1477883750
+timeCreated: 1479255698
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
@@ -17,8 +17,6 @@ MonoImporter:
       type: 2}
   - m_MainMenuActivatorPrefab: {fileID: 114000011125667836, guid: a943a77cb6a6bd04da2b86b34ade4596,
       type: 2}
-  - m_MainMenuActivatorPrefab: {fileID: 114000011125667836, guid: a943a77cb6a6bd04da2b86b34ade4596,
-      type: 2}
   - m_KeyboardMalletPrefab: {fileID: 114000013972379212, guid: 55c3df0d3b957354fa26bae2b39cffb3,
       type: 2}
   - m_NumericKeyboardPrefab: {fileID: 114000012169358554, guid: 5f76c682f089562449adab190d7a8fc4,
@@ -27,8 +25,7 @@ MonoImporter:
       type: 2}
   - m_PlayerModelPrefab: {fileID: 1000013280737546, guid: 3dbbb2baa83f3994e94fe56a60c73252,
       type: 2}
-  - m_ProxyExtra: {fileID: 114000013969493790, guid: 6aad6c6ddcc4d6f4dafb6af60b2d7b6f,
-      type: 2}
+  - m_ProxyExtras: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

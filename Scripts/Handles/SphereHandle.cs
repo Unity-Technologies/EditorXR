@@ -50,15 +50,15 @@ namespace UnityEngine.VR.Handles
 			base.OnHandleDragging(eventData);
 		}
 
-		protected override void OnHandleHoverStarted(HandleEventData eventData) {
+		protected override void OnHandleHoverStarted(HandleEventData eventData)
+		{
 			transform.localScale *= kScaleBump;
-
 			base.OnHandleHoverStarted(eventData);
 		}
 
-		protected override void OnHandleHoverEnded(HandleEventData eventData) {
+		protected override void OnHandleHoverEnded(HandleEventData eventData)
+		{
 			transform.localScale /= kScaleBump;
-
 			base.OnHandleHoverStarted(eventData);
 		}
 

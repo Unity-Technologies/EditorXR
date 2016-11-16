@@ -49,13 +49,13 @@ public interface IGrabObject
 	/// Returns true if the object can be grabbed
 	/// Params: the selection, the rayOrigin
 	/// </summary>
-	Func<DirectSelection, Transform, bool> canGrabObject { set; }
+	Func<DirectSelectionData, Transform, bool> canGrabObject { set; }
 
 	/// <summary>
 	/// Informs EditorVR 
 	/// Params: the implementor, the selection, the rayOrigin, returns whether the grab succeeded
 	/// </summary>
-	Func<IGrabObject, DirectSelection, Transform, bool> grabObject { set; }
+	Func<IGrabObject, DirectSelectionData, Transform, bool> grabObject { set; }
 
 	/// <summary>
 	/// Informs EditorVR 

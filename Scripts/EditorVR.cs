@@ -76,7 +76,7 @@ public class EditorVR : MonoBehaviour
 	private GameObject m_PlayerModelPrefab;
 
 	[SerializeField]
-	private ProxyExtra m_ProxyExtra;
+	ProxyExtras m_ProxyExtras;
 
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
@@ -304,14 +304,19 @@ public class EditorVR : MonoBehaviour
 			yield return null;
 		}
 
-		if (m_ProxyExtra)
+		if (m_ProxyExtras)
 		{
+			var extraData = m_ProxyExtras.data;
 			ForEachRayOrigin((proxy, pair, device, deviceData) =>
 			{
-				if (pair.Key == m_ProxyExtra.node)
+				List<GameObject> prefabs;
+				if (extraData.TryGetValue(pair.Key, out prefabs))
 				{
-					var go = InstantiateUI(m_ProxyExtra.gameObject);
-					go.transform.SetParent(pair.Value, false);
+					foreach (var prefab in prefabs)
+					{
+						var go = InstantiateUI(prefab);
+						go.transform.SetParent(pair.Value, false);
+					}
 				}
 			}, true);
 		}
@@ -2038,9 +2043,9 @@ public class EditorVR : MonoBehaviour
 		return null;
 	}
 
-	Dictionary<Transform, DirectSelection> GetDirectSelection()
+	Dictionary<Transform, DirectSelectionData> GetDirectSelection()
 	{
-		var results = new Dictionary<Transform, DirectSelection>();
+		var results = new Dictionary<Transform, DirectSelectionData>();
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
@@ -2048,7 +2053,7 @@ public class EditorVR : MonoBehaviour
 			var obj = GetDirectSelectionForRayOrigin(rayOrigin, deviceData.directSelectInput);
 			if (obj && !obj.CompareTag(kVRPlayerTag))
 			{
-				results[rayOrigin] = new DirectSelection
+				results[rayOrigin] = new DirectSelectionData
 				{
 					gameObject = obj,
 					node = rayOriginPair.Key,
@@ -2064,7 +2069,7 @@ public class EditorVR : MonoBehaviour
 			var go = GetDirectSelectionForRayOrigin(rayOrigin, miniWorldRay.directSelectInput);
 			if (go != null)
 			{
-				results[rayOrigin] = new DirectSelection
+				results[rayOrigin] = new DirectSelectionData
 				{
 					gameObject = go,
 					node = ray.Value.node,
@@ -2098,7 +2103,7 @@ public class EditorVR : MonoBehaviour
 		return null;
 	}
 
-	bool CanGrabObject(DirectSelection selection, Transform rayOrigin)
+	bool CanGrabObject(DirectSelectionData selection, Transform rayOrigin)
 	{
 		if (selection.gameObject.CompareTag(kVRPlayerTag) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 			return false;
@@ -2106,7 +2111,7 @@ public class EditorVR : MonoBehaviour
 		return true;
 	}
 
-	bool GrabObject(IGrabObject grabber, DirectSelection selection, Transform rayOrigin)
+	bool GrabObject(IGrabObject grabber, DirectSelectionData selection, Transform rayOrigin)
 	{
 		if (!CanGrabObject(selection, rayOrigin))
 			return false;

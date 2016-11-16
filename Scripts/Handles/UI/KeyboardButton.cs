@@ -3,7 +3,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
-using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 using UnityEngine.VR.Extensions;
@@ -18,72 +17,24 @@ public class KeyboardButton : BaseHandle
 		Disabled
 	}
 
-	private const float kRepeatTime = 0.35f;
-	private const float kRepeatDecayFactor = 0.75f;
-	private const float kClickTime = 0.3f;
-	private const float kPressEmission = 1f;
-	private const float kEmissionLerpTime = 0.1f;
-	private const float kKeyResponseDuration = 0.1f;
-	private const float kKeyResponsePositionAmplitude = 0.02f;
-	private const float kKeyResponseScaleAmplitude = 0.08f;
+	const float kRepeatTime = 0.35f;
+	const float kRepeatDecayFactor = 0.75f;
+	const float kClickTime = 0.3f;
+	const float kPressEmission = 1f;
+	const float kEmissionLerpTime = 0.1f;
+	const float kKeyResponseDuration = 0.1f;
+	const float kKeyResponsePositionAmplitude = 0.02f;
+	const float kKeyResponseScaleAmplitude = 0.08f;
 
 	public Text textComponent { get { return m_TextComponent; } set { m_TextComponent = value; } }
-
 	[SerializeField]
-	private Text m_TextComponent;
+	Text m_TextComponent;
 
-	[SerializeField]
-	private char m_Character;
-
-	[SerializeField]
-	private bool m_UseShiftCharacter;
-
-	[SerializeField]
-	private char m_ShiftCharacter;
-
-	private bool m_ShiftMode;
-
-	[SerializeField]
-	private bool m_MatchButtonTextToCharacter;
-
-	[SerializeField]
-	private Renderer m_TargetMesh;
-
-	private Vector3 m_TargetMeshInitialScale;
-	private Vector3 m_TargetMeshInitialLocalPosition;
-
-	[SerializeField]
-	private bool m_RepeatOnHold;
-
-	[SerializeField]
-	WorkspaceButton m_WorkspaceButton;
-
-	float m_HoldStartTime;
-	float m_RepeatWaitTime;
-	float m_PressDownTime;
-	bool m_Holding;
-	bool m_Triggered; // Hit by mallet
+	public Material targetMeshMaterial { get { return m_TargetMeshMaterial; } }
 	Material m_TargetMeshMaterial;
-	Coroutine m_ChangeEmissionCoroutine;
-	Coroutine m_PunchKeyCoroutine;
-	Coroutine m_SetTextAlphaCoroutine;
-	Coroutine m_MoveCoroutine;
 
-	Action<char> m_KeyPress;
-	Func<bool> m_PressOnHover;
-	Func<bool> m_InTransition; 
-
-	public Color targetMeshBaseColor
-	{
-		get { return m_TargetMeshBaseColor; }
-	}
-
+	public Color targetMeshBaseColor { get { return m_TargetMeshBaseColor; } }
 	Color m_TargetMeshBaseColor;
-
-	public Material targetMeshMaterial
-	{
-		get { return m_TargetMeshMaterial; }
-	}
 
 	public CanvasGroup canvasGroup
 	{
@@ -94,8 +45,44 @@ public class KeyboardButton : BaseHandle
 				: m_CanvasGroup;
 		}
 	}
-
 	CanvasGroup m_CanvasGroup;
+
+	[SerializeField]
+	char m_Character;
+
+	[SerializeField]
+	bool m_UseShiftCharacter;
+
+	[SerializeField]
+	char m_ShiftCharacter;
+
+	bool m_ShiftMode;
+
+	[SerializeField]
+	Renderer m_TargetMesh;
+
+	Vector3 m_TargetMeshInitialScale;
+	Vector3 m_TargetMeshInitialLocalPosition;
+
+	[SerializeField]
+	bool m_RepeatOnHold;
+
+	[SerializeField]
+	WorkspaceButton m_WorkspaceButton;
+
+	float m_HoldStartTime;
+	float m_RepeatWaitTime;
+	float m_PressDownTime;
+	bool m_Holding;
+	bool m_Triggered; // Hit by mallet
+	Coroutine m_ChangeEmissionCoroutine;
+	Coroutine m_PunchKeyCoroutine;
+	Coroutine m_SetTextAlphaCoroutine;
+	Coroutine m_MoveCoroutine;
+
+	Action<char> m_KeyPress;
+	Func<bool> m_PressOnHover;
+	Func<bool> m_InTransition; 
 
 	void Awake()
 	{
@@ -104,7 +91,6 @@ public class KeyboardButton : BaseHandle
 		m_TargetMeshInitialScale = targetMeshTransform.localScale;
 		m_TargetMeshMaterial = U.Material.GetMaterialClone(m_TargetMesh.GetComponent<Renderer>());
 		m_TargetMeshBaseColor = m_TargetMeshMaterial.color;
-
 		m_CanvasGroup = GetComponentInChildren<CanvasGroup>(true);
 	}
 
@@ -211,7 +197,6 @@ public class KeyboardButton : BaseHandle
 	{
 		base.OnHandleHoverStarted(eventData);
 
-//		if (!m_PressOnHover() && !m_InTransition())
 		if (!m_InTransition())
 		{
 			if ((KeyCode)m_Character == KeyCode.Escape || m_ShiftMode && (KeyCode)m_ShiftCharacter == KeyCode.Escape)
@@ -242,15 +227,12 @@ public class KeyboardButton : BaseHandle
 		if (eventData == null)
 			return;
 
-//		if (!m_PressOnHover())
-		{
-			m_PressDownTime = Time.realtimeSinceStartup;
+		m_PressDownTime = Time.realtimeSinceStartup;
 
-			if (m_RepeatOnHold)
-				KeyPressed();
+		if (m_RepeatOnHold)
+			KeyPressed();
 
-			m_WorkspaceButton.highlight = true;
-		}
+		m_WorkspaceButton.highlight = true;
 
 		base.OnHandleDragStarted(eventData);
 	}
@@ -260,14 +242,11 @@ public class KeyboardButton : BaseHandle
 		if (eventData == null)
 			return;
 
-//		if (!m_PressOnHover())
-		{
-			if (m_RepeatOnHold)
-				HoldKey();
-			else if (Time.realtimeSinceStartup - m_PressDownTime > kClickTime)
-				m_WorkspaceButton.highlight = false;
-		}
-
+		if (m_RepeatOnHold)
+			HoldKey();
+		else if (Time.realtimeSinceStartup - m_PressDownTime > kClickTime)
+			m_WorkspaceButton.highlight = false;
+	
 		base.OnHandleDragging(eventData);
 	}
 
@@ -276,13 +255,10 @@ public class KeyboardButton : BaseHandle
 		if (eventData == null)
 			return;
 
-//		if (!m_PressOnHover())
-		{
-			if (m_RepeatOnHold)
-				EndKeyHold();
-			else if (Time.realtimeSinceStartup - m_PressDownTime < kClickTime)
-				KeyPressed();
-		}
+		if (m_RepeatOnHold)
+			EndKeyHold();
+		else if (Time.realtimeSinceStartup - m_PressDownTime < kClickTime)
+			KeyPressed();
 
 		base.OnHandleDragEnded(eventData);
 	}
@@ -331,15 +307,6 @@ public class KeyboardButton : BaseHandle
 			m_KeyPress(m_ShiftCharacter);
 		else
 			m_KeyPress(m_Character);
-
-		// Return since the escape key will disable the keyboard
-//		if ((!m_ShiftMode && (KeyCode)m_Character == KeyCode.Escape) || (m_ShiftMode && (KeyCode)m_ShiftCharacter == KeyCode.Escape)) // Avoid message about starting coroutine on inactive object
-//		{
-//			var targetMeshTransform = m_TargetMesh.transform;
-//			targetMeshTransform.localScale = m_TargetMeshInitialScale;
-//			targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;
-//			return;
-//		}
 
 		if (!m_Holding)
 		{
