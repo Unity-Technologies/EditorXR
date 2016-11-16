@@ -151,7 +151,9 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		m_CurrentManipulator = m_AllManipulators[m_CurrentManipulatorIndex];
 
 		foreach (var manipulator in m_AllManipulators)
+		{
 			manipulator.gameObject.SetActive(false);
+		}
 	}
 
 	public void OnSelectionChanged()

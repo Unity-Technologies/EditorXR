@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -43,10 +42,6 @@ namespace UnityEngine.VR.Proxies
 					m_Hidden = value;
 					m_LeftHand.gameObject.SetActive(!value);
 					m_RightHand.gameObject.SetActive(!value);
-
-					//var renderers = GetComponentsInChildren<Renderer>();
-					//foreach (var r in renderers)
-					//	r.enabled = !value;
 				}
 			}
 		}

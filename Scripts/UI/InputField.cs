@@ -116,7 +116,9 @@ namespace UnityEngine.VR.UI
 		/// </summary>
 		public virtual void OpenKeyboard()
 		{
-			if (m_KeyboardOpen) return;
+			if (m_KeyboardOpen)
+				return;
+
 			m_KeyboardOpen = true;
 
 			m_Keyboard = spawnKeyboard();

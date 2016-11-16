@@ -119,7 +119,7 @@ namespace UnityEngine.VR.Menus
 			}
 			else
 			{
-				const float kRotatationDragMoveThreshold = 0.25f;
+				const float kRotationDragMoveThreshold = 0.25f;
 				const float kFlickDeltaThreshold = 0.5f;
 				const float kRotationInputIdleDurationThreshold = 0.05f; // Limits how often a flick can happen
 
@@ -137,7 +137,7 @@ namespace UnityEngine.VR.Menus
 				else if (Mathf.Approximately(m_RotationDragStartValue, 0))
 					m_RotationDragStartValue = m_LastRotationInput; // set new drag start value
 
-				if (m_RotationDragThresholdExceeded || (!Mathf.Approximately(m_RotationDragStartValue, 0) && !Mathf.Approximately(rotationInput, 0) && Mathf.Abs((Mathf.Abs(m_RotationDragStartValue) - Mathf.Abs(rotationInput))) > kRotatationDragMoveThreshold))
+				if (m_RotationDragThresholdExceeded || (!Mathf.Approximately(m_RotationDragStartValue, 0) && !Mathf.Approximately(rotationInput, 0) && Mathf.Abs((Mathf.Abs(m_RotationDragStartValue) - Mathf.Abs(rotationInput))) > kRotationDragMoveThreshold))
 				{
 					const float kFlickDurationThreshold = 0.3f;
 					m_RotationDragThresholdExceeded = true;
@@ -212,11 +212,7 @@ namespace UnityEngine.VR.Menus
 						b.button.onClick.AddListener(() =>
 						{
 							if (visible && b.hoveringRayOrigin)
-							{
 								selectTool(b.hoveringRayOrigin, selectedType);
-								// Close menu after selecting something for performance reasons
-								visible = false;
-							}
 						});
 					}
 					else if (isWorkspace)
@@ -224,11 +220,7 @@ namespace UnityEngine.VR.Menus
 						b.button.onClick.AddListener(() =>
 						{
 							if (visible && b.hoveringRayOrigin)
-							{
 								createWorkspace(selectedType);
-								// Close menu after selecting something for performance reasons
-								visible = false;
-							}
 						});
 					}
 				});

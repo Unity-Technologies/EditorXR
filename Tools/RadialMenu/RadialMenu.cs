@@ -82,7 +82,6 @@ namespace UnityEngine.VR.Menus
 			m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
 			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_RadialMenuUI.actions = menuActions;
-			m_RadialMenuUI.selectItem = () => itemWasSelected(rayOrigin);
 			m_RadialMenuUI.Setup();
 			m_RadialMenuUI.visible = m_Visible;
 		}
@@ -93,7 +92,15 @@ namespace UnityEngine.VR.Menus
 				return;
 
 			m_RadialMenuUI.buttonInputDirection = m_RadialMenuInput.navigate.vector2;
-			m_RadialMenuUI.highlighted = !m_RadialMenuInput.deselectItem.wasJustReleased; // Deselect any highlghted menu items when the thumbstick/trackpad-button is released
+			m_RadialMenuUI.pressedDown = m_RadialMenuInput.selectItem.wasJustPressed;
+
+			if (m_RadialMenuInput.selectItem.wasJustReleased)
+			{
+				m_RadialMenuUI.SelectionOccurred();
+
+				if (itemWasSelected != null)
+					itemWasSelected(rayOrigin);
+			}
 		}
 	}
 }

@@ -40,7 +40,7 @@ namespace UnityEditor.VR
 		[NonSerialized]
 		private Camera m_Camera;
 
-		private LayerMask? m_LayerMask;
+		LayerMask? m_CullingMask;
 		private RenderTexture m_SceneTargetTexture;
 		private bool m_ShowDeviceView;
 		private bool m_SceneViewsEnabled;
@@ -113,7 +113,7 @@ namespace UnityEditor.VR
 			set
 			{
 				if (s_ActiveView)
-					s_ActiveView.m_LayerMask = value;
+					s_ActiveView.m_CullingMask = value;
 			}
 		}
 
@@ -314,7 +314,7 @@ namespace UnityEditor.VR
 				var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
 				PrepareCameraTargetTexture(cameraRect);
 
-				m_Camera.cullingMask = m_LayerMask.HasValue ? m_LayerMask.Value.value : Tools.visibleLayers;
+				m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : Tools.visibleLayers;
 
 				// Draw camera
 				bool pushedGUIClip;

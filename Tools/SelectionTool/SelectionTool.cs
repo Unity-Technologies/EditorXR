@@ -68,7 +68,6 @@ namespace UnityEngine.VR.Tools
 			if (isLocked(newHoverGameObject))
 				return;
 
-
 			// Handle changing highlight
 			if (newHoverGameObject != m_HoverGameObject)
 			{

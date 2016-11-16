@@ -64,7 +64,8 @@ public class KeyboardMallet : MonoBehaviour
 	/// </summary>
 	public void CheckForKeyCollision()
 	{
-		if (!m_Open) return;
+		if (!m_Open)
+			return;
 
 		if (m_CurrentButton != null)
 			m_CurrentButton.OnTriggerStay(m_BulbCollider);

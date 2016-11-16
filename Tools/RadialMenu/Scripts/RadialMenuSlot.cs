@@ -9,7 +9,6 @@ namespace UnityEngine.VR.Menus
 	{
 		static readonly Vector3 kHiddenLocalScale = new Vector3(1f, 0f, 1f);
 		const float m_IconHighlightedLocalYOffset = 0.006f;
-		readonly Color kPressedColor = Color.clear;
 
 		[SerializeField]
 		MeshRenderer m_InsetMeshRenderer;
@@ -73,18 +72,6 @@ namespace UnityEngine.VR.Menus
 		}
 		bool m_Highlighted;
 
-		public bool selected
-		{
-			set
-			{
-				if (!value)
-					return;
-
-				this.StopCoroutine(ref m_SelectSlotCoroutine);
-				m_SelectSlotCoroutine = StartCoroutine(Select());
-			}
-		}
-
 		UnityBrandColorScheme.GradientPair m_OriginalInsetGradientPair;
 		Material m_BorderRendererMaterial;
 		Transform m_IconTransform;
@@ -97,13 +84,10 @@ namespace UnityEngine.VR.Menus
 		Vector3 m_IconPressedLocalPosition;
 		float m_IconLookForwardOffset = 0.5f;
 		Vector3 m_IconLookDirection;
-		Color m_OriginalIconColor;
 
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
-		Coroutine m_InsetVisibilityCoroutine;
-		Coroutine m_SelectSlotCoroutine;
 		
 		public Material borderRendererMaterial
 		{
@@ -150,7 +134,6 @@ namespace UnityEngine.VR.Menus
 			m_OriginalIconLocalPosition = m_IconTransform.localPosition;
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * m_IconHighlightedLocalYOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * -m_IconHighlightedLocalYOffset;
-			m_OriginalIconColor = m_Icon.color;
 		}
 
 		void OnDisable()
@@ -354,54 +337,6 @@ namespace UnityEngine.VR.Menus
 
 			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
 			m_IconHighlightCoroutine = null;
-		}
-
-		IEnumerator Select()
-		{
-			this.StopCoroutine(ref m_IconHighlightCoroutine);
-			m_IconHighlightCoroutine = StartCoroutine(IconHighlightAnimatedShow(true));
-
-			var topColor = m_OriginalInsetGradientPair.a;
-			var bottomColor = m_OriginalInsetGradientPair.b;
-			var iconColor = m_Icon.color;
-			var duration = 0f;
-			while (duration < 0.125f)
-			{
-				duration += Time.unscaledDeltaTime;
-
-				topColor = Color.Lerp(s_GradientPair.a, m_OriginalInsetGradientPair.a, duration * 8);
-				bottomColor = Color.Lerp(s_GradientPair.b, m_OriginalInsetGradientPair.b, duration * 8);
-				m_InsetMaterial.SetColor("_ColorTop", topColor);
-				m_InsetMaterial.SetColor("_ColorBottom", bottomColor);
-
-				iconColor = Color.Lerp(iconColor, kPressedColor, duration * 8);
-				m_Icon.color = iconColor;
-
-				m_MenuInset.localScale = Vector3.Lerp(m_HighlightedInsetLocalScale, m_VisibleInsetLocalScale, duration * 8);
-				yield return null;
-			}
-
-			this.StopCoroutine(ref m_IconHighlightCoroutine);
-			m_IconHighlightCoroutine = StartCoroutine(IconHighlightAnimatedShow());
-
-			duration = 0f;
-			while (duration < 0.25f)
-			{
-				duration += Time.unscaledDeltaTime;
-
-				topColor = Color.Lerp(m_OriginalInsetGradientPair.a, s_GradientPair.a, duration * 4);
-				bottomColor = Color.Lerp(m_OriginalInsetGradientPair.b, s_GradientPair.b, duration * 4);
-				m_InsetMaterial.SetColor("_ColorTop", topColor);
-				m_InsetMaterial.SetColor("_ColorBottom", bottomColor);
-
-				iconColor = Color.Lerp(kPressedColor, m_OriginalIconColor, duration * 4);
-				m_Icon.color = iconColor;
-
-				m_MenuInset.localScale = Vector3.Lerp(m_VisibleInsetLocalScale, m_HighlightedInsetLocalScale, duration * 4);
-				yield return null;
-			}
-
-			m_SelectSlotCoroutine = null;
 		}
 	}
 }

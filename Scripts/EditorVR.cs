@@ -42,6 +42,7 @@ public class EditorVR : MonoBehaviour
 
 	// Minimum time to spend loading the project folder before yielding
 	const float kMinProjectFolderLoadTime = 0.005f;
+
 	// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
 	const float kMaxFrameTime = 0.01f;
 
@@ -159,7 +160,7 @@ public class EditorVR : MonoBehaviour
 	private readonly Dictionary<Transform, MiniWorldRay> m_MiniWorldRays = new Dictionary<Transform, MiniWorldRay>();
 	private readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>();
 	bool m_MiniWorldIgnoreListDirty = true;
-	
+
 	private event Action m_SelectionChanged;
 
 	IPreviewCamera m_PreviewCamera;
@@ -435,6 +436,7 @@ public class EditorVR : MonoBehaviour
 		UpdateKeyboardMallets();
 
 		var camera = U.Camera.GetMainCamera();
+
 		// Enable/disable workspace vacuum bounds based on distance to camera
 		foreach (var workspace in m_AllWorkspaces)
 			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
@@ -496,7 +498,7 @@ public class EditorVR : MonoBehaviour
 						var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 						if (dpr)
 						{
-							if(malletVisible)
+							if (malletVisible)
 								dpr.Hide();
 							else
 								dpr.Show();
@@ -655,7 +657,7 @@ public class EditorVR : MonoBehaviour
 	void OnMainMenuVisibilityChanged(IMainMenu mainMenu)
 	{
 		UpdateCustomMenus(mainMenu);
-		UpdateRayForMenus(mainMenu);		
+		UpdateRayForMenus(mainMenu);
 		UpdatePlayerHandleMaps();
 	}
 
@@ -802,7 +804,7 @@ public class EditorVR : MonoBehaviour
 			m_AllActions.Add(action);
 		}
 
-		m_MenuActions.Sort((x,y) => y.priority.CompareTo(x.priority));
+		m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));
 	}
 
 	private void CreateAllProxies()
@@ -1003,7 +1005,7 @@ public class EditorVR : MonoBehaviour
 	{
 		if (m_StandardKeyboard != null)
 			m_StandardKeyboard.gameObject.SetActive(false);
-		
+
 		// Check if the prefab has already been instantiated
 		if (m_NumericKeyboard == null)
 			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
@@ -1015,7 +1017,7 @@ public class EditorVR : MonoBehaviour
 	{
 		if (m_NumericKeyboard != null)
 			m_NumericKeyboard.gameObject.SetActive(false);
-		
+
 		// Check if the prefab has already been instantiated
 		if (m_StandardKeyboard == null)
 			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
@@ -1032,6 +1034,7 @@ public class EditorVR : MonoBehaviour
 		var devices = device == null ? GetSystemDevices() : new [] { device };
 
 		var actionMapInput = ActionMapInput.Create(map);
+
 		// It's possible that there are no suitable control schemes for the device that is being initialized, 
 		// so ActionMapInput can't be marked active
 		var successfulInitialization = false;
@@ -1193,7 +1196,7 @@ public class EditorVR : MonoBehaviour
 		return mainMenu;
 	}
 
-	private IAlternateMenu SpawnAlternateMenu (Type type, InputDevice device)
+	private IAlternateMenu SpawnAlternateMenu(Type type, InputDevice device)
 	{
 		if (!typeof(IAlternateMenu).IsAssignableFrom(type))
 			return null;
@@ -1206,7 +1209,7 @@ public class EditorVR : MonoBehaviour
 		return alternateMenu;
 	}
 
-	private MainMenuActivator SpawnMainMenuActivator (InputDevice device)
+	private MainMenuActivator SpawnMainMenuActivator(InputDevice device)
 	{
 		var mainMenuActivator = U.Object.Instantiate(m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
 		ConnectInterfaces(mainMenuActivator, device);
@@ -1453,10 +1456,12 @@ public class EditorVR : MonoBehaviour
 		if (m_DefaultRays.TryGetValue(rayOrigin, out dpr))
 		{
 			length = dpr.pointerLength;
+
 			// If this is a MiniWorldRay, scale the pointer length to the correct size relative to MiniWorld objects
 			if (ray != null)
 			{
 				var miniWorld = ray.miniWorld;
+
 				// As the miniworld gets smaller, the ray length grows, hence localScale.Inverse().
 				// Assume that both transforms have uniform scale, so we just need .x
 				length *= miniWorld.referenceTransform.TransformVector(miniWorld.miniWorldTransform.localScale.Inverse()).x;
@@ -1547,11 +1552,11 @@ public class EditorVR : MonoBehaviour
 				deviceData.currentTool = deviceData.tools.Peek();
 
 				// Pop this tool of any other stack that references it (for single instance tools)
-				foreach (var otherDeviceData in m_DeviceData.Values) 
+				foreach (var otherDeviceData in m_DeviceData.Values)
 				{
-					if (otherDeviceData != deviceData) 
+					if (otherDeviceData != deviceData)
 					{
-						if (otherDeviceData.currentTool == tool) 
+						if (otherDeviceData.currentTool == tool)
 						{
 							otherDeviceData.tools.Pop();
 							otherDeviceData.currentTool = otherDeviceData.tools.Peek();
@@ -1574,7 +1579,7 @@ public class EditorVR : MonoBehaviour
 
 	void SetToolsEnabled(DeviceData deviceData, bool value)
 	{
-		foreach (var t in deviceData.tools) 
+		foreach (var t in deviceData.tools)
 		{
 			var mb = t as MonoBehaviour;
 			mb.enabled = value;
@@ -1604,7 +1609,9 @@ public class EditorVR : MonoBehaviour
 						matchingTagIndices++;
 				}
 				else
+				{
 					untaggedDevicesFound++;
+				}
 			}
 		}
 
@@ -1640,7 +1647,7 @@ public class EditorVR : MonoBehaviour
 
 	void CreateWorkspace(Type t, Action<Workspace> createdCallback = null)
 	{
-		var defaultOffset = new Vector3(0, -0.15f, 0.6f);		
+		var defaultOffset = new Vector3(0, -0.15f, 0.6f);
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 
 		var workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
@@ -1693,6 +1700,7 @@ public class EditorVR : MonoBehaviour
 			directSelectInput.active = false;
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
+
 			// Use the mini world ray origin instead of the original ray origin
 			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
 			{
@@ -1848,10 +1856,10 @@ public class EditorVR : MonoBehaviour
 			miniWorldRay.tester.active = isContained;
 
 			if (isContained && !miniWorldRay.wasContained)
-				HideRay(originalRayOrigin);
+				HideRay(originalRayOrigin, true);
 
-			if(!isContained && miniWorldRay.wasContained)
-				ShowRay(originalRayOrigin);
+			if (!isContained && miniWorldRay.wasContained)
+				ShowRay(originalRayOrigin, true);
 
 			var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
 
@@ -2158,13 +2166,6 @@ public class EditorVR : MonoBehaviour
 	{
 		var viewerPivot = U.Camera.GetViewerPivot();
 
-		// Smooth motion will cause Workspaces to lag behind camera
-		var components = viewerPivot.GetComponentsInChildren<SmoothMotion>();
-		foreach (var smoothMotion in components)
-		{
-			smoothMotion.enabled = false;
-		}
-
 		// Hide player head to avoid jarring impact
 		var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
 		foreach (var renderer in playerHeadRenderers)
@@ -2190,6 +2191,7 @@ public class EditorVR : MonoBehaviour
 		{
 			diffTime = Time.realtimeSinceStartup - startTime;
 			var t = diffTime / kViewerPivotTransitionTime;
+
 			// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
 			viewerPivot.position = Vector3.Lerp(startPosition, endPosition, t);
 			viewerPivot.rotation = Quaternion.Lerp(startRotation, endRotation, t);
@@ -2202,11 +2204,6 @@ public class EditorVR : MonoBehaviour
 		playerHead.parent = mainCamera;
 		playerHead.localRotation = Quaternion.identity;
 		playerHead.localPosition = Vector3.zero;
-
-		foreach (var smoothMotion in components)
-		{
-			smoothMotion.enabled = true;
-		}
 
 		foreach (var renderer in playerHeadRenderers)
 		{
