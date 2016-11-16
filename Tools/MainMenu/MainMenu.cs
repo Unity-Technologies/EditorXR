@@ -10,7 +10,7 @@ using UnityEngine.VR.Workspaces;
 
 namespace UnityEngine.VR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, ICustomRay, IRayLocking, IMenuOrigins
+	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IMenuOrigins
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -62,17 +62,6 @@ namespace UnityEngine.VR.Menus
 					if (m_MainMenuUI)
 						m_MainMenuUI.visible = value;
 
-					if (value)
-					{
-						hideDefaultRay();
-						lockRay(rayOrigin, this);
-					}
-					else
-					{
-						unlockRay(rayOrigin, this);
-						showDefaultRay();
-					}
-
 					menuVisibilityChanged(this);
 				}
 			}
@@ -91,11 +80,6 @@ namespace UnityEngine.VR.Menus
 		bool m_RotationDragThresholdExceeded;
 
 		public Func<GameObject, GameObject> instantiateUI { private get; set; }
-		public Transform rayOrigin { private get; set; }
-		public Action hideDefaultRay { private get; set; }
-		public Action showDefaultRay { private get; set; }
-		public Func<Transform, object, bool> lockRay { private get; set; }
-		public Func<Transform, object, bool> unlockRay { private get; set; }
 		public List<Type> menuTools { private get; set; }
 		public Func<Transform, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
@@ -183,17 +167,9 @@ namespace UnityEngine.VR.Menus
 			m_LastRotationInput = rotationInput;
 		}
 
-		private void OnDisable()
-		{
-			unlockRay(rayOrigin, this);
-		}
-
 		private void OnDestroy()
 		{
 			U.Object.Destroy(m_MainMenuUI.gameObject);
-
-			unlockRay(rayOrigin, this);
-			showDefaultRay();
 		}
 
 		private void CreateFaceButtons(List<Type> types)

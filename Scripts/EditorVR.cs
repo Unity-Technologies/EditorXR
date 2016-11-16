@@ -570,8 +570,6 @@ public class EditorVR : MonoBehaviour
 			locomotionTool = typeof(JoystickLocomotionTool);
 
 		var transformTool = SpawnTool(typeof(TransformTool), out devices) as TransformTool;
-		transformTool.showRay = ShowRay;
-		transformTool.hideRay = HideRay;
 		m_TransformTool = transformTool;
 
 		foreach (var deviceData in m_DeviceData)
@@ -626,15 +624,29 @@ public class EditorVR : MonoBehaviour
 
 				// Toggle visibility between custom menus and the main menu
 				foreach (GameObject go in deviceData.customMenus)
-					go.SetActive(!mainMenu.visible);
-
-				if (deviceData.customMenus.Count > 0)
 				{
-					var dpr = rayOriginPair.Value.GetComponentInChildren<DefaultProxyRay>();
-					if (mainMenu.visible)
-						dpr.Show();
-					else
-						dpr.Hide();
+					go.SetActive(!mainMenu.visible);
+				}
+			}
+		}, true);
+	}
+
+	void UpdateRayForMenus(IMainMenu mainMenu)
+	{
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			if (mainMenu == deviceData.mainMenu)
+			{
+				var dpr = rayOriginPair.Value.GetComponentInChildren<DefaultProxyRay>();
+				if (mainMenu.visible || deviceData.customMenus.Count > 0)
+				{
+					dpr.Hide();
+					dpr.LockRay(mainMenu);
+				}
+				else
+				{
+					dpr.UnlockRay(mainMenu);
+					dpr.Show();
 				}
 			}
 		}, true);
@@ -643,6 +655,7 @@ public class EditorVR : MonoBehaviour
 	void OnMainMenuVisibilityChanged(IMainMenu mainMenu)
 	{
 		UpdateCustomMenus(mainMenu);
+		UpdateRayForMenus(mainMenu);		
 		UpdatePlayerHandleMaps();
 	}
 
@@ -978,6 +991,7 @@ public class EditorVR : MonoBehaviour
 					deviceData.customMenus.Add(go);
 					deviceData.mainMenu.visible = false;
 					UpdateCustomMenus(deviceData.mainMenu);
+					UpdateRayForMenus(deviceData.mainMenu);
 				}
 			}
 		}, true);
@@ -1274,19 +1288,7 @@ public class EditorVR : MonoBehaviour
 		{
 			var ray = obj as IUsesRayOrigin;
 			if (ray != null)
-			{
 				ray.rayOrigin = rayOrigin;
-
-				// Specific proxy ray setting
-				DefaultProxyRay dpr = null;
-				var customRay = obj as ICustomRay;
-				if (customRay != null)
-				{
-					dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-					customRay.showDefaultRay = dpr.Show;
-					customRay.hideDefaultRay = dpr.Hide;
-				}
-			}
 
 			var menuOrigins = obj as IMenuOrigins;
 			if (menuOrigins != null)
@@ -1301,6 +1303,14 @@ public class EditorVR : MonoBehaviour
 						menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
 				}
 			}
+		}
+
+		// Specific proxy ray setting
+		var customRay = obj as ICustomRay;
+		if (customRay != null)
+		{
+			customRay.showDefaultRay = ShowRay;
+			customRay.hideDefaultRay = HideRay;
 		}
 
 		var lockableRay = obj as IRayLocking;
@@ -2240,27 +2250,27 @@ public class EditorVR : MonoBehaviour
 		return dpr == null || dpr.visible;
 	}
 
-	void ShowRay(Transform rayOrigin)
+	static void ShowRay(Transform rayOrigin, bool rayOnly = false)
 	{
 		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 		if (dpr)
-			dpr.ShowRayOnly();
+			dpr.Show(rayOnly);
 	}
 
-	void HideRay(Transform rayOrigin)
+	static void HideRay(Transform rayOrigin, bool rayOnly = false)
 	{
 		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 		if (dpr)
-			dpr.HideRayOnly();
+			dpr.Hide(rayOnly);
 	}
 
-	bool LockRay(Transform rayOrigin, object obj)
+	static bool LockRay(Transform rayOrigin, object obj)
 	{
 		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 		return dpr && dpr.LockRay(obj);
 	}
 
-	bool UnlockRay(Transform rayOrigin, object obj)
+	static bool UnlockRay(Transform rayOrigin, object obj)
 	{
 		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 		return dpr && dpr.UnlockRay(obj);

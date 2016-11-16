@@ -10,7 +10,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Actions;
 
-public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight
+public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -118,8 +118,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	float m_ScaleFactor;
 	bool m_WasScaling;
 
-	public Action<Transform> showRay { private get; set; }
-	public Action<Transform> hideRay { private get; set; }
+	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
+	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
 
 	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
@@ -236,7 +236,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 					setHighlight(grabbedObject.gameObject, false);
 
-					hideRay(rayOrigin);
+					hideDefaultRay(rayOrigin, true);
 
 					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
 					EditorApplication.delayCall += () =>
@@ -393,7 +393,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		dropObject(this, grabData.grabbedObject, grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
 
-		showRay(grabData.rayOrigin);
+		showDefaultRay(grabData.rayOrigin, true);
 	}
 
 	private void Translate(Vector3 delta)

@@ -6,7 +6,7 @@ using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, ICustomActionMap
+public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesRayOrigin, ICustomActionMap
 {
 	private enum State
 	{
@@ -28,8 +28,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	public Transform viewerPivot { private get; set; }
 
-	public Action showDefaultRay { get; set; }
-	public Action hideDefaultRay { get; set; }
+	public DefaultRayVisibilityDelegate showDefaultRay { get; set; }
+	public DefaultRayVisibilityDelegate hideDefaultRay { get; set; }
 	public Transform rayOrigin { private get; set; }
 
 	public ActionMap actionMap { get { return m_BlinkActionMap; } }
@@ -61,7 +61,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	private void OnDestroy()
 	{
-		showDefaultRay();
+		showDefaultRay(rayOrigin);
 	}
 
 	private void Update()
@@ -72,13 +72,13 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		if (m_BlinkLocomotionInput.blink.wasJustPressed)
 		{
 			s_ActiveTool = this;
-			hideDefaultRay();
+			hideDefaultRay(rayOrigin);
 			m_BlinkVisuals.ShowVisuals();
 		}
 		else if (s_ActiveTool == this && m_BlinkLocomotionInput.blink.wasJustReleased)
 		{
 			var outOfRange = m_BlinkVisuals.HideVisuals();
-			showDefaultRay();
+			showDefaultRay(rayOrigin);
 
 			if (!outOfRange)
 				StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));

@@ -59,9 +59,6 @@ namespace UnityEngine.VR.Modules
 
 		public void AddObject(GameObject gameObject)
 		{
-			if (gameObject.GetComponentInParent<EditorVR>())
-				return;
-
 			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
 			{
 				spatialHash.AddObject(renderer, renderer.bounds);
