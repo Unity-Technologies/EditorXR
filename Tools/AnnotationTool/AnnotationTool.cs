@@ -30,11 +30,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	private AnnotationInput m_AnnotationInput;
 
-	private const int kInitialListSize = 65535;
+	private const int kInitialListSize = 32767;
 
 	private List<Vector3> m_Points = new List<Vector3>(kInitialListSize);
 	private List<Vector3> m_Forwards = new List<Vector3>(kInitialListSize);
 	private List<float> m_Widths = new List<float>(kInitialListSize);
+	private List<Vector3> m_Rights = new List<Vector3>();
 
 	private MeshFilter m_CurrentMeshFilter;
 	private Color m_ColorToUse = Color.white;
@@ -366,6 +367,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		m_Points.Clear();
 		m_Forwards.Clear();
 		m_Widths.Clear();
+		m_Rights.Clear();
 
 		GameObject go = new GameObject("Annotation " + m_AnnotationHolder.childCount);
 		m_UndoList.Add(go);
@@ -439,11 +441,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		Vector3 worldPoint = rayOrigin.position + rayForward * kTipDistance;
 		Vector3 localPoint = m_WorldToLocalMesh.MultiplyPoint3x4(worldPoint);
 
-		//if (m_Points.Count < 1 || Vector3.Distance(m_Points.Last(), localPoint) >= (m_CurrentRadius * 0.25f))
+		if (m_Points.Count < 1 || Vector3.Distance(m_Points.Last(), localPoint) >= (m_CurrentRadius * 0.1f))
 		{
 			m_Points.Add(localPoint);
 			m_Forwards.Add(rayForward);
 			m_Widths.Add(m_CurrentRadius);
+			m_Rights.Add(rayOrigin.right);
 
 			PointsToMesh();
 		}
@@ -470,7 +473,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		TriangulatePlane(newTriangles, newVertices.Count);
 		CalculateUvs(newUvs, newVertices);
-
+		
 		m_CurrentMesh.Clear();
 
 		m_CurrentMesh.vertices = newVertices.ToArray();
@@ -494,17 +497,18 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 			// For optimization, ignore inner points of an almost straight line.
 			// The last point is an exception, it is required for a smooth drawing experience.
-			if (Vector3.Angle(prevDirection, direction) < 1f && i < m_Points.Count - 1)
+			if (Vector3.Angle(prevDirection, direction) < 1f && i < m_Points.Count - 1 && i > 1)
 				continue;
 
-			Vector3 cross;
-			float drawAngle = Vector3.Angle(direction, m_Forwards[i - 1]);
-			if (drawAngle < 10 || drawAngle > 170)
-				cross = Vector3.Cross(direction, Quaternion.Euler(-90, 0, 0) * m_Forwards[i - 1]).normalized;
-			else
-				cross = Vector3.Cross(direction, m_Forwards[i - 1]).normalized;
-			
-			float width = m_Widths[i - 1];
+			var ratio = Mathf.Abs(Vector3.Dot(direction, m_Forwards[i - 1]));
+			var cross1 = m_Rights[i - 1].normalized;
+			var cross2 = Vector3.Cross(direction, m_Forwards[i - 1]).normalized;
+			var cross = Vector3.Lerp(cross1, cross2, 1 - ratio).normalized;
+
+			float lowWidth = Mathf.Min((i - 3) * 0.1f, 1);
+			float highWidth = Mathf.Min((m_Points.Count - (i + 2)) * 0.25f, 1);
+			float unclampedWidth = m_Widths[i - 1] * Mathf.Clamp01(i < m_Points.Count / 2f ? lowWidth : highWidth);
+			float width = Mathf.Clamp(unclampedWidth, kTopMinRadius, kTopMaxRadius);
 			Vector3 left = thisPoint - cross * width;
 			Vector3 right = thisPoint + cross * width;
 
@@ -517,13 +521,14 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	private void SmoothPlane(List<Vector3> newVertices)
 	{
-		const float kSmoothRatio = .5f;
+		const float kSmoothRatio = .75f;
 		for (int side = 0; side < 2; side++)
 		{
 			for (int i = 4; i < newVertices.Count - 4 - side; i++)
 			{
 				Vector3 average = (newVertices[i - 4 + side] + newVertices[i - 2 + side] + newVertices[i + 2 + side] + newVertices[i + 4 + side]) / 4f;
-				newVertices[i + side] = Vector3.Lerp(newVertices[i + side], average, kSmoothRatio);
+				float dynamicSmooth = 1 / Vector3.Distance(newVertices[i + side], average);
+				newVertices[i + side] = Vector3.Lerp(newVertices[i + side], average, kSmoothRatio * dynamicSmooth);
 			}
 		}
 	}
