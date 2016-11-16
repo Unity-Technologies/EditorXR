@@ -71,14 +71,14 @@ public class OVRTouchInputToEvents : MonoBehaviour
 			float value;
 			if (GetAxis(controller, (VRInputDevice.VRControl)axis, out value))
 			{
+				if (Mathf.Approximately(m_LastAxisValues[ovrIndex, axis], value))
+					continue;
+
 				var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 				inputEvent.deviceType = typeof(VRInputDevice);
 				inputEvent.deviceIndex = deviceIndex;
 				inputEvent.controlIndex = axis;
 				inputEvent.value = value;
-
-				if (Mathf.Approximately(m_LastAxisValues[ovrIndex, axis], inputEvent.value))
-					continue;
 
 				m_LastAxisValues[ovrIndex, axis] = inputEvent.value;
 
@@ -134,15 +134,17 @@ public class OVRTouchInputToEvents : MonoBehaviour
 		if (!OVRInput.GetControllerPositionTracked(ovrController))
 			return;
 
+		var localPosition = OVRInput.GetLocalControllerPosition(ovrController);
+		var localRotation = OVRInput.GetLocalControllerRotation(ovrController);
+
+		if (localPosition == m_LastPositionValues[ovrIndex] && localRotation == m_LastRotationValues[ovrIndex])
+			return;
+
 		var inputEvent = InputSystem.CreateEvent<VREvent>();
 		inputEvent.deviceType = typeof(VRInputDevice);
 		inputEvent.deviceIndex = deviceIndex;
-		inputEvent.localPosition = OVRInput.GetLocalControllerPosition(ovrController);
-		inputEvent.localRotation = OVRInput.GetLocalControllerRotation(ovrController);
-
-		if (inputEvent.localPosition == m_LastPositionValues[ovrIndex] &&
-			inputEvent.localRotation == m_LastRotationValues[ovrIndex])
-			return;
+		inputEvent.localPosition = localPosition;
+		inputEvent.localRotation = localRotation;
 
 		m_LastPositionValues[ovrIndex] = inputEvent.localPosition;
 		m_LastRotationValues[ovrIndex] = inputEvent.localRotation;

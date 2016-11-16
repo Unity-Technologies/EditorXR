@@ -66,17 +66,16 @@ public class ViveInputToEvents : MonoBehaviour
 			Vector2 axisVec = SteamVR_Controller.Input(steamDeviceIndex).GetAxis((EVRButtonId)axis);
 			for (XorY xy = XorY.X; (int)xy <= (int)XorY.Y; xy++, a++)
 			{
+				var value = xy == XorY.X ? axisVec.x : axisVec.y;
+				if (Mathf.Approximately(m_LastAxisValues[steamDeviceIndex, a], value))
+					continue;
+				
 				var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 				inputEvent.deviceType = typeof(VRInputDevice);
 				inputEvent.deviceIndex = deviceIndex;
 				inputEvent.controlIndex = a;
-				inputEvent.value = xy == XorY.X ? axisVec.x : axisVec.y;
+				inputEvent.value = value;
 
-				if (Mathf.Approximately(m_LastAxisValues[steamDeviceIndex, a], inputEvent.value))
-				{
-					//TODO Does continue need to be commented out for some reason?
-					//continue;
-				}
 				m_LastAxisValues[steamDeviceIndex, a] = inputEvent.value;
 
 				InputSystem.QueueEvent(inputEvent);
@@ -106,16 +105,18 @@ public class ViveInputToEvents : MonoBehaviour
 
 	private void SendTrackingEvents(int steamDeviceIndex, int deviceIndex, TrackedDevicePose_t[] poses)
 	{
+		var pose = new SteamVR_Utils.RigidTransform(poses[steamDeviceIndex].mDeviceToAbsoluteTracking);
+		var localPosition = pose.pos;
+		var localRotation = pose.rot;
+
+		if (localPosition == m_LastPositionValues[steamDeviceIndex] && localRotation == m_LastRotationValues[steamDeviceIndex])
+			return;
+
 		var inputEvent = InputSystem.CreateEvent<VREvent>();
 		inputEvent.deviceType = typeof(VRInputDevice);
 		inputEvent.deviceIndex = deviceIndex;
-		var pose = new SteamVR_Utils.RigidTransform(poses[steamDeviceIndex].mDeviceToAbsoluteTracking);
-		inputEvent.localPosition = pose.pos;
-		inputEvent.localRotation = pose.rot;
-
-		if (inputEvent.localPosition == m_LastPositionValues[steamDeviceIndex] &&
-			inputEvent.localRotation == m_LastRotationValues[steamDeviceIndex])
-			return;
+		inputEvent.localPosition = localPosition;
+		inputEvent.localRotation = localRotation;
 
 		m_LastPositionValues[steamDeviceIndex] = inputEvent.localPosition;
 		m_LastRotationValues[steamDeviceIndex] = inputEvent.localRotation;
