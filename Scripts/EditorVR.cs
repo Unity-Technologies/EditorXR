@@ -1032,23 +1032,20 @@ public class EditorVR : MonoBehaviour
 				maps.AddRange(alternateMenuMaps);
 			}
 
+			if(deviceData.moveWorkspacesModule != null)
+				AddActionMapInputs(deviceData.moveWorkspacesModule, maps);
+
 			maps.Add(deviceData.directSelectInput);
 			maps.Add(deviceData.uiInput);
 		}
 
-		foreach (var ray in m_MiniWorldRays.Values)
+		foreach(var ray in m_MiniWorldRays.Values)
 		{
 			maps.Add(ray.directSelectInput);
 			maps.Add(ray.uiInput);
 		}
 
 		maps.Add(m_TrackedObjectInput);
-
-		foreach (DeviceData deviceData in m_DeviceData.Values)
-		{
-			if (deviceData.moveWorkspacesModule != null)
-				AddActionMapInputs(deviceData.moveWorkspacesModule, maps);
-		}
 
 		foreach (DeviceData deviceData in m_DeviceData.Values)
 		{
