@@ -30,6 +30,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	GameObject m_TopHat;
 
+	bool m_GrabbedInTopHat;
+
 	private enum ManipulateMode
 	{
 		On,
@@ -45,8 +47,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		m_TopHat.transform.parent = VRView.viewerCamera.transform;
 
 		//set cylinder on top of head
-		m_TopHat.transform.localScale = new Vector3(0.3f, 0.2f, 0.3f);
-		m_TopHat.transform.Translate(Vector3.up * 0.3f);
+		m_TopHat.transform.localScale = new Vector3(0.2f, 0.15f, 0.2f);
+		m_TopHat.transform.Translate(Vector3.up * 0.2f);
 		m_TopHat.GetComponent<Collider>().isTrigger = true;
 		m_TopHat.GetComponent<MeshRenderer>().enabled = false;
 	}
@@ -67,8 +69,14 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 				if(standardInput.action.wasJustPressed)
 					HandleDoubleTap();
 
-				if(standardInput.action.isHeld)
-					HandleManipulationStart();
+				if(m_GrabbedInTopHat)
+				{
+					if(standardInput.action.isHeld)
+						HandleManipulationStart();
+				}
+
+				if(standardInput.action.wasJustReleased)
+					m_GrabbedInTopHat = false;
 
 				break;
 			}
@@ -99,6 +107,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	bool FindWorkspaces()
 	{
+		m_ThrowDownTriggered = false;
+
 		m_AllWorkspaces = GetComponentsInChildren<Workspace>();
 
 		if(m_AllWorkspaces.Length > 0)
@@ -124,6 +134,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			resetWorkspaces(null);
 		}
 		m_TriggerPressedTimeStamp = Time.realtimeSinceStartup;
+		m_GrabbedInTopHat = true;
 	}
 
 	void HandleThrowDown()
@@ -171,17 +182,14 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	void UpdateWorkspaceManipulation()
 	{
+		if(m_ThrowDownTriggered)
+			return;
+
 		Quaternion rayOriginCurrentAngle = Quaternion.LookRotation(rayOrigin.up);
 		float deltaAngleY = rayOriginCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
 
 		for(int i = 0; i < m_AllWorkspaces.Length; i++)
 		{
-			if(m_AllWorkspaces[i] == null)
-			{
-				FindWorkspaces();
-				break;
-			}
-
 			//don't move for tiny movements
 			if(Mathf.Abs(m_VerticalVelocity) > 0.00005f)
 			{
