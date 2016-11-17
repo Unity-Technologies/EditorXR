@@ -11,9 +11,7 @@ using UnityObject = UnityEngine.Object;
 public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash
 {
 	private const float kPreviewDuration = 0.1f;
-
 	private const float kMaxPreviewScale = 0.33f;
-
 	private const float kRotateSpeed = 50f;
 
 	[SerializeField]
@@ -235,7 +233,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		}
 
 		// Turn off expensive render settings
-		foreach(var renderer in m_PreviewObjectTransform.GetComponentsInChildren<Renderer>())
+		foreach (var renderer in m_PreviewObjectTransform.GetComponentsInChildren<Renderer>())
 		{
 			renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 			renderer.receiveShadows = false;
@@ -244,7 +242,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		}
 
 		// Turn off lights
-		foreach(var light in m_PreviewObjectTransform.GetComponentsInChildren<Light>()) {
+		foreach (var light in m_PreviewObjectTransform.GetComponentsInChildren<Light>())
+		{
 			light.enabled = false;
 		}
 
@@ -264,6 +263,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		// If bounds are greater than offset, set to bounds
 		if(previewExtents.y > m_GrabPreviewPivotOffset.y)
 			m_GrabPreviewPivotOffset.y = previewExtents.y;
+
 		if(previewExtents.z > m_GrabPreviewPivotOffset.z)
 			m_GrabPreviewPivotOffset.z = previewExtents.z;
 
@@ -387,7 +387,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		var currentPreviewScale = Vector3.one;
 		var currentPreviewOffset = Vector3.zero;
 
-		if (m_PreviewObjectClone) {
+		if (m_PreviewObjectClone)
+		{
 			currentPreviewScale = m_PreviewObjectClone.localScale;
 			currentPreviewOffset = m_PreviewObjectClone.localPosition;
 		}

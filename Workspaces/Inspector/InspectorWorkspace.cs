@@ -46,8 +46,7 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 		connectInterfaces(lockUI);
 
 		var listView = m_InspectorUI.inspectorListView;
-		if(listView.data == null)
-			listView.data = new InspectorData[0];
+		listView.data = new InspectorData[0];
 		listView.instantiateUI = instantiateUI;
 		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		listView.setHighlight = setHighlight;

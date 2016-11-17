@@ -183,7 +183,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 				}
 				StartCoroutine(CheckSingleClick());
 			}
-			
+
 			m_ClickCount++;
 			m_SelectIsHeld = true;
 			m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;

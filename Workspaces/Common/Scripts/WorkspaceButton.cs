@@ -13,6 +13,99 @@ namespace UnityEngine.VR.Workspaces
 		const string kMaterialColorTopProperty = "_ColorTop";
 		const string kMaterialColorBottomProperty = "_ColorBottom";
 
+		public bool autoHighlight
+		{
+			get { return m_AutoHighlight; }
+			set { m_AutoHighlight = value; }
+		}
+		[SerializeField]
+		bool m_AutoHighlight = true;
+
+		public Quaternion visibleLocalRotation
+		{
+			get { return m_VisibleLocalRotation; }
+			set { m_VisibleLocalRotation = value; }
+		}
+		Quaternion m_VisibleLocalRotation;
+
+		public Sprite iconSprite
+		{
+			set
+			{
+				m_IconSprite = value;
+				m_Icon.sprite = m_IconSprite;
+			}
+		}
+		Sprite m_IconSprite;
+
+		public Color customHighlightColor
+		{
+			get { return m_CustomHighlightColor; }
+			set { m_CustomHighlightColor = value; }
+		}
+		[Header("Extras")]
+		[SerializeField]
+		Color m_CustomHighlightColor = UnityBrandColorScheme.light;
+
+		public bool pressed
+		{
+			get { return m_Pressed; }
+			set
+			{
+				if (!m_Highlighted)
+					value = false;
+				else if (value != m_Pressed && value) // proceed only if value is true after previously being false
+				{
+					m_Pressed = value;
+
+					this.StopCoroutine(ref m_IconHighlightCoroutine);
+
+					m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight(true));
+				}
+			}
+		}
+		bool m_Pressed;
+
+		public bool highlighted
+		{
+			set
+			{
+				if (m_Highlighted == value)
+					return;
+				else
+				{
+					// Stop any existing icon highlight coroutines
+					this.StopCoroutine(ref m_IconHighlightCoroutine);
+
+					m_Highlighted = value;
+
+					// Stop any existing begin/end highlight coroutine
+					this.StopCoroutine(ref m_HighlightCoroutine);
+
+					if (!gameObject.activeInHierarchy)
+						return;
+
+					m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
+				}
+			}
+		}
+		bool m_Highlighted;
+
+		public bool alternateIconVisible
+		{
+			set
+			{
+				if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
+					m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
+			}
+			get
+			{
+				return m_Icon.sprite == m_AlternateIconSprite;
+			}
+		}
+		[SerializeField]
+		Sprite m_AlternateIconSprite;
+
 		[SerializeField]
 		MeshRenderer m_ButtonMeshRenderer;
 
@@ -27,13 +120,6 @@ namespace UnityEngine.VR.Workspaces
 
 		[SerializeField]
 		Button m_Button;
-
-		[Header("Extras")]
-		[SerializeField]
-		Color m_CustomHighlightColor = UnityBrandColorScheme.light;
-
-		[SerializeField]
-		Sprite m_AlternateIconSprite;
 
 		[SerializeField]
 		bool m_SwapIconsOnClick = true;
@@ -76,103 +162,10 @@ namespace UnityEngine.VR.Workspaces
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
 
-		public bool autoHighlight
-		{
-			get { return m_AutoHighlight; }
-			set { m_AutoHighlight = value; }
-		}
-
-		[SerializeField]
-		bool m_AutoHighlight = true;
-
 		public Button button
 		{
 			get { return m_Button; }
 		}
-
-		public bool alternateIconVisible
-		{
-			set
-			{
-				if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
-					m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
-			}
-			get
-			{
-				return m_Icon.sprite == m_AlternateIconSprite;
-			}
-		}
-
-		public Quaternion visibleLocalRotation
-		{
-			get { return m_VisibleLocalRotation; }
-			set { m_VisibleLocalRotation = value; }
-		}
-
-		Quaternion m_VisibleLocalRotation;
-
-		public Sprite iconSprite
-		{
-			set
-			{
-				m_IconSprite = value;
-				m_Icon.sprite = m_IconSprite;
-			}
-		}
-
-		Sprite m_IconSprite;
-
-		public bool pressed
-		{
-			get { return m_Pressed; }
-			set
-			{
-				if (!m_Highlighted)
-					value = false;
-				else if (value != m_Pressed && value) // proceed only if value is true after previously being false
-				{
-					m_Pressed = value;
-
-					this.StopCoroutine(ref m_IconHighlightCoroutine);
-
-					m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight(true));
-				}
-			}
-		}
-
-		bool m_Pressed;
-
-		public bool highlight
-		{
-			set
-			{
-				if (m_Highlighted == value)
-					return;
-				else
-				{
-					// Stop any existing icon highlight coroutines
-					this.StopCoroutine(ref m_IconHighlightCoroutine);
-
-					m_Highlighted = value;
-
-					// Stop any existing begin/end highlight coroutine
-					this.StopCoroutine(ref m_HighlightCoroutine);
-
-					if (!gameObject.activeInHierarchy)
-						return;
-
-					m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
-				}
-			}
-		}
-
-		public Color customHighlightColor
-		{
-			get { return m_CustomHighlightColor; }
-			set { m_CustomHighlightColor = value; }
-		}
-
-		bool m_Highlighted;
 
 		public void InstantClearState()
 		{
@@ -181,7 +174,6 @@ namespace UnityEngine.VR.Workspaces
 
 			ResetColors();
 			transform.localScale = m_OriginalScale;
-			m_HighlightCoroutine = null;
 		}
 
 		public void SetMaterialColors(UnityBrandColorScheme.GradientPair gradientPair)
@@ -386,13 +378,9 @@ namespace UnityEngine.VR.Workspaces
 		IEnumerator IconContainerContentsBeginHighlight(bool pressed = false)
 		{
 			var currentPosition = m_IconContainer.localPosition;
-			var targetPosition = pressed == false
-				? m_IconHighlightedLocalPosition
-				: m_IconPressedLocalPosition; // forward for highlight, backward for press
+			var targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // forward for highlight, backward for press
 			var transitionAmount = Time.unscaledDeltaTime;
-			var transitionAddMultiplier = pressed == false
-				? 2
-				: 5; // Faster transition in for highlight; slower for pressed highlight
+			var transitionAddMultiplier = !pressed ? 2 : 5; // Faster transition in for highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
 				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
@@ -421,7 +409,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			var currentPosition = m_IconContainer.localPosition;
 			var transitionAmount = 1f;
-			const float kTransitionSubtractMultiplier = 5f; //18;
+			const float kTransitionSubtractMultiplier = 5f;
 			while (transitionAmount > 0)
 			{
 				transitionAmount -= Time.unscaledDeltaTime * kTransitionSubtractMultiplier;
@@ -449,13 +437,13 @@ namespace UnityEngine.VR.Workspaces
 		public void OnRayEnter(RayEventData eventData)
 		{
 			if (autoHighlight)
-				highlight = true;
+				highlighted = true;
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
 			if (autoHighlight)
-				highlight = false;
+				highlighted = false;
 		}
 
 		void SwapIconSprite()

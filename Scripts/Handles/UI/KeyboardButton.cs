@@ -211,7 +211,7 @@ public class KeyboardButton : BaseHandle
 				m_WorkspaceButton.ResetColors();
 			}
 
-			m_WorkspaceButton.highlight = true;
+			m_WorkspaceButton.highlighted = true;
 		}
 	}
 
@@ -219,7 +219,7 @@ public class KeyboardButton : BaseHandle
 	{
 		base.OnHandleHoverEnded(eventData);
 
-		m_WorkspaceButton.highlight = false;
+		m_WorkspaceButton.highlighted = false;
 	}
 
 	protected override void OnHandleDragStarted(HandleEventData eventData)
@@ -232,7 +232,7 @@ public class KeyboardButton : BaseHandle
 		if (m_RepeatOnHold)
 			KeyPressed();
 
-		m_WorkspaceButton.highlight = true;
+		m_WorkspaceButton.highlighted = true;
 
 		base.OnHandleDragStarted(eventData);
 	}
@@ -245,7 +245,7 @@ public class KeyboardButton : BaseHandle
 		if (m_RepeatOnHold)
 			HoldKey();
 		else if (Time.realtimeSinceStartup - m_PressDownTime > kClickTime)
-			m_WorkspaceButton.highlight = false;
+			m_WorkspaceButton.highlighted = false;
 	
 		base.OnHandleDragging(eventData);
 	}
