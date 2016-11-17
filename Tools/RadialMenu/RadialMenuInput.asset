@@ -30,8 +30,6 @@ MonoBehaviour:
     - sources:
       - controlIndex: 22
         deviceKey: 1
-      - controlIndex: 3
-        deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
@@ -96,7 +94,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: RadialMenuInput
+  m_Name: NavigateY
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}

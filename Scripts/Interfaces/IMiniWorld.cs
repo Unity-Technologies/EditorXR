@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// For the purpose of interacting with MiniWorlds
@@ -27,7 +27,7 @@ public interface IMiniWorld
 	/// <summary>
 	/// Matrix that converts from the mini world space to reference space (which may have scale and translation)
 	/// </summary>
-	Matrix4x4 worldToCameraMatrix { get; }
+	Func<Camera, Matrix4x4> getWorldToCameraMatrix { get; }
 
 	/// <summary>
 	/// Sets a list of renderers to be skipped when rendering the MiniWorld

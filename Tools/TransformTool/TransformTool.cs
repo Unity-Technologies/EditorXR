@@ -10,7 +10,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Actions;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject
+public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -59,15 +59,6 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 			execute();
 		}
 	}
-
-	static Transform[] selectionTransforms { get { return Selection.GetTransforms(SelectionMode.Editable); } }
-
-	public ActionMap actionMap { get { return m_TransformActionMap; } }
-	[SerializeField]
-	ActionMap m_TransformActionMap;
-
-	public ActionMapInput actionMapInput { get { return m_TransformInput; } set { m_TransformInput = (TransformInput)value; } }
-	TransformInput m_TransformInput;
 
 	public List<IAction> actions
 	{
@@ -125,14 +116,20 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 	float m_ScaleFactor;
 	bool m_WasScaling;
 
+	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
+	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
+
 	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 
-	public Func<Dictionary<Transform, DirectSelection>> getDirectSelection { private get; set; }
+	Dictionary<Transform, DirectSelectionData> m_LastDirectSelection;
+	public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
 
-	public Func<DirectSelection, Transform, bool> canGrabObject { private get; set; }
-	public Func<IGrabObject, DirectSelection, Transform, bool> grabObject { private get; set; }
+	public Func<DirectSelectionData, Transform, bool> canGrabObject { private get; set; }
+	public Func<IGrabObject, DirectSelectionData, Transform, bool> grabObject { private get; set; }
 	public Action<IGrabObject, Transform, Transform> dropObject { private get; set; }
+
+	public Action<GameObject, bool> setHighlight { private get; set; }
 
 	void Awake()
 	{
@@ -151,8 +148,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 		m_CurrentManipulatorIndex = 0;
 		m_CurrentManipulator = m_AllManipulators[m_CurrentManipulatorIndex];
 
-		foreach(var manipulator in m_AllManipulators)
+		foreach (var manipulator in m_AllManipulators)
+		{
 			manipulator.gameObject.SetActive(false);
+		}
 	}
 
 	public void OnSelectionChanged()
@@ -160,7 +159,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 		// Reset direct selection state in case of a ray selection
 		m_DirectSelected = false;
 
-		if (selectionTransforms.Length == 0)
+		if (Selection.gameObjects.Length == 0)
 			m_CurrentManipulator.gameObject.SetActive(false);
 		else
 			UpdateCurrentManipulator();
@@ -175,6 +174,20 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 		var hasRight = m_GrabData.ContainsKey(Node.RightHand);
 		var hasObject = directSelection.Count > 0 || hasLeft || hasRight;
 
+		if (m_LastDirectSelection != null)
+		{
+			foreach (var selection in m_LastDirectSelection.Values)
+			{
+				setHighlight(selection.gameObject, false);
+			}
+		}
+
+		foreach(var selection in directSelection.Values)
+		{
+			setHighlight(selection.gameObject, true);
+		}
+
+		m_LastDirectSelection = directSelection;
 		if (!m_CurrentManipulator.dragging)
 		{
 			// Disable manipulator on direct hover or drag
@@ -185,6 +198,13 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 			{
 				var selection = kvp.Value;
 				var rayOrigin = kvp.Key;
+
+				// If gameObject is within a prefab and not the current prefab, choose prefab root
+				var prefabRoot = PrefabUtility.FindPrefabRoot(selection.gameObject);
+				if(prefabRoot)
+				{
+					selection.gameObject = prefabRoot;
+				}
 
 				if (!canGrabObject(selection, rayOrigin))
 					continue;
@@ -213,6 +233,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 					m_GrabData[selection.node] = new GrabData(rayOrigin, grabbedObject, directSelectInput);
 
 					Selection.activeGameObject = grabbedObject.gameObject;
+
+					setHighlight(grabbedObject.gameObject, false);
+
+					hideDefaultRay(rayOrigin, true);
 
 					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
 					EditorApplication.delayCall += () =>
@@ -276,17 +300,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 		if (hasObject || m_DirectSelected)
 			return;
 
-		if (selectionTransforms != null && selectionTransforms.Length > 0)
+		if (Selection.gameObjects.Length > 0)
 		{
-			if (m_TransformInput.pivotMode.wasJustPressed) // Switching center vs pivot
-				TogglePivotMode();
-
-			if (m_TransformInput.pivotRotation.wasJustPressed) // Switching global vs local
-				TogglePivotRotation();
-
-			if (m_TransformInput.manipulatorType.wasJustPressed)
-				SwitchManipulator();
-
 			if (!m_CurrentManipulator.dragging)
 				UpdateCurrentManipulator();
 			
@@ -297,7 +312,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 			if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 				manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, kLazyFollowRotate * deltaTime);
 
-			foreach (var t in selectionTransforms)
+			foreach (var t in Selection.transforms)
 			{
 				t.rotation = Quaternion.Slerp(t.rotation, m_TargetRotation * m_RotationOffsets[t], kLazyFollowRotate * deltaTime);
 
@@ -377,6 +392,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 		var grabData = m_GrabData[inputNode];
 		dropObject(this, grabData.grabbedObject, grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
+
+		showDefaultRay(grabData.rayOrigin, true);
 	}
 
 	private void Translate(Vector3 delta)
@@ -395,34 +412,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 	}
 
 	private void UpdateSelectionBounds()
-	{
-		Bounds? newBounds = null;
-		foreach (var selectedObj in selectionTransforms)
-		{
-			var renderers = selectedObj.GetComponentsInChildren<Renderer>();
-			foreach (var r in renderers)
-			{
-				if (Mathf.Approximately(r.bounds.extents.sqrMagnitude, 0f)) // Necessary because Particle Systems have renderer components with center and extents (0,0,0)
-					continue;
-
-				if (newBounds.HasValue)
-					// Only use encapsulate after the first renderer, otherwise bounds will always encapsulate point (0,0,0)
-					newBounds.Value.Encapsulate(r.bounds);
-				else
-					newBounds = r.bounds;
-			}
-		}
-
-		// If we haven't encountered any Renderers, return bounds of (0,0,0) at the center of the selected objects
-		if (newBounds == null)
-		{
-			var bounds = new Bounds();
-			foreach (var selectedObj in selectionTransforms)
-				bounds.center += selectedObj.transform.position / selectionTransforms.Length;
-			newBounds = bounds;
-		}
-
-		m_SelectionBounds = newBounds.Value;
+	{		
+		m_SelectionBounds = U.Object.GetBounds(Selection.gameObjects);
 	}
 
 	BaseManipulator CreateManipulator(GameObject prefab)
@@ -437,6 +428,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 
 	private void UpdateCurrentManipulator()
 	{
+		var selectionTransforms = Selection.transforms;
 		if (selectionTransforms.Length <= 0)
 			return;
 
@@ -444,8 +436,9 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransforme
 		var manipulatorGameObject = m_CurrentManipulator.gameObject;
 		manipulatorGameObject.SetActive(true);
 		var manipulatorTransform = manipulatorGameObject.transform;
-		manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? selectionTransforms[0].position : m_SelectionBounds.center;
-		manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : selectionTransforms[0].rotation;
+		var activeTransform = Selection.activeTransform;
+		manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? activeTransform.position : m_SelectionBounds.center;
+		manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : activeTransform.rotation;
 		m_TargetPosition = manipulatorTransform.position;
 		m_TargetRotation = manipulatorTransform.rotation;
 		m_StartRotation = m_TargetRotation;

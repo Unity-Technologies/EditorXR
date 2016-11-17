@@ -70,7 +70,7 @@ namespace UnityEngine.VR.Utilities
 						var direction = end - start;
 
 						// Handle degenerate triangles
-						if (Mathf.Approximately(direction.sqrMagnitude, 0f))
+						if (Mathf.Approximately(direction.magnitude, 0f))
 							continue;
 
 						// Shoot a ray from outside the object (due to face normals) in the direction of the ray to see if it is inside
