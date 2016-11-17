@@ -163,7 +163,7 @@ public class EditorVR : MonoBehaviour
 
 	private event Action m_SelectionChanged;
 
-	IPreviewCamera m_PreviewCamera;
+	IPreviewCamera m_CustomPreviewCamera;
 
 	StandardManipulator m_StandardManipulator;
 	ScaleManipulator m_ScaleManipulator;
@@ -196,12 +196,12 @@ public class EditorVR : MonoBehaviour
 		if (m_PreviewCameraPrefab)
 		{
 			var go = U.Object.Instantiate(m_PreviewCameraPrefab);
-			m_PreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
-			if (m_PreviewCamera != null)
+			m_CustomPreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
+			if (m_CustomPreviewCamera != null)
 			{
-				VRView.customPreviewCamera = m_PreviewCamera.previewCamera;
-				m_PreviewCamera.vrCamera = VRView.viewerCamera;
-				hmdOnlyLayerMask = m_PreviewCamera.hmdOnlyLayerMask;
+				VRView.customPreviewCamera = m_CustomPreviewCamera.previewCamera;
+				m_CustomPreviewCamera.vrCamera = VRView.viewerCamera;
+				hmdOnlyLayerMask = m_CustomPreviewCamera.hmdOnlyLayerMask;
 			}
 		}
 		VRView.cullingMask = Tools.visibleLayers | hmdOnlyLayerMask;
@@ -404,8 +404,8 @@ public class EditorVR : MonoBehaviour
 
 	void OnDestroy()
 	{
-		if (m_PreviewCamera != null)
-			U.Object.Destroy(((MonoBehaviour)m_PreviewCamera).gameObject);
+		if (m_CustomPreviewCamera != null)
+			U.Object.Destroy(((MonoBehaviour)m_CustomPreviewCamera).gameObject);
 
 		PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
 	}
@@ -430,8 +430,8 @@ public class EditorVR : MonoBehaviour
 
 	private void Update()
 	{
-		if (m_PreviewCamera != null)
-			m_PreviewCamera.enabled = VRView.showDeviceView;
+		if (m_CustomPreviewCamera != null)
+			m_CustomPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
 
 		UpdateKeyboardMallets();
 
@@ -881,8 +881,8 @@ public class EditorVR : MonoBehaviour
 
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_InputModule.getPointerLength = GetPointerLength;
-		if (m_PreviewCamera != null)
-			m_InputModule.layerMask |= m_PreviewCamera.hmdOnlyLayerMask;
+		if (m_CustomPreviewCamera != null)
+			m_InputModule.layerMask |= m_CustomPreviewCamera.hmdOnlyLayerMask;
 
 		m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;

@@ -29,7 +29,7 @@ namespace UnityEditor.VR
 				if (s_ActiveView)
 					s_ActiveView.m_CustomPreviewCamera = value;
 			}
-			private get
+			get
 			{
 				return s_ActiveView && s_ActiveView.m_UseCustomPreviewCamera ?
 					s_ActiveView.m_CustomPreviewCamera : null;
