@@ -1672,8 +1672,6 @@ GameObject:
   - 4: {fileID: 4000013255986934}
   - 114: {fileID: 114000013058841060}
   - 65: {fileID: 65000011117750628}
-  - 114: {fileID: 114000012226602824}
-  - 114: {fileID: 114000012743690814}
   m_Layer: 5
   m_Name: Period
   m_TagString: Untagged
@@ -2136,8 +2134,6 @@ GameObject:
   - 4: {fileID: 4000010751011392}
   - 114: {fileID: 114000012009579334}
   - 65: {fileID: 65000011880075282}
-  - 114: {fileID: 114000011741856648}
-  - 114: {fileID: 114000013814945510}
   m_Layer: 5
   m_Name: Backspace
   m_TagString: Untagged
@@ -5963,20 +5959,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000012739368960}
   m_CanvasGroup: {fileID: 225000013544097520}
   m_Icon: {fileID: 114000012237014186}
   m_IconContainer: {fileID: 224000013975777956}
   m_Button: {fileID: 114000011592639226}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013211652276}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000010194139274
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -5989,20 +5985,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000012511019654}
   m_CanvasGroup: {fileID: 225000011110828628}
   m_Icon: {fileID: 114000013388538794}
   m_IconContainer: {fileID: 224000014217249756}
   m_Button: {fileID: 114000010572065210}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013979871322}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000010214840134
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -6015,20 +6011,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000010605724158}
   m_CanvasGroup: {fileID: 225000012220750896}
   m_Icon: {fileID: 114000010261139748}
   m_IconContainer: {fileID: 224000012837106980}
   m_Button: {fileID: 114000010528233106}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000010913063674}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000010261139748
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -6074,7 +6070,6 @@ MonoBehaviour:
   m_Character: 54
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000010946643492}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000013747035984}
@@ -6214,20 +6209,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000012082684028}
   m_CanvasGroup: {fileID: 225000011443298288}
   m_Icon: {fileID: 114000013127986964}
   m_IconContainer: {fileID: 224000012436905210}
   m_Button: {fileID: 114000010369100942}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013057657026}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000010369100942
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -6604,20 +6599,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000011442629444}
   m_CanvasGroup: {fileID: 225000010532854318}
   m_Icon: {fileID: 114000012833346390}
   m_IconContainer: {fileID: 224000011103010256}
   m_Button: {fileID: 114000010459235538}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013173370746}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000010777117202
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -6669,7 +6664,6 @@ MonoBehaviour:
   m_Character: 50
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000010291578726}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000010214840134}
@@ -6703,7 +6697,6 @@ MonoBehaviour:
   m_Character: 51
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000011913756988}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000010194139274}
@@ -6752,7 +6745,6 @@ MonoBehaviour:
   m_Character: 48
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000014094068594}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000010186837888}
@@ -6976,20 +6968,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000013101216500}
   m_CanvasGroup: {fileID: 225000011285877462}
   m_Icon: {fileID: 114000013320756924}
   m_IconContainer: {fileID: 224000013497798886}
   m_Button: {fileID: 114000012869419410}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000011807608200}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000011367987976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7002,20 +6994,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000012131916374}
   m_CanvasGroup: {fileID: 225000013517458114}
   m_Icon: {fileID: 114000010874740900}
   m_IconContainer: {fileID: 224000013978177456}
   m_Button: {fileID: 114000011155924792}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000010170714022}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000011386775834
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7033,7 +7025,6 @@ MonoBehaviour:
   m_Character: 47
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000010075206638}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000012999224372}
@@ -7225,21 +7216,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
---- !u!114 &114000011741856648
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013202132154}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14ee7a591bb7fbb49a0d755d7b58fcb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_Target: {fileID: 0}
-  m_AllHandles:
-  - {fileID: 114000012009579334}
 --- !u!114 &114000011807608200
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7333,7 +7309,6 @@ MonoBehaviour:
   m_Character: 49
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000013590475304}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000013347712096}
@@ -7388,7 +7363,6 @@ MonoBehaviour:
   m_Character: 8
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 0
   m_TargetMesh: {fileID: 23000013124346246}
   m_RepeatOnHold: 1
   m_WorkspaceButton: {fileID: 114000012241023202}
@@ -7446,20 +7420,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000012462264472}
   m_CanvasGroup: {fileID: 225000013896179592}
   m_Icon: {fileID: 114000010355857756}
   m_IconContainer: {fileID: 224000012046879946}
   m_Button: {fileID: 114000013115134186}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000010003945272}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000012129850560
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7612,21 +7586,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
---- !u!114 &114000012226602824
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012549834216}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14ee7a591bb7fbb49a0d755d7b58fcb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_Target: {fileID: 0}
-  m_AllHandles:
-  - {fileID: 114000013058841060}
 --- !u!114 &114000012237014186
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7672,7 +7631,6 @@ MonoBehaviour:
   m_Character: 52
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000012173838054}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000012309604180}
@@ -7688,20 +7646,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000013862660466}
   m_CanvasGroup: {fileID: 225000010601517992}
   m_Icon: {fileID: 114000010073638498}
   m_IconContainer: {fileID: 224000014203213672}
   m_Button: {fileID: 114000013534205440}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013065317788}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000012309604180
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7714,20 +7672,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000014012432480}
   m_CanvasGroup: {fileID: 225000013218112864}
   m_Icon: {fileID: 114000011439239378}
   m_IconContainer: {fileID: 224000010634626676}
   m_Button: {fileID: 114000011122339770}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013622744450}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000012389248786
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7740,20 +7698,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000011642713898}
   m_CanvasGroup: {fileID: 225000012401374066}
   m_Icon: {fileID: 114000013533394368}
   m_IconContainer: {fileID: 224000010748523716}
   m_Button: {fileID: 114000012045461672}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000010279381882}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000012433406534
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7866,19 +7824,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
---- !u!114 &114000012743690814
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012549834216}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_SelectionFlags: 2
 --- !u!114 &114000012788228378
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7958,7 +7903,6 @@ MonoBehaviour:
   m_Character: 53
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000012064637162}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000010367358728}
@@ -8016,20 +7960,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000012835079486}
   m_CanvasGroup: {fileID: 225000011340701980}
   m_Icon: {fileID: 114000011457506078}
   m_IconContainer: {fileID: 224000011507507672}
   m_Button: {fileID: 114000014229287354}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000012788228378}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000013000075480
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8124,7 +8068,6 @@ MonoBehaviour:
   m_Character: 46
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000014044360624}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000012062849506}
@@ -8179,7 +8122,6 @@ MonoBehaviour:
   m_Character: 56
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000010632663638}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000010762641440}
@@ -8420,20 +8362,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000012448164980}
   m_CanvasGroup: {fileID: 225000010113985700}
   m_Icon: {fileID: 114000010434263492}
   m_IconContainer: {fileID: 224000011063688852}
   m_Button: {fileID: 114000013978562512}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000010777117202}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000013388538794
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8549,7 +8491,6 @@ MonoBehaviour:
   m_Character: 57
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000013753092330}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000014138576998}
@@ -8640,7 +8581,6 @@ MonoBehaviour:
   m_Character: 43
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000012075212360}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000011350626312}
@@ -8661,7 +8601,6 @@ MonoBehaviour:
   m_Character: 42
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000012764189800}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000014249341742}
@@ -8710,7 +8649,6 @@ MonoBehaviour:
   m_Character: 55
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000013716219464}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000013793755090}
@@ -8765,7 +8703,6 @@ MonoBehaviour:
   m_Character: 13
   m_UseShiftCharacter: 1
   m_ShiftCharacter: 27
-  m_MatchButtonTextToCharacter: 0
   m_TargetMesh: {fileID: 23000011589460270}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000012389248786}
@@ -8781,20 +8718,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000011718095566}
   m_CanvasGroup: {fileID: 225000011501249730}
   m_Icon: {fileID: 114000010642119610}
   m_IconContainer: {fileID: 224000010303514446}
   m_Button: {fileID: 114000011888765630}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000011921688878}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000013793755090
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8807,33 +8744,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000013013581464}
   m_CanvasGroup: {fileID: 225000010686112774}
   m_Icon: {fileID: 114000010571432076}
   m_IconContainer: {fileID: 224000010167389004}
   m_Button: {fileID: 114000014060248814}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000011191960790}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
---- !u!114 &114000013814945510
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013202132154}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_SelectionFlags: 2
 --- !u!114 &114000013978562512
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8969,7 +8893,6 @@ MonoBehaviour:
   m_Character: 45
   m_UseShiftCharacter: 0
   m_ShiftCharacter: 0
-  m_MatchButtonTextToCharacter: 1
   m_TargetMesh: {fileID: 23000011319633622}
   m_RepeatOnHold: 0
   m_WorkspaceButton: {fileID: 114000011367987976}
@@ -8985,20 +8908,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000013751468230}
   m_CanvasGroup: {fileID: 225000012052618312}
   m_Icon: {fileID: 114000013567075384}
   m_IconContainer: {fileID: 224000010672279208}
   m_Button: {fileID: 114000013402391116}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000010322899662}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!114 &114000014229287354
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9053,20 +8976,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 0
+  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000011095386598}
   m_CanvasGroup: {fileID: 225000011968965928}
   m_Icon: {fileID: 114000012433406534}
   m_IconContainer: {fileID: 224000012621789262}
   m_Button: {fileID: 114000013163124872}
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000011519049408}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.01
-  m_AutoHighlight: 0
 --- !u!222 &222000010008004838
 CanvasRenderer:
   m_ObjectHideFlags: 1

@@ -50,12 +50,12 @@ namespace UnityEngine.VR.Manipulators
 		private void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
 		{
 			foreach (var h in m_AllHandles)
+			{
 				h.gameObject.SetActive(h == handle);
+			}
 			dragging = true;
 
-			var target = m_Target == null
-				? transform
-				: m_Target;
+			var target = m_Target == null ? transform : m_Target;
 
 			var rayOrigin = eventData.rayOrigin;
 			var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
@@ -65,9 +65,7 @@ namespace UnityEngine.VR.Manipulators
 
 		private void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
 		{
-			var target = m_Target == null
-				? transform
-				: m_Target;
+			var target = m_Target == null ? transform : m_Target;
 
 			var rayOrigin = eventData.rayOrigin;
 			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
@@ -77,8 +75,12 @@ namespace UnityEngine.VR.Manipulators
 		private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			if (gameObject.activeSelf)
+			{
 				foreach (var h in m_AllHandles)
+				{
 					h.gameObject.SetActive(true);
+				}
+			}
 
 			dragging = false;
 		}

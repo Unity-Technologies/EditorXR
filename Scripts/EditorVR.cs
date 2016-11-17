@@ -162,12 +162,12 @@ public class EditorVR : MonoBehaviour
 	bool m_MiniWorldIgnoreListDirty = true;
 
 	private event Action m_SelectionChanged;
+	Transform m_LastSelectionRayOrigin;
 
 	IPreviewCamera m_CustomPreviewCamera;
 
 	StandardManipulator m_StandardManipulator;
 	ScaleManipulator m_ScaleManipulator;
-	Vector3 m_OriginalManipulatorScale;
 
 	IGrabObject m_TransformTool;
 
@@ -178,6 +178,8 @@ public class EditorVR : MonoBehaviour
 	float m_ProjectFolderLoadYieldTime;
 
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
+
+	readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
 	private void Awake()
 	{
@@ -218,7 +220,6 @@ public class EditorVR : MonoBehaviour
 		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
-
 		m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
 		m_LockModule.updateAlternateMenu = (rayOrigin, o) => SetAlternateMenuVisibility(rayOrigin, o != null);
 		ConnectInterfaces(m_LockModule);
@@ -273,6 +274,8 @@ public class EditorVR : MonoBehaviour
 	{
 		if (m_SelectionChanged != null)
 			m_SelectionChanged();
+
+		UpdateAlternateMenuOnSelectionChanged(m_LastSelectionRayOrigin);
 	}
 
 	// TODO: Find a better callback for when objects are created or destroyed
@@ -583,7 +586,7 @@ public class EditorVR : MonoBehaviour
 			tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 			AddToolToDeviceData(tool, devices);
 			var selectionTool = tool as SelectionTool;
-			selectionTool.selected += UpdateAlternateMenuOnSelectionChanged; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			selectionTool.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 			selectionTool.hovered += m_LockModule.OnHovered;
 			selectionTool.isRayActive = IsRayActive;
 
@@ -690,6 +693,11 @@ public class EditorVR : MonoBehaviour
 				}
 			}
 		}, true);
+	}
+
+	void SetLastSelectionRayOrigin(Transform rayOrigin)
+	{
+		m_LastSelectionRayOrigin = rayOrigin;
 	}
 
 	void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)
@@ -881,6 +889,7 @@ public class EditorVR : MonoBehaviour
 
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_InputModule.getPointerLength = GetPointerLength;
+
 		if (m_CustomPreviewCamera != null)
 			m_InputModule.layerMask |= m_CustomPreviewCamera.hmdOnlyLayerMask;
 
@@ -1283,6 +1292,9 @@ public class EditorVR : MonoBehaviour
 
 	void ConnectInterfaces(object obj, Transform rayOrigin = null)
 	{
+		if (!m_ConnectedInterfaces.Add(obj))
+			return;
+
 		var connectInterfaces = obj as IConnectInterfaces;
 		if (connectInterfaces != null)
 			connectInterfaces.connectInterfaces = ConnectInterfaces;
@@ -1419,6 +1431,8 @@ public class EditorVR : MonoBehaviour
 
 	private void DisconnectInterfaces(object obj)
 	{
+		m_ConnectedInterfaces.Remove(obj);
+
 		var selectionChanged = obj as ISelectionChanged;
 		if (selectionChanged != null)
 			m_SelectionChanged -= selectionChanged.OnSelectionChanged;
@@ -1700,7 +1714,6 @@ public class EditorVR : MonoBehaviour
 			directSelectInput.active = false;
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
-
 			// Use the mini world ray origin instead of the original ray origin
 			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
 			{
@@ -1733,6 +1746,7 @@ public class EditorVR : MonoBehaviour
 
 			m_IntersectionModule.AddTester(tester);
 		});
+
 		UpdatePlayerHandleMaps();
 	}
 
@@ -1787,11 +1801,9 @@ public class EditorVR : MonoBehaviour
 					var rayOrigin = ray.Key;
 #if ENABLE_MINIWORLD_RAY_SELECTION
 					maps.Remove(miniWorldRay.uiInput);
-#endif
-					maps.Remove(miniWorldRay.directSelectInput);
-#if ENABLE_MINIWORLD_RAY_SELECTION
 					m_InputModule.RemoveRaycastSource(rayOrigin);
 #endif
+					maps.Remove(miniWorldRay.directSelectInput);
 					m_MiniWorldRays.Remove(rayOrigin);
 				}
 			}
@@ -2457,7 +2469,7 @@ public class EditorVR : MonoBehaviour
 	private static void InitializeInputManager()
 	{
 		// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-		// in edit mode we need to keyboard lifecycle explicitly
+		// in edit mode we need to handle lifecycle explicitly
 		InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
 		foreach (var m in managers)
 		{
