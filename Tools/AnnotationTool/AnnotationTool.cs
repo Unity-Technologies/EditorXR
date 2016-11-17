@@ -47,6 +47,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	[SerializeField]
 	private Material m_ConeMaterial;
+	private Material m_ConeMaterialInstance;
 
 	[SerializeField]
 	private GameObject m_ColorPickerPrefab;
@@ -113,13 +114,13 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			SetupAnnotation();
 		else if (m_AnnotationInput.draw.isHeld)
 			UpdateAnnotation();
-		else if (m_AnnotationInput.undo.wasJustPressed)
-			UndoLast();
 		else if (m_AnnotationInput.draw.wasJustReleased)
 		{
 			m_CurrentMesh.Optimize();
 			m_CurrentMesh.UploadMeshData(true);
 		}
+		else if (m_AnnotationInput.undo.wasJustPressed)
+			UndoLast();
 
 		if (m_AnnotationInput.changeBrushSize.value != 0)
 			HandleBrushSize();
@@ -188,7 +189,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 					var colorPickerObj = instantiateUI(m_ColorPickerPrefab);
 					m_ColorPicker = colorPickerObj.GetComponent<ColorPickerUI>();
 					m_ColorPicker.toolRayOrigin = rayOrigin;
-					m_ColorPicker.onColorPicked = (col) => { m_ColorToUse = col; };
+					m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
 
 					var pickerTransform = m_ColorPicker.transform;
 					pickerTransform.SetParent(otherRayOrigin);
@@ -216,11 +217,22 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		}
 	}
 
+	private void OnColorPickerValueChanged(Color newColor)
+	{
+		m_ColorToUse = newColor;
+
+		newColor.a = .75f;
+		m_ConeMaterialInstance.SetColor("_Color", newColor);
+		m_ConeMaterialInstance.SetColor("_EmissionColor", newColor);
+
+		m_BrushSizeUi.OnBrushColorChanged(newColor);
+	}
+
 	private void HandleBrushSize()
 	{
 		if (m_CustomPointerMesh != null)
 		{
-			var sign = m_AnnotationInput.changeBrushSize.value;
+			var sign = Mathf.Sign(m_AnnotationInput.changeBrushSize.value);
 			m_CurrentRadius += sign * Time.unscaledDeltaTime * .1f;
 			m_CurrentRadius = Mathf.Clamp(m_CurrentRadius, kTopMinRadius, kTopMaxRadius);
 
@@ -261,7 +273,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		m_CustomPointerObject = new GameObject("CustomPointer");
 
 		m_CustomPointerObject.AddComponent<MeshFilter>().sharedMesh = m_CustomPointerMesh;
-		m_CustomPointerObject.AddComponent<MeshRenderer>().sharedMaterial = m_ConeMaterial;
+		
+		m_ConeMaterialInstance = Instantiate(m_ConeMaterial);
+		m_CustomPointerObject.AddComponent<MeshRenderer>().sharedMaterial = m_ConeMaterialInstance;
 
 		var pointerTrans = m_CustomPointerObject.transform;
 		pointerTrans.SetParent(rayOrigin);
@@ -438,17 +452,41 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	private void UpdateAnnotation()
 	{
 		Vector3 rayForward = rayOrigin.forward;
+		Vector3 rayRight = rayOrigin.right;
 		Vector3 worldPoint = rayOrigin.position + rayForward * kTipDistance;
 		Vector3 localPoint = m_WorldToLocalMesh.MultiplyPoint3x4(worldPoint);
 
-		if (m_Points.Count < 1 || Vector3.Distance(m_Points.Last(), localPoint) >= (m_CurrentRadius * 0.1f))
-		{
-			m_Points.Add(localPoint);
-			m_Forwards.Add(rayForward);
-			m_Widths.Add(m_CurrentRadius);
-			m_Rights.Add(rayOrigin.right);
+		InterpolatePointsIfNeeded(localPoint, rayForward, rayRight);
+		
+		m_Points.Add(localPoint);
+		m_Forwards.Add(rayForward);
+		m_Widths.Add(m_CurrentRadius);
+		m_Rights.Add(rayRight);
 
-			PointsToMesh();
+		PointsToMesh();
+	}
+
+	private void InterpolatePointsIfNeeded(Vector3 localPoint, Vector3 rayForward, Vector3 rayRight)
+	{
+		if (m_Points.Count > 1)
+		{
+			var lastPoint = m_Points.Last();
+			var distance = Vector3.Distance(lastPoint, localPoint);
+
+			if (distance > m_CurrentRadius * .5f)
+			{
+				var halfPoint = (lastPoint + localPoint) / 2f;
+				m_Points.Add(halfPoint);
+
+				var halfForward = (m_Forwards.Last() + rayForward) / 2f;
+				m_Forwards.Add(halfForward);
+
+				var halfRadius = (m_Widths.Last() + m_CurrentRadius) / 2f;
+				m_Widths.Add(halfRadius);
+
+				var halfRight = (m_Rights.Last() + rayRight) / 2f;
+				m_Rights.Add(halfRight);
+			}
 		}
 	}
 	
@@ -509,6 +547,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			float highWidth = Mathf.Min((m_Points.Count - (i + 2)) * 0.25f, 1);
 			float unclampedWidth = m_Widths[i - 1] * Mathf.Clamp01(i < m_Points.Count / 2f ? lowWidth : highWidth);
 			float width = Mathf.Clamp(unclampedWidth, kTopMinRadius, kTopMaxRadius);
+
 			Vector3 left = thisPoint - cross * width;
 			Vector3 right = thisPoint + cross * width;
 
@@ -552,10 +591,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		for (int i = 0; i < newVertices.Count; i += 2)
 		{
 			for (int side = 0; side < 2; side++)
-			{
-				float distance = i > 0 ? Vector3.Distance(newVertices[i - 2 + side], newVertices[i + side]) : 0;
-				newUvs.Add(new Vector2(side, distance));
-			}
+				newUvs.Add(new Vector2(side, i / 2));
 		}
 	}
 

@@ -14,8 +14,15 @@ public class BrushSizeUI : MonoBehaviour
 	[SerializeField]
 	private Slider m_Slider;
 
+	private Image m_SliderHandleImage;
+
 	private const float kMinSize = 0.25f;
 	private const float kMaxSize = 12.5f;
+
+	void Start()
+	{
+		m_SliderHandleImage = m_SliderHandle.GetComponent<Image>();
+	}
 
 	public void OnSliderValueChanged(float value)
 	{
@@ -28,6 +35,11 @@ public class BrushSizeUI : MonoBehaviour
 	public void ChangeSliderValue(float newValue)
 	{
 		m_Slider.value = newValue;
+	}
+
+	public void OnBrushColorChanged(Color newColor)
+	{
+		m_SliderHandleImage.color = newColor;
 	}
 
 }

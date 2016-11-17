@@ -8,7 +8,7 @@ Material:
   m_PrefabInternal: {fileID: 0}
   m_Name: AnnotationMaterial
   m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
-  m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION
+  m_ShaderKeywords: _ALPHABLEND_ON _EMISSION
   m_LightmapFlags: 0
   m_CustomRenderQueue: 3000
   stringTagMap:
@@ -44,6 +44,12 @@ Material:
         name: _EmissionMap
       second:
         m_Texture: {fileID: 2800000, guid: 831efcd782cc31c4493674a90523630a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _Illum
+      second:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - first:
@@ -84,6 +90,9 @@ Material:
         name: _DstBlend
       second: 10
     - first:
+        name: _Emission
+      second: 1
+    - first:
         name: _GlossMapScale
       second: 1
     - first:
@@ -97,7 +106,7 @@ Material:
       second: 0
     - first:
         name: _Mode
-      second: 3
+      second: 2
     - first:
         name: _OcclusionStrength
       second: 1
@@ -112,7 +121,7 @@ Material:
       second: 1
     - first:
         name: _SrcBlend
-      second: 1
+      second: 5
     - first:
         name: _UVSec
       second: 0
@@ -122,7 +131,7 @@ Material:
     m_Colors:
     - first:
         name: _Color
-      second: {r: 1, g: 1, b: 1, a: 0.5019608}
+      second: {r: 1, g: 1, b: 1, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 1, g: 1, b: 1, a: 1}

@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: SelectionCone
+  m_Name: BrushCone
   m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
   m_LightmapFlags: 1
@@ -85,7 +85,7 @@ Material:
       second: 10
     - first:
         name: _GlossMapScale
-      second: 1
+      second: 0
     - first:
         name: _Glossiness
       second: 0
@@ -122,7 +122,7 @@ Material:
     m_Colors:
     - first:
         name: _Color
-      second: {r: 0.011764706, g: 0.6627451, b: 0.95686275, a: 0.39215687}
+      second: {r: 0.95686275, g: 0.95686275, b: 0.95686275, a: 0.7529412}
     - first:
         name: _EmissionColor
-      second: {r: 0.0024590136, g: 0.13852465, b: 0.2, a: 1}
+      second: {r: 1, g: 1, b: 1, a: 1}
