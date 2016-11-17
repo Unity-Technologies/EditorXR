@@ -19,10 +19,12 @@ namespace UnityEngine.VR.Modules
 			public UIActions actionMapInput;
 			public RayEventData eventData;
 			public GameObject hoveredObject;
-			public GameObject selectedObject;
+			public GameObject draggedObject;
 			public Func<RaycastSource, bool> isValid;
 
-			public bool hasObject { get { return (hoveredObject != null && (s_LayerMask & (1 << hoveredObject.layer)) != 0) || selectedObject != null; } }
+			public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
+
+			public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
 
 			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput, Func<RaycastSource, bool> validationCallback)
 			{
@@ -93,7 +95,7 @@ namespace UnityEngine.VR.Modules
 			var sources = new List<RaycastSource>(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
 			foreach (var source in sources)
 			{
-				if (!(source.rayOrigin.gameObject.activeSelf || source.selectedObject) || !source.proxy.active)
+				if (!(source.rayOrigin.gameObject.activeSelf || source.draggedObject) || !source.proxy.active)
 					continue;
 
 				if (preProcessRaycastSource != null)
@@ -113,7 +115,7 @@ namespace UnityEngine.VR.Modules
 
 				HandlePointerExitAndEnter(eventData, source.hoveredObject); // Send enter and exit events
 
-				source.actionMapInput.active = source.hasObject;
+				source.actionMapInput.active = source.hasObject && ShouldActivateInput(eventData, source.currentObject);
 
 				// Proceed only if pointer is interacting with something
 				if (!source.actionMapInput.active)
@@ -126,10 +128,10 @@ namespace UnityEngine.VR.Modules
 				if (source.actionMapInput.select.wasJustReleased)
 					OnSelectReleased(source);
 
-				var draggedObject = source.selectedObject;
+				var draggedObject = source.draggedObject;
 
 				// Send Drag Events
-				if (source.selectedObject != null)
+				if (source.draggedObject != null)
 				{
 					ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.dragHandler);
 					ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.dragHandler);
@@ -138,13 +140,32 @@ namespace UnityEngine.VR.Modules
 				// Send scroll events
 				var scrollObject = source.hoveredObject;
 				if (!scrollObject)
-					scrollObject = source.selectedObject;
+					scrollObject = source.draggedObject;
 				if (scrollObject)
 				{
 					eventData.scrollDelta = new Vector2(0f, source.actionMapInput.verticalScroll.value);
 					ExecuteEvents.ExecuteHierarchy(scrollObject, eventData, ExecuteEvents.scrollHandler);
 				}
 			}
+		}
+
+		static bool ShouldActivateInput(RayEventData eventData, GameObject sourceCurrentObject)
+		{
+			var selectionFlags = sourceCurrentObject.GetComponent<ISelectionFlags>();
+			if (selectionFlags != null && selectionFlags.selectionFlags == SelectionFlags.Direct && !U.UI.IsDirectEvent(eventData))
+				return false;
+
+			return ExecuteEvents.CanHandleEvent<IPointerClickHandler>(sourceCurrentObject)
+
+				|| ExecuteEvents.CanHandleEvent<IDragHandler>(sourceCurrentObject)
+				|| ExecuteEvents.CanHandleEvent<IBeginDragHandler>(sourceCurrentObject)
+				|| ExecuteEvents.CanHandleEvent<IEndDragHandler>(sourceCurrentObject)
+
+				|| ExecuteEvents.CanHandleEvent<IRayDragHandler>(sourceCurrentObject)
+				|| ExecuteEvents.CanHandleEvent<IRayBeginDragHandler>(sourceCurrentObject)
+				|| ExecuteEvents.CanHandleEvent<IRayEndDragHandler>(sourceCurrentObject)
+
+				|| ExecuteEvents.CanHandleEvent<IScrollHandler>(sourceCurrentObject);
 		}
 
 		private RayEventData CloneEventData(RayEventData eventData)
@@ -271,10 +292,11 @@ namespace UnityEngine.VR.Modules
 
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.beginDragHandler);
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.beginDragHandler);
+				eventData.dragging = true;
 				dragStarted(draggedObject, eventData);
 
 				eventData.pointerDrag = draggedObject;
-				source.selectedObject = draggedObject;
+				source.draggedObject = draggedObject;
 			}
 		}
 
@@ -283,12 +305,12 @@ namespace UnityEngine.VR.Modules
 			var eventData = source.eventData;
 			var hoveredObject = source.hoveredObject;
 
-			if (source.selectedObject)
-				ExecuteEvents.Execute(source.selectedObject, eventData, ExecuteEvents.pointerUpHandler);
+			if (source.draggedObject)
+				ExecuteEvents.Execute(source.draggedObject, eventData, ExecuteEvents.pointerUpHandler);
 
-			if (source.selectedObject)
+			if (source.draggedObject)
 			{
-				var draggedObject = source.selectedObject;
+				var draggedObject = source.draggedObject;
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.endDragHandler);
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.endDragHandler);
 				dragEnded(draggedObject, eventData);
@@ -300,13 +322,14 @@ namespace UnityEngine.VR.Modules
 			}
 
 			var clickHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(hoveredObject);
-			if (source.selectedObject == clickHandler && eventData.eligibleForClick)
+			if (source.draggedObject == clickHandler && eventData.eligibleForClick)
 				ExecuteEvents.Execute(clickHandler, eventData, ExecuteEvents.pointerClickHandler);
 
+			eventData.dragging = false;
 			eventData.rawPointerPress = null;
 			eventData.pointerPress = null;
 			eventData.eligibleForClick = false;
-			source.selectedObject = null;
+			source.draggedObject = null;
 		}
 
 		public void Deselect()
@@ -336,9 +359,8 @@ namespace UnityEngine.VR.Modules
 			eventData.position = m_EventCamera.pixelRect.center;
 			eventData.scrollDelta = Vector2.zero;
 
-			List<RaycastResult> results = new List<RaycastResult>();
-			eventSystem.RaycastAll(eventData, results);
-			eventData.pointerCurrentRaycast = FindFirstRaycast(results);
+			eventSystem.RaycastAll(eventData, m_RaycastResultCache);
+			eventData.pointerCurrentRaycast = FindFirstRaycast(m_RaycastResultCache);
 			hit = eventData.pointerCurrentRaycast.gameObject;
 
 			m_RaycastResultCache.Clear();

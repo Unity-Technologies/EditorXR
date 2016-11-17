@@ -6,7 +6,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Tools
 {
-	public class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, ISetHighlight, IGameObjectLocking
+	public class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, IStandardActionMap,  ICustomActionMap, ISetHighlight, IGameObjectLocking
 	{
 		static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
@@ -27,6 +27,8 @@ namespace UnityEngine.VR.Tools
 			set { m_SelectionInput = (SelectionInput)value; }
 		}
 		SelectionInput m_SelectionInput;
+
+		public Standard standardInput { get; set; }
 
 		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 		public Transform rayOrigin { private get; set; }
@@ -80,11 +82,11 @@ namespace UnityEngine.VR.Tools
 
 			m_HoverGameObject = newHoverGameObject;
 
-			if (m_SelectionInput.select.wasJustPressed && m_HoverGameObject)
+			if (standardInput.action.wasJustPressed && m_HoverGameObject)
 				m_PressedObject = m_HoverGameObject;
 
 			// Handle select button press
-			if (m_SelectionInput.select.wasJustReleased)
+			if (standardInput.action.wasJustReleased)
 			{
 				if (m_PressedObject == m_HoverGameObject)
 				{

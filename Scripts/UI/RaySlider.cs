@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
-public class RaySlider : Slider
+public class RaySlider : Slider, ISelectionFlags
 {
 	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 	[SerializeField]

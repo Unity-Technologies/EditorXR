@@ -29,15 +29,12 @@ using UnityEditor.VR;
 [InitializeOnLoad]
 public class EditorVR : MonoBehaviour
 {
+	delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
+
 	public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
-
 	const string kVRPlayerTag = "VRPlayer";
-
 	const float kDefaultRayLength = 100f;
-
-	const float kWorkspaceVacuumEnableDistance = 0.6f; // Disable vacuum bounds if workspace is close to player
 	const float kPreviewScale = 0.1f;
-
 	const float kViewerPivotTransitionTime = 0.75f;
 
 	// Minimum time to spend loading the project folder before yielding
@@ -45,6 +42,9 @@ public class EditorVR : MonoBehaviour
 
 	// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
 	const float kMaxFrameTime = 0.01f;
+
+	static readonly Vector3 kDefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
+	static readonly Quaternion kDefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
 	[SerializeField]
 	private ActionMap m_TrackedObjectActionMap;
@@ -125,7 +125,7 @@ public class EditorVR : MonoBehaviour
 	private List<IAction> m_AllActions;
 	List<Type> m_MainMenuTools;
 	private List<Type> m_AllWorkspaceTypes;
-	private readonly List<Workspace> m_AllWorkspaces = new List<Workspace>();
+	private readonly List<IWorkspace> m_AllWorkspaces = new List<IWorkspace>();
 
 	private readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 	{
@@ -171,6 +171,8 @@ public class EditorVR : MonoBehaviour
 
 	IGrabObject m_TransformTool;
 
+	readonly List<VacuumTool> m_VacuumTools = new List<VacuumTool>();
+
 	readonly List<IUsesProjectFolderData> m_ProjectFolderLists = new List<IUsesProjectFolderData>();
 	FolderData[] m_FolderData;
 	readonly HashSet<string> m_AssetTypes = new HashSet<string>();
@@ -180,6 +182,8 @@ public class EditorVR : MonoBehaviour
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
 	readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
+
+	readonly Dictionary<InputDevice, Standard> m_StandardActionMapInputs = new Dictionary<InputDevice, Standard>();
 
 	private void Awake()
 	{
@@ -226,7 +230,7 @@ public class EditorVR : MonoBehaviour
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
-		m_AllWorkspaceTypes = U.Object.GetExtensionsOfClass(typeof(Workspace)).ToList();
+		m_AllWorkspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 
 		UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
@@ -438,12 +442,6 @@ public class EditorVR : MonoBehaviour
 
 		UpdateKeyboardMallets();
 
-		var camera = U.Camera.GetMainCamera();
-
-		// Enable/disable workspace vacuum bounds based on distance to camera
-		foreach (var workspace in m_AllWorkspaces)
-			workspace.vacuumEnabled = (workspace.transform.position - camera.transform.position).magnitude > kWorkspaceVacuumEnableDistance;
-
 		UpdateMiniWorlds();
 
 #if UNITY_EDITOR
@@ -561,7 +559,8 @@ public class EditorVR : MonoBehaviour
 	{
 		return typeof(ITransformer).IsAssignableFrom(type)
 			|| typeof(SelectionTool).IsAssignableFrom(type)
-			|| typeof(ILocomotor).IsAssignableFrom(type);
+			|| typeof(ILocomotor).IsAssignableFrom(type)
+			|| typeof(VacuumTool).IsAssignableFrom(type);
 	}
 
 	private void SpawnDefaultTools()
@@ -579,13 +578,19 @@ public class EditorVR : MonoBehaviour
 
 		foreach (var deviceData in m_DeviceData)
 		{
-			// Skip keyboard, mouse, gamepads. Selection tool should only be on left and right hands (tagged 0 and 1)
+			// Skip keyboard, mouse, gamepads. Selection, blink, and vacuum tools should only be on left and right hands (tagged 0 and 1)
 			if (deviceData.Key.tagIndex == -1)
 				continue;
 
+			tool = SpawnTool(typeof(VacuumTool), out devices, deviceData.Key);
+			AddToolToDeviceData(tool, devices);
+			var vacuumTool = (VacuumTool)tool;
+			vacuumTool.defaultOffset = kDefaultWorkspaceOffset;
+			m_VacuumTools.Add(vacuumTool);
+
 			tool = SpawnTool(typeof(SelectionTool), out devices, deviceData.Key);
 			AddToolToDeviceData(tool, devices);
-			var selectionTool = tool as SelectionTool;
+			var selectionTool = (SelectionTool)tool;
 			selectionTool.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 			selectionTool.hovered += m_LockModule.OnHovered;
 			selectionTool.isRayActive = IsRayActive;
@@ -920,7 +925,7 @@ public class EditorVR : MonoBehaviour
 		});
 	}
 
-	void ForEachRayOrigin(Action<IProxy, KeyValuePair<Node, Transform>, InputDevice, DeviceData> callback, bool activeOnly = false)
+	void ForEachRayOrigin(ForEachRayOriginCallback callback, bool activeOnly = false)
 	{
 		foreach (var proxy in m_AllProxies)
 		{
@@ -1245,7 +1250,14 @@ public class EditorVR : MonoBehaviour
 		var standardMap = obj as IStandardActionMap;
 		if (standardMap != null)
 		{
-			standardMap.standardInput = (Standard)CreateActionMapInput(m_StandardToolActionMap, device);
+			Standard standard;
+			if (!m_StandardActionMapInputs.TryGetValue(device, out standard))
+			{
+				standard = (Standard)CreateActionMapInput(m_StandardToolActionMap, device);
+				m_StandardActionMapInputs[device] = standard;
+			}
+
+			standardMap.standardInput = standard;
 			if (actionMapInputs != null)
 				actionMapInputs.Add(standardMap.standardInput);
 		}
@@ -1427,7 +1439,21 @@ public class EditorVR : MonoBehaviour
 		var alternateMenu = obj as IAlternateMenu;
 		if (alternateMenu != null)
 			alternateMenu.menuActions = m_MenuActions;
-	}
+
+        var projectFolderList = obj as IUsesProjectFolderData;
+        if (projectFolderList != null)
+        {
+            projectFolderList.folderData = GetFolderData();
+            m_ProjectFolderLists.Add(projectFolderList);
+        }
+
+        var filterUI = obj as IFilterUI;
+        if (filterUI != null)
+        {
+            filterUI.filterList = GetFilterList();
+            m_FilterUIs.Add(filterUI);
+        }
+    }
 
 	private void DisconnectInterfaces(object obj)
 	{
@@ -1659,34 +1685,28 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	void CreateWorkspace(Type t, Action<Workspace> createdCallback = null)
+	void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
 	{
-		var defaultOffset = new Vector3(0, -0.15f, 0.6f);
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 
-		var workspace = (Workspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
+		var workspace = (IWorkspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
 		m_AllWorkspaces.Add(workspace);
 		workspace.destroyed += OnWorkspaceDestroyed;
 		ConnectInterfaces(workspace);
-		var workspaceTransform = workspace.transform;
-		workspaceTransform.position = cameraTransform.TransformPoint(defaultOffset);
-		workspaceTransform.rotation *= Quaternion.LookRotation(cameraTransform.forward) * Workspace.kDefaultTilt;
 
 		//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 		workspace.Setup();
 
-		var projectFolderList = workspace as IUsesProjectFolderData;
-		if (projectFolderList != null)
-		{
-			projectFolderList.folderData = GetFolderData();
-			m_ProjectFolderLists.Add(projectFolderList);
-		}
+		var offset = kDefaultWorkspaceOffset;
+		offset.z += workspace.vacuumBounds.extents.z;
 
-		var filterUI = workspace as IFilterUI;
-		if (filterUI != null)
+		var workspaceTransform = workspace.transform;
+		workspaceTransform.position = cameraTransform.TransformPoint(offset);
+		workspaceTransform.rotation *= Quaternion.LookRotation(cameraTransform.forward) * kDefaultWorkspaceTilt;
+
+		foreach (var vacuumTool in m_VacuumTools)
 		{
-			filterUI.filterList = GetFilterList();
-			m_FilterUIs.Add(filterUI);
+			vacuumTool.vacuumables.Add(workspace);
 		}
 
 		if (createdCallback != null)
@@ -1770,9 +1790,13 @@ public class EditorVR : MonoBehaviour
 		return miniWorldRay;
 	}
 
-	private void OnWorkspaceDestroyed(Workspace workspace)
+	private void OnWorkspaceDestroyed(IWorkspace workspace)
 	{
 		m_AllWorkspaces.Remove(workspace);
+		foreach (var vacuumTool in m_VacuumTools)
+		{
+			vacuumTool.vacuumables.Remove(workspace);
+		}
 
 		DisconnectInterfaces(workspace);
 
@@ -2332,6 +2356,7 @@ public class EditorVR : MonoBehaviour
 
 	void LoadProjectFolders()
 	{
+		return;
 		m_AssetTypes.Clear();
 
 		StartCoroutine(CreateFolderData((folderData, hasNext) =>
