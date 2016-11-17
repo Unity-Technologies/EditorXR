@@ -6,6 +6,7 @@ using UnityEngine.VR.Utilities;
 public class MiniWorldRenderer : MonoBehaviour
 {
 	public const string kShowInMiniWorldTag = "ShowInMiniWorld";
+	const string kMiniWorldCameraTag = "MiniWorldCamera";
 	const float kMinScale = 0.001f;
 
 	static int s_DefaultLayer;
@@ -46,6 +47,7 @@ public class MiniWorldRenderer : MonoBehaviour
 	void OnEnable()
 	{
 		GameObject go = new GameObject("MiniWorldCamera", typeof(Camera));
+		go.tag = kMiniWorldCameraTag;
 		go.hideFlags = HideFlags.DontSave;
 		m_MiniCamera = go.GetComponent<Camera>();
 		go.SetActive(false);
@@ -61,7 +63,7 @@ public class MiniWorldRenderer : MonoBehaviour
 	void RenderMiniWorld(Camera camera)
 	{
 		// Do not render if miniWorld scale is too low to avoid errors in the console
-		if (camera != m_MiniCamera && miniWorld && miniWorld.transform.lossyScale.magnitude > kMinScale)
+		if (!camera.gameObject.CompareTag(kMiniWorldCameraTag) && miniWorld && miniWorld.transform.lossyScale.magnitude > kMinScale)
 		{
 			m_MiniCamera.CopyFrom(camera);
 
