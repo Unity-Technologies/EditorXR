@@ -34,6 +34,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	bool m_GrabbedInTopHat;
 	float m_ThrowingTimeStamp;
 	const float kThrowDelayAllowed = 0.2f;
+	float m_CurrentTargetScale = 1.0f;
 
 	private enum ManipulateMode
 	{
@@ -86,6 +87,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			case ManipulateMode.On:
 			{
 				HandleThrowDown();
+				UpdateWorkspaceScales();
 
 				if (standardInput.action.isHeld)
 					UpdateWorkspaceManipulation();
@@ -167,16 +169,14 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	bool UserThrowsDown()
 	{
 		const float kLocalScaleWhenReadyToThrow = 0.5f;
+		const float kThrowVelocityThreshold = 0.003f;
 
 		m_VerticalVelocity = (m_PreviousPosition.y - rayOrigin.position.y) * Time.unscaledDeltaTime;
 		m_PreviousPosition = rayOrigin.position;
 
-		if (m_VerticalVelocity > 0.003f)
+		if (m_VerticalVelocity > kThrowVelocityThreshold)
 		{
-			for (int i = 0; i < m_AllWorkspaces.Length; i++)
-			{
-				m_AllWorkspaces[i].transform.localScale = Vector3.one * kLocalScaleWhenReadyToThrow;
-			}
+			m_CurrentTargetScale = kLocalScaleWhenReadyToThrow;
 
 			m_ThrowingTimeStamp = Time.realtimeSinceStartup;
 			return true;
@@ -189,12 +189,27 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			}
 			else
 			{
-				for (int i = 0; i < m_AllWorkspaces.Length; i++)
-				{
-					m_AllWorkspaces[i].transform.localScale = Vector3.one;
-				}
+				m_CurrentTargetScale = 1.0f;
 				return false;
 			}
+		}
+	}
+
+	void UpdateWorkspaceScales()
+	{
+		const float kScaleSpeed = 15.0f;
+
+		for (int i = 0; i < m_AllWorkspaces.Length; i++)
+		{
+			float currentScale = m_AllWorkspaces[i].transform.localScale.x;
+			
+			//snap scale if close enough to target
+			if (currentScale > m_CurrentTargetScale - 0.1f && currentScale < m_CurrentTargetScale + 0.1f)
+			{
+				m_AllWorkspaces[i].transform.localScale = Vector3.one * m_CurrentTargetScale;
+				continue;
+			}
+			m_AllWorkspaces[i].transform.localScale = Vector3.Lerp(m_AllWorkspaces[i].transform.localScale, Vector3.one * m_CurrentTargetScale, Time.unscaledDeltaTime * kScaleSpeed);
 		}
 	}
 
@@ -211,8 +226,9 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 				for (int i = 0; i < m_AllWorkspaces.Length; i++)
 				{
 					m_AllWorkspaces[i].SetUIHighlights(true);
-					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetRotationSmoothing(2f);
-					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetPositionSmoothing(2f);
+					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().enabled = true;
+					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetRotationSmoothing(1f);
+					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetPositionSmoothing(1f);
 				}
 			}
 			else
@@ -233,10 +249,10 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		for (int i = 0; i < m_AllWorkspaces.Length; i++)
 		{
 			//don't move for tiny movements
-			if (Mathf.Abs(m_VerticalVelocity) > 0.00015f)
+			if (Mathf.Abs(m_VerticalVelocity) > 0.0001f)
 			{
 				// move on Y axis with corrected direction
-				m_AllWorkspaces[i].transform.Translate(0.0f, m_VerticalVelocity * -50.0f, 0.0f, Space.World);
+				m_AllWorkspaces[i].transform.Translate(0.0f, m_VerticalVelocity * -35.0f, 0.0f, Space.World);
 			}
 
 			//don't rotate for tiny rotations
