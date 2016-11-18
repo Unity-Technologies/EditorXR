@@ -1023,8 +1023,8 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012386759016}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.003846623, y: 0.030632988, z: -0.20000981}
-  m_LocalScale: {x: 0.8500001, y: 0.70000106, z: 1}
+  m_LocalPosition: {x: 0.001, y: 0, z: -0.002}
+  m_LocalScale: {x: 0.0903, y: 0.0209, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 4000013451538518}
@@ -1189,8 +1189,8 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013554416906}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.02640399, y: 0.030631216, z: -0.19991533}
-  m_LocalScale: {x: 0.8500001, y: 0.70000094, z: 0.9999998}
+  m_LocalPosition: {x: 0.001, y: 0, z: -0.002}
+  m_LocalScale: {x: 0.084055, y: 0.0209, z: 0.9999998}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 4000010553173774}
@@ -1713,6 +1713,7 @@ MonoBehaviour:
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
+  m_AutoHighlight: 1
 --- !u!114 &114000010661339384
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1953,6 +1954,7 @@ MonoBehaviour:
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
+  m_AutoHighlight: 1
 --- !u!114 &114000011523287580
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2107,7 +2109,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114000013305609772}
-        m_MethodName: Open
+        m_MethodName: OpenKeyboard
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3266,6 +3268,7 @@ MonoBehaviour:
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
+  m_AutoHighlight: 1
 --- !u!114 &114000013715494506
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4016,7 +4019,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010157872688}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.000000011175871}
+  m_LocalPosition: {x: 0, y: 0, z: 0.002}
   m_LocalScale: {x: 1, y: 1.0000005, z: 1.0000005}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -4246,7 +4249,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013146979432}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.000000011175871}
+  m_LocalPosition: {x: 0, y: 0, z: 0.002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:

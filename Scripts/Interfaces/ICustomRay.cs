@@ -2,16 +2,23 @@
 
 namespace UnityEngine.VR.Tools
 {
-	public interface ICustomRay : IUsesRayOrigin
+	/// <summary>
+	/// Method signature for hiding or showing the default ray
+	/// <param name="rayOrigin">The ray to hide or show</param>
+	/// <param name="onlyRay">An optional parameter to hide or show only the ray</param>
+	/// </summary>
+	public delegate void DefaultRayVisibilityDelegate(Transform rayOrigin, bool onlyRay = false);
+
+	public interface ICustomRay
 	{
 		/// <summary>
-		/// Method handling the enabling & showing of the default proxy ray
+		/// Show the default proxy ray/cone
 		/// </summary>
-		Action showDefaultRay { set; }
+		DefaultRayVisibilityDelegate showDefaultRay { set; }
 
 		/// <summary>
-		/// Method handling the disabling & hiding of the default proxy ray
+		/// Hide the default proxy ray/cone
 		/// </summary>
-		Action hideDefaultRay { set; }
+		DefaultRayVisibilityDelegate hideDefaultRay { set; }
 	}
 }

@@ -16,9 +16,9 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	public Transform rayOrigin { get; set; }
 
-	public Action showDefaultRay { private get; set; }
+	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
 
-	public Action hideDefaultRay { private get; set; }
+	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
 
 	public Action<Workspace> resetWorkspaces { get; set; }
 
@@ -53,7 +53,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		m_TopHat.transform.localScale = new Vector3(0.2f, 0.15f, 0.2f);
 		m_TopHat.transform.Translate(Vector3.up * 0.2f);
 		m_TopHat.GetComponent<Collider>().isTrigger = true;
-		//m_TopHat.GetComponent<MeshRenderer>().enabled = false;
+		m_TopHat.GetComponent<MeshRenderer>().enabled = false;
 	}
 
 	void Update()
@@ -93,7 +93,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 				if (standardInput.action.wasJustReleased)
 				{
 					mode = ManipulateMode.Off;
-					showDefaultRay();
+					showDefaultRay(rayOrigin);
 
 					for (int i = 0; i < m_AllWorkspaces.Length; i++)
 					{
@@ -207,12 +207,12 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 				m_PreviousPosition = rayOrigin.position;
 				m_RayOriginStartAngle = Quaternion.LookRotation(rayOrigin.up);
 				mode = ManipulateMode.On;
-				hideDefaultRay();
+				hideDefaultRay(rayOrigin);
 				for (int i = 0; i < m_AllWorkspaces.Length; i++)
 				{
 					m_AllWorkspaces[i].SetUIHighlights(true);
-					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetRotationSmoothing(5f);
-					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetPositionSmoothing(5f);
+					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetRotationSmoothing(2f);
+					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetPositionSmoothing(2f);
 				}
 			}
 			else

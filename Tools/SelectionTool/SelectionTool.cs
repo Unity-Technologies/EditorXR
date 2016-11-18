@@ -34,14 +34,20 @@ namespace UnityEngine.VR.Tools
 		public Action<GameObject, bool> setLocked { get; set; }
 		public Func<GameObject, bool> isLocked { get; set; }
 
+		public Func<Transform, bool> isRayActive;
 		public event Action<GameObject, Transform> hovered;
 		public event Action<Transform> selected;
 
 		void Update()
 		{
+			if (rayOrigin == null)
+				return;
+
+			if (!isRayActive(rayOrigin))
+				return;
+
 			var newHoverGameObject = getFirstGameObject(rayOrigin);
 			GameObject newPrefabRoot = null;
-
 			if (newHoverGameObject != null)
 			{
 				// If gameObject is within a prefab and not the current prefab, choose prefab root
@@ -76,6 +82,7 @@ namespace UnityEngine.VR.Tools
 
 			if (m_SelectionInput.select.wasJustPressed && m_HoverGameObject)
 				m_PressedObject = m_HoverGameObject;
+
 			// Handle select button press
 			if (m_SelectionInput.select.wasJustReleased)
 			{
@@ -107,6 +114,8 @@ namespace UnityEngine.VR.Tools
 						Selection.activeGameObject = m_HoverGameObject;
 						s_SelectedObjects.Add(m_HoverGameObject);
 					}
+
+					setHighlight(m_HoverGameObject, false);
 
 					Selection.objects = s_SelectedObjects.ToArray();
 					if (selected != null)

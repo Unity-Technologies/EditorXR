@@ -20,8 +20,7 @@ public class LockUI : MonoBehaviour, IGameObjectLocking
 
 	public Action<GameObject, bool> setLocked { private get; set; }
 	public Func<GameObject, bool> isLocked { private get; set; }
-	public Action<GameObject, Transform> checkHover { private get; set; }
-
+	
 	void Start()
 	{
 		UpdateIcon();

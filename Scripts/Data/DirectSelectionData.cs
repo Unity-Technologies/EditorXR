@@ -1,11 +1,12 @@
 ﻿using UnityEngine.InputNew;
+using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Modules
 {
 	/// <summary>
 	/// Stores the state of a direct selection
 	/// </summary>
-	public class DirectSelection
+	public class DirectSelectionData
 	{
 		/// <summary>
 		/// The Node used to select the object

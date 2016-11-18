@@ -3,9 +3,10 @@ using UnityEngine;
 using UnityEngine.VR.Tools;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Utilities;
+using UnityObject = UnityEngine.Object;
 
 [MainMenuItem("Primitive", "Primitive", "Create primitives in the scene")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin
+public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin, IUsesSpatialHash
 {
 	[SerializeField]
 	CreatePrimitiveMenu m_MenuPrefab;
@@ -31,6 +32,9 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 	public Transform rayOrigin { get; set; }
 
 	public ConnectInterfacesDelegate connectInterfaces { private get; set; }
+
+	public Action<GameObject> addToSpatialHash { get; set; }
+	public Action<GameObject> removeFromSpatialHash { get; set; }
 
 	enum PrimitiveCreationStates
 	{
@@ -92,6 +96,8 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 			m_CurrentGameObject.transform.position = m_StartPoint;
 
 			m_State = m_Freeform ? PrimitiveCreationStates.Freeform : PrimitiveCreationStates.EndPoint;
+
+			addToSpatialHash(m_CurrentGameObject);
 		}
 	}
 

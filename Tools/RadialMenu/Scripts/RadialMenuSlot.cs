@@ -84,8 +84,8 @@ namespace UnityEngine.VR.Menus
 		Vector3 m_IconPressedLocalPosition;
 		float m_IconLookForwardOffset = 0.5f;
 		Vector3 m_IconLookDirection;
-		
-		Coroutine m_FadeCoroutine;
+
+		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
 		
@@ -138,7 +138,7 @@ namespace UnityEngine.VR.Menus
 
 		void OnDisable()
 		{
-			this.StopCoroutine(ref m_FadeCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 			this.StopCoroutine(ref m_HighlightCoroutine);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 		}
@@ -149,15 +149,15 @@ namespace UnityEngine.VR.Menus
 			m_Pressed = false;
 			m_Highlighted = false;
 
-			this.StopCoroutine(ref m_FadeCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 		
-			m_FadeCoroutine = StartCoroutine(AnimateShow());
+			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
 
 		public void Hide()
 		{
-			this.StopCoroutine(ref m_FadeCoroutine);
-			m_FadeCoroutine = StartCoroutine(AnimateHide());
+			this.StopCoroutine(ref m_VisibilityCoroutine);
+			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
 		void CorrectIconRotation()
@@ -199,7 +199,7 @@ namespace UnityEngine.VR.Menus
 
 			CorrectIconRotation();
 
-			m_FadeCoroutine = null;
+			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator ShowInset()
@@ -247,7 +247,7 @@ namespace UnityEngine.VR.Menus
 			}
 
 			FadeOutCleanup();
-			m_FadeCoroutine = null;
+			m_VisibilityCoroutine = null;
 		}
 
 		void FadeOutCleanup()
