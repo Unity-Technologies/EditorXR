@@ -97,11 +97,12 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 					mode = ManipulateMode.Off;
 					showDefaultRay(rayOrigin);
 
-					for (int i = 0; i < m_AllWorkspaces.Length; i++)
+					foreach(var ws in m_AllWorkspaces)
 					{
-						m_AllWorkspaces[i].SetUIHighlights(false);
-						m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetRotationSmoothing(10f);
-						m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetPositionSmoothing(10f);
+						ws.SetUIHighlights(false);
+						var smoothMotion = ws.GetComponentInChildren<SmoothMotion>();
+						smoothMotion.SetRotationSmoothing(10f);
+						smoothMotion.SetPositionSmoothing(10f);
 					}
 				}
 				break;
@@ -159,8 +160,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 				{
 					m_ThrowDownTriggered = true;
 
-					for (int i = 0; i < m_AllWorkspaces.Length; i++)
-						m_AllWorkspaces[i].OnCloseClicked();
+					foreach (var ws in m_AllWorkspaces)
+						ws.OnCloseClicked();
 				}
 			}
 		}
@@ -199,17 +200,17 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	{
 		const float kScaleSpeed = 15.0f;
 
-		for (int i = 0; i < m_AllWorkspaces.Length; i++)
+		foreach(var ws in m_AllWorkspaces)
 		{
-			float currentScale = m_AllWorkspaces[i].transform.localScale.x;
+			float currentScale = ws.transform.localScale.x;
 			
 			//snap scale if close enough to target
 			if (currentScale > m_CurrentTargetScale - 0.1f && currentScale < m_CurrentTargetScale + 0.1f)
 			{
-				m_AllWorkspaces[i].transform.localScale = Vector3.one * m_CurrentTargetScale;
+				ws.transform.localScale = Vector3.one * m_CurrentTargetScale;
 				continue;
 			}
-			m_AllWorkspaces[i].transform.localScale = Vector3.Lerp(m_AllWorkspaces[i].transform.localScale, Vector3.one * m_CurrentTargetScale, Time.unscaledDeltaTime * kScaleSpeed);
+			ws.transform.localScale = Vector3.Lerp(ws.transform.localScale, Vector3.one * m_CurrentTargetScale, Time.unscaledDeltaTime * kScaleSpeed);
 		}
 	}
 
@@ -223,17 +224,14 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 				m_RayOriginStartAngle = Quaternion.LookRotation(rayOrigin.up);
 				mode = ManipulateMode.On;
 				hideDefaultRay(rayOrigin);
-				for (int i = 0; i < m_AllWorkspaces.Length; i++)
+				foreach (var ws in m_AllWorkspaces)
 				{
-					m_AllWorkspaces[i].SetUIHighlights(true);
-					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().enabled = true;
-					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetRotationSmoothing(1f);
-					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetPositionSmoothing(1f);
+					ws.SetUIHighlights(true);
+					var smoothMotion = ws.GetComponentInChildren<SmoothMotion>();
+					smoothMotion.enabled = true;
+					smoothMotion.SetRotationSmoothing(1f);
+					smoothMotion.SetPositionSmoothing(1f);
 				}
-			}
-			else
-			{
-				return;
 			}
 		}
 	}
@@ -246,18 +244,18 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		Quaternion rayOriginCurrentAngle = Quaternion.LookRotation(rayOrigin.up);
 		float deltaAngleY = rayOriginCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
 
-		for (int i = 0; i < m_AllWorkspaces.Length; i++)
+		foreach (var ws in m_AllWorkspaces)
 		{
 			//don't move for tiny movements
 			if (Mathf.Abs(m_VerticalVelocity) > 0.0001f)
 			{
 				// move on Y axis with corrected direction
-				m_AllWorkspaces[i].transform.Translate(0.0f, m_VerticalVelocity * -35.0f, 0.0f, Space.World);
+				ws.transform.Translate(0.0f, m_VerticalVelocity * -35.0f, 0.0f, Space.World);
 			}
 
 			//don't rotate for tiny rotations
 			if (Mathf.Abs(deltaAngleY) > (80.0f * Time.unscaledDeltaTime))
-				m_AllWorkspaces[i].transform.RotateAround(VRView.viewerCamera.transform.position, Vector3.up, deltaAngleY);
+				ws.transform.RotateAround(VRView.viewerCamera.transform.position, Vector3.up, deltaAngleY);
 		}
 		//save current rotation for next frame math
 		m_RayOriginStartAngle = rayOriginCurrentAngle;
