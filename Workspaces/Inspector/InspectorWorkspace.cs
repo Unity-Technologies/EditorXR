@@ -4,16 +4,19 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
+public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChanged, IConnectInterfaces
 {
 	public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
-	const float kScrollMargin = 0.03f;
 
 	[SerializeField]
 	GameObject m_ContentPrefab;
+
+	[SerializeField]
+	GameObject m_LockPrefab;
 
 	[SerializeField]
 	bool m_IsLocked;
@@ -25,23 +28,26 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
 
-	public PreviewDelegate preview { private get; set; }
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
+
+	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
-		minBounds = new Vector3(0.3f, kMinBounds.y, 0.3f);
-		m_CustomStartingBounds = new Vector3(0.35f, kMinBounds.y, 0.6f);
+		minBounds = new Vector3(0.375f, kMinBounds.y, 0.3f);
+		m_CustomStartingBounds = new Vector3(0.375f, kMinBounds.y, 0.6f);
 
 		base.Setup();
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_InspectorUI = contentPrefab.GetComponent<InspectorUI>();
+		
+		var lockUI = U.Object.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LockUI>();
+		connectInterfaces(lockUI);
 
 		var listView = m_InspectorUI.inspectorListView;
 		listView.data = new InspectorData[0];
 		listView.instantiateUI = instantiateUI;
-		listView.preview = preview;
 		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		listView.setHighlight = setHighlight;
 		listView.getIsLocked = GetIsLocked;
@@ -56,6 +62,14 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 		scrollHandle.hoverEnded += OnScrollHoverEnded;
 
 		contentBounds = new Bounds(Vector3.zero, m_CustomStartingBounds.Value);
+
+		var scrollHandleTransform = m_InspectorUI.inspectorScrollHandle.transform;
+		scrollHandleTransform.SetParent(m_WorkspaceUI.topFaceContainer);
+		scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
+		scrollHandleTransform.localPosition = new Vector3(0f, -0.01f, 0f); // Offset from content for collision purposes
+
+		if (Selection.activeGameObject)
+			OnSelectionChanged();
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -271,12 +285,10 @@ public class InspectorWorkspace : Workspace, IPreview, ISelectionChanged
 	protected override void OnBoundsChanged()
 	{
 		var size = contentBounds.size;
-		var inspectorScrollHandleTransform = m_InspectorUI.inspectorScrollHandle.transform;
-		inspectorScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, inspectorScrollHandleTransform.localScale.y, size.z + kScrollMargin);
-
 		var inspectorListView = m_InspectorUI.inspectorListView;
 		var bounds = contentBounds;
 		size.y = float.MaxValue; // Add height for dropdowns
+		size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
 		size.z -= 0.15f; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
 		bounds.size = size;
 		inspectorListView.bounds = bounds;

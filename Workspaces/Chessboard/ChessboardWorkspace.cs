@@ -1,14 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ChessboardWorkspace : Workspace, IMiniWorld
+public class ChessboardWorkspace : Workspace, IRayLocking
 {
-	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.1f; // Show more space above ground than below
-	private const float kInitReferenceScale = 25f; // We want to see a big region by default
+	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below
+	private const float kInitReferenceScale = 15f; // We want to see a big region by default
 
 	//TODO: replace with dynamic values once spatial hash lands
 	// Scale slider min/max (maps to referenceTransform unifrom scale)
@@ -41,9 +43,10 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		public Vector3 refTransformStartScale;
 	}
 
-	public Transform referenceTransform { get { return m_MiniWorld.referenceTransform; } }
-	public Transform miniWorldTransform { get { return m_MiniWorld.miniWorldTransform; } }
-	public bool Contains(Vector3 position) { return m_MiniWorld.Contains(position); }
+	public Func<Transform, object, bool> lockRay { get; set; }
+	public Func<Transform, object, bool> unlockRay { get; set; }
+
+	public IMiniWorld miniWorld { get { return m_MiniWorld; } }
 
 	public override void Setup()
 	{
@@ -81,6 +84,10 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		m_ZoomSliderUI.zoomSlider.minValue = kMinScale;
 		m_ZoomSliderUI.zoomSlider.direction = Slider.Direction.RightToLeft; // Invert direction for expected ux; zoom in as slider moves left to right
 		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
+
+		var frontHandle = m_WorkspaceUI.directManipulator.GetComponent<BaseHandle>();
+		frontHandle.dragStarted += DragStarted;
+		frontHandle.dragEnded += DragEnded;
 
 		// Propagate initial bounds
 		OnBoundsChanged();
@@ -129,6 +136,13 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	private void OnSliding(float value)
 	{
+		ScaleMiniWorld(value);
+	}
+
+	void ScaleMiniWorld(float value)
+	{
+		var scaleDiff = (value - m_MiniWorld.referenceTransform.localScale.x) / m_MiniWorld.referenceTransform.localScale.x;
+		m_MiniWorld.referenceTransform.position += Vector3.up * m_MiniWorld.referenceBounds.extents.y * scaleDiff;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
 	}
 
@@ -138,9 +152,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		m_WorkspaceUI.topHighlight.visible = true;
 
 		if (m_RayData.Count == 1) // On introduction of second ray
-		{
 			m_ScaleStartDistance = (m_RayData[0].rayOrigin.position - eventData.rayOrigin.position).magnitude;
-		}
 
 		m_RayData.Add(new RayData
 		{
@@ -156,21 +168,23 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		var rayData = m_RayData[0];
 		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) // Do not execute for the second ray
 			return;
+
 		var referenceTransform = m_MiniWorld.referenceTransform;
 		var rayOrigin = eventData.rayOrigin;
 		
 		// Rotate translation by inverse workspace yaw
 		Quaternion yawRotation = Quaternion.AngleAxis(transform.rotation.eulerAngles.y, Vector3.down);
-		
+
 		// Translate
 		referenceTransform.position = rayData.refTransformStartPosition
-									+ yawRotation * Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
-		// If we have two rays, also scale
+			+ yawRotation * Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
+
+		// If we have two rays, scale
 		if (m_RayData.Count > 1)
 		{
 			var otherRay = m_RayData[1];
 			referenceTransform.localScale = otherRay.refTransformStartScale * (m_ScaleStartDistance
-										/ (otherRay.rayOrigin.position - rayOrigin.position).magnitude);
+				/ (otherRay.rayOrigin.position - rayOrigin.position).magnitude);
 
 			m_ZoomSliderUI.zoomSlider.value = referenceTransform.localScale.x;
 		}
@@ -193,6 +207,16 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 	{
 		if (!m_PanZooming)
 			m_WorkspaceUI.topHighlight.visible = false;
+	}
+
+	void DragStarted(BaseHandle baseHandle, HandleEventData handleEventData)
+	{
+		lockRay(handleEventData.rayOrigin, this);
+	}
+
+	void DragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
+	{
+		unlockRay(handleEventData.rayOrigin, this);
 	}
 
 	protected override void OnDestroy()

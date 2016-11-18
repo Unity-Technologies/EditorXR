@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Proxies;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Modules
@@ -10,7 +11,7 @@ namespace UnityEngine.VR.Modules
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
 	public class MultipleRayInputModule : BaseInputModule
 	{
-		class RaycastSource
+		public class RaycastSource
 		{
 			public IProxy proxy; // Needed for checking if proxy is active
 			public Transform rayOrigin;
@@ -19,23 +20,27 @@ namespace UnityEngine.VR.Modules
 			public RayEventData eventData;
 			public GameObject hoveredObject;
 			public GameObject selectedObject;
+			public Func<RaycastSource, bool> isValid;
 
-			public bool hasObject { get { return (hoveredObject != null && hoveredObject.layer == UILayer) || selectedObject != null; } }
+			public bool hasObject { get { return (hoveredObject != null && (s_LayerMask & (1 << hoveredObject.layer)) != 0) || selectedObject != null; } }
 
-			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput)
+			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput, Func<RaycastSource, bool> validationCallback)
 			{
 				this.proxy = proxy;
 				this.rayOrigin = rayOrigin;
 				this.node = node;
 				this.actionMapInput = actionMapInput;
+				this.isValid = validationCallback ?? delegate { return true; };
 			}
 		}
 
-		private static int UILayer = -1;
 		private readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
 
 		public Camera eventCamera { get { return m_EventCamera; } set { m_EventCamera = value; } }
 		private Camera m_EventCamera;
+
+		public LayerMask layerMask { get { return s_LayerMask; } set { s_LayerMask = value; } }
+		private static LayerMask s_LayerMask;
 
 		public ActionMap actionMap { get { return m_UIActionMap; } }
 		[SerializeField]
@@ -48,31 +53,19 @@ namespace UnityEngine.VR.Modules
 		public event Action<GameObject, RayEventData> dragStarted = delegate {};
 		public event Action<GameObject, RayEventData> dragEnded = delegate {};
 
+		public Action<Transform> preProcessRaycastSource;
+
 		protected override void Awake()
 		{
 			base.Awake();
-			UILayer = LayerMask.NameToLayer("UI");
+			s_LayerMask = LayerMask.GetMask("UI");
 		}
 
-		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin = null)
+		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin, Func<RaycastSource, bool> validationCallback = null)
 		{
-			UIActions actions = (UIActions) actionMapInput;
-			if (actions == null)
-			{
-				Debug.LogError("Cannot add actionMapInput to InputModule that is not of type UIActions.");
-				return;
-			}
+			UIActions actions = (UIActions)actionMapInput;
 			actions.active = false;
-			if (rayOrigin != null)
-			{
-				m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions));
-			}
-			else if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
-			{
-				m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions));
-			}
-			else
-				Debug.LogError("Failed to get ray origin transform for node " + node + " from proxy " + proxy);
+			m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions, validationCallback));
 		}
 
 		public void RemoveRaycastSource(Transform rayOrigin)
@@ -95,12 +88,16 @@ namespace UnityEngine.VR.Modules
 
 			if (m_EventCamera == null)
 				return;
-			
+
 			//Process events for all different transforms in RayOrigins
-			foreach (var source in m_RaycastSources.Values)
+			var sources = new List<RaycastSource>(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
+			foreach (var source in sources)
 			{
 				if (!(source.rayOrigin.gameObject.activeSelf || source.selectedObject) || !source.proxy.active)
 					continue;
+
+				if (preProcessRaycastSource != null)
+					preProcessRaycastSource(source.rayOrigin);
 
 				if (source.eventData == null)
 					source.eventData = new RayEventData(base.eventSystem);
@@ -110,6 +107,9 @@ namespace UnityEngine.VR.Modules
 				eventData.node = source.node;
 				eventData.rayOrigin = source.rayOrigin;
 				eventData.pointerLength = getPointerLength(eventData.rayOrigin);
+
+				if (!source.isValid(source))
+					continue;
 
 				HandlePointerExitAndEnter(eventData, source.hoveredObject); // Send enter and exit events
 

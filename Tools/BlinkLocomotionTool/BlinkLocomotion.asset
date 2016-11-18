@@ -25,9 +25,7 @@ MonoBehaviour:
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
-      - controlIndex: 21
-        deviceKey: 1
-      - controlIndex: 3
+      - controlIndex: 18
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []

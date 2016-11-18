@@ -42,13 +42,22 @@
 			m_LazyRotation = transform.rotation;
 		}
 
-		void LateUpdate ()
+		void LateUpdate()
 		{
 			if (m_Target != transform.parent)
 				m_Target = transform.parent; // cache new parent as this transform is assigned to different objects
 
 			if (m_Target == null)
 				return;
+
+			const float kMaxSmoothingVelocity = 1f; // m/s
+			var targetPosition = m_Target.position;
+			if (Vector3.Distance(targetPosition, m_LazyPosition) > kMaxSmoothingVelocity * Time.unscaledDeltaTime)
+			{
+				m_LazyPosition = transform.position;
+				m_LazyRotation = transform.rotation;
+				return;
+			}
 
 			if (m_SmoothRotation)
 			{
@@ -59,10 +68,18 @@
 
 			if (m_SmoothPosition)
 			{
-				var targetPosition = m_Target.position;
 				m_LazyPosition = Vector3.Lerp(m_LazyPosition, targetPosition, m_TightenPosition * Time.unscaledDeltaTime);
 				transform.position = m_LazyPosition;
 			}
+		}
+
+		/// <summary>
+		/// Set the follow transform
+		/// </summary>
+		/// <param name="target">The transform to follow</param>
+		public void SetTarget(Transform target)
+		{
+			m_Target = target;
 		}
 
 		/// <summary>

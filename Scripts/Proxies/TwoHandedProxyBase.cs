@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
@@ -36,15 +37,19 @@ namespace UnityEngine.VR.Proxies
 		{
 			set
 			{
-				var renderers = GetComponentsInChildren<Renderer>();
-				foreach (var r in renderers)
-					r.enabled = !value;
+				if (value != m_Hidden)
+				{
+					m_Hidden = value;
+					m_LeftHand.gameObject.SetActive(!value);
+					m_RightHand.gameObject.SetActive(!value);
+				}
 			}
 		}
+		private bool m_Hidden;
 
-		public Dictionary<Node, Transform> menuOrigins { get; set; }
-		public Dictionary<Node, Transform> alternateMenuOrigins { get; set; }
-		public Dictionary<Node, Transform> previewOrigins { get; set; }
+		public Dictionary<Transform, Transform> menuOrigins { get; set; }
+		public Dictionary<Transform, Transform> alternateMenuOrigins { get; set; }
+		public Dictionary<Transform, Transform> previewOrigins { get; set; }
 
 		public virtual void Awake()
 		{
@@ -52,27 +57,6 @@ namespace UnityEngine.VR.Proxies
 			m_RightHand = U.Object.Instantiate(m_RightHandProxyPrefab, transform).transform;
 			var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
 			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
-
-			// The menu target transform should only be on the left hand by default, unless specificed otherwise
-			menuOrigins = new Dictionary<Node, Transform>();
-			alternateMenuOrigins = new Dictionary<Node, Transform>();
-			var leftHandMenuOrigin = leftProxyHelper.menuOrigin;
-			var rightHandMenuOrigin = rightProxyHelper.menuOrigin;
-			var leftHandAlternateMenu = leftProxyHelper.alternateMenuOrigin;
-			var rightHandAlternateMenu = rightProxyHelper.alternateMenuOrigin;
-
-			// MS: Unless I misunderstand, these two if blocks are overridden by the setters below
-			if (leftHandAlternateMenu != null)
-			{
-				menuOrigins.Add(Node.LeftHand, leftHandMenuOrigin);
-				alternateMenuOrigins.Add(Node.LeftHand, leftHandAlternateMenu);
-			}
-
-			if (rightHandAlternateMenu != null)
-			{
-				menuOrigins.Add(Node.RightHand, rightHandMenuOrigin);
-				alternateMenuOrigins.Add(Node.RightHand, rightHandAlternateMenu);
-			}
 			
 			m_RayOrigins = new Dictionary<Node, Transform>
 			{
@@ -80,22 +64,22 @@ namespace UnityEngine.VR.Proxies
 				{ Node.RightHand, rightProxyHelper.rayOrigin }
 			};
 
-			menuOrigins = new Dictionary<Node, Transform>()
+			menuOrigins = new Dictionary<Transform, Transform>()
 			{
-				{ Node.LeftHand, leftProxyHelper.menuOrigin },
-				{ Node.RightHand, rightProxyHelper.menuOrigin },
+				{ leftProxyHelper.rayOrigin, leftProxyHelper.menuOrigin },
+				{ rightProxyHelper.rayOrigin, rightProxyHelper.menuOrigin },
 			};
 
-			alternateMenuOrigins = new Dictionary<Node, Transform>()
+			alternateMenuOrigins = new Dictionary<Transform, Transform>()
 			{
-				{ Node.LeftHand, leftProxyHelper.alternateMenuOrigin },
-				{ Node.RightHand, rightProxyHelper.alternateMenuOrigin },
+				{ leftProxyHelper.rayOrigin, leftProxyHelper.alternateMenuOrigin },
+				{ rightProxyHelper.rayOrigin, rightProxyHelper.alternateMenuOrigin },
 			};
 
-			previewOrigins = new Dictionary<Node, Transform>
+			previewOrigins = new Dictionary<Transform, Transform>
 			{
-				{ Node.LeftHand, leftProxyHelper.previewOirign },
-				{ Node.RightHand, rightProxyHelper.previewOirign }
+				{ leftProxyHelper.rayOrigin, leftProxyHelper.previewOrigin },
+				{ rightProxyHelper.rayOrigin, rightProxyHelper.previewOrigin }
 			};
 		}
 
@@ -108,11 +92,14 @@ namespace UnityEngine.VR.Proxies
 
 		public virtual void Update()
 		{
-			m_LeftHand.localPosition = trackedObjectInput.leftPosition.vector3;
-			m_LeftHand.localRotation = trackedObjectInput.leftRotation.quaternion;
+			if (active)
+			{
+				m_LeftHand.localPosition = trackedObjectInput.leftPosition.vector3;
+				m_LeftHand.localRotation = trackedObjectInput.leftRotation.quaternion;
 
-			m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
-			m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
+				m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
+				m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
+			}
 		}
 	}
 }

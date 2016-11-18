@@ -18,12 +18,6 @@ public class FilterUI : MonoBehaviour
 	private Text m_DescriptionText;
 
 	[SerializeField]
-	private GameObject m_VisibilityButton;
-
-	[SerializeField]
-	private GameObject m_SummaryButton;
-
-	[SerializeField]
 	private RectTransform m_ButtonList;
 
 	[SerializeField]
@@ -51,7 +45,7 @@ public class FilterUI : MonoBehaviour
 	Coroutine m_HideButtonListCoroutine;
 	float m_HiddenButtonListYSpacing;
 
-	public List<string> filterTypes
+	public List<string> filterList
 	{
 		set
 		{

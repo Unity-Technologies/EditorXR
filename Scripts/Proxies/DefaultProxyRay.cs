@@ -26,8 +26,9 @@ public class DefaultProxyRay : MonoBehaviour
 
 	private State m_State;
 	private Vector3 m_TipStartScale;
-	private Coroutine m_Transitioning;
-	
+	Transform m_ConeTransform;
+	Vector3 m_OriginalConeLocalScale;
+
 	/// <summary>
 	/// The object that is set when LockRay is called while the ray is unlocked.
 	/// As long as this reference is set, and the ray is locked, only that object can unlock the ray.
@@ -72,7 +73,12 @@ public class DefaultProxyRay : MonoBehaviour
 		}
 	}
 
-	public void Hide()
+	public bool visible
+	{
+		get { return m_State == State.Visible; }
+	}
+
+	public void Hide(bool rayOnly = false)
 	{
 		if (isActiveAndEnabled && m_LockRayObject == null)
 		{
@@ -80,10 +86,13 @@ public class DefaultProxyRay : MonoBehaviour
 				StopAllCoroutines();
 			
 			StartCoroutine(HideRay());
+
+			if (!rayOnly)
+				StartCoroutine(HideCone());
 		}
 	}
 
-	public void Show()
+	public void Show(bool rayOnly = false)
 	{
 		if (isActiveAndEnabled && m_LockRayObject == null)
 		{
@@ -91,6 +100,9 @@ public class DefaultProxyRay : MonoBehaviour
 				StopAllCoroutines();
 			
 			StartCoroutine(ShowRay());
+
+			if (!rayOnly)
+				StartCoroutine(ShowCone());
 		}
 	}
 
@@ -105,6 +117,12 @@ public class DefaultProxyRay : MonoBehaviour
 		m_Tip.transform.localScale = length * m_TipStartScale;
 	}
 
+	private void Awake()
+	{
+		m_ConeTransform = m_Cone.transform;
+		m_OriginalConeLocalScale = m_ConeTransform.localScale;
+	}
+
 	private void Start()
 	{
 		m_TipStartScale = m_Tip.transform.localScale;
@@ -117,14 +135,15 @@ public class DefaultProxyRay : MonoBehaviour
 		m_Tip.transform.localScale = Vector3.zero;
 
 		// cache current width for smooth animation to target value without snapping
-		float currentWidth = m_LineRenderer.widthStart;
+		var currentWidth = m_LineRenderer.widthStart;
 		const float kTargetWidth = 0f;
 		const float kSmoothTime = 0.1875f;
-		var startTime = Time.realtimeSinceStartup;
-		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
+		var currentDuration = 0f;
+		while (currentDuration < kSmoothTime)
 		{
 			float smoothVelocity = 0f;
 			currentWidth = U.Math.SmoothDamp(currentWidth, kTargetWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
 			yield return null;
 		}
@@ -138,18 +157,53 @@ public class DefaultProxyRay : MonoBehaviour
 		m_State = State.Transitioning;
 		m_Tip.transform.localScale = m_TipStartScale;
 
-		float currentWidth = m_LineRenderer.widthStart;
-		float smoothVelocity = 0f;
+		var currentWidth = m_LineRenderer.widthStart;
+		var smoothVelocity = 0f;
 		const float kSmoothTime = 0.3125f;
-		var startTime = Time.realtimeSinceStartup;
-		while (Time.realtimeSinceStartup < startTime + kSmoothTime)
+		var currentDuration = 0f;
+		while (currentDuration < kSmoothTime)
 		{
 			currentWidth = U.Math.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
 			yield return null;
 		}
 		
 		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth);
 		m_State = State.Visible;
+	}
+
+	IEnumerator HideCone()
+	{
+		var currentScale = m_ConeTransform.localScale;
+		var smoothVelocity = Vector3.one;
+		const float kSmoothTime = 0.1875f;
+		var currentDuration = 0f;
+		while (currentDuration < kSmoothTime)
+		{
+			currentScale = U.Math.SmoothDamp(currentScale, Vector3.zero, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
+			m_ConeTransform.localScale = currentScale;
+			yield return null;
+		}
+
+		m_ConeTransform.localScale = Vector3.zero;
+	}
+
+	IEnumerator ShowCone()
+	{
+		var currentScale = m_ConeTransform.localScale;
+		var smoothVelocity = Vector3.one;
+		const float kSmoothTime = 0.3125f;
+		var currentDuration = 0f;
+		while (currentDuration < kSmoothTime)
+		{
+			currentScale = Vector3.SmoothDamp(currentScale, m_OriginalConeLocalScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentDuration += Time.unscaledDeltaTime;
+			m_ConeTransform.localScale = currentScale;
+			yield return null;
+		}
+
+		m_ConeTransform.localScale = m_OriginalConeLocalScale;
 	}
 }
