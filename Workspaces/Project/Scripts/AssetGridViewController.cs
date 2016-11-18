@@ -4,9 +4,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Modules;
+using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
+using UnityObject = UnityEngine.Object;
 
-public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IPlaceObjects, IPreview
+public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IConnectInterfaces
 {
 	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
@@ -26,15 +28,28 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	[SerializeField]
 	private GameObject[] m_Icons;
 
-	public Action<Transform, Vector3> placeObject { private get; set; }
-
-	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
-	public PreviewDelegate preview { private get; set; }
+	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 	public Func<string, bool> testFilter;
 
 	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
 	private readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
+
+	public override AssetData[] data
+	{
+		set
+		{
+			if (m_Data != null)
+			{
+				foreach (var data in m_Data) // Clear out visuals for old data
+				{
+					RecycleBeginning(data);
+				}
+			}
+
+			m_Data = value;
+		}
+	}
 
 	protected override void Setup()
 	{
@@ -205,9 +220,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		var item = base.GetItem(data);
 
 		item.transform.localPosition = m_StartPosition;
-		item.placeObject = placeObject;
-		item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
-		item.preview = preview;
+		connectInterfaces(item);
 
 		StartCoroutine(Transition(data, false));
 
@@ -218,7 +231,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 				if (material)
 					item.material = material;
 				else
-					item.fallbackTexture = data.icon;
+					LoadFallbackTexture(item, data);
 				break;
 			case "Texture2D":
 				goto case "Texture";
@@ -227,16 +240,24 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 				if (texture)
 					item.texture = texture;
 				else
-					item.fallbackTexture = data.icon;
+					LoadFallbackTexture(item, data);
 				break;
 			default:
 				GameObject icon;
 				if (m_IconDictionary.TryGetValue(data.type, out icon))
 					item.icon = icon;
 				else
-					item.fallbackTexture = data.icon;
+					LoadFallbackTexture(item, data);
 				break;
 		}
 		return item;
+	}
+
+	static void LoadFallbackTexture(AssetGridItem item, AssetData data)
+	{
+		item.fallbackTexture = null;
+		item.StartCoroutine(U.Object.GetAssetPreview(
+			AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GetAssetPath(data.instanceID)), 
+			texture => item.fallbackTexture = texture));
 	}
 }

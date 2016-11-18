@@ -13,79 +13,13 @@ namespace UnityEngine.VR.Workspaces
 		const string kMaterialColorTopProperty = "_ColorTop";
 		const string kMaterialColorBottomProperty = "_ColorBottom";
 
-		[SerializeField]
-		MeshRenderer m_ButtonMeshRenderer;
-
-		[SerializeField]
-		CanvasGroup m_CanvasGroup;
-
-		[SerializeField]
-		Image m_Icon;
-
-		[SerializeField]
-		Transform m_IconContainer;
-
-		[SerializeField]
-		Button m_Button;
-
-		[Header("Extras")]
-		[SerializeField]
-		Color m_CustomHighlightColor = UnityBrandColorScheme.light;
-
-		[SerializeField]
-		Sprite m_AlternateIconSprite;
-
-		[SerializeField]
-		bool m_SwapIconsOnClick = true;
-
-		[SerializeField]
-		Graphic[] m_HighlightItems;
-
-		[Header("Animated Reveal Settings")]
-		[SerializeField]
-		bool m_AnimatedReveal;
-
-		[Tooltip("Default value is 0.5")]
-		[SerializeField]
-		[Range(0f, 2f)]
-		float m_DelayBeforeReveal = 0.5f;
-
-		UnityBrandColorScheme.GradientPair m_OriginalGradientPair;
-		UnityBrandColorScheme.GradientPair m_HighlightGradientPair;
-		Transform m_parentTransform;
-		Vector3 m_IconDirection;
-		Material m_ButtonMaterial;
-		Vector3 m_OriginalIconLocalPosition;
-		Vector3 m_HiddenLocalScale;
-		Vector3 m_IconHighlightedLocalPosition;
-		Vector3 m_IconPressedLocalPosition;
-		Vector3 m_IconLookDirection;
-		Color m_OriginalColor;
-		Sprite m_OriginalIconSprite;
-		float m_VisibleLocalZScale;
-
-		// The initial button reveal coroutines, before highlighting
-		Coroutine m_VisibilityCoroutine;
-		Coroutine m_ContentVisibilityCoroutine;
-
-		// The already visible, highlight coroutines
-		Coroutine m_HighlightCoroutine;
-		Coroutine m_IconHighlightCoroutine;
-
-		public Button button { get { return m_Button; } }
-
-		public bool alternateIconVisible
+		public bool autoHighlight
 		{
-			set
-			{
-				if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
-					m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
-			}
-			get
-			{
-				return m_Icon.sprite == m_AlternateIconSprite;
-			}
+			get { return m_AutoHighlight; }
+			set { m_AutoHighlight = value; }
 		}
+		[SerializeField]
+		bool m_AutoHighlight = true;
 
 		public Quaternion visibleLocalRotation
 		{
@@ -104,7 +38,16 @@ namespace UnityEngine.VR.Workspaces
 		}
 		Sprite m_IconSprite;
 
-		bool pressed
+		public Color customHighlightColor
+		{
+			get { return m_CustomHighlightColor; }
+			set { m_CustomHighlightColor = value; }
+		}
+		[Header("Extras")]
+		[SerializeField]
+		Color m_CustomHighlightColor = UnityBrandColorScheme.light;
+
+		public bool pressed
 		{
 			get { return m_Pressed; }
 			set
@@ -123,7 +66,7 @@ namespace UnityEngine.VR.Workspaces
 		}
 		bool m_Pressed;
 
-		bool highlight
+		public bool highlighted
 		{
 			set
 			{
@@ -139,11 +82,111 @@ namespace UnityEngine.VR.Workspaces
 					// Stop any existing begin/end highlight coroutine
 					this.StopCoroutine(ref m_HighlightCoroutine);
 
+					if (!gameObject.activeInHierarchy)
+						return;
+
 					m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
 				}
 			}
 		}
 		bool m_Highlighted;
+
+		public bool alternateIconVisible
+		{
+			set
+			{
+				if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
+					m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
+			}
+			get
+			{
+				return m_Icon.sprite == m_AlternateIconSprite;
+			}
+		}
+		[SerializeField]
+		Sprite m_AlternateIconSprite;
+
+		[SerializeField]
+		MeshRenderer m_ButtonMeshRenderer;
+
+		[SerializeField]
+		CanvasGroup m_CanvasGroup;
+
+		[SerializeField]
+		Image m_Icon;
+
+		[SerializeField]
+		Transform m_IconContainer;
+
+		[SerializeField]
+		Button m_Button;
+
+		[SerializeField]
+		bool m_SwapIconsOnClick = true;
+
+		[SerializeField]
+		Graphic[] m_HighlightItems;
+
+		[SerializeField]
+		bool m_GrayscaleGradient = false;
+
+		[Header("Animated Reveal Settings")]
+		[SerializeField]
+		bool m_AnimatedReveal;
+
+		[Tooltip("Default value is 0.25")]
+		[SerializeField]
+		[Range(0f, 2f)]
+		float m_DelayBeforeReveal = 0.25f;
+
+		UnityBrandColorScheme.GradientPair m_OriginalGradientPair;
+		UnityBrandColorScheme.GradientPair m_HighlightGradientPair;
+		Transform m_parentTransform;
+		Vector3 m_IconDirection;
+		Material m_ButtonMaterial;
+		Vector3 m_OriginalIconLocalPosition;
+		Vector3 m_HiddenLocalScale;
+		Vector3 m_IconHighlightedLocalPosition;
+		Vector3 m_IconPressedLocalPosition;
+		Vector3 m_IconLookDirection;
+		Color m_OriginalColor;
+		Sprite m_OriginalIconSprite;
+		float m_VisibleLocalZScale;
+		Vector3 m_OriginalScale;
+
+		// The initial button reveal coroutines, before highlighting
+		Coroutine m_VisibilityCoroutine;
+		Coroutine m_ContentVisibilityCoroutine;
+
+		// The already visible, highlight coroutines
+		Coroutine m_HighlightCoroutine;
+		Coroutine m_IconHighlightCoroutine;
+
+		public Button button
+		{
+			get { return m_Button; }
+		}
+
+		public void InstantClearState()
+		{
+			this.StopCoroutine(ref m_IconHighlightCoroutine);
+			this.StopCoroutine(ref m_HighlightCoroutine);
+
+			ResetColors();
+			transform.localScale = m_OriginalScale;
+		}
+
+		public void SetMaterialColors(UnityBrandColorScheme.GradientPair gradientPair)
+		{
+			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, gradientPair.a);
+			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, gradientPair.b);
+		}
+
+		public void ResetColors()
+		{
+			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, m_OriginalGradientPair.a);
+			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, m_OriginalGradientPair.b);
+		}
 
 		void Awake()
 		{
@@ -152,12 +195,13 @@ namespace UnityEngine.VR.Workspaces
 			m_OriginalGradientPair = new UnityBrandColorScheme.GradientPair(m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
 			m_HiddenLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, 0f);
 			m_VisibleLocalZScale = transform.localScale.z;
+			m_OriginalScale = transform.localScale;
 
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * kIconHighlightedLocalZOffset;
 
-			m_HighlightGradientPair = UnityBrandColorScheme.sessionGradient;
+			m_HighlightGradientPair = m_GrayscaleGradient ? UnityBrandColorScheme.grayscaleSessionGradient : UnityBrandColorScheme.sessionGradient;
 
 			m_OriginalIconSprite = m_Icon.sprite;
 
@@ -173,6 +217,11 @@ namespace UnityEngine.VR.Workspaces
 				this.StopCoroutine(ref m_VisibilityCoroutine);
 				m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 			}
+		}
+
+		void OnDisable()
+		{
+			InstantClearState();
 		}
 
 		IEnumerator AnimateShow()
@@ -202,7 +251,7 @@ namespace UnityEngine.VR.Workspaces
 				while (delay < m_DelayBeforeReveal)
 				{
 					delay += Time.unscaledDeltaTime;
-					yield return null;	
+					yield return null;
 				}
 
 				// Perform the button vertical button reveal, after the initial wait
@@ -331,7 +380,7 @@ namespace UnityEngine.VR.Workspaces
 			var currentPosition = m_IconContainer.localPosition;
 			var targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // forward for highlight, backward for press
 			var transitionAmount = Time.unscaledDeltaTime;
-			var transitionAddMultiplier = pressed == false ? 2 : 5; // Faster transition in for highlight; slower for pressed highlight
+			var transitionAddMultiplier = !pressed ? 2 : 5; // Faster transition in for highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
 				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
@@ -339,7 +388,7 @@ namespace UnityEngine.VR.Workspaces
 				foreach (var graphic in m_HighlightItems)
 				{
 					if (graphic)
-						graphic.color = Color.Lerp(m_OriginalColor, m_CustomHighlightColor, transitionAmount);
+						graphic.color = Color.Lerp(m_OriginalColor, customHighlightColor, transitionAmount);
 				}
 
 				m_IconContainer.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
@@ -360,7 +409,7 @@ namespace UnityEngine.VR.Workspaces
 		{
 			var currentPosition = m_IconContainer.localPosition;
 			var transitionAmount = 1f;
-			const float kTransitionSubtractMultiplier = 5f;//18;
+			const float kTransitionSubtractMultiplier = 5f;
 			while (transitionAmount > 0)
 			{
 				transitionAmount -= Time.unscaledDeltaTime * kTransitionSubtractMultiplier;
@@ -368,7 +417,7 @@ namespace UnityEngine.VR.Workspaces
 				foreach (var graphic in m_HighlightItems)
 				{
 					if (graphic != null)
-						graphic.color = Color.Lerp(m_OriginalColor, m_CustomHighlightColor, transitionAmount);
+						graphic.color = Color.Lerp(m_OriginalColor, customHighlightColor, transitionAmount);
 				}
 
 				m_IconContainer.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
@@ -387,12 +436,14 @@ namespace UnityEngine.VR.Workspaces
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			highlight = true;
+			if (autoHighlight)
+				highlighted = true;
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			highlight = false;
+			if (autoHighlight)
+				highlighted = false;
 		}
 
 		void SwapIconSprite()

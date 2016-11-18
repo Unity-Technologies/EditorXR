@@ -2,36 +2,38 @@ using System;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
-[CanEditMultipleObjects]
 [CustomEditor(typeof(KeyboardButton))]
 public class KeyboardButtonEditor : Editor
 {
 	const char kLowercaseStart = 'a';
 	const char kLowercaseEnd = 'z';
 
+	SerializedProperty m_SelectionFlagsProperty;
 	SerializedProperty m_CharacterProperty;
 	SerializedProperty m_UseShiftCharacterProperty;
 	SerializedProperty m_ShiftCharacterProperty;
 	SerializedProperty m_ButtonTextProperty;
 	SerializedProperty m_MatchButtonTextToCharacterProperty;
 	SerializedProperty m_ButtonMeshProperty;
-	SerializedProperty m_ButtonGraphicProperty;
 	SerializedProperty m_RepeatOnHoldProperty;
+	SerializedProperty m_WorkspaceButtonProperty;
 	
 	KeyboardButton m_KeyboardButton;
 	bool m_ShiftCharIsUppercase;
 
 	protected void OnEnable()
 	{
+		m_SelectionFlagsProperty = serializedObject.FindProperty("m_SelectionFlags");
 		m_CharacterProperty = serializedObject.FindProperty("m_Character");
 		m_UseShiftCharacterProperty = serializedObject.FindProperty("m_UseShiftCharacter");
 		m_ShiftCharacterProperty = serializedObject.FindProperty("m_ShiftCharacter");
 		m_ButtonTextProperty = serializedObject.FindProperty("m_TextComponent");
 		m_MatchButtonTextToCharacterProperty = serializedObject.FindProperty("m_MatchButtonTextToCharacter");
 		m_ButtonMeshProperty = serializedObject.FindProperty("m_TargetMesh");
-		m_ButtonGraphicProperty = serializedObject.FindProperty("m_TargetGraphic");
 		m_RepeatOnHoldProperty = serializedObject.FindProperty("m_RepeatOnHold");
+		m_WorkspaceButtonProperty = serializedObject.FindProperty("m_WorkspaceButton");
 	}
 
 	public override void OnInspectorGUI()
@@ -40,7 +42,13 @@ public class KeyboardButtonEditor : Editor
 
 		serializedObject.Update();
 
-		CharacterField("Primary Character", m_CharacterProperty);
+		EditorGUILayout.PropertyField(m_SelectionFlagsProperty);
+
+		var updateObjectName = false;
+		EditorGUI.BeginChangeCheck();
+		CharacterField("Primary Character", m_CharacterProperty, true);
+		if (EditorGUI.EndChangeCheck())
+			updateObjectName = true;
 
 		EditorGUILayout.PropertyField(m_ButtonTextProperty);
 		// Set text component to character
@@ -49,7 +57,7 @@ public class KeyboardButtonEditor : Editor
 			EditorGUI.BeginChangeCheck();
 			EditorGUILayout.PropertyField(m_MatchButtonTextToCharacterProperty);
 			if (EditorGUI.EndChangeCheck())
-				UpdateButtonTextAndObjectName(m_CharacterProperty.intValue);
+				UpdateButtonTextAndObjectName(m_CharacterProperty.intValue, updateObjectName);
 
 			if (m_MatchButtonTextToCharacterProperty.boolValue)
 			{
@@ -73,22 +81,46 @@ public class KeyboardButtonEditor : Editor
 					m_ShiftCharacterProperty.intValue = m_ShiftCharIsUppercase ? upperCase[0] : 0;
 			}
 			else
+			{
 				m_ShiftCharIsUppercase = false;
+			}
 
 			if (!m_ShiftCharIsUppercase)
-				CharacterField("Shift Character", m_ShiftCharacterProperty);
+				CharacterField("Shift Character", m_ShiftCharacterProperty, false);
 		}
 		else
+		{
 			m_ShiftCharIsUppercase = false;
+		}
 
 		EditorGUILayout.PropertyField(m_ButtonMeshProperty);
-		EditorGUILayout.PropertyField(m_ButtonGraphicProperty);
 		EditorGUILayout.PropertyField(m_RepeatOnHoldProperty);
+		EditorGUILayout.PropertyField(m_WorkspaceButtonProperty);
+
+		if (GUILayout.Button("Create layout transfrom"))
+		{
+			// Get position in hierarchy
+			var siblingIndex = 0;
+			foreach (Transform child in m_KeyboardButton.transform.parent)
+			{
+				if (child == m_KeyboardButton.transform)
+					break;
+				siblingIndex++;
+			}
+
+			var t = new GameObject(m_KeyboardButton.name + "_LayoutPosition").transform;
+			t.SetParent(m_KeyboardButton.transform);
+			t.localPosition = Vector3.zero;
+			t.localRotation = Quaternion.identity;
+			t.localScale = Vector3.one;
+			t.SetParent(m_KeyboardButton.transform.parent);
+			t.transform.SetSiblingIndex(siblingIndex);
+		}
 
 		serializedObject.ApplyModifiedProperties();
 	}
 
-	private void CharacterField(string label, SerializedProperty property)
+	private void CharacterField(string label, SerializedProperty property, bool updateName)
 	{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUI.BeginChangeCheck();
@@ -97,13 +129,13 @@ public class KeyboardButtonEditor : Editor
 		if (EditorGUI.EndChangeCheck())
 		{
 			property.intValue = (int)GetKeycodeFromString(inputString);
-			UpdateButtonTextAndObjectName(property.intValue);
+			UpdateButtonTextAndObjectName(property.intValue, updateName);
 		}
 
 		EditorGUI.BeginChangeCheck();
 		property.intValue = (int)(KeyCode)EditorGUILayout.EnumPopup((KeyCode)property.intValue);
 		if (EditorGUI.EndChangeCheck())
-			UpdateButtonTextAndObjectName(property.intValue);
+			UpdateButtonTextAndObjectName(property.intValue, updateName);
 		EditorGUILayout.EndHorizontal();
 	}
 
@@ -125,7 +157,7 @@ public class KeyboardButtonEditor : Editor
 		return KeyCode.None;
 	}
 
-	void UpdateButtonTextAndObjectName(int input)
+	void UpdateButtonTextAndObjectName(int input, bool updateName)
 	{
 		var inputString = ((char)input).ToString();
 
@@ -136,6 +168,7 @@ public class KeyboardButtonEditor : Editor
 		if (Enum.IsDefined(typeof(KeyCode), input))
 			inputString = ((KeyCode) input).ToString();
 
-		m_KeyboardButton.gameObject.name = inputString;
+		if (updateName)
+			m_KeyboardButton.gameObject.name = inputString;
 	}
 }

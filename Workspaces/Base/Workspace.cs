@@ -7,10 +7,9 @@ using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Workspaces
 {
-	public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
+	public abstract class Workspace : MonoBehaviour, IInstantiateUI, ISetHighlight
 	{
 		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
-		public static readonly Vector3 kDefaultOffset = new Vector3(0, -0.15f, 1f);
 		public static readonly Vector3 kVacuumOffset = new Vector3(0, -0.15f, 0.6f);
 		public static readonly Quaternion kDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
@@ -83,7 +82,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public Func<GameObject, GameObject> instantiateUI { protected get; set; }
 
-		public Action<GameObject, bool> setHighlight { get; set; }
+		public Action<GameObject, bool> setHighlight { protected get; set; }
 
 		/// <summary>
 		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
@@ -94,6 +93,11 @@ namespace UnityEngine.VR.Workspaces
 		/// If true, prevent the resizing of a workspace via the front and back resize handles
 		/// </summary>
 		public bool preventFrontBackResize { set { m_WorkspaceUI.preventFrontBackResize = value; } }
+
+		/// <summary>
+		/// If true, prevent the resizing of a workspace via the left and right resize handles
+		/// </summary>
+		public bool preventLeftRightResize { set { m_WorkspaceUI.preventLeftRightResize = value; } }
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
@@ -312,7 +316,9 @@ namespace UnityEngine.VR.Workspaces
 			destroyed(this);
 		}
 
-		protected abstract void OnBoundsChanged();
+		protected virtual void OnBoundsChanged()
+		{
+		}
 
 		IEnumerator AnimateShow()
 		{

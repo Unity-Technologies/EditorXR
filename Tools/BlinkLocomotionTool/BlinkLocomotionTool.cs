@@ -1,15 +1,12 @@
-﻿using System;
+using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.UI;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-[ExecuteInEditMode]
-public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay, ICustomActionMap
+public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesRayOrigin, ICustomActionMap
 {
 	private enum State
 	{
@@ -22,18 +19,17 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 
 	// It doesn't make sense to be able to activate another blink tool when you already have one active, since you can't
 	// blink to two locations at the same time;
-	private static BlinkLocomotionTool s_ActiveTool;
+	static BlinkLocomotionTool s_ActiveBlinkTool;
 
 	private GameObject m_BlinkVisualsGO;
 	private BlinkVisuals m_BlinkVisuals;
 
-	private float m_MovementSpeed = 8f;
 	private State m_State = State.Inactive;
 
 	public Transform viewerPivot { private get; set; }
 
-	public Action showDefaultRay { get; set; }
-	public Action hideDefaultRay { get; set; }
+	public DefaultRayVisibilityDelegate showDefaultRay { get; set; }
+	public DefaultRayVisibilityDelegate hideDefaultRay { get; set; }
 	public Transform rayOrigin { private get; set; }
 
 	public ActionMap actionMap { get { return m_BlinkActionMap; } }
@@ -59,47 +55,54 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotion, ICustomRay
 	private void OnDisable()
 	{
 		m_State = State.Inactive;
-		if (s_ActiveTool == this)
-			s_ActiveTool = null;
+		if (s_ActiveBlinkTool == this)
+			s_ActiveBlinkTool = null;
 	}
 
 	private void OnDestroy()
 	{
-		showDefaultRay();
+		showDefaultRay(rayOrigin);
 	}
 
 	private void Update()
 	{
-		if (m_State == State.Moving || (s_ActiveTool != null && s_ActiveTool != this))
+		if (m_State == State.Moving || (s_ActiveBlinkTool != null && s_ActiveBlinkTool != this))
 			return;
 
 		if (m_BlinkLocomotionInput.blink.wasJustPressed)
 		{
-			s_ActiveTool = this;
-			hideDefaultRay();
+			s_ActiveBlinkTool = this;
+			hideDefaultRay(rayOrigin);
 			m_BlinkVisuals.ShowVisuals();
 		}
-		else if (m_BlinkLocomotionInput.blink.wasJustReleased)
+		else if (s_ActiveBlinkTool == this && m_BlinkLocomotionInput.blink.wasJustReleased)
 		{
-			m_BlinkVisuals.HideVisuals();
-			showDefaultRay();
+			var outOfRange = m_BlinkVisuals.HideVisuals();
+			showDefaultRay(rayOrigin);
 
-			StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
+			if (!outOfRange)
+				StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
 		}
 	}
 
 	private IEnumerator MoveTowardTarget(Vector3 targetPosition)
 	{
 		m_State = State.Moving;
-
-		targetPosition = new Vector3(targetPosition.x, viewerPivot.position.y, targetPosition.z);
-		while ((viewerPivot.position - targetPosition).magnitude > 0.1f)
+		targetPosition = new Vector3(targetPosition.x + (viewerPivot.position.x - U.Camera.GetMainCamera().transform.position.x), viewerPivot.position.y, targetPosition.z + (viewerPivot.position.z - U.Camera.GetMainCamera().transform.position.z));
+		const float kTargetDuration = 1f;
+		var currentPosition = viewerPivot.position;
+		var velocity = new Vector3();
+		var currentDuration = 0f;
+		while (currentDuration < kTargetDuration)
 		{
-			viewerPivot.position = Vector3.Lerp(viewerPivot.position, targetPosition, Time.unscaledDeltaTime * m_MovementSpeed);
+			currentDuration += Time.unscaledDeltaTime;
+			currentPosition = U.Math.SmoothDamp(currentPosition, targetPosition, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+			viewerPivot.position = currentPosition;
 			yield return null;
 		}
 
+		viewerPivot.position = targetPosition;
 		m_State = State.Inactive;
-		s_ActiveTool = null;
+		s_ActiveBlinkTool = null;
 	}
 }

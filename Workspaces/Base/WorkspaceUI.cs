@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 
@@ -18,18 +19,12 @@ namespace UnityEngine.VR.Workspaces
 		const int kThinFrameBlendShapeIndex = 3;
 		const float kFaceWidthMatchMultiplier =  7.1375f; // Multiplier that sizes the face to the intended width
 		const float kBackResizeButtonPositionOffset = -0.02f; // Offset to place the back resize buttons in their intended location
-		const float kBackHandleOffset = -0.045f; // Offset to place the back handle in the expected region behind the workspace
-		const float kSideHandleOffset = 0.05f; // Offset to place the back handle in the expected region behind the workspace
 		const float kPanelOffset = 0.0625f; // The panel needs to be pulled back slightly
 
 		// Cached for optimization
 		float m_OriginalUIContainerLocalYPos;
 		float m_PreviousXRotation;
-		float m_HandleScale;
-		float m_FrontHandleYLocalPosition;
-		float m_BackHandleYLocalPosition;
-		float m_LeftHandleYLocalPosition;
-		float m_RightHandleYLocalPosition;
+		Vector3 m_OriginalFrontHandleLocalPosition;
 		Vector3 m_FrontResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BackResizeIconsContainerOriginalLocalPosition;
 		Vector3 m_BaseFrontPanelRotation = Vector3.zero;
@@ -86,9 +81,16 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		BaseHandle m_MoveHandle;
 
+		public Transform topFaceContainer { get { return m_TopFaceContainer; } }
+		[SerializeField]
+		Transform m_TopFaceContainer;
+
 		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
 		[SerializeField]
 		WorkspaceHighlight m_TopHighlight;
+
+		public bool dynamicFaceAdjustment { get { return m_DynamicFaceAdjustment; } set { m_DynamicFaceAdjustment = value; } }
+		bool m_DynamicFaceAdjustment = true;
 
 		[SerializeField]
 		private SkinnedMeshRenderer m_Frame;
@@ -136,15 +138,13 @@ namespace UnityEngine.VR.Workspaces
 		WorkspaceButton m_LockButton;
 
 		[SerializeField]
-		Transform m_TopFaceContainer;
+		GameObject m_ResetButton;
 
 		[SerializeField]
 		Transform m_TopHighlightContainer;
 
 		[SerializeField]
 		WorkspaceHighlight m_FrontHighlight;
-
-		public bool dynamicFaceAdjustment { get; set; }
 
 		public bool highlightsVisible
 		{
@@ -199,7 +199,57 @@ namespace UnityEngine.VR.Workspaces
 		}
 		float? m_TopPanelDividerOffset;
 
-		public bool preventFrontBackResize { set; private get; }
+		public bool preventFrontBackResize
+		{
+			set
+			{
+				m_PreventFrontBackResize = value;
+				if (value)
+				{
+					m_FrontHandleTransform.localScale = Vector3.zero;
+					m_BackHandleTransform.localScale = Vector3.zero;
+					m_FrontHandle.enabled = false;
+					m_BackHandle.enabled = false;
+
+					if (!m_PreventLeftRightResize) // Disable reset button if no resize handles are active
+						m_ResetButton.SetActive(false);
+				}
+				else
+				{
+					m_FrontHandle.enabled = true;
+					m_BackHandle.enabled = true;
+					m_ResetButton.SetActive(true);
+				}
+			}
+			private get { return m_PreventFrontBackResize; }
+		}
+		bool m_PreventFrontBackResize;
+
+		public bool preventLeftRightResize
+		{
+			set
+			{
+				m_PreventLeftRightResize = value;
+				if (value)
+				{
+					m_LeftHandleTransform.localScale = Vector3.zero;
+					m_RightHandleTransform.localScale = Vector3.zero;
+					m_LeftHandle.enabled = false;
+					m_RightHandle.enabled = false;
+
+					if (!m_PreventFrontBackResize) // Disable reset button if no resize handles are active
+						m_ResetButton.SetActive(false);
+				}
+				else
+				{
+					m_LeftHandle.enabled = true;
+					m_RightHandle.enabled = true;
+					m_ResetButton.SetActive(true);
+				}
+			}
+			private get { return m_PreventLeftRightResize; }
+		}
+		bool m_PreventLeftRightResize;
 
 		public Bounds bounds
 		{
@@ -214,18 +264,6 @@ namespace UnityEngine.VR.Workspaces
 				m_Frame.SetBlendShapeWeight(0, boundsSize.x + Workspace.kHandleMargin);
 				m_Frame.SetBlendShapeWeight(1, boundsSize.z + Workspace.kHandleMargin);
 
-				// Resize handles
-				m_LeftHandleTransform.localPosition = new Vector3(-extents.x + m_HandleScale * 0.5f - kSideHandleOffset, m_LeftHandleYLocalPosition, 0);
-				m_LeftHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
-
-				m_FrontHandleTransform.localScale = preventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
-
-				m_RightHandleTransform.localPosition = new Vector3(extents.x - m_HandleScale * 0.5f + kSideHandleOffset, m_RightHandleYLocalPosition, 0);
-				m_RightHandleTransform.localScale = new Vector3(boundsSize.z, m_HandleScale, m_HandleScale);
-
-				m_BackHandleTransform.localPosition = new Vector3(0, m_BackHandleYLocalPosition, extents.z - m_HandleScale - kBackHandleOffset);
-				m_BackHandleTransform.localScale = preventFrontBackResize == false ? new Vector3(boundsSize.x, m_HandleScale, m_HandleScale) : Vector3.zero;
-
 				// Resize content container
 				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, boundsSize.x);
 				m_UIContentContainer.localPosition = new Vector3(0, m_OriginalUIContainerLocalYPos, -extents.z);
@@ -234,7 +272,7 @@ namespace UnityEngine.VR.Workspaces
 				m_BackResizeIconsContainer.localPosition = new Vector3 (m_BackResizeIconsContainerOriginalLocalPosition.x, m_BackResizeIconsContainerOriginalLocalPosition.y, boundsSize.z + kBackResizeButtonPositionOffset);
 
 				// Adjust front panel position if dynamic adjustment is enabled
-				if (dynamicFaceAdjustment == false)
+				if (!m_DynamicFaceAdjustment)
 					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, kPanelOffset);
 
 				// Resize front panel
@@ -348,11 +386,7 @@ namespace UnityEngine.VR.Workspaces
 			m_FrontHandleTransform = m_FrontHandle.transform;
 			m_BackHandleTransform = m_BackHandle.transform;
 
-			m_HandleScale = m_LeftHandleTransform.localScale.z;
-			m_LeftHandleYLocalPosition = m_LeftHandleTransform.localPosition.y;
-			m_RightHandleYLocalPosition = m_LeftHandleYLocalPosition; // use the same for right as was used for left; front and back can differ
-			m_FrontHandleYLocalPosition = m_FrontHandleTransform.localPosition.y;
-			m_BackHandleYLocalPosition = m_BackHandleTransform.localPosition.y;
+			m_OriginalFrontHandleLocalPosition = m_FrontHandleTransform.localPosition;
 
 			const float frontResizeIconsContainerForwardOffset = -0.15f;
 			const float frontResizeIconsContainerUpOffset = -0.025f;
@@ -371,7 +405,7 @@ namespace UnityEngine.VR.Workspaces
 
 		void Update()
 		{
-			if (dynamicFaceAdjustment == false)
+			if (!m_DynamicFaceAdjustment)
 				return;
 
 			var currentXRotation = transform.rotation.eulerAngles.x;
@@ -410,15 +444,13 @@ namespace UnityEngine.VR.Workspaces
 			m_FrontResizeIconsContainer.localPosition = Vector3.Lerp(m_FrontResizeIconsContainerOriginalLocalPosition, m_FrontResizeIconsContainerAngledLocalPosition, lerpAmount);
 
 			// offset front handle position according to workspace rotation angle
-			const float kFrontHandleLocalYAngledOffset = 0.1f;
-			const float kFrontHandleLocalZNormalOfset = 0.5f;
-			const float kFrontHandleLocalZAngledOfset = 0.3f;
-			var lerpedFrontHandleZAngledOffset = Mathf.Lerp(kFrontHandleLocalZNormalOfset, kFrontHandleLocalZAngledOfset, lerpAmount);
-			var lerpedFrontHandleYLocalPosition = Mathf.Lerp(m_FrontHandleYLocalPosition, m_FrontHandleYLocalPosition + kFrontHandleLocalYAngledOffset, lerpAmount);
-			m_FrontHandleTransform.localPosition = new Vector3(0, lerpedFrontHandleYLocalPosition, -m_Bounds.size.z - m_HandleScale + lerpedFrontHandleZAngledOffset);
+			const float kBoundsZCompensation = -0.179f;
+			var boundsZSize = m_Bounds.size.z;
+			var frontHandleAngledPosition = new Vector3 (0f, -0.065f, -0.91f - (boundsZSize * kBoundsZCompensation));
+			m_FrontHandleTransform.localPosition = Vector3.Lerp(m_OriginalFrontHandleLocalPosition, frontHandleAngledPosition, lerpAmount);
 		}
 
-		private void OnDestroy()
+		void OnDestroy()
 		{
 			U.Object.Destroy(m_TopFaceMaterial);
 		}
@@ -495,6 +527,7 @@ namespace UnityEngine.VR.Workspaces
 
 			m_TopFaceVisibleCoroutine = null;
 		}
+
 		IEnumerator HideTopFace()
 		{
 			const string kMaterialHighlightAlphaProperty = "_Alpha";
