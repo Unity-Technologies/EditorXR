@@ -14,8 +14,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	public Transform rayOrigin { private get; set; }
 	public List<Transform> otherRayOrigins { private get; set; }
 
-	public Action showDefaultRay { get; set; }
-	public Action hideDefaultRay { get; set; }
+	public DefaultRayVisibilityDelegate showDefaultRay { get; set; }
+	public DefaultRayVisibilityDelegate hideDefaultRay { get; set; }
 
 	public ActionMap actionMap
 	{
@@ -79,7 +79,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	void OnDestroy()
 	{
 		if (m_RayHidden && showDefaultRay != null)
-			showDefaultRay();
+			showDefaultRay(rayOrigin);
 
 		if (m_ColorPicker)
 			U.Object.Destroy(m_ColorPicker.gameObject);
@@ -95,7 +95,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		{
 			if (hideDefaultRay != null)
 			{
-				hideDefaultRay();
+				hideDefaultRay(rayOrigin);
 				m_RayHidden = true;
 			}
 		}
@@ -180,9 +180,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		{
 			var otherRayMatrix = otherRayOrigin.worldToLocalMatrix;
 			var rayLocalPos = otherRayMatrix.MultiplyPoint3x4(rayOrigin.position);
-			var distance = Mathf.Abs(rayLocalPos.x);
-
-			if (distance < .1625f)
+			
+			if (IsDistanceOkForColorPicker(rayLocalPos))
 			{
 				if (m_ColorPicker == null)
 				{
@@ -195,6 +194,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 					pickerTransform.SetParent(otherRayOrigin);
 					pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
 					pickerTransform.localRotation = m_ColorPickerPrefab.transform.localRotation;
+					
+					showDefaultRay(rayOrigin);
+					m_CustomPointerObject.SetActive(false);
 				}
 				else if (m_ColorPicker.transform.parent != otherRayOrigin)
 				{
@@ -210,11 +212,30 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				m_ColorPicker.transform.localPosition = localPos;
 
 				if (!m_ColorPicker.enabled)
+				{
 					m_ColorPicker.Show();
+					showDefaultRay(rayOrigin);
+					m_CustomPointerObject.SetActive(false);
+				}
 			}
 			else if (m_ColorPicker && m_ColorPicker.enabled)
+			{
 				m_ColorPicker.Hide();
+				hideDefaultRay(rayOrigin);
+				m_CustomPointerObject.SetActive(true);
+			}
 		}
+	}
+
+	private bool IsDistanceOkForColorPicker(Vector3 rayLocalPosition)
+	{
+		var distanceX = Mathf.Abs(rayLocalPosition.x);
+		var distanceZ = Mathf.Abs(rayLocalPosition.z);
+		var distanceY = Mathf.Abs(rayLocalPosition.y);
+
+		const float kSmallDistance = .1625f;
+		const float kLargeDistance = .33f;
+		return distanceX < kSmallDistance && distanceY < kLargeDistance && distanceZ < kSmallDistance;
 	}
 
 	private void OnColorPickerValueChanged(Color newColor)
@@ -222,7 +243,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		m_ColorToUse = newColor;
 
 		newColor.a = .75f;
-		m_ConeMaterialInstance.SetColor("_Color", newColor);
 		m_ConeMaterialInstance.SetColor("_EmissionColor", newColor);
 
 		m_BrushSizeUi.OnBrushColorChanged(newColor);
@@ -328,12 +348,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			int upperLeft = i + kSides - 1;
 			int upperRight = i + kSides;
 
-			int[] sideTriangles = VerticesToPolygon(upperRight, upperLeft, lowerRight, lowerLeft, false);
+			int[] sideTriangles = VerticesToPolygon(upperRight, upperLeft, lowerRight, lowerLeft);
 			triangles.AddRange(sideTriangles);
 		}
 
 		// Finish the side with a polygon that loops around from the end to the start vertices.
-		int[] finishTriangles = VerticesToPolygon(kSides, kSides * 2 - 1, 0, kSides - 1, false);
+		int[] finishTriangles = VerticesToPolygon(kSides, kSides * 2 - 1, 0, kSides - 1);
 		triangles.AddRange(finishTriangles);
 	}
 
@@ -543,8 +563,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			var cross2 = Vector3.Cross(direction, m_Forwards[i - 1]).normalized;
 			var cross = Vector3.Lerp(cross1, cross2, 1 - ratio).normalized;
 
-			float lowWidth = Mathf.Min((i - 3) * 0.1f, 1);
-			float highWidth = Mathf.Min((m_Points.Count - (i + 2)) * 0.25f, 1);
+			float lowWidth = Mathf.Min((newVertices.Count / 2) * 0.1f, 1);
+			float highWidth = Mathf.Min((m_Points.Count - (i + 3)) * 0.25f, 1);
 			float unclampedWidth = m_Widths[i - 1] * Mathf.Clamp01(i < m_Points.Count / 2f ? lowWidth : highWidth);
 			float width = Mathf.Clamp(unclampedWidth, kTopMinRadius, kTopMaxRadius);
 
@@ -595,7 +615,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		}
 	}
 
-	private int[] VerticesToPolygon(int upperLeft, int upperRight, int lowerLeft, int lowerRight, bool doubleSided = true)
+	private int[] VerticesToPolygon(int upperLeft, int upperRight, int lowerLeft, int lowerRight, bool doubleSided = false)
 	{
 		int triangleCount = doubleSided ? 12 : 6;
 		int[] triangles = new int[triangleCount];
