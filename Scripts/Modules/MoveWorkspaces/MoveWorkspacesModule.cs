@@ -7,6 +7,7 @@ using UnityEngine.VR.Tools;
 using UnityEditor.VR;
 using System;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Helpers;
 
 [ExecuteInEditMode]
 public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayOrigin, ICustomRay, IMoveWorkspaces
@@ -31,6 +32,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	GameObject m_TopHat;
 
 	bool m_GrabbedInTopHat;
+	float m_ThrowingTimeStamp;
+	const float kThrowDelayAllowed = 0.2f;
 
 	private enum ManipulateMode
 	{
@@ -50,47 +53,54 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		m_TopHat.transform.localScale = new Vector3(0.2f, 0.15f, 0.2f);
 		m_TopHat.transform.Translate(Vector3.up * 0.2f);
 		m_TopHat.GetComponent<Collider>().isTrigger = true;
-		m_TopHat.GetComponent<MeshRenderer>().enabled = false;
+		//m_TopHat.GetComponent<MeshRenderer>().enabled = false;
 	}
 
 	void Update()
 	{
-		if(standardInput == null)
+		if (standardInput == null)
 			return;
 
-		switch(mode)
+		switch (mode)
 		{
 			case ManipulateMode.Off:
 			{
 				standardInput.active = IsControllerAboveHMD();
-				if(!standardInput.active)
+				if (!standardInput.active)
 					return;
 
-				if(standardInput.action.wasJustPressed)
+				if (standardInput.action.wasJustPressed)
 					HandleDoubleTap();
 
-				if(m_GrabbedInTopHat)
+				if (m_GrabbedInTopHat)
 				{
-					if(standardInput.action.isHeld)
+					if (standardInput.action.isHeld)
 						HandleManipulationStart();
 				}
 
-				if(standardInput.action.wasJustReleased)
+				if (standardInput.action.wasJustReleased)
 					m_GrabbedInTopHat = false;
 
 				break;
 			}
 			case ManipulateMode.On:
 			{
-				if(standardInput.action.isHeld)
-				{
-					HandleThrowDown();
+				HandleThrowDown();
+
+				if (standardInput.action.isHeld)
 					UpdateWorkspaceManipulation();
-				}
-				else if(standardInput.action.wasJustReleased)
+
+				if (standardInput.action.wasJustReleased)
 				{
 					mode = ManipulateMode.Off;
 					showDefaultRay();
+
+					for (int i = 0; i < m_AllWorkspaces.Length; i++)
+					{
+						m_AllWorkspaces[i].SetUIHighlights(false);
+						m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetRotationSmoothing(10f);
+						m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetPositionSmoothing(10f);
+					}
 				}
 				break;
 			}
@@ -99,7 +109,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	bool IsControllerAboveHMD()
 	{
-		if(m_TopHat.GetComponent<Collider>().bounds.Contains(rayOrigin.position))
+		if (m_TopHat.GetComponent<Collider>().bounds.Contains(rayOrigin.position))
 			return true;
 
 		return false;
@@ -111,11 +121,11 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 		m_AllWorkspaces = GetComponentsInChildren<Workspace>();
 
-		if(m_AllWorkspaces.Length > 0)
+		if (m_AllWorkspaces.Length > 0)
 		{
-			foreach(var ws in m_AllWorkspaces)
+			foreach (var ws in m_AllWorkspaces)
 			{
-				if(ws.m_Hidden)
+				if (ws.m_Hidden)
 					return false;
 			}
 			return true;
@@ -128,7 +138,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	void HandleDoubleTap()
 	{
-		if(Time.realtimeSinceStartup - m_TriggerPressedTimeStamp < 0.8f)
+		if (Time.realtimeSinceStartup - m_TriggerPressedTimeStamp < 0.8f)
 		{
 			m_ThrowDownTriggered = false;
 			resetWorkspaces(null);
@@ -139,39 +149,71 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	void HandleThrowDown()
 	{
-		if(UserThrowsDown() && !m_ThrowDownTriggered)
+		if (UserThrowsDown() && !m_ThrowDownTriggered)
 		{
-			if(FindWorkspaces())
+			if (standardInput.action.wasJustReleased)
 			{
-				m_ThrowDownTriggered = true;
+				if (FindWorkspaces())
+				{
+					m_ThrowDownTriggered = true;
 
-				for(int i = 0; i < m_AllWorkspaces.Length; i++)
-					m_AllWorkspaces[i].OnCloseClicked();
+					for (int i = 0; i < m_AllWorkspaces.Length; i++)
+						m_AllWorkspaces[i].OnCloseClicked();
+				}
 			}
 		}
 	}
 
 	bool UserThrowsDown()
 	{
+		const float kLocalScaleWhenReadyToThrow = 0.5f;
+
 		m_VerticalVelocity = (m_PreviousPosition.y - rayOrigin.position.y) * Time.unscaledDeltaTime;
 		m_PreviousPosition = rayOrigin.position;
 
-		if(m_VerticalVelocity > 0.005f)
+		if (m_VerticalVelocity > 0.003f)
+		{
+			for (int i = 0; i < m_AllWorkspaces.Length; i++)
+			{
+				m_AllWorkspaces[i].transform.localScale = Vector3.one * kLocalScaleWhenReadyToThrow;
+			}
+
+			m_ThrowingTimeStamp = Time.realtimeSinceStartup;
 			return true;
+		}
 		else
-			return false;
+		{
+			if (Time.realtimeSinceStartup - m_ThrowingTimeStamp < kThrowDelayAllowed)
+			{
+				return true;
+			}
+			else
+			{
+				for (int i = 0; i < m_AllWorkspaces.Length; i++)
+				{
+					m_AllWorkspaces[i].transform.localScale = Vector3.one;
+				}
+				return false;
+			}
+		}
 	}
 
 	void HandleManipulationStart()
 	{
-		if(Time.realtimeSinceStartup - m_TriggerPressedTimeStamp > 1.0f)
+		if (Time.realtimeSinceStartup - m_TriggerPressedTimeStamp > 1.0f)
 		{
-			if(FindWorkspaces())
+			if (FindWorkspaces())
 			{
 				m_PreviousPosition = rayOrigin.position;
 				m_RayOriginStartAngle = Quaternion.LookRotation(rayOrigin.up);
 				mode = ManipulateMode.On;
 				hideDefaultRay();
+				for (int i = 0; i < m_AllWorkspaces.Length; i++)
+				{
+					m_AllWorkspaces[i].SetUIHighlights(true);
+					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetRotationSmoothing(5f);
+					m_AllWorkspaces[i].GetComponentInChildren<SmoothMotion>().SetPositionSmoothing(5f);
+				}
 			}
 			else
 			{
@@ -182,28 +224,28 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	void UpdateWorkspaceManipulation()
 	{
-		if(m_ThrowDownTriggered)
+		if (m_ThrowDownTriggered)
 			return;
 
 		Quaternion rayOriginCurrentAngle = Quaternion.LookRotation(rayOrigin.up);
 		float deltaAngleY = rayOriginCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
 
-		for(int i = 0; i < m_AllWorkspaces.Length; i++)
+		for (int i = 0; i < m_AllWorkspaces.Length; i++)
 		{
 			//don't move for tiny movements
-			if(Mathf.Abs(m_VerticalVelocity) > 0.00005f)
+			if (Mathf.Abs(m_VerticalVelocity) > 0.00015f)
 			{
 				// move on Y axis with corrected direction
 				m_AllWorkspaces[i].transform.Translate(0.0f, m_VerticalVelocity * -50.0f, 0.0f, Space.World);
 			}
 
 			//don't rotate for tiny rotations
-			if(Mathf.Abs(deltaAngleY) > (60.0f * Time.unscaledDeltaTime))
-				m_AllWorkspaces[i].transform.RotateAround(VRView.viewerCamera.transform.position,Vector3.up,deltaAngleY);
+			if (Mathf.Abs(deltaAngleY) > (80.0f * Time.unscaledDeltaTime))
+				m_AllWorkspaces[i].transform.RotateAround(VRView.viewerCamera.transform.position, Vector3.up, deltaAngleY);
 		}
 		//save current rotation for next frame math
 		m_RayOriginStartAngle = rayOriginCurrentAngle;
-    }
+	}
 
 	void OnDestroy()
 	{

@@ -329,6 +329,11 @@ namespace UnityEngine.VR.Workspaces
 		{
 		}
 
+		public void SetUIHighlights(bool value)
+		{
+			m_WorkspaceUI.highlightsVisible = value;
+		}
+
 		private void UpdateBounds()
 		{
 			m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
