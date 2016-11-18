@@ -6,7 +6,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class InspectorListViewController : NestedListViewController<InspectorData>, IPreview, IHighlight
+public class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight
 {
 	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -40,7 +40,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
-	public PreviewDelegate preview { private get; set; }
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
 	public Func<bool> getIsLocked { private get; set; }
@@ -60,7 +59,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		foreach (var template in m_TemplateDictionary)
 			m_TemplateSizes[template.Key] = GetObjectSize(template.Value.prefab);
 
-		data = new InspectorData[0];
+		if (data == null)
+			data = new InspectorData[0];
 	}
 
 	protected override void ComputeConditions()
@@ -139,7 +139,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCube);
 
 			item.setHighlight = setHighlight;
-			item.preview = preview;
 			item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 
 			var numberItem = item as InspectorNumberItem;

@@ -4,9 +4,11 @@ using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Actions;
 using UnityEngine.VR.Tools;
+using Object = UnityEngine.Object;
 
-[MainMenuItem("Cube", "Create", "Create cubes in the scene")]
-public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IToolActions
+//[MainMenuItem("Cube", "Create", "Create cubes in the scene")]
+[MainMenuItem(false)]
+public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IActions
 {
 	class CubeToolAction : IAction
 	{
@@ -21,23 +23,28 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IToo
 
 	readonly CubeToolAction m_CubeToolAction = new CubeToolAction();
 
-	public List<IAction> toolActions { get; private set; }
+	public List<IAction> actions { get; private set; }
 	public Transform rayOrigin { get; set; }
 	public Standard standardInput { get; set; }
+
+	public Action<Object> addObjectToSpatialHash { get; set; }
+	public Action<Object> removeObjectFromSpatialHash { get; set; }
 
 	void Awake()
 	{
 		m_CubeToolAction.icon = m_Icon;
-		toolActions = new List<IAction>() { m_CubeToolAction };
+		actions = new List<IAction>() { m_CubeToolAction };
 	}
 
-	private void Update()
+	void Update()
 	{
 		if (standardInput.action.wasJustPressed)
 		{
 			Transform cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
 			if (rayOrigin)
 				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
+
+			addObjectToSpatialHash(cube);
 		}
 	}
 }

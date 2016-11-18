@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -6,7 +6,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Tools
 {
-	public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
+	public class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, ISetHighlight, IGameObjectLocking
 	{
 		static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
 
@@ -31,15 +31,23 @@ namespace UnityEngine.VR.Tools
 		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 		public Transform rayOrigin { private get; set; }
 		public Action<GameObject, bool> setHighlight { private get; set; }
-		public Node? node { private get; set; }
+		public Action<GameObject, bool> setLocked { get; set; }
+		public Func<GameObject, bool> isLocked { get; set; }
 
-		public event Action<Node?> selected = delegate {};
+		public Func<Transform, bool> isRayActive;
+		public event Action<GameObject, Transform> hovered;
+		public event Action<Transform> selected;
 
 		void Update()
 		{
+			if (rayOrigin == null)
+				return;
+
+			if (!isRayActive(rayOrigin))
+				return;
+
 			var newHoverGameObject = getFirstGameObject(rayOrigin);
 			GameObject newPrefabRoot = null;
-
 			if (newHoverGameObject != null)
 			{
 				// If gameObject is within a prefab and not the current prefab, choose prefab root
@@ -49,7 +57,16 @@ namespace UnityEngine.VR.Tools
 					if (newPrefabRoot != s_CurrentPrefabOpened)
 						newHoverGameObject = newPrefabRoot;
 				}
+
+				if (newHoverGameObject.isStatic)
+					return;
 			}
+
+			if (hovered != null)
+				hovered(newHoverGameObject, rayOrigin);
+
+			if (isLocked(newHoverGameObject))
+				return;
 
 			// Handle changing highlight
 			if (newHoverGameObject != m_HoverGameObject)
@@ -80,7 +97,8 @@ namespace UnityEngine.VR.Tools
 						{
 							// Already selected, so remove from selection
 							s_SelectedObjects.Remove(m_HoverGameObject);
-						} else
+						}
+						else
 						{
 							// Add to selection
 							s_SelectedObjects.Add(m_HoverGameObject);
@@ -97,8 +115,11 @@ namespace UnityEngine.VR.Tools
 						s_SelectedObjects.Add(m_HoverGameObject);
 					}
 
+					setHighlight(m_HoverGameObject, false);
+
 					Selection.objects = s_SelectedObjects.ToArray();
-					selected(node);
+					if (selected != null)
+						selected(rayOrigin);
 				}
 
 				m_PressedObject = null;

@@ -1,5 +1,7 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 public class HighlightModule : MonoBehaviour
 {
@@ -24,11 +26,14 @@ public class HighlightModule : MonoBehaviour
 
 	public void SetHighlight(GameObject go, bool active)
 	{
-		if (go == null)
+		if (go == null || go.isStatic)
 			return;
 
 		if (active) // Highlight
 		{
+			if (Selection.gameObjects.Contains(go))
+				return;
+
 			if (!m_HighlightCounts.ContainsKey(go))
 				m_HighlightCounts.Add(go, 1);
 			else
@@ -36,16 +41,15 @@ public class HighlightModule : MonoBehaviour
 		}
 		else // Unhighlight
 		{
-			if (!m_HighlightCounts.ContainsKey(go))
+			int count;
+			if(m_HighlightCounts.TryGetValue(go, out count))
 			{
-				Debug.LogError("Unhighlight called on object that is not currently highlighted: " + go);
-				return;
+				count--;
+				if (count <= 0)
+					m_HighlightCounts.Remove(go);
+				else
+					m_HighlightCounts[go] = count;
 			}
-			else
-				m_HighlightCounts[go]--;
-
-			if (m_HighlightCounts[go] == 0)
-				m_HighlightCounts.Remove(go);
 		}
 	}
 }

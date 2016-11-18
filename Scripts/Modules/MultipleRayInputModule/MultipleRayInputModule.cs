@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Proxies;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Modules
@@ -21,7 +22,7 @@ namespace UnityEngine.VR.Modules
 			public GameObject selectedObject;
 			public Func<RaycastSource, bool> isValid;
 
-			public bool hasObject { get { return (hoveredObject != null && hoveredObject.layer == UILayer) || selectedObject != null; } }
+			public bool hasObject { get { return (hoveredObject != null && (s_LayerMask & (1 << hoveredObject.layer)) != 0) || selectedObject != null; } }
 
 			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput, Func<RaycastSource, bool> validationCallback)
 			{
@@ -33,11 +34,13 @@ namespace UnityEngine.VR.Modules
 			}
 		}
 
-		private static int UILayer = -1;
 		private readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
 
 		public Camera eventCamera { get { return m_EventCamera; } set { m_EventCamera = value; } }
 		private Camera m_EventCamera;
+
+		public LayerMask layerMask { get { return s_LayerMask; } set { s_LayerMask = value; } }
+		private static LayerMask s_LayerMask;
 
 		public ActionMap actionMap { get { return m_UIActionMap; } }
 		[SerializeField]
@@ -50,12 +53,12 @@ namespace UnityEngine.VR.Modules
 		public event Action<GameObject, RayEventData> dragStarted = delegate {};
 		public event Action<GameObject, RayEventData> dragEnded = delegate {};
 
-		public Action<Transform> preProcessRaycastSource = delegate {};
+		public Action<Transform> preProcessRaycastSource;
 
 		protected override void Awake()
 		{
 			base.Awake();
-			UILayer = LayerMask.NameToLayer("UI");
+			s_LayerMask = LayerMask.GetMask("UI");
 		}
 
 		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin, Func<RaycastSource, bool> validationCallback = null)
@@ -87,12 +90,14 @@ namespace UnityEngine.VR.Modules
 				return;
 
 			//Process events for all different transforms in RayOrigins
-			foreach (var source in m_RaycastSources.Values)
+			var sources = new List<RaycastSource>(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
+			foreach (var source in sources)
 			{
 				if (!(source.rayOrigin.gameObject.activeSelf || source.selectedObject) || !source.proxy.active)
 					continue;
 
-				preProcessRaycastSource(source.rayOrigin);
+				if (preProcessRaycastSource != null)
+					preProcessRaycastSource(source.rayOrigin);
 
 				if (source.eventData == null)
 					source.eventData = new RayEventData(base.eventSystem);

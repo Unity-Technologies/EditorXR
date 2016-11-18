@@ -269,7 +269,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_RendererCullingMask:
     serializedVersion: 2
-    m_Bits: 4294967263
+    m_Bits: 4294966751
   m_ReferenceTransform: {fileID: 0}
 --- !u!114 &114000012428583066
 MonoBehaviour:

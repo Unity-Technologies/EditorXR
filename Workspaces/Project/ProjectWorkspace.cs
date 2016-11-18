@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
+using UnityObject = UnityEngine.Object;
 
-public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFolderList, IFilterUI
+public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IConnectInterfaces
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 	const float kPaneMargin = 0.01f;
@@ -37,10 +39,7 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFold
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
 
-	public Action<Transform, Vector3> placeObject { private get; set; }
-
-	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
-	public PreviewDelegate preview { private get; set; }
+	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 	public FolderData[] folderData { set { m_ProjectUI.folderListView.data = value; } }
 
@@ -74,10 +73,8 @@ public class ProjectWorkspace : Workspace, IPlaceObjects, IPreview, IProjectFold
 
 		var assetGridView = m_ProjectUI.assetGridView;
 		assetGridView.testFilter = TestFilter;
-		assetGridView.placeObject = placeObject;
-		assetGridView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
-		assetGridView.preview = preview;
 		assetGridView.data = new AssetData[0];
+		connectInterfaces(assetGridView);
 
 		var scrollHandles = new[]
 		{

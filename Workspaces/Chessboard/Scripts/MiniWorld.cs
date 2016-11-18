@@ -35,7 +35,7 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 
 	public Matrix4x4 miniToReferenceMatrix { get { return transform.localToWorldMatrix * referenceTransform.worldToLocalMatrix; } }
 
-	public Matrix4x4 worldToCameraMatrix { get { return m_MiniWorldRenderer.worldToCameraMatrix; } }
+	public Func<Camera, Matrix4x4> getWorldToCameraMatrix { get { return m_MiniWorldRenderer.GetWorldToCameraMatrix; } }
 
 	public Bounds referenceBounds
 	{

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -6,12 +6,12 @@ using UnityEngine.UI;
 using UnityEngine.VR.Actions;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Extensions;
-using GradientPair = UnityEngine.VR.Utilities.UnityBrandColorScheme.GradientPair;
 
 namespace UnityEngine.VR.Menus
 {
 	public class RadialMenuUI : MonoBehaviour
 	{
+		const float kPhaseOffset = 90f; // Correcting the coordinates, so that 0 degrees is at the top of the radial menu
 		const int kSlotCount = 16;
 
 		[SerializeField]
@@ -25,9 +25,6 @@ namespace UnityEngine.VR.Menus
 
 		[SerializeField]
 		Transform m_SlotContainer;
-
-		[SerializeField]
-		float m_InputPhaseOffset = 75f;
 
 		List<RadialMenuSlot> m_RadialMenuSlots;
 		Coroutine m_VisibilityCoroutine;
@@ -80,7 +77,7 @@ namespace UnityEngine.VR.Menus
 				{
 					m_Actions = value
 						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.kDefaultActionSectionName)
-						.OrderByDescending(a => a.priority)
+						.OrderBy(a => a.priority)
 						.ToList();
 
 					if (visible && actions.Count > 0)
@@ -116,56 +113,69 @@ namespace UnityEngine.VR.Menus
 					{
 						// No button was selected on the Radial Menu. Close the radial menu, and deselect.
 						Selection.activeGameObject = null;
-						actions = null;
+						visible = false;
 					}
 				}
 			}
 		}
 		bool m_PressedDown;
 
-		RadialMenuSlot m_HighlightedButton;
-		Vector2 m_InputMatrix;
-		float m_InputDirection;
-
-		readonly Dictionary<RadialMenuSlot, Vector2> buttonRotationRange = new Dictionary<RadialMenuSlot, Vector2>();
-
 		public Vector2 buttonInputDirection
 		{
 			set
 			{
-				if (Mathf.Approximately(value.magnitude, 0) && !Mathf.Approximately(m_InputDirection, 0))
+				if (Mathf.Approximately(value.magnitude, 0) && !Mathf.Approximately(m_ButtonInputDirection.magnitude, 0))
 				{
-					m_InputDirection = 0;
-					foreach (var buttonMinMaxRange in buttonRotationRange)
-						buttonMinMaxRange.Key.highlighted = false;
+					foreach (var slot in m_RadialMenuSlots)
+						slot.highlighted = false;
 				}
 				else if (value.magnitude > 0)
 				{
-					m_InputMatrix = value;
-					m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
-					m_InputDirection += m_InputPhaseOffset;
+					var angle = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg;
+					angle -= kPhaseOffset;
 
-					var angleCorrected = m_InputDirection * Mathf.Deg2Rad;
-					m_InputMatrix = new Vector2(Mathf.Cos(angleCorrected), -Mathf.Sin(angleCorrected));
-					m_InputDirection = Mathf.Atan2(m_InputMatrix.y, m_InputMatrix.x) * Mathf.Rad2Deg;
+					// Handle lower quadrant to put it into full 360 degree range
+					if (angle < 0f)
+						angle += 360f;
 
-					foreach (var buttonMinMaxRange in buttonRotationRange)
+					const float kSlotAngleRange = 360f / kSlotCount;
+					const float kPadding = 0.25f;
+
+					var index = angle / kSlotAngleRange;
+					var t = index % 1f;
+					// Use padding to prevent unintended button switches
+					if (t >= kPadding && t <= 1f - kPadding)
 					{
-						if (actions != null && m_InputDirection > buttonMinMaxRange.Value.x && m_InputDirection < buttonMinMaxRange.Value.y)
-						{
-							m_HighlightedButton = buttonMinMaxRange.Key;
-							m_HighlightedButton.highlighted = true;
-						}
-						else
-							buttonMinMaxRange.Key.highlighted = false;
+						m_HighlightedButton = m_RadialMenuSlots[(int)index];
+						foreach (var slot in m_RadialMenuSlots)
+							slot.highlighted = slot == m_HighlightedButton;
 					}
 				}
+				m_ButtonInputDirection = value;
 			}
 		}
+		Vector2 m_ButtonInputDirection;
+
+		RadialMenuSlot m_HighlightedButton;
 
 		void Start()
 		{
 			m_SlotsMask.gameObject.SetActive(false);
+		}
+
+		void Update()
+		{
+			if (m_Actions != null)
+			{
+				// Action icons can update after being displayed
+				for (int i = 0; i < m_Actions.Count; ++i)
+				{
+					var action = m_Actions[i].action;
+					var radialMenuSlot = m_RadialMenuSlots[i];
+					if (radialMenuSlot.icon != action.icon)
+						radialMenuSlot.icon = action.icon;
+				}
+			}
 		}
 
 		public void Setup()
@@ -198,18 +208,12 @@ namespace UnityEngine.VR.Menus
 
 		void SetupRadialSlotPositions()
 		{
-			const float kRotationSpacing = 22.5f;
+			const float kRotationSpacing = 360f / kSlotCount;
 			for (int i = 0; i < kSlotCount; ++i)
 			{
 				var slot = m_RadialMenuSlots[i];
-				slot.visibleLocalRotation = Quaternion.AngleAxis(kRotationSpacing * i, Vector3.up);
-
-				var direction = i > 7 ? -1 : 1;
-				buttonRotationRange.Add(slot, new Vector2(direction * Mathf.PingPong(kRotationSpacing * i, 180f), direction * Mathf.PingPong(kRotationSpacing * i + kRotationSpacing, 180f)));
-
-				var range = Vector2.zero;
-				buttonRotationRange.TryGetValue(m_RadialMenuSlots[i], out range);
-
+				// We move in counter-clockwise direction
+				slot.visibleLocalRotation = Quaternion.AngleAxis(kPhaseOffset + kRotationSpacing * i, Vector3.down);
 				slot.Hide();
 			}
 
@@ -217,11 +221,10 @@ namespace UnityEngine.VR.Menus
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
-		IEnumerator AnimateShow()
+		void UpdateRadialSlots()
 		{
-			m_SlotsMask.gameObject.SetActive(true);
+			var gradientPair = UnityBrandColorScheme.sessionGradient;
 
-			var gradientPair = UnityBrandColorScheme.GetRandomGradient();
 			for (int i = 0; i < m_Actions.Count; ++i)
 			{
 				// prevent more actions being added beyond the max slot count
@@ -233,17 +236,23 @@ namespace UnityEngine.VR.Menus
 				slot.gradientPair = gradientPair;
 				slot.icon = action.icon ?? m_MissingActionIcon;
 
+				var index = i; // Closure
 				slot.button.onClick.RemoveAllListeners();
 				slot.button.onClick.AddListener(() =>
 				{
-					// Having to grab the index because of incorrect closure support
-					var index = m_RadialMenuSlots.IndexOf(m_HighlightedButton);
 					var selectedSlot = m_RadialMenuSlots[index];
 					var buttonAction = m_Actions[index].action;
 					buttonAction.ExecuteAction();
 					selectedSlot.icon = buttonAction.icon ?? m_MissingActionIcon;
 				});
 			}
+		}
+
+		IEnumerator AnimateShow()
+		{
+			m_SlotsMask.gameObject.SetActive(true);
+
+			UpdateRadialSlots();
 
 			m_SlotsMask.fillAmount = 1f;
 
