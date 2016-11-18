@@ -548,8 +548,10 @@ MonoBehaviour:
   m_HighlightItems:
   - {fileID: 114000013668190444}
   - {fileID: 114000013883654872}
+  m_GrayscaleGradient: 0
   m_AnimatedReveal: 1
-  m_DelayBeforeReveal: 0.5
+  m_DelayBeforeReveal: 0.125
+  m_AutoHighlight: 1
 --- !u!114 &114000010404580652
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -673,8 +675,6 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_SummaryText: {fileID: 114000013668190444}
   m_DescriptionText: {fileID: 114000013883654872}
-  m_VisibilityButton: {fileID: 1000011073178180}
-  m_SummaryButton: {fileID: 1000012133731784}
   m_ButtonList: {fileID: 224000013333582342}
   m_ButtonPrefab: {fileID: 1000011664971740, guid: 9356373b6af61fb47aef381a65c953dc,
     type: 2}
@@ -797,7 +797,11 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_SourceRectTransform: {fileID: 224000013333582342}
   m_XPositionPadding: 0
+  m_YPositionPadding: 0
+  m_ZPositionPadding: 0.00055
   m_XScalePadding: 0.01
+  m_YScalePadding: 0
+  m_ParentUnderSource: 1
 --- !u!114 &114000012308107684
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -950,8 +954,10 @@ MonoBehaviour:
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013587831842}
+  m_GrayscaleGradient: 0
   m_AnimatedReveal: 1
-  m_DelayBeforeReveal: 0.5
+  m_DelayBeforeReveal: 0.125
+  m_AutoHighlight: 1
 --- !u!114 &114000013883654872
 MonoBehaviour:
   m_ObjectHideFlags: 1

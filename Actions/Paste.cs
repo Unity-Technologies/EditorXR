@@ -1,11 +1,35 @@
-﻿using UnityEngine.VR.Utilities;
+﻿using System;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
-	public class Paste : BaseAction
+	public class Paste : BaseAction, IUsesSpatialHash
 	{
-		public static Object buffer { get; set; }
+		public static GameObject[] buffer
+		{
+			get
+			{
+				return m_Buffer;
+			}
+			set
+			{
+				m_Buffer = value;
+
+				if (value != null)
+				{
+					var bounds = U.Object.GetBounds(value);
+					
+					m_BufferDistance = bounds.size == Vector3.zero ? (bounds.center - U.Camera.GetMainCamera().transform.position).magnitude : 0f;
+				}
+			}
+		}
+		static GameObject[] m_Buffer;
+
+		static float m_BufferDistance;
+
+		public Action<GameObject> addToSpatialHash { get; set; }
+		public Action<GameObject> removeFromSpatialHash { get; set; }
 
 		public override void ExecuteAction()
 		{
@@ -13,11 +37,18 @@ namespace UnityEngine.VR.Actions
 
 			if (buffer != null)
 			{
-				var pasted = Instantiate(buffer);
-				pasted.hideFlags = HideFlags.None;
-				var go = pasted as GameObject;
-				if (go)
-					go.SetActive(true);
+				var bounds = U.Object.GetBounds(buffer);
+				foreach (var go in buffer)
+				{
+					var pasted = Instantiate(go);
+					var pastedTransform = pasted.transform;
+					pasted.hideFlags = HideFlags.None;
+					var cameraTransform = U.Camera.GetMainCamera().transform;
+					pastedTransform.position = cameraTransform.TransformPoint(Vector3.forward * m_BufferDistance)
+						+ pastedTransform.position - bounds.center;
+					pasted.SetActive(true);
+					addToSpatialHash(pasted);
+				}
 			}
 		}
 	}

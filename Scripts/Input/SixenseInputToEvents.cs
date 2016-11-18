@@ -80,14 +80,16 @@ public class SixenseInputToEvents : MonoBehaviour
 	{
 		for (var axis = 0; axis < kAxisCount; ++axis)
 		{
+			var value = GetAxis(sixenseDeviceIndex, (VRInputDevice.VRControl)axis);
+
+			if (Mathf.Approximately(m_LastAxisValues[sixenseDeviceIndex, axis], value))
+				continue;
+
 			var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 			inputEvent.deviceType = typeof(VRInputDevice);
 			inputEvent.deviceIndex = deviceIndex;
 			inputEvent.controlIndex = axis;
-			inputEvent.value = GetAxis(sixenseDeviceIndex, (VRInputDevice.VRControl)axis);
-
-			if (Mathf.Approximately(m_LastAxisValues[sixenseDeviceIndex, axis], inputEvent.value))
-				continue;
+			inputEvent.value = value;
 
 			m_LastAxisValues[sixenseDeviceIndex, axis] = inputEvent.value;
 
@@ -112,10 +114,7 @@ public class SixenseInputToEvents : MonoBehaviour
 				return (int)VRInputDevice.VRControl.Action4;
 
 			case SixenseButtons.BUMPER:
-				return (int)VRInputDevice.VRControl.Action5;
-
-			case SixenseButtons.TRIGGER:
-				return (int)VRInputDevice.VRControl.Trigger1;
+				return (int)VRInputDevice.VRControl.Trigger2;
 
 			case SixenseButtons.START:
 				return (int)VRInputDevice.VRControl.Start;
@@ -156,17 +155,18 @@ public class SixenseInputToEvents : MonoBehaviour
 	private void SendTrackingEvents(int sixenseDeviceIndex, int deviceIndex)
 	{
 		var controller = SixenseInput.Controllers[sixenseDeviceIndex];
+		var localPosition = (m_RotationOffset * controller.Position * kHydraUnits) + m_ControllerOffsets[sixenseDeviceIndex];
+		var localRotation = m_RotationOffset * controller.Rotation;
+
+		if (localPosition == m_LastPositionValues[sixenseDeviceIndex] && localRotation == m_LastRotationValues[sixenseDeviceIndex])
+			return;
+
 		var inputEvent = InputSystem.CreateEvent<VREvent>();
 		inputEvent.deviceType = typeof(VRInputDevice);
 		inputEvent.deviceIndex = deviceIndex;
-		inputEvent.localPosition = (m_RotationOffset*controller.Position*kHydraUnits) +
-									m_ControllerOffsets[sixenseDeviceIndex];
-		inputEvent.localRotation = m_RotationOffset*controller.Rotation;
-
-		if (inputEvent.localPosition == m_LastPositionValues[sixenseDeviceIndex] &&
-			inputEvent.localRotation == m_LastRotationValues[sixenseDeviceIndex])
-			return;
-
+		inputEvent.localPosition = localPosition;
+		inputEvent.localRotation = localRotation;
+		
 		m_LastPositionValues[sixenseDeviceIndex] = inputEvent.localPosition;
 		m_LastRotationValues[sixenseDeviceIndex] = inputEvent.localRotation;
 

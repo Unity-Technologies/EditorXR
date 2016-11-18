@@ -15,6 +15,8 @@ namespace UnityEngine.VR.Handles
 
 		private const float kInitialScrollRate = 2f;
 		private const float kScrollAcceleration = 14f;
+
+		readonly static float kScaleBump = 1.1f;
 		
 		private float m_ScrollRate;
 		private Vector3 m_LastPosition;
@@ -46,6 +48,18 @@ namespace UnityEngine.VR.Handles
 			m_LastPosition = worldPosition;
 
 			base.OnHandleDragging(eventData);
+		}
+
+		protected override void OnHandleHoverStarted(HandleEventData eventData)
+		{
+			transform.localScale *= kScaleBump;
+			base.OnHandleHoverStarted(eventData);
+		}
+
+		protected override void OnHandleHoverEnded(HandleEventData eventData)
+		{
+			transform.localScale /= kScaleBump;
+			base.OnHandleHoverStarted(eventData);
 		}
 
 		public void ChangeRadius(float delta)

@@ -13,6 +13,6 @@ namespace UnityEngine.VR.Modules
 		/// Key is the rayOrigin used to select the object
 		/// Value is a data class containing the selected object and metadata
 		/// </summary>
-		Func<Dictionary<Transform, DirectSelection>> getDirectSelection { set; }
+		Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { set; }
 	}
 }

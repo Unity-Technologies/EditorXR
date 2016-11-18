@@ -73,7 +73,12 @@ public class DefaultProxyRay : MonoBehaviour
 		}
 	}
 
-	public void Hide()
+	public bool visible
+	{
+		get { return m_State == State.Visible; }
+	}
+
+	public void Hide(bool rayOnly = false)
 	{
 		if (isActiveAndEnabled && m_LockRayObject == null)
 		{
@@ -81,11 +86,13 @@ public class DefaultProxyRay : MonoBehaviour
 				StopAllCoroutines();
 			
 			StartCoroutine(HideRay());
-			StartCoroutine(HideCone());
+
+			if (!rayOnly)
+				StartCoroutine(HideCone());
 		}
 	}
 
-	public void Show()
+	public void Show(bool rayOnly = false)
 	{
 		if (isActiveAndEnabled && m_LockRayObject == null)
 		{
@@ -93,7 +100,9 @@ public class DefaultProxyRay : MonoBehaviour
 				StopAllCoroutines();
 			
 			StartCoroutine(ShowRay());
-			StartCoroutine(ShowCone());
+
+			if (!rayOnly)
+				StartCoroutine(ShowCone());
 		}
 	}
 

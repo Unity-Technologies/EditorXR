@@ -18,12 +18,6 @@ public class FilterUI : MonoBehaviour
 	private Text m_DescriptionText;
 
 	[SerializeField]
-	private GameObject m_VisibilityButton;
-
-	[SerializeField]
-	private GameObject m_SummaryButton;
-
-	[SerializeField]
 	private RectTransform m_ButtonList;
 
 	[SerializeField]
