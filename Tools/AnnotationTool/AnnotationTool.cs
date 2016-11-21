@@ -9,8 +9,9 @@ using UnityEngine.VR.Utilities;
 using UnityEditor.VR;
 
 [MainMenuItem("Annotation", "Tools", "Draw in the space")]
-public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI
+public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI, IMenuOrigins
 {
+
 	public Transform rayOrigin { private get; set; }
 	public List<Transform> otherRayOrigins { private get; set; }
 
@@ -25,17 +26,16 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	private ActionMap m_ActionMap;
 
 	public ActionMapInput actionMapInput { get { return m_AnnotationInput; } set { m_AnnotationInput = (AnnotationInput)value; } }
+	private AnnotationInput m_AnnotationInput;
 
 	public Func<GameObject, GameObject> instantiateUI { private get; set; }
-
-	private AnnotationInput m_AnnotationInput;
 
 	private const int kInitialListSize = 32767;
 
 	private List<Vector3> m_Points = new List<Vector3>(kInitialListSize);
 	private List<Vector3> m_Forwards = new List<Vector3>(kInitialListSize);
 	private List<float> m_Widths = new List<float>(kInitialListSize);
-	private List<Vector3> m_Rights = new List<Vector3>();
+	private List<Vector3> m_Rights = new List<Vector3>(kInitialListSize);
 
 	private MeshFilter m_CurrentMeshFilter;
 	private Color m_ColorToUse = Color.white;
@@ -59,18 +59,24 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	private Action<float> onBrushSizeChanged { set; get; }
 
+	public Transform menuOrigin { set; private get; }
+	public Transform alternateMenuOrigin { set; private get; }
+
 	private Transform m_AnnotationHolder;
 
-	private bool m_RayHidden;
+	private bool m_IsRayHidden;
+	private bool m_IsValidStroke;
 
 	private Mesh m_CustomPointerMesh;
 	private GameObject m_CustomPointerObject;
-
+	
 	private const float kTopMinRadius = 0.001f;
 	private const float kTopMaxRadius = 0.05f;
 	private const float kBottomRadius = 0.01f;
 	private const float kTipDistance = 0.05f;
 	private const int kSides = 16;
+
+	private readonly Bounds m_ColorPickerRegion = new Bounds(Vector3.zero, Vector3.one * 0.35f);
 
 	private float m_CurrentRadius = kTopMinRadius;
 
@@ -78,7 +84,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	void OnDestroy()
 	{
-		if (m_RayHidden && showDefaultRay != null)
+		if (m_IsRayHidden && showDefaultRay != null)
 			showDefaultRay(rayOrigin);
 
 		if (m_ColorPicker)
@@ -91,15 +97,39 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	
 	void Update()
 	{
-		if (!m_RayHidden)
+		HideRay();
+		HandleRayOrigins();
+
+		if (m_AnnotationInput.draw.wasJustPressed)
+			SetupAnnotation();
+		else if (m_IsValidStroke)
+		{
+			if (m_AnnotationInput.draw.isHeld)
+				UpdateAnnotation();
+			else if (m_AnnotationInput.draw.wasJustReleased)
+				FinalizeMesh();
+		}
+		else if (m_AnnotationInput.undo.wasJustPressed)
+			UndoLast();
+
+		if (m_AnnotationInput.changeBrushSize.value != 0)
+			HandleBrushSize();
+	}
+
+	private void HideRay()
+	{
+		if (!m_IsRayHidden)
 		{
 			if (hideDefaultRay != null)
 			{
 				hideDefaultRay(rayOrigin);
-				m_RayHidden = true;
+				m_IsRayHidden = true;
 			}
 		}
+	}
 
+	private void HandleRayOrigins()
+	{
 		if (rayOrigin != null)
 		{
 			GenerateCustomPointer();
@@ -109,21 +139,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 			CheckBrushSizeUi();
 		}
-
-		if (m_AnnotationInput.draw.wasJustPressed)
-			SetupAnnotation();
-		else if (m_AnnotationInput.draw.isHeld)
-			UpdateAnnotation();
-		else if (m_AnnotationInput.draw.wasJustReleased)
-		{
-			m_CurrentMesh.Optimize();
-			m_CurrentMesh.UploadMeshData(true);
-		}
-		else if (m_AnnotationInput.undo.wasJustPressed)
-			UndoLast();
-
-		if (m_AnnotationInput.changeBrushSize.value != 0)
-			HandleBrushSize();
 	}
 
 	private void UndoLast()
@@ -161,9 +176,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			var bsuiObj = instantiateUI(m_BrushSizePrefab);
 			m_BrushSizeUi = bsuiObj.GetComponent<BrushSizeUI>();
 			var trans = bsuiObj.transform;
-			trans.SetParent(rayOrigin);
-			trans.localPosition = m_BrushSizePrefab.transform.localPosition;
-			trans.localRotation = m_BrushSizePrefab.transform.localRotation;
+			trans.SetParent(alternateMenuOrigin);
+			trans.localPosition = Vector3.zero;
+			trans.localRotation = Quaternion.Euler(-90, 0, 0);
 
 			m_BrushSizeUi.onValueChanged = (val) => 
 			{
@@ -176,66 +191,61 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	private void CheckColorPicker()
 	{
-		foreach (var otherRayOrigin in otherRayOrigins)
+		if (!m_IsValidStroke)
 		{
-			var otherRayMatrix = otherRayOrigin.worldToLocalMatrix;
-			var rayLocalPos = otherRayMatrix.MultiplyPoint3x4(rayOrigin.position);
-			
-			if (IsDistanceOkForColorPicker(rayLocalPos))
+			foreach (var otherRayOrigin in otherRayOrigins)
 			{
-				if (m_ColorPicker == null)
-				{
-					var colorPickerObj = instantiateUI(m_ColorPickerPrefab);
-					m_ColorPicker = colorPickerObj.GetComponent<ColorPickerUI>();
-					m_ColorPicker.toolRayOrigin = rayOrigin;
-					m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
+				var otherRayMatrix = otherRayOrigin.worldToLocalMatrix;
+				var rayLocalPos = otherRayMatrix.MultiplyPoint3x4(rayOrigin.position);
 
-					var pickerTransform = m_ColorPicker.transform;
-					pickerTransform.SetParent(otherRayOrigin);
-					pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
-					pickerTransform.localRotation = m_ColorPickerPrefab.transform.localRotation;
-					
-					showDefaultRay(rayOrigin);
-					m_CustomPointerObject.SetActive(false);
-				}
-				else if (m_ColorPicker.transform.parent != otherRayOrigin)
+				if (m_ColorPickerRegion.Contains(rayLocalPos))
 				{
-					var pickerTransform = m_ColorPicker.transform;
-					pickerTransform.SetParent(otherRayOrigin);
-					pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
-					pickerTransform.localRotation = m_ColorPickerPrefab.transform.localRotation;
+					if (m_ColorPicker == null)
+						CreateColorPicker(otherRayOrigin);
+					else if (m_ColorPicker.transform.parent != otherRayOrigin)
+					{
+						var pickerTransform = m_ColorPicker.transform;
+						pickerTransform.SetParent(otherRayOrigin);
+						pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
+						pickerTransform.localRotation = m_ColorPickerPrefab.transform.localRotation;
+					}
+
+					float dot = Vector3.Dot(otherRayOrigin.right, rayOrigin.position - otherRayOrigin.position);
+					Vector3 localPos = m_ColorPicker.transform.localPosition;
+					localPos.x = Mathf.Abs(localPos.x) * Mathf.Sign(dot);
+					m_ColorPicker.transform.localPosition = localPos;
+
+					if (!m_ColorPicker.enabled)
+					{
+						m_ColorPicker.Show();
+						showDefaultRay(rayOrigin);
+						m_CustomPointerObject.SetActive(false);
+					}
 				}
-
-				float dot = Vector3.Dot(otherRayOrigin.right, rayOrigin.position - otherRayOrigin.position);
-				Vector3 localPos = m_ColorPicker.transform.localPosition;
-				localPos.x = Mathf.Abs(localPos.x) * Mathf.Sign(dot);
-				m_ColorPicker.transform.localPosition = localPos;
-
-				if (!m_ColorPicker.enabled)
+				else if (m_ColorPicker && m_ColorPicker.enabled)
 				{
-					m_ColorPicker.Show();
-					showDefaultRay(rayOrigin);
-					m_CustomPointerObject.SetActive(false);
+					m_ColorPicker.Hide();
+					hideDefaultRay(rayOrigin);
+					m_CustomPointerObject.SetActive(true);
 				}
-			}
-			else if (m_ColorPicker && m_ColorPicker.enabled)
-			{
-				m_ColorPicker.Hide();
-				hideDefaultRay(rayOrigin);
-				m_CustomPointerObject.SetActive(true);
 			}
 		}
 	}
 
-	private bool IsDistanceOkForColorPicker(Vector3 rayLocalPosition)
+	private void CreateColorPicker(Transform otherRayOrigin)
 	{
-		var distanceX = Mathf.Abs(rayLocalPosition.x);
-		var distanceZ = Mathf.Abs(rayLocalPosition.z);
-		var distanceY = Mathf.Abs(rayLocalPosition.y);
+		var colorPickerObj = instantiateUI(m_ColorPickerPrefab);
+		m_ColorPicker = colorPickerObj.GetComponent<ColorPickerUI>();
+		m_ColorPicker.toolRayOrigin = rayOrigin;
+		m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
 
-		const float kSmallDistance = .1625f;
-		const float kLargeDistance = .33f;
-		return distanceX < kSmallDistance && distanceY < kLargeDistance && distanceZ < kSmallDistance;
+		var pickerTransform = m_ColorPicker.transform;
+		pickerTransform.SetParent(otherRayOrigin);
+		pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
+		pickerTransform.localRotation = m_ColorPickerPrefab.transform.localRotation;
+
+		showDefaultRay(rayOrigin);
+		m_CustomPointerObject.SetActive(false);
 	}
 
 	private void OnColorPickerValueChanged(Color newColor)
@@ -396,6 +406,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	private void SetupAnnotation()
 	{
+		m_IsValidStroke = m_CustomPointerObject.activeSelf;
+		if (!m_IsValidStroke)
+			return;
+
 		SetupHolder();
 
 		m_Points.Clear();
@@ -613,6 +627,17 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			for (int side = 0; side < 2; side++)
 				newUvs.Add(new Vector2(side, i / 2));
 		}
+	}
+
+	private void FinalizeMesh()
+	{
+		m_IsValidStroke = false;
+
+		m_CurrentMesh.RecalculateBounds();
+		m_CurrentMesh.RecalculateNormals();
+		m_CurrentMesh.Optimize();
+
+		m_CurrentMesh.UploadMeshData(true);
 	}
 
 	private int[] VerticesToPolygon(int upperLeft, int upperRight, int lowerLeft, int lowerRight, bool doubleSided = false)
