@@ -24,6 +24,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	private float m_TriggerPressedTimeStamp = 0.0f;
 	private Workspace[] m_AllWorkspaces;
+	private Quaternion[] m_WorkspaceLocalRotaions;
+
 	private Quaternion m_RayOriginStartAngle;
 	private bool m_ThrowDownTriggered = false;
 	private Vector3 m_PreviousPosition;
@@ -35,6 +37,11 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	float m_ThrowingTimeStamp;
 	const float kThrowDelayAllowed = 0.2f;
 	float m_CurrentTargetScale = 1.0f;
+
+	float deltaAngleY = 0.0f;
+	float m_targetAngleY = 0.0f;
+
+	const float kThresholdY = 0.2f;
 
 	private enum ManipulateMode
 	{
@@ -123,6 +130,10 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		m_ThrowDownTriggered = false;
 
 		m_AllWorkspaces = GetComponentsInChildren<Workspace>();
+		m_WorkspaceLocalRotaions = new Quaternion[m_AllWorkspaces.Length];
+
+		for (int i=0; i<m_AllWorkspaces.Length; i++)
+			m_WorkspaceLocalRotaions[i] = m_AllWorkspaces[i].transform.localRotation;
 
 		if (m_AllWorkspaces.Length > 0)
 		{
@@ -222,6 +233,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			{
 				m_PreviousPosition = rayOrigin.position;
 				m_RayOriginStartAngle = Quaternion.LookRotation(rayOrigin.up);
+				deltaAngleY = 0.0f;
 				mode = ManipulateMode.On;
 				hideDefaultRay(rayOrigin);
 				foreach (var ws in m_AllWorkspaces)
@@ -229,8 +241,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 					ws.SetUIHighlights(true);
 					var smoothMotion = ws.GetComponentInChildren<SmoothMotion>();
 					smoothMotion.enabled = true;
-					smoothMotion.SetRotationSmoothing(1f);
-					smoothMotion.SetPositionSmoothing(1f);
+					smoothMotion.SetRotationSmoothing(5f);
+					smoothMotion.SetPositionSmoothing(5f);
 				}
 			}
 		}
@@ -242,23 +254,42 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			return;
 
 		Quaternion rayOriginCurrentAngle = Quaternion.LookRotation(rayOrigin.up);
-		float deltaAngleY = rayOriginCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
+		deltaAngleY = rayOriginCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
+		m_targetAngleY += deltaAngleY;
 
+		float rotateAmount = m_targetAngleY * Time.unscaledDeltaTime * 5.0f;
 		foreach (var ws in m_AllWorkspaces)
 		{
+			//don't rotate for tiny rotations
+			if (Mathf.Abs(rotateAmount) > 0.1f)
+				ws.transform.RotateAround(VRView.viewerCamera.transform.position, Vector3.up, rotateAmount);
+			
 			//don't move for tiny movements
 			if (Mathf.Abs(m_VerticalVelocity) > 0.0001f)
-			{
-				// move on Y axis with corrected direction
 				ws.transform.Translate(0.0f, m_VerticalVelocity * -35.0f, 0.0f, Space.World);
-			}
-
-			//don't rotate for tiny rotations
-			if (Mathf.Abs(deltaAngleY) > (80.0f * Time.unscaledDeltaTime))
-				ws.transform.RotateAround(VRView.viewerCamera.transform.position, Vector3.up, deltaAngleY);
 		}
-		//save current rotation for next frame math
+
+		//update variables for next frame math
+		m_targetAngleY -= rotateAmount;
 		m_RayOriginStartAngle = rayOriginCurrentAngle;
+
+
+		//workspaces look at player on their X axis beyond Y thresholds
+		Vector3 camPos = VRView.viewerCamera.transform.position;
+		for (int i = 0; i < m_AllWorkspaces.Length; i++)
+		{
+			Vector3 wsPos = m_AllWorkspaces[i].transform.position;
+			if ((wsPos.y < camPos.y - kThresholdY) || (wsPos.y > camPos.y + kThresholdY))
+			{
+				//m_WorkspaceLocalRotaions[i] = m_AllWorkspaces[i].transform.localRotation;
+				Quaternion lookRot = Quaternion.LookRotation(wsPos - camPos);
+
+				//apply original X rotation offset
+				lookRot *= Quaternion.Euler(m_WorkspaceLocalRotaions[i].eulerAngles.x, 0f, 0f);
+				//m_AllWorkspaces[i].transform.rotation = lookRot;
+				m_AllWorkspaces[i].transform.rotation = Quaternion.Lerp(m_AllWorkspaces[i].transform.rotation, lookRot, Time.unscaledDeltaTime * 10f);
+			}
+		}
 	}
 
 	void OnDestroy()
