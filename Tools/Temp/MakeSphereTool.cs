@@ -42,7 +42,7 @@ public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	public Action<GameObject> addToSpatialHash { get; set; }
 	public Action<GameObject> removeFromSpatialHash { get; set; }
 
-	private void Update()
+	public void ProcessInput(Action<InputControl> consumeControl)
 	{
 		if (m_Standard.action.wasJustPressed)
 		{
@@ -51,6 +51,8 @@ public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				sphere.position = rayOrigin.position + rayOrigin.forward * 5f;
 
 			addToSpatialHash(sphere.gameObject);
+
+			consumeControl(m_Standard.action);
 		}
 	}
 }

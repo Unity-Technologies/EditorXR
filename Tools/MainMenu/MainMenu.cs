@@ -21,6 +21,7 @@ namespace UnityEngine.VR.Menus
 			get { return m_MainMenuInput; }
 			set { m_MainMenuInput = (MainMenuInput) value; }
 		}
+
 		[SerializeField]
 		private MainMenuInput m_MainMenuInput;
 
@@ -103,13 +104,17 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.SetupMenuFaces();
 		}
 
-		private void Update()
+		public void ProcessInput(Action<InputControl> consumeControl)
 		{
 			var rotationInput = -m_MainMenuInput.rotate.rawValue;
 
 			// Flick the face when the button is released by adding this value to the flick rotation
 			if (m_MainMenuInput.flickFace.wasJustReleased)
-				m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex - (int) Mathf.Sign(-rotationInput);
+			{
+				m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex - (int)Mathf.Sign(-rotationInput);
+
+				consumeControl(m_MainMenuInput.flickFace);
+			}
 
 			if (Mathf.Approximately(rotationInput, m_LastRotationInput) && Mathf.Approximately(rotationInput, 0f))
 			{

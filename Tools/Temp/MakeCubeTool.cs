@@ -36,7 +36,7 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOr
 		actions = new List<IAction>() { m_CubeToolAction };
 	}
 
-	void Update()
+	public void ProcessInput(Action<InputControl> consumeControl)
 	{
 		if (standardInput.action.wasJustPressed)
 		{
@@ -45,6 +45,8 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOr
 				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
 
 			addObjectToSpatialHash(cube);
+
+			consumeControl(standardInput.action);
 		}
 	}
 }

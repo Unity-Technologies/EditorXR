@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -14,11 +15,12 @@ public class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrig
 	readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();
 
 	public Standard standardInput { get; set; }
+
 	public Transform rayOrigin { get; set; }
 
 	public Vector3 defaultOffset { private get; set; }
 
-	void Update ()
+	public void ProcessInput(Action<InputControl> consumeControl)
 	{
 		if (standardInput.action.wasJustPressed)
 		{
@@ -39,6 +41,8 @@ public class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrig
 						m_VacuumingCoroutines[vacuumableTransform] = StartCoroutine(VacuumToViewer(vacuumable));
 					}
 				}
+
+				consumeControl(standardInput.action);
 			}
 
 			m_LastClickTime = Time.realtimeSinceStartup;

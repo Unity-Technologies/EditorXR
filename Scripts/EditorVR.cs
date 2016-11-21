@@ -183,8 +183,6 @@ public class EditorVR : MonoBehaviour
 
 	readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
-	readonly Dictionary<InputDevice, Standard> m_StandardActionMapInputs = new Dictionary<InputDevice, Standard>();
-
 	private void Awake()
 	{
 		ClearDeveloperConsoleIfNecessary();
@@ -435,6 +433,25 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
+	void ConsumeControl(InputControl control)
+	{
+		var ami = control.provider as ActionMapInput;
+		var binding = ami.controlScheme.bindings[control.index];
+		Debug.Log("consume " + ami.actionMap.name + ", "+ Time.frameCount);
+		foreach (var source in binding.sources)
+		{
+			var index = source.controlIndex;
+			foreach (var input in m_PlayerHandle.maps)
+			{
+				if (input != ami)
+				{
+					var deviceSlot = ami.controlScheme.GetDeviceSlot(source.deviceKey);
+					input.ResetControl(source.controlIndex, deviceSlot);
+				}
+			}
+		}
+	}
+
 	private void Update()
 	{
 		if (m_CustomPreviewCamera != null)
@@ -443,6 +460,8 @@ public class EditorVR : MonoBehaviour
 		UpdateKeyboardMallets();
 
 		UpdateMiniWorlds();
+
+		ProcessInput();
 
 #if UNITY_EDITOR
 		// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
@@ -463,6 +482,35 @@ public class EditorVR : MonoBehaviour
 			m_UpdatePixelRaycastModule = false; // Don't allow another one to queue until the current one is processed
 		}
 #endif
+	}
+
+	void ProcessInput()
+	{
+		m_InputModule.DoProcess();
+
+		foreach (var deviceData in m_DeviceData.Values)
+		{
+			foreach (var tool in deviceData.tools)
+			{
+				var standard = tool as IStandardActionMap;
+				if (standard != null)
+				{
+					standard.ProcessInput(ConsumeControl);
+					continue;
+				}
+
+				var custom = tool as ICustomActionMap;
+				if (custom != null)
+				{
+					custom.ProcessInput(ConsumeControl);
+					continue;
+				}
+			}
+
+			var menu = deviceData.mainMenu as ICustomActionMap;
+			if (menu != null)
+				menu.ProcessInput(ConsumeControl);
+		}
 	}
 
 	void UpdateKeyboardMallets()
@@ -921,7 +969,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value);
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, ConsumeControl);
 		});
 	}
 
@@ -1250,13 +1298,7 @@ public class EditorVR : MonoBehaviour
 		var standardMap = obj as IStandardActionMap;
 		if (standardMap != null)
 		{
-			Standard standard;
-			if (!m_StandardActionMapInputs.TryGetValue(device, out standard))
-			{
-				standard = (Standard)CreateActionMapInput(m_StandardToolActionMap, device);
-				m_StandardActionMapInputs[device] = standard;
-			}
-
+			var standard = (Standard)CreateActionMapInput(m_StandardToolActionMap, device);
 			standardMap.standardInput = standard;
 			if (actionMapInputs != null)
 				actionMapInputs.Add(standardMap.standardInput);
@@ -1735,7 +1777,7 @@ public class EditorVR : MonoBehaviour
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
 			// Use the mini world ray origin instead of the original ray origin
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, ConsumeControl, (source) =>
 			{
 				if (!IsRayActive(source.rayOrigin))
 					return false;

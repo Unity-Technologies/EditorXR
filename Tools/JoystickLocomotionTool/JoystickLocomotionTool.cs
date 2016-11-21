@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEditor.VR;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
@@ -32,6 +33,7 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomA
 		get { return m_JoystickLocomotionInput; }
 		set { m_JoystickLocomotionInput = (JoystickLocomotion)value; }
 	}
+
 	private JoystickLocomotion m_JoystickLocomotionInput;
 
 	void Start()
@@ -41,6 +43,10 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomA
 	
 	}
 
+	public void ProcessInput(Action<InputControl> consumeControl)
+	{
+	}
+
 	void Update()
 	{
 		var moveDirection =
@@ -48,6 +54,6 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomA
 			 Vector3.right * m_JoystickLocomotionInput.moveRight.value).normalized;
 		moveDirection = VRView.viewerCamera.transform.TransformVector(moveDirection);
 		m_ViewerPivot.Translate(moveDirection * m_MoveSpeed * Time.unscaledDeltaTime, Space.World);
-		m_ViewerPivot.Rotate(Vector3.up, m_JoystickLocomotionInput.yaw.value * m_TurnSpeed * Time.unscaledDeltaTime, Space.Self);	    
+		m_ViewerPivot.Rotate(Vector3.up, m_JoystickLocomotionInput.yaw.value * m_TurnSpeed * Time.unscaledDeltaTime, Space.Self);
 	}
 }

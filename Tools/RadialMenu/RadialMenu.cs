@@ -22,6 +22,7 @@ namespace UnityEngine.VR.Menus
 			get { return m_RadialMenuInput; }
 			set { m_RadialMenuInput = (RadialMenuInput) value; }
 		}
+
 		[SerializeField]
 		RadialMenuInput m_RadialMenuInput;
 
@@ -86,7 +87,7 @@ namespace UnityEngine.VR.Menus
 			m_RadialMenuUI.visible = m_Visible;
 		}
 
-		void Update()
+		public void ProcessInput(Action<InputControl> consumeControl)
 		{
 			if (m_RadialMenuInput == null || !visible)
 				return;
@@ -101,6 +102,8 @@ namespace UnityEngine.VR.Menus
 				if (itemWasSelected != null)
 					itemWasSelected(rayOrigin);
 			}
+
+			consumeControl(m_RadialMenuInput.selectItem);
 		}
 	}
 }

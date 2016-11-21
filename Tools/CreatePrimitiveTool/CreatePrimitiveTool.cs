@@ -25,7 +25,9 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 
 	PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
-	public Standard standardInput {	get; set; }
+	Action<InputControl> m_ConsumeControl;
+
+	public Standard standardInput { get; set; }
 
 	public Func<Transform, GameObject, GameObject> instantiateMenuUI { private get; set; }
 
@@ -43,8 +45,10 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 		Freeform,
 	}
 
-	void Update()
+	public void ProcessInput(Action<InputControl> consumeControl)
 	{
+		m_ConsumeControl = consumeControl;
+
 		switch (m_State)
 		{
 			case PrimitiveCreationStates.StartPoint:
@@ -98,6 +102,8 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 			m_State = m_Freeform ? PrimitiveCreationStates.Freeform : PrimitiveCreationStates.EndPoint;
 
 			addToSpatialHash(m_CurrentGameObject);
+
+			m_ConsumeControl(standardInput.action);
 		}
 	}
 
@@ -129,7 +135,11 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 	{
 		// Ready for next object to be created
 		if (standardInput.action.wasJustReleased)
+		{
 			m_State = PrimitiveCreationStates.StartPoint;
+
+			m_ConsumeControl(standardInput.action);
+		}
 	}
 
 	void OnDestroy()

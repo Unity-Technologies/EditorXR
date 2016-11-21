@@ -1,4 +1,5 @@
-﻿using UnityEngine.InputNew;
+﻿using System;
+using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Tools
 {
@@ -16,5 +17,7 @@ namespace UnityEngine.VR.Tools
 		/// Provides access to the ActionMapInput created using actionMap
 		/// </summary>
 		ActionMapInput actionMapInput { set; get; }
+
+		void ProcessInput(Action<InputControl> consumeControl);
 	}
 }

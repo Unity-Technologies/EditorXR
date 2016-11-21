@@ -26,6 +26,7 @@ namespace UnityEngine.VR.Tools
 			get { return m_SelectionInput; }
 			set { m_SelectionInput = (SelectionInput)value; }
 		}
+
 		SelectionInput m_SelectionInput;
 
 		public Standard standardInput { get; set; }
@@ -40,7 +41,7 @@ namespace UnityEngine.VR.Tools
 		public event Action<GameObject, Transform> hovered;
 		public event Action<Transform> selected;
 
-		void Update()
+		public void ProcessInput(Action<InputControl> consumeControl)
 		{
 			if (rayOrigin == null)
 				return;
@@ -83,7 +84,11 @@ namespace UnityEngine.VR.Tools
 			m_HoverGameObject = newHoverGameObject;
 
 			if (standardInput.action.wasJustPressed && m_HoverGameObject)
+			{
 				m_PressedObject = m_HoverGameObject;
+
+				consumeControl(standardInput.action);
+			}
 
 			// Handle select button press
 			if (standardInput.action.wasJustReleased)
@@ -106,6 +111,8 @@ namespace UnityEngine.VR.Tools
 							s_SelectedObjects.Add(m_HoverGameObject);
 							Selection.activeGameObject = m_HoverGameObject;
 						}
+
+						consumeControl(m_SelectionInput.multiSelect);
 					}
 					else
 					{
@@ -125,6 +132,7 @@ namespace UnityEngine.VR.Tools
 				}
 
 				m_PressedObject = null;
+				consumeControl(standardInput.action);
 			}
 		}
 

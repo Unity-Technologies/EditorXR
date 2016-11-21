@@ -41,6 +41,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		get { return m_BlinkLocomotionInput; }
 		set { m_BlinkLocomotionInput = (BlinkLocomotion)value; }
 	}
+
 	private BlinkLocomotion m_BlinkLocomotionInput;
 
 	private void Start()
@@ -64,7 +65,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		showDefaultRay(rayOrigin);
 	}
 
-	private void Update()
+	public void ProcessInput(Action<InputControl> consumeControl)
 	{
 		if (m_State == State.Moving || (s_ActiveBlinkTool != null && s_ActiveBlinkTool != this))
 			return;
@@ -74,6 +75,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			s_ActiveBlinkTool = this;
 			hideDefaultRay(rayOrigin);
 			m_BlinkVisuals.ShowVisuals();
+
+			consumeControl(m_BlinkLocomotionInput.blink);
 		}
 		else if (s_ActiveBlinkTool == this && m_BlinkLocomotionInput.blink.wasJustReleased)
 		{
@@ -82,6 +85,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 			if (!outOfRange)
 				StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
+
+			consumeControl(m_BlinkLocomotionInput.blink);
 		}
 	}
 
