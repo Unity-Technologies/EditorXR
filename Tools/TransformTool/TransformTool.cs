@@ -10,7 +10,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Actions;
 
-public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay
+public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay, IProcessInput
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -165,14 +165,12 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 			UpdateCurrentManipulator();
 	}
 
-	void Update()
+	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 	{
 		var manipulatorGameObject = m_CurrentManipulator.gameObject;
 
 		var directSelection = getDirectSelection();
-		var hasLeft = m_GrabData.ContainsKey(Node.LeftHand);
-		var hasRight = m_GrabData.ContainsKey(Node.RightHand);
-		var hasObject = directSelection.Count > 0 || hasLeft || hasRight;
+		var hasObject = false;
 
 		if (m_LastDirectSelection != null)
 		{
@@ -190,6 +188,10 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		m_LastDirectSelection = directSelection;
 		if (!m_CurrentManipulator.dragging)
 		{
+			var hasLeft = m_GrabData.ContainsKey(Node.LeftHand);
+			var hasRight = m_GrabData.ContainsKey(Node.RightHand);
+			hasObject = directSelection.Count > 0 || hasLeft || hasRight;
+
 			// Disable manipulator on direct hover or drag
 			if (manipulatorGameObject.activeSelf && hasObject)
 				manipulatorGameObject.SetActive(false);
@@ -214,6 +216,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 				{
 					if (!grabObject(this, selection, rayOrigin))
 						continue;
+
+					consumeControl(directSelectInput.select);
 
 					var grabbedObject = selection.gameObject.transform;
 
@@ -290,10 +294,16 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 			}
 
 			if (hasLeft && leftData.input.select.wasJustReleased)
+			{
 				DropObject(Node.LeftHand);
+				consumeControl(leftData.input.select);
+			}
 
 			if (hasRight && rightData.input.select.wasJustReleased)
+			{
 				DropObject(Node.RightHand);
+				consumeControl(rightData.input.select);
+			}
 		}
 
 		// Manipulator is disabled while direct manipulation is happening

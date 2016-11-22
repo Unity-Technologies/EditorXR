@@ -3,10 +3,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Tools
 {
-	public interface IStandardActionMap
+	public interface IStandardActionMap : IProcessInput
 	{
-		Standard standardInput { set; get; }
-
-		void ProcessInput(Action<InputControl> consumeControl);
 	}
 }

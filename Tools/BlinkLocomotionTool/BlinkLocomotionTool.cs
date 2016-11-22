@@ -36,14 +36,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	[SerializeField]
 	private ActionMap m_BlinkActionMap;
 
-	public ActionMapInput actionMapInput
-	{
-		get { return m_BlinkLocomotionInput; }
-		set { m_BlinkLocomotionInput = (BlinkLocomotion)value; }
-	}
-
-	private BlinkLocomotion m_BlinkLocomotionInput;
-
 	private void Start()
 	{
 		m_BlinkVisualsGO = U.Object.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
@@ -65,20 +57,21 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		showDefaultRay(rayOrigin);
 	}
 
-	public void ProcessInput(Action<InputControl> consumeControl)
+	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 	{
+		var blinkInput = (BlinkLocomotion)input;
 		if (m_State == State.Moving || (s_ActiveBlinkTool != null && s_ActiveBlinkTool != this))
 			return;
 
-		if (m_BlinkLocomotionInput.blink.wasJustPressed)
+		if (blinkInput.blink.wasJustPressed)
 		{
 			s_ActiveBlinkTool = this;
 			hideDefaultRay(rayOrigin);
 			m_BlinkVisuals.ShowVisuals();
 
-			consumeControl(m_BlinkLocomotionInput.blink);
+			consumeControl(blinkInput.blink);
 		}
-		else if (s_ActiveBlinkTool == this && m_BlinkLocomotionInput.blink.wasJustReleased)
+		else if (s_ActiveBlinkTool == this && blinkInput.blink.wasJustReleased)
 		{
 			var outOfRange = m_BlinkVisuals.HideVisuals();
 			showDefaultRay(rayOrigin);
@@ -86,7 +79,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			if (!outOfRange)
 				StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
 
-			consumeControl(m_BlinkLocomotionInput.blink);
+			consumeControl(blinkInput.blink);
 		}
 	}
 

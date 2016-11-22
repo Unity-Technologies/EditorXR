@@ -134,6 +134,9 @@ namespace UnityEngine.VR.Modules
 					source.consumeControl(source.actionMapInput.select);
 				}
 
+				//if (source.actionMapInput.select.isHeld)
+				//	source.consumeControl(source.actionMapInput.select);
+
 				if (source.actionMapInput.select.wasJustReleased)
 				{
 					OnSelectReleased(source);

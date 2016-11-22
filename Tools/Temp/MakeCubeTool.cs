@@ -25,7 +25,6 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOr
 
 	public List<IAction> actions { get; private set; }
 	public Transform rayOrigin { get; set; }
-	public Standard standardInput { get; set; }
 
 	public Action<Object> addObjectToSpatialHash { get; set; }
 	public Action<Object> removeObjectFromSpatialHash { get; set; }
@@ -36,11 +35,12 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOr
 		actions = new List<IAction>() { m_CubeToolAction };
 	}
 
-	public void ProcessInput(Action<InputControl> consumeControl)
+	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 	{
+		var standardInput = (Standard)input;
 		if (standardInput.action.wasJustPressed)
 		{
-			Transform cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
+			var cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
 			if (rayOrigin)
 				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
 

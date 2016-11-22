@@ -14,14 +14,13 @@ public class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrig
 	public List<IVacuumable> vacuumables { get { return m_Vacuumables; } }
 	readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();
 
-	public Standard standardInput { get; set; }
-
 	public Transform rayOrigin { get; set; }
 
 	public Vector3 defaultOffset { private get; set; }
 
-	public void ProcessInput(Action<InputControl> consumeControl)
+	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 	{
+		var standardInput = (Standard)input;
 		if (standardInput.action.wasJustPressed)
 		{
 			if (U.UI.IsDoubleClick(Time.realtimeSinceStartup - m_LastClickTime))

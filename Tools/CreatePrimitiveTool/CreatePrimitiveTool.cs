@@ -25,10 +25,6 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 
 	PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
-	Action<InputControl> m_ConsumeControl;
-
-	public Standard standardInput { get; set; }
-
 	public Func<Transform, GameObject, GameObject> instantiateMenuUI { private get; set; }
 
 	public Transform rayOrigin { get; set; }
@@ -45,34 +41,6 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 		Freeform,
 	}
 
-	public void ProcessInput(Action<InputControl> consumeControl)
-	{
-		m_ConsumeControl = consumeControl;
-
-		switch (m_State)
-		{
-			case PrimitiveCreationStates.StartPoint:
-			{
-				HandleStartPoint();
-				break;
-			}
-			case PrimitiveCreationStates.EndPoint:
-			{
-				UpdatePositions();
-				SetScalingForObjectType();
-				CheckForTriggerRelease();
-				break;
-			}
-			case PrimitiveCreationStates.Freeform:
-			{
-				UpdatePositions();
-				UpdateFreeformScale();
-				CheckForTriggerRelease();
-				break;
-			}
-		}
-	}
-
 	void Start()
 	{
 		m_ToolMenu = instantiateMenuUI(rayOrigin, m_MenuPrefab.gameObject);
@@ -81,13 +49,41 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 		createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
 	}
 
+	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+	{
+		var standardInput = (Standard)input;
+
+		switch (m_State)
+		{
+			case PrimitiveCreationStates.StartPoint:
+				{
+					HandleStartPoint(standardInput, consumeControl);
+					break;
+				}
+			case PrimitiveCreationStates.EndPoint:
+				{
+					UpdatePositions();
+					SetScalingForObjectType();
+					CheckForTriggerRelease(standardInput, consumeControl);
+					break;
+				}
+			case PrimitiveCreationStates.Freeform:
+				{
+					UpdatePositions();
+					UpdateFreeformScale();
+					CheckForTriggerRelease(standardInput, consumeControl);
+					break;
+				}
+		}
+	}
+
 	void SetSelectedPrimitive(PrimitiveType type, bool isFreeform)
 	{
 		m_SelectedPrimitiveType = type;
 		m_Freeform = isFreeform;
 	}
 
-	void HandleStartPoint()
+	void HandleStartPoint(Standard standardInput, Action<InputControl> consumeControl)
 	{
 		if (standardInput.action.wasJustPressed)
 		{
@@ -103,7 +99,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 
 			addToSpatialHash(m_CurrentGameObject);
 
-			m_ConsumeControl(standardInput.action);
+			consumeControl(standardInput.action);
 		}
 	}
 
@@ -131,14 +127,14 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 		m_CurrentGameObject.transform.localScale = (maxCorner - minCorner);
 	}
 
-	void CheckForTriggerRelease()
+	void CheckForTriggerRelease(Standard standardInput, Action<InputControl> consumeControl)
 	{
 		// Ready for next object to be created
 		if (standardInput.action.wasJustReleased)
 		{
 			m_State = PrimitiveCreationStates.StartPoint;
 
-			m_ConsumeControl(standardInput.action);
+			consumeControl(standardInput.action);
 		}
 	}
 
