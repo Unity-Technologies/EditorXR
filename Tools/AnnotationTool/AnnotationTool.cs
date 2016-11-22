@@ -7,6 +7,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.VR.Utilities;
 using UnityEditor.VR;
+using UnityEngine.VR.Menus;
 
 [MainMenuItem("Annotation", "Tools", "Draw in the space")]
 public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI, IMenuOrigins
@@ -69,7 +70,11 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	private Mesh m_CustomPointerMesh;
 	private GameObject m_CustomPointerObject;
-	
+
+	[SerializeField]
+	private GameObject m_ColorPickerActivatorPrefab;
+	private GameObject m_ColorPickerActivator;
+
 	private const float kTopMinRadius = 0.001f;
 	private const float kTopMaxRadius = 0.05f;
 	private const float kBottomRadius = 0.01f;
@@ -138,6 +143,13 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				CheckColorPicker();
 
 			CheckBrushSizeUi();
+
+			if (m_ColorPickerActivator == null)
+			{
+				m_ColorPickerActivator = instantiateUI(m_ColorPickerActivatorPrefab);
+				m_ColorPickerActivator.GetComponentInChildren<MainMenuActivator>().alternateMenuOrigin = alternateMenuOrigin;
+				m_ColorPickerActivator.transform.localPosition += Vector3.right * 0.05f;
+			}
 		}
 	}
 
@@ -175,6 +187,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		{
 			var bsuiObj = instantiateUI(m_BrushSizePrefab);
 			m_BrushSizeUi = bsuiObj.GetComponent<BrushSizeUI>();
+
 			var trans = bsuiObj.transform;
 			trans.SetParent(alternateMenuOrigin);
 			trans.localPosition = Vector3.zero;
@@ -202,21 +215,11 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				{
 					if (m_ColorPicker == null)
 						CreateColorPicker(otherRayOrigin);
-					else if (m_ColorPicker.transform.parent != otherRayOrigin)
-					{
-						var pickerTransform = m_ColorPicker.transform;
-						pickerTransform.SetParent(otherRayOrigin);
-						pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
-						pickerTransform.localRotation = m_ColorPickerPrefab.transform.localRotation;
-					}
-
-					float dot = Vector3.Dot(otherRayOrigin.right, rayOrigin.position - otherRayOrigin.position);
-					Vector3 localPos = m_ColorPicker.transform.localPosition;
-					localPos.x = Mathf.Abs(localPos.x) * Mathf.Sign(dot);
-					m_ColorPicker.transform.localPosition = localPos;
 
 					if (!m_ColorPicker.enabled)
 					{
+						PositionColorPicker(otherRayOrigin);
+
 						m_ColorPicker.Show();
 						showDefaultRay(rayOrigin);
 						m_CustomPointerObject.SetActive(false);
@@ -239,13 +242,22 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		m_ColorPicker.toolRayOrigin = rayOrigin;
 		m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
 
-		var pickerTransform = m_ColorPicker.transform;
-		pickerTransform.SetParent(otherRayOrigin);
-		pickerTransform.localPosition = m_ColorPickerPrefab.transform.localPosition;
-		pickerTransform.localRotation = m_ColorPickerPrefab.transform.localRotation;
+		PositionColorPicker(otherRayOrigin);
 
 		showDefaultRay(rayOrigin);
 		m_CustomPointerObject.SetActive(false);
+	}
+
+	private void PositionColorPicker(Transform otherRayOrigin)
+	{
+		var rayPos = rayOrigin.position;
+		var otherRayPos = otherRayOrigin.position;
+		var halfPos = (rayPos + otherRayPos) / 2f;
+		var targetPosition = halfPos + Vector3.up * 0.1f;
+
+		var pickerTrans = m_ColorPicker.transform;
+		pickerTrans.position = targetPosition;
+		pickerTrans.LookAt(VRView.viewerCamera.transform);
 	}
 
 	private void OnColorPickerValueChanged(Color newColor)
@@ -591,10 +603,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			prevDirection = direction;
 		}
 	}
-
+	
 	private void SmoothPlane(List<Vector3> newVertices)
 	{
-		const float kSmoothRatio = .75f;
+		const float kSmoothRatio = 0.75f;
 		for (int side = 0; side < 2; side++)
 		{
 			for (int i = 4; i < newVertices.Count - 4 - side; i++)
@@ -625,7 +637,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		for (int i = 0; i < newVertices.Count; i += 2)
 		{
 			for (int side = 0; side < 2; side++)
+			{
 				newUvs.Add(new Vector2(side, i / 2));
+			}
 		}
 	}
 

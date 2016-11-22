@@ -102,6 +102,8 @@ public class ColorPickerUI : MonoBehaviour
 		}
 
 		canvasGroup.alpha = target;
+		canvasGroup.interactable = !fadeOut;
+		canvasGroup.blocksRaycasts = !fadeOut;
 		m_FadeCoroutine = null;
 	}
 
