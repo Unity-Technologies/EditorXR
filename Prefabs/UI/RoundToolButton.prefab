@@ -20,7 +20,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000012504767854}
   - 114: {fileID: 114000012540944536}
-  - 114: {fileID: 114000010525254200}
+  - 114: {fileID: 114000014061666484}
   m_Layer: 5
   m_Name: RoundToolButton
   m_TagString: Untagged
@@ -303,33 +303,6 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
---- !u!114 &114000010525254200
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000010204453368}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ea8f288a8eeaef46b1f6bfb72debc2a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_AutoHighlight: 0
-  m_CustomHighlightColor: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
-  m_ButtonMeshRenderer: {fileID: 23000013664958186}
-  m_CanvasGroup: {fileID: 225000013680203428}
-  m_Icon: {fileID: 114000013366903114}
-  m_IconContainer: {fileID: 224000012388631740}
-  m_Button: {fileID: 114000010471055224}
-  m_SwapIconsOnClick: 0
-  m_HighlightItems:
-  - {fileID: 114000013366903114}
-  - {fileID: 114000012662170858}
-  m_GrayscaleGradient: 1
-  m_AnimatedReveal: 0
-  m_DelayBeforeReveal: 0.25
 --- !u!114 &114000012540944536
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -405,6 +378,33 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 2
+--- !u!114 &114000014061666484
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010204453368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c14051f25ea615549aeb702ebe3005d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_AutoHighlight: 1
+  m_Button: {fileID: 0}
+  m_ButtonMeshRenderer: {fileID: 23000013664958186}
+  m_IconContainer: {fileID: 224000012388631740}
+  m_CanvasGroup: {fileID: 225000013680203428}
+  m_Text: {fileID: 114000012662170858}
+  m_Icon: {fileID: 114000013366903114}
+  m_AlternateIconSprite: {fileID: 0}
+  m_CustomHighlightColor: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
+  m_HighlightItems:
+  - {fileID: 114000013366903114}
+  - {fileID: 114000012662170858}
+  m_GrayscaleGradient: 1
+  m_AnimatedReveal: 1
+  m_DelayBeforeReveal: 0.25
 --- !u!114 &114000014204280446
 MonoBehaviour:
   m_ObjectHideFlags: 1
