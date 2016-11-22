@@ -9,7 +9,7 @@ using UnityEngine.VR.Utilities;
 namespace UnityEngine.VR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-	public class MultipleRayInputModule : BaseInputModule
+	public class MultipleRayInputModule : BaseInputModule, IProcessInput
 	{
 		public class RaycastSource
 		{
@@ -17,7 +17,6 @@ namespace UnityEngine.VR.Modules
 			public Transform rayOrigin;
 			public Node node;
 			public UIActions actionMapInput;
-			public Action<InputControl> consumeControl;
 			public RayEventData eventData;
 			public GameObject hoveredObject;
 			public GameObject draggedObject;
@@ -27,13 +26,12 @@ namespace UnityEngine.VR.Modules
 
 			public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
 
-			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput, Action<InputControl> consumeControl, Func<RaycastSource, bool> validationCallback)
+			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput, Func<RaycastSource, bool> validationCallback)
 			{
 				this.proxy = proxy;
 				this.rayOrigin = rayOrigin;
 				this.node = node;
 				this.actionMapInput = actionMapInput;
-				this.consumeControl = consumeControl;
 				this.isValid = validationCallback ?? delegate { return true; };
 			}
 		}
@@ -65,11 +63,11 @@ namespace UnityEngine.VR.Modules
 			s_LayerMask = LayerMask.GetMask("UI");
 		}
 
-		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin, Action<InputControl> consumeControl, Func<RaycastSource, bool> validationCallback = null)
+		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin, Func<RaycastSource, bool> validationCallback = null)
 		{
 			UIActions actions = (UIActions)actionMapInput;
 			actions.active = false;
-			m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions, consumeControl, validationCallback));
+			m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions, validationCallback));
 		}
 
 		public void RemoveRaycastSource(Transform rayOrigin)
@@ -88,9 +86,10 @@ namespace UnityEngine.VR.Modules
 
 		public override void Process()
 		{
+			// We don't process with all other input modules because we need fine-grained control to consume input
 		}
 
-		public void DoProcess()
+		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 		{
 			ExecuteUpdateOnSelectedObject();
 
@@ -131,16 +130,13 @@ namespace UnityEngine.VR.Modules
 				if (source.actionMapInput.select.wasJustPressed)
 				{
 					OnSelectPressed(source);
-					source.consumeControl(source.actionMapInput.select);
+					consumeControl(source.actionMapInput.select);
 				}
-
-				//if (source.actionMapInput.select.isHeld)
-				//	source.consumeControl(source.actionMapInput.select);
 
 				if (source.actionMapInput.select.wasJustReleased)
 				{
 					OnSelectReleased(source);
-					source.consumeControl(source.actionMapInput.select);
+					consumeControl(source.actionMapInput.select);
 				}
 
 				var draggedObject = source.draggedObject;
@@ -164,23 +160,25 @@ namespace UnityEngine.VR.Modules
 			}
 		}
 
-		static bool ShouldActivateInput(RayEventData eventData, GameObject sourceCurrentObject)
+		static bool ShouldActivateInput(RayEventData eventData, GameObject currentObject)
 		{
-			var selectionFlags = sourceCurrentObject.GetComponent<ISelectionFlags>();
+			var selectionFlags = currentObject.GetComponent<ISelectionFlags>();
 			if (selectionFlags != null && selectionFlags.selectionFlags == SelectionFlags.Direct && !U.UI.IsDirectEvent(eventData))
 				return false;
 
-			return ExecuteEvents.CanHandleEvent<IPointerClickHandler>(sourceCurrentObject)
+			return ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IPointerDownHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IPointerUpHandler>(currentObject)
 
-				|| ExecuteEvents.CanHandleEvent<IDragHandler>(sourceCurrentObject)
-				|| ExecuteEvents.CanHandleEvent<IBeginDragHandler>(sourceCurrentObject)
-				|| ExecuteEvents.CanHandleEvent<IEndDragHandler>(sourceCurrentObject)
+				|| ExecuteEvents.GetEventHandler<IDragHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IBeginDragHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IEndDragHandler>(currentObject)
 
-				|| ExecuteEvents.CanHandleEvent<IRayDragHandler>(sourceCurrentObject)
-				|| ExecuteEvents.CanHandleEvent<IRayBeginDragHandler>(sourceCurrentObject)
-				|| ExecuteEvents.CanHandleEvent<IRayEndDragHandler>(sourceCurrentObject)
+				|| ExecuteEvents.GetEventHandler<IRayDragHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IRayBeginDragHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IRayEndDragHandler>(currentObject)
 
-				|| ExecuteEvents.CanHandleEvent<IScrollHandler>(sourceCurrentObject);
+				|| ExecuteEvents.GetEventHandler<IScrollHandler>(currentObject);
 		}
 
 		private RayEventData CloneEventData(RayEventData eventData)

@@ -445,7 +445,11 @@ public class EditorVR : MonoBehaviour
 
 	void ConsumeControl(InputControl control)
 	{
+		// Consuming a control inherently locks it (for now), since consuming a control for one frame only might leave
+		// another AMI to pick up a wasPressed the next frame, since it's own input would have been cleared. The
+		// control is released when it returns to it's default value
 		m_LockedControls.Add(control);
+
 		var ami = control.provider as ActionMapInput;
 		foreach (var input in m_PlayerHandle.maps)
 		{
@@ -488,45 +492,42 @@ public class EditorVR : MonoBehaviour
 
 	void ProcessInput()
 	{
+		// Maintain a consumed control, so that other AMIs don't pick up the input, until it's no longer used
 		var removeList = new List<InputControl>();
 		foreach (var lockedControl in m_LockedControls)
 		{
 			if (Mathf.Approximately(lockedControl.rawValue, lockedControl.provider.GetControlData(lockedControl.index).defaultValue))
-			{
 				removeList.Add(lockedControl);
-				Debug.Log("remove lock " + lockedControl.provider);
-			}
 			else
-			{
 				ConsumeControl(lockedControl);
-			}
 		}
 
+		// Remove separately, since we cannot remove while iterating
 		foreach (var inputControl in removeList)
 		{
 			m_LockedControls.Remove(inputControl);
 		}
 
-		m_InputModule.DoProcess();
+		m_InputModule.ProcessInput(null, ConsumeControl);
 
 		foreach (var deviceData in m_DeviceData.Values)
 		{
+			var mainMenu = deviceData.mainMenu;
+			var menuInput = mainMenu as IProcessInput;
+			if (menuInput != null && mainMenu.visible)
+				menuInput.ProcessInput(deviceData.mainMenuInput, ConsumeControl);
+
+			var altMenu = deviceData.alternateMenu;
+			var altMenuInput = altMenu as IProcessInput;
+			if (altMenuInput != null && altMenu.visible)
+				altMenuInput.ProcessInput(deviceData.alternateMenuInput, ConsumeControl);
+
 			foreach (var toolData in deviceData.toolData)
 			{
 				var process = toolData.tool as IProcessInput;
 				if (process != null)
-				{
 					process.ProcessInput(toolData.input, ConsumeControl);
-				}
 			}
-
-			var menu = deviceData.mainMenu as IProcessInput;
-			if (menu != null)
-				menu.ProcessInput(deviceData.mainMenuInput, ConsumeControl);
-
-			var altMenu = deviceData.alternateMenu as IProcessInput;
-			if (altMenu != null)
-				altMenu.ProcessInput(deviceData.alternateMenuInput, ConsumeControl);
 		}
 	}
 
@@ -988,7 +989,7 @@ public class EditorVR : MonoBehaviour
 			}
 
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, ConsumeControl);
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value);
 		});
 	}
 
@@ -1757,7 +1758,7 @@ public class EditorVR : MonoBehaviour
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
 			// Use the mini world ray origin instead of the original ray origin
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, ConsumeControl, (source) =>
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
 			{
 				if (!IsRayActive(source.rayOrigin))
 					return false;
@@ -2378,7 +2379,6 @@ public class EditorVR : MonoBehaviour
 
 	void LoadProjectFolders()
 	{
-		return;
 		m_AssetTypes.Clear();
 
 		StartCoroutine(CreateFolderData((folderData, hasNext) =>

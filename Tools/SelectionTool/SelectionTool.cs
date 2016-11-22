@@ -77,7 +77,6 @@ namespace UnityEngine.VR.Tools
 
 			if (selectionInput.select.wasJustPressed && m_HoverGameObject)
 			{
-				Debug.Log("waspressed");
 				m_PressedObject = m_HoverGameObject;
 
 				consumeControl(selectionInput.select);
@@ -86,7 +85,6 @@ namespace UnityEngine.VR.Tools
 			// Handle select button press
 			if (selectionInput.select.wasJustReleased)
 			{
-				Debug.Log("wasreleased");
 				if (m_PressedObject == m_HoverGameObject)
 				{
 					s_CurrentPrefabOpened = newPrefabRoot;
