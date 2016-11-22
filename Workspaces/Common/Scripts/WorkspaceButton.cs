@@ -21,13 +21,6 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		bool m_AutoHighlight = true;
 
-		public Quaternion visibleLocalRotation
-		{
-			get { return m_VisibleLocalRotation; }
-			set { m_VisibleLocalRotation = value; }
-		}
-		Quaternion m_VisibleLocalRotation;
-
 		public Sprite iconSprite
 		{
 			set
