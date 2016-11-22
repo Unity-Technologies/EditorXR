@@ -186,6 +186,10 @@ namespace UnityEngine.VR.UI
 
 			// Hookup button OnClick event if there is an alternate icon sprite set
 			m_Button.onClick.AddListener(SwapIconSprite);
+
+			// Clears any non-icon content from being displayed if a sprite was set on this button
+			if (m_OriginalIconSprite)
+				SetContent(m_OriginalIconSprite, m_AlternateIconSprite);
 		}
 
 		void OnEnable()
