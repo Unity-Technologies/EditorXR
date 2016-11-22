@@ -101,12 +101,21 @@ namespace UnityEngine.VR.UI
 		[SerializeField]
 		Button m_Button;
 
+		/// <summary>
+		/// The inner-button's background gradient MeshRenderer
+		/// </summary>
 		[SerializeField]
 		MeshRenderer m_ButtonMeshRenderer;
 
+		/// <summary>
+		/// Transform-root of the contents in the icon container (icons, text, etc)
+		/// </summary>
 		[SerializeField]
 		Transform m_IconContainer;
 
+		/// <summary>
+		/// The canvas group managing the drawing of elements in the icon container
+		/// </summary>
 		[SerializeField]
 		CanvasGroup m_CanvasGroup;
 
@@ -129,20 +138,35 @@ namespace UnityEngine.VR.UI
 		[SerializeField]
 		Sprite m_AlternateIconSprite;
 
+		/// <summary>
+		/// The color that elements in the HighlighItems collection should inherit during the highlighted state
+		/// </summary>
 		[SerializeField]
 		Color m_CustomHighlightColor = UnityBrandColorScheme.light;
 
+		/// <summary>
+		/// Collection of items that will change appearance during the highlighted state (color/position/etc)
+		/// </summary>
 		[SerializeField]
 		Graphic[] m_HighlightItems;
 
+		/// <summary>
+		/// If true, use a contrasting grayscale gradient for this button's visual elements (rather than the session gradient)
+		/// </summary>
 		[SerializeField]
 		bool m_GrayscaleGradient = false;
 
 		[Header("Animated Reveal Settings")]
+		/// <summary>
+		/// If true, perform a visually animated reveal of the button's contents OnEnable
+		/// </summary>
 		[SerializeField]
 		bool m_AnimatedReveal;
 
 		[Tooltip("Default value is 0.25")]
+		/// <summary>
+		/// If AnimatedReveal is enabled, wait this duration before performing the reveal
+		/// </summary>
 		[SerializeField]
 		[Range(0f, 2f)]
 		float m_DelayBeforeReveal = 0.25f;
@@ -187,9 +211,11 @@ namespace UnityEngine.VR.UI
 			// Hookup button OnClick event if there is an alternate icon sprite set
 			m_Button.onClick.AddListener(SwapIconSprite);
 
-			// Clears any non-icon content from being displayed if a sprite was set on this button
+			// Clears/resets any non-sprite content(text) from being displayed if a sprite was set on this button
 			if (m_OriginalIconSprite)
 				SetContent(m_OriginalIconSprite, m_AlternateIconSprite);
+			else if (!string.IsNullOrEmpty(m_Text.text))
+				SetContent(m_Text.text.ToCharArray()[0]);
 		}
 
 		void OnEnable()
