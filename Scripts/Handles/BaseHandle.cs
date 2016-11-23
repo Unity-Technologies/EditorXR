@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Handles

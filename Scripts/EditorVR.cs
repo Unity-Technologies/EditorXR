@@ -179,7 +179,7 @@ public class EditorVR : MonoBehaviour
 
 	IGrabObject m_ObjectGrabber;
 
-	readonly List<VacuumTool> m_VacuumTools = new List<VacuumTool>();
+	readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();
 
 	readonly List<IUsesProjectFolderData> m_ProjectFolderLists = new List<IUsesProjectFolderData>();
 	FolderData[] m_FolderData;
@@ -660,7 +660,7 @@ public class EditorVR : MonoBehaviour
 			AddToolToDeviceData(toolData, devices);
 			var vacuumTool = (VacuumTool)toolData.tool;
 			vacuumTool.defaultOffset = kDefaultWorkspaceOffset;
-			m_VacuumTools.Add(vacuumTool);
+			vacuumTool.vacuumables = m_Vacuumables;
 
 			// Using a shared instance of the transform tool across all device tool stacks
 			AddToolToStack(inputDevice, transformTool);
@@ -1727,10 +1727,7 @@ public class EditorVR : MonoBehaviour
 		workspaceTransform.position = cameraTransform.TransformPoint(offset);
 		workspaceTransform.rotation *= Quaternion.LookRotation(cameraTransform.forward) * kDefaultWorkspaceTilt;
 
-		foreach (var vacuumTool in m_VacuumTools)
-		{
-			vacuumTool.vacuumables.Add(workspace);
-		}
+		m_Vacuumables.Add(workspace);
 
 		if (createdCallback != null)
 			createdCallback(workspace);
@@ -1816,10 +1813,7 @@ public class EditorVR : MonoBehaviour
 	private void OnWorkspaceDestroyed(IWorkspace workspace)
 	{
 		m_AllWorkspaces.Remove(workspace);
-		foreach (var vacuumTool in m_VacuumTools)
-		{
-			vacuumTool.vacuumables.Remove(workspace);
-		}
+		m_Vacuumables.Remove(workspace);
 
 		DisconnectInterfaces(workspace);
 
@@ -2553,4 +2547,3 @@ public class EditorVR : MonoBehaviour
 	}
 #endif
 }
-

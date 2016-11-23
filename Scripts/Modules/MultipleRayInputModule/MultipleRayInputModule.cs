@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Proxies;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Modules
@@ -152,6 +153,7 @@ namespace UnityEngine.VR.Modules
 				var scrollObject = source.hoveredObject;
 				if (!scrollObject)
 					scrollObject = source.draggedObject;
+
 				if (scrollObject)
 				{
 					eventData.scrollDelta = new Vector2(0f, source.actionMapInput.verticalScroll.value);

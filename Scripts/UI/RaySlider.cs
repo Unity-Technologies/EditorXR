@@ -2,6 +2,7 @@
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 
 public class RaySlider : Slider, ISelectionFlags

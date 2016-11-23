@@ -1,7 +1,11 @@
 ﻿using System;
+using UnityEngine.VR.Helpers;
 
 namespace UnityEngine.VR.Workspaces
 {
+	/// <summary>
+	/// Declares a class as a Workspace within the system
+	/// </summary>
 	public interface IWorkspace : IVacuumable
 	{
 		/// <summary>

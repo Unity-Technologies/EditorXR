@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
@@ -11,8 +12,7 @@ public class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrig
 	float m_LastClickTime;
 	readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();
 
-	public List<IVacuumable> vacuumables { get { return m_Vacuumables; } }
-	readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();
+	public List<IVacuumable> vacuumables { private get; set; }
 
 	public Transform rayOrigin { get; set; }
 

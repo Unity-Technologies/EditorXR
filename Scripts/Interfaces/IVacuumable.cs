@@ -1,14 +1,18 @@
-﻿using UnityEngine;
-
-public interface IVacuumable
+﻿namespace UnityEngine.VR.Helpers
 {
 	/// <summary>
-	/// Bounding volume to test raycast
+	/// Declares a class as something that can be vacuumed
 	/// </summary>
-	Bounds vacuumBounds { get; }
+	public interface IVacuumable
+	{
+		/// <summary>
+		/// Bounding volume to test raycast
+		/// </summary>
+		Bounds vacuumBounds { get; }
 
-	/// <summary>
-	/// Does not require implementation unless implementing class is not a MonoBehaviour
-	/// </summary>
-	Transform transform { get; }
+		/// <summary>
+		/// Does not require implementation unless implementing class is not a MonoBehaviour
+		/// </summary>
+		Transform transform { get; }
+	}
 }
