@@ -101,6 +101,22 @@ namespace UnityEngine.VR.UI
 		[SerializeField]
 		Button m_Button;
 
+		public bool visible
+		{
+			get { return m_Visible; }
+			set
+			{
+				if (m_Visible == value)
+					return;
+
+				m_Visible = value;
+
+				this.StopCoroutine(ref m_VisibilityCoroutine);
+				m_VisibilityCoroutine = value ? StartCoroutine(AnimateShow()) : StartCoroutine(AnimateHide());
+			}
+		}
+		bool m_Visible;
+
 		/// <summary>
 		/// The inner-button's background gradient MeshRenderer
 		/// </summary>
@@ -112,6 +128,12 @@ namespace UnityEngine.VR.UI
 		/// </summary>
 		[SerializeField]
 		Transform m_IconContainer;
+
+		/// <summary>
+		/// Transform-root of the contents that will be scaled when button is highlighted
+		/// </summary>
+		[SerializeField]
+		Transform m_ContentContainer;
 
 		/// <summary>
 		/// The canvas group managing the drawing of elements in the icon container
@@ -145,24 +167,25 @@ namespace UnityEngine.VR.UI
 		Color m_CustomHighlightColor = UnityBrandColorScheme.light;
 
 		/// <summary>
-		/// Collection of items that will change appearance during the highlighted state (color/position/etc)
-		/// </summary>
-		[SerializeField]
-		Graphic[] m_HighlightItems;
-
-		/// <summary>
 		/// If true, use a contrasting grayscale gradient for this button's visual elements (rather than the session gradient)
 		/// </summary>
 		[SerializeField]
 		bool m_GrayscaleGradient = false;
 
-		[Header("Animated Reveal Settings")]
 		/// <summary>
-		/// If true, perform a visually animated reveal of the button's contents OnEnable
+		/// Collection of items that will change appearance during the highlighted state (color/position/etc)
 		/// </summary>
 		[SerializeField]
-		bool m_AnimatedReveal;
+		Graphic[] m_HighlightItems;
 
+		[Header("Animated Reveal Settings")]
+		/*
+		/// <summary>
+		/// If true, perform a visually animated reveal of the button's contents OnEnable; perform animated hide OnDisable
+		/// </summary>
+		[SerializeField]
+		bool m_AutomaticVisibility;
+		*/
 		[Tooltip("Default value is 0.25")]
 		/// <summary>
 		/// If AnimatedReveal is enabled, wait this duration before performing the reveal
@@ -171,20 +194,23 @@ namespace UnityEngine.VR.UI
 		[Range(0f, 2f)]
 		float m_DelayBeforeReveal = 0.25f;
 
+		[SerializeField]
+		float m_highlightZScaleMultiplier = 2f;
+
 		UnityBrandColorScheme.GradientPair m_OriginalGradientPair;
 		UnityBrandColorScheme.GradientPair m_HighlightGradientPair;
 		Transform m_parentTransform;
 		Vector3 m_IconDirection;
 		Material m_ButtonMaterial;
 		Vector3 m_OriginalIconLocalPosition;
+		Vector3 m_OriginalContentContainerLocalScale;
 		Vector3 m_HiddenLocalScale;
 		Vector3 m_IconHighlightedLocalPosition;
 		Vector3 m_IconPressedLocalPosition;
 		Vector3 m_IconLookDirection;
 		Color m_OriginalColor;
 		Sprite m_OriginalIconSprite;
-		float m_VisibleLocalZScale;
-		Vector3 m_OriginalScale;
+		Vector3 m_OriginalLocalScale;
 
 		// The initial button reveal coroutines, before highlighting occurs
 		Coroutine m_VisibilityCoroutine;
@@ -201,9 +227,9 @@ namespace UnityEngine.VR.UI
 			m_ButtonMaterial = U.Material.GetMaterialClone(m_ButtonMeshRenderer);
 			m_OriginalGradientPair = new UnityBrandColorScheme.GradientPair(m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
 			m_HiddenLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, 0f);
-			m_VisibleLocalZScale = transform.localScale.z;
-			m_OriginalScale = transform.localScale;
+			m_OriginalLocalScale = transform.localScale;
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
+			m_OriginalContentContainerLocalScale = m_ContentContainer.localScale;
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * kIconHighlightedLocalZOffset;
 			m_HighlightGradientPair = m_GrayscaleGradient ? UnityBrandColorScheme.grayscaleSessionGradient : UnityBrandColorScheme.sessionGradient;
@@ -218,20 +244,6 @@ namespace UnityEngine.VR.UI
 				SetContent(m_Text.text);
 		}
 
-		void OnEnable()
-		{
-			if (m_AnimatedReveal)
-			{
-				this.StopCoroutine(ref m_VisibilityCoroutine);
-				m_VisibilityCoroutine = StartCoroutine(AnimateShow());
-			}
-		}
-
-		void OnDisable()
-		{
-			ResetState();
-		}
-
 		/// <summary>
 		/// Animate the reveal of this button's visual elements
 		/// </summary>
@@ -239,24 +251,23 @@ namespace UnityEngine.VR.UI
 		{
 			m_CanvasGroup.interactable = false;
 			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 0f);
+			m_ContentContainer.localScale = m_OriginalContentContainerLocalScale;
 
 			this.StopCoroutine(ref m_ContentVisibilityCoroutine);
 			m_ContentVisibilityCoroutine = StartCoroutine(ShowContent());
 
-			const float kInitialRevealDuration = 0.5f;
 			const float kScaleRevealDuration = 0.25f;
 			var delay = 0f;
-			var scale = m_HiddenLocalScale;
+			var scale = Vector3.zero;
 			var smoothVelocity = Vector3.zero;
-			var hiddenLocalYScale = new Vector3(m_HiddenLocalScale.x, 0f, 0f);
 			var currentDuration = 0f;
-			var totalDuration = m_DelayBeforeReveal + kInitialRevealDuration + kScaleRevealDuration;
-			var visibleLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, m_VisibleLocalZScale);
+			var totalDuration = m_DelayBeforeReveal + kScaleRevealDuration;
+			var visibleLocalScale = m_OriginalLocalScale;
 			while (currentDuration < totalDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = scale;
-				m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, scale.z);
+				m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, scale.y);
 
 				// Perform initial delay
 				while (delay < m_DelayBeforeReveal)
@@ -265,21 +276,42 @@ namespace UnityEngine.VR.UI
 					yield return null;
 				}
 
-				// Perform the button vertical button reveal, after the initial wait
-				while (delay < kInitialRevealDuration + m_DelayBeforeReveal)
-				{
-					delay += Time.unscaledDeltaTime;
-					var shapedDelayLerp = delay / m_DelayBeforeReveal;
-					transform.localScale = Vector3.Lerp(hiddenLocalYScale, m_HiddenLocalScale, shapedDelayLerp * shapedDelayLerp);
-					yield return null;
-				}
-
 				// Perform the button depth reveal
 				scale = U.Math.SmoothDamp(scale, visibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
-			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 1);
+			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 1f);
+			transform.localScale = m_OriginalLocalScale;
+			m_VisibilityCoroutine = null;
+		}
+
+		/// <summary>
+		/// Animate the hiding of this button's visual elements
+		/// </summary>
+		IEnumerator AnimateHide()
+		{
+			Debug.LogError("Animate hide");
+			m_CanvasGroup.interactable = false;
+			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 0f);
+
+			const float kTotalDuration = 0.25f;
+			var scale = transform.localScale;
+			var smoothVelocity = Vector3.zero;
+			var hiddenLocalScale = Vector3.zero;
+			var currentDuration = 0f;
+			while (currentDuration < kTotalDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				scale = U.Math.SmoothDamp(scale, hiddenLocalScale, ref smoothVelocity, kTotalDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				transform.localScale = scale;
+				m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, scale.z);
+
+				yield return null;
+			}
+
+			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 0f);
+			transform.localScale = hiddenLocalScale;
 			m_VisibilityCoroutine = null;
 		}
 
@@ -335,13 +367,13 @@ namespace UnityEngine.VR.UI
 			var currentBottomColor = m_ButtonMaterial.GetColor(kMaterialColorBottomProperty);
 			var topHighlightColor = m_HighlightGradientPair.a;
 			var bottomHighlightColor = m_HighlightGradientPair.b;
-			var currentLocalScale = transform.localScale;
-			var highlightedLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, m_VisibleLocalZScale * 2);
+			var currentLocalScale = m_ContentContainer.localScale;
+			var highlightedLocalScale = new Vector3(m_OriginalContentContainerLocalScale.x, m_OriginalContentContainerLocalScale.y, m_OriginalContentContainerLocalScale.z * m_highlightZScaleMultiplier);
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.unscaledDeltaTime * 3;
 				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
-				transform.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
+				m_ContentContainer.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
 
 				topColor = Color.Lerp(currentTopColor, topHighlightColor, shapedTransitionAmount);
 				bottomColor = Color.Lerp(currentBottomColor, bottomHighlightColor, shapedTransitionAmount);
@@ -352,7 +384,7 @@ namespace UnityEngine.VR.UI
 
 			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, topHighlightColor);
 			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, bottomHighlightColor);
-			transform.localScale = highlightedLocalScale;
+			m_ContentContainer.localScale = highlightedLocalScale;
 			m_HighlightCoroutine = null;
 		}
 
@@ -373,8 +405,8 @@ namespace UnityEngine.VR.UI
 			var currentBottomColor = m_ButtonMaterial.GetColor(kMaterialColorBottomProperty);
 			var topOriginalColor = m_OriginalGradientPair.a;
 			var bottomOriginalColor = m_OriginalGradientPair.b;
-			var currentLocalScale = transform.localScale;
-			var targetScale = new Vector3(transform.localScale.x, transform.localScale.y, m_VisibleLocalZScale);
+			var currentLocalScale = m_ContentContainer.localScale;
+			var targetScale = m_OriginalContentContainerLocalScale;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.unscaledDeltaTime * 3;
@@ -385,13 +417,13 @@ namespace UnityEngine.VR.UI
 				m_ButtonMaterial.SetColor(kMaterialColorTopProperty, topColor);
 				m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, bottomColor);
 
-				transform.localScale = Vector3.Lerp(currentLocalScale, targetScale, shapedTransitionAmount);
+				m_ContentContainer.localScale = Vector3.Lerp(currentLocalScale, targetScale, shapedTransitionAmount);
 				yield return null;
 			}
 
 			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, topOriginalColor);
 			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, bottomOriginalColor);
-			transform.localScale = targetScale;
+			m_ContentContainer.localScale = targetScale;
 			m_HighlightCoroutine = null;
 		}
 
@@ -493,10 +525,11 @@ namespace UnityEngine.VR.UI
 		/// Set this button to only display the first character of a given string, instead of an icon-sprite
 		/// </summary>
 		/// <param name="displayedText">String for which the first character is to be displayed</param>
-		void SetContent(string displayedText)
+		public void SetContent(string displayedText)
 		{
 			m_AlternateIconSprite = null;
 			m_IconSprite = null;
+			m_Icon.enabled = false;
 			m_Text.text = displayedText.Substring(0, 1);
 		}
 
@@ -505,11 +538,12 @@ namespace UnityEngine.VR.UI
 		/// </summary>
 		/// <param name="icon">The main icon-sprite to display</param>
 		/// <param name="alternateIcon">If set, the alternate icon to display when this button is clicked</param>
-		void SetContent(Sprite icon, Sprite alternateIcon = null)
+		public void SetContent(Sprite icon, Sprite alternateIcon = null)
 		{
+			m_Icon.enabled = true;
 			m_IconSprite = icon;
 			m_AlternateIconSprite = alternateIcon;
-			m_Text = null;
+			m_Text.text = string.Empty;
 		}
 
 		/// <summary>
@@ -521,7 +555,13 @@ namespace UnityEngine.VR.UI
 			this.StopCoroutine(ref m_HighlightCoroutine);
 
 			ResetColors();
-			transform.localScale = m_OriginalScale;
+			transform.localScale = m_OriginalLocalScale;
+		}
+
+		public void InstantHide()
+		{
+			m_ContentContainer.localScale = Vector3.zero;
+			transform.localScale = Vector3.zero;
 		}
 
 		/// <summary>
