@@ -20,7 +20,10 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000012504767854}
   - 114: {fileID: 114000012540944536}
+  - 114: {fileID: 114000011260412956}
   - 114: {fileID: 114000014061666484}
+  - 114: {fileID: 114000013154973004}
+  - 135: {fileID: 135000014223547852}
   m_Layer: 5
   m_Name: RoundToolButton
   m_TagString: Untagged
@@ -88,7 +91,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000010210676734}
   - 222: {fileID: 222000012081963994}
-  - 114: {fileID: 114000010471055224}
+  - 114: {fileID: 114000010047785902}
   - 114: {fileID: 114000014204280446}
   m_Layer: 5
   m_Name: Button
@@ -166,7 +169,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010204453368}
-  m_LocalRotation: {x: -0, y: 0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.71465826, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -261,7 +264,7 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011266792292}
   m_Mesh: {fileID: 4300050, guid: 4f7e1c38dff4db9449be30d253d1bd8f, type: 3}
---- !u!114 &114000010471055224
+--- !u!114 &114000010047785902
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -269,7 +272,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000012673317218}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1392445389, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: c75e541e7d7e17f40b6aae5dd949e157, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
@@ -303,6 +306,40 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  m_SelectionFlags: 3
+  onEnter:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  onExit:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  onDown:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  onUp:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+--- !u!114 &114000011260412956
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010204453368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d327b5d520391fe4da32c92a940cfbfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_VRButton: {fileID: 114000014061666484}
 --- !u!114 &114000012540944536
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -350,6 +387,23 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: W
+--- !u!114 &114000013154973004
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010204453368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d140242271ba0a94c9685339cdb66ee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_SmoothRotation: 0
+  m_TightenRotation: 5
+  m_SmoothPosition: 0
+  m_TightenPosition: 5
+  m_Target: {fileID: 0}
 --- !u!114 &114000013366903114
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -390,8 +444,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_AutoHighlight: 1
-  m_Button: {fileID: 0}
+  m_RayHighlight: 0
+  m_Button: {fileID: 114000010047785902}
   m_ButtonMeshRenderer: {fileID: 23000013664958186}
   m_IconContainer: {fileID: 224000012388631740}
   m_CanvasGroup: {fileID: 225000013680203428}
@@ -404,7 +458,7 @@ MonoBehaviour:
   - {fileID: 114000012662170858}
   m_GrayscaleGradient: 1
   m_AnimatedReveal: 1
-  m_DelayBeforeReveal: 0.25
+  m_DelayBeforeReveal: 0
 --- !u!114 &114000014204280446
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -433,6 +487,18 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!135 &135000014223547852
+SphereCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010204453368}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.02
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!222 &222000011018194712
 CanvasRenderer:
   m_ObjectHideFlags: 1
@@ -553,7 +619,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013544577132}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -4.4775122e-10}
   m_LocalScale: {x: 0.00008, y: 0.00008, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
