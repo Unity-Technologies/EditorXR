@@ -1974,7 +1974,7 @@ BoxCollider:
   m_GameObject: {fileID: 1000013208892598}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -2940,13 +2940,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 1
+  m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000014080278418}
   m_CanvasGroup: {fileID: 225000013644774484}
   m_Icon: {fileID: 114000012475626578}
   m_IconContainer: {fileID: 224000011275249326}
   m_Button: {fileID: 114000012007736194}
-  m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 1
   m_HighlightItems:
   - {fileID: 114000012475626578}
@@ -3228,14 +3229,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 1
+  m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_AlternateIconSprite: {fileID: 21300000, guid: bda51dfe062f45741aae4c4ac8bb3cef,
+    type: 3}
   m_ButtonMeshRenderer: {fileID: 23000011344974456}
   m_CanvasGroup: {fileID: 225000011255720640}
   m_Icon: {fileID: 114000012576664828}
   m_IconContainer: {fileID: 224000012811710988}
   m_Button: {fileID: 114000011807431208}
-  m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_AlternateIconSprite: {fileID: 21300000, guid: bda51dfe062f45741aae4c4ac8bb3cef,
-    type: 3}
   m_SwapIconsOnClick: 1
   m_HighlightItems:
   - {fileID: 114000012576664828}
@@ -3397,13 +3399,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 1
+  m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000013191296468}
   m_CanvasGroup: {fileID: 225000014170531246}
   m_Icon: {fileID: 114000012181704926}
   m_IconContainer: {fileID: 224000012458543974}
   m_Button: {fileID: 114000010091343298}
-  m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 1
   m_HighlightItems:
   - {fileID: 114000012181704926}
@@ -3640,12 +3643,13 @@ MonoBehaviour:
   m_FrontPanel: {fileID: 224000013655961458}
   m_DirectManipulator: {fileID: 114000011014117582}
   m_GrabCollider: {fileID: 65000013091105856}
-  m_VacuumHandle: {fileID: 114000012144030156}
   m_LeftHandle: {fileID: 114000010929740822}
   m_FrontHandle: {fileID: 114000014067047110}
   m_RightHandle: {fileID: 114000012827231190}
   m_BackHandle: {fileID: 114000013854833486}
   m_MoveHandle: {fileID: 114000011868678278}
+  m_TopFaceContainer: {fileID: 4000012021209696}
+  m_TopHighlight: {fileID: 114000013312479136}
   m_Frame: {fileID: 137000012547310740}
   m_FrameFrontFaceTransform: {fileID: 4000011062655166}
   m_TopPanelDividerTransform: {fileID: 4000011607955888}
@@ -3662,10 +3666,8 @@ MonoBehaviour:
   m_BackResizeIconsContainer: {fileID: 224000013299645382}
   m_LockButton: {fileID: 114000013163589872}
   m_ResetButton: {fileID: 1000011944177398}
-  m_TopFaceContainer: {fileID: 4000012021209696}
   m_TopHighlightContainer: {fileID: 4000012340493516}
   m_FrontHighlight: {fileID: 114000013793407110}
-  m_TopHighlight: {fileID: 114000013312479136}
 --- !u!137 &137000012547310740
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1
@@ -3898,7 +3900,7 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011022840156}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -9,7 +9,7 @@ using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.UI
 {
-	public abstract class InputField : Selectable
+	public abstract class InputField : Selectable, ISelectionFlags
 	{
 		const float kMoveKeyboardTime = 0.2f;
 		public SelectionFlags selectionFlags

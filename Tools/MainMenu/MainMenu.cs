@@ -16,14 +16,6 @@ namespace UnityEngine.VR.Menus
 		[SerializeField]
 		private ActionMap m_MainMenuActionMap;
 
-		public ActionMapInput actionMapInput
-		{
-			get { return m_MainMenuInput; }
-			set { m_MainMenuInput = (MainMenuInput) value; }
-		}
-		[SerializeField]
-		private MainMenuInput m_MainMenuInput;
-
 		public Transform alternateMenuOrigin
 		{
 			get
@@ -103,13 +95,18 @@ namespace UnityEngine.VR.Menus
 			m_MainMenuUI.SetupMenuFaces();
 		}
 
-		private void Update()
+		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 		{
-			var rotationInput = -m_MainMenuInput.rotate.rawValue;
+			var mainMenuInput = (MainMenuInput)input;
+			var rotationInput = -mainMenuInput.rotate.rawValue;
 
 			// Flick the face when the button is released by adding this value to the flick rotation
-			if (m_MainMenuInput.flickFace.wasJustReleased)
-				m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex - (int) Mathf.Sign(-rotationInput);
+			if (mainMenuInput.flickFace.wasJustReleased)
+			{
+				m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex - (int)Mathf.Sign(-rotationInput);
+
+				consumeControl(mainMenuInput.flickFace);
+			}
 
 			if (Mathf.Approximately(rotationInput, m_LastRotationInput) && Mathf.Approximately(rotationInput, 0f))
 			{

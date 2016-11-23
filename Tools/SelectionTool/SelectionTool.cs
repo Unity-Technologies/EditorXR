@@ -21,13 +21,6 @@ namespace UnityEngine.VR.Tools
 		[SerializeField]
 		ActionMap m_ActionMap;
 
-		public ActionMapInput actionMapInput
-		{
-			get { return m_SelectionInput; }
-			set { m_SelectionInput = (SelectionInput)value; }
-		}
-		SelectionInput m_SelectionInput;
-
 		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 		public Transform rayOrigin { private get; set; }
 		public Action<GameObject, bool> setHighlight { private get; set; }
@@ -38,13 +31,15 @@ namespace UnityEngine.VR.Tools
 		public event Action<GameObject, Transform> hovered;
 		public event Action<Transform> selected;
 
-		void Update()
+		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 		{
 			if (rayOrigin == null)
 				return;
 
 			if (!isRayActive(rayOrigin))
 				return;
+
+			var selectionInput = (SelectionInput)input;
 
 			var newHoverGameObject = getFirstGameObject(rayOrigin);
 			GameObject newPrefabRoot = null;
@@ -80,18 +75,22 @@ namespace UnityEngine.VR.Tools
 
 			m_HoverGameObject = newHoverGameObject;
 
-			if (m_SelectionInput.select.wasJustPressed && m_HoverGameObject)
+			if (selectionInput.select.wasJustPressed && m_HoverGameObject)
+			{
 				m_PressedObject = m_HoverGameObject;
 
+				consumeControl(selectionInput.select);
+			}
+
 			// Handle select button press
-			if (m_SelectionInput.select.wasJustReleased)
+			if (selectionInput.select.wasJustReleased)
 			{
 				if (m_PressedObject == m_HoverGameObject)
 				{
 					s_CurrentPrefabOpened = newPrefabRoot;
 
 					// Multi-Select
-					if (m_SelectionInput.multiSelect.isHeld)
+					if (selectionInput.multiSelect.isHeld)
 					{
 						if (s_SelectedObjects.Contains(m_HoverGameObject))
 						{
@@ -104,6 +103,8 @@ namespace UnityEngine.VR.Tools
 							s_SelectedObjects.Add(m_HoverGameObject);
 							Selection.activeGameObject = m_HoverGameObject;
 						}
+
+						consumeControl(selectionInput.multiSelect);
 					}
 					else
 					{
@@ -121,6 +122,9 @@ namespace UnityEngine.VR.Tools
 					if (selected != null)
 						selected(rayOrigin);
 				}
+
+				if (m_PressedObject != null)
+					consumeControl(selectionInput.select);
 
 				m_PressedObject = null;
 			}

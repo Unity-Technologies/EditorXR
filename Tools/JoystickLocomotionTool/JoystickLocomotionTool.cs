@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEditor.VR;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
@@ -10,8 +11,6 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomA
 	private float m_MoveSpeed = 1f;
 	[SerializeField]
 	private float m_TurnSpeed = 30f;
-	[SerializeField]
-	private PlayerInput m_PlayerInput;
 
 	public Transform viewerPivot
 	{
@@ -27,27 +26,15 @@ public class JoystickLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomA
 	[SerializeField]
 	private ActionMap m_LocomotionActionMap;
 
-	public ActionMapInput actionMapInput
+	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 	{
-		get { return m_JoystickLocomotionInput; }
-		set { m_JoystickLocomotionInput = (JoystickLocomotion)value; }
-	}
-	private JoystickLocomotion m_JoystickLocomotionInput;
+		var joystickLocomotionInput = (JoystickLocomotion)input;
 
-	void Start()
-	{
-		if (m_JoystickLocomotionInput == null && m_PlayerInput)
-			m_JoystickLocomotionInput = m_PlayerInput.GetActions<JoystickLocomotion>();
-	
-	}
-
-	void Update()
-	{
 		var moveDirection =
-			(Vector3.forward * m_JoystickLocomotionInput.moveForward.value +
-			 Vector3.right * m_JoystickLocomotionInput.moveRight.value).normalized;
+			(Vector3.forward * joystickLocomotionInput.moveForward.value +
+			 Vector3.right * joystickLocomotionInput.moveRight.value).normalized;
 		moveDirection = VRView.viewerCamera.transform.TransformVector(moveDirection);
 		m_ViewerPivot.Translate(moveDirection * m_MoveSpeed * Time.unscaledDeltaTime, Space.World);
-		m_ViewerPivot.Rotate(Vector3.up, m_JoystickLocomotionInput.yaw.value * m_TurnSpeed * Time.unscaledDeltaTime, Space.Self);	    
+		m_ViewerPivot.Rotate(Vector3.up, joystickLocomotionInput.yaw.value * m_TurnSpeed * Time.unscaledDeltaTime, Space.Self);
 	}
 }
