@@ -6,8 +6,8 @@ using UnityEngine.VR.Actions;
 using UnityEngine.VR.Tools;
 using Object = UnityEngine.Object;
 
-//[MainMenuItem("Cube", "Create", "Create cubes in the scene")]
-[MainMenuItem(false)]
+//[MainMenuItem(false)]
+[MainMenuItem("Cube", "Primitive", "Create cubes in the scene")]
 public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IActions
 {
 	class CubeToolAction : IAction
