@@ -7,20 +7,12 @@ namespace UnityEngine.VR.Menus
 	/// <summary>
 	/// The main menu that can be shown on device proxies
 	/// </summary>
-	public interface IMainMenu : IUsesMenuActions
+	public interface IMainMenu : IUsesMenuActions, ISelectTool
 	{
 		/// <summary>
 		/// The menu tools that will populate the menu
 		/// </summary>
 		List<Type> menuTools { set; }
-
-		/// <summary>
-		/// Delegate used to select tools from the menu
-		/// Transform = ray origin
-		/// Type = type of tool
-		/// Returns whether the tool was successfully selected
-		/// </summary>
-		Func<Transform, Type, bool> selectTool { set; }
 
 		/// <summary>
 		/// The workspaces that are selectable from the menu
