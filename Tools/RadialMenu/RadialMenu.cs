@@ -17,14 +17,6 @@ namespace UnityEngine.VR.Menus
 		
 		RadialMenuUI m_RadialMenuUI;
 
-		public ActionMapInput actionMapInput
-		{
-			get { return m_RadialMenuInput; }
-			set { m_RadialMenuInput = (RadialMenuInput) value; }
-		}
-		[SerializeField]
-		RadialMenuInput m_RadialMenuInput;
-
 		public List<ActionMenuData> menuActions
 		{
 			get { return m_MenuActions; }
@@ -86,20 +78,27 @@ namespace UnityEngine.VR.Menus
 			m_RadialMenuUI.visible = m_Visible;
 		}
 
-		void Update()
+		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 		{
-			if (m_RadialMenuInput == null || !visible)
+			var radialMenuInput = (RadialMenuInput)input;
+			if (radialMenuInput == null || !visible)
 				return;
 
-			m_RadialMenuUI.buttonInputDirection = m_RadialMenuInput.navigate.vector2;
-			m_RadialMenuUI.pressedDown = m_RadialMenuInput.selectItem.wasJustPressed;
+			m_RadialMenuUI.buttonInputDirection = radialMenuInput.navigate.vector2;
+			m_RadialMenuUI.pressedDown = radialMenuInput.selectItem.wasJustPressed;
+			if (m_RadialMenuUI.pressedDown)
+			{
+				consumeControl(radialMenuInput.selectItem);
+			}
 
-			if (m_RadialMenuInput.selectItem.wasJustReleased)
+			if (radialMenuInput.selectItem.wasJustReleased)
 			{
 				m_RadialMenuUI.SelectionOccurred();
 
 				if (itemWasSelected != null)
 					itemWasSelected(rayOrigin);
+
+				consumeControl(radialMenuInput.selectItem);
 			}
 		}
 	}

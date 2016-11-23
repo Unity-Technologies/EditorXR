@@ -28,7 +28,7 @@ namespace UnityEngine.VR.Utilities
 
 			public static bool IsDirectEvent(RayEventData eventData)
 			{
-				return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength;
+				return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength || eventData.dragging;
 			}
 
 			public static bool IsValidEvent(RayEventData eventData, SelectionFlags selectionFlags)

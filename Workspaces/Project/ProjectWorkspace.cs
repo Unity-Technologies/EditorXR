@@ -44,20 +44,35 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 
 	public FolderData[] folderData
 	{
-		private get { return m_ProjectUI.folderListView.data; }
+		private get { return m_FolderData; }
 		set
 		{
-			var oldData = m_ProjectUI.folderListView.data;
-			if (oldData.Length > 0)
-				CopyExpandStates(oldData[0], value[0]);
+			m_FolderData = value;
 
-			m_ProjectUI.folderListView.data = value;
-			if (value.Length > 0)
-				SelectFolder(m_OpenFolder != null ? GetFolderDataByInstanceID(value[0], m_OpenFolder.instanceID) : value[0]);
+			if (m_ProjectUI)
+			{
+				var oldData = m_ProjectUI.folderListView.data;
+				if (oldData != null && oldData.Length > 0)
+					CopyExpandStates(oldData[0], value[0]);
+
+				m_ProjectUI.folderListView.data = value;
+				if (value.Length > 0)
+					SelectFolder(m_OpenFolder != null ? GetFolderDataByInstanceID(value[0], m_OpenFolder.instanceID) : value[0]);
+			}
 		}
 	}
+	FolderData[] m_FolderData;
 
-	public List<string> filterList { set { m_FilterUI.filterList = value; } }
+	public List<string> filterList
+	{
+		set
+		{
+			m_FilterList = value;
+			if (m_FilterUI)
+				m_FilterUI.filterList = value;
+		}
+	}
+	List<string> m_FilterList;
 
 	public override void Setup()
 	{
@@ -72,7 +87,13 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
 
+		var folderListView = m_ProjectUI.folderListView;
+		folderListView.selectFolder = SelectFolder;
+		folderListView.data = new FolderData[0];
+		folderData = m_FolderData;
+
 		m_FilterUI = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+		filterList = m_FilterList;
 
 		var sliderPrefab = U.Object.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
 		var zoomSlider = sliderPrefab.GetComponent<ZoomSliderUI>();
@@ -80,10 +101,6 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		zoomSlider.zoomSlider.maxValue = kMaxScale;
 		zoomSlider.zoomSlider.value = m_ProjectUI.assetGridView.scaleFactor;
 		zoomSlider.sliding += Scale;
-
-		var folderListView = m_ProjectUI.folderListView;
-		folderListView.selectFolder = SelectFolder;
-		folderListView.data = new FolderData[0];
 
 		var assetGridView = m_ProjectUI.assetGridView;
 		assetGridView.testFilter = TestFilter;
