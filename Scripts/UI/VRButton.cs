@@ -16,13 +16,13 @@ namespace UnityEngine.VR.UI
 		/// <summary>
 		/// If true, highlight this button OnRayEnter
 		/// </summary>
-		public bool autoHighlight
+		public bool rayHighlight
 		{
-			get { return m_AutoHighlight; }
-			set { m_AutoHighlight = value; }
+			get { return m_RayHighlight; }
+			set { m_RayHighlight = value; }
 		}
 		[SerializeField]
-		bool m_AutoHighlight = true;
+		bool m_RayHighlight = true;
 
 		public Sprite iconSprite
 		{
@@ -215,7 +215,7 @@ namespace UnityEngine.VR.UI
 			if (m_OriginalIconSprite)
 				SetContent(m_OriginalIconSprite, m_AlternateIconSprite);
 			else if (!string.IsNullOrEmpty(m_Text.text))
-				SetContent(m_Text.text.ToCharArray()[0]);
+				SetContent(m_Text.text);
 		}
 
 		void OnEnable()
@@ -466,7 +466,7 @@ namespace UnityEngine.VR.UI
 		/// </summary>
 		public void OnRayEnter(RayEventData eventData)
 		{
-			if (autoHighlight)
+			if (rayHighlight)
 				highlighted = true;
 		}
 
@@ -475,7 +475,7 @@ namespace UnityEngine.VR.UI
 		/// </summary>
 		public void OnRayExit(RayEventData eventData)
 		{
-			if (autoHighlight)
+			if (rayHighlight)
 				highlighted = false;
 		}
 
@@ -490,14 +490,14 @@ namespace UnityEngine.VR.UI
 		}
 
 		/// <summary>
-		/// Set this button to only display a single character, instead of an icon-sprite
+		/// Set this button to only display the first character of a given string, instead of an icon-sprite
 		/// </summary>
-		/// <param name="displayedCharacter">The character to display</param>
-		void SetContent(char displayedCharacter)
+		/// <param name="displayedText">String for which the first character is to be displayed</param>
+		void SetContent(string displayedText)
 		{
 			m_AlternateIconSprite = null;
 			m_IconSprite = null;
-			m_Text.text = displayedCharacter.ToString();
+			m_Text.text = displayedText.Substring(0, 1);
 		}
 
 		/// <summary>
