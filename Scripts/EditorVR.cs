@@ -82,6 +82,9 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	ProxyExtras m_ProxyExtras;
 
+	[SerializeField]
+	ActiveToolButton m_ActiveToolButtonPrefab;
+
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
 
@@ -124,6 +127,7 @@ public class EditorVR : MonoBehaviour
 		public ActionMapInput alternateMenuInput;
 		public ITool currentTool;
 		public List<GameObject> customMenus;
+		public ActiveToolButton activeToolbutton;
 	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
@@ -677,6 +681,11 @@ public class EditorVR : MonoBehaviour
 			mainMenuActivator.hoverStarted += OnMainMenuActivatorHoverStarted;
 			mainMenuActivator.hoverEnded += OnMainMenuActivatorHoverEnded;
 
+			var activeToolButton = SpawnActiveToolButton(inputDevice);
+			deviceData.activeToolbutton = activeToolButton;
+			activeToolButton.selected += OnActiveMenuButtonSelected;
+			activeToolButton.gameObject.transform.SetParent(mainMenuActivator.gameObject.transform, false);
+
 			var alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 			deviceData.alternateMenu = alternateMenu;
 			alternateMenu.itemWasSelected += UpdateAlternateMenuOnSelectionChanged;
@@ -852,6 +861,11 @@ public class EditorVR : MonoBehaviour
 			}
 
 		}, true);
+	}
+
+	void OnActiveMenuButtonSelected(Transform rayOrigin)
+	{
+		Debug.LogError("<color=red>OnActiveMenuButtonSelected <--------</color>");
 	}
 
 	private void SpawnActions()
@@ -1270,6 +1284,14 @@ public class EditorVR : MonoBehaviour
 		return mainMenuActivator;
 	}
 
+	ActiveToolButton SpawnActiveToolButton(InputDevice device)
+	{
+		var activeToolButon = U.Object.Instantiate(m_ActiveToolButtonPrefab.gameObject).GetComponent<ActiveToolButton>();
+		ConnectInterfaces(activeToolButon, device);
+
+		return activeToolButon;
+	}
+
 	private Node? GetDeviceNode(InputDevice device)
 	{
 		var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
@@ -1443,7 +1465,6 @@ public class EditorVR : MonoBehaviour
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_MainMenuTools;
-			mainMenu.selectTool = SelectTool;
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
 			mainMenu.menuVisibilityChanged += OnMainMenuVisibilityChanged;
 		}
@@ -1470,6 +1491,10 @@ public class EditorVR : MonoBehaviour
 		var trackedObjectMap = obj as ITrackedObjectActionMap;
 		if (trackedObjectMap != null)
 			trackedObjectMap.trackedObjectInput = m_TrackedObjectInput;
+
+		var selectTool = obj as ISelectTool;
+		if (selectTool != null)
+			selectTool.selectTool = SelectTool;
 	}
 
 	private void DisconnectInterfaces(object obj)
@@ -1584,6 +1609,9 @@ public class EditorVR : MonoBehaviour
 							DespawnTool(deviceData, deviceData.currentTool);
 
 						AddToolToStack(dev, newTool);
+
+						deviceData.activeToolbutton.activeTool = deviceData.currentTool; // assign the new current tool (if any) to the active tool button
+						deviceData.activeToolbutton.activeToolRayOrigin = rayOrigin;
 					}
 				}
 
@@ -1611,6 +1639,7 @@ public class EditorVR : MonoBehaviour
 
 				deviceData.toolData.Pop();
 				deviceData.currentTool = topTool.tool;
+				deviceData.activeToolbutton.activeTool = deviceData.currentTool; // assign the new current tool (if any) to the active tool button
 
 				// Pop this tool of any other stack that references it (for single instance tools)
 				foreach (var otherDeviceData in m_DeviceData.Values)
