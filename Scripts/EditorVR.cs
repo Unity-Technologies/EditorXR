@@ -84,7 +84,7 @@ public class EditorVR : MonoBehaviour
 	ProxyExtras m_ProxyExtras;
 
 	[SerializeField]
-	ActiveToolButton m_ActiveToolButtonPrefab;
+	PinnedToolButton m_PinnedToolButtonPrefab;
 
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
@@ -128,7 +128,7 @@ public class EditorVR : MonoBehaviour
 		public ActionMapInput alternateMenuInput;
 		public ITool currentTool;
 		public IMenu customMenu;
-		public ActiveToolButton activeToolbutton;
+		public PinnedToolButton previousToolButton;
 	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
@@ -682,9 +682,11 @@ public class EditorVR : MonoBehaviour
 			mainMenuActivator.hoverStarted += OnMainMenuActivatorHoverStarted;
 			mainMenuActivator.hoverEnded += OnMainMenuActivatorHoverEnded;
 
-			var activeToolButton = SpawnActiveToolButton(inputDevice);
-			deviceData.activeToolbutton = activeToolButton;
-			activeToolButton.gameObject.transform.SetParent(mainMenuActivator.gameObject.transform, false);
+			var pinnedToolButton = SpawnPinnedToolButton(inputDevice);
+			deviceData.previousToolButton = pinnedToolButton;
+			var pinnedToolButtonTransform = pinnedToolButton.transform;
+			pinnedToolButtonTransform.SetParent(mainMenuActivator.transform, false);
+			pinnedToolButtonTransform.localPosition = new Vector3(0f, 0f, -0.035f); // Offset from the main menu activator
 
 			var alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 			deviceData.alternateMenu = alternateMenu;
@@ -1079,7 +1081,6 @@ public class EditorVR : MonoBehaviour
 	private GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
 	{
 		GameObject go = null;
-
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			if (proxy.rayOrigins.ContainsValue(rayOrigin) && rayOriginPair.Value != rayOrigin)
@@ -1307,12 +1308,12 @@ public class EditorVR : MonoBehaviour
 		return mainMenuActivator;
 	}
 
-	ActiveToolButton SpawnActiveToolButton(InputDevice device)
+	PinnedToolButton SpawnPinnedToolButton(InputDevice device)
 	{
-		var activeToolButon = U.Object.Instantiate(m_ActiveToolButtonPrefab.gameObject).GetComponent<ActiveToolButton>();
-		ConnectInterfaces(activeToolButon, device);
+		var button = U.Object.Instantiate(m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
+		ConnectInterfaces(button, device);
 
-		return activeToolButon;
+		return button;
 	}
 
 	private Node? GetDeviceNode(InputDevice device)
@@ -1633,8 +1634,8 @@ public class EditorVR : MonoBehaviour
 
 						AddToolToStack(dev, newTool);
 
-						deviceData.activeToolbutton.toolType = toolType; // assign the new current tool type to the active tool button
-						deviceData.activeToolbutton.activeToolRayOrigin = rayOrigin;
+						deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
+						deviceData.previousToolButton.rayOrigin = rayOrigin;
 					}
 				}
 
@@ -2610,3 +2611,4 @@ public class EditorVR : MonoBehaviour
 	}
 #endif
 }
+

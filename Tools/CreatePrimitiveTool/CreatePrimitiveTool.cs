@@ -6,7 +6,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityObject = UnityEngine.Object;
 
-[MainMenuItem("Primitive", "Primitive", "Create primitives in the scene")]
+[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin, IUsesSpatialHash
 {
 	[SerializeField]

@@ -9,7 +9,7 @@ using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.UI
 {
-	public class VRButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+	public class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 	{
 		const float kIconHighlightedLocalZOffset = -0.0015f;
 		const string kMaterialAlphaProperty = "_Alpha";

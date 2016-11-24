@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 1d288f1a40f3bc54bb07e9a5eb99d137
-timeCreated: 1479865638
+timeCreated: 1479964689
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
@@ -28,7 +28,7 @@ MonoImporter:
   - m_PreviewCameraPrefab: {fileID: 1000010893495554, guid: 66d2f6b9efc6b7842bea782607a65bd2,
       type: 2}
   - m_ProxyExtras: {instanceID: 0}
-  - m_ActiveToolButtonPrefab: {fileID: 114000011260412956, guid: 7221a75a049ac3949a505c7c2f06bd8e,
+  - m_PinnedToolButtonPrefab: {fileID: 114000011260412956, guid: 7221a75a049ac3949a505c7c2f06bd8e,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
