@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using UnityEngine.UI;
-using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Extensions;
+using UnityEngine.VR.Helpers;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Menus
 {
@@ -9,6 +10,10 @@ namespace UnityEngine.VR.Menus
 	{
 		static readonly Vector3 kHiddenLocalScale = new Vector3(1f, 0f, 1f);
 		const float m_IconHighlightedLocalYOffset = 0.006f;
+		const string kMaterialAlphaProperty = "_Alpha";
+		const string kMaterialExpandProperty = "_Expand";
+		const string kMaterialColorTopProperty = "_ColorTop";
+		const string kMaterialColorBottomProperty = "_ColorBottom";
 
 		[SerializeField]
 		MeshRenderer m_InsetMeshRenderer;
@@ -72,7 +77,7 @@ namespace UnityEngine.VR.Menus
 		}
 		bool m_Highlighted;
 
-		UnityBrandColorScheme.GradientPair m_OriginalInsetGradientPair;
+		GradientPair m_OriginalInsetGradientPair;
 		Material m_BorderRendererMaterial;
 		Transform m_IconTransform;
 		Material m_InsetMaterial;
@@ -109,21 +114,21 @@ namespace UnityEngine.VR.Menus
 
 		public Sprite icon { set { m_Icon.sprite = value; } get { return m_Icon.sprite; } }
 
-		public UnityBrandColorScheme.GradientPair gradientPair
+		public GradientPair gradientPair
 		{
 			set
 			{
 				s_GradientPair = value;
-				m_BorderRendererMaterial.SetColor("_ColorTop", value.a);
-				m_BorderRendererMaterial.SetColor("_ColorBottom", value.b);
+				m_BorderRendererMaterial.SetColor(kMaterialColorTopProperty, value.a);
+				m_BorderRendererMaterial.SetColor(kMaterialColorBottomProperty, value.b);
 			}
 		}
-		static UnityBrandColorScheme.GradientPair s_GradientPair;
+		static GradientPair s_GradientPair;
 
 		void Awake()
 		{
 			m_InsetMaterial = U.Material.GetMaterialClone(m_InsetMeshRenderer);
-			m_OriginalInsetGradientPair = new UnityBrandColorScheme.GradientPair(m_InsetMaterial.GetColor("_ColorTop"), m_InsetMaterial.GetColor("_ColorBottom"));
+			m_OriginalInsetGradientPair = new GradientPair(m_InsetMaterial.GetColor(kMaterialColorTopProperty), m_InsetMaterial.GetColor(kMaterialColorBottomProperty));
 			hiddenLocalRotation = transform.localRotation;
 			m_VisibleInsetLocalScale = m_MenuInset.localScale;
 			m_HighlightedInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_VisibleInsetLocalScale.y * 1.1f, m_VisibleInsetLocalScale.z);
@@ -170,10 +175,10 @@ namespace UnityEngine.VR.Menus
 		IEnumerator AnimateShow()
 		{
 			m_CanvasGroup.interactable = false;
-			m_InsetMaterial.SetFloat("_Alpha", 0);
-			m_InsetMaterial.SetColor("_ColorTop", m_OriginalInsetGradientPair.a);
-			m_InsetMaterial.SetColor("_ColorBottom", m_OriginalInsetGradientPair.b);
-			m_BorderRendererMaterial.SetFloat("_Expand", 0);
+			m_InsetMaterial.SetFloat(kMaterialAlphaProperty, 0);
+			m_InsetMaterial.SetColor(kMaterialColorTopProperty, m_OriginalInsetGradientPair.a);
+			m_InsetMaterial.SetColor(kMaterialColorBottomProperty, m_OriginalInsetGradientPair.b);
+			m_BorderRendererMaterial.SetFloat(kMaterialExpandProperty, 0);
 			m_MenuInset.localScale = m_HiddenInsetLocalScale ;
 			transform.localScale = kHiddenLocalScale;
 			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
@@ -188,12 +193,12 @@ namespace UnityEngine.VR.Menus
 				var opacityShaped = Mathf.Pow(opacity, opacity);
 
 				transform.localScale = Vector3.Lerp(kHiddenLocalScale, Vector3.one, opacity);
-				m_BorderRendererMaterial.SetFloat("_Expand", 1 - opacityShaped);
+				m_BorderRendererMaterial.SetFloat(kMaterialExpandProperty, 1 - opacityShaped);
 				CorrectIconRotation();
 				yield return null;
 			}
 
-			m_BorderRendererMaterial.SetFloat("_Expand", 0);
+			m_BorderRendererMaterial.SetFloat(kMaterialExpandProperty, 0);
 			m_CanvasGroup.interactable = true;
 			transform.localScale = Vector3.one;
 
@@ -214,12 +219,12 @@ namespace UnityEngine.VR.Menus
 				var opacity = duration / 2;
 				opacity *= opacity;
 				m_CanvasGroup.alpha = Mathf.Clamp01(duration - 1);
-				m_InsetMaterial.SetFloat("_Alpha", opacity);
+				m_InsetMaterial.SetFloat(kMaterialAlphaProperty, opacity);
 				m_MenuInset.localScale = Vector3.Lerp(m_HiddenInsetLocalScale, m_VisibleInsetLocalScale, opacity);
 				yield return null;
 			}
 
-			m_InsetMaterial.SetFloat("_Alpha", 1);
+			m_InsetMaterial.SetFloat(kMaterialAlphaProperty, 1);
 			m_MenuInset.localScale = m_VisibleInsetLocalScale;
 		}
 
@@ -229,7 +234,7 @@ namespace UnityEngine.VR.Menus
 			m_Pressed = false;
 			m_Highlighted = false;
 
-			var opacity = m_InsetMaterial.GetFloat("_Alpha");;
+			var opacity = m_InsetMaterial.GetFloat(kMaterialAlphaProperty);;
 			var opacityShaped = Mathf.Pow(opacity, opacity);
 			while (opacity > 0)
 			{
@@ -237,8 +242,8 @@ namespace UnityEngine.VR.Menus
 				transform.localScale = newScale;
 
 				m_CanvasGroup.alpha = opacityShaped;
-				m_BorderRendererMaterial.SetFloat("_Expand", opacityShaped);
-				m_InsetMaterial.SetFloat("_Alpha", opacityShaped);
+				m_BorderRendererMaterial.SetFloat(kMaterialExpandProperty, opacityShaped);
+				m_InsetMaterial.SetFloat(kMaterialAlphaProperty, opacityShaped);
 				m_MenuInset.localScale = Vector3.Lerp(m_HiddenInsetLocalScale, m_VisibleInsetLocalScale, opacityShaped);
 				opacity -= Time.unscaledDeltaTime * 1.5f;
 				opacityShaped = Mathf.Pow(opacity, opacity);
@@ -253,10 +258,10 @@ namespace UnityEngine.VR.Menus
 		void FadeOutCleanup()
 		{
 			m_CanvasGroup.alpha = 0;
-			m_InsetMaterial.SetColor("_ColorTop", m_OriginalInsetGradientPair.a);
-			m_InsetMaterial.SetColor("_ColorBottom", m_OriginalInsetGradientPair.b);
-			m_BorderRendererMaterial.SetFloat("_Expand", 1);
-			m_InsetMaterial.SetFloat("_Alpha", 0);
+			m_InsetMaterial.SetColor(kMaterialColorTopProperty, m_OriginalInsetGradientPair.a);
+			m_InsetMaterial.SetColor(kMaterialColorBottomProperty, m_OriginalInsetGradientPair.b);
+			m_BorderRendererMaterial.SetFloat(kMaterialExpandProperty, 1);
+			m_InsetMaterial.SetFloat(kMaterialAlphaProperty, 0);
 			m_MenuInset.localScale = m_HiddenInsetLocalScale;
 			CorrectIconRotation();
 			transform.localScale = Vector3.zero;
@@ -280,16 +285,16 @@ namespace UnityEngine.VR.Menus
 				topColor = Color.Lerp(m_OriginalInsetGradientPair.a, s_GradientPair.a, opacity * 2f);
 				bottomColor = Color.Lerp(m_OriginalInsetGradientPair.b, s_GradientPair.b, opacity);
 
-				m_InsetMaterial.SetColor("_ColorTop", topColor);
-				m_InsetMaterial.SetColor("_ColorBottom", bottomColor);
+				m_InsetMaterial.SetColor(kMaterialColorTopProperty, topColor);
+				m_InsetMaterial.SetColor(kMaterialColorBottomProperty, bottomColor);
 
 				m_MenuInset.localScale = Vector3.Lerp(m_VisibleInsetLocalScale, m_HighlightedInsetLocalScale, opacity * opacity);
 				yield return null;
 			}
 
-			m_BorderRendererMaterial.SetFloat("_Expand", 0);
-			m_InsetMaterial.SetColor("_ColorTop", m_OriginalInsetGradientPair.a);
-			m_InsetMaterial.SetColor("_ColorBottom", m_OriginalInsetGradientPair.b);
+			m_BorderRendererMaterial.SetFloat(kMaterialExpandProperty, 0);
+			m_InsetMaterial.SetColor(kMaterialColorTopProperty, m_OriginalInsetGradientPair.a);
+			m_InsetMaterial.SetColor(kMaterialColorBottomProperty, m_OriginalInsetGradientPair.b);
 
 			m_HighlightCoroutine = null;
 		}

@@ -36,6 +36,7 @@ public class EditorVR : MonoBehaviour
 	const float kDefaultRayLength = 100f;
 	const float kPreviewScale = 0.1f;
 	const float kViewerPivotTransitionTime = 0.75f;
+	const string kNull = "null";
 
 	// Minimum time to spend loading the project folder before yielding
 	const float kMinProjectFolderLoadTime = 0.005f;
@@ -82,6 +83,9 @@ public class EditorVR : MonoBehaviour
 	[SerializeField]
 	ProxyExtras m_ProxyExtras;
 
+	[SerializeField]
+	PinnedToolButton m_PinnedToolButtonPrefab;
+
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
 
@@ -119,11 +123,12 @@ public class EditorVR : MonoBehaviour
 		public ActionMapInput directSelectInput;
 		public IMainMenu mainMenu;
 		public ActionMapInput mainMenuInput;
-		public bool restoreMainMenu;
+		public List<IMenu> restoreMenus;
 		public IAlternateMenu alternateMenu;
 		public ActionMapInput alternateMenuInput;
 		public ITool currentTool;
-		public List<GameObject> customMenus;
+		public IMenu customMenu;
+		public PinnedToolButton previousToolButton;
 	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
@@ -310,7 +315,7 @@ public class EditorVR : MonoBehaviour
 			var deviceData = new DeviceData
 			{
 				toolData = new Stack<ToolData>(),
-				customMenus = new List<GameObject>()
+				restoreMenus = new List<IMenu>(),
 			};
 			m_DeviceData.Add(device, deviceData);
 		}
@@ -677,6 +682,12 @@ public class EditorVR : MonoBehaviour
 			mainMenuActivator.hoverStarted += OnMainMenuActivatorHoverStarted;
 			mainMenuActivator.hoverEnded += OnMainMenuActivatorHoverEnded;
 
+			var pinnedToolButton = SpawnPinnedToolButton(inputDevice);
+			deviceData.previousToolButton = pinnedToolButton;
+			var pinnedToolButtonTransform = pinnedToolButton.transform;
+			pinnedToolButtonTransform.SetParent(mainMenuActivator.transform, false);
+			pinnedToolButtonTransform.localPosition = new Vector3(0f, 0f, -0.035f); // Offset from the main menu activator
+
 			var alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 			deviceData.alternateMenu = alternateMenu;
 			alternateMenu.itemWasSelected += UpdateAlternateMenuOnSelectionChanged;
@@ -691,20 +702,16 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	void UpdateCustomMenus(IMainMenu mainMenu)
+	void UpdateCustomMenu(IMainMenu mainMenu)
 	{
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			if (mainMenu == deviceData.mainMenu)
 			{
-				// Clean up any stale menus
-				deviceData.customMenus.RemoveAll((go) => go == null);
-
-				// Toggle visibility between custom menus and the main menu
-				foreach (GameObject go in deviceData.customMenus)
-				{
-					go.SetActive(!mainMenu.visible);
-				}
+				// Toggle visibility between a custom menu and the main menu
+				var customMenu = deviceData.customMenu;
+				if (customMenu != null)
+					customMenu.visible = !mainMenu.visible && !deviceData.restoreMenus.Contains(mainMenu);
 			}
 		}, true);
 	}
@@ -716,7 +723,8 @@ public class EditorVR : MonoBehaviour
 			if (mainMenu == deviceData.mainMenu)
 			{
 				var dpr = rayOriginPair.Value.GetComponentInChildren<DefaultProxyRay>();
-				if (mainMenu.visible || deviceData.customMenus.Count > 0)
+				var customMenu = deviceData.customMenu;
+				if (mainMenu.visible || (customMenu != null && customMenu.visible))
 				{
 					dpr.Hide();
 					dpr.LockRay(mainMenu);
@@ -732,7 +740,7 @@ public class EditorVR : MonoBehaviour
 
 	void OnMainMenuVisibilityChanged(IMainMenu mainMenu)
 	{
-		UpdateCustomMenus(mainMenu);
+		UpdateCustomMenu(mainMenu);
 		UpdateRayForMenus(mainMenu);
 		UpdatePlayerHandleMaps();
 	}
@@ -746,9 +754,18 @@ public class EditorVR : MonoBehaviour
 				var mainMenu = deviceData.mainMenu;
 				if (mainMenu.visible)
 				{
+					deviceData.restoreMenus.Add(mainMenu);
 					mainMenu.visible = false;
-					deviceData.restoreMainMenu = true;
 				}
+
+				var customMenu = deviceData.customMenu;
+				if (customMenu != null && customMenu.visible)
+				{
+					deviceData.restoreMenus.Add(customMenu);
+					customMenu.visible = false;
+				}
+
+				UpdateRayForMenus(mainMenu);
 			}
 		}, true);
 	}
@@ -759,11 +776,16 @@ public class EditorVR : MonoBehaviour
 		{
 			if (kvp.Value == rayOrigin)
 			{
-				if (deviceData.restoreMainMenu)
+				var restoreMenus = deviceData.restoreMenus;
+				foreach (var menu in restoreMenus)
 				{
-					deviceData.mainMenu.visible = true;
-					deviceData.restoreMainMenu = false;
+					// HACK: Interfaces don't play well with null comparisons, so this is a workaround
+					if (!Equals(menu, kNull))
+						menu.visible = true;
 				}
+				restoreMenus.Clear();
+
+				UpdateRayForMenus(deviceData.mainMenu);
 			}
 		}, true);
 	}
@@ -794,7 +816,7 @@ public class EditorVR : MonoBehaviour
 				if (mainMenu != null && alternateMenu.visible)
 				{
 					mainMenu.visible = false;
-					deviceData.restoreMainMenu = false;
+					deviceData.restoreMenus.Remove(mainMenu);
 				}
 
 				// Move the activator button to an alternate position if the alternate menu will be shown
@@ -846,7 +868,7 @@ public class EditorVR : MonoBehaviour
 					if (mainMenu != null)
 					{
 						mainMenu.visible = false;
-						deviceData.restoreMainMenu = false;
+						deviceData.restoreMenus.Remove(mainMenu);
 					}
 				}
 			}
@@ -1056,10 +1078,9 @@ public class EditorVR : MonoBehaviour
 		return go;
 	}
 
-	private GameObject InstantiateMenuUI(Transform rayOrigin, GameObject prefab)
+	private GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
 	{
-		var go = InstantiateUI(prefab);
-
+		GameObject go = null;
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			if (proxy.rayOrigins.ContainsValue(rayOrigin) && rayOriginPair.Value != rayOrigin)
@@ -1068,14 +1089,31 @@ public class EditorVR : MonoBehaviour
 				Transform menuOrigin;
 				if (proxy.menuOrigins.TryGetValue(otherRayOrigin, out menuOrigin))
 				{
-					go.transform.SetParent(menuOrigin);
-					go.transform.localPosition = Vector3.zero;
-					go.transform.localRotation = Quaternion.identity;
+					if (deviceData.customMenu == null)
+					{
+						go = InstantiateUI(prefab.gameObject);
 
-					deviceData.customMenus.Add(go);
-					deviceData.mainMenu.visible = false;
-					UpdateCustomMenus(deviceData.mainMenu);
-					UpdateRayForMenus(deviceData.mainMenu);
+						go.transform.SetParent(menuOrigin);
+						go.transform.localPosition = Vector3.zero;
+						go.transform.localRotation = Quaternion.identity;
+
+						var customMenu = go.GetComponent<IMenu>();
+						deviceData.customMenu = customMenu;
+
+						var mainMenu = deviceData.mainMenu;
+
+						// We must be hovering, so respect that with this newly spawned menu
+						if (deviceData.restoreMenus.Count > 0)
+						{
+							customMenu.visible = false;
+						}
+						else
+						{
+							mainMenu.visible = false;
+							UpdateCustomMenu(mainMenu);
+							UpdateRayForMenus(mainMenu);
+						}
+					}
 				}
 			}
 		}, true);
@@ -1270,6 +1308,14 @@ public class EditorVR : MonoBehaviour
 		return mainMenuActivator;
 	}
 
+	PinnedToolButton SpawnPinnedToolButton(InputDevice device)
+	{
+		var button = U.Object.Instantiate(m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
+		ConnectInterfaces(button, device);
+
+		return button;
+	}
+
 	private Node? GetDeviceNode(InputDevice device)
 	{
 		var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
@@ -1443,7 +1489,6 @@ public class EditorVR : MonoBehaviour
 		if (mainMenu != null)
 		{
 			mainMenu.menuTools = m_MainMenuTools;
-			mainMenu.selectTool = SelectTool;
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
 			mainMenu.menuVisibilityChanged += OnMainMenuVisibilityChanged;
 		}
@@ -1470,6 +1515,10 @@ public class EditorVR : MonoBehaviour
 		var trackedObjectMap = obj as ITrackedObjectActionMap;
 		if (trackedObjectMap != null)
 			trackedObjectMap.trackedObjectInput = m_TrackedObjectInput;
+
+		var selectTool = obj as ISelectTool;
+		if (selectTool != null)
+			selectTool.selectTool = SelectTool;
 	}
 
 	private void DisconnectInterfaces(object obj)
@@ -1584,12 +1633,23 @@ public class EditorVR : MonoBehaviour
 							DespawnTool(deviceData, deviceData.currentTool);
 
 						AddToolToStack(dev, newTool);
+
+						deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
+						deviceData.previousToolButton.rayOrigin = rayOrigin;
 					}
 				}
 
 				UpdatePlayerHandleMaps();
-				result = true;
+				result = spawnTool;
 			}
+		}, true);
+
+		// In case of a despawned tool with custom menus, ray visibility needs to be updated
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			var mainMenu = deviceData.mainMenu;
+			UpdateCustomMenu(mainMenu);
+			UpdateRayForMenus(mainMenu);
 		}, true);
 
 		return result;
@@ -1610,6 +1670,7 @@ public class EditorVR : MonoBehaviour
 				}
 
 				deviceData.toolData.Pop();
+				topTool = deviceData.toolData.Peek();
 				deviceData.currentTool = topTool.tool;
 
 				// Pop this tool of any other stack that references it (for single instance tools)
@@ -1627,6 +1688,9 @@ public class EditorVR : MonoBehaviour
 							if (tool is IExclusiveMode)
 								SetToolsEnabled(otherDeviceData, true);
 						}
+
+						// If the tool had a custom menu, the custom menu would spawn on the opposite device
+						otherDeviceData.customMenu = null;
 					}
 				}
 			}
@@ -1907,6 +1971,7 @@ public class EditorVR : MonoBehaviour
 			var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * GetPointerLength(originalRayOrigin);
 			var isContained = miniWorld.Contains(originalPointerPosition);
 			miniWorldRay.tester.active = isContained;
+			miniWorldRayOrigin.gameObject.SetActive(isContained);
 
 			if (isContained && !miniWorldRay.wasContained)
 				HideRay(originalRayOrigin, true);
@@ -2547,3 +2612,4 @@ public class EditorVR : MonoBehaviour
 	}
 #endif
 }
+
