@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: ActiveToolButtonFaceMask
+  m_Name: PinnedToolButtonFaceMask
   m_Shader: {fileID: 4800000, guid: 996205269e400e24fbd065614615829d, type: 3}
   m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1

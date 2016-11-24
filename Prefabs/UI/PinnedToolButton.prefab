@@ -20,7 +20,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000012504767854}
   - 114: {fileID: 114000011260412956}
-  - 114: {fileID: 114000013154973004}
   m_Layer: 5
   m_Name: PinnedToolButton
   m_TagString: Untagged
@@ -340,23 +339,6 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: A
---- !u!114 &114000013154973004
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000010204453368}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d140242271ba0a94c9685339cdb66ee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_SmoothRotation: 1
-  m_TightenRotation: 20
-  m_SmoothPosition: 1
-  m_TightenPosition: 20
-  m_Target: {fileID: 0}
 --- !u!114 &114000013366903114
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -530,5 +512,5 @@ CanvasGroup:
   m_Enabled: 1
   m_Alpha: 1
   m_Interactable: 1
-  m_BlocksRaycasts: 1
+  m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0

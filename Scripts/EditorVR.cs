@@ -1971,6 +1971,7 @@ public class EditorVR : MonoBehaviour
 			var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * GetPointerLength(originalRayOrigin);
 			var isContained = miniWorld.Contains(originalPointerPosition);
 			miniWorldRay.tester.active = isContained;
+			miniWorldRayOrigin.gameObject.SetActive(isContained);
 
 			if (isContained && !miniWorldRay.wasContained)
 				HideRay(originalRayOrigin, true);
