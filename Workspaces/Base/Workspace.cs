@@ -7,15 +7,13 @@ using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Workspaces
 {
-	public abstract class Workspace : MonoBehaviour, IInstantiateUI, ISetHighlight
+	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight
 	{
 		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
-		public static readonly Vector3 kVacuumOffset = new Vector3(0, -0.15f, 0.6f);
-		public static readonly Quaternion kDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
 		public const float kHandleMargin = -0.15f; // Compensate for base size from frame model
 
-		public event Action<Workspace> destroyed = delegate { };
+		public event Action<IWorkspace> destroyed;
 
 		protected WorkspaceUI m_WorkspaceUI;
 
@@ -69,7 +67,7 @@ namespace UnityEngine.VR.Workspaces
 		/// <summary>
 		/// Bounding box for entire workspace, including UI handles
 		/// </summary>
-		public Bounds outerBounds
+		public Bounds vacuumBounds
 		{
 			get
 			{
@@ -114,8 +112,6 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		public bool vacuumEnabled { set { m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value); } }
-
 		public virtual void Setup()
 		{
 			GameObject baseObject = instantiateUI(m_BasePrefab);
@@ -145,11 +141,7 @@ namespace UnityEngine.VR.Workspaces
 			moveHandle.hoverStarted += OnMoveHandleHoverStarted;
 			moveHandle.hoverEnded += OnMoveHandleHoverEnded;
 
-			m_WorkspaceUI.vacuumHandle.doubleClick += OnDoubleClick;
-			m_WorkspaceUI.vacuumHandle.hoverStarted += OnHandleHoverStarted;
-			m_WorkspaceUI.vacuumHandle.hoverEnded += OnHandleHoverEnded;
-
-			var handles = new BaseHandle[]
+			var handles = new []
 			{
 				m_WorkspaceUI.leftHandle,
 				m_WorkspaceUI.frontHandle,
@@ -221,22 +213,10 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			// TODO: Add new highlight visuals support
-			//if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
-			//	setHighlight(handle.gameObject, true);
 		}
 
 		public virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			// TODO: Add new highlight visuals support
-			//if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
-			//	setHighlight(handle.gameObject, false);
-		}
-
-		private void OnDoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			if (!m_Vacuuming)
-				StartCoroutine(VacuumToViewer());
 		}
 
 		public void OnDoubleTriggerTapAboveHMD()
@@ -263,36 +243,6 @@ namespace UnityEngine.VR.Workspaces
 				return;
 
 			transform.rotation *= deltaRotation;
-		}
-
-		private IEnumerator VacuumToViewer()
-		{
-			m_Vacuuming = true;
-			var startPosition = transform.position;
-			var startRotation = transform.rotation;
-
-			var camera = U.Camera.GetMainCamera().transform;
-			var cameraYawVector = camera.forward;
-			cameraYawVector.y = 0;
-			var cameraYaw = Quaternion.LookRotation(cameraYawVector, Vector3.up);
-
-			var destPosition = camera.position + cameraYaw * kVacuumOffset;
-			var destRotation = cameraYaw * kDefaultTilt;
-			var currentValue = 0f;
-			var currentVelocity = 0f;
-			var currentDuration = 0f;
-			const float kTargetValue = 1f;
-			const float kTargetDuration = 0.5f;
-			while (currentDuration < kTargetDuration)
-			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentValue = U.Math.SmoothDamp(currentValue, kTargetValue, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
-				transform.position = Vector3.Lerp(startPosition, destPosition, currentValue);
-				transform.rotation = Quaternion.Lerp(startRotation, destRotation, currentValue);
-				yield return null;
-			}
-
-			m_Vacuuming = false;
 		}
 
 		public virtual void OnCloseClicked()
@@ -335,8 +285,6 @@ namespace UnityEngine.VR.Workspaces
 
 		private void UpdateBounds()
 		{
-			m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
-			m_WorkspaceUI.vacuumHandle.transform.localScale = outerBounds.size;
 			m_WorkspaceUI.bounds = contentBounds;
 		}
 

@@ -22,35 +22,24 @@ public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		}
 	}
 
-	public ActionMapInput actionMapInput
-	{
-		get
-		{
-			return m_Standard;
-		}
-		set
-		{
-			m_Standard = (StandardAlt)value;
-		}
-	}
-
 	[SerializeField]
 	private ActionMap m_ActionMap;
-	[SerializeField]
-	private StandardAlt m_Standard;
 
 	public Action<GameObject> addToSpatialHash { get; set; }
 	public Action<GameObject> removeFromSpatialHash { get; set; }
 
-	private void Update()
+	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 	{
-		if (m_Standard.action.wasJustPressed)
+		var standardAlt = (StandardAlt)input;
+		if (standardAlt.action.wasJustPressed)
 		{
 			Transform sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
 			if (rayOrigin)
 				sphere.position = rayOrigin.position + rayOrigin.forward * 5f;
 
 			addToSpatialHash(sphere.gameObject);
+
+			consumeControl(standardAlt.action);
 		}
 	}
 }

@@ -8,7 +8,7 @@ namespace UnityEngine.VR.UI
 	/// <summary>
 	/// Extension of UI.Button includes SelectionFlags to check for direct selection
 	/// </summary>
-	public class Button : UnityEngine.UI.Button
+	public class Button : UnityEngine.UI.Button, ISelectionFlags
 	{
 		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]

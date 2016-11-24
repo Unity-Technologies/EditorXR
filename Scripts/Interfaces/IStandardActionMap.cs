@@ -1,9 +1,9 @@
-﻿using UnityEngine.InputNew;
-
-namespace UnityEngine.VR.Tools
+﻿namespace UnityEngine.VR.Tools
 {
-	public interface IStandardActionMap
+	/// <summary>
+	/// Receive the default action map from the system
+	/// </summary>
+	public interface IStandardActionMap : IProcessInput
 	{
-		Standard standardInput { set; get; }
 	}
 }
