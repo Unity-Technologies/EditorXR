@@ -125,6 +125,7 @@ public class EditorVR : MonoBehaviour
 		public ITool currentTool;
 		public List<GameObject> customMenus;
 		public IMoveWorkspaces moveWorkspacesModule;
+		public ActionMapInput moveWorkspacesModuleInput;
 	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
@@ -440,8 +441,8 @@ public class EditorVR : MonoBehaviour
 			workspaceSaves.m_Workspaces[i].workspaceName = ws.GetType().ToString();
 			workspaceSaves.m_Workspaces[i].localPosition = ws.transform.localPosition;
 			workspaceSaves.m_Workspaces[i].localRotation = ws.transform.localRotation;
-			workspaceSaves.m_Workspaces[i].bounds = ws.contentBounds;
-			workspaceSaves.m_Workspaces[i].extra = ws.GetExtraSave();
+			//workspaceSaves.m_Workspaces[i].bounds = ws.contentBounds;
+			//workspaceSaves.m_Workspaces[i].extra = ws.GetExtraSave();
 			i++;
 		}
 
@@ -467,7 +468,7 @@ public class EditorVR : MonoBehaviour
 
 			if (moveWorkSpaces == null)
 			{
-				moveWorkSpaces = SpawnMoveWorkspacesModule(typeof(MoveWorkspacesModule), device);
+				moveWorkSpaces = SpawnMoveWorkspacesModule(typeof(MoveWorkspacesModule), device, out deviceData.moveWorkspacesModuleInput);
 				deviceData.moveWorkspacesModule = moveWorkSpaces;
 				UpdatePlayerHandleMaps();
 			}
@@ -552,6 +553,11 @@ public class EditorVR : MonoBehaviour
 			var altMenuInput = altMenu as IProcessInput;
 			if (altMenuInput != null && altMenu.visible)
 				altMenuInput.ProcessInput(deviceData.alternateMenuInput, ConsumeControl);
+
+			var moveWSModule = deviceData.moveWorkspacesModule;
+			var moveWSModuleInput = moveWSModule as IProcessInput;
+			if (moveWSModuleInput != null)
+				moveWSModuleInput.ProcessInput(deviceData.moveWorkspacesModuleInput, ConsumeControl);
 
 			foreach (var toolData in deviceData.toolData)
 			{
@@ -1199,8 +1205,17 @@ public class EditorVR : MonoBehaviour
 					maps.Add(alternateMenuInput);
 			}
 
-			if (deviceData.moveWorkspacesModule != null)
-				AddActionMapInputs(deviceData.moveWorkspacesModule, maps);
+
+			//if (deviceData.moveWorkspacesModule != null)
+			//	AddActionMapInputs(deviceData.moveWorkspacesModule, maps);
+
+			var moveWSModule = deviceData.moveWorkspacesModule;
+			var moveWSModuleInput = deviceData.moveWorkspacesModuleInput;
+			if (moveWSModule!= null && moveWSModuleInput != null)
+			{
+				if (!maps.Contains(moveWSModuleInput))
+					maps.Add(moveWSModuleInput);
+			}
 
 			maps.Add(deviceData.directSelectInput);
 			maps.Add(deviceData.uiInput);
@@ -1281,10 +1296,16 @@ public class EditorVR : MonoBehaviour
 		return mainMenu;
 	}
 
-	private IMoveWorkspaces SpawnMoveWorkspacesModule(Type type, InputDevice device)
+	private IMoveWorkspaces SpawnMoveWorkspacesModule(Type type, InputDevice device, out ActionMapInput input)
 	{
+		input = null;
+
+		if (!typeof(IMoveWorkspaces).IsAssignableFrom(type))
+			return null;
+
 		var workspaceModule = U.Object.AddComponent(type, gameObject) as IMoveWorkspaces;
-		ConnectActionMaps(workspaceModule, device);
+		//ConnectActionMaps(workspaceModule, device);
+		input = CreateActionMapForObject(workspaceModule, device);
 		ConnectInterfaces(workspaceModule, device);
 		return workspaceModule;
 	}
@@ -1770,9 +1791,9 @@ public class EditorVR : MonoBehaviour
 				{
 					workSpace.transform.localPosition = ws.localPosition;
 					workSpace.transform.localRotation = ws.localRotation;
-					workSpace.contentBounds = ws.bounds;
-					if (ws.extra != "")
-						workSpace.SetExtraSave(ws.extra);
+					//workSpace.contentBounds = ws.bounds;
+					//if (ws.extra != "")
+					//	workSpace.SetExtraSave(ws.extra);
 				});
 			}
 		}
@@ -1795,7 +1816,7 @@ public class EditorVR : MonoBehaviour
 			if (instance != null && instance != ws)
 				continue;
 
-			ws.OnDoubleTriggerTapAboveHMD();
+			//ws.OnDoubleTriggerTapAboveHMD();
 			ws.transform.position = cameraTransform.TransformPoint(defaultOffset);
 			ws.transform.LookAt(headPosition);
 			ws.transform.Rotate(Vector3.up, 180.0f);

@@ -12,8 +12,6 @@ using UnityEngine.VR.Helpers;
 [ExecuteInEditMode]
 public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayOrigin, ICustomRay, IMoveWorkspaces
 {
-	public Standard standardInput { set; get; }
-
 	public Transform rayOrigin { get; set; }
 
 	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
@@ -64,8 +62,12 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		m_TopHat.GetComponent<MeshRenderer>().enabled = false;
 	}
 
-	void Update()
+
+	//void Update()
+	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 	{
+		var standardInput = (Standard) input;
+
 		if (standardInput == null)
 			return;
 
@@ -93,9 +95,11 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			}
 			case ManipulateMode.On:
 			{
+				HandleThrowDown(standardInput.action.wasJustReleased);
+				UpdateWorkspaceScales();
+
 				if (standardInput.action.isHeld)
 				{
-					HandleThrowDown();
 					UpdateWorkspaceManipulation();
 					UpdateLookAtPlayer();
 				}
@@ -152,11 +156,11 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		m_GrabbedInTopHat = true;
 	}
 
-	void HandleThrowDown()
+	void HandleThrowDown(bool wasJustReleased)
 	{
 		if (UserThrowsDown() && !m_ThrowDownTriggered)
 		{
-			if (standardInput.action.wasJustReleased)
+			if (wasJustReleased)
 			{
 				if (FindWorkspaces())
 				{
@@ -167,8 +171,6 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 				}
 			}
 		}
-
-		UpdateWorkspaceScales();
 	}
 
 	bool UserThrowsDown()
