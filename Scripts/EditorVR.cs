@@ -1816,8 +1816,7 @@ public class EditorVR : MonoBehaviour
 			if (instance != null && instance != ws)
 				continue;
 
-			//ws.OnDoubleTriggerTapAboveHMD();
-			ws.transform.position = cameraTransform.TransformPoint(defaultOffset);
+			ws.transform.position = cameraTransform.position + defaultOffset;
 			ws.transform.LookAt(headPosition);
 			ws.transform.Rotate(Vector3.up, 180.0f);
 			ws.transform.Rotate(Vector3.right, -30.0f);
