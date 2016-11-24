@@ -122,11 +122,11 @@ public class EditorVR : MonoBehaviour
 		public ActionMapInput directSelectInput;
 		public IMainMenu mainMenu;
 		public ActionMapInput mainMenuInput;
-		public bool restoreMainMenu;
+		public List<IMenu> restoreMenus;
 		public IAlternateMenu alternateMenu;
 		public ActionMapInput alternateMenuInput;
 		public ITool currentTool;
-		public List<GameObject> customMenus;
+		public IMenu customMenu;
 		public ActiveToolButton activeToolbutton;
 	}
 
@@ -314,7 +314,7 @@ public class EditorVR : MonoBehaviour
 			var deviceData = new DeviceData
 			{
 				toolData = new Stack<ToolData>(),
-				customMenus = new List<GameObject>()
+				restoreMenus = new List<IMenu>(),
 			};
 			m_DeviceData.Add(device, deviceData);
 		}
@@ -683,7 +683,6 @@ public class EditorVR : MonoBehaviour
 
 			var activeToolButton = SpawnActiveToolButton(inputDevice);
 			deviceData.activeToolbutton = activeToolButton;
-			activeToolButton.selected += OnActiveMenuButtonSelected;
 			activeToolButton.gameObject.transform.SetParent(mainMenuActivator.gameObject.transform, false);
 
 			var alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
@@ -700,20 +699,16 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	void UpdateCustomMenus(IMainMenu mainMenu)
+	void UpdateCustomMenu(IMainMenu mainMenu)
 	{
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			if (mainMenu == deviceData.mainMenu)
 			{
-				// Clean up any stale menus
-				deviceData.customMenus.RemoveAll((go) => go == null);
-
-				// Toggle visibility between custom menus and the main menu
-				foreach (GameObject go in deviceData.customMenus)
-				{
-					go.SetActive(!mainMenu.visible);
-				}
+				// Toggle visibility between a custom menu and the main menu
+				var customMenu = deviceData.customMenu;
+				if (customMenu != null)
+					customMenu.visible = !mainMenu.visible;
 			}
 		}, true);
 	}
@@ -725,7 +720,8 @@ public class EditorVR : MonoBehaviour
 			if (mainMenu == deviceData.mainMenu)
 			{
 				var dpr = rayOriginPair.Value.GetComponentInChildren<DefaultProxyRay>();
-				if (mainMenu.visible || deviceData.customMenus.Count > 0)
+				var customMenu = deviceData.customMenu;
+				if (mainMenu.visible || (customMenu != null && customMenu.visible))
 				{
 					dpr.Hide();
 					dpr.LockRay(mainMenu);
@@ -741,7 +737,7 @@ public class EditorVR : MonoBehaviour
 
 	void OnMainMenuVisibilityChanged(IMainMenu mainMenu)
 	{
-		UpdateCustomMenus(mainMenu);
+		UpdateCustomMenu(mainMenu);
 		UpdateRayForMenus(mainMenu);
 		UpdatePlayerHandleMaps();
 	}
@@ -756,7 +752,14 @@ public class EditorVR : MonoBehaviour
 				if (mainMenu.visible)
 				{
 					mainMenu.visible = false;
-					deviceData.restoreMainMenu = true;
+					deviceData.restoreMenus.Add(mainMenu);
+				}
+
+				var customMenu = deviceData.customMenu;
+				if (customMenu != null && customMenu.visible)
+				{
+					customMenu.visible = false;
+					deviceData.restoreMenus.Add(customMenu);
 				}
 			}
 		}, true);
@@ -768,11 +771,13 @@ public class EditorVR : MonoBehaviour
 		{
 			if (kvp.Value == rayOrigin)
 			{
-				if (deviceData.restoreMainMenu)
+				var restoreMenus = deviceData.restoreMenus;
+				foreach (var menu in restoreMenus)
 				{
-					deviceData.mainMenu.visible = true;
-					deviceData.restoreMainMenu = false;
+					if (menu != null && ((MonoBehaviour)menu).gameObject != null)
+						menu.visible = true;
 				}
+				restoreMenus.Clear();
 			}
 		}, true);
 	}
@@ -803,7 +808,7 @@ public class EditorVR : MonoBehaviour
 				if (mainMenu != null && alternateMenu.visible)
 				{
 					mainMenu.visible = false;
-					deviceData.restoreMainMenu = false;
+					deviceData.restoreMenus.Remove(mainMenu);
 				}
 
 				// Move the activator button to an alternate position if the alternate menu will be shown
@@ -855,17 +860,12 @@ public class EditorVR : MonoBehaviour
 					if (mainMenu != null)
 					{
 						mainMenu.visible = false;
-						deviceData.restoreMainMenu = false;
+						deviceData.restoreMenus.Remove(mainMenu);
 					}
 				}
 			}
 
 		}, true);
-	}
-
-	void OnActiveMenuButtonSelected(Transform rayOrigin)
-	{
-		Debug.LogError("<color=red>OnActiveMenuButtonSelected <--------</color>");
 	}
 
 	private void SpawnActions()
@@ -1070,9 +1070,9 @@ public class EditorVR : MonoBehaviour
 		return go;
 	}
 
-	private GameObject InstantiateMenuUI(Transform rayOrigin, GameObject prefab)
+	private GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
 	{
-		var go = InstantiateUI(prefab);
+		GameObject go = null;
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
@@ -1082,14 +1082,19 @@ public class EditorVR : MonoBehaviour
 				Transform menuOrigin;
 				if (proxy.menuOrigins.TryGetValue(otherRayOrigin, out menuOrigin))
 				{
-					go.transform.SetParent(menuOrigin);
-					go.transform.localPosition = Vector3.zero;
-					go.transform.localRotation = Quaternion.identity;
+					if (deviceData.customMenu == null)
+					{
+						go = InstantiateUI(prefab.gameObject);
 
-					deviceData.customMenus.Add(go);
-					deviceData.mainMenu.visible = false;
-					UpdateCustomMenus(deviceData.mainMenu);
-					UpdateRayForMenus(deviceData.mainMenu);
+						go.transform.SetParent(menuOrigin);
+						go.transform.localPosition = Vector3.zero;
+						go.transform.localRotation = Quaternion.identity;
+
+						deviceData.customMenu = go.GetComponent<IMenu>();
+						deviceData.mainMenu.visible = false;
+						UpdateCustomMenu(deviceData.mainMenu);
+						UpdateRayForMenus(deviceData.mainMenu);
+					}
 				}
 			}
 		}, true);
@@ -1610,14 +1615,22 @@ public class EditorVR : MonoBehaviour
 
 						AddToolToStack(dev, newTool);
 
-						deviceData.activeToolbutton.activeTool = deviceData.currentTool; // assign the new current tool (if any) to the active tool button
+						deviceData.activeToolbutton.toolType = toolType; // assign the new current tool type to the active tool button
 						deviceData.activeToolbutton.activeToolRayOrigin = rayOrigin;
 					}
 				}
 
 				UpdatePlayerHandleMaps();
-				result = true;
+				result = spawnTool;
 			}
+		}, true);
+
+		// In case of a despawned tool with custom menus, ray visibility needs to be updated
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			var mainMenu = deviceData.mainMenu;
+			UpdateCustomMenu(mainMenu);
+			UpdateRayForMenus(mainMenu);
 		}, true);
 
 		return result;
@@ -1638,8 +1651,8 @@ public class EditorVR : MonoBehaviour
 				}
 
 				deviceData.toolData.Pop();
+				topTool = deviceData.toolData.Peek();
 				deviceData.currentTool = topTool.tool;
-				deviceData.activeToolbutton.activeTool = deviceData.currentTool; // assign the new current tool (if any) to the active tool button
 
 				// Pop this tool of any other stack that references it (for single instance tools)
 				foreach (var otherDeviceData in m_DeviceData.Values)
@@ -1656,6 +1669,9 @@ public class EditorVR : MonoBehaviour
 							if (tool is IExclusiveMode)
 								SetToolsEnabled(otherDeviceData, true);
 						}
+
+						// If the tool had a custom menu, the custom menu would spawn on the opposite device
+						otherDeviceData.customMenu = null;
 					}
 				}
 			}

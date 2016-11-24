@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 
 //[MainMenuItem(false)]
 [MainMenuItem("Cube", "Primitive", "Create cubes in the scene")]
-public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IActions
+public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IActions, IUsesSpatialHash
 {
 	class CubeToolAction : IAction
 	{
@@ -26,8 +26,8 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOr
 	public List<IAction> actions { get; private set; }
 	public Transform rayOrigin { get; set; }
 
-	public Action<Object> addObjectToSpatialHash { get; set; }
-	public Action<Object> removeObjectFromSpatialHash { get; set; }
+	public Action<GameObject> addToSpatialHash { get; set; }
+	public Action<GameObject> removeFromSpatialHash { get; set; }
 
 	void Awake()
 	{
@@ -44,7 +44,7 @@ public class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOr
 			if (rayOrigin)
 				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
 
-			addObjectToSpatialHash(cube);
+			addToSpatialHash(cube.gameObject);
 
 			consumeControl(standardInput.action);
 		}

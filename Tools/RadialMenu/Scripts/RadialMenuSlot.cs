@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using UnityEngine.UI;
-using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Extensions;
+using UnityEngine.VR.Helpers;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Menus
 {
@@ -72,7 +73,7 @@ namespace UnityEngine.VR.Menus
 		}
 		bool m_Highlighted;
 
-		UnityBrandColorScheme.GradientPair m_OriginalInsetGradientPair;
+		GradientPair m_OriginalInsetGradientPair;
 		Material m_BorderRendererMaterial;
 		Transform m_IconTransform;
 		Material m_InsetMaterial;
@@ -109,7 +110,7 @@ namespace UnityEngine.VR.Menus
 
 		public Sprite icon { set { m_Icon.sprite = value; } get { return m_Icon.sprite; } }
 
-		public UnityBrandColorScheme.GradientPair gradientPair
+		public GradientPair gradientPair
 		{
 			set
 			{
@@ -118,12 +119,12 @@ namespace UnityEngine.VR.Menus
 				m_BorderRendererMaterial.SetColor("_ColorBottom", value.b);
 			}
 		}
-		static UnityBrandColorScheme.GradientPair s_GradientPair;
+		static GradientPair s_GradientPair;
 
 		void Awake()
 		{
 			m_InsetMaterial = U.Material.GetMaterialClone(m_InsetMeshRenderer);
-			m_OriginalInsetGradientPair = new UnityBrandColorScheme.GradientPair(m_InsetMaterial.GetColor("_ColorTop"), m_InsetMaterial.GetColor("_ColorBottom"));
+			m_OriginalInsetGradientPair = new GradientPair(m_InsetMaterial.GetColor("_ColorTop"), m_InsetMaterial.GetColor("_ColorBottom"));
 			hiddenLocalRotation = transform.localRotation;
 			m_VisibleInsetLocalScale = m_MenuInset.localScale;
 			m_HighlightedInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_VisibleInsetLocalScale.y * 1.1f, m_VisibleInsetLocalScale.z);
