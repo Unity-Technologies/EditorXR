@@ -30,8 +30,6 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	private Vector3 m_PreviousPosition;
 	private float m_VerticalVelocity;
 
-	GameObject m_TopHat;
-
 	bool m_GrabbedInTopHat;
 	float m_ThrowingTimeStamp;
 	const float kThrowDelayAllowed = 0.2f;
@@ -40,6 +38,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	float m_targetAngleY = 0.0f;
 
 	const float kThresholdY = 0.2f;
+	Bounds m_TopHatBounds;
 
 	private enum ManipulateMode
 	{
@@ -50,18 +49,13 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	void Start()
 	{
-		m_TopHat = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-		m_TopHat.transform.position = VRView.viewerCamera.transform.position;
-		m_TopHat.transform.rotation = VRView.viewerCamera.transform.rotation;
-		m_TopHat.transform.parent = VRView.viewerCamera.transform;
-
-		//set cylinder on top of head
-		m_TopHat.transform.localScale = new Vector3(0.2f, 0.15f, 0.2f);
-		m_TopHat.transform.Translate(Vector3.up * 0.2f);
-		m_TopHat.GetComponent<Collider>().isTrigger = true;
-		m_TopHat.GetComponent<MeshRenderer>().enabled = false;
+		m_TopHatBounds = new Bounds(Vector3.up * 0.2f, new Vector3(0.2f, 0.15f, 0.2f));
 	}
 
+	void OnDrawGizmos()
+	{
+		Gizmos.DrawWireCube(m_TopHatBounds.center, m_TopHatBounds.size);
+	}
 
 	//void Update()
 	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
@@ -114,7 +108,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	bool IsControllerAboveHMD()
 	{
-		return m_TopHat.GetComponent<Collider>().bounds.Contains(rayOrigin.position);
+		Vector3 controllerLocalPos = VRView.viewerCamera.transform.worldToLocalMatrix.MultiplyPoint3x4(rayOrigin.position);
+		return m_TopHatBounds.Contains(controllerLocalPos);
 	}
 
 	bool FindWorkspaces()
@@ -312,10 +307,5 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			smoothMotion.SetRotationSmoothing(kSetOriginalSmoothValue);
 			smoothMotion.SetPositionSmoothing(kSetOriginalSmoothValue);
 		}
-	}
-
-	void OnDestroy()
-	{
-		U.Object.Destroy(m_TopHat);
 	}
 }
