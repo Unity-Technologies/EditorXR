@@ -16,7 +16,7 @@ public class BrushSizeUI : MonoBehaviour
 
 	private Image m_SliderHandleImage;
 
-	private const float kMinSize = 0.25f;
+	private const float kMinSize = 0.625f;
 	private const float kMaxSize = 12.5f;
 
 	void Start()

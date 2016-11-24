@@ -4,12 +4,14 @@ using UnityEngine.UI;
 using System;
 using UnityEngine.EventSystems;
 
-public class ColorPickerUI : MonoBehaviour
+public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 {
 
 	public Transform toolRayOrigin { private get; set; }
 
 	public Action<Color> onColorPicked { private get; set; }
+
+	public Action onHideCalled { private get; set; }
 
 	[SerializeField]
 	private float m_FadeTime;
@@ -101,6 +103,7 @@ public class ColorPickerUI : MonoBehaviour
 			yield return null;
 		}
 
+		GetComponentInChildren<Collider>().enabled = !fadeOut;
 		canvasGroup.alpha = target;
 		canvasGroup.interactable = !fadeOut;
 		canvasGroup.blocksRaycasts = !fadeOut;
@@ -191,5 +194,10 @@ public class ColorPickerUI : MonoBehaviour
 			onColorPicked(col);
 		}
 	}
-	
+
+	public void OnPointerExit(PointerEventData eventData)
+	{
+		if (onHideCalled != null)
+			onHideCalled();
+	}
 }

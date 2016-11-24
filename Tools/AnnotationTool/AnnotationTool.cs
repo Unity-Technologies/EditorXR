@@ -10,7 +10,7 @@ using UnityEditor.VR;
 using UnityEngine.VR.Menus;
 
 [MainMenuItem("Annotation", "Tools", "Draw in the space")]
-public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI, IMenuOrigins
+public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI, IMenuOrigins, ICustomMenuOrigins
 {
 
 	public Transform rayOrigin { private get; set; }
@@ -63,6 +63,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	public Transform menuOrigin { set; private get; }
 	public Transform alternateMenuOrigin { set; private get; }
 
+	public Func<Transform, Transform> customMenuOrigin { private get; set; }
+	public Func<Transform, Transform> customAlternateMenuOrigin { private get; set; }
+
 	private Transform m_AnnotationHolder;
 
 	private bool m_IsRayHidden;
@@ -75,7 +78,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	private GameObject m_ColorPickerActivatorPrefab;
 	private GameObject m_ColorPickerActivator;
 
-	private const float kTopMinRadius = 0.001f;
+	private const float kTopMinRadius = 0.0025f;
 	private const float kTopMaxRadius = 0.05f;
 	private const float kBottomRadius = 0.01f;
 	private const float kTipDistance = 0.05f;
@@ -138,17 +141,19 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (rayOrigin != null)
 		{
 			GenerateCustomPointer();
-
-			if (otherRayOrigins != null)
-				CheckColorPicker();
-
 			CheckBrushSizeUi();
 
 			if (m_ColorPickerActivator == null)
 			{
 				m_ColorPickerActivator = instantiateUI(m_ColorPickerActivatorPrefab);
-				m_ColorPickerActivator.GetComponentInChildren<MainMenuActivator>().alternateMenuOrigin = alternateMenuOrigin;
-				m_ColorPickerActivator.transform.localPosition += Vector3.right * 0.05f;
+				var otherAltMenu = customAlternateMenuOrigin(otherRayOrigins[0]);
+				m_ColorPickerActivator.transform.SetParent(otherAltMenu);
+				m_ColorPickerActivator.transform.localRotation = Quaternion.identity;
+				m_ColorPickerActivator.transform.localPosition = Vector3.back * 0.075f + Vector3.right * 0.05f;
+
+				var activator = m_ColorPickerActivator.GetComponent<ColorPickerActivator>();
+				activator.rayOrigin = otherRayOrigins[0];
+				activator.showColorPicker = ShowColorPicker;
 			}
 		}
 	}
@@ -185,10 +190,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		if (m_BrushSizeUi == null)
 		{
-			var bsuiObj = instantiateUI(m_BrushSizePrefab);
-			m_BrushSizeUi = bsuiObj.GetComponent<BrushSizeUI>();
+			var brushSizeUi = instantiateUI(m_BrushSizePrefab);
+			m_BrushSizeUi = brushSizeUi.GetComponent<BrushSizeUI>();
 
-			var trans = bsuiObj.transform;
+			var trans = brushSizeUi.transform;
 			trans.SetParent(alternateMenuOrigin);
 			trans.localPosition = Vector3.zero;
 			trans.localRotation = Quaternion.Euler(-90, 0, 0);
@@ -211,27 +216,37 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				var otherRayMatrix = otherRayOrigin.worldToLocalMatrix;
 				var rayLocalPos = otherRayMatrix.MultiplyPoint3x4(rayOrigin.position);
 
-				if (m_ColorPickerRegion.Contains(rayLocalPos))
-				{
-					if (m_ColorPicker == null)
-						CreateColorPicker(otherRayOrigin);
-
-					if (!m_ColorPicker.enabled)
-					{
-						PositionColorPicker(otherRayOrigin);
-
-						m_ColorPicker.Show();
-						showDefaultRay(rayOrigin);
-						m_CustomPointerObject.SetActive(false);
-					}
-				}
-				else if (m_ColorPicker && m_ColorPicker.enabled)
-				{
-					m_ColorPicker.Hide();
-					hideDefaultRay(rayOrigin);
-					m_CustomPointerObject.SetActive(true);
-				}
+				if (!m_ColorPickerRegion.Contains(rayLocalPos))
+					HideColorPicker();
 			}
+		}
+	}
+
+	private void ShowColorPicker(Transform otherRayOrigin)
+	{
+		if (m_IsValidStroke)
+			return;
+
+		if (!m_ColorPicker)
+			CreateColorPicker(otherRayOrigin);
+
+		if (!m_ColorPicker.enabled)
+		{
+			PositionColorPicker(otherRayOrigin);
+
+			m_ColorPicker.Show();
+			showDefaultRay(rayOrigin);
+			m_CustomPointerObject.SetActive(false);
+		}
+	}
+
+	private void HideColorPicker()
+	{
+		if (m_ColorPicker && m_ColorPicker.enabled)
+		{
+			m_ColorPicker.Hide();
+			hideDefaultRay(rayOrigin);
+			m_CustomPointerObject.SetActive(true);
 		}
 	}
 
@@ -239,6 +254,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		var colorPickerObj = instantiateUI(m_ColorPickerPrefab);
 		m_ColorPicker = colorPickerObj.GetComponent<ColorPickerUI>();
+		m_ColorPicker.onHideCalled = HideColorPicker;
 		m_ColorPicker.toolRayOrigin = rayOrigin;
 		m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
 
@@ -253,11 +269,13 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		var rayPos = rayOrigin.position;
 		var otherRayPos = otherRayOrigin.position;
 		var halfPos = (rayPos + otherRayPos) / 2f;
-		var targetPosition = halfPos + Vector3.up * 0.1f;
+		var upVector = Vector3.up * 0.1f;
+		var forwardVector = VRView.viewerCamera.transform.forward * 0.025f;
+		var targetPosition = halfPos + upVector + forwardVector;
 
 		var pickerTrans = m_ColorPicker.transform;
 		pickerTrans.position = targetPosition;
-		pickerTrans.LookAt(VRView.viewerCamera.transform);
+		pickerTrans.rotation = Quaternion.LookRotation(pickerTrans.position - VRView.viewerCamera.transform.position);
 	}
 
 	private void OnColorPickerValueChanged(Color newColor)
@@ -309,8 +327,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			return;
 
 		m_CustomPointerMesh = new Mesh();
-		m_CustomPointerMesh.vertices = GenerateVertices();
-		m_CustomPointerMesh.triangles = GenerateTriangles();
+		m_CustomPointerMesh.vertices = GeneratePointerVertices();
+		m_CustomPointerMesh.triangles = GeneratePointerTriangles();
 
 		m_CustomPointerObject = new GameObject("CustomPointer");
 
@@ -327,7 +345,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		pointerTrans.localRotation = Quaternion.identity;
 	}
 
-	private Vector3[] GenerateVertices()
+	private Vector3[] GeneratePointerVertices()
 	{
 		List<Vector3> points = new List<Vector3>();
 
@@ -351,17 +369,17 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		return points.ToArray();
 	}
 
-	private int[] GenerateTriangles()
+	private int[] GeneratePointerTriangles()
 	{
 		List<int> triangles = new List<int>();
 
-		GenerateSideTriangles(triangles);
-		GenerateCapsTriangles(triangles);
+		GeneratePointerSideTriangles(triangles);
+		GeneratePointerCapsTriangles(triangles);
 
 		return triangles.ToArray();
 	}
 
-	private void GenerateSideTriangles(List<int> triangles)
+	private void GeneratePointerSideTriangles(List<int> triangles)
 	{
 		for (int i = 1; i < kSides; i++)
 		{
@@ -379,7 +397,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		triangles.AddRange(finishTriangles);
 	}
 
-	private void GenerateCapsTriangles(List<int> triangles)
+	private void GeneratePointerCapsTriangles(List<int> triangles)
 	{
 		// Generate the bottom circle cap.
 		for (int i = 1; i < kSides; i++)
@@ -501,6 +519,14 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		Vector3 rayRight = rayOrigin.right;
 		Vector3 worldPoint = rayOrigin.position + rayForward * kTipDistance;
 		Vector3 localPoint = m_WorldToLocalMesh.MultiplyPoint3x4(worldPoint);
+
+		if (m_Points.Count > 0)
+		{
+			var lastPoint = m_Points.Last();
+			var velocity = (localPoint - lastPoint) / Time.unscaledDeltaTime;
+			if (velocity.magnitude < m_CurrentRadius)
+				return;
+		}
 
 		InterpolatePointsIfNeeded(localPoint, rayForward, rayRight);
 		

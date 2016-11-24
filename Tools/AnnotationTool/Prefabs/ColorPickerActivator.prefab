@@ -19,7 +19,6 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 4000012841704540}
-  - 114: {fileID: 114000012106753508}
   - 135: {fileID: 135000013639289666}
   - 114: {fileID: 114000013627361928}
   - 114: {fileID: 114000014269249202}
@@ -235,20 +234,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010848960288}
   m_Mesh: {fileID: 4300050, guid: 4f7e1c38dff4db9449be30d253d1bd8f, type: 3}
---- !u!114 &114000012106753508
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000010255295176}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d6f3e100bf7b5f54d9ad1b115494abed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_Icon: {fileID: 4000010924652800}
-  m_HighlightedPRS: {fileID: 4000013117727556}
 --- !u!114 &114000013627361928
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -274,6 +259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_Icon: {fileID: 4000010924652800}
 --- !u!135 &135000013639289666
 SphereCollider:
   m_ObjectHideFlags: 1

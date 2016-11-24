@@ -1330,6 +1330,13 @@ public class EditorVR : MonoBehaviour
 						menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
 				}
 			}
+
+			var customMenuOrigins = obj as ICustomMenuOrigins;
+			if (customMenuOrigins != null)
+			{
+				customMenuOrigins.customMenuOrigin = GetCustomMainMenuOrigin;
+				customMenuOrigins.customAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
+			}
 		}
 
 		// Specific proxy ray setting
@@ -1456,6 +1463,44 @@ public class EditorVR : MonoBehaviour
 			m_MenuActions = m_MenuActions.Where(a => !actions.Contains(a.action)).ToList();
 			UpdateAlternateMenuActions();
 		}
+	}
+
+	private Transform GetCustomMainMenuOrigin(Transform rayOrigin)
+	{
+		Transform mainMenuOrigin = null;
+		
+		ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
+		{
+			if (mainMenuOrigin)
+				return;
+			
+			if (rayOriginPair.Value == rayOrigin)
+			{
+				if (proxy.menuOrigins.ContainsKey(rayOrigin))
+					mainMenuOrigin = proxy.menuOrigins[rayOrigin];
+			}
+		}, true);
+
+		return mainMenuOrigin;
+	}
+
+	private Transform GetCustomAlternateMenuOrigin(Transform rayOrigin)
+	{
+		Transform alternateMenuOrigin = null;
+
+		ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
+		{
+			if (alternateMenuOrigin)
+				return;
+
+			if (rayOriginPair.Value == rayOrigin)
+			{
+				if (proxy.alternateMenuOrigins.ContainsKey(rayOrigin))
+					alternateMenuOrigin = proxy.alternateMenuOrigins[rayOrigin];
+			}
+		}, true);
+
+		return alternateMenuOrigin;
 	}
 
 	private void UpdateAlternateMenuActions()
