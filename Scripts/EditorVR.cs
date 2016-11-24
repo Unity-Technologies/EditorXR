@@ -36,6 +36,7 @@ public class EditorVR : MonoBehaviour
 	const float kDefaultRayLength = 100f;
 	const float kPreviewScale = 0.1f;
 	const float kViewerPivotTransitionTime = 0.75f;
+	const string kNull = "null";
 
 	// Minimum time to spend loading the project folder before yielding
 	const float kMinProjectFolderLoadTime = 0.005f;
@@ -708,7 +709,7 @@ public class EditorVR : MonoBehaviour
 				// Toggle visibility between a custom menu and the main menu
 				var customMenu = deviceData.customMenu;
 				if (customMenu != null)
-					customMenu.visible = !mainMenu.visible;
+					customMenu.visible = !mainMenu.visible && !deviceData.restoreMenus.Contains(mainMenu);
 			}
 		}, true);
 	}
@@ -751,16 +752,18 @@ public class EditorVR : MonoBehaviour
 				var mainMenu = deviceData.mainMenu;
 				if (mainMenu.visible)
 				{
-					mainMenu.visible = false;
 					deviceData.restoreMenus.Add(mainMenu);
+					mainMenu.visible = false;
 				}
 
 				var customMenu = deviceData.customMenu;
 				if (customMenu != null && customMenu.visible)
 				{
-					customMenu.visible = false;
 					deviceData.restoreMenus.Add(customMenu);
+					customMenu.visible = false;
 				}
+
+				UpdateRayForMenus(mainMenu);
 			}
 		}, true);
 	}
@@ -774,10 +777,13 @@ public class EditorVR : MonoBehaviour
 				var restoreMenus = deviceData.restoreMenus;
 				foreach (var menu in restoreMenus)
 				{
-					if (menu != null && ((MonoBehaviour)menu).gameObject != null)
+					// HACK: Interfaces don't play well with null comparisons, so this is a workaround
+					if (!Equals(menu, kNull))
 						menu.visible = true;
 				}
 				restoreMenus.Clear();
+
+				UpdateRayForMenus(deviceData.mainMenu);
 			}
 		}, true);
 	}
@@ -1090,10 +1096,22 @@ public class EditorVR : MonoBehaviour
 						go.transform.localPosition = Vector3.zero;
 						go.transform.localRotation = Quaternion.identity;
 
-						deviceData.customMenu = go.GetComponent<IMenu>();
-						deviceData.mainMenu.visible = false;
-						UpdateCustomMenu(deviceData.mainMenu);
-						UpdateRayForMenus(deviceData.mainMenu);
+						var customMenu = go.GetComponent<IMenu>();
+						deviceData.customMenu = customMenu;
+
+						var mainMenu = deviceData.mainMenu;
+
+						// We must be hovering, so respect that with this newly spawned menu
+						if (deviceData.restoreMenus.Count > 0)
+						{
+							customMenu.visible = false;
+						}
+						else
+						{
+							mainMenu.visible = false;
+							UpdateCustomMenu(mainMenu);
+							UpdateRayForMenus(mainMenu);
+						}
 					}
 				}
 			}
