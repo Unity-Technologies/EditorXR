@@ -25,6 +25,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	private float m_TriggerPressedTimeStamp = 0.0f;
 	private Workspace[] m_AllWorkspaces;
 	private Quaternion[] m_WorkspaceLocalRotaions;
+	private float[] m_ExtraOffset;
 
 	private Quaternion m_RayOriginStartAngle;
 	private bool m_ThrowDownTriggered = false;
@@ -38,7 +39,6 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	const float kThrowDelayAllowed = 0.2f;
 	float m_CurrentTargetScale = 1.0f;
 
-	float deltaAngleY = 0.0f;
 	float m_targetAngleY = 0.0f;
 
 	const float kThresholdY = 0.2f;
@@ -93,25 +93,16 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			}
 			case ManipulateMode.On:
 			{
-				HandleThrowDown();
-				UpdateWorkspaceScales();
-
 				if (standardInput.action.isHeld)
+				{
+					HandleThrowDown();
 					UpdateWorkspaceManipulation();
+					UpdateLookAtPlayer();
+				}
 
 				if (standardInput.action.wasJustReleased)
-				{
-					mode = ManipulateMode.Off;
-					showDefaultRay(rayOrigin);
+					HandleManipulationEnd();
 
-					foreach(var ws in m_AllWorkspaces)
-					{
-						ws.SetUIHighlights(false);
-						var smoothMotion = ws.GetComponentInChildren<SmoothMotion>();
-						smoothMotion.SetRotationSmoothing(10f);
-						smoothMotion.SetPositionSmoothing(10f);
-					}
-				}
 				break;
 			}
 		}
@@ -119,10 +110,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	bool IsControllerAboveHMD()
 	{
-		if (m_TopHat.GetComponent<Collider>().bounds.Contains(rayOrigin.position))
-			return true;
-
-		return false;
+		return m_TopHat.GetComponent<Collider>().bounds.Contains(rayOrigin.position);
 	}
 
 	bool FindWorkspaces()
@@ -131,28 +119,31 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 		m_AllWorkspaces = GetComponentsInChildren<Workspace>();
 		m_WorkspaceLocalRotaions = new Quaternion[m_AllWorkspaces.Length];
+		m_ExtraOffset = new float[m_AllWorkspaces.Length];
 
-		for (int i=0; i<m_AllWorkspaces.Length; i++)
-			m_WorkspaceLocalRotaions[i] = m_AllWorkspaces[i].transform.localRotation;
+		var cameraPosition = VRView.viewerCamera.transform.position;
+		for (int i = 0; i < m_AllWorkspaces.Length; i++)
+		{
+			float yOffset = m_AllWorkspaces[i].transform.position.y - cameraPosition.y;
 
-		if (m_AllWorkspaces.Length > 0)
-		{
-			foreach (var ws in m_AllWorkspaces)
-			{
-				if (ws.m_Hidden)
-					return false;
-			}
-			return true;
+			m_WorkspaceLocalRotaions[i] = Quaternion.Euler(m_AllWorkspaces[i].transform.localRotation.eulerAngles.x, 0.0f, 0.0f);
+
+			if (yOffset > kThresholdY)
+				m_ExtraOffset[i] = yOffset - kThresholdY;
+			else if (yOffset < -kThresholdY)
+				m_ExtraOffset[i] = yOffset + kThresholdY;
+			else
+				m_ExtraOffset[i] = 0.0f;
 		}
-		else
-		{
-			return false;
-		}
+
+		return m_AllWorkspaces.Length > 0;
 	}
 
 	void HandleDoubleTap()
 	{
-		if (Time.realtimeSinceStartup - m_TriggerPressedTimeStamp < 0.8f)
+		const float kDoubleTapTime = 0.8f;
+
+		if (Time.realtimeSinceStartup - m_TriggerPressedTimeStamp < kDoubleTapTime)
 		{
 			m_ThrowDownTriggered = false;
 			resetWorkspaces(null);
@@ -176,6 +167,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 				}
 			}
 		}
+
+		UpdateWorkspaceScales();
 	}
 
 	bool UserThrowsDown()
@@ -210,13 +203,14 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	void UpdateWorkspaceScales()
 	{
 		const float kScaleSpeed = 15.0f;
+		const float kClampScaleValue = 0.1f;
 
 		foreach(var ws in m_AllWorkspaces)
 		{
 			float currentScale = ws.transform.localScale.x;
 			
 			//snap scale if close enough to target
-			if (currentScale > m_CurrentTargetScale - 0.1f && currentScale < m_CurrentTargetScale + 0.1f)
+			if (currentScale > m_CurrentTargetScale - kClampScaleValue && currentScale < m_CurrentTargetScale + kClampScaleValue)
 			{
 				ws.transform.localScale = Vector3.one * m_CurrentTargetScale;
 				continue;
@@ -227,13 +221,15 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	void HandleManipulationStart()
 	{
-		if (Time.realtimeSinceStartup - m_TriggerPressedTimeStamp > 1.0f)
+		const float kEnterMovementModeTime = 1.0f;
+		const float kSmoothValue = 5.0f;
+
+		if (Time.realtimeSinceStartup - m_TriggerPressedTimeStamp > kEnterMovementModeTime)
 		{
 			if (FindWorkspaces())
 			{
 				m_PreviousPosition = rayOrigin.position;
 				m_RayOriginStartAngle = Quaternion.LookRotation(rayOrigin.up);
-				deltaAngleY = 0.0f;
 				mode = ManipulateMode.On;
 				hideDefaultRay(rayOrigin);
 				foreach (var ws in m_AllWorkspaces)
@@ -241,23 +237,26 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 					ws.SetUIHighlights(true);
 					var smoothMotion = ws.GetComponentInChildren<SmoothMotion>();
 					smoothMotion.enabled = true;
-					smoothMotion.SetRotationSmoothing(5f);
-					smoothMotion.SetPositionSmoothing(5f);
+					smoothMotion.SetRotationSmoothing(kSmoothValue);
+					smoothMotion.SetPositionSmoothing(kSmoothValue);
 				}
 			}
 		}
 	}
-
+	
 	void UpdateWorkspaceManipulation()
 	{
 		if (m_ThrowDownTriggered)
 			return;
 
+		const float kRotateAroundSpeed = 5.0f;
+		const float kVerticalMoveSpeed = 45.0f;
+
 		Quaternion rayOriginCurrentAngle = Quaternion.LookRotation(rayOrigin.up);
-		deltaAngleY = rayOriginCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
+		float deltaAngleY = rayOriginCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
 		m_targetAngleY += deltaAngleY;
 
-		float rotateAmount = m_targetAngleY * Time.unscaledDeltaTime * 5.0f;
+		float rotateAmount = m_targetAngleY * Time.unscaledDeltaTime * kRotateAroundSpeed;
 		foreach (var ws in m_AllWorkspaces)
 		{
 			//don't rotate for tiny rotations
@@ -266,29 +265,50 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			
 			//don't move for tiny movements
 			if (Mathf.Abs(m_VerticalVelocity) > 0.0001f)
-				ws.transform.Translate(0.0f, m_VerticalVelocity * -35.0f, 0.0f, Space.World);
+				ws.transform.Translate(0.0f, m_VerticalVelocity * -kVerticalMoveSpeed, 0.0f, Space.World);
 		}
 
 		//update variables for next frame math
 		m_targetAngleY -= rotateAmount;
 		m_RayOriginStartAngle = rayOriginCurrentAngle;
+	}
 
+	void UpdateLookAtPlayer()
+	{
+		float kWorkspaceRotationSpeed = Time.unscaledDeltaTime * 10f;
 
-		//workspaces look at player on their X axis beyond Y thresholds
-		Vector3 camPos = VRView.viewerCamera.transform.position;
+		// workspaces look at player on their X axis beyond Y thresholds
+		Vector3 cameraPosition = VRView.viewerCamera.transform.position;
 		for (int i = 0; i < m_AllWorkspaces.Length; i++)
 		{
-			Vector3 wsPos = m_AllWorkspaces[i].transform.position;
-			if ((wsPos.y < camPos.y - kThresholdY) || (wsPos.y > camPos.y + kThresholdY))
-			{
-				//m_WorkspaceLocalRotaions[i] = m_AllWorkspaces[i].transform.localRotation;
-				Quaternion lookRot = Quaternion.LookRotation(wsPos - camPos);
+			Transform wsTrans = m_AllWorkspaces[i].transform;
+			float yOffset = wsTrans.position.y - cameraPosition.y;
 
-				//apply original X rotation offset
-				lookRot *= Quaternion.Euler(m_WorkspaceLocalRotaions[i].eulerAngles.x, 0f, 0f);
-				//m_AllWorkspaces[i].transform.rotation = lookRot;
-				m_AllWorkspaces[i].transform.rotation = Quaternion.Lerp(m_AllWorkspaces[i].transform.rotation, lookRot, Time.unscaledDeltaTime * 10f);
+			if (Mathf.Abs(yOffset) > kThresholdY)
+			{
+				float sign = Mathf.Sign(yOffset);
+				Vector3 offset = Vector3.up * kThresholdY * sign + Vector3.up * m_ExtraOffset[i];
+				Vector3 wsForward = wsTrans.position - (cameraPosition + offset);
+				Quaternion targetRotation = Quaternion.LookRotation(wsForward) * m_WorkspaceLocalRotaions[i];
+
+				wsTrans.rotation = Quaternion.Lerp(wsTrans.rotation, targetRotation, kWorkspaceRotationSpeed);
 			}
+		}
+	}
+
+	void HandleManipulationEnd()
+	{
+		const float kSetOriginalSmoothValue = 10.0f;
+
+		mode = ManipulateMode.Off;
+		showDefaultRay(rayOrigin);
+
+		foreach (var ws in m_AllWorkspaces)
+		{
+			ws.SetUIHighlights(false);
+			var smoothMotion = ws.GetComponentInChildren<SmoothMotion>();
+			smoothMotion.SetRotationSmoothing(kSetOriginalSmoothValue);
+			smoothMotion.SetPositionSmoothing(kSetOriginalSmoothValue);
 		}
 	}
 
