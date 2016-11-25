@@ -9,7 +9,7 @@ using UnityEngine.VR.Utilities;
 using UnityEditor.VR;
 using UnityEngine.VR.Menus;
 
-[MainMenuItem("Annotation", "Tools", "Draw in the space")]
+[MainMenuItem("Annotation", "Tools", "Draw in 3D")]
 public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI, IMenuOrigins, ICustomMenuOrigins
 {
 
@@ -18,6 +18,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	public DefaultRayVisibilityDelegate showDefaultRay { get; set; }
 	public DefaultRayVisibilityDelegate hideDefaultRay { get; set; }
+
+	public Transform menuOrigin { set; private get; }
+	public Transform alternateMenuOrigin { set; private get; }
+
+	public Func<Transform, Transform> customMenuOrigin { private get; set; }
+	public Func<Transform, Transform> customAlternateMenuOrigin { private get; set; }
 
 	public ActionMap actionMap
 	{
@@ -30,6 +36,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	private AnnotationInput m_AnnotationInput;
 
 	public Func<GameObject, GameObject> instantiateUI { private get; set; }
+
+	private Action<float> onBrushSizeChanged { set; get; }
 
 	private const int kInitialListSize = 32767;
 
@@ -58,14 +66,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	private GameObject m_BrushSizePrefab;
 	private BrushSizeUI m_BrushSizeUi;
 
-	private Action<float> onBrushSizeChanged { set; get; }
-
-	public Transform menuOrigin { set; private get; }
-	public Transform alternateMenuOrigin { set; private get; }
-
-	public Func<Transform, Transform> customMenuOrigin { private get; set; }
-	public Func<Transform, Transform> customAlternateMenuOrigin { private get; set; }
-
 	private Transform m_AnnotationHolder;
 
 	private bool m_IsRayHidden;
@@ -84,8 +84,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	private const float kTipDistance = 0.05f;
 	private const int kSides = 16;
 
-	private readonly Bounds m_ColorPickerRegion = new Bounds(Vector3.zero, Vector3.one * 0.35f);
-
 	private float m_CurrentRadius = kTopMinRadius;
 
 	private List<GameObject> m_UndoList = new List<GameObject>();
@@ -99,6 +97,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			U.Object.Destroy(m_ColorPicker.gameObject);
 		if (m_BrushSizeUi)
 			U.Object.Destroy(m_BrushSizeUi.gameObject);
+		if (m_ColorPickerActivator)
+			U.Object.Destroy(m_ColorPickerActivator);
+
 		if (m_CustomPointerObject)
 			DestroyImmediate(m_CustomPointerObject);
 	}
@@ -204,21 +205,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				ResizePointer();
 			};
 			onBrushSizeChanged = m_BrushSizeUi.ChangeSliderValue;
-		}
-	}
-
-	private void CheckColorPicker()
-	{
-		if (!m_IsValidStroke)
-		{
-			foreach (var otherRayOrigin in otherRayOrigins)
-			{
-				var otherRayMatrix = otherRayOrigin.worldToLocalMatrix;
-				var rayLocalPos = otherRayMatrix.MultiplyPoint3x4(rayOrigin.position);
-
-				if (!m_ColorPickerRegion.Contains(rayLocalPos))
-					HideColorPicker();
-			}
 		}
 	}
 
