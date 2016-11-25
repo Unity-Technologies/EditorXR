@@ -13,8 +13,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Actions:
-  - {fileID: 114000011870887724}
   - {fileID: 114000010095369560}
+  - {fileID: 114000010106806814}
   m_ControlSchemes:
   - m_Name: Sixense
     m_DeviceSlots:
@@ -26,7 +26,7 @@ MonoBehaviour:
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
-      - controlIndex: 2
+      - controlIndex: 3
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -35,7 +35,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 3
+      - controlIndex: 2
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -55,11 +55,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: SelectionInput
+  m_Name: Multi Select
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 1
+  m_ActionIndex: 0
   m_ControlData:
     componentControlIndices: 
     controlType:
@@ -67,7 +67,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Multi Select
     defaultValue: 0
---- !u!114 &114000011870887724
+--- !u!114 &114000010106806814
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -76,11 +76,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: SelectionInput
+  m_Name: Select
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 0
+  m_ActionIndex: 1
   m_ControlData:
     componentControlIndices: 
     controlType:

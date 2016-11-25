@@ -52,9 +52,9 @@ public class ViveInputToEvents : MonoBehaviour
 	}
 
 	public const int controllerCount = 10;
-	public const int buttonCount = 64;
+	public const int buttonCount = (int)EVRButtonId.k_EButton_Max + 1;
 	public const int axisCount = 10; // 5 axes in openVR, each with X and Y.
-	private float[,] m_LastAxisValues = new float[controllerCount, axisCount];
+	private float[,] m_LastAxisValues = new float[controllerCount, axisCount + buttonCount];
 	private Vector3[] m_LastPositionValues = new Vector3[controllerCount];
 	private Quaternion[] m_LastRotationValues = new Quaternion[controllerCount];
 
@@ -87,16 +87,27 @@ public class ViveInputToEvents : MonoBehaviour
 	{
 		foreach (EVRButtonId button in Enum.GetValues(typeof(EVRButtonId)))
 		{
+			// Don't double count the trigger
+			if (button == EVRButtonId.k_EButton_SteamVR_Trigger)
+				continue;
+
 			bool isDown = SteamVR_Controller.Input(steamDeviceIndex).GetPressDown(button);
 			bool isUp = SteamVR_Controller.Input(steamDeviceIndex).GetPressUp(button);
+			var value = isDown ? 1.0f : 0.0f;
+			var controlIndex = axisCount + (int)button;
+
+			if (Mathf.Approximately(m_LastAxisValues[steamDeviceIndex, controlIndex], value))
+				continue;
 
 			if (isDown || isUp)
 			{
 				var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 				inputEvent.deviceType = typeof(VRInputDevice);
 				inputEvent.deviceIndex = deviceIndex;
-				inputEvent.controlIndex = axisCount + (int)button;
-				inputEvent.value = isDown ? 1.0f : 0.0f;
+				inputEvent.controlIndex = controlIndex;
+				inputEvent.value = value;
+
+				m_LastAxisValues[steamDeviceIndex, controlIndex] = value;
 
 				InputSystem.QueueEvent(inputEvent);
 			}

@@ -57,10 +57,6 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		private BoxCollider m_GrabCollider;
 
-		public BaseHandle vacuumHandle { get { return m_VacuumHandle; } }
-		[SerializeField]
-		private BaseHandle m_VacuumHandle;
-
 		public BaseHandle leftHandle { get { return m_LeftHandle; } }
 		[SerializeField]
 		private BaseHandle m_LeftHandle;
