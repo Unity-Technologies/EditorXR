@@ -1,16 +1,15 @@
-using UnityEngine;
-using System.Collections;
-using UnityEngine.VR.Tools;
 using System;
-using UnityEngine.InputNew;
-using System.Linq;
 using System.Collections.Generic;
-using UnityEngine.VR.Utilities;
+using System.Linq;
 using UnityEditor.VR;
+using UnityEngine;
+using UnityEngine.InputNew;
 using UnityEngine.VR.Menus;
+using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
 
 [MainMenuItem("Annotation", "Tools", "Draw in 3D")]
-public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI, IMenuOrigins, ICustomMenuOrigins
+public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI, IMenuOrigins, ICustomMenuOrigins, IRayLocking
 {
 
 	public Transform rayOrigin { private get; set; }
@@ -32,13 +31,13 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	[SerializeField]
 	private ActionMap m_ActionMap;
 
-	public ActionMapInput actionMapInput { get { return m_AnnotationInput; } set { m_AnnotationInput = (AnnotationInput)value; } }
-	private AnnotationInput m_AnnotationInput;
-
 	public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
-	private Action<float> onBrushSizeChanged { set; get; }
+	public Func<Transform, object, bool> lockRay { private get; set; }
+	public Func<Transform, object, bool> unlockRay { private get; set; }
 
+	private Action<float> onBrushSizeChanged { set; get; }
+	
 	private const int kInitialListSize = 32767;
 
 	private List<Vector3> m_Points = new List<Vector3>(kInitialListSize);
@@ -108,21 +107,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		HideRay();
 		HandleRayOrigins();
-
-		if (m_AnnotationInput.draw.wasJustPressed)
-			SetupAnnotation();
-		else if (m_IsValidStroke)
-		{
-			if (m_AnnotationInput.draw.isHeld)
-				UpdateAnnotation();
-			else if (m_AnnotationInput.draw.wasJustReleased)
-				FinalizeMesh();
-		}
-		else if (m_AnnotationInput.undo.wasJustPressed)
-			UndoLast();
-
-		if (m_AnnotationInput.changeBrushSize.value != 0)
-			HandleBrushSize();
 	}
 
 	private void HideRay()
@@ -132,6 +116,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			if (hideDefaultRay != null)
 			{
 				hideDefaultRay(rayOrigin);
+				lockRay(rayOrigin, this);
 				m_IsRayHidden = true;
 			}
 		}
@@ -148,12 +133,13 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			{
 				m_ColorPickerActivator = instantiateUI(m_ColorPickerActivatorPrefab);
 				var otherAltMenu = customAlternateMenuOrigin(otherRayOrigins[0]);
-				m_ColorPickerActivator.transform.SetParent(otherAltMenu);
+				
+				m_ColorPickerActivator.transform.SetParent(otherAltMenu.GetComponentInChildren<MainMenuActivator>().transform);
 				m_ColorPickerActivator.transform.localRotation = Quaternion.identity;
-				m_ColorPickerActivator.transform.localPosition = Vector3.back * 0.075f + Vector3.right * 0.05f;
+				m_ColorPickerActivator.transform.localPosition = Vector3.right * 0.05f;
 
 				var activator = m_ColorPickerActivator.GetComponent<ColorPickerActivator>();
-				activator.rayOrigin = otherRayOrigins[0];
+				activator.rayOrigin = otherRayOrigins.First();
 				activator.showColorPicker = ShowColorPicker;
 			}
 		}
@@ -221,6 +207,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			PositionColorPicker(otherRayOrigin);
 
 			m_ColorPicker.Show();
+			unlockRay(rayOrigin, this);
 			showDefaultRay(rayOrigin);
 			m_CustomPointerObject.SetActive(false);
 		}
@@ -232,6 +219,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		{
 			m_ColorPicker.Hide();
 			hideDefaultRay(rayOrigin);
+			lockRay(rayOrigin, this);
 			m_CustomPointerObject.SetActive(true);
 		}
 	}
@@ -246,6 +234,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		PositionColorPicker(otherRayOrigin);
 
+		unlockRay(rayOrigin, this);
 		showDefaultRay(rayOrigin);
 		m_CustomPointerObject.SetActive(false);
 	}
@@ -274,11 +263,11 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		m_BrushSizeUi.OnBrushColorChanged(newColor);
 	}
 
-	private void HandleBrushSize()
+	private void HandleBrushSize(float value)
 	{
 		if (m_CustomPointerMesh != null)
 		{
-			var sign = Mathf.Sign(m_AnnotationInput.changeBrushSize.value);
+			var sign = Mathf.Sign(value);
 			m_CurrentRadius += sign * Time.unscaledDeltaTime * .1f;
 			m_CurrentRadius = Mathf.Clamp(m_CurrentRadius, kTopMinRadius, kTopMaxRadius);
 
@@ -692,6 +681,26 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		}
 
 		return triangles;
+	}
+	
+	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+	{
+		var annotationInput = input as AnnotationInput;
+		
+		if (annotationInput.draw.wasJustPressed)
+			SetupAnnotation();
+		else if (m_IsValidStroke)
+		{
+			if (annotationInput.draw.isHeld)
+				UpdateAnnotation();
+			else if (annotationInput.draw.wasJustReleased)
+				FinalizeMesh();
+		}
+		else if (annotationInput.undo.wasJustPressed)
+			UndoLast();
+
+		if (annotationInput.changeBrushSize.value != 0)
+			HandleBrushSize(annotationInput.changeBrushSize.value);
 	}
 
 }
