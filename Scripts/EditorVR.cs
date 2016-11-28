@@ -20,11 +20,12 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
-using UnityObject = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;
 #endif
+
+[assembly: OptionalDependency("UnityEditor.SceneViewUtilities", "UNITY_EDITORVR")]
 
 [InitializeOnLoad]
 public class EditorVR : MonoBehaviour

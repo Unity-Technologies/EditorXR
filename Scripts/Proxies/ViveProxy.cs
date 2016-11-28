@@ -6,8 +6,10 @@ namespace UnityEngine.VR.Proxies
 	{
 		private ViveInputToEvents m_InputToEvents;
 
-		private SteamVR_RenderModel m_RightModel;
-		private SteamVR_RenderModel m_LeftModel;
+#if ENABLE_STEAMVR_INPUT
+		SteamVR_RenderModel m_RightModel;
+		SteamVR_RenderModel m_LeftModel;
+#endif
 
 		public override bool active
 		{
@@ -23,6 +25,7 @@ namespace UnityEngine.VR.Proxies
 			m_InputToEvents = U.Object.AddComponent<ViveInputToEvents>(gameObject);
 		}
 
+#if ENABLE_STEAMVR_INPUT
 		public override void Start()
 		{
 			base.Start();
@@ -50,4 +53,5 @@ namespace UnityEngine.VR.Proxies
 			base.Update();
 		}
 	}
+#endif
 }
