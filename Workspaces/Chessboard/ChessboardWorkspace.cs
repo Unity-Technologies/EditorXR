@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using UnityEditor.VR;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
@@ -7,7 +8,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ChessboardWorkspace : Workspace, IRayLocking
+public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 {
 	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below
 	private const float kInitReferenceScale = 15f; // We want to see a big region by default
@@ -19,6 +20,9 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 
 	[SerializeField]
 	private GameObject m_ContentPrefab;
+
+	[SerializeField]
+	GameObject m_LocateYourselfPrefab;
 
 	[SerializeField]
 	private GameObject m_UIPrefab;
@@ -35,6 +39,9 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 	private float m_ScaleStartDistance;
 	bool m_PanZooming;
 
+	bool m_LocatingPlayer;
+	Vector3 m_MiniWorldTargetPosition;
+
 	private class RayData
 	{
 		public Transform rayOrigin;
@@ -48,6 +55,8 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 
 	public IMiniWorld miniWorld { get { return m_MiniWorld; } }
 
+	public ConnectInterfacesDelegate connectInterfaces { get; set; }
+
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
@@ -60,12 +69,20 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
 		m_GridMaterial = U.Material.GetMaterialClone(m_ChessboardUI.grid);
 
+		var locateUI = U.Object.Instantiate(m_LocateYourselfPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LocateYourselfUI>();
+		locateUI.locateButton.onClick.AddListener(LocateYourself);
+		connectInterfaces(locateUI);
+
+		m_LocatingPlayer = false;
+
 		// Set up MiniWorld
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
 		m_MiniWorld.referenceTransform.position = Vector3.up * kInitReferenceYOffset * kInitReferenceScale;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * kInitReferenceScale;
 
-		// Set up ControlBox
+		m_MiniWorldTargetPosition = m_MiniWorld.referenceTransform.position;
+
+		// Set up ControlBox	
 		var panZoomHandle = m_ChessboardUI.panZoomHandle;
 		// ControlBox shouldn't move with miniWorld
 		panZoomHandle.transform.parent = m_WorkspaceUI.sceneContainer;
@@ -95,6 +112,9 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 
 	private void Update()
 	{
+		if (m_LocatingPlayer)
+			UpdateMoveToPlayer();
+
 		//Set grid height, deactivate if out of bounds
 		float gridHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
 		var grid = m_ChessboardUI.grid;
@@ -217,6 +237,28 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 	void DragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
 	{
 		unlockRay(handleEventData.rayOrigin, this);
+	}
+
+	void LocateYourself()
+	{
+#if UNITY_EDITOR
+		m_LocatingPlayer = true;
+		var refTrans = m_MiniWorld.referenceTransform;
+		m_MiniWorldTargetPosition = VRView.viewerCamera.transform.position;
+#endif
+	}
+
+	void UpdateMoveToPlayer()
+	{
+		const float kSnapDistance = 0.25f;
+		const float kMoveSpeed = 2.5f;
+		var trans = m_MiniWorld.referenceTransform;
+		trans.position = Vector3.Lerp(trans.position, m_MiniWorldTargetPosition, Time.unscaledDeltaTime * kMoveSpeed);
+		if (Vector3.Distance(trans.position, m_MiniWorldTargetPosition) < kSnapDistance)
+		{
+			trans.position = m_MiniWorldTargetPosition;
+			m_LocatingPlayer = false;
+		}
 	}
 
 	protected override void OnDestroy()
