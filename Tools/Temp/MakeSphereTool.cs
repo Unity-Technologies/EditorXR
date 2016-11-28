@@ -2,10 +2,11 @@
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
+using Object = UnityEngine.Object;
 
-[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
-[ExecuteInEditMode]
-public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay
+//[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
+[MainMenuItem(false)]
+public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesSpatialHash
 {	
 	public Transform rayOrigin { get; set; }
 
@@ -21,30 +22,24 @@ public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay
 		}
 	}
 
-	public ActionMapInput actionMapInput
-	{
-		get
-		{
-			return m_Standard;
-		}
-		set
-		{
-			m_Standard = (StandardAlt)value;
-		}
-	}
-
 	[SerializeField]
 	private ActionMap m_ActionMap;
-	[SerializeField]
-	private StandardAlt m_Standard;
 
-	private void Update()
+	public Action<GameObject> addToSpatialHash { get; set; }
+	public Action<GameObject> removeFromSpatialHash { get; set; }
+
+	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 	{
-		if (m_Standard.action.wasJustPressed)
+		var standardAlt = (StandardAlt)input;
+		if (standardAlt.action.wasJustPressed)
 		{
-			Transform cube = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+			Transform sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
 			if (rayOrigin)
-				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
+				sphere.position = rayOrigin.position + rayOrigin.forward * 5f;
+
+			addToSpatialHash(sphere.gameObject);
+
+			consumeControl(standardAlt.action);
 		}
 	}
 }

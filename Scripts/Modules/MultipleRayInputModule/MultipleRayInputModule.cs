@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Proxies;
+using UnityEngine.VR.Tools;
+using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-	public class MultipleRayInputModule : BaseInputModule
+	public class MultipleRayInputModule : BaseInputModule, IProcessInput
 	{
-		class RaycastSource
+		public class RaycastSource
 		{
 			public IProxy proxy; // Needed for checking if proxy is active
 			public Transform rayOrigin;
@@ -18,56 +20,34 @@ namespace UnityEngine.VR.Modules
 			public UIActions actionMapInput;
 			public RayEventData eventData;
 			public GameObject hoveredObject;
-			public GameObject selectedObject;
+			public GameObject draggedObject;
+			public Func<RaycastSource, bool> isValid;
 
-			public bool hasObject { get { return (hoveredObject != null && hoveredObject.layer == UILayer) || selectedObject != null; } }
+			public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
 
-			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput)
+			public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
+
+			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput, Func<RaycastSource, bool> validationCallback)
 			{
 				this.proxy = proxy;
 				this.rayOrigin = rayOrigin;
 				this.node = node;
 				this.actionMapInput = actionMapInput;
+				this.isValid = validationCallback ?? delegate { return true; };
 			}
 		}
 
-		private static int UILayer = -1;
 		private readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
 
 		public Camera eventCamera { get { return m_EventCamera; } set { m_EventCamera = value; } }
 		private Camera m_EventCamera;
 
+		public LayerMask layerMask { get { return s_LayerMask; } set { s_LayerMask = value; } }
+		private static LayerMask s_LayerMask;
+
 		public ActionMap actionMap { get { return m_UIActionMap; } }
 		[SerializeField]
 		private ActionMap m_UIActionMap;
-
-		/// <summary>
-		/// Controls input blocking state. Set to true to deactivate all ActionMapInputs and stop processing events
-		/// Use this when dragging objects to avoid activating ActionMapInputs and, as a side-effect, dropping the object when a ray hovers over UI
-		/// </summary>
-		public bool inputBlocked
-		{
-			get
-			{
-				return m_InputBlocked;
-			}
-			set
-			{
-				if (m_InputBlocked == value)
-					return;
-
-				m_InputBlocked = value;
-				if (m_InputBlocked)
-				{
-					// Because Process will no longer control active state, deactivate all UI ActionMapInputs
-					foreach (var source in m_RaycastSources.Values)
-					{
-						source.actionMapInput.active = false;
-					}
-				}
-			}
-		}
-		bool m_InputBlocked;
 
 		public Func<Transform, float> getPointerLength { get; set; }
 
@@ -76,31 +56,19 @@ namespace UnityEngine.VR.Modules
 		public event Action<GameObject, RayEventData> dragStarted = delegate {};
 		public event Action<GameObject, RayEventData> dragEnded = delegate {};
 
+		public Action<Transform> preProcessRaycastSource;
+
 		protected override void Awake()
 		{
 			base.Awake();
-			UILayer = LayerMask.NameToLayer("UI");
+			s_LayerMask = LayerMask.GetMask("UI");
 		}
 
-		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin = null)
+		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin, Func<RaycastSource, bool> validationCallback = null)
 		{
-			UIActions actions = (UIActions) actionMapInput;
-			if (actions == null)
-			{
-				Debug.LogError("Cannot add actionMapInput to InputModule that is not of type UIActions.");
-				return;
-			}
+			UIActions actions = (UIActions)actionMapInput;
 			actions.active = false;
-			if (rayOrigin != null)
-			{
-				m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions));
-			}
-			else if (proxy.rayOrigins.TryGetValue(node, out rayOrigin))
-			{
-				m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions));
-			}
-			else
-				Debug.LogError("Failed to get ray origin transform for node " + node + " from proxy " + proxy);
+			m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions, validationCallback));
 		}
 
 		public void RemoveRaycastSource(Transform rayOrigin)
@@ -110,9 +78,6 @@ namespace UnityEngine.VR.Modules
 
 		public RayEventData GetPointerEventData(Transform rayOrigin)
 		{
-			if (inputBlocked)
-				return null;
-
 			RaycastSource source;
 			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
 				return source.eventData;
@@ -122,19 +87,25 @@ namespace UnityEngine.VR.Modules
 
 		public override void Process()
 		{
+			// We don't process with all other input modules because we need fine-grained control to consume input
+		}
+
+		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		{
 			ExecuteUpdateOnSelectedObject();
 
 			if (m_EventCamera == null)
 				return;
 
-			if (inputBlocked)
-				return;
-			
 			//Process events for all different transforms in RayOrigins
-			foreach (var source in m_RaycastSources.Values)
+			var sources = new List<RaycastSource>(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
+			foreach (var source in sources)
 			{
-				if (!(source.rayOrigin.gameObject.activeSelf || source.selectedObject) || !source.proxy.active)
+				if (!(source.rayOrigin.gameObject.activeSelf || source.draggedObject) || !source.proxy.active)
 					continue;
+
+				if (preProcessRaycastSource != null)
+					preProcessRaycastSource(source.rayOrigin);
 
 				if (source.eventData == null)
 					source.eventData = new RayEventData(base.eventSystem);
@@ -145,9 +116,12 @@ namespace UnityEngine.VR.Modules
 				eventData.rayOrigin = source.rayOrigin;
 				eventData.pointerLength = getPointerLength(eventData.rayOrigin);
 
+				if (!source.isValid(source))
+					continue;
+
 				HandlePointerExitAndEnter(eventData, source.hoveredObject); // Send enter and exit events
 
-				source.actionMapInput.active = source.hasObject;
+				source.actionMapInput.active = source.hasObject && ShouldActivateInput(eventData, source.currentObject);
 
 				// Proceed only if pointer is interacting with something
 				if (!source.actionMapInput.active)
@@ -155,15 +129,21 @@ namespace UnityEngine.VR.Modules
 
 				// Send select pressed and released events
 				if (source.actionMapInput.select.wasJustPressed)
+				{
 					OnSelectPressed(source);
+					consumeControl(source.actionMapInput.select);
+				}
 
 				if (source.actionMapInput.select.wasJustReleased)
+				{
 					OnSelectReleased(source);
+					consumeControl(source.actionMapInput.select);
+				}
 
-				var draggedObject = source.selectedObject;
+				var draggedObject = source.draggedObject;
 
 				// Send Drag Events
-				if (source.selectedObject != null)
+				if (source.draggedObject != null)
 				{
 					ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.dragHandler);
 					ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.dragHandler);
@@ -172,13 +152,35 @@ namespace UnityEngine.VR.Modules
 				// Send scroll events
 				var scrollObject = source.hoveredObject;
 				if (!scrollObject)
-					scrollObject = source.selectedObject;
+					scrollObject = source.draggedObject;
+
 				if (scrollObject)
 				{
 					eventData.scrollDelta = new Vector2(0f, source.actionMapInput.verticalScroll.value);
 					ExecuteEvents.ExecuteHierarchy(scrollObject, eventData, ExecuteEvents.scrollHandler);
 				}
 			}
+		}
+
+		static bool ShouldActivateInput(RayEventData eventData, GameObject currentObject)
+		{
+			var selectionFlags = currentObject.GetComponent<ISelectionFlags>();
+			if (selectionFlags != null && selectionFlags.selectionFlags == SelectionFlags.Direct && !U.UI.IsDirectEvent(eventData))
+				return false;
+
+			return ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IPointerDownHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IPointerUpHandler>(currentObject)
+
+				|| ExecuteEvents.GetEventHandler<IDragHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IBeginDragHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IEndDragHandler>(currentObject)
+
+				|| ExecuteEvents.GetEventHandler<IRayDragHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IRayBeginDragHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IRayEndDragHandler>(currentObject)
+
+				|| ExecuteEvents.GetEventHandler<IScrollHandler>(currentObject);
 		}
 
 		private RayEventData CloneEventData(RayEventData eventData)
@@ -305,10 +307,11 @@ namespace UnityEngine.VR.Modules
 
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.beginDragHandler);
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.beginDragHandler);
+				eventData.dragging = true;
 				dragStarted(draggedObject, eventData);
 
 				eventData.pointerDrag = draggedObject;
-				source.selectedObject = draggedObject;
+				source.draggedObject = draggedObject;
 			}
 		}
 
@@ -317,12 +320,12 @@ namespace UnityEngine.VR.Modules
 			var eventData = source.eventData;
 			var hoveredObject = source.hoveredObject;
 
-			if (source.selectedObject)
-				ExecuteEvents.Execute(source.selectedObject, eventData, ExecuteEvents.pointerUpHandler);
+			if (source.draggedObject)
+				ExecuteEvents.Execute(source.draggedObject, eventData, ExecuteEvents.pointerUpHandler);
 
-			if (source.selectedObject)
+			if (source.draggedObject)
 			{
-				var draggedObject = source.selectedObject;
+				var draggedObject = source.draggedObject;
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.endDragHandler);
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.endDragHandler);
 				dragEnded(draggedObject, eventData);
@@ -334,13 +337,14 @@ namespace UnityEngine.VR.Modules
 			}
 
 			var clickHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(hoveredObject);
-			if (source.selectedObject == clickHandler && eventData.eligibleForClick)
+			if (source.draggedObject == clickHandler && eventData.eligibleForClick)
 				ExecuteEvents.Execute(clickHandler, eventData, ExecuteEvents.pointerClickHandler);
 
+			eventData.dragging = false;
 			eventData.rawPointerPress = null;
 			eventData.pointerPress = null;
 			eventData.eligibleForClick = false;
-			source.selectedObject = null;
+			source.draggedObject = null;
 		}
 
 		public void Deselect()
@@ -370,9 +374,8 @@ namespace UnityEngine.VR.Modules
 			eventData.position = m_EventCamera.pixelRect.center;
 			eventData.scrollDelta = Vector2.zero;
 
-			List<RaycastResult> results = new List<RaycastResult>();
-			eventSystem.RaycastAll(eventData, results);
-			eventData.pointerCurrentRaycast = FindFirstRaycast(results);
+			eventSystem.RaycastAll(eventData, m_RaycastResultCache);
+			eventData.pointerCurrentRaycast = FindFirstRaycast(m_RaycastResultCache);
 			hit = eventData.pointerCurrentRaycast.gameObject;
 
 			m_RaycastResultCache.Clear();

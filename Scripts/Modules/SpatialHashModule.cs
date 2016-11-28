@@ -56,5 +56,21 @@ namespace UnityEngine.VR.Modules
 				yield return null;
 			}
 		}
+
+		public void AddObject(GameObject gameObject)
+		{
+			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
+			{
+				spatialHash.AddObject(renderer, renderer.bounds);
+			}
+		}
+
+		public void RemoveObject(GameObject gameObject)
+		{
+			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
+			{
+				spatialHash.RemoveObject(renderer);
+			}
+		}
 	}
 }

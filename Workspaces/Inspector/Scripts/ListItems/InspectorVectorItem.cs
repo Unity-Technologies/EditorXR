@@ -44,7 +44,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 				break;
 		}
 
-		m_CuboidLayout.UpdateCubes();
+		m_CuboidLayout.UpdateObjects();
 
 		UpdateInputFields(count, vector);
 	}

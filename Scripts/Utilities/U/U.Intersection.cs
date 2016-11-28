@@ -1,4 +1,4 @@
-﻿using UnityEngine.VR.Modules;
+using UnityEngine.VR.Modules;
 
 namespace UnityEngine.VR.Utilities
 {
@@ -67,13 +67,18 @@ namespace UnityEngine.VR.Utilities
 
 						var start = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[j]));
 						var end = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[(j + 1) % 3]));
-						var direction = end - start;
+						var direction = (end - start).normalized;
+
+						// Handle degenerate triangles
+						if (Mathf.Approximately(direction.magnitude, 0f))
+							continue;
 
 						// Shoot a ray from outside the object (due to face normals) in the direction of the ray to see if it is inside
 						var forwardRay = new Ray(start, direction);
 						forwardRay.origin = forwardRay.GetPoint(-maxDistance);
 
 						Vector3 forwardHit;
+
 						if (collisionTester.Raycast(forwardRay, out hitInfo, maxDistance * 2f))
 							forwardHit = hitInfo.point;
 						else

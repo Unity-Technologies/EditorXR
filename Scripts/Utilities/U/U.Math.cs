@@ -155,12 +155,57 @@
 				return Vector3.SmoothDamp(current, target, ref currentVelocity, correctSmoothTime, maxSpeed, deltaTime);
 			}
 
-			public static Quaternion YawConstrainRotation(Quaternion rotation)
+			/// <summary>
+			/// Returns a rotation which only contains the yaw component of the given rotation
+			/// </summary>
+			/// <param name="rotation">The rotation we would like to constrain</param>
+			/// <returns>A yaw-only rotation which matches the input's yaw</returns>
+			public static Quaternion ConstrainYawRotation(Quaternion rotation)
 			{
 				var euler = rotation.eulerAngles;
 				euler.x = 0;
 				euler.z = 0;
 				return Quaternion.Euler(euler);
+			}
+
+			/// <summary>
+			/// Get the position and rotatoin difference between two objects for the purpose of maintaining that offset
+			/// </summary>
+			/// <param name="from">The object whose position will be changing (parent)</param>
+			/// <param name="to">The object whose position will be updated (child)</param>
+			/// <param name="positionOffset">The position vector from "from" to "to"</param>
+			/// <param name="rotationOffset">The rotation which will rotate "from" to "to"</param>
+			public static void GetTransformOffset(Transform from, Transform to, out Vector3 positionOffset, out Quaternion rotationOffset)
+			{
+				var inverseRotation = Quaternion.Inverse(from.rotation);
+				positionOffset = inverseRotation * (to.transform.position - from.position);
+				rotationOffset = inverseRotation * to.transform.rotation;
+			}
+
+			/// <summary>
+			/// Set the position and rotation of the "child" transform given an offset from the parent (for independent transforms)
+			/// </summary>
+			/// <param name="parent">The transform we are offsetting from</param>
+			/// <param name="child">The transform whose position we are setting</param>
+			/// <param name="positionOffset">The position offset (local position)</param>
+			/// <param name="rotationOffset">The rotation offset (local rotation)</param>
+			public static void SetTransformOffset(Transform parent, Transform child, Vector3 positionOffset, Quaternion rotationOffset)
+			{
+				child.position = parent.position + parent.rotation * positionOffset;
+				child.rotation = parent.rotation * rotationOffset;
+			}
+
+			/// <summary>
+			/// Interpolates a source transform towards a destination
+			/// </summary>
+			/// <param name="source">The source Transform we are interpolating</param>
+			/// <param name="targetPosition">The target position</param>
+			/// <param name="targetRotation">The target rotation</param>
+			/// <param name="t">Interpolation parameter for smooth transitions (Optional)</param>
+			public static void LerpTransform(Transform source, Vector3 targetPosition, Quaternion targetRotation, float t = 1f)
+			{
+				source.position = Vector3.Lerp(source.position, targetPosition, t);
+				source.rotation = Quaternion.Slerp(source.rotation, targetRotation, t);
 			}
 		}
 	}

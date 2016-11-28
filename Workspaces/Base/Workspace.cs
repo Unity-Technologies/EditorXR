@@ -7,22 +7,19 @@ using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Workspaces
 {
-	public abstract class Workspace : MonoBehaviour, IInstantiateUI, IHighlight
+	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight
 	{
 		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
-		public static readonly Vector3 kDefaultOffset = new Vector3(0, -0.15f, 1f);
-		public static readonly Vector3 kVacuumOffset = new Vector3(0, -0.15f, 0.6f);
-		public static readonly Quaternion kDefaultTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
 		public const float kHandleMargin = -0.15f; // Compensate for base size from frame model
 
-		public event Action<Workspace> destroyed = delegate { };
+		public event Action<IWorkspace> destroyed;
 
 		protected WorkspaceUI m_WorkspaceUI;
 
 		protected Vector3? m_CustomStartingBounds;
 
-		public static readonly Vector3 kMinBounds = new Vector3(0.7f, 0.4f, 0.1f);
+		public static readonly Vector3 kMinBounds = new Vector3(0.55f, 0.4f, 0.1f);
 		private const float kExtraHeight = 0.15f; //Extra space for frame model
 
 		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
@@ -61,12 +58,14 @@ namespace UnityEngine.VR.Workspaces
 		private bool m_Dragging;
 		private bool m_DragLocked;
 		private bool m_Vacuuming;
+		bool m_Moving;
 		Coroutine m_VisibilityCoroutine;
+		Coroutine m_ResetSizeCoroutine;
 
 		/// <summary>
 		/// Bounding box for entire workspace, including UI handles
 		/// </summary>
-		public Bounds outerBounds
+		public Bounds vacuumBounds
 		{
 			get
 			{
@@ -81,7 +80,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public Func<GameObject, GameObject> instantiateUI { protected get; set; }
 
-		public Action<GameObject, bool> setHighlight { get; set; }
+		public Action<GameObject, bool> setHighlight { protected get; set; }
 
 		/// <summary>
 		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
@@ -92,6 +91,11 @@ namespace UnityEngine.VR.Workspaces
 		/// If true, prevent the resizing of a workspace via the front and back resize handles
 		/// </summary>
 		public bool preventFrontBackResize { set { m_WorkspaceUI.preventFrontBackResize = value; } }
+
+		/// <summary>
+		/// If true, prevent the resizing of a workspace via the left and right resize handles
+		/// </summary>
+		public bool preventLeftRightResize { set { m_WorkspaceUI.preventLeftRightResize = value; } }
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
@@ -106,8 +110,6 @@ namespace UnityEngine.VR.Workspaces
 			}
 		}
 
-		public bool vacuumEnabled { set { m_WorkspaceUI.vacuumHandle.gameObject.SetActive(value); } }
-
 		public virtual void Setup()
 		{
 			GameObject baseObject = instantiateUI(m_BasePrefab);
@@ -116,23 +118,28 @@ namespace UnityEngine.VR.Workspaces
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
 			m_WorkspaceUI.closeClicked += OnCloseClicked;
 			m_WorkspaceUI.lockClicked += OnLockClicked;
+			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
+
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
 			m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? kDefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
 			UpdateBounds();
 
-			//Set up DirectManipulaotr
+			//Set up DirectManipulator
 			var directManipulator = m_WorkspaceUI.directManipulator;
 			directManipulator.target = transform;
 			directManipulator.translate = Translate;
 			directManipulator.rotate = Rotate;
 
-			m_WorkspaceUI.vacuumHandle.doubleClick += OnDoubleClick;
-			m_WorkspaceUI.vacuumHandle.hoverStarted += OnHandleHoverStarted;
-			m_WorkspaceUI.vacuumHandle.hoverEnded += OnHandleHoverEnded;
+			//Set up the front "move" handle highglight, the move handle is used to translate/rotate the workspace
+			var moveHandle = m_WorkspaceUI.moveHandle;
+			moveHandle.dragStarted += OnMoveHandleDragStarted;
+			moveHandle.dragEnded += OnMoveHandleDragEnded;
+			moveHandle.hoverStarted += OnMoveHandleHoverStarted;
+			moveHandle.hoverEnded += OnMoveHandleHoverEnded;
 
-			var handles = new BaseHandle[]
+			var handles = new []
 			{
 				m_WorkspaceUI.leftHandle,
 				m_WorkspaceUI.frontHandle,
@@ -145,18 +152,18 @@ namespace UnityEngine.VR.Workspaces
 				handle.dragStarted += OnHandleDragStarted;
 				handle.dragging += OnHandleDragging;
 				handle.dragEnded += OnHandleDragEnded;
-
 				handle.hoverStarted += OnHandleHoverStarted;
 				handle.hoverEnded += OnHandleHoverEnded;
 			}
 
-			StopCoroutine(ref m_VisibilityCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
 
 		public virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			m_WorkspaceUI.highlightsVisible = true;
 			m_PositionStart = transform.position;
 			m_DragStart = eventData.rayOrigin.position;
 			m_BoundSizeStart = contentBounds.size;
@@ -198,27 +205,16 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			m_WorkspaceUI.highlightsVisible = false;
 			m_Dragging = false;
 		}
 
 		public virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			// TODO: Add new highlight visuals support
-			//if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
-			//	setHighlight(handle.gameObject, true);
 		}
 
 		public virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			// TODO: Add new highlight visuals support
-			//if (handle == m_WorkspaceUI.vacuumHandle || !m_DragLocked)
-			//	setHighlight(handle.gameObject, false);
-		}
-
-		private void OnDoubleClick(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			if (!m_Vacuuming)
-				StartCoroutine(VacuumToViewer());
 		}
 
 		private void Translate(Vector3 deltaPosition)
@@ -237,38 +233,9 @@ namespace UnityEngine.VR.Workspaces
 			transform.rotation *= deltaRotation;
 		}
 
-		private IEnumerator VacuumToViewer()
-		{
-			m_Vacuuming = true;
-			var startPosition = transform.position;
-			var startRotation = transform.rotation;
-
-			var camera = U.Camera.GetMainCamera().transform;
-			var cameraYawVector = camera.forward;
-			cameraYawVector.y = 0;
-			var cameraYaw = Quaternion.LookRotation(cameraYawVector, Vector3.up);
-
-			var destPosition = camera.position + cameraYaw * kVacuumOffset;
-			var destRotation = cameraYaw * kDefaultTilt;
-
-			var currentValue = 0f;
-			var currentVelocity = 0f;
-			const float kTargetValue = 1f;
-			const float kTargetValueOvershoot = 1.1f; // overshoot target value to compensate for smoothDamp not reaching target value
-
-			while (currentValue < kTargetValue)
-			{
-				currentValue = U.Math.SmoothDamp(currentValue, kTargetValueOvershoot, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
-				transform.position = Vector3.Lerp(startPosition, destPosition, currentValue);
-				transform.rotation = Quaternion.Lerp(startRotation, destRotation, currentValue);
-				yield return null;
-			}
-			m_Vacuuming = false;
-		}
-
 		public virtual void OnCloseClicked()
 		{
-			StopCoroutine(ref m_VisibilityCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
@@ -278,10 +245,17 @@ namespace UnityEngine.VR.Workspaces
 			m_DragLocked = !m_DragLocked;
 		}
 
+		public virtual void OnResetClicked()
+		{
+			m_DragLocked = false;
+
+			this.StopCoroutine(ref m_ResetSizeCoroutine);
+
+			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
+		}
+
 		private void UpdateBounds()
 		{
-			m_WorkspaceUI.vacuumHandle.transform.localPosition = outerBounds.center;
-			m_WorkspaceUI.vacuumHandle.transform.localScale = outerBounds.size;
 			m_WorkspaceUI.bounds = contentBounds;
 		}
 
@@ -290,38 +264,104 @@ namespace UnityEngine.VR.Workspaces
 			destroyed(this);
 		}
 
-		protected abstract void OnBoundsChanged();
+		protected virtual void OnBoundsChanged()
+		{
+		}
 
 		IEnumerator AnimateShow()
 		{
-			var kTargetScale = transform.localScale;
+			m_WorkspaceUI.highlightsVisible = true;
+
+			var targetScale = transform.localScale;
 			var scale = Vector3.zero;
 			var smoothVelocity = Vector3.zero;
-
-			while (!Mathf.Approximately(scale.x, kTargetScale.x))
+			var currentDuration = 0f;
+			const float kTargetDuration = 0.75f;
+			while (currentDuration < kTargetDuration)
 			{
+				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = scale;
-				scale = Vector3.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.125f, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
+			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateHide()
 		{
-			var kTargetScale = Vector3.zero;
+			var targetScale = Vector3.zero;
 			var scale = transform.localScale;
 			var smoothVelocity = Vector3.zero;
-			while (!Mathf.Approximately(scale.x, kTargetScale.x))
+			var currentDuration = 0f;
+			const float kTargetDuration = 0.185f;
+			while (currentDuration < kTargetDuration)
 			{
+				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = scale;
-				scale = Vector3.SmoothDamp(scale, kTargetScale, ref smoothVelocity, 0.06875f, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
+			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
 			U.Object.Destroy(gameObject);
+		}
+
+		void OnMoveHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			if (m_Dragging)
+				return;
+
+			m_Moving = true;
+			m_WorkspaceUI.highlightsVisible = true;
+		}
+
+		void OnMoveHandleDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			if (m_Dragging)
+				return;
+
+			m_Moving = false;
+			m_WorkspaceUI.highlightsVisible = false;
+		}
+
+		void OnMoveHandleHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			if (m_Dragging || m_Moving)
+				return;
+
+			m_WorkspaceUI.frontHighlightVisible = true;
+		}
+
+		void OnMoveHandleHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			if (m_Dragging || m_Moving)
+				return;
+
+			m_WorkspaceUI.frontHighlightVisible = false;
+		}
+
+		IEnumerator AnimateResetSize()
+		{
+			var currentBoundsSize = contentBounds.size;
+			var currentBoundsCenter = contentBounds.center;
+			var targetBoundsSize = m_CustomStartingBounds != null ? m_CustomStartingBounds.Value : minBounds;
+			var targetBoundsCenter = Vector3.zero;
+			var smoothVelocitySize = Vector3.zero;
+			var smoothVelocityCenter = Vector3.zero;
+			var currentDuration = 0f;
+			const float kTargetDuration = 0.75f;
+			while (currentDuration < kTargetDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				currentBoundsCenter = U.Math.SmoothDamp(currentBoundsCenter, targetBoundsCenter, ref smoothVelocityCenter, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBoundsSize = U.Math.SmoothDamp(currentBoundsSize, targetBoundsSize, ref smoothVelocitySize, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				contentBounds = new Bounds(currentBoundsCenter, currentBoundsSize);
+				OnBoundsChanged();
+				yield return null;
+			}
 		}
 	}
 }

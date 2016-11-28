@@ -9,7 +9,7 @@ using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using InputField = UnityEngine.VR.UI.InputField;
 
-public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHighlight
+public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight
 {
 	const float kIndent = 0.02f;
 
@@ -60,7 +60,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		m_ClipTexts = GetComponentsInChildren<ClipText>(true);
 		m_CuboidLayout = GetComponentInChildren<CuboidLayout>(true);
 		if (m_CuboidLayout)
-			m_CuboidLayout.UpdateCubes();
+			m_CuboidLayout.UpdateObjects();
 
 		var handles = GetComponentsInChildren<BaseHandle>(true);
 		foreach (var handle in handles)
@@ -126,7 +126,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		m_UIContainer.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, indent, width - indent);
 
 		if (m_CuboidLayout)
-			m_CuboidLayout.UpdateCubes();
+			m_CuboidLayout.UpdateObjects();
 	}
 
 	public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)
@@ -179,11 +179,9 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 				{
 					m_ClickedField = child.GetComponent<InputField>();
 					if (m_ClickedField)
-					{
-						StartCoroutine(CheckSingleClick());
 						break;
-					}
 				}
+				StartCoroutine(CheckSingleClick());
 			}
 
 			m_ClickCount++;
@@ -245,7 +243,10 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		}
 
 		if (m_DragObject)
-			preview(m_DragObject, getPreviewOriginForRayOrigin(eventData.rayOrigin), m_DragLerp, kPreviewRotation);
+		{
+			var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
+			U.Math.LerpTransform(m_DragObject, previewOrigin.position, kPreviewRotation, m_DragLerp);
+		}
 	}
 
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
@@ -284,10 +285,10 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		if (m_ClickCount == 1)
 		{
 			foreach (var inputField in m_InputFields)
-				inputField.Close();
+				inputField.CloseKeyboard(m_ClickedField == null);
 
 			if (m_ClickedField)
-				m_ClickedField.Open();
+				m_ClickedField.OpenKeyboard();
 		}
 
 		m_ClickCount = 0;
