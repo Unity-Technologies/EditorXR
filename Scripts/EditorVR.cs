@@ -470,8 +470,6 @@ public class EditorVR : MonoBehaviour
 
 		UpdateKeyboardMallets();
 
-		UpdateMiniWorlds();
-
 		ProcessInput();
 
 #if UNITY_EDITOR
@@ -512,6 +510,8 @@ public class EditorVR : MonoBehaviour
 		{
 			m_LockedControls.Remove(inputControl);
 		}
+
+		UpdateMiniWorlds();
 
 		m_InputModule.ProcessInput(null, ConsumeControl);
 
