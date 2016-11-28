@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEngine.VR.Helpers;
 
 namespace UnityEngine.VR.Utilities
 {
@@ -141,22 +141,6 @@ namespace UnityEngine.VR.Utilities
 		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements
 		/// </summary>
 		public static GradientPair grayscaleSessionGradient { get; private set; }
-
-		/// <summary>
-		/// Gradient pair container class
-		/// </summary>
-		[Serializable]
-		public struct GradientPair
-		{
-			public Color a;
-			public Color b;
-
-			public GradientPair(Color a, Color b)
-			{
-				this.a = a;
-				this.b = b;
-			}
-		}
 
 		/// <summary>
 		/// Static Constructor that sets up the swatch and gradient data

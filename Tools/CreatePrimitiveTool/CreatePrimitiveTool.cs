@@ -1,11 +1,12 @@
 using System;
 using UnityEngine;
-using UnityEngine.VR.Tools;
 using UnityEngine.InputNew;
+using UnityEngine.VR.Menus;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityObject = UnityEngine.Object;
 
-[MainMenuItem("Primitive", "Primitive", "Create primitives in the scene")]
+[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin, IUsesSpatialHash
 {
 	[SerializeField]
@@ -25,7 +26,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 
 	PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
-	public Func<Transform, GameObject, GameObject> instantiateMenuUI { private get; set; }
+	public Func<Transform, IMenu, GameObject> instantiateMenuUI { private get; set; }
 
 	public Transform rayOrigin { get; set; }
 
@@ -43,7 +44,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 
 	void Start()
 	{
-		m_ToolMenu = instantiateMenuUI(rayOrigin, m_MenuPrefab.gameObject);
+		m_ToolMenu = instantiateMenuUI(rayOrigin, m_MenuPrefab);
 		var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
 		connectInterfaces(createPrimitiveMenu, rayOrigin);
 		createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;

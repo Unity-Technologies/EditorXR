@@ -1,4 +1,5 @@
 using System;
+using UnityEngine.VR.Menus;
 
 namespace UnityEngine.VR.Tools
 {
@@ -13,6 +14,6 @@ namespace UnityEngine.VR.Tools
 		/// GameObject = Prefab
 		/// Returns an instantiated UI
 		/// </summary>
-		Func<Transform, GameObject, GameObject> instantiateMenuUI { set; }
+		Func<Transform, IMenu, GameObject> instantiateMenuUI { set; }
 	}
 }
