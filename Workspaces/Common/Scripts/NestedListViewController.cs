@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace ListView
+﻿namespace ListView
 {
 	public class NestedListViewController<DataType> : ListViewController<DataType, ListViewItem<DataType>> where DataType : ListViewItemNestedData<DataType>
 	{
@@ -16,6 +14,7 @@ namespace ListView
 						RecycleRecursively(data);
 					}
 				}
+
 				m_Data = value;
 				scrollOffset = 0;
 			}
@@ -28,6 +27,7 @@ namespace ListView
 		protected void RecycleRecursively(DataType data)
 		{
 			RecycleBeginning(data);
+
 			if (data.children != null)
 			{
 				foreach (var child in data.children)
@@ -54,7 +54,9 @@ namespace ListView
 					RecycleEnd(datum);
 				else
 					UpdateNestedItem(datum, count, depth);
+
 				count++;
+
 				if (datum.children != null)
 					UpdateRecursively(datum.children, ref count, depth + 1);
 			}

@@ -2428,7 +2428,10 @@ public class EditorVR : MonoBehaviour
 
 	FolderData[] GetFolderData()
 	{
-		return m_FolderData ?? new FolderData[0];
+		if (m_FolderData == null)
+			m_FolderData = new FolderData[0];
+
+		return m_FolderData;
 	}
 
 	void LoadProjectFolders()
@@ -2437,7 +2440,7 @@ public class EditorVR : MonoBehaviour
 
 		StartCoroutine(CreateFolderData((folderData, hasNext) =>
 		{
-			m_FolderData = new[] { folderData };
+			m_FolderData = folderData.children; // Don't show Assets folder
 
 			// Send new data to existing folderLists
 			foreach (var list in m_ProjectFolderLists)
@@ -2503,7 +2506,7 @@ public class EditorVR : MonoBehaviour
 
 	static AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
 	{
-		var type = "";
+		var type = string.Empty;
 		if (assetTypes != null)
 		{
 			type = AssetDatabase.GetMainAssetTypeAtPath(AssetDatabase.GUIDToAssetPath(hp.guid)).Name;

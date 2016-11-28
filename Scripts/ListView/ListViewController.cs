@@ -37,17 +37,11 @@ namespace ListView
 			{
 				var datum = m_Data[i];
 				if (i + m_DataOffset < -1)
-				{
 					RecycleBeginning(datum);
-				}
 				else if (i + m_DataOffset > m_NumRows - 1)
-				{
 					RecycleEnd(datum);
-				}
 				else
-				{
 					UpdateVisibleItem(datum, i);
-				}
 			}
 		}
 
@@ -67,6 +61,7 @@ namespace ListView
 		{
 			if (data.item == null)
 				data.item = GetItem(data);
+
 			UpdateItemTransform(data.item.transform, offset);
 		}
 

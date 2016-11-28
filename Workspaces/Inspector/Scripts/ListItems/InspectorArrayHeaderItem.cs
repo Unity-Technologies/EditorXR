@@ -16,7 +16,7 @@ public class InspectorArrayHeaderItem : InspectorPropertyItem
 
 		// Rotate arrow for expand state
 		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-												expanded ? kExpandedRotation : kNormalRotation,
-												kExpandArrowRotateSpeed);
+			expanded ? kExpandedRotation : kNormalRotation,
+			kExpandArrowRotateSpeed);
 	}
 }

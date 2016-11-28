@@ -73,7 +73,8 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		foreach (var datum in data)
 		{
 			bool expanded;
-			m_ExpandStates.TryGetValue(datum.guid, out expanded);
+			if (!m_ExpandStates.TryGetValue(datum.guid, out expanded))
+				m_ExpandStates[datum.guid] = false;
 
 			if (count + m_DataOffset < -1)
 				RecycleBeginning(datum);
@@ -102,7 +103,9 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 		item.toggleExpanded = ToggleExpanded;
 
-		item.UpdateArrow(m_ExpandStates[listData.guid], true);
+		bool expanded;
+		if(m_ExpandStates.TryGetValue(listData.guid, out expanded))
+			item.UpdateArrow(m_ExpandStates[listData.guid], true);
 
 		return item;
 	}
@@ -119,7 +122,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		selectFolder(data);
 	}
 
-	FolderData GetFolderDataByGUID(FolderData data, string guid)
+	static FolderData GetFolderDataByGUID(FolderData data, string guid)
 	{
 		if (data.guid == guid)
 			return data;

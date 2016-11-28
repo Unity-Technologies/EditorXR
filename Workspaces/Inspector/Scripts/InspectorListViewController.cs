@@ -94,13 +94,16 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			var expanded = m_ExpandStates[datum.instanceID];
 
 			m_ItemSize = m_TemplateSizes[datum.template];
+
 			if (totalOffset + scrollOffset + m_ItemSize.z < 0)
 				RecycleBeginning(datum);
 			else if (totalOffset + scrollOffset > bounds.size.z)
 				RecycleEnd(datum);
 			else
 				UpdateItemRecursive(datum, totalOffset, depth, expanded);
+
 			totalOffset += m_ItemSize.z;
+
 			if (datum.children != null)
 			{
 				if (expanded)
@@ -115,6 +118,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		if (data.item == null)
 			data.item = GetItem(data);
+
 		var item = (InspectorListItem)data.item;
 		item.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded);
 		item.UpdateClipTexts(transform.worldToLocalMatrix, bounds.extents);

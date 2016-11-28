@@ -88,17 +88,20 @@ public class FolderListItem : ListViewItem<FolderData>
 		cubeScale.x = width;
 		m_CubeTransform.localScale = cubeScale;
 
-		var arrowWidth = m_ExpandArrow.transform.localScale.x * 0.5f;
+		var expandArrowTransform = m_ExpandArrow.transform;
+
+		var arrowWidth = expandArrowTransform.localScale.x * 0.5f;
 		var halfWidth = width * 0.5f;
 		var indent = kIndent * depth;
 		var doubleMargin = kMargin * 2;
-		m_ExpandArrow.transform.localPosition = new Vector3(kMargin + indent - halfWidth, m_ExpandArrow.transform.localPosition.y, 0);
+		expandArrowTransform.localPosition = new Vector3(kMargin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
 
 		// Text is next to arrow, with a margin and indent, rotated toward camera
-		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / m_Text.transform.localScale.x);
-		m_Text.transform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, m_Text.transform.localPosition.y, 0);
+		var textTransform = m_Text.transform;
+		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / textTransform.localScale.x);
+		textTransform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, textTransform.localPosition.y, 0);
 
-		m_Text.transform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
+		textTransform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
 
 		UpdateArrow(expanded);
 
@@ -113,8 +116,9 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	public void UpdateArrow(bool expanded, bool immediate = false)
 	{
+		var expandArrowTransform = m_ExpandArrow.transform;
 		// Rotate arrow for expand state
-		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
+		expandArrowTransform.localRotation = Quaternion.Lerp(expandArrowTransform.localRotation,
 			Quaternion.AngleAxis(90f, Vector3.right) * (expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
 			immediate ? 1f : kExpandArrowRotateSpeed);
 	}
