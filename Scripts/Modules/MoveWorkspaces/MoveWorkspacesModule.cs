@@ -21,6 +21,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	public Action<Workspace> resetWorkspaces { get; set; }
 
 	private float m_TriggerPressedTimeStamp = 0.0f;
+
 	private Workspace[] m_AllWorkspaces;
 	private Quaternion[] m_WorkspaceLocalRotaions;
 	private float[] m_ExtraOffset;
@@ -30,15 +31,17 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	private Vector3 m_PreviousPosition;
 	private float m_VerticalVelocity;
 
-	bool m_GrabbedInTopHat;
-	float m_ThrowingTimeStamp;
-	const float kThrowDelayAllowed = 0.2f;
-	float m_CurrentTargetScale = 1.0f;
+	private Bounds m_TopHatBounds;
+	private bool m_GrabbedInTopHat;
 
-	float m_targetAngleY = 0.0f;
+	private float m_ThrowingTimeStamp;
+	private const float kThrowDelayAllowed = 0.2f;
+	private float m_CurrentTargetScale = 1.0f;
 
-	const float kThresholdY = 0.2f;
-	Bounds m_TopHatBounds;
+	private float m_targetAngleY = 0.0f;
+
+	private const float kThresholdY = 0.2f;
+	
 
 	private enum ManipulateMode
 	{
@@ -52,12 +55,6 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		m_TopHatBounds = new Bounds(Vector3.up * 0.2f, new Vector3(0.2f, 0.15f, 0.2f));
 	}
 
-	void OnDrawGizmos()
-	{
-		Gizmos.DrawWireCube(m_TopHatBounds.center, m_TopHatBounds.size);
-	}
-
-	//void Update()
 	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 	{
 		var standardInput = (Standard) input;
