@@ -41,9 +41,28 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 
 	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
-	public FolderData[] folderData { set { m_ProjectUI.folderListView.data = value; } }
+	public FolderData[] folderData
+	{
+		set
+		{
+			m_FolderData = value;
 
-	public List<string> filterList { set { m_FilterUI.filterList = value; } }
+			if (m_ProjectUI)
+				m_ProjectUI.folderListView.data = value;
+		}
+	}
+	FolderData[] m_FolderData;
+
+	public List<string> filterList
+	{
+		set
+		{
+			m_FilterList = value;
+			if (m_FilterUI)
+				m_FilterUI.filterList = value;
+		}
+	}
+	List<string> m_FilterList;
 
 	public override void Setup()
 	{
@@ -58,7 +77,13 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
 
+		var folderListView = m_ProjectUI.folderListView;
+		folderListView.selectFolder = SelectFolder;
+		folderListView.data = new FolderData[0];
+		folderData = m_FolderData;
+
 		m_FilterUI = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+		filterList = m_FilterList;
 
 		var sliderPrefab = U.Object.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
 		var zoomSlider = sliderPrefab.GetComponent<ZoomSliderUI>();
@@ -66,10 +91,6 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		zoomSlider.zoomSlider.maxValue = kMaxScale;
 		zoomSlider.zoomSlider.value = m_ProjectUI.assetGridView.scaleFactor;
 		zoomSlider.sliding += Scale;
-
-		var folderListView = m_ProjectUI.folderListView;
-		folderListView.selectFolder = SelectFolder;
-		folderListView.data = new FolderData[0];
 
 		var assetGridView = m_ProjectUI.assetGridView;
 		assetGridView.testFilter = TestFilter;

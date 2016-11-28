@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 using UnityEngine.VR.Extensions;
@@ -201,7 +202,7 @@ public class KeyboardButton : BaseHandle
 		{
 			if ((KeyCode)m_Character == KeyCode.Escape || m_ShiftMode && (KeyCode)m_ShiftCharacter == KeyCode.Escape)
 			{
-				var gradient = new UnityBrandColorScheme.GradientPair();
+				var gradient = new GradientPair();
 				gradient.a = UnityBrandColorScheme.red;
 				gradient.b = UnityBrandColorScheme.redDark;
 				m_WorkspaceButton.SetMaterialColors(gradient);

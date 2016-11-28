@@ -6,13 +6,8 @@ namespace UnityEngine.VR.Menus
 	/// <summary>
 	/// An alternate menu that shows on device proxies
 	/// </summary>
-	public interface IAlternateMenu : IUsesMenuActions, IUsesRayOrigin
+	public interface IAlternateMenu : IMenu, IUsesMenuActions, IUsesRayOrigin
 	{
-		/// <summary>
-		/// Controls whether the menu is visible or not
-		/// </summary>
-		bool visible { get; set; }
-
 		/// <summary>
 		/// Delegate called when any item was selected in the alternate menu
 		/// </summary>

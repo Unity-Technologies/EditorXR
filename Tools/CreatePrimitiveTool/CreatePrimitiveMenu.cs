@@ -1,14 +1,15 @@
 using System;
-using System.Collections;
 using UnityEngine;
-using UnityEngine.VR.Tools;
+using UnityEngine.VR.Menus;
 
-public class CreatePrimitiveMenu : MonoBehaviour
+public class CreatePrimitiveMenu : MonoBehaviour, IMenu
 {
 	[SerializeField]
 	GameObject[] m_HighlightObjects;
 
 	public Action<PrimitiveType, bool> selectPrimitive;
+
+	public bool visible { get { return gameObject.activeSelf; } set { gameObject.SetActive(value); } }
 
 	public void SelectPrimitive(int type)
 	{
