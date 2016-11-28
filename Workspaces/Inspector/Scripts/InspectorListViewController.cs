@@ -35,6 +35,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		{
 			base.data = value;
 			m_ExpandStates.Clear();
+
+			ExpandComponentRows(data);
 		}
 	}
 
@@ -89,12 +91,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		foreach (var datum in data)
 		{
-			bool expanded;
-			if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
-			{
-				expanded = datum.defaultToExpanded;
-				m_ExpandStates[datum.instanceID] = expanded;
-			}
+			var expanded = m_ExpandStates[datum.instanceID];
 
 			m_ItemSize = m_TemplateSizes[datum.template];
 			if (totalOffset + scrollOffset + m_ItemSize.z < 0)
@@ -168,6 +165,18 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	void OnArraySizeChanged(PropertyData element)
 	{
 		arraySizeChanged(m_Data, element);
+	}
+
+	void ExpandComponentRows(InspectorData[] data)
+	{
+		foreach (var datum in data)
+		{
+			var targetObject = datum.serializedObject.targetObject;
+			m_ExpandStates[datum.instanceID] = targetObject is Component || targetObject is GameObject;
+
+			if (datum.children != null)
+				ExpandComponentRows(datum.children);
+		}
 	}
 
 	void OnDestroy()

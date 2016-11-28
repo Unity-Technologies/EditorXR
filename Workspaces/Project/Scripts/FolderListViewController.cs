@@ -73,11 +73,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		foreach (var datum in data)
 		{
 			bool expanded;
-			if (!m_ExpandStates.TryGetValue(datum.guid, out expanded))
-			{
-				expanded = datum.defaultToExpanded;
-				m_ExpandStates[datum.guid] = expanded;
-			}
+			m_ExpandStates.TryGetValue(datum.guid, out expanded);
 
 			if (count + m_DataOffset < -1)
 				RecycleBeginning(datum);

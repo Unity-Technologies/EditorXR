@@ -17,17 +17,17 @@ public class AssetData : ListViewItemData
 
 	public Object asset
 	{
-		get {
+		get
+		{
 			return m_Asset;
 		}
 		set
 		{
 			m_Asset = value;
 			if (m_Asset)
-				CheckType();
+				UpdateType(); // We lazy load assets and don't know the final type until the asset is loaded
 		}
 	}
-
 	Object m_Asset;
 
 	public AssetData(string name, string guid, string type)
@@ -38,11 +38,7 @@ public class AssetData : ListViewItemData
 		this.type = type;
 	}
 
-	/// <summary>
-	/// In order to determine whether a GameObject is a model or a prefab, we need to load the asset.
-	/// Then, we can narrow down the type.
-	/// </summary>
-	void CheckType()
+	void UpdateType()
 	{
 		if (type == "GameObject")
 		{
@@ -55,7 +51,6 @@ public class AssetData : ListViewItemData
 					type = "Prefab";
 					break;
 			}
-
 		}
 	}
 }

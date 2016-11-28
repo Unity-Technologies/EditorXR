@@ -13,7 +13,7 @@ public class FolderData : ListViewItemNestedData<FolderData>
 	public AssetData[] assets { get { return m_Assets; } }
 	readonly AssetData[] m_Assets;
 
-	public FolderData(string name, FolderData[] children, AssetData[] assets, string guid, bool defaultToExpanded = false) : base(defaultToExpanded)
+	public FolderData(string name, FolderData[] children, AssetData[] assets, string guid)
 	{
 		template = kTemplateName;
 		m_Name = name;

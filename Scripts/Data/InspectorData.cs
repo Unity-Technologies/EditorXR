@@ -1,4 +1,5 @@
-﻿using ListView;
+﻿using System;
+using ListView;
 using UnityEditor;
 
 public class InspectorData : ListViewItemNestedData<InspectorData>
@@ -10,7 +11,7 @@ public class InspectorData : ListViewItemNestedData<InspectorData>
 		get { return serializedObject.targetObject.GetInstanceID(); }
 	}
 
-	public InspectorData(string template, SerializedObject serializedObject, InspectorData[] children, bool defaultToExpanded = false) : base(defaultToExpanded)
+	public InspectorData(string template, SerializedObject serializedObject, InspectorData[] children)
 	{
 		this.template = template;
 		this.serializedObject = serializedObject;

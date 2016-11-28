@@ -2455,8 +2455,6 @@ public class EditorVR : MonoBehaviour
 
 	IEnumerator CreateFolderData(Action<FolderData, bool> callback, HashSet<string> assetTypes, bool hasNext = true, HierarchyProperty hp = null)
 	{
-		var defaultToExpanded = hp == null; // First folder (Assets) defaults expanded
-
 		if (hp == null)
 		{
 			hp = new HierarchyProperty(HierarchyType.Assets);
@@ -2500,7 +2498,7 @@ public class EditorVR : MonoBehaviour
 				hp.Previous(null);
 		}
 
-		callback(new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), guid, defaultToExpanded), hasNext);
+		callback(new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), guid), hasNext);
 	}
 
 	static AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)

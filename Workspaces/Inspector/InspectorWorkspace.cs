@@ -159,12 +159,12 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 						componentChildren.Add(SerializedPropertyToPropertyData(property, obj));
 				}
 
-				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren.ToArray(), true);
+				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren.ToArray());
 				objectChildren.Add(componentData);
 			}
 		}
 
-		var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(Selection.activeObject), objectChildren.ToArray(), true);
+		var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(Selection.activeObject), objectChildren.ToArray());
 		inspectorData.Add(objectData);
 
 		m_InspectorUI.inspectorListView.data = inspectorData.ToArray();
@@ -223,7 +223,7 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 	{
 		var propertyData = property.isArray
 			? new PropertyData("InspectorArrayHeaderItem", obj, null, property.Copy())
-			: new PropertyData("InspectorGenericItem", obj, null, property.Copy(), true);
+			: new PropertyData("InspectorGenericItem", obj, null, property.Copy());
 		
 		propertyData.SetChildren(GetChildProperties(propertyData, property, obj));
 

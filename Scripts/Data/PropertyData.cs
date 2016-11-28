@@ -10,8 +10,8 @@ public class PropertyData : InspectorData
 		get { return property.GetHashCode(); }
 	}
 
-	public PropertyData(string template, SerializedObject serializedObject, InspectorData[] children, SerializedProperty property, bool defaultToExpanded = false)
-		: base(template, serializedObject, children, defaultToExpanded)
+	public PropertyData(string template, SerializedObject serializedObject, InspectorData[] children, SerializedProperty property)
+		: base(template, serializedObject, children)
 	{
 		this.property = property;
 	}
