@@ -65,7 +65,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 		SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 
-		UpdateItem(item.transform, offset);
+		UpdateItemTransform(item.transform, offset);
 	}
 
 	protected override void UpdateRecursively(FolderData[] data, ref int count, int depth = 0)
@@ -105,6 +105,8 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		item.selectFolder = SelectFolder;
 
 		item.toggleExpanded = ToggleExpanded;
+
+		item.UpdateArrow(m_ExpandStates[listData.guid], true);
 
 		return item;
 	}

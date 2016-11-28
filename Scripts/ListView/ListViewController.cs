@@ -67,7 +67,7 @@ namespace ListView
 		{
 			if (data.item == null)
 				data.item = GetItem(data);
-			UpdateItem(data.item.transform, offset);
+			UpdateItemTransform(data.item.transform, offset);
 		}
 
 		protected virtual ItemType GetItem(DataType data)

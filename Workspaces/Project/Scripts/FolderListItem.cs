@@ -45,7 +45,7 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	public Action<FolderData> toggleExpanded { private get; set; }
 	public Action<FolderData> selectFolder { private get; set; }
-
+	
 	public override void Setup(FolderData listData)
 	{
 		base.Setup(listData);
@@ -100,10 +100,7 @@ public class FolderListItem : ListViewItem<FolderData>
 
 		m_Text.transform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
 
-		// Rotate arrow for expand state
-		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-			Quaternion.AngleAxis(90f, Vector3.right) * (expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
-			kExpandArrowRotateSpeed);
+		UpdateArrow(expanded);
 
 		// Set selected/hover/normal color
 		if (selected)
@@ -112,6 +109,14 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_CubeRenderer.sharedMaterial.color = m_HoverColor;
 		else
 			m_CubeRenderer.sharedMaterial.color = m_NormalColor;
+	}
+
+	public void UpdateArrow(bool expanded, bool immediate = false)
+	{
+		// Rotate arrow for expand state
+		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
+			Quaternion.AngleAxis(90f, Vector3.right) * (expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
+			immediate ? 1f : kExpandArrowRotateSpeed);
 	}
 
 	void ToggleExpanded(BaseHandle handle, HandleEventData eventData)

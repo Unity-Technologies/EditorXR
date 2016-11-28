@@ -157,7 +157,7 @@ namespace ListView
 			m_ScrollOffset = index * itemSize.z;
 		}
 
-		protected virtual void UpdateItem(Transform t, int offset)
+		protected virtual void UpdateItemTransform(Transform t, int offset)
 		{
 			t.localPosition = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.back;
 			t.localRotation = Quaternion.identity;
