@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IConnectInterfaces, IOverShoulderCheck
+public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IConnectInterfaces
 {
 	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
@@ -33,8 +33,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
 	private readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
-
-	public Func<Transform, bool> isOverShoulder { private get; set; }
 
 	public override AssetData[] data
 	{
@@ -222,7 +220,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 		item.transform.localPosition = m_StartPosition;
 		connectInterfaces(item);
-		item.isOverShoulder = isOverShoulder;
 
 		StartCoroutine(Transition(data, false));
 

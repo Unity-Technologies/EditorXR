@@ -1485,11 +1485,11 @@ public class EditorVR : MonoBehaviour
 			spatialHash.removeFromSpatialHash = m_SpatialHashModule.RemoveObject;
 		}
 
-		var deleteSceneObjects = obj as IDeleteSceneObjects;
+		var deleteSceneObjects = obj as IDeleteSceneObject;
 		if (deleteSceneObjects != null)
 			deleteSceneObjects.deleteSceneObject = DeleteSceneObject;
 
-		var overShoulderCheck = obj as IOverShoulderCheck;
+		var overShoulderCheck = obj as IUsesViewerBody;
 		if (overShoulderCheck != null)
 			overShoulderCheck.isOverShoulder = IsOverShoulder;
 

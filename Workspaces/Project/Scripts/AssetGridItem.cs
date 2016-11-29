@@ -8,7 +8,7 @@ using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IOverShoulderCheck
+public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
 {
 	private const float kPreviewDuration = 0.1f;
 	private const float kMaxPreviewScale = 0.33f;

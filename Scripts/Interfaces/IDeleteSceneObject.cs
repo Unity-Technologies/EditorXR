@@ -5,7 +5,7 @@ namespace UnityEngine.VR.Tools
 	/// <summary>
 	/// Decorates objects which can delete objects from the scene
 	/// </summary>
-	public interface IDeleteSceneObjects
+	public interface IDeleteSceneObject
 	{
 		/// <summary>
 		/// Destroy the given game object and remove it from the spatial hash
