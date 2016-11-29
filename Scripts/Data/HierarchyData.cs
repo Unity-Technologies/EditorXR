@@ -10,11 +10,15 @@ public class HierarchyData : ListViewItemNestedData<HierarchyData>
 	public int instanceID { get { return m_InstanceID; } }
 	readonly int m_InstanceID;
 
-	public HierarchyData(string name, HierarchyData[] children, int instanceID)
+	public HierarchyData(string name, int instanceID)
 	{
 		template = kTemplateName;
-		this.children = children;
 		m_Name = name;
 		m_InstanceID = instanceID;
+	}
+
+	public HierarchyData(string name, int instanceID, HierarchyData[] children) : this(name, instanceID)
+	{
+		m_Children = children;
 	}
 }

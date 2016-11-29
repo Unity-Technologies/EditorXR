@@ -192,6 +192,9 @@ public class EditorVR : MonoBehaviour
 	float m_ProjectFolderLoadStartTime;
 	float m_ProjectFolderLoadYieldTime;
 
+	readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
+	HierarchyData[] m_HierarchyData;
+
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
 	readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
@@ -203,6 +206,7 @@ public class EditorVR : MonoBehaviour
 		ClearDeveloperConsoleIfNecessary();
 
 		LoadProjectFolders();
+		LoadHierarchyData();
 
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 		if (VRSettings.loadedDeviceName == "OpenVR")
@@ -300,6 +304,8 @@ public class EditorVR : MonoBehaviour
 	{
 		m_MiniWorldIgnoreListDirty = true;
 		m_PixelRaycastIgnoreListDirty = true;
+
+		LoadHierarchyData();
 	}
 
 	IEnumerable<InputDevice> GetSystemDevices()
@@ -1504,6 +1510,13 @@ public class EditorVR : MonoBehaviour
 			m_ProjectFolderLists.Add(projectFolderList);
 		}
 
+		var hierarchyList = obj as IUsesHierarchyData;
+		if (hierarchyList != null)
+		{
+			hierarchyList.hierarchyData = GetHierarchyData();
+			m_HierarchyLists.Add(hierarchyList);
+		}
+
 		var filterUI = obj as IFilterUI;
 		if (filterUI != null)
 		{
@@ -2527,6 +2540,52 @@ public class EditorVR : MonoBehaviour
 		}
 
 		return new AssetData(hp.name, hp.guid, type);
+	}
+
+	HierarchyData[] GetHierarchyData()
+	{
+		if (m_HierarchyData == null)
+			m_HierarchyData = new HierarchyData[0];
+
+		return m_HierarchyData;
+	}
+
+	void LoadHierarchyData()
+	{
+		var hasNext = true;
+		m_HierarchyData = CreateHierarchyData(ref hasNext);
+		// Send new data to existing hierarchyLists
+		//foreach (var list in m_ProjectFolderLists)
+		//{
+		//	list.folderData = GetFolderData();
+		//}
+	}
+
+	HierarchyData[] CreateHierarchyData(ref bool hasNext, HierarchyProperty hp = null)
+	{
+		if (hp == null)
+			hp = new HierarchyProperty(HierarchyType.GameObjects);
+		else
+			hp.Next(null);
+
+		var depth = hp.depth;
+
+		List<HierarchyData> list = new List<HierarchyData>();
+		do
+		{
+			if (hp.hasChildren)
+				list.Add(new HierarchyData(hp.name, hp.instanceID, CreateHierarchyData(ref hasNext, hp)));
+			else
+				list.Add(new HierarchyData(hp.name, hp.instanceID));
+
+			hasNext = hp.Next(null);
+		}
+		while (hasNext && hp.depth >= depth);
+
+		if (hasNext)
+			hp.Previous(null);
+
+		return list.ToArray();
 	}
 
 #if UNITY_EDITOR
