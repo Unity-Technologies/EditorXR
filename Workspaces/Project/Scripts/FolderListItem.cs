@@ -44,7 +44,7 @@ public class FolderListItem : ListViewItem<FolderData>
 	public Material cubeMaterial { get { return m_CubeRenderer.sharedMaterial; } }
 
 	public Action<FolderData> toggleExpanded { private get; set; }
-	public Action<FolderData> selectFolder { private get; set; }
+	public Action<string> selectFolder { private get; set; }
 	
 	public override void Setup(FolderData listData)
 	{
@@ -130,7 +130,7 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	void SelectFolder(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		selectFolder(data);
+		selectFolder(data.guid);
 	}
 
 	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)

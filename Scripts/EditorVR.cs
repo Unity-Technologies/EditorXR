@@ -2440,7 +2440,7 @@ public class EditorVR : MonoBehaviour
 
 		StartCoroutine(CreateFolderData((folderData, hasNext) =>
 		{
-			m_FolderData = folderData.children; // Don't show Assets folder
+			m_FolderData = new [] { folderData };
 
 			// Send new data to existing folderLists
 			foreach (var list in m_ProjectFolderLists)

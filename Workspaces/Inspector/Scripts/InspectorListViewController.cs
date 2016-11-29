@@ -1,6 +1,7 @@
 ﻿using ListView;
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
@@ -91,14 +92,14 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		foreach (var datum in data)
 		{
-			var expanded = m_ExpandStates[datum.instanceID];
+			bool expanded;
+			if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
+				m_ExpandStates[datum.instanceID] = false;
 
 			m_ItemSize = m_TemplateSizes[datum.template];
 
-			if (totalOffset + scrollOffset + m_ItemSize.z < 0)
-				RecycleBeginning(datum);
-			else if (totalOffset + scrollOffset > bounds.size.z)
-				RecycleEnd(datum);
+			if (totalOffset + scrollOffset + m_ItemSize.z < 0 || totalOffset + scrollOffset > bounds.size.z)
+				Recycle(datum);
 			else
 				UpdateItemRecursive(datum, totalOffset, depth, expanded);
 
@@ -116,12 +117,13 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	void UpdateItemRecursive(InspectorData data, float offset, int depth, bool expanded)
 	{
-		if (data.item == null)
-			data.item = GetItem(data);
+		ListViewItem<InspectorData> item;
+		if (!m_ListItems.TryGetValue(data, out item))
+			item = GetItem(data);
 
-		var item = (InspectorListItem)data.item;
-		item.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded);
-		item.UpdateClipTexts(transform.worldToLocalMatrix, bounds.extents);
+		var inspectorListItem = (InspectorListItem)item;
+		inspectorListItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded);
+		inspectorListItem.UpdateClipTexts(transform.worldToLocalMatrix, bounds.extents);
 
 		UpdateItem(item.transform, offset);
 	}
@@ -135,6 +137,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	protected override ListViewItem<InspectorData> GetItem(InspectorData listData)
 	{
 		var item = (InspectorListItem)base.GetItem(listData);
+
 		if (!item.setup)
 		{
 			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCube);
@@ -159,6 +162,41 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		item.toggleExpanded = ToggleExpanded;
 
 		return item;
+	}
+
+	public void OnBeforeChildrenChanged(ListViewItemNestedData<InspectorData> data, ListViewItemNestedData<InspectorData>[] newData)
+	{
+		InspectorNumberItem arraySizeItem = null;
+		var children = data.children;
+		if (children != null)
+		{
+			foreach (var child in children)
+			{
+				ListViewItem<InspectorData> item;
+				if (m_ListItems.TryGetValue(child, out item))
+				{
+					var childNumberItem = item as InspectorNumberItem;
+					if (childNumberItem && childNumberItem.propertyType == SerializedPropertyType.ArraySize)
+						arraySizeItem = childNumberItem;
+					else
+						Recycle(child);
+				}
+			}
+		}
+
+		// Re-use InspectorNumberItem for array Size in case we are dragging the value
+		if (arraySizeItem)
+		{
+			foreach (var child in newData)
+			{
+				var propChild = child as PropertyData;
+				if (propChild != null && propChild.property.propertyType == SerializedPropertyType.ArraySize)
+				{
+					m_ListItems[propChild] = arraySizeItem;
+					arraySizeItem.data = propChild;
+				}
+			}
+		}
 	}
 
 	void ToggleExpanded(InspectorData data)

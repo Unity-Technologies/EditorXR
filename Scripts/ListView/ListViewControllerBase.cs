@@ -181,6 +181,7 @@ namespace ListView
 		{
 			if (item == null || template == null)
 				return;
+
 			m_TemplateDictionary[template].pool.Add(item);
 			item.gameObject.SetActive(false);
 		}

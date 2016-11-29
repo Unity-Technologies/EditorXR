@@ -24,18 +24,14 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	{
 		set
 		{
-			if (m_Data != null)
-			{
-				// Clear out visuals for old data
-				foreach (var datum in m_Data)
-				{
-					RecycleRecursively(datum);
-				}
-			}
+			base.data = value;
 
-			m_Data = value;
-			if (m_Data.Length > 0 && !string.IsNullOrEmpty(m_SelectedFolder))
-				SelectFolder(GetFolderDataByGUID(m_Data[0], m_SelectedFolder));
+			if (m_Data != null && m_Data.Length > 0) // Expand and select the Assets folder by default
+			{
+				var guid = data[0].guid;
+				m_ExpandStates[guid] = true;
+				SelectFolder(guid);
+			}
 		}
 	}
 
@@ -58,12 +54,15 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	void UpdateFolderItem(FolderData data, int offset, int depth, bool expanded)
 	{
-		if (data.item == null)
-			data.item = GetItem(data);
-		var item = (FolderListItem)data.item;
-		item.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.guid == m_SelectedFolder);
+		ListViewItem<FolderData> item;
+		if (!m_ListItems.TryGetValue(data, out item))
+			item = GetItem(data);
 
-		SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
+		var folderItem = (FolderListItem)item;
+
+		folderItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.guid == m_SelectedFolder);
+
+		SetMaterialClip(folderItem.cubeMaterial, transform.worldToLocalMatrix);
 
 		UpdateItemTransform(item.transform, offset);
 	}
@@ -76,10 +75,8 @@ public class FolderListViewController : NestedListViewController<FolderData>
 			if (!m_ExpandStates.TryGetValue(datum.guid, out expanded))
 				m_ExpandStates[datum.guid] = false;
 
-			if (count + m_DataOffset < -1)
-				RecycleBeginning(datum);
-			else if (count + m_DataOffset > m_NumRows - 1)
-				RecycleEnd(datum);
+			if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
+				Recycle(datum);
 			else
 				UpdateFolderItem(datum, count, depth, expanded);
 
@@ -116,10 +113,15 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
 	}
 
-	void SelectFolder(FolderData data)
+	void SelectFolder(string guid)
 	{
-		m_SelectedFolder = data.guid;
-		selectFolder(data);
+		if (data == null)
+			return;
+
+		m_SelectedFolder = guid;
+
+		var folderData = GetFolderDataByGUID(data[0], guid) ?? data[0];
+		selectFolder(folderData);
 	}
 
 	static FolderData GetFolderDataByGUID(FolderData data, string guid)

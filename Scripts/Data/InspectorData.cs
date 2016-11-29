@@ -14,6 +14,6 @@ public class InspectorData : ListViewItemNestedData<InspectorData>
 	{
 		this.template = template;
 		this.serializedObject = serializedObject;
-		this.children = children;
+		m_Children = children;
 	}
 }

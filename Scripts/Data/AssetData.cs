@@ -12,7 +12,6 @@ public class AssetData : ListViewItemData
 
 	public string type { get; private set; }
 
-	public bool animating { get; set; }
 	public GameObject preview { get; set; }
 
 	public Object asset

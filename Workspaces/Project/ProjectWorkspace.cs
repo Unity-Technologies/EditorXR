@@ -77,6 +77,11 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
 
+		var assetGridView = m_ProjectUI.assetGridView;
+		assetGridView.testFilter = TestFilter;
+		assetGridView.data = new AssetData[0];
+		connectInterfaces(assetGridView);
+
 		var folderListView = m_ProjectUI.folderListView;
 		folderListView.selectFolder = SelectFolder;
 		folderListView.data = new FolderData[0];
@@ -91,11 +96,6 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		zoomSlider.zoomSlider.maxValue = kMaxScale;
 		zoomSlider.zoomSlider.value = m_ProjectUI.assetGridView.scaleFactor;
 		zoomSlider.sliding += Scale;
-
-		var assetGridView = m_ProjectUI.assetGridView;
-		assetGridView.testFilter = TestFilter;
-		assetGridView.data = new AssetData[0];
-		connectInterfaces(assetGridView);
 
 		var scrollHandles = new[]
 		{
