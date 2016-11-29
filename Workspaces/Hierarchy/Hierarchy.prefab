@@ -57,7 +57,7 @@ GameObject:
   - 23: {fileID: 23000012436214412}
   - 114: {fileID: 114000011690277160}
   m_Layer: 5
-  m_Name: HierarchyScrollHandle
+  m_Name: ScrollHandle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -119,7 +119,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011576250758}
   m_LocalRotation: {x: -0.7071068, y: -1.8474108e-13, z: 1.2789768e-13, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.008700995, z: -0.00000072964065}
   m_LocalScale: {x: 55, y: 49.9, z: 0.20000029}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
   m_Children: []
@@ -132,7 +132,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012323769710}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
@@ -294,7 +294,7 @@ MonoBehaviour:
   m_ScrollDamping: 1
   m_MaxMomentum: 200
   m_Templates:
-  - {fileID: 1000014066556564, guid: 3a8d15e2004808b45bbe8ddf381a4a53, type: 2}
+  - {fileID: 1000014066556564, guid: 918c55469b1324d46b0c41586835ce87, type: 2}
   m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
   m_ExpandArrowMaterial: {fileID: 2100000, guid: 41165fc29d3ea90418665f906b7fa247,
     type: 2}
@@ -325,6 +325,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_HierarchyListView: {fileID: 114000011426645376}
   m_ScrollHandle: {fileID: 114000011690277160}
+  m_Highlight: {fileID: 114000010577969036}
 --- !u!114 &114000013463570846
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -376,5 +377,5 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0.5, y: 0.5}
+  m_SizeDelta: {x: 0.344, y: 0.504}
   m_Pivot: {x: 0.5, y: 0.5}

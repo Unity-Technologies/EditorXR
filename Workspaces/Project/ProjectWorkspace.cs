@@ -84,7 +84,6 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 
 		var folderListView = m_ProjectUI.folderListView;
 		folderListView.selectFolder = SelectFolder;
-		folderListView.data = new FolderData[0];
 		folderData = m_FolderData;
 
 		m_FilterUI = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();

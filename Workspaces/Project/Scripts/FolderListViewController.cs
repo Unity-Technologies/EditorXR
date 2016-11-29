@@ -109,8 +109,8 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	void ToggleExpanded(FolderData data)
 	{
-		var instanceID = data.guid;
-		m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
+		var guid = data.guid;
+		m_ExpandStates[guid] = !m_ExpandStates[guid];
 	}
 
 	void SelectFolder(string guid)

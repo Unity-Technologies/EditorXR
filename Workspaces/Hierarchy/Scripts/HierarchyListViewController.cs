@@ -1,5 +1,6 @@
-﻿using ListView;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using ListView;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
 
@@ -13,32 +14,11 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 	[SerializeField]
 	private Material m_ExpandArrowMaterial;
 
-	private Transform m_GrabbedObject;
+	int m_SelectedRow;
 
-	public Action<HierarchyData> selectRow;
+	readonly Dictionary<int, bool> m_ExpandStates = new Dictionary<int, bool>();
 
-	public override HierarchyData[] data
-	{
-		set
-		{
-			if (m_Data != null)
-			{
-				// Clear out visuals for old data
-				foreach (var data in m_Data)
-				{
-					RecycleRecursively(data);
-				}
-			}
-
-			m_Data = value;
-		}
-	}
-
-	public void ClearSelected()
-	{
-		foreach (var folderData in m_Data)
-			folderData.ClearSelected();
-	}
+	public Action<int> selectRow;
 
 	protected override void Setup()
 	{
@@ -57,24 +37,75 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
 	}
 
-	protected override void UpdateNestedItem(HierarchyData data, int offset, int depth)
+	void UpdateFolderItem(HierarchyData data, int offset, int depth, bool expanded)
 	{
-		if (data.item == null)
-			data.item = GetItem(data);
-		var item = (HierarchyItem)data.item;
-		item.UpdateSelf(bounds.size.x - kClipMargin, depth);
+		ListViewItem<HierarchyData> item;
+		if (!m_ListItems.TryGetValue(data, out item))
+			item = GetItem(data);
 
-		SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
+		var folderItem = (HierarchyListItem)item;
 
-		UpdateItem(item.transform, offset);
+		folderItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.instanceID == m_SelectedRow);
+
+		SetMaterialClip(folderItem.cubeMaterial, transform.worldToLocalMatrix);
+
+		UpdateItemTransform(item.transform, offset);
+	}
+
+	protected override void UpdateRecursively(HierarchyData[] data, ref int count, int depth = 0)
+	{
+		foreach (var datum in data)
+		{
+			bool expanded;
+			if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
+				m_ExpandStates[datum.instanceID] = false;
+
+			if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
+				Recycle(datum);
+			else
+				UpdateFolderItem(datum, count, depth, expanded);
+
+			count++;
+
+			if (datum.children != null)
+			{
+				if (expanded)
+					UpdateRecursively(datum.children, ref count, depth + 1);
+				else
+					RecycleChildren(datum);
+			}
+		}
 	}
 
 	protected override ListViewItem<HierarchyData> GetItem(HierarchyData listData)
 	{
-		var item = (HierarchyItem)base.GetItem(listData);
+		var item = (HierarchyListItem)base.GetItem(listData);
 		item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
-		item.selectRow = selectRow;
+		item.selectRow = SelectRow;
+
+		item.toggleExpanded = ToggleExpanded;
+
+		bool expanded;
+		if(m_ExpandStates.TryGetValue(listData.instanceID, out expanded))
+			item.UpdateArrow(m_ExpandStates[listData.instanceID], true);
+
 		return item;
+	}
+
+	void ToggleExpanded(HierarchyData data)
+	{
+		var instanceID = data.instanceID;
+		m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
+	}
+
+	void SelectRow(int instanceID)
+	{
+		if (data == null)
+			return;
+
+		m_SelectedRow = instanceID;
+
+		selectRow(instanceID);
 	}
 
 	private void OnDestroy()
