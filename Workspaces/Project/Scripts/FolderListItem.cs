@@ -43,8 +43,9 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	public Material cubeMaterial { get { return m_CubeRenderer.sharedMaterial; } }
 
-	public Action<FolderData> selectFolder;
-
+	public Action<FolderData> toggleExpanded { private get; set; }
+	public Action<string> selectFolder { private get; set; }
+	
 	public override void Setup(FolderData listData)
 	{
 		base.Setup(listData);
@@ -81,31 +82,31 @@ public class FolderListItem : ListViewItem<FolderData>
 		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
 	}
 
-	public void UpdateSelf(float width, int depth)
+	public void UpdateSelf(float width, int depth, bool expanded, bool selected)
 	{
 		var cubeScale = m_CubeTransform.localScale;
 		cubeScale.x = width;
 		m_CubeTransform.localScale = cubeScale;
 
-		var arrowWidth = m_ExpandArrow.transform.localScale.x * 0.5f;
+		var expandArrowTransform = m_ExpandArrow.transform;
+
+		var arrowWidth = expandArrowTransform.localScale.x * 0.5f;
 		var halfWidth = width * 0.5f;
 		var indent = kIndent * depth;
 		var doubleMargin = kMargin * 2;
-		m_ExpandArrow.transform.localPosition = new Vector3(kMargin + indent - halfWidth, m_ExpandArrow.transform.localPosition.y, 0);
+		expandArrowTransform.localPosition = new Vector3(kMargin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
 
 		// Text is next to arrow, with a margin and indent, rotated toward camera
-		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / m_Text.transform.localScale.x);
-		m_Text.transform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, m_Text.transform.localPosition.y, 0);
+		var textTransform = m_Text.transform;
+		m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / textTransform.localScale.x);
+		textTransform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, textTransform.localPosition.y, 0);
 
-		m_Text.transform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
+		textTransform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
 
-		// Rotate arrow for expand state
-		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-												Quaternion.AngleAxis(90f, Vector3.right) * (data.expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
-												kExpandArrowRotateSpeed);
+		UpdateArrow(expanded);
 
 		// Set selected/hover/normal color
-		if (data.selected)
+		if (selected)
 			m_CubeRenderer.sharedMaterial.color = m_SelectedColor;
 		else if (m_Hovering)
 			m_CubeRenderer.sharedMaterial.color = m_HoverColor;
@@ -113,15 +114,23 @@ public class FolderListItem : ListViewItem<FolderData>
 			m_CubeRenderer.sharedMaterial.color = m_NormalColor;
 	}
 
-	private void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
+	public void UpdateArrow(bool expanded, bool immediate = false)
 	{
-		data.expanded = !data.expanded;
+		var expandArrowTransform = m_ExpandArrow.transform;
+		// Rotate arrow for expand state
+		expandArrowTransform.localRotation = Quaternion.Lerp(expandArrowTransform.localRotation,
+			Quaternion.AngleAxis(90f, Vector3.right) * (expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
+			immediate ? 1f : kExpandArrowRotateSpeed);
 	}
 
-	private void SelectFolder(BaseHandle baseHandle, HandleEventData eventData)
+	void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
 	{
-		var folderItem = baseHandle.GetComponentInParent<FolderListItem>();
-		selectFolder(folderItem.data);
+		toggleExpanded(data);
+	}
+
+	void SelectFolder(BaseHandle baseHandle, HandleEventData eventData)
+	{
+		selectFolder(data.guid);
 	}
 
 	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)

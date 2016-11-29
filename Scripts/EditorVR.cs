@@ -2429,11 +2429,9 @@ public class EditorVR : MonoBehaviour
 	FolderData[] GetFolderData()
 	{
 		if (m_FolderData == null)
-			return new FolderData[0];
+			m_FolderData = new FolderData[0];
 
-		var assetsFolder = new FolderData(m_FolderData[0]) { expanded = true };
-
-		return new[] { assetsFolder };
+		return m_FolderData;
 	}
 
 	void LoadProjectFolders()
@@ -2442,7 +2440,7 @@ public class EditorVR : MonoBehaviour
 
 		StartCoroutine(CreateFolderData((folderData, hasNext) =>
 		{
-			m_FolderData = new[] { folderData };
+			m_FolderData = new [] { folderData };
 
 			// Send new data to existing folderLists
 			foreach (var list in m_ProjectFolderLists)
@@ -2466,7 +2464,7 @@ public class EditorVR : MonoBehaviour
 			hp.SetSearchFilter("t:object", 0);
 		}
 		var name = hp.name;
-		var instanceID = hp.instanceID;
+		var guid = hp.guid;
 		var depth = hp.depth;
 		var folderList = new List<FolderData>();
 		var assetList = new List<AssetData>();
@@ -2503,29 +2501,17 @@ public class EditorVR : MonoBehaviour
 				hp.Previous(null);
 		}
 
-		callback(new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), instanceID), hasNext);
+		callback(new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), guid), hasNext);
 	}
 
-	AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
+	static AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
 	{
-		
-		var type = "";
+		var type = string.Empty;
 		if (assetTypes != null)
 		{
 			type = AssetDatabase.GetMainAssetTypeAtPath(AssetDatabase.GUIDToAssetPath(hp.guid)).Name;
 			switch (type)
 			{
-				case "GameObject":
-					switch (PrefabUtility.GetPrefabType(EditorUtility.InstanceIDToObject(hp.instanceID)))
-					{
-						case PrefabType.ModelPrefab:
-							type = "Model";
-							break;
-						default:
-							type = "Prefab";
-							break;
-					}
-					break;
 				case "MonoScript":
 					type = "Script";
 					break;
@@ -2540,7 +2526,7 @@ public class EditorVR : MonoBehaviour
 			assetTypes.Add(type);
 		}
 
-		return new AssetData(hp.name, hp.instanceID, type);
+		return new AssetData(hp.name, hp.guid, type);
 	}
 
 #if UNITY_EDITOR
