@@ -38,27 +38,17 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
-	FolderData m_OpenFolder;
 
 	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 	public FolderData[] folderData
 	{
-		private get { return m_FolderData; }
 		set
 		{
 			m_FolderData = value;
 
 			if (m_ProjectUI)
-			{
-				var oldData = m_ProjectUI.folderListView.data;
-				if (oldData != null && oldData.Length > 0)
-					CopyExpandStates(oldData[0], value[0]);
-
 				m_ProjectUI.folderListView.data = value;
-				if (value.Length > 0)
-					SelectFolder(m_OpenFolder != null ? GetFolderDataByInstanceID(value[0], m_OpenFolder.instanceID) : value[0]);
-			}
 		}
 	}
 	FolderData[] m_FolderData;
@@ -87,6 +77,11 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
 
+		var assetGridView = m_ProjectUI.assetGridView;
+		assetGridView.testFilter = TestFilter;
+		assetGridView.data = new AssetData[0];
+		connectInterfaces(assetGridView);
+
 		var folderListView = m_ProjectUI.folderListView;
 		folderListView.selectFolder = SelectFolder;
 		folderListView.data = new FolderData[0];
@@ -101,11 +96,6 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		zoomSlider.zoomSlider.maxValue = kMaxScale;
 		zoomSlider.zoomSlider.value = m_ProjectUI.assetGridView.scaleFactor;
 		zoomSlider.sliding += Scale;
-
-		var assetGridView = m_ProjectUI.assetGridView;
-		assetGridView.testFilter = TestFilter;
-		assetGridView.data = new AssetData[0];
-		connectInterfaces(assetGridView);
 
 		var scrollHandles = new[]
 		{
@@ -206,12 +196,6 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 
 	void SelectFolder(FolderData data)
 	{
-		if (data == m_OpenFolder)
-			return;
-
-		m_OpenFolder = data;
-		m_ProjectUI.folderListView.ClearSelected();
-		data.selected = true;
 		m_ProjectUI.assetGridView.data = data.assets;
 		m_ProjectUI.assetGridView.scrollOffset = 0;
 	}
@@ -314,38 +298,5 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 	bool TestFilter(string type)
 	{
 		return FilterUI.TestFilter(m_FilterUI.searchQuery, type);
-	}
-
-	FolderData GetFolderDataByInstanceID(FolderData data, int instanceID)
-	{
-		if (data.instanceID == instanceID)
-			return data;
-
-		if (data.children != null)
-		{
-			foreach (var child in data.children)
-			{
-				var folder = GetFolderDataByInstanceID(child, instanceID);
-				if (folder != null)
-					return folder;
-			}
-		}
-		return null;
-	}
-
-	// In case a folder was moved up the hierarchy, we must search the entire destination root for every source folder
-	void CopyExpandStates(FolderData source, FolderData destinationRoot)
-	{
-		var match = GetFolderDataByInstanceID(destinationRoot, source.instanceID);
-		if (match != null)
-			match.expanded = source.expanded;
-
-		if (source.children != null)
-		{
-			foreach (var child in source.children)
-			{
-				CopyExpandStates(child, destinationRoot);
-			}
-		}
 	}
 }

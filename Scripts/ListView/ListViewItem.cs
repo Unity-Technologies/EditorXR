@@ -9,7 +9,6 @@ namespace ListView
 		public virtual void Setup(DataType data)
 		{
 			this.data = data;
-			data.item = this;
 		}
 	}
 }
