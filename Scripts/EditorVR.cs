@@ -2553,39 +2553,55 @@ public class EditorVR : MonoBehaviour
 	void LoadHierarchyData()
 	{
 		var hasNext = true;
-		m_HierarchyData = CreateHierarchyData(ref hasNext);
+		m_HierarchyData = CreateHierarchyData(ref hasNext).children;
 		// Send new data to existing hierarchyLists
-		//foreach (var list in m_ProjectFolderLists)
-		//{
-		//	list.folderData = GetFolderData();
-		//}
+		foreach (var list in m_HierarchyLists)
+		{
+			list.hierarchyData = GetHierarchyData();
+		}
 	}
 
-	HierarchyData[] CreateHierarchyData(ref bool hasNext, HierarchyProperty hp = null)
+	HierarchyData CreateHierarchyData(ref bool hasNext, HierarchyProperty hp = null)
 	{
 		if (hp == null)
+		{
 			hp = new HierarchyProperty(HierarchyType.GameObjects);
-		else
 			hp.Next(null);
-
+		}
+		
 		var depth = hp.depth;
+		var name = hp.name;
+		var instanceID = hp.instanceID;
 
 		List<HierarchyData> list = new List<HierarchyData>();
-		do
-		{
-			if (hp.hasChildren)
-				list.Add(new HierarchyData(hp.name, hp.instanceID, CreateHierarchyData(ref hasNext, hp)));
-			else
-				list.Add(new HierarchyData(hp.name, hp.instanceID));
 
+		if (hasNext)
+		{
 			hasNext = hp.Next(null);
+			while (hasNext && hp.depth > depth)
+			{
+				var go = EditorUtility.InstanceIDToObject(hp.instanceID);
+
+				if (go == gameObject)
+				{
+					// skip children of EVR to prevent the display of EVR contents
+					while (hp.Next(null) && hp.depth > depth + 1) { }
+				}
+
+				if (hp.hasChildren)
+					list.Add(CreateHierarchyData(ref hasNext, hp));
+				else
+					list.Add(new HierarchyData(hp.name, hp.instanceID));
+
+				if (hasNext)
+					hasNext = hp.Next(null);
+			}
 		}
-		while (hasNext && hp.depth >= depth);
 
 		if (hasNext)
 			hp.Previous(null);
 
-		return list.ToArray();
+		return new HierarchyData(name, instanceID, list.ToArray());
 	}
 
 #if UNITY_EDITOR

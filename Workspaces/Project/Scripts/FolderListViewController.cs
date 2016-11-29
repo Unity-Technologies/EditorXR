@@ -43,13 +43,13 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
 	}
 
-	protected override void ComputeConditions()
+	protected override void UpdateItems()
 	{
-		base.ComputeConditions();
-
 		var parentMatrix = transform.worldToLocalMatrix;
 		SetMaterialClip(m_TextMaterial, parentMatrix);
 		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
+
+		base.UpdateItems();
 	}
 
 	void UpdateFolderItem(FolderData data, int offset, int depth, bool expanded)

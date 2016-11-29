@@ -2,7 +2,7 @@
 
 public class HierarchyData : ListViewItemNestedData<HierarchyData>
 {
-	const string kTemplateName = "FolderListItem";
+	const string kTemplateName = "HierarchyListItem";
 
 	public string name { get { return m_Name; } }
 	readonly string m_Name;

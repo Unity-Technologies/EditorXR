@@ -222,7 +222,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 1e584586efda064418cc580c65ad9b5f, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -270,7 +270,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011576250758}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 00e379bb9a41c774a9f43d4ef1734d02, type: 3}
   m_Name: 
@@ -294,7 +294,7 @@ MonoBehaviour:
   m_ScrollDamping: 1
   m_MaxMomentum: 200
   m_Templates:
-  - {fileID: 1000014066556564, guid: 918c55469b1324d46b0c41586835ce87, type: 2}
+  - {fileID: 1000014066556564, guid: 3a8d15e2004808b45bbe8ddf381a4a53, type: 2}
   m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
   m_ExpandArrowMaterial: {fileID: 2100000, guid: 41165fc29d3ea90418665f906b7fa247,
     type: 2}

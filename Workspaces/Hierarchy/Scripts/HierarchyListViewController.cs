@@ -28,13 +28,13 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
 	}
 
-	protected override void ComputeConditions()
+	protected override void UpdateItems()
 	{
-		base.ComputeConditions();
-
 		var parentMatrix = transform.worldToLocalMatrix;
 		SetMaterialClip(m_TextMaterial, parentMatrix);
 		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
+
+		base.UpdateItems();
 	}
 
 	void UpdateFolderItem(HierarchyData data, int offset, int depth, bool expanded)

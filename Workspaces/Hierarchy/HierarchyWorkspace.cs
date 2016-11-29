@@ -6,8 +6,9 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces
+public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUsesHierarchyData
 {
+	new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 	const float kYBounds = 0.2f;
 	const float kScrollMargin = 0.03f;
 
@@ -41,23 +42,32 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces
 	}
 	HierarchyData[] m_HierarchyData;
 
-	public List<string> filterList { set { m_FilterUI.filterList = value; } }
+	public List<string> filterList
+	{
+		set
+		{
+			m_FilterList = value;
+
+			if (m_FilterUI)
+				m_FilterUI.filterList = value;
+		}
+	}
+	List<string> m_FilterList;
 
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
-		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.5f);
+		minBounds = new Vector3(0.375f, kMinBounds.y, 0.5f);
 		m_CustomStartingBounds = minBounds;
 
 		base.Setup();
-
-		topPanelDividerOffset = -0.2875f; // enable & position the top-divider(mask) slightly to the left of workspace center
 
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_HierarchyUI = contentPrefab.GetComponent<HierarchyUI>();
 		hierarchyData = m_HierarchyData;
 
 		m_FilterUI = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+		m_FilterUI.filterList = m_FilterList;
 
 		var hierarchyListView = m_HierarchyUI.hierarchyListView;
 		hierarchyListView.selectRow = SelectRow;
@@ -90,6 +100,7 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces
 		var bounds = contentBounds;
 		var size = bounds.size;
 		size.y = kYBounds;
+		size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
 		size.z = size.z - depthCompensation;
 		bounds.size = size;
 		bounds.center = Vector3.zero;
