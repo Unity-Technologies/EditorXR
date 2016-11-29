@@ -39,8 +39,11 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 	private float m_ScaleStartDistance;
 	bool m_PanZooming;
 
-	bool m_LocatingPlayer;
+	bool m_RelocatingMiniWorld;
+	bool m_ScalingMiniWorld;
 	Vector3 m_MiniWorldTargetPosition;
+	float m_MiniWorldTargetScale;
+	float m_MiniWorldCurrentScale;
 
 	private class RayData
 	{
@@ -71,14 +74,16 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 
 		var locateUI = U.Object.Instantiate(m_LocateYourselfPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LocateYourselfUI>();
 		locateUI.locateButton.onClick.AddListener(LocateYourself);
+		locateUI.resetButton.onClick.AddListener(ResetChessboard);
 		connectInterfaces(locateUI);
 
-		m_LocatingPlayer = false;
+		m_RelocatingMiniWorld = false;
 
 		// Set up MiniWorld
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
 		m_MiniWorld.referenceTransform.position = Vector3.up * kInitReferenceYOffset * kInitReferenceScale;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * kInitReferenceScale;
+		m_MiniWorldCurrentScale = kInitReferenceScale;
 
 		m_MiniWorldTargetPosition = m_MiniWorld.referenceTransform.position;
 
@@ -112,8 +117,11 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 
 	private void Update()
 	{
-		if (m_LocatingPlayer)
-			UpdateMoveToPlayer();
+		if (m_RelocatingMiniWorld)
+		{
+			UpdateLocation();
+			//ScaleToTarget();
+		}
 
 		//Set grid height, deactivate if out of bounds
 		float gridHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
@@ -164,6 +172,7 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 		var scaleDiff = (value - m_MiniWorld.referenceTransform.localScale.x) / m_MiniWorld.referenceTransform.localScale.x;
 		m_MiniWorld.referenceTransform.position += Vector3.up * m_MiniWorld.referenceBounds.extents.y * scaleDiff;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
+		m_MiniWorldCurrentScale = value;
 	}
 
 	void OnPanZoomDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -242,13 +251,21 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 	void LocateYourself()
 	{
 #if UNITY_EDITOR
-		m_LocatingPlayer = true;
-		var refTrans = m_MiniWorld.referenceTransform;
+		m_RelocatingMiniWorld = true;
 		m_MiniWorldTargetPosition = VRView.viewerCamera.transform.position;
 #endif
 	}
 
-	void UpdateMoveToPlayer()
+	void ResetChessboard()
+	{
+		m_RelocatingMiniWorld = true;
+		m_ScalingMiniWorld = true;
+		m_MiniWorldTargetPosition = Vector3.up * kInitReferenceYOffset * kInitReferenceScale;
+		ScaleMiniWorld(kInitReferenceScale);
+		m_ZoomSliderUI.zoomSlider.value = m_MiniWorld.referenceTransform.localScale.x;
+	}
+
+	void UpdateLocation()
 	{
 		const float kSnapDistance = 0.25f;
 		const float kMoveSpeed = 2.5f;
@@ -257,8 +274,20 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 		if (Vector3.Distance(trans.position, m_MiniWorldTargetPosition) < kSnapDistance)
 		{
 			trans.position = m_MiniWorldTargetPosition;
-			m_LocatingPlayer = false;
+			m_RelocatingMiniWorld = false;
 		}
+	}
+
+	void ScaleToTarget()
+	{
+		const float kScaleSpeed = 1.0f;
+		const float kScaleSnap = 0.1f;
+
+		var scaleTo = Mathf.Lerp(m_MiniWorldCurrentScale, m_MiniWorldTargetScale, Time.unscaledDeltaTime * kScaleSpeed);
+		if (Mathf.Abs(scaleTo - m_MiniWorldTargetScale) < kScaleSnap)
+			scaleTo = m_MiniWorldTargetScale;
+
+		ScaleMiniWorld(scaleTo);
 	}
 
 	protected override void OnDestroy()
