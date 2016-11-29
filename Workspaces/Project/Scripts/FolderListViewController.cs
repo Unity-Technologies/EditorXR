@@ -1,5 +1,6 @@
 ﻿using ListView;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Utilities;
 
@@ -13,31 +14,25 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	[SerializeField]
 	private Material m_ExpandArrowMaterial;
 
-	private Transform m_GrabbedObject;
+	string m_SelectedFolder;
 
-	public Action<FolderData> selectFolder;
+	readonly Dictionary<string, bool> m_ExpandStates = new Dictionary<string, bool>();
+
+	public Action<FolderData> selectFolder { private get; set; }
 
 	public override FolderData[] data
 	{
 		set
 		{
-			if (m_Data != null)
+			base.data = value;
+
+			if (m_Data != null && m_Data.Length > 0) // Expand and select the Assets folder by default
 			{
-				// Clear out visuals for old data
-				foreach (var data in m_Data)
-				{
-					RecycleRecursively(data);
-				}
+				var guid = data[0].guid;
+				m_ExpandStates[guid] = true;
+				SelectFolder(guid);
 			}
-
-			m_Data = value;
 		}
-	}
-
-	public void ClearSelected()
-	{
-		foreach (var folderData in m_Data)
-			folderData.ClearSelected();
 	}
 
 	protected override void Setup()
@@ -57,24 +52,93 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
 	}
 
-	protected override void UpdateNestedItem(FolderData data, int offset, int depth)
+	void UpdateFolderItem(FolderData data, int offset, int depth, bool expanded)
 	{
-		if (data.item == null)
-			data.item = GetItem(data);
-		var item = (FolderListItem)data.item;
-		item.UpdateSelf(bounds.size.x - kClipMargin, depth);
+		ListViewItem<FolderData> item;
+		if (!m_ListItems.TryGetValue(data, out item))
+			item = GetItem(data);
 
-		SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
+		var folderItem = (FolderListItem)item;
 
-		UpdateItem(item.transform, offset);
+		folderItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.guid == m_SelectedFolder);
+
+		SetMaterialClip(folderItem.cubeMaterial, transform.worldToLocalMatrix);
+
+		UpdateItemTransform(item.transform, offset);
+	}
+
+	protected override void UpdateRecursively(FolderData[] data, ref int count, int depth = 0)
+	{
+		foreach (var datum in data)
+		{
+			bool expanded;
+			if (!m_ExpandStates.TryGetValue(datum.guid, out expanded))
+				m_ExpandStates[datum.guid] = false;
+
+			if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
+				Recycle(datum);
+			else
+				UpdateFolderItem(datum, count, depth, expanded);
+
+			count++;
+
+			if (datum.children != null)
+			{
+				if (expanded)
+					UpdateRecursively(datum.children, ref count, depth + 1);
+				else
+					RecycleChildren(datum);
+			}
+		}
 	}
 
 	protected override ListViewItem<FolderData> GetItem(FolderData listData)
 	{
 		var item = (FolderListItem)base.GetItem(listData);
 		item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
-		item.selectFolder = selectFolder;
+		item.selectFolder = SelectFolder;
+
+		item.toggleExpanded = ToggleExpanded;
+
+		bool expanded;
+		if(m_ExpandStates.TryGetValue(listData.guid, out expanded))
+			item.UpdateArrow(m_ExpandStates[listData.guid], true);
+
 		return item;
+	}
+
+	void ToggleExpanded(FolderData data)
+	{
+		var instanceID = data.guid;
+		m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
+	}
+
+	void SelectFolder(string guid)
+	{
+		if (data == null)
+			return;
+
+		m_SelectedFolder = guid;
+
+		var folderData = GetFolderDataByGUID(data[0], guid) ?? data[0];
+		selectFolder(folderData);
+	}
+
+	static FolderData GetFolderDataByGUID(FolderData data, string guid)
+	{
+		if (data.guid == guid)
+			return data;
+
+		if (data.children != null)
+		{
+			foreach (var child in data.children)
+			{
+				var folder = GetFolderDataByGUID(child, guid);
+				if (folder != null)
+					return folder;
+			}
+		}
+		return null;
 	}
 
 	private void OnDestroy()
