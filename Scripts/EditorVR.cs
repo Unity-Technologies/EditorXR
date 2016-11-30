@@ -446,14 +446,16 @@ public class EditorVR : MonoBehaviour
 		WorkspaceSave workspaceSaves = new WorkspaceSave(m_AllWorkspaces.Count);
 
 		int i = 0;
-		foreach (var ws in m_AllWorkspaces)
+		foreach (var iws in m_AllWorkspaces)
 		{
 			workspaceSaves.m_Workspaces[i] = new WorkspaceSaveData();
-			workspaceSaves.m_Workspaces[i].workspaceName = ws.GetType().ToString();
-			workspaceSaves.m_Workspaces[i].localPosition = ws.transform.localPosition;
-			workspaceSaves.m_Workspaces[i].localRotation = ws.transform.localRotation;
-			//workspaceSaves.m_Workspaces[i].bounds = ws.contentBounds;
-			//workspaceSaves.m_Workspaces[i].extra = ws.GetExtraSave();
+			workspaceSaves.m_Workspaces[i].workspaceName = iws.GetType().ToString();
+			workspaceSaves.m_Workspaces[i].localPosition = iws.transform.localPosition;
+			workspaceSaves.m_Workspaces[i].localRotation = iws.transform.localRotation;
+			Workspace ws = iws as Workspace;
+			if (ws != null)
+				workspaceSaves.m_Workspaces[i].bounds = ws.contentBounds;
+
 			i++;
 		}
 
@@ -1862,25 +1864,22 @@ public class EditorVR : MonoBehaviour
 		WorkspaceSave savedData = JsonUtility.FromJson<WorkspaceSave>(inputString);
 		if (savedData.m_Workspaces.Length > 0)
 		{
-			foreach (var ws in savedData.m_Workspaces)
+			foreach (var wsData in savedData.m_Workspaces)
 			{
-				CreateWorkspace(Type.GetType(ws.workspaceName), (workSpace) =>
+				CreateWorkspace(Type.GetType(wsData.workspaceName), (workSpace) =>
 				{
-					workSpace.transform.localPosition = ws.localPosition;
-					workSpace.transform.localRotation = ws.localRotation;
-					//workSpace.contentBounds = ws.bounds;
-					//if (ws.extra != "")
-					//	workSpace.SetExtraSave(ws.extra);
+					workSpace.transform.localPosition = wsData.localPosition;
+					workSpace.transform.localRotation = wsData.localRotation;
+					var ws = workSpace as Workspace;
+					if (ws != null)
+						ws.contentBounds = wsData.bounds;
 				});
+				
 			}
 		}
 	}
 
-	/// <summary>
-	/// Use this method to reset all workspaces to a default layout around the HMD
-	/// </summary>
-	/// <param name="instance"> If using this parameter, the method resets the position only for the workspace passed in </param>
-	private void ResetWorkspacePositions(Workspace instance = null)
+	private void ResetWorkspacePositions()
 	{
 		var defaultOffset = new Vector3(0, -0.15f, 1.0f);
 		var cameraTransform = U.Camera.GetMainCamera().transform;
@@ -1890,9 +1889,6 @@ public class EditorVR : MonoBehaviour
 
 		foreach (var ws in m_AllWorkspaces)
 		{
-			if (instance != null && instance != ws)
-				continue;
-
 			ws.transform.position = cameraTransform.position + defaultOffset;
 			ws.transform.LookAt(headPosition);
 			ws.transform.Rotate(Vector3.up, 180.0f);

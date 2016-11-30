@@ -12,43 +12,43 @@ using UnityEngine.VR.Helpers;
 [ExecuteInEditMode]
 public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayOrigin, ICustomRay, IMoveWorkspaces
 {
+	float m_TriggerPressedTimeStamp = 0.0f;
+
+	Workspace[] m_AllWorkspaces;
+	Quaternion[] m_WorkspaceLocalRotaions;
+	float[] m_ExtraYOffsetForLookat;
+
+	Quaternion m_RayOriginStartAngle;
+	bool m_ThrowDownTriggered = false;
+	Vector3 m_PreviousPosition;
+	float m_VerticalVelocity;
+
+	Bounds m_TopHatBounds;
+	bool m_GrabbedInTopHat;
+
+	float m_ThrowingTimeStamp;
+	const float kThrowDelayAllowed = 0.2f;
+	float m_CurrentTargetScale = 1.0f;
+
+	float m_targetAngleY = 0.0f;
+
+	const float kThresholdY = 0.2f;
+	
+	ManipulateMode m_Mode = ManipulateMode.Off;
+
 	public Transform rayOrigin { get; set; }
 
 	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
 
 	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
 
-	public Action<Workspace> resetWorkspaces { get; set; }
+	public Action resetWorkspaces { get; set; }
 
-	private float m_TriggerPressedTimeStamp = 0.0f;
-
-	private Workspace[] m_AllWorkspaces;
-	private Quaternion[] m_WorkspaceLocalRotaions;
-	private float[] m_ExtraOffset;
-
-	private Quaternion m_RayOriginStartAngle;
-	private bool m_ThrowDownTriggered = false;
-	private Vector3 m_PreviousPosition;
-	private float m_VerticalVelocity;
-
-	private Bounds m_TopHatBounds;
-	private bool m_GrabbedInTopHat;
-
-	private float m_ThrowingTimeStamp;
-	private const float kThrowDelayAllowed = 0.2f;
-	private float m_CurrentTargetScale = 1.0f;
-
-	private float m_targetAngleY = 0.0f;
-
-	private const float kThresholdY = 0.2f;
-	
-
-	private enum ManipulateMode
+	enum ManipulateMode
 	{
 		On,
 		Off,
 	}
-	private ManipulateMode mode = ManipulateMode.Off;
 
 	void Start()
 	{
@@ -59,10 +59,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	{
 		var standardInput = (Standard) input;
 
-		if (standardInput == null)
-			return;
-
-		switch (mode)
+		switch (m_Mode)
 		{
 			case ManipulateMode.Off:
 			{
@@ -73,11 +70,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 				if (standardInput.action.wasJustPressed)
 					HandleDoubleTap();
 
-				if (m_GrabbedInTopHat)
-				{
-					if (standardInput.action.isHeld)
+				if (m_GrabbedInTopHat && standardInput.action.isHeld)
 						HandleManipulationStart();
-				}
 
 				if (standardInput.action.wasJustReleased)
 					m_GrabbedInTopHat = false;
@@ -115,7 +109,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 		m_AllWorkspaces = GetComponentsInChildren<Workspace>();
 		m_WorkspaceLocalRotaions = new Quaternion[m_AllWorkspaces.Length];
-		m_ExtraOffset = new float[m_AllWorkspaces.Length];
+		m_ExtraYOffsetForLookat = new float[m_AllWorkspaces.Length];
 
 		var cameraPosition = VRView.viewerCamera.transform.position;
 		for (int i = 0; i < m_AllWorkspaces.Length; i++)
@@ -125,11 +119,11 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			m_WorkspaceLocalRotaions[i] = Quaternion.Euler(m_AllWorkspaces[i].transform.localRotation.eulerAngles.x, 0.0f, 0.0f);
 
 			if (yOffset > kThresholdY)
-				m_ExtraOffset[i] = yOffset - kThresholdY;
+				m_ExtraYOffsetForLookat[i] = yOffset - kThresholdY;
 			else if (yOffset < -kThresholdY)
-				m_ExtraOffset[i] = yOffset + kThresholdY;
+				m_ExtraYOffsetForLookat[i] = yOffset + kThresholdY;
 			else
-				m_ExtraOffset[i] = 0.0f;
+				m_ExtraYOffsetForLookat[i] = 0.0f;
 		}
 
 		return m_AllWorkspaces.Length > 0;
@@ -142,7 +136,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		if (Time.realtimeSinceStartup - m_TriggerPressedTimeStamp < kDoubleTapTime)
 		{
 			m_ThrowDownTriggered = false;
-			resetWorkspaces(null);
+			resetWorkspaces();
 		}
 		m_TriggerPressedTimeStamp = Time.realtimeSinceStartup;
 		m_GrabbedInTopHat = true;
@@ -152,15 +146,12 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	{
 		if (UserThrowsDown() && !m_ThrowDownTriggered)
 		{
-			if (wasJustReleased)
+			if (wasJustReleased && FindWorkspaces())
 			{
-				if (FindWorkspaces())
-				{
-					m_ThrowDownTriggered = true;
+				m_ThrowDownTriggered = true;
 
-					foreach (var ws in m_AllWorkspaces)
-						ws.OnCloseClicked();
-				}
+				foreach (var ws in m_AllWorkspaces)
+					ws.OnCloseClicked();
 			}
 		}
 	}
@@ -176,7 +167,6 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		if (m_VerticalVelocity > kThrowVelocityThreshold)
 		{
 			m_CurrentTargetScale = kLocalScaleWhenReadyToThrow;
-
 			m_ThrowingTimeStamp = Time.realtimeSinceStartup;
 			return true;
 		}
@@ -197,14 +187,14 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	void UpdateWorkspaceScales()
 	{
 		const float kScaleSpeed = 15.0f;
-		const float kClampScaleValue = 0.1f;
+		const float kSnapScaleValue = 0.1f;
 
 		foreach(var ws in m_AllWorkspaces)
 		{
 			float currentScale = ws.transform.localScale.x;
 			
 			//snap scale if close enough to target
-			if (currentScale > m_CurrentTargetScale - kClampScaleValue && currentScale < m_CurrentTargetScale + kClampScaleValue)
+			if (currentScale > m_CurrentTargetScale - kSnapScaleValue && currentScale < m_CurrentTargetScale + kSnapScaleValue)
 			{
 				ws.transform.localScale = Vector3.one * m_CurrentTargetScale;
 				continue;
@@ -216,7 +206,6 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	void HandleManipulationStart()
 	{
 		const float kEnterMovementModeTime = 1.0f;
-		const float kSmoothValue = 5.0f;
 
 		if (Time.realtimeSinceStartup - m_TriggerPressedTimeStamp > kEnterMovementModeTime)
 		{
@@ -224,16 +213,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			{
 				m_PreviousPosition = rayOrigin.position;
 				m_RayOriginStartAngle = Quaternion.LookRotation(rayOrigin.up);
-				mode = ManipulateMode.On;
+				m_Mode = ManipulateMode.On;
 				hideDefaultRay(rayOrigin);
-				foreach (var ws in m_AllWorkspaces)
-				{
-					ws.SetUIHighlights(true);
-					var smoothMotion = ws.GetComponentInChildren<SmoothMotion>();
-					smoothMotion.enabled = true;
-					smoothMotion.SetRotationSmoothing(kSmoothValue);
-					smoothMotion.SetPositionSmoothing(kSmoothValue);
-				}
 			}
 		}
 	}
@@ -269,7 +250,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	void UpdateLookAtPlayer()
 	{
-		float kWorkspaceRotationSpeed = Time.unscaledDeltaTime * 10f;
+		float kWorkspaceRotationSpeed = Time.unscaledDeltaTime * 10.0f;
 
 		// workspaces look at player on their X axis beyond Y thresholds
 		Vector3 cameraPosition = VRView.viewerCamera.transform.position;
@@ -281,7 +262,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			if (Mathf.Abs(yOffset) > kThresholdY)
 			{
 				float sign = Mathf.Sign(yOffset);
-				Vector3 offset = Vector3.up * kThresholdY * sign + Vector3.up * m_ExtraOffset[i];
+				Vector3 offset = Vector3.up * kThresholdY * sign + Vector3.up * m_ExtraYOffsetForLookat[i];
 				Vector3 wsForward = wsTrans.position - (cameraPosition + offset);
 				Quaternion targetRotation = Quaternion.LookRotation(wsForward) * m_WorkspaceLocalRotaions[i];
 
@@ -292,17 +273,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	void HandleManipulationEnd()
 	{
-		const float kSetOriginalSmoothValue = 10.0f;
-
-		mode = ManipulateMode.Off;
+		m_Mode = ManipulateMode.Off;
 		showDefaultRay(rayOrigin);
-
-		foreach (var ws in m_AllWorkspaces)
-		{
-			ws.SetUIHighlights(false);
-			var smoothMotion = ws.GetComponentInChildren<SmoothMotion>();
-			smoothMotion.SetRotationSmoothing(kSetOriginalSmoothValue);
-			smoothMotion.SetPositionSmoothing(kSetOriginalSmoothValue);
-		}
 	}
 }
