@@ -247,8 +247,8 @@ public class EditorVR : MonoBehaviour
 
 		UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
-		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
-		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
+		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.
+		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified,
 		// then only show it in that hand's menu.
 		// CollectToolActionMaps(m_AllTools);
 	}
@@ -1155,7 +1155,7 @@ public class EditorVR : MonoBehaviour
 
 		var actionMapInput = ActionMapInput.Create(map);
 
-		// It's possible that there are no suitable control schemes for the device that is being initialized, 
+		// It's possible that there are no suitable control schemes for the device that is being initialized,
 		// so ActionMapInput can't be marked active
 		var successfulInitialization = false;
 		if (actionMapInput.TryInitializeWithDevices(devices))
@@ -1240,7 +1240,7 @@ public class EditorVR : MonoBehaviour
 	/// </summary>
 	/// <param name="toolType">The tool to spawn</param>
 	/// <param name="usedDevices">A list of the used devices coming from the action map</param>
-	/// <param name="device">The input device whose tool stack the tool should be spawned on (optional). If not 
+	/// <param name="device">The input device whose tool stack the tool should be spawned on (optional). If not
 	/// specified, then it uses the action map to determine which devices the tool should be spawned on.</param>
 	/// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
 	private ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device = null)
@@ -1939,6 +1939,7 @@ public class EditorVR : MonoBehaviour
 
 	private void UpdateMiniWorlds()
 	{
+
 		if (m_MiniWorldIgnoreListDirty)
 		{
 			UpdateMiniWorldIgnoreList();
@@ -2355,7 +2356,7 @@ public class EditorVR : MonoBehaviour
 			if (proxy.previewOrigins.TryGetValue(rayOrigin, out previewOrigin))
 				return previewOrigin;
 		}
-		
+
 		return null;
 	}
 
