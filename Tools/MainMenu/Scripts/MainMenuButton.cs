@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine.UI;
 using UnityEngine.VR.Modules;
-using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {
@@ -16,6 +15,25 @@ namespace UnityEngine.VR.Menus
 		[SerializeField]
 		private Text m_ButtonTitle;
 
+		Color m_OriginalColor;
+
+		public bool selected
+		{
+			set
+			{
+				if (value)
+				{
+					m_Button.transition = Selectable.Transition.None;
+					m_Button.targetGraphic.color = m_Button.colors.highlightedColor;
+				}
+				else
+				{
+					m_Button.transition = Selectable.Transition.ColorTint;
+					m_Button.targetGraphic.color = m_OriginalColor;
+				}
+			}
+		}
+
 		public Action clicked;
 
 		/// <summary>
@@ -26,6 +44,8 @@ namespace UnityEngine.VR.Menus
 		private void Awake()
 		{
 			m_Button.onClick.AddListener(OnButtonClicked);
+
+			m_OriginalColor = m_Button.targetGraphic.color;
 		}
 
 		private void OnDestroy()

@@ -24,5 +24,18 @@ namespace UnityEngine.VR.Menus
 		/// IMainMenu: main menu instance
 		/// </summary>
 		event Action<IMainMenu> menuVisibilityChanged;
+
+		/// <summary>
+		/// The ray origin that tools will spawn on
+		/// </summary>
+		Transform targetRayOrigin { set; }
+
+		/// <summary>
+		/// Returns true if the active tool on the given ray origin is of the given type
+		/// Transform: ray origin to check
+		/// Type: Type with which to compare
+		/// returns whether the active tool is of the same type
+		/// </summary>
+		Func<Transform, Type, bool> isToolActive { set; }
 	}
 }
