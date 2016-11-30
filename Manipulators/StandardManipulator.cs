@@ -1,97 +1,93 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.VR.Tools;
-using UnityEditor.VR;
+﻿using System.Collections.Generic;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 
-public class StandardManipulator : MonoBehaviour, IManipulator
+namespace UnityEngine.VR.Manipulators
 {
-	[SerializeField]
-	private Transform m_PlaneHandlesParent;
-
-	[SerializeField]
-	private List<BaseHandle> m_AllHandles;
-
-	public bool dragging { get {  return m_Dragging; } }
-	private bool m_Dragging;
-
-	public Action<Vector3> translate { private get; set; }
-	public Action<Quaternion> rotate { private get; set; }
-	public Action<Vector3> scale { private get; set; }
-
-	void OnEnable()
+	public class StandardManipulator : BaseManipulator
 	{
-		foreach (var h in m_AllHandles)
+		[SerializeField]
+		Transform m_PlaneHandlesParent;
+
+		[SerializeField]
+		List<BaseHandle> m_AllHandles;
+
+		protected override void OnEnable()
 		{
-			if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
-				h.handleDrag += TranslateHandleDrag;
+			base.OnEnable();
 
-			if (h is RadialHandle)
-				h.handleDrag += RotateHandleDrag;
-
-			h.handleDragging += HandleDragging;
-			h.handleDragged += HandleDragged;
-		}
-	}
-
-	void OnDisable()
-	{
-		foreach (var h in m_AllHandles)
-		{
-			if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
-				h.handleDrag -= TranslateHandleDrag;
-
-			if (h is RadialHandle)
-				h.handleDrag -= RotateHandleDrag;
-
-			h.handleDragging -= HandleDragging;
-			h.handleDragged -= HandleDragged;
-		}
-	}
-
-	void Update()
-	{
-		if (!m_Dragging)
-		{
-			// Place the plane handles in a good location that is accessible to the user
-			var viewerPosition = U.Camera.GetMainCamera().transform.position;
-			foreach (Transform t in m_PlaneHandlesParent)
+			foreach (var h in m_AllHandles)
 			{
-				var localPos = t.localPosition;
-				localPos.x = Mathf.Abs(localPos.x) * (transform.position.x < viewerPosition.x ? 1 : -1);
-				localPos.y = Mathf.Abs(localPos.y) * (transform.position.y < viewerPosition.y ? 1 : -1);
-				localPos.z = Mathf.Abs(localPos.z) * (transform.position.z < viewerPosition.z ? 1 : -1);
-				t.localPosition = localPos;
+				if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
+					h.dragging += OnTranslateDragging;
+
+				if (h is RadialHandle)
+					h.dragging += OnRotateDragging;
+
+				h.dragStarted += OnHandleDragStarted;
+				h.dragEnded += OnHandleDragEnded;
 			}
 		}
-	}
 
-	private void TranslateHandleDrag(BaseHandle handle, HandleEventData eventData)
-	{
-		translate(eventData.deltaPosition);
-	}
+		protected override void OnDisable()
+		{
+			base.OnDisable();
 
-	private void RotateHandleDrag(BaseHandle handle, HandleEventData eventData)
-	{
-		rotate(eventData.deltaRotation);
-	}
+			foreach (var h in m_AllHandles)
+			{
+				if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
+					h.dragging -= OnTranslateDragging;
 
-	private void HandleDragging(BaseHandle handle, HandleEventData eventData)
-	{
-		foreach (var h in m_AllHandles)
-			h.gameObject.SetActive(h == handle);
+				if (h is RadialHandle)
+					h.dragging -= OnRotateDragging;
 
-		m_Dragging = true;
-	}
+				h.dragStarted -= OnHandleDragStarted;
+				h.dragEnded -= OnHandleDragEnded;
+			}
+		}
 
-	private void HandleDragged(BaseHandle handle, HandleEventData eventData)
-	{
-		foreach (var h in m_AllHandles)
-			h.gameObject.SetActive(true);
+		void Update()
+		{
+			if (!dragging)
+			{
+				// Place the plane handles in a good location that is accessible to the user
+				var viewerPosition = U.Camera.GetMainCamera().transform.position;
+				foreach (Transform t in m_PlaneHandlesParent)
+				{
+					var localPos = t.localPosition;
+					localPos.x = Mathf.Abs(localPos.x) * (transform.position.x < viewerPosition.x ? 1 : -1);
+					localPos.y = Mathf.Abs(localPos.y) * (transform.position.y < viewerPosition.y ? 1 : -1);
+					localPos.z = Mathf.Abs(localPos.z) * (transform.position.z < viewerPosition.z ? 1 : -1);
+					t.localPosition = localPos;
+				}
+			}
+		}
 
-		m_Dragging = false;
+		void OnTranslateDragging(BaseHandle handle, HandleEventData eventData)
+		{
+			translate(eventData.deltaPosition);
+		}
+
+		void OnRotateDragging(BaseHandle handle, HandleEventData eventData)
+		{
+			rotate(eventData.deltaRotation);
+		}
+
+		void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
+		{
+			foreach (var h in m_AllHandles)
+				h.gameObject.SetActive(h == handle);
+
+			dragging = true;
+		}
+
+		void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
+		{
+			if (gameObject.activeSelf)
+				foreach (var h in m_AllHandles)
+					h.gameObject.SetActive(true);
+
+			dragging = false;
+		}
 	}
 }

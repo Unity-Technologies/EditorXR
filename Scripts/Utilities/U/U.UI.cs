@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Utilities
+namespace UnityEngine.VR.Utilities
 {
 	using System;
 	using UnityEngine;
@@ -18,17 +18,17 @@
 		/// </summary>
 		public static class UI
 		{
-			private const float kDoubleClickIntervalMax = 0.3f;
+			public const float kDoubleClickIntervalMax = 0.3f;
 			private const float kDoubleClickIntervalMin = 0.15f;
 
-			public static bool DoubleClick(float timeSinceLastClick)
+			public static bool IsDoubleClick(float timeSinceLastClick)
 			{
 				return timeSinceLastClick <= kDoubleClickIntervalMax && timeSinceLastClick >= kDoubleClickIntervalMin;
 			}
 
 			public static bool IsDirectEvent(RayEventData eventData)
 			{
-				return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength;
+				return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength || eventData.dragging;
 			}
 
 			public static bool IsValidEvent(RayEventData eventData, SelectionFlags selectionFlags)
@@ -73,14 +73,28 @@
 
 			public static Type SerializedPropertyToType(SerializedProperty property)
 			{
-				string[] parts = property.propertyPath.Split('.');
+				var parts = property.propertyPath.Split('.');
 
-				Type currentType = property.serializedObject.targetObject.GetType();
+				var currentType = property.serializedObject.targetObject.GetType();
 
-				for (int i = 0; i < parts.Length; i++)
-					currentType = currentType.GetField(parts[i], BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance).FieldType;
+				if (parts.Length == 0)
+					return null;
 
-				return currentType;
+				var field = GetFieldInTypeOrParent(currentType, parts[parts.Length - 1]);
+
+				return field != null ? field.FieldType : null;
+			}
+
+			public static FieldInfo GetFieldInTypeOrParent(Type type, string fieldName)
+			{
+				while (true)
+				{
+					if (type == null)
+						return null;
+					var field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
+					if (field != null) return field;
+					type = type.BaseType;
+				}
 			}
 		}
 	}

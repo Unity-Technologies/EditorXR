@@ -36,6 +36,7 @@ ModelImporter:
     100056: MenuInputArrowLeft
     100058: MenuInputArrowRight
     100060: MenuInputBaseOuter
+    100062: MenuFaceTop
     400000: MenuFaces
     400002: //RootNode
     400004: MenuShell
@@ -67,6 +68,7 @@ ModelImporter:
     400056: MenuInputArrowLeft
     400058: MenuInputArrowRight
     400060: MenuInputBaseOuter
+    400062: MenuFaceTop
     2300000: MenuFaces
     2300002: MenuShell_MeshPart0
     2300004: MenuShell_MeshPart1
@@ -98,6 +100,7 @@ ModelImporter:
     2300056: MenuInputArrowLeft
     2300058: MenuInputArrowRight
     2300060: MenuInputBaseOuter
+    2300062: MenuFaceTop
     3300000: MenuFaces
     3300002: MenuShell_MeshPart0
     3300004: MenuShell_MeshPart1
@@ -129,6 +132,7 @@ ModelImporter:
     3300056: MenuInputArrowLeft
     3300058: MenuInputArrowRight
     3300060: MenuInputBaseOuter
+    3300062: MenuFaceTop
     4300000: MenuFaces
     4300002: MenuShell_MeshPart0
     4300004: MenuShell_MeshPart1
@@ -159,6 +163,7 @@ ModelImporter:
     4300054: MenuInputArrowLeft
     4300056: MenuInputArrowRight
     4300058: MenuInputBaseOuter
+    4300060: MenuFaceTop
   materials:
     importMaterials: 0
     materialName: 0

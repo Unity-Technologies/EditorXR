@@ -1,12 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Workspaces;
 
-public class ChessboardWorkspace : Workspace
+public class ChessboardWorkspace : Workspace, IRayLocking
 {
-	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 6f; // Show more space above ground than below
-	private const float kInitReferenceScale = 25f; // We want to see a big region by default
+	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below
+	private const float kInitReferenceScale = 15f; // We want to see a big region by default
 
 	//TODO: replace with dynamic values once spatial hash lands
 	// Scale slider min/max (maps to referenceTransform unifrom scale)
@@ -19,6 +23,9 @@ public class ChessboardWorkspace : Workspace
 	[SerializeField]
 	private GameObject m_UIPrefab;
 
+	[SerializeField]
+	private GameObject m_FilterPrefab;
+
 	private ChessboardUI m_ChessboardUI;
 	private MiniWorld m_MiniWorld;
 	private Material m_GridMaterial;
@@ -26,6 +33,7 @@ public class ChessboardWorkspace : Workspace
 
 	private readonly List<RayData> m_RayData = new List<RayData>(2);
 	private float m_ScaleStartDistance;
+	bool m_PanZooming;
 
 	private class RayData
 	{
@@ -35,9 +43,19 @@ public class ChessboardWorkspace : Workspace
 		public Vector3 refTransformStartScale;
 	}
 
+	public Func<Transform, object, bool> lockRay { get; set; }
+	public Func<Transform, object, bool> unlockRay { get; set; }
+
+	public IMiniWorld miniWorld { get { return m_MiniWorld; } }
+
 	public override void Setup()
 	{
+		// Initial bounds must be set before the base.Setup() is called
+		minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.25f);
+		m_CustomStartingBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.5f);
+
 		base.Setup();
+
 		U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
 		m_GridMaterial = U.Material.GetMaterialClone(m_ChessboardUI.grid);
@@ -52,11 +70,11 @@ public class ChessboardWorkspace : Workspace
 		// ControlBox shouldn't move with miniWorld
 		panZoomHandle.transform.parent = m_WorkspaceUI.sceneContainer;
 		panZoomHandle.transform.localPosition = Vector3.down * panZoomHandle.transform.localScale.y * 0.5f;
-		panZoomHandle.handleDragging += ControlDragging;
-		panZoomHandle.handleDrag += ControlDrag;
-		panZoomHandle.handleDragged += ControlDragged;
-		panZoomHandle.hovering += OnControlHoverEnter;
-		panZoomHandle.hovered += OnControlHoverExit;
+		panZoomHandle.dragStarted += OnPanZoomDragStarted;
+		panZoomHandle.dragging += OnPanZoomDragging;
+		panZoomHandle.dragEnded += OnPanZoomDragEnded;
+		panZoomHandle.hoverStarted += OnPanZoomHoverStarted;
+		panZoomHandle.hoverEnded += OnPanZoomHoverEnded;
 
 		// Set up UI
 		var UI = U.Object.Instantiate(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
@@ -64,7 +82,12 @@ public class ChessboardWorkspace : Workspace
 		m_ZoomSliderUI.sliding += OnSliding;
 		m_ZoomSliderUI.zoomSlider.maxValue = kMaxScale;
 		m_ZoomSliderUI.zoomSlider.minValue = kMinScale;
+		m_ZoomSliderUI.zoomSlider.direction = Slider.Direction.RightToLeft; // Invert direction for expected ux; zoom in as slider moves left to right
 		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
+
+		var frontHandle = m_WorkspaceUI.directManipulator.GetComponent<BaseHandle>();
+		frontHandle.dragStarted += DragStarted;
+		frontHandle.dragEnded += DragEnded;
 
 		// Propagate initial bounds
 		OnBoundsChanged();
@@ -98,27 +121,38 @@ public class ChessboardWorkspace : Workspace
 	protected override void OnBoundsChanged()
 	{
 		m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
-		m_MiniWorld.localBounds = contentBounds;
-		
-		m_ChessboardUI.boundsCube.transform.localScale = contentBounds.size;
+		const float kOffsetToAccountForFrameSize = -0.14f;
+		// NOTE: We are correcting bounds because the mesh needs to be updated
+		var correctedBounds = new Bounds(contentBounds.center, new Vector3(contentBounds.size.x, contentBounds.size.y, contentBounds.size.z + kOffsetToAccountForFrameSize));
+		m_MiniWorld.localBounds = correctedBounds;
 
-		m_ChessboardUI.grid.transform.localScale = new Vector3(contentBounds.size.x, contentBounds.size.z, 1);
+		m_ChessboardUI.boundsCube.transform.localScale = correctedBounds.size;
+
+		m_ChessboardUI.grid.transform.localScale = new Vector3(correctedBounds.size.x, correctedBounds.size.z, 1);
 
 		var controlBox = m_ChessboardUI.panZoomHandle;
-		controlBox.transform.localScale = new Vector3(contentBounds.size.x, controlBox.transform.localScale.y, contentBounds.size.z);
+		controlBox.transform.localScale = new Vector3(correctedBounds.size.x, controlBox.transform.localScale.y, correctedBounds.size.z);
 	}
 
 	private void OnSliding(float value)
 	{
+		ScaleMiniWorld(value);
+	}
+
+	void ScaleMiniWorld(float value)
+	{
+		var scaleDiff = (value - m_MiniWorld.referenceTransform.localScale.x) / m_MiniWorld.referenceTransform.localScale.x;
+		m_MiniWorld.referenceTransform.position += Vector3.up * m_MiniWorld.referenceBounds.extents.y * scaleDiff;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
 	}
 
-	private void ControlDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnPanZoomDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		m_PanZooming = true;
+		m_WorkspaceUI.topHighlight.visible = true;
+
 		if (m_RayData.Count == 1) // On introduction of second ray
-		{
 			m_ScaleStartDistance = (m_RayData[0].rayOrigin.position - eventData.rayOrigin.position).magnitude;
-		}
 
 		m_RayData.Add(new RayData
 		{
@@ -129,44 +163,60 @@ public class ChessboardWorkspace : Workspace
 		});
 	}
 
-	private void ControlDrag(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnPanZoomDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		var rayData = m_RayData[0];
 		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) // Do not execute for the second ray
 			return;
+
 		var referenceTransform = m_MiniWorld.referenceTransform;
 		var rayOrigin = eventData.rayOrigin;
 		
 		// Rotate translation by inverse workspace yaw
 		Quaternion yawRotation = Quaternion.AngleAxis(transform.rotation.eulerAngles.y, Vector3.down);
-		
+
 		// Translate
 		referenceTransform.position = rayData.refTransformStartPosition
-									+ yawRotation * Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
-		// If we have two rays, also scale
+			+ yawRotation * Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
+
+		// If we have two rays, scale
 		if (m_RayData.Count > 1)
 		{
 			var otherRay = m_RayData[1];
 			referenceTransform.localScale = otherRay.refTransformStartScale * (m_ScaleStartDistance
-										/ (otherRay.rayOrigin.position - rayOrigin.position).magnitude);
+				/ (otherRay.rayOrigin.position - rayOrigin.position).magnitude);
 
 			m_ZoomSliderUI.zoomSlider.value = referenceTransform.localScale.x;
 		}
 	}
 
-	private void ControlDragged(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnPanZoomDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		m_PanZooming = false;
+		m_WorkspaceUI.topHighlight.visible = false;
+
 		m_RayData.RemoveAll(rayData => rayData.rayOrigin.Equals(eventData.rayOrigin));
 	}
 
-	private void OnControlHoverEnter(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnPanZoomHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		setHighlight(handle.gameObject, true);
+		m_WorkspaceUI.topHighlight.visible = true;
 	}
 
-	private void OnControlHoverExit(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnPanZoomHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		setHighlight(handle.gameObject, false);
+		if (!m_PanZooming)
+			m_WorkspaceUI.topHighlight.visible = false;
+	}
+
+	void DragStarted(BaseHandle baseHandle, HandleEventData handleEventData)
+	{
+		lockRay(handleEventData.rayOrigin, this);
+	}
+
+	void DragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
+	{
+		unlockRay(handleEventData.rayOrigin, this);
 	}
 
 	protected override void OnDestroy()

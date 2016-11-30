@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: c4676a965995f624b9663a9e48588734
+timeCreated: 1475184065
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_RowCubeMaterial: {fileID: 2100000, guid: 7076eefb0e29024489a88aac0cac7403, type: 2}
+  - m_BackingCubeMaterial: {fileID: 2100000, guid: de3a472d61ee2cf44b1a333112b4e3a4,
+      type: 2}
+  - m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
+  - m_UIMaterial: {fileID: 2100000, guid: d330a55736490e149910ed6a59d2cbee, type: 2}
+  - m_NoClipBackingCube: {fileID: 2100000, guid: 502322ab303686946b1fca122f1b451d,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

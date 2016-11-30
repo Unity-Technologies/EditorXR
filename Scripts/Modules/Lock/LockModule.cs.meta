@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: f50edd995081cea46bb155b6a02184fd
+timeCreated: 1478740086
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_LockIcon: {fileID: 21300000, guid: bda51dfe062f45741aae4c4ac8bb3cef, type: 3}
+  - m_UnlockIcon: {fileID: 21300000, guid: f5cf11a93d148a847986732c04258f7b, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -15,16 +15,37 @@ namespace UnityEngine.VR.Menus
 		[SerializeField]
 		private Text m_ButtonTitle;
 
+		Color m_OriginalColor;
+
+		public bool selected
+		{
+			set
+			{
+				if (value)
+				{
+					m_Button.transition = Selectable.Transition.None;
+					m_Button.targetGraphic.color = m_Button.colors.highlightedColor;
+				}
+				else
+				{
+					m_Button.transition = Selectable.Transition.ColorTint;
+					m_Button.targetGraphic.color = m_OriginalColor;
+				}
+			}
+		}
+
 		public Action clicked;
 
 		/// <summary>
-		/// The node of the ray that hovering over the button
+		/// The ray that is hovering over the button
 		/// </summary>
-		public Node? node { get; private set; }
+		public Transform hoveringRayOrigin { get; private set; }
 
 		private void Awake()
 		{
 			m_Button.onClick.AddListener(OnButtonClicked);
+
+			m_OriginalColor = m_Button.targetGraphic.color;
 		}
 
 		private void OnDestroy()
@@ -47,13 +68,13 @@ namespace UnityEngine.VR.Menus
 		public void OnRayEnter(RayEventData eventData)
 		{
 			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
-			node = eventData.node;
+			hoveringRayOrigin = eventData.rayOrigin;
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			if (node == eventData.node)
-				node = null;
+			if (hoveringRayOrigin == eventData.rayOrigin)
+				hoveringRayOrigin = null;
 		}
 	}
 }

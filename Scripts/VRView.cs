@@ -6,6 +6,7 @@ using UnityEngine.Assertions;
 using System.Collections;
 using UnityEditor.VR.Helpers;
 using System.Reflection;
+using Valve.VR;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.VR
@@ -13,6 +14,114 @@ namespace UnityEditor.VR
 	[InitializeOnLoad]
 	public class VRView : EditorWindow
 	{
+		const string kShowDeviceView = "VRView.ShowDeviceView";
+		const string kUseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
+		const string kLaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
+		const float kHMDActivityTimeout = 3f; // in seconds
+
+		DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
+
+		// To allow for alternate previews (e.g. smoothing)
+		public static Camera customPreviewCamera
+		{
+			set
+			{
+				if (s_ActiveView)
+					s_ActiveView.m_CustomPreviewCamera = value;
+			}
+			get
+			{
+				return s_ActiveView && s_ActiveView.m_UseCustomPreviewCamera ?
+					s_ActiveView.m_CustomPreviewCamera : null;
+			}
+		}
+		Camera m_CustomPreviewCamera;
+
+		[NonSerialized]
+		private Camera m_Camera;
+
+		LayerMask? m_CullingMask;
+		private RenderTexture m_SceneTargetTexture;
+		private bool m_ShowDeviceView;
+		private bool m_SceneViewsEnabled;
+
+		private static VRView s_ActiveView;
+
+		private Transform m_CameraPivot;
+		private Quaternion m_LastHeadRotation = Quaternion.identity;
+		private float m_TimeSinceLastHMDChange;
+		private bool m_LatchHMDValues;
+
+		bool m_HMDReady;
+		bool m_VRInitialized;
+		bool m_UseCustomPreviewCamera;
+
+		public static Transform viewerPivot
+		{
+			get
+			{
+				if (s_ActiveView)
+				{
+					return s_ActiveView.m_CameraPivot;
+				}
+
+				return null;
+			}
+		}
+
+		public static Camera viewerCamera
+		{
+			get
+			{
+				if (s_ActiveView)
+				{
+					return s_ActiveView.m_Camera;
+				}
+
+				return null;
+			}
+		}
+
+		public static Rect rect
+		{
+			get
+			{
+				if (s_ActiveView)
+				{
+					return s_ActiveView.position;
+				}
+
+				return new Rect();
+			}
+		}
+
+		public static VRView activeView
+		{
+			get
+			{
+				return s_ActiveView;
+			}
+		}
+
+		public static bool showDeviceView
+		{
+			get { return s_ActiveView && s_ActiveView.m_ShowDeviceView; }
+		}
+
+		public static LayerMask cullingMask
+		{
+			set
+			{
+				if (s_ActiveView)
+					s_ActiveView.m_CullingMask = value;
+			}
+		}
+
+		public static event Action onEnable = delegate {};
+		public static event Action onDisable = delegate {};
+		public static event Action<EditorWindow> onGUIDelegate = delegate {};
+		public static event Action onHMDReady = delegate {};
+
 		public static VRView GetWindow()
 		{
 			return EditorWindow.GetWindow<VRView>(true);
@@ -22,7 +131,7 @@ namespace UnityEditor.VR
 		{
 			if (s_ActiveView && s_ActiveView.m_CameraPivot)
 			{
-				EditorMonoBehaviour mb = s_ActiveView.m_CameraPivot.GetComponent<EditorMonoBehaviour>();
+				var mb = s_ActiveView.m_CameraPivot.GetComponent<EditorMonoBehaviour>();
 				return mb.StartCoroutine(routine);
 			}
 
@@ -48,79 +157,6 @@ namespace UnityEditor.VR
 					GetWindow();
 			}
 		}
-		
-		public static Transform viewerPivot
-		{
-			get
-			{
-				if (s_ActiveView)
-				{
-					return s_ActiveView.m_CameraPivot;
-				}
-				else
-				{
-					return null;
-				}
-			}
-		}
-
-		public static Camera viewerCamera
-		{
-			get
-			{
-				if (s_ActiveView)
-				{
-					return s_ActiveView.m_Camera;
-				}
-				else
-				{
-					return null;
-				}
-			}
-		}
-
-		public static Rect rect
-		{
-			get
-			{
-				if (s_ActiveView)
-				{
-					return s_ActiveView.position;
-				}
-				else
-				{
-					return new Rect();
-				}
-			}
-		}
-
-		public static VRView activeView
-		{
-			get
-			{
-				return s_ActiveView;
-			}
-		}
-
-		public static event System.Action onEnable = delegate {};
-		public static event System.Action onDisable = delegate {};
-		public static event System.Action<EditorWindow> onGUIDelegate = delegate { };
-
-		public DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
-		
-		[NonSerialized]
-		private Camera m_Camera;
-
-		private RenderTexture m_SceneTargetTexture;
-
-		private static VRView s_ActiveView = null;
-
-		private Transform m_CameraPivot = null;
-		private Quaternion m_LastHeadRotation = Quaternion.identity;
-		private float m_TimeSinceLastHMDChange = 0f;
-		
-		private const string kLaunchOnExitPlaymode = "EditorVR.LaunchOnExitPlaymode";
-		private const float kHMDActivityTimeout = 3f; // in seconds
 
 		public void OnEnable()
 		{
@@ -129,7 +165,6 @@ namespace UnityEditor.VR
 			Assert.IsNull(s_ActiveView, "Only one EditorVR should be active");
 
 			autoRepaintOnSceneChange = true;
-			wantsMouseMove = true;
 			s_ActiveView = this;
 
 			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCamera", EditorVR.kDefaultHideFlags, typeof(Camera));
@@ -150,11 +185,16 @@ namespace UnityEditor.VR
 			m_CameraPivot.position = position;
 			m_CameraPivot.rotation = Quaternion.identity;
 
+			m_ShowDeviceView = EditorPrefs.GetBool(kShowDeviceView, false);
+			m_UseCustomPreviewCamera = EditorPrefs.GetBool(kUseCustomPreviewCamera, false);
+
 			// Disable other views to increase rendering performance for EditorVR
 			SetOtherViewsEnabled(false);
 
 			VRSettings.StartRenderingToDevice();
 			InputTracking.Recenter();
+			// HACK: Fix VRSettings.enabled or some other API to check for missing HMD
+			m_VRInitialized =  OVRPlugin.initialized || (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
 
 			onEnable();
 		}
@@ -167,6 +207,9 @@ namespace UnityEditor.VR
 
 			VRSettings.StopRenderingToDevice();
 
+			EditorPrefs.SetBool(kShowDeviceView, m_ShowDeviceView);
+			EditorPrefs.SetBool(kUseCustomPreviewCamera, m_UseCustomPreviewCamera);
+
 			SetOtherViewsEnabled(true);
 
 			if (m_CameraPivot)
@@ -176,16 +219,19 @@ namespace UnityEditor.VR
 			s_ActiveView = null;
 		}
 
-		protected void SetupCamera()
+		private void UpdateCamera()
 		{
-			// Transfer original camera position and rotation to pivot, since it will get overridden by tracking
-			//m_CameraPivot.position = m_Camera.transform.position;
-			//m_CameraPivot.rotation = m_Camera.transform.rotation;
-			//m_Camera.ResetFieldOfView(); // Use FOV from HMD
-
-			// Latch HMD values initially
-			m_Camera.transform.localPosition = InputTracking.GetLocalPosition(VRNode.Head);
+			// Latch HMD values early in case it is used in other scripts
+			Vector3 headPosition = InputTracking.GetLocalPosition(VRNode.Head);
 			Quaternion headRotation = InputTracking.GetLocalRotation(VRNode.Head);
+
+			// HACK: Until an actual fix is found, this is a workaround
+			// Delay until the VR subsystem has set the initial tracking position, then we can start latching values for
+			// the HMD for the camera transform. Otherwise, we will bork the original centering of the HMD.
+			var cameraTransform = m_Camera.transform;
+			if (!Mathf.Approximately(Quaternion.Angle(cameraTransform.localRotation, Quaternion.identity), 0f))
+				m_LatchHMDValues = true;
+
 			if (Quaternion.Angle(headRotation, m_LastHeadRotation) > 0.1f)
 			{
 				if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
@@ -194,77 +240,107 @@ namespace UnityEditor.VR
 				// Keep track of HMD activity by tracking head rotations
 				m_TimeSinceLastHMDChange = Time.realtimeSinceStartup;
 			}
-			m_Camera.transform.localRotation = headRotation;
+
+			if (m_LatchHMDValues)
+			{
+				cameraTransform.localPosition = headPosition;
+				cameraTransform.localRotation = headRotation;
+				if (!m_HMDReady)
+				{
+					m_HMDReady = true;
+					onHMDReady();
+				}
+			}
+
 			m_LastHeadRotation = headRotation;
 		}
 
 		// TODO: Share this between SceneView/EditorVR in SceneViewUtilies
-		private void CreateCameraTargetTexture(Rect cameraRect, bool hdr)
+		public void CreateCameraTargetTexture(ref RenderTexture renderTexture, Rect cameraRect, bool hdr)
 		{
 			bool useSRGBTarget = QualitySettings.activeColorSpace == ColorSpace.Linear;
 
 			int msaa = Mathf.Max(1, QualitySettings.antiAliasing);
 			
 			RenderTextureFormat format = hdr ? RenderTextureFormat.ARGBHalf : RenderTextureFormat.ARGB32;
-			if (m_SceneTargetTexture != null)
+			if (renderTexture != null)
 			{
-				bool matchingSRGB = m_SceneTargetTexture != null && useSRGBTarget == m_SceneTargetTexture.sRGB;
+				bool matchingSRGB = renderTexture != null && useSRGBTarget == renderTexture.sRGB;
 
-				if (m_SceneTargetTexture.format != format || m_SceneTargetTexture.antiAliasing != msaa || !matchingSRGB)
+				if (renderTexture.format != format || renderTexture.antiAliasing != msaa || !matchingSRGB)
 				{
-					Object.DestroyImmediate(m_SceneTargetTexture);
-					m_SceneTargetTexture = null;
+					Object.DestroyImmediate(renderTexture);
+					renderTexture = null;
 				}
 			}
 
-			Rect actualCameraRect = cameraRect; // Handles.GetCameraRect(cameraRect);
+			Rect actualCameraRect = cameraRect;
 			int width = (int)actualCameraRect.width;
 			int height = (int)actualCameraRect.height;
 
-			if (m_SceneTargetTexture == null)
+			if (renderTexture == null)
 			{
-				m_SceneTargetTexture = new RenderTexture(0, 0, 24, format);
-				m_SceneTargetTexture.name = "SceneView RT";
-				m_SceneTargetTexture.antiAliasing = msaa;
-				m_SceneTargetTexture.hideFlags = HideFlags.HideAndDontSave;
+				renderTexture = new RenderTexture(0, 0, 24, format);
+				renderTexture.name = "Scene RT";
+				renderTexture.antiAliasing = msaa;
+				renderTexture.hideFlags = HideFlags.HideAndDontSave;
 			}
-			if (m_SceneTargetTexture.width != width || m_SceneTargetTexture.height != height)
+			if (renderTexture.width != width || renderTexture.height != height)
 			{
-				m_SceneTargetTexture.Release();
-				m_SceneTargetTexture.width = width;
-				m_SceneTargetTexture.height = height;
+				renderTexture.Release();
+				renderTexture.width = width;
+				renderTexture.height = height;
 			}
-			m_SceneTargetTexture.Create();
+			renderTexture.Create();
 		}
-
 
 		private void PrepareCameraTargetTexture(Rect cameraRect)
 		{
 			// Always render camera into a RT
-			bool hdr = false; // SceneViewIsRenderingHDR();
-			CreateCameraTargetTexture(cameraRect, hdr);
-			m_Camera.targetTexture = m_SceneTargetTexture;
-		}     
+			CreateCameraTargetTexture(ref m_SceneTargetTexture, cameraRect, false);
+			m_Camera.targetTexture = m_ShowDeviceView ? m_SceneTargetTexture : null;
+			VRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
+		}
 
 		private void OnGUI()
 		{
 			onGUIDelegate(this);
-			SceneViewUtilities.ResetOnGUIState();
+			var e = Event.current;
+			if (e.type != EventType.ExecuteCommand && e.type != EventType.used)
+			{
+				SceneViewUtilities.ResetOnGUIState();
 
-			SetupCamera();
+				var guiRect = new Rect(0, 0, position.width, position.height);
+				var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
+				PrepareCameraTargetTexture(cameraRect);
 
-			Rect guiRect = new Rect(0, 0, position.width, position.height);
-			Rect cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
-			PrepareCameraTargetTexture(cameraRect);
-			Handles.ClearCamera(cameraRect, m_Camera);
-			
-			m_Camera.cullingMask = Tools.visibleLayers;
+				m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : Tools.visibleLayers;
 
-			// Draw camera
-			bool pushedGUIClip;
-			DoDrawCamera(guiRect, out pushedGUIClip);
+				// Draw camera
+				bool pushedGUIClip;
+				DoDrawCamera(guiRect, out pushedGUIClip);
 
-			SceneViewUtilities.BlitRT(m_SceneTargetTexture, guiRect, pushedGUIClip);
+				if (m_ShowDeviceView)
+					SceneViewUtilities.DrawTexture(customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_SceneTargetTexture, guiRect, pushedGUIClip);
+
+				GUILayout.BeginArea(guiRect);
+				{
+					if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))
+						m_ShowDeviceView = !m_ShowDeviceView;
+
+					if (m_CustomPreviewCamera)
+					{
+						GUILayout.FlexibleSpace();
+						GUILayout.BeginHorizontal();
+						{
+							GUILayout.FlexibleSpace();
+							m_UseCustomPreviewCamera = GUILayout.Toggle(m_UseCustomPreviewCamera, "Use Presentation Camera");
+						}
+						GUILayout.EndHorizontal();
+					}
+				}
+				GUILayout.EndArea();
+			}
 		}
 
 		private void DoDrawCamera(Rect cameraRect, out bool pushedGUIClip)
@@ -272,9 +348,11 @@ namespace UnityEditor.VR
 			pushedGUIClip = false;
 			if (!m_Camera.gameObject.activeInHierarchy)
 				return;
-			//DrawGridParameters gridParam = grid.PrepareGridRender(camera, pivot, m_Rotation.target, m_Size.value, m_Ortho.target, AnnotationUtility.showGrid);
 
-			SceneViewUtilities.DrawCamera(m_Camera, cameraRect, position, m_RenderMode, true, out pushedGUIClip);			
+			if (!m_VRInitialized)
+				return;
+
+			SceneViewUtilities.DrawCamera(m_Camera, cameraRect, position, m_RenderMode, out pushedGUIClip);
 		}
 
 		private void OnPlaymodeStateChanged()
@@ -296,9 +374,11 @@ namespace UnityEditor.VR
 			// This also allows scripts with [ExecuteInEditMode] to run
 			SceneViewUtilities.SetSceneRepaintDirty();
 
+			UpdateCamera();
+
 			// Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
 			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
-				 SetSceneViewsEnabled(true);
+				SetSceneViewsEnabled(true);
 		}
 
 		private void SetGameViewsEnabled(bool enabled)
@@ -310,7 +390,12 @@ namespace UnityEditor.VR
 
 		private void SetSceneViewsEnabled(bool enabled)
 		{
-			SceneViewUtilities.SetViewsEnabled(typeof(SceneView), enabled);
+			// It's costly to call through to SetViewsEnabled, so only call when the value has changed
+			if (m_SceneViewsEnabled != enabled)
+			{
+				SceneViewUtilities.SetViewsEnabled(typeof(SceneView), enabled);
+				m_SceneViewsEnabled = enabled;
+			}
 		}
 
 		private void SetOtherViewsEnabled(bool enabled)
@@ -319,5 +404,5 @@ namespace UnityEditor.VR
 			SetSceneViewsEnabled(enabled);
 		}
 	}
-} // namespace
+}
 #endif

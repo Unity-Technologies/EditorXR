@@ -1,55 +1,55 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
-using UnityEngine.VR.Proxies;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace UnityEditor.VR.Modules
 {
 	public class PixelRaycastModule : MonoBehaviour
 	{
-		private readonly Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
+		readonly Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
 
-		private GameObject[] m_IgnoreList;
+		GameObject[] m_IgnoreList;
 
 		public Transform ignoreRoot { get; set; }
 
 		/// <summary>
-		/// Must be called from OnGUI. Does raycast from all ray origins in the given proxies that are active.
+		/// Must be called from OnGUI. Updates pixel raycast result for given rayOrigin
 		/// </summary>
-		/// <param name="proxies"></param> List of proxies to raycast from
+		/// <param name="rayOrigin"></param> rayOrigin to raycast from
 		/// <param name="camera"></param> Camera to use for pixel based raycast (will be moved to the proxies' ray origins
-		public void UpdateRaycasts(List<IProxy> proxies, Camera camera)
+		public void UpdateRaycast(Transform rayOrigin, Camera camera)
 		{
-			UpdateIgnoreList();
-			foreach (var proxy in proxies)
-			{
-				if (proxy.active)
-				{
-					foreach (var rayOrigin in proxy.rayOrigins.Values)
-						m_RaycastGameObjects[rayOrigin] = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera);
-				}
-			}
+			m_RaycastGameObjects[rayOrigin] = Raycast(new Ray(rayOrigin.position, rayOrigin.forward), camera);
 		}
 
+		/// <summary>
+		/// Get the GameObject over which a particular ray is hovering
+		/// </summary>
+		/// <param name="rayOrigin">rayOrigin to check against</param>
+		/// <returns></returns>
 		public GameObject GetFirstGameObject(Transform rayOrigin)
 		{
 			GameObject go;
 			if (m_RaycastGameObjects.TryGetValue(rayOrigin, out go))
 				return go;
-			else
-				Debug.LogError("Transform rayOrigin " + rayOrigin + " is not set to raycast from.");
+
+			Debug.LogError("Transform rayOrigin " + rayOrigin + " is not set to raycast from.");
 			return null;
 		}
 
-		private void UpdateIgnoreList()
+		/// <summary>
+		/// Update the list of objects that ignore raycasts. This list will include EditorVR and all of its children
+		/// </summary>
+		public void UpdateIgnoreList()
 		{
-			var children = ignoreRoot.GetComponentsInChildren<Transform>();
+			var children = ignoreRoot.GetComponentsInChildren<Transform>(true);
 			m_IgnoreList = new GameObject[children.Length];
 			for (int i = 0; i < children.Length; i++)
 				m_IgnoreList[i] = children[i].gameObject;
 		}
 
-		private GameObject Raycast(Ray ray, Camera camera)
+		GameObject Raycast(Ray ray, Camera camera)
 		{
+#if UNITY_EDITOR
 			camera.transform.position = ray.origin;
 			camera.transform.forward = ray.direction;
 
@@ -65,6 +65,9 @@ namespace UnityEditor.VR.Modules
 			camera.targetTexture = null;
 
 			return go;
+#else
+			return null;
+#endif
 		}
 	}
 }

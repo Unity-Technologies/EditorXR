@@ -26,17 +26,17 @@ namespace UnityEngine.VR.Handles
 			return new PlaneHandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
 		}
 
-		protected override void OnHandleBeginDrag(HandleEventData eventData)
+		protected override void OnHandleDragStarted(HandleEventData eventData)
 		{
 			var planeEventData = eventData as PlaneHandleEventData;
 			m_LastPosition = planeEventData.raycastHitWorldPosition;
 
 			m_Plane.SetNormalAndPosition(transform.forward, transform.position);
 
-			base.OnHandleBeginDrag(eventData);
+			base.OnHandleDragStarted(eventData);
 		}
 
-		protected override void OnHandleDrag(HandleEventData eventData)
+		protected override void OnHandleDragging(HandleEventData eventData)
 		{
 			Transform rayOrigin = eventData.rayOrigin;
 
@@ -55,7 +55,7 @@ namespace UnityEngine.VR.Handles
 			deltaPosition = transform.TransformVector(deltaPosition);
 			eventData.deltaPosition = deltaPosition;
 
-			base.OnHandleDrag(eventData);
+			base.OnHandleDragging(eventData);
 		}
 	}
 }

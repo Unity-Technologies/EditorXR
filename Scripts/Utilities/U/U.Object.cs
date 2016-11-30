@@ -1,4 +1,7 @@
-﻿namespace UnityEngine.VR.Utilities
+﻿using System.Reflection;
+using UnityEngine.Networking;
+
+namespace UnityEngine.VR.Utilities
 {
 	using System;
 	using UnityEngine;
@@ -34,6 +37,7 @@
 					go.hideFlags = EditorVR.kDefaultHideFlags;
 				}
 #endif
+
 				return go;
 			}
 
@@ -71,7 +75,7 @@
 				return empty;
 			}
 
-			public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : MonoBehaviour
+			public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : Component
 			{
 				return (T)CreateGameObjectWithComponent(typeof(T), parent);
 			}
@@ -97,14 +101,41 @@
 					transforms[i].gameObject.layer = layer;
 			}
 
+			public static Bounds GetBounds(GameObject[] gameObjects)
+			{
+				Bounds? bounds = null;
+				foreach (var go in gameObjects)
+				{
+					var goBounds = GetBounds(go);
+					if (!bounds.HasValue)
+					{
+						bounds = goBounds;
+					} else
+					{
+						goBounds.Encapsulate(bounds.Value);
+						bounds = goBounds;
+					}
+				}
+				return bounds ?? new Bounds();
+			}
+
 			public static Bounds GetBounds(GameObject obj)
 			{
 				Bounds b = new Bounds(obj.transform.position, Vector3.zero);
-				Renderer[] childrenR = obj.GetComponentsInChildren<Renderer>();
-				foreach (Renderer childR in childrenR)
+				Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+				foreach (Renderer r in renderers)
 				{
-					b.Encapsulate(childR.bounds);
+					b.Encapsulate(r.bounds);
 				}
+
+				// As a fallback when there are no bounds, collect all transform positions
+				if (b.size == Vector3.zero)
+				{
+					var transforms = obj.GetComponentsInChildren<Transform>();
+					foreach (var t in transforms)
+						b.Encapsulate(t.position);
+				}
+
 				return b;
 			}
 
@@ -140,26 +171,48 @@
 				return component;
 			}
 
+			private static IEnumerable<Type> GetAssignableTypes(Type type)
+			{
+				var list = new List<Type>();
+				var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+				foreach (var assembly in assemblies)
+				{
+					Type[] types;
+					try
+					{
+						types = assembly.GetTypes();
+					}
+					catch (ReflectionTypeLoadException)
+					{
+						// Skip any assemblies that don't load properly
+						continue;
+					}
+
+					foreach (var t in types)
+					{
+						if (type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+							list.Add(t);
+					}
+				}
+
+				return list;
+
+			}
+
 			public static IEnumerable<Type> GetImplementationsOfInterface(Type type)
 			{
 				if (type.IsInterface)
-				{
-					return AppDomain.CurrentDomain.GetAssemblies()
-						.SelectMany(s => s.GetTypes())
-						.Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
-				}
-				return new List<Type>();
+					return GetAssignableTypes(type);
+				else
+					return Enumerable.Empty<Type>();
 			}
 
 			public static IEnumerable<Type> GetExtensionsOfClass(Type type)
 			{
 				if (type.IsClass)
-				{
-					return AppDomain.CurrentDomain.GetAssemblies()
-						.SelectMany(s => s.GetTypes())
-						.Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
-				}
-				return new List<Type>();
+					return GetAssignableTypes(type);
+				else
+					return Enumerable.Empty<Type>();
 			}
 
 			public static void Destroy(UnityObject o, float t = 0f)
@@ -190,48 +243,48 @@
 				UnityObject.DestroyImmediate(o);
 			}
 
-			public static GameObject SpawnGhostWireframe(GameObject obj, UnityMaterial ghostMaterial, bool enableRenderers = true)
+			/// <summary>
+			/// Strip "PPtr<> and $ from a string for getting a System.Type from SerializedProperty.type
+			/// TODO: expose internal SerializedProperty.objectReferenceTypeString to remove this hack
+			/// </summary>
+			/// <param name="type">Type string</param>
+			/// <returns>Nicified type string</returns>
+			public static string NicifySerializedPropertyType(string type)
 			{
-				// spawn ghost
-				GameObject ghostObj = Instantiate(obj, obj.transform.parent);
-				// generate wireframe for objects in tree containing renderers
-				Renderer[] children = ghostObj.GetComponentsInChildren<Renderer>();
-				foreach (Renderer r in children)
-				{
-					GenerateWireframe(r, ghostMaterial);
-					r.enabled = enableRenderers;
-				}
-				ghostObj.transform.position = obj.transform.position;
-				ghostObj.transform.rotation = obj.transform.rotation;
-				ghostObj.transform.localScale = obj.transform.localScale;
-
-				// remove colliders if there are any
-				Collider[] colliders = ghostObj.GetComponents<Collider>();
-				foreach (Collider c in colliders)
-					Destroy(c);
-
-				return ghostObj;
+				return type.Replace("PPtr<", "").Replace(">", "").Replace("$", "");
 			}
 
-			// generates wireframe if contains a renderer 
-			private static void GenerateWireframe(Renderer r, UnityMaterial ghostMaterial)
+			/// <summary>
+			/// Search through all assemblies in the current AppDomain for a class that is assignable to UnityObject and matches the given weak name
+			/// TODO: expoose internal SerialzedProperty.ValidateObjectReferenceValue to remove his hack
+			/// </summary>
+			/// <param name="name">Weak type name</param>
+			/// <returns>Best guess System.Type</returns>
+			public static Type TypeNameToType(string name)
 			{
-				if (r)
-				{
-					UnityMaterial[] materials = r.sharedMaterials;
-					for (int i = 0; i < materials.Length; i++)
-						materials[i] = ghostMaterial;
-					r.sharedMaterials = materials;
+				return AppDomain.CurrentDomain.GetAssemblies()
+					.SelectMany(x => x.GetTypes())
+					.FirstOrDefault(x => x.Name.Equals(name) && typeof(UnityObject).IsAssignableFrom(x));
+			}
 
-					// generate wireframe
-					MeshFilter mf = r.GetComponent<MeshFilter>();
-					if (mf)
-					{
-						// TODO: Replace with new wireframe generator
-						//Mesh mesh = mf.sharedMesh;
-						// mf.mesh = WireframeGenerator.Generate(ref mesh, WIRE_INSIDE.Color);
-					}
+			public static IEnumerator GetAssetPreview(UnityObject obj, Action<Texture> callback)
+			{
+				Texture texture = null;
+
+#if UNITY_EDITOR
+				texture = AssetPreview.GetAssetPreview(obj);
+
+				while (AssetPreview.IsLoadingAssetPreview(obj.GetInstanceID()))
+				{
+					texture = AssetPreview.GetAssetPreview(obj);
+					yield return null;
 				}
+
+				if (!texture)
+					texture = AssetPreview.GetMiniThumbnail(obj);
+#endif
+
+				callback(texture);
 			}
 		}
 	}

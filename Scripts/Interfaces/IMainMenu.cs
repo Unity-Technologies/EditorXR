@@ -1,29 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {
-	public interface IMainMenu
+	/// <summary>
+	/// The main menu that can be shown on device proxies
+	/// </summary>
+	public interface IMainMenu : IMenu, IUsesMenuActions, ISelectTool
 	{
-		/// <summary>
-		/// The transform under which the menu should be parented
-		/// </summary>
-		Transform menuOrigin { set; }
-
-		/// <summary>
-		/// The transform under which the alternate menu should be parented
-		/// </summary>
-		Transform alternateMenuOrigin { set; }
-
 		/// <summary>
 		/// The menu tools that will populate the menu
 		/// </summary>
 		List<Type> menuTools { set; }
-
-		/// <summary>
-		/// Delegate used select tools from the Main Menu
-		/// </summary>
-		Func<Node, Type, bool> selectTool { set; }
 
 		/// <summary>
 		/// The workspaces that are selectable from the menu
@@ -31,21 +20,22 @@ namespace UnityEngine.VR.Menus
 		List<Type> menuWorkspaces { set; }
 
 		/// <summary>
-		/// Delegated used for creating a workspace selected from the Main Menu
+		/// You must implement and call this event when the visibility of the menu changes
+		/// IMainMenu: main menu instance
 		/// </summary>
-		Action<Type> createWorkspace { set; }
+		event Action<IMainMenu> menuVisibilityChanged;
 
 		/// <summary>
-		/// The tracked node where this menu is spawned
+		/// The ray origin that spawned the menu and will be used for node-specific operations (e.g. selecting a tool)
 		/// </summary>
-		Node? node { set; }
+		Transform targetRayOrigin { set; }
 
 		/// <summary>
-		/// Controls whether the menu is visible or not
+		/// Returns true if the active tool on the given ray origin is of the given type
+		/// Transform: Ray origin to check
+		/// Type: Type with which to compare
+		/// Returns whether the active tool is of the same type
 		/// </summary>
-		bool visible { get; set; }
-
-		// HACK: Awake/Start get called together in ExecuteInEditMode, so calling this method after is a workaround for order of operations
-		Action setup { get; }
+		Func<Transform, Type, bool> isToolActive { set; }
 	}
 }

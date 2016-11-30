@@ -1,6 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEngine.VR.Tools;
 using UnityEngine.EventSystems;
-using UnityEngine.VR.Handles;
 
 namespace UnityEngine.VR.Modules
 {
