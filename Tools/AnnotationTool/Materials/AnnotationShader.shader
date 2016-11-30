@@ -13,7 +13,7 @@ Shader "EditorVR/Annotation/Line"
         Tags
 		{
             "IgnoreProjector"="True"
-            "Queue"="Transparent"
+            "Queue"="AlphaTest"
             "RenderType"="Transparent"
         }
 		

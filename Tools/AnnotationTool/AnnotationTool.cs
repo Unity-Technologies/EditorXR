@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor.VR;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.VR;
 using UnityEngine.VR.Menus;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -90,7 +91,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	void OnDestroy()
 	{
 		if (m_IsRayHidden && showDefaultRay != null)
+		{
+			unlockRay(rayOrigin, this);
 			showDefaultRay(rayOrigin);
+		}
 
 		if (m_ColorPicker)
 			U.Object.Destroy(m_ColorPicker.gameObject);
@@ -267,9 +271,15 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		if (m_CustomPointerMesh != null)
 		{
-			var sign = Mathf.Sign(value);
-			m_CurrentRadius += sign * Time.unscaledDeltaTime * .1f;
-			m_CurrentRadius = Mathf.Clamp(m_CurrentRadius, kTopMinRadius, kTopMaxRadius);
+			// For vive controllers, use 1:1 touchpad setting.
+			if (VRSettings.loadedDeviceName == "OpenVR")
+				m_CurrentRadius = Mathf.Lerp(kTopMinRadius, kTopMaxRadius, (value + 1) / 2f);
+			// For touch and hydra, let the thumbstick gradually modifiy the width.
+			else
+			{
+				m_CurrentRadius += value * Time.unscaledDeltaTime * .1f;
+				m_CurrentRadius = Mathf.Clamp(m_CurrentRadius, kTopMinRadius, kTopMaxRadius);
+			}
 
 			if (m_BrushSizeUi && onBrushSizeChanged != null)
 			{
@@ -648,11 +658,31 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		m_IsValidStroke = false;
 
+		CenterMesh();
+
 		m_CurrentMesh.RecalculateBounds();
 		m_CurrentMesh.RecalculateNormals();
 		m_CurrentMesh.Optimize();
 
 		m_CurrentMesh.UploadMeshData(true);
+	}
+
+	private void CenterMesh()
+	{
+		Vector3 center = Vector3.zero;
+		
+		var vertices = m_CurrentMesh.vertices;
+
+		for (int i = 0; i < m_CurrentMesh.vertexCount; i++)
+			center += vertices[i];
+
+		center /= m_CurrentMesh.vertexCount;
+
+		for (int i = 0; i < m_CurrentMesh.vertexCount; i++)
+			vertices[i] -= center;
+
+		m_CurrentMesh.vertices = vertices;
+		m_CurrentMeshFilter.transform.localPosition += center;
 	}
 
 	private int[] VerticesToPolygon(int upperLeft, int upperRight, int lowerLeft, int lowerRight, bool doubleSided = false)
