@@ -1,4 +1,6 @@
-﻿namespace ListView
+﻿using System.Collections.Generic;
+
+namespace ListView
 {
 	public class NestedListViewController<DataType> : ListViewController<DataType, ListViewItem<DataType>> where DataType : ListViewItemNestedData<DataType>
 	{
@@ -26,7 +28,7 @@
 			m_ExpandedDataLength = count;
 		}
 
-		protected virtual void UpdateRecursively(DataType[] data, ref int count, int depth = 0)
+		protected virtual void UpdateRecursively(List<DataType> data, ref int count, int depth = 0)
 		{
 			foreach (var datum in data)
 			{

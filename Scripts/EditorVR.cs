@@ -20,7 +20,6 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
-using UnityObject = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;
@@ -189,10 +188,14 @@ public class EditorVR : MonoBehaviour
 	readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();
 
 	readonly List<IUsesProjectFolderData> m_ProjectFolderLists = new List<IUsesProjectFolderData>();
-	FolderData[] m_FolderData;
+	List<FolderData> m_FolderData;
 	readonly HashSet<string> m_AssetTypes = new HashSet<string>();
 	float m_ProjectFolderLoadStartTime;
 	float m_ProjectFolderLoadYieldTime;
+
+	readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
+	HierarchyData m_HierarchyData;
+	HierarchyProperty m_HierarchyProperty;
 
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
@@ -204,7 +207,8 @@ public class EditorVR : MonoBehaviour
 	{
 		ClearDeveloperConsoleIfNecessary();
 
-		LoadProjectFolders();
+		UpdateProjectFolders();
+		UpdateHierarchyData();
 
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 		if (VRSettings.loadedDeviceName == "OpenVR")
@@ -249,8 +253,8 @@ public class EditorVR : MonoBehaviour
 
 		UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
-		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.  
-		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified, 
+		// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.
+		// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified,
 		// then only show it in that hand's menu.
 		// CollectToolActionMaps(m_AllTools);
 	}
@@ -302,6 +306,8 @@ public class EditorVR : MonoBehaviour
 	{
 		m_MiniWorldIgnoreListDirty = true;
 		m_PixelRaycastIgnoreListDirty = true;
+
+		UpdateHierarchyData();
 	}
 
 	IEnumerable<InputDevice> GetSystemDevices()
@@ -382,7 +388,7 @@ public class EditorVR : MonoBehaviour
 #if UNITY_EDITOR
 		EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 		VRView.onGUIDelegate += OnSceneGUI;
-		EditorApplication.projectWindowChanged += LoadProjectFolders;
+		EditorApplication.projectWindowChanged += UpdateProjectFolders;
 #endif
 	}
 
@@ -392,7 +398,7 @@ public class EditorVR : MonoBehaviour
 #if UNITY_EDITOR
 		EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 		VRView.onGUIDelegate -= OnSceneGUI;
-		EditorApplication.projectWindowChanged -= LoadProjectFolders;
+		EditorApplication.projectWindowChanged -= UpdateProjectFolders;
 #endif
 	}
 
@@ -502,8 +508,6 @@ public class EditorVR : MonoBehaviour
 
 		UpdateKeyboardMallets();
 
-		UpdateMiniWorlds();
-
 		ProcessInput();
 
 #if UNITY_EDITOR
@@ -544,6 +548,8 @@ public class EditorVR : MonoBehaviour
 		{
 			m_LockedControls.Remove(inputControl);
 		}
+
+		UpdateMiniWorlds();
 
 		m_InputModule.ProcessInput(null, ConsumeControl);
 
@@ -1192,7 +1198,7 @@ public class EditorVR : MonoBehaviour
 
 		var actionMapInput = ActionMapInput.Create(map);
 
-		// It's possible that there are no suitable control schemes for the device that is being initialized, 
+		// It's possible that there are no suitable control schemes for the device that is being initialized,
 		// so ActionMapInput can't be marked active
 		var successfulInitialization = false;
 		if (actionMapInput.TryInitializeWithDevices(devices))
@@ -1289,7 +1295,7 @@ public class EditorVR : MonoBehaviour
 	/// </summary>
 	/// <param name="toolType">The tool to spawn</param>
 	/// <param name="usedDevices">A list of the used devices coming from the action map</param>
-	/// <param name="device">The input device whose tool stack the tool should be spawned on (optional). If not 
+	/// <param name="device">The input device whose tool stack the tool should be spawned on (optional). If not
 	/// specified, then it uses the action map to determine which devices the tool should be spawned on.</param>
 	/// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
 	private ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device = null)
@@ -1569,6 +1575,13 @@ public class EditorVR : MonoBehaviour
 		{
 			projectFolderList.folderData = GetFolderData();
 			m_ProjectFolderLists.Add(projectFolderList);
+		}
+
+		var hierarchyList = obj as IUsesHierarchyData;
+		if (hierarchyList != null)
+		{
+			hierarchyList.hierarchyData = GetHierarchyData();
+			m_HierarchyLists.Add(hierarchyList);
 		}
 
 		var filterUI = obj as IFilterUI;
@@ -2091,6 +2104,7 @@ public class EditorVR : MonoBehaviour
 
 	private void UpdateMiniWorlds()
 	{
+
 		if (m_MiniWorldIgnoreListDirty)
 		{
 			UpdateMiniWorldIgnoreList();
@@ -2507,7 +2521,7 @@ public class EditorVR : MonoBehaviour
 			if (proxy.previewOrigins.TryGetValue(rayOrigin, out previewOrigin))
 				return previewOrigin;
 		}
-		
+
 		return null;
 	}
 
@@ -2578,21 +2592,21 @@ public class EditorVR : MonoBehaviour
 		return m_AssetTypes.ToList();
 	}
 
-	FolderData[] GetFolderData()
+	List<FolderData> GetFolderData()
 	{
 		if (m_FolderData == null)
-			m_FolderData = new FolderData[0];
+			m_FolderData = new List<FolderData>();
 
 		return m_FolderData;
 	}
 
-	void LoadProjectFolders()
+	void UpdateProjectFolders()
 	{
 		m_AssetTypes.Clear();
 
 		StartCoroutine(CreateFolderData((folderData, hasNext) =>
 		{
-			m_FolderData = new [] { folderData };
+			m_FolderData = new List<FolderData> { folderData };
 
 			// Send new data to existing folderLists
 			foreach (var list in m_ProjectFolderLists)
@@ -2653,7 +2667,7 @@ public class EditorVR : MonoBehaviour
 				hp.Previous(null);
 		}
 
-		callback(new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), guid), hasNext);
+		callback(new FolderData(name, folderList.Count > 0 ? folderList : null, assetList, guid), hasNext);
 	}
 
 	static AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
@@ -2679,6 +2693,112 @@ public class EditorVR : MonoBehaviour
 		}
 
 		return new AssetData(hp.name, hp.guid, type);
+	}
+
+	List<HierarchyData> GetHierarchyData()
+	{
+		if (m_HierarchyData == null)
+			return new List<HierarchyData>();
+
+		return m_HierarchyData.children;
+	}
+
+	void UpdateHierarchyData()
+	{
+		if (m_HierarchyProperty == null)
+		{
+			m_HierarchyProperty = new HierarchyProperty(HierarchyType.GameObjects);
+			m_HierarchyProperty.Next(null);
+		}
+		else
+		{
+			m_HierarchyProperty.Reset();
+			m_HierarchyProperty.Next(null);
+		}
+
+		var hasNext = true;
+		bool hasChanged = false;
+		m_HierarchyData = CollectHierarchyData(ref hasNext, ref hasChanged, m_HierarchyData, m_HierarchyProperty);
+		
+		if (hasChanged)
+		{
+			foreach (var list in m_HierarchyLists)
+			{
+				list.hierarchyData = GetHierarchyData();
+			}
+		}
+	}
+
+	HierarchyData CollectHierarchyData(ref bool hasNext, ref bool hasChanged, HierarchyData hd, HierarchyProperty hp)
+	{
+		var depth = hp.depth;
+		var name = hp.name;
+		var instanceID = hp.instanceID;
+
+		List<HierarchyData> list = null;
+		list = (hd == null || hd.children == null) ? new List<HierarchyData>() : hd.children;
+
+		if (hp.hasChildren)
+		{
+			hasNext = hp.Next(null);
+			var i = 0;
+			while (hasNext && hp.depth > depth)
+			{
+				var go = EditorUtility.InstanceIDToObject(hp.instanceID);
+
+				if (go == gameObject)
+				{
+					// skip children of EVR to prevent the display of EVR contents
+					while (hp.Next(null) && hp.depth > depth + 1) { }
+					name = hp.name;
+					instanceID = hp.instanceID;
+				}
+
+				if (i >= list.Count)
+				{
+					list.Add(CollectHierarchyData(ref hasNext, ref hasChanged, null, hp));
+					hasChanged = true;
+				}
+				else if (list[i].instanceID != hp.instanceID)
+				{
+					list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, null, hp);
+					hasChanged = true;
+				}
+				else
+				{
+					list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, list[i], hp);
+				}
+
+				if (hasNext)
+					hasNext = hp.Next(null);
+
+				i++;
+			}
+
+				if (i != list.Count)
+				{
+					list.RemoveRange(i, list.Count - i);
+					hasChanged = true;
+				}
+
+			if (hasNext)
+				hp.Previous(null);
+		}
+		else
+			list.Clear();
+
+		List<HierarchyData> children = null;
+		if (list.Count > 0)
+			children = list;
+
+		if (hd != null)
+		{
+			hd.children = children;
+			hd.name = name;
+			hd.instanceID = instanceID;
+		}
+
+		return hd ?? new HierarchyData(name, instanceID, children);
 	}
 
 #if UNITY_EDITOR

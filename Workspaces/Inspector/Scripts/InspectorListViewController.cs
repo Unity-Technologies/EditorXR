@@ -30,7 +30,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	readonly Dictionary<int, bool> m_ExpandStates = new Dictionary<int, bool>(); 
 
-	public override InspectorData[] data
+	public override List<InspectorData> data
 	{
 		set
 		{
@@ -48,7 +48,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	public Func<bool> getIsLocked { private get; set; }
 	public Action<bool> setIsLocked { private get; set; }
 
-	public event Action<InspectorData[], PropertyData> arraySizeChanged = delegate {};
+	public event Action<List<InspectorData>, PropertyData> arraySizeChanged = delegate {};
 
 	protected override void Setup()
 	{
@@ -63,7 +63,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			m_TemplateSizes[template.Key] = GetObjectSize(template.Value.prefab);
 
 		if (data == null)
-			data = new InspectorData[0];
+			data = new List<InspectorData>();
 	}
 
 	protected override void ComputeConditions()
@@ -85,10 +85,10 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		UpdateRecursively(m_Data, ref totalOffset);
 		// Snap back if list scrolled too far
 		if (totalOffset > 0 && -scrollOffset >= totalOffset)
-			m_ScrollReturn = -totalOffset + m_ItemSize.z; // m_ItemSize will be equal to the size of the last visible item
+			m_ScrollReturn = -totalOffset + m_ItemSize.Value.z; // m_ItemSize will be equal to the size of the last visible item
 	}
 
-	void UpdateRecursively(InspectorData[] data, ref float totalOffset, int depth = 0)
+	void UpdateRecursively(List<InspectorData> data, ref float totalOffset, int depth = 0)
 	{
 		foreach (var datum in data)
 		{
@@ -97,13 +97,14 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 				m_ExpandStates[datum.instanceID] = false;
 
 			m_ItemSize = m_TemplateSizes[datum.template];
+			var itemSize = m_ItemSize.Value;
 
-			if (totalOffset + scrollOffset + m_ItemSize.z < 0 || totalOffset + scrollOffset > bounds.size.z)
+			if (totalOffset + scrollOffset + itemSize.z < 0 || totalOffset + scrollOffset > bounds.size.z)
 				Recycle(datum);
 			else
 				UpdateItemRecursive(datum, totalOffset, depth, expanded);
 
-			totalOffset += m_ItemSize.z;
+			totalOffset += itemSize.z;
 
 			if (datum.children != null)
 			{
@@ -164,7 +165,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		return item;
 	}
 
-	public void OnBeforeChildrenChanged(ListViewItemNestedData<InspectorData> data, ListViewItemNestedData<InspectorData>[] newData)
+	public void OnBeforeChildrenChanged(ListViewItemNestedData<InspectorData> data, List<InspectorData> newData)
 	{
 		InspectorNumberItem arraySizeItem = null;
 		var children = data.children;
@@ -209,7 +210,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		arraySizeChanged(m_Data, element);
 	}
 
-	void ExpandComponentRows(InspectorData[] data)
+	void ExpandComponentRows(List<InspectorData> data)
 	{
 		foreach (var datum in data)
 		{

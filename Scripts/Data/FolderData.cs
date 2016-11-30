@@ -1,4 +1,5 @@
 ﻿using ListView;
+using System.Collections.Generic;
 
 public class FolderData : ListViewItemNestedData<FolderData>
 {
@@ -10,15 +11,15 @@ public class FolderData : ListViewItemNestedData<FolderData>
 	public string guid { get { return m_Guid; } }
 	readonly string m_Guid;
 
-	public AssetData[] assets { get { return m_Assets; } }
-	readonly AssetData[] m_Assets;
+	public List<AssetData> assets { get { return m_Assets; } }
+	readonly List<AssetData> m_Assets;
 
-	public FolderData(string name, FolderData[] children, AssetData[] assets, string guid)
+	public FolderData(string name, List<FolderData> children, List<AssetData> assets, string guid)
 	{
 		template = kTemplateName;
 		m_Name = name;
 		m_Guid = guid;
-		this.children = children;
+		m_Children = children;
 		m_Assets = assets;
 	}
 }

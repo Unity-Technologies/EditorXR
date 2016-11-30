@@ -9,7 +9,7 @@ namespace ListView
 		where DataType : ListViewItemData
 		where ItemType : ListViewItem<DataType>
 	{
-		public virtual DataType[] data
+		public virtual List<DataType> data
 		{
 			get { return m_Data; }
 			set
@@ -28,18 +28,17 @@ namespace ListView
 				scrollOffset = 0;
 			}
 		}
-		[SerializeField]
-		protected DataType[] m_Data;
+		protected List<DataType> m_Data;
 
 		protected readonly Dictionary<DataType, ItemType> m_ListItems = new Dictionary<DataType, ItemType>();
 
-		protected override int dataLength { get { return m_Data.Length; } }
+		protected override int dataLength { get { return m_Data.Count; } }
 
 		public Func<GameObject, GameObject> instantiateUI { get; set; }
 
 		protected override void UpdateItems()
 		{
-			for (int i = 0; i < m_Data.Length; i++)
+			for (int i = 0; i < m_Data.Count; i++)
 			{
 				var datum = m_Data[i];
 				if (i + m_DataOffset < -1 || i + m_DataOffset > m_NumRows - 1)
