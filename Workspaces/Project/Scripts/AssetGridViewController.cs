@@ -48,7 +48,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
 
-	public override AssetData[] data
+	public override List<AssetData> data
 	{
 		set
 		{
@@ -73,13 +73,14 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	{
 		base.ComputeConditions();
 
-		m_NumPerRow = (int) (bounds.size.x / m_ItemSize.x);
+		var itemSize = m_ItemSize.Value;
+		m_NumPerRow = (int) (bounds.size.x / itemSize.x);
 		if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
 			return;
 
-		m_NumRows = (int) (bounds.size.z / m_ItemSize.z);
+		m_NumRows = (int) (bounds.size.z / itemSize.z);
 
-		m_StartPosition = bounds.extents.z * Vector3.forward + (bounds.extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
+		m_StartPosition = bounds.extents.z * Vector3.forward + (bounds.extents.x - itemSize.x * 0.5f) * Vector3.left;
 
 		m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
 		if (m_ScrollOffset < 0)
@@ -170,9 +171,10 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	{
 		item.UpdateTransforms(m_ScaleFactor);
 
+		var itemSize = m_ItemSize.Value;
 		var t = item.transform;
-		var zOffset = m_ItemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
-		var xOffset = m_ItemSize.x * (offset % m_NumPerRow);
+		var zOffset = itemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
+		var xOffset = itemSize.x * (offset % m_NumPerRow);
 		t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, kPositionFollow);
 		t.localRotation = Quaternion.identity;
 	}

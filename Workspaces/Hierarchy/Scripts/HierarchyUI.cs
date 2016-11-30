@@ -4,9 +4,9 @@ using UnityEngine.VR.UI;
 
 public class HierarchyUI : MonoBehaviour
 {
-	public HierarchyListViewController hierarchyListView { get { return m_HierarchyListView; } }
+	public HierarchyListViewController listView { get { return m_ListView; } }
 	[SerializeField]
-	HierarchyListViewController m_HierarchyListView;
+	HierarchyListViewController m_ListView;
 
 	public BaseHandle scrollHandle { get { return m_ScrollHandle; } }
 	[SerializeField]

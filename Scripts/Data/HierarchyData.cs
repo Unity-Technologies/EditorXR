@@ -1,24 +1,19 @@
 ﻿using ListView;
+using System.Collections.Generic;
 
 public class HierarchyData : ListViewItemNestedData<HierarchyData>
 {
 	const string kTemplateName = "HierarchyListItem";
 
-	public string name { get { return m_Name; } }
-	readonly string m_Name;
+	public string name { get; set; }
 
-	public int instanceID { get { return m_InstanceID; } }
-	readonly int m_InstanceID;
+	public int instanceID { get; set; }
 
-	public HierarchyData(string name, int instanceID)
+	public HierarchyData(string name, int instanceID, List<HierarchyData> children = null)
 	{
 		template = kTemplateName;
-		m_Name = name;
-		m_InstanceID = instanceID;
-	}
-
-	public HierarchyData(string name, int instanceID, HierarchyData[] children) : this(name, instanceID)
-	{
+		this.name = name;
+		this.instanceID = instanceID;
 		m_Children = children;
 	}
 }

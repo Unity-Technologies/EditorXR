@@ -8,7 +8,6 @@ using UnityEngine.VR.Workspaces;
 
 public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUsesHierarchyData
 {
-	new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 	const float kYBounds = 0.2f;
 	const float kScrollMargin = 0.03f;
 
@@ -25,22 +24,22 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUse
 	float m_ScrollOffsetStart;
 	HierarchyData m_SelectedRow;
 
-	bool m_HierarchyPanelDragging;
-	Transform m_HierarchyPanelHighlightContainer;
+	bool m_Scrolling;
+	Transform m_HighlightContainer;
 
 	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
-	public HierarchyData[] hierarchyData
+	public List<HierarchyData> hierarchyData
 	{
 		set
 		{
 			m_HierarchyData = value;
 
 			if (m_HierarchyUI)
-				m_HierarchyUI.hierarchyListView.data = value;
+				m_HierarchyUI.listView.data = value;
 		}
 	}
-	HierarchyData[] m_HierarchyData;
+	List<HierarchyData> m_HierarchyData;
 
 	public List<string> filterList
 	{
@@ -69,7 +68,7 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUse
 		m_FilterUI = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
 		m_FilterUI.filterList = m_FilterList;
 
-		var hierarchyListView = m_HierarchyUI.hierarchyListView;
+		var hierarchyListView = m_HierarchyUI.listView;
 		hierarchyListView.selectRow = SelectRow;
 
 		var handle = m_HierarchyUI.scrollHandle;
@@ -87,7 +86,7 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUse
 		handle.hoverEnded += OnScrollPanelHoverHighlightEnd;
 
 		// Assign highlight references
-		m_HierarchyPanelHighlightContainer = m_HierarchyUI.highlight.transform.parent.transform;
+		m_HighlightContainer = m_HierarchyUI.highlight.transform.parent.transform;
 
 		// Propagate initial bounds
 		OnBoundsChanged();
@@ -114,13 +113,12 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUse
 		scrollHandleTransform.localPosition = new Vector3(-kHalfScrollMargin + kScrollHandleXPositionOffset, -scrollHandleTransform.localScale.y * 0.5f, 0);
 		scrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin + kScrollHandleXScaleOffset, scrollHandleTransform.localScale.y, size.z + kDoubleScrollMargin);
 
-		var listView = m_HierarchyUI.hierarchyListView;
+		var listView = m_HierarchyUI.listView;
 		bounds.size = size;
 		listView.bounds = bounds;
-		listView.PreCompute(); // Compute item size
 		listView.transform.localPosition = new Vector3(0, listView.itemSize.y * 0.5f, 0); // Center in Y
 
-		m_HierarchyPanelHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
+		m_HighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
 
 		size = contentBounds.size;
 		size.z = size.z - depthCompensation;
@@ -137,8 +135,8 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUse
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		m_ScrollStart = eventData.rayOrigin.transform.position;
-		m_ScrollOffsetStart = m_HierarchyUI.hierarchyListView.scrollOffset;
-		m_HierarchyUI.hierarchyListView.OnBeginScrolling();
+		m_ScrollOffsetStart = m_HierarchyUI.listView.scrollOffset;
+		m_HierarchyUI.listView.OnBeginScrolling();
 	}
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -149,25 +147,25 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUse
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		Scroll(handle, eventData);
-		m_ScrollOffsetStart = m_HierarchyUI.hierarchyListView.scrollOffset;
-		m_HierarchyUI.hierarchyListView.OnScrollEnded();
+		m_ScrollOffsetStart = m_HierarchyUI.listView.scrollOffset;
+		m_HierarchyUI.listView.OnScrollEnded();
 	}
 
 	void Scroll(BaseHandle handle, HandleEventData eventData)
 	{
 		var scrollOffset = m_ScrollOffsetStart + Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
-		m_HierarchyUI.hierarchyListView.scrollOffset = scrollOffset;
+		m_HierarchyUI.listView.scrollOffset = scrollOffset;
 	}
 
 	void OnScrollPanelDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		m_HierarchyPanelDragging = true;
+		m_Scrolling = true;
 		m_HierarchyUI.highlight.visible = true;
 	}
 
 	void OnScrollPanelDragHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		m_HierarchyPanelDragging = false;
+		m_Scrolling = false;
 		m_HierarchyUI.highlight.visible = false;
 	}
 
@@ -178,7 +176,7 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUse
 
 	void OnScrollPanelHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if (!m_HierarchyPanelDragging)
+		if (!m_Scrolling)
 			m_HierarchyUI.highlight.visible = false;
 	}
 

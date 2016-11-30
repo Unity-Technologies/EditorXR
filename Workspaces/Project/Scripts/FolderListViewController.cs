@@ -20,13 +20,13 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	public Action<FolderData> selectFolder { private get; set; }
 
-	public override FolderData[] data
+	public override List<FolderData> data
 	{
 		set
 		{
 			base.data = value;
 
-			if (m_Data != null && m_Data.Length > 0) // Expand and select the Assets folder by default
+			if (m_Data != null && m_Data.Count > 0) // Expand and select the Assets folder by default
 			{
 				var guid = data[0].guid;
 				m_ExpandStates[guid] = true;
@@ -67,7 +67,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		UpdateItemTransform(item.transform, offset);
 	}
 
-	protected override void UpdateRecursively(FolderData[] data, ref int count, int depth = 0)
+	protected override void UpdateRecursively(List<FolderData> data, ref int count, int depth = 0)
 	{
 		foreach (var datum in data)
 		{
@@ -102,7 +102,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 		bool expanded;
 		if(m_ExpandStates.TryGetValue(listData.guid, out expanded))
-			item.UpdateArrow(m_ExpandStates[listData.guid], true);
+			item.UpdateArrow(expanded, true);
 
 		return item;
 	}

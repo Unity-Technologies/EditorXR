@@ -6,13 +6,13 @@ using UnityEngine.VR.Utilities;
 
 public class HierarchyListViewController : NestedListViewController<HierarchyData>
 {
-	private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
+	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 	[SerializeField]
-	private Material m_TextMaterial;
+	Material m_TextMaterial;
 
 	[SerializeField]
-	private Material m_ExpandArrowMaterial;
+	Material m_ExpandArrowMaterial;
 
 	int m_SelectedRow;
 
@@ -37,22 +37,22 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		base.UpdateItems();
 	}
 
-	void UpdateFolderItem(HierarchyData data, int offset, int depth, bool expanded)
+	void UpdateHierarchyItem(HierarchyData data, int offset, int depth, bool expanded)
 	{
 		ListViewItem<HierarchyData> item;
 		if (!m_ListItems.TryGetValue(data, out item))
 			item = GetItem(data);
 
-		var folderItem = (HierarchyListItem)item;
+		var hierarchyItem = (HierarchyListItem)item;
 
-		folderItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.instanceID == m_SelectedRow);
+		hierarchyItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.instanceID == m_SelectedRow);
 
-		SetMaterialClip(folderItem.cubeMaterial, transform.worldToLocalMatrix);
+		SetMaterialClip(hierarchyItem.cubeMaterial, transform.worldToLocalMatrix);
 
 		UpdateItemTransform(item.transform, offset);
 	}
 
-	protected override void UpdateRecursively(HierarchyData[] data, ref int count, int depth = 0)
+	protected override void UpdateRecursively(List<HierarchyData> data, ref int count, int depth = 0)
 	{
 		foreach (var datum in data)
 		{
@@ -63,7 +63,7 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 			if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
 				Recycle(datum);
 			else
-				UpdateFolderItem(datum, count, depth, expanded);
+				UpdateHierarchyItem(datum, count, depth, expanded);
 
 			count++;
 
@@ -87,7 +87,7 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 
 		bool expanded;
 		if(m_ExpandStates.TryGetValue(listData.instanceID, out expanded))
-			item.UpdateArrow(m_ExpandStates[listData.instanceID], true);
+			item.UpdateArrow(expanded, true);
 
 		return item;
 	}

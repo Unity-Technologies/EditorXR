@@ -20,7 +20,6 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
-using UnityObject = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;
@@ -187,13 +186,14 @@ public class EditorVR : MonoBehaviour
 	readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();
 
 	readonly List<IUsesProjectFolderData> m_ProjectFolderLists = new List<IUsesProjectFolderData>();
-	FolderData[] m_FolderData;
+	List<FolderData> m_FolderData;
 	readonly HashSet<string> m_AssetTypes = new HashSet<string>();
 	float m_ProjectFolderLoadStartTime;
 	float m_ProjectFolderLoadYieldTime;
 
 	readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
-	HierarchyData[] m_HierarchyData;
+	HierarchyData m_HierarchyData;
+	HierarchyProperty m_HierarchyProperty;
 
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
@@ -205,8 +205,8 @@ public class EditorVR : MonoBehaviour
 	{
 		ClearDeveloperConsoleIfNecessary();
 
-		LoadProjectFolders();
-		LoadHierarchyData();
+		UpdateProjectFolders();
+		UpdateHierarchyData();
 
 		VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 		if (VRSettings.loadedDeviceName == "OpenVR")
@@ -305,7 +305,7 @@ public class EditorVR : MonoBehaviour
 		m_MiniWorldIgnoreListDirty = true;
 		m_PixelRaycastIgnoreListDirty = true;
 
-		LoadHierarchyData();
+		UpdateHierarchyData();
 	}
 
 	IEnumerable<InputDevice> GetSystemDevices()
@@ -385,7 +385,7 @@ public class EditorVR : MonoBehaviour
 #if UNITY_EDITOR
 		EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 		VRView.onGUIDelegate += OnSceneGUI;
-		EditorApplication.projectWindowChanged += LoadProjectFolders;
+		EditorApplication.projectWindowChanged += UpdateProjectFolders;
 #endif
 	}
 
@@ -395,7 +395,7 @@ public class EditorVR : MonoBehaviour
 #if UNITY_EDITOR
 		EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 		VRView.onGUIDelegate -= OnSceneGUI;
-		EditorApplication.projectWindowChanged -= LoadProjectFolders;
+		EditorApplication.projectWindowChanged -= UpdateProjectFolders;
 #endif
 	}
 
@@ -2439,21 +2439,21 @@ public class EditorVR : MonoBehaviour
 		return m_AssetTypes.ToList();
 	}
 
-	FolderData[] GetFolderData()
+	List<FolderData> GetFolderData()
 	{
 		if (m_FolderData == null)
-			m_FolderData = new FolderData[0];
+			m_FolderData = new List<FolderData>();
 
 		return m_FolderData;
 	}
 
-	void LoadProjectFolders()
+	void UpdateProjectFolders()
 	{
 		m_AssetTypes.Clear();
 
 		StartCoroutine(CreateFolderData((folderData, hasNext) =>
 		{
-			m_FolderData = new [] { folderData };
+			m_FolderData = new List<FolderData> { folderData };
 
 			// Send new data to existing folderLists
 			foreach (var list in m_ProjectFolderLists)
@@ -2514,7 +2514,7 @@ public class EditorVR : MonoBehaviour
 				hp.Previous(null);
 		}
 
-		callback(new FolderData(name, folderList.Count > 0 ? folderList.ToArray() : null, assetList.ToArray(), guid), hasNext);
+		callback(new FolderData(name, folderList.Count > 0 ? folderList : null, assetList, guid), hasNext);
 	}
 
 	static AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
@@ -2542,42 +2542,53 @@ public class EditorVR : MonoBehaviour
 		return new AssetData(hp.name, hp.guid, type);
 	}
 
-	HierarchyData[] GetHierarchyData()
+	List<HierarchyData> GetHierarchyData()
 	{
 		if (m_HierarchyData == null)
-			m_HierarchyData = new HierarchyData[0];
+			return new List<HierarchyData>();
 
-		return m_HierarchyData;
+		return m_HierarchyData.children;
 	}
 
-	void LoadHierarchyData()
+	void UpdateHierarchyData()
 	{
+		if (m_HierarchyProperty == null)
+		{
+			m_HierarchyProperty = new HierarchyProperty(HierarchyType.GameObjects);
+			m_HierarchyProperty.Next(null);
+		}
+		else
+		{
+			m_HierarchyProperty.Reset();
+			m_HierarchyProperty.Next(null);
+		}
+
 		var hasNext = true;
-		m_HierarchyData = CreateHierarchyData(ref hasNext).children;
-		// Send new data to existing hierarchyLists
-		foreach (var list in m_HierarchyLists)
+		bool hasChanged = false;
+		m_HierarchyData = CollectHierarchyData(ref hasNext, ref hasChanged, m_HierarchyData, m_HierarchyProperty);
+		
+		if (hasChanged)
 		{
-			list.hierarchyData = GetHierarchyData();
+			foreach (var list in m_HierarchyLists)
+			{
+				list.hierarchyData = GetHierarchyData();
+			}
 		}
 	}
 
-	HierarchyData CreateHierarchyData(ref bool hasNext, HierarchyProperty hp = null)
+	HierarchyData CollectHierarchyData(ref bool hasNext, ref bool hasChanged, HierarchyData hd, HierarchyProperty hp)
 	{
-		if (hp == null)
-		{
-			hp = new HierarchyProperty(HierarchyType.GameObjects);
-			hp.Next(null);
-		}
-		
 		var depth = hp.depth;
 		var name = hp.name;
 		var instanceID = hp.instanceID;
 
-		List<HierarchyData> list = new List<HierarchyData>();
+		List<HierarchyData> list = null;
+		list = (hd == null || hd.children == null) ? new List<HierarchyData>() : hd.children;
 
-		if (hasNext)
+		if (hp.hasChildren)
 		{
 			hasNext = hp.Next(null);
+			var i = 0;
 			while (hasNext && hp.depth > depth)
 			{
 				var go = EditorUtility.InstanceIDToObject(hp.instanceID);
@@ -2586,22 +2597,55 @@ public class EditorVR : MonoBehaviour
 				{
 					// skip children of EVR to prevent the display of EVR contents
 					while (hp.Next(null) && hp.depth > depth + 1) { }
+					name = hp.name;
+					instanceID = hp.instanceID;
 				}
 
-				if (hp.hasChildren)
-					list.Add(CreateHierarchyData(ref hasNext, hp));
+				if (i >= list.Count)
+				{
+					list.Add(CollectHierarchyData(ref hasNext, ref hasChanged, null, hp));
+					hasChanged = true;
+				}
+				else if (list[i].instanceID != hp.instanceID)
+				{
+					list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, null, hp);
+					hasChanged = true;
+				}
 				else
-					list.Add(new HierarchyData(hp.name, hp.instanceID));
+				{
+					list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, list[i], hp);
+				}
 
 				if (hasNext)
 					hasNext = hp.Next(null);
+
+				i++;
 			}
+
+				if (i != list.Count)
+				{
+					list.RemoveRange(i, list.Count - i);
+					hasChanged = true;
+				}
+
+			if (hasNext)
+				hp.Previous(null);
+		}
+		else
+			list.Clear();
+
+		List<HierarchyData> children = null;
+		if (list.Count > 0)
+			children = list;
+
+		if (hd != null)
+		{
+			hd.children = children;
+			hd.name = name;
+			hd.instanceID = instanceID;
 		}
 
-		if (hasNext)
-			hp.Previous(null);
-
-		return new HierarchyData(name, instanceID, list.ToArray());
+		return hd ?? new HierarchyData(name, instanceID, children);
 	}
 
 #if UNITY_EDITOR
