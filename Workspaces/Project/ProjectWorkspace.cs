@@ -41,7 +41,7 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 
 	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
-	public FolderData[] folderData
+	public List<FolderData> folderData
 	{
 		set
 		{
@@ -51,7 +51,7 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 				m_ProjectUI.folderListView.data = value;
 		}
 	}
-	FolderData[] m_FolderData;
+	List<FolderData> m_FolderData;
 
 	public List<string> filterList
 	{
@@ -79,12 +79,11 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 
 		var assetGridView = m_ProjectUI.assetGridView;
 		assetGridView.testFilter = TestFilter;
-		assetGridView.data = new AssetData[0];
+		assetGridView.data = new List<AssetData>();
 		connectInterfaces(assetGridView);
 
 		var folderListView = m_ProjectUI.folderListView;
 		folderListView.selectFolder = SelectFolder;
-		folderListView.data = new FolderData[0];
 		folderData = m_FolderData;
 
 		m_FilterUI = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
@@ -158,7 +157,6 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		size.x -= kSideScrollBoundsShrinkAmount; // set narrow x bounds for scrolling region on left side of folder list view
 		bounds.size = size;
 		folderListView.bounds = bounds;
-		folderListView.PreCompute(); // Compute item size
 		const float kFolderListShrinkAmount = kSideScrollBoundsShrinkAmount / 2.2f; // Empirically determined value to allow for scroll borders
 		folderListView.transform.localPosition = new Vector3(xOffset + kFolderListShrinkAmount, folderListView.itemSize.y * 0.5f, 0); // Center in Y
 
@@ -183,7 +181,6 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 
 		var assetListView = m_ProjectUI.assetGridView;
 		assetListView.bounds = bounds;
-		assetListView.PreCompute(); // Compute item size
 		assetListView.transform.localPosition = Vector3.right * xOffset;
 
 		var assetPanel = m_ProjectUI.assetPanel;

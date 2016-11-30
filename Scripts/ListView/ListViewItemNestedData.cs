@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ListView
 {
 	public class ListViewItemNestedData<ChildType> : ListViewItemData
 	{
-		public ChildType[] children
+		public List<ChildType> children
 		{
 			get { return m_Children; }
 			set
@@ -15,8 +16,8 @@ namespace ListView
 				m_Children = value;
 			}
 		}
-		protected ChildType[] m_Children;
+		protected List<ChildType> m_Children;
 
-		public event Action<ListViewItemNestedData<ChildType>, ChildType[]> childrenChanging;
+		public event Action<ListViewItemNestedData<ChildType>, List<ChildType>> childrenChanging;
 	}
 }

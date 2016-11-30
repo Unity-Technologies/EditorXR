@@ -27,10 +27,22 @@ namespace ListView
 		[SerializeField]
 		protected GameObject[] m_Templates;
 
+		public Vector3 itemSize
+		{
+			get
+			{
+				if (!m_ItemSize.HasValue && m_Templates.Length > 0)
+					m_ItemSize = GetObjectSize(m_Templates[0]);
+
+				return m_ItemSize ?? Vector3.zero;
+			}
+		}
+
+		protected Vector3? m_ItemSize;
+
 		protected int m_DataOffset;
 		protected int m_NumRows;
 		protected Vector3 m_StartPosition;
-		protected Vector3 m_ItemSize;
 
 		protected readonly Dictionary<string, ListViewItemTemplate> m_TemplateDictionary = new Dictionary<string, ListViewItemTemplate>();
 
@@ -41,7 +53,6 @@ namespace ListView
 
 		protected abstract int dataLength { get; }
 
-		public Vector3 itemSize { get { return m_ItemSize; } }
 		public Bounds bounds { protected get; set; }
 
 		void Start()
@@ -74,19 +85,15 @@ namespace ListView
 			UpdateItems();
 		}
 
-		public void PreCompute()
-		{
-			ComputeConditions();
-		}
-
 		protected virtual void ComputeConditions()
 		{
 			if (m_Templates.Length > 0) // Use first template to get item size
 				m_ItemSize = GetObjectSize(m_Templates[0]);
 
-			m_NumRows = Mathf.CeilToInt(bounds.size.z / m_ItemSize.z);
+			var itemSize = m_ItemSize.Value;
+			m_NumRows = Mathf.CeilToInt(bounds.size.z / itemSize.z);
 
-			m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward;
+			m_StartPosition = (bounds.extents.z - itemSize.z * 0.5f) * Vector3.forward;
 
 			m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
 			if (m_ScrollOffset < 0)
@@ -144,12 +151,12 @@ namespace ListView
 
 		public virtual void ScrollNext()
 		{
-			m_ScrollOffset += m_ItemSize.z;
+			m_ScrollOffset += m_ItemSize.Value.z;
 		}
 
 		public virtual void ScrollPrev()
 		{
-			m_ScrollOffset -= m_ItemSize.z;
+			m_ScrollOffset -= m_ItemSize.Value.z;
 		}
 
 		public virtual void ScrollTo(int index)
@@ -159,7 +166,7 @@ namespace ListView
 
 		protected virtual void UpdateItemTransform(Transform t, int offset)
 		{
-			t.localPosition = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.back;
+			t.localPosition = m_StartPosition + (offset * m_ItemSize.Value.z + m_ScrollOffset) * Vector3.back;
 			t.localRotation = Quaternion.identity;
 		}
 

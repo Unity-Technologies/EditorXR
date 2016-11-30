@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 
-public interface IUsesProjectFolderData
+public interface IUsesHierarchyData
 {
 	/// <summary>
-	/// Set accessor for folder list data
+	/// Set accessor for hierarchy list data
 	/// Used to update existing implementors after lazy load completes
 	/// </summary>
-	List<FolderData> folderData { set; }
+	List<HierarchyData> hierarchyData { set; }
 }

@@ -20,13 +20,13 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	public Action<FolderData> selectFolder { private get; set; }
 
-	public override FolderData[] data
+	public override List<FolderData> data
 	{
 		set
 		{
 			base.data = value;
 
-			if (m_Data != null && m_Data.Length > 0) // Expand and select the Assets folder by default
+			if (m_Data != null && m_Data.Count > 0) // Expand and select the Assets folder by default
 			{
 				var guid = data[0].guid;
 				m_ExpandStates[guid] = true;
@@ -43,13 +43,13 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
 	}
 
-	protected override void ComputeConditions()
+	protected override void UpdateItems()
 	{
-		base.ComputeConditions();
-
 		var parentMatrix = transform.worldToLocalMatrix;
 		SetMaterialClip(m_TextMaterial, parentMatrix);
 		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
+
+		base.UpdateItems();
 	}
 
 	void UpdateFolderItem(FolderData data, int offset, int depth, bool expanded)
@@ -67,7 +67,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		UpdateItemTransform(item.transform, offset);
 	}
 
-	protected override void UpdateRecursively(FolderData[] data, ref int count, int depth = 0)
+	protected override void UpdateRecursively(List<FolderData> data, ref int count, int depth = 0)
 	{
 		foreach (var datum in data)
 		{
@@ -102,15 +102,15 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 		bool expanded;
 		if(m_ExpandStates.TryGetValue(listData.guid, out expanded))
-			item.UpdateArrow(m_ExpandStates[listData.guid], true);
+			item.UpdateArrow(expanded, true);
 
 		return item;
 	}
 
 	void ToggleExpanded(FolderData data)
 	{
-		var instanceID = data.guid;
-		m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
+		var guid = data.guid;
+		m_ExpandStates[guid] = !m_ExpandStates[guid];
 	}
 
 	void SelectFolder(string guid)
