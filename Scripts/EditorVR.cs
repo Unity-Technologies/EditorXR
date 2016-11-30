@@ -838,7 +838,7 @@ public class EditorVR : MonoBehaviour
 			UpdatePlayerHandleMaps();
 	}
 
-	void OnMainMenuActivatorSelected(Transform rayOrigin, Transform clickRayOrigin)
+	void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
 	{
 		ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
 		{
@@ -848,7 +848,7 @@ public class EditorVR : MonoBehaviour
 				if (mainMenu != null)
 				{
 					mainMenu.visible = !mainMenu.visible;
-					mainMenu.targetRayOrigin = clickRayOrigin;
+					mainMenu.targetRayOrigin = targetRayOrigin;
 				}
 
 				// move to rest position if this is the node that made the selection

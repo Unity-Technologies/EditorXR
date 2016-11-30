@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.InputNew;
 using UnityEngine.UI;
+using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Menus
 {
