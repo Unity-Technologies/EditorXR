@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
+using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Menus
 {
@@ -20,6 +20,8 @@ namespace UnityEngine.VR.Menus
 		private Transform m_GridTransform;
 		[SerializeField]
 		private SkinnedMeshRenderer m_TitleIcon;
+		[SerializeField]
+		ScrollRect m_ScrollRect;
 
 		private Material m_BorderOutlineMaterial;
 		private Vector3 m_BorderOutlineOriginalLocalScale;
@@ -115,7 +117,7 @@ namespace UnityEngine.VR.Menus
 				m_CanvasGroup.interactable = true;
 			else
 				m_TitleIcon.SetBlendShapeWeight(0, 0);
-			
+
 			m_VisibilityCoroutine = null;
 		}
 

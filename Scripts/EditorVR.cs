@@ -359,7 +359,7 @@ public class EditorVR : MonoBehaviour
 						go.transform.SetParent(pair.Value, false);
 					}
 				}
-			}, true);
+			});
 		}
 
 		CreateSpatialSystem();
@@ -412,7 +412,7 @@ public class EditorVR : MonoBehaviour
 			ForEachRayOrigin((proxy, pair, device, deviceData) =>
 			{
 				m_PixelRaycastModule.UpdateRaycast(pair.Value, m_EventCamera);
-			}, true);
+			});
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
 			foreach (var rayOrigin in m_MiniWorldRays.Keys)
@@ -719,7 +719,7 @@ public class EditorVR : MonoBehaviour
 				if (customMenu != null)
 					customMenu.visible = !mainMenu.visible && !deviceData.restoreMenus.Contains(mainMenu);
 			}
-		}, true);
+		});
 	}
 
 	void UpdateRayForMenus(IMainMenu mainMenu)
@@ -741,7 +741,7 @@ public class EditorVR : MonoBehaviour
 					dpr.Show();
 				}
 			}
-		}, true);
+		});
 	}
 
 	void OnMainMenuVisibilityChanged(IMainMenu mainMenu)
@@ -773,7 +773,7 @@ public class EditorVR : MonoBehaviour
 
 				UpdateRayForMenus(mainMenu);
 			}
-		}, true);
+		});
 	}
 
 	void OnMainMenuActivatorHoverEnded(Transform rayOrigin)
@@ -793,7 +793,7 @@ public class EditorVR : MonoBehaviour
 
 				UpdateRayForMenus(deviceData.mainMenu);
 			}
-		}, true);
+		});
 	}
 
 	void SetLastSelectionRayOrigin(Transform rayOrigin)
@@ -832,13 +832,13 @@ public class EditorVR : MonoBehaviour
 
 				updateMaps = true;
 			}
-		}, true);
+		});
 
 		if (updateMaps)
 			UpdatePlayerHandleMaps();
 	}
 
-	void OnMainMenuActivatorSelected(Transform rayOrigin)
+	void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
 	{
 		ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
 		{
@@ -846,7 +846,10 @@ public class EditorVR : MonoBehaviour
 			{
 				var mainMenu = deviceData.mainMenu;
 				if (mainMenu != null)
+				{
 					mainMenu.visible = !mainMenu.visible;
+					mainMenu.targetRayOrigin = targetRayOrigin;
+				}
 
 				// move to rest position if this is the node that made the selection
 				var mainMenuActivator = deviceData.mainMenuActivator;
@@ -878,8 +881,7 @@ public class EditorVR : MonoBehaviour
 					}
 				}
 			}
-
-		}, true);
+		});
 	}
 
 	private void SpawnActions()
@@ -1018,10 +1020,10 @@ public class EditorVR : MonoBehaviour
 
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value);
-		});
+		}, false);
 	}
 
-	void ForEachRayOrigin(ForEachRayOriginCallback callback, bool activeOnly = false)
+	void ForEachRayOrigin(ForEachRayOriginCallback callback, bool activeOnly = true)
 	{
 		foreach (var proxy in m_AllProxies)
 		{
@@ -1061,7 +1063,7 @@ public class EditorVR : MonoBehaviour
 			var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
 			tester.active = proxy.active;
 			m_IntersectionModule.AddTester(tester);
-		});
+		}, false);
 	}
 
 	GameObject InstantiateUI(GameObject prefab)
@@ -1122,7 +1124,7 @@ public class EditorVR : MonoBehaviour
 					}
 				}
 			}
-		}, true);
+		});
 
 		return go;
 	}
@@ -1361,7 +1363,7 @@ public class EditorVR : MonoBehaviour
 		{
 			if (rayOriginDevice == device)
 				rayOrigin = rayOriginPair.Value;
-		}, true);
+		});
 
 		ConnectInterfaces(obj, rayOrigin);
 	}
@@ -1497,6 +1499,7 @@ public class EditorVR : MonoBehaviour
 			mainMenu.menuTools = m_MainMenuTools;
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
 			mainMenu.menuVisibilityChanged += OnMainMenuVisibilityChanged;
+			mainMenu.isToolActive = IsToolActive;
 		}
 
 		var alternateMenu = obj as IAlternateMenu;
@@ -1597,7 +1600,20 @@ public class EditorVR : MonoBehaviour
 		{
 			if (rayOriginPair.Value == rayOrigin)
 				result = proxy;
-		}, true);
+		});
+
+		return result;
+	}
+
+	bool IsToolActive(Transform targetRayOrigin, Type toolType)
+	{
+		var result = false;
+
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			if (rayOriginPair.Value == targetRayOrigin)
+				result = deviceData.currentTool.GetType() == toolType;
+		});
 
 		return result;
 	}
@@ -1655,7 +1671,7 @@ public class EditorVR : MonoBehaviour
 				UpdatePlayerHandleMaps();
 				result = spawnTool;
 			}
-		}, true);
+		});
 
 		// In case of a despawned tool with custom menus, ray visibility needs to be updated
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
@@ -1663,7 +1679,7 @@ public class EditorVR : MonoBehaviour
 			var mainMenu = deviceData.mainMenu;
 			UpdateCustomMenu(mainMenu);
 			UpdateRayForMenus(mainMenu);
-		}, true);
+		});
 
 		return result;
 	}
@@ -1862,7 +1878,7 @@ public class EditorVR : MonoBehaviour
 			};
 
 			m_IntersectionModule.AddTester(tester);
-		});
+		}, false);
 
 		UpdatePlayerHandleMaps();
 	}
@@ -2224,7 +2240,7 @@ public class EditorVR : MonoBehaviour
 					input = deviceData.directSelectInput
 				};
 			}
-		}, true);
+		});
 
 		foreach (var ray in m_MiniWorldRays)
 		{
