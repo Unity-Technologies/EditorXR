@@ -1,16 +1,15 @@
 ﻿using System;
-using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR;
+using UnityEngine.VR.Actions;
 using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Actions;
 
-public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay, IProcessInput
+public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -137,6 +136,10 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	public Action<IGrabObject, Transform, Transform> dropObject { private get; set; }
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
+
+	public Func<Transform, bool> isOverShoulder { private get; set; }
+
+	public Action<GameObject> deleteSceneObject { private get; set; }
 
 	void Awake()
 	{

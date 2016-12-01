@@ -5,9 +5,10 @@ using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Helpers;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash
+public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
 {
 	private const float kPreviewDuration = 0.1f;
 	private const float kMaxPreviewScale = 0.33f;
@@ -134,6 +135,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	}
 
 	public Action<Transform, Vector3> placeObject { private get; set; }
+	public Func<Transform, bool> isOverShoulder { private get; set; }
 	public float scaleFactor { private get; set; }
 
 	public override void Setup(AssetData listData)
@@ -302,18 +304,21 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	{
 		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
-		if (gridItem.m_PreviewObjectTransform)
+		if (!isOverShoulder(eventData.rayOrigin))
 		{
-			placeObject(gridItem.m_PreviewObjectTransform, m_PreviewPrefabScale);
-		}
-		else
-		{
-			switch (data.type)
+			if (gridItem.m_PreviewObjectTransform)
 			{
-				case "Prefab":
-				case "Model":
-					addToSpatialHash((GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
-					break;
+				placeObject(gridItem.m_PreviewObjectTransform, m_PreviewPrefabScale);
+			}
+			else
+			{
+				switch (data.type)
+				{
+					case "Prefab":
+					case "Model":
+						addToSpatialHash((GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
+						break;
+				}
 			}
 		}
 
@@ -447,7 +452,9 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		}
 
 		m_DragObject.localScale = Vector3.one;
-		m_PreviewObjectClone.localScale = m_GrabPreviewTargetScale;
+
+		if (m_PreviewObjectClone)
+			m_PreviewObjectClone.localScale = m_GrabPreviewTargetScale;
 	}
 
 	static IEnumerator HideGrabbedObject(GameObject itemToHide, Renderer cubeRenderer)

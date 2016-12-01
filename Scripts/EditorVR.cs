@@ -1493,6 +1493,14 @@ public class EditorVR : MonoBehaviour
 			spatialHash.removeFromSpatialHash = m_SpatialHashModule.RemoveObject;
 		}
 
+		var deleteSceneObjects = obj as IDeleteSceneObject;
+		if (deleteSceneObjects != null)
+			deleteSceneObjects.deleteSceneObject = DeleteSceneObject;
+
+		var usesViewerBody = obj as IUsesViewerBody;
+		if (usesViewerBody != null)
+			usesViewerBody.isOverShoulder = IsOverShoulder;
+
 		var mainMenu = obj as IMainMenu;
 		if (mainMenu != null)
 		{
@@ -2173,7 +2181,12 @@ public class EditorVR : MonoBehaviour
 
 				// If the user has pulled an object out of the MiniWorld, use PlaceObject to grow it back to its original scale
 				if (!isContained)
-					PlaceObject(dragObjectTransform, miniWorldRay.dragObjectOriginalScale);
+				{
+					if (IsOverShoulder(originalRayOrigin))
+						DeleteSceneObject(dragObjectTransform.gameObject);
+					else
+						PlaceObject(dragObjectTransform, miniWorldRay.dragObjectOriginalScale);
+				}
 
 				miniWorldRay.dragObject = null;
 				miniWorldRay.wasHeld = false;
@@ -2308,6 +2321,8 @@ public class EditorVR : MonoBehaviour
 		// Dropping the player head updates the viewer pivot
 		if (grabbedObject.CompareTag(kVRPlayerTag))
 			StartCoroutine(UpdateViewerPivot(grabbedObject));
+		else if (IsOverShoulder(rayOrigin))
+			DeleteSceneObject(grabbedObject.gameObject);
 	}
 
 	IEnumerator UpdateViewerPivot(Transform playerHead)
@@ -2449,6 +2464,29 @@ public class EditorVR : MonoBehaviour
 	{
 		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
 		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
+	}
+
+	bool IsOverShoulder(Transform rayOrigin)
+	{
+		var radius = GetPointerLength(rayOrigin);
+		var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
+		foreach (var collider in colliders)
+		{
+			if (collider.CompareTag(kVRPlayerTag))
+				return true;
+		}
+		return false;
+	}
+
+	void DeleteSceneObject(GameObject sceneObject)
+	{
+		var renderers = sceneObject.GetComponentsInChildren<Renderer>(true);
+		foreach (var renderer in renderers)
+		{
+			m_SpatialHashModule.spatialHash.RemoveObject(renderer);
+		}
+
+		U.Object.Destroy(sceneObject);
 	}
 
 	List<string> GetFilterList()
