@@ -1,52 +1,48 @@
-﻿using ListView;
-using System;
+﻿using System;
+using ListView;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
 
-public class FolderListItem : ListViewItem<FolderData>
+public class HierarchyListItem : ListViewItem<HierarchyData>
 {
-	private const float kMargin = 0.01f;
-	private const float kIndent = 0.02f;
+	const float kMargin = 0.01f;
+	const float kIndent = 0.02f;
 
-	private const float kExpandArrowRotateSpeed = 0.4f;
-
-	[SerializeField]
-	private Text m_Text;
+	const float kExpandArrowRotateSpeed = 0.4f;
 
 	[SerializeField]
-	private BaseHandle m_Cube;
+	Text m_Text;
 
 	[SerializeField]
-	private BaseHandle m_ExpandArrow;
+	BaseHandle m_Cube;
 
 	[SerializeField]
-	private Material m_NoClipCubeMaterial;
+	BaseHandle m_ExpandArrow;
 
 	[SerializeField]
-	private Material m_NoClipExpandArrowMaterial;
+	Material m_NoClipCubeMaterial;
 
 	[SerializeField]
-	private Color m_HoverColor;
+	Material m_NoClipExpandArrowMaterial;
 
 	[SerializeField]
-	private Color m_SelectedColor;
+	Color m_HoverColor;
 
-	private Color m_NormalColor;
+	[SerializeField]
+	Color m_SelectedColor;
 
-	private bool m_Hovering;
-
-	private Renderer m_CubeRenderer;
-
+	Color m_NormalColor;
+	bool m_Hovering;
+	Renderer m_CubeRenderer;
 	Transform m_CubeTransform;
 
 	public Material cubeMaterial { get { return m_CubeRenderer.sharedMaterial; } }
-
-	public Action<FolderData> toggleExpanded { private get; set; }
-	public Action<string> selectFolder { private get; set; }
+	public Action<HierarchyData> toggleExpanded { private get; set; }
+	public Action<int> selectRow { private get; set; }
 	
-	public override void Setup(FolderData listData)
+	public override void Setup(HierarchyData listData)
 	{
 		base.Setup(listData);
 		// First time setup
@@ -130,20 +126,20 @@ public class FolderListItem : ListViewItem<FolderData>
 
 	void SelectFolder(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		selectFolder(data.guid);
+		selectRow(data.instanceID);
 	}
 
-	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
+	void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		m_Hovering = true;
 	}
 
-	private void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
+	void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		m_Hovering = false;
 	}
 
-	private void OnDestroy()
+	void OnDestroy()
 	{
 		if (m_CubeRenderer)
 			U.Object.Destroy(m_CubeRenderer.sharedMaterial);

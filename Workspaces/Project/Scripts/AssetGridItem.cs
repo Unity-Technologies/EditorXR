@@ -13,6 +13,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	private const float kPreviewDuration = 0.1f;
 	private const float kMaxPreviewScale = 0.33f;
 	private const float kRotateSpeed = 50f;
+	private const float kTransitionDuration = 0.1f;
 
 	[SerializeField]
 	private Text m_Text;
@@ -40,14 +41,14 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	private Transform m_PreviewObjectTransform;
 
 	private bool m_Setup;
-	private float m_PreviewFade;
 	private Vector3 m_PreviewPrefabScale;
 	private Vector3 m_PreviewTargetScale;
 	Vector3 m_GrabPreviewTargetScale;
 	Vector3 m_GrabPreviewPivotOffset;
 	Transform m_PreviewObjectClone;
 
-	private Coroutine m_TransitionCoroutine;
+	Coroutine m_PreviewCoroutine;
+	Coroutine m_VisibilityCoroutine;
 
 	private Material m_TextureMaterial;
 
@@ -134,12 +135,15 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	}
 
 	public Action<Transform, Vector3> placeObject { private get; set; }
-	
 	public Func<Transform, bool> isOverShoulder { private get; set; }
+	public float scaleFactor { private get; set; }
 
 	public override void Setup(AssetData listData)
 	{
 		base.Setup(listData);
+
+		m_PreviewCoroutine = null;
+		m_VisibilityCoroutine = null;
 
 		// First time setup
 		if (!m_Setup)
@@ -161,44 +165,29 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 
 		InstantiatePreview();
 
+		icon.transform.localScale = Vector3.one;
+
+		if (m_PreviewObjectTransform)
+			m_PreviewObjectTransform.localScale = Vector3.zero;
+
 		m_Text.text = listData.name;
 
 		// HACK: We need to kick the canvasRenderer to update the mesh properly
 		m_Text.gameObject.SetActive(false);
 		m_Text.gameObject.SetActive(true);
-
-		m_PreviewFade = 0;
 	}
 
 	public void UpdateTransforms(float scale)
 	{
+		scaleFactor = scale;
+
+		// Don't scale the item while changing visibility because this would conflict with AnimateVisibility
+		if (m_VisibilityCoroutine != null)
+			return;
+
 		transform.localScale = Vector3.one * scale;
 
 		m_TextPanel.transform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
-
-		// Handle preview fade
-		if (m_PreviewObjectTransform)
-		{
-			if (m_PreviewFade == 0)
-			{
-				m_PreviewObjectTransform.gameObject.SetActive(false);
-				icon.SetActive(true);
-				icon.transform.localScale = Vector3.one;
-			}
-			else if (m_PreviewFade == 1)
-			{
-				m_PreviewObjectTransform.gameObject.SetActive(true);
-				icon.SetActive(false);
-				m_PreviewObjectTransform.transform.localScale = m_PreviewTargetScale;
-			}
-			else
-			{
-				icon.SetActive(true);
-				m_PreviewObjectTransform.gameObject.SetActive(true);
-				icon.transform.localScale = Vector3.one * (1 - m_PreviewFade);
-				m_PreviewObjectTransform.transform.localScale = Vector3.Lerp(Vector3.zero, m_PreviewTargetScale, m_PreviewFade);
-			}
-		}
 
 		if (m_Sphere.gameObject.activeInHierarchy)
 			m_Sphere.transform.Rotate(Vector3.up, kRotateSpeed * Time.unscaledDeltaTime, Space.Self);
@@ -308,15 +297,14 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		if (smoothMotion != null)
 			smoothMotion.enabled = false;
 
-		StartCoroutine(AnimateToPreviewScale());
+		StartCoroutine(ShowGrabbedObject());
 	}
 
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
-		var rayOrigin = eventData.rayOrigin;
 
-		if (!isOverShoulder(rayOrigin))
+		if (!isOverShoulder(eventData.rayOrigin))
 		{
 			if (gridItem.m_PreviewObjectTransform)
 			{
@@ -328,49 +316,94 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 				{
 					case "Prefab":
 					case "Model":
-					addToSpatialHash((GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
+						addToSpatialHash((GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
 						break;
 				}
 			}
 		}
 
-		StartCoroutine(AnimatedHide(m_DragObject.gameObject, gridItem.m_Cube, rayOrigin));
+		StartCoroutine(HideGrabbedObject(m_DragObject.gameObject, gridItem.m_Cube));
 	}
 
 	private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		if (gameObject.activeInHierarchy)
+		if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
 		{
-			this.StopCoroutine(ref m_TransitionCoroutine);
-			m_TransitionCoroutine = StartCoroutine(AnimatePreview(false));
+			this.StopCoroutine(ref m_PreviewCoroutine);
+			m_PreviewCoroutine = StartCoroutine(AnimatePreview(false));
 		}
 	}
 
 	private void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		if (gameObject.activeInHierarchy)
+		if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
 		{
-			this.StopCoroutine(ref m_TransitionCoroutine);
-			m_TransitionCoroutine = StartCoroutine(AnimatePreview(true));
+			this.StopCoroutine(ref m_PreviewCoroutine);
+			m_PreviewCoroutine = StartCoroutine(AnimatePreview(true));
 		}
 	}
 
 	private IEnumerator AnimatePreview(bool @out)
 	{
-		var startVal = 0;
-		var endVal = 1;
-		if (@out)
-		{
-			startVal = 1;
-			endVal = 0;
-		}
+		icon.SetActive(true);
+		m_PreviewObjectTransform.gameObject.SetActive(true);
+
+		var iconTransform = icon.transform;
+		var currentIconScale = iconTransform.localScale;
+		var targetIconScale = @out ? Vector3.one : Vector3.zero;
+
+		var currentPreviewScale = m_PreviewObjectTransform.localScale;
+		var targetPreviewScale = @out ? Vector3.zero : m_PreviewTargetScale;
+
 		var startTime = Time.realtimeSinceStartup;
 		while (Time.realtimeSinceStartup - startTime < kPreviewDuration)
 		{
-			m_PreviewFade = Mathf.Lerp(startVal, endVal, (Time.realtimeSinceStartup - startTime) / kPreviewDuration);
+			var t = (Time.realtimeSinceStartup - startTime) / kPreviewDuration;
+
+			icon.transform.localScale = Vector3.Lerp(currentIconScale, targetIconScale, t);
+			m_PreviewObjectTransform.transform.localScale = Vector3.Lerp(currentPreviewScale, targetPreviewScale, t);
 			yield return null;
 		}
-		m_PreviewFade = endVal;
+
+		m_PreviewObjectTransform.transform.localScale = targetPreviewScale;
+		icon.transform.localScale = targetIconScale;
+
+		m_PreviewObjectTransform.gameObject.SetActive(!@out);
+		icon.SetActive(@out);
+
+		m_PreviewCoroutine = null;
+	}
+
+	public void SetVisibility(bool visible, Action<AssetGridItem> callback = null)
+	{
+		this.StopCoroutine(ref m_VisibilityCoroutine);
+		m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(visible, callback));
+	}
+
+	private IEnumerator AnimateVisibility(bool visible, Action<AssetGridItem> callback)
+	{
+		var currentTime = 0f;
+
+		// Item should always be at a scale of zero before becoming visible
+		if (visible)
+			transform.localScale = Vector3.zero;
+
+		var currentScale = transform.localScale;
+		var targetScale = visible ? Vector3.one * scaleFactor : Vector3.zero;
+
+		while (currentTime < kTransitionDuration)
+		{
+			currentTime += Time.unscaledDeltaTime;
+			transform.localScale = Vector3.Lerp(currentScale, targetScale, currentTime / kTransitionDuration);
+			yield return null;
+		}
+		
+		transform.localScale = targetScale;
+
+		if (callback != null)
+			callback(this);
+
+		m_VisibilityCoroutine = null;
 	}
 
 	object GetDropObject(BaseHandle handle)
@@ -383,11 +416,9 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		U.Object.Destroy(m_Cube.sharedMaterial);
 	}
 
-	/// <summary>
-	/// Animate the LocalScale of the asset towards a common/unified scale
-	/// used when the asset is magnetized/attached to the proxy, after grabbing it from the asset grid
-	/// </summary>
-	IEnumerator AnimateToPreviewScale()
+	// Animate the LocalScale of the asset towards a common/unified scale
+	// used when the asset is magnetized/attached to the proxy, after grabbing it from the asset grid
+	IEnumerator ShowGrabbedObject()
 	{
 		var currentLocalScale = m_DragObject.localScale;
 		var currentPreviewScale = Vector3.one;
@@ -421,10 +452,12 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		}
 
 		m_DragObject.localScale = Vector3.one;
-		m_PreviewObjectClone.localScale = m_GrabPreviewTargetScale;
+
+		if (m_PreviewObjectClone)
+			m_PreviewObjectClone.localScale = m_GrabPreviewTargetScale;
 	}
 
-	IEnumerator AnimatedHide(GameObject itemToHide, Renderer cubeRenderer, Transform rayOrigin)
+	static IEnumerator HideGrabbedObject(GameObject itemToHide, Renderer cubeRenderer)
 	{
 		var itemTransform = itemToHide.transform;
 		var currentScale = itemTransform.localScale;
