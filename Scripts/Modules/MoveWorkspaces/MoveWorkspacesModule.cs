@@ -114,10 +114,9 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		var cameraPosition = VRView.viewerCamera.transform.position;
 		for (int i = 0; i < m_AllWorkspaces.Length; i++)
 		{
-			float yOffset = m_AllWorkspaces[i].transform.position.y - cameraPosition.y;
-
 			m_WorkspaceLocalRotaions[i] = Quaternion.Euler(m_AllWorkspaces[i].transform.localRotation.eulerAngles.x, 0.0f, 0.0f);
 
+			var yOffset = m_AllWorkspaces[i].transform.position.y - cameraPosition.y;
 			if (yOffset > kThresholdY)
 				m_ExtraYOffsetForLookat[i] = yOffset - kThresholdY;
 			else if (yOffset < -kThresholdY)
@@ -215,6 +214,9 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 				m_RayOriginStartAngle = Quaternion.LookRotation(rayOrigin.up);
 				m_Mode = ManipulateMode.On;
 				hideDefaultRay(rayOrigin);
+
+				foreach (var ws in m_AllWorkspaces)
+					ws.SetUIHighlights(true);
 			}
 		}
 	}
@@ -228,10 +230,10 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 		const float kVerticalMoveSpeed = 45.0f;
 
 		Quaternion rayOriginCurrentAngle = Quaternion.LookRotation(rayOrigin.up);
-		float deltaAngleY = rayOriginCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
+		var deltaAngleY = rayOriginCurrentAngle.eulerAngles.y - m_RayOriginStartAngle.eulerAngles.y;
 		m_targetAngleY += deltaAngleY;
 
-		float rotateAmount = m_targetAngleY * Time.unscaledDeltaTime * kRotateAroundSpeed;
+		var rotateAmount = m_targetAngleY * Time.unscaledDeltaTime * kRotateAroundSpeed;
 		foreach (var ws in m_AllWorkspaces)
 		{
 			//don't rotate for tiny rotations
@@ -250,7 +252,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	void UpdateLookAtPlayer()
 	{
-		float kWorkspaceRotationSpeed = Time.unscaledDeltaTime * 10.0f;
+		var workspaceRotationSpeed = Time.unscaledDeltaTime * 10.0f;
 
 		// workspaces look at player on their X axis beyond Y thresholds
 		Vector3 cameraPosition = VRView.viewerCamera.transform.position;
@@ -265,8 +267,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 				Vector3 offset = Vector3.up * kThresholdY * sign + Vector3.up * m_ExtraYOffsetForLookat[i];
 				Vector3 wsForward = wsTrans.position - (cameraPosition + offset);
 				Quaternion targetRotation = Quaternion.LookRotation(wsForward) * m_WorkspaceLocalRotaions[i];
-
-				wsTrans.rotation = Quaternion.Lerp(wsTrans.rotation, targetRotation, kWorkspaceRotationSpeed);
+				wsTrans.rotation = Quaternion.Lerp(wsTrans.rotation, targetRotation, workspaceRotationSpeed);
 			}
 		}
 	}
@@ -275,5 +276,8 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	{
 		m_Mode = ManipulateMode.Off;
 		showDefaultRay(rayOrigin);
+
+		foreach (var ws in m_AllWorkspaces)
+			ws.SetUIHighlights(false);
 	}
 }
