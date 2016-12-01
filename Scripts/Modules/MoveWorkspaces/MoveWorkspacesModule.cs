@@ -1,25 +1,21 @@
+using System;
+using UnityEditor.VR;
 using UnityEngine;
-using UnityEngine.VR.Workspaces;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
-using UnityEditor.VR;
-using System;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Helpers;
+using UnityEngine.VR.Workspaces;
 
 [ExecuteInEditMode]
 public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayOrigin, ICustomRay, IMoveWorkspaces
 {
-	float m_TriggerPressedTimeStamp = 0.0f;
+	float m_TriggerPressedTimeStamp;
 
 	Workspace[] m_AllWorkspaces;
 	Quaternion[] m_WorkspaceLocalRotaions;
 	float[] m_ExtraYOffsetForLookat;
 
 	Quaternion m_RayOriginStartAngle;
-	bool m_ThrowDownTriggered = false;
+	bool m_ThrowDownTriggered;
 	Vector3 m_PreviousPosition;
 	float m_VerticalVelocity;
 
@@ -27,14 +23,13 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	bool m_GrabbedInTopHat;
 
 	float m_ThrowingTimeStamp;
-	const float kThrowDelayAllowed = 0.2f;
 	float m_CurrentTargetScale = 1.0f;
 
-	float m_targetAngleY = 0.0f;
+	float m_targetAngleY;
 
 	const float kThresholdY = 0.2f;
 	
-	ManipulateMode m_Mode = ManipulateMode.Off;
+	bool m_ManipulateModeOn;
 
 	public Transform rayOrigin { get; set; }
 
@@ -44,56 +39,44 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	public Action resetWorkspaces { get; set; }
 
-	enum ManipulateMode
-	{
-		On,
-		Off,
-	}
-
 	void Start()
 	{
+		m_ManipulateModeOn = false;
 		m_TopHatBounds = new Bounds(Vector3.up * 0.2f, new Vector3(0.2f, 0.15f, 0.2f));
 	}
 
 	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 	{
-		var standardInput = (Standard) input;
+		var standardInput = (Standard)input;
 
-		switch (m_Mode)
+		if (!m_ManipulateModeOn)
 		{
-			case ManipulateMode.Off:
+			standardInput.active = IsControllerAboveHMD();
+			if (!standardInput.active)
+				return;
+
+			if (standardInput.action.wasJustPressed)
+				HandleDoubleTap();
+
+			if (m_GrabbedInTopHat && standardInput.action.isHeld)
+				HandleManipulationStart();
+
+			if (standardInput.action.wasJustReleased)
+				m_GrabbedInTopHat = false;
+		}
+		else
+		{
+			HandleThrowDown(standardInput.action.wasJustReleased);
+			UpdateWorkspaceScales();
+
+			if (standardInput.action.isHeld)
 			{
-				standardInput.active = IsControllerAboveHMD();
-				if (!standardInput.active)
-					return;
-
-				if (standardInput.action.wasJustPressed)
-					HandleDoubleTap();
-
-				if (m_GrabbedInTopHat && standardInput.action.isHeld)
-						HandleManipulationStart();
-
-				if (standardInput.action.wasJustReleased)
-					m_GrabbedInTopHat = false;
-
-				break;
+				UpdateWorkspaceManipulation();
+				UpdateLookAtPlayer();
 			}
-			case ManipulateMode.On:
-			{
-				HandleThrowDown(standardInput.action.wasJustReleased);
-				UpdateWorkspaceScales();
 
-				if (standardInput.action.isHeld)
-				{
-					UpdateWorkspaceManipulation();
-					UpdateLookAtPlayer();
-				}
-
-				if (standardInput.action.wasJustReleased)
-					HandleManipulationEnd();
-
-				break;
-			}
+			if (standardInput.action.wasJustReleased)
+				HandleManipulationEnd();
 		}
 	}
 
@@ -159,6 +142,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 	{
 		const float kLocalScaleWhenReadyToThrow = 0.5f;
 		const float kThrowVelocityThreshold = 0.003f;
+		const float kThrowDelayAllowed = 0.2f;
 
 		m_VerticalVelocity = (m_PreviousPosition.y - rayOrigin.position.y) * Time.unscaledDeltaTime;
 		m_PreviousPosition = rayOrigin.position;
@@ -212,7 +196,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 			{
 				m_PreviousPosition = rayOrigin.position;
 				m_RayOriginStartAngle = Quaternion.LookRotation(rayOrigin.up);
-				m_Mode = ManipulateMode.On;
+				m_ManipulateModeOn = true;
 				hideDefaultRay(rayOrigin);
 
 				foreach (var ws in m_AllWorkspaces)
@@ -274,7 +258,7 @@ public class MoveWorkspacesModule : MonoBehaviour, IStandardActionMap, IUsesRayO
 
 	void HandleManipulationEnd()
 	{
-		m_Mode = ManipulateMode.Off;
+		m_ManipulateModeOn = false;
 		showDefaultRay(rayOrigin);
 
 		foreach (var ws in m_AllWorkspaces)

@@ -269,15 +269,6 @@ namespace UnityEngine.VR.Workspaces
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
 		}
 
-		public virtual string GetExtraSave()
-		{
-			return "";
-		}
-
-		public virtual void SetExtraSave(string data)
-		{
-		}
-
 		public void SetUIHighlights(bool value)
 		{
 			m_WorkspaceUI.highlightsVisible = value;

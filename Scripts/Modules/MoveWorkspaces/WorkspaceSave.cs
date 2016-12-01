@@ -3,10 +3,10 @@ using UnityEngine;
 [System.Serializable]
 public class WorkspaceSave
 {
-	public WorkspaceSaveData[] m_Workspaces;
+	public WorkspaceSaveData[] workspaces;
 	public WorkspaceSave(int numberOfWorkspaces)
 	{
-		m_Workspaces = new WorkspaceSaveData[numberOfWorkspaces];
+		workspaces = new WorkspaceSaveData[numberOfWorkspaces];
 	}
 }
 
@@ -17,5 +17,4 @@ public struct WorkspaceSaveData
 	public Vector3 localPosition;
 	public Quaternion localRotation;
 	public Bounds bounds;
-	public string extra;
 }

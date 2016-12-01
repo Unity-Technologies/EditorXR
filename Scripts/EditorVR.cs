@@ -443,21 +443,23 @@ public class EditorVR : MonoBehaviour
 
 	void SaveWorkspacePositions()
 	{
-		WorkspaceSave workspaceSaves = new WorkspaceSave(m_AllWorkspaces.Count);
+		var workspaceSaves = new WorkspaceSave(m_AllWorkspaces.Count);
+		var saveDatas = new List<WorkspaceSaveData>();
 
-		int i = 0;
-		foreach (var iws in m_AllWorkspaces)
+		foreach (var workspace in m_AllWorkspaces)
 		{
-			workspaceSaves.m_Workspaces[i] = new WorkspaceSaveData();
-			workspaceSaves.m_Workspaces[i].workspaceName = iws.GetType().ToString();
-			workspaceSaves.m_Workspaces[i].localPosition = iws.transform.localPosition;
-			workspaceSaves.m_Workspaces[i].localRotation = iws.transform.localRotation;
-			Workspace ws = iws as Workspace;
-			if (ws != null)
-				workspaceSaves.m_Workspaces[i].bounds = ws.contentBounds;
+			var saveData = new WorkspaceSaveData();
+			saveData.workspaceName = workspace.GetType().ToString();
+			saveData.localPosition = workspace.transform.localPosition;
+			saveData.localRotation = workspace.transform.localRotation;
 
-			i++;
+			var ws = workspace as Workspace;
+			if (ws != null)
+				saveData.bounds = ws.contentBounds;
+
+			saveDatas.Add(saveData);
 		}
+		workspaceSaves.workspaces = saveDatas.ToArray();
 
 		EditorPrefs.SetString("WorkspaceSavePositions", JsonUtility.ToJson(workspaceSaves));
 	}
@@ -1253,10 +1255,6 @@ public class EditorVR : MonoBehaviour
 					maps.Add(alternateMenuInput);
 			}
 
-
-			//if (deviceData.moveWorkspacesModule != null)
-			//	AddActionMapInputs(deviceData.moveWorkspacesModule, maps);
-
 			var moveWSModule = deviceData.moveWorkspacesModule;
 			var moveWSModuleInput = deviceData.moveWorkspacesModuleInput;
 			if (moveWSModule!= null && moveWSModuleInput != null)
@@ -1874,13 +1872,13 @@ public class EditorVR : MonoBehaviour
 	{
 		string inputString = EditorPrefs.GetString("WorkspaceSavePositions");
 
-		if (inputString == "")
+		if (string.IsNullOrEmpty(inputString))
 			return;
 
 		WorkspaceSave savedData = JsonUtility.FromJson<WorkspaceSave>(inputString);
-		if (savedData.m_Workspaces.Length > 0)
+		if (savedData.workspaces != null && savedData.workspaces.Length > 0)
 		{
-			foreach (var wsData in savedData.m_Workspaces)
+			foreach (var wsData in savedData.workspaces)
 			{
 				CreateWorkspace(Type.GetType(wsData.workspaceName), (workSpace) =>
 				{
@@ -1900,8 +1898,8 @@ public class EditorVR : MonoBehaviour
 		var defaultOffset = new Vector3(0, -0.15f, 1.0f);
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 		var headPosition = cameraTransform.position;
-		float heightOffset = Workspace.kDefaultBounds.y;
-		Vector3 halfBounds = Workspace.kDefaultBounds * 0.5f;
+		var heightOffset = Workspace.kDefaultBounds.y;
+		var halfBounds = Workspace.kDefaultBounds * 0.5f;
 
 		foreach (var ws in m_AllWorkspaces)
 		{

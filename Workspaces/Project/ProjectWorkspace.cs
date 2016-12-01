@@ -198,18 +198,6 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		m_AssetGridHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
 	}
 
-	public override string GetExtraSave()
-	{
-		return JsonUtility.ToJson(m_UniqueSave);
-	}
-
-	public override void SetExtraSave(string data)
-	{
-		m_UniqueSave = JsonUtility.FromJson<ProjectWorkspaceUniqueSave>(data);
-		m_ProjectUI.assetGridView.scaleFactor = m_UniqueSave.scaleFactor;
-		m_SliderPrefab.GetComponent<ZoomSliderUI>().zoomSlider.value = m_UniqueSave.scaleFactor;
-	}
-
 	void SelectFolder(FolderData data)
 	{
 		m_ProjectUI.assetGridView.data = data.assets;

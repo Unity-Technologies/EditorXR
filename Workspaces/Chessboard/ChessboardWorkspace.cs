@@ -102,19 +102,6 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 		OnBoundsChanged();
 	}
 
-	public override string GetExtraSave()
-	{
-		return JsonUtility.ToJson(m_UniqueSave);
-	}
-
-	public override void SetExtraSave(string data)
-	{
-		m_UniqueSave = JsonUtility.FromJson<ChessBoardUniqueSave>(data);
-		m_MiniWorld.referenceTransform.localScale = m_UniqueSave.miniWorldRefScale;
-		m_MiniWorld.referenceTransform.position = m_UniqueSave.miniWorldRefPos;
-		m_ZoomSliderUI.zoomSlider.value = m_UniqueSave.zoomSliderValue;
-	}
-
 	private void Update()
 	{
 		//Set grid height, deactivate if out of bounds
