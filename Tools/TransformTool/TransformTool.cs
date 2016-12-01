@@ -69,7 +69,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 				m_Actions = new List<IAction>()
 				{
 					m_PivotModeToggleAction,
-					m_PivotRotationToggleAction
+					m_PivotRotationToggleAction,
+					m_ManipulatorToggleAction
 				};
 			}
 			return m_Actions;
@@ -85,15 +86,20 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	Sprite m_RotationGlobalIcon;
 	[SerializeField]
 	Sprite m_RotationLocalIcon;
+	[SerializeField]
+	Sprite m_StandardManipulatorIcon;
+	[SerializeField]
+	Sprite m_ScaleManipulatorIcon;
 
 	[SerializeField]
 	GameObject m_StandardManipulatorPrefab;
 	[SerializeField]
 	GameObject m_ScaleManipulatorPrefab;
 
-	readonly List<BaseManipulator> m_AllManipulators = new List<BaseManipulator>();
 	BaseManipulator m_CurrentManipulator;
-	int m_CurrentManipulatorIndex;
+
+	BaseManipulator m_StandardManipulator;
+	BaseManipulator m_ScaleManipulator;
 
 	Bounds m_SelectionBounds;
 	Vector3 m_TargetPosition;
@@ -121,6 +127,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
+	readonly TransformAction m_ManipulatorToggleAction = new TransformAction();
 
 	Dictionary<Transform, DirectSelectionData> m_LastDirectSelection;
 	public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
@@ -137,21 +144,17 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		UpdatePivotModeToggleIcon();
 		m_PivotRotationToggleAction.execute = TogglePivotRotation;
 		UpdatePivotRotationToggleIcon();
+		m_ManipulatorToggleAction.execute = ToggleManipulator;
+		UpdateManipulatorToggleIcon();
 
 		// Add standard and scale manipulator prefabs to a list (because you cannot add asset references directly to a serialized list)
 		if (m_StandardManipulatorPrefab != null)
-			m_AllManipulators.Add(CreateManipulator(m_StandardManipulatorPrefab));
+			m_StandardManipulator = CreateManipulator(m_StandardManipulatorPrefab);
 
 		if (m_ScaleManipulatorPrefab != null)
-			m_AllManipulators.Add(CreateManipulator(m_ScaleManipulatorPrefab));
+			m_ScaleManipulator = CreateManipulator(m_ScaleManipulatorPrefab);
 
-		m_CurrentManipulatorIndex = 0;
-		m_CurrentManipulator = m_AllManipulators[m_CurrentManipulatorIndex];
-
-		foreach (var manipulator in m_AllManipulators)
-		{
-			manipulator.gameObject.SetActive(false);
-		}
+		m_CurrentManipulator = m_StandardManipulator;
 	}
 
 	public void OnSelectionChanged()
@@ -429,6 +432,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	BaseManipulator CreateManipulator(GameObject prefab)
 	{
 		var go = U.Object.Instantiate(prefab, transform, active: false);
+		go.SetActive(false);
 		var manipulator = go.GetComponent<BaseManipulator>();
 		manipulator.translate = Translate;
 		manipulator.rotate = Rotate;
@@ -494,14 +498,18 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		m_PivotRotationToggleAction.icon = m_PivotRotation == PivotRotation.Global ? m_RotationGlobalIcon : m_RotationLocalIcon;
 	}
 
-	private void SwitchManipulator()
+	bool ToggleManipulator()
 	{
-		foreach (var manipulator in m_AllManipulators)
-			manipulator.gameObject.SetActive(false);
+		m_CurrentManipulator.gameObject.SetActive(false);
 
-		// Go to the next manipulator type in the list
-		m_CurrentManipulatorIndex = (m_CurrentManipulatorIndex + 1) % m_AllManipulators.Count;
-		m_CurrentManipulator = m_AllManipulators[m_CurrentManipulatorIndex];
+		m_CurrentManipulator = m_CurrentManipulator == m_StandardManipulator ? m_ScaleManipulator : m_StandardManipulator;
+		UpdateManipulatorToggleIcon();
 		UpdateCurrentManipulator();
+		return true;
+	}
+
+	void UpdateManipulatorToggleIcon()
+	{
+		m_ManipulatorToggleAction.icon = m_CurrentManipulator == m_StandardManipulator ? m_ScaleManipulatorIcon : m_StandardManipulatorIcon;
 	}
 }
