@@ -36,8 +36,6 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 1
-        deviceKey: 1
       - controlIndex: 0
         deviceKey: 1
       deadZone: 0.3

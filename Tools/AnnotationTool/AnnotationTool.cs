@@ -34,11 +34,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	public Func<GameObject, GameObject> instantiateUI { private get; set; }
 
+	private Action<float> onBrushSizeChanged { set; get; }
+
 	public Func<Transform, object, bool> lockRay { private get; set; }
 	public Func<Transform, object, bool> unlockRay { private get; set; }
 
-	private Action<float> onBrushSizeChanged { set; get; }
-	
+
 	private const int kInitialListSize = 32767;
 
 	private List<Vector3> m_Points = new List<Vector3>(kInitialListSize);
@@ -115,14 +116,11 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	private void HideRay()
 	{
-		if (!m_IsRayHidden)
+		if (hideDefaultRay != null && !m_IsRayHidden)
 		{
-			if (hideDefaultRay != null)
-			{
-				hideDefaultRay(rayOrigin);
-				lockRay(rayOrigin, this);
-				m_IsRayHidden = true;
-			}
+			hideDefaultRay(rayOrigin);
+			lockRay(rayOrigin, this);
+			m_IsRayHidden = true;
 		}
 	}
 
@@ -143,8 +141,15 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				m_ColorPickerActivator.transform.localPosition = Vector3.right * 0.05f;
 
 				var activator = m_ColorPickerActivator.GetComponent<ColorPickerActivator>();
+
+				m_ColorPicker = activator.GetComponentInChildren<ColorPickerUI>(true);
+				m_ColorPicker.onHideCalled = HideColorPicker;
+				m_ColorPicker.toolRayOrigin = rayOrigin;
+				m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
+
 				activator.rayOrigin = otherRayOrigins.First();
 				activator.showColorPicker = ShowColorPicker;
+				activator.hideColorPicker = HideColorPicker;
 			}
 		}
 	}
@@ -203,18 +208,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (m_IsValidStroke)
 			return;
 
-		if (!m_ColorPicker)
-			CreateColorPicker(otherRayOrigin);
-
 		if (!m_ColorPicker.enabled)
-		{
-			PositionColorPicker(otherRayOrigin);
-
 			m_ColorPicker.Show();
-			unlockRay(rayOrigin, this);
-			showDefaultRay(rayOrigin);
-			m_CustomPointerObject.SetActive(false);
-		}
+
+		unlockRay(rayOrigin, this);
+		showDefaultRay(rayOrigin);
+		m_CustomPointerObject.SetActive(false);
 	}
 
 	private void HideColorPicker()
@@ -665,10 +664,15 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		m_CurrentMesh.Optimize();
 
 		m_CurrentMesh.UploadMeshData(true);
+
+		CenterHolder();
 	}
 
 	private void CenterMesh()
 	{
+		if (m_CurrentMesh == null || m_CurrentMesh.vertexCount == 0)
+			return;
+
 		Vector3 center = Vector3.zero;
 		
 		var vertices = m_CurrentMesh.vertices;
@@ -683,6 +687,28 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		m_CurrentMesh.vertices = vertices;
 		m_CurrentMeshFilter.transform.localPosition += center;
+	}
+
+	private void CenterHolder()
+	{
+		if (m_AnnotationHolder == null || m_AnnotationHolder.childCount == 0)
+			return;
+
+		List<Vector3> childWorldPositions = new List<Vector3>();
+		Vector3 center = Vector3.zero;
+
+		for (int i = 0; i < m_AnnotationHolder.childCount; i++)
+		{
+			var worldPos = m_AnnotationHolder.GetChild(i).position;
+			childWorldPositions.Add(worldPos);
+			center += worldPos;
+		}
+
+		center /= m_AnnotationHolder.childCount;
+
+		m_AnnotationHolder.localPosition += center;
+		for (int i = 0; i < m_AnnotationHolder.childCount; i++)
+			m_AnnotationHolder.GetChild(i).position = childWorldPositions[i];
 	}
 
 	private int[] VerticesToPolygon(int upperLeft, int upperRight, int lowerLeft, int lowerRight, bool doubleSided = false)

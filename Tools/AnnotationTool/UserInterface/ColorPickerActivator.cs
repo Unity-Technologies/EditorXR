@@ -6,8 +6,12 @@ using UnityEngine.EventSystems;
 public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
 
+	[SerializeField]
+	private Transform m_TargetScale;
+
 	public Transform rayOrigin { private get; set; }
 	public Action<Transform> showColorPicker { private get; set; }
+	public Action hideColorPicker { private get; set; }
 
 	[SerializeField]
 	private Transform m_Icon;
@@ -16,11 +20,7 @@ public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointe
 	
 	public void OnPointerClick(PointerEventData eventData)
 	{
-		if (showColorPicker != null)
-		{
-			showColorPicker(rayOrigin);
-			eventData.Use();
-		}
+		eventData.Use();
 	}
 
 	public void OnPointerEnter(PointerEventData eventData)
@@ -28,13 +28,10 @@ public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointe
 		if (m_HighlightCoroutine != null)
 			StopCoroutine(m_HighlightCoroutine);
 
+		showColorPicker(rayOrigin);
 		m_HighlightCoroutine = StartCoroutine(Highlight());
-
-		if (showColorPicker != null)
-		{
-			showColorPicker(rayOrigin);
-			eventData.Use();
-		}
+		
+		eventData.Use();
 	}
 
 	public void OnPointerExit(PointerEventData eventData)
@@ -42,6 +39,7 @@ public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointe
 		if (m_HighlightCoroutine != null)
 			StopCoroutine(m_HighlightCoroutine);
 
+		hideColorPicker();
 		m_HighlightCoroutine = StartCoroutine(Highlight(false));
 	}
 
@@ -49,7 +47,7 @@ public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointe
 	{
 		var amount = 0f;
 		var currentScale = m_Icon.localScale;
-		var targetScale = transitionIn ? Vector3.one * 1.5f : Vector3.one;
+		var targetScale = transitionIn ? m_TargetScale.localScale : Vector3.one;
 		var speed = (currentScale.x + 0.5f / targetScale.x) * 4;
 
 		while (amount < 1f)
