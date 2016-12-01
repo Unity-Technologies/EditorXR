@@ -25,6 +25,10 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 	GameObject m_LocateYourselfPrefab;
 
 	[SerializeField]
+	private GameObject m_LocatePlayerPrefab;
+	private Transform m_PlayerDirectionArrow;
+
+	[SerializeField]
 	private GameObject m_UIPrefab;
 
 	[SerializeField]
@@ -73,9 +77,15 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 		m_GridMaterial = U.Material.GetMaterialClone(m_ChessboardUI.grid);
 
 		var locateUI = U.Object.Instantiate(m_LocateYourselfPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LocateYourselfUI>();
-		locateUI.locateButton.onClick.AddListener(LocateYourself);
+		//locateUI.locateButton.onClick.AddListener(LocateYourself);
 		locateUI.resetButton.onClick.AddListener(ResetChessboard);
 		connectInterfaces(locateUI);
+		
+		var parent = m_WorkspaceUI.frontPanel.parent;
+		var locatePlayerUI = U.Object.Instantiate(m_LocatePlayerPrefab, parent, false);
+		locatePlayerUI.GetComponentInChildren<Button>().onClick.AddListener(LocatePlayer);
+		connectInterfaces(locatePlayerUI);
+		m_PlayerDirectionArrow = locatePlayerUI.transform.GetChild(0);
 
 		m_RelocatingMiniWorld = false;
 
@@ -121,6 +131,11 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 		{
 			UpdateLocation();
 			//ScaleToTarget();
+		}
+
+		if (IsPlayerOutOfBounds())
+		{
+			UpdatePlayerDirectionArrow();
 		}
 
 		//Set grid height, deactivate if out of bounds
@@ -248,7 +263,7 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 		unlockRay(handleEventData.rayOrigin, this);
 	}
 
-	void LocateYourself()
+	void LocatePlayer()
 	{
 #if UNITY_EDITOR
 		m_RelocatingMiniWorld = true;
@@ -276,6 +291,26 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 			trans.position = m_MiniWorldTargetPosition;
 			m_RelocatingMiniWorld = false;
 		}
+	}
+
+	bool IsPlayerOutOfBounds()
+	{
+		bool playerOutOfBounds = !m_MiniWorld.referenceBounds.Contains(VRView.viewerCamera.transform.position);
+		m_PlayerDirectionArrow.gameObject.SetActive(playerOutOfBounds);
+		return playerOutOfBounds;
+	}
+
+	void UpdatePlayerDirectionArrow()
+	{
+		var playerPos = VRView.viewerCamera.transform.position;
+		//playerPos.y = 0.0f;
+		var miniWorldPos = m_MiniWorld.referenceTransform.position;
+		//miniWorldPos.y = 0.0f;
+		var targetDir = playerPos - miniWorldPos;
+		var newDir = Vector3.RotateTowards(m_PlayerDirectionArrow.transform.up, targetDir, 360.0f, 360.0f);
+
+		m_PlayerDirectionArrow.transform.localRotation = Quaternion.LookRotation(newDir);
+		m_PlayerDirectionArrow.transform.Rotate(Vector3.right, 90.0f);
 	}
 
 	void ScaleToTarget()
