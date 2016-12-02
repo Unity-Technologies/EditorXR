@@ -11,6 +11,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
 using UnityEngine.VR.Actions;
+using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.Menus;
@@ -114,30 +115,38 @@ public class EditorVR : MonoBehaviour
 		public ActionMapInput input;
 	}
 
-	private class DeviceData
+	[Flags]
+	enum MenuHideFlags
 	{
-		public Stack<ToolData> toolData;
+		Hidden			= 1 << 0,
+		OverActivator	= 1 << 1,
+		NearWorkspace	= 1 << 2,
+	}
+
+	class DeviceData
+	{
+		public readonly Stack<ToolData> toolData = new Stack<ToolData>();
 		public ActionMapInput uiInput;
 		public MainMenuActivator mainMenuActivator;
 		public ActionMapInput directSelectInput;
 		public IMainMenu mainMenu;
 		public ActionMapInput mainMenuInput;
-		public List<IMenu> restoreMenus;
 		public IAlternateMenu alternateMenu;
 		public ActionMapInput alternateMenuInput;
 		public ITool currentTool;
 		public IMenu customMenu;
 		public PinnedToolButton previousToolButton;
+		public readonly Dictionary<IMenu, MenuHideFlags> menuHideFlags = new Dictionary<IMenu, MenuHideFlags>();
 	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
-	private readonly List<IProxy> m_AllProxies = new List<IProxy>();
+	private readonly List<IProxy> m_Proxies = new List<IProxy>();
 	private List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
 	private List<Type> m_AllTools;
-	private List<IAction> m_AllActions;
-	List<Type> m_MainMenuTools;
 	private List<Type> m_AllWorkspaceTypes;
-	private readonly List<IWorkspace> m_AllWorkspaces = new List<IWorkspace>();
+	private List<IAction> m_Actions;
+	List<Type> m_MainMenuTools;
+	private readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
 
 	private readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 	{
@@ -182,6 +191,8 @@ public class EditorVR : MonoBehaviour
 	ScaleManipulator m_ScaleManipulator;
 
 	IGrabObject m_ObjectGrabber;
+
+	bool m_ControllersReady;
 
 	readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();
 
@@ -318,12 +329,7 @@ public class EditorVR : MonoBehaviour
 	{
 		foreach (var device in GetSystemDevices())
 		{
-			var deviceData = new DeviceData
-			{
-				toolData = new Stack<ToolData>(),
-				restoreMenus = new List<IMenu>(),
-			};
-			m_DeviceData.Add(device, deviceData);
+			m_DeviceData.Add(device, new DeviceData());
 		}
 	}
 
@@ -333,7 +339,7 @@ public class EditorVR : MonoBehaviour
 		bool proxyActive = false;
 		while (!proxyActive)
 		{
-			foreach (var proxy in m_AllProxies)
+			foreach (var proxy in m_Proxies)
 			{
 				if (proxy.active)
 				{
@@ -344,6 +350,8 @@ public class EditorVR : MonoBehaviour
 
 			yield return null;
 		}
+
+		m_ControllersReady = true;
 
 		if (m_ProxyExtras)
 		{
@@ -449,6 +457,7 @@ public class EditorVR : MonoBehaviour
 			{
 				mainMenu = SpawnMainMenu(typeof(MainMenu), device, false, out deviceData.mainMenuInput);
 				deviceData.mainMenu = mainMenu;
+				deviceData.menuHideFlags[mainMenu] = MenuHideFlags.Hidden;
 				UpdatePlayerHandleMaps();
 			}
 		}
@@ -474,10 +483,6 @@ public class EditorVR : MonoBehaviour
 		if (m_CustomPreviewCamera != null)
 			m_CustomPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
 
-		UpdateKeyboardMallets();
-
-		ProcessInput();
-
 #if UNITY_EDITOR
 		// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
 		//		Additionally, on some machines it's required to do a delay call otherwise none of this works
@@ -497,6 +502,37 @@ public class EditorVR : MonoBehaviour
 			m_UpdatePixelRaycastModule = false; // Don't allow another one to queue until the current one is processed
 		}
 #endif
+
+		if (!m_ControllersReady)
+			return;
+
+		UpdateKeyboardMallets();
+
+		ProcessInput();
+
+		UpdateMenuVisibilityNearWorkspaces();
+		UpdateMenuVisibilities();
+	}
+
+	void UpdateMenuVisibilityNearWorkspaces()
+	{
+		ForEachRayOrigin((proxy, pair, device, deviceData) =>
+		{
+			var mainMenu = deviceData.mainMenu;
+			var intersection = false;
+			var menuBounds = U.Object.GetBounds(proxy.menuOrigins[pair.Value].gameObject);
+			foreach (var workspace in m_Workspaces)
+			{
+				if (menuBounds.Intersects(workspace.transform.TransformBounds(workspace.outerBounds)))
+				{
+					intersection = true;
+					break;
+				}
+			}
+			var menuHideFlags = deviceData.menuHideFlags;
+			var flags = menuHideFlags[mainMenu];
+			menuHideFlags[mainMenu] = intersection ? flags | MenuHideFlags.NearWorkspace : flags & ~MenuHideFlags.NearWorkspace;
+		});
 	}
 
 	void ProcessInput()
@@ -544,7 +580,7 @@ public class EditorVR : MonoBehaviour
 
 	void UpdateKeyboardMallets()
 	{
-		foreach (var proxy in m_AllProxies)
+		foreach (var proxy in m_Proxies)
 		{
 			proxy.hidden = !proxy.active;
 			if (proxy.active)
@@ -696,6 +732,7 @@ public class EditorVR : MonoBehaviour
 
 			var alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 			deviceData.alternateMenu = alternateMenu;
+			deviceData.menuHideFlags[alternateMenu] = MenuHideFlags.Hidden;
 			alternateMenu.itemWasSelected += UpdateAlternateMenuOnSelectionChanged;
 
 			UpdatePlayerHandleMaps();
@@ -708,90 +745,118 @@ public class EditorVR : MonoBehaviour
 		}
 	}
 
-	void UpdateCustomMenu(IMainMenu mainMenu)
+	void UpdateAlternateMenuForDevice(DeviceData deviceData)
 	{
-		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-		{
-			if (mainMenu == deviceData.mainMenu)
-			{
-				// Toggle visibility between a custom menu and the main menu
-				var customMenu = deviceData.customMenu;
-				if (customMenu != null)
-					customMenu.visible = !mainMenu.visible && !deviceData.restoreMenus.Contains(mainMenu);
-			}
-		});
+		var alternateMenu = deviceData.alternateMenu;
+		alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0;
+
+		// Move the activator button to an alternate position if the alternate menu will be shown
+		var mainMenuActivator = deviceData.mainMenuActivator;
+		if (mainMenuActivator != null)
+			mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
 	}
 
-	void UpdateRayForMenus(IMainMenu mainMenu)
+	void UpdateRayForDevice(DeviceData deviceData, Transform rayOrigin)
 	{
-		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		var mainMenu = deviceData.mainMenu;
+		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+		var customMenu = deviceData.customMenu;
+		if (mainMenu.visible || (customMenu != null && customMenu.visible))
 		{
-			if (mainMenu == deviceData.mainMenu)
-			{
-				var dpr = rayOriginPair.Value.GetComponentInChildren<DefaultProxyRay>();
-				var customMenu = deviceData.customMenu;
-				if (mainMenu.visible || (customMenu != null && customMenu.visible))
-				{
-					dpr.Hide();
-					dpr.LockRay(mainMenu);
-				}
-				else
-				{
-					dpr.UnlockRay(mainMenu);
-					dpr.Show();
-				}
-			}
-		});
+			dpr.Hide();
+			dpr.LockRay(mainMenu);
+		}
+		else
+		{
+			dpr.UnlockRay(mainMenu);
+			dpr.Show();
+		}
 	}
 
-	void OnMainMenuVisibilityChanged(IMainMenu mainMenu)
+	void UpdateMenuVisibilities()
 	{
-		UpdateCustomMenu(mainMenu);
-		UpdateRayForMenus(mainMenu);
+		var deviceDatas = new List<DeviceData>();
+		ForEachRayOrigin((proxy, pair, device, deviceData) =>
+		{
+			deviceDatas.Add(deviceData);
+		});
+
+		foreach (var deviceData in deviceDatas)
+		{
+			var alternateMenu = deviceData.alternateMenu;
+			var mainMenu = deviceData.mainMenu;
+			var customMenu = deviceData.customMenu;
+			var menuHideFlags = deviceData.menuHideFlags;
+
+			if (mainMenu == null)
+				continue;
+
+			if (alternateMenu != null && (menuHideFlags[mainMenu] == 0 || (customMenu != null && menuHideFlags[customMenu] == 0)) && menuHideFlags[alternateMenu] == 0)
+			{
+				foreach (var otherDeviceData in deviceDatas)
+				{
+					if(otherDeviceData == deviceData)
+						continue;
+
+					var otherCustomMenu = otherDeviceData.customMenu;
+					var otherHideFlags = otherDeviceData.menuHideFlags;
+					if (otherHideFlags[otherDeviceData.mainMenu] != 0 || otherCustomMenu == null || otherHideFlags[otherCustomMenu] != 0)
+					{
+						otherHideFlags[otherDeviceData.alternateMenu] &= ~MenuHideFlags.Hidden;
+					}
+				}
+
+				menuHideFlags[alternateMenu] |= MenuHideFlags.Hidden;
+			}
+
+			if (customMenu != null && menuHideFlags[mainMenu] == 0 && menuHideFlags[customMenu] == 0)
+			{
+				menuHideFlags[customMenu] |= MenuHideFlags.Hidden;
+			}
+		}
+
+		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+		{
+			var mainMenu = deviceData.mainMenu;
+			mainMenu.visible = deviceData.menuHideFlags[mainMenu] == 0;
+
+			var customMenu = deviceData.customMenu;
+			if (customMenu != null)
+				customMenu.visible = deviceData.menuHideFlags[customMenu] == 0;
+
+			UpdateAlternateMenuForDevice(deviceData);
+			UpdateRayForDevice(deviceData, rayOriginPair.Value);
+		});
+
 		UpdatePlayerHandleMaps();
 	}
 
 	void OnMainMenuActivatorHoverStarted(Transform rayOrigin)
 	{
-		ForEachRayOrigin((p, kvp, device, deviceData) =>
+		ForEachRayOrigin((p, rayOriginPair, device, deviceData) =>
 		{
-			if (kvp.Value == rayOrigin)
+			if (rayOriginPair.Value == rayOrigin)
 			{
-				var mainMenu = deviceData.mainMenu;
-				if (mainMenu.visible)
+				var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
+				foreach (var menu in menus)
 				{
-					deviceData.restoreMenus.Add(mainMenu);
-					mainMenu.visible = false;
+					deviceData.menuHideFlags[menu] |= MenuHideFlags.OverActivator;
 				}
-
-				var customMenu = deviceData.customMenu;
-				if (customMenu != null && customMenu.visible)
-				{
-					deviceData.restoreMenus.Add(customMenu);
-					customMenu.visible = false;
-				}
-
-				UpdateRayForMenus(mainMenu);
 			}
 		});
 	}
 
 	void OnMainMenuActivatorHoverEnded(Transform rayOrigin)
 	{
-		ForEachRayOrigin((p, kvp, device, deviceData) =>
+		ForEachRayOrigin((p, rayOriginPair, device, deviceData) =>
 		{
-			if (kvp.Value == rayOrigin)
+			if (rayOriginPair.Value == rayOrigin)
 			{
-				var restoreMenus = deviceData.restoreMenus;
-				foreach (var menu in restoreMenus)
+				var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
+				foreach (var menu in menus)
 				{
-					// HACK: Interfaces don't play well with null comparisons, so this is a workaround
-					if (!Equals(menu, kNull))
-						menu.visible = true;
+					deviceData.menuHideFlags[menu] &= ~MenuHideFlags.OverActivator;
 				}
-				restoreMenus.Clear();
-
-				UpdateRayForMenus(deviceData.mainMenu);
 			}
 		});
 	}
@@ -808,34 +873,15 @@ public class EditorVR : MonoBehaviour
 
 	void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
 	{
-		var updateMaps = false;
-
 		ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
 		{
 			var alternateMenu = deviceData.alternateMenu;
 			if (alternateMenu != null)
 			{
-				alternateMenu.visible = (rayOriginPair.Value == rayOrigin) && visible;
-
-				// Hide the main menu if the alternate menu is going to be visible
-				var mainMenu = deviceData.mainMenu;
-				if (mainMenu != null && alternateMenu.visible)
-				{
-					mainMenu.visible = false;
-					deviceData.restoreMenus.Remove(mainMenu);
-				}
-
-				// Move the activator button to an alternate position if the alternate menu will be shown
-				var mainMenuActivator = deviceData.mainMenuActivator;
-				if (mainMenuActivator != null)
-					mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
-
-				updateMaps = true;
+				var flags = deviceData.menuHideFlags[alternateMenu];
+				deviceData.menuHideFlags[alternateMenu] = (rayOriginPair.Value == rayOrigin) && visible ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
 			}
 		});
-
-		if (updateMaps)
-			UpdatePlayerHandleMaps();
 	}
 
 	void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
@@ -847,38 +893,8 @@ public class EditorVR : MonoBehaviour
 				var mainMenu = deviceData.mainMenu;
 				if (mainMenu != null)
 				{
-					mainMenu.visible = !mainMenu.visible;
+					deviceData.menuHideFlags[mainMenu] ^= MenuHideFlags.Hidden;
 					mainMenu.targetRayOrigin = targetRayOrigin;
-				}
-
-				// move to rest position if this is the node that made the selection
-				var mainMenuActivator = deviceData.mainMenuActivator;
-				if (mainMenuActivator != null)
-					mainMenuActivator.activatorButtonMoveAway = false;
-
-				var alternateMenu = deviceData.alternateMenu;
-				if (alternateMenu != null)
-					alternateMenu.visible = false;
-			}
-			else if (Selection.gameObjects.Length > 0)
-			{
-				// Enable the alternate menu on the other hand if the menu was opened on a hand with the alternate menu already enabled
-				var alternateMenu = deviceData.alternateMenu;
-				if (alternateMenu != null)
-				{
-					alternateMenu.visible = true;
-
-					var mainMenuActivator = deviceData.mainMenuActivator;
-					if (mainMenuActivator != null)
-						mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
-
-					// Close a menu if it was open, since it would conflict with the alternate menu
-					var mainMenu = deviceData.mainMenu;
-					if (mainMenu != null)
-					{
-						mainMenu.visible = false;
-						deviceData.restoreMenus.Remove(mainMenu);
-					}
 				}
 			}
 		});
@@ -887,7 +903,7 @@ public class EditorVR : MonoBehaviour
 	private void SpawnActions()
 	{
 		IEnumerable<Type> actionTypes = U.Object.GetImplementationsOfInterface(typeof(IAction));
-		m_AllActions = new List<IAction>();
+		m_Actions = new List<IAction>();
 		foreach (Type actionType in actionTypes)
 		{
 			// Don't treat vanilla actions or tool actions as first class actions
@@ -912,7 +928,7 @@ public class EditorVR : MonoBehaviour
 				m_MenuActions.Add(actionMenuData);
 			}
 
-			m_AllActions.Add(action);
+			m_Actions.Add(action);
 		}
 
 		m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));
@@ -940,14 +956,14 @@ public class EditorVR : MonoBehaviour
 				m_KeyboardMallets.Add(rayOriginPairValue, mallet);
 			}
 
-			m_AllProxies.Add(proxy);
+			m_Proxies.Add(proxy);
 		}
 	}
 
 	private void UpdateDefaultProxyRays()
 	{
 		// Set ray lengths based on renderer bounds
-		foreach (var proxy in m_AllProxies)
+		foreach (var proxy in m_Proxies)
 		{
 			if (!proxy.active)
 				continue;
@@ -1025,7 +1041,7 @@ public class EditorVR : MonoBehaviour
 
 	void ForEachRayOrigin(ForEachRayOriginCallback callback, bool activeOnly = true)
 	{
-		foreach (var proxy in m_AllProxies)
+		foreach (var proxy in m_Proxies)
 		{
 			if (activeOnly && !proxy.active)
 				continue;
@@ -1107,20 +1123,7 @@ public class EditorVR : MonoBehaviour
 
 						var customMenu = go.GetComponent<IMenu>();
 						deviceData.customMenu = customMenu;
-
-						var mainMenu = deviceData.mainMenu;
-
-						// We must be hovering, so respect that with this newly spawned menu
-						if (deviceData.restoreMenus.Count > 0)
-						{
-							customMenu.visible = false;
-						}
-						else
-						{
-							mainMenu.visible = false;
-							UpdateCustomMenu(mainMenu);
-							UpdateRayForMenus(mainMenu);
-						}
+						deviceData.menuHideFlags[customMenu] = 0;
 					}
 				}
 			}
@@ -1506,7 +1509,6 @@ public class EditorVR : MonoBehaviour
 		{
 			mainMenu.menuTools = m_MainMenuTools;
 			mainMenu.menuWorkspaces = m_AllWorkspaceTypes.ToList();
-			mainMenu.menuVisibilityChanged += OnMainMenuVisibilityChanged;
 			mainMenu.isToolActive = IsToolActive;
 		}
 
@@ -1679,14 +1681,10 @@ public class EditorVR : MonoBehaviour
 				UpdatePlayerHandleMaps();
 				result = spawnTool;
 			}
-		});
-
-		// In case of a despawned tool with custom menus, ray visibility needs to be updated
-		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-		{
-			var mainMenu = deviceData.mainMenu;
-			UpdateCustomMenu(mainMenu);
-			UpdateRayForMenus(mainMenu);
+			else
+			{
+				deviceData.menuHideFlags[deviceData.mainMenu] |= MenuHideFlags.Hidden;
+			}
 		});
 
 		return result;
@@ -1814,7 +1812,7 @@ public class EditorVR : MonoBehaviour
 		var cameraTransform = U.Camera.GetMainCamera().transform;
 
 		var workspace = (IWorkspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
-		m_AllWorkspaces.Add(workspace);
+		m_Workspaces.Add(workspace);
 		workspace.destroyed += OnWorkspaceDestroyed;
 		ConnectInterfaces(workspace);
 
@@ -1862,7 +1860,7 @@ public class EditorVR : MonoBehaviour
 					return false;
 
 				if (source.hoveredObject)
-					return !m_AllWorkspaces.Any(w => source.hoveredObject.transform.IsChildOf(w.transform));
+					return !m_Workspaces.Any(w => source.hoveredObject.transform.IsChildOf(w.transform));
 
 				return true;
 			});
@@ -1913,7 +1911,7 @@ public class EditorVR : MonoBehaviour
 
 	private void OnWorkspaceDestroyed(IWorkspace workspace)
 	{
-		m_AllWorkspaces.Remove(workspace);
+		m_Workspaces.Remove(workspace);
 		m_Vacuumables.Remove(workspace);
 
 		DisconnectInterfaces(workspace);
@@ -2394,7 +2392,7 @@ public class EditorVR : MonoBehaviour
 
 	Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
 	{
-		foreach (var proxy in m_AllProxies)
+		foreach (var proxy in m_Proxies)
 		{
 			Transform previewOrigin;
 			if (proxy.previewOrigins.TryGetValue(rayOrigin, out previewOrigin))
@@ -2407,7 +2405,7 @@ public class EditorVR : MonoBehaviour
 	bool IsRayActive(Transform rayOrigin)
 	{
 		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-		return dpr == null || dpr.visible;
+		return dpr == null || dpr.rayVisible;
 	}
 
 	static void ShowRay(Transform rayOrigin, bool rayOnly = false)

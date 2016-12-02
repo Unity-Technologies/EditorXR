@@ -17,5 +17,10 @@ namespace UnityEngine.VR.Workspaces
 		/// Call this in OnDestroy to inform the system
 		/// </summary>
 		event Action<IWorkspace> destroyed;
+
+		/// <summary>
+		/// Bounding box for entire workspace, including UI handles
+		/// </summary>
+		Bounds outerBounds { get; }
 	}
 }
