@@ -62,13 +62,9 @@ namespace UnityEngine.VR.Workspaces
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ResetSizeCoroutine;
 
-		/// <summary>
-		/// Bounding box for entire workspace, including UI handles
-		/// </summary>
-		public Bounds vacuumBounds
+		public Bounds outerBounds
 		{
-			get
-			{
+			get {
 				return new Bounds(contentBounds.center + Vector3.down * kExtraHeight * 0.5f,
 					new Vector3(
 						contentBounds.size.x,
@@ -77,6 +73,8 @@ namespace UnityEngine.VR.Workspaces
 						));
 			}
 		}
+
+		public Bounds vacuumBounds { get { return outerBounds; } }
 
 		public Func<GameObject, GameObject> instantiateUI { protected get; set; }
 

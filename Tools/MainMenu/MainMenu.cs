@@ -53,8 +53,6 @@ namespace UnityEngine.VR.Menus
 					m_Visible = value;
 					if (m_MainMenuUI)
 						m_MainMenuUI.visible = value;
-
-					menuVisibilityChanged(this);
 				}
 			}
 		}
@@ -83,7 +81,7 @@ namespace UnityEngine.VR.Menus
 		public Transform targetRayOrigin { private get; set; }
 		public Func<Transform, Type, bool> isToolActive { private get; set; }
 
-		public event Action<IMainMenu> menuVisibilityChanged = delegate {};
+		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
 		void Start()
 		{
