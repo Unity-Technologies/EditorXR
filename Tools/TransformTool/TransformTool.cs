@@ -123,6 +123,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
 	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
+	public Func<Transform, object, bool> lockRay { private get; set; }
+	public Func<Transform, object, bool> unlockRay { private get; set; }
 
 	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
@@ -247,6 +249,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 					setHighlight(grabbedObject.gameObject, false);
 
 					hideDefaultRay(rayOrigin, true);
+					lockRay(rayOrigin, this);
 
 					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
 					EditorApplication.delayCall += () =>
@@ -409,6 +412,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		dropObject(this, grabData.grabbedObject, grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
 
+		unlockRay(grabData.rayOrigin, this);
 		showDefaultRay(grabData.rayOrigin, true);
 	}
 

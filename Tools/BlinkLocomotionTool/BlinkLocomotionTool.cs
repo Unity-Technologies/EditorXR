@@ -8,6 +8,8 @@ using UnityEngine.VR.Utilities;
 
 public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesRayOrigin, ICustomActionMap
 {
+	const float kRotationSpeed = 100f;
+
 	private enum State
 	{
 		Inactive = 0,
@@ -28,18 +30,23 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	public Transform viewerPivot { private get; set; }
 
-	public DefaultRayVisibilityDelegate showDefaultRay { get; set; }
-	public DefaultRayVisibilityDelegate hideDefaultRay { get; set; }
-	public Transform rayOrigin { private get; set; }
-
 	public ActionMap actionMap { get { return m_BlinkActionMap; } }
 	[SerializeField]
 	private ActionMap m_BlinkActionMap;
+
+	public DefaultRayVisibilityDelegate showDefaultRay { get; set; }
+	public DefaultRayVisibilityDelegate hideDefaultRay { get; set; }
+	public Func<Transform, object, bool> lockRay { get; set; }
+	public Func<Transform, object, bool> unlockRay { get; set; }
+
+	public Transform rayOrigin { private get; set; }
 
 	private void Start()
 	{
 		m_BlinkVisualsGO = U.Object.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
 		m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
+		m_BlinkVisuals.enabled = false;
+		m_BlinkVisuals.showValidTargetIndicator = false; // We don't define valid targets, so always show green
 		m_BlinkVisualsGO.transform.parent = rayOrigin;
 		m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
 		m_BlinkVisualsGO.transform.localRotation = Quaternion.identity;
@@ -63,21 +70,37 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		if (m_State == State.Moving || (s_ActiveBlinkTool != null && s_ActiveBlinkTool != this))
 			return;
 
-		if (blinkInput.blink.wasJustPressed)
+		var yawValue = blinkInput.yaw.value;
+		if (!Mathf.Approximately(yawValue, 0))
+		{
+			viewerPivot.RotateAround(U.Camera.GetMainCamera().transform.position, Vector3.up, yawValue * kRotationSpeed * Time.unscaledDeltaTime);
+			consumeControl(blinkInput.yaw);
+		}
+
+		if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 		{
 			s_ActiveBlinkTool = this;
 			hideDefaultRay(rayOrigin);
+			lockRay(rayOrigin, this);
+
 			m_BlinkVisuals.ShowVisuals();
 
 			consumeControl(blinkInput.blink);
 		}
 		else if (s_ActiveBlinkTool == this && blinkInput.blink.wasJustReleased)
 		{
-			var outOfRange = m_BlinkVisuals.HideVisuals();
+			unlockRay(rayOrigin, this);
 			showDefaultRay(rayOrigin);
 
-			if (!outOfRange)
+			if (!m_BlinkVisuals.outOfMaxRange)
+			{
+				m_BlinkVisuals.HideVisuals();
 				StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
+			}
+			else
+			{
+				m_BlinkVisuals.enabled = false;
+			}
 
 			consumeControl(blinkInput.blink);
 		}
@@ -87,14 +110,13 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	{
 		m_State = State.Moving;
 		targetPosition = new Vector3(targetPosition.x + (viewerPivot.position.x - U.Camera.GetMainCamera().transform.position.x), viewerPivot.position.y, targetPosition.z + (viewerPivot.position.z - U.Camera.GetMainCamera().transform.position.z));
-		const float kTargetDuration = 1f;
+		const float kTargetDuration = 0.05f;
 		var currentPosition = viewerPivot.position;
-		var velocity = new Vector3();
 		var currentDuration = 0f;
 		while (currentDuration < kTargetDuration)
 		{
 			currentDuration += Time.unscaledDeltaTime;
-			currentPosition = U.Math.SmoothDamp(currentPosition, targetPosition, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+			currentPosition = Vector3.Lerp(currentPosition, targetPosition, currentDuration / kTargetDuration);
 			viewerPivot.position = currentPosition;
 			yield return null;
 		}

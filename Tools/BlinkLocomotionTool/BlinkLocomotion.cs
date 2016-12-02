@@ -8,5 +8,6 @@ namespace UnityEngine.InputNew
 		public BlinkLocomotion (ActionMap actionMap) : base (actionMap) { }
 		
 		public ButtonInputControl @blink { get { return (ButtonInputControl)this[0]; } }
+		public AxisInputControl @yaw { get { return (AxisInputControl)this[1]; } }
 	}
 }
