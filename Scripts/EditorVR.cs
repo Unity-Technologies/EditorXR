@@ -787,17 +787,16 @@ public class EditorVR : MonoBehaviour
 	void UpdateRayForDevice(DeviceData deviceData, Transform rayOrigin)
 	{
 		var mainMenu = deviceData.mainMenu;
-		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 		var customMenu = deviceData.customMenu;
 		if (mainMenu.visible || (customMenu != null && customMenu.visible))
 		{
-			dpr.Hide();
-			dpr.LockRay(mainMenu);
+			HideRay(rayOrigin);
+			LockRay(rayOrigin, mainMenu);
 		}
 		else
 		{
-			dpr.UnlockRay(mainMenu);
-			dpr.Show();
+			UnlockRay(rayOrigin, mainMenu);
+			ShowRay(rayOrigin);
 		}
 	}
 
@@ -1760,7 +1759,12 @@ public class EditorVR : MonoBehaviour
 						}
 
 						// If the tool had a custom menu, the custom menu would spawn on the opposite device
-						otherDeviceData.customMenu = null;
+						var customMenu = otherDeviceData.customMenu;
+						if (customMenu != null)
+						{
+							otherDeviceData.menuHideFlags.Remove(customMenu);
+							otherDeviceData.customMenu = null;
+						}
 					}
 				}
 			}
@@ -2009,7 +2013,6 @@ public class EditorVR : MonoBehaviour
 
 	private void UpdateMiniWorlds()
 	{
-
 		if (m_MiniWorldIgnoreListDirty)
 		{
 			UpdateMiniWorldIgnoreList();
@@ -2045,10 +2048,16 @@ public class EditorVR : MonoBehaviour
 			miniWorldRayOrigin.gameObject.SetActive(isContained);
 
 			if (isContained && !miniWorldRay.wasContained)
+			{
 				HideRay(originalRayOrigin, true);
+				LockRay(originalRayOrigin, this);
+			}
 
 			if (!isContained && miniWorldRay.wasContained)
+			{
+				UnlockRay(originalRayOrigin, this);
 				ShowRay(originalRayOrigin, true);
+			}
 
 			var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
 
@@ -2076,6 +2085,8 @@ public class EditorVR : MonoBehaviour
 						if (!Mathf.Approximately(maxSizeComponent, 0f))
 							miniWorldRay.dragObjectPreviewScale = dragObject.transform.localScale * (kPreviewScale / maxSizeComponent);
 					}
+
+					ConsumeControl(directSelectInput.select);
 				}
 			}
 
@@ -2483,13 +2494,13 @@ public class EditorVR : MonoBehaviour
 			m_StandardManipulator = GetComponentInChildren<StandardManipulator>();
 
 		if (m_StandardManipulator)
-			m_StandardManipulator.AdjustScale(camera.transform.position, matrix);
+			m_StandardManipulator.AdjustScale(camera.transform, matrix);
 
 		if (!m_ScaleManipulator)
 			m_ScaleManipulator = GetComponentInChildren<ScaleManipulator>();
 
 		if (m_ScaleManipulator)
-			m_ScaleManipulator.AdjustScale(camera.transform.position, matrix);
+			m_ScaleManipulator.AdjustScale(camera.transform, matrix);
 	}
 #endif
 
