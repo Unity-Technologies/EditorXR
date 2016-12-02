@@ -26,7 +26,12 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 
 	[SerializeField]
 	private GameObject m_LocatePlayerPrefab;
+
+	[SerializeField]
+	private GameObject m_PlayerDirectionArrowPrefab;
+	private Transform m_PlayerDirectionButton;
 	private Transform m_PlayerDirectionArrow;
+
 
 	[SerializeField]
 	private GameObject m_UIPrefab;
@@ -77,7 +82,6 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 		m_GridMaterial = U.Material.GetMaterialClone(m_ChessboardUI.grid);
 
 		var locateUI = U.Object.Instantiate(m_LocateYourselfPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LocateYourselfUI>();
-		//locateUI.locateButton.onClick.AddListener(LocateYourself);
 		locateUI.resetButton.onClick.AddListener(ResetChessboard);
 		connectInterfaces(locateUI);
 		
@@ -85,7 +89,11 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 		var locatePlayerUI = U.Object.Instantiate(m_LocatePlayerPrefab, parent, false);
 		locatePlayerUI.GetComponentInChildren<Button>().onClick.AddListener(LocatePlayer);
 		connectInterfaces(locatePlayerUI);
-		m_PlayerDirectionArrow = locatePlayerUI.transform.GetChild(0);
+		m_PlayerDirectionButton = locatePlayerUI.transform.GetChild(0);
+
+		var arrow = U.Object.Instantiate(m_PlayerDirectionArrowPrefab, parent, false);
+		arrow.transform.localPosition = new Vector3(-0.232f, 0.03149995f, 0f);
+		m_PlayerDirectionArrow = arrow.transform;
 
 		m_RelocatingMiniWorld = false;
 
@@ -296,6 +304,7 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 	bool IsPlayerOutOfBounds()
 	{
 		bool playerOutOfBounds = !m_MiniWorld.referenceBounds.Contains(VRView.viewerCamera.transform.position);
+		m_PlayerDirectionButton.gameObject.SetActive(playerOutOfBounds);
 		m_PlayerDirectionArrow.gameObject.SetActive(playerOutOfBounds);
 		return playerOutOfBounds;
 	}
@@ -310,7 +319,7 @@ public class ChessboardWorkspace : Workspace, IRayLocking, IConnectInterfaces
 		var newDir = Vector3.RotateTowards(m_PlayerDirectionArrow.transform.up, targetDir, 360.0f, 360.0f);
 
 		m_PlayerDirectionArrow.transform.localRotation = Quaternion.LookRotation(newDir);
-		m_PlayerDirectionArrow.transform.Rotate(Vector3.right, 90.0f);
+		m_PlayerDirectionArrow.transform.Rotate(Vector3.right, -90.0f);
 	}
 
 	void ScaleToTarget()
