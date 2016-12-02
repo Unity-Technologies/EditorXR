@@ -137,6 +137,7 @@ public class EditorVR : MonoBehaviour
 		public IMenu customMenu;
 		public PinnedToolButton previousToolButton;
 		public readonly Dictionary<IMenu, MenuHideFlags> menuHideFlags = new Dictionary<IMenu, MenuHideFlags>();
+		public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
 	}
 
 	private readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
@@ -518,20 +519,47 @@ public class EditorVR : MonoBehaviour
 	{
 		ForEachRayOrigin((proxy, pair, device, deviceData) =>
 		{
-			var mainMenu = deviceData.mainMenu;
-			var intersection = false;
-			var menuBounds = U.Object.GetBounds(proxy.menuOrigins[pair.Value].gameObject);
-			foreach (var workspace in m_Workspaces)
+			var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
+			foreach (var menu in menus)
 			{
-				if (menuBounds.Intersects(workspace.transform.TransformBounds(workspace.outerBounds)))
+				var menuSizes = deviceData.menuSizes;
+				var menuBounds = U.Object.GetBounds(menu.menuContent);
+				var menuBoundsSize = menuBounds.size;
+
+				// Because menus can change size, store the maximum size to avoid ping ponging visibility
+				float maxComponent;
+				if (!menuSizes.TryGetValue(menu, out maxComponent))
 				{
-					intersection = true;
-					break;
+					maxComponent = menuBoundsSize.MaxComponent();
+					menuSizes[menu] = maxComponent;
 				}
+
+				var menuHideFlags = deviceData.menuHideFlags;
+				var flags = menuHideFlags[menu];
+				var currentMaxComponent = menuBoundsSize.MaxComponent();
+				if (currentMaxComponent > maxComponent && flags == 0)
+				{
+					maxComponent = currentMaxComponent;
+					menuSizes[menu] = currentMaxComponent;
+				}
+
+				var intersection = false;
+				
+				foreach (var workspace in m_Workspaces)
+				{
+					var outerBounds = workspace.transform.TransformBounds(workspace.outerBounds);
+					if (flags == 0)
+						outerBounds.extents -= Vector3.one * maxComponent;
+
+					if (menuBounds.Intersects(outerBounds))
+					{
+						intersection = true;
+						break;
+					}
+				}
+
+				menuHideFlags[menu] = intersection ? flags | MenuHideFlags.NearWorkspace : flags & ~MenuHideFlags.NearWorkspace;
 			}
-			var menuHideFlags = deviceData.menuHideFlags;
-			var flags = menuHideFlags[mainMenu];
-			menuHideFlags[mainMenu] = intersection ? flags | MenuHideFlags.NearWorkspace : flags & ~MenuHideFlags.NearWorkspace;
 		});
 	}
 
@@ -781,6 +809,7 @@ public class EditorVR : MonoBehaviour
 			deviceDatas.Add(deviceData);
 		});
 
+		// Reconcile conflicts because menus on the same device can visually overlay each other
 		foreach (var deviceData in deviceDatas)
 		{
 			var alternateMenu = deviceData.alternateMenu;
@@ -788,9 +817,7 @@ public class EditorVR : MonoBehaviour
 			var customMenu = deviceData.customMenu;
 			var menuHideFlags = deviceData.menuHideFlags;
 
-			if (mainMenu == null)
-				continue;
-
+			// Move alternate menu to another device if it conflicts with main or custom menu
 			if (alternateMenu != null && (menuHideFlags[mainMenu] == 0 || (customMenu != null && menuHideFlags[customMenu] == 0)) && menuHideFlags[alternateMenu] == 0)
 			{
 				foreach (var otherDeviceData in deviceDatas)
@@ -800,10 +827,11 @@ public class EditorVR : MonoBehaviour
 
 					var otherCustomMenu = otherDeviceData.customMenu;
 					var otherHideFlags = otherDeviceData.menuHideFlags;
-					if (otherHideFlags[otherDeviceData.mainMenu] != 0 || otherCustomMenu == null || otherHideFlags[otherCustomMenu] != 0)
-					{
-						otherHideFlags[otherDeviceData.alternateMenu] &= ~MenuHideFlags.Hidden;
-					}
+					otherHideFlags[otherDeviceData.alternateMenu] &= ~MenuHideFlags.Hidden;
+					otherHideFlags[otherDeviceData.mainMenu] |= MenuHideFlags.Hidden;
+
+					if (otherCustomMenu != null)
+						otherHideFlags[otherCustomMenu] |= MenuHideFlags.Hidden;
 				}
 
 				menuHideFlags[alternateMenu] |= MenuHideFlags.Hidden;
@@ -815,6 +843,7 @@ public class EditorVR : MonoBehaviour
 			}
 		}
 
+		// Apply state to UI visibility
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
 			var mainMenu = deviceData.mainMenu;
@@ -893,7 +922,13 @@ public class EditorVR : MonoBehaviour
 				var mainMenu = deviceData.mainMenu;
 				if (mainMenu != null)
 				{
-					deviceData.menuHideFlags[mainMenu] ^= MenuHideFlags.Hidden;
+					var menuHideFlags = deviceData.menuHideFlags;
+					menuHideFlags[mainMenu] ^= MenuHideFlags.Hidden;
+
+					var customMenu = deviceData.customMenu;
+					if (customMenu != null)
+						menuHideFlags[customMenu] &= ~MenuHideFlags.Hidden;
+
 					mainMenu.targetRayOrigin = targetRayOrigin;
 				}
 			}

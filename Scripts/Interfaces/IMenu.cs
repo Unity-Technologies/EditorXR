@@ -14,5 +14,10 @@
 		/// GameObject that this component is attached to
 		/// </summary>
 		GameObject gameObject { get; }
+
+		/// <summary>
+		/// Root GameObject for visible menu content
+		/// </summary>
+		GameObject menuContent { get; }
 	}
 }

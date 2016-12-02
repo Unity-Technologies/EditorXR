@@ -81,6 +81,8 @@ namespace UnityEngine.VR.Menus
 		public Transform targetRayOrigin { private get; set; }
 		public Func<Transform, Type, bool> isToolActive { private get; set; }
 
+		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
+
 		void Start()
 		{
 			m_MainMenuUI = instantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
