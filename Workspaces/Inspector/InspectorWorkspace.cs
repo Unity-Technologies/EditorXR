@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ListView;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
@@ -46,7 +47,7 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 		connectInterfaces(lockUI);
 
 		var listView = m_InspectorUI.inspectorListView;
-		listView.data = new InspectorData[0];
+		listView.data = new List<InspectorData>();
 		listView.instantiateUI = instantiateUI;
 		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 		listView.setHighlight = setHighlight;
@@ -135,7 +136,7 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 
 		if (Selection.activeGameObject == null)
 		{
-			m_InspectorUI.inspectorListView.data = new InspectorData[0];
+			m_InspectorUI.inspectorListView.data = new List<InspectorData>();
 			m_SelectedObject = null;
 			return;
 		}
@@ -159,15 +160,15 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 						componentChildren.Add(SerializedPropertyToPropertyData(property, obj));
 				}
 
-				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren.ToArray()) { expanded = true };
+				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren);
 				objectChildren.Add(componentData);
 			}
 		}
 
-		var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(Selection.activeObject), objectChildren.ToArray()) { expanded = true };
+		var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(Selection.activeObject), objectChildren);
 		inspectorData.Add(objectData);
 
-		m_InspectorUI.inspectorListView.data = inspectorData.ToArray();
+		m_InspectorUI.inspectorListView.data = inspectorData;
 	}
 
 	PropertyData SerializedPropertyToPropertyData(SerializedProperty property, SerializedObject obj)
@@ -221,16 +222,18 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 
 	PropertyData GenericProperty(SerializedProperty property, SerializedObject obj)
 	{
+		var children = GetSubProperties(property, obj);
+
 		var propertyData = property.isArray
-			? new PropertyData("InspectorArrayHeaderItem", obj, null, property.Copy())
-			: new PropertyData("InspectorGenericItem", obj, null, property.Copy()) {expanded = true};
-		
-		propertyData.SetChildren(GetChildProperties(propertyData, property, obj));
+			? new PropertyData("InspectorArrayHeaderItem", obj, children, property.Copy())
+			: new PropertyData("InspectorGenericItem", obj, children, property.Copy());
+
+		propertyData.childrenChanging += m_InspectorUI.inspectorListView.OnBeforeChildrenChanged;
 
 		return propertyData;
 	}
 
-	InspectorData[] GetChildProperties(PropertyData parent, SerializedProperty property, SerializedObject obj)
+	List<InspectorData> GetSubProperties(SerializedProperty property, SerializedObject obj)
 	{
 		var children = new List<InspectorData>();
 		var iteratorProperty = property.Copy();
@@ -249,10 +252,10 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 					break;
 			}
 		}
-		return children.ToArray();
+		return children;
 	}
 
-	void OnArraySizeChanged(InspectorData[] data, PropertyData element)
+	void OnArraySizeChanged(List<InspectorData> data, PropertyData element)
 	{
 		foreach (var d in data)
 		{
@@ -270,7 +273,7 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 				if (child == element)
 				{
 					var propertyData = (PropertyData)parent;
-					propertyData.SetChildren(GetChildProperties(propertyData, propertyData.property.Copy(), propertyData.serializedObject));
+					propertyData.children = GetSubProperties(propertyData.property.Copy(), propertyData.serializedObject);
 					return true;
 				}
 

@@ -7,7 +7,7 @@ namespace UnityEngine.VR.Menus
 	/// <summary>
 	/// The main menu that can be shown on device proxies
 	/// </summary>
-	public interface IMainMenu : IUsesMenuActions
+	public interface IMainMenu : IMenu, IUsesMenuActions, ISelectTool
 	{
 		/// <summary>
 		/// The menu tools that will populate the menu
@@ -15,27 +15,21 @@ namespace UnityEngine.VR.Menus
 		List<Type> menuTools { set; }
 
 		/// <summary>
-		/// Delegate used to select tools from the menu
-		/// Transform = ray origin
-		/// Type = type of tool
-		/// Returns whether the tool was successfully selected
-		/// </summary>
-		Func<Transform, Type, bool> selectTool { set; }
-
-		/// <summary>
 		/// The workspaces that are selectable from the menu
 		/// </summary>
 		List<Type> menuWorkspaces { set; }
 
 		/// <summary>
-		/// Controls whether the menu is visible or not
+		/// The ray origin that spawned the menu and will be used for node-specific operations (e.g. selecting a tool)
 		/// </summary>
-		bool visible { get; set; }
+		Transform targetRayOrigin { set; }
 
 		/// <summary>
-		/// You must implement and call this event when the visibility of the menu changes
-		/// IMainMenu: main menu instance
+		/// Returns true if the active tool on the given ray origin is of the given type
+		/// Transform: Ray origin to check
+		/// Type: Type with which to compare
+		/// Returns whether the active tool is of the same type
 		/// </summary>
-		event Action<IMainMenu> menuVisibilityChanged;
+		Func<Transform, Type, bool> isToolActive { set; }
 	}
 }

@@ -125,7 +125,8 @@ namespace UnityEngine.VR.Utilities
 				Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
 				foreach (Renderer r in renderers)
 				{
-					b.Encapsulate(r.bounds);
+					if (r.bounds.size != Vector3.zero)
+						b.Encapsulate(r.bounds);
 				}
 
 				// As a fallback when there are no bounds, collect all transform positions

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Utilities;
@@ -41,19 +40,14 @@ public class InspectorComponentItem : InspectorListItem
 		m_ExpandArrow.gameObject.SetActive(data.children != null);
 	}
 
-	public override void UpdateSelf(float width, int depth)
+	public override void UpdateSelf(float width, int depth, bool expanded)
 	{
-		base.UpdateSelf(width, depth);
+		base.UpdateSelf(width, depth, expanded);
 
 		// Rotate arrow for expand state
 		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-												data.expanded ? kExpandedRotation : kNormalRotation,
-												kExpandArrowRotateSpeed);
-	}
-
-	public void ToggleExpanded()
-	{
-		data.expanded = !data.expanded;
+			expanded ? kExpandedRotation : kNormalRotation,
+			kExpandArrowRotateSpeed);
 	}
 
 	public void SetEnabled(bool value)

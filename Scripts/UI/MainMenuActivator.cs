@@ -67,13 +67,17 @@ namespace UnityEngine.VR.Menus
 
 		public event Action<Transform> hoverStarted = delegate {};
 		public event Action<Transform> hoverEnded = delegate {};
-		public event Action<Transform> selected = delegate {};
+		public event Action<Transform, Transform> selected = delegate {};
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
+			// A child may have used the event, but still reflect that is was hovered
 			var rayEventData = eventData as RayEventData;
 			if (rayEventData != null)
 				hoverStarted(rayEventData.rayOrigin);
+
+			if (eventData.used)
+				return;
 
 			if (m_HighlightCoroutine != null)
 				StopCoroutine(m_HighlightCoroutine);
@@ -84,9 +88,13 @@ namespace UnityEngine.VR.Menus
 
 		public void OnPointerExit(PointerEventData eventData)
 		{
+			// A child may have used the event, but still reflect that is was hovered
 			var rayEventData = eventData as RayEventData;
 			if (rayEventData != null)
 				hoverEnded(rayEventData.rayOrigin);
+
+			if (eventData.used)
+				return;
 
 			if (m_HighlightCoroutine != null)
 				StopCoroutine(m_HighlightCoroutine);
@@ -97,7 +105,8 @@ namespace UnityEngine.VR.Menus
 
 		public void OnPointerClick(PointerEventData eventData)
 		{
-			selected(rayOrigin);
+			var rayEventData = eventData as RayEventData;
+			selected(rayOrigin, rayEventData != null ? rayEventData.rayOrigin : null);
 		}
 
 		IEnumerator Highlight(bool transitionIn = true)

@@ -1,33 +1,55 @@
 ﻿using ListView;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 public class AssetData : ListViewItemData
 {
-	private const string kTemplateName = "AssetGridItem";
+	const string kTemplateName = "AssetGridItem";
 
 	public string name { get; private set; }
-	public int instanceID { get; private set; }
+	public string guid { get; private set; }
 
 	public string type { get; private set; }
 
-	public bool animating { get; set; }
-	public Object asset { get; set; }
 	public GameObject preview { get; set; }
 
-	public AssetData(string name, int instanceID, string type)
+	public Object asset
+	{
+		get
+		{
+			return m_Asset;
+		}
+		set
+		{
+			m_Asset = value;
+			if (m_Asset)
+				UpdateType(); // We lazy load assets and don't know the final type until the asset is loaded
+		}
+	}
+	Object m_Asset;
+
+	public AssetData(string name, string guid, string type)
 	{
 		template = kTemplateName;
 		this.name = name;
-		this.instanceID = instanceID;
+		this.guid = guid;
 		this.type = type;
 	}
 
-	public AssetData(AssetData original)
+	void UpdateType()
 	{
-		template = kTemplateName;
-		name = original.name;
-		instanceID = original.instanceID;
-		type = original.type;
+		if (type == "GameObject")
+		{
+			switch (PrefabUtility.GetPrefabType(asset))
+			{
+				case PrefabType.ModelPrefab:
+					type = "Model";
+					break;
+				default:
+					type = "Prefab";
+					break;
+			}
+		}
 	}
 }

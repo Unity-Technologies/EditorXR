@@ -53,8 +53,6 @@ namespace UnityEngine.VR.Menus
 					m_Visible = value;
 					if (m_MainMenuUI)
 						m_MainMenuUI.visible = value;
-
-					menuVisibilityChanged(this);
 				}
 			}
 		}
@@ -70,6 +68,7 @@ namespace UnityEngine.VR.Menus
 		private float m_LastRotationInput;
 		float m_RotationDragStartValue;
 		bool m_RotationDragThresholdExceeded;
+		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
 
 		public Func<GameObject, GameObject> instantiateUI { private get; set; }
 		public List<Type> menuTools { private get; set; }
@@ -79,7 +78,10 @@ namespace UnityEngine.VR.Menus
 		public List<ActionMenuData> menuActions { get; set; }
 		public Node? node { private get; set; }
 		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
-		public event Action<IMainMenu> menuVisibilityChanged = delegate {};
+		public Transform targetRayOrigin { private get; set; }
+		public Func<Transform, Type, bool> isToolActive { private get; set; }
+
+		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
 		void Start()
 		{
@@ -93,6 +95,7 @@ namespace UnityEngine.VR.Menus
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
 			m_MainMenuUI.SetupMenuFaces();
+			UpdateToolButtons();
 		}
 
 		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
@@ -206,21 +209,34 @@ namespace UnityEngine.VR.Menus
 					b.button.onClick.RemoveAllListeners();
 					if (isTool)
 					{
+						m_ToolButtons[type] = b;
+
 						b.button.onClick.AddListener(() =>
 						{
-							if (visible && b.hoveringRayOrigin)
-								selectTool(b.hoveringRayOrigin, selectedType);
+							if (visible && targetRayOrigin)
+							{
+								selectTool(targetRayOrigin, selectedType);
+								UpdateToolButtons();
+							}
 						});
 					}
 					else if (isWorkspace)
 					{
 						b.button.onClick.AddListener(() =>
 						{
-							if (visible && b.hoveringRayOrigin)
+							if (visible)
 								createWorkspace(selectedType);
 						});
 					}
 				});
+			}
+		}
+
+		void UpdateToolButtons()
+		{
+			foreach (var kvp in m_ToolButtons)
+			{
+				kvp.Value.selected = isToolActive(targetRayOrigin, kvp.Key);
 			}
 		}
 	}

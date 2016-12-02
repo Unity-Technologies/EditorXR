@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 
 public interface IUsesProjectFolderData
 {
@@ -6,5 +6,5 @@ public interface IUsesProjectFolderData
 	/// Set accessor for folder list data
 	/// Used to update existing implementors after lazy load completes
 	/// </summary>
-	FolderData[] folderData { set; }
+	List<FolderData> folderData { set; }
 }

@@ -67,7 +67,7 @@ namespace UnityEngine.VR.Utilities
 
 						var start = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[j]));
 						var end = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[(j + 1) % 3]));
-						var direction = end - start;
+						var direction = (end - start).normalized;
 
 						// Handle degenerate triangles
 						if (Mathf.Approximately(direction.magnitude, 0f))

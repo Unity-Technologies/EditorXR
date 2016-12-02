@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
+using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Utilities;
 
@@ -20,13 +21,6 @@ namespace UnityEngine.VR.Workspaces
 		}
 		[SerializeField]
 		bool m_AutoHighlight = true;
-
-		public Quaternion visibleLocalRotation
-		{
-			get { return m_VisibleLocalRotation; }
-			set { m_VisibleLocalRotation = value; }
-		}
-		Quaternion m_VisibleLocalRotation;
 
 		public Sprite iconSprite
 		{
@@ -139,8 +133,8 @@ namespace UnityEngine.VR.Workspaces
 		[Range(0f, 2f)]
 		float m_DelayBeforeReveal = 0.25f;
 
-		UnityBrandColorScheme.GradientPair m_OriginalGradientPair;
-		UnityBrandColorScheme.GradientPair m_HighlightGradientPair;
+		GradientPair m_OriginalGradientPair;
+		GradientPair m_HighlightGradientPair;
 		Transform m_parentTransform;
 		Vector3 m_IconDirection;
 		Material m_ButtonMaterial;
@@ -152,7 +146,6 @@ namespace UnityEngine.VR.Workspaces
 		Color m_OriginalColor;
 		Sprite m_OriginalIconSprite;
 		float m_VisibleLocalZScale;
-		Vector3 m_OriginalScale;
 
 		// The initial button reveal coroutines, before highlighting
 		Coroutine m_VisibilityCoroutine;
@@ -173,10 +166,9 @@ namespace UnityEngine.VR.Workspaces
 			this.StopCoroutine(ref m_HighlightCoroutine);
 
 			ResetColors();
-			transform.localScale = m_OriginalScale;
 		}
 
-		public void SetMaterialColors(UnityBrandColorScheme.GradientPair gradientPair)
+		public void SetMaterialColors(GradientPair gradientPair)
 		{
 			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, gradientPair.a);
 			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, gradientPair.b);
@@ -192,10 +184,9 @@ namespace UnityEngine.VR.Workspaces
 		{
 			m_OriginalColor = m_Icon.color;
 			m_ButtonMaterial = U.Material.GetMaterialClone(m_ButtonMeshRenderer);
-			m_OriginalGradientPair = new UnityBrandColorScheme.GradientPair(m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
+			m_OriginalGradientPair = new GradientPair(m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
 			m_HiddenLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, 0f);
 			m_VisibleLocalZScale = transform.localScale.z;
-			m_OriginalScale = transform.localScale;
 
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;

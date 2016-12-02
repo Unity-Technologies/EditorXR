@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
-using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Extensions;
+using UnityEngine.VR.Helpers;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Menus
 {
@@ -19,6 +20,8 @@ namespace UnityEngine.VR.Menus
 		private Transform m_GridTransform;
 		[SerializeField]
 		private SkinnedMeshRenderer m_TitleIcon;
+		[SerializeField]
+		ScrollRect m_ScrollRect;
 
 		private Material m_BorderOutlineMaterial;
 		private Vector3 m_BorderOutlineOriginalLocalScale;
@@ -31,7 +34,7 @@ namespace UnityEngine.VR.Menus
 		private const float kBorderScaleMultiplier = 1.0135f;
 		private const string kBottomGradientProperty = "_ColorBottom";
 		private const string kTopGradientProperty = "_ColorTop";
-		private readonly UnityBrandColorScheme.GradientPair kEmptyGradient = new UnityBrandColorScheme.GradientPair(UnityBrandColorScheme.light, UnityBrandColorScheme.darker);
+		private readonly GradientPair kEmptyGradient = new GradientPair(UnityBrandColorScheme.light, UnityBrandColorScheme.darker);
 
 		private void Awake()
 		{
@@ -46,7 +49,7 @@ namespace UnityEngine.VR.Menus
 			SetGradientColors(kEmptyGradient);
 		}
 
-		public void SetFaceData(string faceName, List<Transform> buttons, UnityBrandColorScheme.GradientPair gradientPair)
+		public void SetFaceData(string faceName, List<Transform> buttons, GradientPair gradientPair)
 		{
 			if (m_MenuButtons != null && m_MenuButtons.Any())
 				foreach (var button in m_MenuButtons)
@@ -67,7 +70,7 @@ namespace UnityEngine.VR.Menus
 			SetGradientColors(gradientPair);
 		}
 
-		private void SetGradientColors(UnityBrandColorScheme.GradientPair gradientPair)
+		private void SetGradientColors(GradientPair gradientPair)
 		{
 			m_BorderOutlineMaterial.SetColor(kTopGradientProperty, gradientPair.a);
 			m_BorderOutlineMaterial.SetColor(kBottomGradientProperty, gradientPair.b);
@@ -114,7 +117,7 @@ namespace UnityEngine.VR.Menus
 				m_CanvasGroup.interactable = true;
 			else
 				m_TitleIcon.SetBlendShapeWeight(0, 0);
-			
+
 			m_VisibilityCoroutine = null;
 		}
 
