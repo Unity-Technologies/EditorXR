@@ -9,7 +9,7 @@ namespace UnityEngine.VR.Tools
 	/// </summary>
 	public delegate void DefaultRayVisibilityDelegate(Transform rayOrigin, bool onlyRay = false);
 
-	public interface ICustomRay
+	public interface ICustomRay : IRayLocking
 	{
 		/// <summary>
 		/// Show the default proxy ray/cone

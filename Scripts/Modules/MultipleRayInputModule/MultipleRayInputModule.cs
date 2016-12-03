@@ -135,10 +135,7 @@ namespace UnityEngine.VR.Modules
 				}
 
 				if (source.actionMapInput.select.wasJustReleased)
-				{
 					OnSelectReleased(source);
-					consumeControl(source.actionMapInput.select);
-				}
 
 				var draggedObject = source.draggedObject;
 

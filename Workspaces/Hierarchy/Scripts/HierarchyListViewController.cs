@@ -98,14 +98,46 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
 	}
 
-	void SelectRow(int instanceID)
+	public void SelectRow(int instanceID)
 	{
 		if (data == null)
 			return;
 
 		m_SelectedRow = instanceID;
 
+		foreach (var datum in data)
+		{
+			ExpandToRow(datum, instanceID);
+		}
+
 		selectRow(instanceID);
+	}
+
+	bool ExpandToRow(HierarchyData container, int rowID, float scrollHeight = 0)
+	{
+		if (container.instanceID == rowID)
+		{
+			scrollOffset = -scrollHeight - itemSize.z;
+			return true;
+		}
+
+		scrollHeight += itemSize.z;
+
+		bool found = false;
+
+		if (container.children != null)
+		{
+			foreach (var child in container.children)
+			{
+				if (ExpandToRow(child, rowID, scrollHeight))
+					found = true;
+			}
+		}
+
+		if (found)
+			m_ExpandStates[container.instanceID] = true;
+
+		return found;
 	}
 
 	private void OnDestroy()

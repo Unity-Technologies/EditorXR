@@ -6,7 +6,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUsesHierarchyData
+public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUsesHierarchyData, ISelectionChanged
 {
 	const float kYBounds = 0.2f;
 	const float kScrollMargin = 0.03f;
@@ -183,5 +183,10 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUse
 	bool TestFilter(string type)
 	{
 		return FilterUI.TestFilter(m_FilterUI.searchQuery, type);
+	}
+
+	public void OnSelectionChanged()
+	{
+		m_HierarchyUI.listView.SelectRow(Selection.activeInstanceID);
 	}
 }

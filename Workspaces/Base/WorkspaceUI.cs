@@ -404,8 +404,8 @@ namespace UnityEngine.VR.Workspaces
 			const string kShaderBlur = "_Blur";
 			const string kShaderAlpha = "_Alpha";
 			const string kShaderVerticalOffset = "_VerticalOffset";
-
 			const float kTargetDuration = 1.25f;
+
 			var originalBlurAmount = m_TopFaceMaterial.GetFloat("_Blur");
 			var currentBlurAmount = 10f; // also the maximum blur amount
 			var currentDuration = 0f;
