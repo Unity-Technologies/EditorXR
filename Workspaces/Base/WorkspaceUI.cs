@@ -399,6 +399,42 @@ namespace UnityEngine.VR.Workspaces
 			m_TopFaceMaterial.SetFloat("_Alpha", 1f);
 		}
 
+		IEnumerator Start()
+		{
+			const string kShaderBlur = "_Blur";
+			const string kShaderAlpha = "_Alpha";
+			const string kShaderVerticalOffset = "_VerticalOffset";
+			const float kTargetDuration = 1.25f;
+
+			var originalBlurAmount = m_TopFaceMaterial.GetFloat("_Blur");
+			var currentBlurAmount = 10f; // also the maximum blur amount
+			var currentDuration = 0f;
+			var currentVelocity = 0f;
+
+			m_TopFaceMaterial.SetFloat(kShaderBlur, currentBlurAmount);
+			m_TopFaceMaterial.SetFloat(kShaderVerticalOffset, 1f); // increase the blur sample offset to amplify the effect
+			m_TopFaceMaterial.SetFloat(kShaderAlpha, 0.5f); // set partially transparent
+
+			while (currentDuration < kTargetDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				currentBlurAmount = U.Math.SmoothDamp(currentBlurAmount, originalBlurAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_TopFaceMaterial.SetFloat(kShaderBlur, currentBlurAmount);
+
+				float percentageComplete = currentDuration / kTargetDuration;
+				m_TopFaceMaterial.SetFloat(kShaderVerticalOffset, 1 - percentageComplete); // lerp back towards an offset of zero
+				m_TopFaceMaterial.SetFloat(kShaderAlpha, percentageComplete * 0.5f + 0.5f); // lerp towards fully opaque from 50% transparent
+
+				yield return null;
+			}
+
+			m_TopFaceMaterial.SetFloat(kShaderBlur, originalBlurAmount);
+			m_TopFaceMaterial.SetFloat(kShaderVerticalOffset, 0f);
+			m_TopFaceMaterial.SetFloat(kShaderAlpha, 1f);
+
+			yield return null;
+		}
+
 		void Update()
 		{
 			if (!m_DynamicFaceAdjustment)
