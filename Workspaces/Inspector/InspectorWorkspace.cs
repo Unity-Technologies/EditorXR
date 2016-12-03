@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using ListView;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChanged, IConnectInterfaces
+public class InspectorWorkspace : Workspace, IConnectInterfaces, ISelectionChanged
 {
 	public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 
@@ -19,17 +16,15 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 	[SerializeField]
 	GameObject m_LockPrefab;
 
-	[SerializeField]
-	bool m_IsLocked;
-
 	InspectorUI m_InspectorUI;
 	GameObject m_SelectedObject;
-	bool m_Scrolling;
+	LockUI m_LockUI;
 
+	bool m_Scrolling;
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
 
-	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
+	bool m_IsLocked;
 
 	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
@@ -43,16 +38,12 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_InspectorUI = contentPrefab.GetComponent<InspectorUI>();
 		
-		var lockUI = U.Object.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LockUI>();
-		connectInterfaces(lockUI);
+		m_LockUI = U.Object.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LockUI>();
+		m_LockUI.lockButtonPressed += SetIsLocked;
 
 		var listView = m_InspectorUI.inspectorListView;
+		connectInterfaces(listView);
 		listView.data = new List<InspectorData>();
-		listView.instantiateUI = instantiateUI;
-		listView.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
-		listView.setHighlight = setHighlight;
-		listView.getIsLocked = GetIsLocked;
-		listView.setIsLocked = SetIsLocked;
 		listView.arraySizeChanged += OnArraySizeChanged;
 
 		var scrollHandle = m_InspectorUI.inspectorScrollHandle;
@@ -301,15 +292,12 @@ public class InspectorWorkspace : Workspace, IGetPreviewOrigin, ISelectionChange
 		inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
 	}
 
-	bool GetIsLocked()
+	void SetIsLocked()
 	{
-		return m_IsLocked;
-	}
+		m_IsLocked = !m_IsLocked;
+		m_LockUI.UpdateIcon(m_IsLocked);
 
-	void SetIsLocked(bool isLocked)
-	{
-		m_IsLocked = isLocked;
-		if (!isLocked)
+		if (!m_IsLocked)
 			OnSelectionChanged();
 	}
 }
