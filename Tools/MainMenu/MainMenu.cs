@@ -117,8 +117,7 @@ namespace UnityEngine.VR.Menus
 				m_RotationDragStartValue = 0f;
 				m_RotationDragThresholdExceeded = false;
 
-				if (m_MainMenuUI.visible)
-					consumeControl(mainMenuInput.rotate);
+				consumeControl(mainMenuInput.rotate);
 			}
 			else
 			{

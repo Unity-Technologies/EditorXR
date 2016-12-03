@@ -8,7 +8,8 @@ using UnityEngine.VR.Utilities;
 
 public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesRayOrigin, ICustomActionMap
 {
-	const float kRotationSpeed = 100f;
+	const float kRotationSpeed = 300f;
+	const float kMoveSpeed = 5f;
 
 	private enum State
 	{
@@ -70,11 +71,33 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		if (m_State == State.Moving || (s_ActiveBlinkTool != null && s_ActiveBlinkTool != this))
 			return;
 
+		var viewerCamera = U.Camera.GetMainCamera();
+
 		var yawValue = blinkInput.yaw.value;
-		if (!Mathf.Approximately(yawValue, 0))
+		var forwardValue = blinkInput.forward.value;
+
+		if (Mathf.Abs(yawValue) > Mathf.Abs(forwardValue))
 		{
-			viewerPivot.RotateAround(U.Camera.GetMainCamera().transform.position, Vector3.up, yawValue * kRotationSpeed * Time.unscaledDeltaTime);
-			consumeControl(blinkInput.yaw);
+			if (!Mathf.Approximately(yawValue, 0))
+			{
+				yawValue = yawValue * yawValue * Mathf.Sign(yawValue);
+
+				viewerPivot.RotateAround(viewerCamera.transform.position, Vector3.up, yawValue * kRotationSpeed * Time.unscaledDeltaTime);
+				consumeControl(blinkInput.yaw);
+			}
+		}
+		else
+		{
+			if (!Mathf.Approximately(forwardValue, 0))
+			{
+				var forward = viewerCamera.transform.forward;
+				forward.y = 0;
+				forward.Normalize();
+				forwardValue = forwardValue * forwardValue * Mathf.Sign(forwardValue);
+
+				viewerPivot.Translate(forward * forwardValue * kMoveSpeed * Time.unscaledDeltaTime, Space.World);
+				consumeControl(blinkInput.forward);
+			}
 		}
 
 		if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)

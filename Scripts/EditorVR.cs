@@ -600,7 +600,7 @@ public class EditorVR : MonoBehaviour
 			foreach (var toolData in deviceData.toolData)
 			{
 				var process = toolData.tool as IProcessInput;
-				if (process != null)
+				if (process != null && ((MonoBehaviour)toolData.tool).enabled)
 					process.ProcessInput(toolData.input, ConsumeControl);
 			}
 		}
@@ -707,11 +707,6 @@ public class EditorVR : MonoBehaviour
 		HashSet<InputDevice> devices;
 		ToolData toolData;
 
-		var locomotionTool = typeof(BlinkLocomotionTool);
-		// TODO: system for switching locomotion tools
-		//if (VRSettings.loadedDeviceName == "Oculus")
-		//	locomotionTool = typeof(JoystickLocomotionTool);
-
 		var transformTool = SpawnTool(typeof(TransformTool), out devices);
 		m_ObjectGrabber = transformTool.tool as IGrabObject;
 
@@ -739,12 +734,9 @@ public class EditorVR : MonoBehaviour
 
 			// Using a shared instance of the transform tool across all device tool stacks
 			AddToolToStack(inputDevice, transformTool);
-
-			if (locomotionTool == typeof(BlinkLocomotionTool))
-			{
-				toolData = SpawnTool(locomotionTool, out devices, inputDevice);
-				AddToolToDeviceData(toolData, devices);
-			}
+			
+			toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
+			AddToolToDeviceData(toolData, devices);
 
 			var mainMenuActivator = SpawnMainMenuActivator(inputDevice);
 			deviceData.mainMenuActivator = mainMenuActivator;
@@ -764,12 +756,6 @@ public class EditorVR : MonoBehaviour
 			alternateMenu.itemWasSelected += UpdateAlternateMenuOnSelectionChanged;
 
 			UpdatePlayerHandleMaps();
-		}
-
-		if (locomotionTool == typeof(JoystickLocomotionTool))
-		{
-			toolData = SpawnTool(locomotionTool, out devices);
-			AddToolToDeviceData(toolData, devices);
 		}
 	}
 
@@ -2484,6 +2470,7 @@ public class EditorVR : MonoBehaviour
 	void PreProcessRaycastSource(Transform rayOrigin)
 	{
 		var camera = U.Camera.GetMainCamera();
+		var cameraPosition = camera.transform.position;
 		var matrix = camera.worldToCameraMatrix;
 
 		MiniWorldRay ray;
@@ -2494,13 +2481,13 @@ public class EditorVR : MonoBehaviour
 			m_StandardManipulator = GetComponentInChildren<StandardManipulator>();
 
 		if (m_StandardManipulator)
-			m_StandardManipulator.AdjustScale(camera.transform, matrix);
+			m_StandardManipulator.AdjustScale(cameraPosition, matrix);
 
 		if (!m_ScaleManipulator)
 			m_ScaleManipulator = GetComponentInChildren<ScaleManipulator>();
 
 		if (m_ScaleManipulator)
-			m_ScaleManipulator.AdjustScale(camera.transform, matrix);
+			m_ScaleManipulator.AdjustScale(cameraPosition, matrix);
 	}
 #endif
 

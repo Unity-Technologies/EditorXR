@@ -227,10 +227,10 @@ public class BlinkVisuals : MonoBehaviour
 
 	private IEnumerator AnimateHideVisuals()
 	{
-		const float kTargetScale = 0f;
-
 		m_State = State.TransitioningOut;
 		m_DetachedWorldArcPosition = m_LocatorRoot.position;
+
+		const float kTargetScale = 0f;
 
 		float smoothVelocity = 0f;
 		float scale = 1f;
@@ -241,9 +241,7 @@ public class BlinkVisuals : MonoBehaviour
 		{
 			scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			currentDuration += Time.unscaledDeltaTime;
-
 			SetColors(Color.Lerp(!showValidTargetIndicator || validTarget ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
-
 			m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
 			m_LineRenderer.SetWidth(scale, scale);
 			m_RingTransform.localScale = Vector3.Lerp(m_RingTransform.localScale, m_RingTransformOriginalScale, scale);
@@ -279,6 +277,7 @@ public class BlinkVisuals : MonoBehaviour
 				StopAllCoroutines();
 				StartCoroutine(AnimateHideVisuals());
 			}
+
 			return;
 		}
 
@@ -327,7 +326,7 @@ public class BlinkVisuals : MonoBehaviour
 		{
 			var t = (i / (float)m_MotionSphereCount) + m_MotionSphereOffset;
 			m_MotionSpheres[i].position = U.Math.CalculateCubicBezierPoint(t, m_BezierControlPoints);
-			float motionSphereScale = visible ? (validTarget == true ? m_MotionSphereOriginalScale.x : 0.05f) : 0f;
+			float motionSphereScale = visible ? (validTarget ? m_MotionSphereOriginalScale.x : 0.05f) : 0f;
 			float smoothVelocity = 0f;
 			motionSphereScale = U.Math.SmoothDamp(m_MotionSpheres[i].localScale.x, motionSphereScale, ref smoothVelocity, 3f, Mathf.Infinity, Time.unscaledDeltaTime) * Mathf.Min((m_Transform.position - m_MotionSpheres[i].position).magnitude * 4, 1f);
 			m_MotionSpheres[i].localScale = Vector3.one * motionSphereScale;

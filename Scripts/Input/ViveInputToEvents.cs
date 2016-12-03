@@ -67,8 +67,8 @@ public class ViveInputToEvents : MonoBehaviour
 			for (XorY xy = XorY.X; (int)xy <= (int)XorY.Y; xy++, a++)
 			{
 				var value = xy == XorY.X ? axisVec.x : axisVec.y;
-				const float kDeadzone = 0.05f;
-				if (Mathf.Abs(value) < kDeadzone)
+				const float kDeadZone = 0.05f;
+				if (Mathf.Abs(value) < kDeadZone)
 					value = 0f;
 
 				if (Mathf.Approximately(m_LastAxisValues[steamDeviceIndex, a], value))
