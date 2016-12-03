@@ -116,6 +116,8 @@ namespace UnityEngine.VR.Menus
 				m_RotationInputIdleTime += Time.unscaledDeltaTime;
 				m_RotationDragStartValue = 0f;
 				m_RotationDragThresholdExceeded = false;
+
+				consumeControl(mainMenuInput.rotate);
 			}
 			else
 			{
