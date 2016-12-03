@@ -12,7 +12,6 @@ namespace UnityEngine.VR.Workspaces
 	public class WorkspaceUI : MonoBehaviour
 	{
 		public event Action closeClicked = delegate {};
-		public event Action lockClicked = delegate {};
 		public event Action resetSizeClicked = delegate {};
 
 		const int kAngledFaceBlendShapeIndex = 2;
@@ -129,9 +128,6 @@ namespace UnityEngine.VR.Workspaces
 
 		[SerializeField]
 		Transform m_BackResizeIconsContainer;
-
-		[SerializeField]
-		WorkspaceButton m_LockButton;
 
 		[SerializeField]
 		GameObject m_ResetButton;
@@ -492,17 +488,9 @@ namespace UnityEngine.VR.Workspaces
 			closeClicked();
 		}
 
-		public void LockClick()
-		{
-			lockClicked();
-		}
-
 		public void ResetSizeClick()
 		{
 			resetSizeClicked();
-
-			// If the lock icon sprite is being displayed, swap back to the unlocked icon; the workspace is unlocked when the the size is reset
-			m_LockButton.alternateIconVisible = false;
 		}
 
 		IEnumerator IncreaseFrameThickness()

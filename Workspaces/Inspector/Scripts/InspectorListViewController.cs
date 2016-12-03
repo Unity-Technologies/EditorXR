@@ -7,7 +7,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight
+public class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight, IGameObjectLocking
 {
 	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -45,8 +45,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
-	public Func<bool> getIsLocked { private get; set; }
-	public Action<bool> setIsLocked { private get; set; }
+	public Action<GameObject, bool> setLocked { private get; set; }
+	public Func<GameObject, bool> isLocked { private get; set; }
 
 	public event Action<List<InspectorData>, PropertyData> arraySizeChanged = delegate {};
 
@@ -156,8 +156,9 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		var headerItem = item as InspectorHeaderItem;
 		if (headerItem)
 		{
-			headerItem.lockToggle.isOn = getIsLocked();
-			headerItem.setLocked = setIsLocked;
+			var go = (GameObject)listData.serializedObject.targetObject;
+			headerItem.lockToggle.isOn = isLocked(go);
+			headerItem.setLocked = locked => setLocked(go, locked);
 		}
 
 		item.toggleExpanded = ToggleExpanded;

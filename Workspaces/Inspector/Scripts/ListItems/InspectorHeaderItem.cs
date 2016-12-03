@@ -32,8 +32,8 @@ public class InspectorHeaderItem : InspectorListItem
 	DropDown m_LayerDropDown;
 
 	GameObject m_TargetGameObject;
-	
-	public Action<bool> setLocked { private get; set; }
+
+	public Action<bool> setLocked;
 
 	public override void Setup(InspectorData data)
 	{
@@ -109,10 +109,10 @@ public class InspectorHeaderItem : InspectorListItem
 			m_TargetGameObject.isStatic = isStatic;
 	}
 
-	public void SetLock(bool isLocked)
+	public void SetLock(bool locked)
 	{
 		if (setLocked != null)
-			setLocked(isLocked);
+			setLocked(locked);
 	}
 
 	void SetTag(int val, int[] values)
