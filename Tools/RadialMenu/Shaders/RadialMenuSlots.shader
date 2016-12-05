@@ -12,10 +12,11 @@
 		Tags { "Queue"="Geometry+2" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
 		ZWrite On
 		ZTest Greater
+		Lighting Off
 		Blend SrcAlpha OneMinusSrcAlpha
 
 		Stencil{
-			Ref 1
+			Ref 2
 			Comp equal
 		}
 
