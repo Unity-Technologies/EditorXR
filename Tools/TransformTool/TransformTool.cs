@@ -1,16 +1,15 @@
 ﻿using System;
-using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR;
+using UnityEngine.VR.Actions;
 using UnityEngine.VR.Manipulators;
 using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Actions;
 
-public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay, IProcessInput
+public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -69,7 +68,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 				m_Actions = new List<IAction>()
 				{
 					m_PivotModeToggleAction,
-					m_PivotRotationToggleAction
+					m_PivotRotationToggleAction,
+					m_ManipulatorToggleAction
 				};
 			}
 			return m_Actions;
@@ -85,15 +85,20 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	Sprite m_RotationGlobalIcon;
 	[SerializeField]
 	Sprite m_RotationLocalIcon;
+	[SerializeField]
+	Sprite m_StandardManipulatorIcon;
+	[SerializeField]
+	Sprite m_ScaleManipulatorIcon;
 
 	[SerializeField]
 	GameObject m_StandardManipulatorPrefab;
 	[SerializeField]
 	GameObject m_ScaleManipulatorPrefab;
 
-	readonly List<BaseManipulator> m_AllManipulators = new List<BaseManipulator>();
 	BaseManipulator m_CurrentManipulator;
-	int m_CurrentManipulatorIndex;
+
+	BaseManipulator m_StandardManipulator;
+	BaseManipulator m_ScaleManipulator;
 
 	Bounds m_SelectionBounds;
 	Vector3 m_TargetPosition;
@@ -118,9 +123,12 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
 	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
+	public Func<Transform, object, bool> lockRay { private get; set; }
+	public Func<Transform, object, bool> unlockRay { private get; set; }
 
 	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
+	readonly TransformAction m_ManipulatorToggleAction = new TransformAction();
 
 	Dictionary<Transform, DirectSelectionData> m_LastDirectSelection;
 	public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
@@ -131,27 +139,27 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
+	public Func<Transform, bool> isOverShoulder { private get; set; }
+
+	public Action<GameObject> deleteSceneObject { private get; set; }
+
 	void Awake()
 	{
 		m_PivotModeToggleAction.execute = TogglePivotMode;
 		UpdatePivotModeToggleIcon();
 		m_PivotRotationToggleAction.execute = TogglePivotRotation;
 		UpdatePivotRotationToggleIcon();
+		m_ManipulatorToggleAction.execute = ToggleManipulator;
+		UpdateManipulatorToggleIcon();
 
 		// Add standard and scale manipulator prefabs to a list (because you cannot add asset references directly to a serialized list)
 		if (m_StandardManipulatorPrefab != null)
-			m_AllManipulators.Add(CreateManipulator(m_StandardManipulatorPrefab));
+			m_StandardManipulator = CreateManipulator(m_StandardManipulatorPrefab);
 
 		if (m_ScaleManipulatorPrefab != null)
-			m_AllManipulators.Add(CreateManipulator(m_ScaleManipulatorPrefab));
+			m_ScaleManipulator = CreateManipulator(m_ScaleManipulatorPrefab);
 
-		m_CurrentManipulatorIndex = 0;
-		m_CurrentManipulator = m_AllManipulators[m_CurrentManipulatorIndex];
-
-		foreach (var manipulator in m_AllManipulators)
-		{
-			manipulator.gameObject.SetActive(false);
-		}
+		m_CurrentManipulator = m_StandardManipulator;
 	}
 
 	public void OnSelectionChanged()
@@ -241,6 +249,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 					setHighlight(grabbedObject.gameObject, false);
 
 					hideDefaultRay(rayOrigin, true);
+					lockRay(rayOrigin, this);
 
 					// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
 					EditorApplication.delayCall += () =>
@@ -403,6 +412,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		dropObject(this, grabData.grabbedObject, grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
 
+		unlockRay(grabData.rayOrigin, this);
 		showDefaultRay(grabData.rayOrigin, true);
 	}
 
@@ -429,6 +439,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	BaseManipulator CreateManipulator(GameObject prefab)
 	{
 		var go = U.Object.Instantiate(prefab, transform, active: false);
+		go.SetActive(false);
 		var manipulator = go.GetComponent<BaseManipulator>();
 		manipulator.translate = Translate;
 		manipulator.rotate = Rotate;
@@ -494,14 +505,18 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		m_PivotRotationToggleAction.icon = m_PivotRotation == PivotRotation.Global ? m_RotationGlobalIcon : m_RotationLocalIcon;
 	}
 
-	private void SwitchManipulator()
+	bool ToggleManipulator()
 	{
-		foreach (var manipulator in m_AllManipulators)
-			manipulator.gameObject.SetActive(false);
+		m_CurrentManipulator.gameObject.SetActive(false);
 
-		// Go to the next manipulator type in the list
-		m_CurrentManipulatorIndex = (m_CurrentManipulatorIndex + 1) % m_AllManipulators.Count;
-		m_CurrentManipulator = m_AllManipulators[m_CurrentManipulatorIndex];
+		m_CurrentManipulator = m_CurrentManipulator == m_StandardManipulator ? m_ScaleManipulator : m_StandardManipulator;
+		UpdateManipulatorToggleIcon();
 		UpdateCurrentManipulator();
+		return true;
+	}
+
+	void UpdateManipulatorToggleIcon()
+	{
+		m_ManipulatorToggleAction.icon = m_CurrentManipulator == m_StandardManipulator ? m_ScaleManipulatorIcon : m_StandardManipulatorIcon;
 	}
 }

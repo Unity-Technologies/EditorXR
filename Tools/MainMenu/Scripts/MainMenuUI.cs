@@ -55,6 +55,9 @@ namespace UnityEngine.VR.Menus
 		}
 		private int m_TargetFaceIndex;
 
+		public Dictionary<string, List<Transform>> faceButtons { get { return m_FaceButtons; } }
+		private readonly Dictionary<string, List<Transform>> m_FaceButtons = new Dictionary<string, List<Transform>>();
+
 		private const float kFaceRotationSnapAngle = 90f;
 		private const int kFaceCount = 4;
 		private const float kDefaultSnapSpeed = 10f;
@@ -74,7 +77,6 @@ namespace UnityEngine.VR.Menus
 		private MainMenuFace[] m_MenuFaces;
 		private Material m_MenuFacesMaterial;
 		private Color m_MenuFacesColor;
-		private readonly Dictionary<string, List<Transform>> m_FaceButtons = new Dictionary<string, List<Transform>>();
 		private Transform m_MenuOrigin;
 		private Transform m_AlternateMenuOrigin;
 		private Vector3 m_AlternateMenuOriginOriginalLocalScale;

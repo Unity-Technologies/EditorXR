@@ -67,9 +67,13 @@ public class ViveInputToEvents : MonoBehaviour
 			for (XorY xy = XorY.X; (int)xy <= (int)XorY.Y; xy++, a++)
 			{
 				var value = xy == XorY.X ? axisVec.x : axisVec.y;
+				const float kDeadZone = 0.05f;
+				if (Mathf.Abs(value) < kDeadZone)
+					value = 0f;
+
 				if (Mathf.Approximately(m_LastAxisValues[steamDeviceIndex, a], value))
 					continue;
-				
+
 				var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 				inputEvent.deviceType = typeof(VRInputDevice);
 				inputEvent.deviceIndex = deviceIndex;

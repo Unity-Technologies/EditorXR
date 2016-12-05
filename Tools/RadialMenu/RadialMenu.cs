@@ -69,6 +69,8 @@ namespace UnityEngine.VR.Menus
 
 		public Transform menuOrigin { get; set; }
 
+		public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
+
 		void Start()
 		{
 			m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
@@ -83,8 +85,17 @@ namespace UnityEngine.VR.Menus
 			var radialMenuInput = (RadialMenuInput)input;
 			if (radialMenuInput == null || !visible)
 				return;
+			
+			var inputDirection = radialMenuInput.navigate.vector2;
+			m_RadialMenuUI.buttonInputDirection = inputDirection;
 
-			m_RadialMenuUI.buttonInputDirection = radialMenuInput.navigate.vector2;
+			if (inputDirection != Vector2.zero)
+			{
+				// Composite controls need to be consumed separately
+				consumeControl(radialMenuInput.navigateX);
+				consumeControl(radialMenuInput.navigateY);
+			}
+
 			m_RadialMenuUI.pressedDown = radialMenuInput.selectItem.wasJustPressed;
 			if (m_RadialMenuUI.pressedDown)
 			{

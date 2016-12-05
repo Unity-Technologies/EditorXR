@@ -57,7 +57,6 @@ public class BlinkVisuals : MonoBehaviour
 	private Vector3 m_MotionSphereOriginalScale;
 	private float m_MovementMagnitudeDelta;
 	private Vector3 m_MovementVelocityDelta;
-	private bool m_OutOfMaxRange;
 	private readonly Vector3[] m_BezierControlPoints = new Vector3[4]; // Cubic
 	private Transform m_RingTransform;
 	private Vector3 m_RingTransformOriginalScale;
@@ -70,13 +69,14 @@ public class BlinkVisuals : MonoBehaviour
 	private Transform m_TubeTransform;
 	private Vector3 m_TubeTransformHiddenScale;
 	private Vector3 m_TubeTransformOriginalScale;
-	private bool m_ValidTarget;
 	private Material m_BlinkMaterial;
 	private Material m_MotionSpheresMaterial;
 
+	public bool outOfMaxRange { get { return Mathf.Abs(pointerStrength) > m_MaxArc; } }
 	public Vector3 locatorPosition { get { return locatorRoot.position; } }
 	public Transform locatorRoot { get { return m_LocatorRoot; } }
-	public bool validTarget { get { return m_ValidTarget; } }
+	public bool validTarget { get; private set; }
+	public bool showValidTargetIndicator { private get; set; }
 
 	private float pointerStrength { get { return (m_ToolPoint.forward.y + 1.0f) * 0.5f; } }
 
@@ -96,13 +96,16 @@ public class BlinkVisuals : MonoBehaviour
 
 		foreach (var renderer in m_LocatorRoot.GetComponentsInChildren<Renderer>())
 			renderer.sharedMaterial = m_BlinkMaterial;
-	}
 
-	public void Start()
-	{
+		if (!m_ToolPoint)
+			m_ToolPoint = transform;
+
+		m_RoomScaleTransform = m_RoomScaleRenderer.transform;
+		m_RoomScaleTransform.parent = m_LocatorRoot;
+		m_RoomScaleTransform.localPosition = Vector3.zero;
+		m_RoomScaleTransform.localRotation = Quaternion.identity;
+
 		m_Transform = transform;
-
-		if (m_ToolPoint == false) m_ToolPoint = transform;
 
 		m_LineRenderer.SetVertexCount(m_LineSegmentCount);
 		m_LineRenderer.useWorldSpace = true;
@@ -126,11 +129,6 @@ public class BlinkVisuals : MonoBehaviour
 		m_CurveLengthEstimate = 1.0f;
 		m_MotionSphereOffset = 0.0f;
 
-		m_RoomScaleTransform = m_RoomScaleRenderer.transform;
-		m_RoomScaleTransform.parent = m_LocatorRoot;
-		m_RoomScaleTransform.localPosition = Vector3.zero;
-		m_RoomScaleTransform.localRotation = Quaternion.identity;
-
 		m_RingTransform = m_RingRenderer.transform;
 		m_RingTransformOriginalScale = m_RingTransform.localScale;
 		m_TubeTransform = m_TubeRenderer.transform;
@@ -138,6 +136,8 @@ public class BlinkVisuals : MonoBehaviour
 		m_TubeTransformHiddenScale = new Vector3(m_TubeTransform.localScale.x, 0.0001f, m_TubeTransform.localScale.z);
 
 		ShowLine(false);
+
+		showValidTargetIndicator = true;
 	}
 
 	void Update()
@@ -163,9 +163,8 @@ public class BlinkVisuals : MonoBehaviour
 			const float kTubeHiddenDistanceThreshold = 6f;
 			m_TubeTransform.localScale = Vector3.Lerp(m_TubeTransformOriginalScale, m_TubeTransformHiddenScale, m_MovementMagnitudeDelta / kTubeHiddenDistanceThreshold);
 		}
-		else if (m_OutOfMaxRange && Mathf.Abs(pointerStrength) < m_MaxArc)
+		else if (!outOfMaxRange && m_State == State.Inactive)
 		{
-			m_OutOfMaxRange = false;
 			ShowVisuals();
 		}
 	}
@@ -184,19 +183,14 @@ public class BlinkVisuals : MonoBehaviour
 		}
 	}
 
-	public bool HideVisuals()
+	public void HideVisuals()
 	{
 		if (m_State != State.Inactive)
 		{
 			StopAllCoroutines();
 			StartCoroutine(AnimateHideVisuals());
 		}
-
-		var outOfRange = m_OutOfMaxRange;
-		m_OutOfMaxRange = false;
 		enabled = false;
-
-		return outOfRange;
 	}
 
 	private IEnumerator AnimateShowVisuals()
@@ -237,7 +231,7 @@ public class BlinkVisuals : MonoBehaviour
 		m_DetachedWorldArcPosition = m_LocatorRoot.position;
 
 		const float kTargetScale = 0f;
-		
+
 		float smoothVelocity = 0f;
 		float scale = 1f;
 		float tubeScale = m_TubeTransform.localScale.x;
@@ -247,7 +241,7 @@ public class BlinkVisuals : MonoBehaviour
 		{
 			scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			currentDuration += Time.unscaledDeltaTime;
-			SetColors(Color.Lerp(validTarget == true ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
+			SetColors(Color.Lerp(!showValidTargetIndicator || validTarget ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
 			m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
 			m_LineRenderer.SetWidth(scale, scale);
 			m_RingTransform.localScale = Vector3.Lerp(m_RingTransform.localScale, m_RingTransformOriginalScale, scale);
@@ -262,6 +256,7 @@ public class BlinkVisuals : MonoBehaviour
 			// Must set the line renderer to zero to turn it completely off
 			m_LineRenderer.SetWidth(kTargetScale, kTargetScale);
 			m_State = State.Inactive;
+
 			ShowLine(false);
 
 			for (int i = 0; i < m_MotionSphereCount; ++i)
@@ -274,11 +269,15 @@ public class BlinkVisuals : MonoBehaviour
 		m_LocatorRoot.rotation = Quaternion.identity;
 
 		// prevent rendering line when pointing to high or low
-		if (Mathf.Abs(pointerStrength) > m_MaxArc)
+		if (outOfMaxRange)
 		{
-			m_ValidTarget = false;
-			m_OutOfMaxRange = true;
-			StartCoroutine(AnimateHideVisuals());
+			validTarget = false;
+			if (m_State != State.Inactive)
+			{
+				StopAllCoroutines();
+				StartCoroutine(AnimateHideVisuals());
+			}
+
 			return;
 		}
 
@@ -297,13 +296,12 @@ public class BlinkVisuals : MonoBehaviour
 		// set the position of the locator
 		m_LocatorRoot.position = m_DetachedWorldArcPosition == null ? m_FinalPosition + kGroundOffset : (Vector3)m_DetachedWorldArcPosition;
 
-		m_ValidTarget = false;
+		validTarget = false;
 
-		// TODO: Switch to support for the new EVR collider-free system
 		var colliders = Physics.OverlapSphere(m_FinalPosition, m_Radius, m_LayerMask.value);
-		m_ValidTarget = colliders != null && colliders.Length > 0;
+		validTarget = colliders != null && colliders.Length > 0;
 
-		SetColors(m_ValidTarget ? m_ValidLocationColor : m_InvalidLocationColor);
+		SetColors(!showValidTargetIndicator || validTarget ? m_ValidLocationColor : m_InvalidLocationColor);
 
 		// calculate and send points to the line renderer
 		m_SegmentPositions = new Vector3[m_LineSegmentCount];
@@ -328,7 +326,7 @@ public class BlinkVisuals : MonoBehaviour
 		{
 			var t = (i / (float)m_MotionSphereCount) + m_MotionSphereOffset;
 			m_MotionSpheres[i].position = U.Math.CalculateCubicBezierPoint(t, m_BezierControlPoints);
-			float motionSphereScale = visible ? (m_ValidTarget == true ? m_MotionSphereOriginalScale.x : 0.05f) : 0f;
+			float motionSphereScale = visible ? (validTarget ? m_MotionSphereOriginalScale.x : 0.05f) : 0f;
 			float smoothVelocity = 0f;
 			motionSphereScale = U.Math.SmoothDamp(m_MotionSpheres[i].localScale.x, motionSphereScale, ref smoothVelocity, 3f, Mathf.Infinity, Time.unscaledDeltaTime) * Mathf.Min((m_Transform.position - m_MotionSpheres[i].position).magnitude * 4, 1f);
 			m_MotionSpheres[i].localScale = Vector3.one * motionSphereScale;

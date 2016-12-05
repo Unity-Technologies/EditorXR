@@ -56,19 +56,14 @@ namespace UnityEngine.VR.Workspaces
 		private Vector3 m_PositionStart;
 		private Vector3 m_BoundSizeStart;
 		private bool m_Dragging;
-		private bool m_DragLocked;
 		private bool m_Vacuuming;
 		bool m_Moving;
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ResetSizeCoroutine;
 
-		/// <summary>
-		/// Bounding box for entire workspace, including UI handles
-		/// </summary>
-		public Bounds vacuumBounds
+		public Bounds outerBounds
 		{
-			get
-			{
+			get {
 				return new Bounds(contentBounds.center + Vector3.down * kExtraHeight * 0.5f,
 					new Vector3(
 						contentBounds.size.x,
@@ -77,6 +72,8 @@ namespace UnityEngine.VR.Workspaces
 						));
 			}
 		}
+
+		public Bounds vacuumBounds { get { return outerBounds; } }
 
 		public Func<GameObject, GameObject> instantiateUI { protected get; set; }
 
@@ -117,7 +114,6 @@ namespace UnityEngine.VR.Workspaces
 
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
 			m_WorkspaceUI.closeClicked += OnCloseClicked;
-			m_WorkspaceUI.lockClicked += OnLockClicked;
 			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
 
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
@@ -172,7 +168,7 @@ namespace UnityEngine.VR.Workspaces
 
 		public virtual void OnHandleDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			if (m_Dragging && !m_DragLocked)
+			if (m_Dragging)
 			{
 				Vector3 dragVector = eventData.rayOrigin.position - m_DragStart;
 				Bounds bounds = contentBounds;
@@ -219,17 +215,11 @@ namespace UnityEngine.VR.Workspaces
 
 		private void Translate(Vector3 deltaPosition)
 		{
-			if (m_DragLocked)
-				return;
-
 			transform.position += deltaPosition;
 		}
 
 		private void Rotate(Quaternion deltaRotation)
 		{
-			if (m_DragLocked)
-				return;
-
 			transform.rotation *= deltaRotation;
 		}
 
@@ -240,15 +230,8 @@ namespace UnityEngine.VR.Workspaces
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
-		public virtual void OnLockClicked()
-		{
-			m_DragLocked = !m_DragLocked;
-		}
-
 		public virtual void OnResetClicked()
 		{
-			m_DragLocked = false;
-
 			this.StopCoroutine(ref m_ResetSizeCoroutine);
 
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());

@@ -6,18 +6,27 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
-using UnityObject = UnityEngine.Object;
 
 public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IConnectInterfaces
 {
-	private const float kTransitionDuration = 0.1f;
 	private const float kPositionFollow = 0.4f;
 
 	private Transform m_GrabbedObject;
 
 	private int m_NumPerRow;
 
-	public float scaleFactor { get { return m_ScaleFactor; } set { m_ScaleFactor = value; } }
+	public float scaleFactor
+	{
+		get
+		{
+			return m_ScaleFactor;
+		}
+		set
+		{
+			m_LastHiddenItemOffset = Mathf.Infinity; // Allow any change in scale to change visibility states
+			m_ScaleFactor = value;
+		}
+	}
 
 	[SerializeField]
 	private float m_ScaleFactor = 0.1f;
@@ -28,34 +37,29 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	[SerializeField]
 	private GameObject[] m_Icons;
 
+	float m_LastHiddenItemOffset;
+
+	readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
+
 	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 	public Func<string, bool> testFilter;
 
 	protected override int dataLength { get { return Mathf.CeilToInt((float) base.dataLength / m_NumPerRow); } }
-	private readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
 
-	public override AssetData[] data
+	public override List<AssetData> data
 	{
 		set
 		{
-			if (m_Data != null)
-			{
-				foreach (var data in m_Data) // Clear out visuals for old data
-				{
-					RecycleBeginning(data);
-				}
-			}
+			base.data = value;
 
-			m_Data = value;
+			m_LastHiddenItemOffset = Mathf.Infinity;
 		}
 	}
 
 	protected override void Setup()
 	{
 		base.Setup();
-
-		m_Data = new AssetData[0]; // Start with empty list to avoid null references
 
 		for (int i = 0; i < m_IconTypes.Length; i++)
 		{
@@ -68,13 +72,14 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	{
 		base.ComputeConditions();
 
-		m_NumPerRow = (int) (bounds.size.x / m_ItemSize.x);
+		var itemSize = m_ItemSize.Value;
+		m_NumPerRow = (int) (bounds.size.x / itemSize.x);
 		if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
 			return;
 
-		m_NumRows = (int) (bounds.size.z / m_ItemSize.z);
+		m_NumRows = (int) (bounds.size.z / itemSize.z);
 
-		m_StartPosition = bounds.extents.z * Vector3.forward + (bounds.extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
+		m_StartPosition = bounds.extents.z * Vector3.forward + (bounds.extents.x - itemSize.x * 0.5f) * Vector3.left;
 
 		m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
 		if (m_ScrollOffset < 0)
@@ -109,9 +114,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 				continue;
 			}
 
-			if (count / m_NumPerRow + m_DataOffset < 0)
-				RecycleGridItem(data);
-			else if (count / m_NumPerRow + m_DataOffset > m_NumRows - 1)
+			if (count / m_NumPerRow + m_DataOffset < 0 || count / m_NumPerRow + m_DataOffset > m_NumRows - 1)
 				RecycleGridItem(data);
 			else
 				UpdateVisibleItem(data, count);
@@ -122,61 +125,29 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected void RecycleGridItem(AssetData data)
 	{
-		if (!data.item)
+		AssetGridItem item;
+		if (!m_ListItems.TryGetValue(data, out item))
 			return;
-		StartCoroutine(Transition(data, true));
-	}
 
-	private IEnumerator Transition(AssetData data, bool @out)
-	{
-		var startTime = Time.realtimeSinceStartup;
-		var currTime = 0f;
-		var cancel = false;
+		m_LastHiddenItemOffset = scrollOffset;
 
-		var item = data.item;
-		data.animating = true;
+		m_ListItems.Remove(data);
 
-		var startVal = 0;
-		var endVal = 1;
-		if (@out)
+		item.SetVisibility(false, gridItem =>
 		{
-			data.item = null;
-			startVal = 1;
-			endVal = 0;
-		}
-
-		var lastScale = startVal * m_ScaleFactor;
-		item.transform.localScale = Vector3.one * lastScale;
-		while (currTime < kTransitionDuration)
-		{
-			if (!Mathf.Approximately(item.transform.localScale.x, lastScale))
-			{
-				cancel = true;
-				break;
-			}
-			currTime = Time.realtimeSinceStartup - startTime;
-			var t = currTime / kTransitionDuration;
-			item.transform.localScale = Vector3.one * Mathf.Lerp(startVal, endVal, t * t) * m_ScaleFactor;
-			lastScale = item.transform.localScale.x;
-			yield return null;
-		}
-		if (!cancel)
-		{
-			if (@out)
-			{
-				m_TemplateDictionary[data.template].pool.Add(item);
-				item.gameObject.SetActive(false);
-			}
-			item.transform.localScale = Vector3.one * m_ScaleFactor * endVal;
-			data.animating = false;
-		}
+			item.gameObject.SetActive(false);
+			m_TemplateDictionary[data.template].pool.Add(item);
+		});
 	}
 
 	protected override void UpdateVisibleItem(AssetData data, int offset)
 	{
-		if (data.item == null)
-			data.item = GetItem(data);
-		UpdateGridItem(data, offset);
+		AssetGridItem item;
+		if (!m_ListItems.TryGetValue(data, out item))
+			item = GetItem(data);
+
+		if(item)
+			UpdateGridItem(item, offset);
 	}
 
 	public override void OnScrollEnded()
@@ -195,25 +166,28 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		}
 	}
 
-	private void UpdateGridItem(AssetData data, int offset)
+	private void UpdateGridItem(AssetGridItem item, int offset)
 	{
-		var item = data.item as AssetGridItem;
-		if (!data.animating)
-			item.UpdateTransforms(m_ScaleFactor);
+		item.UpdateTransforms(m_ScaleFactor);
 
+		var itemSize = m_ItemSize.Value;
 		var t = item.transform;
-		var zOffset = m_ItemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
-		var xOffset = m_ItemSize.x * (offset % m_NumPerRow);
+		var zOffset = itemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
+		var xOffset = itemSize.x * (offset % m_NumPerRow);
 		t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, kPositionFollow);
 		t.localRotation = Quaternion.identity;
 	}
 
 	protected override AssetGridItem GetItem(AssetData data)
 	{
+		const float kJitterMargin = 0.125f;
+		if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * kJitterMargin) // Avoid jitter while scrolling rows in and out of view
+			return null;
+
 		// If this AssetData hasn't fetched its asset yet, do so now
 		if (data.asset == null)
 		{
-			data.asset = EditorUtility.InstanceIDToObject(data.instanceID);
+			data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid));
 			data.preview = data.asset as GameObject;
 		}
 
@@ -222,7 +196,8 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		item.transform.localPosition = m_StartPosition;
 		connectInterfaces(item);
 
-		StartCoroutine(Transition(data, false));
+		item.scaleFactor = m_ScaleFactor;
+		item.SetVisibility(true);
 
 		switch (data.type)
 		{
@@ -257,7 +232,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	{
 		item.fallbackTexture = null;
 		item.StartCoroutine(U.Object.GetAssetPreview(
-			AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GetAssetPath(data.instanceID)), 
+			AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid)),
 			texture => item.fallbackTexture = texture));
 	}
 }

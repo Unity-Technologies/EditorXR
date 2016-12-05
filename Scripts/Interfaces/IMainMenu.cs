@@ -20,9 +20,16 @@ namespace UnityEngine.VR.Menus
 		List<Type> menuWorkspaces { set; }
 
 		/// <summary>
-		/// You must implement and call this event when the visibility of the menu changes
-		/// IMainMenu: main menu instance
+		/// The ray origin that spawned the menu and will be used for node-specific operations (e.g. selecting a tool)
 		/// </summary>
-		event Action<IMainMenu> menuVisibilityChanged;
+		Transform targetRayOrigin { set; }
+
+		/// <summary>
+		/// Returns true if the active tool on the given ray origin is of the given type
+		/// Transform: Ray origin to check
+		/// Type: Type with which to compare
+		/// Returns whether the active tool is of the same type
+		/// </summary>
+		Func<Transform, Type, bool> isToolActive { set; }
 	}
 }
