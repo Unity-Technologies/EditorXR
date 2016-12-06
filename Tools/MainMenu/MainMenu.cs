@@ -148,7 +148,7 @@ namespace UnityEngine.VR.Menus
 					if (Mathf.Abs(flickRotation) >= kFlickDeltaThreshold
 						&& (Time.realtimeSinceStartup - m_RotationInputStartTime) < kFlickDurationThreshold)
 					{
-						m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex - (int) Mathf.Sign(flickRotation);
+						m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex + (int) Mathf.Sign(flickRotation);
 
 						// Don't allow another flick until rotation resets
 						m_RotationInputStartTime = 0f;
