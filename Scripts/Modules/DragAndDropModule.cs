@@ -53,6 +53,9 @@ public class DragAndDropModule : MonoBehaviour
 
 	public void OnRayExited(GameObject gameObject, RayEventData eventData)
 	{
+		if (!gameObject)
+			return;
+
 		var dropReceiver = gameObject.GetComponent<IDropReceiver>();
 		if (dropReceiver != null)
 		{

@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
-using UnityObject = UnityEngine.Object;
 
 public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IConnectInterfaces
 {

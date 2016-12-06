@@ -6,7 +6,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
-using UnityObject = UnityEngine.Object;
 
 public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IConnectInterfaces
 {

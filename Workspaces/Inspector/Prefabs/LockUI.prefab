@@ -204,13 +204,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 1
+  m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000012688190106}
   m_CanvasGroup: {fileID: 225000012263596680}
   m_Icon: {fileID: 114000011231580806}
   m_IconContainer: {fileID: 224000013543175994}
   m_Button: {fileID: 114000014132259166}
-  m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_AlternateIconSprite: {fileID: 0}
   m_SwapIconsOnClick: 1
   m_HighlightItems:
   - {fileID: 114000011231580806}
@@ -442,11 +443,11 @@ RectTransform:
   - {fileID: 224000010430235018}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0.5}
-  m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 0.014759451, y: 0}
+  m_AnchorMin: {x: 1, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: 0.05, y: 0}
   m_SizeDelta: {x: 0.22439998, y: 0.05}
-  m_Pivot: {x: 0, y: 0.5}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &225000012263596680
 CanvasGroup:
   m_ObjectHideFlags: 1
