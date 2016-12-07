@@ -59,6 +59,7 @@ public class CuboidLayout : UIBehaviour
 				cube.GetComponent<Renderer>().sharedMaterial = backingCubeMaterial;
 			}
 
+			// These are most likely WorkspaceButtons, so the material cloning that is done there will get stomped by this
 			foreach (var hightlight in m_HighlightCubeTransforms)
 			{
 				foreach (var child in hightlight.GetComponentsInChildren<Renderer>())

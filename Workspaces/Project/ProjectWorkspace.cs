@@ -83,7 +83,9 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 
 		m_FilterUI = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
 		foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
+		{
 			connectInterfaces(mb);
+		}
 		filterList = m_FilterList;
 
 		var sliderPrefab = U.Object.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
@@ -93,7 +95,9 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 		zoomSlider.zoomSlider.value = m_ProjectUI.assetGridView.scaleFactor;
 		zoomSlider.sliding += Scale;
 		foreach (var mb in zoomSlider.GetComponentsInChildren<MonoBehaviour>())
+		{
 			connectInterfaces(mb);
+		}
 
 		var scrollHandles = new[]
 		{

@@ -402,8 +402,6 @@ public class EditorVR : MonoBehaviour
 
 		// This will be the first call to update the player handle (input) maps, sorted by priority
 		UpdatePlayerHandleMaps();
-
-		CreateWorkspace(typeof(InspectorWorkspace));
 	}
 
 	void OnEnable()

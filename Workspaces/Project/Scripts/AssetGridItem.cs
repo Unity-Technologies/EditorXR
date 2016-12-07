@@ -97,7 +97,9 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 			m_SphereMaterial.renderQueue = kPreviewRenderQueue;
 			m_Sphere.sharedMaterial = m_SphereMaterial;
 			m_Sphere.gameObject.SetActive(true);
+
 			m_Cube.gameObject.SetActive(false);
+
 			if (m_Icon)
 				m_Icon.gameObject.SetActive(false);
 		}
@@ -109,13 +111,16 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		{
 			m_Sphere.gameObject.SetActive(true);
 			m_Cube.gameObject.SetActive(false);
+
 			if (m_Icon)
 				m_Icon.gameObject.SetActive(false);
+
 			if (!value)
 			{
 				m_Sphere.sharedMaterial.mainTexture = null;
 				return;
 			}
+
 			if (m_SphereMaterial)
 				U.Object.Destroy(m_SphereMaterial);
 
@@ -422,6 +427,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	{
 		if (m_SphereMaterial)
 			U.Object.Destroy(m_SphereMaterial);
+
 		U.Object.Destroy(m_Cube.sharedMaterial);
 	}
 

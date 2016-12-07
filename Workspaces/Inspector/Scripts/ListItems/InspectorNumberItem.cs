@@ -165,13 +165,4 @@ public class InspectorNumberItem : InspectorPropertyItem
 				break;
 		}
 	}
-
-	public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material noClipHighlightMaterial, Material[] highlightMaterials)
-	{
-		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, noClipHighlightMaterial, highlightMaterials);
-		//foreach (var button in m_IncrementDecrementButtons)
-		//{
-		//	button.buttonMeshRenderer.sharedMaterials = highlightMaterials;
-		//}
-	}
 }

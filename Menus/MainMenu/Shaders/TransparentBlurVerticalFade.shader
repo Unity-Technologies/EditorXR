@@ -10,8 +10,6 @@
 		{
 			Tags{ "Queue" = "Transparent" "LightMode" = "Always" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
 			ZWrite On
-			//Offset 1000, 1
-			//ZTest Always
 
 			SubShader{
 

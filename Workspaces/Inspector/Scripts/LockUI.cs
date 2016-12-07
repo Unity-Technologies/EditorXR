@@ -37,7 +37,9 @@ public class LockUI : MonoBehaviour, IUsesStencilRef
 	void OnDestroy()
 	{
 		foreach (var bm in m_ButtonMaterials)
+		{
 			U.Object.Destroy(bm);
+		}
 	}
 
 	public void OnLockButtonPressed()

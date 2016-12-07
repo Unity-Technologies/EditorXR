@@ -154,10 +154,9 @@ public class InspectorHeaderItem : InspectorListItem
 		m_NameField.ForceUpdateLabel();
 	}
 
-	public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material noClipHighlightMaterial, Material[] highlightMaterials)
+	public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials)
 	{
-		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, noClipHighlightMaterial, highlightMaterials);
-
+		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, highlightMaterials);
 		m_Button.sharedMaterials = highlightMaterials;
 	}
 }

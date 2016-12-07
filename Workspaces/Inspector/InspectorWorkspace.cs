@@ -19,7 +19,6 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 	InspectorUI m_InspectorUI;
 	GameObject m_SelectedObject;
 	LockUI m_LockUI;
-	Material m_LockUIMaterial;
 
 	bool m_Scrolling;
 	Vector3 m_ScrollStart;

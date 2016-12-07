@@ -25,17 +25,11 @@ namespace UnityEngine.VR.Proxies
 
 		protected Dictionary<Node, Transform> m_RayOrigins;
 
-		public virtual Dictionary<Node, Transform> rayOrigins
-		{
-			get { return m_RayOrigins; }
-		}
+		public virtual Dictionary<Node, Transform> rayOrigins { get { return m_RayOrigins; } }
 
 		public virtual TrackedObject trackedObjectInput { protected get; set; }
 
-		public virtual bool active
-		{
-			get { return true; }
-		}
+		public virtual bool active { get { return true; } }
 
 		public virtual bool hidden
 		{

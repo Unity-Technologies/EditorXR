@@ -65,7 +65,9 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 
 		m_FilterUI = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
 		foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
+		{
 			connectInterfaces(mb);
+		}
 		m_FilterUI.filterList = m_FilterList;
 
 		var hierarchyListView = m_HierarchyUI.listView;
