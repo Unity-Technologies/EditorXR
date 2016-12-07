@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
@@ -215,6 +216,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	{
 		if (m_PreviewObjectTransform)
 			U.Object.Destroy(m_PreviewObjectTransform.gameObject);
+
 		if (!data.preview)
 			return;
 
@@ -290,13 +292,26 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 
 		if (cloneItem.m_PreviewObjectTransform)
 		{
+			m_PreviewObjectClone = cloneItem.m_PreviewObjectTransform;
+
+#if UNITY_EDITOR
+			var originalPosition = m_PreviewObjectClone.position;
+			var originalRotation = m_PreviewObjectClone.rotation;
+			var originalScale = m_PreviewObjectClone.localScale;
+			m_PreviewObjectClone = PrefabUtility.ConnectGameObjectToPrefab(m_PreviewObjectClone.gameObject, data.preview).transform;
+			m_PreviewObjectClone.position = originalPosition;
+			m_PreviewObjectClone.rotation = originalRotation;
+			m_PreviewObjectClone.localScale = originalScale;
+			cloneItem.m_PreviewObjectTransform = m_PreviewObjectClone;
+#endif
+
 			cloneItem.m_Cube.gameObject.SetActive(false);
+
 			if (cloneItem.m_Icon)
 				cloneItem.m_Icon.gameObject.SetActive(false);
-			cloneItem.m_PreviewObjectTransform.gameObject.SetActive(true);
-			cloneItem.m_PreviewObjectTransform.transform.localScale = m_PreviewTargetScale;
 
-			m_PreviewObjectClone = cloneItem.m_PreviewObjectTransform;
+			m_PreviewObjectClone.gameObject.SetActive(true);
+			m_PreviewObjectClone.localScale = m_PreviewTargetScale;
 
 			// Destroy label
 			U.Object.Destroy(cloneItem.m_TextPanel.gameObject);
@@ -328,7 +343,16 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 				{
 					case "Prefab":
 					case "Model":
-						addToSpatialHash((GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
+#if UNITY_EDITOR
+						var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
+						var transform = go.transform;
+						transform.position = gridItem.transform.position;
+						transform.rotation = gridItem.transform.rotation;
+#else
+						var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+#endif
+
+						addToSpatialHash(go);
 						break;
 				}
 			}
