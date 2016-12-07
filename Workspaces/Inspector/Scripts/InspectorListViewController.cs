@@ -7,8 +7,9 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight, IGameObjectLocking
+public class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight, IGameObjectLocking, IUsesStencilRef
 {
+	const string kMaterialStencilRef = "_StencilRef";
 	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 	[SerializeField]
@@ -26,6 +27,12 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	[SerializeField]
 	Material m_NoClipBackingCube;
 
+	[SerializeField]
+	Material m_HighlightMaterial;
+
+	[SerializeField]
+	Material m_HighlightMaskMaterial;
+
 	readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
 
 	readonly Dictionary<int, bool> m_ExpandStates = new Dictionary<int, bool>(); 
@@ -40,6 +47,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			ExpandComponentRows(data);
 		}
 	}
+
+	public byte stencilRef { get; set; }
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
@@ -57,7 +66,13 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		m_RowCubeMaterial = Instantiate(m_RowCubeMaterial);
 		m_BackingCubeMaterial = Instantiate(m_BackingCubeMaterial);
 		m_TextMaterial = Instantiate(m_TextMaterial);
+		m_TextMaterial.SetInt(kMaterialStencilRef, stencilRef);
 		m_UIMaterial = Instantiate(m_UIMaterial);
+
+		m_HighlightMaterial = Instantiate(m_HighlightMaterial);
+		m_HighlightMaterial.SetInt(kMaterialStencilRef, stencilRef);
+		m_HighlightMaskMaterial = Instantiate(m_HighlightMaskMaterial);
+		m_HighlightMaskMaterial.SetInt(kMaterialStencilRef, stencilRef);
 
 		foreach (var template in m_TemplateDictionary)
 			m_TemplateSizes[template.Key] = GetObjectSize(template.Value.prefab);
@@ -77,6 +92,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
 		SetMaterialClip(m_TextMaterial, parentMatrix);
 		SetMaterialClip(m_UIMaterial, parentMatrix);
+		SetMaterialClip(m_HighlightMaterial, parentMatrix);
+		SetMaterialClip(m_HighlightMaskMaterial, parentMatrix);
 	}
 
 	protected override void UpdateItems()
@@ -141,7 +158,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 		if (!item.setup)
 		{
-			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCube);
+			var highlightMaterials = new[] { m_HighlightMaterial, m_HighlightMaskMaterial };
+			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCube, highlightMaterials);
 
 			item.setHighlight = setHighlight;
 			item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
@@ -229,5 +247,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		U.Object.Destroy(m_BackingCubeMaterial);
 		U.Object.Destroy(m_TextMaterial);
 		U.Object.Destroy(m_UIMaterial);
+		U.Object.Destroy(m_HighlightMaterial);
+		U.Object.Destroy(m_HighlightMaskMaterial);
 	}
 }

@@ -14,6 +14,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	private const float kMaxPreviewScale = 0.33f;
 	private const float kRotateSpeed = 50f;
 	private const float kTransitionDuration = 0.1f;
+	const int kPreviewRenderQueue = 9200;
 
 	[SerializeField]
 	private Text m_Text;
@@ -50,7 +51,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	Coroutine m_PreviewCoroutine;
 	Coroutine m_VisibilityCoroutine;
 
-	private Material m_TextureMaterial;
+	private Material m_SphereMaterial;
 
 	public Action<GameObject> addToSpatialHash { get; set; }
 	public Action<GameObject> removeFromSpatialHash { get; set; }
@@ -89,9 +90,16 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	{
 		set
 		{
-			m_Sphere.sharedMaterial = value;
+			if (m_SphereMaterial)
+				U.Object.Destroy(m_SphereMaterial);
+
+			m_SphereMaterial = Instantiate(value);
+			m_SphereMaterial.renderQueue = kPreviewRenderQueue;
+			m_Sphere.sharedMaterial = m_SphereMaterial;
 			m_Sphere.gameObject.SetActive(true);
+
 			m_Cube.gameObject.SetActive(false);
+
 			if (m_Icon)
 				m_Icon.gameObject.SetActive(false);
 		}
@@ -103,18 +111,22 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		{
 			m_Sphere.gameObject.SetActive(true);
 			m_Cube.gameObject.SetActive(false);
+
 			if (m_Icon)
 				m_Icon.gameObject.SetActive(false);
+
 			if (!value)
 			{
 				m_Sphere.sharedMaterial.mainTexture = null;
 				return;
 			}
-			if (m_TextureMaterial)
-				U.Object.Destroy(m_TextureMaterial);
 
-			m_TextureMaterial = new Material(Shader.Find("Standard")) { mainTexture = value };
-			m_Sphere.sharedMaterial = m_TextureMaterial;
+			if (m_SphereMaterial)
+				U.Object.Destroy(m_SphereMaterial);
+
+			m_SphereMaterial = new Material(Shader.Find("Standard")) { mainTexture = value };
+			m_SphereMaterial.renderQueue = kPreviewRenderQueue;
+			m_Sphere.sharedMaterial = m_SphereMaterial;
 		}
 	}
 
@@ -413,6 +425,9 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 
 	private void OnDestroy()
 	{
+		if (m_SphereMaterial)
+			U.Object.Destroy(m_SphereMaterial);
+
 		U.Object.Destroy(m_Cube.sharedMaterial);
 	}
 

@@ -7,7 +7,7 @@ using UnityEngine.VR.Extensions;
 
 namespace UnityEngine.VR.Workspaces
 {
-	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight
+	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight, IUsesStencilRef, IConnectInterfaces
 	{
 		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 
@@ -75,9 +75,13 @@ namespace UnityEngine.VR.Workspaces
 
 		public Bounds vacuumBounds { get { return outerBounds; } }
 
-		public Func<GameObject, GameObject> instantiateUI { protected get; set; }
+		public InstantiateUIDelegate instantiateUI { protected get; set; }
 
 		public Action<GameObject, bool> setHighlight { protected get; set; }
+
+		public byte stencilRef { get; set; }
+
+		public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 		/// <summary>
 		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
@@ -113,6 +117,7 @@ namespace UnityEngine.VR.Workspaces
 			baseObject.transform.SetParent(transform, false);
 
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
+			connectInterfaces(m_WorkspaceUI);
 			m_WorkspaceUI.closeClicked += OnCloseClicked;
 			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
 

@@ -6,7 +6,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUsesHierarchyData, ISelectionChanged
+public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged
 {
 	const float kYBounds = 0.2f;
 	const float kScrollMargin = 0.03f;
@@ -26,8 +26,6 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUse
 
 	bool m_Scrolling;
 	Transform m_HighlightContainer;
-
-	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 	public List<HierarchyData> hierarchyData
 	{
@@ -66,6 +64,10 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IConnectInterfaces, IUse
 		hierarchyData = m_HierarchyData;
 
 		m_FilterUI = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+		foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
+		{
+			connectInterfaces(mb);
+		}
 		m_FilterUI.filterList = m_FilterList;
 
 		var hierarchyListView = m_HierarchyUI.listView;

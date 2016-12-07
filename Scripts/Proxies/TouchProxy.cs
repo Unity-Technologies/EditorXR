@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Collections;
+using UnityEditor;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
@@ -21,7 +22,7 @@ namespace UnityEngine.VR.Proxies
 			m_InputToEvents = U.Object.AddComponent<OVRTouchInputToEvents>(gameObject);
 		}
 
-		public override void Start()
+		public override IEnumerator Start()
 		{
 			// Touch controllers should be spawned under a pivot that corresponds to the head with no offsets, since the
 			// local positions of the controllers will be provided that way.
@@ -33,6 +34,8 @@ namespace UnityEngine.VR.Proxies
 #else
 			transform.localPosition = Vector3.zero;
 #endif
+
+			return base.Start();
 		}
 	}
 }

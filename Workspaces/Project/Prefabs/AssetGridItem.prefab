@@ -131,11 +131,11 @@ MeshRenderer:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012846224990}
   m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
   m_Materials: []
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
@@ -159,11 +159,11 @@ MeshRenderer:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010981419404}
   m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
   m_Materials:
   - {fileID: 2100000, guid: 6772715c000354c4b9d4948c82e289fc, type: 2}
   m_SubsetIndices: 
@@ -242,7 +242,7 @@ MonoBehaviour:
   m_Cube: {fileID: 23000013864279834}
   m_Sphere: {fileID: 23000012405634146}
   m_Icon: {fileID: 0}
-  m_PreviewObject: {fileID: 0}
+  m_PreviewObjectTransform: {fileID: 0}
 --- !u!114 &114000011913880262
 MonoBehaviour:
   m_ObjectHideFlags: 1

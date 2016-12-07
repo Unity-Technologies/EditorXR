@@ -37,6 +37,7 @@ public class EditorVR : MonoBehaviour
 	const float kPreviewScale = 0.1f;
 	const float kViewerPivotTransitionTime = 0.75f;
 	const string kNull = "null";
+	const byte kMinStencilRef = 2;
 
 	// Minimum time to spend loading the project folder before yielding
 	const float kMinProjectFolderLoadTime = 0.005f;
@@ -212,6 +213,21 @@ public class EditorVR : MonoBehaviour
 	readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
 	readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
+
+	byte stencilRef
+	{
+		get { return m_StencilRef; }
+		set
+		{
+			// Stencil reference range is 0 to 255
+			m_StencilRef = (byte)Mathf.Clamp(value, kMinStencilRef, byte.MaxValue);
+
+			// Wrap
+			if (m_StencilRef == byte.MaxValue)
+				m_StencilRef = kMinStencilRef;
+		}
+	}
+	byte m_StencilRef = kMinStencilRef;
 
 	private void Awake()
 	{
@@ -428,8 +444,6 @@ public class EditorVR : MonoBehaviour
 				m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera);
 #endif
 
-			UpdateDefaultProxyRays();
-
 			// Queue up the next round
 			m_UpdatePixelRaycastModule = true;
 
@@ -506,6 +520,8 @@ public class EditorVR : MonoBehaviour
 
 		if (!m_ControllersReady)
 			return;
+
+		UpdateDefaultProxyRays();
 
 		UpdateKeyboardMallets();
 
@@ -1102,9 +1118,10 @@ public class EditorVR : MonoBehaviour
 		}, false);
 	}
 
-	GameObject InstantiateUI(GameObject prefab)
+	GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
 	{
-		var go = U.Object.Instantiate(prefab, transform);
+		var go = U.Object.Instantiate(prefab);
+		go.transform.SetParent(parent ? parent : transform, worldPositionStays);
 		foreach (var canvas in go.GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = m_EventCamera;
 
@@ -1116,8 +1133,8 @@ public class EditorVR : MonoBehaviour
 				inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
 		}
 
-		foreach (var component in go.GetComponentsInChildren<Component>(true))
-			ConnectInterfaces(component);
+		foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
+			ConnectInterfaces(mb);
 
 		return go;
 	}
@@ -1565,6 +1582,27 @@ public class EditorVR : MonoBehaviour
 		var selectTool = obj as ISelectTool;
 		if (selectTool != null)
 			selectTool.selectTool = SelectTool;
+
+		var usesStencilRef = obj as IUsesStencilRef;
+		if (usesStencilRef != null)
+		{
+			byte? stencilRef = null;
+
+			var mb = obj as MonoBehaviour;
+			if (mb)
+			{
+				var parent = mb.transform.parent;
+				if (parent)
+				{
+					// For workspaces and tools, it's likely that the stencil ref should be shared internally
+					var parentStencilRef = parent.GetComponentInParent<IUsesStencilRef>();
+					if (parentStencilRef != null)
+						stencilRef = parentStencilRef.stencilRef;
+				}
+			}
+
+			usesStencilRef.stencilRef = stencilRef ?? this.stencilRef++;
+		}
 	}
 
 	private void DisconnectInterfaces(object obj)

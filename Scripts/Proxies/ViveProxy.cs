@@ -1,4 +1,5 @@
-﻿using UnityEngine.VR.Utilities;
+﻿using System.Collections;
+using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Proxies
 {
@@ -23,12 +24,13 @@ namespace UnityEngine.VR.Proxies
 			m_InputToEvents = U.Object.AddComponent<ViveInputToEvents>(gameObject);
 		}
 
-		public override void Start()
+		public override IEnumerator Start()
 		{
-			base.Start();
 			SteamVR_Render.instance.transform.parent = gameObject.transform;
 			m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(); // TODO: AddComponent at runtime and remove it from the prefab (requires the steam device model loading to work properly in editor)            
 			m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>();
+
+			return base.Start();
 		}
 
 		public override void Update()

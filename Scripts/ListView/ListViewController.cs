@@ -34,7 +34,7 @@ namespace ListView
 
 		protected override int dataLength { get { return m_Data.Count; } }
 
-		public Func<GameObject, GameObject> instantiateUI { get; set; }
+		public InstantiateUIDelegate instantiateUI { get; set; }
 
 		protected override void UpdateItems()
 		{
@@ -93,11 +93,15 @@ namespace ListView
 			else
 			{
 				if (instantiateUI != null)
-					item = instantiateUI(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
+				{
+					item = instantiateUI(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<ItemType>();
+				}
 				else
+				{
 					item = Instantiate(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
+					item.transform.SetParent(transform, false);
+				}
 
-				item.transform.SetParent(transform, false);
 				item.Setup(data);
 			}
 
