@@ -9,5 +9,6 @@ namespace UnityEngine.InputNew
 		
 		public AxisInputControl @rotate { get { return (AxisInputControl)this[0]; } }
 		public ButtonInputControl @flickFace { get { return (ButtonInputControl)this[1]; } }
+		public AxisInputControl @blockY { get { return (AxisInputControl)this[2]; } }
 	}
 }
