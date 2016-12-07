@@ -50,13 +50,23 @@ public class CuboidLayout : UIBehaviour
 	/// Set a new material on all backing cubes (used for instanced version of the material)
 	/// </summary>
 	/// <param name="backingCubeMaterial">New material to use</param>
-	public void SetMaterials(Material backingCubeMaterial)
+	public void SetMaterials(Material backingCubeMaterial, Material[] highlightMaterials)
 	{
 		if (m_CubeTransforms != null)
 		{
 			foreach (var cube in m_CubeTransforms)
 			{
 				cube.GetComponent<Renderer>().sharedMaterial = backingCubeMaterial;
+			}
+
+			// These are most likely WorkspaceButtons, so the material cloning that is done there will get stomped by this
+			foreach (var hightlight in m_HighlightCubeTransforms)
+			{
+				foreach (var child in hightlight.GetComponentsInChildren<Renderer>())
+				{
+					if(child.transform != hightlight)
+						child.sharedMaterials = highlightMaterials;
+				}
 			}
 		}
 	}

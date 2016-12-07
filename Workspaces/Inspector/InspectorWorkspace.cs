@@ -6,7 +6,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class InspectorWorkspace : Workspace, IConnectInterfaces, ISelectionChanged
+public class InspectorWorkspace : Workspace, ISelectionChanged
 {
 	public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 
@@ -26,8 +26,6 @@ public class InspectorWorkspace : Workspace, IConnectInterfaces, ISelectionChang
 
 	bool m_IsLocked;
 
-	public ConnectInterfacesDelegate connectInterfaces { get; set; }
-
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
@@ -39,6 +37,7 @@ public class InspectorWorkspace : Workspace, IConnectInterfaces, ISelectionChang
 		m_InspectorUI = contentPrefab.GetComponent<InspectorUI>();
 		
 		m_LockUI = U.Object.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LockUI>();
+		connectInterfaces(m_LockUI);
 		m_LockUI.lockButtonPressed += SetIsLocked;
 
 		var listView = m_InspectorUI.inspectorListView;

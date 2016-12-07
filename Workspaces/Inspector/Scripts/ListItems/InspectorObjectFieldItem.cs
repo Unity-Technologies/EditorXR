@@ -13,6 +13,9 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 	[SerializeField]
 	Text m_FieldLabel;
 
+	[SerializeField]
+	MeshRenderer m_Button;
+
 	Type m_ObjectType;
 	string m_ObjectTypeName;
 
@@ -74,5 +77,11 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
 		SetObject(dropObject as Object);
+	}
+
+	public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials)
+	{
+		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, highlightMaterials);
+		m_Button.sharedMaterials = highlightMaterials;
 	}
 }

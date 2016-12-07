@@ -113,6 +113,9 @@ Material:
         name: _SrcBlend
       second: 1
     - first:
+        name: _StencilRef
+      second: 3
+    - first:
         name: _UVSec
       second: 0
     - first:

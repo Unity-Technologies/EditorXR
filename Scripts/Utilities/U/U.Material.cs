@@ -18,12 +18,28 @@
 			/// <summary>
 			/// Get a material clone; IMPORTANT: Make sure to call U.Destroy() on this material when done!
 			/// </summary>
-			/// <param name="renderer"></param>
-			/// <returns>Material</returns>
+			/// <param name="renderer">Renderer that will have its material clone and replaced</param>
+			/// <returns>Cloned material</returns>
 			public static UMaterial GetMaterialClone(Renderer renderer)
 			{
 				// The following is equivalent to renderer.material, but gets rid of the error messages in edit mode
 				return renderer.material = UObject.Instantiate(renderer.sharedMaterial);
+			}
+
+			/// <summary>
+			/// Clone all materials within a renderer; IMPORTANT: Make sure to call U.Destroy() on this material when done!
+			/// </summary>
+			/// <param name="renderer">Renderer that will have its materials cloned and replaced</param>
+			/// <returns>Cloned materials</returns>
+			public static UMaterial[] CloneMaterials(Renderer renderer)
+			{
+				var sharedMaterials = renderer.sharedMaterials;
+				for (var i = 0; i < sharedMaterials.Length; i++)
+				{
+					sharedMaterials[i] = UObject.Instantiate(sharedMaterials[i]);
+				}
+				renderer.sharedMaterials = sharedMaterials;
+				return sharedMaterials;
 			}
 
 			// from http://wiki.unity3d.com/index.php?title=HexConverter

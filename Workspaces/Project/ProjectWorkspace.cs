@@ -5,7 +5,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IConnectInterfaces
+public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 	const float kPaneMargin = 0.01f;
@@ -35,8 +35,6 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 
 	Vector3 m_ScrollStart;
 	float m_ScrollOffsetStart;
-
-	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 	public List<FolderData> folderData
 	{
@@ -84,6 +82,10 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		folderData = m_FolderData;
 
 		m_FilterUI = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+		foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
+		{
+			connectInterfaces(mb);
+		}
 		filterList = m_FilterList;
 
 		var sliderPrefab = U.Object.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
@@ -92,6 +94,10 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, IC
 		zoomSlider.zoomSlider.maxValue = kMaxScale;
 		zoomSlider.zoomSlider.value = m_ProjectUI.assetGridView.scaleFactor;
 		zoomSlider.sliding += Scale;
+		foreach (var mb in zoomSlider.GetComponentsInChildren<MonoBehaviour>())
+		{
+			connectInterfaces(mb);
+		}
 
 		var scrollHandles = new[]
 		{
