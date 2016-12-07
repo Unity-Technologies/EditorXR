@@ -31,6 +31,9 @@ public class InspectorHeaderItem : InspectorListItem
 	[SerializeField]
 	DropDown m_LayerDropDown;
 
+	[SerializeField]
+	MeshRenderer m_Button;
+
 	GameObject m_TargetGameObject;
 
 	public Action<bool> setLocked;
@@ -149,5 +152,12 @@ public class InspectorHeaderItem : InspectorListItem
 	{
 		m_NameField.text = (string)dropObject;
 		m_NameField.ForceUpdateLabel();
+	}
+
+	public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material noClipHighlightMaterial, Material[] highlightMaterials)
+	{
+		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, noClipHighlightMaterial, highlightMaterials);
+
+		m_Button.sharedMaterials = highlightMaterials;
 	}
 }

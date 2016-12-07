@@ -2,14 +2,14 @@
 {
 	SubShader
 	{
-		Tags { "Queue"="Geometry" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
-		ZWrite On
-		ZTest NotEqual
+		Tags { "Queue"="Overlay+5500" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
+		ZWrite Off
+		ZTest LEqual
 		ColorMask 0
 		
 		Stencil 
 		{
-			Ref 2
+			Ref 1
 			Comp always
 			Pass replace
 		}

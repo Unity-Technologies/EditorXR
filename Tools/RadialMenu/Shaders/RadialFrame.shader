@@ -1,4 +1,4 @@
-Shader "StandardOverlay"
+Shader "EditorVR/RadialMenu/RadialFrame"
 {
 	Properties
 	{
@@ -51,9 +51,14 @@ Shader "StandardOverlay"
 
 	SubShader
 	{
-		Tags { "Queue" = "Overlay+5000" "RenderType"="Opaque" "PerformanceChecks"="False" }
+		Tags { "Queue" = "Overlay+5503" "RenderType"="Opaque" "PerformanceChecks"="False" }
 		LOD 300
-	
+
+		Stencil
+		{
+			Ref 1
+			Comp NotEqual
+		}
 
 		// ------------------------------------------------------------------
 		//  Base forward pass (directional light, emission, lightmaps, ...)
@@ -64,7 +69,6 @@ Shader "StandardOverlay"
 
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
-			ZTest Off
 			Offset 0, -1
 
 			CGPROGRAM

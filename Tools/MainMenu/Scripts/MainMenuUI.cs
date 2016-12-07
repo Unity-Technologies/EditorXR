@@ -117,7 +117,7 @@ namespace UnityEngine.VR.Menus
 			}
 		}
 
-		public Func<GameObject, GameObject> instantiateUI { private get; set; }
+		public InstantiateUIDelegate instantiateUI { private get; set; }
 
 		public float targetRotation { get; set; }
 

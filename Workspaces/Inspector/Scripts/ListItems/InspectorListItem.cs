@@ -7,6 +7,7 @@ using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Workspaces;
 using InputField = UnityEngine.VR.UI.InputField;
 
 public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight
@@ -90,7 +91,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 		m_InputFields = GetComponentsInChildren<InputField>(true);
 	}
 
-	public void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material UIMaterial, Material textMaterial, Material noClipBackingCube)
+	public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material noClipHighlightMaterial, Material[] highlightMaterials)
 	{
 		m_NoClipBackingCube = noClipBackingCube;
 
@@ -98,11 +99,15 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 
 		var cuboidLayouts = GetComponentsInChildren<CuboidLayout>(true);
 		foreach (var cuboidLayout in cuboidLayouts)
-			cuboidLayout.SetMaterials(backingCubeMaterial);
+			cuboidLayout.SetMaterials(backingCubeMaterial, highlightMaterials);
+
+		var workspaceButtons = GetComponentsInChildren<WorkspaceButton>(true);
+		foreach (var button in workspaceButtons)
+			button.buttonMeshRenderer.sharedMaterials = highlightMaterials;
 
 		var graphics = GetComponentsInChildren<Graphic>(true);
 		foreach (var graphic in graphics)
-			graphic.material = UIMaterial;
+			graphic.material = uiMaterial;
 
 		// Texts need a specific shader
 		var texts = GetComponentsInChildren<Text>(true);

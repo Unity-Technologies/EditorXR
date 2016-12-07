@@ -9,14 +9,15 @@
 
 	SubShader
 	{
-		Tags { "Queue"="Geometry+2" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
+		Tags { "Queue"="Overlay+5502" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
 		ZWrite On
-		ZTest Greater
+		ZTest Off
 		Lighting Off
 		Blend SrcAlpha OneMinusSrcAlpha
 
-		Stencil{
-			Ref 2
+		Stencil
+		{
+			Ref 1
 			Comp equal
 		}
 

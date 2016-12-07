@@ -6,13 +6,12 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: SelectionCone
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
-  m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+  m_Name: ButtonFaceMaskClip
+  m_Shader: {fileID: 4800000, guid: 39870122dcab896479abe10e40ce1415, type: 3}
+  m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1
-  m_CustomRenderQueue: 3000
-  stringTagMap:
-    RenderType: Transparent
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
     m_TexEnvs:
@@ -72,6 +71,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - first:
+        name: _Alpha
+      second: 1
+    - first:
         name: _BumpScale
       second: 1
     - first:
@@ -82,13 +84,13 @@ Material:
       second: 1
     - first:
         name: _DstBlend
-      second: 10
+      second: 0
     - first:
         name: _GlossMapScale
       second: 1
     - first:
         name: _Glossiness
-      second: 0
+      second: 0.5
     - first:
         name: _GlossyReflections
       second: 1
@@ -97,7 +99,7 @@ Material:
       second: 0
     - first:
         name: _Mode
-      second: 3
+      second: 0
     - first:
         name: _OcclusionStrength
       second: 1
@@ -106,7 +108,7 @@ Material:
       second: 0.02
     - first:
         name: _SmoothnessTextureChannel
-      second: 1
+      second: 0
     - first:
         name: _SpecularHighlights
       second: 1
@@ -114,15 +116,24 @@ Material:
         name: _SrcBlend
       second: 1
     - first:
+        name: _StencilRef
+      second: 3
+    - first:
         name: _UVSec
       second: 0
     - first:
         name: _ZWrite
-      second: 0
+      second: 1
     m_Colors:
     - first:
         name: _Color
-      second: {r: 0.011764706, g: 0.6627451, b: 0.95686275, a: 0.39215687}
+      second: {r: 0.2146139, g: 0.20175552, b: 0.1457231, a: 1}
+    - first:
+        name: _ColorBottom
+      second: {r: 0.28137252, g: 0.28699994, b: 0.28699994, a: 1}
+    - first:
+        name: _ColorTop
+      second: {r: 0.38921565, g: 0.39699996, b: 0.39699996, a: 1}
     - first:
         name: _EmissionColor
-      second: {r: 0.0024590136, g: 0.13852465, b: 0.2, a: 1}
+      second: {r: 0, g: 0, b: 0, a: 1}

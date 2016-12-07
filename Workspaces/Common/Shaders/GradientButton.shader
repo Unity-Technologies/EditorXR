@@ -1,22 +1,23 @@
-﻿Shader "EditorVR/Workspaces/WorkspaceButton"
+﻿Shader "EditorVR/UI/GradientButton"
 {
 	Properties
 	{
 		_ColorTop("Top Color", Color) = (1,1,1,1)
 		_ColorBottom("Bottom Color", Color) = (1,1,1,1)
 		_Alpha("Alpha", Range(0.0, 1.0)) = 1.0
+		_StencilRef("StencilRef", Int) = 3
 	}
 
 	SubShader
 	{
-		Tags{ "Queue" = "Transparent+1" "LightMode" = "Always" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
+		Tags{ "Queue" = "Overlay+5101" "LightMode" = "Always" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
 		ZWrite On
-		ZTest Greater
+		ZTest LEqual
 		Blend SrcAlpha OneMinusSrcAlpha
 
 		Stencil
 		{
-			Ref 1
+			Ref[_StencilRef]
 			Comp equal
 		}
 

@@ -84,6 +84,8 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 		m_ZoomSliderUI.zoomSlider.minValue = kMinScale;
 		m_ZoomSliderUI.zoomSlider.direction = Slider.Direction.RightToLeft; // Invert direction for expected ux; zoom in as slider moves left to right
 		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
+		foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
+			connectInterfaces(mb);
 
 		var frontHandle = m_WorkspaceUI.directManipulator.GetComponent<BaseHandle>();
 		frontHandle.dragStarted += DragStarted;

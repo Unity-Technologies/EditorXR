@@ -6,9 +6,9 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: ListItemText
-  m_Shader: {fileID: 4800000, guid: 3c02d0db608bfc64784bd02246ed8142, type: 3}
-  m_ShaderKeywords: UNITY_UI_ALPHACLIP _EMISSION
+  m_Name: InputBackgroundHighlightClip
+  m_Shader: {fileID: 4800000, guid: c2384494d8f01454d87b0d8abe0bbf60, type: 3}
+  m_ShaderKeywords: 
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -71,11 +71,11 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - first:
-        name: _BumpScale
+        name: _Alpha
       second: 1
     - first:
-        name: _ColorMask
-      second: 15
+        name: _BumpScale
+      second: 1
     - first:
         name: _Cutoff
       second: 0.5
@@ -94,6 +94,9 @@ Material:
     - first:
         name: _GlossyReflections
       second: 1
+    - first:
+        name: _InvFade
+      second: 0.01
     - first:
         name: _Metallic
       second: 0
@@ -116,45 +119,30 @@ Material:
         name: _SrcBlend
       second: 1
     - first:
-        name: _Stencil
-      second: 0
-    - first:
-        name: _StencilComp
-      second: 4.79
-    - first:
-        name: _StencilOp
-      second: 0
-    - first:
-        name: _StencilReadMask
-      second: 255
-    - first:
         name: _StencilRef
       second: 3
     - first:
-        name: _StencilWriteMask
-      second: 255
-    - first:
         name: _UVSec
       second: 0
-    - first:
-        name: _UseUIAlphaClip
-      second: 1
     - first:
         name: _ZWrite
       second: 1
     m_Colors:
     - first:
-        name: _ClipCenter
-      second: {r: 0, g: 0, b: 0, a: 0}
-    - first:
         name: _ClipExtents
       second: {r: 0.1675, g: 1.7014117e+38, b: 0.22500001, a: 0}
     - first:
         name: _Color
-      second: {r: 1, g: 1, b: 1, a: 1}
+      second: {r: 0.2146139, g: 0.20175552, b: 0.1457231, a: 1}
+    - first:
+        name: _ColorBottom
+      second: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
+    - first:
+        name: _ColorTop
+      second: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}
     - first:
-        name: _Tint
-      second: {r: 1, g: 1, b: 1, a: 1}
+        name: _TintColor
+      second: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}

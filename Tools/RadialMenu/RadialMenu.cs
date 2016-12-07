@@ -65,7 +65,7 @@ namespace UnityEngine.VR.Menus
 
 		public Transform rayOrigin { private get; set; }
 
-		public Func<GameObject, GameObject> instantiateUI { get; set; }
+		public InstantiateUIDelegate instantiateUI { get; set; }
 
 		public Transform menuOrigin { get; set; }
 

@@ -70,7 +70,7 @@ namespace UnityEngine.VR.Menus
 		bool m_RotationDragThresholdExceeded;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
 
-		public Func<GameObject, GameObject> instantiateUI { private get; set; }
+		public InstantiateUIDelegate instantiateUI { private get; set; }
 		public List<Type> menuTools { private get; set; }
 		public Func<Transform, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
