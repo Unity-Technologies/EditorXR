@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.VR.Handles;
 
-public class ChessboardUI : MonoBehaviour
+public class MiniWorldUI : MonoBehaviour
 {
 	public Renderer grid { get { return m_Grid; } }
 	[SerializeField]
