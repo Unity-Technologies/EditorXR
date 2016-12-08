@@ -26,11 +26,16 @@ namespace UnityEngine.VR.Proxies
 
 		public override IEnumerator Start()
 		{
-			SteamVR_Render.instance.transform.parent = gameObject.transform;
-			m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(); // TODO: AddComponent at runtime and remove it from the prefab (requires the steam device model loading to work properly in editor)            
-			m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>();
+			while (!active)
+				yield return null;
 
-			return base.Start();
+			SteamVR_Render.instance.transform.parent = gameObject.transform;
+			m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(true);
+			m_LeftModel.enabled = true;
+			m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>(true);
+			m_RightModel.enabled = true;
+
+			yield return base.Start();
 		}
 
 		public override void Update()

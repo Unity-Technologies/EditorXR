@@ -368,7 +368,10 @@ namespace UnityEditor.VR
 		{
 			// If code is compiling, then we need to clean up the window resources before classes get re-initialized
 			if (EditorApplication.isCompiling)
+			{
 				Close();
+				return;
+			}
 
 			// Force the window to repaint every tick, since we need live updating
 			// This also allows scripts with [ExecuteInEditMode] to run
