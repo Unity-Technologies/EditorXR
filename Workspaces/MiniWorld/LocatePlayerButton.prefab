@@ -293,8 +293,8 @@ MonoBehaviour:
   m_HighlightItems:
   - {fileID: 114000012436921770}
   m_GrayscaleGradient: 0
-  m_AnimatedReveal: 0
-  m_DelayBeforeReveal: 0.5
+  m_AnimatedReveal: 1
+  m_DelayBeforeReveal: 0.125
 --- !u!222 &222000013850563780
 CanvasRenderer:
   m_ObjectHideFlags: 1

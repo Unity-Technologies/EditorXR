@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.VR;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
@@ -22,36 +24,27 @@ public class MiniWorldWorkspace : Workspace, IRayLocking
 	private GameObject m_ContentPrefab;
 
 	[SerializeField]
-	GameObject m_LocateYourselfPrefab;
+	GameObject m_RecenterUIPrefab;
 
 	[SerializeField]
 	private GameObject m_LocatePlayerPrefab;
 
 	[SerializeField]
 	private GameObject m_PlayerDirectionArrowPrefab;
-	private Transform m_PlayerDirectionButton;
-	private Transform m_PlayerDirectionArrow;
 
 	[SerializeField]
 	private GameObject m_UIPrefab;
-
-	[SerializeField]
-	private GameObject m_FilterPrefab;
 
 	private MiniWorldUI m_MiniWorldUI;
 	private MiniWorld m_MiniWorld;
 	private Material m_GridMaterial;
 	private ZoomSliderUI m_ZoomSliderUI;
-
+	private Transform m_PlayerDirectionButton;
+	private Transform m_PlayerDirectionArrow;
 	private readonly List<RayData> m_RayData = new List<RayData>(2);
 	private float m_ScaleStartDistance;
 	bool m_PanZooming;
-
-	bool m_RelocatingMiniWorld;
-	bool m_ScalingMiniWorld;
-	Vector3 m_MiniWorldTargetPosition;
-	float m_MiniWorldTargetScale;
-	float m_MiniWorldCurrentScale;
+	Coroutine m_UpdateLocationCoroutine;
 
 	private class RayData
 	{
@@ -78,31 +71,35 @@ public class MiniWorldWorkspace : Workspace, IRayLocking
 		m_MiniWorldUI = GetComponentInChildren<MiniWorldUI>();
 		m_GridMaterial = U.Material.GetMaterialClone(m_MiniWorldUI.grid);
 
-		var locateUI = U.Object.Instantiate(m_LocateYourselfPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LocateYourselfUI>();
-		locateUI.resetButton.onClick.AddListener(ResetChessboard);
-		connectInterfaces(locateUI);
+		var resetUI = U.Object.Instantiate(m_RecenterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<ResetUI>();
+		resetUI.resetButton.onClick.AddListener(ResetChessboard);
+		foreach (var mb in resetUI.GetComponentsInChildren<MonoBehaviour>())
+		{
+			connectInterfaces(mb);
+		}
 		
 		var parent = m_WorkspaceUI.frontPanel.parent;
 		var locatePlayerUI = U.Object.Instantiate(m_LocatePlayerPrefab, parent, false);
-		locatePlayerUI.GetComponentInChildren<Button>().onClick.AddListener(LocatePlayer);
-		connectInterfaces(locatePlayerUI);
 		m_PlayerDirectionButton = locatePlayerUI.transform.GetChild(0);
+		foreach (var mb in locatePlayerUI.GetComponentsInChildren<MonoBehaviour>())
+		{
+			var button = mb as Button;
+			if (button)
+				button.onClick.AddListener(RecenterOnPlayer);
+
+			connectInterfaces(mb);
+		}
 
 		var arrow = U.Object.Instantiate(m_PlayerDirectionArrowPrefab, parent, false);
 		arrow.transform.localPosition = new Vector3(-0.232f, 0.03149995f, 0f);
 		m_PlayerDirectionArrow = arrow.transform;
-
-		m_RelocatingMiniWorld = false;
-
+		
 		// Set up MiniWorld
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
 		m_MiniWorld.referenceTransform.position = Vector3.up * kInitReferenceYOffset * kInitReferenceScale;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * kInitReferenceScale;
-		m_MiniWorldCurrentScale = kInitReferenceScale;
 
-		m_MiniWorldTargetPosition = m_MiniWorld.referenceTransform.position;
-
-		// Set up ControlBox	
+		// Set up ControlBox
 		var panZoomHandle = m_MiniWorldUI.panZoomHandle;
 		// ControlBox shouldn't move with miniWorld
 		panZoomHandle.transform.parent = m_WorkspaceUI.sceneContainer;
@@ -134,16 +131,12 @@ public class MiniWorldWorkspace : Workspace, IRayLocking
 
 	private void Update()
 	{
-		if (m_RelocatingMiniWorld)
-		{
-			UpdateLocation();
-			//ScaleToTarget();
-		}
+		var inBounds = IsPlayerInBounds();
+		m_PlayerDirectionButton.gameObject.SetActive(inBounds);
+		m_PlayerDirectionArrow.gameObject.SetActive(inBounds);
 
-		if (IsPlayerOutOfBounds())
-		{
+		if (!inBounds)
 			UpdatePlayerDirectionArrow();
-		}
 
 		//Set grid height, deactivate if out of bounds
 		float gridHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
@@ -194,7 +187,6 @@ public class MiniWorldWorkspace : Workspace, IRayLocking
 		var scaleDiff = (value - m_MiniWorld.referenceTransform.localScale.x) / m_MiniWorld.referenceTransform.localScale.x;
 		m_MiniWorld.referenceTransform.position += Vector3.up * m_MiniWorld.referenceBounds.extents.y * scaleDiff;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
-		m_MiniWorldCurrentScale = value;
 	}
 
 	void OnPanZoomDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -270,67 +262,50 @@ public class MiniWorldWorkspace : Workspace, IRayLocking
 		unlockRay(handleEventData.rayOrigin, this);
 	}
 
-	void LocatePlayer()
+	void RecenterOnPlayer()
 	{
-#if UNITY_EDITOR
-		m_RelocatingMiniWorld = true;
-		m_MiniWorldTargetPosition = VRView.viewerCamera.transform.position;
-#endif
+		this.RestartCoroutine(ref m_UpdateLocationCoroutine, UpdateLocation(U.Camera.GetMainCamera().transform.position));
 	}
 
 	void ResetChessboard()
 	{
-		m_RelocatingMiniWorld = true;
-		m_ScalingMiniWorld = true;
-		m_MiniWorldTargetPosition = Vector3.up * kInitReferenceYOffset * kInitReferenceScale;
 		ScaleMiniWorld(kInitReferenceScale);
 		m_ZoomSliderUI.zoomSlider.value = m_MiniWorld.referenceTransform.localScale.x;
+
+		this.RestartCoroutine(ref m_UpdateLocationCoroutine, UpdateLocation(Vector3.up * kInitReferenceYOffset * kInitReferenceScale));
 	}
 
-	void UpdateLocation()
+	IEnumerator UpdateLocation(Vector3 targetPosition)
 	{
-		const float kSnapDistance = 0.25f;
-		const float kMoveSpeed = 2.5f;
-		var trans = m_MiniWorld.referenceTransform;
-		trans.position = Vector3.Lerp(trans.position, m_MiniWorldTargetPosition, Time.unscaledDeltaTime * kMoveSpeed);
-		if (Vector3.Distance(trans.position, m_MiniWorldTargetPosition) < kSnapDistance)
+		const float kTargetDuration = 0.25f;
+		var transform = m_MiniWorld.referenceTransform;
+		var smoothVelocity = Vector3.zero;
+		var currentDuration = 0f;
+		while (currentDuration < kTargetDuration)
 		{
-			trans.position = m_MiniWorldTargetPosition;
-			m_RelocatingMiniWorld = false;
+			currentDuration += Time.unscaledDeltaTime;
+			transform.position = U.Math.SmoothDamp(transform.position, targetPosition, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+			yield return null;
 		}
+
+		transform.position = targetPosition;
 	}
 
-	bool IsPlayerOutOfBounds()
+	bool IsPlayerInBounds()
 	{
-		bool playerOutOfBounds = !m_MiniWorld.referenceBounds.Contains(VRView.viewerCamera.transform.position);
-		m_PlayerDirectionButton.gameObject.SetActive(playerOutOfBounds);
-		m_PlayerDirectionArrow.gameObject.SetActive(playerOutOfBounds);
-		return playerOutOfBounds;
+		return m_MiniWorld.referenceBounds.Contains(U.Camera.GetMainCamera().transform.position);
 	}
 
 	void UpdatePlayerDirectionArrow()
 	{
-		var playerPos = VRView.viewerCamera.transform.position;
-		//playerPos.y = 0.0f;
+		var directionArrowTransform = m_PlayerDirectionArrow.transform;
+		var playerPos = U.Camera.GetMainCamera().transform.position;
 		var miniWorldPos = m_MiniWorld.referenceTransform.position;
-		//miniWorldPos.y = 0.0f;
 		var targetDir = playerPos - miniWorldPos;
-		var newDir = Vector3.RotateTowards(m_PlayerDirectionArrow.transform.up, targetDir, 360.0f, 360.0f);
+		var newDir = Vector3.RotateTowards(directionArrowTransform.up, targetDir, 360f, 360f);
 
-		m_PlayerDirectionArrow.transform.localRotation = Quaternion.LookRotation(newDir);
-		m_PlayerDirectionArrow.transform.Rotate(Vector3.right, -90.0f);
-	}
-
-	void ScaleToTarget()
-	{
-		const float kScaleSpeed = 1.0f;
-		const float kScaleSnap = 0.1f;
-
-		var scaleTo = Mathf.Lerp(m_MiniWorldCurrentScale, m_MiniWorldTargetScale, Time.unscaledDeltaTime * kScaleSpeed);
-		if (Mathf.Abs(scaleTo - m_MiniWorldTargetScale) < kScaleSnap)
-			scaleTo = m_MiniWorldTargetScale;
-
-		ScaleMiniWorld(scaleTo);
+		directionArrowTransform.localRotation = Quaternion.LookRotation(newDir);
+		directionArrowTransform.Rotate(Vector3.right, -90.0f);
 	}
 
 	protected override void OnDestroy()

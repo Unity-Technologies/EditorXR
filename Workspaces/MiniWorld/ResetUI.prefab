@@ -72,7 +72,7 @@ GameObject:
   - 224: {fileID: 224000014279392046}
   - 114: {fileID: 114000011551299612}
   m_Layer: 5
-  m_Name: LocateUI
+  m_Name: ResetUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -216,8 +216,8 @@ MonoBehaviour:
   m_HighlightItems:
   - {fileID: 114000011231580806}
   m_GrayscaleGradient: 0
-  m_AnimatedReveal: 0
-  m_DelayBeforeReveal: 0.5
+  m_AnimatedReveal: 1
+  m_DelayBeforeReveal: 0.125
 --- !u!114 &114000011231580806
 MonoBehaviour:
   m_ObjectHideFlags: 1

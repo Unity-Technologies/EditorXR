@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: aab2ab33b5d370b4889c8004fceb7843
-timeCreated: 1480685683
-licenseType: Pro
+timeCreated: 1481160624
+licenseType: Free
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
@@ -9,7 +9,7 @@ MonoImporter:
       type: 2}
   - m_ContentPrefab: {fileID: 1000012496997414, guid: 1c661791d5dcbf640809b4e15a35395d,
       type: 2}
-  - m_LocateYourselfPrefab: {fileID: 1000011166056430, guid: 5a75f0f2ee760e74da2620e87db7cdd5,
+  - m_RecenterUIPrefab: {fileID: 1000011166056430, guid: 5a75f0f2ee760e74da2620e87db7cdd5,
       type: 2}
   - m_LocatePlayerPrefab: {fileID: 1000013310326674, guid: 1e43cbd929c778043b08d39c463b62c3,
       type: 2}
