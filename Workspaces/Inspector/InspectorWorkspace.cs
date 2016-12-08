@@ -21,8 +21,6 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 	LockUI m_LockUI;
 
 	bool m_Scrolling;
-	Vector3 m_ScrollStart;
-	float m_ScrollOffsetStart;
 
 	bool m_IsLocked;
 
@@ -70,15 +68,12 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		m_WorkspaceUI.topHighlight.visible = true;
 		m_WorkspaceUI.amplifyTopHighlight = false;
 
-		m_ScrollStart = eventData.rayOrigin.transform.position;
-		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
-
 		m_InspectorUI.inspectorListView.OnBeginScrolling();
 	}
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		Scroll(eventData);
+		m_InspectorUI.inspectorListView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -87,8 +82,6 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 		m_WorkspaceUI.topHighlight.visible = false;
 
-		Scroll(eventData);
-		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
 		m_InspectorUI.inspectorListView.OnScrollEnded();
 	}
 
@@ -108,12 +101,6 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 			m_WorkspaceUI.topHighlight.visible = false;
 			m_WorkspaceUI.amplifyTopHighlight = false;
 		}
-	}
-
-	void Scroll(HandleEventData eventData)
-	{
-		var scrollOffset = m_ScrollOffsetStart - Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
-		m_InspectorUI.inspectorListView.scrollOffset = scrollOffset;
 	}
 
 	public void OnSelectionChanged()

@@ -15,6 +15,9 @@ namespace UnityEngine.VR.Handles
 		[SerializeField]
 		private Transform m_HandleTip;
 
+		[SerializeField]
+		private bool m_LockDragPlaneToTransform;
+
 		private const float kMaxDragDistance = 1000f;
 
 		private Plane m_Plane;
@@ -69,11 +72,18 @@ namespace UnityEngine.VR.Handles
 			var linearEventData = eventData as LinearHandleEventData;
 			m_LastPosition = linearEventData.raycastHitWorldPosition;
 
-			// Create a plane through the axis that rotates to avoid being parallel to the ray, so that you can prevent
-			// intersections at infinity
-			var forward = Quaternion.Inverse(transform.rotation) * (eventData.rayOrigin.position - transform.position);
-			forward.z = 0;
-			m_Plane.SetNormalAndPosition(transform.rotation * forward.normalized, transform.position);
+			if (m_LockDragPlaneToTransform)
+			{
+				m_Plane.SetNormalAndPosition(transform.up, transform.position);
+			}
+			else
+			{
+				// Create a plane through the axis that rotates to avoid being parallel to the ray, so that you can prevent
+				// intersections at infinity
+				var forward = Quaternion.Inverse(transform.rotation) * (eventData.rayOrigin.position - transform.position);
+				forward.z = 0;
+				m_Plane.SetNormalAndPosition(transform.rotation * forward.normalized, transform.position);
+			}
 
 			UpdateHandleTip(linearEventData);
 
@@ -85,10 +95,17 @@ namespace UnityEngine.VR.Handles
 			Transform rayOrigin = eventData.rayOrigin;
 			Vector3 worldPosition = m_LastPosition;
 
-			// Continue to rotate plane, so that the ray direction isn't parallel to the plane
-			var forward = Quaternion.Inverse(transform.rotation) * (rayOrigin.position - transform.position);
-			forward.z = 0;
-			m_Plane.SetNormalAndPosition(transform.rotation * forward.normalized, transform.position);
+			if (m_LockDragPlaneToTransform)
+			{
+				m_Plane.SetNormalAndPosition(transform.up, transform.position);
+			}
+			else
+			{
+				// Continue to rotate plane, so that the ray direction isn't parallel to the plane
+				var forward = Quaternion.Inverse(transform.rotation) * (rayOrigin.position - transform.position);
+				forward.z = 0;
+				m_Plane.SetNormalAndPosition(transform.rotation * forward.normalized, transform.position);
+			}
 
 			float distance = 0f;
 			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
@@ -98,14 +115,9 @@ namespace UnityEngine.VR.Handles
 			var linearEventData = eventData as LinearHandleEventData;
 			linearEventData.raycastHitWorldPosition = worldPosition;
 
-			var deltaPosition = worldPosition - m_LastPosition;
-			m_LastPosition = worldPosition;
+			eventData.deltaPosition = Vector3.Project(worldPosition - m_LastPosition, transform.forward);
 
-			deltaPosition = transform.InverseTransformVector(deltaPosition);
-			deltaPosition.x = 0;
-			deltaPosition.y = 0;
-			deltaPosition = transform.TransformVector(deltaPosition);
-			eventData.deltaPosition = deltaPosition;
+			m_LastPosition = worldPosition;
 
 			UpdateHandleTip(linearEventData);
 
