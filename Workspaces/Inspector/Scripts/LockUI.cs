@@ -1,13 +1,11 @@
 using System;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR;
 using UnityEngine.VR.Tools;
+using UnityEngine.VR.Utilities;
 
-public class LockUI : MonoBehaviour, IGameObjectLocking
+public class LockUI : MonoBehaviour, IUsesStencilRef
 {
 	[SerializeField]
 	Image m_LockImage;
@@ -18,29 +16,40 @@ public class LockUI : MonoBehaviour, IGameObjectLocking
 	[SerializeField]
 	Sprite m_UnlockIcon;
 
-	public Action<GameObject, bool> setLocked { private get; set; }
-	public Func<GameObject, bool> isLocked { private get; set; }
-	
+	List<Material> m_ButtonMaterials = new List<Material>();
+
+	public byte stencilRef { get; set; }
+
+	public event Action lockButtonPressed;
+
 	void Start()
 	{
-		UpdateIcon();
+		var mr = GetComponentInChildren<MeshRenderer>();
+		foreach (var sm in mr.sharedMaterials)
+		{
+			var material = Instantiate<Material>(sm);
+			material.SetInt("_StencilRef", stencilRef);
+			m_ButtonMaterials.Add(material);
+		}
+		mr.sharedMaterials = m_ButtonMaterials.ToArray();
+	}
+
+	void OnDestroy()
+	{
+		foreach (var bm in m_ButtonMaterials)
+		{
+			U.Object.Destroy(bm);
+		}
 	}
 
 	public void OnLockButtonPressed()
 	{
-#if UNITY_EDITOR
-		var go = Selection.activeGameObject;
-		setLocked(go, !isLocked(go));
-#endif
-		UpdateIcon();
+		if (lockButtonPressed != null)
+			lockButtonPressed();
 	}
 
-	void UpdateIcon()
+	public void UpdateIcon(bool locked)
 	{
-		var locked = false;
-#if UNITY_EDITOR
-		locked = isLocked(Selection.activeGameObject);
-#endif
 		m_LockImage.sprite = locked ? m_LockIcon : m_UnlockIcon;
 	}
 }

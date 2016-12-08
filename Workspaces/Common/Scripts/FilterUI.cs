@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class FilterUI : MonoBehaviour
+public class FilterUI : MonoBehaviour, IUsesStencilRef
 {
 	private const string kAllText = "All";
 
@@ -38,12 +39,20 @@ public class FilterUI : MonoBehaviour
 	[SerializeField]
 	CanvasGroup m_ButtonListCanvasGroup;
 
+	[SerializeField]
+	MeshRenderer m_Background;
+
+	public string searchQuery { get { return m_SearchQuery; } }
+	string m_SearchQuery = string.Empty;
+
 	private FilterButtonUI[] m_VisibilityButtons;
 	Coroutine m_ShowUICoroutine;
 	Coroutine m_HideUICoroutine;
 	Coroutine m_ShowButtonListCoroutine;
 	Coroutine m_HideButtonListCoroutine;
 	float m_HiddenButtonListYSpacing;
+	List<string> m_FilterTypes;
+	Material m_BackgroundMaterial;
 
 	public List<string> filterList
 	{
@@ -53,7 +62,6 @@ public class FilterUI : MonoBehaviour
 			if (m_VisibilityButtons != null)
 				foreach (var button in m_VisibilityButtons)
 					U.Object.Destroy(button.gameObject);
-
 
 			m_FilterTypes = value;
 			m_FilterTypes.Sort();
@@ -76,15 +84,22 @@ public class FilterUI : MonoBehaviour
 		}
 	}
 
-	private List<string> m_FilterTypes;
-
-	public string searchQuery { get { return m_SearchQuery; } }
-	private string m_SearchQuery = string.Empty;
-
+	public byte stencilRef { get; set; }
 
 	void Awake()
 	{
 		m_HiddenButtonListYSpacing = -m_ButtonListGrid.cellSize.y;
+	}
+
+	void Start()
+	{
+		m_BackgroundMaterial = U.Material.GetMaterialClone(m_Background);
+		m_BackgroundMaterial.SetInt("_StencilRef", stencilRef);
+	}
+
+	void OnDestroy()
+	{
+		U.Object.Destroy(m_BackgroundMaterial);
 	}
 
 	public void SetListVisibility(bool show)

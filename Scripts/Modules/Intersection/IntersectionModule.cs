@@ -62,6 +62,10 @@ namespace UnityEngine.VR.Modules
 						Array.Sort(intersections, (a, b) => (a.bounds.center - testerBoundsCenter).magnitude.CompareTo((b.bounds.center - testerBoundsCenter).magnitude));
 						foreach (var obj in intersections)
 						{
+							// Ignore destroyed objects
+							if (!obj)
+								continue;
+
 							// Ignore inactive objects
 							if (!obj.gameObject.activeInHierarchy)
 								continue;

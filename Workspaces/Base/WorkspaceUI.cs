@@ -4,15 +4,15 @@ using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Manipulators;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Workspaces
 {
-	public class WorkspaceUI : MonoBehaviour
+	public class WorkspaceUI : MonoBehaviour, IUsesStencilRef
 	{
 		public event Action closeClicked = delegate {};
-		public event Action lockClicked = delegate {};
 		public event Action resetSizeClicked = delegate {};
 
 		const int kAngledFaceBlendShapeIndex = 2;
@@ -20,6 +20,7 @@ namespace UnityEngine.VR.Workspaces
 		const float kFaceWidthMatchMultiplier =  7.1375f; // Multiplier that sizes the face to the intended width
 		const float kBackResizeButtonPositionOffset = -0.02f; // Offset to place the back resize buttons in their intended location
 		const float kPanelOffset = 0.0625f; // The panel needs to be pulled back slightly
+		const string kMaterialStencilRef = "_StencilRef";
 
 		// Cached for optimization
 		float m_OriginalUIContainerLocalYPos;
@@ -41,6 +42,7 @@ namespace UnityEngine.VR.Workspaces
 		Coroutine m_FrameThicknessCoroutine;
 		Coroutine m_TopFaceVisibleCoroutine;
 		Material m_TopFaceMaterial;
+		Material m_FrontFaceMaterial;
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -129,9 +131,6 @@ namespace UnityEngine.VR.Workspaces
 
 		[SerializeField]
 		Transform m_BackResizeIconsContainer;
-
-		[SerializeField]
-		WorkspaceButton m_LockButton;
 
 		[SerializeField]
 		GameObject m_ResetButton;
@@ -296,6 +295,8 @@ namespace UnityEngine.VR.Workspaces
 		}
 		Bounds m_Bounds;
 
+		public byte stencilRef { get; set; }
+
 		void ShowResizeUI(BaseHandle baseHandle, HandleEventData eventData)
 		{
 			this.StopCoroutine(ref m_FrameThicknessCoroutine);
@@ -394,9 +395,49 @@ namespace UnityEngine.VR.Workspaces
 
 			if (m_TopPanelDividerOffset == null)
 				m_TopPanelDividerTransform.gameObject.SetActive(false);
+		}
+
+		IEnumerator Start()
+		{
+			const string kShaderBlur = "_Blur";
+			const string kShaderAlpha = "_Alpha";
+			const string kShaderVerticalOffset = "_VerticalOffset";
+			const float kTargetDuration = 1.25f;
 
 			m_TopFaceMaterial = U.Material.GetMaterialClone(m_TopFaceContainer.GetComponentInChildren<MeshRenderer>());
 			m_TopFaceMaterial.SetFloat("_Alpha", 1f);
+			m_TopFaceMaterial.SetInt(kMaterialStencilRef, stencilRef);
+
+			m_FrontFaceMaterial = U.Material.GetMaterialClone(m_FrameFrontFaceTransform.GetComponentInChildren<MeshRenderer>());
+			m_FrontFaceMaterial.SetInt(kMaterialStencilRef, stencilRef);
+
+			var originalBlurAmount = m_TopFaceMaterial.GetFloat("_Blur");
+			var currentBlurAmount = 10f; // also the maximum blur amount
+			var currentDuration = 0f;
+			var currentVelocity = 0f;
+
+			m_TopFaceMaterial.SetFloat(kShaderBlur, currentBlurAmount);
+			m_TopFaceMaterial.SetFloat(kShaderVerticalOffset, 1f); // increase the blur sample offset to amplify the effect
+			m_TopFaceMaterial.SetFloat(kShaderAlpha, 0.5f); // set partially transparent
+
+			while (currentDuration < kTargetDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				currentBlurAmount = U.Math.SmoothDamp(currentBlurAmount, originalBlurAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				m_TopFaceMaterial.SetFloat(kShaderBlur, currentBlurAmount);
+
+				float percentageComplete = currentDuration / kTargetDuration;
+				m_TopFaceMaterial.SetFloat(kShaderVerticalOffset, 1 - percentageComplete); // lerp back towards an offset of zero
+				m_TopFaceMaterial.SetFloat(kShaderAlpha, percentageComplete * 0.5f + 0.5f); // lerp towards fully opaque from 50% transparent
+
+				yield return null;
+			}
+
+			m_TopFaceMaterial.SetFloat(kShaderBlur, originalBlurAmount);
+			m_TopFaceMaterial.SetFloat(kShaderVerticalOffset, 0f);
+			m_TopFaceMaterial.SetFloat(kShaderAlpha, 1f);
+
+			yield return null;
 		}
 
 		void Update()
@@ -449,6 +490,7 @@ namespace UnityEngine.VR.Workspaces
 		void OnDestroy()
 		{
 			U.Object.Destroy(m_TopFaceMaterial);
+			U.Object.Destroy(m_FrontFaceMaterial);
 		}
 
 		public void CloseClick()
@@ -456,17 +498,9 @@ namespace UnityEngine.VR.Workspaces
 			closeClicked();
 		}
 
-		public void LockClick()
-		{
-			lockClicked();
-		}
-
 		public void ResetSizeClick()
 		{
 			resetSizeClicked();
-
-			// If the lock icon sprite is being displayed, swap back to the unlocked icon; the workspace is unlocked when the the size is reset
-			m_LockButton.alternateIconVisible = false;
 		}
 
 		IEnumerator IncreaseFrameThickness()

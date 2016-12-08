@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Utilities;
 
 public class DefaultProxyRay : MonoBehaviour
@@ -17,17 +18,11 @@ public class DefaultProxyRay : MonoBehaviour
 	[SerializeField]
 	private MeshFilter m_Cone;
 
-	private enum State
-	{
-		Visible,
-		Transitioning,
-		Hidden
-	}
-
-	private State m_State;
 	private Vector3 m_TipStartScale;
 	Transform m_ConeTransform;
 	Vector3 m_OriginalConeLocalScale;
+	Coroutine m_RayVisibilityCoroutine;
+	Coroutine m_ConeVisibilityCoroutine;
 
 	/// <summary>
 	/// The object that is set when LockRay is called while the ray is unlocked.
@@ -73,22 +68,32 @@ public class DefaultProxyRay : MonoBehaviour
 		}
 	}
 
-	public bool visible
+	public bool rayVisible { get; private set; }
+	public bool coneVisible { get; private set; }
+
+	void OnDisable()
 	{
-		get { return m_State == State.Visible; }
+		this.StopCoroutine(ref m_RayVisibilityCoroutine);
+		this.StopCoroutine(ref m_ConeVisibilityCoroutine);
 	}
 
 	public void Hide(bool rayOnly = false)
 	{
 		if (isActiveAndEnabled && m_LockRayObject == null)
 		{
-			if (m_State == State.Transitioning)
-				StopAllCoroutines();
-			
-			StartCoroutine(HideRay());
+			if (rayVisible)
+			{
+				rayVisible = false;
+				this.StopCoroutine(ref m_RayVisibilityCoroutine);
+				m_RayVisibilityCoroutine = StartCoroutine(HideRay());
+			}
 
-			if (!rayOnly)
-				StartCoroutine(HideCone());
+			if (!rayOnly && coneVisible)
+			{
+				coneVisible = false;
+				this.StopCoroutine(ref m_ConeVisibilityCoroutine);
+				m_ConeVisibilityCoroutine = StartCoroutine(HideCone());
+			}
 		}
 	}
 
@@ -96,19 +101,25 @@ public class DefaultProxyRay : MonoBehaviour
 	{
 		if (isActiveAndEnabled && m_LockRayObject == null)
 		{
-			if (m_State == State.Transitioning)
-				StopAllCoroutines();
-			
-			StartCoroutine(ShowRay());
+			if (!rayVisible)
+			{
+				rayVisible = true;
+				this.StopCoroutine(ref m_RayVisibilityCoroutine);
+				m_RayVisibilityCoroutine = StartCoroutine(ShowRay());
+			}
 
-			if (!rayOnly)
-				StartCoroutine(ShowCone());
+			if (!rayOnly && !coneVisible)
+			{
+				coneVisible = true;
+				this.StopCoroutine(ref m_ConeVisibilityCoroutine);
+				m_ConeVisibilityCoroutine = StartCoroutine(ShowCone());
+			}
 		}
 	}
 
 	public void SetLength(float length)
 	{
-		if (m_State != State.Visible)
+		if (!rayVisible)
 			return;
 
 		m_LineRenderer.transform.localScale = Vector3.one * length;
@@ -126,12 +137,11 @@ public class DefaultProxyRay : MonoBehaviour
 	private void Start()
 	{
 		m_TipStartScale = m_Tip.transform.localScale;
-		m_State = State.Visible;
+		rayVisible = true;
 	}
 
 	private IEnumerator HideRay()
 	{
-		m_State = State.Transitioning;
 		m_Tip.transform.localScale = Vector3.zero;
 
 		// cache current width for smooth animation to target value without snapping
@@ -149,12 +159,11 @@ public class DefaultProxyRay : MonoBehaviour
 		}
 
 		m_LineRenderer.SetWidth(kTargetWidth, kTargetWidth);
-		m_State = State.Hidden;
+		m_RayVisibilityCoroutine = null;
 	}
 
 	private IEnumerator ShowRay()
 	{
-		m_State = State.Transitioning;
 		m_Tip.transform.localScale = m_TipStartScale;
 
 		var currentWidth = m_LineRenderer.widthStart;
@@ -170,7 +179,7 @@ public class DefaultProxyRay : MonoBehaviour
 		}
 		
 		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth);
-		m_State = State.Visible;
+		m_RayVisibilityCoroutine = null;
 	}
 
 	IEnumerator HideCone()
@@ -188,6 +197,7 @@ public class DefaultProxyRay : MonoBehaviour
 		}
 
 		m_ConeTransform.localScale = Vector3.zero;
+		m_ConeVisibilityCoroutine = null;
 	}
 
 	IEnumerator ShowCone()
@@ -205,5 +215,6 @@ public class DefaultProxyRay : MonoBehaviour
 		}
 
 		m_ConeTransform.localScale = m_OriginalConeLocalScale;
+		m_ConeVisibilityCoroutine = null;
 	}
 }
