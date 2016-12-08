@@ -86,8 +86,6 @@ public class MiniWorldWorkspace : Workspace, IRayLocking
 			var button = mb as Button;
 			if (button)
 				button.onClick.AddListener(RecenterOnPlayer);
-
-			connectInterfaces(mb);
 		}
 
 		var arrow = U.Object.Instantiate(m_PlayerDirectionArrowPrefab, parent, false);
@@ -132,8 +130,8 @@ public class MiniWorldWorkspace : Workspace, IRayLocking
 	private void Update()
 	{
 		var inBounds = IsPlayerInBounds();
-		m_PlayerDirectionButton.gameObject.SetActive(inBounds);
-		m_PlayerDirectionArrow.gameObject.SetActive(inBounds);
+		m_PlayerDirectionButton.gameObject.SetActive(!inBounds);
+		m_PlayerDirectionArrow.gameObject.SetActive(!inBounds);
 
 		if (!inBounds)
 			UpdatePlayerDirectionArrow();
