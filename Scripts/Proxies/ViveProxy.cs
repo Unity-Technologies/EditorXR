@@ -41,7 +41,7 @@ namespace UnityEngine.VR.Proxies
 
 		public override void Update()
 		{
-			if (active)
+			if (active && m_LeftModel && m_RightModel)
 			{
 				//If proxy is not mapped to a physical input device, check if one has been assigned
 				if ((int) m_LeftModel.index == -1 && m_InputToEvents.steamDevice[0] != -1)
