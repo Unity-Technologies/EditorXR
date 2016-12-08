@@ -26,10 +26,11 @@ namespace UnityEngine.VR.Proxies
 
 		public override IEnumerator Start()
 		{
+			SteamVR_Render.instance.transform.parent = gameObject.transform;
+
 			while (!active)
 				yield return null;
 
-			SteamVR_Render.instance.transform.parent = gameObject.transform;
 			m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(true);
 			m_LeftModel.enabled = true;
 			m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>(true);
