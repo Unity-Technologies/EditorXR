@@ -11,6 +11,8 @@ public class CreatePrimitiveMenu : MonoBehaviour, IMenu
 
 	public bool visible { get { return gameObject.activeSelf; } set { gameObject.SetActive(value); } }
 
+	public GameObject menuContent { get { return gameObject; } }
+
 	public void SelectPrimitive(int type)
 	{
 		selectPrimitive((PrimitiveType)type, false);

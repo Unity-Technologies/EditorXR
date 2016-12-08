@@ -7,6 +7,7 @@ using UnityEngine.VR.Handles;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
+using UnityEngine.VR.Workspaces;
 using InputField = UnityEngine.VR.UI.InputField;
 
 public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight
@@ -43,6 +44,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 	public bool setup { get; set; }
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
+
+	public Action<InspectorData> toggleExpanded { private get; set; }
 
 	public override void Setup(InspectorData data)
 	{
@@ -88,7 +91,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 		m_InputFields = GetComponentsInChildren<InputField>(true);
 	}
 
-	public void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material UIMaterial, Material textMaterial, Material noClipBackingCube)
+	public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials)
 	{
 		m_NoClipBackingCube = noClipBackingCube;
 
@@ -96,24 +99,38 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 
 		var cuboidLayouts = GetComponentsInChildren<CuboidLayout>(true);
 		foreach (var cuboidLayout in cuboidLayouts)
-			cuboidLayout.SetMaterials(backingCubeMaterial);
+		{
+			cuboidLayout.SetMaterials(backingCubeMaterial, highlightMaterials);
+		}
+
+		var workspaceButtons = GetComponentsInChildren<WorkspaceButton>(true);
+		foreach (var button in workspaceButtons)
+		{
+			button.buttonMeshRenderer.sharedMaterials = highlightMaterials;
+		}
 
 		var graphics = GetComponentsInChildren<Graphic>(true);
 		foreach (var graphic in graphics)
-			graphic.material = UIMaterial;
+		{
+			graphic.material = uiMaterial;
+		}
 
 		// Texts need a specific shader
 		var texts = GetComponentsInChildren<Text>(true);
 		foreach (var text in texts)
+		{
 			text.material = textMaterial;
+		}
 
 		// Don't clip masks
 		var masks = GetComponentsInChildren<Mask>(true);
 		foreach (var mask in masks)
+		{
 			mask.graphic.material = null;
+		}
 	}
 
-	public virtual void UpdateSelf(float width, int depth)
+	public virtual void UpdateSelf(float width, int depth, bool expanded)
 	{
 		var cubeScale = m_Cube.transform.localScale;
 		cubeScale.x = width;
@@ -306,5 +323,10 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 
 	protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
+	}
+
+	public void ToggleExpanded()
+	{
+		toggleExpanded(data);
 	}
 }

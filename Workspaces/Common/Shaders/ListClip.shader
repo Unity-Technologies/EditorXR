@@ -7,11 +7,18 @@
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
+		_StencilRef("StencilRef", Int) = 3
 	}
 	SubShader
 	{
-		Tags { "RenderType"="Opaque" "Queue" = "Transparent-2" }
+		Tags { "RenderType"="Transparent" "Queue" = "Overlay+5103" }
 		LOD 200
+
+		Stencil
+		{
+			Ref 0
+			Comp Equal
+		}
 
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types

@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.VR.Handles;
 using Button = UnityEngine.VR.UI.Button;
 
 public class InspectorArrayHeaderItem : InspectorPropertyItem
@@ -11,18 +10,13 @@ public class InspectorArrayHeaderItem : InspectorPropertyItem
 	[SerializeField]
 	Button m_ExpandArrow;
 
-	public override void UpdateSelf(float width, int depth)
+	public override void UpdateSelf(float width, int depth, bool expanded)
 	{
-		base.UpdateSelf(width, depth);
+		base.UpdateSelf(width, depth, expanded);
 
 		// Rotate arrow for expand state
 		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-												data.expanded ? kExpandedRotation : kNormalRotation,
-												kExpandArrowRotateSpeed);
-	}
-
-	public void ToggleExpanded()
-	{
-		data.expanded = !data.expanded;
+			expanded ? kExpandedRotation : kNormalRotation,
+			kExpandArrowRotateSpeed);
 	}
 }

@@ -179,7 +179,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_ScrollOffset: 0
   m_Padding: 0.01
-  m_ScrollDamping: 5
+  m_ScrollDamping: 1
   m_MaxMomentum: 200
   m_Templates:
   - {fileID: 1000011895958286, guid: de8c0fc8c49734e49ae847ae6b833fe2, type: 2}
@@ -202,6 +202,11 @@ MonoBehaviour:
   m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
   m_UIMaterial: {fileID: 2100000, guid: d330a55736490e149910ed6a59d2cbee, type: 2}
   m_NoClipBackingCube: {fileID: 2100000, guid: 502322ab303686946b1fca122f1b451d, type: 2}
+  m_NoClipHighlightMaterial: {fileID: 2100000, guid: c26f6dcf4fb6382488a16a9d738df037,
+    type: 2}
+  m_HighlightMaterial: {fileID: 2100000, guid: 8d993d4dd9ec99247a30bbe1482df2f4, type: 2}
+  m_HighlightMaskMaterial: {fileID: 2100000, guid: 2e6e6d7336061b54886b155c24f8460f,
+    type: 2}
 --- !u!224 &224000012935315334
 RectTransform:
   m_ObjectHideFlags: 1

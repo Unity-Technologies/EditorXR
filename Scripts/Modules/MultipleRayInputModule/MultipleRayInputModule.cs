@@ -135,10 +135,7 @@ namespace UnityEngine.VR.Modules
 				}
 
 				if (source.actionMapInput.select.wasJustReleased)
-				{
 					OnSelectReleased(source);
-					consumeControl(source.actionMapInput.select);
-				}
 
 				var draggedObject = source.draggedObject;
 
@@ -156,8 +153,18 @@ namespace UnityEngine.VR.Modules
 
 				if (scrollObject)
 				{
-					eventData.scrollDelta = new Vector2(0f, source.actionMapInput.verticalScroll.value);
-					ExecuteEvents.ExecuteHierarchy(scrollObject, eventData, ExecuteEvents.scrollHandler);
+					var actionMapInput = source.actionMapInput;
+					var verticalScroll = actionMapInput.verticalScroll;
+					var horizontalScroll = actionMapInput.horizontalScroll;
+					var verticalScrollValue = verticalScroll.value;
+					var horizontalScrollValue = horizontalScroll.value;
+					if (!Mathf.Approximately(verticalScrollValue, 0f) || !Mathf.Approximately(horizontalScrollValue, 0f))
+					{
+						consumeControl(verticalScroll);
+						consumeControl(horizontalScroll);
+						eventData.scrollDelta = new Vector2(horizontalScrollValue, verticalScrollValue);
+						ExecuteEvents.ExecuteHierarchy(scrollObject, eventData, ExecuteEvents.scrollHandler);
+					}
 				}
 			}
 		}

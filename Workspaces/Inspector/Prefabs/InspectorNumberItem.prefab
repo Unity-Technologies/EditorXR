@@ -615,7 +615,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 2100000, guid: c26f6dcf4fb6382488a16a9d738df037, type: 2}
+  - {fileID: 2100000, guid: 8d993d4dd9ec99247a30bbe1482df2f4, type: 2}
   - {fileID: 2100000, guid: e1423c0176008a841a94b94a6034bbf8, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
@@ -674,7 +674,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 2100000, guid: c26f6dcf4fb6382488a16a9d738df037, type: 2}
+  - {fileID: 2100000, guid: 8d993d4dd9ec99247a30bbe1482df2f4, type: 2}
   - {fileID: 2100000, guid: e1423c0176008a841a94b94a6034bbf8, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
@@ -704,7 +704,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 2100000, guid: c26f6dcf4fb6382488a16a9d738df037, type: 2}
+  - {fileID: 2100000, guid: 8d993d4dd9ec99247a30bbe1482df2f4, type: 2}
   - {fileID: 2100000, guid: e1423c0176008a841a94b94a6034bbf8, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
@@ -829,14 +829,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 1
+  m_CustomHighlightColor: {r: 1, g: 1, b: 1, a: 1}
+  m_AlternateIconSprite: {fileID: 21300000, guid: ea362006918ddee41a65752e3722d093,
+    type: 3}
   m_ButtonMeshRenderer: {fileID: 23000014216549842}
   m_CanvasGroup: {fileID: 225000012875699454}
   m_Icon: {fileID: 114000013697906624}
   m_IconContainer: {fileID: 224000010257913162}
   m_Button: {fileID: 114000010810373808}
-  m_CustomHighlightColor: {r: 1, g: 1, b: 1, a: 1}
-  m_AlternateIconSprite: {fileID: 21300000, guid: ea362006918ddee41a65752e3722d093,
-    type: 3}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013697906624}
@@ -1623,14 +1624,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 1
+  m_CustomHighlightColor: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
+  m_AlternateIconSprite: {fileID: 21300000, guid: 8f21106ed0539b64ca132508f61ed30b,
+    type: 3}
   m_ButtonMeshRenderer: {fileID: 23000011543636028}
   m_CanvasGroup: {fileID: 225000013731265230}
   m_Icon: {fileID: 114000010943776462}
   m_IconContainer: {fileID: 224000010645501412}
   m_Button: {fileID: 114000011897388082}
-  m_CustomHighlightColor: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
-  m_AlternateIconSprite: {fileID: 21300000, guid: 8f21106ed0539b64ca132508f61ed30b,
-    type: 3}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000010943776462}
@@ -1756,14 +1758,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
+  m_AutoHighlight: 1
+  m_CustomHighlightColor: {r: 1, g: 1, b: 1, a: 1}
+  m_AlternateIconSprite: {fileID: 21300000, guid: 917083b1bf3745e40a50e8607576c9a2,
+    type: 3}
   m_ButtonMeshRenderer: {fileID: 23000013509797236}
   m_CanvasGroup: {fileID: 225000012226531288}
   m_Icon: {fileID: 114000013398990474}
   m_IconContainer: {fileID: 224000011504508114}
   m_Button: {fileID: 114000013159829532}
-  m_CustomHighlightColor: {r: 1, g: 1, b: 1, a: 1}
-  m_AlternateIconSprite: {fileID: 21300000, guid: 917083b1bf3745e40a50e8607576c9a2,
-    type: 3}
   m_SwapIconsOnClick: 0
   m_HighlightItems:
   - {fileID: 114000013398990474}

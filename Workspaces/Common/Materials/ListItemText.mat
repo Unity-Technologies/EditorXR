@@ -128,6 +128,9 @@ Material:
         name: _StencilReadMask
       second: 255
     - first:
+        name: _StencilRef
+      second: 3
+    - first:
         name: _StencilWriteMask
       second: 255
     - first:
@@ -145,7 +148,7 @@ Material:
       second: {r: 0, g: 0, b: 0, a: 0}
     - first:
         name: _ClipExtents
-      second: {r: 0.07333333, g: 0.1, b: 0.18125, a: 0}
+      second: {r: 0.1675, g: 1.7014117e+38, b: 0.22500001, a: 0}
     - first:
         name: _Color
       second: {r: 1, g: 1, b: 1, a: 1}

@@ -286,7 +286,7 @@ MonoBehaviour:
   m_Icon: {fileID: 114000013366903114}
   m_AlternateIconSprite: {fileID: 0}
   m_NormalContentColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_HighlightItemColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_HighlightItemColor: {r: 1, g: 1, b: 1, a: 1}
   m_HighlightItems:
   - {fileID: 114000013366903114}
   - {fileID: 114000012662170858}
@@ -318,7 +318,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Material: {fileID: 2100000, guid: dd79a285dde86924793e5a909ca783e0, type: 2}
-  m_Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -352,7 +352,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Material: {fileID: 2100000, guid: dd79a285dde86924793e5a909ca783e0, type: 2}
-  m_Color: {r: 0.9764706, g: 0.9764706, b: 0.9764706, a: 1}
+  m_Color: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:

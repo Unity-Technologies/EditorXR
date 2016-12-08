@@ -7,7 +7,7 @@ namespace UnityEngine.VR.Manipulators
 	{
 		public bool dragging { get; protected set; }
 
-		protected const float kBaseManipulatorSize = 0.3f;
+		protected const float kBaseManipulatorSize = 0.5f;
 
 		public Action<Vector3> translate { protected get; set; }
 		public Action<Quaternion> rotate { protected get; set; }
@@ -30,10 +30,12 @@ namespace UnityEngine.VR.Manipulators
 
 		public void AdjustScale(Vector3 cameraPosition, Matrix4x4 worldToCameraMatrix)
 		{
+			var originalCameraPosition = cameraPosition;
+			
 			// Adjust size of manipulator while accounting for any non-standard cameras (e.g. scaling applied to the camera)
 			var manipulatorPosition = worldToCameraMatrix.MultiplyPoint3x4(transform.position);
 			cameraPosition = worldToCameraMatrix.MultiplyPoint3x4(cameraPosition);
-			var delta = worldToCameraMatrix.inverse.MultiplyPoint3x4(cameraPosition - manipulatorPosition);
+			var delta = worldToCameraMatrix.inverse.MultiplyPoint3x4(cameraPosition - manipulatorPosition) - originalCameraPosition;
 			transform.localScale = Vector3.one * delta.magnitude * kBaseManipulatorSize;
 		}
 	}

@@ -7,14 +7,24 @@
 		_VerticalOffset("Offset", Range(-1, 1)) = 1
 		_MainTex("Texture", 2D) = "white" {}
 		_Alpha("Alpha", Range(0, 1)) = 1
+		_StencilRef("StencilRef", Int) = 3
 	}
 
 		Category
 		{
-			Tags{ "Queue" = "Transparent" "LightMode" = "Always" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
+			Tags{ "Queue" = "Overlay+5102" "LightMode" = "Always" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
 			ZWrite On
+			ZTest LEqual
 			Lighting Off
 			Blend SrcAlpha OneMinusSrcAlpha
+
+			Stencil
+			{
+				Ref [_StencilRef]
+				Comp NotEqual
+				Pass Zero
+				Fail Keep
+			}
 
 			SubShader
 			{

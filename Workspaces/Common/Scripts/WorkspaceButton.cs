@@ -3,11 +3,12 @@ using UnityEngine.UI;
 using UnityEngine.VR.Extensions;
 using UnityEngine.VR.Helpers;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Workspaces
 {
-	public class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
+	public class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef
 	{
 		const float kIconHighlightedLocalZOffset = -0.0015f;
 		const string kMaterialAlphaProperty = "_Alpha";
@@ -100,6 +101,7 @@ namespace UnityEngine.VR.Workspaces
 		[SerializeField]
 		Sprite m_AlternateIconSprite;
 
+		public MeshRenderer buttonMeshRenderer { get { return m_ButtonMeshRenderer; } }
 		[SerializeField]
 		MeshRenderer m_ButtonMeshRenderer;
 
@@ -138,6 +140,7 @@ namespace UnityEngine.VR.Workspaces
 		Transform m_parentTransform;
 		Vector3 m_IconDirection;
 		Material m_ButtonMaterial;
+		Material m_ButtonMaskMaterial;
 		Vector3 m_OriginalIconLocalPosition;
 		Vector3 m_HiddenLocalScale;
 		Vector3 m_IconHighlightedLocalPosition;
@@ -146,7 +149,6 @@ namespace UnityEngine.VR.Workspaces
 		Color m_OriginalColor;
 		Sprite m_OriginalIconSprite;
 		float m_VisibleLocalZScale;
-		Vector3 m_OriginalScale;
 
 		// The initial button reveal coroutines, before highlighting
 		Coroutine m_VisibilityCoroutine;
@@ -161,13 +163,14 @@ namespace UnityEngine.VR.Workspaces
 			get { return m_Button; }
 		}
 
+		public byte stencilRef { get; set; }
+
 		public void InstantClearState()
 		{
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			this.StopCoroutine(ref m_HighlightCoroutine);
 
 			ResetColors();
-			transform.localScale = m_OriginalScale;
 		}
 
 		public void SetMaterialColors(GradientPair gradientPair)
@@ -185,11 +188,12 @@ namespace UnityEngine.VR.Workspaces
 		void Awake()
 		{
 			m_OriginalColor = m_Icon.color;
-			m_ButtonMaterial = U.Material.GetMaterialClone(m_ButtonMeshRenderer);
+			m_ButtonMaterial = Instantiate(m_ButtonMeshRenderer.sharedMaterials[0]);
+			m_ButtonMaskMaterial = Instantiate(m_ButtonMeshRenderer.sharedMaterials[1]);
+			m_ButtonMeshRenderer.materials = new Material[] { m_ButtonMaterial, m_ButtonMaskMaterial };
 			m_OriginalGradientPair = new GradientPair(m_ButtonMaterial.GetColor(kMaterialColorTopProperty), m_ButtonMaterial.GetColor(kMaterialColorBottomProperty));
 			m_HiddenLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, 0f);
 			m_VisibleLocalZScale = transform.localScale.z;
-			m_OriginalScale = transform.localScale;
 
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
@@ -204,6 +208,13 @@ namespace UnityEngine.VR.Workspaces
 				m_Button.onClick.AddListener(SwapIconSprite);
 		}
 
+		void Start()
+		{
+			const string kStencilRef = "_StencilRef";
+			m_ButtonMaterial.SetInt(kStencilRef, stencilRef);
+			m_ButtonMaskMaterial.SetInt(kStencilRef, stencilRef);
+		}
+
 		void OnEnable()
 		{
 			if (m_AnimatedReveal)
@@ -211,6 +222,12 @@ namespace UnityEngine.VR.Workspaces
 				this.StopCoroutine(ref m_VisibilityCoroutine);
 				m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 			}
+		}
+
+		void OnDestroy()
+		{
+			U.Object.Destroy(m_ButtonMaterial);
+			U.Object.Destroy(m_ButtonMaskMaterial);
 		}
 
 		void OnDisable()

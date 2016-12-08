@@ -14,6 +14,11 @@ namespace UnityEngine.VR.UI
 		bool m_CapsLock;
 		bool m_Shift;
 
+		public override void OpenKeyboard()
+		{
+			// AE 12/6/16 - Disabling for now since it is not completely functional
+		}
+
 		protected override void Append(char c)
 		{
 			var len = m_Text.Length;
