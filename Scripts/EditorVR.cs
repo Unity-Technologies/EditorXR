@@ -1073,7 +1073,8 @@ public class EditorVR : MonoBehaviour
 			}
 
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, (source) => IsRayActive(source.rayOrigin));
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, 
+				(source) => IsRayActive(source.rayOrigin));
 		}, false);
 	}
 
@@ -2541,7 +2542,7 @@ public class EditorVR : MonoBehaviour
 			m_ScaleManipulator.AdjustScale(cameraPosition, matrix);
 	}
 
-		void AddPlayerModel()
+	void AddPlayerModel()
 	{
 		var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
 		m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
