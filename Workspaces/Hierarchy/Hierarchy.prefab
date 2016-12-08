@@ -56,6 +56,7 @@ GameObject:
   - 65: {fileID: 65000013747495728}
   - 23: {fileID: 23000012436214412}
   - 114: {fileID: 114000011690277160}
+  - 114: {fileID: 114000010483368304}
   m_Layer: 5
   m_Name: ScrollHandle
   m_TagString: Untagged
@@ -222,7 +223,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1e584586efda064418cc580c65ad9b5f, type: 2}
+  - {fileID: 0}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -264,6 +265,19 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &114000010483368304
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011497900222}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6578b7c795e17243af7f851d5c98d6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  listView: {fileID: 114000011426645376}
 --- !u!114 &114000010577969036
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -310,7 +324,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000011829900818
 MonoBehaviour:
   m_ObjectHideFlags: 1
