@@ -173,6 +173,7 @@ namespace UnityEngine.VR.Modules
 		static bool ShouldActivateInput(RayEventData eventData, GameObject currentObject, out bool hasScrollHandler)
 		{
 			hasScrollHandler = false;
+
 			var selectionFlags = currentObject.GetComponent<ISelectionFlags>();
 			if (selectionFlags != null && selectionFlags.selectionFlags == SelectionFlags.Direct && !U.UI.IsDirectEvent(eventData))
 				return false;
