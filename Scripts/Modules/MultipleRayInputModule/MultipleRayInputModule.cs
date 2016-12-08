@@ -121,7 +121,8 @@ namespace UnityEngine.VR.Modules
 
 				HandlePointerExitAndEnter(eventData, source.hoveredObject); // Send enter and exit events
 
-				source.actionMapInput.active = source.hasObject && ShouldActivateInput(eventData, source.currentObject);
+				var hasScrollHandler = false;
+				source.actionMapInput.active = source.hasObject && ShouldActivateInput(eventData, source.currentObject, out hasScrollHandler);
 
 				// Proceed only if pointer is interacting with something
 				if (!source.actionMapInput.active)
@@ -151,7 +152,7 @@ namespace UnityEngine.VR.Modules
 				if (!scrollObject)
 					scrollObject = source.draggedObject;
 
-				if (scrollObject)
+				if (scrollObject && hasScrollHandler)
 				{
 					var actionMapInput = source.actionMapInput;
 					var verticalScroll = actionMapInput.verticalScroll;
@@ -169,11 +170,14 @@ namespace UnityEngine.VR.Modules
 			}
 		}
 
-		static bool ShouldActivateInput(RayEventData eventData, GameObject currentObject)
+		static bool ShouldActivateInput(RayEventData eventData, GameObject currentObject, out bool hasScrollHandler)
 		{
+			hasScrollHandler = false;
 			var selectionFlags = currentObject.GetComponent<ISelectionFlags>();
 			if (selectionFlags != null && selectionFlags.selectionFlags == SelectionFlags.Direct && !U.UI.IsDirectEvent(eventData))
 				return false;
+
+			hasScrollHandler = ExecuteEvents.GetEventHandler<IScrollHandler>(currentObject);
 
 			return ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentObject)
 				|| ExecuteEvents.GetEventHandler<IPointerDownHandler>(currentObject)
@@ -187,7 +191,7 @@ namespace UnityEngine.VR.Modules
 				|| ExecuteEvents.GetEventHandler<IRayBeginDragHandler>(currentObject)
 				|| ExecuteEvents.GetEventHandler<IRayEndDragHandler>(currentObject)
 
-				|| ExecuteEvents.GetEventHandler<IScrollHandler>(currentObject);
+				|| hasScrollHandler;
 		}
 
 		private RayEventData CloneEventData(RayEventData eventData)
