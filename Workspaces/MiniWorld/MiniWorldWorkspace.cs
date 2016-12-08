@@ -7,7 +7,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-public class ChessboardWorkspace : Workspace, IRayLocking
+public class MiniWorldWorkspace : Workspace, IRayLocking
 {
 	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below
 	private const float kInitReferenceScale = 15f; // We want to see a big region by default
@@ -26,7 +26,7 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 	[SerializeField]
 	private GameObject m_FilterPrefab;
 
-	private ChessboardUI m_ChessboardUI;
+	private MiniWorldUI m_MiniWorldUI;
 	private MiniWorld m_MiniWorld;
 	private Material m_GridMaterial;
 	private ZoomSliderUI m_ZoomSliderUI;
@@ -57,8 +57,8 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 		base.Setup();
 
 		U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
-		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
-		m_GridMaterial = U.Material.GetMaterialClone(m_ChessboardUI.grid);
+		m_MiniWorldUI = GetComponentInChildren<MiniWorldUI>();
+		m_GridMaterial = U.Material.GetMaterialClone(m_MiniWorldUI.grid);
 
 		// Set up MiniWorld
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
@@ -66,7 +66,7 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * kInitReferenceScale;
 
 		// Set up ControlBox
-		var panZoomHandle = m_ChessboardUI.panZoomHandle;
+		var panZoomHandle = m_MiniWorldUI.panZoomHandle;
 		// ControlBox shouldn't move with miniWorld
 		panZoomHandle.transform.parent = m_WorkspaceUI.sceneContainer;
 		panZoomHandle.transform.localPosition = Vector3.down * panZoomHandle.transform.localScale.y * 0.5f;
@@ -99,7 +99,7 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 	{
 		//Set grid height, deactivate if out of bounds
 		float gridHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
-		var grid = m_ChessboardUI.grid;
+		var grid = m_MiniWorldUI.grid;
 		if (Mathf.Abs(gridHeight) < contentBounds.extents.y)
 		{
 			grid.gameObject.SetActive(true);
@@ -128,11 +128,11 @@ public class ChessboardWorkspace : Workspace, IRayLocking
 		var correctedBounds = new Bounds(contentBounds.center, new Vector3(contentBounds.size.x, contentBounds.size.y, contentBounds.size.z + kOffsetToAccountForFrameSize));
 		m_MiniWorld.localBounds = correctedBounds;
 
-		m_ChessboardUI.boundsCube.transform.localScale = correctedBounds.size;
+		m_MiniWorldUI.boundsCube.transform.localScale = correctedBounds.size;
 
-		m_ChessboardUI.grid.transform.localScale = new Vector3(correctedBounds.size.x, correctedBounds.size.z, 1);
+		m_MiniWorldUI.grid.transform.localScale = new Vector3(correctedBounds.size.x, correctedBounds.size.z, 1);
 
-		var controlBox = m_ChessboardUI.panZoomHandle;
+		var controlBox = m_MiniWorldUI.panZoomHandle;
 		controlBox.transform.localScale = new Vector3(correctedBounds.size.x, controlBox.transform.localScale.y, correctedBounds.size.z);
 	}
 

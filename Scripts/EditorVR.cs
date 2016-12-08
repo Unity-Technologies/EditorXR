@@ -1908,12 +1908,12 @@ public class EditorVR : MonoBehaviour
 		if (createdCallback != null)
 			createdCallback(workspace);
 
-		// Chessboard is a special case that we handle due to all of the mini world interactions
-		var chessboardWorkspace = workspace as ChessboardWorkspace;
-		if (!chessboardWorkspace)
+		// MiniWorld is a special case that we handle due to all of the mini world interactions
+		var miniWorldWorkspace = workspace as MiniWorldWorkspace;
+		if (!miniWorldWorkspace)
 			return;
 
-		var miniWorld = chessboardWorkspace.miniWorld;
+		var miniWorld = miniWorldWorkspace.miniWorld;
 		m_MiniWorlds.Add(miniWorld);
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
@@ -2001,10 +2001,10 @@ public class EditorVR : MonoBehaviour
 		if (filterUI != null)
 			m_FilterUIs.Remove(filterUI);
 
-		var chessboard = workspace as ChessboardWorkspace;
-		if (chessboard != null)
+		var miniWorldWorkspace = workspace as MiniWorldWorkspace;
+		if (miniWorldWorkspace != null)
 		{
-			var miniWorld = chessboard.miniWorld;
+			var miniWorld = miniWorldWorkspace.miniWorld;
 
 			//Clean up MiniWorldRays
 			m_MiniWorlds.Remove(miniWorld);
