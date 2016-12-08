@@ -1073,8 +1073,16 @@ public class EditorVR : MonoBehaviour
 			}
 
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, 
-				(source) => IsRayActive(source.rayOrigin));
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, source =>
+			{
+				foreach (var miniWorld in m_MiniWorlds)
+				{
+					if (miniWorld.Contains(source.rayOrigin.position))
+						return false;
+				}
+
+				return true;
+			});
 		}, false);
 	}
 
