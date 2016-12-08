@@ -153,10 +153,16 @@ namespace UnityEngine.VR.Modules
 
 				if (scrollObject)
 				{
-					if (!Mathf.Approximately(source.actionMapInput.verticalScroll.value, 0f))
+					var actionMapInput = source.actionMapInput;
+					var verticalScroll = actionMapInput.verticalScroll;
+					var horizontalScroll = actionMapInput.horizontalScroll;
+					var verticalScrollValue = verticalScroll.value;
+					var horizontalScrollValue = horizontalScroll.value;
+					if (!Mathf.Approximately(verticalScrollValue, 0f) || !Mathf.Approximately(horizontalScrollValue, 0f))
 					{
-						consumeControl(source.actionMapInput.verticalScroll);
-						eventData.scrollDelta = new Vector2(0f, source.actionMapInput.verticalScroll.value);
+						consumeControl(verticalScroll);
+						consumeControl(horizontalScroll);
+						eventData.scrollDelta = new Vector2(horizontalScrollValue, verticalScrollValue);
 						ExecuteEvents.ExecuteHierarchy(scrollObject, eventData, ExecuteEvents.scrollHandler);
 					}
 				}
