@@ -903,6 +903,23 @@ public class EditorVR : MonoBehaviour
 	void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)
 	{
 		SetAlternateMenuVisibility(rayOrigin, Selection.gameObjects.Length > 0);
+
+		// Tell this rayOrigin's locomotion tool to wait for zero values so that we don't move after selecting items
+		ForEachRayOrigin((proxy, pair, device, data) =>
+		{
+			if (pair.Value == rayOrigin)
+			{
+				foreach (var toolData in data.toolData)
+				{
+					var locomotor = toolData.tool as ILocomotor;
+					if (locomotor != null)
+					{
+						locomotor.waitForReset = true;
+						break;
+					}
+				}
+			}
+		});
 	}
 
 	void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
