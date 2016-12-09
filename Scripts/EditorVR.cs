@@ -2414,7 +2414,7 @@ public class EditorVR : MonoBehaviour
 		// Dropping the player head updates the viewer pivot
 		if (grabbedObject.CompareTag(kVRPlayerTag))
 			StartCoroutine(UpdateViewerPivot(grabbedObject));
-		else if (IsOverShoulder(rayOrigin))
+		else if (IsOverShoulder(rayOrigin) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 			DeleteSceneObject(grabbedObject.gameObject);
 	}
 
