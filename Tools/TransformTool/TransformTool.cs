@@ -9,7 +9,7 @@ using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
-public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject
+public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject//, ISelectObject
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -106,6 +106,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	Vector3 m_TargetScale;
 	Quaternion m_PositionOffsetRotation;
 	Quaternion m_StartRotation;
+
+	readonly List<GameObject> m_SelectedObjects = new List<GameObject>();
 
 	readonly Dictionary<Transform, Vector3> m_PositionOffsets = new Dictionary<Transform, Vector3>();
 	readonly Dictionary<Transform, Quaternion> m_RotationOffsets = new Dictionary<Transform, Quaternion>();
@@ -227,7 +229,10 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 					consumeControl(directSelectInput.select);
 
-					var grabbedObject = selection.gameObject.transform;
+					var grabbedbject = selection.gameObject;
+					var grabbedTransform = grabbedbject.transform;
+
+					//selectObject
 
 					// Check if the other hand is already grabbing for two-handed scale
 					foreach (var grabData in m_GrabData)
@@ -237,16 +242,16 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 						{
 							m_ScaleStartDistance = (rayOrigin.position - grabData.Value.rayOrigin.position).magnitude;
 							m_ScaleFirstNode = otherNode;
-							grabData.Value.positionOffset = grabbedObject.position - grabData.Value.rayOrigin.position;
+							grabData.Value.positionOffset = grabbedTransform.position - grabData.Value.rayOrigin.position;
 							break;
 						}
 					}
 
-					m_GrabData[selection.node] = new GrabData(rayOrigin, grabbedObject, directSelectInput);
+					m_GrabData[selection.node] = new GrabData(rayOrigin, grabbedTransform, directSelectInput);
 
-					Selection.activeGameObject = grabbedObject.gameObject;
+					Selection.activeGameObject = grabbedTransform.gameObject;
 
-					setHighlight(grabbedObject.gameObject, false);
+					setHighlight(grabbedTransform.gameObject, false);
 
 					hideDefaultRay(rayOrigin, true);
 					lockRay(rayOrigin, this);

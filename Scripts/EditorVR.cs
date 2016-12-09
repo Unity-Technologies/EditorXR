@@ -104,6 +104,7 @@ public class EditorVR : MonoBehaviour
 	private ObjectPlacementModule m_ObjectPlacementModule;
 	private LockModule m_LockModule;
 	private DragAndDropModule m_DragAndDropModule;
+	SelectionModule m_SelectionModule;
 
 	private bool m_UpdatePixelRaycastModule = true;
 	bool m_PixelRaycastIgnoreListDirty = true;
@@ -265,13 +266,16 @@ public class EditorVR : MonoBehaviour
 		m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
 
 		CreateEventSystem();
-
 		m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 		m_PixelRaycastModule.ignoreRoot = transform;
 		m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
 		m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
 		m_LockModule.updateAlternateMenu = (rayOrigin, o) => SetAlternateMenuVisibility(rayOrigin, o != null);
 		ConnectInterfaces(m_LockModule);
+
+		m_SelectionModule = U.Object.AddComponent<SelectionModule>(gameObject);
+		m_SelectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+		ConnectInterfaces(m_SelectionModule);
 
 		m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 		m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
@@ -742,7 +746,6 @@ public class EditorVR : MonoBehaviour
 			toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
 			AddToolToDeviceData(toolData, devices);
 			var selectionTool = (SelectionTool)toolData.tool;
-			selectionTool.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 			selectionTool.hovered += m_LockModule.OnHovered;
 			selectionTool.isRayActive = IsRayActive;
 
@@ -1623,6 +1626,13 @@ public class EditorVR : MonoBehaviour
 			}
 
 			usesStencilRef.stencilRef = stencilRef ?? this.stencilRef++;
+		}
+
+		var selectObject = obj as ISelectObject;
+		if (selectObject != null)
+		{
+			selectObject.getSelectObject = m_SelectionModule.GetSelectObject;
+			selectObject.selectObject = m_SelectionModule.SelectObject;
 		}
 	}
 
