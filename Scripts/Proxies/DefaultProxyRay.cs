@@ -127,8 +127,9 @@ public class DefaultProxyRay : MonoBehaviour
 		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth * length);
 		m_Tip.transform.position = transform.position + transform.forward * length;
 		m_Tip.transform.localScale = length * m_TipStartScale;
-		// offset the ray starting point in front of the direct-select cone
-		m_LineRenderer.SetPosition(0, new Vector3(0f, 0f, (1f / lineRendererTransform.localScale.x) * 0.085f));
+
+		const float kLineRendererStartingOffset = 0.085f; // offset the ray starting point in front of the direct-select cone
+		m_LineRenderer.SetPosition(0, new Vector3(0f, 0f, (1f / lineRendererTransform.localScale.x) * kLineRendererStartingOffset));
 	}
 
 	private void Awake()
