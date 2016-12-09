@@ -6,6 +6,7 @@ namespace UnityEngine.VR.Modules
 {
 	public class SpatialHashModule : MonoBehaviour
 	{
+		readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
 		public SpatialHash<Renderer> spatialHash { get; private set; }
 
 		void Awake()
@@ -41,16 +42,30 @@ namespace UnityEngine.VR.Modules
 		{
 			while (true)
 			{
+				m_ChangedObjects.Clear();
+
 				// TODO AE 9/21/16: Hook updates of new objects that are created
-				List<Renderer> allObjects = new List<Renderer>(spatialHash.allObjects);
-				foreach (var obj in allObjects)
+				foreach (var obj in spatialHash.allObjects)
 				{
+					if (!obj)
+					{
+						m_ChangedObjects.Add(obj);
+						continue;
+					}
+
 					if (obj.transform.hasChanged)
 					{
-						spatialHash.RemoveObject(obj);
-						spatialHash.AddObject(obj, obj.bounds);
+						m_ChangedObjects.Add(obj);
 						obj.transform.hasChanged = false;
 					}
+				}
+
+				foreach (var changedObject in m_ChangedObjects)
+				{
+					spatialHash.RemoveObject(changedObject);
+
+					if (changedObject)
+						spatialHash.AddObject(changedObject, changedObject.bounds);
 				}
 
 				yield return null;

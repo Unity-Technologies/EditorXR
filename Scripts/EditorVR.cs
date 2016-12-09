@@ -1,4 +1,4 @@
-#define ENABLE_MINIWORLD_RAY_SELECTION
+//#define ENABLE_MINIWORLD_RAY_SELECTION
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -1061,9 +1061,7 @@ public class EditorVR : MonoBehaviour
 		m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
 		m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
 
-#if ENABLE_MINIWORLD_RAY_SELECTION
 		m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
-#endif
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 		{
@@ -1075,7 +1073,16 @@ public class EditorVR : MonoBehaviour
 			}
 
 			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value);
+			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, source =>
+			{
+				foreach (var miniWorld in m_MiniWorlds)
+				{
+					if (miniWorld.Contains(source.rayOrigin.position))
+						return false;
+				}
+
+				return true;
+			});
 		}, false);
 	}
 
@@ -1908,12 +1915,12 @@ public class EditorVR : MonoBehaviour
 		if (createdCallback != null)
 			createdCallback(workspace);
 
-		// Chessboard is a special case that we handle due to all of the mini world interactions
-		var chessboardWorkspace = workspace as ChessboardWorkspace;
-		if (!chessboardWorkspace)
+		// MiniWorld is a special case that we handle due to all of the mini world interactions
+		var miniWorldWorkspace = workspace as MiniWorldWorkspace;
+		if (!miniWorldWorkspace)
 			return;
 
-		var miniWorld = chessboardWorkspace.miniWorld;
+		var miniWorld = miniWorldWorkspace.miniWorld;
 		m_MiniWorlds.Add(miniWorld);
 
 		ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
@@ -2001,10 +2008,10 @@ public class EditorVR : MonoBehaviour
 		if (filterUI != null)
 			m_FilterUIs.Remove(filterUI);
 
-		var chessboard = workspace as ChessboardWorkspace;
-		if (chessboard != null)
+		var miniWorldWorkspace = workspace as MiniWorldWorkspace;
+		if (miniWorldWorkspace != null)
 		{
-			var miniWorld = chessboard.miniWorld;
+			var miniWorld = miniWorldWorkspace.miniWorld;
 
 			//Clean up MiniWorldRays
 			m_MiniWorlds.Remove(miniWorld);
@@ -2518,16 +2525,17 @@ public class EditorVR : MonoBehaviour
 		return dpr && dpr.UnlockRay(obj);
 	}
 
-#if ENABLE_MINIWORLD_RAY_SELECTION
 	void PreProcessRaycastSource(Transform rayOrigin)
 	{
 		var camera = U.Camera.GetMainCamera();
 		var cameraPosition = camera.transform.position;
 		var matrix = camera.worldToCameraMatrix;
 
+#if ENABLE_MINIWORLD_RAY_SELECTION
 		MiniWorldRay ray;
 		if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
 			matrix = ray.miniWorld.getWorldToCameraMatrix(camera);
+#endif
 
 		if (!m_StandardManipulator)
 			m_StandardManipulator = GetComponentInChildren<StandardManipulator>();
@@ -2541,7 +2549,6 @@ public class EditorVR : MonoBehaviour
 		if (m_ScaleManipulator)
 			m_ScaleManipulator.AdjustScale(cameraPosition, matrix);
 	}
-#endif
 
 	void AddPlayerModel()
 	{

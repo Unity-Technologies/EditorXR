@@ -97,7 +97,7 @@ namespace UnityEngine.VR.Menus
 		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 		{
 			var mainMenuInput = (MainMenuInput)input;
-			var rotationInput = mainMenuInput.rotate.rawValue;
+			var rotationInput = -mainMenuInput.rotate.rawValue;
 
 			consumeControl(mainMenuInput.rotate);
 			consumeControl(mainMenuInput.blockY);

@@ -25,7 +25,7 @@ GameObject:
   - 114: {fileID: 114000012656813054}
   m_Layer: 5
   m_Name: TranslateXY
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -44,7 +44,7 @@ GameObject:
   - 114: {fileID: 114000013109644058}
   m_Layer: 5
   m_Name: RotateY
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -63,7 +63,7 @@ GameObject:
   - 114: {fileID: 114000012004783302}
   m_Layer: 5
   m_Name: RotateX
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -78,7 +78,7 @@ GameObject:
   - 4: {fileID: 4000012837354530}
   m_Layer: 5
   m_Name: PlaneHandles
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -95,7 +95,7 @@ GameObject:
   - 23: {fileID: 23000012973351642}
   m_Layer: 5
   m_Name: TranslateArrowZ
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -114,7 +114,7 @@ GameObject:
   - 114: {fileID: 114000010105022974}
   m_Layer: 5
   m_Name: TranslateXZ
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -133,7 +133,7 @@ GameObject:
   - 114: {fileID: 114000012043475194}
   m_Layer: 5
   m_Name: RotateZ
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -150,7 +150,7 @@ GameObject:
   - 23: {fileID: 23000011512687970}
   m_Layer: 5
   m_Name: RotateArrowY
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -169,7 +169,7 @@ GameObject:
   - 136: {fileID: 136000011415012526}
   m_Layer: 5
   m_Name: TranslateY
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -186,7 +186,7 @@ GameObject:
   - 23: {fileID: 23000012097216674}
   m_Layer: 5
   m_Name: TranslateArrowX
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -202,7 +202,7 @@ GameObject:
   - 114: {fileID: 114000012657926048}
   m_Layer: 5
   m_Name: StandardManipulator
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -219,7 +219,7 @@ GameObject:
   - 23: {fileID: 23000010728977110}
   m_Layer: 5
   m_Name: TranslateArrowY
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -255,7 +255,7 @@ GameObject:
   - 23: {fileID: 23000010522627972}
   m_Layer: 5
   m_Name: RotateArrowX
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -274,7 +274,7 @@ GameObject:
   - 136: {fileID: 136000011845933296}
   m_Layer: 5
   m_Name: TranslateX
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -293,7 +293,7 @@ GameObject:
   - 136: {fileID: 136000014012623966}
   m_Layer: 5
   m_Name: TranslateZ
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -310,7 +310,7 @@ GameObject:
   - 23: {fileID: 23000011923190926}
   m_Layer: 5
   m_Name: RotateArrowZ
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -329,7 +329,7 @@ GameObject:
   - 114: {fileID: 114000011169532704}
   m_Layer: 5
   m_Name: TranslateYZ
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -445,7 +445,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013091982958}
   m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 3.8276591, z: -0.00000047683716}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
   m_Children: []
@@ -500,7 +500,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010946832768}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 5.755573}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
