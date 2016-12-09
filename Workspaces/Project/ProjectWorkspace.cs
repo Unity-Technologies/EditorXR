@@ -208,9 +208,9 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		if(handle == m_ProjectUI.folderScrollHandle)
-			m_ProjectUI.folderListView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
+			m_ProjectUI.folderListView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
 		else if(handle == m_ProjectUI.assetScrollHandle)
-			m_ProjectUI.assetGridView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
+			m_ProjectUI.assetGridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

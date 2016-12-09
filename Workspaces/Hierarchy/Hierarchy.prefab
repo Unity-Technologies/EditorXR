@@ -289,7 +289,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00e379bb9a41c774a9f43d4ef1734d02, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  m_RunInEditMode: 0
+  m_RunInEditMode: 1
   m_TopHighlightRenderer: {fileID: 23000014260456330}
 --- !u!114 &114000011426645376
 MonoBehaviour:
