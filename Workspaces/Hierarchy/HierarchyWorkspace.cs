@@ -20,8 +20,6 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 	HierarchyUI m_HierarchyUI;
 	FilterUI m_FilterUI;
 
-	Vector3 m_ScrollStart;
-	float m_ScrollOffsetStart;
 	HierarchyData m_SelectedRow;
 
 	bool m_Scrolling;
@@ -136,27 +134,17 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		m_ScrollStart = eventData.rayOrigin.transform.position;
-		m_ScrollOffsetStart = m_HierarchyUI.listView.scrollOffset;
 		m_HierarchyUI.listView.OnBeginScrolling();
 	}
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		Scroll(handle, eventData);
+		m_HierarchyUI.listView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		Scroll(handle, eventData);
-		m_ScrollOffsetStart = m_HierarchyUI.listView.scrollOffset;
 		m_HierarchyUI.listView.OnScrollEnded();
-	}
-
-	void Scroll(BaseHandle handle, HandleEventData eventData)
-	{
-		var scrollOffset = m_ScrollOffsetStart + Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
-		m_HierarchyUI.listView.scrollOffset = scrollOffset;
 	}
 
 	void OnScrollPanelDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -180,11 +168,6 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 	{
 		if (!m_Scrolling)
 			m_HierarchyUI.highlight.visible = false;
-	}
-
-	bool TestFilter(string type)
-	{
-		return FilterUI.TestFilter(m_FilterUI.searchQuery, type);
 	}
 
 	public void OnSelectionChanged()

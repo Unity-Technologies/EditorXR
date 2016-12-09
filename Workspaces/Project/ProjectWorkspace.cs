@@ -33,9 +33,6 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 	ProjectUI m_ProjectUI;
 	FilterUI m_FilterUI;
 
-	Vector3 m_ScrollStart;
-	float m_ScrollOffsetStart;
-
 	public List<FolderData> folderData
 	{
 		set
@@ -202,46 +199,26 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		m_ScrollStart = eventData.rayOrigin.transform.position;
 		if (handle == m_ProjectUI.folderScrollHandle)
-		{
-			m_ScrollOffsetStart = m_ProjectUI.folderListView.scrollOffset;
 			m_ProjectUI.folderListView.OnBeginScrolling();
-		}
 		else if (handle == m_ProjectUI.assetScrollHandle)
-		{
-			m_ScrollOffsetStart = m_ProjectUI.assetGridView.scrollOffset;
 			m_ProjectUI.assetGridView.OnBeginScrolling();
-		}
 	}
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		Scroll(handle, eventData);
+		if(handle == m_ProjectUI.folderScrollHandle)
+			m_ProjectUI.folderListView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
+		else if(handle == m_ProjectUI.assetScrollHandle)
+			m_ProjectUI.assetGridView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		Scroll(handle, eventData);
 		if (handle == m_ProjectUI.folderScrollHandle)
-		{
-			m_ScrollOffsetStart = m_ProjectUI.folderListView.scrollOffset;
 			m_ProjectUI.folderListView.OnScrollEnded();
-		}
 		else if (handle == m_ProjectUI.assetScrollHandle)
-		{
-			m_ScrollOffsetStart = m_ProjectUI.assetGridView.scrollOffset;
 			m_ProjectUI.assetGridView.OnScrollEnded();
-		}
-	}
-
-	void Scroll(BaseHandle handle, HandleEventData eventData)
-	{
-		var scrollOffset = m_ScrollOffsetStart + Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
-		if (handle == m_ProjectUI.folderScrollHandle)
-			m_ProjectUI.folderListView.scrollOffset = scrollOffset;
-		else if (handle == m_ProjectUI.assetScrollHandle)
-			m_ProjectUI.assetGridView.scrollOffset = scrollOffset;
 	}
 
 	void OnAssetGridDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
