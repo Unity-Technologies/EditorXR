@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using UnityEngine;
 using UnityEngine.VR;

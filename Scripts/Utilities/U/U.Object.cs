@@ -142,6 +142,7 @@ namespace UnityEngine.VR.Utilities
 
 			public static void SetRunInEditModeRecursively(GameObject go, bool enabled)
 			{
+#if UNITY_EDITOR && UNITY_EDITORVR
 				MonoBehaviour[] monoBehaviours = go.GetComponents<MonoBehaviour>();
 				foreach (MonoBehaviour mb in monoBehaviours)
 				{
@@ -153,11 +154,7 @@ namespace UnityEngine.VR.Utilities
 				{
 					SetRunInEditModeRecursively(child.gameObject, enabled);
 				}
-			}
-
-			public static bool IsEditModeActive(MonoBehaviour mb)
-			{
-				return !Application.isPlaying && mb.runInEditMode;
+#endif
 			}
 
 			public static T AddComponent<T>(GameObject go) where T : Component
@@ -222,7 +219,7 @@ namespace UnityEngine.VR.Utilities
 				{
 					UnityObject.Destroy(o, t);
 				}
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_EDITORVR
 				else
 				{
 					if (Mathf.Approximately(t, 0f))
@@ -283,6 +280,8 @@ namespace UnityEngine.VR.Utilities
 
 				if (!texture)
 					texture = AssetPreview.GetMiniThumbnail(obj);
+#else
+				yield return null;
 #endif
 
 				callback(texture);

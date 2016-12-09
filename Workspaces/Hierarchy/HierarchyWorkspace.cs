@@ -129,9 +129,11 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 
 	static void SelectRow(int instanceID)
 	{
+#if UNITY_EDITOR
 		var gameObject = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
 		if (gameObject)
 			Selection.activeGameObject = gameObject;
+#endif
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

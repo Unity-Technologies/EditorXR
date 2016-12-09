@@ -38,6 +38,7 @@ public class InspectorHeaderItem : InspectorListItem
 
 	public Action<bool> setLocked;
 
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -159,4 +160,5 @@ public class InspectorHeaderItem : InspectorListItem
 		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, highlightMaterials);
 		m_Button.sharedMaterials = highlightMaterials;
 	}
+#endif
 }

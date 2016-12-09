@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
+#if UNITY_EDITOR
 using UnityEditorInternal;
+#endif
 using UnityEngine;
 using UnityEngine.VR.UI;
 
@@ -13,6 +15,7 @@ public class InspectorDropDownItem : InspectorPropertyItem
 	[SerializeField]
 	DropDown m_DropDown;
 
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -167,4 +170,5 @@ public class InspectorDropDownItem : InspectorPropertyItem
 
 		return layerMask;
 	}
+#endif
 }

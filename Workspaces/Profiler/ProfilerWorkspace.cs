@@ -9,6 +9,7 @@ public class ProfilerWorkspace : Workspace
 
 	private Transform m_ProfilerWindow;
 
+#if UNITY_EDITORVR
 	bool inView
 	{
 		get
@@ -73,4 +74,5 @@ public class ProfilerWorkspace : Workspace
 		base.OnDestroy();
 		UnityEditorInternal.ProfilerDriver.profileEditor = false;
 	}
+#endif
 }

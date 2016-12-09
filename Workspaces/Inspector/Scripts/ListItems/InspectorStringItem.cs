@@ -7,6 +7,7 @@ public class InspectorStringItem : InspectorPropertyItem
 	[SerializeField]
 	StandardInputField m_InputField;
 
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -69,4 +70,5 @@ public class InspectorStringItem : InspectorPropertyItem
 	{
 		SetValue(dropObject.ToString());
 	}
+#endif
 }

@@ -39,7 +39,7 @@
 			public static UnityEngine.Camera GetMainCamera()
 			{
 				UnityEngine.Camera camera = UnityEngine.Camera.main;
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_EDITORVR
 				if (!Application.isPlaying && VRView.viewerCamera)
 				{
 					camera = VRView.viewerCamera;
@@ -52,7 +52,7 @@
 			public static Transform GetViewerPivot()
 			{
 				Transform pivot = UnityEngine.Camera.main ? UnityEngine.Camera.main.transform.parent : null;
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_EDITORVR
 				if (!Application.isPlaying)
 				{
 					if (VRView.viewerCamera)

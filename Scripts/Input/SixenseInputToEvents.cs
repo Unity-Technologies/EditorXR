@@ -178,6 +178,7 @@ public class SixenseInputToEvents : MonoBehaviour
 
 	void CalibrateControllers()
 	{
+#if UNITY_EDITORVR
 		// Assume controllers are on the side of the HMD and facing forward (aligned with base)
 		var  span = (SixenseInput.Controllers[1].Position*kHydraUnits - SixenseInput.Controllers[0].Position*kHydraUnits).magnitude;
 		// Distance between controllers
@@ -191,6 +192,7 @@ public class SixenseInputToEvents : MonoBehaviour
 								(m_RotationOffset*SixenseInput.Controllers[0].Position*kHydraUnits);
 		m_ControllerOffsets[1] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (headPivot.right*span*0.5f)) -
 								(m_RotationOffset*SixenseInput.Controllers[1].Position*kHydraUnits);
+#endif
 	}
 #endif
-}
+	}

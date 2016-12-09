@@ -7,7 +7,9 @@ namespace UnityEngine.VR.Actions
 	{
 		public override void ExecuteAction()
 		{
+#if UNITY_EDITOR
 			EditorApplication.isPlaying = true;
+#endif
 		}
 	}
 }

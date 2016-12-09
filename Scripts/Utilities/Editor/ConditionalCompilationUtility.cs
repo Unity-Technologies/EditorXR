@@ -6,61 +6,64 @@ using System.Reflection;
 using UnityEditor;
 using Debug = UnityEngine.Debug;
 
-/// <summary>
-/// The Conditional Compilation Utility (CCU) will add defines to the build settings once dependendent classes have been detected. 
-/// In order for this to specified in any project without the project needing to include the CCU, at least one custom attribute 
-/// must be created in the following form:
-/// 
-/// [Conditional(UNITY_CCU)]									// | This is necessary for CCU to pick up the right attributes
-/// public class OptionalDependencyAttribute : Attribute		// | Must derive from System.Attribute
-/// {
-///		public string dependentClass;							// | Required field specifying the fully qualified dependent class
-///		public string define;									// | Required field specifying the define to add
-/// }
-/// 
-/// Then, simply specify the assembly attribute(s) you created:
-/// [assembly: OptionalDependency("UnityEngine.InputNew.InputSystem", "USE_NEW_INPUT")]
-/// [assembly: OptionalDependency("UnityEditor.SceneViewUtilities", "UNITY_EDITORVR")]
-/// 
-/// namespace Foo
-/// { 
-/// ...
-/// }
-/// </summary>
-[InitializeOnLoad]
-public class ConditionalCompilationUtility
+namespace ConditionalCompilationUtility
 {
-	const string kConditionString = "UNITY_CCU";
-
-	static ConditionalCompilationUtility()
+	/// <summary>
+	/// The Conditional Compilation Utility (CCU) will add defines to the build settings once dependendent classes have been detected. 
+	/// In order for this to specified in any project without the project needing to include the CCU, at least one custom attribute 
+	/// must be created in the following form:
+	/// 
+	/// [Conditional(UNITY_CCU)]									// | This is necessary for CCU to pick up the right attributes
+	/// public class OptionalDependencyAttribute : Attribute		// | Must derive from System.Attribute
+	/// {
+	///		public string dependentClass;							// | Required field specifying the fully qualified dependent class
+	///		public string define;									// | Required field specifying the define to add
+	/// }
+	/// 
+	/// Then, simply specify the assembly attribute(s) you created:
+	/// [assembly: OptionalDependency("UnityEngine.InputNew.InputSystem", "USE_NEW_INPUT")]
+	/// [assembly: OptionalDependency("Valve.VR.IVRSystem", "ENABLE_STEAMVR_INPUT")]
+	/// 
+	/// namespace Foo
+	/// { 
+	/// ...
+	/// }
+	/// </summary>
+	[InitializeOnLoad]
+	public class ConditionalCompilationUtility
 	{
-		var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
-		var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList<string>();
-		if (!defines.Contains(kConditionString, StringComparer.OrdinalIgnoreCase))
+		const string kEnableCCU = "UNITY_CCU";
+
+		static ConditionalCompilationUtility()
 		{
-			defines.Add(kConditionString);
-			PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines.ToArray()));
-			// This will trigger another re-compile, which needs to happen, so all the custom attributes will be visible
-			return;
-		}
+			var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+			var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList<string>();
+			if (!defines.Contains(kEnableCCU, StringComparer.OrdinalIgnoreCase))
+			{
+				defines.Add(kEnableCCU);
+				PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines.ToArray()));
 
-		var conditionalAttributeType = typeof(ConditionalAttribute);
+				// This will trigger another re-compile, which needs to happen, so all the custom attributes will be visible
+				return;
+			}
 
-		const string kDependentClass = "dependentClass";
-		const string kDefine = "define";
+			var conditionalAttributeType = typeof(ConditionalAttribute);
 
-		var attributeTypes = GetAssignableTypes(typeof(Attribute), type => 
+			const string kDependentClass = "dependentClass";
+			const string kDefine = "define";
+
+			var attributeTypes = GetAssignableTypes(typeof(Attribute), type =>
 			{
 				var conditionals = (ConditionalAttribute[])type.GetCustomAttributes(conditionalAttributeType, true);
 
 				foreach (var conditional in conditionals)
 				{
-					if (string.Equals(conditional.ConditionString, kConditionString, StringComparison.OrdinalIgnoreCase))
+					if (string.Equals(conditional.ConditionString, kEnableCCU, StringComparison.OrdinalIgnoreCase))
 					{
 						var dependentClassField = type.GetField(kDependentClass);
 						if (dependentClassField == null)
 						{
-							Debug.LogErrorFormat("[CCU] Attribute type {0} missing field: {1}", type.Name, kDependentClass);							
+							Debug.LogErrorFormat("[CCU] Attribute type {0} missing field: {1}", type.Name, kDependentClass);
 							return false;
 						}
 
@@ -74,82 +77,84 @@ public class ConditionalCompilationUtility
 					}
 					return true;
 				}
-				
+
 				return false;
 			});
 
-		var dependencies = new Dictionary<string, string>();
-		ForEachAssembly(assembly =>
-		{
-			var typeAttributes = assembly.GetCustomAttributes(false).Cast<Attribute>();
-			foreach (var typeAttribute in typeAttributes)
+			var dependencies = new Dictionary<string, string>();
+			ForEachAssembly(assembly =>
 			{
-				if (attributeTypes.Contains(typeAttribute.GetType()))
+				var typeAttributes = assembly.GetCustomAttributes(false).Cast<Attribute>();
+				foreach (var typeAttribute in typeAttributes)
 				{
-					var t = typeAttribute.GetType();
-					// These fields were already validated in a previous step
-					var dependentClass = t.GetField(kDependentClass).GetValue(typeAttribute) as string;
-					var define = t.GetField(kDefine).GetValue(typeAttribute) as string;
+					if (attributeTypes.Contains(typeAttribute.GetType()))
+					{
+						var t = typeAttribute.GetType();
 
-					if (!string.IsNullOrEmpty(dependentClass) && !string.IsNullOrEmpty(define))
-						dependencies.Add(dependentClass, define);
+						// These fields were already validated in a previous step
+						var dependentClass = t.GetField(kDependentClass).GetValue(typeAttribute) as string;
+						var define = t.GetField(kDefine).GetValue(typeAttribute) as string;
+
+						if (!string.IsNullOrEmpty(dependentClass) && !string.IsNullOrEmpty(define))
+							dependencies.Add(dependentClass, define);
+					}
 				}
-			}
-		});
+			});
 
-		ForEachAssembly(assembly =>
-		{
-			foreach (var dependency in dependencies)
+			ForEachAssembly(assembly =>
 			{
-				var type = assembly.GetType(dependency.Key);
-				if (type != null)
+				foreach (var dependency in dependencies)
 				{
-					var define = dependency.Value;
-					if (!defines.Contains(define, StringComparer.OrdinalIgnoreCase))
-						defines.Add(define);
+					var type = assembly.GetType(dependency.Key);
+					if (type != null)
+					{
+						var define = dependency.Value;
+						if (!defines.Contains(define, StringComparer.OrdinalIgnoreCase))
+							defines.Add(define);
+					}
 				}
-			}
-		});
+			});
 
-		PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines.ToArray()));
-	}
+			PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines.ToArray()));
+		}
 
-	static void ForEachAssembly(Action<Assembly> callback)
-	{
-		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		foreach (var assembly in assemblies)
+		static void ForEachAssembly(Action<Assembly> callback)
 		{
-			try
+			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+			foreach (var assembly in assemblies)
 			{
-				callback(assembly);
-			}
-			catch (ReflectionTypeLoadException)
-			{
-				// Skip any assemblies that don't load properly
-				continue;
+				try
+				{
+					callback(assembly);
+				}
+				catch (ReflectionTypeLoadException)
+				{
+					// Skip any assemblies that don't load properly
+					continue;
+				}
 			}
 		}
-	}
 
-	static void ForEachType(Action<Type> callback)
-	{
-		ForEachAssembly(assembly =>
+		static void ForEachType(Action<Type> callback)
 		{
-			var types = assembly.GetTypes();
-			foreach (var t in types)
-				callback(t);
-		});
-	}
+			ForEachAssembly(assembly =>
+			{
+				var types = assembly.GetTypes();
+				foreach (var t in types)
+					callback(t);
+			});
+		}
 
-	static IEnumerable<Type> GetAssignableTypes(Type type, Func<Type, bool> predicate = null)
-	{
-		var list = new List<Type>();
-		ForEachType(t =>
+		static IEnumerable<Type> GetAssignableTypes(Type type, Func<Type, bool> predicate = null)
 		{
-			if (type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract && (predicate == null || predicate(t)))
-				list.Add(t);
-		});
+			var list = new List<Type>();
+			ForEachType(t =>
+			{
+				if (type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract && (predicate == null || predicate(t)))
+					list.Add(t);
+			});
 
-		return list;
+			return list;
+		}
 	}
 }
