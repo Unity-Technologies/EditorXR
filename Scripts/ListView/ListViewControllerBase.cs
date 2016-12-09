@@ -41,7 +41,7 @@ namespace ListView
 		protected Vector3? m_ItemSize;
 
 		public float scrollSpeed { get { return m_ScrollSpeed; } set { m_ScrollSpeed = value; } }
-		private float m_ScrollSpeed = 0.03f;
+		float m_ScrollSpeed = 0.03f;
 
 		protected int m_DataOffset;
 		protected int m_NumRows;
