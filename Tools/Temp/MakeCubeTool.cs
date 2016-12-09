@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.VR.Actions;
+using UnityEngine.VR.Menus;
 using UnityEngine.VR.Tools;
 using Object = UnityEngine.Object;
 
