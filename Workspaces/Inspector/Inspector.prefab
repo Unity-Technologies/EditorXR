@@ -150,7 +150,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_InspectorListView: {fileID: 114000011592582654}
+  m_ListView: {fileID: 114000011592582654}
   m_InspectorScrollHandle: {fileID: 114000010864693748}
   m_InspectorPanel: {fileID: 224000012935315334}
 --- !u!114 &114000010864693748
