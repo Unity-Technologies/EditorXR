@@ -25,6 +25,8 @@ namespace UnityEngine.VR.Proxies
 
 		protected Dictionary<Node, Transform> m_RayOrigins;
 
+		List<Transform> m_ProxyMeshRoots = new List<Transform>();
+
 		public virtual Dictionary<Node, Transform> rayOrigins { get { return m_RayOrigins; } }
 
 		public virtual TrackedObject trackedObjectInput { protected get; set; }
@@ -56,6 +58,9 @@ namespace UnityEngine.VR.Proxies
 			m_RightHand = U.Object.Instantiate(m_RightHandProxyPrefab, transform).transform;
 			var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
 			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
+
+			m_ProxyMeshRoots.Add(leftProxyHelper.meshRoot);
+			m_ProxyMeshRoots.Add(rightProxyHelper.meshRoot);
 
 			m_RayOrigins = new Dictionary<Node, Transform>
 			{
@@ -97,7 +102,13 @@ namespace UnityEngine.VR.Proxies
 
 			foreach (var r in renderers)
 			{
-				m_Materials.AddRange(U.Material.CloneMaterials(r));
+				var rendererTransform = r.transform;
+				foreach (var meshRoot in m_ProxyMeshRoots)
+				{
+					// Contents under various origin transforms should not be collected and altered
+					if (rendererTransform.IsChildOf(meshRoot))
+						m_Materials.AddRange(U.Material.CloneMaterials(r));
+				}
 			}
 
 			// Move controllers up into EVR range, so they render properly over our UI (e.g. manipulators)
