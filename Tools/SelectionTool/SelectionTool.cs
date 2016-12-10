@@ -58,7 +58,6 @@ namespace UnityEngine.VR.Tools
 			if (selectionInput.select.wasJustPressed)
 			{
 				m_PressedObject = rayObject;
-
 				consumeControl(selectionInput.select);
 			}
 
@@ -68,6 +67,10 @@ namespace UnityEngine.VR.Tools
 				if (m_PressedObject == rayObject)
 				{
 					selectObject(m_PressedObject, rayOrigin, selectionInput.multiSelect.isHeld);
+
+					if (m_PressedObject != null)
+						setHighlight(m_PressedObject, false);
+
 					if (selectionInput.multiSelect.isHeld)
 						consumeControl(selectionInput.multiSelect);
 				}
