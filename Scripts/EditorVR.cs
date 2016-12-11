@@ -1883,7 +1883,7 @@ public class EditorVR : MonoBehaviour
 			var deviceData = m_DeviceData[device];
 
 			// Exclusive tools render other tools disabled while they are on the stack
-			if (toolData is IExclusiveMode)
+			if (toolData.tool is IExclusiveMode)
 				SetToolsEnabled(deviceData, false);
 
 			deviceData.toolData.Push(toolData);
