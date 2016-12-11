@@ -1080,7 +1080,7 @@ public class EditorVR : MonoBehaviour
 					var targetObject = source.hoveredObject ? source.hoveredObject : source.draggedObject;
 					if (miniWorld.Contains(source.rayOrigin.position))
 					{
-						if(targetObject && !targetObject.transform.IsChildOf(miniWorld.miniWorldTransform.parent))
+						if (targetObject && !targetObject.transform.IsChildOf(miniWorld.miniWorldTransform.parent))
 							return false;
 					}
 				}
