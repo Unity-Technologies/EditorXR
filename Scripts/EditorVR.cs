@@ -1604,6 +1604,10 @@ public class EditorVR : MonoBehaviour
 		if (selectTool != null)
 			selectTool.selectTool = SelectTool;
 
+		var usesViewerPivot = obj as IUsesViewerPivot;
+		if (usesViewerPivot != null)
+			usesViewerPivot.viewerPivot = U.Camera.GetViewerPivot();
+		
 		var usesStencilRef = obj as IUsesStencilRef;
 		if (usesStencilRef != null)
 		{
