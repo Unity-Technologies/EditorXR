@@ -6,7 +6,7 @@ using UnityEngine.VR.Menus;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-[MainMenuItem("Inspector", "Workspaces", "View and edit properties")]
+[MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
 public class InspectorWorkspace : Workspace, ISelectionChanged
 {
 	public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);

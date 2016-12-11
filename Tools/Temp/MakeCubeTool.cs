@@ -5,7 +5,6 @@ using UnityEngine.InputNew;
 using UnityEngine.VR.Actions;
 using UnityEngine.VR.Menus;
 using UnityEngine.VR.Tools;
-using Object = UnityEngine.Object;
 
 //[MainMenuItem("Cube", "Create", "Create cubes in the scene")]
 [MainMenuItem(false)]

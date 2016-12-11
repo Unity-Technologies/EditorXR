@@ -5,7 +5,7 @@ using UnityEngine.VR.Menus;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-[MainMenuItem("Project view", "Workspaces", "Manage the assets that belong to your project")]
+[MainMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
 public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 {
 	const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds

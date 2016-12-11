@@ -6,7 +6,7 @@ using UnityEngine.VR.Menus;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-[MainMenuItem("Hierarchy", "Workspaces", "List of every GameObject in scene")]
+[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
 public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged
 {
 	const float kYBounds = 0.2f;

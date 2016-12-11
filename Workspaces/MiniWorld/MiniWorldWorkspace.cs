@@ -10,7 +10,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
-[MainMenuItem("Miniworld", "Workspaces", "Editable, smaller version of the world")]
+[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
 public class MiniWorldWorkspace : Workspace, IRayLocking
 {
 	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below

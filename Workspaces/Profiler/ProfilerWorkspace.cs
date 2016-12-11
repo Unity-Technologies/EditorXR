@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.VR.Menus;
 using UnityEngine.VR.Workspaces;
 
-[MainMenuItem("Profiler", "Workspaces", "Reports on time spent")]
+[MainMenuItem("Profiler", "Workspaces", "Analyze your project's performance")]
 public class ProfilerWorkspace : Workspace
 {
 	[SerializeField]

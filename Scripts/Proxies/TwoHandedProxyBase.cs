@@ -93,22 +93,20 @@ namespace UnityEngine.VR.Proxies
 			if (trackedObjectInput == null && m_PlayerInput)
 				trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 
-			Renderer[] renderers = null;
-			while (renderers == null || renderers.Length == 0)
+			List<Renderer> renderers = new List<Renderer>();
+			while (renderers.Count == 0)
 			{
 				yield return null;
-				renderers = GetComponentsInChildren<Renderer>();
+				foreach (var meshRoot in m_ProxyMeshRoots)
+				{
+					// Only add models of the device and not anything else that is spawned underneath the hand (e.g. menu button, cone/ray)
+					renderers.AddRange(meshRoot.GetComponentsInChildren<Renderer>());
+				}
 			}
 
 			foreach (var r in renderers)
 			{
-				var rendererTransform = r.transform;
-				foreach (var meshRoot in m_ProxyMeshRoots)
-				{
-					// Contents under various origin transforms should not be collected and altered
-					if (rendererTransform.IsChildOf(meshRoot))
-						m_Materials.AddRange(U.Material.CloneMaterials(r));
-				}
+				m_Materials.AddRange(U.Material.CloneMaterials(r));
 			}
 
 			// Move controllers up into EVR range, so they render properly over our UI (e.g. manipulators)
