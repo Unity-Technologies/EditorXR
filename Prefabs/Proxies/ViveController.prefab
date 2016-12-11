@@ -1586,6 +1586,7 @@ MonoBehaviour:
   m_MenuOrigin: {fileID: 4000012932055730}
   m_AlternateMenuOrigin: {fileID: 4000012662092726}
   m_PreviewOrigin: {fileID: 4000011094092792}
+  m_MeshRoot: {fileID: 4000010093119470}
 --- !u!114 &114000013615270472
 MonoBehaviour:
   m_ObjectHideFlags: 1
