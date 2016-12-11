@@ -782,7 +782,7 @@ public class EditorVR : MonoBehaviour
 	void UpdateAlternateMenuForDevice(DeviceData deviceData)
 	{
 		var alternateMenu = deviceData.alternateMenu;
-		alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0;
+		alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0 && !(deviceData.currentTool is IExclusiveMode);
 
 		// Move the activator button to an alternate position if the alternate menu will be shown
 		var mainMenuActivator = deviceData.mainMenuActivator;
