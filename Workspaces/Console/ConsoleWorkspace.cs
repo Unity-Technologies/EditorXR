@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
+using UnityEngine.VR.Menus;
 using UnityEngine.VR.Workspaces;
 
+[MainMenuItem("Console", "Workspaces", "View errors, warnings and other messages")]
 public class ConsoleWorkspace : Workspace
 {
 	[SerializeField]
