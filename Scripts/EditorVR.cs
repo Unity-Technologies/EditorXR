@@ -2818,36 +2818,6 @@ public class EditorVR : MonoBehaviour
 	{
 		VRView.onEnable += OnEVREnabled;
 		VRView.onDisable += OnEVRDisabled;
-
-		// Add EVR tags if they don't exist
-		var evrTags = new[] { "VRPlayer", "ShowInMiniWorld" };
-		var asset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
-		if ((asset != null) && (asset.Length > 0))
-		{
-			var so = new SerializedObject(asset[0]);
-			var tags = so.FindProperty("tags");
-
-			foreach (var tag in evrTags)
-			{
-				var found = false;
-				for (int i = 0; i < tags.arraySize; ++i)
-				{
-					if (tags.GetArrayElementAtIndex(i).stringValue == tag)
-					{
-						found = true;
-						break;
-					}
-				}
-
-				if (!found)
-				{
-					tags.InsertArrayElementAtIndex(0);
-					tags.GetArrayElementAtIndex(0).stringValue = tag;
-				}
-			}
-			so.ApplyModifiedProperties();
-			so.Update();
-		}
 	}
 
 	private static void OnEVREnabled()
