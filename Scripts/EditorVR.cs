@@ -2808,7 +2808,7 @@ public class EditorVR : MonoBehaviour
 		VRView.GetWindow<VRView>(true, "EditorVR", true);
 	}
 
-	[MenuItem("Window/EditorVR", true)]
+	[MenuItem("Window/EditorVR %e", true)]
 	public static bool ShouldShowEditorVR()
 	{
 		return PlayerSettings.virtualRealitySupported;
@@ -2818,6 +2818,9 @@ public class EditorVR : MonoBehaviour
 	{
 		VRView.onEnable += OnEVREnabled;
 		VRView.onDisable += OnEVRDisabled;
+
+		if (!PlayerSettings.virtualRealitySupported)
+			Debug.Log("EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings");
 	}
 
 	private static void OnEVREnabled()
