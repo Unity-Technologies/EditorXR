@@ -170,14 +170,14 @@ public class EditorVR : MonoBehaviour
 #endif
 		public ActionMapInput directSelectInput;
 		public IntersectionTester tester;
-		public GameObject dragObject;
+		public GameObject[] dragObjects;
 
 		public Vector3 dragObjectOriginalScale;
 		public Vector3 dragObjectPreviewScale;
 
 		public bool wasHeld;
-		public Vector3 originalPositionOffset;
-		public Quaternion originalRotationOffset;
+		public Vector3[] originalPositionOffsets;
+		public Quaternion[] originalRotationOffsets;
 
 		public bool wasContained;
 	}
@@ -197,6 +197,7 @@ public class EditorVR : MonoBehaviour
 	IGrabObject m_ObjectGrabber;
 
 	bool m_ControllersReady;
+	bool m_RaycastsReady;
 
 	readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();
 
@@ -439,6 +440,8 @@ public class EditorVR : MonoBehaviour
 				m_PixelRaycastIgnoreListDirty = false;
 			}
 
+			m_RaycastsReady = true;
+
 			ForEachRayOrigin((proxy, pair, device, deviceData) =>
 			{
 				m_PixelRaycastModule.UpdateRaycast(pair.Value, m_EventCamera);
@@ -523,7 +526,7 @@ public class EditorVR : MonoBehaviour
 		}
 #endif
 
-		if (!m_ControllersReady)
+		if (!m_ControllersReady || !m_RaycastsReady)
 			return;
 
 		UpdateDefaultProxyRays();
@@ -2131,14 +2134,14 @@ public class EditorVR : MonoBehaviour
 				{
 					// Only one ray can grab an object, otherwise PlaceObject is called on each trigger release
 					// This does not prevent TransformTool from doing two-handed scaling
-					var otherRayHasThisObject = false;
+					var otherRayHasObject = false;
 					foreach (var otherRay in m_MiniWorldRays.Values)
 					{
-						if (otherRay != miniWorldRay && otherRay.dragObject == dragObject)
-							otherRayHasThisObject = true;
+						if (otherRay != miniWorldRay && otherRay.dragObjects != null)
+							otherRayHasObject = true;
 					}
 
-					if (!otherRayHasThisObject)
+					if (!otherRayHasObject)
 					{
 						miniWorldRay.dragObject = dragObject;
 						miniWorldRay.dragObjectOriginalScale = dragObject.transform.localScale;
@@ -2226,7 +2229,7 @@ public class EditorVR : MonoBehaviour
 						if (directSelection != null)
 						{
 							if (miniWorldRay.wasHeld)
-								U.Math.SetTransformOffset(miniWorldRayOrigin, dragObjectTransform, miniWorldRay.originalPositionOffset, miniWorldRay.originalRotationOffset);
+								U.Math.SetTransformOffset(miniWorldRayOrigin, dragObjectTransform, miniWorldRay.originalPositionOffsets, miniWorldRay.originalRotationOffsets);
 							else
 								U.Math.SetTransformOffset(miniWorldRayOrigin, dragObjectTransform, GetPointerLength(miniWorldRayOrigin) * Vector3.forward, Quaternion.identity);
 
@@ -2265,7 +2268,7 @@ public class EditorVR : MonoBehaviour
 								// Drop from TransformTool to take control of object
 								if (directSelection != null)
 								{
-									//directSelection.DropHeldObjects(dragObjectTransform, out miniWorldRay.originalPositionOffset, out miniWorldRay.originalRotationOffset);
+									directSelection.DropHeldObjects(dragObjectTransform, out miniWorldRay.originalPositionOffsets, out miniWorldRay.originalRotationOffsets);
 									miniWorldRay.wasHeld = true;
 								}
 

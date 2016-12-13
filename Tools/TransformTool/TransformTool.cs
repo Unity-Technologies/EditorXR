@@ -208,6 +208,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 					setHighlight(selection, false);
 			}
 
+			m_HoverObjects.Clear();
+
 			foreach (var kvp in directSelection)
 			{
 				var rayOrigin = kvp.Key;
