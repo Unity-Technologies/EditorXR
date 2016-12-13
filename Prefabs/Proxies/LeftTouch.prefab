@@ -1094,3 +1094,4 @@ MonoBehaviour:
   m_MenuOrigin: {fileID: 4000012197213606}
   m_AlternateMenuOrigin: {fileID: 4000011559331518}
   m_PreviewOrigin: {fileID: 4000010810114962}
+  m_MeshRoot: {fileID: 485484}
