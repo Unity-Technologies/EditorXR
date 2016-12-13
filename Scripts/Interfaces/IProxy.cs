@@ -1,5 +1,5 @@
-﻿using UnityEngine.InputNew;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 
 namespace UnityEngine.VR.Proxies

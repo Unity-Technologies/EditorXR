@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine.InputNew;
+﻿using UnityEngine.InputNew;
 
 namespace UnityEngine.VR.Tools
 {

@@ -1,6 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
+/// <summary>
+/// Implementors receive a list of asset types found in the project
+/// </summary>
 public interface IFilterUI
 {
 	/// <summary>

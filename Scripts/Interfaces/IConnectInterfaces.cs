@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace UnityEngine.VR.Tools
+﻿namespace UnityEngine.VR.Tools
 {
 	/// <summary>
 	/// Method signature for connecting interfaces
