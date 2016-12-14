@@ -19,6 +19,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 	Type m_ObjectType;
 	string m_ObjectTypeName;
 
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -84,4 +85,5 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, highlightMaterials);
 		m_Button.sharedMaterials = highlightMaterials;
 	}
+#endif
 }

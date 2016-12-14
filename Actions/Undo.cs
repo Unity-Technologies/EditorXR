@@ -5,7 +5,9 @@
 	{
 		public override void ExecuteAction()
 		{
+#if UNITY_EDITOR
 			UnityEditor.Undo.PerformUndo();
+#endif
 		}
 	}
 }

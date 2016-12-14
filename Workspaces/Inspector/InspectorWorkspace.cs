@@ -27,6 +27,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 	bool m_IsLocked;
 
+#if UNITY_EDITOR
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
@@ -300,4 +301,9 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		if (!m_IsLocked)
 			OnSelectionChanged();
 	}
+#else
+	public void OnSelectionChanged()
+	{
+	}
+#endif
 }

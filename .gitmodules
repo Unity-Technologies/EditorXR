@@ -4,4 +4,4 @@
 	branch = editorvr/custom-player-handle
 [submodule "libs/UnityOctree"]
 	path = libs/UnityOctree
-	url = https://github.com/Nition/UnityOctree.git
+url=https://github.com/Unity-Technologies/UnityOctree.git

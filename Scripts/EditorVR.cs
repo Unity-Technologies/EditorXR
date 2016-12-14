@@ -1,4 +1,7 @@
 //#define ENABLE_MINIWORLD_RAY_SELECTION
+#if !UNITY_EDITORVR
+#pragma warning disable 67, 414, 649
+#endif
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,12 +24,12 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
-#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;
-#endif
 
+#if UNITY_EDITOR
 [InitializeOnLoad]
+#endif
 public class EditorVR : MonoBehaviour
 {
 	delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
@@ -204,9 +207,11 @@ public class EditorVR : MonoBehaviour
 	float m_ProjectFolderLoadStartTime;
 	float m_ProjectFolderLoadYieldTime;
 
+#if UNITY_EDITOR
 	readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
 	HierarchyData m_HierarchyData;
 	HierarchyProperty m_HierarchyProperty;
+#endif
 
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
@@ -229,6 +234,7 @@ public class EditorVR : MonoBehaviour
 	}
 	byte m_StencilRef = kMinStencilRef;
 
+#if UNITY_EDITORVR
 	private void Awake()
 	{
 		ClearDeveloperConsoleIfNecessary();
@@ -2865,5 +2871,5 @@ public class EditorVR : MonoBehaviour
 		U.Object.Destroy(s_InputManager.gameObject);
 	}
 #endif
+#endif
 }
-
