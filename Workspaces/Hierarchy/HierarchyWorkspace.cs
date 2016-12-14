@@ -2,10 +2,11 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
-using UnityEngine.VR.Tools;
+using UnityEngine.VR.Menus;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
 
+[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
 public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged
 {
 	const float kYBounds = 0.2f;

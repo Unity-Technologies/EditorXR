@@ -25,6 +25,8 @@ namespace UnityEngine.VR.Proxies
 
 		protected Dictionary<Node, Transform> m_RayOrigins;
 
+		List<Transform> m_ProxyMeshRoots = new List<Transform>();
+
 		public virtual Dictionary<Node, Transform> rayOrigins { get { return m_RayOrigins; } }
 
 		public virtual TrackedObject trackedObjectInput { protected get; set; }
@@ -57,6 +59,9 @@ namespace UnityEngine.VR.Proxies
 			var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
 			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 
+			m_ProxyMeshRoots.Add(leftProxyHelper.meshRoot);
+			m_ProxyMeshRoots.Add(rightProxyHelper.meshRoot);
+
 			m_RayOrigins = new Dictionary<Node, Transform>
 			{
 				{ Node.LeftHand, leftProxyHelper.rayOrigin },
@@ -88,11 +93,15 @@ namespace UnityEngine.VR.Proxies
 			if (trackedObjectInput == null && m_PlayerInput)
 				trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 
-			Renderer[] renderers = null;
-			while (renderers == null || renderers.Length == 0)
+			List<Renderer> renderers = new List<Renderer>();
+			while (renderers.Count == 0)
 			{
 				yield return null;
-				renderers = GetComponentsInChildren<Renderer>();
+				foreach (var meshRoot in m_ProxyMeshRoots)
+				{
+					// Only add models of the device and not anything else that is spawned underneath the hand (e.g. menu button, cone/ray)
+					renderers.AddRange(meshRoot.GetComponentsInChildren<Renderer>());
+				}
 			}
 
 			foreach (var r in renderers)

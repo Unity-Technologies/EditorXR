@@ -26,10 +26,11 @@ namespace UnityEngine.VR.Proxies
 #if ENABLE_STEAMVR_INPUT
 		public override IEnumerator Start()
 		{
+			SteamVR_Render.instance.transform.parent = gameObject.transform;
+
 			while (!active)
 				yield return null;
 
-			SteamVR_Render.instance.transform.parent = gameObject.transform;
 			m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(true);
 			m_LeftModel.enabled = true;
 			m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>(true);
@@ -40,7 +41,7 @@ namespace UnityEngine.VR.Proxies
 
 		public override void Update()
 		{
-			if (active)
+			if (active && m_LeftModel && m_RightModel)
 			{
 				//If proxy is not mapped to a physical input device, check if one has been assigned
 				if ((int) m_LeftModel.index == -1 && m_InputToEvents.steamDevice[0] != -1)
