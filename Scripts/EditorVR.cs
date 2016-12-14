@@ -2023,12 +2023,12 @@ public class EditorVR : MonoBehaviour
 			//Clean up MiniWorldRays
 			m_MiniWorlds.Remove(miniWorld);
 			var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_MiniWorldRays);
-			foreach (var ray in miniWorldRaysCopy)
+#if ENABLE_MINIWORLD_RAY_SELECTION
+			var maps = m_PlayerHandle.maps;
+#endif
+			foreach(var ray in miniWorldRaysCopy)
 			{
 				var miniWorldRay = ray.Value;
-#if ENABLE_MINIWORLD_RAY_SELECTION
-				var maps = m_PlayerHandle.maps;
-#endif
 				if (miniWorldRay.miniWorld == miniWorld)
 				{
 					var rayOrigin = ray.Key;

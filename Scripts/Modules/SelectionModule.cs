@@ -99,7 +99,7 @@ namespace UnityEngine.VR.Modules
 			else
 			{
 				groupRoot = GetGroupRoot(hoveredObject.transform).gameObject;
-				if(groupRoot && groupRoot != m_CurrentGroupRoot)
+				if (groupRoot && groupRoot != m_CurrentGroupRoot)
 					hoveredObject = groupRoot;
 			}
 			return hoveredObject;
