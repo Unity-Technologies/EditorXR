@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 /// <summary>
-/// Handles raw input processing for Sixense devices
+/// Sends events to the input system based on native Sixense SDK calls
 /// </summary>
 public class SixenseInputToEvents : MonoBehaviour
 {

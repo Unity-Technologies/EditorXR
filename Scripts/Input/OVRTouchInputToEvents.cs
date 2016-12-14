@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 /// <summary>
-/// Handles raw Oculus input processing
+/// Sends events to the input system based on native Oculus SDK calls
 /// </summary>
 public class OVRTouchInputToEvents : MonoBehaviour
 {

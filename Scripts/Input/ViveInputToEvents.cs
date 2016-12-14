@@ -4,7 +4,7 @@ using UnityEngine.InputNew;
 using Valve.VR;
 
 /// <summary>
-/// Handles raw Vive input processing
+/// Sends events to the input system based on native SteamVR SDK calls
 /// </summary>
 public class ViveInputToEvents : MonoBehaviour
 {

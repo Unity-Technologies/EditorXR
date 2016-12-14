@@ -4,6 +4,9 @@ using UnityEngine.InputNew;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.Modules;
 
+/// <summary>
+/// Provides methods and delegates used to directly select and grab scene objects
+/// </summary>
 public interface IGrabObject
 {
 	/// <summary>
