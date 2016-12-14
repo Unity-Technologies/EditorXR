@@ -7,7 +7,7 @@ namespace UnityEngine.VR.Modules
 {
 	public class SelectionModule : MonoBehaviour, IGameObjectLocking, ISelectionChanged
 	{
-		GameObject m_CurrentPrefabRoot;
+		GameObject m_CurrentGroupRoot;
 		readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state
 
 		public Action<GameObject, bool> setLocked { private get; set; }
@@ -23,7 +23,7 @@ namespace UnityEngine.VR.Modules
 					return null;
 
 				GameObject newPrefabRoot;
-				hoveredObject = CheckPrefabRoot(hoveredObject, out newPrefabRoot);
+				hoveredObject = CheckGroupRoot(hoveredObject, out newPrefabRoot);
 			}
 
 			// Do this after checking for a prefab so that we check if the prefab is locked
@@ -45,16 +45,16 @@ namespace UnityEngine.VR.Modules
 				return;
 
 			// Select the prefab root if we don't already have one selected
-			GameObject newPrefabRoot = null;
+			GameObject groupRoot = null;
 			if (hoveredObject != null)
 			{
 				if (hoveredObject.isStatic)
 					return;
 
-				hoveredObject = CheckPrefabRoot(hoveredObject, out newPrefabRoot);
+				hoveredObject = CheckGroupRoot(hoveredObject, out groupRoot);
 			}
 
-			m_CurrentPrefabRoot = newPrefabRoot;
+			m_CurrentGroupRoot = groupRoot;
 			m_SelectedObjects.Clear();
 
 			// Multi-Select
@@ -87,23 +87,44 @@ namespace UnityEngine.VR.Modules
 				selected(rayOrigin);
 		}
 
-		GameObject CheckPrefabRoot(GameObject hoveredObject, out GameObject prefabRoot)
+		GameObject CheckGroupRoot(GameObject hoveredObject, out GameObject groupRoot)
 		{
 			// If gameObject is within a prefab and not the current prefab, choose prefab root
-			prefabRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
-			if (prefabRoot)
+			groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
+			if (groupRoot && groupRoot != hoveredObject)
 			{
-				if (prefabRoot != m_CurrentPrefabRoot)
-					hoveredObject = prefabRoot;
+				if (groupRoot != m_CurrentGroupRoot)
+					hoveredObject = groupRoot;
+			}
+			else
+			{
+				groupRoot = GetGroupRoot(hoveredObject.transform).gameObject;
+				if(groupRoot && groupRoot != m_CurrentGroupRoot)
+					hoveredObject = groupRoot;
 			}
 			return hoveredObject;
+		}
+
+		static Transform GetGroupRoot(Transform transform)
+		{
+			var parent = transform.parent;
+			if (parent)
+			{
+				if (parent.GetComponent<Renderer>())
+					return GetGroupRoot(parent);
+
+				return parent;
+			}
+
+
+			return transform;
 		}
 
 		public void OnSelectionChanged()
 		{
 			// Clear prefab root if selection is cleared (m_SelectedObjects clears itself in SelectObject)
 			if (Selection.objects.Length == 0)
-				m_CurrentPrefabRoot = null;
+				m_CurrentGroupRoot = null;
 		}
 	}
 }
