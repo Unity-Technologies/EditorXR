@@ -11,7 +11,7 @@ namespace UnityEngine.VR.Utilities
 		static TagManager()
 		{
 			// Add EVR tags and layers if they don't exist
-			var evrTags = new[] { "VRPlayer", "ShowInMiniWorld" };
+			var evrTags = new[] { "VRPlayer", "ShowInMiniWorld", "MiniWorldCamera" };
 			foreach (var tag in evrTags)
 			{
 				AddTag(tag);
