@@ -192,6 +192,7 @@ public class EditorVR : MonoBehaviour
 	StandardManipulator m_StandardManipulator;
 	ScaleManipulator m_ScaleManipulator;
 
+	ITransformer m_Transformer;
 	IGrabObject m_ObjectGrabber;
 
 	bool m_ControllersReady;
@@ -213,6 +214,8 @@ public class EditorVR : MonoBehaviour
 	readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
 	readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
+
+	readonly List<SelectionInput> m_SelectionInputs = new List<SelectionInput>();
 
 	byte stencilRef
 	{
@@ -624,6 +627,15 @@ public class EditorVR : MonoBehaviour
 					process.ProcessInput(toolData.input, ConsumeControl);
 			}
 		}
+
+		// Hide manipulator while direct selecting
+		var hideManipulator = false;
+		foreach (var input in m_SelectionInputs)
+		{
+			if (input.multiSelect.isHeld)
+				hideManipulator = true;
+		}
+		m_Transformer.hideManipulator = hideManipulator;
 	}
 
 	void UpdateKeyboardMallets()
@@ -729,6 +741,7 @@ public class EditorVR : MonoBehaviour
 
 		var transformTool = SpawnTool(typeof(TransformTool), out devices);
 		m_ObjectGrabber = transformTool.tool as IGrabObject;
+		m_Transformer = transformTool.tool as ITransformer;
 
 		foreach (var deviceDataPair in m_DeviceData)
 		{
@@ -745,6 +758,7 @@ public class EditorVR : MonoBehaviour
 			selectionTool.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 			selectionTool.hovered += m_LockModule.OnHovered;
 			selectionTool.isRayActive = IsRayActive;
+			m_SelectionInputs.Add((SelectionInput)toolData.input);
 
 			toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 			AddToolToDeviceData(toolData, devices);

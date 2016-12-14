@@ -143,6 +143,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 	public Action<GameObject> deleteSceneObject { private get; set; }
 
+	public bool hideManipulator { private get; set; }
+
 	void Awake()
 	{
 		m_PivotModeToggleAction.execute = TogglePivotMode;
@@ -453,8 +455,14 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		if (selectionTransforms.Length <= 0)
 			return;
 
-		UpdateSelectionBounds();
 		var manipulatorGameObject = m_CurrentManipulator.gameObject;
+		if (hideManipulator)
+		{
+			manipulatorGameObject.SetActive(false);
+			return;
+		}
+
+		UpdateSelectionBounds();
 		manipulatorGameObject.SetActive(true);
 		var manipulatorTransform = manipulatorGameObject.transform;
 		var activeTransform = Selection.activeTransform;
