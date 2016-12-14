@@ -27,11 +27,6 @@ using UnityEngine.VR.Workspaces;
 using UnityEditor;
 using UnityEditor.VR;
 
-#if !UNITY_EDITORVR
-// Legacy support for pre-experimental builds
-[assembly: OptionalDependency("UnityEditor.SceneViewUtilities", "UNITY_EDITORVR")]
-#endif
-
 #if UNITY_EDITOR
 [InitializeOnLoad]
 #endif
