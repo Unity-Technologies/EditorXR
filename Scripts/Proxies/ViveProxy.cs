@@ -23,9 +23,9 @@ namespace UnityEngine.VR.Proxies
 			m_InputToEvents = U.Object.AddComponent<ViveInputToEvents>(gameObject);
 		}
 
-#if ENABLE_STEAMVR_INPUT
 		public override IEnumerator Start()
 		{
+#if ENABLE_STEAMVR_INPUT
 			SteamVR_Render.instance.transform.parent = gameObject.transform;
 
 			while (!active)
@@ -37,8 +37,12 @@ namespace UnityEngine.VR.Proxies
 			m_RightModel.enabled = true;
 
 			yield return base.Start();
+#else
+			yield break;
+#endif
 		}
 
+#if ENABLE_STEAMVR_INPUT
 		public override void Update()
 		{
 			if (active && m_LeftModel && m_RightModel)
