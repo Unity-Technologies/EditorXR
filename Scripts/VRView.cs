@@ -6,7 +6,9 @@ using UnityEngine.Assertions;
 using System.Collections;
 using UnityEditor.VR.Helpers;
 using System.Reflection;
+#if ENABLE_STEAMVR_INPUT
 using Valve.VR;
+#endif
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.VR
@@ -194,7 +196,14 @@ namespace UnityEditor.VR
 			VRSettings.StartRenderingToDevice();
 			InputTracking.Recenter();
 			// HACK: Fix VRSettings.enabled or some other API to check for missing HMD
-			m_VRInitialized =  OVRPlugin.initialized || (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
+			m_VRInitialized = false;
+#if ENABLE_OVR_INPUT
+			m_VRInitialized |= OVRPlugin.initialized;
+#endif
+
+#if ENABLE_STEAMVR_INPUT
+			m_VRInitialized |= (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
+#endif
 
 			onEnable();
 		}
