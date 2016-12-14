@@ -33,7 +33,7 @@ public interface IGrabObject
 	/// <param name="input">DirectSelect ActionMapInput for the holding ray</param>
 	/// <param name="destRayOrigin">Destination rayOrigin</param>
 	/// <param name="deltaOffset">Change in position offset (added to GrabData.positionOffset)</param>
-	void TransferHeldObjects(Transform rayOrigin, ActionMapInput input, Transform destRayOrigin, Vector3 deltaOffset);
+	void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset);
 
 	/// <summary>
 	/// Adds the given object to the held objects for the given node and rayOrigin

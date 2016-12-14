@@ -386,8 +386,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 			}
 		}
 
-		positionOffsets = new Vector3[0];
-		rotationOffsets = new Quaternion[0];
+		positionOffsets = null;
+		rotationOffsets = null;
 	}
 
 	public Transform[] GetHeldObjects(Transform rayOrigin)
@@ -401,14 +401,13 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		return null;
 	}
 
-	public void TransferHeldObjects(Transform rayOrigin, ActionMapInput input, Transform destRayOrigin, Vector3 deltaOffset)
+	public void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset)
 	{
 		foreach (var grabData in m_GrabData.Values)
 		{
 			if (grabData.rayOrigin == rayOrigin)
 			{
 				grabData.rayOrigin = destRayOrigin;
-				grabData.input = (DirectSelectInput)input;
 				var positionOffsets = grabData.positionOffsets;
 				for (int i = 0; i < positionOffsets.Length; i++)
 				{
