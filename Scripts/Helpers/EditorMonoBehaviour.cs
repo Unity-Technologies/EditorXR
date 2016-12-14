@@ -2,7 +2,9 @@
 
 namespace UnityEditor.VR.Helpers
 {
-	// Used for launching co-routines
+	/// <summary>
+	/// Used for launching co-routines
+	/// </summary>
 	public class EditorMonoBehaviour : MonoBehaviour
 	{
 	}

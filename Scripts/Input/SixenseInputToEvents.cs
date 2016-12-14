@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEditor.VR;
 using UnityEngine;
 using UnityEngine.InputNew;
 
+/// <summary>
+/// Handles raw input processing for Sixense devices
+/// </summary>
 public class SixenseInputToEvents : MonoBehaviour
 {
 	public const uint kControllerCount = SixenseInput.MAX_CONTROLLERS;

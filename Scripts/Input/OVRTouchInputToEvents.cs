@@ -2,6 +2,9 @@
 using UnityEngine;
 using UnityEngine.InputNew;
 
+/// <summary>
+/// Handles raw Oculus input processing
+/// </summary>
 public class OVRTouchInputToEvents : MonoBehaviour
 {
 	public const uint kControllerCount = 2;

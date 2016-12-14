@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.InputNew;
 using Valve.VR;
 
+/// <summary>
+/// Handles raw Vive input processing
+/// </summary>
 public class ViveInputToEvents : MonoBehaviour
 {
 	private enum XorY { X, Y }
