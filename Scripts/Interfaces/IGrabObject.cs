@@ -36,13 +36,13 @@ public interface IGrabObject
 	void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset);
 
 	/// <summary>
-	/// Adds the given object to the held objects for the given node and rayOrigin
+	/// Adds the given objects to the held objects for the given node and rayOrigin
 	/// </summary>
 	/// <param name="node">The node associtated with the rayOrigin</param>
 	/// <param name="rayOrigin">The rayOrigin to attach the object to</param>
-	/// <param name="grabbedObject">The object we are adding</param>
 	/// <param name="input">The input used to control selection</param>
-	void GrabSelection(Node node, Transform rayOrigin, ActionMapInput input);
+	/// <param name="objects">The objects being grabbed</param>
+	void GrabObjects(Node node, Transform rayOrigin, ActionMapInput input, Transform[] objects);
 
 	/// <summary>
 	/// Returns true if the object can be grabbed

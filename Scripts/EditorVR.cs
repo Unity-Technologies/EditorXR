@@ -2226,14 +2226,12 @@ public class EditorVR : MonoBehaviour
 						{
 							var dragObject = dragObjects[i];
 							dragObject.localScale = originalScales[i];
-
-							// Add the object (back) to TransformTool
-							if (directSelection != null)
-							{
-								U.Math.SetTransformOffset(miniWorldRayOrigin, dragObject, positionOffsets[i], rotationOffsets[i]);
-								directSelection.GrabSelection(miniWorldRay.node, miniWorldRayOrigin, directSelectInput);
-							}
+							U.Math.SetTransformOffset(miniWorldRayOrigin, dragObject, positionOffsets[i], rotationOffsets[i]);
 						}
+
+						// Add the object (back) to TransformTool
+						if (directSelection != null)
+							directSelection.GrabObjects(miniWorldRay.node, miniWorldRayOrigin, directSelectInput, dragObjects);
 					}
 				}
 				else

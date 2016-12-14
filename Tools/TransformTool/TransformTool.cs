@@ -21,24 +21,24 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		public DirectSelectInput input;
 		public Vector3[] positionOffsets { get; private set; }
 		public Quaternion[] rotationOffsets { get; private set; }
-		public List<Transform> grabbedObjects;
+		public Transform[] grabbedObjects;
 		Vector3[] initialScales;
 
-		public GrabData(Transform rayOrigin, DirectSelectInput input)
+		public GrabData(Transform rayOrigin, DirectSelectInput input, Transform[] grabbedObjects)
 		{
 			this.rayOrigin = rayOrigin;
 			this.input = input;
-			grabbedObjects = new List<Transform>(Selection.transforms);
+			this.grabbedObjects = grabbedObjects;
 			Reset();
 		}
 
 		public void Reset()
 		{
-			var count = grabbedObjects.Count;
-			positionOffsets = new Vector3[grabbedObjects.Count];
-			rotationOffsets = new Quaternion[grabbedObjects.Count];
-			initialScales = new Vector3[grabbedObjects.Count];
-			for (int i = 0; i < count; i++)
+			var length = grabbedObjects.Length;
+			positionOffsets = new Vector3[length];
+			rotationOffsets = new Quaternion[length];
+			initialScales = new Vector3[length];
+			for (int i = 0; i < length; i++)
 			{
 				var grabbedObject = grabbedObjects[i];
 				U.Math.GetTransformOffset(rayOrigin, grabbedObject, out positionOffsets[i], out rotationOffsets[i]);
@@ -48,7 +48,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 		public void UpdatePositions()
 		{
-			for (int i = 0; i < grabbedObjects.Count; i++)
+			for (int i = 0; i < grabbedObjects.Length; i++)
 			{
 				U.Math.SetTransformOffset(rayOrigin, grabbedObjects[i], positionOffsets[i], rotationOffsets[i]);
 			}
@@ -56,7 +56,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 		public void ScaleObjects(float scaleFactor)
 		{
-			for (int i = 0; i < grabbedObjects.Count; i++)
+			for (int i = 0; i < grabbedObjects.Length; i++)
 			{
 				var grabbedObject = grabbedObjects[i];
 				grabbedObject.position = rayOrigin.position + positionOffsets[i] * scaleFactor;
@@ -251,7 +251,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 							var otherData = grabData.Value;
 							m_ScaleStartDistance = (rayOrigin.position - otherData.rayOrigin.position).magnitude;
 							m_ScaleFirstNode = otherNode;
-							for (int i = 0; i < otherData.grabbedObjects.Count; i++)
+							for (int i = 0; i < otherData.grabbedObjects.Length; i++)
 							{
 								otherData.positionOffsets[i] = otherData.grabbedObjects[i].position - otherData.rayOrigin.position;
 							}
@@ -259,7 +259,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 						}
 					}
 
-					m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput);
+					m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput, Selection.transforms);
 
 					setHighlight(selectedObject, false);
 
@@ -419,9 +419,9 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		}
 	}
 
-	public void GrabSelection(Node node, Transform rayOrigin, ActionMapInput input)
+	public void GrabObjects(Node node, Transform rayOrigin, ActionMapInput input, Transform[] objects)
 	{
-		m_GrabData[node] = new GrabData(rayOrigin, (DirectSelectInput)input);
+		m_GrabData[node] = new GrabData(rayOrigin, (DirectSelectInput)input, objects);
 	}
 
 	void DropObjects(Node inputNode)
