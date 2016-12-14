@@ -1,4 +1,7 @@
-﻿using UnityEditor;
+﻿#if !UNITY_EDITORVR
+#pragma warning disable 414, 649
+#endif
+using UnityEditor;
 using UnityEngine;
 using UnityEditor.VR;
 using UnityEngine.VR.Utilities;
@@ -29,6 +32,7 @@ namespace UnityEngine.VR.Helpers
 
 		public int hmdOnlyLayerMask { get { return LayerMask.GetMask("HMDOnly"); } }
 
+#if UNITY_EDITORVR
 		void Awake()
 		{
 			m_SmoothCamera = GetComponent<Camera>();
@@ -89,5 +93,6 @@ namespace UnityEngine.VR.Helpers
 				hidden[i].enabled = hiddenEnabled[i];
 			}
 		}
+#endif
 	}
 }

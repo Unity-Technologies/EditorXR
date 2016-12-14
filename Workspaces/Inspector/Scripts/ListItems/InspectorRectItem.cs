@@ -11,6 +11,7 @@ public class InspectorRectItem : InspectorPropertyItem
 	[SerializeField]
 	NumericInputField[] m_SizeFields;
 
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -140,4 +141,5 @@ public class InspectorRectItem : InspectorPropertyItem
 			data.serializedObject.ApplyModifiedProperties();
 		}
 	}
+#endif
 }
