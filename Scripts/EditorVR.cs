@@ -789,7 +789,7 @@ public class EditorVR : MonoBehaviour
 	void UpdateAlternateMenuForDevice(DeviceData deviceData)
 	{
 		var alternateMenu = deviceData.alternateMenu;
-		alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0;
+		alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0 && !(deviceData.currentTool is IExclusiveMode);
 
 		// Move the activator button to an alternate position if the alternate menu will be shown
 		var mainMenuActivator = deviceData.mainMenuActivator;
@@ -1615,6 +1615,10 @@ public class EditorVR : MonoBehaviour
 		if (selectTool != null)
 			selectTool.selectTool = SelectTool;
 
+		var usesViewerPivot = obj as IUsesViewerPivot;
+		if (usesViewerPivot != null)
+			usesViewerPivot.viewerPivot = U.Camera.GetViewerPivot();
+		
 		var usesStencilRef = obj as IUsesStencilRef;
 		if (usesStencilRef != null)
 		{
@@ -1894,7 +1898,7 @@ public class EditorVR : MonoBehaviour
 			var deviceData = m_DeviceData[device];
 
 			// Exclusive tools render other tools disabled while they are on the stack
-			if (toolData is IExclusiveMode)
+			if (toolData.tool is IExclusiveMode)
 				SetToolsEnabled(deviceData, false);
 
 			deviceData.toolData.Push(toolData);
