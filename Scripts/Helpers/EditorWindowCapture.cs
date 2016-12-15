@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿#if !UNITY_EDITOR
+#pragma warning disable 414
+#endif
+
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 using System;
@@ -13,6 +17,7 @@ public class EditorWindowCapture : MonoBehaviour
 	[SerializeField]
 	private Rect m_Position = new Rect(0f, 0f, 600f, 400f);
 
+#if UNITY_EDITOR
 	private EditorWindow m_Window;
 	private Object m_GuiView;
 	private MethodInfo m_GrabPixels;
@@ -20,7 +25,6 @@ public class EditorWindowCapture : MonoBehaviour
 	public RenderTexture texture { get; private set; }
 	public bool capture { get; set; }
 
-#if UNITY_EDITOR
 	private void Start()
 	{
 		Assembly asm = Assembly.GetAssembly(typeof(UnityEditor.Editor));

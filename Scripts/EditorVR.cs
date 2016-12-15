@@ -1,4 +1,7 @@
 //#define ENABLE_MINIWORLD_RAY_SELECTION
+#if !UNITY_EDITORVR
+#pragma warning disable 67, 414, 649
+#endif
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,12 +24,13 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
-#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;
-#endif
 
+#if UNITY_EDITOR
 [InitializeOnLoad]
+#endif
+[RequiresTag(kVRPlayerTag)]
 public class EditorVR : MonoBehaviour
 {
 	delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
@@ -204,9 +208,11 @@ public class EditorVR : MonoBehaviour
 	float m_ProjectFolderLoadStartTime;
 	float m_ProjectFolderLoadYieldTime;
 
+#if UNITY_EDITOR
 	readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
 	HierarchyData m_HierarchyData;
 	HierarchyProperty m_HierarchyProperty;
+#endif
 
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
@@ -229,6 +235,7 @@ public class EditorVR : MonoBehaviour
 	}
 	byte m_StencilRef = kMinStencilRef;
 
+#if UNITY_EDITORVR
 	private void Awake()
 	{
 		ClearDeveloperConsoleIfNecessary();
@@ -2821,6 +2828,26 @@ public class EditorVR : MonoBehaviour
 
 		if (!PlayerSettings.virtualRealitySupported)
 			Debug.Log("EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings");
+
+		// Add EVR tags and layers if they don't exist
+		var tags = new List<string>();
+		var layers = new List<string>();
+		U.Object.ForEachType(t =>
+		{
+			var tagAttributes = (RequiresTagAttribute[])t.GetCustomAttributes(typeof(RequiresTagAttribute), true);
+			foreach (var attribute in tagAttributes)
+				tags.Add(attribute.tag);
+
+			var layerAttributes = (RequiresLayerAttribute[])t.GetCustomAttributes(typeof(RequiresLayerAttribute), true);
+			foreach (var attribute in layerAttributes)
+				layers.Add(attribute.layer);
+		});
+
+		foreach (var tag in tags)
+			TagManager.AddTag(tag);
+
+		foreach (var layer in layers)
+			TagManager.AddLayer(layer);
 	}
 
 	private static void OnEVREnabled()
@@ -2868,5 +2895,5 @@ public class EditorVR : MonoBehaviour
 		U.Object.Destroy(s_InputManager.gameObject);
 	}
 #endif
+#endif
 }
-
