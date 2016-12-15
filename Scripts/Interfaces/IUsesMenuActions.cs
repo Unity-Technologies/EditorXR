@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using UnityEngine.VR.Actions;
+using UnityEngine.Experimental.EditorVR.Actions;
 
 /// <summary>
 /// Decorates a class that wants to receive menu actions

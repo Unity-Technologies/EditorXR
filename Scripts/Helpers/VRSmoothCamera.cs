@@ -2,9 +2,9 @@
 #pragma warning disable 414, 649
 #endif
 using UnityEditor;
-using UnityEditor.VR;
+using UnityEditor.Experimental.EditorVR;
 
-namespace UnityEngine.VR.Helpers
+namespace UnityEngine.Experimental.EditorVR.Helpers
 {
 	/// <summary>
 	/// A preview camera that provides for smoothing of the position and look vector

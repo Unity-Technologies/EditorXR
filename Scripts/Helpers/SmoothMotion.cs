@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Helpers
+﻿namespace UnityEngine.Experimental.EditorVR.Helpers
 {
 	/// <summary>
 	/// Provides for smooth translation and/or rotation of an object

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.UI;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.UI;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Handles
+namespace UnityEngine.Experimental.EditorVR.Handles
 {
 	/// <summary>
 	/// Base class for providing draggable handles in 3D (requires PhysicsRaycaster)

@@ -1,8 +1,8 @@
-﻿namespace UnityEngine.VR.Utilities
+﻿namespace UnityEngine.Experimental.EditorVR.Utilities
 {
 	using UnityEngine;
 #if UNITY_EDITOR
-	using UnityEditor.VR;
+	using UnityEditor.Experimental.EditorVR;
 #endif
 
 	/// <summary>

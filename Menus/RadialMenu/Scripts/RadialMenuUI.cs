@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine.UI;
-using UnityEngine.VR.Actions;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Extensions;
+using UnityEngine.Experimental.EditorVR.Actions;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Extensions;
 
-namespace UnityEngine.VR.Menus
+namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	public class RadialMenuUI : MonoBehaviour
 	{

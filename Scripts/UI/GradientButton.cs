@@ -2,12 +2,12 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Helpers;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Helpers;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.UI
+namespace UnityEngine.Experimental.EditorVR.UI
 {
 	public class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 	{

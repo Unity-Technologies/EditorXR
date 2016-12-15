@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR;
+using UnityEngine.Experimental.EditorVR;
 
 [assembly: OptionalDependency("OVRInput", "ENABLE_OVR_INPUT")]
 

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.UI;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.UI;
 
 public class HierarchyUI : MonoBehaviour
 {

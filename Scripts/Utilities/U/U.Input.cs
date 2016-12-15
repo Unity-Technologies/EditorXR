@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Utilities
+﻿namespace UnityEngine.Experimental.EditorVR.Utilities
 {
 	using System.Collections.Generic;
 	using UnityEngine.InputNew;

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine.UI;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Manipulators;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.UI;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Manipulators;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.UI;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Workspaces
+namespace UnityEngine.Experimental.EditorVR.Workspaces
 {
 	public class WorkspaceUI : MonoBehaviour, IUsesStencilRef
 	{

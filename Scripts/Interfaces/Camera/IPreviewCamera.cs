@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Helpers
+﻿namespace UnityEngine.Experimental.EditorVR.Helpers
 {
 	/// <summary>
 	/// For specifying an alternate preview camera

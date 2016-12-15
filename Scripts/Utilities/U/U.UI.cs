@@ -1,9 +1,9 @@
 using System;
 using System.Reflection;
-using UnityEngine.VR.Modules;
+using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEditor;
 
-namespace UnityEngine.VR.Utilities
+namespace UnityEngine.Experimental.EditorVR.Utilities
 {
 	/// <summary>
 	/// EditorVR Utilities

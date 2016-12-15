@@ -1,6 +1,6 @@
 ﻿using System;
-using UnityEditor.VR;
-using UnityEngine.VR;
+using UnityEditor.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR;
 using UnityEngine;
 using UnityEngine.InputNew;
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.VR.UI;
+using UnityEngine.Experimental.EditorVR.UI;
 
 public class InspectorRectItem : InspectorPropertyItem
 {
