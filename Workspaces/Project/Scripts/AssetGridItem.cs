@@ -12,7 +12,7 @@ using UnityEngine.VR.Utilities;
 public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
 {
 	private const float kPreviewDuration = 0.1f;
-	private const float kMaxPreviewScale = 0.33f;
+	private const float kMaxPreviewScale = 0.2f;
 	private const float kRotateSpeed = 50f;
 	private const float kTransitionDuration = 0.1f;
 	const int kPreviewRenderQueue = 9200;
@@ -460,6 +460,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	IEnumerator ShowGrabbedObject()
 	{
 		var currentLocalScale = m_DragObject.localScale;
+		var targetScale = Vector3.one * kMaxPreviewScale;
 		var currentPreviewScale = Vector3.one;
 		var currentPreviewOffset = Vector3.zero;
 
@@ -479,7 +480,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 				yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
 
 			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
-			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, Vector3.one, currentTime);
+			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, targetScale, currentTime);
 
 			if (m_PreviewObjectClone)
 			{
@@ -490,7 +491,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 			yield return null;
 		}
 
-		m_DragObject.localScale = Vector3.one;
+		m_DragObject.localScale = targetScale;
 
 		if (m_PreviewObjectClone)
 			m_PreviewObjectClone.localScale = m_GrabPreviewTargetScale;
