@@ -6,6 +6,9 @@ using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("SixenseInput", "ENABLE_SIXENSE_INPUT")]
 
+/// <summary>
+/// Sends events to the input system based on native Sixense SDK calls
+/// </summary>
 public class SixenseInputToEvents : MonoBehaviour
 {
 #if ENABLE_SIXENSE_INPUT

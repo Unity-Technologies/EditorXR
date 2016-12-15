@@ -1,7 +1,13 @@
 ﻿namespace UnityEngine.VR.Tools
 {
-	public interface IUsesViewerPivot
+    /// <summary>
+    /// Gives decorated class access to the Viewer Pivot
+    /// </summary>
+    public interface IUsesViewerPivot
 	{
+	    /// <summary>
+	    /// The Viewer Pivot
+	    /// </summary>
 		Transform viewerPivot { set; }
 	}
 }

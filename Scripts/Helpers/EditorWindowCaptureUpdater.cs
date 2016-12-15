@@ -6,6 +6,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Utilities;
 
+/// <summary>
+/// Updates a RawImage texture with data from an EditorWindowCapture
+/// </summary>
 public class EditorWindowCaptureUpdater : MonoBehaviour
 {
 	[SerializeField]

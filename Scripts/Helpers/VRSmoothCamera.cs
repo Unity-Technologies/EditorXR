@@ -2,19 +2,27 @@
 #pragma warning disable 414, 649
 #endif
 using UnityEditor;
-using UnityEngine;
 using UnityEditor.VR;
-using UnityEngine.VR.Utilities;
 
 namespace UnityEngine.VR.Helpers
 {
+	/// <summary>
+	/// A preview camera that provides for smoothing of the position and look vector
+	/// </summary>
 	[RequireComponent(typeof(Camera))]
 	[RequiresLayer(kHMDOnlyLayer)]
 	public class VRSmoothCamera : MonoBehaviour, IPreviewCamera
 	{
+		/// <summary>
+		/// The camera drawing the preview
+		/// </summary>
 		public Camera previewCamera { get { return m_SmoothCamera; } }
 		Camera m_SmoothCamera;
 
+		/// <summary>
+		/// The actual HMD camera (will be provided by system)
+		/// The VRView's camera, whose settings are copied by the SmoothCamera
+		/// </summary>
 		public Camera vrCamera { private get { return m_VRCamera; } set { m_VRCamera = value; } }
 		[SerializeField]
 		Camera m_VRCamera;
@@ -33,6 +41,9 @@ namespace UnityEngine.VR.Helpers
 		Vector3 m_Position;
 		Vector3 m_Forward;
 
+		/// <summary>
+		/// A layer mask that controls what will always render in the HMD and not in the preview
+		/// </summary>
 		public int hmdOnlyLayerMask { get { return LayerMask.GetMask(kHMDOnlyLayer); } }
 
 #if UNITY_EDITORVR

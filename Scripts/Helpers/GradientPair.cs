@@ -8,7 +8,14 @@ namespace UnityEngine.VR.Helpers
 	[Serializable]
 	public struct GradientPair
 	{
+		/// <summary>
+		/// First color in the gradient pair
+		/// </summary>
 		public Color a;
+
+		/// <summary>
+		/// Second color in the gradient pair
+		/// </summary>
 		public Color b;
 
 		public GradientPair(Color a, Color b)
@@ -17,6 +24,13 @@ namespace UnityEngine.VR.Helpers
 			this.b = b;
 		}
 
+		/// <summary>
+		/// Provide for lerping between two gradient pairs
+		/// </summary>
+		/// <param name="x">The first gradient pair</param>
+		/// <param name="y">The second gradient pair</param>
+		/// <param name="t">Amount for which to lerp between the first and second gradient pair</param>
+		/// <returns>The lerped gradient pair result</returns>
 		public static GradientPair Lerp(GradientPair x, GradientPair y, float t)
 		{
 			GradientPair r;

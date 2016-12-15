@@ -10,6 +10,9 @@ using System.Reflection;
 #endif
 using Object = UnityEngine.Object;
 
+/// <summary>
+/// Captures a RenderTexture representing an Editor window
+/// </summary>
 public class EditorWindowCapture : MonoBehaviour
 {
 	[SerializeField]
@@ -22,6 +25,10 @@ public class EditorWindowCapture : MonoBehaviour
 	private Object m_GuiView;
 	private MethodInfo m_GrabPixels;
 
+	/// <summary>
+	/// RenderTexture that represents the captured Editor Window
+	/// Updated frequently, when capture is enabled
+	/// </summary>
 	public RenderTexture texture { get; private set; }
 	public bool capture { get; set; }
 

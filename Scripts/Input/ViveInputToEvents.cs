@@ -8,6 +8,9 @@ using Valve.VR;
 
 [assembly: OptionalDependency("Valve.VR.IVRSystem", "ENABLE_STEAMVR_INPUT")]
 
+/// <summary>
+/// Sends events to the input system based on native SteamVR SDK calls
+/// </summary>
 public class ViveInputToEvents : MonoBehaviour
 {
 #if ENABLE_STEAMVR_INPUT

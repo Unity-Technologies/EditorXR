@@ -2,6 +2,9 @@
 
 namespace UnityEngine.VR.Modules
 {
+	/// <summary>
+	/// Implementors receive a preview origin transform
+	/// </summary>
 	public interface IGetPreviewOrigin
 	{
 		/// <summary>
