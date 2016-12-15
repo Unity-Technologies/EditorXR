@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
     /// <summary>
     /// Gives decorated class access to hover/intersection detection

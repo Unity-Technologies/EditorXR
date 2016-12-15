@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 [InitializeOnLoad]
 [RequiresTag(kMiniWorldCameraTag)]

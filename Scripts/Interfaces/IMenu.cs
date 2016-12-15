@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Menus
+﻿namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	/// <summary>
 	/// Declares a class as a system-level menu

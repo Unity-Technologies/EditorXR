@@ -1,17 +1,17 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using UnityEngine;
-using UnityEngine.VR;
 using UnityEngine.Assertions;
 using System.Collections;
-using UnityEditor.VR.Helpers;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using System.Reflection;
+using UnityEngine.VR;
 #if ENABLE_STEAMVR_INPUT
 using Valve.VR;
 #endif
 using Object = UnityEngine.Object;
 
-namespace UnityEditor.VR
+namespace UnityEditor.Experimental.EditorVR
 {
 	[InitializeOnLoad]
 	public class VRView : EditorWindow

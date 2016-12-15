@@ -1,7 +1,7 @@
 ﻿using System;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.VR.Manipulators
+namespace UnityEngine.Experimental.EditorVR.Manipulators
 {
 	public class BaseManipulator : MonoBehaviour, IManipulator
 	{

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	/// <summary>
 	/// Gives decorated class ability to highlight a given GameObject

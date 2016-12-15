@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 public class InspectorUnimplementedItem : InspectorPropertyItem
 {

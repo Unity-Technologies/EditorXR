@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
-using UnityEngine.VR.Data;
+using UnityEngine.Experimental.EditorVR.Data;
 
-namespace UnityEngine.VR.Modules
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	public class SpatialHashModule : MonoBehaviour
 	{
@@ -28,7 +28,7 @@ namespace UnityEngine.VR.Modules
 				if (mf.sharedMesh)
 				{
 					// Exclude EditorVR objects
-					if (mf.GetComponentInParent<EditorVR>())
+					if (mf.GetComponentInParent<UnityEditor.Experimental.EditorVR.EditorVR>())
 						continue;
 
 					Renderer renderer = mf.GetComponent<Renderer>();

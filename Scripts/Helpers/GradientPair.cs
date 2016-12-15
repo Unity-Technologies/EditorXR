@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityEngine.VR.Helpers
+namespace UnityEngine.Experimental.EditorVR.Helpers
 {
 	/// <summary>
 	/// Gradient pair container class

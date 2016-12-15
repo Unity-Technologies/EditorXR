@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Tools
+﻿namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	/// <summary>
 	/// Method signature for hiding or showing the default ray

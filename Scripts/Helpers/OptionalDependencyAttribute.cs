@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace UnityEngine.VR
+namespace UnityEngine.Experimental.EditorVR
 {
 	[Conditional("UNITY_CCU")]
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]

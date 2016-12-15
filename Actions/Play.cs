@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 
-namespace UnityEngine.VR.Actions
+namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Play")]
 	public class Play : BaseAction

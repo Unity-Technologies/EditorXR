@@ -1,7 +1,7 @@
 ﻿using System.Collections;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Proxies
+namespace UnityEngine.Experimental.EditorVR.Proxies
 {
 	public class ViveProxy : TwoHandedProxyBase
 	{

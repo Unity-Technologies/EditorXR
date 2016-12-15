@@ -1,7 +1,7 @@
 using System;
-using UnityEngine.VR.Menus;
+using UnityEngine.Experimental.EditorVR.Menus;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	/// <summary>
 	/// Provides custom menu instantiation

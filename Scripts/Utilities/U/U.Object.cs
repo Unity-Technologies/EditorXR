@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using UnityEngine.Networking;
 
-namespace UnityEngine.VR.Utilities
+namespace UnityEngine.Experimental.EditorVR.Utilities
 {
 	using System;
 	using UnityEngine;
@@ -12,7 +12,7 @@ namespace UnityEngine.VR.Utilities
 	using UnityObject = UnityEngine.Object;
 #if UNITY_EDITOR
 	using UnityEditor;
-	using UnityEditor.VR;
+	using UnityEditor.Experimental.EditorVR;
 #endif
 
 	/// <summary>

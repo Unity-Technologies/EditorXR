@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UnityEditor.VR.Helpers
+namespace UnityEditor.Experimental.EditorVR.Helpers
 {
 	/// <summary>
 	/// Used for launching co-routines

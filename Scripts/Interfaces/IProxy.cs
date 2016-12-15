@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.VR.Proxies
+namespace UnityEngine.Experimental.EditorVR.Proxies
 {
 	/// <summary>
 	/// Declares a class as being a proxy for an input device

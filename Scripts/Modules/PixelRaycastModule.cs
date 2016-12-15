@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnityEditor.VR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	public class PixelRaycastModule : MonoBehaviour
 	{
