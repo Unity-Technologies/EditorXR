@@ -7,7 +7,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 
 [MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin, IUsesSpatialHash
+public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin, IUsesSpatialHash, ICustomRay
 {
 	[SerializeField]
 	CreatePrimitiveMenu m_MenuPrefab;
@@ -27,13 +27,14 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 	PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
 	public Func<Transform, IMenu, GameObject> instantiateMenuUI { private get; set; }
-
 	public Transform rayOrigin { get; set; }
-
 	public ConnectInterfacesDelegate connectInterfaces { private get; set; }
-
 	public Action<GameObject> addToSpatialHash { get; set; }
 	public Action<GameObject> removeFromSpatialHash { get; set; }
+	public Func<Transform, object, bool> lockRay { private get; set; }
+	public Func<Transform, object, bool> unlockRay { private get; set; }
+	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
+	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
 
 	enum PrimitiveCreationStates
 	{
@@ -48,6 +49,9 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 		var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
 		connectInterfaces(createPrimitiveMenu, rayOrigin);
 		createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
+
+		hideDefaultRay(rayOrigin, true);
+		lockRay(rayOrigin, this);
 	}
 
 	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
@@ -142,5 +146,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 	void OnDestroy()
 	{
 		U.Object.Destroy(m_ToolMenu);
+		unlockRay(rayOrigin, this);
+		showDefaultRay(rayOrigin, true);
 	}
 }
