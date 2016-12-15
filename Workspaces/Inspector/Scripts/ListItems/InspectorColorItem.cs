@@ -4,6 +4,7 @@ using UnityEngine.VR.UI;
 
 public class InspectorColorItem : InspectorPropertyItem
 {
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -136,4 +137,5 @@ public class InspectorColorItem : InspectorPropertyItem
 			data.serializedObject.ApplyModifiedProperties();
 		}
 	}
+#endif
 }

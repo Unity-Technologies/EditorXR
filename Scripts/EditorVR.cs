@@ -1,4 +1,7 @@
 //#define ENABLE_MINIWORLD_RAY_SELECTION
+#if !UNITY_EDITORVR
+#pragma warning disable 67, 414, 649
+#endif
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,12 +24,13 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Workspaces;
-#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.VR;
-#endif
 
+#if UNITY_EDITOR
 [InitializeOnLoad]
+#endif
+[RequiresTag(kVRPlayerTag)]
 public class EditorVR : MonoBehaviour
 {
 	delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
@@ -204,9 +208,11 @@ public class EditorVR : MonoBehaviour
 	float m_ProjectFolderLoadStartTime;
 	float m_ProjectFolderLoadYieldTime;
 
+#if UNITY_EDITOR
 	readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
 	HierarchyData m_HierarchyData;
 	HierarchyProperty m_HierarchyProperty;
+#endif
 
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
@@ -229,6 +235,7 @@ public class EditorVR : MonoBehaviour
 	}
 	byte m_StencilRef = kMinStencilRef;
 
+#if UNITY_EDITORVR
 	private void Awake()
 	{
 		ClearDeveloperConsoleIfNecessary();
@@ -782,7 +789,7 @@ public class EditorVR : MonoBehaviour
 	void UpdateAlternateMenuForDevice(DeviceData deviceData)
 	{
 		var alternateMenu = deviceData.alternateMenu;
-		alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0;
+		alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0 && !(deviceData.currentTool is IExclusiveMode);
 
 		// Move the activator button to an alternate position if the alternate menu will be shown
 		var mainMenuActivator = deviceData.mainMenuActivator;
@@ -1077,8 +1084,12 @@ public class EditorVR : MonoBehaviour
 			{
 				foreach (var miniWorld in m_MiniWorlds)
 				{
+					var targetObject = source.hoveredObject ? source.hoveredObject : source.draggedObject;
 					if (miniWorld.Contains(source.rayOrigin.position))
-						return false;
+					{
+						if (targetObject && !targetObject.transform.IsChildOf(miniWorld.miniWorldTransform.parent))
+							return false;
+					}
 				}
 
 				return true;
@@ -1604,6 +1615,10 @@ public class EditorVR : MonoBehaviour
 		if (selectTool != null)
 			selectTool.selectTool = SelectTool;
 
+		var usesViewerPivot = obj as IUsesViewerPivot;
+		if (usesViewerPivot != null)
+			usesViewerPivot.viewerPivot = U.Camera.GetViewerPivot();
+		
 		var usesStencilRef = obj as IUsesStencilRef;
 		if (usesStencilRef != null)
 		{
@@ -1883,7 +1898,7 @@ public class EditorVR : MonoBehaviour
 			var deviceData = m_DeviceData[device];
 
 			// Exclusive tools render other tools disabled while they are on the stack
-			if (toolData is IExclusiveMode)
+			if (toolData.tool is IExclusiveMode)
 				SetToolsEnabled(deviceData, false);
 
 			deviceData.toolData.Push(toolData);
@@ -2410,7 +2425,7 @@ public class EditorVR : MonoBehaviour
 		// Dropping the player head updates the viewer pivot
 		if (grabbedObject.CompareTag(kVRPlayerTag))
 			StartCoroutine(UpdateViewerPivot(grabbedObject));
-		else if (IsOverShoulder(rayOrigin))
+		else if (IsOverShoulder(rayOrigin) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 			DeleteSceneObject(grabbedObject.gameObject);
 	}
 
@@ -2804,7 +2819,7 @@ public class EditorVR : MonoBehaviour
 		VRView.GetWindow<VRView>(true, "EditorVR", true);
 	}
 
-	[MenuItem("Window/EditorVR", true)]
+	[MenuItem("Window/EditorVR %e", true)]
 	public static bool ShouldShowEditorVR()
 	{
 		return PlayerSettings.virtualRealitySupported;
@@ -2814,6 +2829,33 @@ public class EditorVR : MonoBehaviour
 	{
 		VRView.onEnable += OnEVREnabled;
 		VRView.onDisable += OnEVRDisabled;
+
+		if (!PlayerSettings.virtualRealitySupported)
+			Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
+
+#if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
+		Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
+#endif
+
+		// Add EVR tags and layers if they don't exist
+		var tags = new List<string>();
+		var layers = new List<string>();
+		U.Object.ForEachType(t =>
+		{
+			var tagAttributes = (RequiresTagAttribute[])t.GetCustomAttributes(typeof(RequiresTagAttribute), true);
+			foreach (var attribute in tagAttributes)
+				tags.Add(attribute.tag);
+
+			var layerAttributes = (RequiresLayerAttribute[])t.GetCustomAttributes(typeof(RequiresLayerAttribute), true);
+			foreach (var attribute in layerAttributes)
+				layers.Add(attribute.layer);
+		});
+
+		foreach (var tag in tags)
+			TagManager.AddTag(tag);
+
+		foreach (var layer in layers)
+			TagManager.AddLayer(layer);
 	}
 
 	private static void OnEVREnabled()
@@ -2861,5 +2903,5 @@ public class EditorVR : MonoBehaviour
 		U.Object.Destroy(s_InputManager.gameObject);
 	}
 #endif
+#endif
 }
-

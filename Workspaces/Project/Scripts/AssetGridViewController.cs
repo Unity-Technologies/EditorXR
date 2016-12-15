@@ -1,4 +1,8 @@
-﻿using ListView;
+﻿#if !UNITY_EDITOR
+#pragma warning disable 414, 649
+#endif
+
+using ListView;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -57,6 +61,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		}
 	}
 
+#if UNITY_EDITOR
 	protected override void Setup()
 	{
 		base.Setup();
@@ -235,4 +240,5 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 			AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid)),
 			texture => item.fallbackTexture = texture));
 	}
+#endif
 }

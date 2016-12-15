@@ -7,15 +7,14 @@ namespace UnityEngine.VR.Proxies
 	{
 		private ViveInputToEvents m_InputToEvents;
 
-		private SteamVR_RenderModel m_RightModel;
-		private SteamVR_RenderModel m_LeftModel;
+#if ENABLE_STEAMVR_INPUT
+		SteamVR_RenderModel m_RightModel;
+		SteamVR_RenderModel m_LeftModel;
+#endif
 
 		public override bool active
 		{
-			get
-			{
-				return m_InputToEvents.active;
-			}
+			get { return m_InputToEvents.active; }
 		}
 
 		public override void Awake()
@@ -26,6 +25,7 @@ namespace UnityEngine.VR.Proxies
 
 		public override IEnumerator Start()
 		{
+#if ENABLE_STEAMVR_INPUT
 			SteamVR_Render.instance.transform.parent = gameObject.transform;
 
 			while (!active)
@@ -37,8 +37,12 @@ namespace UnityEngine.VR.Proxies
 			m_RightModel.enabled = true;
 
 			yield return base.Start();
+#else
+			yield break;
+#endif
 		}
 
+#if ENABLE_STEAMVR_INPUT
 		public override void Update()
 		{
 			if (active && m_LeftModel && m_RightModel)
@@ -57,5 +61,6 @@ namespace UnityEngine.VR.Proxies
 
 			base.Update();
 		}
+#endif
 	}
 }

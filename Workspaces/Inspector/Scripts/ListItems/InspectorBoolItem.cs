@@ -7,6 +7,7 @@ public class InspectorBoolItem : InspectorPropertyItem
 	[SerializeField]
 	Toggle m_Toggle;
 
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -29,4 +30,5 @@ public class InspectorBoolItem : InspectorPropertyItem
 			data.serializedObject.ApplyModifiedProperties();
 		}
 	}
+#endif
 }
