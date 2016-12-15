@@ -1,28 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEditor.VR;
+using UnityEngine.VR;
 using UnityEngine;
 using UnityEngine.InputNew;
 
+[assembly: OptionalDependency("SixenseInput", "ENABLE_SIXENSE_INPUT")]
+
 public class SixenseInputToEvents : MonoBehaviour
 {
+#if ENABLE_SIXENSE_INPUT
 	public const uint kControllerCount = SixenseInput.MAX_CONTROLLERS;
 	public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
 	public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
 
-	private const float kHydraUnits = 0.001f; // input is in mm
+	const float kHydraUnits = 0.001f; // input is in mm
 
-	private readonly float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
-	private readonly Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
-	private readonly Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
+	readonly float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
+	readonly Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
+	readonly Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
 
-	private Vector3[] m_ControllerOffsets = new Vector3[SixenseInput.MAX_CONTROLLERS];
-	private Quaternion m_RotationOffset = Quaternion.identity;
+	Vector3[] m_ControllerOffsets = new Vector3[SixenseInput.MAX_CONTROLLERS];
+	Quaternion m_RotationOffset = Quaternion.identity;
+#endif
 
 	public bool active { get; private set; }
 
+#if ENABLE_SIXENSE_INPUT
 	private void Awake()
 	{
 		if (!FindObjectOfType<SixenseInput>())
@@ -175,6 +178,7 @@ public class SixenseInputToEvents : MonoBehaviour
 
 	void CalibrateControllers()
 	{
+#if UNITY_EDITORVR
 		// Assume controllers are on the side of the HMD and facing forward (aligned with base)
 		var  span = (SixenseInput.Controllers[1].Position*kHydraUnits - SixenseInput.Controllers[0].Position*kHydraUnits).magnitude;
 		// Distance between controllers
@@ -188,5 +192,7 @@ public class SixenseInputToEvents : MonoBehaviour
 								(m_RotationOffset*SixenseInput.Controllers[0].Position*kHydraUnits);
 		m_ControllerOffsets[1] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (headPivot.right*span*0.5f)) -
 								(m_RotationOffset*SixenseInput.Controllers[1].Position*kHydraUnits);
+#endif
 	}
-}
+#endif
+	}

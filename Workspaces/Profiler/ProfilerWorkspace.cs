@@ -1,7 +1,9 @@
 ﻿using UnityEditor.VR;
 using UnityEngine;
+using UnityEngine.VR.Menus;
 using UnityEngine.VR.Workspaces;
 
+[MainMenuItem("Profiler", "Workspaces", "Analyze your project's performance")]
 public class ProfilerWorkspace : Workspace
 {
 	[SerializeField]
@@ -9,6 +11,7 @@ public class ProfilerWorkspace : Workspace
 
 	private Transform m_ProfilerWindow;
 
+#if UNITY_EDITORVR
 	bool inView
 	{
 		get
@@ -73,4 +76,5 @@ public class ProfilerWorkspace : Workspace
 		base.OnDestroy();
 		UnityEditorInternal.ProfilerDriver.profileEditor = false;
 	}
+#endif
 }

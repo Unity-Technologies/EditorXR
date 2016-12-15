@@ -11,6 +11,7 @@ public class InspectorBoundsItem : InspectorPropertyItem
 	[SerializeField]
 	NumericInputField[] m_ExtentsFields;
 
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -122,4 +123,5 @@ public class InspectorBoundsItem : InspectorPropertyItem
 			data.serializedObject.ApplyModifiedProperties();
 		}
 	}
+#endif
 }

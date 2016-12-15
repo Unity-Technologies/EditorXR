@@ -13,6 +13,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 	[SerializeField]
 	WorkspaceButton[] m_IncrementDecrementButtons;
 
+#if UNITY_EDITOR
 	public SerializedPropertyType propertyType { get; private set; }
 	public event Action<PropertyData> arraySizeChanged = delegate {};
 
@@ -165,4 +166,5 @@ public class InspectorNumberItem : InspectorPropertyItem
 				break;
 		}
 	}
+#endif
 }

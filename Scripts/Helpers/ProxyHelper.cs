@@ -17,4 +17,8 @@ public class ProxyHelper : MonoBehaviour
 	public Transform previewOrigin { get { return m_PreviewOrigin; } }
 	[SerializeField]
 	private Transform m_PreviewOrigin;
+
+	public Transform meshRoot { get { return m_MeshRoot; } }
+	[SerializeField]
+	private Transform m_MeshRoot;
 }
