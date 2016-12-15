@@ -1,4 +1,4 @@
-﻿Shader "Custom/List Clip"
+﻿Shader "Custom/List Item"
 {
 	Properties
 	{
@@ -10,18 +10,18 @@
 	}
 	SubShader
 	{
-		Tags { "RenderType"="Transparent" "Queue" = "Overlay+5103" }
+		Tags { "RenderType"="Opaque" "Queue" = "Overlay+5103" }
 		LOD 200
 
 		Stencil
 		{
-			Ref 0
+			Ref 1
 			Comp Equal
 		}
 
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
-		#pragma surface surf Standard vertex:vert
+		#pragma surface surf Standard
 
 		// Use shader model 3.0 target, to get nicer looking lighting
 		#pragma target 3.0
@@ -29,7 +29,6 @@
 		struct Input
 		{
 			float2 uv_MainTex;
-			float3 localPos;
 		};
 
 		#include "ListClip.cginc"
@@ -40,16 +39,8 @@
 		half _Metallic;
 		fixed4 _Color;
 
-		void vert(inout appdata_full v, out Input o)
-		{
-			UNITY_INITIALIZE_OUTPUT(Input, o);
-			o.localPos = listClipLocalPos(v.vertex);
-		}
-
 		void surf (Input IN, inout SurfaceOutputStandard o)
 		{
-			listClipFrag(IN.localPos);
-
 			fixed4 c = tex2D(_MainTex, IN.uv_MainTex);
 			c *= _Color * c.a;
 			o.Emission = c.rgb;
