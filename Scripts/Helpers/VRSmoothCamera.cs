@@ -9,6 +9,7 @@ using UnityEngine.VR.Utilities;
 namespace UnityEngine.VR.Helpers
 {
 	[RequireComponent(typeof(Camera))]
+	[RequiresLayer(kHMDOnlyLayer)]
 	public class VRSmoothCamera : MonoBehaviour, IPreviewCamera
 	{
 		public Camera previewCamera { get { return m_SmoothCamera; } }
@@ -25,12 +26,14 @@ namespace UnityEngine.VR.Helpers
 		[SerializeField]
 		float m_SmoothingMultiplier = 3;
 
+		const string kHMDOnlyLayer = "HMDOnly";
+
 		RenderTexture m_RenderTexture;
 
 		Vector3 m_Position;
 		Vector3 m_Forward;
 
-		public int hmdOnlyLayerMask { get { return LayerMask.GetMask("HMDOnly"); } }
+		public int hmdOnlyLayerMask { get { return LayerMask.GetMask(kHMDOnlyLayer); } }
 
 #if UNITY_EDITORVR
 		void Awake()

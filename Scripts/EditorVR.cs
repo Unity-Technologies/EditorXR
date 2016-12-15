@@ -30,6 +30,7 @@ using UnityEditor.VR;
 #if UNITY_EDITOR
 [InitializeOnLoad]
 #endif
+[RequiresTag(kVRPlayerTag)]
 public class EditorVR : MonoBehaviour
 {
 	delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
@@ -2824,6 +2825,26 @@ public class EditorVR : MonoBehaviour
 	{
 		VRView.onEnable += OnEVREnabled;
 		VRView.onDisable += OnEVRDisabled;
+
+		// Add EVR tags and layers if they don't exist
+		var tags = new List<string>();
+		var layers = new List<string>();
+		U.Object.ForEachType(t =>
+		{
+			var tagAttributes = (RequiresTagAttribute[])t.GetCustomAttributes(typeof(RequiresTagAttribute), true);
+			foreach (var attribute in tagAttributes)
+				tags.Add(attribute.tag);
+
+			var layerAttributes = (RequiresLayerAttribute[])t.GetCustomAttributes(typeof(RequiresLayerAttribute), true);
+			foreach (var attribute in layerAttributes)
+				layers.Add(attribute.layer);
+		});
+
+		foreach (var tag in tags)
+			TagManager.AddTag(tag);
+
+		foreach (var layer in layers)
+			TagManager.AddLayer(layer);
 	}
 
 	private static void OnEVREnabled()

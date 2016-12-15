@@ -2,27 +2,10 @@
 
 namespace UnityEngine.VR.Utilities
 {
-	[InitializeOnLoad]
 	public static class TagManager
 	{
 		const int kMaxLayer = 31;
 		const int kMinLayer = 8;
-
-		static TagManager()
-		{
-			// Add EVR tags and layers if they don't exist
-			var evrTags = new[] { "VRPlayer", "ShowInMiniWorld", "MiniWorldCamera" };
-			foreach (var tag in evrTags)
-			{
-				AddTag(tag);
-			}
-
-			var evrLayers = new[] { "HMDOnly" };
-			foreach (var layer in evrLayers)
-			{
-				AddLayer(layer);
-			}
-		}
 
 		/// <summary>
 		/// Add a tag to the tag manager if it doesn't already exist

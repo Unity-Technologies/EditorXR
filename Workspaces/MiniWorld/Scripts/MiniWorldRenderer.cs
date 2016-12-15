@@ -1,8 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.VR;
 using UnityEngine.VR.Utilities;
 
+[InitializeOnLoad]
+[RequiresTag(kMiniWorldCameraTag)]
+[RequiresTag(kShowInMiniWorldTag)]
 public class MiniWorldRenderer : MonoBehaviour
 {
 	public const string kShowInMiniWorldTag = "ShowInMiniWorld";
