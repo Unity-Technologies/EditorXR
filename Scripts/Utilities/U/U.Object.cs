@@ -169,32 +169,43 @@ namespace UnityEngine.VR.Utilities
 				return component;
 			}
 
-			private static IEnumerable<Type> GetAssignableTypes(Type type)
+			static IEnumerable<Type> GetAssignableTypes(Type type, Func<Type, bool> predicate = null)
 			{
 				var list = new List<Type>();
+				ForEachType(t =>
+				{
+					if (type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract && (predicate == null || predicate(t)))
+						list.Add(t);
+				});
+
+				return list;
+			}
+
+			public static void ForEachAssembly(Action<Assembly> callback)
+			{
 				var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 				foreach (var assembly in assemblies)
 				{
-					Type[] types;
 					try
 					{
-						types = assembly.GetTypes();
+						callback(assembly);
 					}
 					catch (ReflectionTypeLoadException)
 					{
 						// Skip any assemblies that don't load properly
 						continue;
 					}
-
-					foreach (var t in types)
-					{
-						if (type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
-							list.Add(t);
-					}
 				}
+			}
 
-				return list;
-
+			public static void ForEachType(Action<Type> callback)
+			{
+				ForEachAssembly(assembly =>
+				{
+					var types = assembly.GetTypes();
+					foreach (var t in types)
+						callback(t);
+				});
 			}
 
 			public static IEnumerable<Type> GetImplementationsOfInterface(Type type)
