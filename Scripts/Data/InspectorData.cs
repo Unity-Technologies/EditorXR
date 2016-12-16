@@ -9,7 +9,7 @@ public class InspectorData : ListViewItemNestedData<InspectorData>
 
 	public virtual int instanceID
 	{
-		get { return serializedObject == null ? serializedObject.targetObject.GetInstanceID() : 0; }
+		get { return serializedObject.targetObject.GetInstanceID(); }
 	}
 
 	public InspectorData(string template, SerializedObject serializedObject, List<InspectorData> children)
