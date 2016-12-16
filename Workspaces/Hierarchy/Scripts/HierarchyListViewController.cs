@@ -117,7 +117,7 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 	{
 		if (container.instanceID == rowID)
 		{
-			scrollOffset = -scrollHeight - itemSize.z;
+			//scrollOffset = -scrollHeight - itemSize.z;
 			return true;
 		}
 
