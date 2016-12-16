@@ -208,6 +208,10 @@ MonoBehaviour:
   m_HighlightMaterial: {fileID: 2100000, guid: 8d993d4dd9ec99247a30bbe1482df2f4, type: 2}
   m_HighlightMaskMaterial: {fileID: 2100000, guid: 2e6e6d7336061b54886b155c24f8460f,
     type: 2}
+  m_NoClipHighlightMaterial: {fileID: 2100000, guid: c26f6dcf4fb6382488a16a9d738df037,
+    type: 2}
+  m_NoClipHighlightMaskMaterial: {fileID: 2100000, guid: e1423c0176008a841a94b94a6034bbf8,
+    type: 2}
 --- !u!114 &114000012271505990
 MonoBehaviour:
   m_ObjectHideFlags: 1
