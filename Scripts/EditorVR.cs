@@ -810,7 +810,8 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				HideRay(rayOrigin);
 				LockRay(rayOrigin, mainMenu);
-			} else
+			}
+			else
 			{
 				UnlockRay(rayOrigin, mainMenu);
 				ShowRay(rayOrigin);
@@ -914,6 +915,23 @@ namespace UnityEditor.Experimental.EditorVR
 		void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)
 		{
 			SetAlternateMenuVisibility(rayOrigin, Selection.gameObjects.Length > 0);
+
+			// Tell this rayOrigin's locomotion tool to wait for zero values so that we don't move after selecting items
+			ForEachRayOrigin((proxy, pair, device, data) =>
+			{
+				if (pair.Value == rayOrigin)
+				{
+					foreach (var toolData in data.toolData)
+					{
+						var locomotor = toolData.tool as ILocomotor;
+						if (locomotor != null)
+						{
+							locomotor.waitForReset = true;
+							break;
+						}
+					}
+				}
+			});
 		}
 
 		void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
@@ -1033,7 +1051,8 @@ namespace UnityEditor.Experimental.EditorVR
 					{
 						// Set ray length to distance to UI objects
 						distance = uiEventData.pointerCurrentRaycast.distance;
-					} else
+					}
+					else
 					{
 						// If not hitting UI, then check standard raycast and approximate bounds to set distance
 						var go = GetFirstGameObject(rayOrigin);
@@ -1242,7 +1261,8 @@ namespace UnityEditor.Experimental.EditorVR
 			if (actionMapInput.TryInitializeWithDevices(devices))
 			{
 				successfulInitialization = true;
-			} else
+			}
+			else
 			{
 				// For two-handed tools, the single device won't work, so collect the devices from the action map
 				devices = U.Input.CollectInputDevicesFromActionMaps(new List<ActionMap>() { map });
@@ -1784,7 +1804,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 					UpdatePlayerHandleMaps();
 					result = spawnTool;
-				} else
+				}
+				else
 				{
 					deviceData.menuHideFlags[deviceData.mainMenu] |= MenuHideFlags.Hidden;
 				}
@@ -1877,7 +1898,8 @@ namespace UnityEditor.Experimental.EditorVR
 							nonMatchingTagIndices++;
 						else
 							matchingTagIndices++;
-					} else
+					}
+					else
 					{
 						untaggedDevicesFound++;
 					}
@@ -1961,7 +1983,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
 
-// Use the mini world ray origin instead of the original ray origin
+	// Use the mini world ray origin instead of the original ray origin
 			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
 			{
 				if (!IsRayActive(source.rayOrigin))
@@ -2240,7 +2262,8 @@ namespace UnityEditor.Experimental.EditorVR
 								directSelection.AddHeldObject(miniWorldRay.node, miniWorldRayOrigin, dragObjectTransform, directSelectInput);
 							}
 						}
-					} else
+					}
+					else
 					{
 						if (dragObjectTransform.CompareTag(kVRPlayerTag))
 						{
@@ -2249,7 +2272,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 							// Drop player at edge of MiniWorld
 							miniWorldRay.dragObject = null;
-						} else
+						}
+						else
 						{
 							if (miniWorldRay.wasContained)
 							{
@@ -2660,8 +2684,11 @@ namespace UnityEditor.Experimental.EditorVR
 							folderList.Add(data);
 							hasNext = next;
 						}, assetTypes, hasNext, hp));
-					} else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
+					}
+					else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
+					{
 						assetList.Add(CreateAssetData(hp, assetTypes));
+					}
 
 					if (hasNext)
 						hasNext = hp.Next(null);
@@ -2724,7 +2751,8 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				m_HierarchyProperty = new HierarchyProperty(HierarchyType.GameObjects);
 				m_HierarchyProperty.Next(null);
-			} else
+			}
+			else
 			{
 				m_HierarchyProperty.Reset();
 				m_HierarchyProperty.Next(null);
@@ -2774,11 +2802,13 @@ namespace UnityEditor.Experimental.EditorVR
 					{
 						list.Add(CollectHierarchyData(ref hasNext, ref hasChanged, null, hp));
 						hasChanged = true;
-					} else if (list[i].instanceID != hp.instanceID)
+					}
+					else if (list[i].instanceID != hp.instanceID)
 					{
 						list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, null, hp);
 						hasChanged = true;
-					} else
+					}
+					else
 					{
 						list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, list[i], hp);
 					}
@@ -2797,8 +2827,11 @@ namespace UnityEditor.Experimental.EditorVR
 
 				if (hasNext)
 					hp.Previous(null);
-			} else
+			}
+			else
+			{
 				list.Clear();
+			}
 
 			List<HierarchyData> children = null;
 			if (list.Count > 0)
