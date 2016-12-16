@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine.InputNew;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	/// <summary>
 	/// Decorates a class that needs to process input from the system

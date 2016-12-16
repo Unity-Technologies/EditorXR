@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Menus;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Workspaces;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 
 [MainMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
 public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI

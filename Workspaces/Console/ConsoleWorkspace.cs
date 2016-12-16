@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
-using UnityEngine.VR.Menus;
-using UnityEngine.VR.Workspaces;
+using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 
 [MainMenuItem("Console", "Workspaces", "View errors, warnings and other messages")]
 public class ConsoleWorkspace : Workspace

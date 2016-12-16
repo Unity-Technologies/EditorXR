@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	/// <summary>
 	/// Get access to locking features

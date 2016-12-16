@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.VR.Actions
+namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Cut", ActionMenuItemAttribute.kDefaultActionSectionName, 4)]
 	public class Cut : BaseAction

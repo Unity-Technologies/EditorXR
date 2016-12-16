@@ -1,7 +1,7 @@
-﻿using UnityEditor.VR;
+﻿using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
-using UnityEngine.VR.Menus;
-using UnityEngine.VR.Workspaces;
+using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 
 [MainMenuItem("Profiler", "Workspaces", "Analyze your project's performance")]
 public class ProfilerWorkspace : Workspace
@@ -11,6 +11,7 @@ public class ProfilerWorkspace : Workspace
 
 	private Transform m_ProfilerWindow;
 
+#if UNITY_EDITORVR
 	bool inView
 	{
 		get
@@ -75,4 +76,5 @@ public class ProfilerWorkspace : Workspace
 		base.OnDestroy();
 		UnityEditorInternal.ProfilerDriver.profileEditor = false;
 	}
+#endif
 }

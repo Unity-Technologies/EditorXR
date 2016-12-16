@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Helpers;
-using UnityEngine.VR.Manipulators;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Helpers;
+using UnityEngine.Experimental.EditorVR.Manipulators;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 public class KeyboardUI : MonoBehaviour
 {

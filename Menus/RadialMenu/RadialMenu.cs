@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Actions;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Actions;
+using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.VR.Menus
+namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	public class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IMenuOrigins, ICustomActionMap
 	{

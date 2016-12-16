@@ -4,6 +4,7 @@ using UnityEditor;
 
 public class InspectorData : ListViewItemNestedData<InspectorData>
 {
+#if UNITY_EDITOR
 	public SerializedObject serializedObject { get; private set; }
 
 	public virtual int instanceID
@@ -17,4 +18,5 @@ public class InspectorData : ListViewItemNestedData<InspectorData>
 		this.serializedObject = serializedObject;
 		m_Children = children;
 	}
+#endif
 }

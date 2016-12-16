@@ -1,7 +1,7 @@
 [submodule "libs/input-prototype"]
 	path = libs/input-prototype
-	url = https://ono.unity3d.com/labs/input-prototype
+url=https://github.com/Unity-Technologies/input-prototype.git
 	branch = editorvr/custom-player-handle
 [submodule "libs/UnityOctree"]
 	path = libs/UnityOctree
-	url = https://github.com/Nition/UnityOctree.git
+url=https://github.com/Unity-Technologies/UnityOctree.git

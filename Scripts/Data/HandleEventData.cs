@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Handles
+﻿namespace UnityEngine.Experimental.EditorVR.Handles
 {
 	/// <summary>
 	/// Event data for BaseHandle.DragEventCallback

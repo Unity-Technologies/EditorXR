@@ -1,8 +1,11 @@
 ﻿using System;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
-	public interface IRayLocking
+    /// <summary>
+    /// Gives decorated class the ability to lock and unlock the default ray
+    /// </summary>
+    public interface IRayLocking
 	{
 		/// <summary>
 		/// Lock the default ray's show/hide state.

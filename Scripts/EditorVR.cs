@@ -1,32 +1,37 @@
 //#define ENABLE_MINIWORLD_RAY_SELECTION
+#if !UNITY_EDITORVR
+#pragma warning disable 67, 414, 649
+#endif
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEditor.VR.Modules;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
+using UnityEngine.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Actions;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Helpers;
+using UnityEngine.Experimental.EditorVR.Manipulators;
+using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Proxies;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.UI;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
-using UnityEngine.VR.Actions;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Helpers;
-using UnityEngine.VR.Manipulators;
-using UnityEngine.VR.Menus;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.Proxies;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.UI;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Workspaces;
-#if UNITY_EDITOR
-using UnityEditor;
-using UnityEditor.VR;
-#endif
 
-[InitializeOnLoad]
+namespace UnityEditor.Experimental.EditorVR
+{
+#if UNITY_EDITOR
+	[InitializeOnLoad]
+#endif
+	[RequiresTag(kVRPlayerTag)]
 public class EditorVR : MonoBehaviour
 {
 	delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
@@ -205,9 +210,11 @@ public class EditorVR : MonoBehaviour
 	float m_ProjectFolderLoadStartTime;
 	float m_ProjectFolderLoadYieldTime;
 
+#if UNITY_EDITOR
 	readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
 	HierarchyData m_HierarchyData;
 	HierarchyProperty m_HierarchyProperty;
+#endif
 
 	readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
@@ -230,8 +237,10 @@ public class EditorVR : MonoBehaviour
 				m_StencilRef = kMinStencilRef;
 		}
 	}
+
 	byte m_StencilRef = kMinStencilRef;
 
+#if UNITY_EDITORVR
 	private void Awake()
 	{
 		ClearDeveloperConsoleIfNecessary();
@@ -258,7 +267,7 @@ public class EditorVR : MonoBehaviour
 				hmdOnlyLayerMask = m_CustomPreviewCamera.hmdOnlyLayerMask;
 			}
 		}
-		VRView.cullingMask = Tools.visibleLayers | hmdOnlyLayerMask;
+			VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
 
 		InitializePlayerHandle();
 		CreateDefaultActionMapInputs();
@@ -502,6 +511,7 @@ public class EditorVR : MonoBehaviour
 			m_CustomPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
 
 #if UNITY_EDITOR
+
 		// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
 		//		Additionally, on some machines it's required to do a delay call otherwise none of this works
 		//		I noticed that delay calls were queuing up, so it was necessary to protect against that, so only one is processed
@@ -581,7 +591,9 @@ public class EditorVR : MonoBehaviour
 					}
 				}
 
-				menuHideFlags[menu] = intersection ? flags | MenuHideFlags.NearWorkspace : flags & ~MenuHideFlags.NearWorkspace;
+					menuHideFlags[menu] = intersection
+						? flags | MenuHideFlags.NearWorkspace
+						: flags & ~MenuHideFlags.NearWorkspace;
 			}
 		});
 	}
@@ -796,7 +808,7 @@ public class EditorVR : MonoBehaviour
 	void UpdateAlternateMenuForDevice(DeviceData deviceData)
 	{
 		var alternateMenu = deviceData.alternateMenu;
-		alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0;
+			alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0 && !(deviceData.currentTool is IExclusiveMode);
 
 		// Move the activator button to an alternate position if the alternate menu will be shown
 		var mainMenuActivator = deviceData.mainMenuActivator;
@@ -812,8 +824,7 @@ public class EditorVR : MonoBehaviour
 		{
 			HideRay(rayOrigin);
 			LockRay(rayOrigin, mainMenu);
-		}
-		else
+			} else
 		{
 			UnlockRay(rayOrigin, mainMenu);
 			ShowRay(rayOrigin);
@@ -927,7 +938,9 @@ public class EditorVR : MonoBehaviour
 			if (alternateMenu != null)
 			{
 				var flags = deviceData.menuHideFlags[alternateMenu];
-				deviceData.menuHideFlags[alternateMenu] = (rayOriginPair.Value == rayOrigin) && visible ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
+					deviceData.menuHideFlags[alternateMenu] = (rayOriginPair.Value == rayOrigin) && visible
+						? flags & ~MenuHideFlags.Hidden
+						: flags | MenuHideFlags.Hidden;
 			}
 		});
 	}
@@ -1034,8 +1047,7 @@ public class EditorVR : MonoBehaviour
 				{
 					// Set ray length to distance to UI objects
 					distance = uiEventData.pointerCurrentRaycast.distance;
-				}
-				else
+					} else
 				{
 					// If not hitting UI, then check standard raycast and approximate bounds to set distance
 					var go = GetFirstGameObject(rayOrigin);
@@ -1091,7 +1103,9 @@ public class EditorVR : MonoBehaviour
 			{
 				foreach (var miniWorld in m_MiniWorlds)
 				{
-					var targetObject = source.hoveredObject ? source.hoveredObject : source.draggedObject;
+						var targetObject = source.hoveredObject
+							? source.hoveredObject
+							: source.draggedObject;
 					if (miniWorld.Contains(source.rayOrigin.position))
 					{
 						if (targetObject && !targetObject.transform.IsChildOf(miniWorld.miniWorldTransform.parent))
@@ -1150,7 +1164,9 @@ public class EditorVR : MonoBehaviour
 	GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
 	{
 		var go = U.Object.Instantiate(prefab);
-		go.transform.SetParent(parent ? parent : transform, worldPositionStays);
+			go.transform.SetParent(parent
+				? parent
+				: transform, worldPositionStays);
 		foreach (var canvas in go.GetComponentsInChildren<Canvas>())
 			canvas.worldCamera = m_EventCamera;
 
@@ -1228,7 +1244,9 @@ public class EditorVR : MonoBehaviour
 		if (device != null && !IsValidActionMapForDevice(map, device))
 			return null;
 
-		var devices = device == null ? GetSystemDevices() : new [] { device };
+			var devices = device == null
+				? GetSystemDevices()
+				: new[] { device };
 
 		var actionMapInput = ActionMapInput.Create(map);
 
@@ -1238,8 +1256,7 @@ public class EditorVR : MonoBehaviour
 		if (actionMapInput.TryInitializeWithDevices(devices))
 		{
 			successfulInitialization = true;
-		}
-		else
+			} else
 		{
 			// For two-handed tools, the single device won't work, so collect the devices from the action map
 			devices = U.Input.CollectInputDevicesFromActionMaps(new List<ActionMap>() { map });
@@ -1622,6 +1639,10 @@ public class EditorVR : MonoBehaviour
 		if (selectTool != null)
 			selectTool.selectTool = SelectTool;
 
+			var usesViewerPivot = obj as IUsesViewerPivot;
+			if (usesViewerPivot != null)
+				usesViewerPivot.viewerPivot = U.Camera.GetViewerPivot();
+
 		var usesStencilRef = obj as IUsesStencilRef;
 		if (usesStencilRef != null)
 		{
@@ -1777,8 +1798,7 @@ public class EditorVR : MonoBehaviour
 
 				UpdatePlayerHandleMaps();
 				result = spawnTool;
-			}
-			else
+				} else
 			{
 				deviceData.menuHideFlags[deviceData.mainMenu] |= MenuHideFlags.Hidden;
 			}
@@ -1871,8 +1891,7 @@ public class EditorVR : MonoBehaviour
 						nonMatchingTagIndices++;
 					else
 						matchingTagIndices++;
-				}
-				else
+					} else
 				{
 					untaggedDevicesFound++;
 				}
@@ -1901,7 +1920,7 @@ public class EditorVR : MonoBehaviour
 			var deviceData = m_DeviceData[device];
 
 			// Exclusive tools render other tools disabled while they are on the stack
-			if (toolData is IExclusiveMode)
+				if (toolData.tool is IExclusiveMode)
 				SetToolsEnabled(deviceData, false);
 
 			deviceData.toolData.Push(toolData);
@@ -1955,6 +1974,7 @@ public class EditorVR : MonoBehaviour
 			directSelectInput.active = false;
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
+
 			// Use the mini world ray origin instead of the original ray origin
 			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
 			{
@@ -2234,8 +2254,7 @@ public class EditorVR : MonoBehaviour
 							directSelection.AddHeldObject(miniWorldRay.node, miniWorldRayOrigin, dragObjectTransform, directSelectInput);
 						}
 					}
-				}
-				else
+					} else
 				{
 					if (dragObjectTransform.CompareTag(kVRPlayerTag))
 					{
@@ -2244,8 +2263,7 @@ public class EditorVR : MonoBehaviour
 
 						// Drop player at edge of MiniWorld
 						miniWorldRay.dragObject = null;
-					}
-					else
+						} else
 					{
 						if (miniWorldRay.wasContained)
 						{
@@ -2656,8 +2674,7 @@ public class EditorVR : MonoBehaviour
 						folderList.Add(data);
 						hasNext = next;
 					}, assetTypes, hasNext, hp));
-				}
-				else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
+					} else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
 					assetList.Add(CreateAssetData(hp, assetTypes));
 
 				if (hasNext)
@@ -2677,7 +2694,9 @@ public class EditorVR : MonoBehaviour
 				hp.Previous(null);
 		}
 
-		callback(new FolderData(name, folderList.Count > 0 ? folderList : null, assetList, guid), hasNext);
+			callback(new FolderData(name, folderList.Count > 0
+				? folderList
+				: null, assetList, guid), hasNext);
 	}
 
 	static AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
@@ -2719,8 +2738,7 @@ public class EditorVR : MonoBehaviour
 		{
 			m_HierarchyProperty = new HierarchyProperty(HierarchyType.GameObjects);
 			m_HierarchyProperty.Next(null);
-		}
-		else
+			} else
 		{
 			m_HierarchyProperty.Reset();
 			m_HierarchyProperty.Next(null);
@@ -2746,7 +2764,9 @@ public class EditorVR : MonoBehaviour
 		var instanceID = hp.instanceID;
 
 		List<HierarchyData> list = null;
-		list = (hd == null || hd.children == null) ? new List<HierarchyData>() : hd.children;
+			list = (hd == null || hd.children == null)
+				? new List<HierarchyData>()
+				: hd.children;
 
 		if (hp.hasChildren)
 		{
@@ -2768,13 +2788,11 @@ public class EditorVR : MonoBehaviour
 				{
 					list.Add(CollectHierarchyData(ref hasNext, ref hasChanged, null, hp));
 					hasChanged = true;
-				}
-				else if (list[i].instanceID != hp.instanceID)
+					} else if (list[i].instanceID != hp.instanceID)
 				{
 					list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, null, hp);
 					hasChanged = true;
-				}
-				else
+					} else
 				{
 					list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, list[i], hp);
 				}
@@ -2793,8 +2811,7 @@ public class EditorVR : MonoBehaviour
 
 			if (hasNext)
 				hp.Previous(null);
-		}
-		else
+			} else
 			list.Clear();
 
 		List<HierarchyData> children = null;
@@ -2822,7 +2839,7 @@ public class EditorVR : MonoBehaviour
 		VRView.GetWindow<VRView>(true, "EditorVR", true);
 	}
 
-	[MenuItem("Window/EditorVR", true)]
+		[MenuItem("Window/EditorVR %e", true)]
 	public static bool ShouldShowEditorVR()
 	{
 		return PlayerSettings.virtualRealitySupported;
@@ -2832,6 +2849,33 @@ public class EditorVR : MonoBehaviour
 	{
 		VRView.onEnable += OnEVREnabled;
 		VRView.onDisable += OnEVRDisabled;
+
+			if (!PlayerSettings.virtualRealitySupported)
+				Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
+
+#if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
+		Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
+#endif
+
+			// Add EVR tags and layers if they don't exist
+			var tags = new List<string>();
+			var layers = new List<string>();
+			U.Object.ForEachType(t =>
+			{
+				var tagAttributes = (RequiresTagAttribute[])t.GetCustomAttributes(typeof(RequiresTagAttribute), true);
+				foreach (var attribute in tagAttributes)
+					tags.Add(attribute.tag);
+
+				var layerAttributes = (RequiresLayerAttribute[])t.GetCustomAttributes(typeof(RequiresLayerAttribute), true);
+				foreach (var attribute in layerAttributes)
+					layers.Add(attribute.layer);
+			});
+
+			foreach (var tag in tags)
+				TagManager.AddTag(tag);
+
+			foreach (var layer in layers)
+				TagManager.AddLayer(layer);
 	}
 
 	private static void OnEVREnabled()
@@ -2879,5 +2923,6 @@ public class EditorVR : MonoBehaviour
 		U.Object.Destroy(s_InputManager.gameObject);
 	}
 #endif
+#endif
 }
-
+}

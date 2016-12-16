@@ -1,9 +1,9 @@
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.UI
+namespace UnityEngine.Experimental.EditorVR.UI
 {
 	/// <summary>
 	/// Extension of UI.Button includes SelectionFlags to check for direct selection

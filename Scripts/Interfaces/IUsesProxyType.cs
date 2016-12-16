@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	/// <summary>
 	/// In cases where you must have different input logic (e.g. button press + axis input) you can get the proxy type
