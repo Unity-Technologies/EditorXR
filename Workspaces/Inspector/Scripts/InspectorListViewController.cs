@@ -101,6 +101,10 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	protected override void ComputeConditions()
 	{
+		// Check if object was deleted
+		if (data.Count > 0 && !data[0].serializedObject.targetObject)
+			data = new List<InspectorData>();
+
 		base.ComputeConditions();
 
 		m_StartPosition = bounds.extents.z * Vector3.back;
@@ -240,7 +244,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	void ToggleExpanded(InspectorData data)
 	{
-		m_ExpandStates[data.instanceID] = !m_ExpandStates[data.instanceID];
+		// TODO: fix this
+		//m_ExpandStates[data.instanceID] = !m_ExpandStates[data.instanceID];
 	}
 
 	void OnArraySizeChanged(PropertyData element)
