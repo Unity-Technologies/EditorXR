@@ -1,7 +1,7 @@
 ﻿using System;
-using UnityEngine.VR.Workspaces;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	/// <summary>
 	/// Method signature for creating workspaces

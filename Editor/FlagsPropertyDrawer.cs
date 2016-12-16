@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 [CustomPropertyDrawer(typeof(FlagsPropertyAttribute))]
 public class FlagsPropertyDrawer : PropertyDrawer

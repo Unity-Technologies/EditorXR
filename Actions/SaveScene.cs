@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Actions
+﻿namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("SaveScene", "Scene")]
 	public class SaveScene : BaseAction

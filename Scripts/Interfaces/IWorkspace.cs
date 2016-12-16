@@ -1,7 +1,7 @@
 ﻿using System;
-using UnityEngine.VR.Helpers;
+using UnityEngine.Experimental.EditorVR.Helpers;
 
-namespace UnityEngine.VR.Workspaces
+namespace UnityEngine.Experimental.EditorVR.Workspaces
 {
 	/// <summary>
 	/// Declares a class as a Workspace within the system

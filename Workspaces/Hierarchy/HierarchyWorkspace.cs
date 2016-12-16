@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Workspaces;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 
+[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
 public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged
 {
 	const float kYBounds = 0.2f;
@@ -127,9 +128,11 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 
 	static void SelectRow(int instanceID)
 	{
+#if UNITY_EDITOR
 		var gameObject = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
 		if (gameObject)
 			Selection.activeGameObject = gameObject;
+#endif
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

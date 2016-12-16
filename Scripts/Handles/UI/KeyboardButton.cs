@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Helpers;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Workspaces;
-using UnityEngine.VR.Extensions;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Helpers;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Workspaces;
+using UnityEngine.Experimental.EditorVR.Extensions;
 
 public class KeyboardButton : BaseHandle
 {

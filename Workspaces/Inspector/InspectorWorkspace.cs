@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Workspaces;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 
+[MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
 public class InspectorWorkspace : Workspace, ISelectionChanged
 {
 	public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
@@ -24,6 +25,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 	bool m_IsLocked;
 
+#if UNITY_EDITOR
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
@@ -286,4 +288,9 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		if (!m_IsLocked)
 			OnSelectionChanged();
 	}
+#else
+	public void OnSelectionChanged()
+	{
+	}
+#endif
 }

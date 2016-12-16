@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.VR.Modules;
+using UnityEngine.Experimental.EditorVR.Modules;
 
 public class DragAndDropModule : MonoBehaviour
 {

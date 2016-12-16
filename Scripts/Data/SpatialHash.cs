@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace UnityEngine.VR.Data
+namespace UnityEngine.Experimental.EditorVR.Data
 {
 	public class SpatialHash<T>
 	{
