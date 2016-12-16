@@ -1,7 +1,10 @@
 ﻿using System;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
+    /// <summary>
+    /// Gives decorated class the ability to select tools from a menu
+    /// </summary>
 	public interface ISelectTool
 	{
 		/// <summary>

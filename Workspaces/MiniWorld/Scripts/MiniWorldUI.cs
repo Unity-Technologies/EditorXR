@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.VR.Handles;
+using UnityEngine.Experimental.EditorVR.Handles;
 
 public class MiniWorldUI : MonoBehaviour
 {

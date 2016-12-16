@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ListView;
 using UnityEngine;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 public class HierarchyListViewController : NestedListViewController<HierarchyData>
 {

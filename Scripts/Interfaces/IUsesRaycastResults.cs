@@ -1,9 +1,17 @@
 ﻿using System;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
-	public interface IUsesRaycastResults
+    /// <summary>
+    /// Gives decorated class access to hover/intersection detection
+    /// </summary>
+    public interface IUsesRaycastResults
 	{
-		Func<Transform, GameObject> getFirstGameObject { set; }
+	    /// <summary>
+	    /// Delegate used to test hover/intersection
+	    /// Transform = object in test
+	    /// Returns the first GameObject being hovered over, or intersected with
+	    /// </summary>
+	    Func<Transform, GameObject> getFirstGameObject { set; }
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Serialization;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.UI;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.UI;
 
 public class ProjectUI : MonoBehaviour
 {

@@ -1,19 +1,31 @@
-﻿using System; 
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Experimental.EditorVR;
+#if ENABLE_STEAMVR_INPUT
+using System; 
 using UnityEngine.InputNew;
 using Valve.VR;
+#endif
 
+[assembly: OptionalDependency("Valve.VR.IVRSystem", "ENABLE_STEAMVR_INPUT")]
+
+/// <summary>
+/// Sends events to the input system based on native SteamVR SDK calls
+/// </summary>
 public class ViveInputToEvents : MonoBehaviour
 {
-	private enum XorY { X, Y }
+#if ENABLE_STEAMVR_INPUT
+	enum XorY { X, Y }
+
 	public int[] steamDevice
 	{
 		get { return steamDeviceIndices; }
 	}
-	private readonly int[] steamDeviceIndices = new int[] { -1, -1 };
+	readonly int[] steamDeviceIndices = new int[] { -1, -1 };
+#endif
 
 	public bool active { get; private set; }
 
+#if ENABLE_STEAMVR_INPUT
 	public void Update()
 	{
 		active = false;
@@ -138,4 +150,5 @@ public class ViveInputToEvents : MonoBehaviour
 
 		InputSystem.QueueEvent(inputEvent);
 	}
+#endif
 }

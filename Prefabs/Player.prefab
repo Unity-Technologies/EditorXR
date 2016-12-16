@@ -20,7 +20,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000012130594944}
   - 65: {fileID: 65000012604665208}
-  m_Layer: 0
+  m_Layer: 31
   m_Name: OverShoulderTrigger
   m_TagString: VRPlayer
   m_Icon: {fileID: 0}
@@ -37,7 +37,7 @@ GameObject:
   - 4: {fileID: 4000012312717512}
   - 33: {fileID: 33000010250972572}
   - 23: {fileID: 23000012781288072}
-  m_Layer: 0
+  m_Layer: 31
   m_Name: HMD
   m_TagString: VRPlayer
   m_Icon: {fileID: 0}
@@ -54,7 +54,7 @@ GameObject:
   - 4: {fileID: 4000012302416490}
   - 33: {fileID: 33000010236785338}
   - 23: {fileID: 23000012136404606}
-  m_Layer: 0
+  m_Layer: 31
   m_Name: Player
   m_TagString: VRPlayer
   m_Icon: {fileID: 0}

@@ -1,9 +1,9 @@
 ﻿using System;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.UI;
-using UnityEngine.VR.Workspaces;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.UI;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 
 public class InspectorNumberItem : InspectorPropertyItem
 {
@@ -13,6 +13,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 	[SerializeField]
 	WorkspaceButton[] m_IncrementDecrementButtons;
 
+#if UNITY_EDITOR
 	public SerializedPropertyType propertyType { get; private set; }
 	public event Action<PropertyData> arraySizeChanged = delegate {};
 
@@ -165,4 +166,5 @@ public class InspectorNumberItem : InspectorPropertyItem
 				break;
 		}
 	}
+#endif
 }

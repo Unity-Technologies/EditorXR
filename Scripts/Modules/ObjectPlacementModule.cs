@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 public class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 {
