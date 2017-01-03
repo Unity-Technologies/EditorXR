@@ -347,7 +347,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 						var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
 						var transform = go.transform;
 						transform.position = gridItem.transform.position;
-						transform.rotation = gridItem.transform.rotation;
+						transform.rotation = U.Math.ConstrainYawRotation(gridItem.transform.rotation);
 #else
 						var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
 #endif
