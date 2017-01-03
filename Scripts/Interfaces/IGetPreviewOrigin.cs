@@ -1,7 +1,10 @@
 ﻿using System;
 
-namespace UnityEngine.VR.Modules
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
+	/// <summary>
+	/// Implementors receive a preview origin transform
+	/// </summary>
 	public interface IGetPreviewOrigin
 	{
 		/// <summary>

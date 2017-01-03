@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.VR.Actions;
+using UnityEngine.Experimental.EditorVR.Actions;
 
 /// <summary>
 /// A convenience class for simple action implementations

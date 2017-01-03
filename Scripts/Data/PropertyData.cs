@@ -3,6 +3,7 @@ using UnityEditor;
 
 public class PropertyData : InspectorData
 {
+#if UNITY_EDITOR
 	public SerializedProperty property { get; private set; }
 
 	public override int instanceID
@@ -15,4 +16,5 @@ public class PropertyData : InspectorData
 	{
 		this.property = property;
 	}
+#endif
 }

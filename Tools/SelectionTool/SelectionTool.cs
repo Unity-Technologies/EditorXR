@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine.InputNew;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	public class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, ISetHighlight, IGameObjectLocking
 	{
@@ -43,6 +43,7 @@ namespace UnityEngine.VR.Tools
 
 			var newHoverGameObject = getFirstGameObject(rayOrigin);
 			GameObject newPrefabRoot = null;
+#if UNITY_EDITOR
 			if (newHoverGameObject != null)
 			{
 				// If gameObject is within a prefab and not the current prefab, choose prefab root
@@ -56,6 +57,7 @@ namespace UnityEngine.VR.Tools
 				if (newHoverGameObject.isStatic)
 					return;
 			}
+#endif
 
 			if (hovered != null)
 				hovered(newHoverGameObject, rayOrigin);

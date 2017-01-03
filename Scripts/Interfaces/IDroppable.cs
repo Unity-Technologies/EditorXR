@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Modules
+﻿namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	/// <summary>
 	/// Implementors can be dropped on IDropReceivers

@@ -1,6 +1,6 @@
-﻿using UnityEngine.VR.Utilities;
+﻿using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Proxies
+namespace UnityEngine.Experimental.EditorVR.Proxies
 {
 	public class SixenseProxy : TwoHandedProxyBase
 	{

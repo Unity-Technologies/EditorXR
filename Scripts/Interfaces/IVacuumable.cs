@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Helpers
+﻿namespace UnityEngine.Experimental.EditorVR.Helpers
 {
 	/// <summary>
 	/// Declares a class as something that can be vacuumed

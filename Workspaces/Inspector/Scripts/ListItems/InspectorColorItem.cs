@@ -1,9 +1,10 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.VR.UI;
+using UnityEngine.Experimental.EditorVR.UI;
 
 public class InspectorColorItem : InspectorPropertyItem
 {
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -136,4 +137,5 @@ public class InspectorColorItem : InspectorPropertyItem
 			data.serializedObject.ApplyModifiedProperties();
 		}
 	}
+#endif
 }

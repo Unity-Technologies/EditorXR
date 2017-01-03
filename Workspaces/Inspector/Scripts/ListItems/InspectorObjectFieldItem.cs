@@ -2,10 +2,10 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.UI;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.UI;
+using UnityEngine.Experimental.EditorVR.Utilities;
 using Object = UnityEngine.Object;
 
 public class InspectorObjectFieldItem : InspectorPropertyItem
@@ -19,6 +19,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 	Type m_ObjectType;
 	string m_ObjectTypeName;
 
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -84,4 +85,5 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, highlightMaterials);
 		m_Button.sharedMaterials = highlightMaterials;
 	}
+#endif
 }

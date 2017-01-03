@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using UnityEngine.UI;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Helpers;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Helpers;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Workspaces
+namespace UnityEngine.Experimental.EditorVR.Workspaces
 {
 	public class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef
 	{
