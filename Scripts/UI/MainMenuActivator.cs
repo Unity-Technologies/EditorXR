@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine.EventSystems;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.VR.Menus
+namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	internal class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IMenuOrigins, IUsesRayOrigin
 	{

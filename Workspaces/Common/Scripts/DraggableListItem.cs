@@ -2,9 +2,9 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 public class DraggableListItem<DataType> : ListViewItem<DataType>, IGetPreviewOrigin where DataType : ListViewItemData
 {

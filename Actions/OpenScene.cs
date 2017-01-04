@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Actions
+﻿namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("OpenScene", "Scene")]
 	public class OpenScene : BaseAction

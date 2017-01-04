@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	/// <summary>
 	/// Provides access to checks that can test against the viewer's body

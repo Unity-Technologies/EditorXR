@@ -1,16 +1,20 @@
-﻿using System;
+﻿#if !UNITY_EDITOR
+#pragma warning disable 414, 649
+#endif
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Actions;
-using UnityEngine.VR.Manipulators;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Actions;
+using UnityEngine.Experimental.EditorVR.Manipulators;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay, IProcessInput, ISelectObject
+public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -71,7 +75,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		public Sprite icon { get; internal set; }
 		public void ExecuteAction()
 		{
-			execute();
+			if (execute != null)
+				execute();
 		}
 	}
 
@@ -127,8 +132,10 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	readonly Dictionary<Transform, Quaternion> m_RotationOffsets = new Dictionary<Transform, Quaternion>();
 	readonly Dictionary<Transform, Vector3> m_ScaleOffsets = new Dictionary<Transform, Vector3>();
 
+#if UNITY_EDITOR
 	PivotRotation m_PivotRotation = PivotRotation.Local;
 	PivotMode m_PivotMode = PivotMode.Pivot;
+#endif
 
 	readonly Dictionary<Node, GrabData> m_GrabData = new Dictionary<Node, GrabData>();
 	bool m_DirectSelected;
@@ -154,15 +161,19 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	public Action<GameObject, bool> setHighlight { private get; set; }
 	public Func<GameObject, GameObject> getSelectObject { private get; set; }
 	public Action<GameObject, Transform, bool> selectObject { private get; set; }
+	public Func<Transform, bool> isOverShoulder { private get; set; }
+	public Action<GameObject> deleteSceneObject { private get; set; }
 
 	void Awake()
 	{
+#if UNITY_EDITOR
 		m_PivotModeToggleAction.execute = TogglePivotMode;
 		UpdatePivotModeToggleIcon();
 		m_PivotRotationToggleAction.execute = TogglePivotRotation;
 		UpdatePivotRotationToggleIcon();
 		m_ManipulatorToggleAction.execute = ToggleManipulator;
 		UpdateManipulatorToggleIcon();
+#endif
 
 		// Add standard and scale manipulator prefabs to a list (because you cannot add asset references directly to a serialized list)
 		if (m_StandardManipulatorPrefab != null)
@@ -343,19 +354,23 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 			var manipulatorTransform = manipulatorGameObject.transform;
 			manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, kLazyFollowTranslate * deltaTime);
 
+#if UNITY_EDITOR
 			if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 				manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, kLazyFollowRotate * deltaTime);
+#endif
 
 			foreach (var t in Selection.transforms)
 			{
 				t.rotation = Quaternion.Slerp(t.rotation, m_TargetRotation * m_RotationOffsets[t], kLazyFollowRotate * deltaTime);
 
+#if UNITY_EDITOR
 				if (m_PivotMode == PivotMode.Center) // Rotate the position offset from the manipulator when rotating around center
 				{
 					m_PositionOffsetRotation = Quaternion.Slerp(m_PositionOffsetRotation, m_TargetRotation * Quaternion.Inverse(m_StartRotation), kLazyFollowRotate * deltaTime);
 					t.position = manipulatorTransform.position + m_PositionOffsetRotation * m_PositionOffsets[t];
 				}
 				else
+#endif
 				{
 					t.position = manipulatorTransform.position + m_PositionOffsets[t];
 				}
@@ -475,9 +490,11 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		var manipulatorGameObject = m_CurrentManipulator.gameObject;
 		manipulatorGameObject.SetActive(true);
 		var manipulatorTransform = manipulatorGameObject.transform;
+#if UNITY_EDITOR
 		var activeTransform = Selection.activeTransform;
 		manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? activeTransform.position : m_SelectionBounds.center;
 		manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : activeTransform.rotation;
+#endif
 		m_TargetPosition = manipulatorTransform.position;
 		m_TargetRotation = manipulatorTransform.rotation;
 		m_StartRotation = m_TargetRotation;
@@ -497,6 +514,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		}
 	}
 
+#if UNITY_EDITOR
 	bool TogglePivotMode()
 	{
 		m_PivotMode = m_PivotMode == PivotMode.Pivot ? PivotMode.Center : PivotMode.Pivot;
@@ -537,4 +555,5 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	{
 		m_ManipulatorToggleAction.icon = m_CurrentManipulator == m_StandardManipulator ? m_ScaleManipulatorIcon : m_StandardManipulatorIcon;
 	}
+#endif
 }

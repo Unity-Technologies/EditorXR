@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using UnityEngine.VR.Menus;
+using UnityEngine.Experimental.EditorVR.Menus;
 
 public class CreatePrimitiveMenu : MonoBehaviour, IMenu
 {

@@ -1,6 +1,6 @@
-using UnityEngine.VR.UI;
+using UnityEngine.Experimental.EditorVR.UI;
 
-namespace UnityEditor.VR.UI
+namespace UnityEditor.Experimental.EditorVR.UI
 {
 	[CustomEditor(typeof(StandardInputField))]
 	public class StandardInputFieldEditor : InputFieldEditor

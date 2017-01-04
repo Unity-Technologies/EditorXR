@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.VR.Modules
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	public class SelectionModule : MonoBehaviour, IGameObjectLocking, ISelectionChanged
 	{

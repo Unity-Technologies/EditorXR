@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using Button = UnityEngine.VR.UI.Button;
+using Button = UnityEngine.Experimental.EditorVR.UI.Button;
 
 public class FilterButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {

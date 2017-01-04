@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Extensions;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Extensions;
 
-namespace UnityEngine.VR.Workspaces
+namespace UnityEngine.Experimental.EditorVR.Workspaces
 {
 	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight, IUsesStencilRef, IConnectInterfaces
 	{
