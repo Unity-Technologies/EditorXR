@@ -1640,7 +1640,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var selectObject = obj as ISelectObject;
 			if (selectObject != null)
 			{
-				selectObject.getSelectObject = m_SelectionModule.GetSelectObject;
+				selectObject.canSelectObject = m_SelectionModule.CanSelectObject;
 				selectObject.selectObject = m_SelectionModule.SelectObject;
 			}
 		}

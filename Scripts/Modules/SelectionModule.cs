@@ -15,46 +15,44 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		public event Action<Transform> selected;
 
-		public GameObject GetSelectObject(GameObject hoveredObject)
+		public bool CanSelectObject(GameObject hoveredObject, bool useGroupRoot = false)
 		{
+			if (isLocked(hoveredObject))
+				return false;
+
 			if (hoveredObject != null)
 			{
 				if (hoveredObject.isStatic)
-					return null;
+					return false;
 
-				GameObject newPrefabRoot;
-				hoveredObject = CheckGroupRoot(hoveredObject, out newPrefabRoot);
+				var groupRoot = GetGroupRoot(hoveredObject);
+				if (groupRoot && (groupRoot.isStatic || isLocked(groupRoot)))
+					return false;
 			}
 
-			// Do this after checking for a prefab so that we check if the prefab is locked
-			if (isLocked(hoveredObject))
-				return null;
-
-			return hoveredObject;
+			return true;
 		}
-		/// <summary>
-		/// Select an object
-		/// </summary>
-		/// <param name="hoveredObject">The hovered object we want to select. We might select its prefab root if there is one</param>
-		/// <param name="rayOrigin">The rayOrigin used to make the selection</param>
-		/// <param name="multiSelect">Whether this will be part of a multiple selection</param>
-		/// <returns>The selected GameObject, or null if nothing was selected. This will be the prefab root if that's what we selected</returns>
-		public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect)
+
+		public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGroupRoot)
 		{
-			if (isLocked(hoveredObject))
+			if (!CanSelectObject(hoveredObject, useGroupRoot))
 				return;
 
-			// Select the prefab root if we don't already have one selected
-			GameObject groupRoot = null;
-			if (hoveredObject != null)
+			if (useGroupRoot)
 			{
-				if (hoveredObject.isStatic)
-					return;
+				var groupRoot = GetGroupRoot(hoveredObject);
 
-				hoveredObject = CheckGroupRoot(hoveredObject, out groupRoot);
+				if (groupRoot != m_CurrentGroupRoot)
+					hoveredObject = groupRoot;
+				else
+				{
+					if (groupRoot && groupRoot != m_CurrentGroupRoot)
+						hoveredObject = groupRoot;
+				}
+
+				if (hoveredObject != null && hoveredObject != m_CurrentGroupRoot)
+					m_CurrentGroupRoot = groupRoot;
 			}
-
-			m_CurrentGroupRoot = groupRoot;
 			m_SelectedObjects.Clear();
 
 			// Multi-Select
@@ -87,31 +85,22 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				selected(rayOrigin);
 		}
 
-		GameObject CheckGroupRoot(GameObject hoveredObject, out GameObject groupRoot)
+		GameObject GetGroupRoot(GameObject hoveredObject)
 		{
-			// If gameObject is within a prefab and not the current prefab, choose prefab root
-			groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
-			if (groupRoot && groupRoot != hoveredObject)
-			{
-				if (groupRoot != m_CurrentGroupRoot)
-					hoveredObject = groupRoot;
-			}
-			else
-			{
-				groupRoot = GetGroupRoot(hoveredObject.transform).gameObject;
-				if (groupRoot && groupRoot != m_CurrentGroupRoot)
-					hoveredObject = groupRoot;
-			}
-			return hoveredObject;
+			var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
+			if (!groupRoot || groupRoot == hoveredObject)
+				groupRoot = FindGroupRoot(hoveredObject.transform).gameObject;
+
+			return groupRoot;
 		}
 
-		static Transform GetGroupRoot(Transform transform)
+		static Transform FindGroupRoot(Transform transform)
 		{
 			var parent = transform.parent;
 			if (parent)
 			{
 				if (parent.GetComponent<Renderer>())
-					return GetGroupRoot(parent);
+					return FindGroupRoot(parent);
 
 				return parent;
 			}
