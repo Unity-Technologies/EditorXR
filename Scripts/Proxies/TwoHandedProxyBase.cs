@@ -1,10 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Proxies
+namespace UnityEngine.Experimental.EditorVR.Proxies
 {
 	public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
 	{

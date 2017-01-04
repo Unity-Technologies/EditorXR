@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using Button = UnityEngine.VR.UI.Button;
+using Button = UnityEngine.Experimental.EditorVR.UI.Button;
 
 public class InspectorArrayHeaderItem : InspectorPropertyItem
 {

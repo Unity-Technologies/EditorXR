@@ -1,6 +1,6 @@
-using UnityEngine.VR.Modules;
+using UnityEngine.Experimental.EditorVR.Modules;
 
-namespace UnityEngine.VR.Utilities
+namespace UnityEngine.Experimental.EditorVR.Utilities
 {
 	public static partial class U
 	{

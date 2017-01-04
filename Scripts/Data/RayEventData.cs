@@ -1,7 +1,7 @@
-﻿using UnityEngine.VR.Tools;
+﻿using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.EventSystems;
 
-namespace UnityEngine.VR.Modules
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	public class RayEventData : PointerEventData
 	{

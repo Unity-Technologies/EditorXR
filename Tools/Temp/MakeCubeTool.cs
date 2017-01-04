@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Actions;
-using UnityEngine.VR.Menus;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Actions;
+using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Tools;
 
 //[MainMenuItem("Cube", "Create", "Create cubes in the scene")]
 [MainMenuItem(false)]

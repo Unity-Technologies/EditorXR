@@ -41,6 +41,7 @@ public class AssetData : ListViewItemData
 	{
 		if (type == "GameObject")
 		{
+#if UNITY_EDITOR
 			switch (PrefabUtility.GetPrefabType(asset))
 			{
 				case PrefabType.ModelPrefab:
@@ -50,6 +51,7 @@ public class AssetData : ListViewItemData
 					type = "Prefab";
 					break;
 			}
+#endif
 		}
 	}
 }
