@@ -15,7 +15,25 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		public event Action<Transform> selected;
 
-		public bool CanSelectObject(GameObject hoveredObject, bool useGroupRoot = false)
+		public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
+		{
+			// If we can't even select the object we're starting with, then skip any further logic
+			if (!CanSelectObject(hoveredObject, false))
+				return null;
+
+			// By default the selection candidate would be the same object passed in
+			if (!useGrouping)
+				return hoveredObject;
+
+			// Only offer up the group root as the selection on first selection; Subsequent selections would allow children from the group
+			var groupRoot = GetGroupRoot(hoveredObject);
+			if (groupRoot && groupRoot != m_CurrentGroupRoot && CanSelectObject(groupRoot, false))
+				return groupRoot;
+			
+			return hoveredObject;
+		}
+
+		bool CanSelectObject(GameObject hoveredObject, bool useGrouping)
 		{
 			if (isLocked(hoveredObject))
 				return false;
@@ -25,9 +43,11 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				if (hoveredObject.isStatic)
 					return false;
 
-				var groupRoot = GetGroupRoot(hoveredObject);
-				if (groupRoot && (groupRoot.isStatic || isLocked(groupRoot)))
-					return false;
+				if (useGrouping)
+				{
+					// Check the same rules on our selection candidate
+					return CanSelectObject(GetSelectionCandidate(hoveredObject, true), false);
+				}
 			}
 
 			return true;
@@ -35,38 +55,33 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGroupRoot = false)
 		{
-			if (!CanSelectObject(hoveredObject, useGroupRoot))
-				return;
-
-			if (useGroupRoot)
-			{
-				var groupRoot = GetGroupRoot(hoveredObject, true);
-				if (groupRoot)
-					hoveredObject = groupRoot;
-			}
+			var selection = GetSelectionCandidate(hoveredObject);
+			
+			if (useGroupRoot && selection != m_CurrentGroupRoot)
+				m_CurrentGroupRoot = selection;
 			m_SelectedObjects.Clear();
 
 			// Multi-Select
 			if (multiSelect)
 			{
 				m_SelectedObjects.AddRange(Selection.objects);
-				if (m_SelectedObjects.Contains(hoveredObject))
+				if (m_SelectedObjects.Contains(selection))
 				{
 					// Already selected, so remove from selection
-					m_SelectedObjects.Remove(hoveredObject);
+					m_SelectedObjects.Remove(selection);
 				}
 				else
 				{
 					// Add to selection
-					m_SelectedObjects.Add(hoveredObject);
-					Selection.activeObject = hoveredObject;
+					m_SelectedObjects.Add(selection);
+					Selection.activeObject = selection;
 				}
 			}
 			else
 			{
 				m_SelectedObjects.Clear();
-				Selection.activeObject = hoveredObject;
-				m_SelectedObjects.Add(hoveredObject);
+				Selection.activeObject = selection;
+				m_SelectedObjects.Add(selection);
 			}
 
 			Selection.objects = m_SelectedObjects.ToArray();
@@ -76,32 +91,16 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				selected(rayOrigin);
 		}
 
-		public GameObject GetGroupRoot(GameObject hoveredObject)
+		static GameObject GetGroupRoot(GameObject hoveredObject)
 		{
-			return GetGroupRoot(hoveredObject, false);
-		}
+			if (!hoveredObject)
+				return null;
 
-		GameObject GetGroupRoot(GameObject hoveredObject, bool setCurrent)
-		{
 			var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
-			if (!groupRoot && hoveredObject)
+			if (!groupRoot)
 				groupRoot = FindGroupRoot(hoveredObject.transform).gameObject;
 
-			if (hoveredObject)
-			{
-				if (groupRoot && groupRoot != m_CurrentGroupRoot)
-				{
-					if (setCurrent)
-						m_CurrentGroupRoot = groupRoot;
-					return groupRoot;
-				}
-			}
-			else if (setCurrent)
-			{
-				m_CurrentGroupRoot = null;
-			}
-
-			return hoveredObject;
+			return groupRoot;
 		}
 
 		static Transform FindGroupRoot(Transform transform)
@@ -114,7 +113,6 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 				return parent;
 			}
-
 
 			return transform;
 		}

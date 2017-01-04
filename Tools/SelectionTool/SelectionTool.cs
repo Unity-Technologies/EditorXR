@@ -19,8 +19,7 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		public Func<Transform, bool> isRayActive;
 		public event Action<GameObject, Transform> hovered;
 
-		public CanSelectObjectDelegate canSelectObject { private get; set; }
-		public Func<GameObject, GameObject> getGroupRoot { private get; set; }
+		public GetSelectionCandidateDelegate getSelectionCandidate { private get; set; }
 		public SelectObjectDelegate selectObject { private get; set; }
 
 		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
@@ -33,42 +32,43 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 
 			var selectionInput = (SelectionInput)input;
 
-			var hoveringObject = getFirstGameObject(rayOrigin);
+			var hoveredObject = getFirstGameObject(rayOrigin);
 
 			if (hovered != null)
-				hovered(hoveringObject, rayOrigin);
+				hovered(hoveredObject, rayOrigin);
 
-			var newHoverObject = getGroupRoot(hoveringObject);
-			if (newHoverObject)
-				hoveringObject = newHoverObject;
+			var selectionCandidate = getSelectionCandidate(hoveredObject, true);
 
-			// Can't select this object
-			if (!canSelectObject(hoveringObject, true))
+			// Can't select this object (it might be locked or static)
+			if (hoveredObject && !selectionCandidate)
 				return;
 
+			if (selectionCandidate)
+				hoveredObject = selectionCandidate;
+
 			// Handle changing highlight
-			if (newHoverObject != m_HoverGameObject)
+			if (hoveredObject != m_HoverGameObject)
 			{
 				if (m_HoverGameObject != null)
 					setHighlight(m_HoverGameObject, false);
 
-				if (newHoverObject != null)
-					setHighlight(newHoverObject, true);
+				if (hoveredObject != null)
+					setHighlight(hoveredObject, true);
 			}
 
-			m_HoverGameObject = newHoverObject;
+			m_HoverGameObject = hoveredObject;
 
 			// Capture object on press
 			if (selectionInput.select.wasJustPressed)
 			{
-				m_PressedObject = hoveringObject;
+				m_PressedObject = hoveredObject;
 				consumeControl(selectionInput.select);
 			}
 
 			// Select button on release
 			if (selectionInput.select.wasJustReleased)
 			{
-				if (m_PressedObject == hoveringObject)
+				if (m_PressedObject == hoveredObject)
 				{
 					selectObject(m_PressedObject, rayOrigin, selectionInput.multiSelect.isHeld, true);
 

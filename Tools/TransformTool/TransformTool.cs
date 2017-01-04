@@ -152,19 +152,22 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	readonly Dictionary<Transform, GameObject> m_HoverObjects = new Dictionary<Transform, GameObject>();
 
 	public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
+	public Func<Transform, bool> isOverShoulder { private get; set; }
+	public Action<GameObject> deleteSceneObject { private get; set; }
+
 	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
 	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
+
 	public Func<Transform, object, bool> lockRay { private get; set; }
 	public Func<Transform, object, bool> unlockRay { private get; set; }
+
 	public Func<GameObject, Transform, bool> canGrabObject { private get; set; }
 	public Func<IGrabObjects, GameObject, Transform, bool> grabObject { private get; set; }
 	public Action<IGrabObjects, Transform[], Transform> dropObjects { private get; set; }
+
 	public Action<GameObject, bool> setHighlight { private get; set; }
-	public CanSelectObjectDelegate canSelectObject { private get; set; }
-	public Func<GameObject, GameObject> getGroupRoot { private get; set; }
+	public GetSelectionCandidateDelegate getSelectionCandidate { private get; set; }
 	public SelectObjectDelegate selectObject { private get; set; }
-	public Func<Transform, bool> isOverShoulder { private get; set; }
-	public Action<GameObject> deleteSceneObject { private get; set; }
 
 	void Awake()
 	{
@@ -227,32 +230,33 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 			{
 				var rayOrigin = kvp.Key;
 				var selection = kvp.Value;
-				var hoveringObject = selection.gameObject;
+				var hoveredObject = selection.gameObject;
 
-				// Can't select this object
-				if (!canSelectObject(hoveringObject))
+				var selectionCandidate = getSelectionCandidate(hoveredObject, true);
+
+				// Can't select this object (it might be locked or static)
+				if (hoveredObject && !selectionCandidate)
+					return;
+
+				if (selectionCandidate)
+					hoveredObject = selectionCandidate;
+
+				if (!canGrabObject(hoveredObject, rayOrigin))
 					continue;
 
-				var newHoverObject = getGroupRoot(hoveringObject);
-				if (newHoverObject)
-					hoveringObject = newHoverObject;
+				m_HoverObjects[rayOrigin] = hoveredObject; // Store actual hover object to unhighlight next frame
 
-				if (!canGrabObject(hoveringObject, rayOrigin))
-					continue;
-
-				m_HoverObjects[rayOrigin] = hoveringObject; // Store actual hover object to unhighlight next frame
-
-				setHighlight(hoveringObject, true);
+				setHighlight(hoveredObject, true);
 
 				var directSelectInput = (DirectSelectInput)selection.input;
 				if (directSelectInput.select.wasJustPressed)
 				{
-					if (!grabObject(this, hoveringObject, rayOrigin))
+					if (!grabObject(this, hoveredObject, rayOrigin))
 						continue;
 
 					// Only add to selection, don't remove
-					if (!Selection.objects.Contains(hoveringObject))
-						selectObject(hoveringObject, rayOrigin, directSelectInput.multiSelect.isHeld);
+					if (!Selection.objects.Contains(hoveredObject))
+						selectObject(hoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
 
 					consumeControl(directSelectInput.select);
 
@@ -277,7 +281,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 					m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput, Selection.transforms);
 
-					setHighlight(hoveringObject, false);
+					setHighlight(hoveredObject, false);
 
 					hideDefaultRay(rayOrigin, true);
 					lockRay(rayOrigin, this);
