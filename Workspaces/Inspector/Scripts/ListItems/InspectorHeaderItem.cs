@@ -4,8 +4,8 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.UI;
-using InputField = UnityEngine.VR.UI.InputField;
+using UnityEngine.Experimental.EditorVR.UI;
+using InputField = UnityEngine.Experimental.EditorVR.UI.InputField;
 
 public class InspectorHeaderItem : InspectorListItem
 {

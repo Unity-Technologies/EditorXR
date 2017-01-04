@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Text;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.UI;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.UI;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Menus
+namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	public class PinnedToolButton : MonoBehaviour, ISelectTool
 	{

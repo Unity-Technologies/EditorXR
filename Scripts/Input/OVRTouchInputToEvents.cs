@@ -1,10 +1,13 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR;
+using UnityEngine.Experimental.EditorVR;
 
 [assembly: OptionalDependency("OVRInput", "ENABLE_OVR_INPUT")]
 
+/// <summary>
+/// Sends events to the input system based on native Oculus SDK calls
+/// </summary>
 public class OVRTouchInputToEvents : MonoBehaviour
 {
 #if ENABLE_OVR_INPUT

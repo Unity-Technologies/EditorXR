@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 
-namespace UnityEngine.VR.Utilities
+namespace UnityEngine.Experimental.EditorVR.Utilities
 {
 	public static class TagManager
 	{

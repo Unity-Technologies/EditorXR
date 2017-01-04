@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.UI;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Workspaces;
-using InputField = UnityEngine.VR.UI.InputField;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.UI;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Workspaces;
+using InputField = UnityEngine.Experimental.EditorVR.UI.InputField;
 
 public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight
 {

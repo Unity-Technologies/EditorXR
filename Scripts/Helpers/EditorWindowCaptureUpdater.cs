@@ -4,8 +4,11 @@
 
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
+/// <summary>
+/// Updates a RawImage texture with data from an EditorWindowCapture
+/// </summary>
 public class EditorWindowCaptureUpdater : MonoBehaviour
 {
 	[SerializeField]

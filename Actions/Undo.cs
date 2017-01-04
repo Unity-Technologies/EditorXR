@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Actions
+﻿namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Undo", ActionMenuItemAttribute.kDefaultActionSectionName, 2)]
 	public class Undo : BaseAction

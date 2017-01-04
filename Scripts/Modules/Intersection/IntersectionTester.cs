@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Modules
+﻿namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	public class IntersectionTester : MonoBehaviour
 	{

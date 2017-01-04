@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityEngine.VR
+namespace UnityEngine.Experimental.EditorVR
 {
 	public class RequiresLayerAttribute : Attribute
 	{

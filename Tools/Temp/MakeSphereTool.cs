@@ -1,8 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Menus;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Tools;
 
 //[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
 [MainMenuItem(false)]

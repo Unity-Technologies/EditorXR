@@ -5,7 +5,7 @@ using System.IO;
 using UnityEditor;
 #endif
 using UnityEngine;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Tools;
 
 /// <summary>
 /// Spawn additional objects around a proxy node

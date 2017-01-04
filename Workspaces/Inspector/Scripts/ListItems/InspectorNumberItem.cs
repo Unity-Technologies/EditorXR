@@ -1,9 +1,9 @@
 ﻿using System;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.UI;
-using UnityEngine.VR.Workspaces;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.UI;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 
 public class InspectorNumberItem : InspectorPropertyItem
 {

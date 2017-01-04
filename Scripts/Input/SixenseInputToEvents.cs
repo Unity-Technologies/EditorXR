@@ -1,11 +1,14 @@
 ﻿using System;
-using UnityEditor.VR;
-using UnityEngine.VR;
+using UnityEditor.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("SixenseInput", "ENABLE_SIXENSE_INPUT")]
 
+/// <summary>
+/// Sends events to the input system based on native Sixense SDK calls
+/// </summary>
 public class SixenseInputToEvents : MonoBehaviour
 {
 #if ENABLE_SIXENSE_INPUT

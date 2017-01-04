@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Actions
+﻿namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	/// <summary>
 	/// Declares a class as an action that can be executed within the system

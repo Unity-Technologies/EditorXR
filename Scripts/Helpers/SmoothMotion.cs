@@ -1,9 +1,15 @@
-﻿namespace UnityEngine.VR.Helpers
+﻿namespace UnityEngine.Experimental.EditorVR.Helpers
 {
+	/// <summary>
+	/// Provides for smooth translation and/or rotation of an object
+	/// </summary>
 	public class SmoothMotion : MonoBehaviour
 	{
 		const float kDefaultTighteningAmount = 20f;
 
+		/// <summary>
+		/// If true, smooth the rotation of this transform, according to the TightenRotation amount
+		/// </summary>
 		public bool smoothRotation { private get { return m_SmoothRotation; } set { m_SmoothRotation = value; } }
 		[Header("Rotation")]
 		[SerializeField]
@@ -12,6 +18,9 @@
 		[SerializeField]
 		float m_TightenRotation = kDefaultTighteningAmount;
 
+		/// <summary>
+		/// If true, smooth the position of this transform, according to the TightenPosition amount
+		/// </summary>
 		public bool smoothPosition { private get { return m_SmoothPosition; } set { m_SmoothPosition = value; } }
 		[Header("Position")]
 		[SerializeField]
@@ -74,7 +83,7 @@
 		}
 
 		/// <summary>
-		/// Set the follow transform
+		/// Set the transform that this object should follow
 		/// </summary>
 		/// <param name="target">The transform to follow</param>
 		public void SetTarget(Transform target)

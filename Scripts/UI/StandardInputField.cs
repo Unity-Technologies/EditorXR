@@ -1,4 +1,4 @@
-namespace UnityEngine.VR.UI
+namespace UnityEngine.Experimental.EditorVR.UI
 {
 	public class StandardInputField : InputField
 	{
