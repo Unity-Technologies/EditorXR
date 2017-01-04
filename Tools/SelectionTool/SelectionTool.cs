@@ -20,8 +20,8 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		public event Action<GameObject, Transform> hovered;
 
 		public CanSelectObjectDelegate canSelectObject { private get; set; }
-		public Func<GameObject, GameObject> getGroupRoot { get; set; }
-		public Action<GameObject, Transform, bool, bool> selectObject { private get; set; }
+		public Func<GameObject, GameObject> getGroupRoot { private get; set; }
+		public SelectObjectDelegate selectObject { private get; set; }
 
 		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 		{
@@ -33,17 +33,17 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 
 			var selectionInput = (SelectionInput)input;
 
-			var rayObject = getFirstGameObject(rayOrigin);
+			var hoveringObject = getFirstGameObject(rayOrigin);
 
 			if (hovered != null)
-				hovered(rayObject, rayOrigin);
+				hovered(hoveringObject, rayOrigin);
 
-			var canSelect = canSelectObject(rayObject, true);
-			var newHoverObject = getGroupRoot(rayObject);
-			// TODO: Fix the logic below now that the methods are split with selecting and finding the group root
+			var newHoverObject = getGroupRoot(hoveringObject);
+			if (newHoverObject)
+				hoveringObject = newHoverObject;
 
 			// Can't select this object
-			if (rayObject && canSelect && !newHoverObject)
+			if (!canSelectObject(hoveringObject, true))
 				return;
 
 			// Handle changing highlight
@@ -61,14 +61,14 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 			// Capture object on press
 			if (selectionInput.select.wasJustPressed)
 			{
-				m_PressedObject = rayObject;
+				m_PressedObject = hoveringObject;
 				consumeControl(selectionInput.select);
 			}
 
 			// Select button on release
 			if (selectionInput.select.wasJustReleased)
 			{
-				if (m_PressedObject == rayObject)
+				if (m_PressedObject == hoveringObject)
 				{
 					selectObject(m_PressedObject, rayOrigin, selectionInput.multiSelect.isHeld, true);
 

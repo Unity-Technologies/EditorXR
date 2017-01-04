@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Experimental.EditorVR;
 using UnityEngine.InputNew;
 using UnityEngine.Experimental.EditorVR.Actions;
 using UnityEngine.Experimental.EditorVR.Manipulators;
@@ -14,7 +15,7 @@ using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject
+public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -159,8 +160,9 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	public Func<IGrabObjects, GameObject, Transform, bool> grabObject { private get; set; }
 	public Action<IGrabObjects, Transform[], Transform> dropObjects { private get; set; }
 	public Action<GameObject, bool> setHighlight { private get; set; }
-	public Func<GameObject, GameObject> getSelectObject { private get; set; }
-	public Action<GameObject, Transform, bool> selectObject { private get; set; }
+	public CanSelectObjectDelegate canSelectObject { private get; set; }
+	public Func<GameObject, GameObject> getGroupRoot { private get; set; }
+	public SelectObjectDelegate selectObject { private get; set; }
 	public Func<Transform, bool> isOverShoulder { private get; set; }
 	public Action<GameObject> deleteSceneObject { private get; set; }
 
@@ -225,29 +227,32 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 			{
 				var rayOrigin = kvp.Key;
 				var selection = kvp.Value;
-				var selectedObject = selection.gameObject;
-				var newHoverObject = getSelectObject(selectedObject);
-
-				m_HoverObjects[rayOrigin] = newHoverObject; // Store actual hover object to unhighlight next frame
+				var hoveringObject = selection.gameObject;
 
 				// Can't select this object
-				if (selectedObject && !newHoverObject)
-					continue;
-				
-				if (!canGrabObject(newHoverObject, rayOrigin))
+				if (!canSelectObject(hoveringObject))
 					continue;
 
-				setHighlight(newHoverObject, true);
+				var newHoverObject = getGroupRoot(hoveringObject);
+				if (newHoverObject)
+					hoveringObject = newHoverObject;
+
+				if (!canGrabObject(hoveringObject, rayOrigin))
+					continue;
+
+				m_HoverObjects[rayOrigin] = hoveringObject; // Store actual hover object to unhighlight next frame
+
+				setHighlight(hoveringObject, true);
 
 				var directSelectInput = (DirectSelectInput)selection.input;
 				if (directSelectInput.select.wasJustPressed)
 				{
-					if (!grabObject(this, newHoverObject, rayOrigin))
+					if (!grabObject(this, hoveringObject, rayOrigin))
 						continue;
 
 					// Only add to selection, don't remove
-					if (!Selection.objects.Contains(selectedObject))
-						selectObject(selectedObject, rayOrigin, directSelectInput.multiSelect.isHeld);
+					if (!Selection.objects.Contains(hoveringObject))
+						selectObject(hoveringObject, rayOrigin, directSelectInput.multiSelect.isHeld);
 
 					consumeControl(directSelectInput.select);
 
@@ -272,7 +277,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 					m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput, Selection.transforms);
 
-					setHighlight(selectedObject, false);
+					setHighlight(hoveringObject, false);
 
 					hideDefaultRay(rayOrigin, true);
 					lockRay(rayOrigin, this);

@@ -1642,6 +1642,7 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				selectObject.canSelectObject = m_SelectionModule.CanSelectObject;
 				selectObject.selectObject = m_SelectionModule.SelectObject;
+				selectObject.getGroupRoot = m_SelectionModule.GetGroupRoot;
 			}
 		}
 

@@ -33,25 +33,16 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			return true;
 		}
 
-		public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGroupRoot)
+		public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGroupRoot = false)
 		{
 			if (!CanSelectObject(hoveredObject, useGroupRoot))
 				return;
 
 			if (useGroupRoot)
 			{
-				var groupRoot = GetGroupRoot(hoveredObject);
-
-				if (groupRoot != m_CurrentGroupRoot)
+				var groupRoot = GetGroupRoot(hoveredObject, true);
+				if (groupRoot)
 					hoveredObject = groupRoot;
-				else
-				{
-					if (groupRoot && groupRoot != m_CurrentGroupRoot)
-						hoveredObject = groupRoot;
-				}
-
-				if (hoveredObject != null && hoveredObject != m_CurrentGroupRoot)
-					m_CurrentGroupRoot = groupRoot;
 			}
 			m_SelectedObjects.Clear();
 
@@ -85,13 +76,32 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				selected(rayOrigin);
 		}
 
-		GameObject GetGroupRoot(GameObject hoveredObject)
+		public GameObject GetGroupRoot(GameObject hoveredObject)
+		{
+			return GetGroupRoot(hoveredObject, false);
+		}
+
+		GameObject GetGroupRoot(GameObject hoveredObject, bool setCurrent)
 		{
 			var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
-			if (!groupRoot || groupRoot == hoveredObject)
+			if (!groupRoot && hoveredObject)
 				groupRoot = FindGroupRoot(hoveredObject.transform).gameObject;
 
-			return groupRoot;
+			if (hoveredObject)
+			{
+				if (groupRoot && groupRoot != m_CurrentGroupRoot)
+				{
+					if (setCurrent)
+						m_CurrentGroupRoot = groupRoot;
+					return groupRoot;
+				}
+			}
+			else if (setCurrent)
+			{
+				m_CurrentGroupRoot = null;
+			}
+
+			return hoveredObject;
 		}
 
 		static Transform FindGroupRoot(Transform transform)
