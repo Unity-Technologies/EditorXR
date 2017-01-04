@@ -7,7 +7,7 @@ using UnityEngine.Experimental.EditorVR.Modules;
 /// <summary>
 /// Provides methods and delegates used to directly select and grab scene objects
 /// </summary>
-public interface IGrabObject
+public interface IGrabObjects
 {
 	/// <summary>
 	/// Drop a currently held object
@@ -58,11 +58,11 @@ public interface IGrabObject
 	/// Informs EditorVR that a group of objects was grabbed
 	/// Params: the grabber, the selected objects, the rayOrigin, returns whether the grab succeeded
 	/// </summary>
-	Func<IGrabObject, GameObject, Transform, bool> grabObject { set; }
+	Func<IGrabObjects, GameObject, Transform, bool> grabObject { set; }
 
 	/// <summary>
 	/// Informs EditorVR that a group of objects was dropped
 	/// Params: the grabber, the selected objects, the rayOrigin
 	/// </summary>
-	Action<IGrabObject, Transform[], Transform> dropObjects { set; }
+	Action<IGrabObjects, Transform[], Transform> dropObjects { set; }
 }

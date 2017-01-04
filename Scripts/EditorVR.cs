@@ -155,13 +155,15 @@ namespace UnityEditor.Experimental.EditorVR
 		private List<IAction> m_Actions;
 		List<Type> m_MainMenuTools;
 		private readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
+
+		// Local use only -- created here to avoid allocations
 		readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
 
-		private readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
-	{
-		{ "Left", Node.LeftHand },
-		{ "Right", Node.RightHand }
-	};
+		readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
+		{
+			{ "Left", Node.LeftHand },
+			{ "Right", Node.RightHand }
+		};
 
 		private class MiniWorldRay
 		{
@@ -195,10 +197,9 @@ namespace UnityEditor.Experimental.EditorVR
 		StandardManipulator m_StandardManipulator;
 		ScaleManipulator m_ScaleManipulator;
 
-		IGrabObject m_ObjectGrabber;
+		IGrabObjects m_ObjectsGrabber;
 
 		bool m_ControllersReady;
-		bool m_RaycastsReady;
 
 		readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();
 
@@ -444,8 +445,6 @@ namespace UnityEditor.Experimental.EditorVR
 					m_PixelRaycastIgnoreListDirty = false;
 				}
 
-				m_RaycastsReady = true;
-
 				ForEachRayOrigin((proxy, pair, device, deviceData) =>
 				{
 					m_PixelRaycastModule.UpdateRaycast(pair.Value, m_EventCamera);
@@ -530,7 +529,7 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 #endif
 
-			if (!m_ControllersReady || !m_RaycastsReady)
+			if (!m_ControllersReady)
 				return;
 
 			UpdateDefaultProxyRays();
@@ -742,7 +741,7 @@ namespace UnityEditor.Experimental.EditorVR
 			ToolData toolData;
 
 			var transformTool = SpawnTool(typeof(TransformTool), out devices);
-			m_ObjectGrabber = transformTool.tool as IGrabObject;
+			m_ObjectsGrabber = transformTool.tool as IGrabObjects;
 
 			foreach (var deviceDataPair in m_DeviceData)
 			{
@@ -1453,7 +1452,7 @@ namespace UnityEditor.Experimental.EditorVR
 					});
 				}
 
-				var menuOrigins = obj as IMenuOrigins;
+				var menuOrigins = obj as IUsesMenuOrigins;
 				if (menuOrigins != null)
 				{
 					Transform mainMenuOrigin;
@@ -1476,7 +1475,7 @@ namespace UnityEditor.Experimental.EditorVR
 				customRay.hideDefaultRay = HideRay;
 			}
 
-			var lockableRay = obj as IRayLocking;
+			var lockableRay = obj as IUsesRayLocking;
 			if (lockableRay != null)
 			{
 				lockableRay.lockRay = LockRay;
@@ -1511,7 +1510,7 @@ namespace UnityEditor.Experimental.EditorVR
 			if (placeObjects != null)
 				placeObjects.placeObject = PlaceObject;
 
-			var locking = obj as IGameObjectLocking;
+			var locking = obj as IUsesGameObjectLocking;
 			if (locking != null)
 			{
 				locking.setLocked = m_LockModule.SetLocked;
@@ -1544,11 +1543,11 @@ namespace UnityEditor.Experimental.EditorVR
 				UpdateAlternateMenuActions();
 			}
 
-			var directSelection = obj as IDirectSelection;
+			var directSelection = obj as IUsesDirectSelection;
 			if (directSelection != null)
 				directSelection.getDirectSelection = GetDirectSelection;
 
-			var grabObjects = obj as IGrabObject;
+			var grabObjects = obj as IGrabObjects;
 			if (grabObjects != null)
 			{
 				grabObjects.canGrabObject = CanGrabObject;
@@ -2069,7 +2068,7 @@ namespace UnityEditor.Experimental.EditorVR
 				m_MiniWorldIgnoreListDirty = false;
 			}
 
-			var directSelection = m_ObjectGrabber;
+			var directSelection = m_ObjectsGrabber;
 
 			// Update MiniWorldRays
 			foreach (var ray in m_MiniWorldRays)
@@ -2114,7 +2113,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				if (dragObjects == null)
 				{
-					var heldObjects = m_ObjectGrabber.GetHeldObjects(miniWorldRayOrigin);
+					var heldObjects = m_ObjectsGrabber.GetHeldObjects(miniWorldRayOrigin);
 					if (heldObjects != null)
 					{
 						// Only one ray can grab an object, otherwise PlaceObject is called on each trigger release
@@ -2376,7 +2375,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var results = new Dictionary<Transform, DirectSelectionData>();
 			var activeStates = new List<ActionMapInput>();
 
-			var directSelection = m_ObjectGrabber;
+			var directSelection = m_ObjectsGrabber;
 			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 			{
 				var rayOrigin = rayOriginPair.Value;
@@ -2451,7 +2450,7 @@ namespace UnityEditor.Experimental.EditorVR
 			return true;
 		}
 
-		bool GrabObject(IGrabObject grabber, GameObject selection, Transform rayOrigin)
+		bool GrabObject(IGrabObjects grabber, GameObject selection, Transform rayOrigin)
 		{
 			if (!CanGrabObject(selection, rayOrigin))
 				return false;
@@ -2463,7 +2462,7 @@ namespace UnityEditor.Experimental.EditorVR
 			return true;
 		}
 
-		void DropObjects(IGrabObject grabber, Transform[] grabbedObjects, Transform rayOrigin)
+		void DropObjects(IGrabObjects grabber, Transform[] grabbedObjects, Transform rayOrigin)
 		{
 			foreach (var grabbedObject in grabbedObjects)
 			{

@@ -10,7 +10,7 @@
 	/// <summary>
 	/// Implementors can show & hide the default ray
 	/// </summary>
-	public interface ICustomRay : IRayLocking
+	public interface ICustomRay : IUsesRayLocking
 	{
 		/// <summary>
 		/// Show the default proxy ray/cone

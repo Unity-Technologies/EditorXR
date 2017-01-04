@@ -11,7 +11,7 @@ using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight, IGameObjectLocking, IUsesStencilRef
+public class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight, IUsesGameObjectLocking, IUsesStencilRef
 {
 	const string kMaterialStencilRef = "_StencilRef";
 	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped

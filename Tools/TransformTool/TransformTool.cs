@@ -14,7 +14,7 @@ using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject
+public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -156,8 +156,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	public Func<Transform, object, bool> lockRay { private get; set; }
 	public Func<Transform, object, bool> unlockRay { private get; set; }
 	public Func<GameObject, Transform, bool> canGrabObject { private get; set; }
-	public Func<IGrabObject, GameObject, Transform, bool> grabObject { private get; set; }
-	public Action<IGrabObject, Transform[], Transform> dropObjects { private get; set; }
+	public Func<IGrabObjects, GameObject, Transform, bool> grabObject { private get; set; }
+	public Action<IGrabObjects, Transform[], Transform> dropObjects { private get; set; }
 	public Action<GameObject, bool> setHighlight { private get; set; }
 	public Func<GameObject, GameObject> getSelectObject { private get; set; }
 	public Action<GameObject, Transform, bool> selectObject { private get; set; }
