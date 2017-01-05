@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Experimental.EditorVR;
 using UnityEngine.InputNew;
 using UnityEngine.Experimental.EditorVR.Actions;
 using UnityEngine.Experimental.EditorVR.Manipulators;
@@ -13,43 +15,58 @@ using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IDirectSelection, IGrabObject, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject
+public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
 
 	class GrabData
 	{
-		public Transform grabbedObject;
 		public Transform rayOrigin;
-		public Vector3 positionOffset;
-		public Quaternion rotationOffset;
-		public Vector3 initialScale;
 		public DirectSelectInput input;
+		public Vector3[] positionOffsets { get; private set; }
+		public Quaternion[] rotationOffsets { get; private set; }
+		public Transform[] grabbedObjects;
+		Vector3[] initialScales;
 
-		public GrabData(Transform rayOrigin, Transform grabbedObject, DirectSelectInput input)
+		public GrabData(Transform rayOrigin, DirectSelectInput input, Transform[] grabbedObjects)
 		{
 			this.rayOrigin = rayOrigin;
-			this.grabbedObject = grabbedObject;
 			this.input = input;
+			this.grabbedObjects = grabbedObjects;
 			Reset();
 		}
 
 		public void Reset()
 		{
-			U.Math.GetTransformOffset(rayOrigin, grabbedObject, out positionOffset, out rotationOffset);
-			initialScale = grabbedObject.transform.localScale;
+			var length = grabbedObjects.Length;
+			positionOffsets = new Vector3[length];
+			rotationOffsets = new Quaternion[length];
+			initialScales = new Vector3[length];
+			for (int i = 0; i < length; i++)
+			{
+				var grabbedObject = grabbedObjects[i];
+				U.Math.GetTransformOffset(rayOrigin, grabbedObject, out positionOffsets[i], out rotationOffsets[i]);
+				initialScales[i] = grabbedObject.transform.localScale;
+			}
 		}
 
-		public void PositionObject()
+		public void UpdatePositions()
 		{
-			U.Math.SetTransformOffset(rayOrigin, grabbedObject, positionOffset, rotationOffset);
+			for (int i = 0; i < grabbedObjects.Length; i++)
+			{
+				U.Math.SetTransformOffset(rayOrigin, grabbedObjects[i], positionOffsets[i], rotationOffsets[i]);
+			}
 		}
 
-		public void ScaleObject(float scaleFactor)
+		public void ScaleObjects(float scaleFactor)
 		{
-			grabbedObject.position = rayOrigin.position + positionOffset * scaleFactor;
-			grabbedObject.localScale = initialScale * scaleFactor;
+			for (int i = 0; i < grabbedObjects.Length; i++)
+			{
+				var grabbedObject = grabbedObjects[i];
+				grabbedObject.position = rayOrigin.position + positionOffsets[i] * scaleFactor;
+				grabbedObject.localScale = initialScales[i] * scaleFactor;
+			}
 		}
 	}
 
@@ -128,27 +145,29 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	float m_ScaleFactor;
 	bool m_WasScaling;
 
-	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
-	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
-	public Func<Transform, object, bool> lockRay { private get; set; }
-	public Func<Transform, object, bool> unlockRay { private get; set; }
-
 	readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 	readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 	readonly TransformAction m_ManipulatorToggleAction = new TransformAction();
 
-	Dictionary<Transform, DirectSelectionData> m_LastDirectSelection;
-	public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
+	readonly Dictionary<Transform, GameObject> m_HoverObjects = new Dictionary<Transform, GameObject>();
 
-	public Func<DirectSelectionData, Transform, bool> canGrabObject { private get; set; }
-	public Func<IGrabObject, DirectSelectionData, Transform, bool> grabObject { private get; set; }
-	public Action<IGrabObject, Transform, Transform> dropObject { private get; set; }
+	public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
+	public Func<Transform, bool> isOverShoulder { private get; set; }
+	public Action<GameObject> deleteSceneObject { private get; set; }
+
+	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
+	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
+
+	public Func<Transform, object, bool> lockRay { private get; set; }
+	public Func<Transform, object, bool> unlockRay { private get; set; }
+
+	public Func<GameObject, Transform, bool> canGrabObject { private get; set; }
+	public event Action<GameObject> objectGrabbed;
+	public event Action<Transform[], Transform> objectsDropped;
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
-
-	public Func<Transform, bool> isOverShoulder { private get; set; }
-
-	public Action<GameObject> deleteSceneObject { private get; set; }
+	public GetSelectionCandidateDelegate getSelectionCandidate { private get; set; }
+	public SelectObjectDelegate selectObject { private get; set; }
 
 	void Awake()
 	{
@@ -184,27 +203,13 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 	{
-		var manipulatorGameObject = m_CurrentManipulator.gameObject;
-
-		var directSelection = getDirectSelection();
 		var hasObject = false;
 
-		if (m_LastDirectSelection != null)
-		{
-			foreach (var selection in m_LastDirectSelection.Values)
-			{
-				setHighlight(selection.gameObject, false);
-			}
-		}
-
-		foreach(var selection in directSelection.Values)
-		{
-			setHighlight(selection.gameObject, true);
-		}
-
-		m_LastDirectSelection = directSelection;
+		var manipulatorGameObject = m_CurrentManipulator.gameObject;
 		if (!m_CurrentManipulator.dragging)
 		{
+			var directSelection = getDirectSelection();
+
 			var hasLeft = m_GrabData.ContainsKey(Node.LeftHand);
 			var hasRight = m_GrabData.ContainsKey(Node.RightHand);
 			hasObject = directSelection.Count > 0 || hasLeft || hasRight;
@@ -213,51 +218,69 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 			if (manipulatorGameObject.activeSelf && hasObject)
 				manipulatorGameObject.SetActive(false);
 
+			foreach (var selection in m_HoverObjects.Values)
+			{
+				if (selection)
+					setHighlight(selection, false);
+			}
+
+			m_HoverObjects.Clear();
+
 			foreach (var kvp in directSelection)
 			{
-				var selection = kvp.Value;
 				var rayOrigin = kvp.Key;
+				var selection = kvp.Value;
+				var hoveredObject = selection.gameObject;
 
-#if UNITY_EDITOR
-				// If gameObject is within a prefab and not the current prefab, choose prefab root
-				var prefabRoot = PrefabUtility.FindPrefabRoot(selection.gameObject);
-				if(prefabRoot)
-				{
-					selection.gameObject = prefabRoot;
-				}
-#endif
+				var selectionCandidate = getSelectionCandidate(hoveredObject, true);
 
-				if (!canGrabObject(selection, rayOrigin))
+				// Can't select this object (it might be locked or static)
+				if (hoveredObject && !selectionCandidate)
+					return;
+
+				if (selectionCandidate)
+					hoveredObject = selectionCandidate;
+
+				if (!canGrabObject(hoveredObject, rayOrigin))
 					continue;
+
+				m_HoverObjects[rayOrigin] = hoveredObject; // Store actual hover object to unhighlight next frame
+
+				setHighlight(hoveredObject, true);
 
 				var directSelectInput = (DirectSelectInput)selection.input;
 				if (directSelectInput.select.wasJustPressed)
 				{
-					if (!grabObject(this, selection, rayOrigin))
-						continue;
+					objectGrabbed(hoveredObject);
+
+					// Only add to selection, don't remove
+					if (!Selection.objects.Contains(hoveredObject))
+						selectObject(hoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
 
 					consumeControl(directSelectInput.select);
 
-					var grabbedObject = selection.gameObject.transform;
+					var selectedNode = selection.node;
 
 					// Check if the other hand is already grabbing for two-handed scale
 					foreach (var grabData in m_GrabData)
 					{
 						var otherNode = grabData.Key;
-						if (otherNode != selection.node)
+						if (otherNode != selectedNode)
 						{
-							m_ScaleStartDistance = (rayOrigin.position - grabData.Value.rayOrigin.position).magnitude;
+							var otherData = grabData.Value;
+							m_ScaleStartDistance = (rayOrigin.position - otherData.rayOrigin.position).magnitude;
 							m_ScaleFirstNode = otherNode;
-							grabData.Value.positionOffset = grabbedObject.position - grabData.Value.rayOrigin.position;
+							for (int i = 0; i < otherData.grabbedObjects.Length; i++)
+							{
+								otherData.positionOffsets[i] = otherData.grabbedObjects[i].position - otherData.rayOrigin.position;
+							}
 							break;
 						}
 					}
 
-					m_GrabData[selection.node] = new GrabData(rayOrigin, grabbedObject, directSelectInput);
+					m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput, Selection.transforms);
 
-					Selection.activeGameObject = grabbedObject.gameObject;
-
-					setHighlight(grabbedObject.gameObject, false);
+					setHighlight(hoveredObject, false);
 
 					hideDefaultRay(rayOrigin, true);
 					lockRay(rayOrigin, this);
@@ -279,7 +302,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 			var leftHeld = leftData != null && leftData.input.select.isHeld;
 			var rightHeld = rightData != null && rightData.input.select.isHeld;
-			if (hasLeft && hasRight && leftHeld && rightHeld && leftData.grabbedObject == rightData.grabbedObject) // Two-handed scaling
+			if (hasLeft && hasRight && leftHeld && rightHeld) // Two-handed scaling
 			{
 				// Offsets will change while scaling. Whichever hand keeps holding the trigger after scaling is done will need to reset itself
 				m_WasScaling = true;
@@ -288,9 +311,9 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 				if (m_ScaleFactor > 0 && m_ScaleFactor < Mathf.Infinity)
 				{
 					if (m_ScaleFirstNode == Node.LeftHand)
-						leftData.ScaleObject(m_ScaleFactor);
+						leftData.ScaleObjects(m_ScaleFactor);
 					else
-						rightData.ScaleObject(m_ScaleFactor);
+						rightData.ScaleObjects(m_ScaleFactor);
 				}
 			}
 			else
@@ -307,21 +330,21 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 				}
 
 				if (hasLeft && leftHeld)
-					leftData.PositionObject();
+					leftData.UpdatePositions();
 
 				if (hasRight && rightHeld)
-					rightData.PositionObject();
+					rightData.UpdatePositions();
 			}
 
 			if (hasLeft && leftData.input.select.wasJustReleased)
 			{
-				DropObject(Node.LeftHand);
+				DropObjects(Node.LeftHand);
 				consumeControl(leftData.input.select);
 			}
 
 			if (hasRight && rightData.input.select.wasJustReleased)
 			{
-				DropObject(Node.RightHand);
+				DropObjects(Node.RightHand);
 				consumeControl(rightData.input.select);
 			}
 		}
@@ -365,66 +388,66 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		}
 	}
 
-	public void DropHeldObject(Transform obj)
-	{
-		Vector3 position;
-		Quaternion rotation;
-		DropHeldObject(obj, out position, out rotation);
-	}
-
-	public void DropHeldObject(Transform obj, out Vector3 positionOffset, out Quaternion rotationOffset)
+	public void DropHeldObjects(Transform rayOrigin, out Vector3[] positionOffsets, out Quaternion[] rotationOffsets)
 	{
 		foreach (var kvp in m_GrabData)
 		{
 			var grabData = kvp.Value;
-			if (grabData.grabbedObject == obj)
+			if (grabData.rayOrigin == rayOrigin)
 			{
-				positionOffset = grabData.positionOffset;
-				rotationOffset = grabData.rotationOffset;
-				DropObject(kvp.Key);
+				positionOffsets = grabData.positionOffsets;
+				rotationOffsets = grabData.rotationOffsets;
+				DropObjects(kvp.Key);
 				return;
 			}
 		}
 
-		positionOffset = Vector3.zero;
-		rotationOffset = Quaternion.identity;
+		positionOffsets = null;
+		rotationOffsets = null;
 	}
 
-	public Transform GetHeldObject(Transform rayOrigin)
+	public Transform[] GetHeldObjects(Transform rayOrigin)
 	{
 		foreach (var grabData in m_GrabData.Values)
 		{
 			if (grabData.rayOrigin == rayOrigin)
-				return grabData.grabbedObject;
+				return grabData.grabbedObjects.ToArray();
 		}
 
 		return null;
 	}
 
-	public void TransferHeldObject(Transform rayOrigin, ActionMapInput input, Transform destRayOrigin, Vector3 deltaOffset)
+	public void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset)
 	{
 		foreach (var grabData in m_GrabData.Values)
 		{
 			if (grabData.rayOrigin == rayOrigin)
 			{
 				grabData.rayOrigin = destRayOrigin;
-				grabData.positionOffset += deltaOffset;
-				grabData.input = (DirectSelectInput)input;
-				grabData.PositionObject();
+				var positionOffsets = grabData.positionOffsets;
+				for (int i = 0; i < positionOffsets.Length; i++)
+				{
+					positionOffsets[i] += deltaOffset;
+				}
+				grabData.UpdatePositions();
+
+				// Prevent lock from getting stuck
+				unlockRay(rayOrigin, this);
+				lockRay(destRayOrigin, this);
 				return;
 			}
 		}
 	}
 
-	public void AddHeldObject(Node node, Transform rayOrigin, Transform grabbedObject, ActionMapInput input)
+	public void GrabObjects(Node node, Transform rayOrigin, ActionMapInput input, Transform[] objects)
 	{
-		m_GrabData[node] = new GrabData(rayOrigin, grabbedObject, (DirectSelectInput)input);
+		m_GrabData[node] = new GrabData(rayOrigin, (DirectSelectInput)input, objects);
 	}
 
-	void DropObject(Node inputNode)
+	void DropObjects(Node inputNode)
 	{
 		var grabData = m_GrabData[inputNode];
-		dropObject(this, grabData.grabbedObject, grabData.rayOrigin);
+		objectsDropped(grabData.grabbedObjects.ToArray(), grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
 
 		unlockRay(grabData.rayOrigin, this);
