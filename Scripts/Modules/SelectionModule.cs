@@ -69,27 +69,34 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				if (!m_SelectedObjects.Remove(selection))
 				{
 					m_SelectedObjects.Add(selection);
+#if UNITY_EDITOR
 					Selection.activeObject = selection;
+#endif
 				}
 			}
 			else
 			{
 				m_SelectedObjects.Clear();
+#if UNITY_EDITOR
 				Selection.activeObject = selection;
+#endif
 				m_SelectedObjects.Add(selection);
 			}
 
+#if UNITY_EDITOR
 			Selection.objects = m_SelectedObjects.ToArray();
-
+#endif
 			if (selected != null)
 				selected(rayOrigin);
 		}
 
 		public void OnSelectionChanged()
 		{
+#if UNITY_EDITOR
 			// Selection can change outside of this module, so stay in sync
 			if (Selection.objects.Length == 0)
 				m_CurrentGroupRoot = null;
+#endif
 		}
 	}
 }

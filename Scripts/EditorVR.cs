@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -2907,6 +2908,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
 
+#if UNITY_EDITOR
 			// Add EVR tags and layers if they don't exist
 			var tags = new List<string>();
 			var layers = new List<string>();
@@ -2926,6 +2928,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			foreach (var layer in layers)
 				TagManager.AddLayer(layer);
+#endif
 		}
 
 		private static void OnEVREnabled()
