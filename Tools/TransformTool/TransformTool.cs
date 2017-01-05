@@ -15,7 +15,7 @@ using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject
+public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility
 {
 	const float kLazyFollowTranslate = 8f;
 	const float kLazyFollowRotate = 12f;
@@ -168,6 +168,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	public Action<GameObject, bool> setHighlight { private get; set; }
 	public GetSelectionCandidateDelegate getSelectionCandidate { private get; set; }
 	public SelectObjectDelegate selectObject { private get; set; }
+
+	public bool manipulatorVisible { private get; set; }
 
 	void Awake()
 	{
@@ -491,9 +493,10 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		if (selectionTransforms.Length <= 0)
 			return;
 
-		UpdateSelectionBounds();
 		var manipulatorGameObject = m_CurrentManipulator.gameObject;
-		manipulatorGameObject.SetActive(true);
+		manipulatorGameObject.SetActive(manipulatorVisible);
+		
+		UpdateSelectionBounds();
 		var manipulatorTransform = manipulatorGameObject.transform;
 #if UNITY_EDITOR
 		var activeTransform = Selection.activeTransform;

@@ -222,6 +222,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 		readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
 
+		readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
+		bool m_ManipulatorsVisible = true;
+
 		byte stencilRef
 		{
 			get { return m_StencilRef; }
@@ -543,6 +546,17 @@ namespace UnityEditor.Experimental.EditorVR
 
 			UpdateMenuVisibilityNearWorkspaces();
 			UpdateMenuVisibilities();
+
+			UpdateManipulatorVisibilites();
+		}
+
+		void UpdateManipulatorVisibilites()
+		{
+			foreach (var mv in m_ManipulatorVisibilities)
+				mv.manipulatorVisible = m_ManipulatorsVisible;
+
+			// Reset for the next frame
+			m_ManipulatorsVisible = true;
 		}
 
 		void UpdateMenuVisibilityNearWorkspaces()
@@ -1645,6 +1659,14 @@ namespace UnityEditor.Experimental.EditorVR
 				selectObject.getSelectionCandidate = m_SelectionModule.GetSelectionCandidate;
 				selectObject.selectObject = m_SelectionModule.SelectObject;
 			}
+
+			var manipulatorVisiblity = obj as IManipulatorVisibility;
+			if (manipulatorVisiblity != null)
+				m_ManipulatorVisibilities.Add(manipulatorVisiblity);
+
+			var setManipulatorsVisible = obj as ISetManipulatorsVisible;
+			if (setManipulatorsVisible != null)
+				setManipulatorsVisible.setManipulatorsVisible = SetManipulatorsVisible;
 		}
 
 		private void DisconnectInterfaces(object obj)
@@ -1669,6 +1691,10 @@ namespace UnityEditor.Experimental.EditorVR
 				grabObjects.objectGrabbed -= OnObjectGrabbed;
 				grabObjects.objectsDropped -= OnObjectsDropped;
 			}
+
+			var manipulatorVisiblity = obj as IManipulatorVisibility;
+			if (manipulatorVisiblity != null)
+				m_ManipulatorVisibilities.Remove(manipulatorVisiblity);
 		}
 
 		private void UpdateAlternateMenuActions()
@@ -2609,6 +2635,12 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 			return dpr && dpr.UnlockRay(obj);
+		}
+
+		void SetManipulatorsVisible(bool visible)
+		{
+			// Only show manipulators if all tools agree that they should be shown; This field is reset each frame
+			m_ManipulatorsVisible &= visible;
 		}
 
 		void PreProcessRaycastSource(Transform rayOrigin)
