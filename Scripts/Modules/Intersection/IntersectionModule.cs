@@ -6,7 +6,7 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEngine.Experimental.EditorVR.Modules
 {
-	public class IntersectionModule : MonoBehaviour, IGameObjectLocking
+	public class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		private readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		private readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();

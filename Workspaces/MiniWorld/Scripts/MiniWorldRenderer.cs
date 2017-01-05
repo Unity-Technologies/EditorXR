@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-[InitializeOnLoad]
 [RequiresTag(kMiniWorldCameraTag)]
 [RequiresTag(kShowInMiniWorldTag)]
 public class MiniWorldRenderer : MonoBehaviour

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -109,6 +110,7 @@ namespace UnityEditor.Experimental.EditorVR
 		private ObjectPlacementModule m_ObjectPlacementModule;
 		private LockModule m_LockModule;
 		private DragAndDropModule m_DragAndDropModule;
+		SelectionModule m_SelectionModule;
 
 		private bool m_UpdatePixelRaycastModule = true;
 		bool m_PixelRaycastIgnoreListDirty = true;
@@ -155,7 +157,10 @@ namespace UnityEditor.Experimental.EditorVR
 		List<Type> m_MainMenuTools;
 		private readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
 
-		private readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
+		// Local method use only -- created here to reduce garbage collection
+		readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
+
+		readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 		{
 			{ "Left", Node.LeftHand },
 			{ "Right", Node.RightHand }
@@ -164,23 +169,19 @@ namespace UnityEditor.Experimental.EditorVR
 		private class MiniWorldRay
 		{
 			public Transform originalRayOrigin;
-			public ActionMapInput originalDirectSelectInput;
 			public IMiniWorld miniWorld;
 			public IProxy proxy;
 			public Node node;
-#if ENABLE_MINIWORLD_RAY_SELECTION
-		public ActionMapInput uiInput;
-#endif
 			public ActionMapInput directSelectInput;
 			public IntersectionTester tester;
-			public GameObject dragObject;
+			public Transform[] dragObjects;
 
-			public Vector3 dragObjectOriginalScale;
-			public Vector3 dragObjectPreviewScale;
+			public Vector3[] originalScales;
+			public Vector3 previewScaleFactor;
 
 			public bool wasHeld;
-			public Vector3 originalPositionOffset;
-			public Quaternion originalRotationOffset;
+			public Vector3[] originalPositionOffsets;
+			public Quaternion[] originalRotationOffsets;
 
 			public bool wasContained;
 		}
@@ -198,7 +199,7 @@ namespace UnityEditor.Experimental.EditorVR
 		ScaleManipulator m_ScaleManipulator;
 
 		ITransformer m_Transformer;
-		IGrabObject m_ObjectGrabber;
+		IGrabObjects m_ObjectsGrabber;
 
 		bool m_ControllersReady;
 
@@ -283,6 +284,11 @@ namespace UnityEditor.Experimental.EditorVR
 			m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
 			m_LockModule.updateAlternateMenu = (rayOrigin, o) => SetAlternateMenuVisibility(rayOrigin, o != null);
 			ConnectInterfaces(m_LockModule);
+
+			m_SelectionModule = U.Object.AddComponent<SelectionModule>(gameObject);
+			m_SelectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			m_SelectionModule.getGroupRoot = GetGroupRoot;
+			ConnectInterfaces(m_SelectionModule);
 
 			m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 			m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
@@ -510,7 +516,6 @@ namespace UnityEditor.Experimental.EditorVR
 				m_CustomPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
 
 #if UNITY_EDITOR
-
 			// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
 			//		Additionally, on some machines it's required to do a delay call otherwise none of this works
 			//		I noticed that delay calls were queuing up, so it was necessary to protect against that, so only one is processed
@@ -590,9 +595,7 @@ namespace UnityEditor.Experimental.EditorVR
 						}
 					}
 
-					menuHideFlags[menu] = intersection
-						? flags | MenuHideFlags.NearWorkspace
-						: flags & ~MenuHideFlags.NearWorkspace;
+					menuHideFlags[menu] = intersection ? flags | MenuHideFlags.NearWorkspace : flags & ~MenuHideFlags.NearWorkspace;
 				}
 			});
 		}
@@ -619,6 +622,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			m_InputModule.ProcessInput(null, ConsumeControl);
 
+			m_ProcessedInputs.Clear();
 			foreach (var deviceData in m_DeviceData.Values)
 			{
 				var mainMenu = deviceData.mainMenu;
@@ -634,7 +638,8 @@ namespace UnityEditor.Experimental.EditorVR
 				foreach (var toolData in deviceData.toolData)
 				{
 					var process = toolData.tool as IProcessInput;
-					if (process != null && ((MonoBehaviour)toolData.tool).enabled)
+					if (process != null && ((MonoBehaviour)toolData.tool).enabled
+						&& m_ProcessedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)
 						process.ProcessInput(toolData.input, ConsumeControl);
 				}
 			}
@@ -748,10 +753,9 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			// Spawn default tools
 			HashSet<InputDevice> devices;
-			ToolData toolData;
 
 			var transformTool = SpawnTool(typeof(TransformTool), out devices);
-			m_ObjectGrabber = transformTool.tool as IGrabObject;
+			m_ObjectsGrabber = transformTool.tool as IGrabObjects;
 			m_Transformer = transformTool.tool as ITransformer;
 
 			foreach (var deviceDataPair in m_DeviceData)
@@ -763,10 +767,9 @@ namespace UnityEditor.Experimental.EditorVR
 				if (inputDevice.tagIndex == -1)
 					continue;
 
-				toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
+				var toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
 				AddToolToDeviceData(toolData, devices);
 				var selectionTool = (SelectionTool)toolData.tool;
-				selectionTool.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 				selectionTool.hovered += m_LockModule.OnHovered;
 				selectionTool.isRayActive = IsRayActive;
 				m_SelectionInputs.Add((SelectionInput)toolData.input);
@@ -823,7 +826,8 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				HideRay(rayOrigin);
 				LockRay(rayOrigin, mainMenu);
-			} else
+			}
+			else
 			{
 				UnlockRay(rayOrigin, mainMenu);
 				ShowRay(rayOrigin);
@@ -937,9 +941,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (alternateMenu != null)
 				{
 					var flags = deviceData.menuHideFlags[alternateMenu];
-					deviceData.menuHideFlags[alternateMenu] = (rayOriginPair.Value == rayOrigin) && visible
-						? flags & ~MenuHideFlags.Hidden
-						: flags | MenuHideFlags.Hidden;
+					deviceData.menuHideFlags[alternateMenu] = (rayOriginPair.Value == rayOrigin) && visible ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
 				}
 			});
 		}
@@ -1046,7 +1048,8 @@ namespace UnityEditor.Experimental.EditorVR
 					{
 						// Set ray length to distance to UI objects
 						distance = uiEventData.pointerCurrentRaycast.distance;
-					} else
+					}
+					else
 					{
 						// If not hitting UI, then check standard raycast and approximate bounds to set distance
 						var go = GetFirstGameObject(rayOrigin);
@@ -1102,9 +1105,7 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					foreach (var miniWorld in m_MiniWorlds)
 					{
-						var targetObject = source.hoveredObject
-							? source.hoveredObject
-							: source.draggedObject;
+						var targetObject = source.hoveredObject ? source.hoveredObject : source.draggedObject;
 						if (miniWorld.Contains(source.rayOrigin.position))
 						{
 							if (targetObject && !targetObject.transform.IsChildOf(miniWorld.miniWorldTransform.parent))
@@ -1163,9 +1164,7 @@ namespace UnityEditor.Experimental.EditorVR
 		GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
 		{
 			var go = U.Object.Instantiate(prefab);
-			go.transform.SetParent(parent
-				? parent
-				: transform, worldPositionStays);
+			go.transform.SetParent(parent ? parent : transform, worldPositionStays);
 			foreach (var canvas in go.GetComponentsInChildren<Canvas>())
 				canvas.worldCamera = m_EventCamera;
 
@@ -1243,9 +1242,7 @@ namespace UnityEditor.Experimental.EditorVR
 			if (device != null && !IsValidActionMapForDevice(map, device))
 				return null;
 
-			var devices = device == null
-				? GetSystemDevices()
-				: new[] { device };
+			var devices = device == null ? GetSystemDevices() : new[] { device };
 
 			var actionMapInput = ActionMapInput.Create(map);
 
@@ -1255,7 +1252,8 @@ namespace UnityEditor.Experimental.EditorVR
 			if (actionMapInput.TryInitializeWithDevices(devices))
 			{
 				successfulInitialization = true;
-			} else
+			}
+			else
 			{
 				// For two-handed tools, the single device won't work, so collect the devices from the action map
 				devices = U.Input.CollectInputDevicesFromActionMaps(new List<ActionMap>() { map });
@@ -1301,14 +1299,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 				maps.Add(deviceData.directSelectInput);
 				maps.Add(deviceData.uiInput);
-			}
-
-			foreach (var ray in m_MiniWorldRays.Values)
-			{
-				maps.Add(ray.directSelectInput);
-#if ENABLE_MINIWORLD_RAY_SELECTION
-			maps.Add(ray.uiInput);
-#endif
 			}
 
 			maps.Add(m_TrackedObjectInput);
@@ -1478,7 +1468,7 @@ namespace UnityEditor.Experimental.EditorVR
 					});
 				}
 
-				var menuOrigins = obj as IMenuOrigins;
+				var menuOrigins = obj as IUsesMenuOrigins;
 				if (menuOrigins != null)
 				{
 					Transform mainMenuOrigin;
@@ -1501,7 +1491,7 @@ namespace UnityEditor.Experimental.EditorVR
 				customRay.hideDefaultRay = HideRay;
 			}
 
-			var lockableRay = obj as IRayLocking;
+			var lockableRay = obj as IUsesRayLocking;
 			if (lockableRay != null)
 			{
 				lockableRay.lockRay = LockRay;
@@ -1536,7 +1526,7 @@ namespace UnityEditor.Experimental.EditorVR
 			if (placeObjects != null)
 				placeObjects.placeObject = PlaceObject;
 
-			var locking = obj as IGameObjectLocking;
+			var locking = obj as IUsesGameObjectLocking;
 			if (locking != null)
 			{
 				locking.setLocked = m_LockModule.SetLocked;
@@ -1569,16 +1559,16 @@ namespace UnityEditor.Experimental.EditorVR
 				UpdateAlternateMenuActions();
 			}
 
-			var directSelection = obj as IDirectSelection;
+			var directSelection = obj as IUsesDirectSelection;
 			if (directSelection != null)
 				directSelection.getDirectSelection = GetDirectSelection;
 
-			var grabObjects = obj as IGrabObject;
+			var grabObjects = obj as IGrabObjects;
 			if (grabObjects != null)
 			{
 				grabObjects.canGrabObject = CanGrabObject;
-				grabObjects.grabObject = GrabObject;
-				grabObjects.dropObject = DropObject;
+				grabObjects.objectGrabbed += OnObjectGrabbed;
+				grabObjects.objectsDropped += OnObjectsDropped;
 			}
 
 			var spatialHash = obj as IUsesSpatialHash;
@@ -1662,6 +1652,13 @@ namespace UnityEditor.Experimental.EditorVR
 
 				usesStencilRef.stencilRef = stencilRef ?? this.stencilRef++;
 			}
+
+			var selectObject = obj as ISelectObject;
+			if (selectObject != null)
+			{
+				selectObject.getSelectionCandidate = m_SelectionModule.GetSelectionCandidate;
+				selectObject.selectObject = m_SelectionModule.SelectObject;
+		}
 		}
 
 		private void DisconnectInterfaces(object obj)
@@ -1679,6 +1676,13 @@ namespace UnityEditor.Experimental.EditorVR
 				m_MenuActions = m_MenuActions.Where(a => !actions.Contains(a.action)).ToList();
 				UpdateAlternateMenuActions();
 			}
+
+			var grabObjects = obj as IGrabObjects;
+			if (grabObjects != null)
+			{
+				grabObjects.objectGrabbed -= OnObjectGrabbed;
+				grabObjects.objectsDropped -= OnObjectsDropped;
+		}
 		}
 
 		private void UpdateAlternateMenuActions()
@@ -1797,7 +1801,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 					UpdatePlayerHandleMaps();
 					result = spawnTool;
-				} else
+				}
+				else
 				{
 					deviceData.menuHideFlags[deviceData.mainMenu] |= MenuHideFlags.Hidden;
 				}
@@ -1890,7 +1895,8 @@ namespace UnityEditor.Experimental.EditorVR
 							nonMatchingTagIndices++;
 						else
 							matchingTagIndices++;
-					} else
+					}
+					else
 					{
 						untaggedDevicesFound++;
 					}
@@ -1965,17 +1971,8 @@ namespace UnityEditor.Experimental.EditorVR
 				miniWorldRayOrigin.parent = workspace.transform;
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
-			var uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-			uiInput.active = false;
-#endif
-
-				var directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
-				directSelectInput.active = false;
-
-#if ENABLE_MINIWORLD_RAY_SELECTION
-
 // Use the mini world ray origin instead of the original ray origin
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, uiInput, miniWorldRayOrigin, (source) =>
+				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, miniWorldRayOrigin, (source) =>
 			{
 				if (!IsRayActive(source.rayOrigin))
 					return false;
@@ -1993,14 +1990,10 @@ namespace UnityEditor.Experimental.EditorVR
 				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
 				{
 					originalRayOrigin = rayOriginPair.Value,
-					originalDirectSelectInput = deviceData.directSelectInput,
 					miniWorld = miniWorld,
 					proxy = proxy,
 					node = rayOriginPair.Key,
-#if ENABLE_MINIWORLD_RAY_SELECTION
-				uiInput = uiInput,
-#endif
-					directSelectInput = directSelectInput,
+					directSelectInput = deviceData.directSelectInput,
 					tester = tester
 				};
 
@@ -2056,15 +2049,12 @@ namespace UnityEditor.Experimental.EditorVR
 				foreach (var ray in miniWorldRaysCopy)
 				{
 					var miniWorldRay = ray.Value;
-					var maps = m_PlayerHandle.maps;
 					if (miniWorldRay.miniWorld == miniWorld)
 					{
 						var rayOrigin = ray.Key;
 #if ENABLE_MINIWORLD_RAY_SELECTION
-					maps.Remove(miniWorldRay.uiInput);
 					m_InputModule.RemoveRaycastSource(rayOrigin);
 #endif
-						maps.Remove(miniWorldRay.directSelectInput);
 						m_MiniWorldRays.Remove(rayOrigin);
 					}
 				}
@@ -2101,7 +2091,7 @@ namespace UnityEditor.Experimental.EditorVR
 				m_MiniWorldIgnoreListDirty = false;
 			}
 
-			var directSelection = m_ObjectGrabber;
+			var directSelection = m_ObjectsGrabber;
 
 			// Update MiniWorldRays
 			foreach (var ray in m_MiniWorldRays)
@@ -2129,6 +2119,90 @@ namespace UnityEditor.Experimental.EditorVR
 				miniWorldRay.tester.active = isContained;
 				miniWorldRayOrigin.gameObject.SetActive(isContained);
 
+				var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
+				var dragObjects = miniWorldRay.dragObjects;
+
+				if (dragObjects == null)
+				{
+					var heldObjects = m_ObjectsGrabber.GetHeldObjects(miniWorldRayOrigin);
+					if (heldObjects != null)
+					{
+						// Only one ray can grab an object, otherwise PlaceObject is called on each trigger release
+						// This does not prevent TransformTool from doing two-handed scaling
+						var otherRayHasObject = false;
+						foreach (var otherRay in m_MiniWorldRays.Values)
+						{
+							if (otherRay != miniWorldRay && otherRay.dragObjects != null)
+								otherRayHasObject = true;
+						}
+
+						if (!otherRayHasObject)
+						{
+							miniWorldRay.dragObjects = heldObjects;
+							var scales = new Vector3[heldObjects.Length];
+							var dragGameObjects = new GameObject[heldObjects.Length];
+							for (var i = 0; i < heldObjects.Length; i++)
+							{
+								var dragObject = heldObjects[i];
+								scales[i] = dragObject.transform.localScale;
+								dragGameObjects[i] = dragObject.gameObject;
+							}
+
+							var totalBounds = U.Object.GetBounds(dragGameObjects);
+							var maxSizeComponent = totalBounds.size.MaxComponent();
+							if (!Mathf.Approximately(maxSizeComponent, 0f))
+								miniWorldRay.previewScaleFactor = Vector3.one * (kPreviewScale / maxSizeComponent);
+
+							miniWorldRay.originalScales = scales;
+					}
+				}
+				}
+
+				// Transfer objects to and from original ray and MiniWorld ray (e.g. outside to inside mini world)
+				if (directSelection != null && isContained != miniWorldRay.wasContained)
+				{
+					var pointerLengthDiff = GetPointerLength(miniWorldRayOrigin) - GetPointerLength(originalRayOrigin);
+					var from = isContained ? originalRayOrigin : miniWorldRayOrigin;
+					var to = isContained ? miniWorldRayOrigin : originalRayOrigin;
+					if (isContained || miniWorldRay.dragObjects == null)
+						directSelection.TransferHeldObjects(from, to, pointerLengthDiff * Vector3.forward);
+				}
+
+				// Transfer objects between MiniWorlds
+				if (dragObjects == null)
+				{
+					if (isContained)
+					{
+						foreach (var kvp in m_MiniWorldRays)
+						{
+							var otherRayOrigin = kvp.Key;
+							var otherRay = kvp.Value;
+							var otherObjects = otherRay.dragObjects;
+							if (otherRay != miniWorldRay && !otherRay.wasContained && otherObjects != null)
+							{
+								dragObjects = otherObjects;
+								miniWorldRay.dragObjects = otherObjects;
+								miniWorldRay.originalScales = otherRay.originalScales;
+								miniWorldRay.previewScaleFactor = otherRay.previewScaleFactor;
+
+								otherRay.dragObjects = null;
+
+								if (directSelection != null)
+								{
+									var heldObjects = directSelection.GetHeldObjects(otherRayOrigin);
+									if (heldObjects != null)
+									{
+										directSelection.TransferHeldObjects(otherRayOrigin, miniWorldRayOrigin,
+											Vector3.zero); // Set the new offset to zero because the object will have moved (this could be improved by taking original offset into account)
+									}
+								}
+
+								break;
+							}
+						}
+					}
+				}
+
 				if (isContained && !miniWorldRay.wasContained)
 				{
 					HideRay(originalRayOrigin, true);
@@ -2141,97 +2215,16 @@ namespace UnityEditor.Experimental.EditorVR
 					ShowRay(originalRayOrigin, true);
 				}
 
-				var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
-
-				if (directSelectInput.select.wasJustPressed)
-				{
-					var dragObject = GetDirectSelectionForRayOrigin(miniWorldRayOrigin, directSelectInput);
-
-					if (dragObject)
-					{
-						// Only one ray can grab an object, otherwise PlaceObject is called on each trigger release
-						// This does not prevent TransformTool from doing two-handed scaling
-						var otherRayHasThisObject = false;
-						foreach (var otherRay in m_MiniWorldRays.Values)
-						{
-							if (otherRay != miniWorldRay && otherRay.dragObject == dragObject)
-								otherRayHasThisObject = true;
-						}
-
-						if (!otherRayHasThisObject)
-						{
-							miniWorldRay.dragObject = dragObject;
-							miniWorldRay.dragObjectOriginalScale = dragObject.transform.localScale;
-							var totalBounds = U.Object.GetBounds(dragObject);
-							var maxSizeComponent = totalBounds.size.MaxComponent();
-							if (!Mathf.Approximately(maxSizeComponent, 0f))
-								miniWorldRay.dragObjectPreviewScale = dragObject.transform.localScale * (kPreviewScale / maxSizeComponent);
-						}
-
-						ConsumeControl(directSelectInput.select);
-					}
-				}
-
-				// Transfer objects to and from original ray and MiniWorld ray
-				if (directSelection != null)
-				{
-					var pointerLengthDiff = GetPointerLength(miniWorldRayOrigin) - GetPointerLength(originalRayOrigin);
-
-					// If the original ray was directly manipulating an object, we need to transfer ownership when it enters the MiniWorld
-					var heldObject = directSelection.GetHeldObject(originalRayOrigin);
-					if (heldObject && isContained && !miniWorldRay.wasContained)
-						directSelection.TransferHeldObject(originalRayOrigin, directSelectInput, miniWorldRayOrigin, pointerLengthDiff * Vector3.forward);
-
-					// In the case where we have transferred an object, transfer it back if it leaves the MiniWorld
-					// This is a different case from when an object was first grabbed within the MiniWorld and becomes a preview, because miniWorldRay.dragObject is not set
-					heldObject = directSelection.GetHeldObject(miniWorldRayOrigin);
-					if (heldObject && !isContained && miniWorldRay.wasContained && !miniWorldRay.dragObject)
-						directSelection.TransferHeldObject(miniWorldRayOrigin, miniWorldRay.originalDirectSelectInput, originalRayOrigin, pointerLengthDiff * Vector3.back);
-				}
-
-				// Transfer objects between MiniWorlds
-				if (!miniWorldRay.dragObject)
-				{
-					if (isContained)
-					{
-						foreach (var kvp in m_MiniWorldRays)
-						{
-							var otherRayOrigin = kvp.Key;
-							var otherRay = kvp.Value;
-							var otherObject = otherRay.dragObject;
-							if (otherRay != miniWorldRay && !otherRay.wasContained && otherObject)
-							{
-								miniWorldRay.dragObject = otherObject;
-								miniWorldRay.dragObjectOriginalScale = otherRay.dragObjectOriginalScale;
-								miniWorldRay.dragObjectPreviewScale = otherRay.dragObjectPreviewScale;
-								miniWorldRay.directSelectInput.active = true;
-
-								otherRay.dragObject = null;
-								otherRay.directSelectInput.active = false;
-
-								if (directSelection != null)
-								{
-									var heldObject = directSelection.GetHeldObject(otherRayOrigin);
-									if (heldObject)
-									{
-										directSelection.TransferHeldObject(otherRayOrigin, miniWorldRay.directSelectInput, miniWorldRayOrigin,
-											Vector3.zero); // Set the new offset to zero because the object will have moved (this could be improved by taking original offset into account)
-									}
-								}
-
-								break;
-							}
-						}
-					}
-				}
-
-				if (!miniWorldRay.dragObject)
+				if (dragObjects == null)
 				{
 					miniWorldRay.wasContained = isContained;
 					continue;
 				}
 
-				var dragObjectTransform = miniWorldRay.dragObject.transform;
+				var previewScaleFactor = miniWorldRay.previewScaleFactor;
+				var positionOffsets = miniWorldRay.originalPositionOffsets;
+				var rotationOffsets = miniWorldRay.originalRotationOffsets;
+				var originalScales = miniWorldRay.originalScales;
 
 				if (directSelectInput.select.isHeld)
 				{
@@ -2240,59 +2233,79 @@ namespace UnityEditor.Experimental.EditorVR
 						// Scale the object back to its original scale when it re-enters the MiniWorld
 						if (!miniWorldRay.wasContained)
 						{
-							dragObjectTransform.localScale = miniWorldRay.dragObjectOriginalScale;
+							for (var i = 0; i < dragObjects.Length; i++)
+							{
+								var dragObject = dragObjects[i];
+								dragObject.localScale = originalScales[i];
+								U.Math.SetTransformOffset(miniWorldRayOrigin, dragObject, positionOffsets[i], rotationOffsets[i]);
+							}
 
 							// Add the object (back) to TransformTool
 							if (directSelection != null)
-							{
-								if (miniWorldRay.wasHeld)
-									U.Math.SetTransformOffset(miniWorldRayOrigin, dragObjectTransform, miniWorldRay.originalPositionOffset, miniWorldRay.originalRotationOffset);
-								else
-									U.Math.SetTransformOffset(miniWorldRayOrigin, dragObjectTransform, GetPointerLength(miniWorldRayOrigin) * Vector3.forward, Quaternion.identity);
-
-								directSelection.AddHeldObject(miniWorldRay.node, miniWorldRayOrigin, dragObjectTransform, directSelectInput);
+								directSelection.GrabObjects(miniWorldRay.node, miniWorldRayOrigin, directSelectInput, dragObjects);
 							}
 						}
-					} else
+					else
 					{
-						if (dragObjectTransform.CompareTag(kVRPlayerTag))
+						// Check for player head
+						for (var i = 0; i < dragObjects.Length; i++)
 						{
+							var dragObject = dragObjects[i];
+							if (dragObject.CompareTag(kVRPlayerTag))
+							{
 							if (directSelection != null)
-								directSelection.DropHeldObject(dragObjectTransform.transform);
+									directSelection.DropHeldObjects(miniWorldRayOrigin);
 
 							// Drop player at edge of MiniWorld
-							miniWorldRay.dragObject = null;
-						} else
-						{
+								miniWorldRay.dragObjects = null;
+								dragObjects = null;
+								break;
+							}
+						}
+
+						if (dragObjects == null)
+							continue;
+
 							if (miniWorldRay.wasContained)
 							{
-								var otherwiseContained = false;
+							var containedInOtherMiniWorld = false;
 								foreach (var world in m_MiniWorlds)
 								{
-									if (world.Contains(originalPointerPosition))
-									{
-										otherwiseContained = true;
+								if (miniWorld != world && world.Contains(originalPointerPosition))
+									containedInOtherMiniWorld = true;
 									}
-								}
 
-								if (!otherwiseContained)
+							// Don't switch to previewing the objects we are dragging if we are still in another mini world
+							if (!containedInOtherMiniWorld)
 								{
+								for (var i = 0; i < dragObjects.Length; i++)
+								{
+									var dragObject = dragObjects[i];
+
 									// Store the original scale in case the object re-enters the MiniWorld
-									miniWorldRay.dragObjectOriginalScale = dragObjectTransform.localScale;
+									originalScales[i] = dragObject.localScale;
+
+									dragObject.localScale = Vector3.Scale(dragObject.localScale, previewScaleFactor);
+								}
 
 									// Drop from TransformTool to take control of object
 									if (directSelection != null)
 									{
-										directSelection.DropHeldObject(dragObjectTransform, out miniWorldRay.originalPositionOffset, out miniWorldRay.originalRotationOffset);
+									directSelection.DropHeldObjects(miniWorldRayOrigin, out positionOffsets, out rotationOffsets);
+									miniWorldRay.originalPositionOffsets = positionOffsets;
+									miniWorldRay.originalRotationOffsets = rotationOffsets;
 										miniWorldRay.wasHeld = true;
 									}
-
-									dragObjectTransform.localScale = miniWorldRay.dragObjectPreviewScale;
 								}
 							}
 
-							var previewOrigin = GetPreviewOriginForRayOrigin(originalRayOrigin);
-							U.Math.LerpTransform(dragObjectTransform, previewOrigin.position, previewOrigin.rotation);
+						for (var i = 0; i < dragObjects.Length; i++)
+						{
+							var dragObject = dragObjects[i];
+							var rotation = originalRayOrigin.rotation;
+							var position = originalRayOrigin.position
+								+ rotation * Vector3.Scale(previewScaleFactor, positionOffsets[i]);
+							U.Math.LerpTransform(dragObject, position, rotation * rotationOffsets[i]);
 						}
 					}
 				}
@@ -2300,19 +2313,29 @@ namespace UnityEditor.Experimental.EditorVR
 				// Release the current object if the trigger is no longer held
 				if (directSelectInput.select.wasJustReleased)
 				{
-					if (directSelection != null)
-						directSelection.DropHeldObject(dragObjectTransform);
+					var rayPosition = originalRayOrigin.position;
+					for (var i = 0; i < dragObjects.Length; i++)
+					{
+						var dragObject = dragObjects[i];
 
 					// If the user has pulled an object out of the MiniWorld, use PlaceObject to grow it back to its original scale
 					if (!isContained)
 					{
 						if (IsOverShoulder(originalRayOrigin))
-							DeleteSceneObject(dragObjectTransform.gameObject);
+							{
+								DeleteSceneObject(dragObject.gameObject);
+							}
 						else
-							PlaceObject(dragObjectTransform, miniWorldRay.dragObjectOriginalScale);
+							{
+								dragObject.localScale = originalScales[i];
+								var rotation = originalRayOrigin.rotation;
+								dragObject.position = rayPosition + rotation * positionOffsets[i];
+								dragObject.rotation = rotation * rotationOffsets[i];
+					}
+						}
 					}
 
-					miniWorldRay.dragObject = null;
+					miniWorldRay.dragObjects = null;
 					miniWorldRay.wasHeld = false;
 				}
 
@@ -2331,7 +2354,7 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-				if (renderer && !renderer.gameObject.CompareTag(kVRPlayerTag))
+				if (renderer && !renderer.CompareTag(kVRPlayerTag))
 					return renderer.gameObject;
 			}
 
@@ -2363,19 +2386,27 @@ namespace UnityEditor.Experimental.EditorVR
 		Dictionary<Transform, DirectSelectionData> GetDirectSelection()
 		{
 			var results = new Dictionary<Transform, DirectSelectionData>();
+			var activeStates = new List<ActionMapInput>();
 
+			var directSelection = m_ObjectsGrabber;
 			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 			{
 				var rayOrigin = rayOriginPair.Value;
-				var obj = GetDirectSelectionForRayOrigin(rayOrigin, deviceData.directSelectInput);
+				var input = deviceData.directSelectInput;
+				var obj = GetDirectSelectionForRayOrigin(rayOrigin, input);
 				if (obj && !obj.CompareTag(kVRPlayerTag))
 				{
+					activeStates.Add(input);
 					results[rayOrigin] = new DirectSelectionData
 					{
 						gameObject = obj,
 						node = rayOriginPair.Key,
-						input = deviceData.directSelectInput
+						input = input
 					};
+				}
+				else if (directSelection != null && directSelection.GetHeldObjects(rayOrigin) != null)
+				{
+					activeStates.Add(input);
 				}
 			});
 
@@ -2383,70 +2414,104 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				var rayOrigin = ray.Key;
 				var miniWorldRay = ray.Value;
-				var go = GetDirectSelectionForRayOrigin(rayOrigin, miniWorldRay.directSelectInput);
+				var input = miniWorldRay.directSelectInput;
+				var go = GetDirectSelectionForRayOrigin(rayOrigin, input);
 				if (go != null)
 				{
+					activeStates.Add(input);
 					results[rayOrigin] = new DirectSelectionData
 					{
 						gameObject = go,
 						node = ray.Value.node,
-						input = miniWorldRay.directSelectInput
+						input = input
 					};
 				}
+				else if (miniWorldRay.dragObjects != null
+					|| (directSelection != null && directSelection.GetHeldObjects(rayOrigin) != null))
+				{
+					activeStates.Add(input);
 			}
+			}
+
+			// Only activate direct selection input if the cone is inside of an object, so a trigger press can be detected,
+			// and keep it active if we are dragging
+			ForEachRayOrigin((proxy, pair, device, deviceData) =>
+			{
+				var input = deviceData.directSelectInput;
+				input.active = activeStates.Contains(input);
+			});
+
 			return results;
 		}
 
 		GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, ActionMapInput input)
 		{
-			var directSelection = m_ObjectGrabber;
-
 			if (m_IntersectionModule)
 			{
 				var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 
 				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
 				if (renderer)
-				{
-					input.active = true;
 					return renderer.gameObject;
 				}
-			}
-
-			MiniWorldRay ray;
-			input.active = (directSelection != null && directSelection.GetHeldObject(rayOrigin))
-				|| (m_MiniWorldRays.TryGetValue(rayOrigin, out ray) && ray.dragObject);
-
 			return null;
 		}
 
-		bool CanGrabObject(DirectSelectionData selection, Transform rayOrigin)
+		bool CanGrabObject(GameObject selection, Transform rayOrigin)
 		{
-			if (selection.gameObject.CompareTag(kVRPlayerTag) && !m_MiniWorldRays.ContainsKey(rayOrigin))
+			if (selection.CompareTag(kVRPlayerTag) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 				return false;
 
 			return true;
 		}
 
-		bool GrabObject(IGrabObject grabber, DirectSelectionData selection, Transform rayOrigin)
+		static void OnObjectGrabbed(GameObject selection)
 		{
-			if (!CanGrabObject(selection, rayOrigin))
-				return false;
-
 			// Detach the player head model so that it is not affected by its parent transform
-			if (selection.gameObject.CompareTag(kVRPlayerTag))
-				selection.gameObject.transform.parent = null;
-
-			return true;
+			if (selection.CompareTag(kVRPlayerTag))
+				selection.transform.parent = null;
 		}
 
-		void DropObject(IGrabObject grabber, Transform grabbedObject, Transform rayOrigin)
+		void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
 		{
+			foreach (var grabbedObject in grabbedObjects)
+			{
 			// Dropping the player head updates the viewer pivot
 			if (grabbedObject.CompareTag(kVRPlayerTag))
 				StartCoroutine(UpdateViewerPivot(grabbedObject));
 			else if (IsOverShoulder(rayOrigin) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 				DeleteSceneObject(grabbedObject.gameObject);
+		}
+		}
+
+		static GameObject GetGroupRoot(GameObject hoveredObject)
+		{
+			if (!hoveredObject)
+				return null;
+
+			var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
+			if (groupRoot == hoveredObject)
+				groupRoot = FindGroupRoot(hoveredObject.transform).gameObject;
+
+			return groupRoot;
+		}
+
+		static Transform FindGroupRoot(Transform transform)
+		{
+			// Don't allow grouping selection for the player head, otherwise we'd select the EditorVRCamera
+			if (transform.CompareTag(kVRPlayerTag))
+				return transform;
+
+			var parent = transform.parent;
+			if (parent)
+			{
+				if (parent.GetComponent<Renderer>())
+					return FindGroupRoot(parent);
+
+				return parent;
+			}
+
+			return transform;
 		}
 
 		IEnumerator UpdateViewerPivot(Transform playerHead)
@@ -2673,7 +2738,8 @@ namespace UnityEditor.Experimental.EditorVR
 							folderList.Add(data);
 							hasNext = next;
 						}, assetTypes, hasNext, hp));
-					} else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
+					}
+					else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
 						assetList.Add(CreateAssetData(hp, assetTypes));
 
 					if (hasNext)
@@ -2693,9 +2759,7 @@ namespace UnityEditor.Experimental.EditorVR
 					hp.Previous(null);
 			}
 
-			callback(new FolderData(name, folderList.Count > 0
-				? folderList
-				: null, assetList, guid), hasNext);
+			callback(new FolderData(name, folderList.Count > 0 ? folderList : null, assetList, guid), hasNext);
 		}
 
 		static AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
@@ -2737,7 +2801,8 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				m_HierarchyProperty = new HierarchyProperty(HierarchyType.GameObjects);
 				m_HierarchyProperty.Next(null);
-			} else
+			}
+			else
 			{
 				m_HierarchyProperty.Reset();
 				m_HierarchyProperty.Next(null);
@@ -2763,9 +2828,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var instanceID = hp.instanceID;
 
 			List<HierarchyData> list = null;
-			list = (hd == null || hd.children == null)
-				? new List<HierarchyData>()
-				: hd.children;
+			list = (hd == null || hd.children == null) ? new List<HierarchyData>() : hd.children;
 
 			if (hp.hasChildren)
 			{
@@ -2787,11 +2850,13 @@ namespace UnityEditor.Experimental.EditorVR
 					{
 						list.Add(CollectHierarchyData(ref hasNext, ref hasChanged, null, hp));
 						hasChanged = true;
-					} else if (list[i].instanceID != hp.instanceID)
+					}
+					else if (list[i].instanceID != hp.instanceID)
 					{
 						list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, null, hp);
 						hasChanged = true;
-					} else
+					}
+					else
 					{
 						list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, list[i], hp);
 					}
@@ -2810,7 +2875,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 				if (hasNext)
 					hp.Previous(null);
-			} else
+			}
+			else
 				list.Clear();
 
 			List<HierarchyData> children = null;
@@ -2856,6 +2922,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
 
+#if UNITY_EDITOR
 			// Add EVR tags and layers if they don't exist
 			var tags = new List<string>();
 			var layers = new List<string>();
@@ -2875,6 +2942,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			foreach (var layer in layers)
 				TagManager.AddLayer(layer);
+#endif
 		}
 
 		private static void OnEVREnabled()
