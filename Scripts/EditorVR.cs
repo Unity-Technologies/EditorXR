@@ -176,7 +176,7 @@ namespace UnityEditor.Experimental.EditorVR
 			public Transform[] dragObjects;
 
 			public Vector3[] originalScales;
-			public Vector3 dragObjectPreviewScale;
+			public Vector3 previewScaleFactor;
 
 			public bool wasHeld;
 			public Vector3[] originalPositionOffsets;
@@ -273,6 +273,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
 
 			CreateEventSystem();
+
 			m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 			m_PixelRaycastModule.ignoreRoot = transform;
 			m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
@@ -519,7 +520,7 @@ namespace UnityEditor.Experimental.EditorVR
 				EditorApplication.delayCall += () =>
 				{
 					if (this != null) // Because this is a delay call, the component will be null when EditorVR closes
-				{
+					{
 						Event e = new Event();
 						e.type = EventType.ExecuteCommand;
 						VRView.activeView.SendEvent(e);
@@ -550,16 +551,16 @@ namespace UnityEditor.Experimental.EditorVR
 				var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
 				foreach (var menu in menus)
 				{
-				// AE 12/7/16 - Disabling main menu hiding near workspaces for now because it confuses people; Needs improvement
-				if (menu is IMainMenu)
+					// AE 12/7/16 - Disabling main menu hiding near workspaces for now because it confuses people; Needs improvement
+					if (menu is IMainMenu)
 						continue;
 
 					var menuSizes = deviceData.menuSizes;
 					var menuBounds = U.Object.GetBounds(menu.menuContent);
 					var menuBoundsSize = menuBounds.size;
 
-				// Because menus can change size, store the maximum size to avoid ping ponging visibility
-				float maxComponent;
+					// Because menus can change size, store the maximum size to avoid ping ponging visibility
+					float maxComponent;
 					if (!menuSizes.TryGetValue(menu, out maxComponent))
 					{
 						maxComponent = menuBoundsSize.MaxComponent();
@@ -739,7 +740,6 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			// Spawn default tools
 			HashSet<InputDevice> devices;
-			ToolData toolData;
 
 			var transformTool = SpawnTool(typeof(TransformTool), out devices);
 			m_ObjectsGrabber = transformTool.tool as IGrabObjects;
@@ -753,7 +753,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (inputDevice.tagIndex == -1)
 					continue;
 
-				toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
+				var toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
 				AddToolToDeviceData(toolData, devices);
 				var selectionTool = (SelectionTool)toolData.tool;
 				selectionTool.hovered += m_LockModule.OnHovered;
@@ -1078,15 +1078,15 @@ namespace UnityEditor.Experimental.EditorVR
 
 			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
 			{
-			// Create ui action map input for device.
-			if (deviceData.uiInput == null)
+				// Create ui action map input for device.
+				if (deviceData.uiInput == null)
 				{
 					deviceData.uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
 					deviceData.directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
 				}
 
-			// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-			m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, source =>
+				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, source =>
 				{
 					foreach (var miniWorld in m_MiniWorlds)
 					{
@@ -1743,27 +1743,27 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					var spawnTool = true;
 
-				// If this tool was on the current device already, then simply remove it
-				if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
+					// If this tool was on the current device already, then simply remove it
+					if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
 					{
 						DespawnTool(deviceData, deviceData.currentTool);
 
-					// Don't spawn a new tool, since we are only removing the old tool
-					spawnTool = false;
+						// Don't spawn a new tool, since we are only removing the old tool
+						spawnTool = false;
 					}
 
 					if (spawnTool)
 					{
-					// Spawn tool and collect all devices that this tool will need
-					HashSet<InputDevice> usedDevices;
+						// Spawn tool and collect all devices that this tool will need
+						HashSet<InputDevice> usedDevices;
 						var newTool = SpawnTool(toolType, out usedDevices, device);
 
-					// It's possible this tool uses no action maps, so at least include the device this tool was spawned on
-					if (usedDevices.Count == 0)
+						// It's possible this tool uses no action maps, so at least include the device this tool was spawned on
+						if (usedDevices.Count == 0)
 							usedDevices.Add(device);
 
-					// Exclusive mode tools always take over all tool stacks
-					if (newTool is IExclusiveMode)
+						// Exclusive mode tools always take over all tool stacks
+						if (newTool is IExclusiveMode)
 						{
 							foreach (var dev in m_DeviceData.Keys)
 							{
@@ -1775,12 +1775,12 @@ namespace UnityEditor.Experimental.EditorVR
 						{
 							deviceData = m_DeviceData[dev];
 							if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
-							DespawnTool(deviceData, deviceData.currentTool);
+								DespawnTool(deviceData, deviceData.currentTool);
 
 							AddToolToStack(dev, newTool);
 
 							deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
-						deviceData.previousToolButton.rayOrigin = rayOrigin;
+							deviceData.previousToolButton.rayOrigin = rayOrigin;
 						}
 					}
 
@@ -2136,7 +2136,7 @@ namespace UnityEditor.Experimental.EditorVR
 							var totalBounds = U.Object.GetBounds(dragGameObjects);
 							var maxSizeComponent = totalBounds.size.MaxComponent();
 							if (!Mathf.Approximately(maxSizeComponent, 0f))
-								miniWorldRay.dragObjectPreviewScale = Vector3.one * (kPreviewScale / maxSizeComponent);
+								miniWorldRay.previewScaleFactor = Vector3.one * (kPreviewScale / maxSizeComponent);
 
 							miniWorldRay.originalScales = scales;
 						}
@@ -2168,7 +2168,7 @@ namespace UnityEditor.Experimental.EditorVR
 								dragObjects = otherObjects;
 								miniWorldRay.dragObjects = otherObjects;
 								miniWorldRay.originalScales = otherRay.originalScales;
-								miniWorldRay.dragObjectPreviewScale = otherRay.dragObjectPreviewScale;
+								miniWorldRay.previewScaleFactor = otherRay.previewScaleFactor;
 
 								otherRay.dragObjects = null;
 
@@ -2206,7 +2206,7 @@ namespace UnityEditor.Experimental.EditorVR
 					continue;
 				}
 
-				var previewScale = miniWorldRay.dragObjectPreviewScale;
+				var previewScaleFactor = miniWorldRay.previewScaleFactor;
 				var positionOffsets = miniWorldRay.originalPositionOffsets;
 				var rotationOffsets = miniWorldRay.originalRotationOffsets;
 				var originalScales = miniWorldRay.originalScales;
@@ -2270,7 +2270,7 @@ namespace UnityEditor.Experimental.EditorVR
 									// Store the original scale in case the object re-enters the MiniWorld
 									originalScales[i] = dragObject.localScale;
 
-									dragObject.localScale = Vector3.Scale(dragObject.localScale, previewScale);
+									dragObject.localScale = Vector3.Scale(dragObject.localScale, previewScaleFactor);
 								}
 
 								// Drop from TransformTool to take control of object
@@ -2289,7 +2289,7 @@ namespace UnityEditor.Experimental.EditorVR
 							var dragObject = dragObjects[i];
 							var rotation = originalRayOrigin.rotation;
 							var position = originalRayOrigin.position
-								+ rotation * Vector3.Scale(previewScale, positionOffsets[i]);
+								+ rotation * Vector3.Scale(previewScaleFactor, positionOffsets[i]);
 							U.Math.LerpTransform(dragObject, position, rotation * rotationOffsets[i]);
 						}
 					}
@@ -2685,14 +2685,14 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				m_FolderData = new List<FolderData> { folderData };
 
-			// Send new data to existing folderLists
-			foreach (var list in m_ProjectFolderLists)
+				// Send new data to existing folderLists
+				foreach (var list in m_ProjectFolderLists)
 				{
 					list.folderData = GetFolderData();
 				}
 
-			// Send new data to existing filterUIs
-			foreach (var filterUI in m_FilterUIs)
+				// Send new data to existing filterUIs
+				foreach (var filterUI in m_FilterUIs)
 				{
 					filterUI.filterList = GetFilterList();
 				}
