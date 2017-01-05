@@ -45,10 +45,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 					return false;
 
 				if (useGrouping)
-				{
-					// Check the same rules on our selection candidate
 					return CanSelectObject(GetSelectionCandidate(hoveredObject, true), false);
-				}
 			}
 
 			return true;
@@ -57,23 +54,20 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
 		{
 			var selection = GetSelectionCandidate(hoveredObject, useGrouping);
-			
-			if (useGrouping && selection != m_CurrentGroupRoot)
-				m_CurrentGroupRoot = selection;
+
+			var groupRoot = getGroupRoot(hoveredObject);
+			if (useGrouping && groupRoot != m_CurrentGroupRoot)
+				m_CurrentGroupRoot = groupRoot;
+
 			m_SelectedObjects.Clear();
 
 			// Multi-Select
 			if (multiSelect)
 			{
 				m_SelectedObjects.AddRange(Selection.objects);
-				if (m_SelectedObjects.Contains(selection))
+				// Re-selecting an object removes it from selection
+				if (!m_SelectedObjects.Remove(selection))
 				{
-					// Already selected, so remove from selection
-					m_SelectedObjects.Remove(selection);
-				}
-				else
-				{
-					// Add to selection
 					m_SelectedObjects.Add(selection);
 					Selection.activeObject = selection;
 				}
@@ -87,14 +81,13 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 			Selection.objects = m_SelectedObjects.ToArray();
 
-			// Call selected with the source rayOrigin to show radial menu
 			if (selected != null)
 				selected(rayOrigin);
 		}
 
 		public void OnSelectionChanged()
 		{
-			// Clear prefab root if selection is cleared (m_SelectedObjects clears itself in SelectObject)
+			// Selection can change outside of this module, so stay in sync
 			if (Selection.objects.Length == 0)
 				m_CurrentGroupRoot = null;
 		}
