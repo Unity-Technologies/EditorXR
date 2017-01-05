@@ -5,9 +5,5 @@
 	/// </summary>
 	public interface ITransformer
 	{
-		/// <summary>
-		/// Set to true to hide the manipulator, if there is one
-		/// </summary>
-		bool hideManipulator { set; }
 	}
 }

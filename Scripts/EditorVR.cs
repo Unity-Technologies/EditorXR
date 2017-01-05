@@ -198,7 +198,6 @@ namespace UnityEditor.Experimental.EditorVR
 		StandardManipulator m_StandardManipulator;
 		ScaleManipulator m_ScaleManipulator;
 
-		ITransformer m_Transformer;
 		IGrabObjects m_ObjectsGrabber;
 
 		bool m_ControllersReady;
@@ -223,7 +222,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 		readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
 
-		readonly List<SelectionInput> m_SelectionInputs = new List<SelectionInput>();
+		readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
+		bool m_ManipulatorsVisible = true;
 
 		byte stencilRef
 		{
@@ -546,6 +546,17 @@ namespace UnityEditor.Experimental.EditorVR
 
 			UpdateMenuVisibilityNearWorkspaces();
 			UpdateMenuVisibilities();
+
+			UpdateManipulatorVisibilites();
+		}
+
+		void UpdateManipulatorVisibilites()
+		{
+			foreach (var mv in m_ManipulatorVisibilities)
+				mv.manipulatorVisible = m_ManipulatorsVisible;
+
+			// Reset for the next frame
+			m_ManipulatorsVisible = true;
 		}
 
 		void UpdateMenuVisibilityNearWorkspaces()
@@ -643,15 +654,6 @@ namespace UnityEditor.Experimental.EditorVR
 						process.ProcessInput(toolData.input, ConsumeControl);
 				}
 			}
-
-			// Hide manipulator while direct selecting
-			var hideManipulator = false;
-			foreach (var input in m_SelectionInputs)
-			{
-				if (input.multiSelect.isHeld)
-					hideManipulator = true;
-			}
-			m_Transformer.hideManipulator = hideManipulator;
 		}
 
 		void UpdateKeyboardMallets()
@@ -756,7 +758,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			var transformTool = SpawnTool(typeof(TransformTool), out devices);
 			m_ObjectsGrabber = transformTool.tool as IGrabObjects;
-			m_Transformer = transformTool.tool as ITransformer;
 
 			foreach (var deviceDataPair in m_DeviceData)
 			{
@@ -772,7 +773,6 @@ namespace UnityEditor.Experimental.EditorVR
 				var selectionTool = (SelectionTool)toolData.tool;
 				selectionTool.hovered += m_LockModule.OnHovered;
 				selectionTool.isRayActive = IsRayActive;
-				m_SelectionInputs.Add((SelectionInput)toolData.input);
 
 				toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 				AddToolToDeviceData(toolData, devices);
@@ -1658,7 +1658,15 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				selectObject.getSelectionCandidate = m_SelectionModule.GetSelectionCandidate;
 				selectObject.selectObject = m_SelectionModule.SelectObject;
-		}
+			}
+
+			var manipulatorVisiblity = obj as IManipulatorVisibility;
+			if (manipulatorVisiblity != null)
+				m_ManipulatorVisibilities.Add(manipulatorVisiblity);
+
+			var setManipulatorsVisible = obj as ISetManipulatorsVisible;
+			if (setManipulatorsVisible != null)
+				setManipulatorsVisible.setManipulatorsVisible = SetManipulatorsVisible;
 		}
 
 		private void DisconnectInterfaces(object obj)
@@ -1682,7 +1690,11 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				grabObjects.objectGrabbed -= OnObjectGrabbed;
 				grabObjects.objectsDropped -= OnObjectsDropped;
-		}
+			}
+
+			var manipulatorVisiblity = obj as IManipulatorVisibility;
+			if (manipulatorVisiblity != null)
+				m_ManipulatorVisibilities.Remove(manipulatorVisiblity);
 		}
 
 		private void UpdateAlternateMenuActions()
@@ -2623,6 +2635,11 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 			return dpr && dpr.UnlockRay(obj);
+		}
+
+		void SetManipulatorsVisible(bool visible)
+		{
+			m_ManipulatorsVisible &= visible;
 		}
 
 		void PreProcessRaycastSource(Transform rayOrigin)
