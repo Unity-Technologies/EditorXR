@@ -162,8 +162,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	public Func<Transform, object, bool> unlockRay { private get; set; }
 
 	public Func<GameObject, Transform, bool> canGrabObject { private get; set; }
-	public Func<IGrabObjects, GameObject, Transform, bool> grabObject { private get; set; }
-	public Action<IGrabObjects, Transform[], Transform> dropObjects { private get; set; }
+	public event Action<GameObject> objectGrabbed;
+	public event Action<Transform[], Transform> objectsDropped;
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
 	public GetSelectionCandidateDelegate getSelectionCandidate { private get; set; }
@@ -251,8 +251,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 				var directSelectInput = (DirectSelectInput)selection.input;
 				if (directSelectInput.select.wasJustPressed)
 				{
-					if (!grabObject(this, hoveredObject, rayOrigin))
-						continue;
+					objectGrabbed(hoveredObject);
 
 					// Only add to selection, don't remove
 					if (!Selection.objects.Contains(hoveredObject))
@@ -389,13 +388,6 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		}
 	}
 
-	public void DropHeldObjects(Transform rayOrigin)
-	{
-		Vector3[] positions;
-		Quaternion[] rotations;
-		DropHeldObjects(rayOrigin, out positions, out rotations);
-	}
-
 	public void DropHeldObjects(Transform rayOrigin, out Vector3[] positionOffsets, out Quaternion[] rotationOffsets)
 	{
 		foreach (var kvp in m_GrabData)
@@ -438,6 +430,10 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 					positionOffsets[i] += deltaOffset;
 				}
 				grabData.UpdatePositions();
+
+				// Prevent lock from getting stuck
+				unlockRay(rayOrigin, this);
+				lockRay(destRayOrigin, this);
 				return;
 			}
 		}
@@ -451,7 +447,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	void DropObjects(Node inputNode)
 	{
 		var grabData = m_GrabData[inputNode];
-		dropObjects(this, grabData.grabbedObjects.ToArray(), grabData.rayOrigin);
+		objectsDropped(grabData.grabbedObjects.ToArray(), grabData.rayOrigin);
 		m_GrabData.Remove(inputNode);
 
 		unlockRay(grabData.rayOrigin, this);

@@ -12,6 +12,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		public Action<GameObject, bool> setLocked { private get; set; }
 		public Func<GameObject, bool> isLocked { private get; set; }
+		public Func<GameObject, GameObject> getGroupRoot { private get; set; }
 
 		public event Action<Transform> selected;
 
@@ -26,7 +27,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				return hoveredObject;
 
 			// Only offer up the group root as the selection on first selection; Subsequent selections would allow children from the group
-			var groupRoot = GetGroupRoot(hoveredObject);
+			var groupRoot = getGroupRoot(hoveredObject);
 			if (groupRoot && groupRoot != m_CurrentGroupRoot && CanSelectObject(groupRoot, false))
 				return groupRoot;
 			
@@ -53,11 +54,11 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			return true;
 		}
 
-		public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGroupRoot = false)
+		public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
 		{
-			var selection = GetSelectionCandidate(hoveredObject);
+			var selection = GetSelectionCandidate(hoveredObject, useGrouping);
 			
-			if (useGroupRoot && selection != m_CurrentGroupRoot)
+			if (useGrouping && selection != m_CurrentGroupRoot)
 				m_CurrentGroupRoot = selection;
 			m_SelectedObjects.Clear();
 
@@ -89,32 +90,6 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			// Call selected with the source rayOrigin to show radial menu
 			if (selected != null)
 				selected(rayOrigin);
-		}
-
-		static GameObject GetGroupRoot(GameObject hoveredObject)
-		{
-			if (!hoveredObject)
-				return null;
-
-			var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
-			if (!groupRoot)
-				groupRoot = FindGroupRoot(hoveredObject.transform).gameObject;
-
-			return groupRoot;
-		}
-
-		static Transform FindGroupRoot(Transform transform)
-		{
-			var parent = transform.parent;
-			if (parent)
-			{
-				if (parent.GetComponent<Renderer>())
-					return FindGroupRoot(parent);
-
-				return parent;
-			}
-
-			return transform;
 		}
 
 		public void OnSelectionChanged()
