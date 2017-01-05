@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Handles
+namespace UnityEngine.Experimental.EditorVR.Handles
 {
 	public class RadialHandle : BaseHandle
 	{

@@ -1,8 +1,12 @@
-﻿using UnityEditor;
+﻿#if !UNITY_EDITOR
+#pragma warning disable 414
+#endif
+
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Utilities;
-using Button = UnityEngine.VR.UI.Button;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using Button = UnityEngine.Experimental.EditorVR.UI.Button;
 
 public class InspectorComponentItem : InspectorListItem
 {
@@ -22,6 +26,7 @@ public class InspectorComponentItem : InspectorListItem
 	[SerializeField]
 	Text m_NameText;
 
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -60,4 +65,5 @@ public class InspectorComponentItem : InspectorListItem
 			serializedObject.ApplyModifiedProperties();
 		}
 	}
+#endif
 }

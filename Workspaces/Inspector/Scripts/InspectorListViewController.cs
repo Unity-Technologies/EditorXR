@@ -1,13 +1,17 @@
-﻿using ListView;
+﻿#if !UNITY_EDITOR
+#pragma warning disable 414
+#endif
+
+using ListView;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight, IGameObjectLocking, IUsesStencilRef
+public class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight, IUsesGameObjectLocking, IUsesStencilRef
 {
 	const string kMaterialStencilRef = "_StencilRef";
 	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
@@ -44,7 +48,9 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			base.data = value;
 			m_ExpandStates.Clear();
 
+#if UNITY_EDITOR
 			ExpandComponentRows(data);
+#endif
 		}
 	}
 
@@ -59,6 +65,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	public event Action<List<InspectorData>, PropertyData> arraySizeChanged = delegate {};
 
+#if UNITY_EDITOR
 	protected override void Setup()
 	{
 		base.Setup();
@@ -250,4 +257,5 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		U.Object.Destroy(m_HighlightMaterial);
 		U.Object.Destroy(m_HighlightMaskMaterial);
 	}
+#endif
 }

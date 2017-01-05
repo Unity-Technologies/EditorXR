@@ -3,7 +3,7 @@
 /// <summary>
 /// The transforms for various menu origins provided by device proxies
 /// </summary>
-public interface IMenuOrigins
+public interface IUsesMenuOrigins
 {
 	/// <summary>
 	/// The transform under which the menu should be parented

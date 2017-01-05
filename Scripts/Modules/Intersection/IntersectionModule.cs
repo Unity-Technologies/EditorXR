@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine.VR.Data;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Data;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Modules
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
-	public class IntersectionModule : MonoBehaviour, IGameObjectLocking
+	public class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		private readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		private readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();

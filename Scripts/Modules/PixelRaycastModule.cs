@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnityEditor.VR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	public class PixelRaycastModule : MonoBehaviour
 	{
@@ -32,7 +32,6 @@ namespace UnityEditor.VR.Modules
 			if (m_RaycastGameObjects.TryGetValue(rayOrigin, out go))
 				return go;
 
-			Debug.LogError("Transform rayOrigin " + rayOrigin + " is not set to raycast from.");
 			return null;
 		}
 

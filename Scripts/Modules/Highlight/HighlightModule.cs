@@ -35,7 +35,8 @@ public class HighlightModule : MonoBehaviour
 
 		if (active) // Highlight
 		{
-			if (Selection.gameObjects.Contains(go))
+			// Do not highlight if the selection contains this object or any of its parents
+			if (Selection.transforms.Any(selection => go.transform == selection || go.transform.IsChildOf(selection)))
 				return;
 
 			if (!m_HighlightCounts.ContainsKey(go))

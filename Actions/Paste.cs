@@ -1,7 +1,7 @@
 ﻿using System;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Actions
+namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
 	public class Paste : BaseAction, IUsesSpatialHash

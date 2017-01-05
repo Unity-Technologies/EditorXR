@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Menus
+﻿namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	/// <summary>
 	/// Attribute used to tag items (tools, actions, etc) that can be added to VR menus

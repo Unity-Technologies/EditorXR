@@ -1,9 +1,9 @@
 ﻿using System;
 using UnityEngine.UI;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Workspaces
+namespace UnityEngine.Experimental.EditorVR.Workspaces
 {
 	public class ZoomSliderUI : MonoBehaviour
 	{

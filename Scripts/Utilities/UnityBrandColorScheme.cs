@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using UnityEngine.VR.Helpers;
+using UnityEngine.Experimental.EditorVR.Helpers;
 
-namespace UnityEngine.VR.Utilities
+namespace UnityEngine.Experimental.EditorVR.Utilities
 {
 	/// <summary>
 	/// Class defining the Unity brancd color swatches & gradients

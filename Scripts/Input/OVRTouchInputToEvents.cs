@@ -1,19 +1,28 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.Experimental.EditorVR;
 
+[assembly: OptionalDependency("OVRInput", "ENABLE_OVR_INPUT")]
+
+/// <summary>
+/// Sends events to the input system based on native Oculus SDK calls
+/// </summary>
 public class OVRTouchInputToEvents : MonoBehaviour
 {
+#if ENABLE_OVR_INPUT
 	public const uint kControllerCount = 2;
 	public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
 	public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
 
-	private float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
-	private Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
-	private Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
+	float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
+	Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
+	Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
+#endif
 
 	public bool active { get; private set; }
 
+#if ENABLE_OVR_INPUT
 	public void Update()
 	{
 		// Manually update the Touch input
@@ -151,4 +160,5 @@ public class OVRTouchInputToEvents : MonoBehaviour
 
 		InputSystem.QueueEvent(inputEvent);
 	}
+#endif
 }

@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Actions
+﻿namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	/// <summary>
 	/// Attribute used to tag Action classes in order to be added to VR menus
