@@ -1,7 +1,8 @@
-﻿using UnityEditor;
+﻿using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Utilities
+namespace UnityEditor.Experimental.EditorVR.Utilities
 {
+#if UNITY_EDITOR
 	public static class TagManager
 	{
 		const int kMaxLayer = 31;
@@ -84,4 +85,5 @@ namespace UnityEngine.Experimental.EditorVR.Utilities
 			}
 		}
 	}
+#endif
 }

@@ -14,15 +14,6 @@ public class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 
 	public void PlaceObject(Transform obj, Vector3 targetScale)
 	{
-		if (obj.localScale == targetScale)
-		{
-			// Remove from spatial hash in case the object is already there
-			removeFromSpatialHash(obj.gameObject);
-			obj.parent = null;
-			Selection.activeGameObject = obj.gameObject;
-			addToSpatialHash(obj.gameObject);
-			return;
-		}
 		StartCoroutine(PlaceObjectCoroutine(obj, targetScale));
 	}
 
@@ -37,6 +28,8 @@ public class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 		obj.parent = null;
 		var startScale = obj.localScale;
 		var startPosition = obj.position;
+		var startRotation = obj.rotation;
+		var targetRotation = U.Math.ConstrainYawRotation(startRotation);
 
 		//Get bounds at target scale
 		var origScale = obj.localScale;
@@ -52,9 +45,9 @@ public class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 		var forward = obj.position - camPosition;
 
 		var distance = bounds.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
-		var destinationPosition = obj.position;
-		if (distance > forward.magnitude)
-			destinationPosition = camPosition + forward.normalized * distance;
+		var targetPosition = obj.position;
+		if (distance > forward.magnitude && obj.localScale != targetScale)
+			targetPosition = camPosition + forward.normalized * distance;
 
 		while (currTime < kGrowDuration)
 		{
@@ -62,7 +55,8 @@ public class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 			var t = currTime / kGrowDuration;
 			var tSquared = t * t;
 			obj.localScale = Vector3.Lerp(startScale, targetScale, tSquared);
-			obj.position = Vector3.Lerp(startPosition, destinationPosition, tSquared);
+			obj.position = Vector3.Lerp(startPosition, targetPosition, tSquared);
+			obj.rotation = Quaternion.Lerp(startRotation, targetRotation, tSquared);
 			yield return null;
 		}
 		obj.localScale = targetScale;

@@ -5,7 +5,7 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 	/// <summary>
 	/// Get access to locking features
 	/// </summary>
-	public interface IGameObjectLocking
+	public interface IUsesGameObjectLocking
 	{
 		/// <summary>
 		/// Set a GameObject's locked status

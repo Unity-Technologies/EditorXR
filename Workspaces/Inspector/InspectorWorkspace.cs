@@ -22,8 +22,6 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 	LockUI m_LockUI;
 
 	bool m_Scrolling;
-	Vector3 m_ScrollStart;
-	float m_ScrollOffsetStart;
 
 	bool m_IsLocked;
 
@@ -42,7 +40,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		connectInterfaces(m_LockUI);
 		m_LockUI.lockButtonPressed += SetIsLocked;
 
-		var listView = m_InspectorUI.inspectorListView;
+		var listView = m_InspectorUI.listView;
 		connectInterfaces(listView);
 		listView.data = new List<InspectorData>();
 		listView.arraySizeChanged += OnArraySizeChanged;
@@ -72,15 +70,12 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		m_WorkspaceUI.topHighlight.visible = true;
 		m_WorkspaceUI.amplifyTopHighlight = false;
 
-		m_ScrollStart = eventData.rayOrigin.transform.position;
-		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
-
-		m_InspectorUI.inspectorListView.OnBeginScrolling();
+		m_InspectorUI.listView.OnBeginScrolling();
 	}
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		Scroll(eventData);
+		m_InspectorUI.listView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -89,9 +84,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 		m_WorkspaceUI.topHighlight.visible = false;
 
-		Scroll(eventData);
-		m_ScrollOffsetStart = m_InspectorUI.inspectorListView.scrollOffset;
-		m_InspectorUI.inspectorListView.OnScrollEnded();
+		m_InspectorUI.listView.OnScrollEnded();
 	}
 
 	void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -112,12 +105,6 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		}
 	}
 
-	void Scroll(HandleEventData eventData)
-	{
-		var scrollOffset = m_ScrollOffsetStart - Vector3.Dot(m_ScrollStart - eventData.rayOrigin.transform.position, transform.forward);
-		m_InspectorUI.inspectorListView.scrollOffset = scrollOffset;
-	}
-
 	public void OnSelectionChanged()
 	{
 		if (m_IsLocked)
@@ -128,7 +115,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 		if (Selection.activeGameObject == null)
 		{
-			m_InspectorUI.inspectorListView.data = new List<InspectorData>();
+			m_InspectorUI.listView.data = new List<InspectorData>();
 			m_SelectedObject = null;
 			return;
 		}
@@ -160,7 +147,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(Selection.activeObject), objectChildren);
 		inspectorData.Add(objectData);
 
-		m_InspectorUI.inspectorListView.data = inspectorData;
+		m_InspectorUI.listView.data = inspectorData;
 	}
 
 	PropertyData SerializedPropertyToPropertyData(SerializedProperty property, SerializedObject obj)
@@ -220,7 +207,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 			? new PropertyData("InspectorArrayHeaderItem", obj, children, property.Copy())
 			: new PropertyData("InspectorGenericItem", obj, children, property.Copy());
 
-		propertyData.childrenChanging += m_InspectorUI.inspectorListView.OnBeforeChildrenChanged;
+		propertyData.childrenChanging += m_InspectorUI.listView.OnBeforeChildrenChanged;
 
 		return propertyData;
 	}
@@ -280,7 +267,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 	protected override void OnBoundsChanged()
 	{
 		var size = contentBounds.size;
-		var inspectorListView = m_InspectorUI.inspectorListView;
+		var inspectorListView = m_InspectorUI.listView;
 		var bounds = contentBounds;
 		size.y = float.MaxValue; // Add height for dropdowns
 		size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
