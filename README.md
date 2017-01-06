@@ -15,3 +15,6 @@ If you're a developer, we recommend that you take a look at the [Getting Started
 1. Create a new Unity project or use an existing one
 2. From the command line change directory to your project's `Assets` directory.
 3. Run `git lfs clone --recursive -b dev/main https://github.com/Unity-Technologies/EditorVR`
+
+### Project Settings
+If you plan on making changes to EditorVR and/or contributing back, then you'll need to set the `Asset Serialization` property under Edit->Project Settings->Editor to `Force Text`
