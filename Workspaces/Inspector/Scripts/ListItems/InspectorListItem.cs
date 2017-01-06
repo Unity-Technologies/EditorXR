@@ -43,7 +43,9 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 	public bool setup { get; set; }
 
 	public Action<GameObject, bool> setHighlight { private get; set; }
+
 	public Action<InspectorData> toggleExpanded { private get; set; }
+
 	public Func<byte> requestStencilRef { private get; set; }
 
 	public override void Setup(InspectorData data)

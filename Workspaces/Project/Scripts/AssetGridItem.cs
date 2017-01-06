@@ -2,12 +2,12 @@
 using System.Collections;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Helpers;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
 
 public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
 {
@@ -54,7 +54,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 
 	private Material m_SphereMaterial;
 
-	public Action<GameObject> addToSpatialHash { get; set; }
+	public Action<GameObject> addToSpatialHash { private get; set; }
 	public Action<GameObject> removeFromSpatialHash { get; set; }
 
 	public GameObject icon

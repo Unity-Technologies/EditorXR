@@ -2,9 +2,9 @@
 #pragma warning disable 414
 #endif
 
-using ListView;
 using System;
 using System.Collections.Generic;
+using ListView;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Modules;
@@ -29,7 +29,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	Material m_UIMaterial;
 
 	[SerializeField]
-	Material m_NoClipBackingCube;
+	Material m_NoClipBackingCubeMaterial;
 
 	[SerializeField]
 	Material m_HighlightMaterial;
@@ -78,6 +78,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 		m_RowCubeMaterial = Instantiate(m_RowCubeMaterial);
 		m_BackingCubeMaterial = Instantiate(m_BackingCubeMaterial);
+		m_NoClipBackingCubeMaterial = Instantiate(m_NoClipBackingCubeMaterial);
 		m_TextMaterial = Instantiate(m_TextMaterial);
 		m_TextMaterial.SetInt(kMaterialStencilRef, stencilRef);
 		m_UIMaterial = Instantiate(m_UIMaterial);
@@ -178,7 +179,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		{
 			var highlightMaterials = new[] { m_HighlightMaterial, m_HighlightMaskMaterial };
 			var noClipHighlightMaterials = new[] { m_NoClipHighlightMaterial, m_NoClipHighlightMaskMaterial };
-			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCube, highlightMaterials, noClipHighlightMaterials);
+			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
 
 			item.setHighlight = setHighlight;
 			item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
