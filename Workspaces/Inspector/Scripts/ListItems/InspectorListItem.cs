@@ -10,11 +10,9 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
 using InputField = UnityEngine.Experimental.EditorVR.UI.InputField;
 
-public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight
+public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight, IRequestStencilRef
 {
 	const float kIndent = 0.02f;
-
-	static readonly Quaternion kPreviewRotation = Quaternion.AngleAxis(90, Vector3.right);
 
 	protected CuboidLayout m_CuboidLayout;
 
@@ -32,6 +30,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 	ClipText[] m_ClipTexts;
 
 	Material m_NoClipBackingCube;
+	Material[] m_NoClipHighlightMaterials;
 
 	bool m_Setup;
 
@@ -46,6 +45,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
 	public Action<InspectorData> toggleExpanded { private get; set; }
+
+	public Func<byte> requestStencilRef { private get; set; }
 
 	public override void Setup(InspectorData data)
 	{
@@ -91,9 +92,10 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 		m_InputFields = GetComponentsInChildren<InputField>(true);
 	}
 
-	public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials)
+	public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
 	{
 		m_NoClipBackingCube = noClipBackingCube;
+		m_NoClipHighlightMaterials = noClipHighlightMaterials;
 
 		m_Cube.GetComponent<Renderer>().sharedMaterial = rowMaterial;
 
@@ -205,7 +207,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 			m_SelectIsHeld = true;
 			m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
 
-			// Detect double click
+			// Grab a field block on double click
 			var timeSinceLastClick = Time.realtimeSinceStartup - m_LastClickTime;
 			m_LastClickTime = Time.realtimeSinceStartup;
 			if (m_ClickCount > 1 && U.UI.IsDoubleClick(timeSinceLastClick))
@@ -233,11 +235,28 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 
 				var graphics = clone.GetComponentsInChildren<Graphic>(true);
 				foreach (var graphic in graphics)
+				{
 					graphic.material = null;
+				}
 
+				var stencilRef = requestStencilRef();
 				var renderers = clone.GetComponentsInChildren<Renderer>(true);
 				foreach (var renderer in renderers)
-					renderer.sharedMaterial = m_NoClipBackingCube;
+				{
+					if (renderer.sharedMaterials.Length > 1)
+					{
+						foreach (var material in m_NoClipHighlightMaterials)
+						{
+							material.SetInt("_StencilRef", stencilRef);
+						}
+						renderer.sharedMaterials = m_NoClipHighlightMaterials;
+					}
+					else
+					{
+						renderer.sharedMaterial = m_NoClipBackingCube;
+						m_NoClipBackingCube.SetInt("_StencilRef", stencilRef);
+					}
+				}
 			}
 		}
 	}
@@ -262,7 +281,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 		if (m_DragObject)
 		{
 			var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
-			U.Math.LerpTransform(m_DragObject, previewOrigin.position, kPreviewRotation, m_DragLerp);
+			U.Math.LerpTransform(m_DragObject, previewOrigin.position, 
+				U.Math.ConstrainYawRotation(U.Camera.GetMainCamera().transform.rotation), m_DragLerp);
 		}
 	}
 

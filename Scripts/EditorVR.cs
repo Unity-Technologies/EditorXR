@@ -230,7 +230,6 @@ namespace UnityEditor.Experimental.EditorVR
 			get { return m_StencilRef; }
 			set
 			{
-				// Stencil reference range is 0 to 255
 				m_StencilRef = (byte)Mathf.Clamp(value, kMinStencilRef, byte.MaxValue);
 
 				// Wrap
@@ -1650,7 +1649,7 @@ namespace UnityEditor.Experimental.EditorVR
 					}
 				}
 
-				usesStencilRef.stencilRef = stencilRef ?? this.stencilRef++;
+				usesStencilRef.stencilRef = stencilRef ?? RequestStencilRef();
 			}
 
 			var selectObject = obj as ISelectObject;
@@ -1667,6 +1666,10 @@ namespace UnityEditor.Experimental.EditorVR
 			var setManipulatorsVisible = obj as ISetManipulatorsVisible;
 			if (setManipulatorsVisible != null)
 				setManipulatorsVisible.setManipulatorsVisible = SetManipulatorsVisible;
+
+			var requestStencilRef = obj as IRequestStencilRef;
+			if (requestStencilRef != null)
+				requestStencilRef.requestStencilRef = RequestStencilRef;
 		}
 
 		private void DisconnectInterfaces(object obj)
@@ -2909,6 +2912,11 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 
 			return hd ?? new HierarchyData(name, instanceID, children);
+		}
+
+		byte RequestStencilRef()
+		{
+			return stencilRef++;
 		}
 
 #if UNITY_EDITOR
