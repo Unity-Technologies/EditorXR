@@ -265,6 +265,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		U.Object.Destroy(m_RowCubeMaterial);
 		U.Object.Destroy(m_BackingCubeMaterial);
+		U.Object.Destroy(m_NoClipBackingCubeMaterial);
 		U.Object.Destroy(m_TextMaterial);
 		U.Object.Destroy(m_UIMaterial);
 		U.Object.Destroy(m_HighlightMaterial);
