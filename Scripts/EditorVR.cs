@@ -230,7 +230,6 @@ namespace UnityEditor.Experimental.EditorVR
 			get { return m_StencilRef; }
 			set
 			{
-				// Stencil reference range is 2 to 255
 				m_StencilRef = (byte)Mathf.Clamp(value, kMinStencilRef, byte.MaxValue);
 
 				// Wrap
@@ -1650,7 +1649,7 @@ namespace UnityEditor.Experimental.EditorVR
 					}
 				}
 
-				usesStencilRef.stencilRef = stencilRef ?? this.stencilRef++;
+				usesStencilRef.stencilRef = stencilRef ?? RequestStencilRef();
 			}
 
 			var selectObject = obj as ISelectObject;
@@ -1670,9 +1669,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			var requestStencilRef = obj as IRequestStencilRef;
 			if (requestStencilRef != null)
-			{
 				requestStencilRef.requestStencilRef = RequestStencilRef;
-			}
 		}
 
 		private void DisconnectInterfaces(object obj)
