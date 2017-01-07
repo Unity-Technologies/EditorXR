@@ -113,7 +113,8 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		selectRow(instanceID);
 
 		var scrollHeight = 0f;
-		foreach (var datum in data) {
+		foreach (var datum in data)
+		{
 			ScrollToRow(datum, instanceID, ref scrollHeight);
 			scrollHeight += itemSize.z;
 		}
@@ -152,8 +153,10 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		bool expanded;
 		m_ExpandStates.TryGetValue(container.instanceID, out expanded);
 
-		if (container.children != null) {
-			foreach (var child in container.children) {
+		if (container.children != null)
+		{
+			foreach (var child in container.children)
+			{
 				if (expanded)
 				{
 					ScrollToRow(child, rowID, ref scrollHeight);

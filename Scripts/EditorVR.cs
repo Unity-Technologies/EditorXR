@@ -27,7 +27,8 @@ using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
 
-namespace UnityEditor.Experimental.EditorVR {
+namespace UnityEditor.Experimental.EditorVR
+{
 #if UNITY_EDITOR
 	[InitializeOnLoad]
 #endif
