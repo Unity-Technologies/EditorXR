@@ -157,9 +157,6 @@ namespace UnityEditor.Experimental.EditorVR
 		List<Type> m_MainMenuTools;
 		private readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
 
-		// Local method use only -- created here to reduce garbage collection
-		readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
-
 		readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 		{
 			{ "Left", Node.LeftHand },
@@ -238,6 +235,15 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 		byte m_StencilRef = kMinStencilRef;
+
+		// Local method use only -- created here to reduce garbage collection
+		readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
+		readonly List<InputDevice> m_SystemDevices = new List<InputDevice>();
+		readonly Dictionary<Type, string[]> m_DeviceTypeTags = new Dictionary<Type, string[]>();
+		readonly Dictionary<Transform, DirectSelectionData> m_DirectSelectionResults = new Dictionary<Transform, DirectSelectionData>();
+		readonly List<ActionMapInput> m_ActiveStates = new List<ActionMapInput>();
+		readonly List<IMenu> m_UpdateVisibilityMenus = new List<IMenu>();
+		readonly List<DeviceData> m_ActiveDeviceData = new List<DeviceData>();
 
 #if UNITY_EDITORVR
 		private void Awake()
@@ -352,10 +358,19 @@ namespace UnityEditor.Experimental.EditorVR
 			UpdateHierarchyData();
 		}
 
-		IEnumerable<InputDevice> GetSystemDevices()
+		List<InputDevice> GetSystemDevices()
 		{
 			// For now let's filter out any other devices other than VR controller devices; Eventually, we may support mouse / keyboard etc.
-			return InputSystem.devices.Where(d => d is VRInputDevice && d.tagIndex != -1);
+			m_SystemDevices.Clear();
+			var devices = InputSystem.devices;
+			for (int i = 0; i < devices.Count; i++)
+			{
+				var device = devices[i];
+				if (device is VRInputDevice && device.tagIndex != -1)
+					m_SystemDevices.Add(device);
+			}
+
+			return m_SystemDevices;
 		}
 
 		private void CreateDeviceDataForInputDevices()
@@ -502,8 +517,10 @@ namespace UnityEditor.Experimental.EditorVR
 			m_LockedControls.Add(control);
 
 			var ami = control.provider as ActionMapInput;
-			foreach (var input in m_PlayerHandle.maps)
+			var playerHandleMaps = m_PlayerHandle.maps;
+			for (int i = 0; i < playerHandleMaps.Count; i++)
 			{
+				var input = playerHandleMaps[i];
 				if (input != ami)
 					input.ResetControl(control);
 			}
@@ -562,9 +579,11 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			ForEachRayOrigin((proxy, pair, device, deviceData) =>
 			{
-				var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
-				foreach (var menu in menus)
+				m_UpdateVisibilityMenus.Clear();
+				m_UpdateVisibilityMenus.AddRange(deviceData.menuHideFlags.Keys);
+				for (int i = 0; i < m_UpdateVisibilityMenus.Count; i++)
 				{
+					var menu = m_UpdateVisibilityMenus[i];
 					// AE 12/7/16 - Disabling main menu hiding near workspaces for now because it confuses people; Needs improvement
 					if (menu is IMainMenu)
 						continue;
@@ -592,8 +611,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 					var intersection = false;
 
-					foreach (var workspace in m_Workspaces)
+					for(int j = 0; i < m_Workspaces.Count; i++)
 					{
+						var workspace = m_Workspaces[j];
 						var outerBounds = workspace.transform.TransformBounds(workspace.outerBounds);
 						if (flags == 0)
 							outerBounds.extents -= Vector3.one * maxComponent;
@@ -835,15 +855,16 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void UpdateMenuVisibilities()
 		{
-			var deviceDatas = new List<DeviceData>();
+			m_ActiveDeviceData.Clear();
 			ForEachRayOrigin((proxy, pair, device, deviceData) =>
 			{
-				deviceDatas.Add(deviceData);
+				m_ActiveDeviceData.Add(deviceData);
 			});
 
 			// Reconcile conflicts because menus on the same device can visually overlay each other
-			foreach (var deviceData in deviceDatas)
+			for (int i = 0; i < m_ActiveDeviceData.Count; i++)
 			{
+				var deviceData = m_ActiveDeviceData[i];
 				var alternateMenu = deviceData.alternateMenu;
 				var mainMenu = deviceData.mainMenu;
 				var customMenu = deviceData.customMenu;
@@ -852,8 +873,9 @@ namespace UnityEditor.Experimental.EditorVR
 				// Move alternate menu to another device if it conflicts with main or custom menu
 				if (alternateMenu != null && (menuHideFlags[mainMenu] == 0 || (customMenu != null && menuHideFlags[customMenu] == 0)) && menuHideFlags[alternateMenu] == 0)
 				{
-					foreach (var otherDeviceData in deviceDatas)
+					for (int j = 0; j < m_ActiveDeviceData.Count; j++)
 					{
+						var otherDeviceData = m_ActiveDeviceData[j];
 						if (otherDeviceData == deviceData)
 							continue;
 
@@ -1119,15 +1141,18 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void ForEachRayOrigin(ForEachRayOriginCallback callback, bool activeOnly = true)
 		{
-			foreach (var proxy in m_Proxies)
+			for (var i = 0; i < m_Proxies.Count; i++)
 			{
+				var proxy = m_Proxies[i];
 				if (activeOnly && !proxy.active)
 					continue;
 
 				foreach (var rayOriginPair in proxy.rayOrigins)
 				{
-					foreach (var device in GetSystemDevices())
+					var systemDevices = GetSystemDevices();
+					for (int j = 0; j < systemDevices.Count; j++)
 					{
+						var device = systemDevices[j];
 						// Find device tagged with the node that matches this RayOrigin node
 						var node = GetDeviceNode(device);
 						if (node.HasValue && node.Value == rayOriginPair.Key)
@@ -1241,7 +1266,7 @@ namespace UnityEditor.Experimental.EditorVR
 			if (device != null && !IsValidActionMapForDevice(map, device))
 				return null;
 
-			var devices = device == null ? GetSystemDevices() : new[] { device };
+			var devices = device == null ? GetSystemDevices() : new List<InputDevice> { device };
 
 			var actionMapInput = ActionMapInput.Create(map);
 
@@ -1263,6 +1288,9 @@ namespace UnityEditor.Experimental.EditorVR
 			if (successfulInitialization)
 			{
 				actionMapInput.autoReinitialize = false;
+				// Resetting AMIs cause all AMIs (active or not) that use the same sources to be reset, which causes 
+				// problems (e.g. dropping objects because wasJustPressed becomes true when reset)
+				actionMapInput.resetOnActiveChanged = false;
 				actionMapInput.active = true;
 			}
 
@@ -1400,7 +1428,15 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private Node? GetDeviceNode(InputDevice device)
 		{
-			var tags = InputDeviceUtility.GetDeviceTags(device.GetType());
+			string[] tags;
+
+			var deviceType = device.GetType();
+			if (!m_DeviceTypeTags.TryGetValue(deviceType, out tags))
+			{
+				tags = InputDeviceUtility.GetDeviceTags(deviceType);
+				m_DeviceTypeTags[deviceType] = tags;
+			}
+
 			if (tags != null && device.tagIndex != -1)
 			{
 				var tag = tags[device.tagIndex];
@@ -2400,8 +2436,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 		Dictionary<Transform, DirectSelectionData> GetDirectSelection()
 		{
-			var results = new Dictionary<Transform, DirectSelectionData>();
-			var activeStates = new List<ActionMapInput>();
+			m_DirectSelectionResults.Clear();
+			m_ActiveStates.Clear();
 
 			var directSelection = m_ObjectsGrabber;
 			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
@@ -2411,8 +2447,8 @@ namespace UnityEditor.Experimental.EditorVR
 				var obj = GetDirectSelectionForRayOrigin(rayOrigin, input);
 				if (obj && !obj.CompareTag(kVRPlayerTag))
 				{
-					activeStates.Add(input);
-					results[rayOrigin] = new DirectSelectionData
+					m_ActiveStates.Add(input);
+					m_DirectSelectionResults[rayOrigin] = new DirectSelectionData
 					{
 						gameObject = obj,
 						node = rayOriginPair.Key,
@@ -2421,7 +2457,7 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 				else if (directSelection != null && directSelection.GetHeldObjects(rayOrigin) != null)
 				{
-					activeStates.Add(input);
+					m_ActiveStates.Add(input);
 				}
 			});
 
@@ -2433,8 +2469,8 @@ namespace UnityEditor.Experimental.EditorVR
 				var go = GetDirectSelectionForRayOrigin(rayOrigin, input);
 				if (go != null)
 				{
-					activeStates.Add(input);
-					results[rayOrigin] = new DirectSelectionData
+					m_ActiveStates.Add(input);
+					m_DirectSelectionResults[rayOrigin] = new DirectSelectionData
 					{
 						gameObject = go,
 						node = ray.Value.node,
@@ -2444,7 +2480,7 @@ namespace UnityEditor.Experimental.EditorVR
 				else if (miniWorldRay.dragObjects != null
 					|| (directSelection != null && directSelection.GetHeldObjects(rayOrigin) != null))
 				{
-					activeStates.Add(input);
+					m_ActiveStates.Add(input);
 				}
 			}
 
@@ -2453,10 +2489,10 @@ namespace UnityEditor.Experimental.EditorVR
 			ForEachRayOrigin((proxy, pair, device, deviceData) =>
 			{
 				var input = deviceData.directSelectInput;
-				input.active = activeStates.Contains(input);
+				input.active = m_ActiveStates.Contains(input);
 			});
 
-			return results;
+			return m_DirectSelectionResults;
 		}
 
 		GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, ActionMapInput input)
@@ -3006,8 +3042,11 @@ namespace UnityEditor.Experimental.EditorVR
 			s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
 			U.Object.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
 
+			// These components were allocating memory every frame and aren't currently used in EditorVR
 			U.Object.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
+			U.Object.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
 			U.Object.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
+			U.Object.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
 		}
 
 		private static void OnEVRDisabled()

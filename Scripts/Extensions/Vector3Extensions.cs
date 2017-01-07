@@ -9,11 +9,11 @@ public static class Vector3Extensions
 
 	public static float MinComponent(this Vector3 vec)
 	{
-		return Mathf.Min(vec.x, vec.y, vec.z);
+		return Mathf.Min(Mathf.Min(vec.x, vec.y), vec.z);
 	}
 
 	public static float MaxComponent(this Vector3 vec)
 	{
-		return Mathf.Max(vec.x, vec.y, vec.z);
+		return Mathf.Max(Mathf.Max(vec.x, vec.y), vec.z);
 	}
 }
