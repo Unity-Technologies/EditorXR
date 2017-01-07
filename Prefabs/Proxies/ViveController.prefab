@@ -1586,13 +1586,14 @@ MonoBehaviour:
   m_MenuOrigin: {fileID: 4000012932055730}
   m_AlternateMenuOrigin: {fileID: 4000012662092726}
   m_PreviewOrigin: {fileID: 4000011094092792}
+  m_MeshRoot: {fileID: 4000010093119470}
 --- !u!114 &114000013615270472
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011264600012}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5890e3cad70bea64d91aef9145ba3454, type: 3}
   m_Name: 

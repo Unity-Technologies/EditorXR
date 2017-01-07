@@ -2,11 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.VR.Menus
+namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	public class MainMenuUI : MonoBehaviour, IInstantiateUI
 	{
@@ -20,7 +20,6 @@ namespace UnityEngine.VR.Menus
 		private enum RotationState
 		{
 			AtRest,
-			Rotating,
 			Snapping,
 		}
 
@@ -33,9 +32,6 @@ namespace UnityEngine.VR.Menus
 		}
 
 		[SerializeField] private MainMenuButton m_ButtonTemplatePrefab;
-		[SerializeField] private MeshRenderer m_InputHighlightLeft;
-		[SerializeField] private MeshRenderer m_InputHighlightRight;
-		[SerializeField] private MeshRenderer m_InputOuterBorder;
 		[SerializeField] private Transform[] m_MenuFaceContainers;
 		[SerializeField] private MainMenuFace m_MenuFacePrefab;
 		[SerializeField] private Transform m_MenuFaceRotationOrigin;
@@ -47,6 +43,8 @@ namespace UnityEngine.VR.Menus
 			get { return m_TargetFaceIndex; }
 			set
 			{
+				m_Direction = (int)Mathf.Sign(value - m_TargetFaceIndex);
+
 				// Loop around both ways
 				if (value < 0)
 					value += faceCount;
@@ -64,26 +62,19 @@ namespace UnityEngine.VR.Menus
 		private const float kRotationEpsilon = 1f;
 
 		private readonly string kUncategorizedFaceName = "Uncategorized";
-		private readonly string kRotationHighlightColorProperty = "_Color";
-		private readonly string kRotationHighlightTopProperty = "_ColorTop";
-		private readonly string kRotationHighlightBottomProperty = "_ColorBottom";
 		private readonly Color kMenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
 
 		private VisibilityState m_VisibilityState = VisibilityState.Visible;
 		private RotationState m_RotationState;
-		private Material m_RotationHighlightLeftMaterial;
-		private Material m_RotationHighlightRightMaterial;
-		private Material m_OuterBorderMaterial;
 		private MainMenuFace[] m_MenuFaces;
 		private Material m_MenuFacesMaterial;
 		private Color m_MenuFacesColor;
 		private Transform m_MenuOrigin;
 		private Transform m_AlternateMenuOrigin;
 		private Vector3 m_AlternateMenuOriginOriginalLocalScale;
-		private float m_RotationRate;
-		private float m_LastTargetRotation;
 		private Coroutine m_VisibilityCoroutine;
 		Coroutine m_FrameRevealCoroutine;
+		int m_Direction;
 
 		Transform[] m_MenuFaceContentTransforms;
 		Vector3[] m_MenuFaceContentOriginalLocalPositions;
@@ -168,13 +159,6 @@ namespace UnityEngine.VR.Menus
 
 		private void Awake()
 		{
-			m_OuterBorderMaterial = U.Material.GetMaterialClone(m_InputOuterBorder);
-			m_OuterBorderMaterial.SetColor(kRotationHighlightTopProperty, UnityBrandColorScheme.light);
-			m_OuterBorderMaterial.SetColor(kRotationHighlightBottomProperty, UnityBrandColorScheme.light);
-			m_RotationHighlightLeftMaterial = U.Material.GetMaterialClone(m_InputHighlightLeft);
-			m_RotationHighlightRightMaterial = U.Material.GetMaterialClone(m_InputHighlightRight);
-			m_RotationHighlightLeftMaterial.SetColor(kRotationHighlightColorProperty, Color.clear);
-			m_RotationHighlightRightMaterial.SetColor(kRotationHighlightColorProperty, Color.clear);
 			m_MenuFacesMaterial = U.Material.GetMaterialClone(m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>());
 			m_MenuFacesColor = m_MenuFacesMaterial.color;
 		}
@@ -223,70 +207,8 @@ namespace UnityEngine.VR.Menus
 
 			var faceIndex = currentFaceIndex;
 
-			// If target rotation isn't being set any longer, then ignore seeking and simply snap
-			var targetRotationDelta = targetRotation - m_LastTargetRotation;
-			if (m_RotationRate > 0f && Mathf.Approximately(targetRotationDelta, 0f))
-			{
-				var rotation = currentRotation;
-				var closestFaceIndex = GetClosestFaceIndexForRotation(rotation);
-				var faceIndexRotation = GetRotationForFaceIndex(closestFaceIndex);
-
-				if (Mathf.Abs(faceIndexRotation - rotation) > kRotationEpsilon)
-				{
-					targetFaceIndex = closestFaceIndex;
-					StartCoroutine(SnapToFace(targetFaceIndex, kDefaultSnapSpeed * 0.5f)); // Slower snap for non-flick
-					return;
-				}
-			}
-
-			// Setting a target face takes precedence over manual rotation
 			if (faceIndex != targetFaceIndex)
-			{
-				m_RotationHighlightLeftMaterial.SetColor(kRotationHighlightColorProperty, Color.clear);
-				m_RotationHighlightRightMaterial.SetColor(kRotationHighlightColorProperty, Color.clear);
-
-				var direction = (int)Mathf.Sign(Mathf.DeltaAngle(GetRotationForFaceIndex(faceIndex), GetRotationForFaceIndex(m_TargetFaceIndex)));
-				StartCoroutine(SnapToFace(faceIndex + direction, kDefaultSnapSpeed));
-			}
-			else
-			{
-				float rotation = currentRotation;
-				float deltaRotation = Mathf.DeltaAngle(rotation, targetRotation);
-				if (Mathf.Abs(deltaRotation) > 0f)
-				{
-					if (m_RotationState != RotationState.Rotating)
-					{
-						m_RotationState = RotationState.Rotating;
-
-						foreach (var face in m_MenuFaces)
-							face.BeginVisuals();
-
-						StartCoroutine(AnimateFrameRotationShapeChange(RotationState.Rotating));
-					}
-
-					int direction = (int) Mathf.Sign(deltaRotation);
-
-					m_RotationHighlightLeftMaterial.SetColor(kRotationHighlightColorProperty, direction > 0 ? Color.white : Color.clear);
-					m_RotationHighlightRightMaterial.SetColor(kRotationHighlightColorProperty, direction < 0 ? Color.white : Color.clear);
-
-					const float kRotationRateMax = 10f;
-					const float kRotationSpeed = 15f;
-					m_RotationRate = Mathf.Min(m_RotationRate + Time.unscaledDeltaTime * kRotationSpeed, kRotationRateMax);
-					m_MenuFaceRotationOrigin.Rotate(Vector3.up, deltaRotation * m_RotationRate * Time.unscaledDeltaTime);
-
-					// Target face index and rotation can be set separately, so both, must be kept in sync
-					targetFaceIndex = currentFaceIndex;
-				}
-				else
-				{
-					m_RotationState = RotationState.AtRest;
-
-					// Allow for the smooth resumption of rotation if rotation is resumed before snapping is stopped
-					m_RotationRate = Mathf.Max(m_RotationRate - Time.unscaledDeltaTime, 0f);
-				}
-			}
-
-			m_LastTargetRotation = targetRotation;
+				StartCoroutine(SnapToFace(faceIndex + m_Direction, kDefaultSnapSpeed));
 		}
 
 		private void OnDestroy()
@@ -457,9 +379,9 @@ namespace UnityEngine.VR.Menus
 
 		private IEnumerator AnimateFrameRotationShapeChange(RotationState rotationState)
 		{
-			var smoothTime = rotationState == RotationState.Rotating ? 0.5f : 0.0375f; // slower when rotating, faster when snapping
+			var smoothTime = 0.0375f;
 			var currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
-			var targetWeight = rotationState == RotationState.Rotating ? 100f : 0f;
+			var targetWeight = 0f;
 			var smoothVelocity = 0f;
 			var currentDuration = 0f;
 			while (m_RotationState == rotationState && currentDuration < smoothTime)

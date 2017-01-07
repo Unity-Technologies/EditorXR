@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 public class DefaultProxyRay : MonoBehaviour
 {
@@ -122,10 +122,14 @@ public class DefaultProxyRay : MonoBehaviour
 		if (!rayVisible)
 			return;
 
-		m_LineRenderer.transform.localScale = Vector3.one * length;
+		var lineRendererTransform = m_LineRenderer.transform;
+		lineRendererTransform.localScale = Vector3.one * length;
 		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth * length);
 		m_Tip.transform.position = transform.position + transform.forward * length;
 		m_Tip.transform.localScale = length * m_TipStartScale;
+
+		const float kLineRendererStartingOffset = 0.085f; // offset the ray starting point in front of the direct-select cone
+		m_LineRenderer.SetPosition(0, new Vector3(0f, 0f, (1f / lineRendererTransform.localScale.x) * kLineRendererStartingOffset));
 	}
 
 	private void Awake()
@@ -148,12 +152,12 @@ public class DefaultProxyRay : MonoBehaviour
 		var currentWidth = m_LineRenderer.widthStart;
 		const float kTargetWidth = 0f;
 		const float kSmoothTime = 0.1875f;
+		var smoothVelocity = 0f;
 		var currentDuration = 0f;
 		while (currentDuration < kSmoothTime)
 		{
-			float smoothVelocity = 0f;
-			currentWidth = U.Math.SmoothDamp(currentWidth, kTargetWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			currentDuration += Time.unscaledDeltaTime;
+			currentWidth = U.Math.SmoothDamp(currentWidth, kTargetWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
 			yield return null;
 		}
@@ -172,8 +176,8 @@ public class DefaultProxyRay : MonoBehaviour
 		var currentDuration = 0f;
 		while (currentDuration < kSmoothTime)
 		{
-			currentWidth = U.Math.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			currentDuration += Time.unscaledDeltaTime;
+			currentWidth = U.Math.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_LineRenderer.SetWidth(currentWidth, currentWidth);
 			yield return null;
 		}
@@ -190,8 +194,8 @@ public class DefaultProxyRay : MonoBehaviour
 		var currentDuration = 0f;
 		while (currentDuration < kSmoothTime)
 		{
-			currentScale = U.Math.SmoothDamp(currentScale, Vector3.zero, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			currentDuration += Time.unscaledDeltaTime;
+			currentScale = U.Math.SmoothDamp(currentScale, Vector3.zero, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_ConeTransform.localScale = currentScale;
 			yield return null;
 		}
@@ -203,13 +207,13 @@ public class DefaultProxyRay : MonoBehaviour
 	IEnumerator ShowCone()
 	{
 		var currentScale = m_ConeTransform.localScale;
-		var smoothVelocity = Vector3.one;
+		var smoothVelocity = Vector3.zero;
 		const float kSmoothTime = 0.3125f;
 		var currentDuration = 0f;
 		while (currentDuration < kSmoothTime)
 		{
-			currentScale = Vector3.SmoothDamp(currentScale, m_OriginalConeLocalScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			currentDuration += Time.unscaledDeltaTime;
+			currentScale = U.Math.SmoothDamp(currentScale, m_OriginalConeLocalScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 			m_ConeTransform.localScale = currentScale;
 			yield return null;
 		}

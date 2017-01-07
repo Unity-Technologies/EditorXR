@@ -1,15 +1,17 @@
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using UnityEngine;
-using UnityEngine.VR;
 using UnityEngine.Assertions;
 using System.Collections;
-using UnityEditor.VR.Helpers;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using System.Reflection;
+using UnityEngine.VR;
+#if ENABLE_STEAMVR_INPUT
 using Valve.VR;
+#endif
 using Object = UnityEngine.Object;
 
-namespace UnityEditor.VR
+namespace UnityEditor.Experimental.EditorVR
 {
 	[InitializeOnLoad]
 	public class VRView : EditorWindow
@@ -194,7 +196,14 @@ namespace UnityEditor.VR
 			VRSettings.StartRenderingToDevice();
 			InputTracking.Recenter();
 			// HACK: Fix VRSettings.enabled or some other API to check for missing HMD
-			m_VRInitialized =  OVRPlugin.initialized || (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
+			m_VRInitialized = false;
+#if ENABLE_OVR_INPUT
+			m_VRInitialized |= OVRPlugin.initialized;
+#endif
+
+#if ENABLE_STEAMVR_INPUT
+			m_VRInitialized |= (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
+#endif
 
 			onEnable();
 		}
@@ -368,7 +377,10 @@ namespace UnityEditor.VR
 		{
 			// If code is compiling, then we need to clean up the window resources before classes get re-initialized
 			if (EditorApplication.isCompiling)
+			{
 				Close();
+				return;
+			}
 
 			// Force the window to repaint every tick, since we need live updating
 			// This also allows scripts with [ExecuteInEditMode] to run

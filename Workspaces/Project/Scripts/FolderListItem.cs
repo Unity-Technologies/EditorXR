@@ -2,8 +2,8 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 public class FolderListItem : ListViewItem<FolderData>
 {

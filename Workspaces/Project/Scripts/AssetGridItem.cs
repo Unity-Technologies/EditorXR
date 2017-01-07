@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Helpers;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Helpers;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
 
 public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
 {
 	private const float kPreviewDuration = 0.1f;
-	private const float kMaxPreviewScale = 0.33f;
+	private const float kMaxPreviewScale = 0.2f;
 	private const float kRotateSpeed = 50f;
 	private const float kTransitionDuration = 0.1f;
 	const int kPreviewRenderQueue = 9200;
@@ -53,7 +54,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 
 	private Material m_SphereMaterial;
 
-	public Action<GameObject> addToSpatialHash { get; set; }
+	public Action<GameObject> addToSpatialHash { private get; set; }
 	public Action<GameObject> removeFromSpatialHash { get; set; }
 
 	public GameObject icon
@@ -215,6 +216,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	{
 		if (m_PreviewObjectTransform)
 			U.Object.Destroy(m_PreviewObjectTransform.gameObject);
+
 		if (!data.preview)
 			return;
 
@@ -258,8 +260,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		m_PreviewTargetScale = m_PreviewPrefabScale * scaleFactor;
 		m_PreviewObjectTransform.localPosition = pivotOffset * scaleFactor + Vector3.up * 0.5f;
 
-		// Object will preview at the same size
-		m_GrabPreviewTargetScale = m_PreviewPrefabScale;
+		// Object will preview at the same size when grabbed
+		m_GrabPreviewTargetScale = Vector3.one * maxComponent;
 		var previewExtents = previewTotalBounds.extents;
 		m_GrabPreviewPivotOffset = pivotOffset;
 
@@ -273,7 +275,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		if (maxComponent > kMaxPreviewScale)
 		{
 			// Object will be preview at the maximum scale
-			m_GrabPreviewTargetScale = m_PreviewPrefabScale * scaleFactor * kMaxPreviewScale;
+			m_GrabPreviewTargetScale = Vector3.one * kMaxPreviewScale;
 			m_GrabPreviewPivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * kMaxPreviewScale;
 		}
 
@@ -290,13 +292,26 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 
 		if (cloneItem.m_PreviewObjectTransform)
 		{
+			m_PreviewObjectClone = cloneItem.m_PreviewObjectTransform;
+
+#if UNITY_EDITOR
+			var originalPosition = m_PreviewObjectClone.position;
+			var originalRotation = m_PreviewObjectClone.rotation;
+			var originalScale = m_PreviewObjectClone.localScale;
+			m_PreviewObjectClone = PrefabUtility.ConnectGameObjectToPrefab(m_PreviewObjectClone.gameObject, data.preview).transform;
+			m_PreviewObjectClone.position = originalPosition;
+			m_PreviewObjectClone.rotation = originalRotation;
+			m_PreviewObjectClone.localScale = originalScale;
+			cloneItem.m_PreviewObjectTransform = m_PreviewObjectClone;
+#endif
+
 			cloneItem.m_Cube.gameObject.SetActive(false);
+
 			if (cloneItem.m_Icon)
 				cloneItem.m_Icon.gameObject.SetActive(false);
-			cloneItem.m_PreviewObjectTransform.gameObject.SetActive(true);
-			cloneItem.m_PreviewObjectTransform.transform.localScale = m_PreviewTargetScale;
 
-			m_PreviewObjectClone = cloneItem.m_PreviewObjectTransform;
+			m_PreviewObjectClone.gameObject.SetActive(true);
+			m_PreviewObjectClone.localScale = m_PreviewTargetScale;
 
 			// Destroy label
 			U.Object.Destroy(cloneItem.m_TextPanel.gameObject);
@@ -328,7 +343,16 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 				{
 					case "Prefab":
 					case "Model":
-						addToSpatialHash((GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
+#if UNITY_EDITOR
+						var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
+						var transform = go.transform;
+						transform.position = gridItem.transform.position;
+						transform.rotation = U.Math.ConstrainYawRotation(gridItem.transform.rotation);
+#else
+						var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+#endif
+
+						addToSpatialHash(go);
 						break;
 				}
 			}
@@ -436,14 +460,10 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	IEnumerator ShowGrabbedObject()
 	{
 		var currentLocalScale = m_DragObject.localScale;
-		var currentPreviewScale = Vector3.one;
 		var currentPreviewOffset = Vector3.zero;
 
 		if (m_PreviewObjectClone)
-		{
-			currentPreviewScale = m_PreviewObjectClone.localScale;
 			currentPreviewOffset = m_PreviewObjectClone.localPosition;
-		}
 
 		var currentTime = 0f;
 		var currentVelocity = 0f;
@@ -455,21 +475,15 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 				yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
 
 			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
-			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, Vector3.one, currentTime);
+			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, m_GrabPreviewTargetScale, currentTime);
 
 			if (m_PreviewObjectClone)
-			{
-				m_PreviewObjectClone.localScale = Vector3.Lerp(currentPreviewScale, m_GrabPreviewTargetScale, currentTime);
 				m_PreviewObjectClone.localPosition = Vector3.Lerp(currentPreviewOffset, m_GrabPreviewPivotOffset, currentTime);
-			}
 
 			yield return null;
 		}
 
-		m_DragObject.localScale = Vector3.one;
-
-		if (m_PreviewObjectClone)
-			m_PreviewObjectClone.localScale = m_GrabPreviewTargetScale;
+		m_DragObject.localScale = m_GrabPreviewTargetScale;
 	}
 
 	static IEnumerator HideGrabbedObject(GameObject itemToHide, Renderer cubeRenderer)

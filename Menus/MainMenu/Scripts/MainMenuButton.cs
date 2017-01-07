@@ -1,8 +1,8 @@
 ﻿using System;
 using UnityEngine.UI;
-using UnityEngine.VR.Modules;
+using UnityEngine.Experimental.EditorVR.Modules;
 
-namespace UnityEngine.VR.Menus
+namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	public class MainMenuButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
 	{

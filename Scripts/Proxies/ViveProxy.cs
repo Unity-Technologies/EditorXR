@@ -1,21 +1,20 @@
 ﻿using System.Collections;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Proxies
+namespace UnityEngine.Experimental.EditorVR.Proxies
 {
 	public class ViveProxy : TwoHandedProxyBase
 	{
 		private ViveInputToEvents m_InputToEvents;
 
-		private SteamVR_RenderModel m_RightModel;
-		private SteamVR_RenderModel m_LeftModel;
+#if ENABLE_STEAMVR_INPUT
+		SteamVR_RenderModel m_RightModel;
+		SteamVR_RenderModel m_LeftModel;
+#endif
 
 		public override bool active
 		{
-			get
-			{
-				return m_InputToEvents.active;
-			}
+			get { return m_InputToEvents.active; }
 		}
 
 		public override void Awake()
@@ -26,16 +25,27 @@ namespace UnityEngine.VR.Proxies
 
 		public override IEnumerator Start()
 		{
+#if ENABLE_STEAMVR_INPUT
 			SteamVR_Render.instance.transform.parent = gameObject.transform;
-			m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(); // TODO: AddComponent at runtime and remove it from the prefab (requires the steam device model loading to work properly in editor)            
-			m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>();
 
-			return base.Start();
+			while (!active)
+				yield return null;
+
+			m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(true);
+			m_LeftModel.enabled = true;
+			m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>(true);
+			m_RightModel.enabled = true;
+
+			yield return base.Start();
+#else
+			yield break;
+#endif
 		}
 
+#if ENABLE_STEAMVR_INPUT
 		public override void Update()
 		{
-			if (active)
+			if (active && m_LeftModel && m_RightModel)
 			{
 				//If proxy is not mapped to a physical input device, check if one has been assigned
 				if ((int) m_LeftModel.index == -1 && m_InputToEvents.steamDevice[0] != -1)
@@ -51,5 +61,6 @@ namespace UnityEngine.VR.Proxies
 
 			base.Update();
 		}
+#endif
 	}
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace UnityEngine.VR.Tools
+﻿namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	/// <summary>
 	/// Method signature for hiding or showing the default ray
@@ -9,7 +7,10 @@ namespace UnityEngine.VR.Tools
 	/// </summary>
 	public delegate void DefaultRayVisibilityDelegate(Transform rayOrigin, bool onlyRay = false);
 
-	public interface ICustomRay : IRayLocking
+	/// <summary>
+	/// Implementors can show & hide the default ray
+	/// </summary>
+	public interface ICustomRay : IUsesRayLocking
 	{
 		/// <summary>
 		/// Show the default proxy ray/cone

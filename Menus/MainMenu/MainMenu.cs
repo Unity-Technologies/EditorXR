@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Actions;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Workspaces;
+using UnityEngine.Experimental.EditorVR.Actions;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Proxies;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 
-namespace UnityEngine.VR.Menus
+namespace UnityEngine.Experimental.EditorVR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IMenuOrigins
+	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -62,12 +63,7 @@ namespace UnityEngine.VR.Menus
 		private MainMenuUI m_MainMenuPrefab;
 
 		private MainMenuUI m_MainMenuUI;
-		private float m_RotationInputStartTime;
-		private float m_RotationInputStartValue;
-		private float m_RotationInputIdleTime;
 		private float m_LastRotationInput;
-		float m_RotationDragStartValue;
-		bool m_RotationDragThresholdExceeded;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
 
 		public InstantiateUIDelegate instantiateUI { private get; set; }
@@ -76,10 +72,10 @@ namespace UnityEngine.VR.Menus
 		public List<Type> menuWorkspaces { private get; set; }
 		public CreateWorkspaceDelegate createWorkspace { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
-		public Node? node { private get; set; }
 		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 		public Transform targetRayOrigin { private get; set; }
 		public Func<Transform, Type, bool> isToolActive { private get; set; }
+		public Type proxyType { private get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
@@ -103,67 +99,16 @@ namespace UnityEngine.VR.Menus
 			var mainMenuInput = (MainMenuInput)input;
 			var rotationInput = -mainMenuInput.rotate.rawValue;
 
-			// Flick the face when the button is released by adding this value to the flick rotation
-			if (mainMenuInput.flickFace.wasJustReleased)
+			consumeControl(mainMenuInput.rotate);
+			consumeControl(mainMenuInput.blockY);
+
+			const float kFlickDeltaThreshold = 0.5f;
+			if ((proxyType != typeof(ViveProxy) && Mathf.Abs(rotationInput) >= kFlickDeltaThreshold && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold)
+				|| mainMenuInput.flickFace.wasJustReleased)
 			{
-				m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex - (int)Mathf.Sign(-rotationInput);
+				m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
 
 				consumeControl(mainMenuInput.flickFace);
-			}
-
-			if (Mathf.Approximately(rotationInput, m_LastRotationInput) && Mathf.Approximately(rotationInput, 0f))
-			{
-				m_RotationInputIdleTime += Time.unscaledDeltaTime;
-				m_RotationDragStartValue = 0f;
-				m_RotationDragThresholdExceeded = false;
-
-				consumeControl(mainMenuInput.rotate);
-			}
-			else
-			{
-				const float kRotationDragMoveThreshold = 0.25f;
-				const float kFlickDeltaThreshold = 0.5f;
-				const float kRotationInputIdleDurationThreshold = 0.05f; // Limits how often a flick can happen
-
-				// Track values for a new rotation when input has changed
-				if (m_RotationInputIdleTime > kRotationInputIdleDurationThreshold)
-				{
-					m_RotationInputStartTime = Time.realtimeSinceStartup;
-					// Low sampling can affect our latch value, so sometimes the last rotation is a better choice because
-					// the current rotation may be high by the time it is sampled
-					m_RotationInputStartValue = Mathf.Abs(rotationInput) < Mathf.Abs(m_LastRotationInput) ? rotationInput : m_LastRotationInput;
-				}
-
-				if (Mathf.Approximately(m_LastRotationInput, 0))
-					m_RotationDragStartValue = 0f;
-				else if (Mathf.Approximately(m_RotationDragStartValue, 0))
-					m_RotationDragStartValue = m_LastRotationInput; // set new drag start value
-
-				if (m_RotationDragThresholdExceeded || (!Mathf.Approximately(m_RotationDragStartValue, 0) && !Mathf.Approximately(rotationInput, 0) && Mathf.Abs((Mathf.Abs(m_RotationDragStartValue) - Mathf.Abs(rotationInput))) > kRotationDragMoveThreshold))
-				{
-					const float kFlickDurationThreshold = 0.3f;
-					m_RotationDragThresholdExceeded = true;
-					// Perform a quick single face rotation if a quick flick of the input axis occurred
-					float flickRotation = rotationInput - m_RotationInputStartValue;
-					if (Mathf.Abs(flickRotation) >= kFlickDeltaThreshold
-						&& (Time.realtimeSinceStartup - m_RotationInputStartTime) < kFlickDurationThreshold)
-					{
-						m_MainMenuUI.targetFaceIndex = m_MainMenuUI.targetFaceIndex - (int) Mathf.Sign(flickRotation);
-
-						// Don't allow another flick until rotation resets
-						m_RotationInputStartTime = 0f;
-					}
-					else
-					{
-						const float kRotationSpeed = 250;
-
-						// Otherwise, apply manual rotation to the main menu faces
-						m_MainMenuUI.targetRotation += rotationInput * kRotationSpeed * Time.unscaledDeltaTime;
-					}
-				}
-
-				// Reset the idle time if we are no longer idle (i.e. rotation is happening)
-				m_RotationInputIdleTime = 0f;
 			}
 
 			m_LastRotationInput = rotationInput;

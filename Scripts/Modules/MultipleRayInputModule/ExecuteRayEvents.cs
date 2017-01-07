@@ -1,6 +1,6 @@
 ﻿using UnityEngine.EventSystems;
 
-namespace UnityEngine.VR.Modules
+namespace UnityEngine.Experimental.EditorVR.Modules
 {	
 	public static class ExecuteRayEvents
 	{

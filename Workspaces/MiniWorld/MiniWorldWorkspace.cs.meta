@@ -1,0 +1,26 @@
+fileFormatVersion: 2
+guid: aab2ab33b5d370b4889c8004fceb7843
+timeCreated: 1481160624
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_BasePrefab: {fileID: 1000011022840156, guid: 3a2153f70c365c540a3703c4cf22bc45,
+      type: 2}
+  - m_ContentPrefab: {fileID: 1000012496997414, guid: 1c661791d5dcbf640809b4e15a35395d,
+      type: 2}
+  - m_RecenterUIPrefab: {fileID: 1000011166056430, guid: 5a75f0f2ee760e74da2620e87db7cdd5,
+      type: 2}
+  - m_LocatePlayerPrefab: {fileID: 1000013310326674, guid: 1e43cbd929c778043b08d39c463b62c3,
+      type: 2}
+  - m_PlayerDirectionArrowPrefab: {fileID: 1000012389755558, guid: 8bbd464eb30add54f8badbc4a5ba7cd9,
+      type: 2}
+  - m_UIPrefab: {fileID: 1000011177834630, guid: 41f89a1e8d8d49f4f861f7cb581c1227,
+      type: 2}
+  - m_FilterPrefab: {fileID: 1000011003453154, guid: 60513a54db78d77419cd05a175c654db,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

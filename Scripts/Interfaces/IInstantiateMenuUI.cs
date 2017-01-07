@@ -1,7 +1,7 @@
 using System;
-using UnityEngine.VR.Menus;
+using UnityEngine.Experimental.EditorVR.Menus;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	/// <summary>
 	/// Provides custom menu instantiation
@@ -11,8 +11,8 @@ namespace UnityEngine.VR.Tools
 		/// <summary>
 		/// Instantiate custom menu UI on a proxy
 		/// Transform = Ray origin
-		/// GameObject = Prefab
-		/// Returns an instantiated UI
+		/// IMenu = Prefab (with IMenu component) to instantiate
+		/// Returns an instantiated UI GameObject
 		/// </summary>
 		Func<Transform, IMenu, GameObject> instantiateMenuUI { set; }
 	}
