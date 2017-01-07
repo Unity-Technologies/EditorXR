@@ -80,17 +80,12 @@ public class InspectorHeaderItem : InspectorListItem
 	IEnumerator GetAssetPreview()
 	{
 		m_Icon.texture = null;
-		if (!data.serializedObject.targetObject)
-			yield break;
 
 		var target = data.serializedObject.targetObject;
 		m_Icon.texture = AssetPreview.GetAssetPreview(target);
 
 		while (AssetPreview.IsLoadingAssetPreview(target.GetInstanceID()))
 		{
-			if (!data.serializedObject.targetObject)
-				yield break;
-
 			m_Icon.texture = AssetPreview.GetAssetPreview(target);
 			yield return null;
 		}

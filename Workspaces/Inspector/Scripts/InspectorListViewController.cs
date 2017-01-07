@@ -245,8 +245,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	void ToggleExpanded(InspectorData data)
 	{
-		// TODO: fix this
-		//m_ExpandStates[data.instanceID] = !m_ExpandStates[data.instanceID];
+		m_ExpandStates[data.instanceID] = !m_ExpandStates[data.instanceID];
 	}
 
 	void OnArraySizeChanged(PropertyData element)
