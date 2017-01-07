@@ -1,7 +1,14 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.VR.Utilities;
+﻿#if !UNITY_EDITOR
+#pragma warning disable 414
+#endif
 
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Experimental.EditorVR.Utilities;
+
+/// <summary>
+/// Updates a RawImage texture with data from an EditorWindowCapture
+/// </summary>
 public class EditorWindowCaptureUpdater : MonoBehaviour
 {
 	[SerializeField]
@@ -14,6 +21,7 @@ public class EditorWindowCaptureUpdater : MonoBehaviour
 	[SerializeField]
 	bool m_LockAspect = true;
 
+#if UNITY_EDITOR
 	void Start()
 	{
 		if (!m_EditorWindowCapture)
@@ -79,4 +87,5 @@ public class EditorWindowCaptureUpdater : MonoBehaviour
 			}
 		}
 	}
+#endif
 }

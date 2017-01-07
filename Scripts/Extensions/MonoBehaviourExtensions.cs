@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace UnityEngine.VR.Extensions
+namespace UnityEngine.Experimental.EditorVR.Extensions
 {
 	public static class MonoBehaviourExtensions
 	{

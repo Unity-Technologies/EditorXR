@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 
-namespace UnityEditor.VR.Helpers
+namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-	// Used for launching co-routines
+	/// <summary>
+	/// Used for launching co-routines
+	/// </summary>
 	public class EditorMonoBehaviour : MonoBehaviour
 	{
 	}

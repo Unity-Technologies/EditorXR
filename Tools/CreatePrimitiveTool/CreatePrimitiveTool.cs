@@ -1,10 +1,10 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Menus;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
-using UnityObject = UnityEngine.Object;
+using UnityEngine.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 [MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin, IUsesSpatialHash

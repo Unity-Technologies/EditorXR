@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using UnityEngine.Networking;
 
-namespace UnityEngine.VR.Utilities
+namespace UnityEngine.Experimental.EditorVR.Utilities
 {
 	using System;
 	using UnityEngine;
@@ -12,7 +12,7 @@ namespace UnityEngine.VR.Utilities
 	using UnityObject = UnityEngine.Object;
 #if UNITY_EDITOR
 	using UnityEditor;
-	using UnityEditor.VR;
+	using UnityEditor.Experimental.EditorVR;
 #endif
 
 	/// <summary>
@@ -121,10 +121,11 @@ namespace UnityEngine.VR.Utilities
 
 			public static Bounds GetBounds(GameObject obj)
 			{
-				Bounds b = new Bounds(obj.transform.position, Vector3.zero);
-				Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
-				foreach (Renderer r in renderers)
+				var b = new Bounds(obj.transform.position, Vector3.zero);
+				var renderers = obj.GetComponentsInChildren<Renderer>();
+				for (int i = 0; i < renderers.Length; i++)
 				{
+					var r = renderers[i];
 					if (r.bounds.size != Vector3.zero)
 						b.Encapsulate(r.bounds);
 				}
@@ -142,6 +143,7 @@ namespace UnityEngine.VR.Utilities
 
 			public static void SetRunInEditModeRecursively(GameObject go, bool enabled)
 			{
+#if UNITY_EDITOR && UNITY_EDITORVR
 				MonoBehaviour[] monoBehaviours = go.GetComponents<MonoBehaviour>();
 				foreach (MonoBehaviour mb in monoBehaviours)
 				{
@@ -153,11 +155,7 @@ namespace UnityEngine.VR.Utilities
 				{
 					SetRunInEditModeRecursively(child.gameObject, enabled);
 				}
-			}
-
-			public static bool IsEditModeActive(MonoBehaviour mb)
-			{
-				return !Application.isPlaying && mb.runInEditMode;
+#endif
 			}
 
 			public static T AddComponent<T>(GameObject go) where T : Component
@@ -172,32 +170,43 @@ namespace UnityEngine.VR.Utilities
 				return component;
 			}
 
-			private static IEnumerable<Type> GetAssignableTypes(Type type)
+			static IEnumerable<Type> GetAssignableTypes(Type type, Func<Type, bool> predicate = null)
 			{
 				var list = new List<Type>();
+				ForEachType(t =>
+				{
+					if (type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract && (predicate == null || predicate(t)))
+						list.Add(t);
+				});
+
+				return list;
+			}
+
+			public static void ForEachAssembly(Action<Assembly> callback)
+			{
 				var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 				foreach (var assembly in assemblies)
 				{
-					Type[] types;
 					try
 					{
-						types = assembly.GetTypes();
+						callback(assembly);
 					}
 					catch (ReflectionTypeLoadException)
 					{
 						// Skip any assemblies that don't load properly
 						continue;
 					}
-
-					foreach (var t in types)
-					{
-						if (type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
-							list.Add(t);
-					}
 				}
+			}
 
-				return list;
-
+			public static void ForEachType(Action<Type> callback)
+			{
+				ForEachAssembly(assembly =>
+				{
+					var types = assembly.GetTypes();
+					foreach (var t in types)
+						callback(t);
+				});
 			}
 
 			public static IEnumerable<Type> GetImplementationsOfInterface(Type type)
@@ -222,7 +231,7 @@ namespace UnityEngine.VR.Utilities
 				{
 					UnityObject.Destroy(o, t);
 				}
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_EDITORVR
 				else
 				{
 					if (Mathf.Approximately(t, 0f))
@@ -283,6 +292,8 @@ namespace UnityEngine.VR.Utilities
 
 				if (!texture)
 					texture = AssetPreview.GetMiniThumbnail(obj);
+#else
+				yield return null;
 #endif
 
 				callback(texture);

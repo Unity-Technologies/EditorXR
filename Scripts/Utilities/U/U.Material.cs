@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Utilities
+﻿namespace UnityEngine.Experimental.EditorVR.Utilities
 {
 	using UnityEngine;
 	using Random = UnityEngine.Random;

@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Modules
+﻿namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	public class IntersectionTester : MonoBehaviour
 	{
@@ -66,6 +66,9 @@
 		}
 		private Vector3[] m_Vertices;
 
+#if !UNITY_EDITOR
+#pragma warning disable 109
+#endif
 		public new Renderer renderer
 		{
 			get

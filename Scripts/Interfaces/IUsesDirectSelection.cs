@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace UnityEngine.VR.Modules
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	/// <summary>
 	/// Gives decorated class access to direct selections
 	/// </summary>
-	public interface IDirectSelection
+	public interface IUsesDirectSelection
 	{
 		/// <summary>
 		/// ConnectInterfaces provides a delegate which can be called to get a dictionary of the current direct selection

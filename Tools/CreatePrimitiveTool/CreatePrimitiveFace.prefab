@@ -381,9 +381,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000014107605000}
   - 33: {fileID: 33000014143026804}
-  - 65: {fileID: 65000014128114842}
   - 23: {fileID: 23000014046434806}
-  - 114: {fileID: 114000011548288670}
   m_Layer: 5
   m_Name: highlight_cube
   m_TagString: Untagged
@@ -706,9 +704,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000012326591154}
   - 33: {fileID: 33000010699140308}
-  - 65: {fileID: 65000012908810776}
   - 23: {fileID: 23000010242890022}
-  - 114: {fileID: 114000012505768758}
   m_Layer: 5
   m_Name: Cube
   m_TagString: Untagged
@@ -1522,30 +1518,6 @@ MeshCollider:
   serializedVersion: 2
   m_Convex: 0
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!65 &65000012908810776
-BoxCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013862210272}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!65 &65000014128114842
-BoxCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012000597718}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &114000010109055550
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2231,19 +2203,6 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
---- !u!114 &114000011548288670
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012000597718}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_SelectionFlags: 3
 --- !u!114 &114000011739519648
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2481,19 +2440,6 @@ MonoBehaviour:
   m_Button: {fileID: 114000014144221930}
   m_ButtonDescription: {fileID: 0}
   m_ButtonTitle: {fileID: 0}
---- !u!114 &114000012505768758
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013862210272}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_SelectionFlags: 3
 --- !u!114 &114000012653785674
 MonoBehaviour:
   m_ObjectHideFlags: 1

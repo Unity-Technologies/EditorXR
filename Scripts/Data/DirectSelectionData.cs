@@ -1,7 +1,7 @@
 ﻿using UnityEngine.InputNew;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.VR.Modules
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	/// <summary>
 	/// Stores the state of a direct selection

@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.VR.Tools
+﻿namespace UnityEngine.Experimental.EditorVR.Tools
 {
 	/// <summary>
 	/// A tracked node within the system

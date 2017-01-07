@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Tools;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.VR.Manipulators
+namespace UnityEngine.Experimental.EditorVR.Manipulators
 {
 	public class DirectManipulator : MonoBehaviour, IManipulator
 	{

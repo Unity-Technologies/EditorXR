@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace ListView
 {
-	public abstract class ListViewControllerBase : MonoBehaviour
+	public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler
 	{
 		public float scrollOffset { get { return m_ScrollOffset; } set { m_ScrollOffset = value; } }
 
@@ -37,8 +38,10 @@ namespace ListView
 				return m_ItemSize ?? Vector3.zero;
 			}
 		}
-
 		protected Vector3? m_ItemSize;
+
+		public float scrollSpeed { get { return m_ScrollSpeed; } set { m_ScrollSpeed = value; } }
+		float m_ScrollSpeed = 0.03f;
 
 		protected int m_DataOffset;
 		protected int m_NumRows;
@@ -219,6 +222,11 @@ namespace ListView
 		{
 			material.SetMatrix("_ParentMatrix", parentMatrix);
 			material.SetVector("_ClipExtents", bounds.extents);
+		}
+
+		public void OnScroll(PointerEventData eventData)
+		{
+			scrollOffset += eventData.scrollDelta.y * scrollSpeed;
 		}
 	}
 }

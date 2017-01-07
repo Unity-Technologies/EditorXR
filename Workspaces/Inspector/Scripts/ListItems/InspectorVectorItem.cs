@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR.UI;
+using UnityEngine.Experimental.EditorVR.UI;
 
 public class InspectorVectorItem : InspectorPropertyItem
 {
@@ -11,6 +11,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 	[SerializeField]
 	GameObject WGroup;
 
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -304,4 +305,5 @@ public class InspectorVectorItem : InspectorPropertyItem
 			data.serializedObject.ApplyModifiedProperties();
 		}
 	}
+#endif
 }
