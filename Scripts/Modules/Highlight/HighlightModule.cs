@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class HighlightModule : MonoBehaviour
 {
-	static readonly Vector3 kHighlightScaleIncrease = Vector3.one* 0.0125f;
+	static readonly Vector3 kHighlightScaleIncrease = Vector3.one * 0.0125f;
 
 	[SerializeField]
 	private Material m_HighlightMaterial;
