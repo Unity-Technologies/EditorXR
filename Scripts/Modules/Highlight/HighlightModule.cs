@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class HighlightModule : MonoBehaviour
 {
+	static readonly Vector3 kHighlightScaleIncrease = Vector3.one* 0.0125f;
+
 	[SerializeField]
 	private Material m_HighlightMaterial;
 
@@ -17,11 +19,10 @@ public class HighlightModule : MonoBehaviour
 			if (go == null)
 				continue;
 
-			var highlightTransform = go.transform;
-			var highlightScaleIncrease = Vector3.one * 0.0125f;
-			Matrix4x4 highlightScaleIncreaseMatrix = Matrix4x4.TRS(highlightTransform.position, highlightTransform.rotation, highlightTransform.lossyScale + highlightScaleIncrease);
 			foreach (var m in go.GetComponentsInChildren<MeshFilter>())
 			{
+				var highlightTransform = m.transform;
+				Matrix4x4 highlightScaleIncreaseMatrix = Matrix4x4.TRS(highlightTransform.position, highlightTransform.rotation, highlightTransform.lossyScale + kHighlightScaleIncrease);
 				for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
 					Graphics.DrawMesh(m.sharedMesh, highlightScaleIncreaseMatrix, m_HighlightMaterial, m.gameObject.layer, null, i);
 			}
