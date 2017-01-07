@@ -16,10 +16,14 @@ public class HighlightModule : MonoBehaviour
 		{
 			if (go == null)
 				continue;
+
+			var highlightTransform = go.transform;
+			var highlightScaleIncrease = Vector3.one * 0.0125f;
+			Matrix4x4 highlightScaleIncreaseMatrix = Matrix4x4.TRS(highlightTransform.position, highlightTransform.rotation, highlightTransform.lossyScale + highlightScaleIncrease);
 			foreach (var m in go.GetComponentsInChildren<MeshFilter>())
 			{
 				for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
-					Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, m_HighlightMaterial, m.gameObject.layer, null, i);
+					Graphics.DrawMesh(m.sharedMesh, highlightScaleIncreaseMatrix, m_HighlightMaterial, m.gameObject.layer, null, i);
 			}
 		}
 	}
