@@ -216,7 +216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
 --- !u!114 &114000011808048258
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -130,8 +130,10 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 	{
 #if UNITY_EDITOR
 		var gameObject = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
-		if (gameObject)
+		if (gameObject && Selection.activeGameObject != gameObject)
 			Selection.activeGameObject = gameObject;
+		else
+			Selection.activeGameObject = null;
 #endif
 	}
 

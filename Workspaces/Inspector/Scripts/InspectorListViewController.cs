@@ -102,6 +102,10 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	protected override void ComputeConditions()
 	{
+		// Check if object was deleted
+		if (data.Count > 0 && !data[0].serializedObject.targetObject)
+			data = new List<InspectorData>();
+
 		base.ComputeConditions();
 
 		m_StartPosition = bounds.extents.z * Vector3.back;
