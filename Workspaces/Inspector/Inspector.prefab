@@ -55,6 +55,7 @@ GameObject:
   - 65: {fileID: 65000012766335922}
   - 23: {fileID: 23000010582130766}
   - 114: {fileID: 114000010864693748}
+  - 114: {fileID: 114000012271505990}
   m_Layer: 5
   m_Name: InspectorScrollHandle
   m_TagString: Untagged
@@ -82,7 +83,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012068584196}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.0000000110056355}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -149,7 +150,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_InspectorListView: {fileID: 114000011592582654}
+  m_ListView: {fileID: 114000011592582654}
   m_InspectorScrollHandle: {fileID: 114000010864693748}
   m_InspectorPanel: {fileID: 224000012935315334}
 --- !u!114 &114000010864693748
@@ -160,11 +161,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000013470412438}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
+  m_Script: {fileID: 11500000, guid: 410244f902f0bbc47a023d4a93ffeea9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
+  m_HandleTip: {fileID: 0}
+  m_OrientDragPlaneToRay: 0
 --- !u!114 &114000011592582654
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -201,12 +204,28 @@ MonoBehaviour:
     type: 2}
   m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
   m_UIMaterial: {fileID: 2100000, guid: d330a55736490e149910ed6a59d2cbee, type: 2}
-  m_NoClipBackingCube: {fileID: 2100000, guid: 502322ab303686946b1fca122f1b451d, type: 2}
-  m_NoClipHighlightMaterial: {fileID: 2100000, guid: c26f6dcf4fb6382488a16a9d738df037,
+  m_NoClipBackingCubeMaterial: {fileID: 2100000, guid: 502322ab303686946b1fca122f1b451d,
     type: 2}
   m_HighlightMaterial: {fileID: 2100000, guid: 8d993d4dd9ec99247a30bbe1482df2f4, type: 2}
   m_HighlightMaskMaterial: {fileID: 2100000, guid: 2e6e6d7336061b54886b155c24f8460f,
     type: 2}
+  m_NoClipHighlightMaterial: {fileID: 2100000, guid: c26f6dcf4fb6382488a16a9d738df037,
+    type: 2}
+  m_NoClipHighlightMaskMaterial: {fileID: 2100000, guid: e1423c0176008a841a94b94a6034bbf8,
+    type: 2}
+--- !u!114 &114000012271505990
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013470412438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6578b7c795e17243af7f851d5c98d6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  listView: {fileID: 114000011592582654}
 --- !u!224 &224000012935315334
 RectTransform:
   m_ObjectHideFlags: 1

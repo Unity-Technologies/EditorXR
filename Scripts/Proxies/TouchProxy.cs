@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using UnityEditor;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Proxies
+namespace UnityEngine.Experimental.EditorVR.Proxies
 {
 	public class TouchProxy : TwoHandedProxyBase
 	{

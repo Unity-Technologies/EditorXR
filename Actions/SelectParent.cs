@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 
-namespace UnityEngine.VR.Actions
+namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("SelectParent", ActionMenuItemAttribute.kDefaultActionSectionName, 8)]
 	public class SelectParent : BaseAction

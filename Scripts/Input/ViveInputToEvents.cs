@@ -1,19 +1,38 @@
-﻿using System; 
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Experimental.EditorVR;
+#if ENABLE_STEAMVR_INPUT
+using System; 
 using UnityEngine.InputNew;
 using Valve.VR;
+#endif
 
+[assembly: OptionalDependency("Valve.VR.IVRSystem", "ENABLE_STEAMVR_INPUT")]
+
+/// <summary>
+/// Sends events to the input system based on native SteamVR SDK calls
+/// </summary>
 public class ViveInputToEvents : MonoBehaviour
 {
-	private enum XorY { X, Y }
+#if ENABLE_STEAMVR_INPUT
+	enum XorY { X, Y }
+
 	public int[] steamDevice
 	{
 		get { return steamDeviceIndices; }
 	}
-	private readonly int[] steamDeviceIndices = new int[] { -1, -1 };
+	readonly int[] steamDeviceIndices = new int[] { -1, -1 };
+#endif
 
 	public bool active { get; private set; }
 
+	static EVRButtonId[] s_EnumValues;
+
+	static ViveInputToEvents()
+	{
+		s_EnumValues = (EVRButtonId[])Enum.GetValues(typeof(EVRButtonId));
+	}
+
+#if ENABLE_STEAMVR_INPUT
 	public void Update()
 	{
 		active = false;
@@ -89,14 +108,15 @@ public class ViveInputToEvents : MonoBehaviour
 
 	private void SendButtonEvents(int steamDeviceIndex, int deviceIndex)
 	{
-		foreach (EVRButtonId button in Enum.GetValues(typeof(EVRButtonId)))
+		for (int i = 0; i < s_EnumValues.Length; i++)
 		{
+			var button = s_EnumValues[i];
 			// Don't double count the trigger
 			if (button == EVRButtonId.k_EButton_SteamVR_Trigger)
 				continue;
 
-			bool isDown = SteamVR_Controller.Input(steamDeviceIndex).GetPressDown(button);
-			bool isUp = SteamVR_Controller.Input(steamDeviceIndex).GetPressUp(button);
+			var isDown = SteamVR_Controller.Input(steamDeviceIndex).GetPressDown(button);
+			var isUp = SteamVR_Controller.Input(steamDeviceIndex).GetPressUp(button);
 			var value = isDown ? 1.0f : 0.0f;
 			var controlIndex = axisCount + (int)button;
 
@@ -138,4 +158,5 @@ public class ViveInputToEvents : MonoBehaviour
 
 		InputSystem.QueueEvent(inputEvent);
 	}
+#endif
 }

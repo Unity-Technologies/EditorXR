@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 public class DefaultProxyRay : MonoBehaviour
 {

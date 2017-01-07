@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
-using UnityEngine.VR.Handles;
+using UnityEngine.Experimental.EditorVR.Handles;
 
 public class InspectorUI : MonoBehaviour
 {
-	public InspectorListViewController inspectorListView { get { return m_InspectorListView; } }
+	public InspectorListViewController listView { get { return m_ListView; } }
 	[SerializeField]
-	InspectorListViewController m_InspectorListView;
+	InspectorListViewController m_ListView;
 
 	public BaseHandle inspectorScrollHandle { get { return m_InspectorScrollHandle; } }
 	[SerializeField]

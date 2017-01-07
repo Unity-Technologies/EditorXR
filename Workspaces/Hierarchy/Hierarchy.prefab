@@ -56,6 +56,7 @@ GameObject:
   - 65: {fileID: 65000013747495728}
   - 23: {fileID: 23000012436214412}
   - 114: {fileID: 114000011690277160}
+  - 114: {fileID: 114000010483368304}
   m_Layer: 5
   m_Name: ScrollHandle
   m_TagString: Untagged
@@ -264,6 +265,19 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &114000010483368304
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011497900222}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6578b7c795e17243af7f851d5c98d6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  listView: {fileID: 114000011426645376}
 --- !u!114 &114000010577969036
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -306,11 +320,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000011497900222}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
+  m_Script: {fileID: 11500000, guid: 410244f902f0bbc47a023d4a93ffeea9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
+  m_HandleTip: {fileID: 0}
+  m_OrientDragPlaneToRay: 0
 --- !u!114 &114000011829900818
 MonoBehaviour:
   m_ObjectHideFlags: 1

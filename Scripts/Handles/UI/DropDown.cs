@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Helpers;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Helpers;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.UI
+namespace UnityEngine.Experimental.EditorVR.UI
 {
 	public class DropDown : MonoBehaviour
 	{

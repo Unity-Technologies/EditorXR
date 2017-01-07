@@ -1,4 +1,6 @@
-﻿namespace UnityEngine.VR.Utilities
+﻿using System.Linq;
+
+namespace UnityEngine.Experimental.EditorVR.Utilities
 {
 	using System.Collections.Generic;
 	using UnityEngine.InputNew;
@@ -13,7 +15,7 @@
 		/// </summary>
 		public static class Input
 		{
-			public static HashSet<InputDevice> CollectInputDevicesFromActionMaps(List<ActionMap> maps)
+			public static List<InputDevice> CollectInputDevicesFromActionMaps(List<ActionMap> maps)
 			{
 				var inputDevices = new HashSet<InputDevice>();
 				var systemDevices = InputSystem.devices;
@@ -35,7 +37,7 @@
 						}
 					}
 				}
-				return inputDevices;
+				return inputDevices.ToList();
 			}
 
 			public static void CollectDeviceSlotsFromActionMapInput(ActionMapInput actionMapInput, ref HashSet<DeviceSlot> deviceSlots)

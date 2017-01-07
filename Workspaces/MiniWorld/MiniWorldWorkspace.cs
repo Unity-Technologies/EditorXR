@@ -1,24 +1,25 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.VR;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.Extensions;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Workspaces;
+using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 
-public class MiniWorldWorkspace : Workspace, IRayLocking
+[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
+public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 {
 	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below
 	private const float kInitReferenceScale = 15f; // We want to see a big region by default
 
 	//TODO: replace with dynamic values once spatial hash lands
-	// Scale slider min/max (maps to referenceTransform unifrom scale)
-	private const float kMinScale = 0.1f;
-	private const float kMaxScale = 35;
+	// Scale slider min/max (maps to referenceTransform uniform scale)
+	private const float kMinZoomScale = 0.1f;
+	private const float kMaxZoomScale = 200f;
 
 	[SerializeField]
 	private GameObject m_ContentPrefab;
@@ -112,12 +113,14 @@ public class MiniWorldWorkspace : Workspace, IRayLocking
 		var UI = U.Object.Instantiate(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
 		m_ZoomSliderUI = UI.GetComponentInChildren<ZoomSliderUI>();
 		m_ZoomSliderUI.sliding += OnSliding;
-		m_ZoomSliderUI.zoomSlider.maxValue = kMaxScale;
-		m_ZoomSliderUI.zoomSlider.minValue = kMinScale;
+		m_ZoomSliderUI.zoomSlider.maxValue = kMaxZoomScale;
+		m_ZoomSliderUI.zoomSlider.minValue = kMinZoomScale;
 		m_ZoomSliderUI.zoomSlider.direction = Slider.Direction.RightToLeft; // Invert direction for expected ux; zoom in as slider moves left to right
 		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
 		foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
+		{
 			connectInterfaces(mb);
+		}
 
 		var frontHandle = m_WorkspaceUI.directManipulator.GetComponent<BaseHandle>();
 		frontHandle.dragStarted += DragStarted;
@@ -166,9 +169,7 @@ public class MiniWorldWorkspace : Workspace, IRayLocking
 		// NOTE: We are correcting bounds because the mesh needs to be updated
 		var correctedBounds = new Bounds(contentBounds.center, new Vector3(contentBounds.size.x, contentBounds.size.y, contentBounds.size.z + kOffsetToAccountForFrameSize));
 		m_MiniWorld.localBounds = correctedBounds;
-
 		m_MiniWorldUI.boundsCube.transform.localScale = correctedBounds.size;
-
 		m_MiniWorldUI.grid.transform.localScale = new Vector3(correctedBounds.size.x, correctedBounds.size.z, 1);
 
 		var controlBox = m_MiniWorldUI.panZoomHandle;

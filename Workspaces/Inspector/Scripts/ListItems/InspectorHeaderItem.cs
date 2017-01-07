@@ -4,8 +4,8 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VR.UI;
-using InputField = UnityEngine.VR.UI.InputField;
+using UnityEngine.Experimental.EditorVR.UI;
+using InputField = UnityEngine.Experimental.EditorVR.UI.InputField;
 
 public class InspectorHeaderItem : InspectorListItem
 {
@@ -38,6 +38,7 @@ public class InspectorHeaderItem : InspectorListItem
 
 	public Action<bool> setLocked;
 
+#if UNITY_EDITOR
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -154,9 +155,10 @@ public class InspectorHeaderItem : InspectorListItem
 		m_NameField.ForceUpdateLabel();
 	}
 
-	public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials)
+	public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
 	{
-		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, highlightMaterials);
+		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
 		m_Button.sharedMaterials = highlightMaterials;
 	}
+#endif
 }

@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Proxies;
-using UnityEngine.VR.Tools;
-using UnityEngine.VR.UI;
-using UnityEngine.VR.Utilities;
+using UnityEngine.Experimental.EditorVR.Proxies;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.UI;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.VR.Modules
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
 	public class MultipleRayInputModule : BaseInputModule, IProcessInput
@@ -58,10 +58,15 @@ namespace UnityEngine.VR.Modules
 
 		public Action<Transform> preProcessRaycastSource;
 
+		// Local method use only -- created here to reduce garbage collection
+		RayEventData m_TempRayEvent;
+		List<RaycastSource> m_RaycastSourcesCopy = new List<RaycastSource>();
+
 		protected override void Awake()
 		{
 			base.Awake();
 			s_LayerMask = LayerMask.GetMask("UI");
+			m_TempRayEvent = new RayEventData(eventSystem);
 		}
 
 		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin, Func<RaycastSource, bool> validationCallback = null)
@@ -97,9 +102,11 @@ namespace UnityEngine.VR.Modules
 			if (m_EventCamera == null)
 				return;
 
+			m_RaycastSourcesCopy.Clear();
+			m_RaycastSourcesCopy.AddRange(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
+
 			//Process events for all different transforms in RayOrigins
-			var sources = new List<RaycastSource>(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
-			foreach (var source in sources)
+			foreach (var source in m_RaycastSourcesCopy)
 			{
 				if (!(source.rayOrigin.gameObject.activeSelf || source.draggedObject) || !source.proxy.active)
 					continue;
@@ -195,12 +202,13 @@ namespace UnityEngine.VR.Modules
 				|| hasScrollHandler;
 		}
 
-		private RayEventData CloneEventData(RayEventData eventData)
+		RayEventData GetTempEventDataClone(RayEventData eventData)
 		{
-			RayEventData clone = new RayEventData(base.eventSystem);
+			var clone = m_TempRayEvent;
 			clone.rayOrigin = eventData.rayOrigin;
 			clone.node = eventData.node;
-			clone.hovered = new List<GameObject>(eventData.hovered);
+			clone.hovered.Clear();
+			clone.hovered.AddRange(eventData.hovered);
 			clone.pointerEnter = eventData.pointerEnter;
 			clone.pointerCurrentRaycast = eventData.pointerCurrentRaycast;
 			clone.pointerLength = eventData.pointerLength;
@@ -211,7 +219,7 @@ namespace UnityEngine.VR.Modules
 		protected void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget)
 		{
 			// Cache properties before executing base method, so we can complete additional ray events later
-			var cachedEventData = CloneEventData(eventData);
+			var cachedEventData = GetTempEventDataClone(eventData);
 
 			// This will modify the event data (new target will be set)
 			base.HandlePointerExitAndEnter(eventData, newEnterTarget);

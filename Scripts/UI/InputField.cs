@@ -3,11 +3,11 @@ using System.Collections;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.Utilities;
-using UnityEngine.VR.Extensions;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Extensions;
 
-namespace UnityEngine.VR.UI
+namespace UnityEngine.Experimental.EditorVR.UI
 {
 	public abstract class InputField : Selectable, ISelectionFlags
 	{
