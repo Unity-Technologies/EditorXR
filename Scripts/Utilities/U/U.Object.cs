@@ -121,10 +121,11 @@ namespace UnityEngine.Experimental.EditorVR.Utilities
 
 			public static Bounds GetBounds(GameObject obj)
 			{
-				Bounds b = new Bounds(obj.transform.position, Vector3.zero);
-				Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
-				foreach (Renderer r in renderers)
+				var b = new Bounds(obj.transform.position, Vector3.zero);
+				var renderers = obj.GetComponentsInChildren<Renderer>();
+				for (int i = 0; i < renderers.Length; i++)
 				{
+					var r = renderers[i];
 					if (r.bounds.size != Vector3.zero)
 						b.Encapsulate(r.bounds);
 				}

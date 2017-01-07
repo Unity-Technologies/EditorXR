@@ -25,6 +25,13 @@ public class ViveInputToEvents : MonoBehaviour
 
 	public bool active { get; private set; }
 
+	static EVRButtonId[] s_EnumValues;
+
+	static ViveInputToEvents()
+	{
+		s_EnumValues = (EVRButtonId[])Enum.GetValues(typeof(EVRButtonId));
+	}
+
 #if ENABLE_STEAMVR_INPUT
 	public void Update()
 	{
@@ -101,14 +108,15 @@ public class ViveInputToEvents : MonoBehaviour
 
 	private void SendButtonEvents(int steamDeviceIndex, int deviceIndex)
 	{
-		foreach (EVRButtonId button in Enum.GetValues(typeof(EVRButtonId)))
+		for (int i = 0; i < s_EnumValues.Length; i++)
 		{
+			var button = s_EnumValues[i];
 			// Don't double count the trigger
 			if (button == EVRButtonId.k_EButton_SteamVR_Trigger)
 				continue;
 
-			bool isDown = SteamVR_Controller.Input(steamDeviceIndex).GetPressDown(button);
-			bool isUp = SteamVR_Controller.Input(steamDeviceIndex).GetPressUp(button);
+			var isDown = SteamVR_Controller.Input(steamDeviceIndex).GetPressDown(button);
+			var isUp = SteamVR_Controller.Input(steamDeviceIndex).GetPressUp(button);
 			var value = isDown ? 1.0f : 0.0f;
 			var controlIndex = axisCount + (int)button;
 

@@ -6,7 +6,7 @@
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
-		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
+		_StencilRef("StencilRef", Int) = 3
 	}
 	SubShader
 	{
@@ -15,8 +15,8 @@
 
 		Stencil
 		{
-			Ref 1
-			Comp Equal
+			Ref [_StencilRef]
+			Comp NotEqual
 		}
 
 		CGPROGRAM
@@ -30,8 +30,6 @@
 		{
 			float2 uv_MainTex;
 		};
-
-		#include "ListClip.cginc"
 
 		sampler2D _MainTex;
 

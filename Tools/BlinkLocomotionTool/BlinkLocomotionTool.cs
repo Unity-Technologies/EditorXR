@@ -42,8 +42,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	public Transform rayOrigin { private get; set; }
 
-	public bool waitForReset { private get; set; }
-
 	private void Start()
 	{
 		m_BlinkVisualsGO = U.Object.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
@@ -78,38 +76,28 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		var yawValue = blinkInput.yaw.value;
 		var forwardValue = blinkInput.forward.value;
 
-		if (!waitForReset)
+		if (Mathf.Abs(yawValue) > Mathf.Abs(forwardValue))
 		{
-			if (Mathf.Abs(yawValue) > Mathf.Abs(forwardValue))
+			if (!Mathf.Approximately(yawValue, 0))
 			{
-				if (!Mathf.Approximately(yawValue, 0))
-				{
-					yawValue = yawValue * yawValue * Mathf.Sign(yawValue);
+				yawValue = yawValue * yawValue * Mathf.Sign(yawValue);
 
-					viewerPivot.RotateAround(viewerCamera.transform.position, Vector3.up, yawValue * kRotationSpeed * Time.unscaledDeltaTime);
-					consumeControl(blinkInput.yaw);
-				}
-			}
-			else
-			{
-				if (!Mathf.Approximately(forwardValue, 0))
-				{
-					var forward = viewerCamera.transform.forward;
-					forward.y = 0;
-					forward.Normalize();
-					forwardValue = forwardValue * forwardValue * Mathf.Sign(forwardValue);
-
-					viewerPivot.Translate(forward * forwardValue * kMoveSpeed * Time.unscaledDeltaTime, Space.World);
-					consumeControl(blinkInput.forward);
-				}
+				viewerPivot.RotateAround(viewerCamera.transform.position, Vector3.up, yawValue * kRotationSpeed * Time.unscaledDeltaTime);
+				consumeControl(blinkInput.yaw);
 			}
 		}
 		else
 		{
-			consumeControl(blinkInput.yaw);
-			consumeControl(blinkInput.forward);
-			if (Mathf.Approximately(yawValue, 0f) && Mathf.Approximately(forwardValue, 0f))
-				waitForReset = false;
+			if (!Mathf.Approximately(forwardValue, 0))
+			{
+				var forward = viewerCamera.transform.forward;
+				forward.y = 0;
+				forward.Normalize();
+				forwardValue = forwardValue * forwardValue * Mathf.Sign(forwardValue);
+
+				viewerPivot.Translate(forward * forwardValue * kMoveSpeed * Time.unscaledDeltaTime, Space.World);
+				consumeControl(blinkInput.forward);
+			}
 		}
 
 		if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)

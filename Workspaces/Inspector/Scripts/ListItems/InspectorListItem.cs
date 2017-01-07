@@ -10,7 +10,7 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
 using InputField = UnityEngine.Experimental.EditorVR.UI.InputField;
 
-public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight
+public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight, IRequestStencilRef
 {
 	const float kIndent = 0.02f;
 
@@ -45,6 +45,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 	public Action<GameObject, bool> setHighlight { private get; set; }
 
 	public Action<InspectorData> toggleExpanded { private get; set; }
+
+	public Func<byte> requestStencilRef { private get; set; }
 
 	public override void Setup(InspectorData data)
 	{
@@ -205,7 +207,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 			m_SelectIsHeld = true;
 			m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
 
-			// Detect double click
+			// Grab a field block on double click
 			var timeSinceLastClick = Time.realtimeSinceStartup - m_LastClickTime;
 			m_LastClickTime = Time.realtimeSinceStartup;
 			if (m_ClickCount > 1 && U.UI.IsDoubleClick(timeSinceLastClick))
@@ -237,13 +239,23 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 					graphic.material = null;
 				}
 
+				var stencilRef = requestStencilRef();
 				var renderers = clone.GetComponentsInChildren<Renderer>(true);
 				foreach (var renderer in renderers)
 				{
 					if (renderer.sharedMaterials.Length > 1)
+					{
+						foreach (var material in m_NoClipHighlightMaterials)
+						{
+							material.SetInt("_StencilRef", stencilRef);
+						}
 						renderer.sharedMaterials = m_NoClipHighlightMaterials;
+					}
 					else
+					{
 						renderer.sharedMaterial = m_NoClipBackingCube;
+						m_NoClipBackingCube.SetInt("_StencilRef", stencilRef);
+					}
 				}
 			}
 		}

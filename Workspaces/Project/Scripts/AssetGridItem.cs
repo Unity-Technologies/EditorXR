@@ -2,12 +2,12 @@
 using System.Collections;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Helpers;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
 
 public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
 {
@@ -54,7 +54,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 
 	private Material m_SphereMaterial;
 
-	public Action<GameObject> addToSpatialHash { get; set; }
+	public Action<GameObject> addToSpatialHash { private get; set; }
 	public Action<GameObject> removeFromSpatialHash { get; set; }
 
 	public GameObject icon
@@ -260,8 +260,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		m_PreviewTargetScale = m_PreviewPrefabScale * scaleFactor;
 		m_PreviewObjectTransform.localPosition = pivotOffset * scaleFactor + Vector3.up * 0.5f;
 
-		// Object will preview at the same size
-		m_GrabPreviewTargetScale = m_PreviewPrefabScale;
+		// Object will preview at the same size when grabbed
+		m_GrabPreviewTargetScale = Vector3.one * maxComponent;
 		var previewExtents = previewTotalBounds.extents;
 		m_GrabPreviewPivotOffset = pivotOffset;
 
@@ -275,7 +275,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		if (maxComponent > kMaxPreviewScale)
 		{
 			// Object will be preview at the maximum scale
-			m_GrabPreviewTargetScale = m_PreviewPrefabScale * scaleFactor * kMaxPreviewScale;
+			m_GrabPreviewTargetScale = Vector3.one * kMaxPreviewScale;
 			m_GrabPreviewPivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * kMaxPreviewScale;
 		}
 
@@ -347,7 +347,7 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 						var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
 						var transform = go.transform;
 						transform.position = gridItem.transform.position;
-						transform.rotation = gridItem.transform.rotation;
+						transform.rotation = U.Math.ConstrainYawRotation(gridItem.transform.rotation);
 #else
 						var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
 #endif
@@ -460,15 +460,10 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 	IEnumerator ShowGrabbedObject()
 	{
 		var currentLocalScale = m_DragObject.localScale;
-		var targetScale = Vector3.one * kMaxPreviewScale;
-		var currentPreviewScale = Vector3.one;
 		var currentPreviewOffset = Vector3.zero;
 
 		if (m_PreviewObjectClone)
-		{
-			currentPreviewScale = m_PreviewObjectClone.localScale;
 			currentPreviewOffset = m_PreviewObjectClone.localPosition;
-		}
 
 		var currentTime = 0f;
 		var currentVelocity = 0f;
@@ -480,21 +475,15 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 				yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
 
 			currentTime = U.Math.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
-			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, targetScale, currentTime);
+			m_DragObject.localScale = Vector3.Lerp(currentLocalScale, m_GrabPreviewTargetScale, currentTime);
 
 			if (m_PreviewObjectClone)
-			{
-				m_PreviewObjectClone.localScale = Vector3.Lerp(currentPreviewScale, m_GrabPreviewTargetScale, currentTime);
 				m_PreviewObjectClone.localPosition = Vector3.Lerp(currentPreviewOffset, m_GrabPreviewPivotOffset, currentTime);
-			}
 
 			yield return null;
 		}
 
-		m_DragObject.localScale = targetScale;
-
-		if (m_PreviewObjectClone)
-			m_PreviewObjectClone.localScale = m_GrabPreviewTargetScale;
+		m_DragObject.localScale = m_GrabPreviewTargetScale;
 	}
 
 	static IEnumerator HideGrabbedObject(GameObject itemToHide, Renderer cubeRenderer)

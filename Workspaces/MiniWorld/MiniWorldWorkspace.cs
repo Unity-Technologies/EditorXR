@@ -11,7 +11,7 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
 
 [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
-public class MiniWorldWorkspace : Workspace, IRayLocking
+public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 {
 	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below
 	private const float kInitReferenceScale = 15f; // We want to see a big region by default
