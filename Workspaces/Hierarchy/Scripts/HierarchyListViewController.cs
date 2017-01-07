@@ -104,7 +104,7 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 			return;
 
 		m_SelectedRow = instanceID;
-		
+
 		foreach (var datum in data)
 		{
 			ExpandToRow(datum, instanceID);
