@@ -104,32 +104,32 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 			return;
 
 		m_SelectedRow = instanceID;
-
+		
 		foreach (var datum in data)
 		{
 			ExpandToRow(datum, instanceID);
 		}
 
 		selectRow(instanceID);
+
+		var scrollHeight = 0f;
+		foreach (var datum in data) {
+			ScrollToRow(datum, instanceID, ref scrollHeight);
+			scrollHeight += itemSize.z;
+		}
 	}
 
-	bool ExpandToRow(HierarchyData container, int rowID, float scrollHeight = 0)
+	bool ExpandToRow(HierarchyData container, int rowID)
 	{
 		if (container.instanceID == rowID)
-		{
-			//scrollOffset = -scrollHeight - itemSize.z;
 			return true;
-		}
 
-		scrollHeight += itemSize.z;
-
-		bool found = false;
-
+		var found = false;
 		if (container.children != null)
 		{
 			foreach (var child in container.children)
 			{
-				if (ExpandToRow(child, rowID, scrollHeight))
+				if (ExpandToRow(child, rowID))
 					found = true;
 			}
 		}
@@ -138,6 +138,29 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 			m_ExpandStates[container.instanceID] = true;
 
 		return found;
+	}
+
+	void ScrollToRow(HierarchyData container, int rowID, ref float scrollHeight)
+	{
+		if (container.instanceID == rowID)
+		{
+			if (-scrollOffset > scrollHeight || -scrollOffset + bounds.size.z < scrollHeight)
+				scrollOffset = -scrollHeight;
+			return;
+		}
+
+		bool expanded;
+		m_ExpandStates.TryGetValue(container.instanceID, out expanded);
+
+		if (container.children != null) {
+			foreach (var child in container.children) {
+				if (expanded)
+				{
+					ScrollToRow(child, rowID, ref scrollHeight);
+					scrollHeight += itemSize.z;
+				}
+			}
+		}
 	}
 
 	private void OnDestroy()

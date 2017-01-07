@@ -27,8 +27,7 @@ using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
 
-namespace UnityEditor.Experimental.EditorVR
-{
+namespace UnityEditor.Experimental.EditorVR {
 #if UNITY_EDITOR
 	[InitializeOnLoad]
 #endif
@@ -42,7 +41,6 @@ namespace UnityEditor.Experimental.EditorVR
 		const float kDefaultRayLength = 100f;
 		const float kPreviewScale = 0.1f;
 		const float kViewerPivotTransitionTime = 0.75f;
-		const string kNull = "null";
 		const byte kMinStencilRef = 2;
 
 		// Minimum time to spend loading the project folder before yielding
@@ -2797,7 +2795,9 @@ namespace UnityEditor.Experimental.EditorVR
 						}, assetTypes, hasNext, hp));
 					}
 					else if (hp.isMainRepresentation) // Ignore sub-assets (mixer children, terrain splats, etc.)
+					{
 						assetList.Add(CreateAssetData(hp, assetTypes));
+					}
 
 					if (hasNext)
 						hasNext = hp.Next(null);
@@ -2934,7 +2934,9 @@ namespace UnityEditor.Experimental.EditorVR
 					hp.Previous(null);
 			}
 			else
+			{
 				list.Clear();
+			}
 
 			List<HierarchyData> children = null;
 			if (list.Count > 0)
