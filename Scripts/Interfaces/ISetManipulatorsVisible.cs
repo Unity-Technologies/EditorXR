@@ -10,6 +10,6 @@ namespace UnityEngine.Experimental.EditorVR
 		/// <summary>
 		/// Show or hide the manipulator(s)
 		/// </summary>
-		Action<bool> setManipulatorsVisible { set; }
+		Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { set; }
 	}
 }

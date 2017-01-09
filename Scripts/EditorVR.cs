@@ -219,8 +219,7 @@ namespace UnityEditor.Experimental.EditorVR
 		readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
 
 		readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
-		bool? m_ManipulatorsVisible = true;
-		object m_ManipulatorVisibilityLockObject;
+		readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>(); 
 
 		byte stencilRef
 		{
@@ -568,14 +567,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void UpdateManipulatorVisibilites()
 		{
-			if (m_ManipulatorsVisible.HasValue)
-			{
-				foreach (var mv in m_ManipulatorVisibilities)
-					mv.manipulatorVisible = m_ManipulatorsVisible.Value;
-			}
-
-			// Reset for the next frame
-			m_ManipulatorsVisible = null;
+			var manipulatorsVisible = m_ManipulatorsHiddenRequests.Count == 0;
+			foreach (var mv in m_ManipulatorVisibilities)
+				mv.manipulatorVisible = manipulatorsVisible;
 		}
 
 		void UpdateMenuVisibilityNearWorkspaces()
@@ -1709,13 +1703,6 @@ namespace UnityEditor.Experimental.EditorVR
 			var requestStencilRef = obj as IRequestStencilRef;
 			if (requestStencilRef != null)
 				requestStencilRef.requestStencilRef = RequestStencilRef;
-
-			var usesManipulatorVisibilityLocking = obj as IUsesManipulatorLocking;
-			if (usesManipulatorVisibilityLocking != null)
-			{
-				usesManipulatorVisibilityLocking.lockManipulatorsVisibility = LockManipulatorVisibility;
-				usesManipulatorVisibilityLocking.unlockManipulatorsVisibility = UnlockManipulatorVisibility;
-			}
 		}
 
 		private void DisconnectInterfaces(object obj)
@@ -2686,39 +2673,12 @@ namespace UnityEditor.Experimental.EditorVR
 			return dpr && dpr.UnlockRay(obj);
 		}
 
-		void SetManipulatorsVisible(bool visible)
+		void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
 		{
-			if (m_ManipulatorVisibilityLockObject != null)
-				return;
-
-			if (m_ManipulatorsVisible == null)
-				m_ManipulatorsVisible = true;
-
-			// Only show manipulators if all tools agree that they should be shown; This field is reset each frame
-			m_ManipulatorsVisible &= visible;
-		}
-
-		bool LockManipulatorVisibility(object lockCaller)
-		{
-			if (m_ManipulatorVisibilityLockObject == null)
-			{
-				m_ManipulatorVisibilityLockObject = lockCaller;
-				return true;
-			}
-
-			return false;
-		}
-
-		bool UnlockManipulatorVisibility(object unlockCaller)
-		{
-			// Only allow unlocking if the original lock caller is null or there is no locker caller set
-			if (m_ManipulatorVisibilityLockObject == unlockCaller)
-			{
-				m_ManipulatorVisibilityLockObject = null;
-				return true;
-			}
-
-			return false;
+			if (visible)
+				m_ManipulatorsHiddenRequests.Remove(setter);
+			else
+				m_ManipulatorsHiddenRequests.Add(setter);
 		}
 
 		void PreProcessRaycastSource(Transform rayOrigin)

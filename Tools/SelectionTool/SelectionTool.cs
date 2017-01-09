@@ -22,7 +22,7 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		public GetSelectionCandidateDelegate getSelectionCandidate { private get; set; }
 		public SelectObjectDelegate selectObject { private get; set; }
 
-		public Action<bool> setManipulatorsVisible { private get; set; }
+		public Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { private get; set; }
 
 		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 		{
@@ -60,7 +60,7 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 
 			m_HoverGameObject = hoveredObject;
 
-			setManipulatorsVisible(!selectionInput.multiSelect.isHeld);
+			setManipulatorsVisible(this, !selectionInput.multiSelect.isHeld);
 
 			// Capture object on press
 			if (selectionInput.select.wasJustPressed)
