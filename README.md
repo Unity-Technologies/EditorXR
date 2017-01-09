@@ -16,5 +16,10 @@ If you're a developer, we recommend that you take a look at the [Getting Started
 2. From the command line change directory to your project's `Assets` directory.
 3. Run `git lfs clone --recursive -b development https://github.com/Unity-Technologies/EditorVR`
 
+### Updating
+Because this project uses [git-submodule](https://git-scm.com/docs/git-submodule), you'll need to execute `git submodule update` after pulling whenever a submodule is updated. You could execute this command always just to be safe or if you notice that a submodule is showing as modified after pulling changes.
+
+Optionally, you could add a [git hook for post-checkout](https://ttboj.wordpress.com/2014/05/06/keeping-git-submodules-in-sync-with-your-branches/) or use a GUI (e.g. SourceTree) that does this automatically for you.
+
 ### Project Settings
 If you plan on making changes to EditorVR and/or contributing back, then you'll need to set the `Asset Serialization` property under Edit->Project Settings->Editor to `Force Text`
