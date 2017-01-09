@@ -219,7 +219,7 @@ namespace UnityEditor.Experimental.EditorVR
 		readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
 
 		readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
-		bool m_ManipulatorsVisible = true;
+		readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>(); 
 
 		byte stencilRef
 		{
@@ -567,11 +567,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void UpdateManipulatorVisibilites()
 		{
+			var manipulatorsVisible = m_ManipulatorsHiddenRequests.Count == 0;
 			foreach (var mv in m_ManipulatorVisibilities)
-				mv.manipulatorVisible = m_ManipulatorsVisible;
-
-			// Reset for the next frame
-			m_ManipulatorsVisible = true;
+				mv.manipulatorVisible = manipulatorsVisible;
 		}
 
 		void UpdateMenuVisibilityNearWorkspaces()
@@ -2675,10 +2673,12 @@ namespace UnityEditor.Experimental.EditorVR
 			return dpr && dpr.UnlockRay(obj);
 		}
 
-		void SetManipulatorsVisible(bool visible)
+		void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
 		{
-			// Only show manipulators if all tools agree that they should be shown; This field is reset each frame
-			m_ManipulatorsVisible &= visible;
+			if (visible)
+				m_ManipulatorsHiddenRequests.Remove(setter);
+			else
+				m_ManipulatorsHiddenRequests.Add(setter);
 		}
 
 		void PreProcessRaycastSource(Transform rayOrigin)
