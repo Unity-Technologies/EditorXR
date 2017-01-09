@@ -25,6 +25,7 @@ public class ViveInputToEvents : MonoBehaviour
 
 	public bool active { get; private set; }
 
+#if ENABLE_STEAMVR_INPUT
 	static EVRButtonId[] s_EnumValues;
 
 	static ViveInputToEvents()
@@ -32,7 +33,6 @@ public class ViveInputToEvents : MonoBehaviour
 		s_EnumValues = (EVRButtonId[])Enum.GetValues(typeof(EVRButtonId));
 	}
 
-#if ENABLE_STEAMVR_INPUT
 	public void Update()
 	{
 		active = false;
