@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Reflection;
+using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -7,95 +8,59 @@ using UnityEngine;
 [InitializeOnLoad]
 public class CCUTest
 {
-	const string kEditorPrefsKey = "EVR_TEST_CCU";
-	const string kOldDefinesKey = "EVR_TEST_CCU_OLD_DEFINES";
-	static bool compiled;
-	static FieldInfo s_RunnerWindowInstanceField;
-	static Type s_RunnerWindowType;
-
-	static string s_ErrorLog;
-
 	[Test]
 	public void TestCCU()
 	{
-		if (compiled)
+		// TODO: Find a better way to collect dependencies
+		var dependencyPath = Path.Combine(EditorApplication.applicationContentsPath, "Managed");
+		var extensionsPath = Path.Combine(EditorApplication.applicationContentsPath, "UnityExtensions");
+
+		var references = new List<string>
 		{
-			Assert.IsFalse(CheckErrors(), s_ErrorLog);
-			if (EditorPrefs.HasKey(kOldDefinesKey))
-			{
-				PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, EditorPrefs.GetString(kOldDefinesKey));
-				EditorPrefs.DeleteKey(kOldDefinesKey);
-			}
-		}
-		else
-		{
-			Debug.ClearDeveloperConsole();
-			Application.logMessageReceived += Log;
-			EditorPrefs.SetString(kOldDefinesKey, PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone));
+			Path.Combine(dependencyPath, "UnityEngine.dll"),
+			Path.Combine(dependencyPath, "UnityEditor.dll"),
 
-			PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "");
-
-			EditorPrefs.SetBool(kEditorPrefsKey, true);
-
-			Assert.Inconclusive("Waiting for compile");
-		}
-	}
-
-	static CCUTest()
-	{
-		foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-		{
-			s_RunnerWindowType = assembly.GetType("UnityEditor.EditorTestsRunner.EditorTestsRunnerWindow", false, true);
-			if (s_RunnerWindowType != null)
-				break;
-		}
-
-		s_RunnerWindowInstanceField = s_RunnerWindowType.GetField("s_Instance", BindingFlags.Static | BindingFlags.NonPublic);
+			Path.Combine(Path.Combine(Path.Combine(extensionsPath, "Unity"), "GUISystem"), "UnityEngine.UI.dll"),
+			Path.Combine(Path.Combine(Path.Combine(Path.Combine(extensionsPath, "Unity"), "GUISystem"), "Editor"), "UnityEditor.UI.dll"),
+			Path.Combine(Path.Combine(Path.Combine(Path.Combine(extensionsPath, "Unity"), "EditorTestsRunner"), "Editor"), "nunit.framework.dll"),
+			Path.Combine(Path.Combine(Path.Combine(Path.Combine(extensionsPath, "Unity"), "EditorTestsRunner"), "Editor"), "UnityEditor.EditorTestsRunner.dll")
+		};
 		
-		EditorApplication.update -= Update;
-		EditorApplication.update += Update;
-	}
+		//GetAllFiles(EditorApplication.applicationContentsPath, references, "*.dll"); // Need to weed out unmanaged dlls
+		//GetAllFiles(dependencyPath, references, "*.dll"); // Error on loading ICsharpCode.NRefactory
 
-	static void Update()
-	{
-		if (!EditorApplication.isCompiling)
+		var sources = new List<string>();
+		GetAllFiles(Application.dataPath, sources, "*.cs");
+
+		// TODO: Find a better way to collect #defines
+		var defines = new []
 		{
-			var runnerWindowInstance = s_RunnerWindowInstanceField.GetValue(null);
-
-			if (runnerWindowInstance != null)
-			{
-				var test = EditorPrefs.GetBool(kEditorPrefsKey);
-				if (test)
-				{
-					compiled = true;
-					EditorPrefs.DeleteKey(kEditorPrefsKey);
-					Application.logMessageReceived -= Log;
-					s_RunnerWindowType.InvokeMember("RunTests", BindingFlags.InvokeMethod | BindingFlags.NonPublic, null, runnerWindowInstance, null);
-				}
-			}
-
-			if (CheckErrors() && EditorPrefs.HasKey(kOldDefinesKey))
-			{
-				Application.logMessageReceived -= Log;
-				PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, EditorPrefs.GetString(kOldDefinesKey));
-				EditorPrefs.DeleteKey(kOldDefinesKey);
-			}
+			"UNITY_EDITOR",
+			"UNITY_5_3_OR_NEWER"
+		};
+		var output = EditorUtility.CompileCSharp(sources.ToArray(), references.ToArray(), defines, "test.dll");
+		foreach (var s in output)
+		{
+			Assert.IsFalse(s.Contains("error"));
 		}
 	}
 
-	static void Log(string logString, string stackTrace, LogType type)
+	static void GetAllFiles(string path, List<string> files, string searchPattern)
 	{
-		s_ErrorLog += logString + '\n' + stackTrace + '\n';
-	}
-
-	static bool CheckErrors()
-	{
-		var assembly = Assembly.GetAssembly(typeof(SceneView));
-		var logEntries = assembly.GetType("UnityEditorInternal.LogEntries");
-		logEntries.GetMethod("Clear").Invoke (new object (), null);
-
-		var count = (int)logEntries.GetMethod("GetCount").Invoke(new object(), null);
-
-		return count > 0;
+		try
+		{
+			foreach (var f in Directory.GetFiles(path, searchPattern))
+			{
+				files.Add(f);
+			}
+			foreach (var d in Directory.GetDirectories(path))
+			{
+				GetAllFiles(d, files, searchPattern);
+			}
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.Message);
+		}
 	}
 }
