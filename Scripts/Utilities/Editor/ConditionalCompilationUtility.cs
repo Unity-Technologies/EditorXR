@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using UnityEditor;
 using Debug = UnityEngine.Debug;
 
-namespace ConditionalCompilationUtility
+namespace UnityEditor.ConditionalCompilationUtility
 {
 	/// <summary>
 	/// The Conditional Compilation Utility (CCU) will add defines to the build settings once dependendent classes have been detected. 
@@ -32,7 +31,7 @@ namespace ConditionalCompilationUtility
 	[InitializeOnLoad]
 	public class ConditionalCompilationUtility
 	{
-		const string kEnableCCU = "UNITY_CCU";
+		public const string kEnableCCU = "UNITY_CCU";
 
 		static ConditionalCompilationUtility()
 		{

@@ -4,12 +4,20 @@ using System.IO;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEditor.ConditionalCompilationUtility;
 
 [InitializeOnLoad]
 public class CCUTest
 {
 	[Test]
 	public void TestCCU()
+	{
+		var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+		Assert.IsTrue(PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Contains(ConditionalCompilationUtility.kEnableCCU));
+	}
+
+	[Test]
+	public void NoDependencyTest()
 	{
 		// TODO: Find a better way to collect dependencies
 		var dependencyPath = Path.Combine(EditorApplication.applicationContentsPath, "Managed");
@@ -38,7 +46,20 @@ public class CCUTest
 			"UNITY_EDITOR",
 			"UNITY_5_3_OR_NEWER"
 		};
-		var output = EditorUtility.CompileCSharp(sources.ToArray(), references.ToArray(), defines, "test.dll");
+
+		const string outputFile = "CCUTest.dll";
+
+		var output = EditorUtility.CompileCSharp(sources.ToArray(), references.ToArray(), defines, outputFile);
+		try
+		{
+			File.Delete(outputFile);
+			File.Delete(outputFile + ".mdb");
+		}
+		catch (Exception e)
+		{
+			Debug.LogError(string.Format("CCUTest: Could not delete temp files: {0}", e.Message));
+		}
+		
 		foreach (var s in output)
 		{
 			Assert.IsFalse(s.Contains("error"));
@@ -49,10 +70,7 @@ public class CCUTest
 	{
 		try
 		{
-			foreach (var f in Directory.GetFiles(path, searchPattern))
-			{
-				files.Add(f);
-			}
+			files.AddRange(Directory.GetFiles(path, searchPattern));
 			foreach (var d in Directory.GetDirectories(path))
 			{
 				GetAllFiles(d, files, searchPattern);
