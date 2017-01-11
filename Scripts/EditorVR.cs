@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR
 	[InitializeOnLoad]
 #endif
 	[RequiresTag(kVRPlayerTag)]
-	public class EditorVR : MonoBehaviour
+	internal class EditorVR : MonoBehaviour
 	{
 		delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
 

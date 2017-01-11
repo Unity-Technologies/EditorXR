@@ -4,7 +4,7 @@ using UnityEngine.Experimental.EditorVR.Data;
 
 namespace UnityEngine.Experimental.EditorVR.Modules
 {
-	public class SpatialHashModule : MonoBehaviour
+	internal class SpatialHashModule : MonoBehaviour
 	{
 		readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
 		public SpatialHash<Renderer> spatialHash { get; private set; }

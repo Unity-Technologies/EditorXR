@@ -1,11 +1,8 @@
 ﻿using System;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.UI;
+using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 public class InspectorObjectFieldItem : InspectorPropertyItem
