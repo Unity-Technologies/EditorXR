@@ -3,7 +3,7 @@
 namespace UnityEngine.Experimental.EditorVR
 {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class RequiresTagAttribute : Attribute
+	internal class RequiresTagAttribute : Attribute
 	{
 		public string tag;
 

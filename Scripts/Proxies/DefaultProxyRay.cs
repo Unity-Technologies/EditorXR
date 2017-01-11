@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class DefaultProxyRay : MonoBehaviour
+internal class DefaultProxyRay : MonoBehaviour
 {
 	[SerializeField]
 	private VRLineRenderer m_LineRenderer;

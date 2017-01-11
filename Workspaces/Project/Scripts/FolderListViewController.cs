@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
 public class FolderListViewController : NestedListViewController<FolderData>

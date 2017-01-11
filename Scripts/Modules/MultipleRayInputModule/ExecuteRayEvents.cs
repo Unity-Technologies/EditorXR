@@ -2,7 +2,7 @@
 
 namespace UnityEngine.Experimental.EditorVR.Modules
 {	
-	public static class ExecuteRayEvents
+	internal static class ExecuteRayEvents
 	{
 		public static ExecuteEvents.EventFunction<IRayBeginDragHandler> beginDragHandler { get { return s_BeginDragHandler; } }
 		private static readonly ExecuteEvents.EventFunction<IRayBeginDragHandler> s_BeginDragHandler = Execute;

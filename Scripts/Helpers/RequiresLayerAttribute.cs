@@ -2,7 +2,7 @@
 
 namespace UnityEngine.Experimental.EditorVR
 {
-	public class RequiresLayerAttribute : Attribute
+	internal class RequiresLayerAttribute : Attribute
 	{
 		public string layer;
 
