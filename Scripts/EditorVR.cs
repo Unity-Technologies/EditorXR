@@ -608,7 +608,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 					var intersection = false;
 
-					for(int j = 0; i < m_Workspaces.Count; i++)
+					for(int j = 0; j < m_Workspaces.Count; j++)
 					{
 						var workspace = m_Workspaces[j];
 						var outerBounds = workspace.transform.TransformBounds(workspace.outerBounds);
