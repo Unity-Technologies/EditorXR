@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-
-mv * ./Assets
+SCRIPT_DIR=$(cd $(dirname $0) && pwd)
+mv "${SCRIPT_DIR}/*" "${SCRIPT_DIR}/Assets/"
