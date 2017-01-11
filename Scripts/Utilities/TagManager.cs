@@ -6,7 +6,7 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
 #if UNITY_EDITOR
-	public static class TagManager
+	internal static class TagManager
 	{
 		const int kMaxLayer = 31;
 		const int kMinLayer = 8;

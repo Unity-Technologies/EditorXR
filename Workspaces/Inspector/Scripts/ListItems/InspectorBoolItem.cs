@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Handles;
 
 public class InspectorBoolItem : InspectorPropertyItem
 {
