@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
 
-/// <summary>
-/// Exposes a property used to provide a hierarchy of scene objects to the object
-/// </summary>
-public interface IUsesHierarchyData
+namespace UnityEngine.Experimental.EditorVR
 {
 	/// <summary>
-	/// Set accessor for hierarchy list data
-	/// Used to update existing implementors after lazy load completes
+	/// Exposes a property used to provide a hierarchy of scene objects to the object
 	/// </summary>
-	List<HierarchyData> hierarchyData { set; }
+	public interface IUsesHierarchyData
+	{
+		/// <summary>
+		/// Set accessor for hierarchy list data
+		/// Used to update existing implementors after lazy load completes
+		/// </summary>
+		List<HierarchyData> hierarchyData { set; }
+	}
 }

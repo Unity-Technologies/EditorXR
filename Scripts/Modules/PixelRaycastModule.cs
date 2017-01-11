@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	public class PixelRaycastModule : MonoBehaviour
+	internal class PixelRaycastModule : MonoBehaviour
 	{
 		readonly Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
 
