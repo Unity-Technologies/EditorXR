@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 
 			foreach (var s in output)
 			{
-				Assert.IsFalse(s.Contains("error"));
+				Assert.IsFalse(s.Contains("error"), string.Join("\n", output));
 			}
 		}
 
