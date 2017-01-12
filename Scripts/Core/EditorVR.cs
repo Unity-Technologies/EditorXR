@@ -31,6 +31,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 		const string kVRPlayerTag = "VRPlayer";
+		const string kShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
 
 		[SerializeField]
 		private GameObject m_PlayerModelPrefab;
@@ -40,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		[SerializeField]
 		ProxyExtras m_ProxyExtras;
-		
+
 		HighlightModule m_HighlightModule;
 		ObjectPlacementModule m_ObjectPlacementModule;
 		LockModule m_LockModule;
@@ -391,10 +392,9 @@ namespace UnityEditor.Experimental.EditorVR
 				Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
 
 #if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
-		Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
+			Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
 
-#if UNITY_EDITOR
 			// Add EVR tags and layers if they don't exist
 			var tags = new List<string>();
 			var layers = new List<string>();
@@ -414,7 +414,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			foreach (var layer in layers)
 				TagManager.AddLayer(layer);
-#endif
 		}
 
 		private static void OnEVREnabled()
@@ -465,6 +464,27 @@ namespace UnityEditor.Experimental.EditorVR
 			U.Object.Destroy(s_InputManager.gameObject);
 		}
 #endif
+#else
+		static EditorVR()
+		{
+			if (EditorPrefs.GetBool(kShowCustomEditorWarning, true))
+			{
+				var message = "EditorVR requires a custom editor build. Please see https://blogs.unity3d.com/2016/12/15/editorvr-experimental-build-available-today/";
+				var result = EditorUtility.DisplayDialogComplex("Custom Editor Build Required", message, "Download", "Ignore", "Remind Me Again");
+				switch (result)
+				{
+					case 0:
+						Application.OpenURL("http://rebrand.ly/EditorVR-build");
+						break;
+					case 1:
+						EditorPrefs.SetBool(kShowCustomEditorWarning, false);
+						break;
+					case 2:
+						Debug.Log("<color=orange>" + message + "</color>");
+						break;
+				}
+			}
+		}
 #endif
 	}
 }

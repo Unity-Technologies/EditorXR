@@ -1,4 +1,7 @@
-﻿using System;
+﻿#if !UNITY_EDITORVR
+#pragma warning disable 67, 414, 649
+#endif
+using System;
 using System.Text;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.UI;

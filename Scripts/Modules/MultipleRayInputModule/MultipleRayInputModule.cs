@@ -1,3 +1,6 @@
+#if !UNITY_EDITORVR
+#pragma warning disable 67, 414, 649
+#endif
 using System;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;

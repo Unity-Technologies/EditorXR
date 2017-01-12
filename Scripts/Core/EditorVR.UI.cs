@@ -1,16 +1,12 @@
-//#if !UNITY_EDITORVR
-//#pragma warning disable 67, 414, 649
-//#endif
-using System;
-using System.Collections;
+#if !UNITY_EDITORVR
+#pragma warning disable 67, 414, 649
+#endif
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.UI;
-using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR
