@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using ListView;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;

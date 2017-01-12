@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 namespace UnityEditor.Experimental.EditorVR
 {
 	[InitializeOnLoad]
-	public class VRView : EditorWindow
+	internal class VRView : EditorWindow
 	{
 		const string kShowDeviceView = "VRView.ShowDeviceView";
 		const string kUseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
