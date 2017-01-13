@@ -391,18 +391,8 @@ namespace UnityEditor.Experimental.EditorVR
 #endif
 
 			// Add EVR tags and layers if they don't exist
-			var tags = new List<string>();
-			var layers = new List<string>();
-			U.Object.ForEachType(t =>
-			{
-				var tagAttributes = (RequiresTagAttribute[])t.GetCustomAttributes(typeof(RequiresTagAttribute), true);
-				foreach (var attribute in tagAttributes)
-					tags.Add(attribute.tag);
-
-				var layerAttributes = (RequiresLayerAttribute[])t.GetCustomAttributes(typeof(RequiresLayerAttribute), true);
-				foreach (var attribute in layerAttributes)
-					layers.Add(attribute.layer);
-			});
+			var tags = TagManager.GetRequiredTags();
+			var layers = TagManager.GetRequiredLayers();
 
 			foreach (var tag in tags)
 				TagManager.AddTag(tag);
