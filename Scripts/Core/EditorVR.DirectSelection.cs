@@ -26,6 +26,7 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			// Create event system, input module, and event camera
 			m_SpatialHashModule = U.Object.AddComponent<SpatialHashModule>(gameObject);
+			m_SpatialHashModule.shouldExcludeObject = go => go.GetComponentInParent<EditorVR>();
 			m_SpatialHashModule.Setup();
 			m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
 			ConnectInterfaces(m_IntersectionModule);

@@ -30,7 +30,7 @@ namespace UnityEngine.Experimental.EditorVR.Utilities
 				GameObject go = UnityObject.Instantiate(prefab);
 				go.transform.SetParent(parent, worldPositionStays);
 				go.SetActive(active);
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_EDITORVR
 				if (!Application.isPlaying && runInEditMode)
 				{
 					SetRunInEditModeRecursively(go, runInEditMode);
@@ -64,7 +64,7 @@ namespace UnityEngine.Experimental.EditorVR.Utilities
 				GameObject empty = null;
 				if (String.IsNullOrEmpty(name))
 					name = "Empty";
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_EDITORVR
 				empty = EditorUtility.CreateGameObjectWithHideFlags(name, EditorVR.kDefaultHideFlags);
 #else
 				empty = new GameObject(name);
@@ -82,7 +82,7 @@ namespace UnityEngine.Experimental.EditorVR.Utilities
 
 			public static Component CreateGameObjectWithComponent(Type type, Transform parent = null)
 			{
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_EDITORVR
 				Component component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, EditorVR.kDefaultHideFlags, type).GetComponent(type);
 				if (!Application.isPlaying)
 					SetRunInEditModeRecursively(component.gameObject, true);

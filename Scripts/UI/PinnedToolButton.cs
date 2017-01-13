@@ -1,7 +1,4 @@
-﻿#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
-using System;
+﻿using System;
 using System.Text;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.UI;
@@ -39,7 +36,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		[SerializeField]
 		GradientButton m_GradientButton;
 
-		public event Action<Transform> selected = delegate { };
 		public Transform rayOrigin { get; set; }
 		public Func<Transform, Type, bool> selectTool { private get; set; }
 

@@ -1,8 +1,4 @@
-﻿#if !UNITY_EDITOR
-#pragma warning disable 414
-#endif
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using ListView;
 using UnityEditor;

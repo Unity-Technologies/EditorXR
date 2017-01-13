@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 //#define ENABLE_MINIWORLD_RAY_SELECTION
 using System;
 using System.Collections;
@@ -20,9 +21,7 @@ using UnityEngine.VR;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-#if UNITY_EDITOR
 	[InitializeOnLoad]
-#endif
 #if UNITY_EDITORVR
 	[RequiresTag(kVRPlayerTag)]
 	partial class EditorVR
@@ -474,3 +473,4 @@ namespace UnityEditor.Experimental.EditorVR
 	}
 #endif
 }
+#endif
