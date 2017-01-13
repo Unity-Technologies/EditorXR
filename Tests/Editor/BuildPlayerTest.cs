@@ -1,14 +1,10 @@
-﻿using System;
-using System.IO;
-using NUnit.Framework;
-using UnityEngine;
+﻿using NUnit.Framework;
 
 namespace UnityEditor.Experimental.EditorVR.Tests
 {
 	[InitializeOnLoad]
 	public class BuildPlayerTest
 	{
-		const string kTestPath = "_Test";
 		const string kVerifySavingAssets = "VerifySavingAssets";
 
 		bool? m_VerifySavingAssets;
@@ -49,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 
 		static void TestBuildPlayer(BuildTarget target)
 		{
-			var output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, Path.Combine(kTestPath, target.ToString()), target, BuildOptions.None);
+			var output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, "Temp/" + target, target, BuildOptions.None);
 
 			if (output.Contains("target is not supported"))
 				Assert.Inconclusive("Target platform {0} not installed", target);
@@ -62,18 +58,6 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 		{
 			if (m_VerifySavingAssets.HasValue)
 				EditorPrefs.SetBool(kVerifySavingAssets, m_VerifySavingAssets.Value);
-
-			if (!Directory.Exists(kTestPath))
-				return;
-
-			try
-			{
-				Directory.Delete(kTestPath, true);
-			}
-			catch (Exception e)
-			{
-				Debug.LogError(string.Format("BuildPlayerTest: Could not delete temp directory {0}: {1}", kTestPath, e.Message));
-			}
 		}
 	}
 }

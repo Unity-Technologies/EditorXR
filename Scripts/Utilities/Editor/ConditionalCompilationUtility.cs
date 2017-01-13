@@ -43,11 +43,7 @@ namespace ConditionalCompilation
 			}
 		}
 
-		public static string[] defines
-		{
-			get { return kDefines.ToArray(); }
-		}
-		static readonly List<string> kDefines = new List<string>();
+		public static string[] defines { private set; get; }
 
 		static ConditionalCompilationUtility()
 		{
@@ -62,7 +58,7 @@ namespace ConditionalCompilation
 				return;
 			}
 
-			kDefines.Add(kEnableCCU);
+			var ccuDefines = new List<string> { kEnableCCU };
 
 			var conditionalAttributeType = typeof(ConditionalAttribute);
 
@@ -128,10 +124,12 @@ namespace ConditionalCompilation
 						if (!defines.Contains(define, StringComparer.OrdinalIgnoreCase))
 							defines.Add(define);
 
-						kDefines.Add(define);
+						ccuDefines.Add(define);
 					}
 				}
 			});
+
+			ConditionalCompilationUtility.defines = ccuDefines.ToArray();
 
 			PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines.ToArray()));
 		}
