@@ -11,7 +11,7 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	internal partial class EditorVR : MonoBehaviour
+	partial class EditorVR
 	{
 		[SerializeField]
 		Camera m_EventCameraPrefab;

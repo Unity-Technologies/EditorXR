@@ -11,7 +11,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	internal partial class EditorVR : MonoBehaviour
+	partial class EditorVR
 	{
 		const float kPreviewScale = 0.1f;
 

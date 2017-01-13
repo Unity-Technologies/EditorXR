@@ -14,7 +14,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	internal partial class EditorVR : MonoBehaviour
+	partial class EditorVR
 	{
 		const byte kMinStencilRef = 2;
 

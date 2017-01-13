@@ -7,7 +7,7 @@ using UnityEngine.Experimental.EditorVR;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	internal partial class EditorVR : MonoBehaviour
+	partial class EditorVR
 	{
 #if UNITY_EDITOR
 		readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();

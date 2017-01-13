@@ -12,7 +12,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	internal partial class EditorVR : MonoBehaviour
+	partial class EditorVR : MonoBehaviour
 	{
 		List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
 		List<IAction> m_Actions;
@@ -50,33 +50,6 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 
 			m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));
-		}
-
-		Dictionary<Type, List<ActionMap>> CollectToolActionMaps(IEnumerable<Type> toolTypes)
-		{
-			var toolMaps = new Dictionary<Type, List<ActionMap>>();
-
-			foreach (var t in toolTypes)
-			{
-				if (!t.IsSubclassOf(typeof(MonoBehaviour)))
-					continue;
-
-				var tool = gameObject.AddComponent(t) as ITool;
-				List<ActionMap> actionMaps = new List<ActionMap>();
-
-				var customActionMap = tool as ICustomActionMap;
-				if (customActionMap != null)
-					actionMaps.Add(customActionMap.actionMap);
-
-				var standardActionMap = tool as IStandardActionMap;
-				if (standardActionMap != null)
-					actionMaps.Add(m_StandardToolActionMap);
-
-				toolMaps.Add(t, actionMaps);
-
-				U.Object.Destroy(tool as MonoBehaviour);
-			}
-			return toolMaps;
 		}
 
 		void UpdateAlternateMenuActions()

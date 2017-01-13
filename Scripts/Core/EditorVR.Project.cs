@@ -10,7 +10,7 @@ using UnityEngine.Experimental.EditorVR;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	internal partial class EditorVR : MonoBehaviour
+	partial class EditorVR
 	{
 		// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
 		const float kMaxFrameTime = 0.01f;

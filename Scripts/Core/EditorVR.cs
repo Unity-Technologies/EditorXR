@@ -27,7 +27,7 @@ namespace UnityEditor.Experimental.EditorVR
 	[InitializeOnLoad]
 #endif
 	[RequiresTag(kVRPlayerTag)]
-	internal partial class EditorVR : MonoBehaviour
+	partial class EditorVR
 	{
 		public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 		const string kVRPlayerTag = "VRPlayer";
@@ -108,11 +108,6 @@ namespace UnityEditor.Experimental.EditorVR
 			m_AllWorkspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
-
-			// TODO: Only show tools in the menu for the input devices in the action map that match the devices present in the system.
-			// This is why we're collecting all the action maps. Additionally, if the action map only has a single hand specified,
-			// then only show it in that hand's menu.
-			// CollectToolActionMaps(m_AllTools);
 		}
 
 		void ClearDeveloperConsoleIfNecessary()

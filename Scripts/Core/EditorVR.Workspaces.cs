@@ -12,7 +12,7 @@ using UnityEngine.Experimental.EditorVR.Workspaces;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	internal partial class EditorVR : MonoBehaviour
+	partial class EditorVR
 	{
 		static readonly Vector3 kDefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
 		static readonly Quaternion kDefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
@@ -93,7 +93,7 @@ namespace UnityEditor.Experimental.EditorVR
 			UpdatePlayerHandleMaps();
 		}
 
-				private void OnWorkspaceDestroyed(IWorkspace workspace)
+		void OnWorkspaceDestroyed(IWorkspace workspace)
 		{
 			m_Workspaces.Remove(workspace);
 			m_Vacuumables.Remove(workspace);
