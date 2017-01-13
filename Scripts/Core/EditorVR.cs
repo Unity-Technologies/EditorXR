@@ -1,7 +1,4 @@
 //#define ENABLE_MINIWORLD_RAY_SELECTION
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,12 +23,12 @@ namespace UnityEditor.Experimental.EditorVR
 #if UNITY_EDITOR
 	[InitializeOnLoad]
 #endif
+#if UNITY_EDITORVR
 	[RequiresTag(kVRPlayerTag)]
 	partial class EditorVR
 	{
 		public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 		const string kVRPlayerTag = "VRPlayer";
-		const string kShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
 
 		[SerializeField]
 		private GameObject m_PlayerModelPrefab;
@@ -53,7 +50,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 		bool m_ControllersReady;
 
-#if UNITY_EDITORVR
 		void Awake()
 		{
 			ClearDeveloperConsoleIfNecessary();
@@ -449,8 +445,13 @@ namespace UnityEditor.Experimental.EditorVR
 			U.Object.Destroy(s_InputManager.gameObject);
 		}
 #endif
+	}
 #else
-		static EditorVR()
+	internal class NoEditorVR
+	{
+		const string kShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
+
+		static NoEditorVR()
 		{
 			if (EditorPrefs.GetBool(kShowCustomEditorWarning, true))
 			{
@@ -470,6 +471,6 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 			}
 		}
-#endif
 	}
+#endif
 }

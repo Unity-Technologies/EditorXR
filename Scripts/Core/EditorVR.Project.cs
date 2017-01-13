@@ -1,6 +1,4 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,7 +24,6 @@ namespace UnityEditor.Experimental.EditorVR
 		float m_ProjectFolderLoadStartTime;
 		float m_ProjectFolderLoadYieldTime;
 
-#if UNITY_EDITORVR
 		List<string> GetFilterList()
 		{
 			return m_AssetTypes.ToList();
@@ -136,6 +133,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			return new AssetData(hp.name, hp.guid, type);
 		}
-#endif
 	}
 }
+#endif

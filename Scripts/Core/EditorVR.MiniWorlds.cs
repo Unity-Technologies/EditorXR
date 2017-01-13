@@ -1,6 +1,4 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
@@ -39,7 +37,6 @@ namespace UnityEditor.Experimental.EditorVR
 		readonly List<IMiniWorld> m_MiniWorlds = new List<IMiniWorld>();
 		bool m_MiniWorldIgnoreListDirty = true;
 
-#if UNITY_EDITORVR
 		/// <summary>
 		/// Re-use DefaultProxyRay and strip off objects and components not needed for MiniWorldRays
 		/// </summary>
@@ -341,6 +338,6 @@ namespace UnityEditor.Experimental.EditorVR
 				miniWorldRay.wasContained = isContained;
 			}
 		}
-#endif
 	}
 }
+#endif

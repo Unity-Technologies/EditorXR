@@ -1,6 +1,4 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -36,7 +34,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 		DragAndDropModule m_DragAndDropModule;
 
-#if UNITY_EDITORVR
 		void CreateEventSystem()
 		{
 			// Create event system, input module, and event camera
@@ -193,6 +190,6 @@ namespace UnityEditor.Experimental.EditorVR
 			foreach (var mv in m_ManipulatorVisibilities)
 				mv.manipulatorVisible = manipulatorsVisible;
 		}
-#endif
 	}
 }
+#endif

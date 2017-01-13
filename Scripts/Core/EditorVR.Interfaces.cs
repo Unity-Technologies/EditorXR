@@ -1,6 +1,4 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -34,7 +32,6 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 		byte m_StencilRef = kMinStencilRef;
 
-#if UNITY_EDITORVR
 		void ConnectInterfaces(object obj, InputDevice device)
 		{
 			Transform rayOrigin = null;
@@ -350,6 +347,6 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			return stencilRef++;
 		}
-#endif
 	}
 }
+#endif

@@ -1,6 +1,4 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -41,7 +39,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 		readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
 
-#if UNITY_EDITORVR
 		bool IsPermanentTool(Type type)
 		{
 			return typeof(ITransformer).IsAssignableFrom(type)
@@ -293,7 +290,6 @@ namespace UnityEditor.Experimental.EditorVR
 				deviceData.currentTool = toolData.tool;
 			}
 		}
-
-#endif
 	}
 }
+#endif

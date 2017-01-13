@@ -1,8 +1,5 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -15,7 +12,6 @@ namespace UnityEditor.Experimental.EditorVR
 		HierarchyProperty m_HierarchyProperty;
 #endif
 
-#if UNITY_EDITORVR
 		// TODO: Find a better callback for when objects are created or destroyed
 		void OnHierarchyChanged()
 		{
@@ -132,6 +128,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			return hd ?? new HierarchyData(name, instanceID, children);
 		}
-#endif
 	}
 }
+#endif

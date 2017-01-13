@@ -1,6 +1,4 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -39,7 +37,6 @@ namespace UnityEditor.Experimental.EditorVR
 		readonly List<InputDevice> m_SystemDevices = new List<InputDevice>();
 		readonly Dictionary<Type, string[]> m_DeviceTypeTags = new Dictionary<Type, string[]>();
 
-#if UNITY_EDITORVR
 		List<InputDevice> GetSystemDevices()
 		{
 			// For now let's filter out any other devices other than VR controller devices; Eventually, we may support mouse / keyboard etc.
@@ -300,6 +297,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			return null;
 		}
-#endif
 	}
 }
+#endif

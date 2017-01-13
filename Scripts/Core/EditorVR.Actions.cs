@@ -1,14 +1,10 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -17,7 +13,6 @@ namespace UnityEditor.Experimental.EditorVR
 		List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
 		List<IAction> m_Actions;
 
-#if UNITY_EDITORVR
 		void SpawnActions()
 		{
 			IEnumerable<Type> actionTypes = U.Object.GetImplementationsOfInterface(typeof(IAction));
@@ -61,6 +56,6 @@ namespace UnityEditor.Experimental.EditorVR
 					altMenu.menuActions = m_MenuActions;
 			}
 		}
-#endif
 	}
 }
+#endif

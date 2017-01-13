@@ -1,6 +1,4 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -37,7 +35,6 @@ namespace UnityEditor.Experimental.EditorVR
 		StandardManipulator m_StandardManipulator;
 		ScaleManipulator m_ScaleManipulator;
 
-#if UNITY_EDITORVR
 		void UpdateRayForDevice(DeviceData deviceData, Transform rayOrigin)
 		{
 			var mainMenu = deviceData.mainMenu;
@@ -275,6 +272,6 @@ namespace UnityEditor.Experimental.EditorVR
 			if (m_ScaleManipulator)
 				m_ScaleManipulator.AdjustScale(cameraPosition, matrix);
 		}
-#endif
 	}
 }
+#endif

@@ -1,6 +1,4 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,7 +20,6 @@ namespace UnityEditor.Experimental.EditorVR
 		readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
 		readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();
 
-#if UNITY_EDITORVR
 		void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
 		{
 			var cameraTransform = U.Camera.GetMainCamera().transform;
@@ -130,7 +127,6 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 			}
 		}
-
-#endif
 	}
 }
+#endif

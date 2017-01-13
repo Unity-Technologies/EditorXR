@@ -1,6 +1,4 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,7 +22,6 @@ namespace UnityEditor.Experimental.EditorVR
 		readonly Dictionary<Transform, DirectSelectionData> m_DirectSelectionResults = new Dictionary<Transform, DirectSelectionData>();
 		readonly List<ActionMapInput> m_ActiveStates = new List<ActionMapInput>();
 
-#if UNITY_EDITORVR
 		void CreateSpatialSystem()
 		{
 			// Create event system, input module, and event camera
@@ -220,6 +217,6 @@ namespace UnityEditor.Experimental.EditorVR
 				renderer.enabled = true;
 			}
 		}
-#endif
 	}
 }
+#endif

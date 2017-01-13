@@ -1,6 +1,4 @@
-#if !UNITY_EDITORVR
-#pragma warning disable 67, 414, 649
-#endif
+#if UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -34,7 +32,6 @@ namespace UnityEditor.Experimental.EditorVR
 		readonly List<IMenu> m_UpdateVisibilityMenus = new List<IMenu>();
 		readonly List<DeviceData> m_ActiveDeviceData = new List<DeviceData>();
 
-#if UNITY_EDITORVR
 		void UpdateMenuVisibilityNearWorkspaces()
 		{
 			ForEachRayOrigin((proxy, pair, device, deviceData) =>
@@ -307,7 +304,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			return button;
 		}
-
-#endif
 	}
 }
+#endif
