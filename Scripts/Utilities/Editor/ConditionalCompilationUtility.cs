@@ -34,19 +34,25 @@ namespace ConditionalCompilation
 	{
 		const string kEnableCCU = "UNITY_CCU";
 
-		public static bool kEnabled
+		public static bool enabled
 		{
 			get
 			{
-				return PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup)
-					.Contains(kEnableCCU);
+				var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+				return PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Contains(kEnableCCU);
 			}
 		}
+
+		public static string[] defines
+		{
+			get { return kDefines.ToArray(); }
+		}
+		static readonly List<string> kDefines = new List<string>();
 
 		static ConditionalCompilationUtility()
 		{
 			var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
-			var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList<string>();
+			var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList();
 			if (!defines.Contains(kEnableCCU, StringComparer.OrdinalIgnoreCase))
 			{
 				defines.Add(kEnableCCU);
@@ -55,6 +61,8 @@ namespace ConditionalCompilation
 				// This will trigger another re-compile, which needs to happen, so all the custom attributes will be visible
 				return;
 			}
+
+			kDefines.Add(kEnableCCU);
 
 			var conditionalAttributeType = typeof(ConditionalAttribute);
 
@@ -82,7 +90,6 @@ namespace ConditionalCompilation
 							Debug.LogErrorFormat("[CCU] Attribute type {0} missing field: {1}", type.Name, kDefine);
 							return false;
 						}
-
 					}
 					return true;
 				}
@@ -120,6 +127,8 @@ namespace ConditionalCompilation
 						var define = dependency.Value;
 						if (!defines.Contains(define, StringComparer.OrdinalIgnoreCase))
 							defines.Add(define);
+
+						kDefines.Add(define);
 					}
 				}
 			});

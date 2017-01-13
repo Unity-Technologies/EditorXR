@@ -8,8 +8,6 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 	[InitializeOnLoad]
 	public class TagManagerTest
 	{
-		// TODO: It is possible to make use of tags and forget to add a RequiresTagAttribute. Find a test for this
-
 		[Test]
 		public void TestTags()
 		{
