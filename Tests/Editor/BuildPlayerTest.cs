@@ -47,18 +47,6 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 			TestBuildPlayer(BuildTarget.WebGL);
 		}
 
-		[Test]
-		public void TestStandaloneLinux()
-		{
-			TestBuildPlayer(BuildTarget.StandaloneLinux);
-		}
-
-		[Test]
-		public void TestStandaloneLinux64()
-		{
-			TestBuildPlayer(BuildTarget.StandaloneLinux64);
-		}
-
 		static void TestBuildPlayer(BuildTarget target)
 		{
 			var output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, Path.Combine(kTestPath, target.ToString()), target, BuildOptions.None);

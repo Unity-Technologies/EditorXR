@@ -32,7 +32,16 @@ namespace ConditionalCompilation
 	[InitializeOnLoad]
 	public static class ConditionalCompilationUtility
 	{
-		public const string kEnableCCU = "UNITY_CCU";
+		const string kEnableCCU = "UNITY_CCU";
+
+		public static bool kEnabled
+		{
+			get
+			{
+				return PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup)
+					.Contains(kEnableCCU);
+			}
+		}
 
 		static ConditionalCompilationUtility()
 		{

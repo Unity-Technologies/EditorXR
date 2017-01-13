@@ -13,8 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 		[Test]
 		public void TestCCU()
 		{
-			var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
-			Assert.IsTrue(PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Contains(ConditionalCompilationUtility.kEnableCCU));
+			Assert.IsTrue(ConditionalCompilationUtility.kEnabled);
 		}
 
 		[Test]
