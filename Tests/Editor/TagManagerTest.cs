@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 	public class TagManagerTest
 	{
 		[Test]
-		public void TestTags()
+		public void RequiredTags()
 		{
 			var requiredTags = TagManager.GetRequiredTags();
 
@@ -29,7 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 		}
 
 		[Test]
-		public void TestLayers()
+		public void RequiredLayers()
 		{
 			var requiredLayers = TagManager.GetRequiredLayers();
 

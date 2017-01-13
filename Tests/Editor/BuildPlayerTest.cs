@@ -20,25 +20,25 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 		}
 
 		[Test]
-		public void TestStandaloneWindows()
+		public void StandaloneWindows()
 		{
 			TestBuildPlayer(BuildTarget.StandaloneWindows);
 		}
 
 		[Test]
-		public void TestStandaloneWindows64()
+		public void StandaloneWindows64()
 		{
 			TestBuildPlayer(BuildTarget.StandaloneWindows64);
 		}
 
 		[Test]
-		public void TestAndroid()
+		public void Android()
 		{
 			TestBuildPlayer(BuildTarget.Android);
 		}
 
 		[Test]
-		public void TestWebGL()
+		public void WebGL()
 		{
 			TestBuildPlayer(BuildTarget.WebGL);
 		}
