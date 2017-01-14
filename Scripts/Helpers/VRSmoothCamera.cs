@@ -1,6 +1,4 @@
-﻿#if !UNITY_EDITORVR
-#pragma warning disable 414, 649
-#endif
+﻿#if UNITY_EDITORVR
 using UnityEditor;
 using UnityEditor.Experimental.EditorVR;
 
@@ -46,7 +44,6 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 		/// </summary>
 		public int hmdOnlyLayerMask { get { return LayerMask.GetMask(kHMDOnlyLayer); } }
 
-#if UNITY_EDITORVR
 		void Awake()
 		{
 			m_SmoothCamera = GetComponent<Camera>();
@@ -107,6 +104,6 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 				hidden[i].enabled = hiddenEnabled[i];
 			}
 		}
-#endif
 	}
 }
+#endif

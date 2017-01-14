@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Tests
 {
@@ -35,32 +36,37 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 
 		static void TestCompile(string[] defines)
 		{
+			var outputFile = "Temp/CCUTest.dll";
+
 			var references = new List<string>();
-			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+			U.Object.ForEachAssembly(assembly =>
 			{
 				// Ignore project assemblies because they will cause conflicts
 				if (assembly.FullName.StartsWith("Assembly-CSharp", StringComparison.OrdinalIgnoreCase))
-					continue;
+					return;
 
 				// System.dll is included automatically and will cause conflicts if referenced explicitly
 				if (assembly.FullName.StartsWith("System", StringComparison.OrdinalIgnoreCase))
-					continue;
+					return;
+
+				// This assembly causes a ReflectionTypeLoadException on compile
+				if (assembly.FullName.StartsWith("ICSharpCode.NRefactory", StringComparison.OrdinalIgnoreCase))
+					return;
 
 				var codeBase = assembly.CodeBase;
 				var uri = new UriBuilder(codeBase);
 				var path = Uri.UnescapeDataString(uri.Path);
+
 				references.Add(path);
-			}
+			});
 
 			var sources = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
-			var outputFile = "Temp/CCUTest.dll";
-
 			var output = EditorUtility.CompileCSharp(sources, references.ToArray(), defines, outputFile);
-
-			foreach (var s in output)
+			foreach (var o in output)
 			{
-				Assert.IsFalse(s.Contains("error"), string.Join("\n", output));
+				var line = o.ToLower();
+				Assert.IsFalse(line.Contains("exception") || line.Contains("error") || line.Contains("warning"), string.Join("\n", output));
 			}
 		}
 	}
