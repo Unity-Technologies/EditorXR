@@ -573,7 +573,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114000012354496050}
-        m_MethodName: CancelInvoke
+        m_MethodName: Hide
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -879,7 +879,7 @@ MonoBehaviour:
   m_TextPrefab: {fileID: 1000013835913212, guid: 0b7435b9e20b90949b516c08f26c81f0,
     type: 2}
   m_ToolTipText: Filter by type
-  m_Offset: {x: 0, y: 0.02, z: 0.01}
+  m_Offset: {x: 0, y: 0.04, z: -0.04}
 --- !u!114 &114000012445660226
 MonoBehaviour:
   m_ObjectHideFlags: 1

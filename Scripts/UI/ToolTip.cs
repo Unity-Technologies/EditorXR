@@ -6,7 +6,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 {
 	public class ToolTip : MonoBehaviour
 	{
-		const float kTransitionDuration = 0.75f;
+		const float kTransitionDuration = 0.3f;
 
 		[SerializeField]
 		GameObject m_TextPrefab;
@@ -30,9 +30,8 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 		void Start()
 		{
-			var tipText = U.Object.Instantiate(m_TextPrefab); // No need for InstantiateUI because no interaction
+			var tipText = U.Object.Instantiate(m_TextPrefab, transform); // No need for InstantiateUI because no interaction
 			tipText.gameObject.SetActive(false);
-			tipText.transform.parent = transform;
 			tipText.transform.localPosition = m_Offset;
 
 			m_Text = tipText.GetComponentInChildren<Text>();
@@ -43,6 +42,8 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 		public void Show()
 		{
+			StopAllCoroutines();
+			Reset();
 			m_ShowStartTime = Time.realtimeSinceStartup;
 			m_CanvasGroup.gameObject.SetActive(true);
 			StartCoroutine(UpdateText());
@@ -59,34 +60,42 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			{
 				if (m_ShowStartTime > 0)
 				{
+					var startAlpha = m_CanvasGroup.alpha;
 					var duration = Time.realtimeSinceStartup - m_ShowStartTime;
 					if (duration < kTransitionDuration)
 					{
-						m_CanvasGroup.alpha = duration / kTransitionDuration;
+						m_CanvasGroup.alpha = Mathf.Max(startAlpha, duration / kTransitionDuration);
 					}
 
-					m_CanvasGroup.transform.LookAt(U.Camera.GetMainCamera().transform, Vector3.up);
+					var canvasGroupTransform = m_CanvasGroup.transform;
+					canvasGroupTransform.rotation = Quaternion.LookRotation(canvasGroupTransform.position - U.Camera.GetMainCamera().transform.position, Vector3.up);
 				}
 
 				if (m_HideStartTime > 0)
 				{
+					var startAlpha = m_CanvasGroup.alpha;
 					var duration = Time.realtimeSinceStartup - m_HideStartTime;
 					if (duration < kTransitionDuration)
 					{
-						m_CanvasGroup.alpha = duration / kTransitionDuration;
+						m_CanvasGroup.alpha = Mathf.Min(startAlpha, 1 - duration / kTransitionDuration);
 					}
 					else
 					{
-						m_CanvasGroup.alpha = 0;
-						m_ShowStartTime = -1;
-						m_HideStartTime = -1;
-						m_CanvasGroup.gameObject.SetActive(false);
+						Reset();
 						yield break;
 					}
 				}
 
 				yield return null;
 			}
+		}
+
+		void Reset()
+		{
+			m_CanvasGroup.alpha = 0;
+			m_ShowStartTime = -1;
+			m_HideStartTime = -1;
+			m_CanvasGroup.gameObject.SetActive(false);
 		}
 	}
 }
