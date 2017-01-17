@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections;
 using UnityEngine.Experimental.EditorVR.Data;
 
@@ -7,7 +8,9 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 	internal class SpatialHashModule : MonoBehaviour
 	{
 		readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
+
 		public SpatialHash<Renderer> spatialHash { get; private set; }
+		public Func<GameObject, bool> shouldExcludeObject { private get; set; }
 
 		void Awake()
 		{
@@ -27,8 +30,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			{
 				if (mf.sharedMesh)
 				{
-					// Exclude EditorVR objects
-					if (mf.GetComponentInParent<UnityEditor.Experimental.EditorVR.EditorVR>())
+					if (shouldExcludeObject != null && shouldExcludeObject(mf.gameObject))
 						continue;
 
 					Renderer renderer = mf.GetComponent<Renderer>();

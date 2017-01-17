@@ -36,7 +36,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		[SerializeField]
 		GradientButton m_GradientButton;
 
-		public event Action<Transform> selected = delegate { };
 		public Transform rayOrigin { get; set; }
 		public Func<Transform, Type, bool> selectTool { private get; set; }
 

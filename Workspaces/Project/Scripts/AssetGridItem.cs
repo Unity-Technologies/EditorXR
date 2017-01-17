@@ -243,7 +243,9 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 			renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 			renderer.receiveShadows = false;
 			renderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+#if !UNITY_5_5_OR_NEWER
 			renderer.motionVectors = false;
+#endif
 		}
 
 		// Turn off lights

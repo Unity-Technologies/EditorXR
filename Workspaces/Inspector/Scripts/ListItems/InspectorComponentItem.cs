@@ -1,8 +1,4 @@
-﻿#if !UNITY_EDITOR
-#pragma warning disable 414
-#endif
-
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.Utilities;

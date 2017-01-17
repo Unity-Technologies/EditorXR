@@ -112,14 +112,8 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		/// <summary>
-		/// The top-panel's transform
-		/// </summary>
 		public Transform topPanel { get { return m_WorkspaceUI.topPanel; } }
 
-		/// <summary>
-		/// The front-panel's transform
-		/// </summary>
 		public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
 		public virtual void Setup()
