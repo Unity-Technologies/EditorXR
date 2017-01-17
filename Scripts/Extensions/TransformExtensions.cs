@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace UnityEngine.Experimental.EditorVR.Extensions
 {
 	public static class TransformExtensions
