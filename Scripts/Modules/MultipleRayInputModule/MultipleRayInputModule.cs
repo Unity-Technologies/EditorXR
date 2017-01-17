@@ -56,7 +56,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		public event Action<GameObject, RayEventData> dragStarted = delegate {};
 		public event Action<GameObject, RayEventData> dragEnded = delegate {};
 
-		public Action<Transform> preProcessRaycastSource;
+		public Action<Transform> preProcessRaycastSource { private get; set; }
 
 		// Local method use only -- created here to reduce garbage collection
 		RayEventData m_TempRayEvent;
