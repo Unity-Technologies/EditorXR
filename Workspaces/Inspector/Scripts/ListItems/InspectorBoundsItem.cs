@@ -127,7 +127,7 @@ public class InspectorBoundsItem : InspectorPropertyItem
 			m_SerializedProperty.boundsValue = (Bounds)dropObject;
 
 			UpdateInputFields(m_SerializedProperty.boundsValue);
-			
+
 			data.serializedObject.ApplyModifiedProperties();
 		}
 	}
