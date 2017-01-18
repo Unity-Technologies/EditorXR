@@ -66,7 +66,9 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	public Action<GameObject, bool> setLocked { private get; set; }
 	public Func<GameObject, bool> isLocked { private get; set; }
 
-	public event Action<List<InspectorData>, PropertyData> arraySizeChanged = delegate {};
+	public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
+
+	public Action blockUndoPostProcess { protected get; set; }
 
 #if UNITY_EDITOR
 	protected override void Setup()
@@ -189,6 +191,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			if (numberItem)
 				numberItem.arraySizeChanged += OnArraySizeChanged;
 
+			item.blockUndoPostProcess = blockUndoPostProcess;
+
 			item.setup = true;
 		}
 
@@ -247,7 +251,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	void OnArraySizeChanged(PropertyData element)
 	{
-		arraySizeChanged(m_Data, element);
+		if (arraySizeChanged != null)
+			arraySizeChanged(m_Data, element);
 	}
 
 	void ExpandComponentRows(List<InspectorData> data)

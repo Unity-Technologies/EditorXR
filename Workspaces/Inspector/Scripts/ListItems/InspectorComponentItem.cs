@@ -58,6 +58,8 @@ public class InspectorComponentItem : InspectorListItem
 		var target = serializedObject.targetObject;
 		if (value != (EditorUtility.GetObjectEnabled(target) == 1))
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
 			EditorUtility.SetObjectEnabled(target, value);
 			serializedObject.ApplyModifiedProperties();
 		}

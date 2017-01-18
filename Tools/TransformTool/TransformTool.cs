@@ -363,9 +363,9 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 #if UNITY_EDITOR
 			if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 				manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, kLazyFollowRotate * deltaTime);
-#endif
 
 			UnityEditor.Undo.RecordObjects(Selection.transforms, "EditorVR Manipulator");
+#endif
 
 			foreach (var t in Selection.transforms)
 			{

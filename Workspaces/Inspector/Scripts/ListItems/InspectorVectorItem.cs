@@ -75,6 +75,10 @@ public class InspectorVectorItem : InspectorPropertyItem
 	{
 		float value;
 		if (!float.TryParse(input, out value)) return false;
+
+		blockUndoPostProcess();
+		Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 		switch (m_SerializedProperty.propertyType)
 		{
 			case SerializedPropertyType.Vector2:
@@ -171,6 +175,9 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 		if (dropObject is Vector2)
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			var vector2 = (Vector2) dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
@@ -203,6 +210,9 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 		if (dropObject is Vector3)
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			var vector3 = (Vector3)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
@@ -229,6 +239,9 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 		if (dropObject is Vector4)
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			var vector4 = (Vector4)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
@@ -253,6 +266,9 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 		if (dropObject is Color)
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			var color = (Color)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
@@ -284,6 +300,9 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 		if (dropObject is Quaternion)
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			var quaternion = (Quaternion)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{

@@ -60,6 +60,8 @@ public class InspectorDropDownItem : InspectorPropertyItem
 
 	void ValueChanged(int clicked, int[] values)
 	{
+		blockUndoPostProcess();
+		Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
 		if (m_SerializedProperty.propertyType == SerializedPropertyType.LayerMask)
 		{
 			if (clicked == 0) // Clicked "Nothing"

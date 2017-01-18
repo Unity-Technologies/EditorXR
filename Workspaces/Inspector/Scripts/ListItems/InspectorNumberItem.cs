@@ -44,6 +44,8 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 	public void SetValue(string input)
 	{
+		blockUndoPostProcess();
+		Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
 		switch (m_SerializedProperty.propertyType)
 		{
 			case SerializedPropertyType.ArraySize:

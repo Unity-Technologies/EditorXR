@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.UI;
@@ -42,6 +43,9 @@ public class InspectorColorItem : InspectorPropertyItem
 		var color = m_SerializedProperty.colorValue;
 		if (!Mathf.Approximately(color[index], value))
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			color[index] = value;
 			m_SerializedProperty.colorValue = color;
 
@@ -91,6 +95,9 @@ public class InspectorColorItem : InspectorPropertyItem
 
 		if (dropObject is Color)
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			m_SerializedProperty.colorValue = (Color)dropObject;
 
 			UpdateInputFields(m_SerializedProperty.colorValue);

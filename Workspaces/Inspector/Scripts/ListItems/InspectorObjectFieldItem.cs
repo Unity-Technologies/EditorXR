@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.Utilities;
@@ -29,6 +30,8 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 
 	bool SetObject(Object obj)
 	{
+		blockUndoPostProcess();
+		Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
 		var objectReference = m_SerializedProperty.objectReferenceValue;
 
 		if (obj == null)

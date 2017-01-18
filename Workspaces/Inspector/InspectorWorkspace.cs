@@ -27,6 +27,8 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 	bool m_IsLocked;
 
+	bool m_BlockUndoPostProcess;
+
 #if UNITY_EDITOR
 	public override void Setup()
 	{
@@ -46,6 +48,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		connectInterfaces(listView);
 		listView.data = new List<InspectorData>();
 		listView.arraySizeChanged += OnArraySizeChanged;
+		listView.blockUndoPostProcess = BlockUndoPostProcess;
 
 		var scrollHandle = m_InspectorUI.inspectorScrollHandle;
 		scrollHandle.dragStarted += OnScrollDragStarted;
@@ -156,7 +159,13 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 	UndoPropertyModification[] PostprocessModifications(UndoPropertyModification[] modifications)
 	{
-		if (m_SelectedObject)
+		if (m_BlockUndoPostProcess)
+		{
+			m_BlockUndoPostProcess = false;
+			return modifications;
+		}
+
+		if(m_SelectedObject)
 			UpdateInspectorData(m_SelectedObject);
 
 		return modifications;
@@ -299,6 +308,11 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 		if (!m_IsLocked)
 			OnSelectionChanged();
+	}
+
+	void BlockUndoPostProcess()
+	{
+		m_BlockUndoPostProcess = true;
 	}
 
 	protected override void OnDestroy()

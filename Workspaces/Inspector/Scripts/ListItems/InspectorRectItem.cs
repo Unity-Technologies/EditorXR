@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.UI;
@@ -54,6 +55,9 @@ public class InspectorRectItem : InspectorPropertyItem
 
 		if (!Mathf.Approximately(vector[index], value))
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			vector[index] = value;
 			if (center)
 				rect.center = vector;
@@ -117,6 +121,9 @@ public class InspectorRectItem : InspectorPropertyItem
 
 		if (dropObject is Rect)
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			m_SerializedProperty.rectValue = (Rect)dropObject;
 
 			UpdateInputFields(m_SerializedProperty.rectValue);
@@ -126,6 +133,9 @@ public class InspectorRectItem : InspectorPropertyItem
 
 		if (dropObject is Vector2 || dropObject is Vector3 || dropObject is Vector4)
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			var vector2 = (Vector2)dropObject;
 			var inputField = fieldBlock.GetComponentInChildren<NumericInputField>();
 			var rect = m_SerializedProperty.rectValue;

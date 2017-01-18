@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.UI;
@@ -48,6 +49,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 	public Action<InspectorData> toggleExpanded { private get; set; }
 
 	public Func<byte> requestStencilRef { private get; set; }
+
+	public Action blockUndoPostProcess { protected get; set; }
 
 	public override void Setup(InspectorData data)
 	{

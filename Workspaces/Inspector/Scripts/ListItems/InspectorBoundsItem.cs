@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.UI;
@@ -52,6 +53,9 @@ public class InspectorBoundsItem : InspectorPropertyItem
 
 		if (!Mathf.Approximately(vector[index], value))
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			vector[index] = value;
 			if (center)
 				bounds.center = vector;
@@ -117,10 +121,13 @@ public class InspectorBoundsItem : InspectorPropertyItem
 
 		if (dropObject is Bounds)
 		{
+			blockUndoPostProcess();
+			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+
 			m_SerializedProperty.boundsValue = (Bounds)dropObject;
 
 			UpdateInputFields(m_SerializedProperty.boundsValue);
-
+			
 			data.serializedObject.ApplyModifiedProperties();
 		}
 	}
