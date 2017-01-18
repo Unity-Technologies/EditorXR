@@ -42,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR
 		ObjectPlacementModule m_ObjectPlacementModule;
 		LockModule m_LockModule;
 		SelectionModule m_SelectionModule;
+		HierarchyModule m_HierarchyModule;
 
 		event Action m_SelectionChanged;
 
@@ -53,8 +54,10 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			ClearDeveloperConsoleIfNecessary();
 
+			m_HierarchyModule = U.Object.AddComponent<HierarchyModule>(gameObject);
+
 			UpdateProjectFolders();
-			UpdateHierarchyData();
+			m_HierarchyModule.UpdateHierarchyData();
 
 			VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 			if (VRSettings.loadedDeviceName == "OpenVR")
@@ -219,6 +222,13 @@ namespace UnityEditor.Experimental.EditorVR
 			VRView.onGUIDelegate -= OnSceneGUI;
 			EditorApplication.projectWindowChanged -= UpdateProjectFolders;
 #endif
+		}
+
+		// TODO: Find a better callback for when objects are created or destroyed
+		void OnHierarchyChanged()
+		{
+			m_MiniWorldIgnoreListDirty = true;
+			m_PixelRaycastIgnoreListDirty = true;
 		}
 
 		void OnSceneGUI(EditorWindow obj)

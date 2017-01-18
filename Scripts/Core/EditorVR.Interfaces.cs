@@ -206,12 +206,9 @@ namespace UnityEditor.Experimental.EditorVR
 				m_ProjectFolderLists.Add(projectFolderList);
 			}
 
-			var hierarchyList = obj as IUsesHierarchyData;
-			if (hierarchyList != null)
-			{
-				hierarchyList.hierarchyData = GetHierarchyData();
-				m_HierarchyLists.Add(hierarchyList);
-			}
+			var usesHierarchy = obj as IUsesHierarchyData;
+			if (usesHierarchy != null)
+				m_HierarchyModule.AddConsumer(usesHierarchy);
 
 			var filterUI = obj as IFilterUI;
 			if (filterUI != null)
@@ -296,6 +293,10 @@ namespace UnityEditor.Experimental.EditorVR
 				grabObjects.objectGrabbed -= OnObjectGrabbed;
 				grabObjects.objectsDropped -= OnObjectsDropped;
 			}
+
+			var usesHierarchy = obj as IUsesHierarchyData;
+			if (usesHierarchy != null)
+				m_HierarchyModule.RemoveConsumer(usesHierarchy);
 
 			var manipulatorVisiblity = obj as IManipulatorVisibility;
 			if (manipulatorVisiblity != null)

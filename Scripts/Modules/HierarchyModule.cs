@@ -1,24 +1,41 @@
-#if UNITY_EDITORVR
-using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR;
+﻿using System.Collections.Generic;
+using UnityEditor;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
-	partial class EditorVR
+	internal class HierarchyModule : MonoBehaviour
 	{
-#if UNITY_EDITOR
 		readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
 		HierarchyData m_HierarchyData;
+#if UNITY_EDITOR
 		HierarchyProperty m_HierarchyProperty;
-#endif
+
+		void OnEnable()
+		{
+			EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
+		}
+
+		void OnDisable()
+		{
+			EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
+		}
 
 		// TODO: Find a better callback for when objects are created or destroyed
 		void OnHierarchyChanged()
 		{
-			m_MiniWorldIgnoreListDirty = true;
-			m_PixelRaycastIgnoreListDirty = true;
-
 			UpdateHierarchyData();
+		}
+#endif
+
+		public void AddConsumer(IUsesHierarchyData consumer)
+		{
+			consumer.hierarchyData = GetHierarchyData();
+			m_HierarchyLists.Add(consumer);
+		}
+
+		public void RemoveConsumer(IUsesHierarchyData consumer)
+		{
+			m_HierarchyLists.Remove(consumer);
 		}
 
 		List<HierarchyData> GetHierarchyData()
@@ -29,8 +46,9 @@ namespace UnityEditor.Experimental.EditorVR
 			return m_HierarchyData.children;
 		}
 
-		void UpdateHierarchyData()
+		public void UpdateHierarchyData()
 		{
+#if UNITY_EDITOR
 			if (m_HierarchyProperty == null)
 			{
 				m_HierarchyProperty = new HierarchyProperty(HierarchyType.GameObjects);
@@ -41,10 +59,13 @@ namespace UnityEditor.Experimental.EditorVR
 				m_HierarchyProperty.Reset();
 				m_HierarchyProperty.Next(null);
 			}
+#endif
 
-			var hasNext = true;
 			bool hasChanged = false;
+#if UNITY_EDITOR
+			var hasNext = true;
 			m_HierarchyData = CollectHierarchyData(ref hasNext, ref hasChanged, m_HierarchyData, m_HierarchyProperty);
+#endif
 
 			if (hasChanged)
 			{
@@ -55,6 +76,7 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 
+#if UNITY_EDITOR
 		HierarchyData CollectHierarchyData(ref bool hasNext, ref bool hasChanged, HierarchyData hd, HierarchyProperty hp)
 		{
 			var depth = hp.depth;
@@ -128,6 +150,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			return hd ?? new HierarchyData(name, instanceID, children);
 		}
+#endif
 	}
 }
-#endif
