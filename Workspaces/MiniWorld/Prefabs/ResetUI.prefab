@@ -21,6 +21,7 @@ GameObject:
   - 4: {fileID: 4000013020523898}
   - 114: {fileID: 114000010008684362}
   - 225: {fileID: 225000012263596680}
+  - 114: {fileID: 114000012607748144}
   m_Layer: 5
   m_Name: NewVisibilityButton
   m_TagString: Untagged
@@ -259,6 +260,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ResetButton: {fileID: 114000014132259166}
+--- !u!114 &114000012607748144
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010201826974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_TooltipText: Reset to Origin
+  m_TooltipTarget: {fileID: 0}
 --- !u!114 &114000013753945446
 MonoBehaviour:
   m_ObjectHideFlags: 1

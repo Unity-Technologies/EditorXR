@@ -105,6 +105,7 @@ GameObject:
   - 114: {fileID: 114000014217297154}
   - 114: {fileID: 114000012276274990}
   - 225: {fileID: 225000013394051694}
+  - 114: {fileID: 114000011971583788}
   m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
@@ -253,7 +254,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ZoomSlider: {fileID: 114000011682301028}
-  m_Button: {fileID: 23000014085746768}
 --- !u!114 &114000011682301028
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -315,6 +315,20 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Slider+SliderEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_SelectionFlags: 3
+--- !u!114 &114000011971583788
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011194065778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_TooltipText: Zoom by Dragging the Handle
+  m_TooltipTarget: {fileID: 0}
 --- !u!114 &114000012276274990
 MonoBehaviour:
   m_ObjectHideFlags: 1

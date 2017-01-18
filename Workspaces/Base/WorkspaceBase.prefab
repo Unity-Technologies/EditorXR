@@ -335,6 +335,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 224000012325450348}
+  - 114: {fileID: 114000011923997756}
   m_Layer: 5
   m_Name: ResetButtonContainer
   m_TagString: Untagged
@@ -400,6 +401,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 224000012193787342}
+  - 114: {fileID: 114000014039413872}
   m_Layer: 5
   m_Name: CloseButtonContainer
   m_TagString: Untagged
@@ -2164,6 +2166,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_SelectionFlags: 2
+--- !u!114 &114000011923997756
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011944177398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_TooltipText: Reset Workspace Dimensions
+  m_TooltipTarget: {fileID: 0}
 --- !u!114 &114000011951527348
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3113,6 +3129,20 @@ MonoBehaviour:
   m_SmoothPosition: 1
   m_TightenPosition: 10
   m_Target: {fileID: 0}
+--- !u!114 &114000014039413872
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012243889814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_TooltipText: Close Workspace
+  m_TooltipTarget: {fileID: 0}
 --- !u!114 &114000014067047110
 MonoBehaviour:
   m_ObjectHideFlags: 1
