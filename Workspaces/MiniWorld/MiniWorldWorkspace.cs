@@ -125,7 +125,7 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 		}
 
 		var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();
-		if(zoomTooltip)
+		if (zoomTooltip)
 			zoomTooltip.tooltipText = "Drag the Handle to Zoom the Asset Grid";
 
 		var frontHandle = m_WorkspaceUI.directManipulator.GetComponent<BaseHandle>();

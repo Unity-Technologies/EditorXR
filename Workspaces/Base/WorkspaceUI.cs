@@ -52,6 +52,8 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		private RectTransform m_FrontPanel;
 
+		public Transform topPanel { get; private set; }
+		
 		public DirectManipulator directManipulator { get { return m_DirectManipulator; } }
 		[SerializeField]
 		private DirectManipulator m_DirectManipulator;
@@ -395,6 +397,8 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 
 			if (m_TopPanelDividerOffset == null)
 				m_TopPanelDividerTransform.gameObject.SetActive(false);
+
+			topPanel = m_TopFaceContainer; // The TopFaceContainer serves as the transform that the workspace expects when fetching the TopPanel
 		}
 
 		IEnumerator Start()
