@@ -30,7 +30,7 @@ public class InspectorStringItem : InspectorPropertyItem
 	public void SetValue(string input)
 	{
 		blockUndoPostProcess();
-		Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");f
+		Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
 
 		switch (m_SerializedProperty.propertyType)
 		{
