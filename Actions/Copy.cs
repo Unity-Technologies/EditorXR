@@ -1,9 +1,9 @@
 ﻿using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Copy", ActionMenuItemAttribute.kDefaultActionSectionName, 5)]
+	[Tooltip("Copy")]
 	public class Copy : BaseAction
 	{
 		public override void ExecuteAction()

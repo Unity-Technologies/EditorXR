@@ -272,6 +272,13 @@ namespace UnityEditor.Experimental.EditorVR
 			var requestStencilRef = obj as IRequestStencilRef;
 			if (requestStencilRef != null)
 				requestStencilRef.requestStencilRef = RequestStencilRef;
+
+			var usesTooltip = obj as IUsesTooltip;
+			if (usesTooltip != null)
+			{
+				usesTooltip.showTooltip = m_TooltipModule.ShowTooltip;
+				usesTooltip.hideTooltip = m_TooltipModule.HideTooltip;
+			}
 		}
 
 		void DisconnectInterfaces(object obj)

@@ -42,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR
 		ObjectPlacementModule m_ObjectPlacementModule;
 		LockModule m_LockModule;
 		SelectionModule m_SelectionModule;
+		TooltipModule m_TooltipModule;
 
 		event Action m_SelectionChanged;
 
@@ -83,6 +84,7 @@ namespace UnityEditor.Experimental.EditorVR
 			CreateDeviceDataForInputDevices();
 
 			m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
+			m_TooltipModule = U.Object.AddComponent<TooltipModule>(gameObject);
 
 			CreateEventSystem();
 

@@ -2,8 +2,9 @@
 
 namespace UnityEngine.Experimental.EditorVR
 {
-	public interface IUsesToolTip
+	public interface IUsesTooltip
 	{
-		Action<GameObject> addToolTip { set; }
+		Action<ITooltip> showTooltip { set; }
+		Action<ITooltip> hideTooltip { set; }
 	}
 }

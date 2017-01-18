@@ -1,6 +1,7 @@
 ﻿namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("OpenScene", "Scene")]
+	[Tooltip("Open Scene")]
 	public class OpenScene : BaseAction
 	{
 		public override void ExecuteAction()

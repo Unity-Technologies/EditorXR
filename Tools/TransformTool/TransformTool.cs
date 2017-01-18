@@ -4,12 +4,12 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
-using UnityEngine.InputNew;
 using UnityEngine.Experimental.EditorVR.Actions;
 using UnityEngine.Experimental.EditorVR.Manipulators;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.InputNew;
 
 public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility
 {
@@ -66,9 +66,11 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		}
 	}
 
-	class TransformAction : IAction
+	class TransformAction : IAction, ITooltip
 	{
 		internal Func<bool> execute;
+		public string tooltipText { get; internal set; }
+		public Transform tooltipTarget { get { return null; } } // Not used
 		public Sprite icon { get; internal set; }
 		public void ExecuteAction()
 		{
@@ -171,11 +173,11 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	{
 #if UNITY_EDITOR
 		m_PivotModeToggleAction.execute = TogglePivotMode;
-		UpdatePivotModeToggleIcon();
+		UpdatePivotModeAction();
 		m_PivotRotationToggleAction.execute = TogglePivotRotation;
-		UpdatePivotRotationToggleIcon();
+		UpdatePivotRotationAction();
 		m_ManipulatorToggleAction.execute = ToggleManipulator;
-		UpdateManipulatorToggleIcon();
+		UpdateManipulatorAction();
 #endif
 
 		// Add standard and scale manipulator prefabs to a list (because you cannot add asset references directly to a serialized list)
@@ -522,27 +524,31 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 	bool TogglePivotMode()
 	{
 		m_PivotMode = m_PivotMode == PivotMode.Pivot ? PivotMode.Center : PivotMode.Pivot;
-		UpdatePivotModeToggleIcon();
+		UpdatePivotModeAction();
 		UpdateCurrentManipulator();
 		return true;
 	}
 
-	void UpdatePivotModeToggleIcon()
+	void UpdatePivotModeAction()
 	{
-		m_PivotModeToggleAction.icon = m_PivotMode == PivotMode.Center ? m_OriginCenterIcon : m_OriginPivotIcon;
+		var isCenter = m_PivotMode == PivotMode.Center;
+		m_PivotModeToggleAction.tooltipText = isCenter ? "Manipulator at Center" : "Manipulator at Pivot";
+		m_PivotModeToggleAction.icon = isCenter ? m_OriginCenterIcon : m_OriginPivotIcon;
 	}
 
 	bool TogglePivotRotation()
 	{
 		m_PivotRotation = m_PivotRotation == PivotRotation.Global ? PivotRotation.Local : PivotRotation.Global;
-		UpdatePivotRotationToggleIcon();
+		UpdatePivotRotationAction();
 		UpdateCurrentManipulator();
 		return true;
 	}
 
-	void UpdatePivotRotationToggleIcon()
+	void UpdatePivotRotationAction()
 	{
-		m_PivotRotationToggleAction.icon = m_PivotRotation == PivotRotation.Global ? m_RotationGlobalIcon : m_RotationLocalIcon;
+		var isGlobal = m_PivotRotation == PivotRotation.Global;
+		m_PivotRotationToggleAction.tooltipText = isGlobal ? "Local Rotation" : "Global Rotation";
+		m_PivotRotationToggleAction.icon = isGlobal ? m_RotationGlobalIcon : m_RotationLocalIcon;
 	}
 
 	bool ToggleManipulator()
@@ -550,14 +556,16 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		m_CurrentManipulator.gameObject.SetActive(false);
 
 		m_CurrentManipulator = m_CurrentManipulator == m_StandardManipulator ? m_ScaleManipulator : m_StandardManipulator;
-		UpdateManipulatorToggleIcon();
+		UpdateManipulatorAction();
 		UpdateCurrentManipulator();
 		return true;
 	}
 
-	void UpdateManipulatorToggleIcon()
+	void UpdateManipulatorAction()
 	{
-		m_ManipulatorToggleAction.icon = m_CurrentManipulator == m_StandardManipulator ? m_ScaleManipulatorIcon : m_StandardManipulatorIcon;
+		var isStandard = m_CurrentManipulator == m_StandardManipulator;
+		m_ManipulatorToggleAction.tooltipText = isStandard ? "Switch to Scale Manipulator" : "Switch to Standard Manipulator";
+		m_ManipulatorToggleAction.icon = isStandard ? m_ScaleManipulatorIcon : m_StandardManipulatorIcon;
 	}
 #endif
 }

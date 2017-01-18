@@ -3,6 +3,7 @@
 namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("SelectParent", ActionMenuItemAttribute.kDefaultActionSectionName, 8)]
+	[Tooltip("Select Parent")]
 	public class SelectParent : BaseAction
 	{
 		public override void ExecuteAction()

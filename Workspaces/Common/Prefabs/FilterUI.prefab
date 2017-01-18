@@ -553,38 +553,6 @@ MonoBehaviour:
   m_GrayscaleGradient: 0
   m_AnimatedReveal: 1
   m_DelayBeforeReveal: 0.125
-  m_OnHoverStarted:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 114000012354496050}
-        m_MethodName: Show
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  m_OnHoverEnded:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 114000012354496050}
-        m_MethodName: Hide
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
 --- !u!114 &114000010404580652
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -876,10 +844,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_TextPrefab: {fileID: 1000013835913212, guid: 0b7435b9e20b90949b516c08f26c81f0,
-    type: 2}
-  m_ToolTipText: Filter by type
-  m_Offset: {x: 0, y: 0.04, z: -0.04}
+  m_TooltipText: Fiter by Type
+  m_Target: {fileID: 0}
 --- !u!114 &114000012445660226
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1008,38 +974,6 @@ MonoBehaviour:
   m_GrayscaleGradient: 0
   m_AnimatedReveal: 1
   m_DelayBeforeReveal: 0.125
-  m_OnHoverStarted:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 114000012354496050}
-        m_MethodName: Show
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  m_OnHoverEnded:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 114000012354496050}
-        m_MethodName: Hide
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
 --- !u!114 &114000013883654872
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
 
 namespace UnityEngine.Experimental.EditorVR.UI
 {
@@ -147,7 +146,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		Graphic[] m_HighlightItems;
 
 		[Header("Animated Reveal Settings")]
-		[Tooltip("Default value is 0.25")]
+		[UnityEngine.Tooltip("Default value is 0.25")]
 		// If AnimatedReveal is enabled, wait this duration before performing the reveal
 		[SerializeField]
 		[Range(0f, 2f)]

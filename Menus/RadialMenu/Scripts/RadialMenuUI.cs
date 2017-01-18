@@ -2,14 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
 
 namespace UnityEngine.Experimental.EditorVR.Menus
 {
-	public class RadialMenuUI : MonoBehaviour
+	public class RadialMenuUI : MonoBehaviour, IConnectInterfaces
 	{
 		const float kPhaseOffset = 90f; // Correcting the coordinates, so that 0 degrees is at the top of the radial menu
 		const int kSlotCount = 16;
@@ -28,6 +29,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		List<RadialMenuSlot> m_RadialMenuSlots;
 		Coroutine m_VisibilityCoroutine;
+		RadialMenuSlot m_HighlightedButton;
 
 		public Transform alternateMenuOrigin
 		{
@@ -156,7 +158,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		}
 		Vector2 m_ButtonInputDirection;
 
-		RadialMenuSlot m_HighlightedButton;
+		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 
 		void Start()
 		{
@@ -185,23 +187,17 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 			for (int i = 0; i < kSlotCount; ++i)
 			{
-				Transform menuSlot = null;
-				menuSlot = U.Object.Instantiate(m_RadialMenuSlotTemplate.gameObject).transform;
-				menuSlot.SetParent(m_SlotContainer);
-				menuSlot.localPosition = Vector3.zero;
-				menuSlot.localRotation = Quaternion.identity;
-				menuSlot.localScale = Vector3.one;
-
-				var slotController = menuSlot.GetComponent<RadialMenuSlot>();
-				slotController.orderIndex = i;
-				m_RadialMenuSlots.Add(slotController);
+				var menuSlot = U.Object.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
+				connectInterfaces(menuSlot);
+				menuSlot.orderIndex = i;
+				m_RadialMenuSlots.Add(menuSlot);
 
 				if (slotBorderMaterial == null)
-					slotBorderMaterial = slotController.borderRendererMaterial;
+					slotBorderMaterial = menuSlot.borderRendererMaterial;
 
 				// Set a new shared material for the slots in a RadialMenu.
 				// This isolates shader changes in a RadialMenu's border material to only the slots in a given RadialMenu
-				slotController.borderRendererMaterial = slotBorderMaterial;
+				menuSlot.borderRendererMaterial = slotBorderMaterial;
 			}
 			SetupRadialSlotPositions();
 		}
@@ -245,6 +241,17 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 					buttonAction.ExecuteAction();
 					selectedSlot.icon = buttonAction.icon ?? m_MissingActionIcon;
 				});
+
+				var attributes = action.GetType().GetCustomAttributes(typeof(TooltipAttribute), true);
+				foreach (var attribute in attributes)
+				{
+					slot.tooltip = null;
+					slot.tooltipText = ((TooltipAttribute)attribute).text;
+				}
+
+				var tooltip = action as ITooltip;
+				if (tooltip != null)
+					slot.tooltip = tooltip;
 			}
 		}
 

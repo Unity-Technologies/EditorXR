@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
-using UnityEngine.InputNew;
 using UnityEngine.Experimental.EditorVR.Proxies;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.UI;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.InputNew;
 
 namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-	internal class MultipleRayInputModule : BaseInputModule, IProcessInput
+	internal class MultipleRayInputModule : BaseInputModule, IProcessInput, IUsesTooltip
 	{
 		public class RaycastSource
 		{
@@ -61,6 +61,9 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		// Local method use only -- created here to reduce garbage collection
 		RayEventData m_TempRayEvent;
 		List<RaycastSource> m_RaycastSourcesCopy = new List<RaycastSource>();
+
+		public Action<ITooltip> showTooltip { private get; set; }
+		public Action<ITooltip> hideTooltip { private get; set; }
 
 		protected override void Awake()
 		{
@@ -228,8 +231,15 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			{
 				for (var i = 0; i < cachedEventData.hovered.Count; ++i)
 				{
-					ExecuteEvents.Execute(cachedEventData.hovered[i], eventData, ExecuteRayEvents.rayExitHandler);
-					rayExited(cachedEventData.hovered[i], eventData);
+					var hovered = cachedEventData.hovered[i];
+
+					ExecuteEvents.Execute(hovered, eventData, ExecuteRayEvents.rayExitHandler);
+
+					rayExited(hovered, eventData);
+
+					var tooltip = hovered.GetComponent<ITooltip>();
+					if (tooltip != null)
+						hideTooltip(tooltip);
 				}
 
 				if (newEnterTarget == null)
@@ -268,6 +278,10 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayExitHandler);
 					rayExited(t.gameObject, cachedEventData);
 
+					var tooltip = t.GetComponent<ITooltip>();
+					if (tooltip != null)
+						hideTooltip(tooltip);
+
 					t = t.parent;
 				}
 			}
@@ -279,6 +293,10 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			{
 				ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
 				rayEntered(t.gameObject, cachedEventData);
+
+				var tooltip = t.GetComponent<ITooltip>();
+				if (tooltip != null)
+					showTooltip(tooltip);
 
 				t = t.parent;
 			}

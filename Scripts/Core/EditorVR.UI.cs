@@ -40,6 +40,7 @@ namespace UnityEditor.Experimental.EditorVR
 			U.Object.AddComponent<EventSystem>(gameObject);
 
 			m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
+			ConnectInterfaces(m_InputModule);
 			m_InputModule.getPointerLength = GetPointerLength;
 
 			if (m_CustomPreviewCamera != null)

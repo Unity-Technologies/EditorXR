@@ -1,12 +1,14 @@
-﻿using System.Collections;
-using UnityEngine.UI;
+﻿using System;
+using System.Collections;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Helpers;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
+using Button = UnityEngine.UI.Button;
 
 namespace UnityEngine.Experimental.EditorVR.Menus
 {
-	public class RadialMenuSlot : MonoBehaviour
+	public class RadialMenuSlot : MonoBehaviour, IUsesTooltip, ITooltip
 	{
 		static readonly Vector3 kHiddenLocalScale = new Vector3(1f, 0f, 1f);
 		const float m_IconHighlightedLocalYOffset = 0.006f;
@@ -73,12 +75,38 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				}
 				else
 					m_IconHighlightCoroutine = StartCoroutine(IconEndHighlight());
+
+				if (m_Highlighted)
+					showTooltip(this);
+				else
+					hideTooltip(this);
 			}
 		}
 		bool m_Highlighted;
 
-		GradientPair m_OriginalInsetGradientPair;
+		public GradientPair gradientPair
+		{
+			set
+			{
+				s_GradientPair = value;
+				m_BorderRendererMaterial.SetColor(kMaterialColorTopProperty, value.a);
+				m_BorderRendererMaterial.SetColor(kMaterialColorBottomProperty, value.b);
+			}
+		}
+		static GradientPair s_GradientPair;
+
+		public Material borderRendererMaterial
+		{
+			get { return U.Material.GetMaterialClone(m_BorderRenderer); } // return new unique color to the RadialMenuUI for settings in each RadialMenuSlot contained in a given RadialMenu
+			set
+			{
+				m_BorderRendererMaterial = value;
+				m_BorderRenderer.sharedMaterial = value;
+			}
+		}
 		Material m_BorderRendererMaterial;
+
+		GradientPair m_OriginalInsetGradientPair;
 		Transform m_IconTransform;
 		Material m_InsetMaterial;
 		Vector3 m_VisibleInsetLocalScale;
@@ -93,37 +121,26 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
-		
-		public Material borderRendererMaterial
-		{
-			get { return U.Material.GetMaterialClone(m_BorderRenderer); } // return new unique color to the RadialMenuUI for settings in each RadialMenuSlot contained in a given RadialMenu
-			set
-			{
-				m_BorderRendererMaterial = value;
-				m_BorderRenderer.sharedMaterial = value;
-			}
-		}
+
+		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
+		string m_TooltipText;
+
+		public Sprite icon { set { m_Icon.sprite = value; } get { return m_Icon.sprite; } }
+		public Button button { get { return m_Button; } }
 
 		public int orderIndex { get; set; }
-
-		public Button button { get { return m_Button; } }
 
 		public static Quaternion hiddenLocalRotation { get; set; } // All menu slots share the same hidden location
 
 		public Quaternion visibleLocalRotation { get; set; }
 
-		public Sprite icon { set { m_Icon.sprite = value; } get { return m_Icon.sprite; } }
+		public Action<ITooltip> showTooltip { private get; set; }
+		public Action<ITooltip> hideTooltip { private get; set; }
 
-		public GradientPair gradientPair
-		{
-			set
-			{
-				s_GradientPair = value;
-				m_BorderRendererMaterial.SetColor(kMaterialColorTopProperty, value.a);
-				m_BorderRendererMaterial.SetColor(kMaterialColorBottomProperty, value.b);
-			}
-		}
-		static GradientPair s_GradientPair;
+		// For overriding text (i.e. TransformActions)
+		public ITooltip tooltip { private get; set; }
+
+		public Transform tooltipTarget { get { return m_IconContainer; } }
 
 		void Awake()
 		{

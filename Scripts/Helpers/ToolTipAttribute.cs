@@ -2,8 +2,13 @@
 
 namespace UnityEngine.Experimental.EditorVR
 {
-	public class ToolTipAttribute : Attribute
+	public class TooltipAttribute : Attribute
 	{
-		public Vector3 localOffset;
+		public string text;
+
+		public TooltipAttribute(string text)
+		{
+			this.text = text;
+		}
 	}
 }

@@ -1,11 +1,11 @@
 ﻿using System.Collections;
-using UnityEngine.Events;
-using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Helpers;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
+using TooltipAttribute = UnityEngine.TooltipAttribute;
 
 namespace UnityEngine.Experimental.EditorVR.Workspaces
 {
@@ -82,11 +82,6 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 						return;
 
 					m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
-
-					if (m_Highlighted)
-						m_OnHoverStarted.Invoke();
-					else
-						m_OnHoverEnded.Invoke();
 				}
 			}
 		}
@@ -140,12 +135,6 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		[Range(0f, 2f)]
 		float m_DelayBeforeReveal = 0.25f;
-
-		[SerializeField]
-		private UnityEvent m_OnHoverStarted = new UnityEvent();
-
-		[SerializeField]
-		private UnityEvent m_OnHoverEnded = new UnityEvent();
 
 		GradientPair m_OriginalGradientPair;
 		GradientPair m_HighlightGradientPair;

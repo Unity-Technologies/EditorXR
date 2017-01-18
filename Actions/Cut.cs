@@ -1,9 +1,9 @@
 ﻿using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Tools;
 
 namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Cut", ActionMenuItemAttribute.kDefaultActionSectionName, 4)]
+	[Tooltip("Cut")]
 	public class Cut : BaseAction
 	{
 		public override void ExecuteAction()

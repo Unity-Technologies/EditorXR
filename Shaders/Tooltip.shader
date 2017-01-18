@@ -20,20 +20,11 @@ Shader "EditorVR/UI/Tooltip"
 	{
 		Tags
 		{
-			"Queue" = "Transparent"
+			"Queue" = "Transparent+7000"
 			"IgnoreProjector" = "True"
 			"RenderType" = "Transparent"
 			"PreviewType" = "Plane"
 			"CanUseSpriteAtlas" = "True"
-		}
-
-		Stencil
-		{
-			Ref[_Stencil]
-			Comp[_StencilComp]
-			Pass[_StencilOp]
-			ReadMask[_StencilReadMask]
-			WriteMask[_StencilWriteMask]
 		}
 
 		Cull Off
@@ -41,7 +32,6 @@ Shader "EditorVR/UI/Tooltip"
 		ZWrite Off
 		ZTest Off
 		Blend SrcAlpha OneMinusSrcAlpha
-		ColorMask[_ColorMask]
 
 		Pass
 		{
