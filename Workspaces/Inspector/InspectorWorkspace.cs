@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
@@ -62,6 +63,8 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 		if (Selection.activeGameObject)
 			OnSelectionChanged();
+
+		Undo.postprocessModifications += PostprocessModifications;
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -121,34 +124,42 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 			return;
 		}
 
+		m_SelectedObject = Selection.activeGameObject;
+		UpdateInspectorData(m_SelectedObject);
+	}
+
+	void UpdateInspectorData(GameObject selection)
+	{
 		var inspectorData = new List<InspectorData>();
 		var objectChildren = new List<InspectorData>();
+		
+		foreach(var component in selection.GetComponents<Component>()) {
+			var obj = new SerializedObject(component);
 
-		if (Selection.activeGameObject)
-		{
-			m_SelectedObject = Selection.activeGameObject;
-			foreach (var component in m_SelectedObject.GetComponents<Component>())
-			{
-				var obj = new SerializedObject(component);
+			var componentChildren = new List<InspectorData>();
 
-				var componentChildren = new List<InspectorData>();
-
-				var property = obj.GetIterator();
-				while (property.NextVisible(true))
-				{
-					if (property.depth == 0)
-						componentChildren.Add(SerializedPropertyToPropertyData(property, obj));
-				}
-
-				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren);
-				objectChildren.Add(componentData);
+			var property = obj.GetIterator();
+			while(property.NextVisible(true)) {
+				if(property.depth == 0)
+					componentChildren.Add(SerializedPropertyToPropertyData(property, obj));
 			}
+
+			var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren);
+			objectChildren.Add(componentData);
 		}
 
-		var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(Selection.activeObject), objectChildren);
+		var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(selection), objectChildren);
 		inspectorData.Add(objectData);
 
 		m_InspectorUI.listView.data = inspectorData;
+	}
+
+	UndoPropertyModification[] PostprocessModifications(UndoPropertyModification[] modifications)
+	{
+		if (m_SelectedObject)
+			UpdateInspectorData(m_SelectedObject);
+
+		return modifications;
 	}
 
 	PropertyData SerializedPropertyToPropertyData(SerializedProperty property, SerializedObject obj)
@@ -288,6 +299,12 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 		if (!m_IsLocked)
 			OnSelectionChanged();
+	}
+
+	protected override void OnDestroy()
+	{
+		Undo.postprocessModifications -= PostprocessModifications;
+		base.OnDestroy();
 	}
 #else
 	public void OnSelectionChanged()

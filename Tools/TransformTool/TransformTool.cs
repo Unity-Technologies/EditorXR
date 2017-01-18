@@ -365,6 +365,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 				manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, kLazyFollowRotate * deltaTime);
 #endif
 
+			UnityEditor.Undo.RecordObjects(Selection.transforms, "EditorVR Manipulator");
+
 			foreach (var t in Selection.transforms)
 			{
 				t.rotation = Quaternion.Slerp(t.rotation, m_TargetRotation * m_RotationOffsets[t], kLazyFollowRotate * deltaTime);
