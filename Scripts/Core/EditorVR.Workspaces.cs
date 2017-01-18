@@ -97,14 +97,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			DisconnectInterfaces(workspace);
 
-			var projectFolderList = workspace as IUsesProjectFolderData;
-			if (projectFolderList != null)
-				m_ProjectFolderLists.Remove(projectFolderList);
-
-			var filterUI = workspace as IFilterUI;
-			if (filterUI != null)
-				m_FilterUIs.Remove(filterUI);
-
 			var miniWorldWorkspace = workspace as MiniWorldWorkspace;
 			if (miniWorldWorkspace != null)
 			{

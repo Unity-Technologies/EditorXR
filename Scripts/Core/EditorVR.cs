@@ -43,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR
 		LockModule m_LockModule;
 		SelectionModule m_SelectionModule;
 		HierarchyModule m_HierarchyModule;
+		ProjectFolderModule m_ProjectFolderModule;
 
 		event Action m_SelectionChanged;
 
@@ -54,10 +55,8 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			ClearDeveloperConsoleIfNecessary();
 
-			m_HierarchyModule = U.Object.AddComponent<HierarchyModule>(gameObject);
-
-			UpdateProjectFolders();
-			m_HierarchyModule.UpdateHierarchyData();
+			m_HierarchyModule = U.Object.AddComponent<HierarchyModule>(gameObject);			
+			m_ProjectFolderModule = U.Object.AddComponent<ProjectFolderModule>(gameObject);
 
 			VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 			if (VRSettings.loadedDeviceName == "OpenVR")
@@ -210,7 +209,6 @@ namespace UnityEditor.Experimental.EditorVR
 #if UNITY_EDITOR
 			EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 			VRView.onGUIDelegate += OnSceneGUI;
-			EditorApplication.projectWindowChanged += UpdateProjectFolders;
 #endif
 		}
 
@@ -220,7 +218,6 @@ namespace UnityEditor.Experimental.EditorVR
 #if UNITY_EDITOR
 			EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 			VRView.onGUIDelegate -= OnSceneGUI;
-			EditorApplication.projectWindowChanged -= UpdateProjectFolders;
 #endif
 		}
 

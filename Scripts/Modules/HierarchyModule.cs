@@ -12,18 +12,13 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		void OnEnable()
 		{
-			EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
+			EditorApplication.hierarchyWindowChanged += UpdateHierarchyData;
+			UpdateHierarchyData();
 		}
 
 		void OnDisable()
 		{
-			EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
-		}
-
-		// TODO: Find a better callback for when objects are created or destroyed
-		void OnHierarchyChanged()
-		{
-			UpdateHierarchyData();
+			EditorApplication.hierarchyWindowChanged -= UpdateHierarchyData;
 		}
 #endif
 
@@ -46,7 +41,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			return m_HierarchyData.children;
 		}
 
-		public void UpdateHierarchyData()
+		void UpdateHierarchyData()
 		{
 #if UNITY_EDITOR
 			if (m_HierarchyProperty == null)

@@ -199,23 +199,17 @@ namespace UnityEditor.Experimental.EditorVR
 			if (alternateMenu != null)
 				alternateMenu.menuActions = m_MenuActions;
 
-			var projectFolderList = obj as IUsesProjectFolderData;
-			if (projectFolderList != null)
-			{
-				projectFolderList.folderData = GetFolderData();
-				m_ProjectFolderLists.Add(projectFolderList);
-			}
+			var usesProjectFolderData = obj as IUsesProjectFolderData;
+			if (usesProjectFolderData != null)
+				m_ProjectFolderModule.AddConsumer(usesProjectFolderData);
 
-			var usesHierarchy = obj as IUsesHierarchyData;
-			if (usesHierarchy != null)
-				m_HierarchyModule.AddConsumer(usesHierarchy);
+			var usesHierarchyData = obj as IUsesHierarchyData;
+			if (usesHierarchyData != null)
+				m_HierarchyModule.AddConsumer(usesHierarchyData);
 
 			var filterUI = obj as IFilterUI;
 			if (filterUI != null)
-			{
-				filterUI.filterList = GetFilterList();
-				m_FilterUIs.Add(filterUI);
-			}
+				m_ProjectFolderModule.AddConsumer(filterUI);
 
 			// Tracked Object action maps shouldn't block each other so we share an instance
 			var trackedObjectMap = obj as ITrackedObjectActionMap;
@@ -294,9 +288,17 @@ namespace UnityEditor.Experimental.EditorVR
 				grabObjects.objectsDropped -= OnObjectsDropped;
 			}
 
+			var usesProjectFolderData = obj as IUsesProjectFolderData;
+			if (usesProjectFolderData != null)
+				m_ProjectFolderModule.RemoveConsumer(usesProjectFolderData);
+
 			var usesHierarchy = obj as IUsesHierarchyData;
 			if (usesHierarchy != null)
 				m_HierarchyModule.RemoveConsumer(usesHierarchy);
+
+			var filterUI = obj as IFilterUI;
+			if (filterUI != null)
+				m_ProjectFolderModule.RemoveConsumer(filterUI);
 
 			var manipulatorVisiblity = obj as IManipulatorVisibility;
 			if (manipulatorVisiblity != null)
