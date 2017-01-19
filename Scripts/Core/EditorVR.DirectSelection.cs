@@ -1,4 +1,5 @@
 #if UNITY_EDITORVR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -164,26 +165,22 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				// Dropping the player head updates the viewer pivot
 				if (grabbedObject.CompareTag(kVRPlayerTag))
-					StartCoroutine(UpdateViewerPivot(grabbedObject));
+					DropPlayerHead(grabbedObject);
 				else if (IsOverShoulder(rayOrigin) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 					DeleteSceneObject(grabbedObject.gameObject);
 			}
 		}
 
-		static IEnumerator UpdateViewerPivot(Transform playerHead)
+		void DropPlayerHead(Transform playerHead)
 		{
 			var viewerPivot = U.Camera.GetViewerPivot();
+			var mainCamera = U.Camera.GetMainCamera().transform;
 
 			// Hide player head to avoid jarring impact
 			var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
-			foreach (var renderer in playerHeadRenderers)
-			{
+			foreach(var renderer in playerHeadRenderers) {
 				renderer.enabled = false;
 			}
-
-			var mainCamera = U.Camera.GetMainCamera().transform;
-			var startPosition = viewerPivot.position;
-			var startRotation = viewerPivot.rotation;
 
 			var rotationDiff = U.Math.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
 			var cameraDiff = viewerPivot.position - mainCamera.position;
@@ -192,8 +189,37 @@ namespace UnityEditor.Experimental.EditorVR
 
 			var endPosition = viewerPivot.position + (playerHead.position - mainCamera.position) + rotationOffset;
 			var endRotation = viewerPivot.rotation * rotationDiff;
+			var viewDirection = endRotation * Vector3.forward;
+
+			StartCoroutine(UpdateViewerPivot(endPosition, viewDirection, () =>
+			{
+				playerHead.parent = mainCamera;
+				playerHead.localRotation = Quaternion.identity;
+				playerHead.localPosition = Vector3.zero;
+
+				foreach(var renderer in playerHeadRenderers) {
+					renderer.enabled = true;
+				}
+			}));
+		}
+
+		static IEnumerator UpdateViewerPivot(Vector3 position, Vector3? viewDirection, Action onComplete = null)
+		{
+			var viewerPivot = U.Camera.GetViewerPivot();
+
+			var startPosition = viewerPivot.position;
+			var startRotation = viewerPivot.rotation;
+
 			var startTime = Time.realtimeSinceStartup;
 			var diffTime = 0f;
+
+			var rotation = startRotation;
+			if (viewDirection.HasValue)
+			{
+				var direction = viewDirection.Value;
+				direction.y = 0;
+				rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+			}
 
 			while (diffTime < kViewerPivotTransitionTime)
 			{
@@ -201,22 +227,21 @@ namespace UnityEditor.Experimental.EditorVR
 				var t = diffTime / kViewerPivotTransitionTime;
 
 				// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
-				viewerPivot.position = Vector3.Lerp(startPosition, endPosition, t);
-				viewerPivot.rotation = Quaternion.Lerp(startRotation, endRotation, t);
+				viewerPivot.position = Vector3.Lerp(startPosition, position, t);
+				viewerPivot.rotation = Quaternion.Lerp(startRotation, rotation, t);
 				yield return null;
 			}
 
-			viewerPivot.position = endPosition;
-			viewerPivot.rotation = endRotation;
+			viewerPivot.position = position;
+			viewerPivot.rotation = rotation;
 
-			playerHead.parent = mainCamera;
-			playerHead.localRotation = Quaternion.identity;
-			playerHead.localPosition = Vector3.zero;
+			if (onComplete != null)
+				onComplete();
+		}
 
-			foreach (var renderer in playerHeadRenderers)
-			{
-				renderer.enabled = true;
-			}
+		void MoveViewerPivot(Vector3 position, Vector3? viewdirection)
+		{
+			StartCoroutine(UpdateViewerPivot(position, viewdirection));
 		}
 	}
 }

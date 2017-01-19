@@ -272,6 +272,10 @@ namespace UnityEditor.Experimental.EditorVR
 			var requestStencilRef = obj as IRequestStencilRef;
 			if (requestStencilRef != null)
 				requestStencilRef.requestStencilRef = RequestStencilRef;
+
+			var moveViewerPivot = obj as IMoveViewerPivot;
+			if (moveViewerPivot != null)
+				moveViewerPivot.moveViewerPivot = MoveViewerPivot;
 		}
 
 		void DisconnectInterfaces(object obj)

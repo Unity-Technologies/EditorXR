@@ -6,9 +6,10 @@ using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Menus;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
+using UnityEngine.UI;
 
 [MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
-public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged
+public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveViewerPivot
 {
 	const float kYBounds = 0.2f;
 	const float kScrollMargin = 0.03f;
@@ -18,6 +19,9 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 
 	[SerializeField]
 	GameObject m_FilterPrefab;
+
+	[SerializeField]
+	GameObject m_FocusPrefab;
 
 	HierarchyUI m_HierarchyUI;
 	FilterUI m_FilterUI;
@@ -51,6 +55,8 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 	}
 	List<string> m_FilterList;
 
+	public MoveViewerPivotDelegate moveViewerPivot { private get; set; }
+
 	public override void Setup()
 	{
 		// Initial bounds must be set before the base.Setup() is called
@@ -69,6 +75,12 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 			connectInterfaces(mb);
 		}
 		m_FilterUI.filterList = m_FilterList;
+
+		var focusUI = U.Object.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
+		foreach(var mb in focusUI.GetComponentsInChildren<MonoBehaviour>()) {
+			connectInterfaces(mb);
+		}
+		focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
 
 		var hierarchyListView = m_HierarchyUI.listView;
 		hierarchyListView.selectRow = SelectRow;
@@ -179,5 +191,27 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 	public void OnSelectionChanged()
 	{
 		m_HierarchyUI.listView.SelectRow(Selection.activeInstanceID);
+	}
+
+	void FocusSelection()
+	{
+		if (Selection.gameObjects.Length == 0)
+			return;
+
+		var viewerPivot = U.Camera.GetViewerPivot();
+		var mainCamera = U.Camera.GetMainCamera().transform;
+		var bounds = U.Object.GetBounds(Selection.gameObjects);
+		var maxSize = bounds.size.MaxComponent();
+		const float kExtraDistance = 0.25f; // Add some extra distance so selection isn't in your face
+		maxSize += kExtraDistance;
+
+		var viewDirection = mainCamera.transform.forward;
+		viewDirection.y = 0;
+		viewDirection.Normalize();
+
+		var cameraDiff = mainCamera.position - viewerPivot.position;
+		cameraDiff.y = 0;
+
+		moveViewerPivot(bounds.center - cameraDiff - viewDirection * maxSize);
 	}
 }
