@@ -38,16 +38,20 @@ namespace UnityEditor.Experimental.EditorVR
 		void ConnectInterfaces(object obj, InputDevice device)
 		{
 			Transform rayOrigin = null;
+			var node = Node.LeftHand;
 			ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
 			{
 				if (rayOriginDevice == device)
+				{
+					node = rayOriginPair.Key;
 					rayOrigin = rayOriginPair.Value;
+				}
 			});
 
-			ConnectInterfaces(obj, rayOrigin);
+			ConnectInterfaces(obj, rayOrigin, node);
 		}
 
-		void ConnectInterfaces(object obj, Transform rayOrigin = null)
+		void ConnectInterfaces(object obj, Transform rayOrigin = null, Node node = Node.LeftHand)
 		{
 			if (!m_ConnectedInterfaces.Add(obj))
 				return;
@@ -61,6 +65,10 @@ namespace UnityEditor.Experimental.EditorVR
 				var ray = obj as IUsesRayOrigin;
 				if (ray != null)
 					ray.rayOrigin = rayOrigin;
+
+				var handedRay = obj as IUsesHandedRayOrigin;
+				if(handedRay != null)
+					handedRay.node = node;
 
 				var usesProxy = obj as IUsesProxyType;
 				if (usesProxy != null)

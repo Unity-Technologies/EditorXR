@@ -2,11 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Proxies;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
-public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesRayOrigin, ICustomActionMap, ILinkedTool
+public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesHandedRayOrigin, ICustomActionMap, ILinkedTool, IUsesProxyType
 {
 	const float kRotationSpeed = 300f;
 	const float kMoveSpeed = 5f;
@@ -55,8 +57,11 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	public Func<Transform, object, bool> unlockRay { private get; set; }
 
 	public Transform rayOrigin { private get; set; }
+	public Node node { private get; set; }
 
 	public bool primary { get; set; }
+
+	public Type proxyType { private get; set; }
 
 	private void Start()
 	{
@@ -87,20 +92,11 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		if (m_State == State.Moving || (s_ActiveBlinkTool != null && s_ActiveBlinkTool != this))
 			return;
 
-		var viewerCamera = U.Camera.GetMainCamera();
-
 		var yawValue = blinkInput.yaw.value;
 		var forwardValue = blinkInput.forward.value;
 
-		if (blinkInput.grip.isHeld)
-			m_Grip = blinkInput.grip;
-		else
-			m_Grip = null;
-
-		if(blinkInput.thumb.isHeld)
-			m_Thumb = blinkInput.thumb;
-		else
-			m_Thumb = null;
+		m_Grip = blinkInput.grip.isHeld ? blinkInput.grip : null;
+		m_Thumb = blinkInput.thumb.isHeld ? blinkInput.thumb : null;
 
 		if (primary)
 		{
@@ -166,8 +162,10 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			}
 		}
 
-		if (m_EnableJoystick)
+		if (m_EnableJoystick && (proxyType != typeof(ViveProxy) || m_Thumb != null))
 		{
+			var viewerCamera = U.Camera.GetMainCamera();
+
 			if (Mathf.Abs(yawValue) > Mathf.Abs(forwardValue))
 			{
 				if (!Mathf.Approximately(yawValue, 0))
@@ -182,12 +180,18 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			{
 				if (!Mathf.Approximately(forwardValue, 0))
 				{
-					var forward = viewerCamera.transform.forward;
-					forward.y = 0;
-					forward.Normalize();
-					forwardValue = forwardValue * forwardValue * Mathf.Sign(forwardValue);
+					forwardValue = forwardValue * forwardValue * Mathf.Sign(forwardValue) * viewerPivot.localScale.x;
 
-					viewerPivot.Translate(forward * forwardValue * kMoveSpeed * Time.unscaledDeltaTime, Space.World);
+					var direction = Vector3.up;
+
+					if (node == Node.LeftHand)
+					{
+						direction = viewerCamera.transform.forward;
+						direction.y = 0;
+						direction.Normalize();
+					}
+
+					viewerPivot.Translate(direction * forwardValue * kMoveSpeed * Time.unscaledDeltaTime, Space.World);
 					consumeControl(blinkInput.forward);
 				}
 			}

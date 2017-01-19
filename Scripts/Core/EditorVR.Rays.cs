@@ -68,7 +68,9 @@ namespace UnityEditor.Experimental.EditorVR
 					var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
 					rayTransform.position = rayOriginPairValue.position;
 					rayTransform.rotation = rayOriginPairValue.rotation;
-					m_DefaultRays.Add(rayOriginPairValue, rayTransform.GetComponent<DefaultProxyRay>());
+					var dpr = rayTransform.GetComponent<DefaultProxyRay>();
+					ConnectInterfaces(dpr);
+					m_DefaultRays.Add(rayOriginPairValue, dpr);
 
 					var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginPairValue).transform;
 					malletTransform.position = rayOriginPairValue.position;

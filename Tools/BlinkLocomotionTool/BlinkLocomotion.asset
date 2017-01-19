@@ -135,7 +135,7 @@ MonoBehaviour:
   m_ControlData:
     componentControlIndices: 
     controlType:
-      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
     name: Thumb
     defaultValue: 0
@@ -156,7 +156,7 @@ MonoBehaviour:
   m_ControlData:
     componentControlIndices: 
     controlType:
-      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
     name: Grip
     defaultValue: 0

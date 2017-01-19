@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-internal class DefaultProxyRay : MonoBehaviour
+internal class DefaultProxyRay : MonoBehaviour, IUsesViewerPivot
 {
 	[SerializeField]
 	private VRLineRenderer m_LineRenderer;
@@ -30,6 +30,8 @@ internal class DefaultProxyRay : MonoBehaviour
 	/// If the object reference becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
 	/// </summary>
 	private object m_LockRayObject;
+
+	public Transform viewerPivot { private get; set; }
 
 	public bool LockRay(object lockCaller)
 	{
@@ -122,11 +124,15 @@ internal class DefaultProxyRay : MonoBehaviour
 		if (!rayVisible)
 			return;
 
+		var pivotScale = viewerPivot.localScale.x;
+		var scaledWidth = m_LineWidth * pivotScale;
+		var scaledLength = length / pivotScale;
+
 		var lineRendererTransform = m_LineRenderer.transform;
-		lineRendererTransform.localScale = Vector3.one * length;
-		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth * length);
+		lineRendererTransform.localScale = Vector3.one * scaledLength;
+		m_LineRenderer.SetWidth(scaledWidth, scaledWidth * scaledLength);
 		m_Tip.transform.position = transform.position + transform.forward * length;
-		m_Tip.transform.localScale = length * m_TipStartScale;
+		m_Tip.transform.localScale = scaledLength * m_TipStartScale;
 
 		const float kLineRendererStartingOffset = 0.085f; // offset the ray starting point in front of the direct-select cone
 		m_LineRenderer.SetPosition(0, new Vector3(0f, 0f, (1f / lineRendererTransform.localScale.x) * kLineRendererStartingOffset));
