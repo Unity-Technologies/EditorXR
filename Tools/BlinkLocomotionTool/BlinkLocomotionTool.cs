@@ -1,12 +1,12 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Helpers;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.InputNew;
 
-public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesRayOrigin, ICustomActionMap
+public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesRayOrigin, ICustomActionMap, ILinkedTool
 {
 	const float kRotationSpeed = 300f;
 	const float kMoveSpeed = 5f;
@@ -29,18 +29,31 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	private State m_State = State.Inactive;
 
+	bool m_Scaling;
+	float m_StartScale;
+	float m_StartDistance;
+	Vector3 m_StartPosition;
+	Vector3 m_PlayerVector;
+
 	public Transform viewerPivot { private get; set; }
 
 	public ActionMap actionMap { get { return m_BlinkActionMap; } }
 	[SerializeField]
 	private ActionMap m_BlinkActionMap;
 
+	public List<ILinkedTool> otherTools { get { return m_OtherTools; } }
+	readonly List<ILinkedTool> m_OtherTools = new List<ILinkedTool>();
+
 	public DefaultRayVisibilityDelegate showDefaultRay { get; set; }
 	public DefaultRayVisibilityDelegate hideDefaultRay { get; set; }
 	public Func<Transform, object, bool> lockRay { get; set; }
 	public Func<Transform, object, bool> unlockRay { get; set; }
 
-	public Transform rayOrigin { private get; set; }
+	public Transform rayOrigin { get; set; }
+
+	public bool primary { get; set; }
+
+	public InputControl grip { get; private set; }
 
 	private void Start()
 	{
@@ -75,6 +88,46 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 		var yawValue = blinkInput.yaw.value;
 		var forwardValue = blinkInput.forward.value;
+
+		if (blinkInput.grip.isHeld)
+			grip = blinkInput.grip;
+		else
+			grip = null;
+
+		var scaling = false;
+		if (primary && grip != null)
+		{
+			foreach (var linkedTool in otherTools)
+			{
+				var blinkTool = (BlinkLocomotionTool)linkedTool;
+				if (blinkTool.grip != null)
+				{
+					consumeControl(grip);
+					consumeControl(blinkTool.grip);
+
+					var distance = Vector3.Distance(viewerPivot.InverseTransformPoint(rayOrigin.position),
+						viewerPivot.InverseTransformPoint(blinkTool.rayOrigin.position));
+
+					if (!m_Scaling)
+					{
+						m_StartScale = viewerPivot.localScale.x;
+						m_StartDistance = distance;
+						m_PlayerVector = viewerPivot.position - U.Camera.GetMainCamera().transform.position;
+						m_PlayerVector.y = 0;
+						m_StartPosition = viewerPivot.position - m_PlayerVector;
+					}
+
+					scaling = true;
+
+					var scaleFactor = m_StartDistance / distance;
+					viewerPivot.position = m_StartPosition + m_PlayerVector * scaleFactor;
+					viewerPivot.localScale = Vector3.one * m_StartScale * scaleFactor;
+					break;
+				}
+			}
+		}
+
+		m_Scaling = scaling;
 
 		if (Mathf.Abs(yawValue) > Mathf.Abs(forwardValue))
 		{

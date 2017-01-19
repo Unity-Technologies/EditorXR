@@ -1,4 +1,5 @@
 #if UNITY_EDITORVR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -17,6 +18,8 @@ namespace UnityEditor.Experimental.EditorVR
 		const byte kMinStencilRef = 2;
 
 		readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
+
+		readonly Dictionary<Type, List<ILinkedTool>> m_LinkedTools = new Dictionary<Type, List<ILinkedTool>>();
 
 		byte stencilRef
 		{
@@ -272,6 +275,27 @@ namespace UnityEditor.Experimental.EditorVR
 			var requestStencilRef = obj as IRequestStencilRef;
 			if (requestStencilRef != null)
 				requestStencilRef.requestStencilRef = RequestStencilRef;
+
+			var linkedTool = obj as ILinkedTool;
+			if (linkedTool != null)
+			{
+				List<ILinkedTool> otherTools;
+				var type = obj.GetType();
+				if (m_LinkedTools.TryGetValue(type, out otherTools))
+				{
+					foreach (var otherTool in otherTools)
+					{
+						otherTool.otherTools.Add(linkedTool);
+					}
+
+					linkedTool.otherTools.AddRange(otherTools);
+				}
+				else
+				{
+					linkedTool.primary = true;
+					m_LinkedTools[type] = new List<ILinkedTool> { linkedTool };
+				}
+			}
 		}
 
 		void DisconnectInterfaces(object obj)
