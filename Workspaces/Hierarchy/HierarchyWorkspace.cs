@@ -201,7 +201,11 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 		var viewerPivot = U.Camera.GetViewerPivot();
 		var mainCamera = U.Camera.GetMainCamera().transform;
 		var bounds = U.Object.GetBounds(Selection.gameObjects);
-		var maxSize = bounds.size.MaxComponent();
+
+		var size = bounds.size;
+		size.y = 0;
+		var maxSize = size.MaxComponent();
+
 		const float kExtraDistance = 0.25f; // Add some extra distance so selection isn't in your face
 		maxSize += kExtraDistance;
 
