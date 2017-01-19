@@ -20,9 +20,9 @@
 	}
 	SubShader
 	{
-		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent-1" }
+		Tags{ "RenderType" = "Transparent" "Queue" = "Overlay+5104" }
 		LOD 200
-		ZWrite Off
+		ZWrite On
 
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types

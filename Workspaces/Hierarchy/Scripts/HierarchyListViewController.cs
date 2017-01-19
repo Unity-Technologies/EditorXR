@@ -49,6 +49,7 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		hierarchyItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.instanceID == m_SelectedRow);
 
 		SetMaterialClip(hierarchyItem.cubeMaterial, transform.worldToLocalMatrix);
+		SetMaterialClip(hierarchyItem.marginCubeMaterial, transform.worldToLocalMatrix);
 
 		UpdateItemTransform(item.transform, offset);
 	}

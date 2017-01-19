@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class HierarchyListItem : ListViewItem<HierarchyData>
+public class HierarchyListItem : DraggableListItem<HierarchyData>
 {
 	const float kMargin = 0.01f;
 	const float kIndent = 0.02f;
@@ -23,6 +23,9 @@ public class HierarchyListItem : ListViewItem<HierarchyData>
 	BaseHandle m_ExpandArrow;
 
 	[SerializeField]
+	BaseHandle m_MarginCube;
+
+	[SerializeField]
 	Material m_NoClipCubeMaterial;
 
 	[SerializeField]
@@ -36,10 +39,17 @@ public class HierarchyListItem : ListViewItem<HierarchyData>
 
 	Color m_NormalColor;
 	bool m_Hovering;
-	Renderer m_CubeRenderer;
 	Transform m_CubeTransform;
+	Transform m_MarginCubeTransform;
 
-	public Material cubeMaterial { get { return m_CubeRenderer.sharedMaterial; } }
+	float m_MarginHighlightAlpha;
+
+	public Material cubeMaterial { get { return m_CubeMaterial; } }
+	Material m_CubeMaterial;
+
+	public Material marginCubeMaterial { get { return m_MarginCubeMaterial; } }
+	Material m_MarginCubeMaterial;
+
 	public Action<HierarchyData> toggleExpanded { private get; set; }
 	public Action<int> selectRow { private get; set; }
 	
@@ -47,12 +57,12 @@ public class HierarchyListItem : ListViewItem<HierarchyData>
 	{
 		base.Setup(listData);
 		// First time setup
-		if (m_CubeRenderer == null)
+		if (m_CubeMaterial == null)
 		{
 			// Cube material might change for hover state, so we always instance it
-			m_CubeRenderer = m_Cube.GetComponent<Renderer>();
-			m_NormalColor = m_CubeRenderer.sharedMaterial.color;
-			U.Material.GetMaterialClone(m_CubeRenderer);
+			var cubeRenderer = m_Cube.GetComponent<Renderer>();
+			m_CubeMaterial = U.Material.GetMaterialClone(cubeRenderer);
+			m_NormalColor = m_CubeMaterial.color;
 
 			m_ExpandArrow.dragEnded += ToggleExpanded;
 			m_Cube.dragStarted += SelectFolder;
@@ -60,9 +70,24 @@ public class HierarchyListItem : ListViewItem<HierarchyData>
 
 			m_Cube.hoverStarted += OnHoverStarted;
 			m_Cube.hoverEnded += OnHoverEnded;
+
+			var marginCubeRenderer = m_MarginCube.GetComponent<Renderer>();
+			m_MarginCubeMaterial = U.Material.GetMaterialClone(marginCubeRenderer);
+			var color = m_MarginCubeMaterial.color;
+			m_MarginHighlightAlpha = color.a;
+			color.a = 0;
+			m_MarginCubeMaterial.color = color;
+
+			m_MarginCube.dropHoverStarted += OnDropHoverStarted;
+			m_MarginCube.dropHoverEnded += OnDropHoverEnded;
+
+			m_MarginCube.canDrop = CanDrop;
+			m_MarginCube.receiveDrop = ReceiveDrop;
+			m_MarginCube.getDropObject = GetDropObject;
 		}
 
 		m_CubeTransform = m_Cube.transform;
+		m_MarginCubeTransform = m_MarginCube.transform;
 		m_Text.text = listData.name;
 
 		// HACK: We need to kick the canvasRenderer to update the mesh properly
@@ -85,6 +110,10 @@ public class HierarchyListItem : ListViewItem<HierarchyData>
 		cubeScale.x = width;
 		m_CubeTransform.localScale = cubeScale;
 
+		var marginCubeScale = m_MarginCubeTransform.localScale;
+		marginCubeScale.x = width;
+		m_MarginCubeTransform.localScale = marginCubeScale;
+
 		var expandArrowTransform = m_ExpandArrow.transform;
 
 		var arrowWidth = expandArrowTransform.localScale.x * 0.5f;
@@ -104,11 +133,11 @@ public class HierarchyListItem : ListViewItem<HierarchyData>
 
 		// Set selected/hover/normal color
 		if (selected)
-			m_CubeRenderer.sharedMaterial.color = m_SelectedColor;
+			m_CubeMaterial.color = m_SelectedColor;
 		else if (m_Hovering)
-			m_CubeRenderer.sharedMaterial.color = m_HoverColor;
+			m_CubeMaterial.color = m_HoverColor;
 		else
-			m_CubeRenderer.sharedMaterial.color = m_NormalColor;
+			m_CubeMaterial.color = m_NormalColor;
 	}
 
 	public void UpdateArrow(bool expanded, bool immediate = false)
@@ -140,9 +169,34 @@ public class HierarchyListItem : ListViewItem<HierarchyData>
 		m_Hovering = false;
 	}
 
+	protected virtual void OnDropHoverStarted(BaseHandle handle) {
+		var color = m_MarginCubeMaterial.color;
+		color.a = m_MarginHighlightAlpha;
+		m_MarginCubeMaterial.color = color;
+	}
+
+	protected virtual void OnDropHoverEnded(BaseHandle handle) {
+		var color = m_MarginCubeMaterial.color;
+		color.a = 0;
+		m_MarginCubeMaterial.color = color;
+	}
+
+	object GetDropObject(BaseHandle handle)
+	{
+		return null;
+	}
+
+	bool CanDrop(BaseHandle handle, object dropObject)
+	{
+		return false;
+	}
+
+	void ReceiveDrop(BaseHandle handle, object dropObject) {
+	}
+
 	void OnDestroy()
 	{
-		if (m_CubeRenderer)
-			U.Object.Destroy(m_CubeRenderer.sharedMaterial);
+		U.Object.Destroy(m_CubeMaterial);
+		U.Object.Destroy(m_MarginCubeMaterial);
 	}
 }
