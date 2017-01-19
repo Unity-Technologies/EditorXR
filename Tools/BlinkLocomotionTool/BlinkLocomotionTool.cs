@@ -29,11 +29,16 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	private State m_State = State.Inactive;
 
+	bool m_EnableJoystick;
+	bool m_AllowScaling = true;
 	bool m_Scaling;
 	float m_StartScale;
 	float m_StartDistance;
 	Vector3 m_StartPosition;
 	Vector3 m_PlayerVector;
+
+	InputControl m_Grip;
+	InputControl m_Thumb;
 
 	public Transform viewerPivot { private get; set; }
 
@@ -44,16 +49,14 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	public List<ILinkedTool> otherTools { get { return m_OtherTools; } }
 	readonly List<ILinkedTool> m_OtherTools = new List<ILinkedTool>();
 
-	public DefaultRayVisibilityDelegate showDefaultRay { get; set; }
-	public DefaultRayVisibilityDelegate hideDefaultRay { get; set; }
-	public Func<Transform, object, bool> lockRay { get; set; }
-	public Func<Transform, object, bool> unlockRay { get; set; }
+	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
+	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
+	public Func<Transform, object, bool> lockRay { private get; set; }
+	public Func<Transform, object, bool> unlockRay { private get; set; }
 
-	public Transform rayOrigin { get; set; }
+	public Transform rayOrigin { private get; set; }
 
 	public bool primary { get; set; }
-
-	public InputControl grip { get; private set; }
 
 	private void Start()
 	{
@@ -90,66 +93,103 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		var forwardValue = blinkInput.forward.value;
 
 		if (blinkInput.grip.isHeld)
-			grip = blinkInput.grip;
+			m_Grip = blinkInput.grip;
 		else
-			grip = null;
+			m_Grip = null;
 
-		var scaling = false;
-		if (primary && grip != null)
+		if(blinkInput.thumb.isHeld)
+			m_Thumb = blinkInput.thumb;
+		else
+			m_Thumb = null;
+
+		if (primary)
 		{
-			foreach (var linkedTool in otherTools)
+			if (m_Grip != null)
 			{
-				var blinkTool = (BlinkLocomotionTool)linkedTool;
-				if (blinkTool.grip != null)
+				if (m_AllowScaling)
 				{
-					consumeControl(grip);
-					consumeControl(blinkTool.grip);
-
-					var distance = Vector3.Distance(viewerPivot.InverseTransformPoint(rayOrigin.position),
-						viewerPivot.InverseTransformPoint(blinkTool.rayOrigin.position));
-
-					if (!m_Scaling)
+					foreach (var linkedTool in otherTools)
 					{
-						m_StartScale = viewerPivot.localScale.x;
-						m_StartDistance = distance;
-						m_PlayerVector = viewerPivot.position - U.Camera.GetMainCamera().transform.position;
-						m_PlayerVector.y = 0;
-						m_StartPosition = viewerPivot.position - m_PlayerVector;
+						var blinkTool = (BlinkLocomotionTool)linkedTool;
+						if (blinkTool.m_Grip != null)
+						{
+							consumeControl(m_Grip);
+							consumeControl(blinkTool.m_Grip);
+
+							var distance = Vector3.Distance(viewerPivot.InverseTransformPoint(rayOrigin.position),
+								viewerPivot.InverseTransformPoint(blinkTool.rayOrigin.position));
+
+							if (!m_Scaling)
+							{
+								m_StartScale = viewerPivot.localScale.x;
+								m_StartDistance = distance;
+								m_PlayerVector = viewerPivot.position - U.Camera.GetMainCamera().transform.position;
+								m_PlayerVector.y = 0;
+								m_StartPosition = viewerPivot.position - m_PlayerVector;
+
+								m_EnableJoystick = false;
+								blinkTool.m_EnableJoystick = false;
+							}
+
+							m_Scaling = true;
+
+							var scaleFactor = m_StartDistance / distance;
+
+							if (m_Thumb != null && blinkTool.m_Thumb != null)
+							{
+								m_AllowScaling = false;
+								scaleFactor = 1 / m_StartScale;
+								consumeControl(m_Thumb);
+								consumeControl(blinkTool.m_Thumb);
+							}
+
+							viewerPivot.position = m_StartPosition + m_PlayerVector * scaleFactor;
+							viewerPivot.localScale = Vector3.one * m_StartScale * scaleFactor;
+							break;
+						}
 					}
+				}
+			}
+			else
+			{
+				m_AllowScaling = true;
+				m_Scaling = false;
 
-					scaling = true;
-
-					var scaleFactor = m_StartDistance / distance;
-					viewerPivot.position = m_StartPosition + m_PlayerVector * scaleFactor;
-					viewerPivot.localScale = Vector3.one * m_StartScale * scaleFactor;
-					break;
+				if (!m_EnableJoystick)
+				{
+					m_EnableJoystick = true;
+					foreach (var linkedTool in otherTools)
+					{
+						((BlinkLocomotionTool)linkedTool).m_EnableJoystick = true;
+					}
 				}
 			}
 		}
 
-		m_Scaling = scaling;
-
-		if (Mathf.Abs(yawValue) > Mathf.Abs(forwardValue))
+		if (m_EnableJoystick)
 		{
-			if (!Mathf.Approximately(yawValue, 0))
+			if (Mathf.Abs(yawValue) > Mathf.Abs(forwardValue))
 			{
-				yawValue = yawValue * yawValue * Mathf.Sign(yawValue);
+				if (!Mathf.Approximately(yawValue, 0))
+				{
+					yawValue = yawValue * yawValue * Mathf.Sign(yawValue);
 
-				viewerPivot.RotateAround(viewerCamera.transform.position, Vector3.up, yawValue * kRotationSpeed * Time.unscaledDeltaTime);
-				consumeControl(blinkInput.yaw);
+					viewerPivot.RotateAround(viewerCamera.transform.position, Vector3.up, yawValue * kRotationSpeed * Time.unscaledDeltaTime);
+					consumeControl(blinkInput.yaw);
+				}
 			}
-		}
-		else
-		{
-			if (!Mathf.Approximately(forwardValue, 0))
+			else
 			{
-				var forward = viewerCamera.transform.forward;
-				forward.y = 0;
-				forward.Normalize();
-				forwardValue = forwardValue * forwardValue * Mathf.Sign(forwardValue);
+				if (!Mathf.Approximately(forwardValue, 0))
+				{
+					var forward = viewerCamera.transform.forward;
+					forward.y = 0;
+					forward.Normalize();
+					forwardValue = forwardValue * forwardValue * Mathf.Sign(forwardValue);
 
-				viewerPivot.Translate(forward * forwardValue * kMoveSpeed * Time.unscaledDeltaTime, Space.World);
-				consumeControl(blinkInput.forward);
+					viewerPivot.Translate(forward * forwardValue * kMoveSpeed * Time.unscaledDeltaTime, Space.World);
+					consumeControl(blinkInput.forward);
+				}
 			}
 		}
 
