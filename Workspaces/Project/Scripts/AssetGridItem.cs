@@ -268,10 +268,10 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		m_GrabPreviewPivotOffset = pivotOffset;
 
 		// If bounds are greater than offset, set to bounds
-		if(previewExtents.y > m_GrabPreviewPivotOffset.y)
+		if (previewExtents.y > m_GrabPreviewPivotOffset.y)
 			m_GrabPreviewPivotOffset.y = previewExtents.y;
 
-		if(previewExtents.z > m_GrabPreviewPivotOffset.z)
+		if (previewExtents.z > m_GrabPreviewPivotOffset.z)
 			m_GrabPreviewPivotOffset.z = previewExtents.z;
 
 		if (maxComponent > kMaxPreviewScale)

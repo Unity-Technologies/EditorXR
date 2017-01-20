@@ -103,7 +103,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		item.toggleExpanded = ToggleExpanded;
 
 		bool expanded;
-		if(m_ExpandStates.TryGetValue(listData.guid, out expanded))
+		if (m_ExpandStates.TryGetValue(listData.guid, out expanded))
 			item.UpdateArrow(expanded, true);
 
 		return item;

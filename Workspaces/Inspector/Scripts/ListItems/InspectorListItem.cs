@@ -27,7 +27,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 			m_ClickedHandle = value;
 			m_ClickedField = null;
 
-			if (m_ClickedHandle != null) {
+			if (m_ClickedHandle != null)
+			{
 				var fieldBlock = m_ClickedHandle.transform.parent;
 				if (fieldBlock)
 				{

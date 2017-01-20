@@ -50,6 +50,7 @@ public class CuboidLayout : UIBehaviour
 	/// Set a new material on all backing cubes (used for instanced version of the material)
 	/// </summary>
 	/// <param name="backingCubeMaterial">New material to use</param>
+	/// <param name="highlightMaterials">New materials to use for WorkspaceButtons</param>
 	public void SetMaterials(Material backingCubeMaterial, Material[] highlightMaterials)
 	{
 		if (m_CubeTransforms != null)
@@ -64,7 +65,7 @@ public class CuboidLayout : UIBehaviour
 			{
 				foreach (var child in hightlight.GetComponentsInChildren<Renderer>())
 				{
-					if(child.transform != hightlight)
+					if (child.transform != hightlight)
 						child.sharedMaterials = highlightMaterials;
 				}
 			}

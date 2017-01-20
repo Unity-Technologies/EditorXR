@@ -48,11 +48,8 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	float m_DropZoneHighlightAlpha;
 
-	public Material cubeMaterial { get { return m_CubeMaterial; } }
-	Material m_CubeMaterial;
-
-	public Material dropZoneMaterial { get { return m_DropZoneMaterial; } }
-	Material m_DropZoneMaterial;
+	public Material cubeMaterial { get; private set; }
+	public Material dropZoneMaterial { get; private set; }
 
 	public Action<HierarchyData> toggleExpanded { private get; set; }
 	public Action<int> selectRow { private get; set; }
@@ -63,12 +60,12 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 	{
 		base.Setup(listData);
 		// First time setup
-		if (m_CubeMaterial == null)
+		if (cubeMaterial == null)
 		{
 			// Cube material might change for hover state, so we always instance it
 			var cubeRenderer = m_Cube.GetComponent<Renderer>();
-			m_CubeMaterial = U.Material.GetMaterialClone(cubeRenderer);
-			m_NormalColor = m_CubeMaterial.color;
+			cubeMaterial = U.Material.GetMaterialClone(cubeRenderer);
+			m_NormalColor = cubeMaterial.color;
 
 			m_ExpandArrow.dragEnded += ToggleExpanded;
 			m_Cube.dragStarted += OnDragStarted;
@@ -83,11 +80,11 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 			m_Cube.receiveDrop += ReceiveDrop;
 
 			var dropZoneRenderer = m_DropZone.GetComponent<Renderer>();
-			m_DropZoneMaterial = U.Material.GetMaterialClone(dropZoneRenderer);
-			var color = m_DropZoneMaterial.color;
+			dropZoneMaterial = U.Material.GetMaterialClone(dropZoneRenderer);
+			var color = dropZoneMaterial.color;
 			m_DropZoneHighlightAlpha = color.a;
 			color.a = 0;
-			m_DropZoneMaterial.color = color;
+			dropZoneMaterial.color = color;
 
 			m_DropZone.dropHoverStarted += OnDropHoverStarted;
 			m_DropZone.dropHoverEnded += OnDropHoverEnded;
@@ -131,7 +128,7 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 		var arrowWidth = expandArrowTransform.localScale.x * 0.5f;
 		var halfWidth = width * 0.5f;
 		var indent = kIndent * depth;
-		var doubleMargin = kMargin * 2;
+		const float doubleMargin = kMargin * 2;
 		expandArrowTransform.localPosition = new Vector3(kMargin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
 
 		// Text is next to arrow, with a margin and indent, rotated toward camera
@@ -145,11 +142,11 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 		// Set selected/hover/normal color
 		if (selected)
-			m_CubeMaterial.color = m_SelectedColor;
+			cubeMaterial.color = m_SelectedColor;
 		else if (m_Hovering)
-			m_CubeMaterial.color = m_HoverColor;
+			cubeMaterial.color = m_HoverColor;
 		else
-			m_CubeMaterial.color = m_NormalColor;
+			cubeMaterial.color = m_NormalColor;
 	}
 
 	public void UpdateArrow(bool expanded, bool immediate = false)
@@ -172,7 +169,7 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 		var row = handle.transform.parent;
 		if (row)
 		{
-			var clone = Instantiate(row.gameObject, row.parent) as GameObject;
+			var clone = (GameObject)Instantiate(row.gameObject, row.parent);
 
 			m_DragObject = clone.transform;
 
@@ -234,16 +231,16 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	void OnDropHoverStarted(BaseHandle handle)
 	{
-		var color = m_DropZoneMaterial.color;
+		var color = dropZoneMaterial.color;
 		color.a = m_DropZoneHighlightAlpha;
-		m_DropZoneMaterial.color = color;
+		dropZoneMaterial.color = color;
 	}
 
 	void OnDropHoverEnded(BaseHandle handle)
 	{
-		var color = m_DropZoneMaterial.color;
+		var color = dropZoneMaterial.color;
 		color.a = 0;
-		m_DropZoneMaterial.color = color;
+		dropZoneMaterial.color = color;
 	}
 
 	object GetDropObject(BaseHandle handle)
@@ -319,7 +316,7 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	void OnDestroy()
 	{
-		U.Object.Destroy(m_CubeMaterial);
-		U.Object.Destroy(m_DropZoneMaterial);
+		U.Object.Destroy(cubeMaterial);
+		U.Object.Destroy(dropZoneMaterial);
 	}
 }

@@ -125,7 +125,8 @@ public class DraggableListItem<DataType> : ListViewItem<DataType>, IGetPreviewOr
 	{
 	}
 
-	protected void CancelSingleClick() {
+	void CancelSingleClick()
+	{
 		m_ClickCount = 0;
 	}
 
@@ -133,13 +134,13 @@ public class DraggableListItem<DataType> : ListViewItem<DataType>, IGetPreviewOr
 	{
 		var start = Time.realtimeSinceStartup;
 		var currTime = 0f;
-		while(m_SelectIsHeld || currTime < U.UI.kDoubleClickIntervalMax)
+		while (m_SelectIsHeld || currTime < U.UI.kDoubleClickIntervalMax)
 		{
 			currTime = Time.realtimeSinceStartup - start;
 			yield return null;
 		}
 
-		if(m_ClickCount == 1)
+		if (m_ClickCount == 1)
 			OnSingleClick(handle, eventData);
 
 		m_ClickCount = 0;

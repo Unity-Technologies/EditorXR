@@ -207,7 +207,8 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		return dropObject is HierarchyData && dropObject != data[0];
 	}
 
-	static void RecieveDrop(BaseHandle handle, object dropObject) {
+	static void RecieveDrop(BaseHandle handle, object dropObject)
+	{
 		var hierarchyData = dropObject as HierarchyData;
 		if (hierarchyData != null)
 		{

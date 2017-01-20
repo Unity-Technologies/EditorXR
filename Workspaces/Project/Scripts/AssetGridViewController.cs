@@ -143,7 +143,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		if (!m_ListItems.TryGetValue(data, out item))
 			item = GetItem(data);
 
-		if(item)
+		if (item)
 			UpdateGridItem(item, offset);
 	}
 
