@@ -2,7 +2,8 @@
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace ListView {
+namespace ListView
+{
 	public abstract class ListViewController<DataType, ItemType> : ListViewControllerBase, IInstantiateUI, IConnectInterfaces
 		where DataType : ListViewItemData
 		where ItemType : ListViewItem<DataType>

@@ -179,7 +179,8 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 			StartCoroutine(Magnetize());
 
 			var graphics = clone.GetComponentsInChildren<Graphic>(true);
-			foreach(var graphic in graphics) {
+			foreach(var graphic in graphics)
+			{
 				graphic.material = null;
 			}
 
@@ -231,13 +232,15 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 		m_Hovering = false;
 	}
 
-	void OnDropHoverStarted(BaseHandle handle) {
+	void OnDropHoverStarted(BaseHandle handle)
+	{
 		var color = m_MarginCubeMaterial.color;
 		color.a = m_MarginHighlightAlpha;
 		m_MarginCubeMaterial.color = color;
 	}
 
-	void OnDropHoverEnded(BaseHandle handle) {
+	void OnDropHoverEnded(BaseHandle handle)
+	{
 		var color = m_MarginCubeMaterial.color;
 		color.a = 0;
 		m_MarginCubeMaterial.color = color;
@@ -268,9 +271,6 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 		var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(hierarchyData.instanceID);
 		var transform = gameObject.transform;
 		var dropTransform = dropGameObject.transform;
-
-		//if (transform == null || dropTransform == null)
-		//	return false;
 
 		var siblings = transform.parent == null && dropTransform.parent == null
 			|| transform.parent && dropTransform.parent == transform.parent;

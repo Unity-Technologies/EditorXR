@@ -1,12 +1,11 @@
-﻿using ListView;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using ListView;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IConnectInterfaces
+public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>
 {
 	private const float kPositionFollow = 0.4f;
 
@@ -39,8 +38,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	float m_LastHiddenItemOffset;
 
 	readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
-
-	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 	public Func<string, bool> testFilter;
 
@@ -194,7 +191,6 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		var item = base.GetItem(data);
 
 		item.transform.localPosition = m_StartPosition;
-		connectInterfaces(item);
 
 		item.scaleFactor = m_ScaleFactor;
 		item.SetVisibility(true);
