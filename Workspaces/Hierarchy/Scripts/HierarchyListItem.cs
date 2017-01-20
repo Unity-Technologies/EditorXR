@@ -25,7 +25,7 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 	BaseHandle m_ExpandArrow;
 
 	[SerializeField]
-	BaseHandle m_MarginCube;
+	BaseHandle m_DropZone;
 
 	[SerializeField]
 	Material m_NoClipCubeMaterial;
@@ -44,15 +44,15 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 	Color m_NormalColor;
 	bool m_Hovering;
 	Transform m_CubeTransform;
-	Transform m_MarginCubeTransform;
+	Transform m_DropZoneTransform;
 
-	float m_MarginHighlightAlpha;
+	float m_DropZoneHighlightAlpha;
 
 	public Material cubeMaterial { get { return m_CubeMaterial; } }
 	Material m_CubeMaterial;
 
-	public Material marginCubeMaterial { get { return m_MarginCubeMaterial; } }
-	Material m_MarginCubeMaterial;
+	public Material dropZoneMaterial { get { return m_DropZoneMaterial; } }
+	Material m_DropZoneMaterial;
 
 	public Action<HierarchyData> toggleExpanded { private get; set; }
 	public Action<int> selectRow { private get; set; }
@@ -82,23 +82,23 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 			m_Cube.canDrop += CanDrop;
 			m_Cube.receiveDrop += ReceiveDrop;
 
-			var marginCubeRenderer = m_MarginCube.GetComponent<Renderer>();
-			m_MarginCubeMaterial = U.Material.GetMaterialClone(marginCubeRenderer);
-			var color = m_MarginCubeMaterial.color;
-			m_MarginHighlightAlpha = color.a;
+			var dropZoneRenderer = m_DropZone.GetComponent<Renderer>();
+			m_DropZoneMaterial = U.Material.GetMaterialClone(dropZoneRenderer);
+			var color = m_DropZoneMaterial.color;
+			m_DropZoneHighlightAlpha = color.a;
 			color.a = 0;
-			m_MarginCubeMaterial.color = color;
+			m_DropZoneMaterial.color = color;
 
-			m_MarginCube.dropHoverStarted += OnDropHoverStarted;
-			m_MarginCube.dropHoverEnded += OnDropHoverEnded;
+			m_DropZone.dropHoverStarted += OnDropHoverStarted;
+			m_DropZone.dropHoverEnded += OnDropHoverEnded;
 
-			m_MarginCube.canDrop = CanDrop;
-			m_MarginCube.receiveDrop = ReceiveDrop;
-			m_MarginCube.getDropObject = GetDropObject;
+			m_DropZone.canDrop = CanDrop;
+			m_DropZone.receiveDrop = ReceiveDrop;
+			m_DropZone.getDropObject = GetDropObject;
 		}
 
 		m_CubeTransform = m_Cube.transform;
-		m_MarginCubeTransform = m_MarginCube.transform;
+		m_DropZoneTransform = m_DropZone.transform;
 		m_Text.text = listData.name;
 
 		// HACK: We need to kick the canvasRenderer to update the mesh properly
@@ -122,9 +122,9 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 		cubeScale.x = width;
 		m_CubeTransform.localScale = cubeScale;
 
-		var marginCubeScale = m_MarginCubeTransform.localScale;
-		marginCubeScale.x = width;
-		m_MarginCubeTransform.localScale = marginCubeScale;
+		var dropZoneScale = m_DropZoneTransform.localScale;
+		dropZoneScale.x = width;
+		m_DropZoneTransform.localScale = dropZoneScale;
 
 		var expandArrowTransform = m_ExpandArrow.transform;
 
@@ -187,7 +187,7 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 			var item = clone.GetComponent<HierarchyListItem>();
 			item.m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipBackingCube;
 
-			item.m_MarginCube.GetComponent<Renderer>().enabled = false;
+			item.m_DropZone.GetComponent<Renderer>().enabled = false;
 		}
 	}
 
@@ -234,16 +234,16 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	void OnDropHoverStarted(BaseHandle handle)
 	{
-		var color = m_MarginCubeMaterial.color;
-		color.a = m_MarginHighlightAlpha;
-		m_MarginCubeMaterial.color = color;
+		var color = m_DropZoneMaterial.color;
+		color.a = m_DropZoneHighlightAlpha;
+		m_DropZoneMaterial.color = color;
 	}
 
 	void OnDropHoverEnded(BaseHandle handle)
 	{
-		var color = m_MarginCubeMaterial.color;
+		var color = m_DropZoneMaterial.color;
 		color.a = 0;
-		m_MarginCubeMaterial.color = color;
+		m_DropZoneMaterial.color = color;
 	}
 
 	object GetDropObject(BaseHandle handle)
@@ -320,6 +320,6 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 	void OnDestroy()
 	{
 		U.Object.Destroy(m_CubeMaterial);
-		U.Object.Destroy(m_MarginCubeMaterial);
+		U.Object.Destroy(m_DropZoneMaterial);
 	}
 }

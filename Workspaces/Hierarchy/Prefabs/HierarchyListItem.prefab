@@ -41,7 +41,7 @@ GameObject:
   - 23: {fileID: 23000010200333276}
   - 114: {fileID: 114000014220381596}
   m_Layer: 5
-  m_Name: Hover
+  m_Name: DropZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -312,7 +312,7 @@ MonoBehaviour:
   m_Text: {fileID: 114000013632537286}
   m_Cube: {fileID: 114000012425087266}
   m_ExpandArrow: {fileID: 114000011118187708}
-  m_MarginCube: {fileID: 114000014220381596}
+  m_DropZone: {fileID: 114000014220381596}
   m_NoClipCubeMaterial: {fileID: 2100000, guid: 66d21d847da9fae44a46053afe8d825b,
     type: 2}
   m_NoClipExpandArrowMaterial: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba,
