@@ -14,32 +14,17 @@ namespace UnityEditor.Experimental.EditorVR
 		[SerializeField]
 		Camera m_EventCameraPrefab;
 
-		[SerializeField]
-		KeyboardMallet m_KeyboardMalletPrefab;
-
-		[SerializeField]
-		KeyboardUI m_NumericKeyboardPrefab;
-
-		[SerializeField]
-		KeyboardUI m_StandardKeyboardPrefab;
-
-		readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
-		KeyboardUI m_NumericKeyboard;
-		KeyboardUI m_StandardKeyboard;
-
 		readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
 		readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
 
 		Camera m_EventCamera;
 
-		DragAndDropModule m_DragAndDropModule;
-
-		void CreateEventSystem()
+		void InitializeInputModule()
 		{
 			// Create event system, input module, and event camera
 			U.Object.AddComponent<EventSystem>(gameObject);
 
-			m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
+			m_InputModule = AddModule<MultipleRayInputModule>();
 			m_InputModule.getPointerLength = GetPointerLength;
 
 			if (m_CustomPreviewCamera != null)
@@ -49,83 +34,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_EventCamera.enabled = false;
 			m_InputModule.eventCamera = m_EventCamera;
 
-			m_InputModule.rayEntered += m_DragAndDropModule.OnRayEntered;
-			m_InputModule.rayExited += m_DragAndDropModule.OnRayExited;
-			m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
-			m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
-
 			m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
-		}
-
-		KeyboardUI SpawnNumericKeyboard()
-		{
-			if (m_StandardKeyboard != null)
-				m_StandardKeyboard.gameObject.SetActive(false);
-
-			// Check if the prefab has already been instantiated
-			if (m_NumericKeyboard == null)
-				m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-
-			return m_NumericKeyboard;
-		}
-
-		KeyboardUI SpawnAlphaNumericKeyboard()
-		{
-			if (m_NumericKeyboard != null)
-				m_NumericKeyboard.gameObject.SetActive(false);
-
-			// Check if the prefab has already been instantiated
-			if (m_StandardKeyboard == null)
-				m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-
-			return m_StandardKeyboard;
-		}
-
-		void UpdateKeyboardMallets()
-		{
-			foreach (var proxy in m_Proxies)
-			{
-				if (proxy.active)
-				{
-					foreach (var rayOrigin in proxy.rayOrigins.Values)
-					{
-						var malletVisible = true;
-						var numericKeyboardNull = false;
-						var standardKeyboardNull = false;
-
-						if (m_NumericKeyboard != null)
-							malletVisible = m_NumericKeyboard.ShouldShowMallet(rayOrigin);
-						else
-							numericKeyboardNull = true;
-
-						if (m_StandardKeyboard != null)
-							malletVisible = malletVisible || m_StandardKeyboard.ShouldShowMallet(rayOrigin);
-						else
-							standardKeyboardNull = true;
-
-						if (numericKeyboardNull && standardKeyboardNull)
-							malletVisible = false;
-
-						var mallet = m_KeyboardMallets[rayOrigin];
-
-						if (mallet.visible != malletVisible)
-						{
-							mallet.visible = malletVisible;
-							var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-							if (dpr)
-							{
-								if (malletVisible)
-									dpr.Hide();
-								else
-									dpr.Show();
-							}
-						}
-
-						// TODO remove this after physics are in
-						mallet.CheckForKeyCollision();
-					}
-				}
-			}
 		}
 
 		GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
@@ -138,9 +47,9 @@ namespace UnityEditor.Experimental.EditorVR
 			foreach (var inputField in go.GetComponentsInChildren<InputField>())
 			{
 				if (inputField is NumericInputField)
-					inputField.spawnKeyboard = SpawnNumericKeyboard;
+					inputField.spawnKeyboard = m_KeyboardModule.SpawnNumericKeyboard;
 				else if (inputField is StandardInputField)
-					inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
+					inputField.spawnKeyboard = m_KeyboardModule.SpawnAlphaNumericKeyboard;
 			}
 
 			foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))

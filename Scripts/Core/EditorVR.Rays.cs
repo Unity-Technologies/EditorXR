@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Core;
 using UnityEngine.Experimental.EditorVR.Manipulators;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Proxies;
@@ -15,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
 	partial class EditorVR
 	{
-		delegate void ForEachRayOriginCallback(DeviceData deviceData);
+		delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
 		const float kDefaultRayLength = 100f;
 
@@ -111,7 +112,7 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 
-		void ForEachProxyDevice(ForEachRayOriginCallback callback, bool activeOnly = true)
+		void ForEachProxyDevice(ForEachProxyDeviceCallback callback, bool activeOnly = true)
 		{
 			for (var i = 0; i < m_DeviceData.Count; i++)
 			{
@@ -122,6 +123,11 @@ namespace UnityEditor.Experimental.EditorVR
 
 				callback(deviceData);
 			}
+		}
+
+		void ForEachRayOrigin(ForEachRayOriginCallback callback)
+		{
+			ForEachProxyDevice(deviceData => callback(deviceData.rayOrigin));
 		}
 
 		IProxy GetProxyForRayOrigin(Transform rayOrigin)

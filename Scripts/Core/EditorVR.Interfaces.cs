@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Actions;
+using UnityEngine.Experimental.EditorVR.Core;
 using UnityEngine.Experimental.EditorVR.Menus;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
@@ -259,6 +260,12 @@ namespace UnityEditor.Experimental.EditorVR
 			var requestStencilRef = obj as IRequestStencilRef;
 			if (requestStencilRef != null)
 				requestStencilRef.requestStencilRef = RequestStencilRef;
+
+			// Internal interfaces
+			var objType = obj.GetType();
+			var forEachRayOrigin = obj as IForEachRayOrigin;
+			if (forEachRayOrigin != null && objType.Assembly == typeof(IForEachRayOrigin).Assembly)
+				forEachRayOrigin.forEachRayOrigin = ForEachRayOrigin;
 		}
 
 		void DisconnectInterfaces(object obj)

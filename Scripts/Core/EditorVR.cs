@@ -35,6 +35,7 @@ namespace UnityEditor.Experimental.EditorVR
 		[SerializeField]
 		ProxyExtras m_ProxyExtras;
 
+		DragAndDropModule m_DragAndDropModule;
 		HighlightModule m_HighlightModule;
 		ObjectPlacementModule m_ObjectPlacementModule;
 		LockModule m_LockModule;
@@ -42,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR
 		HierarchyModule m_HierarchyModule;
 		ProjectFolderModule m_ProjectFolderModule;
 		ActionsModule m_ActionsModule;
+		KeyboardModule m_KeyboardModule;
 
 		event Action m_SelectionChanged;
 
@@ -77,8 +79,15 @@ namespace UnityEditor.Experimental.EditorVR
 
 			InitializePlayerHandle();
 			CreateDefaultActionMapInputs();
+			InitializeInputModule();
+
+			m_KeyboardModule = AddModule<KeyboardModule>();
 
 			m_DragAndDropModule = AddModule<DragAndDropModule>();
+			m_InputModule.rayEntered += m_DragAndDropModule.OnRayEntered;
+			m_InputModule.rayExited += m_DragAndDropModule.OnRayExited;
+			m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
+			m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
 
 			m_PixelRaycastModule = AddModule<PixelRaycastModule>();
 			m_PixelRaycastModule.ignoreRoot = transform;
@@ -99,7 +108,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
-			CreateEventSystem();
 			CreateSpatialSystem();
 
 			m_ObjectPlacementModule = AddModule<ObjectPlacementModule>();
@@ -241,7 +249,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			UpdateDefaultProxyRays();
 
-			UpdateKeyboardMallets();
+			m_KeyboardModule.UpdateKeyboardMallets();
 
 			ProcessInput();
 
