@@ -45,25 +45,27 @@ public class TooltipModule : MonoBehaviour
 			var hoverTime = Time.realtimeSinceStartup - tooltipData.startTime;
 			if (hoverTime > kDelay)
 			{
+				var toCamera = (U.Camera.GetMainCamera().transform.position - target.position).normalized;
+
 				if (!tooltipData.tooltipObject)
 				{
 					var tooltipObject = (GameObject)Instantiate(m_TooltipPrefab, m_TooltipCanvas);
 					tooltipData.tooltipObject = tooltipObject;
 					tooltipData.canvasGroup = tooltipObject.GetComponent<CanvasGroup>();
 					tooltipData.text = tooltipObject.GetComponentInChildren<Text>(true);
+
+					tooltipObject.transform.rotation = Quaternion.LookRotation(-toCamera, Vector3.up);
 				}
+
+				var tooltipTransform = tooltipData.tooltipObject.transform;
 
 				var tooltipText = tooltipData.text;
 				if (tooltipText)
 					tooltipText.text = tooltipData.tooltip.tooltipText;
 
-				var tooltipTransform = tooltipData.tooltipObject.transform;
-				
 				tooltipData.canvasGroup.alpha = Mathf.Clamp01((hoverTime - kDelay) / kTransitionDuration);
-				var toCamera = (U.Camera.GetMainCamera().transform.position - target.position).normalized;
 
-				tooltipTransform.position = target.position + toCamera * kOffsetDistance;
-				tooltipTransform.rotation = Quaternion.LookRotation(-toCamera, Vector3.up);
+				tooltipTransform.position = target.position + Vector3.forward * kOffsetDistance;
 			}
 		}
 	}
