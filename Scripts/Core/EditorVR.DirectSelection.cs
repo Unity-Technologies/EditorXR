@@ -178,7 +178,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 			// Hide player head to avoid jarring impact
 			var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
-			foreach(var renderer in playerHeadRenderers) {
+			foreach (var renderer in playerHeadRenderers)
+			{
 				renderer.enabled = false;
 			}
 
@@ -197,7 +198,8 @@ namespace UnityEditor.Experimental.EditorVR
 				playerHead.localRotation = Quaternion.identity;
 				playerHead.localPosition = Vector3.zero;
 
-				foreach(var renderer in playerHeadRenderers) {
+				foreach (var renderer in playerHeadRenderers)
+				{
 					renderer.enabled = true;
 				}
 			}));

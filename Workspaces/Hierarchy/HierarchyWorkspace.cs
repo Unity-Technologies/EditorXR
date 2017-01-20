@@ -77,7 +77,8 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 		m_FilterUI.filterList = m_FilterList;
 
 		var focusUI = U.Object.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
-		foreach(var mb in focusUI.GetComponentsInChildren<MonoBehaviour>()) {
+		foreach (var mb in focusUI.GetComponentsInChildren<MonoBehaviour>())
+		{
 			connectInterfaces(mb);
 		}
 		focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
