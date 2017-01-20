@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
-using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.UI;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
+using UnityEngine.UI;
 using InputField = UnityEngine.Experimental.EditorVR.UI.InputField;
 
 public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight, IRequestStencilRef
@@ -19,8 +17,36 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 
 	protected InputField[] m_InputFields;
 
+	protected override bool singleClickDrag { get { return false; } }
+
+	protected override BaseHandle clickedHandle
+	{
+		get { return m_ClickedHandle; }
+		set
+		{
+			m_ClickedHandle = value;
+			m_ClickedField = null;
+
+			if (m_ClickedHandle != null) {
+				var fieldBlock = m_ClickedHandle.transform.parent;
+				if (fieldBlock)
+				{
+					// Get RayInputField from direct children
+					foreach (Transform child in fieldBlock.transform)
+					{
+						var clickedField = child.GetComponent<InputField>();
+						if (clickedField)
+						{
+							m_ClickedField = clickedField;
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	BaseHandle m_ClickedHandle;
 	protected InputField m_ClickedField;
-	protected int m_ClickCount;
 
 	[SerializeField]
 	BaseHandle m_Cube;
@@ -34,12 +60,6 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 	Material[] m_NoClipHighlightMaterials;
 
 	bool m_Setup;
-
-	readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform, Vector3>();
-
-	float m_LastClickTime;
-	bool m_SelectIsHeld;
-	float m_DragDistance;
 
 	public bool setup { get; set; }
 
@@ -184,100 +204,63 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 		ReceiveDropForFieldBlock(handle.transform.parent, dropObject);
 	}
 
-	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
+	protected override void OnDoubleClick(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		base.OnDragStarted(baseHandle, eventData);
-		m_DragObject = null;
-
 		var fieldBlock = baseHandle.transform.parent;
 		if (fieldBlock)
 		{
-			if (m_ClickCount == 0)
+			var clone = Instantiate(fieldBlock.gameObject, fieldBlock.parent) as GameObject;
+
+			// Re-center pivot
+			clone.GetComponent<RectTransform>().pivot = Vector2.one * 0.5f;
+
+			//Re-center backing cube
+			foreach (Transform child in clone.transform)
 			{
-				// Get RayInputField from direct children
-				foreach (Transform child in fieldBlock.transform)
+				if (child.GetComponent<BaseHandle>())
 				{
-					m_ClickedField = child.GetComponent<InputField>();
-					if (m_ClickedField)
-						break;
+					var localPos = child.localPosition;
+					localPos.x = 0;
+					localPos.y = 0;
+					child.localPosition = localPos;
 				}
-				StartCoroutine(CheckSingleClick());
 			}
 
-			m_ClickCount++;
-			m_SelectIsHeld = true;
-			m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
+			m_DragObject = clone.transform;
+			m_ClickedField = null; // Prevent dragging on NumericFields
 
-			// Grab a field block on double click
-			var timeSinceLastClick = Time.realtimeSinceStartup - m_LastClickTime;
-			m_LastClickTime = Time.realtimeSinceStartup;
-			if (m_ClickCount > 1 && U.UI.IsDoubleClick(timeSinceLastClick))
+			StartCoroutine(Magnetize());
+
+			var graphics = clone.GetComponentsInChildren<Graphic>(true);
+			foreach (var graphic in graphics)
 			{
-				CancelSingleClick();
+				graphic.material = null;
+			}
 
-				var clone = Instantiate(fieldBlock.gameObject, fieldBlock.parent) as GameObject;
-				// Re-center pivot
-				clone.GetComponent<RectTransform>().pivot = Vector2.one * 0.5f;
-
-				//Re-center backing cube
-				foreach (Transform child in clone.transform)
+			var stencilRef = requestStencilRef();
+			var renderers = clone.GetComponentsInChildren<Renderer>(true);
+			foreach (var renderer in renderers)
+			{
+				if (renderer.sharedMaterials.Length > 1)
 				{
-					if (child.GetComponent<BaseHandle>())
+					foreach (var material in m_NoClipHighlightMaterials)
 					{
-						var localPos = child.localPosition;
-						localPos.x = 0;
-						localPos.y = 0;
-						child.localPosition = localPos;
+						material.SetInt("_StencilRef", stencilRef);
 					}
+					renderer.sharedMaterials = m_NoClipHighlightMaterials;
 				}
-
-				m_DragObject = clone.transform;
-				m_ClickedField = null; // Clear clicked field so we don't drag the value
-
-				var graphics = clone.GetComponentsInChildren<Graphic>(true);
-				foreach (var graphic in graphics)
+				else
 				{
-					graphic.material = null;
-				}
-
-				var stencilRef = requestStencilRef();
-				var renderers = clone.GetComponentsInChildren<Renderer>(true);
-				foreach (var renderer in renderers)
-				{
-					if (renderer.sharedMaterials.Length > 1)
-					{
-						foreach (var material in m_NoClipHighlightMaterials)
-						{
-							material.SetInt("_StencilRef", stencilRef);
-						}
-						renderer.sharedMaterials = m_NoClipHighlightMaterials;
-					}
-					else
-					{
-						renderer.sharedMaterial = m_NoClipBackingCube;
-						m_NoClipBackingCube.SetInt("_StencilRef", stencilRef);
-					}
+					renderer.sharedMaterial = m_NoClipBackingCube;
+					m_NoClipBackingCube.SetInt("_StencilRef", stencilRef);
 				}
 			}
 		}
 	}
 
-	protected override void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
+	protected override void OnDragging(BaseHandle handle, HandleEventData eventData)
 	{
-		if (m_ClickedField)
-		{
-			var rayOrigin = eventData.rayOrigin;
-			m_DragDistance = (rayOrigin.position - m_DragStarts[rayOrigin]).magnitude;
-
-			var numericField = m_ClickedField as NumericInputField;
-			if (numericField)
-			{
-				if (m_DragDistance > NumericInputField.kDragDeadzone)
-					CancelSingleClick();
-
-				numericField.SliderDrag(eventData.rayOrigin);
-			}
-		}
+		base.OnDragging(handle, eventData);
 
 		if (m_DragObject)
 		{
@@ -287,49 +270,42 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 		}
 	}
 
+	protected override void OnSingleClickDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+	{
+		if (m_ClickedField)
+		{
+			var numericField = m_ClickedField as NumericInputField;
+			if (numericField)
+			{
+				numericField.SliderDrag(eventData.rayOrigin);
+			}
+		}
+	}
+
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
-		m_SelectIsHeld = false;
-
 		var numericField = m_ClickedField as NumericInputField;
 		if (numericField)
 			numericField.EndDrag();
 
-		var fieldBlock = baseHandle.transform.parent;
-		if (fieldBlock)
-		{
-			if (m_DragObject)
-				U.Object.Destroy(m_DragObject.gameObject);
-		}
+
+		if (m_DragObject)
+			U.Object.Destroy(m_DragObject.gameObject);
 
 		base.OnDragEnded(baseHandle, eventData);
 	}
 
-	void CancelSingleClick()
+	protected override void OnSingleClick(BaseHandle handle, HandleEventData eventData)
 	{
-		m_ClickCount = 0;
-	}
-
-	IEnumerator CheckSingleClick()
-	{
-		var start = Time.realtimeSinceStartup;
-		var currTime = 0f;
-		while (m_SelectIsHeld || currTime < U.UI.kDoubleClickIntervalMax)
-		{
-			currTime = Time.realtimeSinceStartup - start;
-			yield return null;
-		}
-
-		if (m_ClickCount == 1)
+		if (m_ClickedField)
 		{
 			foreach (var inputField in m_InputFields)
+			{
 				inputField.CloseKeyboard(m_ClickedField == null);
+			}
 
-			if (m_ClickedField)
-				m_ClickedField.OpenKeyboard();
+			m_ClickedField.OpenKeyboard();
 		}
-
-		m_ClickCount = 0;
 	}
 
 	protected virtual object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -344,10 +320,5 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 
 	protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-	}
-
-	public void ToggleExpanded()
-	{
-		toggleExpanded(data);
 	}
 }

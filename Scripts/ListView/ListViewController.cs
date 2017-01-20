@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace ListView
-{
-	public abstract class ListViewController<DataType, ItemType> : ListViewControllerBase, IInstantiateUI
+namespace ListView {
+	public abstract class ListViewController<DataType, ItemType> : ListViewControllerBase, IInstantiateUI, IConnectInterfaces
 		where DataType : ListViewItemData
 		where ItemType : ListViewItem<DataType>
 	{
@@ -34,7 +32,8 @@ namespace ListView
 
 		protected override int dataLength { get { return m_Data.Count; } }
 
-		public InstantiateUIDelegate instantiateUI { get; set; }
+		public InstantiateUIDelegate instantiateUI { private get; set; }
+		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 
 		protected override void UpdateItems()
 		{
@@ -92,16 +91,8 @@ namespace ListView
 			}
 			else
 			{
-				if (instantiateUI != null)
-				{
-					item = instantiateUI(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<ItemType>();
-				}
-				else
-				{
-					item = Instantiate(m_TemplateDictionary[data.template].prefab).GetComponent<ItemType>();
-					item.transform.SetParent(transform, false);
-				}
-
+				item = instantiateUI(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<ItemType>();
+				connectInterfaces(item);
 				item.Setup(data);
 			}
 

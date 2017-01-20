@@ -285,9 +285,9 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSp
 		m_PreviewObjectTransform.localScale = Vector3.zero;
 	}
 
-	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
+	protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
 	{
-		base.OnDragStarted(baseHandle, eventData);
+		base.OnDragStarted(handle, eventData);
 
 		var clone = (GameObject)Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 		var cloneItem = clone.GetComponent<AssetGridItem>();

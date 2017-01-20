@@ -1,5 +1,6 @@
 #if UNITY_EDITORVR
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -76,6 +77,11 @@ namespace UnityEditor.Experimental.EditorVR
 					{
 						// skip children of EVR to prevent the display of EVR contents
 						while (hp.Next(null) && hp.depth > depth + 1) { }
+
+						// If EVR is the last object, don't add anything to the list
+						if (hp.instanceID == 0)
+							break;
+
 						name = hp.name;
 						instanceID = hp.instanceID;
 					}

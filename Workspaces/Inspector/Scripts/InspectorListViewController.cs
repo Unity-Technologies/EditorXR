@@ -1,14 +1,13 @@
-﻿using System;
+﻿using ListView;
+using System;
 using System.Collections.Generic;
-using ListView;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
-using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight, IUsesGameObjectLocking, IUsesStencilRef
+public class InspectorListViewController : NestedListViewController<InspectorData>, IUsesGameObjectLocking, IUsesStencilRef
 {
 	const string kMaterialStencilRef = "_StencilRef";
 	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
@@ -58,10 +57,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	}
 
 	public byte stencilRef { get; set; }
-
-	public Action<GameObject, bool> setHighlight { private get; set; }
-
-	public Func<Transform, Transform> getPreviewOriginForRayOrigin { private get; set; }
 
 	public Action<GameObject, bool> setLocked { private get; set; }
 	public Func<GameObject, bool> isLocked { private get; set; }
@@ -181,9 +176,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			var highlightMaterials = new[] { m_HighlightMaterial, m_HighlightMaskMaterial };
 			var noClipHighlightMaterials = new[] { m_NoClipHighlightMaterial, m_NoClipHighlightMaskMaterial };
 			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
-
-			item.setHighlight = setHighlight;
-			item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
 
 			var numberItem = item as InspectorNumberItem;
 			if (numberItem)

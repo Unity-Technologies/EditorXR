@@ -72,6 +72,7 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 
 		var hierarchyListView = m_HierarchyUI.listView;
 		hierarchyListView.selectRow = SelectRow;
+		connectInterfaces(hierarchyListView);
 
 		var handle = m_HierarchyUI.scrollHandle;
 		// Scroll Handle shouldn't move on bounds change

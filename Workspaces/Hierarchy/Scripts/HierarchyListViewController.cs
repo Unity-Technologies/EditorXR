@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using ListView;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
 public class HierarchyListViewController : NestedListViewController<HierarchyData>
@@ -10,10 +12,19 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 	[SerializeField]
+	BaseHandle m_TopDropZone;
+
+	[SerializeField]
 	Material m_TextMaterial;
 
 	[SerializeField]
 	Material m_ExpandArrowMaterial;
+
+	[SerializeField]
+	Material m_NoClipBackingCubeMaterial;
+
+	Material m_TopDropZoneMaterial;
+	float m_TopDropZoneAlpha;
 
 	int m_SelectedRow;
 
@@ -27,6 +38,18 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 
 		m_TextMaterial = Instantiate(m_TextMaterial);
 		m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
+		m_NoClipBackingCubeMaterial = Instantiate(m_NoClipBackingCubeMaterial);
+
+		m_TopDropZoneMaterial = U.Material.GetMaterialClone(m_TopDropZone.GetComponent<Renderer>());
+		var color = m_TopDropZoneMaterial.color;
+		m_TopDropZoneAlpha = color.a;
+		color.a = 0;
+		m_TopDropZoneMaterial.color = color;
+
+		m_TopDropZone.canDrop += CanDrop;
+		m_TopDropZone.receiveDrop += RecieveDrop;
+		m_TopDropZone.dropHoverStarted += DropHoverStarted;
+		m_TopDropZone.dropHoverEnded += DropHoverEnded;
 	}
 
 	protected override void UpdateItems()
@@ -44,9 +67,18 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		if (!m_ListItems.TryGetValue(data, out item))
 			item = GetItem(data);
 
-		var hierarchyItem = (HierarchyListItem)item;
+		var width = bounds.size.x - kClipMargin;
+		var dropZoneTransform = m_TopDropZone.transform;
+		var dropZoneScale = dropZoneTransform.localScale;
+		dropZoneScale.x = width;
+		dropZoneTransform.localScale = dropZoneScale;
 
-		hierarchyItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.instanceID == m_SelectedRow);
+		var dropZonePosition = dropZoneTransform.localPosition;
+		dropZonePosition.z = bounds.extents.z;
+		dropZoneTransform.localPosition = dropZonePosition;
+
+		var hierarchyItem = (HierarchyListItem)item;
+		hierarchyItem.UpdateSelf(width, depth, expanded, data.instanceID == m_SelectedRow);
 
 		SetMaterialClip(hierarchyItem.cubeMaterial, transform.worldToLocalMatrix);
 		SetMaterialClip(hierarchyItem.marginCubeMaterial, transform.worldToLocalMatrix);
@@ -82,7 +114,7 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 	protected override ListViewItem<HierarchyData> GetItem(HierarchyData listData)
 	{
 		var item = (HierarchyListItem)base.GetItem(listData);
-		item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
+		item.SetMaterials(m_NoClipBackingCubeMaterial, m_TextMaterial, m_ExpandArrowMaterial);
 		item.selectRow = SelectRow;
 
 		item.toggleExpanded = ToggleExpanded;
@@ -168,9 +200,39 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		}
 	}
 
+	bool CanDrop(BaseHandle handle, object dropObject)
+	{
+		return dropObject is HierarchyData && dropObject != data[0];
+	}
+
+	void RecieveDrop(BaseHandle handle, object dropObject) {
+		var hierarchyData = dropObject as HierarchyData;
+		if (hierarchyData != null)
+		{
+			var gameObject = EditorUtility.InstanceIDToObject(hierarchyData.instanceID) as GameObject;
+			gameObject.transform.SetParent(null);
+			gameObject.transform.SetSiblingIndex(0);
+		}
+	}
+
+	void DropHoverStarted(BaseHandle handle)
+	{
+		var color = m_TopDropZoneMaterial.color;
+		color.a = m_TopDropZoneAlpha;
+		m_TopDropZoneMaterial.color = color;
+	}
+
+	void DropHoverEnded(BaseHandle handle)
+	{
+		var color = m_TopDropZoneMaterial.color;
+		color.a = 0;
+		m_TopDropZoneMaterial.color = color;
+	}
+
 	private void OnDestroy()
 	{
 		U.Object.Destroy(m_TextMaterial);
 		U.Object.Destroy(m_ExpandArrowMaterial);
+		U.Object.Destroy(m_NoClipBackingCubeMaterial);
 	}
 }

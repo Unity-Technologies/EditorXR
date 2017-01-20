@@ -72,11 +72,12 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 		m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
 
 		var assetGridView = m_ProjectUI.assetGridView;
+		connectInterfaces(assetGridView);
 		assetGridView.testFilter = TestFilter;
 		assetGridView.data = new List<AssetData>();
-		connectInterfaces(assetGridView);
 
 		var folderListView = m_ProjectUI.folderListView;
+		connectInterfaces(folderListView);
 		folderListView.selectFolder = SelectFolder;
 		folderData = m_FolderData;
 

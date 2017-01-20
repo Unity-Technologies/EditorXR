@@ -101,9 +101,9 @@ public class InspectorNumberItem : InspectorPropertyItem
 		SetValue(dropObject.ToString());
 	}
 
-	protected override void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
+	protected override void OnDragging(BaseHandle handle, HandleEventData eventData)
 	{
-		base.OnDragging(baseHandle, eventData);
+		base.OnDragging(handle, eventData);
 
 		if (m_ClickedField && m_ClickCount == 0)
 		{

@@ -1,10 +1,10 @@
 ﻿using System;
-using ListView;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
-using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
 
 public class HierarchyListItem : DraggableListItem<HierarchyData>
 {
@@ -12,6 +12,8 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 	const float kIndent = 0.02f;
 
 	const float kExpandArrowRotateSpeed = 0.4f;
+
+	protected override bool singleClickDrag { get { return false; } }
 
 	[SerializeField]
 	Text m_Text;
@@ -36,6 +38,8 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	[SerializeField]
 	Color m_SelectedColor;
+
+	Material m_NoClipBackingCube;
 
 	Color m_NormalColor;
 	bool m_Hovering;
@@ -65,11 +69,14 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 			m_NormalColor = m_CubeMaterial.color;
 
 			m_ExpandArrow.dragEnded += ToggleExpanded;
-			m_Cube.dragStarted += SelectFolder;
-			m_Cube.dragEnded += ToggleExpanded;
+			m_Cube.dragStarted += OnDragStarted;
+			m_Cube.dragging += OnDragging;
+			m_Cube.dragEnded += OnDragEnded;
 
 			m_Cube.hoverStarted += OnHoverStarted;
 			m_Cube.hoverEnded += OnHoverEnded;
+
+			m_Cube.getDropObject += GetDropObject;
 
 			var marginCubeRenderer = m_MarginCube.GetComponent<Renderer>();
 			m_MarginCubeMaterial = U.Material.GetMaterialClone(marginCubeRenderer);
@@ -98,8 +105,9 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 		m_Hovering = false;
 	}
 
-	public void SetMaterials(Material textMaterial, Material expandArrowMaterial)
+	public void SetMaterials(Material noClipBackingCube, Material textMaterial, Material expandArrowMaterial)
 	{
+		m_NoClipBackingCube = noClipBackingCube;
 		m_Text.material = textMaterial;
 		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
 	}
@@ -149,12 +157,62 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 			immediate ? 1f : kExpandArrowRotateSpeed);
 	}
 
+	protected override void OnSingleClick(BaseHandle handle, HandleEventData eventData)
+	{
+		SelectFolder();
+		ToggleExpanded(handle, eventData);
+	}
+
+	protected override void OnDoubleClick(BaseHandle handle, HandleEventData eventData)
+	{
+		var row = handle.transform.parent;
+		if (row)
+		{
+			var clone = Instantiate(row.gameObject, row.parent) as GameObject;
+
+			m_DragObject = clone.transform;
+
+			StartCoroutine(Magnetize());
+
+			var graphics = clone.GetComponentsInChildren<Graphic>(true);
+			foreach(var graphic in graphics) {
+				graphic.material = null;
+			}
+
+			var item = clone.GetComponent<HierarchyListItem>();
+			item.m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipBackingCube;
+
+			item.m_MarginCube.GetComponent<Renderer>().enabled = false;
+		}
+	}
+
+	protected override void OnDragging(BaseHandle handle, HandleEventData eventData)
+	{
+		base.OnDragging(handle, eventData);
+
+		if (m_DragObject)
+		{
+			var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
+			U.Math.LerpTransform(m_DragObject, previewOrigin.position,
+				U.Math.ConstrainYawRotation(U.Camera.GetMainCamera().transform.rotation)
+				* Quaternion.AngleAxis(90, Vector3.left), m_DragLerp);
+		}
+	}
+
+	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
+	{
+		if (m_DragObject)
+			U.Object.Destroy(m_DragObject.gameObject);
+
+		base.OnDragEnded(baseHandle, eventData);
+	}
+
 	void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
 	{
 		toggleExpanded(data);
 	}
 
-	void SelectFolder(BaseHandle baseHandle, HandleEventData eventData)
+	void SelectFolder()
 	{
 		selectRow(data.instanceID);
 	}
@@ -169,13 +227,13 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 		m_Hovering = false;
 	}
 
-	protected virtual void OnDropHoverStarted(BaseHandle handle) {
+	void OnDropHoverStarted(BaseHandle handle) {
 		var color = m_MarginCubeMaterial.color;
 		color.a = m_MarginHighlightAlpha;
 		m_MarginCubeMaterial.color = color;
 	}
 
-	protected virtual void OnDropHoverEnded(BaseHandle handle) {
+	void OnDropHoverEnded(BaseHandle handle) {
 		var color = m_MarginCubeMaterial.color;
 		color.a = 0;
 		m_MarginCubeMaterial.color = color;
@@ -183,15 +241,58 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	object GetDropObject(BaseHandle handle)
 	{
-		return null;
+		return data;
 	}
 
 	bool CanDrop(BaseHandle handle, object dropObject)
 	{
-		return false;
+		var hierarchyData = dropObject as HierarchyData;
+		if (hierarchyData == null)
+			return false;
+
+		var gameObject = (GameObject)EditorUtility.InstanceIDToObject(data.instanceID);
+		var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(hierarchyData.instanceID);
+		var transform = gameObject.transform;
+		var dropTransform = dropGameObject.transform;
+
+		if (transform == null || dropTransform == null)
+			return false;
+		
+		var siblings = transform.parent == null && dropTransform.parent == null
+			|| transform.parent && dropTransform.IsChildOf(transform.parent);
+
+		// Dropping on previous sibling's zone has no effect
+		if (siblings && transform.GetSiblingIndex() == dropTransform.GetSiblingIndex() - 1)
+			return false;
+
+		// Dropping on own zone would otherwise move object down
+		return dropObject != data;
 	}
 
-	void ReceiveDrop(BaseHandle handle, object dropObject) {
+	void ReceiveDrop(BaseHandle handle, object dropObject)
+	{
+		var hierarchyData = dropObject as HierarchyData;
+		if (hierarchyData != null)
+		{
+			var gameObject = (GameObject)EditorUtility.InstanceIDToObject(data.instanceID);
+			var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(hierarchyData.instanceID);
+			var transform = gameObject.transform;
+			var dropTransform = dropGameObject.transform;
+			if (transform.parent)
+			{
+				if (!dropTransform.IsChildOf(transform.parent))
+					dropTransform.SetParent(transform.parent);
+
+				dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
+			}
+			else
+			{
+				if (dropTransform.parent)
+					dropTransform.SetParent(null);
+
+				dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
+			}
+		}
 	}
 
 	void OnDestroy()
