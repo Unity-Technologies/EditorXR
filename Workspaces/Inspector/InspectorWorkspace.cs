@@ -136,13 +136,15 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		var inspectorData = new List<InspectorData>();
 		var objectChildren = new List<InspectorData>();
 		
-		foreach(var component in selection.GetComponents<Component>()) {
+		foreach(var component in selection.GetComponents<Component>())
+		{
 			var obj = new SerializedObject(component);
 
 			var componentChildren = new List<InspectorData>();
 
 			var property = obj.GetIterator();
-			while(property.NextVisible(true)) {
+			while (property.NextVisible(true))
+			{
 				if(property.depth == 0)
 					componentChildren.Add(SerializedPropertyToPropertyData(property, obj));
 			}
