@@ -30,7 +30,7 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 
 	readonly Dictionary<int, bool> m_ExpandStates = new Dictionary<int, bool>();
 
-	public Action<int> selectRow;
+	public Action<int> selectRow { private get; set; }
 
 	protected override void Setup()
 	{
@@ -90,9 +90,10 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 	{
 		foreach (var datum in data)
 		{
+			var instanceID = datum.instanceID;
 			bool expanded;
-			if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
-				m_ExpandStates[datum.instanceID] = false;
+			if (!m_ExpandStates.TryGetValue(instanceID, out expanded))
+				m_ExpandStates[instanceID] = false;
 
 			if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
 				Recycle(datum);
@@ -108,6 +109,10 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 				else
 					RecycleChildren(datum);
 			}
+			else
+			{
+				m_ExpandStates[instanceID] = false;
+			}
 		}
 	}
 
@@ -119,9 +124,9 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 
 		item.toggleExpanded = ToggleExpanded;
 
-		bool expanded;
-		if(m_ExpandStates.TryGetValue(listData.instanceID, out expanded))
-			item.UpdateArrow(expanded, true);
+		item.isExpanded = GetExpanded;
+
+		item.UpdateArrow(GetExpanded(listData.instanceID), true);
 
 		return item;
 	}
@@ -184,14 +189,11 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 			return;
 		}
 
-		bool expanded;
-		m_ExpandStates.TryGetValue(container.instanceID, out expanded);
-
 		if (container.children != null)
 		{
 			foreach (var child in container.children)
 			{
-				if (expanded)
+				if (GetExpanded(container.instanceID))
 				{
 					ScrollToRow(child, rowID, ref scrollHeight);
 					scrollHeight += itemSize.z;
@@ -205,7 +207,7 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		return dropObject is HierarchyData && dropObject != data[0];
 	}
 
-	void RecieveDrop(BaseHandle handle, object dropObject) {
+	static void RecieveDrop(BaseHandle handle, object dropObject) {
 		var hierarchyData = dropObject as HierarchyData;
 		if (hierarchyData != null)
 		{
@@ -227,6 +229,13 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		var color = m_TopDropZoneMaterial.color;
 		color.a = 0;
 		m_TopDropZoneMaterial.color = color;
+	}
+
+	bool GetExpanded(int instanceID)
+	{
+		bool expanded;
+		m_ExpandStates.TryGetValue(instanceID, out expanded);
+		return expanded;
 	}
 
 	private void OnDestroy()

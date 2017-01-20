@@ -56,6 +56,8 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	public Action<HierarchyData> toggleExpanded { private get; set; }
 	public Action<int> selectRow { private get; set; }
+
+	public Func<int, bool> isExpanded { private get; set; }
 	
 	public override void Setup(HierarchyData listData)
 	{
@@ -77,6 +79,8 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 			m_Cube.hoverEnded += OnHoverEnded;
 
 			m_Cube.getDropObject += GetDropObject;
+			m_Cube.canDrop += CanDrop;
+			m_Cube.receiveDrop += ReceiveDrop;
 
 			var marginCubeRenderer = m_MarginCube.GetComponent<Renderer>();
 			m_MarginCubeMaterial = U.Material.GetMaterialClone(marginCubeRenderer);
@@ -250,23 +254,32 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 		if (hierarchyData == null)
 			return false;
 
+		// Dropping on own zone would otherwise move object down
+		if (dropObject == data)
+			return false;
+
+		if (handle == m_Cube)
+			return true;
+
+		if (isExpanded(data.instanceID))
+			return true;
+
 		var gameObject = (GameObject)EditorUtility.InstanceIDToObject(data.instanceID);
 		var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(hierarchyData.instanceID);
 		var transform = gameObject.transform;
 		var dropTransform = dropGameObject.transform;
 
-		if (transform == null || dropTransform == null)
-			return false;
-		
+		//if (transform == null || dropTransform == null)
+		//	return false;
+
 		var siblings = transform.parent == null && dropTransform.parent == null
-			|| transform.parent && dropTransform.IsChildOf(transform.parent);
+			|| transform.parent && dropTransform.parent == transform.parent;
 
 		// Dropping on previous sibling's zone has no effect
 		if (siblings && transform.GetSiblingIndex() == dropTransform.GetSiblingIndex() - 1)
 			return false;
-
-		// Dropping on own zone would otherwise move object down
-		return dropObject != data;
+		
+		return true;
 	}
 
 	void ReceiveDrop(BaseHandle handle, object dropObject)
@@ -278,19 +291,28 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 			var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(hierarchyData.instanceID);
 			var transform = gameObject.transform;
 			var dropTransform = dropGameObject.transform;
-			if (transform.parent)
-			{
-				if (!dropTransform.IsChildOf(transform.parent))
-					dropTransform.SetParent(transform.parent);
 
-				dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
+			if (handle == m_Cube || isExpanded(data.instanceID))
+			{
+				dropTransform.SetParent(transform);
+				dropTransform.SetSiblingIndex(0);
 			}
 			else
 			{
-				if (dropTransform.parent)
-					dropTransform.SetParent(null);
+				if (transform.parent)
+				{
+					if (!dropTransform.parent == transform.parent)
+						dropTransform.SetParent(transform.parent);
 
-				dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
+					dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
+				}
+				else
+				{
+					if (dropTransform.parent)
+						dropTransform.SetParent(null);
+
+					dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
+				}
 			}
 		}
 	}
