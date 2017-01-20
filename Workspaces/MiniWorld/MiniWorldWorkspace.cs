@@ -111,7 +111,7 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 		panZoomHandle.hoverStarted += OnPanZoomHoverStarted;
 		panZoomHandle.hoverEnded += OnPanZoomHoverEnded;
 
-		// Set up UI
+		// Set up Zoom Slider
 		var sliderObject = U.Object.Instantiate(m_ZoomSliderPrefab, m_WorkspaceUI.frontPanel, false);
 		m_ZoomSliderUI = sliderObject.GetComponentInChildren<ZoomSliderUI>();
 		m_ZoomSliderUI.sliding += OnSliding;
