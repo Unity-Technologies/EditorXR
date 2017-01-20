@@ -9,7 +9,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	partial class EditorVR
+	partial class EditorVR : MonoBehaviour
 	{
 		const float kViewerPivotTransitionTime = 0.75f;
 

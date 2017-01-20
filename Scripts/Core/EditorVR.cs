@@ -41,6 +41,7 @@ namespace UnityEditor.Experimental.EditorVR
 		SelectionModule m_SelectionModule;
 		HierarchyModule m_HierarchyModule;
 		ProjectFolderModule m_ProjectFolderModule;
+		ActionsModule m_ActionsModule;
 
 		event Action m_SelectionChanged;
 
@@ -50,8 +51,8 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			ClearDeveloperConsoleIfNecessary();
 
-			m_HierarchyModule = U.Object.AddComponent<HierarchyModule>(gameObject);			
-			m_ProjectFolderModule = U.Object.AddComponent<ProjectFolderModule>(gameObject);
+			m_HierarchyModule = AddModule<HierarchyModule>();			
+			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
 
 			VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
 			if (VRSettings.loadedDeviceName == "OpenVR")
@@ -77,20 +78,21 @@ namespace UnityEditor.Experimental.EditorVR
 			InitializePlayerHandle();
 			CreateDefaultActionMapInputs();
 
-			m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
+			m_DragAndDropModule = AddModule<DragAndDropModule>();
 
-			m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
+			m_PixelRaycastModule = AddModule<PixelRaycastModule>();
 			m_PixelRaycastModule.ignoreRoot = transform;
-			m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
-			m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
-			m_LockModule.updateAlternateMenu = (rayOrigin, o) => SetAlternateMenuVisibility(rayOrigin, o != null);
-			ConnectInterfaces(m_LockModule);
 
-			m_SelectionModule = U.Object.AddComponent<SelectionModule>(gameObject);
+			m_HighlightModule = AddModule<HighlightModule>();
+			m_ActionsModule = AddModule<ActionsModule>();
+
+			m_LockModule = AddModule<LockModule>();
+			m_LockModule.updateAlternateMenu = (rayOrigin, o) => SetAlternateMenuVisibility(rayOrigin, o != null);
+
+			m_SelectionModule = AddModule<SelectionModule>();
 			m_SelectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 			m_SelectionModule.getGroupRoot = GetGroupRoot;
-			ConnectInterfaces(m_SelectionModule);
-
+			
 			m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 			m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 			m_AllWorkspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
@@ -100,14 +102,11 @@ namespace UnityEditor.Experimental.EditorVR
 			CreateEventSystem();
 			CreateSpatialSystem();
 
-			m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
-			ConnectInterfaces(m_ObjectPlacementModule);
+			m_ObjectPlacementModule = AddModule<ObjectPlacementModule>();
 
 			AddPlayerModel();
 
 			CreateAllProxies();
-
-			SpawnActions();
 
 			// In case we have anything selected at start, set up manipulators, inspector, etc.
 			EditorApplication.delayCall += OnSelectionChanged;
@@ -250,6 +249,13 @@ namespace UnityEditor.Experimental.EditorVR
 			UpdateMenuVisibilities();
 
 			UpdateManipulatorVisibilites();
+		}
+
+		T AddModule<T>() where T : Component
+		{
+			T module = U.Object.AddComponent<T>(gameObject);
+			ConnectInterfaces(module);
+			return module;
 		}
 
 		private void LogError(string error)

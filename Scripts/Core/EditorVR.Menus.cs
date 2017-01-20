@@ -342,6 +342,16 @@ namespace UnityEditor.Experimental.EditorVR
 
 			return button;
 		}
+
+		void UpdateAlternateMenuActions()
+		{
+			foreach (var deviceData in m_DeviceData)
+			{
+				var altMenu = deviceData.alternateMenu;
+				if (altMenu != null)
+					altMenu.menuActions = m_ActionsModule.menuActions;
+			}
+		}
 	}
 }
 #endif

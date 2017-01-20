@@ -151,7 +151,7 @@ namespace UnityEditor.Experimental.EditorVR
 						priority = int.MaxValue,
 						action = action,
 					};
-					m_MenuActions.Add(actionMenuData);
+					m_ActionsModule.menuActions.Add(actionMenuData);
 				}
 				UpdateAlternateMenuActions();
 			}
@@ -193,7 +193,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			var alternateMenu = obj as IAlternateMenu;
 			if (alternateMenu != null)
-				alternateMenu.menuActions = m_MenuActions;
+				alternateMenu.menuActions = m_ActionsModule.menuActions;
 
 			var usesProjectFolderData = obj as IUsesProjectFolderData;
 			if (usesProjectFolderData != null)
@@ -272,8 +272,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var toolActions = obj as IActions;
 			if (toolActions != null)
 			{
-				var actions = toolActions.actions;
-				m_MenuActions = m_MenuActions.Where(a => !actions.Contains(a.action)).ToList();
+				m_ActionsModule.RemoveActions(toolActions.actions);
 				UpdateAlternateMenuActions();
 			}
 
