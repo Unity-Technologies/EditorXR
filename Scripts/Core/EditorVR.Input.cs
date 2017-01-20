@@ -1,8 +1,12 @@
 #if UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Proxies;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
@@ -59,11 +63,86 @@ namespace UnityEditor.Experimental.EditorVR
 			m_PlayerHandle.processAll = true;
 		}
 
-		void CreateDeviceDataForInputDevices()
+		void OnProxyActiveChanged(IProxy proxy)
 		{
-			foreach (var device in GetSystemDevices())
+			proxy.hidden = !proxy.active;
+
+			if (proxy.active)
 			{
-				m_DeviceData.Add(device, new DeviceData());
+				if (!m_DeviceData.Any(dd => dd.proxy == proxy))
+				{
+					foreach (var rayOriginPair in proxy.rayOrigins)
+					{
+						var systemDevices = GetSystemDevices();
+						for (int j = 0; j < systemDevices.Count; j++)
+						{
+							var device = systemDevices[j];
+
+							// Find device tagged with the node that matches this RayOrigin node
+							var node = GetDeviceNode(device);
+							if (node.HasValue && node.Value == rayOriginPair.Key)
+							{
+								var deviceData = new DeviceData();
+								m_DeviceData.Add(deviceData);
+								deviceData.proxy = proxy;
+								deviceData.node = rayOriginPair.Key;
+								deviceData.rayOrigin = rayOriginPair.Value;
+								deviceData.inputDevice = device;
+								deviceData.uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
+								deviceData.directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
+
+								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+								m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, source =>
+								{
+									foreach (var miniWorld in m_MiniWorlds)
+									{
+										var targetObject = source.hoveredObject ? source.hoveredObject : source.draggedObject;
+										if (miniWorld.Contains(source.rayOrigin.position))
+										{
+											if (targetObject && !targetObject.transform.IsChildOf(miniWorld.miniWorldTransform.parent))
+												return false;
+										}
+									}
+
+									return true;
+								});
+							}
+						}
+
+						var rayOriginPairValue = rayOriginPair.Value;
+						var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
+						rayTransform.position = rayOriginPairValue.position;
+						rayTransform.rotation = rayOriginPairValue.rotation;
+						m_DefaultRays.Add(rayOriginPairValue, rayTransform.GetComponent<DefaultProxyRay>());
+
+						var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginPairValue).transform;
+						malletTransform.position = rayOriginPairValue.position;
+						malletTransform.rotation = rayOriginPairValue.rotation;
+						var mallet = malletTransform.GetComponent<KeyboardMallet>();
+						mallet.gameObject.SetActive(false);
+						m_KeyboardMallets.Add(rayOriginPairValue, mallet);
+
+						if (m_ProxyExtras)
+						{
+							var extraData = m_ProxyExtras.data;
+							List<GameObject> prefabs;
+							if (extraData.TryGetValue(rayOriginPair.Key, out prefabs))
+							{
+								foreach (var prefab in prefabs)
+								{
+									var go = InstantiateUI(prefab);
+									go.transform.SetParent(rayOriginPair.Value, false);
+								}
+							}
+						}
+
+						var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
+						tester.active = proxy.active;
+						m_IntersectionModule.AddTester(tester);
+					}
+
+					SpawnDefaultTools(proxy);
+				}
 			}
 		}
 
@@ -90,8 +169,11 @@ namespace UnityEditor.Experimental.EditorVR
 			m_InputModule.ProcessInput(null, ConsumeControl);
 
 			m_ProcessedInputs.Clear();
-			foreach (var deviceData in m_DeviceData.Values)
+			foreach (var deviceData in m_DeviceData)
 			{
+				if (!deviceData.proxy.active)
+					continue;
+
 				var mainMenu = deviceData.mainMenu;
 				var menuInput = mainMenu as IProcessInput;
 				if (menuInput != null && mainMenu.visible)
@@ -177,7 +259,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var maps = m_PlayerHandle.maps;
 			maps.Clear();
 
-			foreach (var deviceData in m_DeviceData.Values)
+			foreach (var deviceData in m_DeviceData)
 			{
 				var mainMenu = deviceData.mainMenu;
 				var mainMenuInput = deviceData.mainMenuInput;
@@ -205,7 +287,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			maps.Add(m_TrackedObjectInput);
 
-			foreach (var deviceData in m_DeviceData.Values)
+			foreach (var deviceData in m_DeviceData)
 			{
 				foreach (var td in deviceData.toolData)
 				{

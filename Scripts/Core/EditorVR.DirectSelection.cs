@@ -31,13 +31,6 @@ namespace UnityEditor.Experimental.EditorVR
 			m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
 			ConnectInterfaces(m_IntersectionModule);
 			m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
-
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-			{
-				var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
-				tester.active = proxy.active;
-				m_IntersectionModule.AddTester(tester);
-			}, false);
 		}
 
 		// NOTE: This is for the length of the pointer object, not the length of the ray coming out of the pointer
@@ -75,9 +68,9 @@ namespace UnityEditor.Experimental.EditorVR
 			m_ActiveStates.Clear();
 
 			var directSelection = m_ObjectsGrabber;
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+			ForEachProxyDevice((deviceData) =>
 			{
-				var rayOrigin = rayOriginPair.Value;
+				var rayOrigin = deviceData.rayOrigin;
 				var input = deviceData.directSelectInput;
 				var obj = GetDirectSelectionForRayOrigin(rayOrigin, input);
 				if (obj && !obj.CompareTag(kVRPlayerTag))
@@ -86,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR
 					m_DirectSelectionResults[rayOrigin] = new DirectSelectionData
 					{
 						gameObject = obj,
-						node = rayOriginPair.Key,
+						node = deviceData.node,
 						input = input
 					};
 				}
@@ -121,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			// Only activate direct selection input if the cone is inside of an object, so a trigger press can be detected,
 			// and keep it active if we are dragging
-			ForEachRayOrigin((proxy, pair, device, deviceData) =>
+			ForEachProxyDevice((deviceData) =>
 			{
 				var input = deviceData.directSelectInput;
 				input.active = m_ActiveStates.Contains(input);

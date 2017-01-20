@@ -1,21 +1,12 @@
 ﻿using System.Collections;
 using UnityEditor;
+using UnityEngine.Experimental.EditorVR.Input;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEngine.Experimental.EditorVR.Proxies
 {
 	public class TouchProxy : TwoHandedProxyBase
 	{
-		private OVRTouchInputToEvents m_InputToEvents;
-
-		public override bool active
-		{
-			get
-			{
-				return m_InputToEvents.active;
-			}
-		}
-
 		public override void Awake()
 		{
 			base.Awake();

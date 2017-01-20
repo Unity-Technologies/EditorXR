@@ -1,6 +1,7 @@
 #if UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Menus;
@@ -35,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void UpdateMenuVisibilityNearWorkspaces()
 		{
-			ForEachRayOrigin((proxy, pair, device, deviceData) =>
+			ForEachProxyDevice((deviceData) =>
 			{
 				m_UpdateVisibilityMenus.Clear();
 				m_UpdateVisibilityMenus.AddRange(deviceData.menuHideFlags.Keys);
@@ -90,18 +91,18 @@ namespace UnityEditor.Experimental.EditorVR
 						if (menuBounds.Intersects(outerBounds))
 						{
 							var standardWorkspace = workspace as Workspace;
-							var pairDevice = pair.Value;
-							var deviceForwardVector = pairDevice.forward;
+							var rayOrigin = deviceData.rayOrigin;
+							var deviceForwardVector = rayOrigin.forward;
 							var workspaceTopFaceForwardVector = workspaceTransform.up;
 							if (standardWorkspace)
 							{
 								var frontPanelTransform = standardWorkspace.frontPanel;
 								var frontPanelForwardVector = frontPanelTransform.forward;
 								var topPanelPosition = standardWorkspace.topPanel.position;
-								var devicePositionTopPanelDot = Vector3.Dot(workspaceTopFaceForwardVector, topPanelPosition - pairDevice.position);
+								var devicePositionTopPanelDot = Vector3.Dot(workspaceTopFaceForwardVector, topPanelPosition - rayOrigin.position);
 								if (devicePositionTopPanelDot > -0.02f && devicePositionTopPanelDot < 0.095f // Verify that the device is within the front-panel's top & bottom boundaries
 									&& Vector3.Dot(frontPanelForwardVector, workspaceTopFaceForwardVector) > -0.7f // Verify the front-panel is not parallel with the workspace top-panel
-									&& Vector3.Dot(frontPanelForwardVector, frontPanelTransform.position - pairDevice.position) > 0 // Verify that the device is in front of the front-panel
+									&& Vector3.Dot(frontPanelForwardVector, frontPanelTransform.position - rayOrigin.position) > 0 // Verify that the device is in front of the front-panel
 									&& Vector3.Dot(frontPanelForwardVector, deviceForwardVector) > 0.75f) // Verify that the device is pointing towards the front-panel
 								{
 									// If the device is in front of the front-panel, pointing at the front-panel, and the front-panel is not parallel to the top-panel, allow for vaild intersection
@@ -109,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR
 								}
 								// Handle for top-panel user interactions if the user is not attempting to interact with the front-face of a standard workspace
 								else if (Vector3.Dot(deviceForwardVector, workspaceTopFaceForwardVector) < -0.35f  // verify that the user is pointing at the top of the workspace
-									&& Vector3.Dot(workspaceTopFaceForwardVector, topPanelPosition - pairDevice.position) < 0) // Verify that the device is in front of the top-panel)
+									&& Vector3.Dot(workspaceTopFaceForwardVector, topPanelPosition - rayOrigin.position) < 0) // Verify that the device is in front of the top-panel)
 								{
 									// Hide the menu if the device is above the top of the workspace, within the intersection range, and pointing towards the workspace
 									intersection = true;
@@ -143,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR
 		void UpdateMenuVisibilities()
 		{
 			m_ActiveDeviceData.Clear();
-			ForEachRayOrigin((proxy, pair, device, deviceData) =>
+			ForEachProxyDevice((deviceData) =>
 			{
 				m_ActiveDeviceData.Add(deviceData);
 			});
@@ -185,7 +186,7 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 
 			// Apply state to UI visibility
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+			ForEachProxyDevice((deviceData) =>
 			{
 				var mainMenu = deviceData.mainMenu;
 				mainMenu.visible = deviceData.menuHideFlags[mainMenu] == 0;
@@ -195,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR
 					customMenu.visible = deviceData.menuHideFlags[customMenu] == 0;
 
 				UpdateAlternateMenuForDevice(deviceData);
-				UpdateRayForDevice(deviceData, rayOriginPair.Value);
+				UpdateRayForDevice(deviceData, deviceData.rayOrigin);
 			});
 
 			UpdatePlayerHandleMaps();
@@ -203,32 +204,28 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void OnMainMenuActivatorHoverStarted(Transform rayOrigin)
 		{
-			ForEachRayOrigin((p, rayOriginPair, device, deviceData) =>
+			var deviceData = m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+			if (deviceData != null)
 			{
-				if (rayOriginPair.Value == rayOrigin)
+				var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
+				foreach (var menu in menus)
 				{
-					var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
-					foreach (var menu in menus)
-					{
-						deviceData.menuHideFlags[menu] |= MenuHideFlags.OverActivator;
-					}
+					deviceData.menuHideFlags[menu] |= MenuHideFlags.OverActivator;
 				}
-			});
+			}
 		}
 
 		void OnMainMenuActivatorHoverEnded(Transform rayOrigin)
 		{
-			ForEachRayOrigin((p, rayOriginPair, device, deviceData) =>
+			var deviceData = m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+			if (deviceData != null)
 			{
-				if (rayOriginPair.Value == rayOrigin)
+				var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
+				foreach (var menu in menus)
 				{
-					var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
-					foreach (var menu in menus)
-					{
-						deviceData.menuHideFlags[menu] &= ~MenuHideFlags.OverActivator;
-					}
+					deviceData.menuHideFlags[menu] &= ~MenuHideFlags.OverActivator;
 				}
-			});
+			}
 		}
 
 		void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)
@@ -238,47 +235,46 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
 		{
-			ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
+			ForEachProxyDevice((deviceData) =>
 			{
 				var alternateMenu = deviceData.alternateMenu;
 				if (alternateMenu != null)
 				{
 					var flags = deviceData.menuHideFlags[alternateMenu];
-					deviceData.menuHideFlags[alternateMenu] = (rayOriginPair.Value == rayOrigin) && visible ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
+					deviceData.menuHideFlags[alternateMenu] = (deviceData.rayOrigin == rayOrigin) && visible ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
 				}
 			});
 		}
 
 		void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
 		{
-			ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
+			var deviceData = m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+			if (deviceData != null)
 			{
-				if (rayOriginPair.Value == rayOrigin)
+				var mainMenu = deviceData.mainMenu;
+				if (mainMenu != null)
 				{
-					var mainMenu = deviceData.mainMenu;
-					if (mainMenu != null)
-					{
-						var menuHideFlags = deviceData.menuHideFlags;
-						menuHideFlags[mainMenu] ^= MenuHideFlags.Hidden;
+					var menuHideFlags = deviceData.menuHideFlags;
+					menuHideFlags[mainMenu] ^= MenuHideFlags.Hidden;
 
-						var customMenu = deviceData.customMenu;
-						if (customMenu != null)
-							menuHideFlags[customMenu] &= ~MenuHideFlags.Hidden;
+					var customMenu = deviceData.customMenu;
+					if (customMenu != null)
+						menuHideFlags[customMenu] &= ~MenuHideFlags.Hidden;
 
-						mainMenu.targetRayOrigin = targetRayOrigin;
-					}
+					mainMenu.targetRayOrigin = targetRayOrigin;
 				}
-			});
+			}
 		}
 
 		private GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
 		{
 			GameObject go = null;
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+			ForEachProxyDevice((deviceData) =>
 			{
-				if (proxy.rayOrigins.ContainsValue(rayOrigin) && rayOriginPair.Value != rayOrigin)
+				var proxy = deviceData.proxy;
+				var otherRayOrigin = deviceData.rayOrigin;
+				if (proxy.rayOrigins.ContainsValue(rayOrigin) && otherRayOrigin != rayOrigin)
 				{
-					var otherRayOrigin = rayOriginPair.Value;
 					Transform menuOrigin;
 					if (proxy.menuOrigins.TryGetValue(otherRayOrigin, out menuOrigin))
 					{

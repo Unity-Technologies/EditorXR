@@ -1,8 +1,6 @@
 #if UNITY_EDITOR
 //#define ENABLE_MINIWORLD_RAY_SELECTION
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -11,7 +9,6 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Menus;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
@@ -49,8 +46,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 		IPreviewCamera m_CustomPreviewCamera;
 
-		bool m_ControllersReady;
-
 		void Awake()
 		{
 			ClearDeveloperConsoleIfNecessary();
@@ -81,12 +76,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 			InitializePlayerHandle();
 			CreateDefaultActionMapInputs();
-			CreateAllProxies();
-			CreateDeviceDataForInputDevices();
 
 			m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
-
-			CreateEventSystem();
 
 			m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
 			m_PixelRaycastModule.ignoreRoot = transform;
@@ -105,6 +96,21 @@ namespace UnityEditor.Experimental.EditorVR
 			m_AllWorkspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
+
+			CreateEventSystem();
+			CreateSpatialSystem();
+
+			m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+			ConnectInterfaces(m_ObjectPlacementModule);
+
+			AddPlayerModel();
+
+			CreateAllProxies();
+
+			SpawnActions();
+
+			// In case we have anything selected at start, set up manipulators, inspector, etc.
+			EditorApplication.delayCall += OnSelectionChanged;
 		}
 
 		void ClearDeveloperConsoleIfNecessary()
@@ -149,60 +155,6 @@ namespace UnityEditor.Experimental.EditorVR
 			UpdateAlternateMenuOnSelectionChanged(m_LastSelectionRayOrigin);
 		}
 
-		IEnumerator Start()
-		{
-			// Delay until at least one proxy initializes
-			bool proxyActive = false;
-			while (!proxyActive)
-			{
-				foreach (var proxy in m_Proxies)
-				{
-					if (proxy.active)
-					{
-						proxyActive = true;
-						break;
-					}
-				}
-
-				yield return null;
-			}
-
-			m_ControllersReady = true;
-
-			if (m_ProxyExtras)
-			{
-				var extraData = m_ProxyExtras.data;
-				ForEachRayOrigin((proxy, pair, device, deviceData) =>
-				{
-					List<GameObject> prefabs;
-					if (extraData.TryGetValue(pair.Key, out prefabs))
-					{
-						foreach (var prefab in prefabs)
-						{
-							var go = InstantiateUI(prefab);
-							go.transform.SetParent(pair.Value, false);
-						}
-					}
-				});
-			}
-
-			CreateSpatialSystem();
-
-			m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
-			ConnectInterfaces(m_ObjectPlacementModule);
-
-			SpawnActions();
-			SpawnDefaultTools();
-			AddPlayerModel();
-			PrewarmAssets();
-
-			// In case we have anything selected at start, set up manipulators, inspector, etc.
-			EditorApplication.delayCall += OnSelectionChanged;
-
-			// This will be the first call to update the player handle (input) maps, sorted by priority
-			UpdatePlayerHandleMaps();
-		}
-
 		void OnEnable()
 		{
 			Selection.selectionChanged += OnSelectionChanged;
@@ -238,9 +190,9 @@ namespace UnityEditor.Experimental.EditorVR
 					m_PixelRaycastIgnoreListDirty = false;
 				}
 
-				ForEachRayOrigin((proxy, pair, device, deviceData) =>
+				ForEachProxyDevice((deviceData) =>
 				{
-					m_PixelRaycastModule.UpdateRaycast(pair.Value, m_EventCamera);
+					m_PixelRaycastModule.UpdateRaycast(deviceData.rayOrigin, m_EventCamera);
 				});
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
@@ -263,26 +215,7 @@ namespace UnityEditor.Experimental.EditorVR
 			PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
 		}
 
-		void PrewarmAssets()
-		{
-			// HACK: Cannot async load assets in the editor yet, so to avoid a hitch let's spawn the menu immediately and then make it invisible
-			foreach (var kvp in m_DeviceData)
-			{
-				var device = kvp.Key;
-				var deviceData = kvp.Value;
-				var mainMenu = deviceData.mainMenu;
-
-				if (mainMenu == null)
-				{
-					mainMenu = SpawnMainMenu(typeof(MainMenu), device, false, out deviceData.mainMenuInput);
-					deviceData.mainMenu = mainMenu;
-					deviceData.menuHideFlags[mainMenu] = MenuHideFlags.Hidden;
-					UpdatePlayerHandleMaps();
-				}
-			}
-		}
-
-		private void Update()
+		void Update()
 		{
 			if (m_CustomPreviewCamera != null)
 				m_CustomPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
@@ -306,9 +239,6 @@ namespace UnityEditor.Experimental.EditorVR
 				m_UpdatePixelRaycastModule = false; // Don't allow another one to queue until the current one is processed
 			}
 #endif
-
-			if (!m_ControllersReady)
-				return;
 
 			UpdateDefaultProxyRays();
 

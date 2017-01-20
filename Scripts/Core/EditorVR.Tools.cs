@@ -1,9 +1,11 @@
 #if UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Proxies;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
@@ -20,6 +22,10 @@ namespace UnityEditor.Experimental.EditorVR
 
 		class DeviceData
 		{
+			public IProxy proxy;
+			public InputDevice inputDevice;
+			public Node node;
+			public Transform rayOrigin;
 			public readonly Stack<ToolData> toolData = new Stack<ToolData>();
 			public ActionMapInput uiInput;
 			public MainMenuActivator mainMenuActivator;
@@ -37,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		List<Type> m_AllTools;
 
-		readonly Dictionary<InputDevice, DeviceData> m_DeviceData = new Dictionary<InputDevice, DeviceData>();
+		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
 
 		bool IsPermanentTool(Type type)
 		{
@@ -47,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR
 				|| typeof(VacuumTool).IsAssignableFrom(type);
 		}
 
-		void SpawnDefaultTools()
+		void SpawnDefaultTools(IProxy proxy)
 		{
 			// Spawn default tools
 			HashSet<InputDevice> devices;
@@ -55,13 +61,11 @@ namespace UnityEditor.Experimental.EditorVR
 			var transformTool = SpawnTool(typeof(TransformTool), out devices);
 			m_ObjectsGrabber = transformTool.tool as IGrabObjects;
 
-			foreach (var deviceDataPair in m_DeviceData)
+			foreach (var deviceData in m_DeviceData)
 			{
-				var inputDevice = deviceDataPair.Key;
-				var deviceData = deviceDataPair.Value;
-
-				// Skip keyboard, mouse, gamepads. Selection, blink, and vacuum tools should only be on left and right hands (tagged 0 and 1)
-				if (inputDevice.tagIndex == -1)
+				var inputDevice = deviceData.inputDevice;
+				
+				if (deviceData.proxy != proxy)
 					continue;
 
 				var toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
@@ -77,10 +81,14 @@ namespace UnityEditor.Experimental.EditorVR
 				vacuumTool.vacuumables = m_Vacuumables;
 
 				// Using a shared instance of the transform tool across all device tool stacks
-				AddToolToStack(inputDevice, transformTool);
+				AddToolToStack(deviceData, transformTool);
 
 				toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
 				AddToolToDeviceData(toolData, devices);
+
+				var mainMenu = SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
+				deviceData.mainMenu = mainMenu;
+				deviceData.menuHideFlags[mainMenu] = MenuHideFlags.Hidden;
 
 				var mainMenuActivator = SpawnMainMenuActivator(inputDevice);
 				deviceData.mainMenuActivator = mainMenuActivator;
@@ -98,9 +106,9 @@ namespace UnityEditor.Experimental.EditorVR
 				deviceData.alternateMenu = alternateMenu;
 				deviceData.menuHideFlags[alternateMenu] = MenuHideFlags.Hidden;
 				alternateMenu.itemWasSelected += UpdateAlternateMenuOnSelectionChanged;
-
-				UpdatePlayerHandleMaps();
 			}
+
+			UpdatePlayerHandleMaps();
 		}
 
 		/// <summary>
@@ -134,29 +142,30 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void AddToolToDeviceData(ToolData toolData, HashSet<InputDevice> devices)
 		{
-			foreach (var dev in devices)
-				AddToolToStack(dev, toolData);
+			foreach (var dd in m_DeviceData)
+			{
+				if (devices.Contains(dd.inputDevice))
+					AddToolToStack(dd, toolData);
+			}
 		}
 
 		bool IsToolActive(Transform targetRayOrigin, Type toolType)
 		{
 			var result = false;
 
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-			{
-				if (rayOriginPair.Value == targetRayOrigin)
-					result = deviceData.currentTool.GetType() == toolType;
-			});
-
+			var deviceData = m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == targetRayOrigin);
+			if (deviceData != null)
+				result = deviceData.currentTool.GetType() == toolType;
+			
 			return result;
 		}
 
 		bool SelectTool(Transform rayOrigin, Type toolType)
 		{
 			var result = false;
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+			ForEachProxyDevice((deviceData) =>
 			{
-				if (rayOriginPair.Value == rayOrigin)
+				if (deviceData.rayOrigin == rayOrigin)
 				{
 					var spawnTool = true;
 
@@ -173,6 +182,7 @@ namespace UnityEditor.Experimental.EditorVR
 					{
 						// Spawn tool and collect all devices that this tool will need
 						HashSet<InputDevice> usedDevices;
+						var device = deviceData.inputDevice;
 						var newTool = SpawnTool(toolType, out usedDevices, device);
 
 						// It's possible this tool uses no action maps, so at least include the device this tool was spawned on
@@ -182,19 +192,21 @@ namespace UnityEditor.Experimental.EditorVR
 						// Exclusive mode tools always take over all tool stacks
 						if (newTool is IExclusiveMode)
 						{
-							foreach (var dev in m_DeviceData.Keys)
+							foreach (var dev in m_DeviceData)
 							{
-								usedDevices.Add(dev);
+								usedDevices.Add(dev.inputDevice);
 							}
 						}
 
-						foreach (var dev in usedDevices)
+						foreach (var dd in m_DeviceData)
 						{
-							deviceData = m_DeviceData[dev];
+							if (!usedDevices.Contains(dd.inputDevice))
+								continue;
+							
 							if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
 								DespawnTool(deviceData, deviceData.currentTool);
 
-							AddToolToStack(dev, newTool);
+							AddToolToStack(dd, newTool);
 
 							deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
 							deviceData.previousToolButton.rayOrigin = rayOrigin;
@@ -232,7 +244,7 @@ namespace UnityEditor.Experimental.EditorVR
 					deviceData.currentTool = topTool.tool;
 
 					// Pop this tool of any other stack that references it (for single instance tools)
-					foreach (var otherDeviceData in m_DeviceData.Values)
+					foreach (var otherDeviceData in m_DeviceData)
 					{
 						if (otherDeviceData != deviceData)
 						{
@@ -276,12 +288,10 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 
-		void AddToolToStack(InputDevice device, ToolData toolData)
+		void AddToolToStack(DeviceData deviceData, ToolData toolData)
 		{
 			if (toolData != null)
 			{
-				var deviceData = m_DeviceData[device];
-
 				// Exclusive tools render other tools disabled while they are on the stack
 				if (toolData.tool is IExclusiveMode)
 					SetToolsEnabled(deviceData, false);

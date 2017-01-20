@@ -1,19 +1,10 @@
-﻿using UnityEngine.Experimental.EditorVR.Utilities;
+﻿using UnityEngine.Experimental.EditorVR.Input;
+using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEngine.Experimental.EditorVR.Proxies
 {
 	public class SixenseProxy : TwoHandedProxyBase
 	{
-		private SixenseInputToEvents m_InputToEvents;
-
-		public override bool active
-		{
-			get
-			{
-				return m_InputToEvents.active;
-			}
-		}
-
 		public override void Awake()
 		{
 			base.Awake();

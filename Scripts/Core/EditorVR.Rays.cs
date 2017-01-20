@@ -1,6 +1,7 @@
 #if UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
@@ -14,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
 	partial class EditorVR
 	{
-		delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
+		delegate void ForEachRayOriginCallback(DeviceData deviceData);
 
 		const float kDefaultRayLength = 100f;
 
@@ -62,21 +63,8 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
 				proxy.trackedObjectInput = m_TrackedObjectInput;
-				foreach (var rayOriginPair in proxy.rayOrigins)
-				{
-					var rayOriginPairValue = rayOriginPair.Value;
-					var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
-					rayTransform.position = rayOriginPairValue.position;
-					rayTransform.rotation = rayOriginPairValue.rotation;
-					m_DefaultRays.Add(rayOriginPairValue, rayTransform.GetComponent<DefaultProxyRay>());
-
-					var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginPairValue).transform;
-					malletTransform.position = rayOriginPairValue.position;
-					malletTransform.rotation = rayOriginPairValue.rotation;
-					var mallet = malletTransform.GetComponent<KeyboardMallet>();
-					mallet.gameObject.SetActive(false);
-					m_KeyboardMallets.Add(rayOriginPairValue, mallet);
-				}
+				proxy.activeChanged += () => OnProxyActiveChanged(proxy);
+				proxy.hidden = true;
 
 				m_Proxies.Add(proxy);
 			}
@@ -123,44 +111,26 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 
-		void ForEachRayOrigin(ForEachRayOriginCallback callback, bool activeOnly = true)
+		void ForEachProxyDevice(ForEachRayOriginCallback callback, bool activeOnly = true)
 		{
-			for (var i = 0; i < m_Proxies.Count; i++)
+			for (var i = 0; i < m_DeviceData.Count; i++)
 			{
-				var proxy = m_Proxies[i];
+				var deviceData = m_DeviceData[i];
+				var proxy = deviceData.proxy;
 				if (activeOnly && !proxy.active)
 					continue;
 
-				foreach (var rayOriginPair in proxy.rayOrigins)
-				{
-					var systemDevices = GetSystemDevices();
-					for (int j = 0; j < systemDevices.Count; j++)
-					{
-						var device = systemDevices[j];
-						// Find device tagged with the node that matches this RayOrigin node
-						var node = GetDeviceNode(device);
-						if (node.HasValue && node.Value == rayOriginPair.Key)
-						{
-							DeviceData deviceData;
-							if (m_DeviceData.TryGetValue(device, out deviceData))
-								callback(proxy, rayOriginPair, device, deviceData);
-
-							break;
-						}
-					}
-				}
+				callback(deviceData);
 			}
 		}
 
 		IProxy GetProxyForRayOrigin(Transform rayOrigin)
 		{
 			IProxy result = null;
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-			{
-				if (rayOriginPair.Value == rayOrigin)
-					result = proxy;
-			});
-
+			var deviceData = m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+			if (deviceData != null)
+				result = deviceData.proxy;
+			
 			return result;
 		}
 

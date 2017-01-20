@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var miniWorld = miniWorldWorkspace.miniWorld;
 			m_MiniWorlds.Add(miniWorld);
 
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+			ForEachProxyDevice((deviceData) =>
 			{
 				var miniWorldRayOrigin = InstantiateMiniWorldRay();
 				miniWorldRayOrigin.parent = workspace.transform;
@@ -76,10 +76,10 @@ namespace UnityEditor.Experimental.EditorVR
 
 				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
 				{
-					originalRayOrigin = rayOriginPair.Value,
+					originalRayOrigin = deviceData.rayOrigin,
 					miniWorld = miniWorld,
-					proxy = proxy,
-					node = rayOriginPair.Key,
+					proxy = deviceData.proxy,
+					node = deviceData.node,
 					directSelectInput = deviceData.directSelectInput,
 					tester = tester
 				};

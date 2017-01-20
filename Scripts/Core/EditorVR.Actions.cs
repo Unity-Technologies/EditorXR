@@ -49,7 +49,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void UpdateAlternateMenuActions()
 		{
-			foreach (var deviceData in m_DeviceData.Values)
+			foreach (var deviceData in m_DeviceData)
 			{
 				var altMenu = deviceData.alternateMenu;
 				if (altMenu != null)

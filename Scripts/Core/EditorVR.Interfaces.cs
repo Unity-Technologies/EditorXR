@@ -35,12 +35,10 @@ namespace UnityEditor.Experimental.EditorVR
 		void ConnectInterfaces(object obj, InputDevice device)
 		{
 			Transform rayOrigin = null;
-			ForEachRayOrigin((proxy, rayOriginPair, rayOriginDevice, deviceData) =>
-			{
-				if (rayOriginDevice == device)
-					rayOrigin = rayOriginPair.Value;
-			});
-
+			var deviceData = m_DeviceData.FirstOrDefault(dd => dd.inputDevice == device);
+			if (deviceData != null)
+				rayOrigin = deviceData.rayOrigin;
+			
 			ConnectInterfaces(obj, rayOrigin);
 		}
 
@@ -62,11 +60,9 @@ namespace UnityEditor.Experimental.EditorVR
 				var usesProxy = obj as IUsesProxyType;
 				if (usesProxy != null)
 				{
-					ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
-					{
-						if (rayOrigin == rayOriginPair.Value)
-							usesProxy.proxyType = proxy.GetType();
-					});
+					var deviceData = m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+					if (deviceData != null)
+						usesProxy.proxyType = deviceData.proxy.GetType();
 				}
 
 				var menuOrigins = obj as IUsesMenuOrigins;
