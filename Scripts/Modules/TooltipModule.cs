@@ -7,9 +7,8 @@ using UnityEngine.UI;
 
 public class TooltipModule : MonoBehaviour
 {
-	const float kDelay = 0.75f;
-	const float kTransitionDuration = 0.3f;
-	const float kOffsetDistance = 0.05f;
+	const float kDelay = 0; // In case we want to bring back a delay
+	const float kTransitionDuration = 0.1f;
 
 	[SerializeField]
 	GameObject m_TooltipPrefab;
@@ -20,20 +19,22 @@ public class TooltipModule : MonoBehaviour
 	class TooltipData
 	{
 		public ITooltip tooltip;
+		public bool centered;
 		public float startTime;
 		public GameObject tooltipObject;
-		public CanvasGroup canvasGroup;
 		public Text text;
 	}
 
 	readonly Dictionary<Transform, TooltipData> m_Tooltips = new Dictionary<Transform, TooltipData>();
 
 	Transform m_TooltipCanvas;
+	Vector3 m_TooltipScale;
 
 	void Start()
 	{
 		m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
 		m_TooltipCanvas.SetParent(transform);
+		m_TooltipScale = m_TooltipPrefab.transform.localScale;
 	}
 
 	void Update()
@@ -45,16 +46,11 @@ public class TooltipModule : MonoBehaviour
 			var hoverTime = Time.realtimeSinceStartup - tooltipData.startTime;
 			if (hoverTime > kDelay)
 			{
-				var toCamera = (U.Camera.GetMainCamera().transform.position - target.position).normalized;
-
 				if (!tooltipData.tooltipObject)
 				{
 					var tooltipObject = (GameObject)Instantiate(m_TooltipPrefab, m_TooltipCanvas);
 					tooltipData.tooltipObject = tooltipObject;
-					tooltipData.canvasGroup = tooltipObject.GetComponent<CanvasGroup>();
 					tooltipData.text = tooltipObject.GetComponentInChildren<Text>(true);
-
-					tooltipObject.transform.rotation = Quaternion.LookRotation(-toCamera, Vector3.up);
 				}
 
 				var tooltipTransform = tooltipData.tooltipObject.transform;
@@ -63,14 +59,24 @@ public class TooltipModule : MonoBehaviour
 				if (tooltipText)
 					tooltipText.text = tooltipData.tooltip.tooltipText;
 
-				tooltipData.canvasGroup.alpha = Mathf.Clamp01((hoverTime - kDelay) / kTransitionDuration);
+				var lerp = Mathf.Clamp01((hoverTime - kDelay) / kTransitionDuration);
+				tooltipTransform.localScale = m_TooltipScale * lerp;
 
-				tooltipTransform.position = target.position + Vector3.forward * kOffsetDistance;
+				var rectTransform = tooltipData.tooltipObject.GetComponent<RectTransform>();
+				var offset = Vector3.zero;
+				if (!tooltipData.centered)
+					offset += Vector3.left * rectTransform.rect.width * 0.5f * rectTransform.lossyScale.x;
+
+				var rotation = Quaternion.identity;
+				if (Vector3.Dot(target.up, Vector3.up) < 0)
+					rotation = Quaternion.AngleAxis(180, Vector3.forward);
+
+				U.Math.SetTransformOffset(target, tooltipTransform, offset * lerp, rotation);
 			}
 		}
 	}
 	
-	public void ShowTooltip(ITooltip tooltip)
+	public void ShowTooltip(ITooltip tooltip, bool centered = true)
 	{
 		if (string.IsNullOrEmpty(tooltip.tooltipText))
 			return;
@@ -82,6 +88,7 @@ public class TooltipModule : MonoBehaviour
 		m_Tooltips[target] = new TooltipData
 		{
 			tooltip = tooltip,
+			centered = centered,
 			startTime = Time.realtimeSinceStartup
 		};
 	}
@@ -99,13 +106,12 @@ public class TooltipModule : MonoBehaviour
 		}
 	}
 
-	static IEnumerator AnimateHide(GameObject tooltipObject)
+	IEnumerator AnimateHide(GameObject tooltipObject)
 	{
-		var canvasGroup = tooltipObject.GetComponent<CanvasGroup>();
 		var startTime = Time.realtimeSinceStartup;
 		while (Time.realtimeSinceStartup - startTime < kTransitionDuration)
 		{
-			canvasGroup.alpha = 1 - (Time.realtimeSinceStartup - startTime) / kTransitionDuration;
+			tooltipObject.transform.localScale = m_TooltipScale * (1 - (Time.realtimeSinceStartup - startTime) / kTransitionDuration);
 			yield return null;
 		}
 

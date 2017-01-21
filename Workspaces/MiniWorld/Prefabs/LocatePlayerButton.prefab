@@ -112,6 +112,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &1000014174579574
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000011967229546}
+  m_Layer: 5
+  m_Name: TooltipTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!4 &4000010409608544
 Transform:
   m_ObjectHideFlags: 1
@@ -137,8 +152,22 @@ Transform:
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_Children:
   - {fileID: 4000013347876576}
+  - {fileID: 4000011967229546}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+--- !u!4 &4000011967229546
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000014174579574}
+  m_LocalRotation: {x: -0.5604656, y: 0, z: 0, w: 0.82817775}
+  m_LocalPosition: {x: 0, y: -0.0283, z: 0.0192}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: -68.176, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000010503807310}
+  m_RootOrder: 1
 --- !u!4 &4000013347876576
 Transform:
   m_ObjectHideFlags: 1
@@ -233,7 +262,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
+  m_TargetGraphic: {fileID: 114000014183139400}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
@@ -317,7 +346,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_TooltipText: Center on Player
-  m_TooltipTarget: {fileID: 0}
+  m_TooltipTarget: {fileID: 4000011967229546}
 --- !u!114 &114000014183139400
 MonoBehaviour:
   m_ObjectHideFlags: 1

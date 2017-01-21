@@ -38,6 +38,10 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		[SerializeField]
 		MeshRenderer m_BorderRenderer;
 
+		public Transform tooltipTarget { get { return m_TooltipTarget; } }
+		[SerializeField]
+		Transform m_TooltipTarget;
+
 		public bool pressed
 		{
 			get { return m_Pressed; }
@@ -77,7 +81,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 					m_IconHighlightCoroutine = StartCoroutine(IconEndHighlight());
 
 				if (m_Highlighted)
-					showTooltip(this);
+					showTooltip(this, false);
 				else
 					hideTooltip(this);
 			}
@@ -134,13 +138,11 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		public Quaternion visibleLocalRotation { get; set; }
 
-		public Action<ITooltip> showTooltip { private get; set; }
+		public ShowToolTipDelegate showTooltip { private get; set; }
 		public Action<ITooltip> hideTooltip { private get; set; }
 
 		// For overriding text (i.e. TransformActions)
 		public ITooltip tooltip { private get; set; }
-
-		public Transform tooltipTarget { get { return m_IconContainer; } }
 
 		void Awake()
 		{
@@ -282,6 +284,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_MenuInset.localScale = m_HiddenInsetLocalScale;
 			CorrectIconRotation();
 			transform.localScale = Vector3.zero;
+			hideTooltip(this);
 		}
 
 		IEnumerator Highlight()

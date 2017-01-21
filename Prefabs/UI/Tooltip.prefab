@@ -21,7 +21,6 @@ GameObject:
   - 224: {fileID: 224000012978409556}
   - 222: {fileID: 222000011641621962}
   - 114: {fileID: 114000011868131886}
-  - 225: {fileID: 225000010877720608}
   - 114: {fileID: 114000011228357028}
   - 114: {fileID: 114000011161904124}
   m_Layer: 5
@@ -181,7 +180,7 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013835913212}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.00075, y: 0.00075, z: 0.00075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -190,18 +189,7 @@ RectTransform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!225 &225000010877720608
-CanvasGroup:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013835913212}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 0
-  m_BlocksRaycasts: 0
-  m_IgnoreParentGroups: 0
