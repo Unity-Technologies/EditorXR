@@ -13,6 +13,8 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 		public override void ExecuteAction()
 		{
 			var selection = Selection.gameObjects;
+			GameObject[] clones = new GameObject[selection.Length];
+			int index = 0;
 			var bounds = U.Object.GetBounds(selection);
 			foreach (var s in selection)
 			{
@@ -24,7 +26,9 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 				cloneTransform.position = cameraTransform.TransformPoint(Vector3.forward * viewDirection.magnitude)
 					+ cloneTransform.position - bounds.center;
 				addToSpatialHash(clone);
+				clones[index++] = clone;
 			}
+			Selection.objects = clones;
 		}
 	}
 }
