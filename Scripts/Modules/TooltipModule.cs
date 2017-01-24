@@ -10,11 +10,17 @@ public class TooltipModule : MonoBehaviour
 	const float kDelay = 0; // In case we want to bring back a delay
 	const float kTransitionDuration = 0.1f;
 
+	const string kMaterialColorTopProperty = "_ColorTop";
+	const string kMaterialColorBottomProperty = "_ColorBottom";
+
 	[SerializeField]
 	GameObject m_TooltipPrefab;
 
 	[SerializeField]
 	GameObject m_TooltipCanvasPrefab;
+
+	[SerializeField]
+	Material m_HighlightMaterial;
 
 	class TooltipData
 	{
@@ -35,6 +41,10 @@ public class TooltipModule : MonoBehaviour
 		m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
 		m_TooltipCanvas.SetParent(transform);
 		m_TooltipScale = m_TooltipPrefab.transform.localScale;
+		m_HighlightMaterial = Instantiate(m_HighlightMaterial);
+		var sessionGradient = UnityBrandColorScheme.sessionGradient;
+		m_HighlightMaterial.SetColor(kMaterialColorTopProperty, sessionGradient.a);
+		m_HighlightMaterial.SetColor(kMaterialColorBottomProperty, sessionGradient.b);
 	}
 
 	void Update()
@@ -51,6 +61,7 @@ public class TooltipModule : MonoBehaviour
 					var tooltipObject = (GameObject)Instantiate(m_TooltipPrefab, m_TooltipCanvas);
 					tooltipData.tooltipObject = tooltipObject;
 					tooltipData.text = tooltipObject.GetComponentInChildren<Text>(true);
+					tooltipObject.transform.Find("TooltipHighlight").GetComponent<Image>().material = m_HighlightMaterial;
 				}
 
 				var tooltipTransform = tooltipData.tooltipObject.transform;
