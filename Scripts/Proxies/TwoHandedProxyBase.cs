@@ -19,8 +19,18 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		[SerializeField]
 		protected PlayerInput m_PlayerInput;
 
-		protected Transform m_LeftHand;
-		protected Transform m_RightHand;
+        public Transform LeftHand
+        {
+            get { return m_LeftHand; }
+        }
+        protected Transform m_LeftHand;
+
+
+        public Transform RightHand
+        {
+            get { return m_RightHand; }
+        }
+        protected Transform m_RightHand;
 		readonly List<Material> m_Materials = new List<Material>();
 
 		protected Dictionary<Node, Transform> m_RayOrigins;
