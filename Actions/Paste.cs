@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEngine.Experimental.EditorVR.Actions
@@ -37,6 +38,8 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 
 			if (buffer != null)
 			{
+				GameObject[] pastedGameObjects = new GameObject[buffer.Length];
+				int index = 0;
 				var bounds = U.Object.GetBounds(buffer);
 				foreach (var go in buffer)
 				{
@@ -48,6 +51,11 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 						+ pastedTransform.position - bounds.center;
 					pasted.SetActive(true);
 					addToSpatialHash(pasted);
+					pastedGameObjects[index++] = pasted;
+				}
+				if (pastedGameObjects.Length > 0)
+				{
+					Selection.objects = pastedGameObjects;
 				}
 			}
 		}
