@@ -188,7 +188,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		{
 			m_IconLookDirection = m_Icon.transform.position + transform.parent.forward * m_IconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
 			m_IconTransform.LookAt(m_IconLookDirection);
-			m_IconTransform.localEulerAngles = new Vector3(0f, m_IconTransform.localEulerAngles.y, 0f);
+			var angle = m_IconTransform.localEulerAngles.y;
+			m_IconTransform.localEulerAngles = new Vector3(0f, angle, 0f);
+			m_TooltipTarget.localEulerAngles = new Vector3(90f, angle, 0f);
 		}
 
 		IEnumerator AnimateShow()
