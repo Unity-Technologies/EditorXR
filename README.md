@@ -4,11 +4,13 @@ Author VR in VR - Initial public release was on December 15, 2016 via [blogpost]
 ## Experimental Status
 It’s important to note that EditorVR is an experimental feature. As such, there is no formal support (e.g. FogBugz, support@unity3d.com, Premium Support, etc.) offered, so please do not use these channels. Instead, take your questions, suggestions, comments to our dedicated [forum](https://forum.unity3d.com/forums/editorvr.126/).
 
-To help ensure you have a good experience, and to help us answer your questions (hey, we’re a small team!), we encourage you to try it out first with a small VR-ready Scene. Please use life-sized objects, nothing too big or small. Dive in and have fun just playing around, instead of trying to use your existing project. 
+To help ensure you have a good experience, and to help us answer your questions (hey, we’re a small team!), we encourage you to try it out first with a small VR-ready scene. Please use life-sized objects, nothing too big or small. Dive in and have fun just playing around, instead of trying to use your existing project. 
 
 **As with any experimental/preview/alpha/beta build, it is always a good idea to make a backup of your project before using the build.**
 
 Experimental means this:
+- We're still adding features!
+- The current menus, tools, workspaces, actions, etc. are not the end-all-be-all. Each of these have individual designs that will change as we experiment with what works best for UX. EditorVR was designed in such a way that we plan on you being able to replace all of these defaults, too, if you so desire.
 - Namespaces, classes, software architecture, prefabs, etc. can change at any point. If you are writing your own tools, then you might need to update them as these things change.
 - There won’t always be an upgrade path from one release to the next, so you might need to fix things manually, which leads to the next point...
 - Stuff can and will break (!)
