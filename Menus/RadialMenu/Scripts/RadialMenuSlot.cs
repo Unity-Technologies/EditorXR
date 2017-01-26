@@ -189,7 +189,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var positionWait = orderIndex * 0.05f;
 			while (opacity < 1)
 			{
-				opacity += Time.unscaledDeltaTime / positionWait;
+				opacity += Time.unscaledDeltaTime / positionWait * 2;
 				var opacityShaped = Mathf.Pow(opacity, opacity);
 
 				transform.localScale = Vector3.Lerp(kHiddenLocalScale, Vector3.one, opacity);
@@ -215,7 +215,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var positionWait = (orderIndex + 1) * 0.075f;
 			while (duration < 2)
 			{
-				duration += Time.unscaledDeltaTime / positionWait;
+				duration += Time.unscaledDeltaTime / positionWait * 2;
 				var opacity = duration / 2;
 				opacity *= opacity;
 				m_CanvasGroup.alpha = Mathf.Clamp01(duration - 1);
@@ -320,7 +320,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			while (transitionAmount < 1)
 			{
 				m_IconTransform.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
-				transitionAmount = transitionAmount + Time.unscaledDeltaTime * transitionAddMultiplier;
+				transitionAmount = transitionAmount + Time.unscaledDeltaTime * transitionAddMultiplier * 2;
 				yield return null;
 			}
 

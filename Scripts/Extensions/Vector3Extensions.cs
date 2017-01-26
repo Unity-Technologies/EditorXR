@@ -16,4 +16,9 @@ public static class Vector3Extensions
 	{
 		return Mathf.Max(Mathf.Max(vec.x, vec.y), vec.z);
 	}
+
+	public static float AveragedComponents(this Vector3 vec)
+	{
+		return (vec.x + vec.y + vec.z) / 3f;
+	}
 }
