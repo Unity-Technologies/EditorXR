@@ -19,13 +19,13 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		[SerializeField]
 		protected PlayerInput m_PlayerInput;
 
-		public Transform LeftHand
+		public Transform leftHand
 		{
 			get { return m_LeftHand; }
 		}
 		protected Transform m_LeftHand;
 
-		public Transform RightHand
+		public Transform rightHand
 		{
 			get { return m_RightHand; }
 		}

@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR
 		DefaultProxyRay m_ProxyRayPrefab;
 
 		readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
-		public List<IProxy> Proxies
+		public List<IProxy> proxies
 		{
 			get { return m_Proxies; }
 		}
