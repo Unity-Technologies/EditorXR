@@ -13,8 +13,8 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 		public override void ExecuteAction()
 		{
 			var selection = Selection.gameObjects;
-			GameObject[] clones = new GameObject[selection.Length];
-			int index = 0;
+			var clones = new GameObject[selection.Length];
+			var index = 0;
 			var bounds = U.Object.GetBounds(selection);
 			foreach (var s in selection)
 			{

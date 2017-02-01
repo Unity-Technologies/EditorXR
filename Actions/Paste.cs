@@ -38,8 +38,8 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 
 			if (buffer != null)
 			{
-				GameObject[] pastedGameObjects = new GameObject[buffer.Length];
-				int index = 0;
+				var pastedGameObjects = new GameObject[buffer.Length];
+				var index = 0;
 				var bounds = U.Object.GetBounds(buffer);
 				foreach (var go in buffer)
 				{
@@ -53,10 +53,9 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 					addToSpatialHash(pasted);
 					pastedGameObjects[index++] = pasted;
 				}
+
 				if (pastedGameObjects.Length > 0)
-				{
-					Selection.objects = pastedGameObjects;
-				}
+				    Selection.objects = pastedGameObjects;
 			}
 		}
 	}
