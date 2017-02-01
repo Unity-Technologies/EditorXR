@@ -357,10 +357,6 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 
 #if UNITY_EDITOR
-		public static EditorVR instance
-		{
-			get { return s_Instance; }
-		}
 		static EditorVR s_Instance;
 		static InputManager s_InputManager;
 

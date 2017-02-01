@@ -22,10 +22,6 @@ namespace UnityEditor.Experimental.EditorVR
 		DefaultProxyRay m_ProxyRayPrefab;
 
 		readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
-		public List<IProxy> proxies
-		{
-			get { return m_Proxies; }
-		}
 		readonly List<IProxy> m_Proxies = new List<IProxy>();
 
 		MultipleRayInputModule m_InputModule;
