@@ -82,6 +82,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
+		BlockUndoPostProcess();
 		m_InspectorUI.listView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
 	}
 
