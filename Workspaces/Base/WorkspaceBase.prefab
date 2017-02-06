@@ -273,6 +273,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &1000011832115928
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000014171123912}
+  m_Layer: 0
+  m_Name: TooltipTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &1000011843930806
 GameObject:
   m_ObjectHideFlags: 1
@@ -541,6 +556,21 @@ GameObject:
   - 114: {fileID: 114000012716726728}
   m_Layer: 5
   m_Name: BackLeftResizeIcon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000012861381350
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000012913026432}
+  m_Layer: 0
+  m_Name: TooltipTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -991,6 +1021,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000011275249326}
+  - {fileID: 4000012913026432}
   m_Father: {fileID: 4000013616737872}
   m_RootOrder: 0
 --- !u!4 &4000012169316234
@@ -1033,6 +1064,19 @@ Transform:
   - {fileID: 4000013784733574}
   m_Father: {fileID: 4000011687496624}
   m_RootOrder: 1
+--- !u!4 &4000012913026432
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012861381350}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.03, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000012157338960}
+  m_RootOrder: 1
 --- !u!4 &4000013196174174
 Transform:
   m_ObjectHideFlags: 1
@@ -1058,6 +1102,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000012458543974}
+  - {fileID: 4000014171123912}
   m_Father: {fileID: 4000010114751354}
   m_RootOrder: 0
 --- !u!4 &4000013616737872
@@ -1112,6 +1157,19 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
   m_Children: []
   m_Father: {fileID: 4000012021209696}
+  m_RootOrder: 1
+--- !u!4 &4000014171123912
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011832115928}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.03, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000013290412170}
   m_RootOrder: 1
 --- !u!23 &23000010475008990
 MeshRenderer:
@@ -2179,7 +2237,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_TooltipText: Reset Workspace Dimensions
-  m_TooltipTarget: {fileID: 0}
+  m_TooltipTarget: {fileID: 4000012913026432}
+  m_TooltipSource: {fileID: 0}
+  m_TooltipAlignment: 1
 --- !u!114 &114000011951527348
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3142,7 +3202,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_TooltipText: Close Workspace
-  m_TooltipTarget: {fileID: 0}
+  m_TooltipTarget: {fileID: 4000014171123912}
+  m_TooltipSource: {fileID: 0}
+  m_TooltipAlignment: 1
 --- !u!114 &114000014067047110
 MonoBehaviour:
   m_ObjectHideFlags: 1
