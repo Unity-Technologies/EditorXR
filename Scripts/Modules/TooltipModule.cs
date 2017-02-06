@@ -25,7 +25,6 @@ public class TooltipModule : MonoBehaviour
 	class TooltipData
 	{
 		public ITooltip tooltip;
-		public bool centered;
 		public float startTime;
 		public GameObject tooltipObject;
 		public Text text;
@@ -65,19 +64,29 @@ public class TooltipModule : MonoBehaviour
 				}
 
 				var tooltipTransform = tooltipData.tooltipObject.transform;
+				var tooltip = tooltipData.tooltip;
 
 				var tooltipText = tooltipData.text;
 				if (tooltipText)
-					tooltipText.text = tooltipData.tooltip.tooltipText;
+					tooltipText.text = tooltip.tooltipText;
 
 				var lerp = Mathf.Clamp01((hoverTime - kDelay) / kTransitionDuration);
 				tooltipTransform.localScale = m_TooltipScale * lerp;
 
+				// Adjust for alignment
 				var rectTransform = tooltipData.tooltipObject.GetComponent<RectTransform>();
 				var offset = Vector3.zero;
-				if (!tooltipData.centered)
-					offset += Vector3.left * rectTransform.rect.width * 0.5f * rectTransform.lossyScale.x;
+				switch (tooltip.tooltipAlignment)
+				{
+						case TextAlignment.Left:
+							offset = Vector3.left * rectTransform.rect.width * 0.5f * rectTransform.lossyScale.x;
+							break;
+						case TextAlignment.Right:
+							offset = Vector3.right * rectTransform.rect.width * 0.5f * rectTransform.lossyScale.x;
+							break;
+				}
 
+				// Maintain readability
 				var rotation = Quaternion.identity;
 				if (Vector3.Dot(target.up, Vector3.up) < 0)
 					rotation = Quaternion.AngleAxis(180, Vector3.forward);
@@ -87,7 +96,7 @@ public class TooltipModule : MonoBehaviour
 		}
 	}
 	
-	public void ShowTooltip(ITooltip tooltip, bool centered = true)
+	public void ShowTooltip(ITooltip tooltip)
 	{
 		if (string.IsNullOrEmpty(tooltip.tooltipText))
 			return;
@@ -99,7 +108,6 @@ public class TooltipModule : MonoBehaviour
 		m_Tooltips[target] = new TooltipData
 		{
 			tooltip = tooltip,
-			centered = centered,
 			startTime = Time.realtimeSinceStartup
 		};
 	}

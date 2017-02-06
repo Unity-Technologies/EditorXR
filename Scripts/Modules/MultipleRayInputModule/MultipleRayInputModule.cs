@@ -62,7 +62,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		RayEventData m_TempRayEvent;
 		List<RaycastSource> m_RaycastSourcesCopy = new List<RaycastSource>();
 
-		public ShowToolTipDelegate showTooltip { private get; set; }
+		public Action<ITooltip> showTooltip { private get; set; }
 		public Action<ITooltip> hideTooltip { private get; set; }
 
 		protected override void Awake()

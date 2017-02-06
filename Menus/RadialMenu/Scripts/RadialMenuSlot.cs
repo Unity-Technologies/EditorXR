@@ -42,6 +42,12 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		[SerializeField]
 		Transform m_TooltipTarget;
 
+		public Transform tooltipSource { get { return m_TooltipSource; } }
+		[SerializeField]
+		Transform m_TooltipSource;
+
+		public TextAlignment tooltipAlignment { get; private set; }
+
 		public bool pressed
 		{
 			get { return m_Pressed; }
@@ -78,10 +84,12 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 						m_HighlightCoroutine = StartCoroutine(Highlight());
 				}
 				else
+				{
 					m_IconHighlightCoroutine = StartCoroutine(IconEndHighlight());
+				}
 
 				if (m_Highlighted)
-					showTooltip(this, false);
+					showTooltip(this);
 				else
 					hideTooltip(this);
 			}
@@ -138,7 +146,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		public Quaternion visibleLocalRotation { get; set; }
 
-		public ShowToolTipDelegate showTooltip { private get; set; }
+		public Action<ITooltip> showTooltip { private get; set; }
 		public Action<ITooltip> hideTooltip { private get; set; }
 
 		// For overriding text (i.e. TransformActions)
@@ -191,6 +199,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var angle = m_IconTransform.localEulerAngles.y;
 			m_IconTransform.localEulerAngles = new Vector3(0f, angle, 0f);
 			m_TooltipTarget.localEulerAngles = new Vector3(90f, angle, 0f);
+
+			tooltipAlignment = Vector3.Dot(Vector3.right, transform.localRotation * Vector3.left) >= 0
+				? TextAlignment.Left : TextAlignment.Right;
 		}
 
 		IEnumerator AnimateShow()

@@ -2,8 +2,6 @@
 
 namespace UnityEngine.Experimental.EditorVR
 {
-	public delegate void ShowToolTipDelegate(ITooltip tooltip, bool centered = true);
-
 	/// <summary>
 	/// Provides access to the ability to show or hide a Tooltip
 	/// </summary>
@@ -12,7 +10,7 @@ namespace UnityEngine.Experimental.EditorVR
 		/// <summary>
 		/// Show the given Tooltip
 		/// </summary>
-		ShowToolTipDelegate showTooltip { set; }
+		Action<ITooltip> showTooltip { set; }
 
 		/// <summary>
 		/// Hide the given Tooltip

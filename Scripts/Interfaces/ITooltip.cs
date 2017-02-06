@@ -19,5 +19,7 @@
 		/// The transform relative to which the tooltip will display
 		/// </summary>
 		Transform tooltipSource { get; }
+
+		TextAlignment tooltipAlignment { get; }
 	}
 }
