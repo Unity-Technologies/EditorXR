@@ -10,8 +10,15 @@ using UnityEngine.InputNew;
 
 public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesHandedRayOrigin, ICustomActionMap, ILinkedTool, IUsesProxyType
 {
-	const float kRotationSpeed = 300f;
-	const float kMoveSpeed = 5f;
+	const float kFastRotationSpeed = 300f;
+	const float kRotationThreshold = 0.9f;
+	const float kSlowRotationSpeed = 15f;
+	const float kFastMoveSpeed = 10f;
+	const float kMoveThreshold = 0.9f;
+	const float kSlowMoveSpeed = 3f;
+
+	const float kMoveThresholdVive = 0.8f;
+	const float kRotationThresholdVive = 0.8f;
 
 	private enum State
 	{
@@ -37,7 +44,9 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	float m_StartScale;
 	float m_StartDistance;
 	Vector3 m_StartPosition;
-	Vector3 m_PlayerVector;
+	Vector3 m_StartMidPoint;
+	Vector3 m_StartDirection;
+	float m_StartYaw;
 
 	InputControl m_Grip;
 	InputControl m_Thumb;
@@ -104,24 +113,35 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			{
 				if (m_AllowScaling)
 				{
+					var otherGrip = false;
 					foreach (var linkedTool in otherTools)
 					{
 						var blinkTool = (BlinkLocomotionTool)linkedTool;
 						if (blinkTool.m_Grip != null)
 						{
+							otherGrip = true;
 							consumeControl(m_Grip);
 							consumeControl(blinkTool.m_Grip);
 
-							var distance = Vector3.Distance(viewerPivot.InverseTransformPoint(rayOrigin.position),
-								viewerPivot.InverseTransformPoint(blinkTool.rayOrigin.position));
+							var thisPosition = viewerPivot.InverseTransformPoint(rayOrigin.position);
+							var otherPosition = viewerPivot.InverseTransformPoint(blinkTool.rayOrigin.position);
+							var distance = Vector3.Distance(thisPosition, otherPosition);
+
+							var rayToRay = otherPosition - thisPosition;
+							var midPoint = thisPosition + rayToRay * 0.5f;
+
+							rayToRay.y = 0; // Use for yaw rotation
+
+							var pivotYaw = U.Math.ConstrainYawRotation(viewerPivot.rotation);
 
 							if (!m_Scaling)
 							{
 								m_StartScale = viewerPivot.localScale.x;
 								m_StartDistance = distance;
-								m_PlayerVector = viewerPivot.position - U.Camera.GetMainCamera().transform.position;
-								m_PlayerVector.y = 0;
-								m_StartPosition = viewerPivot.position - m_PlayerVector;
+								m_StartMidPoint = pivotYaw * midPoint * m_StartScale;
+								m_StartPosition = viewerPivot.position;
+								m_StartDirection = rayToRay;
+								m_StartYaw = viewerPivot.rotation.eulerAngles.y;
 
 								m_EnableJoystick = false;
 								blinkTool.m_EnableJoystick = false;
@@ -129,40 +149,49 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 							m_Scaling = true;
 
-							var scaleFactor = m_StartDistance / distance;
+							var currentScale = m_StartScale * (m_StartDistance / distance);
 
 							if (m_Thumb != null && blinkTool.m_Thumb != null)
 							{
 								m_AllowScaling = false;
-								scaleFactor = 1 / m_StartScale;
+
+								rayToRay = blinkTool.rayOrigin.position - rayOrigin.position;
+								midPoint = rayOrigin.position + rayToRay * 0.5f;
+								var currOffset = midPoint - viewerPivot.position;
+								viewerPivot.localScale = Vector3.one;
+								viewerPivot.position = midPoint - currOffset / currentScale;
 								consumeControl(m_Thumb);
 								consumeControl(blinkTool.m_Thumb);
 							}
 
-							viewerPivot.position = m_StartPosition + m_PlayerVector * scaleFactor;
-							viewerPivot.localScale = Vector3.one * m_StartScale * scaleFactor;
+							if (m_AllowScaling)
+							{
+								var yawSign = Mathf.Sign(Vector3.Dot(Quaternion.AngleAxis(90, Vector3.down) * m_StartDirection, rayToRay));
+								var currentYaw = m_StartYaw + Vector3.Angle(m_StartDirection, rayToRay) * yawSign;
+								var currentRotation = Quaternion.AngleAxis(currentYaw, Vector3.up);
+								midPoint = currentRotation * midPoint * currentScale;
+								
+								viewerPivot.position = m_StartPosition + m_StartMidPoint - midPoint;
+								viewerPivot.localScale = Vector3.one * currentScale;
+								viewerPivot.rotation = currentRotation;
+							}
 							break;
 						}
 					}
+
+					if (!otherGrip)
+						CancelScale();
 				}
 			}
 			else
 			{
-				m_AllowScaling = true;
-				m_Scaling = false;
-
-				if (!m_EnableJoystick)
-				{
-					m_EnableJoystick = true;
-					foreach (var linkedTool in otherTools)
-					{
-						((BlinkLocomotionTool)linkedTool).m_EnableJoystick = true;
+				CancelScale();
 					}
 				}
-			}
-		}
 
-		if (m_EnableJoystick && (proxyType != typeof(ViveProxy) || m_Thumb != null))
+		bool isVive = proxyType == typeof(ViveProxy);
+
+		if (m_EnableJoystick && (!isVive || m_Thumb != null))
 		{
 			var viewerCamera = U.Camera.GetMainCamera();
 
@@ -170,9 +199,12 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			{
 				if (!Mathf.Approximately(yawValue, 0))
 				{
-					yawValue = yawValue * yawValue * Mathf.Sign(yawValue);
+					var speed = yawValue * kSlowRotationSpeed;
+					var threshold = isVive ? kRotationThresholdVive : kRotationThreshold;
+					if (Mathf.Abs(yawValue) > threshold)
+						speed = kFastRotationSpeed * Mathf.Sign(yawValue);
 
-					viewerPivot.RotateAround(viewerCamera.transform.position, Vector3.up, yawValue * kRotationSpeed * Time.unscaledDeltaTime);
+					viewerPivot.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.unscaledDeltaTime);
 					consumeControl(blinkInput.yaw);
 				}
 			}
@@ -180,8 +212,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			{
 				if (!Mathf.Approximately(forwardValue, 0))
 				{
-					forwardValue = forwardValue * forwardValue * Mathf.Sign(forwardValue) * viewerPivot.localScale.x;
-
 					var direction = Vector3.up;
 
 					if (node == Node.LeftHand)
@@ -191,7 +221,14 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 						direction.Normalize();
 					}
 
-					viewerPivot.Translate(direction * forwardValue * kMoveSpeed * Time.unscaledDeltaTime, Space.World);
+					var speed = forwardValue * kSlowMoveSpeed;
+					var threshold = isVive ? kMoveThresholdVive : kMoveThreshold;
+					if (Mathf.Abs(forwardValue) > threshold)
+						speed = kFastMoveSpeed * Mathf.Sign(forwardValue);
+
+					speed *= viewerPivot.localScale.x;
+
+					viewerPivot.Translate(direction * speed * Time.unscaledDeltaTime, Space.World);
 					consumeControl(blinkInput.forward);
 				}
 			}
@@ -223,6 +260,21 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			}
 
 			consumeControl(blinkInput.blink);
+		}
+	}
+
+	void CancelScale()
+	{
+		m_AllowScaling = true;
+		m_Scaling = false;
+
+		if (!m_EnableJoystick)
+		{
+			m_EnableJoystick = true;
+			foreach (var linkedTool in otherTools)
+			{
+				((BlinkLocomotionTool) linkedTool).m_EnableJoystick = true;
+			}
 		}
 	}
 

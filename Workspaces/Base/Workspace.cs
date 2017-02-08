@@ -7,7 +7,7 @@ using UnityEngine.Experimental.EditorVR.Extensions;
 
 namespace UnityEngine.Experimental.EditorVR.Workspaces
 {
-	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight, IUsesStencilRef, IConnectInterfaces
+	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight, IUsesStencilRef, IConnectInterfaces, IUsesViewerPivot
 	{
 		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 
@@ -116,6 +116,8 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 
 		public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
+		public Transform viewerPivot { get; set; }
+
 		public virtual void Setup()
 		{
 			GameObject baseObject = instantiateUI(m_BasePrefab);
@@ -180,9 +182,11 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		{
 			if (m_Dragging)
 			{
-				Vector3 dragVector = eventData.rayOrigin.position - m_DragStart;
-				Bounds bounds = contentBounds;
-				Vector3 positionOffset = Vector3.zero;
+				var scale = viewerPivot.lossyScale.x;
+				var dragVector = (eventData.rayOrigin.position - m_DragStart) / scale;
+				var bounds = contentBounds;
+				var positionOffset = Vector3.zero;
+
 				if (handle.Equals(m_WorkspaceUI.leftHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
@@ -205,7 +209,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 				}
 				contentBounds = bounds;
 				if (contentBounds.size == bounds.size) //Don't reposition if we hit minimum bounds
-					transform.position = m_PositionStart + positionOffset;
+					transform.position = m_PositionStart + positionOffset * scale;
 			}
 		}
 
@@ -277,6 +281,8 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
+
+			transform.localScale = targetScale;
 
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;

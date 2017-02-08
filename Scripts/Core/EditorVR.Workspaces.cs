@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			var cameraTransform = U.Camera.GetMainCamera().transform;
 
-			var workspace = (IWorkspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
+			var workspace = (IWorkspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot(), false);
 			m_Workspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			ConnectInterfaces(workspace);
@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			var workspaceTransform = workspace.transform;
 			workspaceTransform.position = cameraTransform.TransformPoint(offset);
-			workspaceTransform.rotation *= Quaternion.LookRotation(cameraTransform.forward) * kDefaultWorkspaceTilt;
+			workspaceTransform.rotation = Quaternion.LookRotation(cameraTransform.forward) * kDefaultWorkspaceTilt;
 
 			m_Vacuumables.Add(workspace);
 
