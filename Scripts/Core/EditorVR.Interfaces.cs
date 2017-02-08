@@ -159,14 +159,14 @@ namespace UnityEditor.Experimental.EditorVR
 
 			var directSelection = obj as IUsesDirectSelection;
 			if (directSelection != null)
-				directSelection.getDirectSelection = GetDirectSelection;
+				directSelection.getDirectSelection = m_DirectSelection.GetDirectSelection;
 
 			var grabObjects = obj as IGrabObjects;
 			if (grabObjects != null)
 			{
-				grabObjects.canGrabObject = CanGrabObject;
-				grabObjects.objectGrabbed += OnObjectGrabbed;
-				grabObjects.objectsDropped += OnObjectsDropped;
+				grabObjects.canGrabObject = m_DirectSelection.CanGrabObject;
+				grabObjects.objectGrabbed += m_DirectSelection.OnObjectGrabbed;
+				grabObjects.objectsDropped += m_DirectSelection.OnObjectsDropped;
 			}
 
 			var spatialHash = obj as IUsesSpatialHash;
@@ -262,10 +262,16 @@ namespace UnityEditor.Experimental.EditorVR
 				requestStencilRef.requestStencilRef = RequestStencilRef;
 
 			// Internal interfaces
-			var objType = obj.GetType();
 			var forEachRayOrigin = obj as IForEachRayOrigin;
-			if (forEachRayOrigin != null && objType.Assembly == typeof(IForEachRayOrigin).Assembly)
+			if (forEachRayOrigin != null && IsSameAssembly<IForEachRayOrigin>(obj))
 				forEachRayOrigin.forEachRayOrigin = ForEachRayOrigin;
+		}
+
+		static bool IsSameAssembly<T>(object obj)
+		{
+			// Until we move EditorVR into it's own assembly, this is a way to enforce 'internal' on interfaces
+			var objType = obj.GetType();
+			return objType.Assembly == typeof(T).Assembly;
 		}
 
 		void DisconnectInterfaces(object obj)
@@ -286,8 +292,8 @@ namespace UnityEditor.Experimental.EditorVR
 			var grabObjects = obj as IGrabObjects;
 			if (grabObjects != null)
 			{
-				grabObjects.objectGrabbed -= OnObjectGrabbed;
-				grabObjects.objectsDropped -= OnObjectsDropped;
+				grabObjects.objectGrabbed -= m_DirectSelection.OnObjectGrabbed;
+				grabObjects.objectsDropped -= m_DirectSelection.OnObjectsDropped;
 			}
 
 			var usesProjectFolderData = obj as IUsesProjectFolderData;
@@ -323,18 +329,6 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 
 			m_ObjectPlacementModule.PlaceObject(obj, targetScale);
-		}
-
-		bool IsOverShoulder(Transform rayOrigin)
-		{
-			var radius = GetPointerLength(rayOrigin);
-			var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
-			foreach (var collider in colliders)
-			{
-				if (collider.CompareTag(kVRPlayerTag))
-					return true;
-			}
-			return false;
 		}
 
 		void DeleteSceneObject(GameObject sceneObject)

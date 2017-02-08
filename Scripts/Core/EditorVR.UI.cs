@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR
 			U.Object.AddComponent<EventSystem>(gameObject);
 
 			m_InputModule = AddModule<MultipleRayInputModule>();
-			m_InputModule.getPointerLength = GetPointerLength;
+			m_InputModule.getPointerLength = m_DirectSelection.GetPointerLength;
 
 			if (m_CustomPreviewCamera != null)
 				m_InputModule.layerMask |= m_CustomPreviewCamera.hmdOnlyLayerMask;

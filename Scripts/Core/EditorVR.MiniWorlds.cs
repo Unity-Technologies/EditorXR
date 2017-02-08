@@ -87,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR
 				m_MiniWorldIgnoreListDirty = false;
 			}
 
-			var directSelection = m_ObjectsGrabber;
+			var directSelection = m_DirectSelection.objectsGrabber;
 
 			// Update MiniWorldRays
 			foreach (var ray in m_MiniWorldRays)
@@ -110,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR
 				miniWorldRayOrigin.localScale = Vector3.Scale(miniWorld.miniWorldTransform.localScale.Inverse(), referenceTransform.localScale);
 
 				// Set miniWorldRayOrigin active state based on whether controller is inside corresponding MiniWorld
-				var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * GetPointerLength(originalRayOrigin);
+				var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * m_DirectSelection.GetPointerLength(originalRayOrigin);
 				var isContained = miniWorld.Contains(originalPointerPosition);
 				miniWorldRay.tester.active = isContained;
 				miniWorldRayOrigin.gameObject.SetActive(isContained);
@@ -120,7 +120,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				if (dragObjects == null)
 				{
-					var heldObjects = m_ObjectsGrabber.GetHeldObjects(miniWorldRayOrigin);
+					var heldObjects = m_DirectSelection.objectsGrabber.GetHeldObjects(miniWorldRayOrigin);
 					if (heldObjects != null)
 					{
 						// Only one ray can grab an object, otherwise PlaceObject is called on each trigger release
@@ -157,7 +157,7 @@ namespace UnityEditor.Experimental.EditorVR
 				// Transfer objects to and from original ray and MiniWorld ray (e.g. outside to inside mini world)
 				if (directSelection != null && isContained != miniWorldRay.wasContained)
 				{
-					var pointerLengthDiff = GetPointerLength(miniWorldRayOrigin) - GetPointerLength(originalRayOrigin);
+					var pointerLengthDiff = m_DirectSelection.GetPointerLength(miniWorldRayOrigin) - m_DirectSelection.GetPointerLength(originalRayOrigin);
 					var from = isContained ? originalRayOrigin : miniWorldRayOrigin;
 					var to = isContained ? miniWorldRayOrigin : originalRayOrigin;
 					if (isContained || miniWorldRay.dragObjects == null)

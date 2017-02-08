@@ -59,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR
 			HashSet<InputDevice> devices;
 
 			var transformTool = SpawnTool(typeof(TransformTool), out devices);
-			m_ObjectsGrabber = transformTool.tool as IGrabObjects;
+			m_DirectSelection.objectsGrabber = transformTool.tool as IGrabObjects;
 
 			foreach (var deviceData in m_DeviceData)
 			{

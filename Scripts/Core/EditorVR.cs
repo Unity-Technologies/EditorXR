@@ -44,6 +44,10 @@ namespace UnityEditor.Experimental.EditorVR
 		ProjectFolderModule m_ProjectFolderModule;
 		ActionsModule m_ActionsModule;
 		KeyboardModule m_KeyboardModule;
+		SpatialHashModule m_SpatialHashModule;
+		IntersectionModule m_IntersectionModule;
+
+		DirectSelection m_DirectSelection;
 
 		event Action m_SelectionChanged;
 
@@ -77,6 +81,8 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 			VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
 
+			m_DirectSelection = new DirectSelection(this);
+
 			InitializePlayerHandle();
 			CreateDefaultActionMapInputs();
 			InitializeInputModule();
@@ -101,14 +107,20 @@ namespace UnityEditor.Experimental.EditorVR
 			m_SelectionModule = AddModule<SelectionModule>();
 			m_SelectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 			m_SelectionModule.getGroupRoot = GetGroupRoot;
-			
+
+			m_SpatialHashModule = AddModule<SpatialHashModule>();
+			m_SpatialHashModule.shouldExcludeObject = go => go.GetComponentInParent<EditorVR>();
+			m_SpatialHashModule.Setup();
+
+			m_IntersectionModule = AddModule<IntersectionModule>();
+			ConnectInterfaces(m_IntersectionModule);
+			m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
+
 			m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
 			m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 			m_AllWorkspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
-
-			CreateSpatialSystem();
 
 			m_ObjectPlacementModule = AddModule<ObjectPlacementModule>();
 
