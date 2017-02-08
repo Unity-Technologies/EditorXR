@@ -1,4 +1,5 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.Experimental.EditorVR;
@@ -101,6 +102,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 			addToSpatialHash(m_CurrentGameObject);
 
 			consumeControl(standardInput.action);
+			Selection.activeGameObject = m_CurrentGameObject;
 		}
 	}
 
