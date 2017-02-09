@@ -319,7 +319,7 @@ namespace UnityEditor.Experimental.EditorVR
 						{
 							if (IsOverShoulder(originalRayOrigin))
 							{
-								DeleteSceneObject(dragObject.gameObject);
+								m_ObjectModule.DeleteSceneObject(dragObject.gameObject);
 							}
 							else
 							{

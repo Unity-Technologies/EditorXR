@@ -135,7 +135,7 @@ namespace UnityEditor.Experimental.EditorVR
 				U.Input.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
 			}
 
-			ConnectInterfaces(tool, device);
+			m_Interfaces.ConnectInterfaces(tool, device);
 
 			return new ToolData { tool = tool, input = actionMapInput };
 		}
@@ -269,7 +269,7 @@ namespace UnityEditor.Experimental.EditorVR
 						}
 					}
 				}
-				DisconnectInterfaces(tool);
+				m_Interfaces.DisconnectInterfaces(tool);
 
 				// Exclusive tools disable other tools underneath, so restore those
 				if (tool is IExclusiveMode)

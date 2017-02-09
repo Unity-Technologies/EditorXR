@@ -6,17 +6,26 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEngine.Experimental.EditorVR.Modules
 {
-	internal class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
+	internal class ObjectModule : MonoBehaviour, IUsesSpatialHash
 	{
 		const float kInstantiateFOVDifference = -5f;
 		const float kGrowDuration = 0.5f;
+
+		public Func<Transform, Vector3, bool> shouldPlaceObject;
 
 		public Action<GameObject> addToSpatialHash { get; set; }
 		public Action<GameObject> removeFromSpatialHash { get; set; }
 
 		public void PlaceObject(Transform obj, Vector3 targetScale)
 		{
-			StartCoroutine(PlaceObjectCoroutine(obj, targetScale));
+			if (shouldPlaceObject == null || shouldPlaceObject(obj, targetScale))
+				StartCoroutine(PlaceObjectCoroutine(obj, targetScale));
+		}
+
+		public void DeleteSceneObject(GameObject sceneObject)
+		{
+			removeFromSpatialHash(sceneObject);
+			U.Object.Destroy(sceneObject);
 		}
 
 		private IEnumerator PlaceObjectCoroutine(Transform obj, Vector3 targetScale)

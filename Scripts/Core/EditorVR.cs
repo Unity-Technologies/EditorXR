@@ -38,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		DragAndDropModule m_DragAndDropModule;
 		HighlightModule m_HighlightModule;
-		ObjectPlacementModule m_ObjectPlacementModule;
+		ObjectModule m_ObjectModule;
 		LockModule m_LockModule;
 		SelectionModule m_SelectionModule;
 		HierarchyModule m_HierarchyModule;
@@ -50,14 +50,25 @@ namespace UnityEditor.Experimental.EditorVR
 		DeviceInputModule m_DeviceInputModule;
 
 		DirectSelection m_DirectSelection;
+		Interfaces m_Interfaces;
 
 		event Action m_SelectionChanged;
 
 		IPreviewCamera m_CustomPreviewCamera;
 
+		class Nested
+		{
+			public static EditorVR evr { protected get; set; }
+		}
+
 		void Awake()
 		{
+			Nested.evr = this; // Set this once for the convenience of all nested classes 
+
 			ClearDeveloperConsoleIfNecessary();
+
+			m_DirectSelection = new DirectSelection();
+			m_Interfaces = new Interfaces();
 
 			m_HierarchyModule = AddModule<HierarchyModule>();			
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
@@ -82,8 +93,6 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 			}
 			VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
-
-			m_DirectSelection = new DirectSelection(this);
 
 			m_DeviceInputModule = AddModule<DeviceInputModule>();
 
@@ -119,7 +128,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_SpatialHashModule.Setup();
 
 			m_IntersectionModule = AddModule<IntersectionModule>();
-			ConnectInterfaces(m_IntersectionModule);
+			m_Interfaces.ConnectInterfaces(m_IntersectionModule);
 			m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
 
 			m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
@@ -128,7 +137,24 @@ namespace UnityEditor.Experimental.EditorVR
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
-			m_ObjectPlacementModule = AddModule<ObjectPlacementModule>();
+			m_ObjectModule = AddModule<ObjectModule>();
+			m_ObjectModule.shouldPlaceObject = (obj, targetScale) =>
+			{
+				foreach (var miniWorld in m_MiniWorlds)
+				{
+					if (!miniWorld.Contains(obj.position))
+						continue;
+
+					var referenceTransform = miniWorld.referenceTransform;
+					obj.transform.parent = null;
+					obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
+					obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
+					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
+					return false;
+				}
+
+				return true;
+			};
 
 			AddPlayerModel();
 
@@ -310,7 +336,7 @@ namespace UnityEditor.Experimental.EditorVR
 		T AddModule<T>() where T : Component
 		{
 			T module = U.Object.AddComponent<T>(gameObject);
-			ConnectInterfaces(module);
+			m_Interfaces.ConnectInterfaces(module);
 			return module;
 		}
 

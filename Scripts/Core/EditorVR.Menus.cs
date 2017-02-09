@@ -306,7 +306,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			var mainMenu = U.Object.AddComponent(type, gameObject) as IMainMenu;
 			input = m_DeviceInputModule.CreateActionMapInputForObject(mainMenu, device);
-			ConnectInterfaces(mainMenu, device);
+			m_Interfaces.ConnectInterfaces(mainMenu, device);
 			mainMenu.visible = visible;
 
 			return mainMenu;
@@ -321,7 +321,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			var alternateMenu = U.Object.AddComponent(type, gameObject) as IAlternateMenu;
 			input = m_DeviceInputModule.CreateActionMapInputForObject(alternateMenu, device);
-			ConnectInterfaces(alternateMenu, device);
+			m_Interfaces.ConnectInterfaces(alternateMenu, device);
 			alternateMenu.visible = false;
 
 			return alternateMenu;
@@ -330,7 +330,7 @@ namespace UnityEditor.Experimental.EditorVR
 		MainMenuActivator SpawnMainMenuActivator(InputDevice device)
 		{
 			var mainMenuActivator = U.Object.Instantiate(m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
-			ConnectInterfaces(mainMenuActivator, device);
+			m_Interfaces.ConnectInterfaces(mainMenuActivator, device);
 
 			return mainMenuActivator;
 		}
@@ -338,7 +338,7 @@ namespace UnityEditor.Experimental.EditorVR
 		PinnedToolButton SpawnPinnedToolButton(InputDevice device)
 		{
 			var button = U.Object.Instantiate(m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
-			ConnectInterfaces(button, device);
+			m_Interfaces.ConnectInterfaces(button, device);
 
 			return button;
 		}

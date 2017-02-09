@@ -11,20 +11,13 @@ namespace UnityEditor.Experimental.EditorVR
 {
 	partial class EditorVR : MonoBehaviour
 	{
-		class DirectSelection
+		class DirectSelection : Nested
 		{
-			EditorVR m_EVR;
-
 			public IGrabObjects objectsGrabber { get; set; }
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelectionResults = new Dictionary<Transform, DirectSelectionData>();
 			readonly List<ActionMapInput> m_ActiveStates = new List<ActionMapInput>();
-
-			public DirectSelection(EditorVR evr)
-			{
-				m_EVR = evr;
-			}
 
 			// NOTE: This is for the length of the pointer object, not the length of the ray coming out of the pointer
 			public float GetPointerLength(Transform rayOrigin)
@@ -33,11 +26,11 @@ namespace UnityEditor.Experimental.EditorVR
 
 				// Check if this is a MiniWorldRay
 				MiniWorldRay ray;
-				if (m_EVR.m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
+				if (evr.m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
 					rayOrigin = ray.originalRayOrigin;
 
 				DefaultProxyRay dpr;
-				if (m_EVR.m_DefaultRays.TryGetValue(rayOrigin, out dpr))
+				if (evr.m_DefaultRays.TryGetValue(rayOrigin, out dpr))
 				{
 					length = dpr.pointerLength;
 
@@ -61,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR
 				m_ActiveStates.Clear();
 
 				var directSelection = objectsGrabber;
-				m_EVR.ForEachProxyDevice((deviceData) =>
+				evr.ForEachProxyDevice((deviceData) =>
 				{
 					var rayOrigin = deviceData.rayOrigin;
 					var input = deviceData.directSelectInput;
@@ -82,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR
 					}
 				});
 
-				foreach (var ray in m_EVR.m_MiniWorldRays)
+				foreach (var ray in evr.m_MiniWorldRays)
 				{
 					var rayOrigin = ray.Key;
 					var miniWorldRay = ray.Value;
@@ -107,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				// Only activate direct selection input if the cone is inside of an object, so a trigger press can be detected,
 				// and keep it active if we are dragging
-				m_EVR.ForEachProxyDevice((deviceData) =>
+				evr.ForEachProxyDevice((deviceData) =>
 				{
 					var input = deviceData.directSelectInput;
 					input.active = m_ActiveStates.Contains(input);
@@ -118,11 +111,11 @@ namespace UnityEditor.Experimental.EditorVR
 
 			GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, ActionMapInput input)
 			{
-				if (m_EVR.m_IntersectionModule)
+				if (evr.m_IntersectionModule)
 				{
 					var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 
-					var renderer = m_EVR.m_IntersectionModule.GetIntersectedObjectForTester(tester);
+					var renderer = evr.m_IntersectionModule.GetIntersectedObjectForTester(tester);
 					if (renderer)
 						return renderer.gameObject;
 				}
@@ -131,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			public bool CanGrabObject(GameObject selection, Transform rayOrigin)
 			{
-				if (selection.CompareTag(kVRPlayerTag) && !m_EVR.m_MiniWorldRays.ContainsKey(rayOrigin))
+				if (selection.CompareTag(kVRPlayerTag) && !evr.m_MiniWorldRays.ContainsKey(rayOrigin))
 					return false;
 
 				return true;
@@ -150,9 +143,9 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					// Dropping the player head updates the viewer pivot
 					if (grabbedObject.CompareTag(kVRPlayerTag))
-						m_EVR.StartCoroutine(UpdateViewerPivot(grabbedObject));
-					else if (m_EVR.IsOverShoulder(rayOrigin) && !m_EVR.m_MiniWorldRays.ContainsKey(rayOrigin))
-						m_EVR.DeleteSceneObject(grabbedObject.gameObject);
+						evr.StartCoroutine(UpdateViewerPivot(grabbedObject));
+					else if (evr.IsOverShoulder(rayOrigin) && !evr.m_MiniWorldRays.ContainsKey(rayOrigin))
+						evr.m_ObjectModule.DeleteSceneObject(grabbedObject.gameObject);
 				}
 			}
 		}

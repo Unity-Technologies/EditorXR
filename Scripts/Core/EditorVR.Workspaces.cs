@@ -27,7 +27,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var workspace = (IWorkspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
 			m_Workspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
-			ConnectInterfaces(workspace);
+			m_Interfaces.ConnectInterfaces(workspace);
 
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
@@ -95,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_Workspaces.Remove(workspace);
 			m_Vacuumables.Remove(workspace);
 
-			DisconnectInterfaces(workspace);
+			m_Interfaces.DisconnectInterfaces(workspace);
 
 			var miniWorldWorkspace = workspace as MiniWorldWorkspace;
 			if (miniWorldWorkspace != null)

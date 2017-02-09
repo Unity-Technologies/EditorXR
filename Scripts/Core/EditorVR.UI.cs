@@ -53,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 
 			foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
-				ConnectInterfaces(mb);
+				m_Interfaces.ConnectInterfaces(mb);
 
 			return go;
 		}
