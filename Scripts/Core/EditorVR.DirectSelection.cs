@@ -25,8 +25,8 @@ namespace UnityEditor.Experimental.EditorVR
 				var length = 0f;
 
 				// Check if this is a MiniWorldRay
-				MiniWorldRay ray;
-				if (evr.m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
+				MiniWorlds.MiniWorldRay ray;
+				if (evr.m_MiniWorlds.rays.TryGetValue(rayOrigin, out ray))
 					rayOrigin = ray.originalRayOrigin;
 
 				DefaultProxyRay dpr;
@@ -75,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR
 					}
 				});
 
-				foreach (var ray in evr.m_MiniWorldRays)
+				foreach (var ray in evr.m_MiniWorlds.rays)
 				{
 					var rayOrigin = ray.Key;
 					var miniWorldRay = ray.Value;
@@ -124,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal bool CanGrabObject(GameObject selection, Transform rayOrigin)
 			{
-				if (selection.CompareTag(kVRPlayerTag) && !evr.m_MiniWorldRays.ContainsKey(rayOrigin))
+				if (selection.CompareTag(kVRPlayerTag) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
 					return false;
 
 				return true;
@@ -144,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR
 					// Dropping the player head updates the viewer pivot
 					if (grabbedObject.CompareTag(kVRPlayerTag))
 						evr.StartCoroutine(UpdateViewerPivot(grabbedObject));
-					else if (evr.IsOverShoulder(rayOrigin) && !evr.m_MiniWorldRays.ContainsKey(rayOrigin))
+					else if (evr.IsOverShoulder(rayOrigin) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
 						evr.m_ObjectModule.DeleteSceneObject(grabbedObject.gameObject);
 				}
 			}

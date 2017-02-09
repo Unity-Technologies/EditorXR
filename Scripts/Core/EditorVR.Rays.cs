@@ -102,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR
 								// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 								m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, source =>
 								{
-									foreach (var miniWorld in m_MiniWorlds)
+									foreach (var miniWorld in m_MiniWorlds.worlds)
 									{
 										var targetObject = source.hoveredObject ? source.hoveredObject : source.draggedObject;
 										if (miniWorld.Contains(source.rayOrigin.position))
@@ -234,7 +234,7 @@ namespace UnityEditor.Experimental.EditorVR
 					return renderer.gameObject;
 			}
 
-			foreach (var ray in m_MiniWorldRays)
+			foreach (var ray in m_MiniWorlds.rays)
 			{
 				var miniWorldRay = ray.Value;
 				if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))

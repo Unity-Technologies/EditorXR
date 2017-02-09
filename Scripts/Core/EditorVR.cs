@@ -52,6 +52,7 @@ namespace UnityEditor.Experimental.EditorVR
 		DirectSelection m_DirectSelection;
 		Interfaces m_Interfaces;
 		Menus m_Menus;
+		MiniWorlds m_MiniWorlds;
 
 		event Action m_SelectionChanged;
 
@@ -71,6 +72,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_DirectSelection = new DirectSelection();
 			m_Interfaces = new Interfaces();
 			m_Menus = new Menus();
+			m_MiniWorlds = new MiniWorlds();
 
 			m_HierarchyModule = AddModule<HierarchyModule>();			
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
@@ -142,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_ObjectModule = AddModule<ObjectModule>();
 			m_ObjectModule.shouldPlaceObject = (obj, targetScale) =>
 			{
-				foreach (var miniWorld in m_MiniWorlds)
+				foreach (var miniWorld in m_MiniWorlds.worlds)
 				{
 					if (!miniWorld.Contains(obj.position))
 						continue;
@@ -229,7 +231,6 @@ namespace UnityEditor.Experimental.EditorVR
 		// TODO: Find a better callback for when objects are created or destroyed
 		void OnHierarchyChanged()
 		{
-			m_MiniWorldIgnoreListDirty = true;
 			m_PixelRaycastIgnoreListDirty = true;
 		}
 
@@ -305,7 +306,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
 		{
-			UpdateMiniWorlds();
+			m_MiniWorlds.UpdateMiniWorlds();
 
 			m_InputModule.ProcessInput(null, consumeControl);
 

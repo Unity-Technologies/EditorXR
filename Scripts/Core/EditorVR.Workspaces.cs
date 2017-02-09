@@ -50,11 +50,11 @@ namespace UnityEditor.Experimental.EditorVR
 				return;
 
 			var miniWorld = miniWorldWorkspace.miniWorld;
-			m_MiniWorlds.Add(miniWorld);
+			m_MiniWorlds.worlds.Add(miniWorld);
 
 			ForEachProxyDevice((deviceData) =>
 			{
-				var miniWorldRayOrigin = InstantiateMiniWorldRay();
+				var miniWorldRayOrigin = m_MiniWorlds.InstantiateMiniWorldRay();
 				miniWorldRayOrigin.parent = workspace.transform;
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
@@ -74,7 +74,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 				tester.active = false;
 
-				m_MiniWorldRays[miniWorldRayOrigin] = new MiniWorldRay
+				m_MiniWorlds.rays[miniWorldRayOrigin] = new MiniWorlds.MiniWorldRay
 				{
 					originalRayOrigin = deviceData.rayOrigin,
 					miniWorld = miniWorld,
@@ -103,8 +103,8 @@ namespace UnityEditor.Experimental.EditorVR
 				var miniWorld = miniWorldWorkspace.miniWorld;
 
 				//Clean up MiniWorldRays
-				m_MiniWorlds.Remove(miniWorld);
-				var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_MiniWorldRays);
+				m_MiniWorlds.worlds.Remove(miniWorld);
+				var miniWorldRaysCopy = new Dictionary<Transform, MiniWorlds.MiniWorldRay>(m_MiniWorlds.rays);
 				foreach (var ray in miniWorldRaysCopy)
 				{
 					var miniWorldRay = ray.Value;
@@ -114,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR
 #if ENABLE_MINIWORLD_RAY_SELECTION
 						m_InputModule.RemoveRaycastSource(rayOrigin);
 #endif
-						m_MiniWorldRays.Remove(rayOrigin);
+						m_MiniWorlds.rays.Remove(rayOrigin);
 					}
 				}
 			}
