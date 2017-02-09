@@ -162,10 +162,9 @@
 			/// <returns>A yaw-only rotation which matches the input's yaw</returns>
 			public static Quaternion ConstrainYawRotation(Quaternion rotation)
 			{
-				var euler = rotation.eulerAngles;
-				euler.x = 0;
-				euler.z = 0;
-				return Quaternion.Euler(euler);
+				rotation.x = 0;
+				rotation.z = 0;
+				return rotation;
 			}
 
 			/// <summary>
