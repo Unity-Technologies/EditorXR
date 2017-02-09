@@ -7,7 +7,7 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 	{
 		public bool dragging { get; protected set; }
 
-		protected const float kBaseManipulatorSize = 0.5f;
+		protected const float kBaseManipulatorSize = 0.3f;
 
 		public Action<Vector3> translate { protected get; set; }
 		public Action<Quaternion> rotate { protected get; set; }
