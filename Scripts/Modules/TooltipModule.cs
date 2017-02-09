@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
 
-public class TooltipModule : MonoBehaviour
+public class TooltipModule : MonoBehaviour, IUsesViewerPivot
 {
 	const float kDelay = 0; // In case we want to bring back a delay
 	const float kTransitionDuration = 0.1f;
@@ -34,6 +35,8 @@ public class TooltipModule : MonoBehaviour
 
 	Transform m_TooltipCanvas;
 	Vector3 m_TooltipScale;
+
+	public Transform viewerPivot { get; set; }
 
 	void Start()
 	{
@@ -71,7 +74,7 @@ public class TooltipModule : MonoBehaviour
 					tooltipText.text = tooltip.tooltipText;
 
 				var lerp = Mathf.Clamp01((hoverTime - kDelay) / kTransitionDuration);
-				tooltipTransform.localScale = m_TooltipScale * lerp;
+				tooltipTransform.localScale = m_TooltipScale * lerp * viewerPivot.localScale.x;
 
 				// Adjust for alignment
 				var rectTransform = tooltipData.tooltipObject.GetComponent<RectTransform>();
