@@ -192,7 +192,7 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					mainMenu.menuTools = evr.m_Menus.mainMenuTools;
 					mainMenu.menuWorkspaces = evr.m_AllWorkspaceTypes.ToList();
-					mainMenu.isToolActive = evr.IsToolActive;
+					mainMenu.isToolActive = evr.m_Tools.IsToolActive;
 				}
 
 				var alternateMenu = obj as IAlternateMenu;
@@ -218,7 +218,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var selectTool = obj as ISelectTool;
 				if (selectTool != null)
-					selectTool.selectTool = evr.SelectTool;
+					selectTool.selectTool = evr.m_Tools.SelectTool;
 
 				var usesViewerPivot = obj as IUsesViewerPivot;
 				if (usesViewerPivot != null)

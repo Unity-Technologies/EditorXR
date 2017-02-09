@@ -144,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR
 							evr.m_IntersectionModule.AddTester(tester);
 						}
 
-						evr.SpawnDefaultTools(proxy);
+						evr.m_Tools.SpawnDefaultTools(proxy);
 					}
 				}
 			}

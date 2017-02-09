@@ -10,7 +10,9 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Helpers;
+using UnityEngine.Experimental.EditorVR.Menus;
 using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Proxies;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
@@ -56,6 +58,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Menus m_Menus;
 		MiniWorlds m_MiniWorlds;
 		Rays m_Rays;
+		Tools m_Tools;
 
 		event Action m_SelectionChanged;
 
@@ -63,6 +66,29 @@ namespace UnityEditor.Experimental.EditorVR
 
 		bool m_PixelRaycastIgnoreListDirty = true;
 		bool m_UpdatePixelRaycastModule = true;
+
+		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
+
+		class DeviceData
+		{
+			public IProxy proxy;
+			public InputDevice inputDevice;
+			public Node node;
+			public Transform rayOrigin;
+			public readonly Stack<Tools.ToolData> toolData = new Stack<Tools.ToolData>();
+			public ActionMapInput uiInput;
+			public MainMenuActivator mainMenuActivator;
+			public ActionMapInput directSelectInput;
+			public IMainMenu mainMenu;
+			public ActionMapInput mainMenuInput;
+			public IAlternateMenu alternateMenu;
+			public ActionMapInput alternateMenuInput;
+			public ITool currentTool;
+			public IMenu customMenu;
+			public PinnedToolButton previousToolButton;
+			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
+			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
+		}
 
 		class Nested
 		{
@@ -80,6 +106,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_Menus = new Menus();
 			m_MiniWorlds = new MiniWorlds();
 			m_Rays = new Rays();
+			m_Tools = new Tools();
 
 			m_HierarchyModule = AddModule<HierarchyModule>();			
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
@@ -110,7 +137,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_DeviceInputModule.InitializePlayerHandle();
 			m_DeviceInputModule.CreateDefaultActionMapInputs();
 			m_DeviceInputModule.processInput = ProcessInput;
-			m_DeviceInputModule.updatePlayerHandleMaps = UpdatePlayerHandleMaps;
+			m_DeviceInputModule.updatePlayerHandleMaps = m_Tools.UpdatePlayerHandleMaps;
 			InitializeInputModule();
 
 			m_KeyboardModule = AddModule<KeyboardModule>();
@@ -142,8 +169,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_Interfaces.ConnectInterfaces(m_IntersectionModule);
 			m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
 
-			m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
-			m_Menus.mainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
+			m_Menus.mainMenuTools = m_Tools.allTools.Where(t => !m_Tools.IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 			m_AllWorkspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
