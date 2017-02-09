@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			byte m_StencilRef = kMinStencilRef;
 
-			public void ConnectInterfaces(object obj, InputDevice device)
+			internal void ConnectInterfaces(object obj, InputDevice device)
 			{
 				Transform rayOrigin = null;
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.inputDevice == device);
@@ -46,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR
 				ConnectInterfaces(obj, rayOrigin);
 			}
 
-			public void ConnectInterfaces(object obj, Transform rayOrigin = null)
+			internal void ConnectInterfaces(object obj, Transform rayOrigin = null)
 			{
 				if (!m_ConnectedInterfaces.Add(obj))
 					return;
@@ -277,7 +277,7 @@ namespace UnityEditor.Experimental.EditorVR
 				return objType.Assembly == typeof(T).Assembly;
 			}
 
-			public void DisconnectInterfaces(object obj)
+			internal void DisconnectInterfaces(object obj)
 			{
 				m_ConnectedInterfaces.Remove(obj);
 

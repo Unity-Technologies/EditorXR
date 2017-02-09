@@ -13,14 +13,14 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class DirectSelection : Nested
 		{
-			public IGrabObjects objectsGrabber { get; set; }
+			internal IGrabObjects objectsGrabber { get; set; }
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelectionResults = new Dictionary<Transform, DirectSelectionData>();
 			readonly List<ActionMapInput> m_ActiveStates = new List<ActionMapInput>();
 
 			// NOTE: This is for the length of the pointer object, not the length of the ray coming out of the pointer
-			public float GetPointerLength(Transform rayOrigin)
+			internal float GetPointerLength(Transform rayOrigin)
 			{
 				var length = 0f;
 
@@ -48,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR
 				return length;
 			}
 
-			public Dictionary<Transform, DirectSelectionData> GetDirectSelection()
+			internal Dictionary<Transform, DirectSelectionData> GetDirectSelection()
 			{
 				m_DirectSelectionResults.Clear();
 				m_ActiveStates.Clear();
@@ -122,7 +122,7 @@ namespace UnityEditor.Experimental.EditorVR
 				return null;
 			}
 
-			public bool CanGrabObject(GameObject selection, Transform rayOrigin)
+			internal bool CanGrabObject(GameObject selection, Transform rayOrigin)
 			{
 				if (selection.CompareTag(kVRPlayerTag) && !evr.m_MiniWorldRays.ContainsKey(rayOrigin))
 					return false;
@@ -130,14 +130,14 @@ namespace UnityEditor.Experimental.EditorVR
 				return true;
 			}
 
-			public void OnObjectGrabbed(GameObject selection)
+			internal void OnObjectGrabbed(GameObject selection)
 			{
 				// Detach the player head model so that it is not affected by its parent transform
 				if (selection.CompareTag(kVRPlayerTag))
 					selection.transform.parent = null;
 			}
 
-			public void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
+			internal void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
 			{
 				foreach (var grabbedObject in grabbedObjects)
 				{
