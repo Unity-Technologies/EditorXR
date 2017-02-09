@@ -136,7 +136,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 	{
 		var inspectorData = new List<InspectorData>();
 		var objectChildren = new List<InspectorData>();
-		
+
 		foreach(var component in selection.GetComponents<Component>())
 		{
 			var obj = new SerializedObject(component);
