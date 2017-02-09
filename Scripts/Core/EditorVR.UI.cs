@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_EventCamera.enabled = false;
 			m_InputModule.eventCamera = m_EventCamera;
 
-			m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
+			m_InputModule.preProcessRaycastSource = m_Rays.PreProcessRaycastSource;
 		}
 
 		GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)

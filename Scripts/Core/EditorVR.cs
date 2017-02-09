@@ -48,15 +48,21 @@ namespace UnityEditor.Experimental.EditorVR
 		SpatialHashModule m_SpatialHashModule;
 		IntersectionModule m_IntersectionModule;
 		DeviceInputModule m_DeviceInputModule;
+		MultipleRayInputModule m_InputModule;
+		PixelRaycastModule m_PixelRaycastModule;
 
 		DirectSelection m_DirectSelection;
 		Interfaces m_Interfaces;
 		Menus m_Menus;
 		MiniWorlds m_MiniWorlds;
+		Rays m_Rays;
 
 		event Action m_SelectionChanged;
 
 		IPreviewCamera m_CustomPreviewCamera;
+
+		bool m_PixelRaycastIgnoreListDirty = true;
+		bool m_UpdatePixelRaycastModule = true;
 
 		class Nested
 		{
@@ -73,6 +79,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_Interfaces = new Interfaces();
 			m_Menus = new Menus();
 			m_MiniWorlds = new MiniWorlds();
+			m_Rays = new Rays();
 
 			m_HierarchyModule = AddModule<HierarchyModule>();			
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
@@ -124,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_LockModule.updateAlternateMenu = (rayOrigin, o) => m_Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
 
 			m_SelectionModule = AddModule<SelectionModule>();
-			m_SelectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			m_SelectionModule.selected += m_Rays.SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 			m_SelectionModule.getGroupRoot = GetGroupRoot;
 
 			m_SpatialHashModule = AddModule<SpatialHashModule>();
@@ -162,7 +169,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			AddPlayerModel();
 
-			CreateAllProxies();
+			m_Rays.CreateAllProxies();
 
 			// In case we have anything selected at start, set up manipulators, inspector, etc.
 			EditorApplication.delayCall += OnSelectionChanged;
@@ -207,7 +214,7 @@ namespace UnityEditor.Experimental.EditorVR
 			if (m_SelectionChanged != null)
 				m_SelectionChanged();
 
-			m_Menus.UpdateAlternateMenuOnSelectionChanged(m_LastSelectionRayOrigin);
+			m_Menus.UpdateAlternateMenuOnSelectionChanged(m_Rays.lastSelectionRayOrigin);
 		}
 
 		void OnEnable()
@@ -244,7 +251,7 @@ namespace UnityEditor.Experimental.EditorVR
 					m_PixelRaycastIgnoreListDirty = false;
 				}
 
-				ForEachProxyDevice((deviceData) =>
+				m_Rays.ForEachProxyDevice((deviceData) =>
 				{
 					m_PixelRaycastModule.UpdateRaycast(deviceData.rayOrigin, m_EventCamera);
 				});
@@ -292,7 +299,7 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 #endif
 
-			UpdateDefaultProxyRays();
+			m_Rays.UpdateDefaultProxyRays();
 
 			m_KeyboardModule.UpdateKeyboardMallets();
 

@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var miniWorld = miniWorldWorkspace.miniWorld;
 			m_MiniWorlds.worlds.Add(miniWorld);
 
-			ForEachProxyDevice((deviceData) =>
+			m_Rays.ForEachProxyDevice((deviceData) =>
 			{
 				var miniWorldRayOrigin = m_MiniWorlds.InstantiateMiniWorldRay();
 				miniWorldRayOrigin.parent = workspace.transform;

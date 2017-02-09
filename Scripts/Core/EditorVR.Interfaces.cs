@@ -73,7 +73,7 @@ namespace UnityEditor.Experimental.EditorVR
 					if (menuOrigins != null)
 					{
 						Transform mainMenuOrigin;
-						var proxy = evr.GetProxyForRayOrigin(rayOrigin);
+						var proxy = evr.m_Rays.GetProxyForRayOrigin(rayOrigin);
 						if (proxy != null && proxy.menuOrigins.TryGetValue(rayOrigin, out mainMenuOrigin))
 						{
 							menuOrigins.menuOrigin = mainMenuOrigin;
@@ -88,15 +88,15 @@ namespace UnityEditor.Experimental.EditorVR
 				var customRay = obj as ICustomRay;
 				if (customRay != null)
 				{
-					customRay.showDefaultRay = ShowRay;
-					customRay.hideDefaultRay = HideRay;
+					customRay.showDefaultRay = Rays.ShowRay;
+					customRay.hideDefaultRay = Rays.HideRay;
 				}
 
 				var lockableRay = obj as IUsesRayLocking;
 				if (lockableRay != null)
 				{
-					lockableRay.lockRay = LockRay;
-					lockableRay.unlockRay = UnlockRay;
+					lockableRay.lockRay = Rays.LockRay;
+					lockableRay.unlockRay = Rays.UnlockRay;
 				}
 
 				var locomotion = obj as ILocomotor;
@@ -117,7 +117,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var raycaster = obj as IUsesRaycastResults;
 				if (raycaster != null)
-					raycaster.getFirstGameObject = evr.GetFirstGameObject;
+					raycaster.getFirstGameObject = evr.m_Rays.GetFirstGameObject;
 
 				var highlight = obj as ISetHighlight;
 				if (highlight != null)
@@ -136,7 +136,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var positionPreview = obj as IGetPreviewOrigin;
 				if (positionPreview != null)
-					positionPreview.getPreviewOriginForRayOrigin = evr.GetPreviewOriginForRayOrigin;
+					positionPreview.getPreviewOriginForRayOrigin = evr.m_Rays.GetPreviewOriginForRayOrigin;
 
 				var selectionChanged = obj as ISelectionChanged;
 				if (selectionChanged != null)
@@ -267,7 +267,7 @@ namespace UnityEditor.Experimental.EditorVR
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
 				if (forEachRayOrigin != null && IsSameAssembly<IForEachRayOrigin>(obj))
-					forEachRayOrigin.forEachRayOrigin = evr.ForEachRayOrigin;
+					forEachRayOrigin.forEachRayOrigin = evr.m_Rays.ForEachRayOrigin;
 			}
 
 			static bool IsSameAssembly<T>(object obj)

@@ -222,14 +222,14 @@ namespace UnityEditor.Experimental.EditorVR
 
 					if (isContained && !miniWorldRay.wasContained)
 					{
-						HideRay(originalRayOrigin, true);
-						LockRay(originalRayOrigin, this);
+						Rays.HideRay(originalRayOrigin, true);
+						Rays.LockRay(originalRayOrigin, this);
 					}
 
 					if (!isContained && miniWorldRay.wasContained)
 					{
-						UnlockRay(originalRayOrigin, this);
-						ShowRay(originalRayOrigin, true);
+						Rays.UnlockRay(originalRayOrigin, this);
+						Rays.ShowRay(originalRayOrigin, true);
 					}
 
 					if (dragObjects == null)

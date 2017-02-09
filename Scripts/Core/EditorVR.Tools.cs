@@ -72,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR
 				AddToolToDeviceData(toolData, devices);
 				var selectionTool = (SelectionTool)toolData.tool;
 				selectionTool.hovered += m_LockModule.OnHovered;
-				selectionTool.isRayActive = IsRayActive;
+				selectionTool.isRayActive = m_Rays.IsRayActive;
 
 				toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 				AddToolToDeviceData(toolData, devices);
@@ -163,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR
 		bool SelectTool(Transform rayOrigin, Type toolType)
 		{
 			var result = false;
-			ForEachProxyDevice((deviceData) =>
+			m_Rays.ForEachProxyDevice((deviceData) =>
 			{
 				if (deviceData.rayOrigin == rayOrigin)
 				{

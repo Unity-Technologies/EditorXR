@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR
 					rayOrigin = ray.originalRayOrigin;
 
 				DefaultProxyRay dpr;
-				if (evr.m_DefaultRays.TryGetValue(rayOrigin, out dpr))
+				if (evr.m_Rays.defaultRays.TryGetValue(rayOrigin, out dpr))
 				{
 					length = dpr.pointerLength;
 
@@ -54,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR
 				m_ActiveStates.Clear();
 
 				var directSelection = objectsGrabber;
-				evr.ForEachProxyDevice((deviceData) =>
+				evr.m_Rays.ForEachProxyDevice((deviceData) =>
 				{
 					var rayOrigin = deviceData.rayOrigin;
 					var input = deviceData.directSelectInput;
@@ -100,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				// Only activate direct selection input if the cone is inside of an object, so a trigger press can be detected,
 				// and keep it active if we are dragging
-				evr.ForEachProxyDevice((deviceData) =>
+				evr.m_Rays.ForEachProxyDevice((deviceData) =>
 				{
 					var input = deviceData.directSelectInput;
 					input.active = m_ActiveStates.Contains(input);
