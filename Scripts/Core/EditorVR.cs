@@ -51,6 +51,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		DirectSelection m_DirectSelection;
 		Interfaces m_Interfaces;
+		Menus m_Menus;
 
 		event Action m_SelectionChanged;
 
@@ -69,6 +70,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			m_DirectSelection = new DirectSelection();
 			m_Interfaces = new Interfaces();
+			m_Menus = new Menus();
 
 			m_HierarchyModule = AddModule<HierarchyModule>();			
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
@@ -117,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_ActionsModule = AddModule<ActionsModule>();
 
 			m_LockModule = AddModule<LockModule>();
-			m_LockModule.updateAlternateMenu = (rayOrigin, o) => SetAlternateMenuVisibility(rayOrigin, o != null);
+			m_LockModule.updateAlternateMenu = (rayOrigin, o) => m_Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
 
 			m_SelectionModule = AddModule<SelectionModule>();
 			m_SelectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
@@ -132,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
 
 			m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
-			m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
+			m_Menus.mainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 			m_AllWorkspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
@@ -203,7 +205,7 @@ namespace UnityEditor.Experimental.EditorVR
 			if (m_SelectionChanged != null)
 				m_SelectionChanged();
 
-			UpdateAlternateMenuOnSelectionChanged(m_LastSelectionRayOrigin);
+			m_Menus.UpdateAlternateMenuOnSelectionChanged(m_LastSelectionRayOrigin);
 		}
 
 		void OnEnable()
@@ -295,8 +297,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 			m_DeviceInputModule.ProcessInput();
 
-			UpdateMenuVisibilityNearWorkspaces();
-			UpdateMenuVisibilities();
+			m_Menus.UpdateMenuVisibilityNearWorkspaces();
+			m_Menus.UpdateMenuVisibilities();
 
 			UpdateManipulatorVisibilites();
 		}

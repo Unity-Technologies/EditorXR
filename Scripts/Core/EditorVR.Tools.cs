@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR
 			public ITool currentTool;
 			public IMenu customMenu;
 			public PinnedToolButton previousToolButton;
-			public readonly Dictionary<IMenu, MenuHideFlags> menuHideFlags = new Dictionary<IMenu, MenuHideFlags>();
+			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
 			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
 		}
 
@@ -86,26 +86,26 @@ namespace UnityEditor.Experimental.EditorVR
 				toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
 				AddToolToDeviceData(toolData, devices);
 
-				var mainMenu = SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
+				var mainMenu = m_Menus.SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
 				deviceData.mainMenu = mainMenu;
-				deviceData.menuHideFlags[mainMenu] = MenuHideFlags.Hidden;
+				deviceData.menuHideFlags[mainMenu] = Menus.MenuHideFlags.Hidden;
 
-				var mainMenuActivator = SpawnMainMenuActivator(inputDevice);
+				var mainMenuActivator = m_Menus.SpawnMainMenuActivator(inputDevice);
 				deviceData.mainMenuActivator = mainMenuActivator;
-				mainMenuActivator.selected += OnMainMenuActivatorSelected;
-				mainMenuActivator.hoverStarted += OnMainMenuActivatorHoverStarted;
-				mainMenuActivator.hoverEnded += OnMainMenuActivatorHoverEnded;
+				mainMenuActivator.selected += m_Menus.OnMainMenuActivatorSelected;
+				mainMenuActivator.hoverStarted += m_Menus.OnMainMenuActivatorHoverStarted;
+				mainMenuActivator.hoverEnded += m_Menus.OnMainMenuActivatorHoverEnded;
 
-				var pinnedToolButton = SpawnPinnedToolButton(inputDevice);
+				var pinnedToolButton = m_Menus.SpawnPinnedToolButton(inputDevice);
 				deviceData.previousToolButton = pinnedToolButton;
 				var pinnedToolButtonTransform = pinnedToolButton.transform;
 				pinnedToolButtonTransform.SetParent(mainMenuActivator.transform, false);
 				pinnedToolButtonTransform.localPosition = new Vector3(0f, 0f, -0.035f); // Offset from the main menu activator
 
-				var alternateMenu = SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
+				var alternateMenu = m_Menus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 				deviceData.alternateMenu = alternateMenu;
-				deviceData.menuHideFlags[alternateMenu] = MenuHideFlags.Hidden;
-				alternateMenu.itemWasSelected += UpdateAlternateMenuOnSelectionChanged;
+				deviceData.menuHideFlags[alternateMenu] = Menus.MenuHideFlags.Hidden;
+				alternateMenu.itemWasSelected += m_Menus.UpdateAlternateMenuOnSelectionChanged;
 			}
 
 			m_DeviceInputModule.UpdatePlayerHandleMaps();
@@ -218,7 +218,7 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 				else
 				{
-					deviceData.menuHideFlags[deviceData.mainMenu] |= MenuHideFlags.Hidden;
+					deviceData.menuHideFlags[deviceData.mainMenu] |= Menus.MenuHideFlags.Hidden;
 				}
 			});
 

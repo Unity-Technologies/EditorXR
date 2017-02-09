@@ -113,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var instantiateMenuUI = obj as IInstantiateMenuUI;
 				if (instantiateMenuUI != null)
-					instantiateMenuUI.instantiateMenuUI = evr.InstantiateMenuUI;
+					instantiateMenuUI.instantiateMenuUI = evr.m_Menus.InstantiateMenuUI;
 
 				var raycaster = obj as IUsesRaycastResults;
 				if (raycaster != null)
@@ -157,7 +157,7 @@ namespace UnityEditor.Experimental.EditorVR
 						};
 						evr.m_ActionsModule.menuActions.Add(actionMenuData);
 					}
-					evr.UpdateAlternateMenuActions();
+					evr.m_Menus.UpdateAlternateMenuActions();
 				}
 
 				var directSelection = obj as IUsesDirectSelection;
@@ -190,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)
 				{
-					mainMenu.menuTools = evr.m_MainMenuTools;
+					mainMenu.menuTools = evr.m_Menus.mainMenuTools;
 					mainMenu.menuWorkspaces = evr.m_AllWorkspaceTypes.ToList();
 					mainMenu.isToolActive = evr.IsToolActive;
 				}
@@ -289,7 +289,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (toolActions != null)
 				{
 					evr.m_ActionsModule.RemoveActions(toolActions.actions);
-					evr.UpdateAlternateMenuActions();
+					evr.m_Menus.UpdateAlternateMenuActions();
 				}
 
 				var grabObjects = obj as IGrabObjects;
