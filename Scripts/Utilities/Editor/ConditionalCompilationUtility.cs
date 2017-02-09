@@ -10,7 +10,7 @@ namespace ConditionalCompilation
 {
 	/// <summary>
 	/// The Conditional Compilation Utility (CCU) will add defines to the build settings once dependendent classes have been detected. 
-	/// In order for this to specified in any project without the project needing to include the CCU, at least one custom attribute 
+	/// In order for this to be specified in any project without the project needing to include the CCU, at least one custom attribute 
 	/// must be created in the following form:
 	/// 
 	/// [Conditional(UNITY_CCU)]									// | This is necessary for CCU to pick up the right attributes
