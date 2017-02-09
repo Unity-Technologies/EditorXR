@@ -186,8 +186,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			else
 			{
 				CancelScale();
-					}
-				}
+			}
+		}
 
 		bool isVive = proxyType == typeof(ViveProxy);
 
