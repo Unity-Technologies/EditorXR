@@ -211,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR
 			// Tracked Object action maps shouldn't block each other so we share an instance
 			var trackedObjectMap = obj as ITrackedObjectActionMap;
 			if (trackedObjectMap != null)
-				trackedObjectMap.trackedObjectInput = m_TrackedObjectInput;
+				trackedObjectMap.trackedObjectInput = m_DeviceInputModule.trackedObjectInput;
 
 			var selectTool = obj as ISelectTool;
 			if (selectTool != null)

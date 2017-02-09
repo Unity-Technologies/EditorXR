@@ -108,7 +108,7 @@ namespace UnityEditor.Experimental.EditorVR
 				alternateMenu.itemWasSelected += UpdateAlternateMenuOnSelectionChanged;
 			}
 
-			UpdatePlayerHandleMaps();
+			m_DeviceInputModule.UpdatePlayerHandleMaps();
 		}
 
 		/// <summary>
@@ -128,7 +128,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var deviceSlots = new HashSet<DeviceSlot>();
 			var tool = U.Object.AddComponent(toolType, gameObject) as ITool;
 
-			var actionMapInput = CreateActionMapInputForObject(tool, device);
+			var actionMapInput = m_DeviceInputModule.CreateActionMapInputForObject(tool, device);
 			if (actionMapInput != null)
 			{
 				usedDevices.UnionWith(actionMapInput.GetCurrentlyUsedDevices());
@@ -213,7 +213,7 @@ namespace UnityEditor.Experimental.EditorVR
 						}
 					}
 
-					UpdatePlayerHandleMaps();
+					m_DeviceInputModule.UpdatePlayerHandleMaps();
 					result = spawnTool;
 				}
 				else
@@ -299,6 +299,47 @@ namespace UnityEditor.Experimental.EditorVR
 				deviceData.toolData.Push(toolData);
 				deviceData.currentTool = toolData.tool;
 			}
+		}
+
+		void UpdatePlayerHandleMaps(List<ActionMapInput> maps)
+		{
+			foreach (var deviceData in m_DeviceData)
+			{
+				var mainMenu = deviceData.mainMenu;
+				var mainMenuInput = deviceData.mainMenuInput;
+				if (mainMenu != null && mainMenuInput != null)
+				{
+					mainMenuInput.active = mainMenu.visible;
+
+					if (!maps.Contains(mainMenuInput))
+						maps.Add(mainMenuInput);
+				}
+
+				var alternateMenu = deviceData.alternateMenu;
+				var alternateMenuInput = deviceData.alternateMenuInput;
+				if (alternateMenu != null && alternateMenuInput != null)
+				{
+					alternateMenuInput.active = alternateMenu.visible;
+
+					if (!maps.Contains(alternateMenuInput))
+						maps.Add(alternateMenuInput);
+				}
+
+				maps.Add(deviceData.directSelectInput);
+				maps.Add(deviceData.uiInput);
+			}
+
+			maps.Add(m_DeviceInputModule.trackedObjectInput);
+
+			foreach (var deviceData in m_DeviceData)
+			{
+				foreach (var td in deviceData.toolData)
+				{
+					if (td.input != null && !maps.Contains(td.input))
+						maps.Add(td.input);
+				}
+			}
+
 		}
 	}
 }

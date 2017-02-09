@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 //#define ENABLE_MINIWORLD_RAY_SELECTION
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -46,6 +47,7 @@ namespace UnityEditor.Experimental.EditorVR
 		KeyboardModule m_KeyboardModule;
 		SpatialHashModule m_SpatialHashModule;
 		IntersectionModule m_IntersectionModule;
+		DeviceInputModule m_DeviceInputModule;
 
 		DirectSelection m_DirectSelection;
 
@@ -83,8 +85,12 @@ namespace UnityEditor.Experimental.EditorVR
 
 			m_DirectSelection = new DirectSelection(this);
 
-			InitializePlayerHandle();
-			CreateDefaultActionMapInputs();
+			m_DeviceInputModule = AddModule<DeviceInputModule>();
+
+			m_DeviceInputModule.InitializePlayerHandle();
+			m_DeviceInputModule.CreateDefaultActionMapInputs();
+			m_DeviceInputModule.processInput = ProcessInput;
+			m_DeviceInputModule.updatePlayerHandleMaps = UpdatePlayerHandleMaps;
 			InitializeInputModule();
 
 			m_KeyboardModule = AddModule<KeyboardModule>();
@@ -230,8 +236,6 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			if (m_CustomPreviewCamera != null)
 				U.Object.Destroy(((MonoBehaviour)m_CustomPreviewCamera).gameObject);
-
-			PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
 		}
 
 		void Update()
@@ -263,7 +267,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			m_KeyboardModule.UpdateKeyboardMallets();
 
-			ProcessInput();
+			m_DeviceInputModule.ProcessInput();
 
 			UpdateMenuVisibilityNearWorkspaces();
 			UpdateMenuVisibilities();
@@ -271,16 +275,43 @@ namespace UnityEditor.Experimental.EditorVR
 			UpdateManipulatorVisibilites();
 		}
 
+		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
+		{
+			UpdateMiniWorlds();
+
+			m_InputModule.ProcessInput(null, consumeControl);
+
+			foreach (var deviceData in m_DeviceData)
+			{
+				if (!deviceData.proxy.active)
+					continue;
+
+				var mainMenu = deviceData.mainMenu;
+				var menuInput = mainMenu as IProcessInput;
+				if (menuInput != null && mainMenu.visible)
+					menuInput.ProcessInput(deviceData.mainMenuInput, consumeControl);
+
+				var altMenu = deviceData.alternateMenu;
+				var altMenuInput = altMenu as IProcessInput;
+				if (altMenuInput != null && altMenu.visible)
+					altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
+
+				foreach (var toolData in deviceData.toolData)
+				{
+					var process = toolData.tool as IProcessInput;
+					if (process != null && ((MonoBehaviour)toolData.tool).enabled
+						&& processedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)
+						process.ProcessInput(toolData.input, consumeControl);
+				}
+			}
+
+		}
+
 		T AddModule<T>() where T : Component
 		{
 			T module = U.Object.AddComponent<T>(gameObject);
 			ConnectInterfaces(module);
 			return module;
-		}
-
-		private void LogError(string error)
-		{
-			Debug.LogError(string.Format("EVR: {0}", error));
 		}
 
 		static GameObject GetGroupRoot(GameObject hoveredObject)

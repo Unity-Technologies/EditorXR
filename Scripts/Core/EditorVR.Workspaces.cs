@@ -87,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR
 				m_IntersectionModule.AddTester(tester);
 			}, false);
 
-			UpdatePlayerHandleMaps();
+			m_DeviceInputModule.UpdatePlayerHandleMaps();
 		}
 
 		void OnWorkspaceDestroyed(IWorkspace workspace)

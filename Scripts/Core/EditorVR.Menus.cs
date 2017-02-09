@@ -199,7 +199,7 @@ namespace UnityEditor.Experimental.EditorVR
 				UpdateRayForDevice(deviceData, deviceData.rayOrigin);
 			});
 
-			UpdatePlayerHandleMaps();
+			m_DeviceInputModule.UpdatePlayerHandleMaps();
 		}
 
 		void OnMainMenuActivatorHoverStarted(Transform rayOrigin)
@@ -305,7 +305,7 @@ namespace UnityEditor.Experimental.EditorVR
 				return null;
 
 			var mainMenu = U.Object.AddComponent(type, gameObject) as IMainMenu;
-			input = CreateActionMapInputForObject(mainMenu, device);
+			input = m_DeviceInputModule.CreateActionMapInputForObject(mainMenu, device);
 			ConnectInterfaces(mainMenu, device);
 			mainMenu.visible = visible;
 
@@ -320,7 +320,7 @@ namespace UnityEditor.Experimental.EditorVR
 				return null;
 
 			var alternateMenu = U.Object.AddComponent(type, gameObject) as IAlternateMenu;
-			input = CreateActionMapInputForObject(alternateMenu, device);
+			input = m_DeviceInputModule.CreateActionMapInputForObject(alternateMenu, device);
 			ConnectInterfaces(alternateMenu, device);
 			alternateMenu.visible = false;
 

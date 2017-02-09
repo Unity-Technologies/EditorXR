@@ -3,6 +3,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEngine.Experimental.EditorVR.Tools
 {
+	public delegate void ConsumeControlDelegate(InputControl control);
+
 	/// <summary>
 	/// Decorates a class that needs to process input from the system
 	/// </summary>
@@ -13,6 +15,6 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		/// </summary>
 		/// <param name="input">An ActionMapInput if one of the action map interfaces are used</param>
 		/// <param name="consumeControl">A delegate for consuming a control that was used</param>
-		void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl);
+		void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl);
 	}
 }
