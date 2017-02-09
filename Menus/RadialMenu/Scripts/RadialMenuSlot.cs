@@ -262,6 +262,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateHide()
 		{
+			hideTooltip(this);
+
 			m_CanvasGroup.interactable = false;
 			m_Pressed = false;
 			m_Highlighted = false;
