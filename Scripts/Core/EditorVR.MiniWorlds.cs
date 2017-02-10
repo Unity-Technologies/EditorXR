@@ -338,7 +338,7 @@ namespace UnityEditor.Experimental.EditorVR
 							// If the user has pulled an object out of the MiniWorld, use PlaceObject to grow it back to its original scale
 							if (!isContained)
 							{
-								if (evr.IsOverShoulder(originalRayOrigin))
+								if (evr.m_Viewer.IsOverShoulder(originalRayOrigin))
 								{
 									evr.m_ObjectModule.DeleteSceneObject(dragObject.gameObject);
 								}

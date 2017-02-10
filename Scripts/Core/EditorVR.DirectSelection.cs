@@ -143,8 +143,8 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					// Dropping the player head updates the viewer pivot
 					if (grabbedObject.CompareTag(kVRPlayerTag))
-						evr.StartCoroutine(UpdateViewerPivot(grabbedObject));
-					else if (evr.IsOverShoulder(rayOrigin) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
+						evr.StartCoroutine(Viewer.UpdateViewerPivot(grabbedObject));
+					else if (evr.m_Viewer.IsOverShoulder(rayOrigin) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
 						evr.m_ObjectModule.DeleteSceneObject(grabbedObject.gameObject);
 				}
 			}

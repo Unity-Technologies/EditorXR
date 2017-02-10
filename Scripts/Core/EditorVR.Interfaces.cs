@@ -185,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var usesViewerBody = obj as IUsesViewerBody;
 				if (usesViewerBody != null)
-					usesViewerBody.isOverShoulder = evr.IsOverShoulder;
+					usesViewerBody.isOverShoulder = evr.m_Viewer.IsOverShoulder;
 
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)

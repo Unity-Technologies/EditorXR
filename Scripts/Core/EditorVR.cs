@@ -60,6 +60,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Rays m_Rays;
 		Tools m_Tools;
 		UI m_UI;
+		Viewer m_Viewer;
 
 		event Action m_SelectionChanged;
 
@@ -109,6 +110,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_Rays = new Rays();
 			m_Tools = new Tools();
 			m_UI = new UI();
+			m_Viewer = new Viewer();
 
 			m_HierarchyModule = AddModule<HierarchyModule>();			
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
@@ -195,7 +197,7 @@ namespace UnityEditor.Experimental.EditorVR
 				return true;
 			};
 
-			AddPlayerModel();
+			m_Viewer.AddPlayerModel();
 
 			m_Rays.CreateAllProxies();
 
