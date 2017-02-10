@@ -5,6 +5,7 @@ using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Proxies;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -358,6 +359,78 @@ namespace UnityEditor.Experimental.EditorVR
 
 					miniWorldRay.wasContained = isContained;
 				}
+			}
+
+			internal void OnWorkspaceCreated(IWorkspace workspace)
+			{
+				// MiniWorld is a special case that we handle due to all of the mini world interactions
+				var miniWorldWorkspace = workspace as MiniWorldWorkspace;
+				if (!miniWorldWorkspace)
+					return;
+
+				var miniWorld = miniWorldWorkspace.miniWorld;
+				m_Worlds.Add(miniWorld);
+
+				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				{
+					var miniWorldRayOrigin = InstantiateMiniWorldRay();
+					miniWorldRayOrigin.parent = workspace.transform;
+
+#if ENABLE_MINIWORLD_RAY_SELECTION
+				// Use the mini world ray origin instead of the original ray origin
+				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, miniWorldRayOrigin, (source) =>
+				{
+					if (!IsRayActive(source.rayOrigin))
+						return false;
+
+					if (source.hoveredObject)
+						return !m_Workspaces.Any(w => source.hoveredObject.transform.IsChildOf(w.transform));
+
+					return true;
+				});
+#endif
+
+					var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
+					tester.active = false;
+
+					m_Rays[miniWorldRayOrigin] = new MiniWorlds.MiniWorldRay
+					{
+						originalRayOrigin = deviceData.rayOrigin,
+						miniWorld = miniWorld,
+						proxy = deviceData.proxy,
+						node = deviceData.node,
+						directSelectInput = deviceData.directSelectInput,
+						tester = tester
+					};
+
+					evr.m_IntersectionModule.AddTester(tester);
+				}, false);
+			}
+
+			internal void OnWorkspaceDestroyed(IWorkspace workspace)
+			{
+				var miniWorldWorkspace = workspace as MiniWorldWorkspace;
+				if (miniWorldWorkspace != null)
+				{
+					var miniWorld = miniWorldWorkspace.miniWorld;
+
+					//Clean up MiniWorldRays
+					m_Worlds.Remove(miniWorld);
+					var miniWorldRaysCopy = new Dictionary<Transform, MiniWorlds.MiniWorldRay>(m_Rays);
+					foreach (var ray in miniWorldRaysCopy)
+					{
+						var miniWorldRay = ray.Value;
+						if (miniWorldRay.miniWorld == miniWorld)
+						{
+							var rayOrigin = ray.Key;
+#if ENABLE_MINIWORLD_RAY_SELECTION
+						m_InputModule.RemoveRaycastSource(rayOrigin);
+#endif
+							m_Rays.Remove(rayOrigin);
+						}
+					}
+				}
+
 			}
 		}
 	}

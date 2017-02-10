@@ -65,9 +65,10 @@ namespace UnityEditor.Experimental.EditorVR
 						}
 
 						var intersection = false;
-						for (int j = 0; j < evr.m_Workspaces.Count; j++)
+						var workspaces = evr.m_WorkspaceModule.workspaces;
+						for (int j = 0; j < workspaces.Count; j++)
 						{
-							var workspace = evr.m_Workspaces[j];
+							var workspace = workspaces[j];
 							var workspaceTransform = workspace.transform;
 							var outerBounds = workspaceTransform.TransformBounds(workspace.outerBounds);
 							var workspaceVerticalOrentationDot = Vector3.Dot(Vector3.up, workspaceTransform.forward);

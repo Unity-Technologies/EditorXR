@@ -109,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var createWorkspace = obj as ICreateWorkspace;
 				if (createWorkspace != null)
-					createWorkspace.createWorkspace = evr.CreateWorkspace;
+					createWorkspace.createWorkspace = evr.m_WorkspaceModule.CreateWorkspace;
 
 				var instantiateMenuUI = obj as IInstantiateMenuUI;
 				if (instantiateMenuUI != null)
@@ -191,7 +191,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (mainMenu != null)
 				{
 					mainMenu.menuTools = evr.m_Menus.mainMenuTools;
-					mainMenu.menuWorkspaces = evr.m_AllWorkspaceTypes.ToList();
+					mainMenu.menuWorkspaces = evr.m_WorkspaceModule.workspaceTypes;
 					mainMenu.isToolActive = evr.m_Tools.IsToolActive;
 				}
 

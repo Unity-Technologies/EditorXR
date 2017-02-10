@@ -4,10 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Helpers;
 using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Proxies;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -16,6 +19,8 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class Tools : Nested
 		{
+			readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();
+
 			internal class ToolData
 			{
 				public ITool tool;
@@ -35,6 +40,16 @@ namespace UnityEditor.Experimental.EditorVR
 					|| typeof(SelectionTool).IsAssignableFrom(type)
 					|| typeof(ILocomotor).IsAssignableFrom(type)
 					|| typeof(VacuumTool).IsAssignableFrom(type);
+			}
+
+			internal void OnWorkspaceCreated(IWorkspace workspace)
+			{
+				m_Vacuumables.Add(workspace);
+			}
+
+			internal void OnWorkspaceDestroyed(IWorkspace workspace)
+			{
+				m_Vacuumables.Remove(workspace);
 			}
 
 			internal void SpawnDefaultTools(IProxy proxy)
@@ -61,8 +76,8 @@ namespace UnityEditor.Experimental.EditorVR
 					toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var vacuumTool = (VacuumTool)toolData.tool;
-					vacuumTool.defaultOffset = kDefaultWorkspaceOffset;
-					vacuumTool.vacuumables = evr.m_Vacuumables;
+					vacuumTool.defaultOffset = WorkspaceModule.kDefaultWorkspaceOffset;
+					vacuumTool.vacuumables = m_Vacuumables;
 
 					// Using a shared instance of the transform tool across all device tool stacks
 					AddToolToStack(deviceData, transformTool);

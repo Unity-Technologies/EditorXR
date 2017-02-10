@@ -52,6 +52,7 @@ namespace UnityEditor.Experimental.EditorVR
 		DeviceInputModule m_DeviceInputModule;
 		MultipleRayInputModule m_InputModule;
 		PixelRaycastModule m_PixelRaycastModule;
+		WorkspaceModule m_WorkspaceModule;
 
 		DirectSelection m_DirectSelection;
 		Interfaces m_Interfaces;
@@ -174,8 +175,15 @@ namespace UnityEditor.Experimental.EditorVR
 			m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
 
 			m_Menus.mainMenuTools = m_Tools.allTools.Where(t => !m_Tools.IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
-			m_AllWorkspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 
+			m_WorkspaceModule = AddModule<WorkspaceModule>();
+			m_WorkspaceModule.workspaceCreated += m_Tools.OnWorkspaceCreated;
+			m_WorkspaceModule.workspaceCreated += m_MiniWorlds.OnWorkspaceCreated;
+			m_WorkspaceModule.workspaceCreated += (workspace) => { m_DeviceInputModule.UpdatePlayerHandleMaps(); };
+			m_WorkspaceModule.workspaceDestroyed += m_Tools.OnWorkspaceDestroyed;
+			m_WorkspaceModule.workspaceDestroyed += (workspace) => { m_Interfaces.DisconnectInterfaces(workspace); };
+			m_WorkspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
+		
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
 			m_ObjectModule = AddModule<ObjectModule>();
