@@ -1,10 +1,8 @@
 #if UNITY_EDITORVR
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR

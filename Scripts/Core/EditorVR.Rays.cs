@@ -2,15 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Core;
 using UnityEngine.Experimental.EditorVR.Manipulators;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Proxies;
 using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {

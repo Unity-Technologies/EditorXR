@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEngine.Experimental.EditorVR.Modules
