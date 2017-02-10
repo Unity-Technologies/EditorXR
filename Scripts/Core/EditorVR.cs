@@ -437,8 +437,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 		static EditorVR()
 		{
-			VRView.onEnable += OnEVREnabled;
-			VRView.onDisable += OnEVRDisabled;
+			VRView.onEnable += OnVRViewEnabled;
+			VRView.onDisable += OnVRViewDisabled;
 
 			if (!PlayerSettings.virtualRealitySupported)
 				Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
@@ -458,7 +458,7 @@ namespace UnityEditor.Experimental.EditorVR
 				TagManager.AddLayer(layer);
 		}
 
-		static void OnEVREnabled()
+		static void OnVRViewEnabled()
 		{
 			InitializeInputManager();
 			s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
@@ -500,7 +500,7 @@ namespace UnityEditor.Experimental.EditorVR
 			U.Object.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
 		}
 
-		private static void OnEVRDisabled()
+		private static void OnVRViewDisabled()
 		{
 			U.Object.Destroy(s_Instance.gameObject);
 			U.Object.Destroy(s_InputManager.gameObject);
