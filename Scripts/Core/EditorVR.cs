@@ -85,6 +85,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
 			m_TooltipModule = U.Object.AddComponent<TooltipModule>(gameObject);
+			ConnectInterfaces(m_TooltipModule);
 
 			CreateEventSystem();
 

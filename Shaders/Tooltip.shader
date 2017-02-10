@@ -30,7 +30,7 @@ Shader "EditorVR/UI/Tooltip"
 		Cull Off
 		Lighting Off
 		ZWrite Off
-		ZTest Off
+		ZTest On
 		Blend SrcAlpha OneMinusSrcAlpha
 
 		Pass
