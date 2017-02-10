@@ -2,13 +2,14 @@
 using System.Collections;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Helpers;
+using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
 using Button = UnityEngine.UI.Button;
 
 namespace UnityEngine.Experimental.EditorVR.Menus
 {
-	public class RadialMenuSlot : MonoBehaviour, IUsesTooltip, ITooltip
+	public class RadialMenuSlot : MonoBehaviour, IUsesTooltip, ITooltip, IRayEnterHandler, IRayExitHandler
 	{
 		static readonly Vector3 kHiddenLocalScale = new Vector3(1f, 0f, 1f);
 		const float m_IconHighlightedLocalYOffset = 0.006f;
@@ -377,6 +378,16 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
 			m_IconHighlightCoroutine = null;
+		}
+
+		public void OnRayEnter(RayEventData eventData)
+		{
+			highlighted = true;
+		}
+
+		public void OnRayExit(RayEventData eventData)
+		{
+			highlighted = false;
 		}
 	}
 }

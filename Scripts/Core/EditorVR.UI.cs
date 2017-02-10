@@ -33,6 +33,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Camera m_EventCamera;
 
 		DragAndDropModule m_DragAndDropModule;
+		TooltipModule m_TooltipModule;
 
 		void CreateEventSystem()
 		{
@@ -50,10 +51,16 @@ namespace UnityEditor.Experimental.EditorVR
 			m_EventCamera.enabled = false;
 			m_InputModule.eventCamera = m_EventCamera;
 
+			m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
 			m_InputModule.rayEntered += m_DragAndDropModule.OnRayEntered;
 			m_InputModule.rayExited += m_DragAndDropModule.OnRayExited;
 			m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
 			m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
+
+			m_TooltipModule = U.Object.AddComponent<TooltipModule>(gameObject);
+			ConnectInterfaces(m_TooltipModule);
+			m_InputModule.rayEntered += m_TooltipModule.OnRayEntered;
+			m_InputModule.rayExited += m_TooltipModule.OnRayExited;
 
 			m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
 

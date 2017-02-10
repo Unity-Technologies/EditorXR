@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
@@ -137,7 +138,21 @@ public class TooltipModule : MonoBehaviour, IUsesViewerPivot
 		dottedLineTransform.position = midPoint;
 		dottedLineTransform.rotation = Quaternion.LookRotation(toSource, -tooltipTransform.forward);
 	}
-	
+
+	public void OnRayEntered(GameObject gameObject, RayEventData eventData)
+	{
+		var tooltip = gameObject.GetComponent<ITooltip>();
+		if (tooltip != null)
+			ShowTooltip(tooltip);
+	}
+
+	public void OnRayExited(GameObject gameObject, RayEventData eventData)
+	{
+		var tooltip = gameObject.GetComponent<ITooltip>();
+		if (tooltip != null)
+			HideTooltip(tooltip);
+	}
+
 	public void ShowTooltip(ITooltip tooltip)
 	{
 		if (string.IsNullOrEmpty(tooltip.tooltipText))
