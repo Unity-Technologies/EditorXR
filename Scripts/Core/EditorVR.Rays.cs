@@ -69,13 +69,14 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 			}
 
-			public void OnProxyActiveChanged(IProxy proxy)
+			void OnProxyActiveChanged(IProxy proxy)
 			{
 				proxy.hidden = !proxy.active;
 
 				if (proxy.active)
 				{
-					if (!evr.m_DeviceData.Any(dd => dd.proxy == proxy))
+					var evrDeviceData = evr.m_DeviceData;
+					if (!evrDeviceData.Any(dd => dd.proxy == proxy))
 					{
 						var deviceInputModule = evr.m_DeviceInputModule;
 
@@ -91,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR
 								if (node.HasValue && node.Value == rayOriginPair.Key)
 								{
 									var deviceData = new DeviceData();
-									evr.m_DeviceData.Add(deviceData);
+									evrDeviceData.Add(deviceData);
 									deviceData.proxy = proxy;
 									deviceData.node = rayOriginPair.Key;
 									deviceData.rayOrigin = rayOriginPair.Value;
@@ -125,9 +126,10 @@ namespace UnityEditor.Experimental.EditorVR
 
 							evr.m_KeyboardModule.SpawnKeyboardMallet(rayOriginPairValue);
 
-							if (evr.m_ProxyExtras)
+							var proxyExtras = evr.m_ProxyExtras;
+							if (proxyExtras)
 							{
-								var extraData = evr.m_ProxyExtras.data;
+								var extraData = proxyExtras.data;
 								List<GameObject> prefabs;
 								if (extraData.TryGetValue(rayOriginPair.Key, out prefabs))
 								{
@@ -192,9 +194,10 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void ForEachProxyDevice(ForEachProxyDeviceCallback callback, bool activeOnly = true)
 			{
-				for (var i = 0; i < evr.m_DeviceData.Count; i++)
+				var evrDeviceData = evr.m_DeviceData;
+				for (var i = 0; i < evrDeviceData.Count; i++)
 				{
-					var deviceData = evr.m_DeviceData[i];
+					var deviceData = evrDeviceData[i];
 					var proxy = deviceData.proxy;
 					if (activeOnly && !proxy.active)
 						continue;
@@ -224,11 +227,13 @@ namespace UnityEditor.Experimental.EditorVR
 				if (go)
 					return go;
 
+				var intersectionModule = evr.m_IntersectionModule;
+
 				// If a raycast did not find an object use the spatial hash as a final test
-				if (evr.m_IntersectionModule)
+				if (intersectionModule)
 				{
 					var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-					var renderer = evr.m_IntersectionModule.GetIntersectedObjectForTester(tester);
+					var renderer = intersectionModule.GetIntersectedObjectForTester(tester);
 					if (renderer && !renderer.CompareTag(kVRPlayerTag))
 						return renderer.gameObject;
 				}
@@ -249,7 +254,7 @@ namespace UnityEditor.Experimental.EditorVR
 							return go;
 	#endif
 
-						var renderer = evr.m_IntersectionModule.GetIntersectedObjectForTester(tester);
+						var renderer = intersectionModule.GetIntersectedObjectForTester(tester);
 						if (renderer)
 							return renderer.gameObject;
 					}

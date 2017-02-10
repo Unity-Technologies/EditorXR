@@ -85,26 +85,27 @@ namespace UnityEditor.Experimental.EditorVR
 					toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 
-					var mainMenu = evr.m_Menus.SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
+					var evrMenus = evr.m_Menus;
+					var mainMenu = evrMenus.SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
 					deviceData.mainMenu = mainMenu;
 					deviceData.menuHideFlags[mainMenu] = Menus.MenuHideFlags.Hidden;
 
-					var mainMenuActivator = evr.m_Menus.SpawnMainMenuActivator(inputDevice);
+					var mainMenuActivator = evrMenus.SpawnMainMenuActivator(inputDevice);
 					deviceData.mainMenuActivator = mainMenuActivator;
-					mainMenuActivator.selected += evr.m_Menus.OnMainMenuActivatorSelected;
-					mainMenuActivator.hoverStarted += evr.m_Menus.OnMainMenuActivatorHoverStarted;
-					mainMenuActivator.hoverEnded += evr.m_Menus.OnMainMenuActivatorHoverEnded;
+					mainMenuActivator.selected += evrMenus.OnMainMenuActivatorSelected;
+					mainMenuActivator.hoverStarted += evrMenus.OnMainMenuActivatorHoverStarted;
+					mainMenuActivator.hoverEnded += evrMenus.OnMainMenuActivatorHoverEnded;
 
-					var pinnedToolButton = evr.m_Menus.SpawnPinnedToolButton(inputDevice);
+					var pinnedToolButton = evrMenus.SpawnPinnedToolButton(inputDevice);
 					deviceData.previousToolButton = pinnedToolButton;
 					var pinnedToolButtonTransform = pinnedToolButton.transform;
 					pinnedToolButtonTransform.SetParent(mainMenuActivator.transform, false);
 					pinnedToolButtonTransform.localPosition = new Vector3(0f, 0f, -0.035f); // Offset from the main menu activator
 
-					var alternateMenu = evr.m_Menus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
+					var alternateMenu = evrMenus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 					deviceData.alternateMenu = alternateMenu;
 					deviceData.menuHideFlags[alternateMenu] = Menus.MenuHideFlags.Hidden;
-					alternateMenu.itemWasSelected += evr.m_Menus.UpdateAlternateMenuOnSelectionChanged;
+					alternateMenu.itemWasSelected += evrMenus.UpdateAlternateMenuOnSelectionChanged;
 				}
 
 				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
@@ -188,16 +189,18 @@ namespace UnityEditor.Experimental.EditorVR
 							if (usedDevices.Count == 0)
 								usedDevices.Add(device);
 
+							var evrDeviceData = evr.m_DeviceData;
+
 							// Exclusive mode tools always take over all tool stacks
 							if (newTool is IExclusiveMode)
 							{
-								foreach (var dev in evr.m_DeviceData)
+								foreach (var dev in evrDeviceData)
 								{
 									usedDevices.Add(dev.inputDevice);
 								}
 							}
 
-							foreach (var dd in evr.m_DeviceData)
+							foreach (var dd in evrDeviceData)
 							{
 								if (!usedDevices.Contains(dd.inputDevice))
 									continue;
@@ -302,7 +305,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void UpdatePlayerHandleMaps(List<ActionMapInput> maps)
 			{
-				foreach (var deviceData in evr.m_DeviceData)
+				var evrDeviceData = evr.m_DeviceData;
+				foreach (var deviceData in evrDeviceData)
 				{
 					var mainMenu = deviceData.mainMenu;
 					var mainMenuInput = deviceData.mainMenuInput;
@@ -330,7 +334,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				maps.Add(evr.m_DeviceInputModule.trackedObjectInput);
 
-				foreach (var deviceData in evr.m_DeviceData)
+				foreach (var deviceData in evrDeviceData)
 				{
 					foreach (var td in deviceData.toolData)
 					{

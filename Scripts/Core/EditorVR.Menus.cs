@@ -149,7 +149,8 @@ namespace UnityEditor.Experimental.EditorVR
 			internal void UpdateMenuVisibilities()
 			{
 				m_ActiveDeviceData.Clear();
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				var evrRays = evr.m_Rays;
+				evrRays.ForEachProxyDevice((deviceData) =>
 				{
 					m_ActiveDeviceData.Add(deviceData);
 				});
@@ -191,7 +192,7 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 
 				// Apply state to UI visibility
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				evrRays.ForEachProxyDevice((deviceData) =>
 				{
 					var mainMenu = deviceData.mainMenu;
 					mainMenu.visible = deviceData.menuHideFlags[mainMenu] == 0;
@@ -201,7 +202,7 @@ namespace UnityEditor.Experimental.EditorVR
 						customMenu.visible = deviceData.menuHideFlags[customMenu] == 0;
 
 					UpdateAlternateMenuForDevice(deviceData);
-					evr.m_Rays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
+					evrRays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
 				});
 
 				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();

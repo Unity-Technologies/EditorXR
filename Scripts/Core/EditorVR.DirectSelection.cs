@@ -54,7 +54,8 @@ namespace UnityEditor.Experimental.EditorVR
 				m_ActiveStates.Clear();
 
 				var directSelection = objectsGrabber;
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				var evrRays = evr.m_Rays;
+				evrRays.ForEachProxyDevice((deviceData) =>
 				{
 					var rayOrigin = deviceData.rayOrigin;
 					var input = deviceData.directSelectInput;
@@ -100,7 +101,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				// Only activate direct selection input if the cone is inside of an object, so a trigger press can be detected,
 				// and keep it active if we are dragging
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				evrRays.ForEachProxyDevice((deviceData) =>
 				{
 					var input = deviceData.directSelectInput;
 					input.active = m_ActiveStates.Contains(input);
@@ -111,11 +112,12 @@ namespace UnityEditor.Experimental.EditorVR
 
 			GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, ActionMapInput input)
 			{
-				if (evr.m_IntersectionModule)
+				var intersectionModule = evr.m_IntersectionModule;
+				if (intersectionModule)
 				{
 					var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 
-					var renderer = evr.m_IntersectionModule.GetIntersectedObjectForTester(tester);
+					var renderer = intersectionModule.GetIntersectedObjectForTester(tester);
 					if (renderer)
 						return renderer.gameObject;
 				}

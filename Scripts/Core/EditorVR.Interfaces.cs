@@ -130,8 +130,9 @@ namespace UnityEditor.Experimental.EditorVR
 				var locking = obj as IUsesGameObjectLocking;
 				if (locking != null)
 				{
-					locking.setLocked = evr.m_LockModule.SetLocked;
-					locking.isLocked = evr.m_LockModule.IsLocked;
+					var lockModule = evr.m_LockModule;
+					locking.setLocked = lockModule.SetLocked;
+					locking.isLocked = lockModule.IsLocked;
 				}
 
 				var positionPreview = obj as IGetPreviewOrigin;
@@ -167,16 +168,18 @@ namespace UnityEditor.Experimental.EditorVR
 				var grabObjects = obj as IGrabObjects;
 				if (grabObjects != null)
 				{
-					grabObjects.canGrabObject = evr.m_DirectSelection.CanGrabObject;
-					grabObjects.objectGrabbed += evr.m_DirectSelection.OnObjectGrabbed;
-					grabObjects.objectsDropped += evr.m_DirectSelection.OnObjectsDropped;
+					var ds = evr.m_DirectSelection;
+					grabObjects.canGrabObject = ds.CanGrabObject;
+					grabObjects.objectGrabbed += ds.OnObjectGrabbed;
+					grabObjects.objectsDropped += ds.OnObjectsDropped;
 				}
 
 				var spatialHash = obj as IUsesSpatialHash;
 				if (spatialHash != null)
 				{
-					spatialHash.addToSpatialHash = evr.m_SpatialHashModule.AddObject;
-					spatialHash.removeFromSpatialHash = evr.m_SpatialHashModule.RemoveObject;
+					var spatialHashModule = evr.m_SpatialHashModule;
+					spatialHash.addToSpatialHash = spatialHashModule.AddObject;
+					spatialHash.removeFromSpatialHash = spatialHashModule.RemoveObject;
 				}
 
 				var deleteSceneObjects = obj as IDeleteSceneObject;
@@ -248,8 +251,9 @@ namespace UnityEditor.Experimental.EditorVR
 				var selectObject = obj as ISelectObject;
 				if (selectObject != null)
 				{
-					selectObject.getSelectionCandidate = evr.m_SelectionModule.GetSelectionCandidate;
-					selectObject.selectObject = evr.m_SelectionModule.SelectObject;
+					var selectionModule = evr.m_SelectionModule;
+					selectObject.getSelectionCandidate = selectionModule.GetSelectionCandidate;
+					selectObject.selectObject = selectionModule.SelectObject;
 				}
 
 				var manipulatorVisiblity = obj as IManipulatorVisibility;
@@ -295,8 +299,9 @@ namespace UnityEditor.Experimental.EditorVR
 				var grabObjects = obj as IGrabObjects;
 				if (grabObjects != null)
 				{
-					grabObjects.objectGrabbed -= evr.m_DirectSelection.OnObjectGrabbed;
-					grabObjects.objectsDropped -= evr.m_DirectSelection.OnObjectsDropped;
+					var directSelection = evr.m_DirectSelection;
+					grabObjects.objectGrabbed -= directSelection.OnObjectGrabbed;
+					grabObjects.objectsDropped -= directSelection.OnObjectsDropped;
 				}
 
 				var usesProjectFolderData = obj as IUsesProjectFolderData;

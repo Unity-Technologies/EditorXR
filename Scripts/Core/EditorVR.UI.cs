@@ -28,7 +28,8 @@ namespace UnityEditor.Experimental.EditorVR
 				// Create event system, input module, and event camera
 				U.Object.AddComponent<EventSystem>(evr.gameObject);
 
-				evr.m_InputModule = evr.AddModule<MultipleRayInputModule>();
+				var inputModule = evr.AddModule<MultipleRayInputModule>();
+				evr.m_InputModule = inputModule;
 				evr.m_InputModule.getPointerLength = evr.m_DirectSelection.GetPointerLength;
 
 				if (evr.m_CustomPreviewCamera != null)
@@ -36,9 +37,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 				eventCamera = U.Object.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
 				eventCamera.enabled = false;
-				evr.m_InputModule.eventCamera = eventCamera;
+				inputModule.eventCamera = eventCamera;
 
-				evr.m_InputModule.preProcessRaycastSource = evr.m_Rays.PreProcessRaycastSource;
+				inputModule.preProcessRaycastSource = evr.m_Rays.PreProcessRaycastSource;
 			}
 
 			internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
@@ -48,12 +49,13 @@ namespace UnityEditor.Experimental.EditorVR
 				foreach (var canvas in go.GetComponentsInChildren<Canvas>())
 					canvas.worldCamera = eventCamera;
 
+				var keyboardModule = evr.m_KeyboardModule;
 				foreach (var inputField in go.GetComponentsInChildren<InputField>())
 				{
 					if (inputField is NumericInputField)
-						inputField.spawnKeyboard = evr.m_KeyboardModule.SpawnNumericKeyboard;
+						inputField.spawnKeyboard = keyboardModule.SpawnNumericKeyboard;
 					else if (inputField is StandardInputField)
-						inputField.spawnKeyboard = evr.m_KeyboardModule.SpawnAlphaNumericKeyboard;
+						inputField.spawnKeyboard = keyboardModule.SpawnAlphaNumericKeyboard;
 				}
 
 				foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
