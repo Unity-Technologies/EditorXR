@@ -284,7 +284,7 @@ namespace UnityEditor.Experimental.EditorVR
 						{
 							if (deviceData.customMenu == null)
 							{
-								go = evr.InstantiateUI(prefab.gameObject);
+								go = evr.m_UI.InstantiateUI(prefab.gameObject);
 
 								go.transform.SetParent(menuOrigin);
 								go.transform.localPosition = Vector3.zero;

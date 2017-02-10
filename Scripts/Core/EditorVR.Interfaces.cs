@@ -105,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var instantiateUI = obj as IInstantiateUI;
 				if (instantiateUI != null)
-					instantiateUI.instantiateUI = evr.InstantiateUI;
+					instantiateUI.instantiateUI = evr.m_UI.InstantiateUI;
 
 				var createWorkspace = obj as ICreateWorkspace;
 				if (createWorkspace != null)
@@ -254,11 +254,11 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var manipulatorVisiblity = obj as IManipulatorVisibility;
 				if (manipulatorVisiblity != null)
-					evr.m_ManipulatorVisibilities.Add(manipulatorVisiblity);
+					evr.m_UI.manipulatorVisibilities.Add(manipulatorVisiblity);
 
 				var setManipulatorsVisible = obj as ISetManipulatorsVisible;
 				if (setManipulatorsVisible != null)
-					setManipulatorsVisible.setManipulatorsVisible = evr.SetManipulatorsVisible;
+					setManipulatorsVisible.setManipulatorsVisible = evr.m_UI.SetManipulatorsVisible;
 
 				var requestStencilRef = obj as IRequestStencilRef;
 				if (requestStencilRef != null)
@@ -313,7 +313,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var manipulatorVisiblity = obj as IManipulatorVisibility;
 				if (manipulatorVisiblity != null)
-					evr.m_ManipulatorVisibilities.Remove(manipulatorVisiblity);
+					evr.m_UI.manipulatorVisibilities.Remove(manipulatorVisiblity);
 			}
 
 			byte RequestStencilRef()

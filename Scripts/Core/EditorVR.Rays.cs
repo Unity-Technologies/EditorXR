@@ -133,7 +133,7 @@ namespace UnityEditor.Experimental.EditorVR
 								{
 									foreach (var prefab in prefabs)
 									{
-										var go = evr.InstantiateUI(prefab);
+										var go = evr.m_UI.InstantiateUI(prefab);
 										go.transform.SetParent(rayOriginPair.Value, false);
 									}
 								}

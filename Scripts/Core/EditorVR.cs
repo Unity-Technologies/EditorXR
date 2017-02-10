@@ -59,6 +59,7 @@ namespace UnityEditor.Experimental.EditorVR
 		MiniWorlds m_MiniWorlds;
 		Rays m_Rays;
 		Tools m_Tools;
+		UI m_UI;
 
 		event Action m_SelectionChanged;
 
@@ -107,6 +108,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_MiniWorlds = new MiniWorlds();
 			m_Rays = new Rays();
 			m_Tools = new Tools();
+			m_UI = new UI();
 
 			m_HierarchyModule = AddModule<HierarchyModule>();			
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
@@ -133,12 +135,12 @@ namespace UnityEditor.Experimental.EditorVR
 			VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
 
 			m_DeviceInputModule = AddModule<DeviceInputModule>();
-
 			m_DeviceInputModule.InitializePlayerHandle();
 			m_DeviceInputModule.CreateDefaultActionMapInputs();
 			m_DeviceInputModule.processInput = ProcessInput;
 			m_DeviceInputModule.updatePlayerHandleMaps = m_Tools.UpdatePlayerHandleMaps;
-			InitializeInputModule();
+
+			m_UI.Initialize();
 
 			m_KeyboardModule = AddModule<KeyboardModule>();
 
@@ -279,7 +281,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				m_Rays.ForEachProxyDevice((deviceData) =>
 				{
-					m_PixelRaycastModule.UpdateRaycast(deviceData.rayOrigin, m_EventCamera);
+					m_PixelRaycastModule.UpdateRaycast(deviceData.rayOrigin, m_UI.eventCamera);
 				});
 
 #if ENABLE_MINIWORLD_RAY_SELECTION
@@ -334,7 +336,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_Menus.UpdateMenuVisibilityNearWorkspaces();
 			m_Menus.UpdateMenuVisibilities();
 
-			UpdateManipulatorVisibilites();
+			m_UI.UpdateManipulatorVisibilites();
 		}
 
 		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
@@ -406,12 +408,6 @@ namespace UnityEditor.Experimental.EditorVR
 			return transform;
 		}
 
-		void AddPlayerModel()
-		{
-			var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
-			m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
-		}
-
 #if UNITY_EDITOR
 		static EditorVR s_Instance;
 		static InputManager s_InputManager;
@@ -452,13 +448,13 @@ namespace UnityEditor.Experimental.EditorVR
 				TagManager.AddLayer(layer);
 		}
 
-		private static void OnEVREnabled()
+		static void OnEVREnabled()
 		{
 			InitializeInputManager();
 			s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
 		}
 
-		private static void InitializeInputManager()
+		static void InitializeInputManager()
 		{
 			// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
 			// in edit mode we need to handle lifecycle explicitly

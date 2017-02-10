@@ -13,6 +13,12 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		const float kViewerPivotTransitionTime = 0.75f;
 
+		void AddPlayerModel()
+		{
+			var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
+			m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
+		}
+
 		bool IsOverShoulder(Transform rayOrigin)
 		{
 			var radius = m_DirectSelection.GetPointerLength(rayOrigin);

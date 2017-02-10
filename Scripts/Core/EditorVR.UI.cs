@@ -14,64 +14,69 @@ namespace UnityEditor.Experimental.EditorVR
 		[SerializeField]
 		Camera m_EventCameraPrefab;
 
-		readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
-		readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
-
-		Camera m_EventCamera;
-
-		void InitializeInputModule()
+		class UI : Nested
 		{
-			// Create event system, input module, and event camera
-			U.Object.AddComponent<EventSystem>(gameObject);
+			internal List<IManipulatorVisibility> manipulatorVisibilities { get { return m_ManipulatorVisibilities; } }
+			readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
 
-			m_InputModule = AddModule<MultipleRayInputModule>();
-			m_InputModule.getPointerLength = m_DirectSelection.GetPointerLength;
+			readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
 
-			if (m_CustomPreviewCamera != null)
-				m_InputModule.layerMask |= m_CustomPreviewCamera.hmdOnlyLayerMask;
+			internal Camera eventCamera { get; private set; }
 
-			m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
-			m_EventCamera.enabled = false;
-			m_InputModule.eventCamera = m_EventCamera;
-
-			m_InputModule.preProcessRaycastSource = m_Rays.PreProcessRaycastSource;
-		}
-
-		GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
-		{
-			var go = U.Object.Instantiate(prefab);
-			go.transform.SetParent(parent ? parent : transform, worldPositionStays);
-			foreach (var canvas in go.GetComponentsInChildren<Canvas>())
-				canvas.worldCamera = m_EventCamera;
-
-			foreach (var inputField in go.GetComponentsInChildren<InputField>())
+			internal void Initialize()
 			{
-				if (inputField is NumericInputField)
-					inputField.spawnKeyboard = m_KeyboardModule.SpawnNumericKeyboard;
-				else if (inputField is StandardInputField)
-					inputField.spawnKeyboard = m_KeyboardModule.SpawnAlphaNumericKeyboard;
+				// Create event system, input module, and event camera
+				U.Object.AddComponent<EventSystem>(evr.gameObject);
+
+				evr.m_InputModule = evr.AddModule<MultipleRayInputModule>();
+				evr.m_InputModule.getPointerLength = evr.m_DirectSelection.GetPointerLength;
+
+				if (evr.m_CustomPreviewCamera != null)
+					evr.m_InputModule.layerMask |= evr.m_CustomPreviewCamera.hmdOnlyLayerMask;
+
+				eventCamera = U.Object.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
+				eventCamera.enabled = false;
+				evr.m_InputModule.eventCamera = eventCamera;
+
+				evr.m_InputModule.preProcessRaycastSource = evr.m_Rays.PreProcessRaycastSource;
 			}
 
-			foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
-				m_Interfaces.ConnectInterfaces(mb);
+			internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
+			{
+				var go = U.Object.Instantiate(prefab);
+				go.transform.SetParent(parent ? parent : evr.transform, worldPositionStays);
+				foreach (var canvas in go.GetComponentsInChildren<Canvas>())
+					canvas.worldCamera = eventCamera;
 
-			return go;
-		}
+				foreach (var inputField in go.GetComponentsInChildren<InputField>())
+				{
+					if (inputField is NumericInputField)
+						inputField.spawnKeyboard = evr.m_KeyboardModule.SpawnNumericKeyboard;
+					else if (inputField is StandardInputField)
+						inputField.spawnKeyboard = evr.m_KeyboardModule.SpawnAlphaNumericKeyboard;
+				}
 
-		void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
-		{
-			if (visible)
-				m_ManipulatorsHiddenRequests.Remove(setter);
-			else
-				m_ManipulatorsHiddenRequests.Add(setter);
-		}
+				foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
+					evr.m_Interfaces.ConnectInterfaces(mb);
 
-		void UpdateManipulatorVisibilites()
-		{
-			var manipulatorsVisible = m_ManipulatorsHiddenRequests.Count == 0;
-			foreach (var mv in m_ManipulatorVisibilities)
-				mv.manipulatorVisible = manipulatorsVisible;
-		}
+				return go;
+			}
+
+			internal void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
+			{
+				if (visible)
+					m_ManipulatorsHiddenRequests.Remove(setter);
+				else
+					m_ManipulatorsHiddenRequests.Add(setter);
+			}
+
+			internal void UpdateManipulatorVisibilites()
+			{
+				var manipulatorsVisible = m_ManipulatorsHiddenRequests.Count == 0;
+				foreach (var mv in m_ManipulatorVisibilities)
+					mv.manipulatorVisible = manipulatorsVisible;
+			}
+		}  
 	}
 }
 #endif
