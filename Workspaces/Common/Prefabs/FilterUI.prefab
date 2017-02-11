@@ -862,7 +862,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_TooltipText: Fiter by Type
+  m_TooltipText: Filter by Type
   m_TooltipTarget: {fileID: 224000010242275708}
   m_TooltipSource: {fileID: 224000013754521624}
   m_TooltipAlignment: 1
@@ -939,7 +939,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_TooltipText: Fiter by Type
+  m_TooltipText: Filter by Type
   m_TooltipTarget: {fileID: 224000013475752790}
   m_TooltipSource: {fileID: 224000011829119632}
   m_TooltipAlignment: 1
