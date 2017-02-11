@@ -90,19 +90,23 @@ public class TooltipModule : MonoBehaviour, IUsesViewerPivot
 		tooltipTransform.localScale = m_TooltipScale * lerp * viewerPivot.localScale.x;
 
 		// Adjust for alignment
-		var rectTransform = tooltipUI.GetComponent<RectTransform>();
 		var offset = Vector3.zero;
+		switch (tooltip.tooltipAlignment)
+		{
+			case TextAlignment.Right:
+				offset = Vector3.left;
+				break;
+			case TextAlignment.Left:
+				offset = Vector3.right;
+				break;
+		}
+
+		var rectTransform = tooltipUI.GetComponent<RectTransform>();
 		var rect = rectTransform.rect;
 		var halfWidth = rect.width * 0.5f;
 		var halfHeight = rect.height * 0.5f;
-		switch (tooltip.tooltipAlignment) {
-			case TextAlignment.Left:
-				offset = Vector3.left * halfWidth * rectTransform.lossyScale.x;
-				break;
-			case TextAlignment.Right:
-				offset = Vector3.right * halfWidth * rectTransform.lossyScale.x;
-				break;
-		}
+		
+		offset *= halfWidth * rectTransform.lossyScale.x;
 
 		U.Math.SetTransformOffset(target, tooltipTransform, offset * lerp, Quaternion.identity);
 

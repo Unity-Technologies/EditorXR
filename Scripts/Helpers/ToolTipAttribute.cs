@@ -7,7 +7,7 @@ namespace UnityEngine.Experimental.EditorVR
 	/// </summary>
 	public class TooltipAttribute : Attribute
 	{
-		public string text;
+		internal string text { get; private set; }
 
 		public TooltipAttribute(string text)
 		{

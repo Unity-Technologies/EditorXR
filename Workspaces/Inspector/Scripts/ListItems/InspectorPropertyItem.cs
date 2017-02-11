@@ -18,7 +18,7 @@ public abstract class InspectorPropertyItem : InspectorListItem, ITooltip, IUses
 	[SerializeField]
 	Transform m_TooltipSource;
 
-	public TextAlignment tooltipAlignment { get { return TextAlignment.Left; } }
+	public TextAlignment tooltipAlignment { get { return TextAlignment.Right; } }
 
 	public Action<ITooltip> showTooltip { get; set; }
 	public Action<ITooltip> hideTooltip { get; set; }

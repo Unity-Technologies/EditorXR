@@ -202,7 +202,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_TooltipTarget.localEulerAngles = new Vector3(90f, angle, 0f);
 
 			var yaw = transform.localRotation.eulerAngles.y;
-			tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Left : TextAlignment.Right;
+			tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
 		}
 
 		IEnumerator AnimateShow()

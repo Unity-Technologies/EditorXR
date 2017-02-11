@@ -20,6 +20,9 @@
 		/// </summary>
 		Transform tooltipSource { get; }
 
+		/// <summary>
+		/// Whether to align the left side, right side, or center of the tooltip to the target
+		/// </summary>
 		TextAlignment tooltipAlignment { get; }
 	}
 }
