@@ -10,7 +10,7 @@ Material:
   m_Shader: {fileID: 4800000, guid: 2b814cc4ce6814742966b08560698276, type: 3}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
   m_LightmapFlags: 1
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: -1
   stringTagMap:
     RenderType: Transparent
   m_SavedProperties:
