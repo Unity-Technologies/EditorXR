@@ -30,7 +30,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 
 	bool SetObject(Object obj)
 	{
-		if (!TestAssignability(obj))
+		if (!IsAssignable(obj))
 			return false;
 
 		if (obj == null && m_SerializedProperty.objectReferenceValue == null)
@@ -41,12 +41,9 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 
 		UpdateVisuals(obj);
 
-		blockUndoPostProcess();
-		Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 		m_SerializedProperty.objectReferenceValue = obj;
 
-		data.serializedObject.ApplyModifiedProperties();
+		FinalizeModifications();
 
 		return true;
 	}
@@ -56,7 +53,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		SetObject(null);
 	}
 
-	bool TestAssignability(Object obj)
+	bool IsAssignable(Object obj)
 	{
 		return obj == null || obj.GetType().IsAssignableFrom(m_ObjectType);
 	}
@@ -69,7 +66,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 			return;
 		}
 
-		if (!TestAssignability(obj))
+		if (!IsAssignable(obj))
 		{
 			m_FieldLabel.text = "Type Mismatch";
 			return;
@@ -86,7 +83,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
 		var obj = dropObject as Object;
-		return obj != null && TestAssignability(obj);
+		return obj != null && IsAssignable(obj);
 	}
 
 	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)

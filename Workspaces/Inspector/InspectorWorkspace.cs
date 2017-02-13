@@ -68,6 +68,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 			OnSelectionChanged();
 
 		Undo.postprocessModifications += PostprocessModifications;
+		Undo.undoRedoPerformed += UpdateCurrentObject;
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -168,10 +169,15 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 			return modifications;
 		}
 
-		if(m_SelectedObject)
-			UpdateInspectorData(m_SelectedObject);
+		UpdateCurrentObject();
 
 		return modifications;
+	}
+
+	void UpdateCurrentObject()
+	{
+		if (m_SelectedObject)
+			UpdateInspectorData(m_SelectedObject);
 	}
 
 	PropertyData SerializedPropertyToPropertyData(SerializedProperty property, SerializedObject obj)
@@ -321,6 +327,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 	protected override void OnDestroy()
 	{
 		Undo.postprocessModifications -= PostprocessModifications;
+		Undo.undoRedoPerformed -= UpdateCurrentObject;
 		base.OnDestroy();
 	}
 #else

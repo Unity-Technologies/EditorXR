@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.UI;
@@ -37,8 +36,22 @@ public class InspectorBoundsItem : InspectorPropertyItem
 		for (var i = 0; i < m_CenterFields.Length; i++)
 		{
 			var index = i;
-			m_CenterFields[i].onValueChanged.AddListener(value => SetValue(value, index, true));
-			m_ExtentsFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+			m_CenterFields[i].onValueChanged.AddListener(value =>
+			{
+				if (SetValue(value, index, true))
+				{
+					blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
+					data.serializedObject.ApplyModifiedProperties();
+				}
+			});
+			m_ExtentsFields[i].onValueChanged.AddListener(value =>
+			{
+				if (SetValue(value, index))
+				{
+					blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
+					data.serializedObject.ApplyModifiedProperties();
+				}
+			});
 		}
 	}
 
@@ -53,9 +66,6 @@ public class InspectorBoundsItem : InspectorPropertyItem
 
 		if (!Mathf.Approximately(vector[index], value))
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			vector[index] = value;
 			if (center)
 				bounds.center = vector;
@@ -65,7 +75,6 @@ public class InspectorBoundsItem : InspectorPropertyItem
 			UpdateInputFields(bounds);
 
 			m_SerializedProperty.boundsValue = bounds;
-			data.serializedObject.ApplyModifiedProperties();
 
 			return true;
 		}
@@ -109,6 +118,8 @@ public class InspectorBoundsItem : InspectorPropertyItem
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
+
+				FinalizeModifications();
 			}
 
 			index = Array.IndexOf(m_CenterFields, inputField);
@@ -116,19 +127,18 @@ public class InspectorBoundsItem : InspectorPropertyItem
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
+
+				FinalizeModifications();
 			}
 		}
 
 		if (dropObject is Bounds)
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			m_SerializedProperty.boundsValue = (Bounds)dropObject;
 
 			UpdateInputFields(m_SerializedProperty.boundsValue);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 	}
 #endif

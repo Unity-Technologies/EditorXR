@@ -16,7 +16,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 #if UNITY_EDITOR
 	public SerializedPropertyType propertyType { get; private set; }
-	public event Action<PropertyData> arraySizeChanged = delegate {};
+	public event Action<PropertyData> arraySizeChanged;
 
 	public override void Setup(InspectorData data)
 	{
@@ -44,8 +44,16 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 	public void SetValue(string input)
 	{
-		blockUndoPostProcess();
-		Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
+		// Do not increment undo group because NumericInputField does it for us
+		if (SetValueIfPossible(input))
+		{
+			blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
+			data.serializedObject.ApplyModifiedProperties();
+		}
+	}
+
+	bool SetValueIfPossible(string input)
+	{
 		switch (m_SerializedProperty.propertyType)
 		{
 			case SerializedPropertyType.ArraySize:
@@ -56,9 +64,10 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 					m_InputField.text = size.ToString();
 					m_InputField.ForceUpdateLabel();
-					arraySizeChanged((PropertyData)data);
+					if (arraySizeChanged != null)
+						arraySizeChanged((PropertyData)data);
 
-					data.serializedObject.ApplyModifiedProperties();
+					return true;
 				}
 				break;
 			case SerializedPropertyType.Integer:
@@ -70,7 +79,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 					m_InputField.text = i.ToString();
 					m_InputField.ForceUpdateLabel();
 
-					data.serializedObject.ApplyModifiedProperties();
+					return true;
 				}
 				break;
 			case SerializedPropertyType.Float:
@@ -82,10 +91,12 @@ public class InspectorNumberItem : InspectorPropertyItem
 					m_InputField.text = f.ToString();
 					m_InputField.ForceUpdateLabel();
 
-					data.serializedObject.ApplyModifiedProperties();
+					return true;
 				}
 				break;
 		}
+
+		return false;
 	}
 
 	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -100,7 +111,8 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		SetValue(dropObject.ToString());
+		if (SetValueIfPossible(dropObject.ToString()))
+			FinalizeModifications();
 	}
 
 	protected override void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
@@ -148,10 +160,12 @@ public class InspectorNumberItem : InspectorPropertyItem
 		{
 			case SerializedPropertyType.ArraySize:
 			case SerializedPropertyType.Integer:
-				SetValue((m_SerializedProperty.intValue + 1).ToString());
+				if (SetValueIfPossible((m_SerializedProperty.intValue + 1).ToString()))
+					FinalizeModifications();
 				break;
 			case SerializedPropertyType.Float:
-				SetValue((m_SerializedProperty.floatValue + 1).ToString());
+				if (SetValueIfPossible((m_SerializedProperty.floatValue + 1).ToString()))
+					FinalizeModifications();
 				break;
 		}
 	}
@@ -162,10 +176,12 @@ public class InspectorNumberItem : InspectorPropertyItem
 		{
 			case SerializedPropertyType.ArraySize:
 			case SerializedPropertyType.Integer:
-				SetValue((m_SerializedProperty.intValue - 1).ToString());
+				if (SetValueIfPossible((m_SerializedProperty.intValue - 1).ToString()))
+					FinalizeModifications();
 				break;
 			case SerializedPropertyType.Float:
-				SetValue((m_SerializedProperty.floatValue - 1).ToString());
+				if (SetValueIfPossible((m_SerializedProperty.floatValue - 1).ToString()))
+					FinalizeModifications();
 				break;
 		}
 	}

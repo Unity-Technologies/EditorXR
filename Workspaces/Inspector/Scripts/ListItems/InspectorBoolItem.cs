@@ -1,5 +1,4 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.UI;
 
@@ -27,11 +26,9 @@ public class InspectorBoolItem : InspectorPropertyItem
 	{
 		if (m_SerializedProperty.boolValue != value)
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			m_SerializedProperty.boolValue = value;
-			data.serializedObject.ApplyModifiedProperties();
+
+			FinalizeModifications();
 		}
 	}
 #endif

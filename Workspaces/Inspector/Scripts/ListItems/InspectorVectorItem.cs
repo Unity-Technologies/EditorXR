@@ -67,7 +67,14 @@ public class InspectorVectorItem : InspectorPropertyItem
 		for (var i = 0; i < m_InputFields.Length; i++)
 		{
 			var index = i;
-			m_InputFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+			m_InputFields[i].onValueChanged.AddListener(value =>
+			{
+				if (SetValue(value, index))
+				{
+					blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
+					data.serializedObject.ApplyModifiedProperties();
+				}
+			});
 		}
 	}
 
@@ -75,9 +82,6 @@ public class InspectorVectorItem : InspectorPropertyItem
 	{
 		float value;
 		if (!float.TryParse(input, out value)) return false;
-
-		blockUndoPostProcess();
-		Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
 
 		switch (m_SerializedProperty.propertyType)
 		{
@@ -88,6 +92,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 					vector2[index] = value;
 					m_SerializedProperty.vector2Value = vector2;
 					UpdateInputFields(2, vector2);
+					return true;
 				}
 				break;
 			case SerializedPropertyType.Vector3:
@@ -97,6 +102,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 					vector3[index] = value;
 					m_SerializedProperty.vector3Value = vector3;
 					UpdateInputFields(3, vector3);
+					return true;
 				}
 				break;
 			case SerializedPropertyType.Vector4:
@@ -106,6 +112,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 					vector4[index] = value;
 					m_SerializedProperty.vector4Value = vector4;
 					UpdateInputFields(4, vector4);
+					return true;
 				}
 				break;
 			case SerializedPropertyType.Quaternion:
@@ -115,13 +122,12 @@ public class InspectorVectorItem : InspectorPropertyItem
 					euler[index] = value;
 					m_SerializedProperty.quaternionValue = Quaternion.Euler(euler);
 					UpdateInputFields(3, euler);
+					return true;
 				}
 				break;
 		}
 
-		data.serializedObject.ApplyModifiedProperties();
-
-		return true;
+		return false;
 	}
 
 	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -170,14 +176,12 @@ public class InspectorVectorItem : InspectorPropertyItem
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
+				FinalizeModifications();
 			}
 		}
 
 		if (dropObject is Vector2)
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			var vector2 = (Vector2) dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
@@ -205,14 +209,11 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 			UpdateInputFields(2, vector2);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 
 		if (dropObject is Vector3)
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			var vector3 = (Vector3)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
@@ -234,14 +235,11 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 			UpdateInputFields(3, vector3);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 
 		if (dropObject is Vector4)
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			var vector4 = (Vector4)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
@@ -261,14 +259,11 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 			UpdateInputFields(4, vector4);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 
 		if (dropObject is Color)
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			var color = (Color)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
@@ -295,14 +290,11 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 			UpdateInputFields(4, color);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 
 		if (dropObject is Quaternion)
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			var quaternion = (Quaternion)dropObject;
 			switch (m_SerializedProperty.propertyType)
 			{
@@ -322,7 +314,7 @@ public class InspectorVectorItem : InspectorPropertyItem
 
 			UpdateInputFields(3, quaternion.eulerAngles);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 	}
 #endif

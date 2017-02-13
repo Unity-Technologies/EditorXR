@@ -24,14 +24,20 @@ public class InspectorStringItem : InspectorPropertyItem
 				break;
 		}
 
-		SetValue(val);
+		m_InputField.text = val;
+		m_InputField.ForceUpdateLabel();
 	}
 
 	public void SetValue(string input)
 	{
-		blockUndoPostProcess();
-		Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
+		if (SetValueIfPossible(input))
+		{
+			blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
+			data.serializedObject.ApplyModifiedProperties();
+		}
+	}
+	bool SetValueIfPossible(string input)
+	{
 		switch (m_SerializedProperty.propertyType)
 		{
 			case SerializedPropertyType.String:
@@ -42,7 +48,7 @@ public class InspectorStringItem : InspectorPropertyItem
 					m_InputField.text = input;
 					m_InputField.ForceUpdateLabel();
 
-					data.serializedObject.ApplyModifiedProperties();
+					return true;
 				}
 				break;
 			case SerializedPropertyType.Character:
@@ -54,10 +60,12 @@ public class InspectorStringItem : InspectorPropertyItem
 					m_InputField.text = input;
 					m_InputField.ForceUpdateLabel();
 
-					data.serializedObject.ApplyModifiedProperties();
+					return true;
 				}
 				break;
 		}
+
+		return false;
 	}
 
 	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -72,7 +80,8 @@ public class InspectorStringItem : InspectorPropertyItem
 
 	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		SetValue(dropObject.ToString());
+		if (SetValueIfPossible(dropObject.ToString()))
+			FinalizeModifications();
 	}
 #endif
 }

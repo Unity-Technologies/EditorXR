@@ -60,8 +60,6 @@ public class InspectorDropDownItem : InspectorPropertyItem
 
 	void ValueChanged(int clicked, int[] values)
 	{
-		blockUndoPostProcess();
-		Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
 		if (m_SerializedProperty.propertyType == SerializedPropertyType.LayerMask)
 		{
 			if (clicked == 0) // Clicked "Nothing"
@@ -72,7 +70,8 @@ public class InspectorDropDownItem : InspectorPropertyItem
 				if (m_SerializedProperty.intValue == 0)
 					return;
 				m_SerializedProperty.intValue = 0;
-				data.serializedObject.ApplyModifiedProperties();
+
+				FinalizeModifications();
 			}
 			else if (clicked == 1)  // Clicked "Everything"
 			{
@@ -82,7 +81,8 @@ public class InspectorDropDownItem : InspectorPropertyItem
 				if (m_SerializedProperty.intValue == ~0)
 					return;
 				m_SerializedProperty.intValue = ~0;
-				data.serializedObject.ApplyModifiedProperties();
+
+				FinalizeModifications();
 			}
 			else
 			{
@@ -98,7 +98,8 @@ public class InspectorDropDownItem : InspectorPropertyItem
 				if (m_SerializedProperty.intValue != layerMask)
 				{
 					m_SerializedProperty.intValue = layerMask;
-					data.serializedObject.ApplyModifiedProperties();
+
+					FinalizeModifications();
 				}
 			}
 		}
@@ -107,7 +108,8 @@ public class InspectorDropDownItem : InspectorPropertyItem
 			if (m_SerializedProperty.enumValueIndex != values[0])
 			{
 				m_SerializedProperty.enumValueIndex = values[0];
-				data.serializedObject.ApplyModifiedProperties();
+
+				FinalizeModifications();
 			}
 		}
 	}
@@ -116,7 +118,10 @@ public class InspectorDropDownItem : InspectorPropertyItem
 	{
 		var values = new int[InternalEditorUtility.layers.Length + 1];
 		for (var i = 0; i < values.Length; i++)
+		{
 			values[i] = i + 1;
+		}
+
 		return values;
 	}
 

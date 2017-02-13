@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.UI;
@@ -30,7 +29,14 @@ public class InspectorColorItem : InspectorPropertyItem
 		for (var i = 0; i < m_InputFields.Length; i++)
 		{
 			var index = i;
-			m_InputFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+			m_InputFields[i].onValueChanged.AddListener(value =>
+			{
+				if (SetValue(value, index))
+				{
+					blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
+					data.serializedObject.ApplyModifiedProperties();
+				}
+			});
 		}
 	}
 
@@ -43,15 +49,10 @@ public class InspectorColorItem : InspectorPropertyItem
 		var color = m_SerializedProperty.colorValue;
 		if (!Mathf.Approximately(color[index], value))
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			color[index] = value;
 			m_SerializedProperty.colorValue = color;
 
 			UpdateInputFields(color);
-
-			data.serializedObject.ApplyModifiedProperties();
 
 			return true;
 		}
@@ -90,19 +91,18 @@ public class InspectorColorItem : InspectorPropertyItem
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
+
+				FinalizeModifications();
 			}
 		}
 
 		if (dropObject is Color)
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			m_SerializedProperty.colorValue = (Color)dropObject;
 
 			UpdateInputFields(m_SerializedProperty.colorValue);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 
 		var color = m_SerializedProperty.colorValue;
@@ -115,7 +115,7 @@ public class InspectorColorItem : InspectorPropertyItem
 
 			UpdateInputFields(color);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 
 		if (dropObject is Vector3)
@@ -128,7 +128,7 @@ public class InspectorColorItem : InspectorPropertyItem
 
 			UpdateInputFields(color);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 
 		if (dropObject is Vector4)
@@ -142,7 +142,7 @@ public class InspectorColorItem : InspectorPropertyItem
 
 			UpdateInputFields(color);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 	}
 #endif

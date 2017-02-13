@@ -19,5 +19,12 @@ public abstract class InspectorPropertyItem : InspectorListItem
 
 		m_Label.text = m_SerializedProperty.displayName;
 	}
+
+	protected void FinalizeModifications()
+	{
+		blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
+		Undo.IncrementCurrentGroup();
+		data.serializedObject.ApplyModifiedProperties();
+	}
 #endif
 }

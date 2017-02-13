@@ -39,8 +39,22 @@ public class InspectorRectItem : InspectorPropertyItem
 		for (var i = 0; i < m_CenterFields.Length; i++)
 		{
 			var index = i;
-			m_CenterFields[i].onValueChanged.AddListener(value => SetValue(value, index, true));
-			m_SizeFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+			m_CenterFields[i].onValueChanged.AddListener(value =>
+			{
+				if (SetValue(value, index, true))
+				{
+					blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
+					data.serializedObject.ApplyModifiedProperties();
+				}
+			});
+			m_SizeFields[i].onValueChanged.AddListener(value =>
+			{
+				if (SetValue(value, index))
+				{
+					blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
+					data.serializedObject.ApplyModifiedProperties();
+				}
+			});
 		}
 	}
 
@@ -55,9 +69,6 @@ public class InspectorRectItem : InspectorPropertyItem
 
 		if (!Mathf.Approximately(vector[index], value))
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			vector[index] = value;
 			if (center)
 				rect.center = vector;
@@ -67,10 +78,10 @@ public class InspectorRectItem : InspectorPropertyItem
 			UpdateInputFields(rect);
 
 			m_SerializedProperty.rectValue = rect;
-			data.serializedObject.ApplyModifiedProperties();
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 
 	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -109,6 +120,8 @@ public class InspectorRectItem : InspectorPropertyItem
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
+
+				FinalizeModifications();
 			}
 
 			index = Array.IndexOf(m_CenterFields, inputField);
@@ -116,26 +129,22 @@ public class InspectorRectItem : InspectorPropertyItem
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
+
+				FinalizeModifications();
 			}
 		}
 
 		if (dropObject is Rect)
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			m_SerializedProperty.rectValue = (Rect)dropObject;
 
 			UpdateInputFields(m_SerializedProperty.rectValue);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 
 		if (dropObject is Vector2 || dropObject is Vector3 || dropObject is Vector4)
 		{
-			blockUndoPostProcess();
-			Undo.RecordObject(data.serializedObject.targetObject, "EditorVR Inspector");
-
 			var vector2 = (Vector2)dropObject;
 			var inputField = fieldBlock.GetComponentInChildren<NumericInputField>();
 			var rect = m_SerializedProperty.rectValue;
@@ -149,7 +158,7 @@ public class InspectorRectItem : InspectorPropertyItem
 
 			UpdateInputFields(rect);
 
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 		}
 	}
 #endif
