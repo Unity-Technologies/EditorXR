@@ -89,6 +89,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		Vector3 m_IconPressedLocalPosition;
 		float m_IconLookForwardOffset = 0.5f;
 		Vector3 m_IconLookDirection;
+		Material m_FrameMaterial;
 
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
