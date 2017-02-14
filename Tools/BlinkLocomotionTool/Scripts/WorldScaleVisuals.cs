@@ -56,6 +56,16 @@ public class WorldScaleVisuals : MonoBehaviour
 
 		var camera = U.Camera.GetMainCamera().transform;
 		var leftToRight = leftHand.position - rightHand.position;
+
+		// If hands reverse, switch hands
+		if (Vector3.Dot(leftToRight, camera.right) > 0)
+		{
+			leftToRight *= -1;
+			var tmp = leftHand;
+			leftHand = rightHand;
+			rightHand = tmp;
+		}
+
 		transform.position = rightHand.position + leftToRight * 0.5f;
 		transform.rotation = Quaternion.LookRotation(leftToRight, camera.position - transform.position);
 
