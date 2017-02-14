@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a48d40931c82f46bd2f205d94c7e22, type: 3}
+  m_Name: WorldScaleIcons
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_Icons:
+  - {fileID: 21300000, guid: 867c135a734544a44a81779809c03900, type: 3}
+  - {fileID: 21300000, guid: b2952d277834cae448823411737797e2, type: 3}
+  - {fileID: 21300000, guid: 7838a6422b7749f46a20595a9c275aff, type: 3}
+  - {fileID: 21300000, guid: 4e0de21615209344389544b59a5e5650, type: 3}
+  - {fileID: 21300000, guid: e3c74a4db32e344449a9005242f5bcff, type: 3}
+  - {fileID: 21300000, guid: 82ff125236b5d6847a8b89ee7a54126f, type: 3}

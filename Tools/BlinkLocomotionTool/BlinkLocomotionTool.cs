@@ -20,6 +20,9 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	const float kMoveThresholdVive = 0.8f;
 	const float kRotationThresholdVive = 0.8f;
 
+	const float kMinScale = 0.01f;
+	const float kMaxScale = 1000f;
+
 	private enum State
 	{
 		Inactive = 0,
@@ -28,6 +31,11 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	[SerializeField]
 	private GameObject m_BlinkVisualsPrefab;
+
+	[SerializeField]
+	GameObject m_WorldScaleVisualsPrefab;
+
+	WorldScaleVisuals m_WorldScaleVisuals;
 
 	// It doesn't make sense to be able to activate another blink tool when you already have one active, since you can't
 	// blink to two locations at the same time;
@@ -60,6 +68,10 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	public List<ILinkedTool> otherTools { get { return m_OtherTools; } }
 	readonly List<ILinkedTool> m_OtherTools = new List<ILinkedTool>();
 
+	Camera m_MainCamera;
+	float m_OriginalNearClipPlane;
+	float m_OriginalFarClipPlane;
+
 	public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
 	public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
 	public Func<Transform, object, bool> lockRay { private get; set; }
@@ -81,6 +93,10 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		m_BlinkVisualsGO.transform.parent = rayOrigin;
 		m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
 		m_BlinkVisualsGO.transform.localRotation = Quaternion.identity;
+
+		m_MainCamera = U.Camera.GetMainCamera();
+		m_OriginalNearClipPlane = m_MainCamera.nearClipPlane;
+		m_OriginalFarClipPlane = m_MainCamera.farClipPlane;
 	}
 
 	private void OnDisable()
@@ -124,7 +140,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 							consumeControl(blinkTool.m_Grip);
 
 							var thisPosition = viewerPivot.InverseTransformPoint(rayOrigin.position);
-							var otherPosition = viewerPivot.InverseTransformPoint(blinkTool.rayOrigin.position);
+							var otherRayOrigin = blinkTool.rayOrigin;
+							var otherPosition = viewerPivot.InverseTransformPoint(otherRayOrigin.position);
 							var distance = Vector3.Distance(thisPosition, otherPosition);
 
 							var rayToRay = otherPosition - thisPosition;
@@ -145,6 +162,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 								m_EnableJoystick = false;
 								blinkTool.m_EnableJoystick = false;
+
+								CreateWorldScaleVisuals(rayOrigin, otherRayOrigin);
 							}
 
 							m_Scaling = true;
@@ -155,14 +174,23 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 							{
 								m_AllowScaling = false;
 
-								rayToRay = blinkTool.rayOrigin.position - rayOrigin.position;
+								rayToRay = otherRayOrigin.position - rayOrigin.position;
 								midPoint = rayOrigin.position + rayToRay * 0.5f;
 								var currOffset = midPoint - viewerPivot.position;
 								viewerPivot.localScale = Vector3.one;
 								viewerPivot.position = midPoint - currOffset / currentScale;
 								consumeControl(m_Thumb);
 								consumeControl(blinkTool.m_Thumb);
+
+								if (m_WorldScaleVisuals)
+									U.Object.Destroy(m_WorldScaleVisuals.gameObject);
 							}
+
+							if (currentScale < kMinScale)
+								currentScale = kMinScale;
+
+							if (currentScale > kMaxScale)
+								currentScale = kMaxScale;
 
 							if (m_AllowScaling)
 							{
@@ -174,6 +202,9 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 								viewerPivot.position = m_StartPosition + m_StartMidPoint - midPoint;
 								viewerPivot.localScale = Vector3.one * currentScale;
 								viewerPivot.rotation = currentRotation;
+
+								m_MainCamera.nearClipPlane = m_OriginalNearClipPlane * currentScale;
+								m_MainCamera.farClipPlane = m_OriginalFarClipPlane * currentScale;
 							}
 							break;
 						}
@@ -263,6 +294,16 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		}
 	}
 
+	void CreateWorldScaleVisuals(Transform leftHand, Transform rightHand)
+	{
+		m_WorldScaleVisuals = U.Object.Instantiate(m_WorldScaleVisualsPrefab, viewerPivot, false)
+			.GetComponent<WorldScaleVisuals>();
+		m_WorldScaleVisuals.leftHand = leftHand;
+		m_WorldScaleVisuals.rightHand = rightHand;
+		m_WorldScaleVisuals.viewerPivot = viewerPivot;
+		m_WorldScaleVisuals.SetPosition();
+	}
+
 	void CancelScale()
 	{
 		m_AllowScaling = true;
@@ -276,6 +317,9 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 				((BlinkLocomotionTool) linkedTool).m_EnableJoystick = true;
 			}
 		}
+
+		if (m_WorldScaleVisuals)
+			U.Object.Destroy(m_WorldScaleVisuals.gameObject);
 	}
 
 	private IEnumerator MoveTowardTarget(Vector3 targetPosition)
