@@ -8,7 +8,7 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		public override void Awake()
 		{
 			base.Awake();
-			transform.position = U.Camera.GetViewerPivot().position; // Reference position should be the viewer pivot, so remove any offsets
+			transform.position = U.Camera.GetCameraRig().position; // Reference position should be the camera rig root, so remove any offsets
 			m_InputToEvents = U.Object.AddComponent<SixenseInputToEvents>(gameObject);
 		}
 	}

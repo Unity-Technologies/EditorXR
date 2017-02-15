@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class Viewer : Nested
 		{
-			const float kViewerPivotTransitionTime = 0.75f;
+			const float kCameraRigTransitionTime = 0.75f;
 
 			internal void AddPlayerModel()
 			{
@@ -29,9 +29,9 @@ namespace UnityEditor.Experimental.EditorVR
 				return false;
 			}
 
-			internal static IEnumerator UpdateViewerPivot(Transform playerHead)
+			internal static IEnumerator MoveCameraRig(Transform playerHead)
 			{
-				var viewerPivot = U.Camera.GetViewerPivot();
+				var rig = U.Camera.GetCameraRig();
 
 				// Hide player head to avoid jarring impact
 				var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
@@ -41,32 +41,32 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 
 				var mainCamera = U.Camera.GetMainCamera().transform;
-				var startPosition = viewerPivot.position;
-				var startRotation = viewerPivot.rotation;
+				var startPosition = rig.position;
+				var startRotation = rig.rotation;
 
 				var rotationDiff = U.Math.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
-				var cameraDiff = viewerPivot.position - mainCamera.position;
+				var cameraDiff = rig.position - mainCamera.position;
 				cameraDiff.y = 0;
 				var rotationOffset = rotationDiff * cameraDiff - cameraDiff;
 
-				var endPosition = viewerPivot.position + (playerHead.position - mainCamera.position) + rotationOffset;
-				var endRotation = viewerPivot.rotation * rotationDiff;
+				var endPosition = rig.position + (playerHead.position - mainCamera.position) + rotationOffset;
+				var endRotation = rig.rotation * rotationDiff;
 				var startTime = Time.realtimeSinceStartup;
 				var diffTime = 0f;
 
-				while (diffTime < kViewerPivotTransitionTime)
+				while (diffTime < kCameraRigTransitionTime)
 				{
 					diffTime = Time.realtimeSinceStartup - startTime;
-					var t = diffTime / kViewerPivotTransitionTime;
+					var t = diffTime / kCameraRigTransitionTime;
 
 					// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
-					viewerPivot.position = Vector3.Lerp(startPosition, endPosition, t);
-					viewerPivot.rotation = Quaternion.Lerp(startRotation, endRotation, t);
+					rig.position = Vector3.Lerp(startPosition, endPosition, t);
+					rig.rotation = Quaternion.Lerp(startRotation, endRotation, t);
 					yield return null;
 				}
 
-				viewerPivot.position = endPosition;
-				viewerPivot.rotation = endRotation;
+				rig.position = endPosition;
+				rig.rotation = endRotation;
 
 				playerHead.parent = mainCamera;
 				playerHead.localRotation = Quaternion.identity;

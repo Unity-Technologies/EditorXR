@@ -35,7 +35,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 			// Check if the prefab has already been instantiated
 			if (m_NumericKeyboard == null)
-				m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
+				m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetCameraRig()).GetComponent<KeyboardUI>();
 
 			return m_NumericKeyboard;
 		}
@@ -47,7 +47,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 			// Check if the prefab has already been instantiated
 			if (m_StandardKeyboard == null)
-				m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
+				m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetCameraRig()).GetComponent<KeyboardUI>();
 
 			return m_StandardKeyboard;
 		}

@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		DragAndDropModule m_DragAndDropModule;
 		HighlightModule m_HighlightModule;
-		ObjectModule m_ObjectModule;
+		SceneObjectModule m_SceneObjectModule;
 		LockModule m_LockModule;
 		SelectionModule m_SelectionModule;
 		HierarchyModule m_HierarchyModule;
@@ -112,14 +112,14 @@ namespace UnityEditor.Experimental.EditorVR
 			m_UI = new UI();
 			m_Viewer = new Viewer();
 
-			m_HierarchyModule = AddModule<HierarchyModule>();			
+			m_HierarchyModule = AddModule<HierarchyModule>();
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
 
-			VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
+			VRView.cameraRig.parent = transform; // Parent the camera rig under EditorVR
 			if (VRSettings.loadedDeviceName == "OpenVR")
 			{
 				// Steam's reference position should be at the feet and not at the head as we do with Oculus
-				VRView.viewerPivot.localPosition = Vector3.zero;
+				VRView.cameraRig.localPosition = Vector3.zero;
 			}
 
 			var hmdOnlyLayerMask = 0;
@@ -185,8 +185,8 @@ namespace UnityEditor.Experimental.EditorVR
 		
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
-			m_ObjectModule = AddModule<ObjectModule>();
-			m_ObjectModule.shouldPlaceObject = (obj, targetScale) =>
+			m_SceneObjectModule = AddModule<SceneObjectModule>();
+			m_SceneObjectModule.shouldPlaceObject = (obj, targetScale) =>
 			{
 				foreach (var miniWorld in m_MiniWorlds.worlds)
 				{
@@ -272,7 +272,6 @@ namespace UnityEditor.Experimental.EditorVR
 #endif
 		}
 
-		// TODO: Find a better callback for when objects are created or destroyed
 		void OnHierarchyChanged()
 		{
 			m_PixelRaycastIgnoreListDirty = true;
@@ -309,6 +308,8 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			if (m_CustomPreviewCamera != null)
 				U.Object.Destroy(((MonoBehaviour)m_CustomPreviewCamera).gameObject);
+
+			m_MiniWorlds.OnDestroy();
 		}
 
 		void Update()

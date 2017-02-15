@@ -18,11 +18,11 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		internal event Action<IWorkspace> workspaceCreated;
 		internal event Action<IWorkspace> workspaceDestroyed;
 
-		internal List<Type> workspaceTypes { get; private set; }
+		static internal List<Type> workspaceTypes { get; private set; }
 
 		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 
-		public WorkspaceModule()
+		static WorkspaceModule()
 		{
 			workspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 		}
@@ -31,7 +31,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		{
 			var cameraTransform = U.Camera.GetMainCamera().transform;
 
-			var workspace = (IWorkspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
+			var workspace = (IWorkspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetCameraRig());
 			m_Workspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			connectInterfaces(workspace);

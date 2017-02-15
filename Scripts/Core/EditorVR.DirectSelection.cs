@@ -7,7 +7,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	partial class EditorVR : MonoBehaviour
+	partial class EditorVR
 	{
 		class DirectSelection : Nested
 		{
@@ -141,11 +141,11 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				foreach (var grabbedObject in grabbedObjects)
 				{
-					// Dropping the player head updates the viewer pivot
+					// Dropping the player head updates the camera rig position
 					if (grabbedObject.CompareTag(kVRPlayerTag))
-						evr.StartCoroutine(Viewer.UpdateViewerPivot(grabbedObject));
+						evr.StartCoroutine(Viewer.MoveCameraRig(grabbedObject));
 					else if (evr.m_Viewer.IsOverShoulder(rayOrigin) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
-						evr.m_ObjectModule.DeleteSceneObject(grabbedObject.gameObject);
+						evr.m_SceneObjectModule.DeleteSceneObject(grabbedObject.gameObject);
 				}
 			}
 		}

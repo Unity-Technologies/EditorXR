@@ -15,7 +15,7 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 
 		public override IEnumerator Start()
 		{
-			// Touch controllers should be spawned under a pivot that corresponds to the head with no offsets, since the
+			// Touch controllers should be spawned under a root that corresponds to the head with no offsets, since the
 			// local positions of the controllers will be provided that way.
 #if UNITY_EDITOR
 			EditorApplication.delayCall += () =>

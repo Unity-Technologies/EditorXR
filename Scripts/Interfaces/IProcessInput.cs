@@ -3,6 +3,10 @@ using UnityEngine.InputNew;
 
 namespace UnityEngine.Experimental.EditorVR.Tools
 {
+	/// <summary>
+	/// Method signature for consuming an input control
+	/// <param name="control">InputControl to consume</param>
+	/// </summary>
 	public delegate void ConsumeControlDelegate(InputControl control);
 
 	/// <summary>

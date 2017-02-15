@@ -191,12 +191,12 @@ namespace UnityEngine.Experimental.EditorVR.Input
 			var headPivot = VRView.viewerCamera.transform;
 			var lookDirection = headPivot.forward;
 			lookDirection.y = 0f;
-			lookDirection = VRView.viewerPivot.InverseTransformDirection(lookDirection.normalized);
+			lookDirection = VRView.cameraRig.InverseTransformDirection(lookDirection.normalized);
 			if (lookDirection != Vector3.zero)
 				m_RotationOffset = Quaternion.LookRotation(lookDirection);
-			m_ControllerOffsets[0] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (-headPivot.right * span * 0.5f)) -
+			m_ControllerOffsets[0] = VRView.cameraRig.InverseTransformPoint(headPivot.position + (-headPivot.right * span * 0.5f)) -
 				(m_RotationOffset * SixenseInput.Controllers[0].Position * kHydraUnits);
-			m_ControllerOffsets[1] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (headPivot.right * span * 0.5f)) -
+			m_ControllerOffsets[1] = VRView.cameraRig.InverseTransformPoint(headPivot.position + (headPivot.right * span * 0.5f)) -
 				(m_RotationOffset * SixenseInput.Controllers[1].Position * kHydraUnits);
 #endif
 		}

@@ -55,6 +55,24 @@ namespace UnityEditor.Experimental.EditorVR
 				if (connectInterfaces != null)
 					connectInterfaces.connectInterfaces = ConnectInterfaces;
 
+				var evrRays = evr.m_Rays;
+				var evrWorkspaceModule = evr.m_WorkspaceModule;
+				var evrMenus = evr.m_Menus;
+				var evrHighlightModule = evr.m_HighlightModule;
+				var evrSceneObjectModule = evr.m_SceneObjectModule;
+				var evrLockModule = evr.m_LockModule;
+				var evrActionsModule = evr.m_ActionsModule;
+				var evrDirectSelection = evr.m_DirectSelection;
+				var evrSpatialHashModule = evr.m_SpatialHashModule;
+				var evrViewer = evr.m_Viewer;
+				var evrTools = evr.m_Tools;
+				var evrProjectFolderModule = evr.m_ProjectFolderModule;
+				var evrHierarchyModule = evr.m_HierarchyModule;
+				var evrDeviceInputModule = evr.m_DeviceInputModule;
+				var evrSelectionModule = evr.m_SelectionModule;
+				var evrUI = evr.m_UI;
+				var evrDeviceData = evr.m_DeviceData;
+
 				if (rayOrigin)
 				{
 					var ray = obj as IUsesRayOrigin;
@@ -64,7 +82,7 @@ namespace UnityEditor.Experimental.EditorVR
 					var usesProxy = obj as IUsesProxyType;
 					if (usesProxy != null)
 					{
-						var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+						var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 						if (deviceData != null)
 							usesProxy.proxyType = deviceData.proxy.GetType();
 					}
@@ -73,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR
 					if (menuOrigins != null)
 					{
 						Transform mainMenuOrigin;
-						var proxy = evr.m_Rays.GetProxyForRayOrigin(rayOrigin);
+						var proxy = evrRays.GetProxyForRayOrigin(rayOrigin);
 						if (proxy != null && proxy.menuOrigins.TryGetValue(rayOrigin, out mainMenuOrigin))
 						{
 							menuOrigins.menuOrigin = mainMenuOrigin;
@@ -101,43 +119,42 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var locomotion = obj as ILocomotor;
 				if (locomotion != null)
-					locomotion.viewerPivot = VRView.viewerPivot;
+					locomotion.cameraRig = VRView.cameraRig;
 
 				var instantiateUI = obj as IInstantiateUI;
 				if (instantiateUI != null)
-					instantiateUI.instantiateUI = evr.m_UI.InstantiateUI;
+					instantiateUI.instantiateUI = evrUI.InstantiateUI;
 
 				var createWorkspace = obj as ICreateWorkspace;
 				if (createWorkspace != null)
-					createWorkspace.createWorkspace = evr.m_WorkspaceModule.CreateWorkspace;
+					createWorkspace.createWorkspace = evrWorkspaceModule.CreateWorkspace;
 
 				var instantiateMenuUI = obj as IInstantiateMenuUI;
 				if (instantiateMenuUI != null)
-					instantiateMenuUI.instantiateMenuUI = evr.m_Menus.InstantiateMenuUI;
+					instantiateMenuUI.instantiateMenuUI = evrMenus.InstantiateMenuUI;
 
 				var raycaster = obj as IUsesRaycastResults;
 				if (raycaster != null)
-					raycaster.getFirstGameObject = evr.m_Rays.GetFirstGameObject;
+					raycaster.getFirstGameObject = evrRays.GetFirstGameObject;
 
 				var highlight = obj as ISetHighlight;
 				if (highlight != null)
-					highlight.setHighlight = evr.m_HighlightModule.SetHighlight;
+					highlight.setHighlight = evrHighlightModule.SetHighlight;
 
 				var placeObjects = obj as IPlaceObject;
 				if (placeObjects != null)
-					placeObjects.placeObject = evr.m_ObjectModule.PlaceObject;
+					placeObjects.placeObject = evrSceneObjectModule.PlaceSceneObject;
 
 				var locking = obj as IUsesGameObjectLocking;
 				if (locking != null)
 				{
-					var lockModule = evr.m_LockModule;
-					locking.setLocked = lockModule.SetLocked;
-					locking.isLocked = lockModule.IsLocked;
+					locking.setLocked = evrLockModule.SetLocked;
+					locking.isLocked = evrLockModule.IsLocked;
 				}
 
 				var positionPreview = obj as IGetPreviewOrigin;
 				if (positionPreview != null)
-					positionPreview.getPreviewOriginForRayOrigin = evr.m_Rays.GetPreviewOriginForRayOrigin;
+					positionPreview.getPreviewOriginForRayOrigin = evrRays.GetPreviewOriginForRayOrigin;
 
 				var selectionChanged = obj as ISelectionChanged;
 				if (selectionChanged != null)
@@ -156,76 +173,74 @@ namespace UnityEditor.Experimental.EditorVR
 							priority = int.MaxValue,
 							action = action,
 						};
-						evr.m_ActionsModule.menuActions.Add(actionMenuData);
+						evrActionsModule.menuActions.Add(actionMenuData);
 					}
-					evr.m_Menus.UpdateAlternateMenuActions();
+					evrMenus.UpdateAlternateMenuActions();
 				}
 
 				var directSelection = obj as IUsesDirectSelection;
 				if (directSelection != null)
-					directSelection.getDirectSelection = evr.m_DirectSelection.GetDirectSelection;
+					directSelection.getDirectSelection = evrDirectSelection.GetDirectSelection;
 
 				var grabObjects = obj as IGrabObjects;
 				if (grabObjects != null)
 				{
-					var ds = evr.m_DirectSelection;
-					grabObjects.canGrabObject = ds.CanGrabObject;
-					grabObjects.objectGrabbed += ds.OnObjectGrabbed;
-					grabObjects.objectsDropped += ds.OnObjectsDropped;
+					grabObjects.canGrabObject = evrDirectSelection.CanGrabObject;
+					grabObjects.objectGrabbed += evrDirectSelection.OnObjectGrabbed;
+					grabObjects.objectsDropped += evrDirectSelection.OnObjectsDropped;
 				}
 
 				var spatialHash = obj as IUsesSpatialHash;
 				if (spatialHash != null)
 				{
-					var spatialHashModule = evr.m_SpatialHashModule;
-					spatialHash.addToSpatialHash = spatialHashModule.AddObject;
-					spatialHash.removeFromSpatialHash = spatialHashModule.RemoveObject;
+					spatialHash.addToSpatialHash = evrSpatialHashModule.AddObject;
+					spatialHash.removeFromSpatialHash = evrSpatialHashModule.RemoveObject;
 				}
 
 				var deleteSceneObjects = obj as IDeleteSceneObject;
 				if (deleteSceneObjects != null)
-					deleteSceneObjects.deleteSceneObject = evr.m_ObjectModule.DeleteSceneObject;
+					deleteSceneObjects.deleteSceneObject = evrSceneObjectModule.DeleteSceneObject;
 
 				var usesViewerBody = obj as IUsesViewerBody;
 				if (usesViewerBody != null)
-					usesViewerBody.isOverShoulder = evr.m_Viewer.IsOverShoulder;
+					usesViewerBody.isOverShoulder = evrViewer.IsOverShoulder;
 
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)
 				{
-					mainMenu.menuTools = evr.m_Menus.mainMenuTools;
-					mainMenu.menuWorkspaces = evr.m_WorkspaceModule.workspaceTypes;
-					mainMenu.isToolActive = evr.m_Tools.IsToolActive;
+					mainMenu.menuTools = evrMenus.mainMenuTools;
+					mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
+					mainMenu.isToolActive = evrTools.IsToolActive;
 				}
 
 				var alternateMenu = obj as IAlternateMenu;
 				if (alternateMenu != null)
-					alternateMenu.menuActions = evr.m_ActionsModule.menuActions;
+					alternateMenu.menuActions = evrActionsModule.menuActions;
 
 				var usesProjectFolderData = obj as IUsesProjectFolderData;
 				if (usesProjectFolderData != null)
-					evr.m_ProjectFolderModule.AddConsumer(usesProjectFolderData);
+					evrProjectFolderModule.AddConsumer(usesProjectFolderData);
 
 				var usesHierarchyData = obj as IUsesHierarchyData;
 				if (usesHierarchyData != null)
-					evr.m_HierarchyModule.AddConsumer(usesHierarchyData);
+					evrHierarchyModule.AddConsumer(usesHierarchyData);
 
 				var filterUI = obj as IFilterUI;
 				if (filterUI != null)
-					evr.m_ProjectFolderModule.AddConsumer(filterUI);
+					evrProjectFolderModule.AddConsumer(filterUI);
 
 				// Tracked Object action maps shouldn't block each other so we share an instance
 				var trackedObjectMap = obj as ITrackedObjectActionMap;
 				if (trackedObjectMap != null)
-					trackedObjectMap.trackedObjectInput = evr.m_DeviceInputModule.trackedObjectInput;
+					trackedObjectMap.trackedObjectInput = evrDeviceInputModule.trackedObjectInput;
 
 				var selectTool = obj as ISelectTool;
 				if (selectTool != null)
-					selectTool.selectTool = evr.m_Tools.SelectTool;
+					selectTool.selectTool = evrTools.SelectTool;
 
-				var usesViewerPivot = obj as IUsesViewerPivot;
-				if (usesViewerPivot != null)
-					usesViewerPivot.viewerPivot = U.Camera.GetViewerPivot();
+				var usesCameraRig = obj as IUsesCameraRig;
+				if (usesCameraRig != null)
+					usesCameraRig.cameraRig = U.Camera.GetCameraRig();
 
 				var usesStencilRef = obj as IUsesStencilRef;
 				if (usesStencilRef != null)
@@ -251,18 +266,17 @@ namespace UnityEditor.Experimental.EditorVR
 				var selectObject = obj as ISelectObject;
 				if (selectObject != null)
 				{
-					var selectionModule = evr.m_SelectionModule;
-					selectObject.getSelectionCandidate = selectionModule.GetSelectionCandidate;
-					selectObject.selectObject = selectionModule.SelectObject;
+					selectObject.getSelectionCandidate = evrSelectionModule.GetSelectionCandidate;
+					selectObject.selectObject = evrSelectionModule.SelectObject;
 				}
 
 				var manipulatorVisiblity = obj as IManipulatorVisibility;
 				if (manipulatorVisiblity != null)
-					evr.m_UI.manipulatorVisibilities.Add(manipulatorVisiblity);
+					evrUI.manipulatorVisibilities.Add(manipulatorVisiblity);
 
 				var setManipulatorsVisible = obj as ISetManipulatorsVisible;
 				if (setManipulatorsVisible != null)
-					setManipulatorsVisible.setManipulatorsVisible = evr.m_UI.SetManipulatorsVisible;
+					setManipulatorsVisible.setManipulatorsVisible = evrUI.SetManipulatorsVisible;
 
 				var requestStencilRef = obj as IRequestStencilRef;
 				if (requestStencilRef != null)
@@ -271,7 +285,7 @@ namespace UnityEditor.Experimental.EditorVR
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
 				if (forEachRayOrigin != null && IsSameAssembly<IForEachRayOrigin>(obj))
-					forEachRayOrigin.forEachRayOrigin = evr.m_Rays.ForEachRayOrigin;
+					forEachRayOrigin.forEachRayOrigin = evrRays.ForEachRayOrigin;
 			}
 
 			static bool IsSameAssembly<T>(object obj)

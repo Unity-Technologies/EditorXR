@@ -49,11 +49,12 @@ namespace UnityEditor.Experimental.EditorVR
 				EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 			}
 
-			~MiniWorlds()
+			public void OnDestroy()
 			{
 				EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 			}
 
+			// TODO: Find a better callback for when objects are created or destroyed
 			void OnHierarchyChanged()
 			{
 				m_MiniWorldIgnoreListDirty = true;
@@ -343,7 +344,7 @@ namespace UnityEditor.Experimental.EditorVR
 							{
 								if (evr.m_Viewer.IsOverShoulder(originalRayOrigin))
 								{
-									evr.m_ObjectModule.DeleteSceneObject(dragObject.gameObject);
+									evr.m_SceneObjectModule.DeleteSceneObject(dragObject.gameObject);
 								}
 								else
 								{
