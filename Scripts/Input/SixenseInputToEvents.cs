@@ -10,7 +10,7 @@ namespace UnityEngine.Experimental.EditorVR.Input
 	/// <summary>
 	/// Sends events to the input system based on native Sixense SDK calls
 	/// </summary>
-	public class SixenseInputToEvents : MonoBehaviour, IInputToEvents
+	internal class SixenseInputToEvents : BaseInputToEvents
 	{
 #if ENABLE_SIXENSE_INPUT
 		public const uint kControllerCount = SixenseInput.MAX_CONTROLLERS;
@@ -26,24 +26,6 @@ namespace UnityEngine.Experimental.EditorVR.Input
 		Vector3[] m_ControllerOffsets = new Vector3[SixenseInput.MAX_CONTROLLERS];
 		Quaternion m_RotationOffset = Quaternion.identity;
 #endif
-
-		public bool active
-		{
-			get { return m_Active; }
-			private set
-			{
-				if (m_Active != value)
-				{
-					m_Active = value;
-					if (activeChanged != null)
-						activeChanged();
-				}
-			}
-		}
-
-		bool m_Active;
-
-		public event Action activeChanged;
 
 #if ENABLE_SIXENSE_INPUT
 		void Awake()

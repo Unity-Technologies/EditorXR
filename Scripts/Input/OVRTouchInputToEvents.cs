@@ -9,7 +9,7 @@ namespace UnityEngine.Experimental.EditorVR.Input
 	/// <summary>
 	/// Sends events to the input system based on native Oculus SDK calls
 	/// </summary>
-	public class OVRTouchInputToEvents : MonoBehaviour, IInputToEvents
+	internal class OVRTouchInputToEvents : BaseInputToEvents
 	{
 #if ENABLE_OVR_INPUT
 		public const uint kControllerCount = 2;
@@ -20,24 +20,6 @@ namespace UnityEngine.Experimental.EditorVR.Input
 		Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
 		Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
 #endif
-
-		public bool active
-		{
-			get { return m_Active; }
-			private set
-			{
-				if (m_Active != value)
-				{
-					m_Active = value;
-					if (activeChanged != null)
-						activeChanged();
-				}
-			}
-		}
-
-		bool m_Active;
-
-		public event Action activeChanged;
 
 #if ENABLE_OVR_INPUT
 		public void Update()

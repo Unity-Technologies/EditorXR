@@ -12,7 +12,7 @@ namespace UnityEngine.Experimental.EditorVR.Input
 	/// <summary>
 	/// Sends events to the input system based on native SteamVR SDK calls
 	/// </summary>
-	public class ViveInputToEvents : MonoBehaviour, IInputToEvents
+	internal class ViveInputToEvents : BaseInputToEvents
 	{
 #if ENABLE_STEAMVR_INPUT
 		enum XorY
@@ -28,24 +28,6 @@ namespace UnityEngine.Experimental.EditorVR.Input
 
 		readonly int[] steamDeviceIndices = new int[] { -1, -1 };
 #endif
-
-		public bool active
-		{
-			get { return m_Active; }
-			private set
-			{
-				if (m_Active != value)
-				{
-					m_Active = value;
-					if (activeChanged != null)
-						activeChanged();
-				}
-			}
-		}
-
-		bool m_Active;
-
-		public event Action activeChanged;
 
 #if ENABLE_STEAMVR_INPUT
 		static EVRButtonId[] s_EnumValues;
