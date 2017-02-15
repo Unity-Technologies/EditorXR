@@ -8,7 +8,8 @@ using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
-public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesHandedRayOrigin, ICustomActionMap, ILinkedTool, IUsesProxyType
+public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesHandedRayOrigin,
+	ICustomActionMap, ILinkedTool, IUsesProxyType, IConnectInterfaces
 {
 	const float kFastRotationSpeed = 300f;
 	const float kRotationThreshold = 0.9f;
@@ -84,10 +85,13 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	public Type proxyType { private get; set; }
 
+	public ConnectInterfacesDelegate connectInterfaces { get; set; }
+
 	private void Start()
 	{
 		m_BlinkVisualsGO = U.Object.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
 		m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
+		connectInterfaces(m_BlinkVisuals);
 		m_BlinkVisuals.enabled = false;
 		m_BlinkVisuals.showValidTargetIndicator = false; // We don't define valid targets, so always show green
 		m_BlinkVisualsGO.transform.parent = rayOrigin;

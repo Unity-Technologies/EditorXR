@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class BlinkVisuals : MonoBehaviour
+public class BlinkVisuals : MonoBehaviour, IUsesViewerPivot
 {
 	private enum State
 	{
@@ -77,6 +78,8 @@ public class BlinkVisuals : MonoBehaviour
 	public Transform locatorRoot { get { return m_LocatorRoot; } }
 	public bool validTarget { get; private set; }
 	public bool showValidTargetIndicator { private get; set; }
+
+	public Transform viewerPivot { get; set; }
 
 	private float pointerStrength { get { return (m_ToolPoint.forward.y + 1.0f) * 0.5f; } }
 
@@ -155,7 +158,8 @@ public class BlinkVisuals : MonoBehaviour
 			}
 			DrawMotionSpheres();
 
-			m_RoomScaleTransform.position = U.Math.SmoothDamp(m_RoomScaleLazyPosition, m_LocatorRoot.position, ref m_MovementVelocityDelta, 0.2625f, 100f * transform.lossyScale.x, Time.unscaledDeltaTime);
+			m_RoomScaleTransform.position = U.Math.SmoothDamp(m_RoomScaleLazyPosition, m_LocatorRoot.position,
+				ref m_MovementVelocityDelta, 0.2625f, 100f * viewerPivot.localScale.x, Time.unscaledDeltaTime);
 			// Since the room scale visuals are parented under the locator root it is necessary to cache the position each frame before the locator root gets updated
 			m_RoomScaleLazyPosition = m_RoomScaleTransform.position;
 			m_MovementMagnitudeDelta = (m_RoomScaleTransform.position - m_LocatorRoot.position).magnitude;
@@ -215,7 +219,7 @@ public class BlinkVisuals : MonoBehaviour
 		while (m_State == State.TransitioningIn && currentDuration < kSmoothTime)
 		{
 			scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-			var adjustedScale = scale * transform.lossyScale.x;
+			var adjustedScale = scale * viewerPivot.localScale.x;
 			currentDuration += Time.unscaledDeltaTime;
 			m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
 			m_LocatorRoot.localScale = Vector3.one * scale;
@@ -241,7 +245,7 @@ public class BlinkVisuals : MonoBehaviour
 		while (m_State == State.TransitioningOut && currentDuration < kSmoothTime)
 		{
 			scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-			var adjustedScale = scale * transform.lossyScale.x;
+			var adjustedScale = scale * viewerPivot.localScale.x;
 			currentDuration += Time.unscaledDeltaTime;
 			SetColors(Color.Lerp(!showValidTargetIndicator || validTarget ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
 			m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
@@ -286,7 +290,8 @@ public class BlinkVisuals : MonoBehaviour
 		// start point
 		m_BezierControlPoints[0] = m_ToolPoint.position;
 		// first handle -- determines how steep the first part will be
-		m_BezierControlPoints[1] = m_ToolPoint.position + m_ToolPoint.forward * pointerStrength * m_Range * transform.lossyScale.x;
+		m_BezierControlPoints[1] = m_ToolPoint.position + m_ToolPoint.forward * pointerStrength * m_Range
+			* viewerPivot.localScale.x;
 
 		const float kArcEndHeight = 0f;
 		m_FinalPosition = new Vector3(m_BezierControlPoints[1].x, kArcEndHeight, m_BezierControlPoints[1].z);
@@ -326,26 +331,33 @@ public class BlinkVisuals : MonoBehaviour
 		// We estimate how much we should correct our curve time by with a guess step
 		for (int i = 0; i < m_MotionSphereCount; ++i)
 		{
-			var t = (i / (float)m_MotionSphereCount) + m_MotionSphereOffset;
-			m_MotionSpheres[i].position = U.Math.CalculateCubicBezierPoint(t, m_BezierControlPoints);
-			float motionSphereScale = visible ? (validTarget ? m_MotionSphereOriginalScale.x : 0.05f) : 0f;
-			float smoothVelocity = 0f;
-			motionSphereScale = U.Math.SmoothDamp(m_MotionSpheres[i].localScale.x, motionSphereScale, ref smoothVelocity, 3f, Mathf.Infinity, Time.unscaledDeltaTime) * Mathf.Min((m_Transform.position - m_MotionSpheres[i].position).magnitude * 4 / transform.lossyScale.x, 1f);
-			m_MotionSpheres[i].localScale = Vector3.one * motionSphereScale;
-			m_MotionSpheres[i].localRotation = Quaternion.identity;
+			var t = i / (float)m_MotionSphereCount + m_MotionSphereOffset;
+			var motionSphere = m_MotionSpheres[i];
+			motionSphere.position = U.Math.CalculateCubicBezierPoint(t, m_BezierControlPoints);
+			var motionSphereScale = visible ? (validTarget ? m_MotionSphereOriginalScale.x : 0.05f) : 0f;
+			var smoothVelocity = 0f;
+			const float scaleCoefficient = 4f;
+
+			motionSphereScale = U.Math.SmoothDamp(motionSphere.localScale.x, motionSphereScale,
+					ref smoothVelocity, 3f, Mathf.Infinity, Time.unscaledDeltaTime)
+				* Mathf.Min((m_Transform.position - motionSphere.position).magnitude
+					* scaleCoefficient / viewerPivot.localScale.x, 1f);
+
+			motionSphere.localScale = Vector3.one * motionSphereScale;
+			motionSphere.localRotation = Quaternion.identity;
 
 			// If we're not at the starting point, we apply a correction factor
 			if (t > 0.0f)
 			{
 				// We have how long we *think* the curve should be
-				var lengthEstimate = (m_CurveLengthEstimate * t);
+				var lengthEstimate = m_CurveLengthEstimate * t;
 
 				// We compare that to how long our distance actually is
-				var correctionFactor = lengthEstimate / (m_MotionSpheres[i].position - m_BezierControlPoints[0]).magnitude;
+				var correctionFactor = lengthEstimate / (motionSphere.position - m_BezierControlPoints[0]).magnitude;
 
 				// We then scale our time value by this correction factor
 				var correctedTime = Mathf.Clamp01(t * correctionFactor);
-				m_MotionSpheres[i].position = U.Math.CalculateCubicBezierPoint(correctedTime, m_BezierControlPoints);
+				motionSphere.position = U.Math.CalculateCubicBezierPoint(correctedTime, m_BezierControlPoints);
 			}
 		}
 	}
