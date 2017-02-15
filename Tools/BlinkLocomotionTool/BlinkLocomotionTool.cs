@@ -170,6 +170,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 							var currentScale = m_StartScale * (m_StartDistance / distance);
 
+							// Press both thumb buttons to reset
 							if (m_Thumb != null && blinkTool.m_Thumb != null)
 							{
 								m_AllowScaling = false;
@@ -179,6 +180,11 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 								var currOffset = midPoint - viewerPivot.position;
 								viewerPivot.localScale = Vector3.one;
 								viewerPivot.position = midPoint - currOffset / currentScale;
+								viewerPivot.rotation = Quaternion.AngleAxis(m_StartYaw, Vector3.up);
+
+								m_MainCamera.nearClipPlane = m_OriginalNearClipPlane;
+								m_MainCamera.farClipPlane = m_OriginalFarClipPlane;
+
 								consumeControl(m_Thumb);
 								consumeControl(blinkTool.m_Thumb);
 
@@ -288,6 +294,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			else
 			{
 				m_BlinkVisuals.enabled = false;
+				s_ActiveBlinkTool = null;
 			}
 
 			consumeControl(blinkInput.blink);
