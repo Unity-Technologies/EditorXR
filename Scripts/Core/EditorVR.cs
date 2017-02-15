@@ -65,9 +65,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 		IPreviewCamera m_CustomPreviewCamera;
 
-		bool m_PixelRaycastIgnoreListDirty = true;
-		bool m_UpdatePixelRaycastModule = true;
-
 		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
 
 		class DeviceData
@@ -153,6 +150,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			m_PixelRaycastModule = AddModule<PixelRaycastModule>();
 			m_PixelRaycastModule.ignoreRoot = transform;
+			m_PixelRaycastModule.raycastCamera = m_UI.eventCamera;
 
 			m_HighlightModule = AddModule<HighlightModule>();
 			m_ActionsModule = AddModule<ActionsModule>();
@@ -256,46 +254,11 @@ namespace UnityEditor.Experimental.EditorVR
 		void OnEnable()
 		{
 			Selection.selectionChanged += OnSelectionChanged;
-#if UNITY_EDITOR
-			EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
-			VRView.onGUIDelegate += OnSceneGUI;
-#endif
 		}
 
 		void OnDisable()
 		{
 			Selection.selectionChanged -= OnSelectionChanged;
-#if UNITY_EDITOR
-			EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
-			VRView.onGUIDelegate -= OnSceneGUI;
-#endif
-		}
-
-		void OnHierarchyChanged()
-		{
-			m_PixelRaycastIgnoreListDirty = true;
-		}
-
-		void OnSceneGUI(EditorWindow obj)
-		{
-			if (Event.current.type == EventType.ExecuteCommand)
-			{
-				if (m_PixelRaycastIgnoreListDirty)
-				{
-					m_PixelRaycastModule.UpdateIgnoreList();
-					m_PixelRaycastIgnoreListDirty = false;
-				}
-
-				m_Rays.ForEachProxyDevice((deviceData) =>
-				{
-					m_PixelRaycastModule.UpdateRaycast(deviceData.rayOrigin, m_UI.eventCamera);
-				});
-
-				// Queue up the next round
-				m_UpdatePixelRaycastModule = true;
-
-				Event.current.Use();
-			}
 		}
 
 		void OnDestroy()
@@ -310,26 +273,6 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			if (m_CustomPreviewCamera != null)
 				m_CustomPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
-
-#if UNITY_EDITOR
-			// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
-			//		Additionally, on some machines it's required to do a delay call otherwise none of this works
-			//		I noticed that delay calls were queuing up, so it was necessary to protect against that, so only one is processed
-			if (m_UpdatePixelRaycastModule)
-			{
-				EditorApplication.delayCall += () =>
-				{
-					if (this != null) // Because this is a delay call, the component will be null when EditorVR closes
-					{
-						Event e = new Event();
-						e.type = EventType.ExecuteCommand;
-						VRView.activeView.SendEvent(e);
-					}
-				};
-
-				m_UpdatePixelRaycastModule = false; // Don't allow another one to queue until the current one is processed
-			}
-#endif
 
 			m_Rays.UpdateDefaultProxyRays();
 
@@ -412,7 +355,6 @@ namespace UnityEditor.Experimental.EditorVR
 			return transform;
 		}
 
-#if UNITY_EDITOR
 		static EditorVR s_Instance;
 		static InputManager s_InputManager;
 
@@ -494,12 +436,11 @@ namespace UnityEditor.Experimental.EditorVR
 			U.Object.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
 		}
 
-		private static void OnVRViewDisabled()
+		static void OnVRViewDisabled()
 		{
 			U.Object.Destroy(s_Instance.gameObject);
 			U.Object.Destroy(s_InputManager.gameObject);
 		}
-#endif
 	}
 #else
 	internal class NoEditorVR
