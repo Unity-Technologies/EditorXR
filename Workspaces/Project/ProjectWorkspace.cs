@@ -209,9 +209,9 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if(handle == m_ProjectUI.folderScrollHandle)
+		if (handle == m_ProjectUI.folderScrollHandle)
 			m_ProjectUI.folderListView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / viewerPivot.localScale.x;
-		else if(handle == m_ProjectUI.assetScrollHandle)
+		else if (handle == m_ProjectUI.assetScrollHandle)
 			m_ProjectUI.assetGridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / viewerPivot.localScale.x;
 	}
 

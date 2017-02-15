@@ -67,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR
 					ray.rayOrigin = rayOrigin;
 
 				var handedRay = obj as IUsesHandedRayOrigin;
-				if(handedRay != null)
+				if (handedRay != null)
 					handedRay.node = node;
 
 				var usesProxy = obj as IUsesProxyType;
