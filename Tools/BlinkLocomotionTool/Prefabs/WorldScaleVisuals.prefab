@@ -272,7 +272,13 @@ MonoBehaviour:
   m_DottedLine: {fileID: 114000012431232032}
   m_IconsContainer: {fileID: 224000014074285668}
   m_ScaleText: {fileID: 114000012153219018}
-  m_Icons: {fileID: 11400000, guid: c26479deb5ff9054398964cade0dbec8, type: 2}
+  m_Icons:
+  - {fileID: 21300000, guid: 867c135a734544a44a81779809c03900, type: 3}
+  - {fileID: 21300000, guid: b2952d277834cae448823411737797e2, type: 3}
+  - {fileID: 21300000, guid: 7838a6422b7749f46a20595a9c275aff, type: 3}
+  - {fileID: 21300000, guid: 4e0de21615209344389544b59a5e5650, type: 3}
+  - {fileID: 21300000, guid: e3c74a4db32e344449a9005242f5bcff, type: 3}
+  - {fileID: 21300000, guid: 82ff125236b5d6847a8b89ee7a54126f, type: 3}
   m_IconPrefab: {fileID: 1000013859210608, guid: 0d44893a0884e324087812199bd02a85,
     type: 2}
 --- !u!114 &114000013219726656

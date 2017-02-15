@@ -23,7 +23,7 @@ public class WorldScaleVisuals : MonoBehaviour
 	Text m_ScaleText;
 
 	[SerializeField]
-	WorldScaleIcons m_Icons;
+	Sprite[] m_Icons;
 
 	[SerializeField]
 	GameObject m_IconPrefab;
@@ -34,10 +34,9 @@ public class WorldScaleVisuals : MonoBehaviour
 
 	void Start()
 	{
-		var icons = m_Icons.icons;
-		for (var i = 0; i < icons.Length; i++)
+		for (var i = 0; i < m_Icons.Length; i++)
 		{
-			var icon = icons[i];
+			var icon = m_Icons[i];
 			var image = ((GameObject)Instantiate(m_IconPrefab, m_IconsContainer, false)).GetComponent<Image>();
 			image.sprite = icon;
 		}
