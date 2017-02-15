@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-//#define ENABLE_MINIWORLD_RAY_SELECTION
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -291,11 +290,6 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					m_PixelRaycastModule.UpdateRaycast(deviceData.rayOrigin, m_UI.eventCamera);
 				});
-
-#if ENABLE_MINIWORLD_RAY_SELECTION
-				foreach (var rayOrigin in m_MiniWorldRays.Keys)
-					m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera);
-#endif
 
 				// Queue up the next round
 				m_UpdatePixelRaycastModule = true;

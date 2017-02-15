@@ -244,13 +244,6 @@ namespace UnityEditor.Experimental.EditorVR
 						if (!tester.active)
 							continue;
 
-#if ENABLE_MINIWORLD_RAY_SELECTION
-						var miniWorldRayOrigin = ray.Key;
-						go = m_PixelRaycastModule.GetFirstGameObject(miniWorldRayOrigin);
-						if (go)
-							return go;
-	#endif
-
 						var renderer = intersectionModule.GetIntersectedObjectForTester(tester);
 						if (renderer)
 							return renderer.gameObject;
@@ -309,12 +302,6 @@ namespace UnityEditor.Experimental.EditorVR
 				var camera = U.Camera.GetMainCamera();
 				var cameraPosition = camera.transform.position;
 				var matrix = camera.worldToCameraMatrix;
-
-#if ENABLE_MINIWORLD_RAY_SELECTION
-				MiniWorldRay ray;
-				if (m_MiniWorldRays.TryGetValue(rayOrigin, out ray))
-					matrix = ray.miniWorld.getWorldToCameraMatrix(camera);
-	#endif
 
 				if (!m_StandardManipulator)
 					m_StandardManipulator = evr.GetComponentInChildren<StandardManipulator>();

@@ -379,20 +379,6 @@ namespace UnityEditor.Experimental.EditorVR
 					var miniWorldRayOrigin = InstantiateMiniWorldRay();
 					miniWorldRayOrigin.parent = workspace.transform;
 
-#if ENABLE_MINIWORLD_RAY_SELECTION
-				// Use the mini world ray origin instead of the original ray origin
-				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, miniWorldRayOrigin, (source) =>
-				{
-					if (!IsRayActive(source.rayOrigin))
-						return false;
-
-					if (source.hoveredObject)
-						return !m_Workspaces.Any(w => source.hoveredObject.transform.IsChildOf(w.transform));
-
-					return true;
-				});
-#endif
-
 					var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 					tester.active = false;
 
@@ -424,16 +410,9 @@ namespace UnityEditor.Experimental.EditorVR
 					{
 						var miniWorldRay = ray.Value;
 						if (miniWorldRay.miniWorld == miniWorld)
-						{
-							var rayOrigin = ray.Key;
-#if ENABLE_MINIWORLD_RAY_SELECTION
-						m_InputModule.RemoveRaycastSource(rayOrigin);
-#endif
-							m_Rays.Remove(rayOrigin);
-						}
+							m_Rays.Remove(ray.Key);
 					}
 				}
-
 			}
 		}
 	}
