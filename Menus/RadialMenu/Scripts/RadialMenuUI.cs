@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +19,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		Sprite m_MissingActionIcon;
 
 		[SerializeField]
-		Image m_SlotsMask;
-
-		[SerializeField]
 		RadialMenuSlot m_RadialMenuSlotTemplate;
 
 		[SerializeField]
@@ -28,6 +26,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		List<RadialMenuSlot> m_RadialMenuSlots;
 		Coroutine m_VisibilityCoroutine;
+		RadialMenuSlot m_HighlightedButton;
+
+		public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
 
 		public Transform alternateMenuOrigin
 		{
@@ -156,12 +157,28 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		}
 		Vector2 m_ButtonInputDirection;
 
-		RadialMenuSlot m_HighlightedButton;
-
-		void Start()
+		private bool semiTransparent
 		{
-			m_SlotsMask.gameObject.SetActive(false);
+			set
+			{
+				if (value)
+				{
+					var interactingWithSlots = m_RadialMenuSlots.Any(x => x.highlighted);
+					value = !interactingWithSlots;
+				}
+
+				if (m_SemiTransparent == value)
+					return;
+
+				m_SemiTransparent = value;
+
+				foreach (var slot in m_RadialMenuSlots)
+				{
+					slot.semiTransparent = m_SemiTransparent;
+				}
+			}
 		}
+		private bool m_SemiTransparent;
 
 		void Update()
 		{
@@ -176,6 +193,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 						radialMenuSlot.icon = action.icon;
 				}
 			}
+
+			if (m_Visible) // don't override transparency if the menu is in the process of hiding itself
+				semiTransparent = getDirectSelection().Count > 0;
 		}
 
 		public void Setup()
@@ -250,11 +270,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateShow()
 		{
-			m_SlotsMask.gameObject.SetActive(true);
-
 			UpdateRadialSlots();
 
-			m_SlotsMask.fillAmount = 1f;
+			semiTransparent = false;
 
 			var revealAmount = 0f;
 			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;;
@@ -281,7 +299,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			while (revealAmount < 1)
 			{
 				revealAmount += Time.unscaledDeltaTime;
-				m_SlotsMask.fillAmount = Mathf.Lerp(m_SlotsMask.fillAmount, 0f, revealAmount);
 				yield return null;
 			}
 
@@ -290,11 +307,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateHide()
 		{
-			if (!m_SlotsMask.gameObject.activeInHierarchy)
-				yield break;
-
-			m_SlotsMask.fillAmount = 1f;
-
 			var revealAmount = 0f;
 			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 
@@ -312,7 +324,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				yield return null;
 			}
 
-			m_SlotsMask.gameObject.SetActive(false);
 			gameObject.SetActive(false);
 			m_VisibilityCoroutine = null;
 		}
