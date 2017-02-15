@@ -2,18 +2,23 @@
 using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Helpers;
+using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEngine.Experimental.EditorVR.Menus
 {
-	public class RadialMenuSlot : MonoBehaviour
+	public class RadialMenuSlot : MonoBehaviour, IRayEnterHandler, IRayExitHandler
 	{
+		static Color sFrameOpaqueColor;
+		static Color sFrameSemiTransparentColor;
+
 		static readonly Vector3 kHiddenLocalScale = new Vector3(1f, 0f, 1f);
-		const float m_IconHighlightedLocalYOffset = 0.006f;
+		const float kIconHighlightedLocalYOffset = 0.006f;
 		const string kMaterialAlphaProperty = "_Alpha";
 		const string kMaterialExpandProperty = "_Expand";
 		const string kMaterialColorTopProperty = "_ColorTop";
 		const string kMaterialColorBottomProperty = "_ColorBottom";
+		const string kMaterialColorProperty = "_Color";
 
 		[SerializeField]
 		MeshRenderer m_InsetMeshRenderer;
@@ -35,6 +40,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		MeshRenderer m_BorderRenderer;
+
+		[SerializeField]
+		MeshRenderer m_FrameRenderer;
 
 		public bool pressed
 		{
@@ -74,8 +82,27 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				else
 					m_IconHighlightCoroutine = StartCoroutine(IconEndHighlight());
 			}
+
+			get { return m_Highlighted; }
 		}
 		bool m_Highlighted;
+
+		public bool semiTransparent
+		{
+			set
+			{
+				if (value == m_SemiTransparent)
+					return;
+
+				m_SemiTransparent = value;
+
+				this.StopCoroutine(ref m_SemiTransparentCoroutine);
+				m_SemiTransparentCoroutine = StartCoroutine(AnimateSemiTransparent(value));
+			}
+
+			get { return m_SemiTransparent; }
+		}
+		bool m_SemiTransparent;
 
 		GradientPair m_OriginalInsetGradientPair;
 		Material m_BorderRendererMaterial;
@@ -90,11 +117,13 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		float m_IconLookForwardOffset = 0.5f;
 		Vector3 m_IconLookDirection;
 		Material m_FrameMaterial;
+		Material m_IconMaterial;
 
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
-		
+		Coroutine m_SemiTransparentCoroutine;
+
 		public Material borderRendererMaterial
 		{
 			get { return U.Material.GetMaterialClone(m_BorderRenderer); } // return new unique color to the RadialMenuUI for settings in each RadialMenuSlot contained in a given RadialMenu
@@ -129,6 +158,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		void Awake()
 		{
 			m_InsetMaterial = U.Material.GetMaterialClone(m_InsetMeshRenderer);
+			m_IconMaterial = U.Material.GetMaterialClone(m_Icon);
 			m_OriginalInsetGradientPair = new GradientPair(m_InsetMaterial.GetColor(kMaterialColorTopProperty), m_InsetMaterial.GetColor(kMaterialColorBottomProperty));
 			hiddenLocalRotation = transform.localRotation;
 			m_VisibleInsetLocalScale = m_MenuInset.localScale;
@@ -138,8 +168,14 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 			m_IconTransform = m_IconContainer;
 			m_OriginalIconLocalPosition = m_IconTransform.localPosition;
-			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * m_IconHighlightedLocalYOffset;
-			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * -m_IconHighlightedLocalYOffset;
+			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * kIconHighlightedLocalYOffset;
+			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * -kIconHighlightedLocalYOffset;
+
+			semiTransparent = false;
+			m_FrameMaterial = U.Material.GetMaterialClone(m_FrameRenderer);
+			var frameMaterialColor = m_FrameMaterial.color;
+			sFrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
+			sFrameSemiTransparentColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 0.125f);
 		}
 
 		void OnDisable()
@@ -149,9 +185,17 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 		}
 
+		private void OnDestroy()
+		{
+			U.Object.Destroy(m_InsetMaterial);
+			U.Object.Destroy(m_IconMaterial);
+			U.Object.Destroy(m_FrameMaterial);
+		}
+
 		public void Show()
 		{
 			m_MenuInset.localScale = m_HiddenInsetLocalScale;
+			m_FrameMaterial.SetColor(kMaterialColorProperty, sFrameOpaqueColor);
 			m_Pressed = false;
 			m_Highlighted = false;
 
@@ -275,6 +319,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var opacity = Time.unscaledDeltaTime;
 			var topColor = m_OriginalInsetGradientPair.a;
 			var bottomColor = m_OriginalInsetGradientPair.b;
+			var initialFrameColor = m_FrameMaterial.color;
+			var currentFrameColor = initialFrameColor;
 			while (opacity > 0)
 			{
 				if (m_Highlighted)
@@ -282,12 +328,13 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				else
 					opacity = Mathf.Clamp01(opacity - Time.unscaledDeltaTime * 2);
 
-
 				topColor = Color.Lerp(m_OriginalInsetGradientPair.a, s_GradientPair.a, opacity * 2f);
 				bottomColor = Color.Lerp(m_OriginalInsetGradientPair.b, s_GradientPair.b, opacity);
+				currentFrameColor = Color.Lerp(initialFrameColor, sFrameOpaqueColor, opacity);
 
 				m_InsetMaterial.SetColor(kMaterialColorTopProperty, topColor);
 				m_InsetMaterial.SetColor(kMaterialColorBottomProperty, bottomColor);
+				m_FrameMaterial.SetColor(kMaterialColorProperty, currentFrameColor);
 
 				m_MenuInset.localScale = Vector3.Lerp(m_VisibleInsetLocalScale, m_HighlightedInsetLocalScale, opacity * opacity);
 				yield return null;
@@ -343,6 +390,46 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
 			m_IconHighlightCoroutine = null;
+		}
+
+		IEnumerator AnimateSemiTransparent(bool makeSemiTransparent)
+		{
+			var transitionAmount = Time.unscaledDeltaTime;
+			var positionWait = (orderIndex + 4) * 0.25f; // pad the order index for a faster start to the transition
+			var currentFrameColor = m_FrameMaterial.color;
+			var targetFrameColor = makeSemiTransparent ? sFrameSemiTransparentColor : sFrameOpaqueColor;
+			var currentInsetAlpha = m_InsetMaterial.GetFloat(kMaterialAlphaProperty);
+			var targetInsetAlpha = makeSemiTransparent ? 0.25f : 1f;
+			var currentIconColor = m_IconMaterial.GetColor(kMaterialColorProperty);
+			var targetIconColor = makeSemiTransparent ? sFrameSemiTransparentColor : Color.white;
+			var currentInsetScale = m_MenuInset.localScale;
+			var targetInsetScale = makeSemiTransparent ? m_HighlightedInsetLocalScale * 4 : m_VisibleInsetLocalScale;
+			while (transitionAmount < 1)
+			{
+				m_FrameMaterial.SetColor(kMaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, transitionAmount));
+				m_MenuInset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, transitionAmount);
+				var insetAlphaLerp = Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, transitionAmount);
+				m_InsetMaterial.SetFloat(kMaterialAlphaProperty, insetAlphaLerp);
+				m_IconMaterial.SetColor(kMaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, transitionAmount));
+				transitionAmount = transitionAmount + Time.unscaledDeltaTime * positionWait;
+				yield return null;
+			}
+
+			m_FrameMaterial.SetColor(kMaterialColorProperty, targetFrameColor);
+			m_InsetMaterial.SetFloat(kMaterialAlphaProperty, targetInsetAlpha);
+			m_IconMaterial.SetColor(kMaterialColorProperty, targetIconColor);
+			m_MenuInset.localScale = targetInsetScale;
+			m_SemiTransparentCoroutine = null;
+		}
+
+		public void OnRayEnter(RayEventData eventData)
+		{
+			highlighted = true;
+		}
+
+		public void OnRayExit(RayEventData eventData)
+		{
+			highlighted = false;
 		}
 	}
 }
