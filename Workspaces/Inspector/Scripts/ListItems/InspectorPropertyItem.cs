@@ -23,7 +23,16 @@ public abstract class InspectorPropertyItem : InspectorListItem
 	public override void UpdateVisuals()
 	{
 		base.UpdateVisuals();
-		m_SerializedProperty = data.serializedObject.FindProperty(m_SerializedProperty.name);
+
+		var property = data.serializedObject.GetIterator();
+		while (property.NextVisible(true))
+		{
+			if (property.propertyPath == m_SerializedProperty.propertyPath)
+			{
+				m_SerializedProperty = property;
+				break;
+			}
+		}
 	}
 
 	protected void FinalizeModifications()

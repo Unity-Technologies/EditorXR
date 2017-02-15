@@ -152,7 +152,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 
 	public virtual void UpdateVisuals()
 	{
-		data.serializedObject.Update();
+		if (data.serializedObject.targetObject) // An exception is thrown if the targetObject has been deleted
+			data.serializedObject.Update();
 	}
 
 	public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)

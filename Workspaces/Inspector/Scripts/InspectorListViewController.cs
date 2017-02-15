@@ -138,9 +138,17 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		foreach (var datum in data)
 		{
+			if (datum.instanceID == null)
+			{
+				Recycle(datum);
+				RecycleChildren(datum);
+				continue;
+			}
+
 			bool expanded;
-			if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
-				m_ExpandStates[datum.instanceID] = false;
+			var instanceID = datum.instanceID.Value;
+			if (!m_ExpandStates.TryGetValue(instanceID, out expanded))
+				m_ExpandStates[instanceID] = false;
 
 			m_ItemSize = m_TemplateSizes[datum.template];
 			var itemSize = m_ItemSize.Value;
@@ -251,7 +259,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	void ToggleExpanded(InspectorData data)
 	{
-		m_ExpandStates[data.instanceID] = !m_ExpandStates[data.instanceID];
+		var instanceID = data.instanceID.Value;
+		m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
 	}
 
 	void OnArraySizeChanged(PropertyData element)
@@ -264,8 +273,11 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		foreach (var datum in data)
 		{
+			if (datum.instanceID == null)
+				continue;
+
 			var targetObject = datum.serializedObject.targetObject;
-			m_ExpandStates[datum.instanceID] = targetObject is Component || targetObject is GameObject;
+			m_ExpandStates[datum.instanceID.Value] = targetObject is Component || targetObject is GameObject;
 
 			if (datum.children != null)
 				ExpandComponentRows(datum.children);

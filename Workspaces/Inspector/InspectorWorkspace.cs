@@ -174,7 +174,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		if (!m_SelectedObject || !IncludesCurrentObject(modifications))
 			return modifications;
 
-		UpdateCurrentObject(RequiresFullReload(modifications));
+		UpdateCurrentObject(false);
 
 		return modifications;
 	}
@@ -185,6 +185,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		{
 			if (modification.previousValue.target == m_SelectedObject)
 				return true;
+
 			if (modification.currentValue.target == m_SelectedObject)
 				return true;
 
@@ -192,15 +193,12 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 			{
 				if (modification.previousValue.target == component)
 					return true;
+
 				if (modification.currentValue.target == component)
 					return true;
 			}
 		}
-		return false;
-	}
 
-	static bool RequiresFullReload(UndoPropertyModification[] modifications)
-	{
 		return false;
 	}
 
@@ -291,6 +289,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 					break;
 			}
 		}
+
 		return children;
 	}
 
