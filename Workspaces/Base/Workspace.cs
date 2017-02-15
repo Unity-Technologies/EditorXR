@@ -182,7 +182,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		{
 			if (m_Dragging)
 			{
-				var scale = viewerPivot.lossyScale.x;
+				var scale = viewerPivot.localScale.x;
 				var dragVector = (eventData.rayOrigin.position - m_DragStart) / scale;
 				var bounds = contentBounds;
 				var positionOffset = Vector3.zero;

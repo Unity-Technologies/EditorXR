@@ -145,7 +145,8 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		m_HierarchyUI.listView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
+		m_HierarchyUI.listView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward)
+			/ viewerPivot.localScale.x;
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

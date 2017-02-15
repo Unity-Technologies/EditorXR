@@ -28,7 +28,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	}
 
 	[SerializeField]
-	private float m_ScaleFactor = 0.1f;
+	private float m_ScaleFactor = 0.05f;
 
 	[SerializeField]
 	private string[] m_IconTypes;
@@ -94,7 +94,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 
 	protected override Vector3 GetObjectSize(GameObject g)
 	{
-		return g.GetComponent<BoxCollider>().size * m_ScaleFactor + Vector3.one * m_Padding;
+		return g.GetComponent<BoxCollider>().size * m_ScaleFactor + Vector3.one * m_Padding * m_ScaleFactor;
 	}
 
 	protected override void UpdateItems()

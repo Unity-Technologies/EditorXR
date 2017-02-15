@@ -10,7 +10,7 @@ Material:
   m_Shader: {fileID: 4800000, guid: d2d82e816970e9849bc93f1842c33050, type: 3}
   m_ShaderKeywords: LINE_MODEL_SPACE LINE_PERSPECTIVE_WIDTH
   m_LightmapFlags: 5
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: 9105
   stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
