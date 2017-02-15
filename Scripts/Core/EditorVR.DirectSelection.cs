@@ -212,9 +212,6 @@ namespace UnityEditor.Experimental.EditorVR
 			var startPosition = viewerPivot.position;
 			var startRotation = viewerPivot.rotation;
 
-			var startTime = Time.realtimeSinceStartup;
-			var diffTime = 0f;
-
 			var rotation = startRotation;
 			if (viewDirection.HasValue)
 			{
@@ -223,15 +220,16 @@ namespace UnityEditor.Experimental.EditorVR
 				rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
 			}
 
+			var diffTime = 0f;
+			var startTime = Time.realtimeSinceStartup;
 			while (diffTime < kViewerPivotTransitionTime)
 			{
-				diffTime = Time.realtimeSinceStartup - startTime;
 				var t = diffTime / kViewerPivotTransitionTime;
-
 				// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
 				viewerPivot.position = Vector3.Lerp(startPosition, position, t);
 				viewerPivot.rotation = Quaternion.Lerp(startRotation, rotation, t);
 				yield return null;
+				diffTime = Time.realtimeSinceStartup - startTime;
 			}
 
 			viewerPivot.position = position;
