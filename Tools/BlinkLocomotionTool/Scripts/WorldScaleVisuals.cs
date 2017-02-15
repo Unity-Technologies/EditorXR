@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
 
-public class WorldScaleVisuals : MonoBehaviour
+public class WorldScaleVisuals : MonoBehaviour, IUsesViewerPivot
 {
 	[SerializeField]
 	float m_IconTranslateCoefficient = -0.16f;
@@ -49,8 +50,9 @@ public class WorldScaleVisuals : MonoBehaviour
 
 	public void SetPosition()
 	{
+		var viewerScale = viewerPivot.localScale.x;
 		var iconContainerLocal = m_IconsContainer.localPosition;
-		iconContainerLocal.x = Mathf.Log10(transform.lossyScale.x) * m_IconTranslateCoefficient + m_IconTranslateOffset;
+		iconContainerLocal.x = Mathf.Log10(viewerScale) * m_IconTranslateCoefficient + m_IconTranslateOffset;
 		m_IconsContainer.localPosition = iconContainerLocal;
 
 		var camera = U.Camera.GetMainCamera().transform;
@@ -75,6 +77,6 @@ public class WorldScaleVisuals : MonoBehaviour
 		uvRect.width = length * m_DotUVScale;
 		m_DottedLine.uvRect = uvRect;
 
-		m_ScaleText.text = string.Format("Viewer Scale: {0:f2}", viewerPivot.lossyScale.x);
+		m_ScaleText.text = string.Format("Viewer Scale: {0:f2}", viewerScale);
 	}
 }

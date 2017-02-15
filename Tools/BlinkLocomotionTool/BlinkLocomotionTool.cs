@@ -311,7 +311,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			.GetComponent<WorldScaleVisuals>();
 		m_WorldScaleVisuals.leftHand = leftHand;
 		m_WorldScaleVisuals.rightHand = rightHand;
-		m_WorldScaleVisuals.viewerPivot = viewerPivot;
+		connectInterfaces(m_WorldScaleVisuals);
 		m_WorldScaleVisuals.SetPosition();
 	}
 
