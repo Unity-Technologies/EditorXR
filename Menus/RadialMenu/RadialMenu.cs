@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine.InputNew;
 using UnityEngine.Experimental.EditorVR.Actions;
+using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 
 namespace UnityEngine.Experimental.EditorVR.Menus
 {
-	public class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap
+	public class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap, IUsesDirectSelection
 	{
 		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]
@@ -70,6 +71,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		public Transform menuOrigin { get; set; }
 
 		public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
+		public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
 
 		void Start()
 		{
@@ -78,6 +80,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_RadialMenuUI.actions = menuActions;
 			m_RadialMenuUI.Setup();
 			m_RadialMenuUI.visible = m_Visible;
+			m_RadialMenuUI.getDirectSelection = getDirectSelection;
 		}
 
 		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
