@@ -10,16 +10,7 @@ public class InspectorColorItem : InspectorPropertyItem
 	{
 		base.Setup(data);
 
-		UpdateInputFields(m_SerializedProperty.colorValue);
-	}
-
-	void UpdateInputFields(Color color)
-	{
-		for (var i = 0; i < 4; i++)
-		{
-			m_InputFields[i].text = color[i].ToString();
-			m_InputFields[i].ForceUpdateLabel();
-		}
+		UpdateInputFields();
 	}
 
 	protected override void FirstTimeSetup()
@@ -32,12 +23,15 @@ public class InspectorColorItem : InspectorPropertyItem
 			m_InputFields[i].onValueChanged.AddListener(value =>
 			{
 				if (SetValue(value, index))
-				{
-					blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
 					data.serializedObject.ApplyModifiedProperties();
-				}
 			});
 		}
+	}
+
+	public override void UpdateVisuals()
+	{
+		base.UpdateVisuals();
+		UpdateInputFields();
 	}
 
 	public bool SetValue(string input, int index)
@@ -52,12 +46,23 @@ public class InspectorColorItem : InspectorPropertyItem
 			color[index] = value;
 			m_SerializedProperty.colorValue = color;
 
-			UpdateInputFields(color);
+			UpdateInputFields();
 
 			return true;
 		}
 
 		return false;
+	}
+
+	void UpdateInputFields()
+	{
+		var color = m_SerializedProperty.colorValue;
+
+		for (var i = 0; i < 4; i++)
+		{
+			m_InputFields[i].text = color[i].ToString();
+			m_InputFields[i].ForceUpdateLabel();
+		}
 	}
 
 	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -100,7 +105,7 @@ public class InspectorColorItem : InspectorPropertyItem
 		{
 			m_SerializedProperty.colorValue = (Color)dropObject;
 
-			UpdateInputFields(m_SerializedProperty.colorValue);
+			UpdateInputFields();
 
 			FinalizeModifications();
 		}
@@ -113,7 +118,7 @@ public class InspectorColorItem : InspectorPropertyItem
 			color.g = vector2.y;
 			m_SerializedProperty.colorValue = color;
 
-			UpdateInputFields(color);
+			UpdateInputFields();
 
 			FinalizeModifications();
 		}
@@ -126,7 +131,7 @@ public class InspectorColorItem : InspectorPropertyItem
 			color.b = vector3.z;
 			m_SerializedProperty.colorValue = color;
 
-			UpdateInputFields(color);
+			UpdateInputFields();
 
 			FinalizeModifications();
 		}
@@ -140,7 +145,7 @@ public class InspectorColorItem : InspectorPropertyItem
 			color.a = vector4.w;
 			m_SerializedProperty.colorValue = color;
 
-			UpdateInputFields(color);
+			UpdateInputFields();
 
 			FinalizeModifications();
 		}

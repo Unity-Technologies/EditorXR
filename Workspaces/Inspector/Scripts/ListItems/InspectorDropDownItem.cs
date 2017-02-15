@@ -21,6 +21,23 @@ public class InspectorDropDownItem : InspectorPropertyItem
 	{
 		base.Setup(data);
 
+		UpdateDropdown();
+	}
+
+	protected override void FirstTimeSetup()
+	{
+		base.FirstTimeSetup();
+		m_DropDown.valueChanged += ValueChanged;
+	}
+
+	public override void UpdateVisuals()
+	{
+		base.UpdateVisuals();
+		UpdateDropdown();
+	}
+
+	void UpdateDropdown()
+	{
 		if (m_SerializedProperty.propertyType == SerializedPropertyType.LayerMask)
 		{
 			m_DropDown.multiSelect = true;
@@ -50,12 +67,6 @@ public class InspectorDropDownItem : InspectorPropertyItem
 			m_DropDown.options = m_SerializedProperty.enumDisplayNames;
 			m_DropDown.value = m_SerializedProperty.enumValueIndex;
 		}
-	}
-
-	protected override void FirstTimeSetup()
-	{
-		base.FirstTimeSetup();
-		m_DropDown.valueChanged += ValueChanged;
 	}
 
 	void ValueChanged(int clicked, int[] values)

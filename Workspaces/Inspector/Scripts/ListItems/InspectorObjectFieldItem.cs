@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.Utilities;
@@ -25,7 +24,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		m_ObjectTypeName = U.Object.NicifySerializedPropertyType(m_SerializedProperty.type);
 		m_ObjectType = U.Object.TypeNameToType(m_ObjectTypeName);
 
-		UpdateVisuals(m_SerializedProperty.objectReferenceValue);
+		UpdateVisuals();
 	}
 
 	bool SetObject(Object obj)
@@ -39,9 +38,9 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		if (m_SerializedProperty.objectReferenceValue != null && m_SerializedProperty.objectReferenceValue.Equals(obj))
 			return true;
 
-		UpdateVisuals(obj);
-
 		m_SerializedProperty.objectReferenceValue = obj;
+
+		UpdateVisuals();
 
 		FinalizeModifications();
 
@@ -53,13 +52,15 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		SetObject(null);
 	}
 
-	bool IsAssignable(Object obj)
+	public override void UpdateVisuals()
 	{
-		return obj == null || obj.GetType().IsAssignableFrom(m_ObjectType);
+		base.UpdateVisuals();
+		UpdateUI();
 	}
 
-	void UpdateVisuals(Object obj)
+	public void UpdateUI()
 	{
+		var obj = m_SerializedProperty.objectReferenceValue;
 		if (obj == null)
 		{
 			m_FieldLabel.text = string.Format("None ({0})", m_ObjectTypeName);
@@ -95,6 +96,11 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 	{
 		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
 		m_Button.sharedMaterials = highlightMaterials;
+	}
+
+	bool IsAssignable(Object obj)
+	{
+		return obj == null || obj.GetType().IsAssignableFrom(m_ObjectType);
 	}
 #endif
 }

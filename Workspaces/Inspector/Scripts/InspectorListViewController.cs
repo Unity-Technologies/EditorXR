@@ -68,8 +68,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
 
-	public Action blockUndoPostProcess { protected get; set; }
-
 #if UNITY_EDITOR
 	protected override void Setup()
 	{
@@ -125,6 +123,15 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		// Snap back if list scrolled too far
 		if (totalOffset > 0 && -scrollOffset >= totalOffset)
 			m_ScrollReturn = -totalOffset + m_ItemSize.Value.z; // m_ItemSize will be equal to the size of the last visible item
+	}
+
+	public void UpdateVisuals()
+	{
+		foreach (var listViewItem in m_ListItems.Values)
+		{
+			var item = (InspectorListItem)listViewItem;
+			item.UpdateVisuals();
+		}
 	}
 
 	void UpdateRecursively(List<InspectorData> data, ref float totalOffset, int depth = 0)
@@ -190,8 +197,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			var numberItem = item as InspectorNumberItem;
 			if (numberItem)
 				numberItem.arraySizeChanged += OnArraySizeChanged;
-
-			item.blockUndoPostProcess = blockUndoPostProcess;
 
 			item.setup = true;
 		}

@@ -24,6 +24,17 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 		propertyType = m_SerializedProperty.propertyType;
 
+		UpdateVisuals();
+	}
+
+	public override void UpdateVisuals()
+	{
+		base.UpdateVisuals();
+		UpdateInputField();
+	}
+
+	void UpdateInputField()
+	{
 		var val = string.Empty;
 		switch (m_SerializedProperty.propertyType)
 		{
@@ -46,10 +57,7 @@ public class InspectorNumberItem : InspectorPropertyItem
 	{
 		// Do not increment undo group because NumericInputField does it for us
 		if (SetValueIfPossible(input))
-		{
-			blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
 			data.serializedObject.ApplyModifiedProperties();
-		}
 	}
 
 	bool SetValueIfPossible(string input)

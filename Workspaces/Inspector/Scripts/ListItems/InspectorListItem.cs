@@ -50,8 +50,6 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 
 	public Func<byte> requestStencilRef { private get; set; }
 
-	public Action blockUndoPostProcess { protected get; set; }
-
 	public override void Setup(InspectorData data)
 	{
 		base.Setup(data);
@@ -150,6 +148,11 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 
 		if (m_CuboidLayout)
 			m_CuboidLayout.UpdateObjects();
+	}
+
+	public virtual void UpdateVisuals()
+	{
+		data.serializedObject.Update();
 	}
 
 	public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)

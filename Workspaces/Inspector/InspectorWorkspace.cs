@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
@@ -27,8 +26,6 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 	bool m_IsLocked;
 
-	bool m_BlockUndoPostProcess;
-
 #if UNITY_EDITOR
 	public override void Setup()
 	{
@@ -48,7 +45,6 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		connectInterfaces(listView);
 		listView.data = new List<InspectorData>();
 		listView.arraySizeChanged += OnArraySizeChanged;
-		listView.blockUndoPostProcess = BlockUndoPostProcess;
 
 		var scrollHandle = m_InspectorUI.inspectorScrollHandle;
 		scrollHandle.dragStarted += OnScrollDragStarted;
@@ -68,7 +64,12 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 			OnSelectionChanged();
 
 		Undo.postprocessModifications += PostprocessModifications;
-		Undo.undoRedoPerformed += UpdateCurrentObject;
+		Undo.undoRedoPerformed += OnUndoRedo;
+	}
+
+	void OnUndoRedo()
+	{
+		UpdateCurrentObject(true);
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -83,7 +84,6 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		BlockUndoPostProcess();
 		m_InspectorUI.listView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
 	}
 
@@ -130,54 +130,84 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		}
 
 		m_SelectedObject = Selection.activeGameObject;
-		UpdateInspectorData(m_SelectedObject);
+		UpdateInspectorData(m_SelectedObject, true);
 	}
 
-	void UpdateInspectorData(GameObject selection)
+	void UpdateInspectorData(GameObject selection, bool fullReload)
 	{
-		var inspectorData = new List<InspectorData>();
-		var objectChildren = new List<InspectorData>();
-
-		foreach(var component in selection.GetComponents<Component>())
+		var listView = m_InspectorUI.listView;
+		if (fullReload)
 		{
-			var obj = new SerializedObject(component);
+			var inspectorData = new List<InspectorData>();
+			var objectChildren = new List<InspectorData>();
 
-			var componentChildren = new List<InspectorData>();
-
-			var property = obj.GetIterator();
-			while (property.NextVisible(true))
+			foreach (var component in selection.GetComponents<Component>())
 			{
-				if(property.depth == 0)
-					componentChildren.Add(SerializedPropertyToPropertyData(property, obj));
+				var obj = new SerializedObject(component);
+
+				var componentChildren = new List<InspectorData>();
+
+				var property = obj.GetIterator();
+				while (property.NextVisible(true))
+				{
+					if (property.depth == 0)
+						componentChildren.Add(SerializedPropertyToPropertyData(property, obj));
+				}
+
+				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren);
+				objectChildren.Add(componentData);
 			}
 
-			var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren);
-			objectChildren.Add(componentData);
+			var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(selection), objectChildren);
+			inspectorData.Add(objectData);
+
+			listView.data = inspectorData;
 		}
-
-		var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(selection), objectChildren);
-		inspectorData.Add(objectData);
-
-		m_InspectorUI.listView.data = inspectorData;
+		else
+		{
+			listView.UpdateVisuals();
+		}
 	}
 
 	UndoPropertyModification[] PostprocessModifications(UndoPropertyModification[] modifications)
 	{
-		if (m_BlockUndoPostProcess)
-		{
-			m_BlockUndoPostProcess = false;
+		if (!m_SelectedObject || !IncludesCurrentObject(modifications))
 			return modifications;
-		}
 
-		UpdateCurrentObject();
+		UpdateCurrentObject(RequiresFullReload(modifications));
 
 		return modifications;
 	}
 
-	void UpdateCurrentObject()
+	bool IncludesCurrentObject(UndoPropertyModification[] modifications)
+	{
+		foreach (var modification in modifications)
+		{
+			if (modification.previousValue.target == m_SelectedObject)
+				return true;
+			if (modification.currentValue.target == m_SelectedObject)
+				return true;
+
+			foreach (var component in m_SelectedObject.GetComponents<Component>())
+			{
+				if (modification.previousValue.target == component)
+					return true;
+				if (modification.currentValue.target == component)
+					return true;
+			}
+		}
+		return false;
+	}
+
+	static bool RequiresFullReload(UndoPropertyModification[] modifications)
+	{
+		return false;
+	}
+
+	void UpdateCurrentObject(bool fullReload)
 	{
 		if (m_SelectedObject)
-			UpdateInspectorData(m_SelectedObject);
+			UpdateInspectorData(m_SelectedObject, fullReload);
 	}
 
 	PropertyData SerializedPropertyToPropertyData(SerializedProperty property, SerializedObject obj)
@@ -319,15 +349,10 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 			OnSelectionChanged();
 	}
 
-	void BlockUndoPostProcess()
-	{
-		m_BlockUndoPostProcess = true;
-	}
-
 	protected override void OnDestroy()
 	{
 		Undo.postprocessModifications -= PostprocessModifications;
-		Undo.undoRedoPerformed -= UpdateCurrentObject;
+		Undo.undoRedoPerformed -= OnUndoRedo;
 		base.OnDestroy();
 	}
 #else

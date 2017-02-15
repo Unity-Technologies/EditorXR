@@ -13,6 +13,17 @@ public class InspectorStringItem : InspectorPropertyItem
 	{
 		base.Setup(data);
 
+		UpdateInputField();
+	}
+
+	public override void UpdateVisuals()
+	{
+		base.UpdateVisuals();
+		UpdateInputField();
+	}
+
+	void UpdateInputField()
+	{
 		var val = string.Empty;
 		switch (m_SerializedProperty.propertyType)
 		{
@@ -31,10 +42,7 @@ public class InspectorStringItem : InspectorPropertyItem
 	public void SetValue(string input)
 	{
 		if (SetValueIfPossible(input))
-		{
-			blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
 			data.serializedObject.ApplyModifiedProperties();
-		}
 	}
 	bool SetValueIfPossible(string input)
 	{

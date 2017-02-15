@@ -17,16 +17,7 @@ public class InspectorBoundsItem : InspectorPropertyItem
 	{
 		base.Setup(data);
 
-		UpdateInputFields(m_SerializedProperty.boundsValue);
-	}
-
-	void UpdateInputFields(Bounds bounds)
-	{
-		for (var i = 0; i < m_CenterFields.Length; i++)
-		{
-			m_CenterFields[i].text = bounds.center[i].ToString();
-			m_ExtentsFields[i].text = bounds.extents[i].ToString();
-		}
+		UpdateInputFields();
 	}
 
 	protected override void FirstTimeSetup()
@@ -39,19 +30,30 @@ public class InspectorBoundsItem : InspectorPropertyItem
 			m_CenterFields[i].onValueChanged.AddListener(value =>
 			{
 				if (SetValue(value, index, true))
-				{
-					blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
 					data.serializedObject.ApplyModifiedProperties();
-				}
 			});
 			m_ExtentsFields[i].onValueChanged.AddListener(value =>
 			{
 				if (SetValue(value, index))
-				{
-					blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
 					data.serializedObject.ApplyModifiedProperties();
-				}
 			});
+		}
+	}
+
+	public override void UpdateVisuals()
+	{
+		base.UpdateVisuals();
+		UpdateInputFields();
+	}
+
+	void UpdateInputFields()
+	{
+		var bounds = m_SerializedProperty.boundsValue;
+
+		for (var i = 0; i < m_CenterFields.Length; i++)
+		{
+			m_CenterFields[i].text = bounds.center[i].ToString();
+			m_ExtentsFields[i].text = bounds.extents[i].ToString();
 		}
 	}
 
@@ -72,9 +74,9 @@ public class InspectorBoundsItem : InspectorPropertyItem
 			else
 				bounds.extents = vector;
 
-			UpdateInputFields(bounds);
-
 			m_SerializedProperty.boundsValue = bounds;
+
+			UpdateInputFields();
 
 			return true;
 		}
@@ -136,7 +138,7 @@ public class InspectorBoundsItem : InspectorPropertyItem
 		{
 			m_SerializedProperty.boundsValue = (Bounds)dropObject;
 
-			UpdateInputFields(m_SerializedProperty.boundsValue);
+			UpdateInputFields();
 
 			FinalizeModifications();
 		}

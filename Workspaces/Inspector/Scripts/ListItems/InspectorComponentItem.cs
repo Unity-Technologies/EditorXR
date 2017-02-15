@@ -52,6 +52,13 @@ public class InspectorComponentItem : InspectorListItem
 			kExpandArrowRotateSpeed);
 	}
 
+	public override void UpdateVisuals()
+	{
+		base.UpdateVisuals();
+		var enabled = EditorUtility.GetObjectEnabled(data.serializedObject.targetObject);
+		m_EnabledToggle.isOn = enabled == 1;
+	}
+
 	public void SetEnabled(bool value)
 	{
 		var serializedObject = data.serializedObject;
@@ -60,7 +67,6 @@ public class InspectorComponentItem : InspectorListItem
 		{
 			EditorUtility.SetObjectEnabled(target, value);
 
-			blockUndoPostProcess(); // Undo is registered by ApplyModifiedProperties
 			Undo.IncrementCurrentGroup();
 			serializedObject.ApplyModifiedProperties();
 		}

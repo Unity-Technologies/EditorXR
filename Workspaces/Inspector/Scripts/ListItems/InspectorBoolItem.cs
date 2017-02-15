@@ -22,6 +22,12 @@ public class InspectorBoolItem : InspectorPropertyItem
 		m_Toggle.onValueChanged.AddListener(SetValue);
 	}
 
+	public override void UpdateVisuals()
+	{
+		base.UpdateVisuals();
+		m_Toggle.isOn = m_SerializedProperty.boolValue;
+	}
+
 	public void SetValue(bool value)
 	{
 		if (m_SerializedProperty.boolValue != value)
