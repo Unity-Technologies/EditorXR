@@ -7,7 +7,7 @@ using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using TooltipAttribute = UnityEngine.Experimental.EditorVR.TooltipAttribute;
 
-public class TooltipsEditor : EditorWindow
+class TooltipsEditor : EditorWindow
 {
 	readonly Dictionary<Type, TooltipAttribute> m_TooltipAttributes = new Dictionary<Type, TooltipAttribute>();
 	IEnumerable<Type> m_TooltipClasses;
@@ -18,7 +18,7 @@ public class TooltipsEditor : EditorWindow
 	[MenuItem("Window/Tooltips")]
 	static void Init()
 	{
-		((EditorWindow) GetWindow<TooltipsEditor>()).Show();
+		GetWindow<TooltipsEditor>().Show();
 	}
 
 	void OnEnable()

@@ -6,7 +6,7 @@ using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class TooltipModule : MonoBehaviour, IUsesCameraRig
+class TooltipModule : MonoBehaviour, IUsesCameraRig
 {
 	const float kDelay = 0; // In case we want to bring back a delay
 	const float kTransitionDuration = 0.1f;

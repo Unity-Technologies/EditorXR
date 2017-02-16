@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class TooltipUI : MonoBehaviour
+class TooltipUI : MonoBehaviour
 {
 	public Text text { get { return m_Text; } }
 	[SerializeField]
