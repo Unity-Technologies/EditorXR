@@ -9,7 +9,7 @@ using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.UI;
 
 [MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
-public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveViewerPivot
+public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
 {
 	const float kYBounds = 0.2f;
 	const float kScrollMargin = 0.03f;
@@ -55,7 +55,7 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 	}
 	List<string> m_FilterList;
 
-	public MoveViewerPivotDelegate moveViewerPivot { private get; set; }
+	public MoveCameraRigDelegate moveCameraRig { private get; set; }
 
 	public override void Setup()
 	{
@@ -199,7 +199,6 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 		if (Selection.gameObjects.Length == 0)
 			return;
 
-		var viewerPivot = U.Camera.GetViewerPivot();
 		var mainCamera = U.Camera.GetMainCamera().transform;
 		var bounds = U.Object.GetBounds(Selection.gameObjects);
 
@@ -214,9 +213,9 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 		viewDirection.y = 0;
 		viewDirection.Normalize();
 
-		var cameraDiff = mainCamera.position - viewerPivot.position;
+		var cameraDiff = mainCamera.position - U.Camera.GetCameraRig().position;
 		cameraDiff.y = 0;
 
-		moveViewerPivot(bounds.center - cameraDiff - viewDirection * maxSize);
+		moveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
 	}
 }

@@ -1,6 +1,4 @@
 #if UNITY_EDITORVR
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
@@ -137,7 +135,6 @@ namespace UnityEditor.Experimental.EditorVR
 				// Detach the player head model so that it is not affected by its parent transform
 				if (selection.CompareTag(kVRPlayerTag))
 					selection.transform.parent = null;
-				diffTime = Time.realtimeSinceStartup - startTime;
 			}
 
 			internal void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
@@ -146,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					// Dropping the player head updates the camera rig position
 					if (grabbedObject.CompareTag(kVRPlayerTag))
-						evr.StartCoroutine(Viewer.MoveCameraRig(grabbedObject));
+						Viewer.DropPlayerHead(grabbedObject);
 					else if (evr.m_Viewer.IsOverShoulder(rayOrigin) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
 						evr.m_SceneObjectModule.DeleteSceneObject(grabbedObject.gameObject);
 				}
