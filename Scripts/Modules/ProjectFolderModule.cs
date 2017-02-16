@@ -1,14 +1,12 @@
-#if UNITY_EDITORVR
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
+using UnityEditor;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
-	partial class EditorVR
+	internal class ProjectFolderModule : MonoBehaviour
 	{
 		// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
 		const float kMaxFrameTime = 0.01f;
@@ -23,6 +21,39 @@ namespace UnityEditor.Experimental.EditorVR
 		readonly HashSet<string> m_AssetTypes = new HashSet<string>();
 		float m_ProjectFolderLoadStartTime;
 		float m_ProjectFolderLoadYieldTime;
+
+		void OnEnable()
+		{
+			EditorApplication.projectWindowChanged += UpdateProjectFolders;
+			UpdateProjectFolders();
+		}
+
+		void OnDisable()
+		{
+			EditorApplication.projectWindowChanged -= UpdateProjectFolders;
+		}
+
+		public void AddConsumer(IUsesProjectFolderData consumer)
+		{
+			consumer.folderData = GetFolderData();
+			m_ProjectFolderLists.Add(consumer);
+		}
+
+		public void RemoveConsumer(IUsesProjectFolderData consumer)
+		{
+			m_ProjectFolderLists.Remove(consumer);
+		}
+
+		public void AddConsumer(IFilterUI consumer)
+		{
+			consumer.filterList = GetFilterList();
+			m_FilterUIs.Add(consumer);
+		}
+
+		public void RemoveConsumer(IFilterUI consumer)
+		{
+			m_FilterUIs.Remove(consumer);
+		}
 
 		List<string> GetFilterList()
 		{
@@ -41,6 +72,7 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			m_AssetTypes.Clear();
 
+#if UNITY_EDITOR
 			StartCoroutine(CreateFolderData((folderData, hasNext) =>
 			{
 				m_FolderData = new List<FolderData> { folderData };
@@ -57,8 +89,10 @@ namespace UnityEditor.Experimental.EditorVR
 					filterUI.filterList = GetFilterList();
 				}
 			}, m_AssetTypes));
+#endif
 		}
 
+#if UNITY_EDITOR
 		IEnumerator CreateFolderData(Action<FolderData, bool> callback, HashSet<string> assetTypes, bool hasNext = true, HierarchyProperty hp = null)
 		{
 			if (hp == null)
@@ -108,6 +142,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			callback(new FolderData(name, folderList.Count > 0 ? folderList : null, assetList, guid), hasNext);
 		}
+#endif
 
 		static AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
 		{
@@ -135,4 +170,3 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 	}
 }
-#endif

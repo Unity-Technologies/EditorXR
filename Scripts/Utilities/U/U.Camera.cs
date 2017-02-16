@@ -49,17 +49,17 @@
 				return camera;
 			}
 
-			public static Transform GetViewerPivot()
+			public static Transform GetCameraRig()
 			{
-				Transform pivot = UnityEngine.Camera.main ? UnityEngine.Camera.main.transform.parent : null;
+				Transform rig = UnityEngine.Camera.main ? UnityEngine.Camera.main.transform.parent : null;
 #if UNITY_EDITOR && UNITY_EDITORVR
 				if (!Application.isPlaying)
 				{
 					if (VRView.viewerCamera)
-						pivot = VRView.viewerCamera.transform.parent;
+						rig = VRView.viewerCamera.transform.parent;
 				}
 #endif
-				return pivot;
+				return rig;
 			}
 
 			/// <summary>

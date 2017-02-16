@@ -95,7 +95,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			// We don't process with all other input modules because we need fine-grained control to consume input
 		}
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			ExecuteUpdateOnSelectedObject();
 
