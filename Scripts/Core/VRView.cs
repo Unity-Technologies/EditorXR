@@ -49,7 +49,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private static VRView s_ActiveView;
 
-		private Transform m_CameraPivot;
+		private Transform m_CameraRig;
 		private Quaternion m_LastHeadRotation = Quaternion.identity;
 		private float m_TimeSinceLastHMDChange;
 		private bool m_LatchHMDValues;
@@ -58,13 +58,13 @@ namespace UnityEditor.Experimental.EditorVR
 		bool m_VRInitialized;
 		bool m_UseCustomPreviewCamera;
 
-		public static Transform viewerPivot
+		public static Transform cameraRig
 		{
 			get
 			{
 				if (s_ActiveView)
 				{
-					return s_ActiveView.m_CameraPivot;
+					return s_ActiveView.m_CameraRig;
 				}
 
 				return null;
@@ -131,9 +131,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 		public static Coroutine StartCoroutine(IEnumerator routine)
 		{
-			if (s_ActiveView && s_ActiveView.m_CameraPivot)
+			if (s_ActiveView && s_ActiveView.m_CameraRig)
 			{
-				var mb = s_ActiveView.m_CameraPivot.GetComponent<EditorMonoBehaviour>();
+				var mb = s_ActiveView.m_CameraRig.GetComponent<EditorMonoBehaviour>();
 				return mb.StartCoroutine(routine);
 			}
 
@@ -169,23 +169,23 @@ namespace UnityEditor.Experimental.EditorVR
 			autoRepaintOnSceneChange = true;
 			s_ActiveView = this;
 
-			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCamera", EditorVR.kDefaultHideFlags, typeof(Camera));
+			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", EditorVR.kDefaultHideFlags, typeof(Camera));
 			m_Camera = cameraGO.GetComponent<Camera>();
 			m_Camera.enabled = false;
 			m_Camera.cameraType = CameraType.VR;
 
-			GameObject pivotGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCameraPivot", EditorVR.kDefaultHideFlags, typeof(EditorMonoBehaviour));
-			m_CameraPivot = pivotGO.transform;
-			m_Camera.transform.parent = m_CameraPivot;
+			GameObject rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", EditorVR.kDefaultHideFlags, typeof(EditorMonoBehaviour));
+			m_CameraRig = rigGO.transform;
+			m_Camera.transform.parent = m_CameraRig;
 			m_Camera.nearClipPlane = 0.01f;
 			m_Camera.farClipPlane = 1000f;
 
 			// Generally, we want to be at a standing height, so default to that
 			const float kHeadHeight = 1.7f;
-			Vector3 position = m_CameraPivot.position;
+			Vector3 position = m_CameraRig.position;
 			position.y = kHeadHeight;
-			m_CameraPivot.position = position;
-			m_CameraPivot.rotation = Quaternion.identity;
+			m_CameraRig.position = position;
+			m_CameraRig.rotation = Quaternion.identity;
 
 			m_ShowDeviceView = EditorPrefs.GetBool(kShowDeviceView, false);
 			m_UseCustomPreviewCamera = EditorPrefs.GetBool(kUseCustomPreviewCamera, false);
@@ -221,8 +221,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 			SetOtherViewsEnabled(true);
 
-			if (m_CameraPivot)
-				DestroyImmediate(m_CameraPivot.gameObject, true);
+			if (m_CameraRig)
+				DestroyImmediate(m_CameraRig.gameObject, true);
 
 			Assert.IsNotNull(s_ActiveView, "EditorVR should have an active view");
 			s_ActiveView = null;

@@ -80,7 +80,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_RadialMenuUI.visible = m_Visible;
 		}
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var radialMenuInput = (RadialMenuInput)input;
 			if (radialMenuInput == null || !visible)

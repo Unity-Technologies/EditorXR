@@ -18,7 +18,7 @@ public class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrig
 
 	public Vector3 defaultOffset { private get; set; }
 
-	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
 		var standardInput = (Standard)input;
 		if (standardInput.action.wasJustPressed)
