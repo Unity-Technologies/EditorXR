@@ -123,6 +123,7 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		item.selectRow = SelectRow;
 
 		item.toggleExpanded = ToggleExpanded;
+		item.setExpanded = SetExpanded;
 
 		item.isExpanded = GetExpanded;
 
@@ -131,9 +132,8 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		return item;
 	}
 
-	void ToggleExpanded(HierarchyData data)
+	void ToggleExpanded(int instanceID)
 	{
-		var instanceID = data.instanceID;
 		m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
 	}
 
@@ -237,6 +237,11 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		bool expanded;
 		m_ExpandStates.TryGetValue(instanceID, out expanded);
 		return expanded;
+	}
+
+	void SetExpanded(int instanceID, bool expanded)
+	{
+		m_ExpandStates[instanceID] = expanded;
 	}
 
 	private void OnDestroy()

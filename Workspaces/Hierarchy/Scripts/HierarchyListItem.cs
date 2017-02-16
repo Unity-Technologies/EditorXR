@@ -51,7 +51,8 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 	public Material cubeMaterial { get; private set; }
 	public Material dropZoneMaterial { get; private set; }
 
-	public Action<HierarchyData> toggleExpanded { private get; set; }
+	public Action<int> toggleExpanded { private get; set; }
+	public Action<int, bool> setExpanded { private get; set; }
 	public Action<int> selectRow { private get; set; }
 
 	public Func<int, bool> isExpanded { private get; set; }
@@ -119,10 +120,6 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 		cubeScale.x = width;
 		m_CubeTransform.localScale = cubeScale;
 
-		var dropZoneScale = m_DropZoneTransform.localScale;
-		dropZoneScale.x = width;
-		m_DropZoneTransform.localScale = dropZoneScale;
-
 		var expandArrowTransform = m_ExpandArrow.transform;
 
 		var arrowWidth = expandArrowTransform.localScale.x * 0.5f;
@@ -138,13 +135,20 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 		textTransform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
 
+		var dropZoneScale = m_DropZoneTransform.localScale;
+		dropZoneScale.x = width - indent;
+		m_DropZoneTransform.localScale = dropZoneScale;
+		var dropZonePosition = m_DropZoneTransform.localPosition;
+		dropZonePosition.x = indent * 0.5f;
+		m_DropZoneTransform.localPosition = dropZonePosition;
+
 		UpdateArrow(expanded);
 
 		// Set selected/hover/normal color
-		if (selected)
-			cubeMaterial.color = m_SelectedColor;
-		else if (m_Hovering)
+		if (m_Hovering)
 			cubeMaterial.color = m_HoverColor;
+		else if (selected)
+			cubeMaterial.color = m_SelectedColor;
 		else
 			cubeMaterial.color = m_NormalColor;
 	}
@@ -211,7 +215,7 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
 	{
-		toggleExpanded(data);
+		toggleExpanded(data.instanceID);
 	}
 
 	void SelectFolder()
@@ -289,26 +293,33 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 			var transform = gameObject.transform;
 			var dropTransform = dropGameObject.transform;
 
-			if (handle == m_Cube || isExpanded(data.instanceID))
+			if (handle == m_Cube)
 			{
 				dropTransform.SetParent(transform);
-				dropTransform.SetSiblingIndex(0);
+				dropTransform.SetAsLastSibling();
+				setExpanded(data.instanceID, true);
+				selectRow(hierarchyData.instanceID);
 			}
-			else
+			else if (handle == m_DropZone)
 			{
-				if (transform.parent)
+				if (isExpanded(data.instanceID))
 				{
-					if (!dropTransform.parent == transform.parent)
-						dropTransform.SetParent(transform.parent);
-
+					dropTransform.SetParent(transform);
+					dropTransform.SetAsFirstSibling();
+				}
+				else if (transform.parent)
+				{
+					dropTransform.SetParent(transform.parent);
 					dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
 				}
 				else
 				{
-					if (dropTransform.parent)
-						dropTransform.SetParent(null);
+					var targetIndex = transform.GetSiblingIndex() + 1;
+					if (dropTransform.parent == transform.parent && dropTransform.GetSiblingIndex() < targetIndex)
+						targetIndex--;
 
-					dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
+					dropTransform.SetParent(null);
+					dropTransform.SetSiblingIndex(targetIndex);
 				}
 			}
 		}
