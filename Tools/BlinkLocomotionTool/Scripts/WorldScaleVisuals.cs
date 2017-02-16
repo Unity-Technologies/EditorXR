@@ -35,9 +35,8 @@ public class WorldScaleVisuals : MonoBehaviour, IUsesCameraRig
 
 	void Start()
 	{
-		for (var i = 0; i < m_Icons.Length; i++)
+		foreach (var icon in m_Icons)
 		{
-			var icon = m_Icons[i];
 			var image = ((GameObject)Instantiate(m_IconPrefab, m_IconsContainer, false)).GetComponent<Image>();
 			image.sprite = icon;
 		}
