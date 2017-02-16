@@ -9,8 +9,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	public class RadialMenuSlot : MonoBehaviour, IRayEnterHandler, IRayExitHandler
 	{
-		static Color sFrameOpaqueColor;
-		static Color sFrameSemiTransparentColor;
+		static Color s_FrameOpaqueColor;
 
 		static readonly Vector3 kHiddenLocalScale = new Vector3(1f, 0f, 1f);
 		const float kIconHighlightedLocalYOffset = 0.006f;
@@ -171,8 +170,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			semiTransparent = false;
 			m_FrameMaterial = U.Material.GetMaterialClone(m_FrameRenderer);
 			var frameMaterialColor = m_FrameMaterial.color;
-			sFrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
-			sFrameSemiTransparentColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 0.125f);
+			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
 		}
 
 		void OnDisable()
@@ -192,7 +190,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		public void Show()
 		{
 			m_MenuInset.localScale = m_HiddenInsetLocalScale;
-			m_FrameMaterial.SetColor(kMaterialColorProperty, sFrameOpaqueColor);
+			m_FrameMaterial.SetColor(kMaterialColorProperty, s_FrameOpaqueColor);
 			m_Pressed = false;
 			m_Highlighted = false;
 
@@ -324,7 +322,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 				topColor = Color.Lerp(m_OriginalInsetGradientPair.a, s_GradientPair.a, opacity * 2f);
 				bottomColor = Color.Lerp(m_OriginalInsetGradientPair.b, s_GradientPair.b, opacity);
-				currentFrameColor = Color.Lerp(initialFrameColor, sFrameOpaqueColor, opacity);
+				currentFrameColor = Color.Lerp(initialFrameColor, s_FrameOpaqueColor, opacity);
 
 				m_InsetMaterial.SetColor(kMaterialColorTopProperty, topColor);
 				m_InsetMaterial.SetColor(kMaterialColorBottomProperty, bottomColor);
@@ -395,12 +393,13 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var semiTransparentTargetScale = new Vector3(0.9f, 0.15f, 0.9f);
 			var targetScale = makeSemiTransparent ? semiTransparentTargetScale : Vector3.one;
 			var currentFrameColor = m_FrameMaterial.color;
-			var transparentFrameColor = new Color (sFrameOpaqueColor.r, sFrameOpaqueColor.g, sFrameOpaqueColor.b, 0f);
-			var targetFrameColor = m_CanvasGroup.interactable ? (makeSemiTransparent ? sFrameSemiTransparentColor : sFrameOpaqueColor) : transparentFrameColor;
+			var transparentFrameColor = new Color (s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0f);
+			var semiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.125f);
+			var targetFrameColor = m_CanvasGroup.interactable ? (makeSemiTransparent ? semiTransparentFrameColor : s_FrameOpaqueColor) : transparentFrameColor;
 			var currentInsetAlpha = m_InsetMaterial.GetFloat(kMaterialAlphaProperty);
 			var targetInsetAlpha = makeSemiTransparent ? 0.25f : 1f;
 			var currentIconColor = m_IconMaterial.GetColor(kMaterialColorProperty);
-			var targetIconColor = makeSemiTransparent ? sFrameSemiTransparentColor : Color.white;
+			var targetIconColor = makeSemiTransparent ? semiTransparentFrameColor : Color.white;
 			var currentInsetScale = m_MenuInset.localScale;
 			var targetInsetScale = makeSemiTransparent ? m_HighlightedInsetLocalScale * 4 : m_VisibleInsetLocalScale;
 			var currentIconScale = m_IconContainer.localScale;
