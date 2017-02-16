@@ -395,7 +395,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var transitionAmount = Time.unscaledDeltaTime;
 			var positionWait = (orderIndex + 4) * 0.25f; // pad the order index for a faster start to the transition
 			var currentScale = transform.localScale;
-			var targetScale = makeSemiTransparent ? new Vector3(0.9f, 0.15f, 0.9f) : Vector3.one;
+			var semiTransparentTargetScale = new Vector3(0.9f, 0.15f, 0.9f);
+			var targetScale = makeSemiTransparent ? semiTransparentTargetScale : Vector3.one;
 			var currentFrameColor = m_FrameMaterial.color;
 			var targetFrameColor = makeSemiTransparent ? sFrameSemiTransparentColor : sFrameOpaqueColor;
 			var currentInsetAlpha = m_InsetMaterial.GetFloat(kMaterialAlphaProperty);
@@ -405,7 +406,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var currentInsetScale = m_MenuInset.localScale;
 			var targetInsetScale = makeSemiTransparent ? m_HighlightedInsetLocalScale * 4 : m_VisibleInsetLocalScale;
 			var currentIconScale = m_IconContainer.localScale;
-			var targetIconScale = makeSemiTransparent ? Vector3.one * 1.5f : Vector3.one;
+			var semiTransparentTargetIconScale = Vector3.one * 1.5f;
+			var targetIconScale = makeSemiTransparent ? semiTransparentTargetIconScale : Vector3.one;
 			while (transitionAmount < 1)
 			{
 				m_FrameMaterial.SetColor(kMaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, transitionAmount * kFasterMotionMultiplier));
@@ -413,9 +415,10 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				var insetAlphaLerp = Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, transitionAmount);
 				m_InsetMaterial.SetFloat(kMaterialAlphaProperty, insetAlphaLerp);
 				m_IconMaterial.SetColor(kMaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, transitionAmount));
-				transform.localScale = Vector3.Lerp(currentScale, targetScale, Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier);
-				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier);
-				transitionAmount = transitionAmount + Time.unscaledDeltaTime * positionWait;
+				var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
+				transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedTransitionAmount);
+				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedTransitionAmount);
+				transitionAmount += Time.unscaledDeltaTime * positionWait;
 				yield return null;
 			}
 
