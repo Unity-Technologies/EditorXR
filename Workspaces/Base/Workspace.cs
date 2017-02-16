@@ -7,7 +7,8 @@ using UnityEngine.Experimental.EditorVR.Extensions;
 
 namespace UnityEngine.Experimental.EditorVR.Workspaces
 {
-	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight, IUsesStencilRef, IConnectInterfaces, IUsesViewerPivot
+	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight,IUsesStencilRef,
+		IConnectInterfaces, IUsesCameraRig
 	{
 		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 
@@ -116,7 +117,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 
 		public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
-		public Transform viewerPivot { get; set; }
+		public Transform cameraRig { get; set; }
 
 		public virtual void Setup()
 		{
@@ -182,7 +183,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		{
 			if (m_Dragging)
 			{
-				var scale = viewerPivot.localScale.x;
+				var scale = cameraRig.localScale.x;
 				var dragVector = (eventData.rayOrigin.position - m_DragStart) / scale;
 				var bounds = contentBounds;
 				var positionOffset = Vector3.zero;

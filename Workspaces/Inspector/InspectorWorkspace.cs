@@ -77,7 +77,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
 		m_InspectorUI.listView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward)
-			/ viewerPivot.localScale.x;
+			/ cameraRig.localScale.x;
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

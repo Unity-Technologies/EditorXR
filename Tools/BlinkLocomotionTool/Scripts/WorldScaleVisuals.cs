@@ -3,7 +3,7 @@ using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
 
-public class WorldScaleVisuals : MonoBehaviour, IUsesViewerPivot
+public class WorldScaleVisuals : MonoBehaviour, IUsesCameraRig
 {
 	[SerializeField]
 	float m_IconTranslateCoefficient = -0.16f;
@@ -31,7 +31,7 @@ public class WorldScaleVisuals : MonoBehaviour, IUsesViewerPivot
 
 	public Transform leftHand { private get; set; }
 	public Transform rightHand { private get; set; }
-	public Transform viewerPivot { private get; set; }
+	public Transform cameraRig { private get; set; }
 
 	void Start()
 	{
@@ -50,7 +50,7 @@ public class WorldScaleVisuals : MonoBehaviour, IUsesViewerPivot
 
 	public void SetPosition()
 	{
-		var viewerScale = viewerPivot.localScale.x;
+		var viewerScale = cameraRig.localScale.x;
 		var iconContainerLocal = m_IconsContainer.localPosition;
 		iconContainerLocal.x = Mathf.Log10(viewerScale) * m_IconTranslateCoefficient + m_IconTranslateOffset;
 		m_IconsContainer.localPosition = iconContainerLocal;

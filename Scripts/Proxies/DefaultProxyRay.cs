@@ -4,7 +4,7 @@ using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-internal class DefaultProxyRay : MonoBehaviour, IUsesViewerPivot
+internal class DefaultProxyRay : MonoBehaviour, IUsesCameraRig
 {
 	[SerializeField]
 	private VRLineRenderer m_LineRenderer;
@@ -31,7 +31,7 @@ internal class DefaultProxyRay : MonoBehaviour, IUsesViewerPivot
 	/// </summary>
 	private object m_LockRayObject;
 
-	public Transform viewerPivot { private get; set; }
+	public Transform cameraRig { private get; set; }
 
 	public bool LockRay(object lockCaller)
 	{
@@ -124,9 +124,9 @@ internal class DefaultProxyRay : MonoBehaviour, IUsesViewerPivot
 		if (!rayVisible)
 			return;
 
-		var pivotScale = viewerPivot.localScale.x;
-		var scaledWidth = m_LineWidth * pivotScale;
-		var scaledLength = length / pivotScale;
+		var rigScale = cameraRig.localScale.x;
+		var scaledWidth = m_LineWidth * rigScale;
+		var scaledLength = length / rigScale;
 
 		var lineRendererTransform = m_LineRenderer.transform;
 		lineRendererTransform.localScale = Vector3.one * scaledLength;

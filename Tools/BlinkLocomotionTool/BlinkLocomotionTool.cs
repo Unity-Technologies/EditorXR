@@ -60,8 +60,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	InputControl m_Grip;
 	InputControl m_Thumb;
 
-	public Transform viewerPivot { private get; set; }
-
 	public ActionMap actionMap { get { return m_BlinkActionMap; } }
 	[SerializeField]
 	private ActionMap m_BlinkActionMap;
@@ -86,6 +84,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	public Type proxyType { private get; set; }
 
 	public ConnectInterfacesDelegate connectInterfaces { get; set; }
+
+	public Transform cameraRig { private get; set; }
 
 	private void Start()
 	{
@@ -115,7 +115,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		showDefaultRay(rayOrigin);
 	}
 
-	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
 		var blinkInput = (BlinkLocomotion)input;
 		if (m_State == State.Moving || (s_ActiveBlinkTool != null && s_ActiveBlinkTool != this))
@@ -143,9 +143,9 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 							consumeControl(m_Grip);
 							consumeControl(blinkTool.m_Grip);
 
-							var thisPosition = viewerPivot.InverseTransformPoint(rayOrigin.position);
+							var thisPosition = cameraRig.InverseTransformPoint(rayOrigin.position);
 							var otherRayOrigin = blinkTool.rayOrigin;
-							var otherPosition = viewerPivot.InverseTransformPoint(otherRayOrigin.position);
+							var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
 							var distance = Vector3.Distance(thisPosition, otherPosition);
 
 							var rayToRay = otherPosition - thisPosition;
@@ -153,16 +153,16 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 							rayToRay.y = 0; // Use for yaw rotation
 
-							var pivotYaw = U.Math.ConstrainYawRotation(viewerPivot.rotation);
+							var pivotYaw = U.Math.ConstrainYawRotation(cameraRig.rotation);
 
 							if (!m_Scaling)
 							{
-								m_StartScale = viewerPivot.localScale.x;
+								m_StartScale = cameraRig.localScale.x;
 								m_StartDistance = distance;
 								m_StartMidPoint = pivotYaw * midPoint * m_StartScale;
-								m_StartPosition = viewerPivot.position;
+								m_StartPosition = cameraRig.position;
 								m_StartDirection = rayToRay;
-								m_StartYaw = viewerPivot.rotation.eulerAngles.y;
+								m_StartYaw = cameraRig.rotation.eulerAngles.y;
 
 								m_EnableJoystick = false;
 								blinkTool.m_EnableJoystick = false;
@@ -181,10 +181,10 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 								rayToRay = otherRayOrigin.position - rayOrigin.position;
 								midPoint = rayOrigin.position + rayToRay * 0.5f;
-								var currOffset = midPoint - viewerPivot.position;
-								viewerPivot.localScale = Vector3.one;
-								viewerPivot.position = midPoint - currOffset / currentScale;
-								viewerPivot.rotation = Quaternion.AngleAxis(m_StartYaw, Vector3.up);
+								var currOffset = midPoint - cameraRig.position;
+								cameraRig.localScale = Vector3.one;
+								cameraRig.position = midPoint - currOffset / currentScale;
+								cameraRig.rotation = Quaternion.AngleAxis(m_StartYaw, Vector3.up);
 
 								m_MainCamera.nearClipPlane = m_OriginalNearClipPlane;
 								m_MainCamera.farClipPlane = m_OriginalFarClipPlane;
@@ -208,10 +208,10 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 								var currentYaw = m_StartYaw + Vector3.Angle(m_StartDirection, rayToRay) * yawSign;
 								var currentRotation = Quaternion.AngleAxis(currentYaw, Vector3.up);
 								midPoint = currentRotation * midPoint * currentScale;
-								
-								viewerPivot.position = m_StartPosition + m_StartMidPoint - midPoint;
-								viewerPivot.localScale = Vector3.one * currentScale;
-								viewerPivot.rotation = currentRotation;
+
+								cameraRig.position = m_StartPosition + m_StartMidPoint - midPoint;
+								cameraRig.localScale = Vector3.one * currentScale;
+								cameraRig.rotation = currentRotation;
 
 								m_MainCamera.nearClipPlane = m_OriginalNearClipPlane * currentScale;
 								m_MainCamera.farClipPlane = m_OriginalFarClipPlane * currentScale;
@@ -245,7 +245,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 					if (Mathf.Abs(yawValue) > threshold)
 						speed = kFastRotationSpeed * Mathf.Sign(yawValue);
 
-					viewerPivot.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.unscaledDeltaTime);
+					cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.unscaledDeltaTime);
 					consumeControl(blinkInput.yaw);
 				}
 			}
@@ -267,9 +267,9 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 					if (Mathf.Abs(forwardValue) > threshold)
 						speed = kFastMoveSpeed * Mathf.Sign(forwardValue);
 
-					speed *= viewerPivot.localScale.x;
+					speed *= cameraRig.localScale.x;
 
-					viewerPivot.Translate(direction * speed * Time.unscaledDeltaTime, Space.World);
+					cameraRig.Translate(direction * speed * Time.unscaledDeltaTime, Space.World);
 					consumeControl(blinkInput.forward);
 				}
 			}
@@ -307,7 +307,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	void CreateWorldScaleVisuals(Transform leftHand, Transform rightHand)
 	{
-		m_WorldScaleVisuals = U.Object.Instantiate(m_WorldScaleVisualsPrefab, viewerPivot, false)
+		m_WorldScaleVisuals = U.Object.Instantiate(m_WorldScaleVisualsPrefab, cameraRig, false)
 			.GetComponent<WorldScaleVisuals>();
 		m_WorldScaleVisuals.leftHand = leftHand;
 		m_WorldScaleVisuals.rightHand = rightHand;
@@ -325,7 +325,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			m_EnableJoystick = true;
 			foreach (var linkedTool in otherTools)
 			{
-				((BlinkLocomotionTool) linkedTool).m_EnableJoystick = true;
+				((BlinkLocomotionTool)linkedTool).m_EnableJoystick = true;
 			}
 		}
 
@@ -336,19 +336,19 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	private IEnumerator MoveTowardTarget(Vector3 targetPosition)
 	{
 		m_State = State.Moving;
-		targetPosition = new Vector3(targetPosition.x + (viewerPivot.position.x - U.Camera.GetMainCamera().transform.position.x), viewerPivot.position.y, targetPosition.z + (viewerPivot.position.z - U.Camera.GetMainCamera().transform.position.z));
+		targetPosition = new Vector3(targetPosition.x + (cameraRig.position.x - U.Camera.GetMainCamera().transform.position.x), cameraRig.position.y, targetPosition.z + (cameraRig.position.z - U.Camera.GetMainCamera().transform.position.z));
 		const float kTargetDuration = 0.05f;
-		var currentPosition = viewerPivot.position;
+		var currentPosition = cameraRig.position;
 		var currentDuration = 0f;
 		while (currentDuration < kTargetDuration)
 		{
 			currentDuration += Time.unscaledDeltaTime;
 			currentPosition = Vector3.Lerp(currentPosition, targetPosition, currentDuration / kTargetDuration);
-			viewerPivot.position = currentPosition;
+			cameraRig.position = currentPosition;
 			yield return null;
 		}
 
-		viewerPivot.position = targetPosition;
+		cameraRig.position = targetPosition;
 		m_State = State.Inactive;
 		s_ActiveBlinkTool = null;
 	}
