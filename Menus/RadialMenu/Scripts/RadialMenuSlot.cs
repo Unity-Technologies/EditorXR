@@ -196,15 +196,12 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_Pressed = false;
 			m_Highlighted = false;
 
-			this.StopCoroutine(ref m_VisibilityCoroutine);
-
-			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
+			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
 		}
 
 		public void Hide()
 		{
-			this.StopCoroutine(ref m_VisibilityCoroutine);
-			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
 		}
 
 		void CorrectIconRotation()
@@ -398,7 +395,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var semiTransparentTargetScale = new Vector3(0.9f, 0.15f, 0.9f);
 			var targetScale = makeSemiTransparent ? semiTransparentTargetScale : Vector3.one;
 			var currentFrameColor = m_FrameMaterial.color;
-			var targetFrameColor = makeSemiTransparent ? sFrameSemiTransparentColor : sFrameOpaqueColor;
+			var transparentFrameColor = new Color (sFrameOpaqueColor.r, sFrameOpaqueColor.g, sFrameOpaqueColor.b, 0f);
+			var targetFrameColor = m_CanvasGroup.interactable ? (makeSemiTransparent ? sFrameSemiTransparentColor : sFrameOpaqueColor) : transparentFrameColor;
 			var currentInsetAlpha = m_InsetMaterial.GetFloat(kMaterialAlphaProperty);
 			var targetInsetAlpha = makeSemiTransparent ? 0.25f : 1f;
 			var currentIconColor = m_IconMaterial.GetColor(kMaterialColorProperty);
