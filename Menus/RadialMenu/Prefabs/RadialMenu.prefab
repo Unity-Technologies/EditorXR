@@ -216,7 +216,7 @@ MonoBehaviour:
   m_SmoothRotation: 1
   m_TightenRotation: 30
   m_SmoothPosition: 1
-  m_TightenPosition: 30
+  m_TightenPosition: 50
   m_Target: {fileID: 0}
 --- !u!223 &223000013306874762
 Canvas:
