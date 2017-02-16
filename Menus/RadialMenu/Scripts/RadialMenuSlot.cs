@@ -105,7 +105,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		GradientPair m_OriginalInsetGradientPair;
 		Material m_BorderRendererMaterial;
-		Transform m_IconTransform;
 		Material m_InsetMaterial;
 		Vector3 m_VisibleInsetLocalScale;
 		Vector3 m_HiddenInsetLocalScale;
@@ -161,12 +160,11 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_OriginalInsetGradientPair = new GradientPair(m_InsetMaterial.GetColor(kMaterialColorTopProperty), m_InsetMaterial.GetColor(kMaterialColorBottomProperty));
 			hiddenLocalRotation = transform.localRotation;
 			m_VisibleInsetLocalScale = m_MenuInset.localScale;
-			m_HighlightedInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_VisibleInsetLocalScale.y * 1.1f, m_VisibleInsetLocalScale.z);
+			m_HighlightedInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_VisibleInsetLocalScale.y * 1.2f, m_VisibleInsetLocalScale.z);
 			m_VisibleInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_MenuInset.localScale.y * 0.35f, m_VisibleInsetLocalScale.z);
-			m_HiddenInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, 0f, m_VisibleInsetLocalScale.z);
+			m_HiddenInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x * 0.5f, 0f, m_VisibleInsetLocalScale.z * 0.5f);
 
-			m_IconTransform = m_IconContainer;
-			m_OriginalIconLocalPosition = m_IconTransform.localPosition;
+			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * kIconHighlightedLocalYOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * -kIconHighlightedLocalYOffset;
 
@@ -199,7 +197,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_Highlighted = false;
 
 			this.StopCoroutine(ref m_VisibilityCoroutine);
-		
+
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
 
@@ -212,8 +210,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		void CorrectIconRotation()
 		{
 			m_IconLookDirection = m_Icon.transform.position + transform.parent.forward * m_IconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
-			m_IconTransform.LookAt(m_IconLookDirection);
-			m_IconTransform.localEulerAngles = new Vector3(0f, m_IconTransform.localEulerAngles.y, 0f);
+			m_IconContainer.LookAt(m_IconLookDirection);
+			m_IconContainer.localEulerAngles = new Vector3(0f, m_IconContainer.localEulerAngles.y, 0f);
 		}
 
 		IEnumerator AnimateShow()
@@ -225,7 +223,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_BorderRendererMaterial.SetFloat(kMaterialExpandProperty, 0);
 			m_MenuInset.localScale = m_HiddenInsetLocalScale ;
 			transform.localScale = kHiddenLocalScale;
-			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
+			m_IconContainer.localPosition = m_OriginalIconLocalPosition;
 
 			StartCoroutine(ShowInset());
 
@@ -360,41 +358,44 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		IEnumerator IconHighlightAnimatedShow(bool pressed = false)
 		{
-			var currentPosition = m_IconTransform.localPosition;
+			var currentPosition = m_IconContainer.localPosition;
 			var targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // Raise up for highlight; lower for press
 			var transitionAmount = Time.unscaledDeltaTime;
 			var transitionAddMultiplier = pressed == false ? 14 : 18; // Faster transition in for standard highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
-				m_IconTransform.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
+				m_IconContainer.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
 				transitionAmount = transitionAmount + Time.unscaledDeltaTime * transitionAddMultiplier * 2;
 				yield return null;
 			}
 
-			m_IconTransform.localPosition = targetPosition;
+			m_IconContainer.localPosition = targetPosition;
 			m_IconHighlightCoroutine = null;
 		}
 
 		IEnumerator IconEndHighlight()
 		{
-			var currentPosition = m_IconTransform.localPosition;
+			var currentPosition = m_IconContainer.localPosition;
 			var transitionAmount = 1f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
 			var transitionSubtractMultiplier = 5f;
 			while (transitionAmount > 0)
 			{
-				m_IconTransform.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
+				m_IconContainer.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
 				transitionAmount -= Time.unscaledDeltaTime * transitionSubtractMultiplier;
 				yield return null;
 			}
 
-			m_IconTransform.localPosition = m_OriginalIconLocalPosition;
+			m_IconContainer.localPosition = m_OriginalIconLocalPosition;
 			m_IconHighlightCoroutine = null;
 		}
 
 		IEnumerator AnimateSemiTransparent(bool makeSemiTransparent)
 		{
+			const float kFasterMotionMultiplier = 2f;
 			var transitionAmount = Time.unscaledDeltaTime;
 			var positionWait = (orderIndex + 4) * 0.25f; // pad the order index for a faster start to the transition
+			var currentScale = transform.localScale;
+			var targetScale = makeSemiTransparent ? new Vector3(0.9f, 0.15f, 0.9f) : Vector3.one;
 			var currentFrameColor = m_FrameMaterial.color;
 			var targetFrameColor = makeSemiTransparent ? sFrameSemiTransparentColor : sFrameOpaqueColor;
 			var currentInsetAlpha = m_InsetMaterial.GetFloat(kMaterialAlphaProperty);
@@ -403,21 +404,27 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var targetIconColor = makeSemiTransparent ? sFrameSemiTransparentColor : Color.white;
 			var currentInsetScale = m_MenuInset.localScale;
 			var targetInsetScale = makeSemiTransparent ? m_HighlightedInsetLocalScale * 4 : m_VisibleInsetLocalScale;
+			var currentIconScale = m_IconContainer.localScale;
+			var targetIconScale = makeSemiTransparent ? Vector3.one * 1.5f : Vector3.one;
 			while (transitionAmount < 1)
 			{
-				m_FrameMaterial.SetColor(kMaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, transitionAmount));
+				m_FrameMaterial.SetColor(kMaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, transitionAmount * kFasterMotionMultiplier));
 				m_MenuInset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, transitionAmount);
 				var insetAlphaLerp = Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, transitionAmount);
 				m_InsetMaterial.SetFloat(kMaterialAlphaProperty, insetAlphaLerp);
 				m_IconMaterial.SetColor(kMaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, transitionAmount));
+				transform.localScale = Vector3.Lerp(currentScale, targetScale, Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier);
+				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier);
 				transitionAmount = transitionAmount + Time.unscaledDeltaTime * positionWait;
 				yield return null;
 			}
 
+			transform.localScale = targetScale;
 			m_FrameMaterial.SetColor(kMaterialColorProperty, targetFrameColor);
 			m_InsetMaterial.SetFloat(kMaterialAlphaProperty, targetInsetAlpha);
 			m_IconMaterial.SetColor(kMaterialColorProperty, targetIconColor);
 			m_MenuInset.localScale = targetInsetScale;
+			m_IconContainer.localScale = targetIconScale;
 			m_SemiTransparentCoroutine = null;
 		}
 
