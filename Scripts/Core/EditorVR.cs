@@ -60,6 +60,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Tools m_Tools;
 		UI m_UI;
 		Viewer m_Viewer;
+		Vacuumables m_Vacuumables;
 
 		event Action m_SelectionChanged;
 
@@ -107,6 +108,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_Tools = new Tools();
 			m_UI = new UI();
 			m_Viewer = new Viewer();
+			m_Vacuumables = new Vacuumables();
 
 			m_HierarchyModule = AddModule<HierarchyModule>();
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
@@ -173,10 +175,10 @@ namespace UnityEditor.Experimental.EditorVR
 			m_Menus.mainMenuTools = m_Tools.allTools.Where(t => !m_Tools.IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 
 			m_WorkspaceModule = AddModule<WorkspaceModule>();
-			m_WorkspaceModule.workspaceCreated += m_Tools.OnWorkspaceCreated;
+			m_WorkspaceModule.workspaceCreated += m_Vacuumables.OnWorkspaceCreated;
 			m_WorkspaceModule.workspaceCreated += m_MiniWorlds.OnWorkspaceCreated;
 			m_WorkspaceModule.workspaceCreated += (workspace) => { m_DeviceInputModule.UpdatePlayerHandleMaps(); };
-			m_WorkspaceModule.workspaceDestroyed += m_Tools.OnWorkspaceDestroyed;
+			m_WorkspaceModule.workspaceDestroyed += m_Vacuumables.OnWorkspaceDestroyed;
 			m_WorkspaceModule.workspaceDestroyed += (workspace) => { m_Interfaces.DisconnectInterfaces(workspace); };
 			m_WorkspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
 		
