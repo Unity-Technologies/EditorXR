@@ -6,7 +6,7 @@ using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class TooltipModule : MonoBehaviour, IUsesViewerPivot
+public class TooltipModule : MonoBehaviour, IUsesCameraRig
 {
 	const float kDelay = 0; // In case we want to bring back a delay
 	const float kTransitionDuration = 0.1f;
@@ -36,7 +36,7 @@ public class TooltipModule : MonoBehaviour, IUsesViewerPivot
 	Transform m_TooltipCanvas;
 	Vector3 m_TooltipScale;
 
-	public Transform viewerPivot { get; set; }
+	public Transform cameraRig { get; set; }
 
 	void Start()
 	{
@@ -87,7 +87,7 @@ public class TooltipModule : MonoBehaviour, IUsesViewerPivot
 		if (tooltipText)
 			tooltipText.text = tooltip.tooltipText;
 
-		tooltipTransform.localScale = m_TooltipScale * lerp * viewerPivot.localScale.x;
+		tooltipTransform.localScale = m_TooltipScale * lerp * cameraRig.localScale.x;
 
 		// Adjust for alignment
 		var offset = Vector3.zero;

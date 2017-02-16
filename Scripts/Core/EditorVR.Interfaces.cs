@@ -72,6 +72,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var evrSelectionModule = evr.m_SelectionModule;
 				var evrUI = evr.m_UI;
 				var evrDeviceData = evr.m_DeviceData;
+				var tooltipModule = evr.m_TooltipModule;
 
 				if (rayOrigin)
 				{
@@ -283,11 +284,11 @@ namespace UnityEditor.Experimental.EditorVR
 					requestStencilRef.requestStencilRef = RequestStencilRef;
 
 				var usesTooltip = obj as IUsesTooltip;
-			if (usesTooltip != null)
-			{
-				usesTooltip.showTooltip = m_TooltipModule.ShowTooltip;
-				usesTooltip.hideTooltip = m_TooltipModule.HideTooltip;
-			}
+				if (usesTooltip != null)
+				{
+					usesTooltip.showTooltip = tooltipModule.ShowTooltip;
+					usesTooltip.hideTooltip = tooltipModule.HideTooltip;
+				}
 
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;

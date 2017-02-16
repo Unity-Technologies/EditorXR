@@ -38,7 +38,6 @@ namespace UnityEditor.Experimental.EditorVR
 				eventCamera = U.Object.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
 				eventCamera.enabled = false;
 				inputModule.eventCamera = eventCamera;
-		TooltipModule m_TooltipModule;
 
 				inputModule.preProcessRaycastSource = evr.m_Rays.PreProcessRaycastSource;
 			}
@@ -79,7 +78,7 @@ namespace UnityEditor.Experimental.EditorVR
 				foreach (var mv in m_ManipulatorVisibilities)
 					mv.manipulatorVisible = manipulatorsVisible;
 			}
-		}  
+		}
 	}
 }
 #endif
