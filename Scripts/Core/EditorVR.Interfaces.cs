@@ -22,8 +22,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
-			readonly Dictionary<Type, List<ILinkedTool>> m_LinkedTools = new Dictionary<Type, List<ILinkedTool>>();
-
 			byte stencilRef
 			{
 				get { return m_StencilRef; }
@@ -298,7 +296,8 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					List<ILinkedTool> otherTools;
 					var type = obj.GetType();
-					if (m_LinkedTools.TryGetValue(type, out otherTools))
+					var linkedTools = evr.m_Tools.linkedTools;
+					if (linkedTools.TryGetValue(type, out otherTools))
 					{
 						foreach (var otherTool in otherTools)
 						{
@@ -310,7 +309,7 @@ namespace UnityEditor.Experimental.EditorVR
 					else
 					{
 						linkedTool.primary = true;
-						m_LinkedTools[type] = new List<ILinkedTool> { linkedTool };
+						linkedTools[type] = new List<ILinkedTool> { linkedTool };
 					}
 				}
 

@@ -28,6 +28,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal List<Type> allTools { get; private set; }
 
+			internal Dictionary<Type, List<ILinkedTool>> linkedTools { get { return m_LinkedTools; } }
+			readonly Dictionary<Type, List<ILinkedTool>> m_LinkedTools = new Dictionary<Type, List<ILinkedTool>>();
+
 			internal Tools()
 			{
 				allTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();

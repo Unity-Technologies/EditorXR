@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
 
-public class WorldScaleVisuals : MonoBehaviour, IUsesCameraRig
+class WorldScaleVisuals : MonoBehaviour, IUsesCameraRig
 {
 	[SerializeField]
 	float m_IconTranslateCoefficient = -0.16f;
@@ -12,10 +13,7 @@ public class WorldScaleVisuals : MonoBehaviour, IUsesCameraRig
 	float m_IconTranslateOffset = 0.08f;
 
 	[SerializeField]
-	float m_DotUVScale = 50f;
-
-	[SerializeField]
-	RawImage m_DottedLine;
+	VRLineRenderer m_Line;
 
 	[SerializeField]
 	Transform m_IconsContainer;
@@ -29,6 +27,8 @@ public class WorldScaleVisuals : MonoBehaviour, IUsesCameraRig
 	[SerializeField]
 	GameObject m_IconPrefab;
 
+	float m_LineWidth;
+
 	public Transform leftHand { private get; set; }
 	public Transform rightHand { private get; set; }
 	public Transform cameraRig { private get; set; }
@@ -40,6 +40,9 @@ public class WorldScaleVisuals : MonoBehaviour, IUsesCameraRig
 			var image = ((GameObject)Instantiate(m_IconPrefab, m_IconsContainer, false)).GetComponent<Image>();
 			image.sprite = icon;
 		}
+
+		m_LineWidth = m_Line.widthStart;
+		SetPosition();
 	}
 
 	void Update()
@@ -47,7 +50,7 @@ public class WorldScaleVisuals : MonoBehaviour, IUsesCameraRig
 		SetPosition();
 	}
 
-	public void SetPosition()
+	void SetPosition()
 	{
 		var viewerScale = cameraRig.localScale.x;
 		var iconContainerLocal = m_IconsContainer.localPosition;
@@ -70,11 +73,11 @@ public class WorldScaleVisuals : MonoBehaviour, IUsesCameraRig
 		transform.rotation = Quaternion.LookRotation(leftToRight, camera.position - transform.position);
 
 		leftToRight = transform.InverseTransformVector(leftToRight);
-		var length = leftToRight.magnitude;
-		m_DottedLine.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, length);
-		var uvRect = m_DottedLine.uvRect;
-		uvRect.width = length * m_DotUVScale;
-		m_DottedLine.uvRect = uvRect;
+		var length = leftToRight.magnitude * 0.5f;
+		m_Line.SetPosition(0, Vector3.left * length);
+		m_Line.SetPosition(1, Vector3.right * length);
+		var lineWidth = m_LineWidth * viewerScale;
+		m_Line.SetWidth(lineWidth, lineWidth);
 
 		m_ScaleText.text = string.Format("Viewer Scale: {0:f2}", viewerScale);
 	}

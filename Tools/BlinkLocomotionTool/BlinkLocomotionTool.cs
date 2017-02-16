@@ -312,7 +312,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		m_WorldScaleVisuals.leftHand = leftHand;
 		m_WorldScaleVisuals.rightHand = rightHand;
 		connectInterfaces(m_WorldScaleVisuals);
-		m_WorldScaleVisuals.SetPosition();
 	}
 
 	void CancelScale()
