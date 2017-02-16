@@ -16,7 +16,7 @@
 		Transform tooltipTarget { get; }
 
 		/// <summary>
-		/// The transform relative to which the tooltip will display
+		/// The transform to which the dotted line connects
 		/// </summary>
 		Transform tooltipSource { get; }
 
