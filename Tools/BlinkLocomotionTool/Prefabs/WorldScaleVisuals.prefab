@@ -274,7 +274,7 @@ MonoBehaviour:
   m_ScaleText: {fileID: 114000012153219018}
   m_Icons:
   - {fileID: 21300000, guid: 867c135a734544a44a81779809c03900, type: 3}
-  - {fileID: 21300000, guid: b2952d277834cae448823411737797e2, type: 3}
+  - {fileID: 21300000, guid: e80802e0589eec744995341739d3477c, type: 3}
   - {fileID: 21300000, guid: 7838a6422b7749f46a20595a9c275aff, type: 3}
   - {fileID: 21300000, guid: 4e0de21615209344389544b59a5e5650, type: 3}
   - {fileID: 21300000, guid: e3c74a4db32e344449a9005242f5bcff, type: 3}
