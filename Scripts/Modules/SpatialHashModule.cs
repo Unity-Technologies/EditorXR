@@ -84,7 +84,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		public void RemoveObject(GameObject gameObject)
 		{
-			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
+			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>(true))
 			{
 				spatialHash.RemoveObject(renderer);
 			}
