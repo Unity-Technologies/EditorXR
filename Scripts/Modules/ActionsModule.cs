@@ -1,17 +1,30 @@
-#if UNITY_EDITORVR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Actions;
+using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
-	partial class EditorVR : MonoBehaviour
+	internal class ActionsModule : MonoBehaviour, IConnectInterfaces
 	{
+		public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
 		List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
 		List<IAction> m_Actions;
+
+		public ConnectInterfacesDelegate connectInterfaces { get; set; }
+
+		public void RemoveActions(List<IAction> actions)
+		{
+			m_MenuActions.Clear();
+			m_MenuActions.AddRange(m_MenuActions.Where(a => !actions.Contains(a.action)));
+		}
+
+		void Start()
+		{
+			SpawnActions();
+		}
 
 		void SpawnActions()
 		{
@@ -26,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var action = U.Object.AddComponent(actionType, gameObject) as IAction;
 				var attribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
 
-				ConnectInterfaces(action);
+				connectInterfaces(action);
 
 				if (attribute != null)
 				{
@@ -46,16 +59,5 @@ namespace UnityEditor.Experimental.EditorVR
 
 			m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));
 		}
-
-		void UpdateAlternateMenuActions()
-		{
-			foreach (var deviceData in m_DeviceData.Values)
-			{
-				var altMenu = deviceData.alternateMenu;
-				if (altMenu != null)
-					altMenu.menuActions = m_MenuActions;
-			}
-		}
 	}
 }
-#endif

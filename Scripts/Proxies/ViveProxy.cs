@@ -1,21 +1,16 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using UnityEngine.Experimental.EditorVR.Input;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEngine.Experimental.EditorVR.Proxies
 {
 	public class ViveProxy : TwoHandedProxyBase
 	{
-		private ViveInputToEvents m_InputToEvents;
-
 #if ENABLE_STEAMVR_INPUT
 		SteamVR_RenderModel m_RightModel;
 		SteamVR_RenderModel m_LeftModel;
 #endif
-
-		public override bool active
-		{
-			get { return m_InputToEvents.active; }
-		}
 
 		public override void Awake()
 		{
@@ -47,15 +42,18 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		{
 			if (active && m_LeftModel && m_RightModel)
 			{
+				var viveInputToEvents = (ViveInputToEvents)m_InputToEvents;
+
 				//If proxy is not mapped to a physical input device, check if one has been assigned
-				if ((int) m_LeftModel.index == -1 && m_InputToEvents.steamDevice[0] != -1)
+				if ((int) m_LeftModel.index == -1 && viveInputToEvents.steamDevice[0] != -1)
 				{
 					// HACK set device index individually instead of calling SetDeviceIndex because loading device mesh dynamically does not work in editor. Prefab has Model Override set and mesh generated, calling SetDeviceIndex clears the model.
-					m_LeftModel.index = (SteamVR_TrackedObject.EIndex) m_InputToEvents.steamDevice[0];
+					m_LeftModel.index = (SteamVR_TrackedObject.EIndex)viveInputToEvents.steamDevice[0];
 				}
-				if ((int) m_RightModel.index == -1 && m_InputToEvents.steamDevice[1] != -1)
+
+				if ((int) m_RightModel.index == -1 && viveInputToEvents.steamDevice[1] != -1)
 				{
-					m_RightModel.index = (SteamVR_TrackedObject.EIndex) m_InputToEvents.steamDevice[1];
+					m_RightModel.index = (SteamVR_TrackedObject.EIndex)viveInputToEvents.steamDevice[1];
 				}
 			}
 

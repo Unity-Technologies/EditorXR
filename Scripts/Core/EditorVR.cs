@@ -1,7 +1,5 @@
 #if UNITY_EDITOR
-//#define ENABLE_MINIWORLD_RAY_SELECTION
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -13,9 +11,9 @@ using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Helpers;
 using UnityEngine.Experimental.EditorVR.Menus;
 using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEngine.Experimental.EditorVR.Proxies;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
 
@@ -38,29 +36,88 @@ namespace UnityEditor.Experimental.EditorVR
 		[SerializeField]
 		ProxyExtras m_ProxyExtras;
 
+		DragAndDropModule m_DragAndDropModule;
 		HighlightModule m_HighlightModule;
-		ObjectPlacementModule m_ObjectPlacementModule;
+		SceneObjectModule m_SceneObjectModule;
 		LockModule m_LockModule;
 		SelectionModule m_SelectionModule;
+		HierarchyModule m_HierarchyModule;
+		ProjectFolderModule m_ProjectFolderModule;
+		ActionsModule m_ActionsModule;
+		KeyboardModule m_KeyboardModule;
+		SpatialHashModule m_SpatialHashModule;
+		IntersectionModule m_IntersectionModule;
+		DeviceInputModule m_DeviceInputModule;
+		MultipleRayInputModule m_InputModule;
+		PixelRaycastModule m_PixelRaycastModule;
+		WorkspaceModule m_WorkspaceModule;
+
+		DirectSelection m_DirectSelection;
+		Interfaces m_Interfaces;
+		Menus m_Menus;
+		MiniWorlds m_MiniWorlds;
+		Rays m_Rays;
+		Tools m_Tools;
+		UI m_UI;
+		Viewer m_Viewer;
+		Vacuumables m_Vacuumables;
 
 		event Action m_SelectionChanged;
 
 		IPreviewCamera m_CustomPreviewCamera;
 
-		bool m_ControllersReady;
+		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
+
+		class DeviceData
+		{
+			public IProxy proxy;
+			public InputDevice inputDevice;
+			public Node node;
+			public Transform rayOrigin;
+			public readonly Stack<Tools.ToolData> toolData = new Stack<Tools.ToolData>();
+			public ActionMapInput uiInput;
+			public MainMenuActivator mainMenuActivator;
+			public ActionMapInput directSelectInput;
+			public IMainMenu mainMenu;
+			public ActionMapInput mainMenuInput;
+			public IAlternateMenu alternateMenu;
+			public ActionMapInput alternateMenuInput;
+			public ITool currentTool;
+			public IMenu customMenu;
+			public PinnedToolButton previousToolButton;
+			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
+			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
+		}
+
+		class Nested
+		{
+			public static EditorVR evr { protected get; set; }
+		}
 
 		void Awake()
 		{
+			Nested.evr = this; // Set this once for the convenience of all nested classes 
+
 			ClearDeveloperConsoleIfNecessary();
 
-			UpdateProjectFolders();
-			UpdateHierarchyData();
+			m_DirectSelection = new DirectSelection();
+			m_Interfaces = new Interfaces();
+			m_Menus = new Menus();
+			m_MiniWorlds = new MiniWorlds();
+			m_Rays = new Rays();
+			m_Tools = new Tools();
+			m_UI = new UI();
+			m_Viewer = new Viewer();
+			m_Vacuumables = new Vacuumables();
 
-			VRView.viewerPivot.parent = transform; // Parent the camera pivot under EditorVR
+			m_HierarchyModule = AddModule<HierarchyModule>();
+			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
+
+			VRView.cameraRig.parent = transform; // Parent the camera rig under EditorVR
 			if (VRSettings.loadedDeviceName == "OpenVR")
 			{
 				// Steam's reference position should be at the feet and not at the head as we do with Oculus
-				VRView.viewerPivot.localPosition = Vector3.zero;
+				VRView.cameraRig.localPosition = Vector3.zero;
 			}
 
 			var hmdOnlyLayerMask = 0;
@@ -77,32 +134,81 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 			VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
 
-			InitializePlayerHandle();
-			CreateDefaultActionMapInputs();
-			CreateAllProxies();
-			CreateDeviceDataForInputDevices();
+			m_DeviceInputModule = AddModule<DeviceInputModule>();
+			m_DeviceInputModule.InitializePlayerHandle();
+			m_DeviceInputModule.CreateDefaultActionMapInputs();
+			m_DeviceInputModule.processInput = ProcessInput;
+			m_DeviceInputModule.updatePlayerHandleMaps = m_Tools.UpdatePlayerHandleMaps;
 
-			m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
+			m_UI.Initialize();
 
-			CreateEventSystem();
+			m_KeyboardModule = AddModule<KeyboardModule>();
 
-			m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
+			m_DragAndDropModule = AddModule<DragAndDropModule>();
+			m_InputModule.rayEntered += m_DragAndDropModule.OnRayEntered;
+			m_InputModule.rayExited += m_DragAndDropModule.OnRayExited;
+			m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
+			m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
+
+			m_PixelRaycastModule = AddModule<PixelRaycastModule>();
 			m_PixelRaycastModule.ignoreRoot = transform;
-			m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
-			m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
-			m_LockModule.updateAlternateMenu = (rayOrigin, o) => SetAlternateMenuVisibility(rayOrigin, o != null);
-			ConnectInterfaces(m_LockModule);
+			m_PixelRaycastModule.raycastCamera = m_UI.eventCamera;
 
-			m_SelectionModule = U.Object.AddComponent<SelectionModule>(gameObject);
-			m_SelectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			m_HighlightModule = AddModule<HighlightModule>();
+			m_ActionsModule = AddModule<ActionsModule>();
+
+			m_LockModule = AddModule<LockModule>();
+			m_LockModule.updateAlternateMenu = (rayOrigin, o) => m_Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
+
+			m_SelectionModule = AddModule<SelectionModule>();
+			m_SelectionModule.selected += m_Rays.SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 			m_SelectionModule.getGroupRoot = GetGroupRoot;
-			ConnectInterfaces(m_SelectionModule);
 
-			m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
-			m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
-			m_AllWorkspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
+			m_SpatialHashModule = AddModule<SpatialHashModule>();
+			m_SpatialHashModule.shouldExcludeObject = go => go.GetComponentInParent<EditorVR>();
+			m_SpatialHashModule.Setup();
 
+			m_IntersectionModule = AddModule<IntersectionModule>();
+			m_Interfaces.ConnectInterfaces(m_IntersectionModule);
+			m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
+
+			m_Menus.mainMenuTools = m_Tools.allTools.Where(t => !m_Tools.IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
+
+			m_WorkspaceModule = AddModule<WorkspaceModule>();
+			m_WorkspaceModule.workspaceCreated += m_Vacuumables.OnWorkspaceCreated;
+			m_WorkspaceModule.workspaceCreated += m_MiniWorlds.OnWorkspaceCreated;
+			m_WorkspaceModule.workspaceCreated += (workspace) => { m_DeviceInputModule.UpdatePlayerHandleMaps(); };
+			m_WorkspaceModule.workspaceDestroyed += m_Vacuumables.OnWorkspaceDestroyed;
+			m_WorkspaceModule.workspaceDestroyed += (workspace) => { m_Interfaces.DisconnectInterfaces(workspace); };
+			m_WorkspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
+		
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
+
+			m_SceneObjectModule = AddModule<SceneObjectModule>();
+			m_SceneObjectModule.shouldPlaceObject = (obj, targetScale) =>
+			{
+				foreach (var miniWorld in m_MiniWorlds.worlds)
+				{
+					if (!miniWorld.Contains(obj.position))
+						continue;
+
+					var referenceTransform = miniWorld.referenceTransform;
+					obj.transform.parent = null;
+					obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
+					obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
+					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
+					return false;
+				}
+
+				return true;
+			};
+
+			m_Viewer.AddPlayerModel();
+
+			m_Rays.CreateAllProxies();
+
+			// In case we have anything selected at start, set up manipulators, inspector, etc.
+			EditorApplication.delayCall += OnSelectionChanged;
 		}
 
 		void ClearDeveloperConsoleIfNecessary()
@@ -144,108 +250,17 @@ namespace UnityEditor.Experimental.EditorVR
 			if (m_SelectionChanged != null)
 				m_SelectionChanged();
 
-			UpdateAlternateMenuOnSelectionChanged(m_LastSelectionRayOrigin);
-		}
-
-		IEnumerator Start()
-		{
-			// Delay until at least one proxy initializes
-			bool proxyActive = false;
-			while (!proxyActive)
-			{
-				foreach (var proxy in m_Proxies)
-				{
-					if (proxy.active)
-					{
-						proxyActive = true;
-						break;
-					}
-				}
-
-				yield return null;
-			}
-
-			m_ControllersReady = true;
-
-			if (m_ProxyExtras)
-			{
-				var extraData = m_ProxyExtras.data;
-				ForEachRayOrigin((proxy, pair, device, deviceData) =>
-				{
-					List<GameObject> prefabs;
-					if (extraData.TryGetValue(pair.Key, out prefabs))
-					{
-						foreach (var prefab in prefabs)
-						{
-							var go = InstantiateUI(prefab);
-							go.transform.SetParent(pair.Value, false);
-						}
-					}
-				});
-			}
-
-			CreateSpatialSystem();
-
-			m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
-			ConnectInterfaces(m_ObjectPlacementModule);
-
-			SpawnActions();
-			SpawnDefaultTools();
-			AddPlayerModel();
-			PrewarmAssets();
-
-			// In case we have anything selected at start, set up manipulators, inspector, etc.
-			EditorApplication.delayCall += OnSelectionChanged;
-
-			// This will be the first call to update the player handle (input) maps, sorted by priority
-			UpdatePlayerHandleMaps();
+			m_Menus.UpdateAlternateMenuOnSelectionChanged(m_Rays.lastSelectionRayOrigin);
 		}
 
 		void OnEnable()
 		{
 			Selection.selectionChanged += OnSelectionChanged;
-#if UNITY_EDITOR
-			EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
-			VRView.onGUIDelegate += OnSceneGUI;
-			EditorApplication.projectWindowChanged += UpdateProjectFolders;
-#endif
 		}
 
 		void OnDisable()
 		{
 			Selection.selectionChanged -= OnSelectionChanged;
-#if UNITY_EDITOR
-			EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
-			VRView.onGUIDelegate -= OnSceneGUI;
-			EditorApplication.projectWindowChanged -= UpdateProjectFolders;
-#endif
-		}
-
-		void OnSceneGUI(EditorWindow obj)
-		{
-			if (Event.current.type == EventType.ExecuteCommand)
-			{
-				if (m_PixelRaycastIgnoreListDirty)
-				{
-					m_PixelRaycastModule.UpdateIgnoreList();
-					m_PixelRaycastIgnoreListDirty = false;
-				}
-
-				ForEachRayOrigin((proxy, pair, device, deviceData) =>
-				{
-					m_PixelRaycastModule.UpdateRaycast(pair.Value, m_EventCamera);
-				});
-
-#if ENABLE_MINIWORLD_RAY_SELECTION
-				foreach (var rayOrigin in m_MiniWorldRays.Keys)
-					m_PixelRaycastModule.UpdateRaycast(rayOrigin, m_EventCamera);
-#endif
-
-				// Queue up the next round
-				m_UpdatePixelRaycastModule = true;
-
-				Event.current.Use();
-			}
 		}
 
 		void OnDestroy()
@@ -253,71 +268,63 @@ namespace UnityEditor.Experimental.EditorVR
 			if (m_CustomPreviewCamera != null)
 				U.Object.Destroy(((MonoBehaviour)m_CustomPreviewCamera).gameObject);
 
-			PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
+			m_MiniWorlds.OnDestroy();
 		}
 
-		void PrewarmAssets()
-		{
-			// HACK: Cannot async load assets in the editor yet, so to avoid a hitch let's spawn the menu immediately and then make it invisible
-			foreach (var kvp in m_DeviceData)
-			{
-				var device = kvp.Key;
-				var deviceData = kvp.Value;
-				var mainMenu = deviceData.mainMenu;
-
-				if (mainMenu == null)
-				{
-					mainMenu = SpawnMainMenu(typeof(MainMenu), device, false, out deviceData.mainMenuInput);
-					deviceData.mainMenu = mainMenu;
-					deviceData.menuHideFlags[mainMenu] = MenuHideFlags.Hidden;
-					UpdatePlayerHandleMaps();
-				}
-			}
-		}
-
-		private void Update()
+		void Update()
 		{
 			if (m_CustomPreviewCamera != null)
 				m_CustomPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
 
-#if UNITY_EDITOR
-			// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
-			//		Additionally, on some machines it's required to do a delay call otherwise none of this works
-			//		I noticed that delay calls were queuing up, so it was necessary to protect against that, so only one is processed
-			if (m_UpdatePixelRaycastModule)
-			{
-				EditorApplication.delayCall += () =>
-				{
-					if (this != null) // Because this is a delay call, the component will be null when EditorVR closes
-					{
-						Event e = new Event();
-						e.type = EventType.ExecuteCommand;
-						VRView.activeView.SendEvent(e);
-					}
-				};
+			m_Rays.UpdateDefaultProxyRays();
 
-				m_UpdatePixelRaycastModule = false; // Don't allow another one to queue until the current one is processed
-			}
-#endif
+			m_KeyboardModule.UpdateKeyboardMallets();
 
-			if (!m_ControllersReady)
-				return;
+			m_DeviceInputModule.ProcessInput();
 
-			UpdateDefaultProxyRays();
+			m_Menus.UpdateMenuVisibilityNearWorkspaces();
+			m_Menus.UpdateMenuVisibilities();
 
-			UpdateKeyboardMallets();
-
-			ProcessInput();
-
-			UpdateMenuVisibilityNearWorkspaces();
-			UpdateMenuVisibilities();
-
-			UpdateManipulatorVisibilites();
+			m_UI.UpdateManipulatorVisibilites();
 		}
 
-		private void LogError(string error)
+		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
 		{
-			Debug.LogError(string.Format("EVR: {0}", error));
+			m_MiniWorlds.UpdateMiniWorlds();
+
+			m_InputModule.ProcessInput(null, consumeControl);
+
+			foreach (var deviceData in m_DeviceData)
+			{
+				if (!deviceData.proxy.active)
+					continue;
+
+				var mainMenu = deviceData.mainMenu;
+				var menuInput = mainMenu as IProcessInput;
+				if (menuInput != null && mainMenu.visible)
+					menuInput.ProcessInput(deviceData.mainMenuInput, consumeControl);
+
+				var altMenu = deviceData.alternateMenu;
+				var altMenuInput = altMenu as IProcessInput;
+				if (altMenuInput != null && altMenu.visible)
+					altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
+
+				foreach (var toolData in deviceData.toolData)
+				{
+					var process = toolData.tool as IProcessInput;
+					if (process != null && ((MonoBehaviour)toolData.tool).enabled
+						&& processedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)
+						process.ProcessInput(toolData.input, consumeControl);
+				}
+			}
+
+		}
+
+		T AddModule<T>() where T : Component
+		{
+			T module = U.Object.AddComponent<T>(gameObject);
+			m_Interfaces.ConnectInterfaces(module);
+			return module;
 		}
 
 		static GameObject GetGroupRoot(GameObject hoveredObject)
@@ -350,13 +357,6 @@ namespace UnityEditor.Experimental.EditorVR
 			return transform;
 		}
 
-		void AddPlayerModel()
-		{
-			var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
-			m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
-		}
-
-#if UNITY_EDITOR
 		static EditorVR s_Instance;
 		static InputManager s_InputManager;
 
@@ -375,8 +375,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 		static EditorVR()
 		{
-			VRView.onEnable += OnEVREnabled;
-			VRView.onDisable += OnEVRDisabled;
+			VRView.onEnable += OnVRViewEnabled;
+			VRView.onDisable += OnVRViewDisabled;
 
 			if (!PlayerSettings.virtualRealitySupported)
 				Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
@@ -396,13 +396,13 @@ namespace UnityEditor.Experimental.EditorVR
 				TagManager.AddLayer(layer);
 		}
 
-		private static void OnEVREnabled()
+		static void OnVRViewEnabled()
 		{
 			InitializeInputManager();
 			s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
 		}
 
-		private static void InitializeInputManager()
+		static void InitializeInputManager()
 		{
 			// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
 			// in edit mode we need to handle lifecycle explicitly
@@ -438,12 +438,11 @@ namespace UnityEditor.Experimental.EditorVR
 			U.Object.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
 		}
 
-		private static void OnEVRDisabled()
+		static void OnVRViewDisabled()
 		{
 			U.Object.Destroy(s_Instance.gameObject);
 			U.Object.Destroy(s_InputManager.gameObject);
 		}
-#endif
 	}
 #else
 	internal class NoEditorVR

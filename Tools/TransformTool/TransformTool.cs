@@ -210,7 +210,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 			UpdateCurrentManipulator();
 	}
 
-	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
 		var hasObject = false;
 
