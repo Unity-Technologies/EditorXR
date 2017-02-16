@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Actions;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Extensions;
@@ -12,7 +11,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	public class RadialMenuUI : MonoBehaviour
 	{
-		const float kPhaseOffset = 90f; // Correcting the coordinates, so that 0 degrees is at the top of the radial menu
 		const int kSlotCount = 16;
 
 		[SerializeField]
@@ -27,6 +25,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		List<RadialMenuSlot> m_RadialMenuSlots;
 		Coroutine m_VisibilityCoroutine;
 		RadialMenuSlot m_HighlightedButton;
+		float m_PhaseOffset; // Correcting the coordinates, based on actions count, so that the menu is centered at the bottom
 
 		public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
 
@@ -133,7 +132,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				else if (value.magnitude > 0)
 				{
 					var angle = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg;
-					angle -= kPhaseOffset;
+					angle -= m_PhaseOffset;
 
 					// Handle lower quadrant to put it into full 360 degree range
 					if (angle < 0f)
@@ -233,7 +232,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			{
 				var slot = m_RadialMenuSlots[i];
 				// We move in counter-clockwise direction
-				slot.visibleLocalRotation = Quaternion.AngleAxis(kPhaseOffset + kRotationSpacing * i, Vector3.down);
+				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
+				m_PhaseOffset = 270 - (m_Actions.Count * 0.5f) * kRotationSpacing;
+				slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + kRotationSpacing * i, Vector3.down);
 				slot.Hide();
 			}
 
