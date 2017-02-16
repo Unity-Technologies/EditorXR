@@ -96,8 +96,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 				m_SemiTransparent = value;
 
-				this.StopCoroutine(ref m_SemiTransparentCoroutine);
-				m_SemiTransparentCoroutine = StartCoroutine(AnimateSemiTransparent(value));
+				this.RestartCoroutine(ref m_SemiTransparentCoroutine, AnimateSemiTransparent(value));
 			}
 
 			get { return m_SemiTransparent; }
