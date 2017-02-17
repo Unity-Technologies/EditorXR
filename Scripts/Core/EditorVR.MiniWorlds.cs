@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Proxies;
+using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
@@ -41,6 +42,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 			public List<IMiniWorld> worlds { get { return m_Worlds; } }
 			readonly List<IMiniWorld> m_Worlds = new List<IMiniWorld>();
+
+			public Dictionary<MiniWorldWorkspace, ActionMapInput> inputs { get { return m_MiniWorldInputs; } }
+			readonly Dictionary<MiniWorldWorkspace, ActionMapInput> m_MiniWorldInputs = new Dictionary<MiniWorldWorkspace, ActionMapInput>();
 
 			bool m_MiniWorldIgnoreListDirty = true;
 
@@ -102,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 			}
 
-			internal void UpdateMiniWorlds()
+			internal void UpdateMiniWorlds(ConsumeControlDelegate consumeControl)
 			{
 				if (m_MiniWorldIgnoreListDirty)
 				{
@@ -111,6 +115,11 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 
 				var objectsGrabber = evr.m_DirectSelection.objectsGrabber;
+
+				foreach (var kvp in m_MiniWorldInputs)
+				{
+					kvp.Key.ProcessInput(kvp.Value, consumeControl);
+				}
 
 				// Update MiniWorldRays
 				foreach (var ray in m_Rays)
@@ -374,7 +383,9 @@ namespace UnityEditor.Experimental.EditorVR
 				var miniWorld = miniWorldWorkspace.miniWorld;
 				m_Worlds.Add(miniWorld);
 
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				m_MiniWorldInputs[miniWorldWorkspace] = evr.m_DeviceInputModule.CreateActionMapInputForObject(miniWorldWorkspace, null);
+
+				evr.m_Rays.ForEachProxyDevice(deviceData =>
 				{
 					var miniWorldRayOrigin = InstantiateMiniWorldRay();
 					miniWorldRayOrigin.parent = workspace.transform;
@@ -393,6 +404,15 @@ namespace UnityEditor.Experimental.EditorVR
 					};
 
 					evr.m_IntersectionModule.AddTester(tester);
+
+					if (deviceData.proxy.active)
+					{
+						if (deviceData.node == Node.LeftHand)
+							miniWorldWorkspace.leftRayOrigin = deviceData.rayOrigin;
+
+						if (deviceData.node == Node.RightHand)
+							miniWorldWorkspace.rightRayOrigin = deviceData.rayOrigin;
+					}
 				}, false);
 			}
 

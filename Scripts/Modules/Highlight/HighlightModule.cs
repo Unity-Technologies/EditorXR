@@ -25,6 +25,10 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				{
 					var highlightTransform = m.transform;
 					Matrix4x4 highlightScaleIncreaseMatrix = Matrix4x4.TRS(highlightTransform.position, highlightTransform.rotation, highlightTransform.lossyScale + kHighlightScaleIncrease);
+
+					if (m.sharedMesh == null)
+						continue;
+
 					for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
 						Graphics.DrawMesh(m.sharedMesh, highlightScaleIncreaseMatrix, m_HighlightMaterial, m.gameObject.layer, null, i);
 				}

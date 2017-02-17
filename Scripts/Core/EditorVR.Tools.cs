@@ -297,6 +297,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void UpdatePlayerHandleMaps(List<ActionMapInput> maps)
 			{
+				maps.AddRange(evr.m_MiniWorlds.inputs.Values);
+
 				var evrDeviceData = evr.m_DeviceData;
 				foreach (var deviceData in evrDeviceData)
 				{

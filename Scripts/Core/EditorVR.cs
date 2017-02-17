@@ -290,7 +290,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
 		{
-			m_MiniWorlds.UpdateMiniWorlds();
+			m_MiniWorlds.UpdateMiniWorlds(consumeControl);
 
 			m_InputModule.ProcessInput(null, consumeControl);
 
