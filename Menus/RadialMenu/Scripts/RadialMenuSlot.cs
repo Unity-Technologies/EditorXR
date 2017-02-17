@@ -49,7 +49,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			set
 			{
 				// Proceed only if value is true after previously being false
-				if (m_Highlighted && value != m_Pressed && value)
+				if (m_Highlighted && value != m_Pressed && value && gameObject.activeSelf)
 				{
 					m_Pressed = value;
 
@@ -66,7 +66,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		{
 			set
 			{
-				if (m_Highlighted == value)
+				if (m_Highlighted == value || !gameObject.activeSelf)
 					return;
 
 				this.StopCoroutine(ref m_IconHighlightCoroutine);
@@ -90,12 +90,13 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		{
 			set
 			{
-				if (value == m_SemiTransparent)
+				if (value == m_SemiTransparent || !gameObject.activeSelf)
 					return;
 
 				m_SemiTransparent = value;
 
-				this.RestartCoroutine(ref m_SemiTransparentCoroutine, AnimateSemiTransparent(value));
+				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateSemiTransparent(value));
+				ShowCleanup();
 			}
 
 			get { return m_SemiTransparent; }
@@ -121,6 +122,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
 		Coroutine m_SemiTransparentCoroutine;
+		Coroutine m_InsetRevealCoroutine;
 
 		public Material borderRendererMaterial
 		{
@@ -191,6 +193,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		public void Show()
 		{
+			gameObject.SetActive(true);
 			m_MenuInset.localScale = m_HiddenInsetLocalScale;
 			m_Pressed = false;
 			m_Highlighted = false;
@@ -201,7 +204,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		public void Hide()
 		{
-			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
+			if (gameObject.activeSelf)
+				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
 		}
 
 		void CorrectIconRotation()
@@ -222,15 +226,12 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			transform.localScale = kHiddenLocalScale;
 			m_IconContainer.localPosition = m_OriginalIconLocalPosition;
 
-			StartCoroutine(ShowInset());
+			this.RestartCoroutine(ref m_InsetRevealCoroutine, ShowInset());
 
 			var opacity = 0f;
 			var positionWait = orderIndex * 0.05f;
 			while (opacity < 1)
 			{
-				if (m_SemiTransparent)
-					break;
-
 				opacity += Time.unscaledDeltaTime / positionWait * 2;
 				var opacityShaped = Mathf.Pow(opacity, opacity);
 
@@ -240,13 +241,17 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				yield return null;
 			}
 
-			m_BorderRendererMaterial.SetFloat(kMaterialExpandProperty, 0);
-			m_CanvasGroup.interactable = true;
 			transform.localScale = Vector3.one;
-
-			CorrectIconRotation();
+			ShowCleanup();
 
 			m_VisibilityCoroutine = null;
+		}
+
+		void ShowCleanup()
+		{
+			m_BorderRendererMaterial.SetFloat(kMaterialExpandProperty, 0);
+			m_CanvasGroup.interactable = true;
+			CorrectIconRotation();
 		}
 
 		IEnumerator ShowInset()
@@ -268,6 +273,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 			m_InsetMaterial.SetFloat(kMaterialAlphaProperty, 1);
 			m_MenuInset.localScale = m_VisibleInsetLocalScale;
+			m_InsetRevealCoroutine = null;
 		}
 
 		IEnumerator AnimateHide()
@@ -295,6 +301,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 			FadeOutCleanup();
 			m_VisibilityCoroutine = null;
+			gameObject.SetActive(false);
 		}
 
 		void FadeOutCleanup()
@@ -395,6 +402,13 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateSemiTransparent(bool makeSemiTransparent)
 		{
+			if (m_InsetRevealCoroutine != null)
+			{
+				this.StopCoroutine(ref m_InsetRevealCoroutine);
+				m_CanvasGroup.alpha = 1f;
+				ShowCleanup();
+			}
+
 			const float kFasterMotionMultiplier = 2f;
 			var transitionAmount = Time.unscaledDeltaTime;
 			var positionWait = (orderIndex + 4) * 0.25f; // pad the order index for a faster start to the transition
@@ -423,6 +437,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedTransitionAmount);
 				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedTransitionAmount);
 				transitionAmount += Time.unscaledDeltaTime * positionWait;
+				CorrectIconRotation();
 				yield return null;
 			}
 
