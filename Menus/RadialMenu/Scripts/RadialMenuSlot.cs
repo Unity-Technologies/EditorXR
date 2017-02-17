@@ -122,6 +122,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
 		Coroutine m_InsetRevealCoroutine;
+		Coroutine m_RayExitDelayCoroutine;
 
 		public Material borderRendererMaterial
 		{
@@ -403,6 +404,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		{
 			if (m_InsetRevealCoroutine != null)
 			{
+				// In case semiTransparency is triggered immedlately upon showing the radial menu
 				this.StopCoroutine(ref m_InsetRevealCoroutine);
 				m_CanvasGroup.alpha = 1f;
 				ShowCleanup();
@@ -455,6 +457,20 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		public void OnRayExit(RayEventData eventData)
 		{
+			this.RestartCoroutine(ref m_RayExitDelayCoroutine, RayExitDelay());
+		}
+
+		IEnumerator RayExitDelay()
+		{
+			// Wait before setting highlighted to false if the user is moving the ray between slots
+			// This delay prevents highlight flickering when navigating the menu via ray vs analog input
+			var duration = Time.unscaledDeltaTime;
+			while (duration < 0.2f)
+			{
+				duration += Time.unscaledDeltaTime;
+				yield return null;
+			}
+
 			highlighted = false;
 		}
 	}
