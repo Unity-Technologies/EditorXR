@@ -171,9 +171,10 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 				m_SemiTransparent = value;
 
-				foreach (var slot in m_RadialMenuSlots)
+				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
-					slot.semiTransparent = m_SemiTransparent;
+					// Only set the semiTransparent value on menu slots representing actions
+					m_RadialMenuSlots[i].semiTransparent = m_Actions.Count > i ? m_SemiTransparent : false;
 				}
 			}
 		}
@@ -273,11 +274,16 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		{
 			UpdateRadialSlots();
 
-			semiTransparent = false;
+			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
+			{
+				if (i < m_Actions.Count)
+					m_RadialMenuSlots[i].Show();
+				else
+					m_RadialMenuSlots[i].Hide();
+			}
 
 			var revealAmount = 0f;
-			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;;
-
+			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 			while (revealAmount < 1)
 			{
 				revealAmount += Time.unscaledDeltaTime * 8;
@@ -285,12 +291,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
 					if (i < m_Actions.Count)
-					{
-						m_RadialMenuSlots[i].Show();
 						m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, revealAmount * revealAmount);
-					}
-					else
-						m_RadialMenuSlots[i].Hide();
 				}
 
 				yield return null;
@@ -308,6 +309,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateHide()
 		{
+			semiTransparent = false;
 			var revealAmount = 0f;
 			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 
