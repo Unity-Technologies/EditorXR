@@ -13,8 +13,6 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	const float kExpandArrowRotateSpeed = 0.4f;
 
-	protected override bool singleClickDrag { get { return false; } }
-
 	[SerializeField]
 	Text m_Text;
 
@@ -56,7 +54,9 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 	public Action<int> selectRow { private get; set; }
 
 	public Func<int, bool> isExpanded { private get; set; }
-	
+
+	protected override bool singleClickDrag { get { return false; } }
+
 	public override void Setup(HierarchyData listData)
 	{
 		base.Setup(listData);

@@ -17,8 +17,6 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 
 	protected InputField[] m_InputFields;
 
-	protected override bool singleClickDrag { get { return false; } }
-
 	protected override BaseHandle clickedHandle
 	{
 		get { return m_ClickedHandle; }
@@ -69,6 +67,8 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 	public Action<InspectorData> toggleExpanded { private get; set; }
 
 	public Func<byte> requestStencilRef { private get; set; }
+
+	protected override bool singleClickDrag { get { return false; } }
 
 	public override void Setup(InspectorData data)
 	{

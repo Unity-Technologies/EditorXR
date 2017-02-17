@@ -24,10 +24,7 @@ public class DraggableListItem<DataType> : ListViewItem<DataType>, IGetPreviewOr
 	float m_LastClickTime;
 	float m_DragDistance;
 
-	protected virtual bool singleClickDrag
-	{
-		get { return true; }
-	}
+	protected virtual bool singleClickDrag { get { return true; } }
 
 	protected virtual BaseHandle clickedHandle { get; set; }
 
@@ -56,7 +53,6 @@ public class DraggableListItem<DataType> : ListViewItem<DataType>, IGetPreviewOr
 
 			m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
 
-			// Grab a field block on double click
 			var timeSinceLastClick = Time.realtimeSinceStartup - m_LastClickTime;
 			m_LastClickTime = Time.realtimeSinceStartup;
 			if (m_ClickCount > 1 && U.UI.IsDoubleClick(timeSinceLastClick))
