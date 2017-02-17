@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Tools;
 
 namespace UnityEngine.Experimental.EditorVR.Proxies
 {
@@ -16,6 +16,11 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		{
 			get;
 		}
+
+		/// <summary>
+		/// Event called when the active property changes
+		/// </summary>
+		event Action activeChanged;
 
 		/// <summary>
 		/// Provided to a proxy for device input (e.g. position / rotation)

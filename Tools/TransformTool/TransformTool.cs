@@ -10,6 +10,9 @@ using UnityEngine.Experimental.EditorVR.Manipulators;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
+#if UNITY_EDITOR
+using Undo = UnityEditor.Undo;
+#endif
 
 public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility
 {
@@ -49,6 +52,10 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 		public void UpdatePositions()
 		{
+#if UNITY_EDITOR
+			Undo.RecordObjects(grabbedObjects, "Move");
+#endif
+
 			for (int i = 0; i < grabbedObjects.Length; i++)
 			{
 				U.Math.SetTransformOffset(rayOrigin, grabbedObjects[i], positionOffsets[i], rotationOffsets[i]);
@@ -57,6 +64,10 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 
 		public void ScaleObjects(float scaleFactor)
 		{
+#if UNITY_EDITOR
+			Undo.RecordObjects(grabbedObjects, "Move");
+#endif
+
 			for (int i = 0; i < grabbedObjects.Length; i++)
 			{
 				var grabbedObject = grabbedObjects[i];
@@ -199,7 +210,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 			UpdateCurrentManipulator();
 	}
 
-	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
 		var hasObject = false;
 
@@ -289,6 +300,10 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 						// A direct selection has been made. Hide the manipulator until the selection changes
 						m_DirectSelected = true;
 					};
+
+#if UNITY_EDITOR
+					Undo.IncrementCurrentGroup();
+#endif
 				}
 			}
 
@@ -363,6 +378,8 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 #if UNITY_EDITOR
 			if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 				manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, kLazyFollowRotate * deltaTime);
+
+			Undo.RecordObjects(Selection.transforms, "Move");
 #endif
 
 			foreach (var t in Selection.transforms)
@@ -467,6 +484,13 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		m_TargetScale += delta;
 	}
 
+	static void OnDragStarted()
+	{
+#if UNITY_EDITOR
+		Undo.IncrementCurrentGroup();
+#endif
+	}
+
 	private void UpdateSelectionBounds()
 	{		
 		m_SelectionBounds = U.Object.GetBounds(Selection.gameObjects);
@@ -480,6 +504,7 @@ public class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChang
 		manipulator.translate = Translate;
 		manipulator.rotate = Rotate;
 		manipulator.scale = Scale;
+		manipulator.dragStarted += OnDragStarted;
 		return manipulator;
 	}
 

@@ -65,8 +65,8 @@ public class MiniWorld : MonoBehaviour, IMiniWorld
 		m_MiniWorldRenderer.miniWorld = this;
 		m_MiniWorldRenderer.cullingMask = m_RendererCullingMask;
 
-		Transform pivot = U.Camera.GetViewerPivot();
-		referenceTransform.position = pivot.transform.position;
+		Transform rig = U.Camera.GetCameraRig();
+		referenceTransform.position = rig.transform.position;
 	}
 
 	private void OnDisable()
