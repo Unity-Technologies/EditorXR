@@ -1,30 +1,27 @@
-#if UNITY_EDITORVR
-using System;
+﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEngine.Experimental.EditorVR.Modules
 {
-	partial class EditorVR
+	internal class DeviceInputModule : MonoBehaviour
 	{
+		public TrackedObject trackedObjectInput { get; private set; }
 		[SerializeField]
 		ActionMap m_TrackedObjectActionMap;
 
 		[SerializeField]
 		ActionMap m_StandardToolActionMap;
 
+		public ActionMap directSelectActionMap { get { return m_DirectSelectActionMap; } }
 		[SerializeField]
 		ActionMap m_DirectSelectActionMap;
 
 		PlayerHandle m_PlayerHandle;
 
 		readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
-
-		TrackedObject m_TrackedObjectInput;
 
 		readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 		{
@@ -37,7 +34,10 @@ namespace UnityEditor.Experimental.EditorVR
 		readonly List<InputDevice> m_SystemDevices = new List<InputDevice>();
 		readonly Dictionary<Type, string[]> m_DeviceTypeTags = new Dictionary<Type, string[]>();
 
-		List<InputDevice> GetSystemDevices()
+		public Action<HashSet<IProcessInput>, ConsumeControlDelegate> processInput;
+		public Action<List<ActionMapInput>>  updatePlayerHandleMaps;
+
+		public List<InputDevice> GetSystemDevices()
 		{
 			// For now let's filter out any other devices other than VR controller devices; Eventually, we may support mouse / keyboard etc.
 			m_SystemDevices.Clear();
@@ -52,22 +52,19 @@ namespace UnityEditor.Experimental.EditorVR
 			return m_SystemDevices;
 		}
 
-		void InitializePlayerHandle()
+		public void InitializePlayerHandle()
 		{
 			m_PlayerHandle = PlayerHandleManager.GetNewPlayerHandle();
 			m_PlayerHandle.global = true;
 			m_PlayerHandle.processAll = true;
 		}
 
-		void CreateDeviceDataForInputDevices()
+		void OnDestroy()
 		{
-			foreach (var device in GetSystemDevices())
-			{
-				m_DeviceData.Add(device, new DeviceData());
-			}
+			PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
 		}
 
-		void ProcessInput()
+		public void ProcessInput()
 		{
 			// Maintain a consumed control, so that other AMIs don't pick up the input, until it's no longer used
 			var removeList = new List<InputControl>();
@@ -85,39 +82,19 @@ namespace UnityEditor.Experimental.EditorVR
 				m_LockedControls.Remove(inputControl);
 			}
 
-			UpdateMiniWorlds();
-
-			m_InputModule.ProcessInput(null, ConsumeControl);
-
 			m_ProcessedInputs.Clear();
-			foreach (var deviceData in m_DeviceData.Values)
-			{
-				var mainMenu = deviceData.mainMenu;
-				var menuInput = mainMenu as IProcessInput;
-				if (menuInput != null && mainMenu.visible)
-					menuInput.ProcessInput(deviceData.mainMenuInput, ConsumeControl);
 
-				var altMenu = deviceData.alternateMenu;
-				var altMenuInput = altMenu as IProcessInput;
-				if (altMenuInput != null && altMenu.visible)
-					altMenuInput.ProcessInput(deviceData.alternateMenuInput, ConsumeControl);
-
-				foreach (var toolData in deviceData.toolData)
-				{
-					var process = toolData.tool as IProcessInput;
-					if (process != null && ((MonoBehaviour)toolData.tool).enabled
-						&& m_ProcessedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)
-						process.ProcessInput(toolData.input, ConsumeControl);
-				}
-			}
+			// TODO: Replace this with a map of ActionMap,IProcessInput and go through those
+			if (processInput != null)
+				processInput(m_ProcessedInputs, ConsumeControl);
 		}
 
-		void CreateDefaultActionMapInputs()
+		public void CreateDefaultActionMapInputs()
 		{
-			m_TrackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap, null);
+			trackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap, null);
 		}
 
-		ActionMapInput CreateActionMapInput(ActionMap map, InputDevice device)
+		public ActionMapInput CreateActionMapInput(ActionMap map, InputDevice device)
 		{
 			// Check for improper use of action maps first
 			if (device != null && !IsValidActionMapForDevice(map, device))
@@ -154,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR
 			return actionMapInput;
 		}
 
-		ActionMapInput CreateActionMapInputForObject(object obj, InputDevice device)
+		public ActionMapInput CreateActionMapInputForObject(object obj, InputDevice device)
 		{
 			var customMap = obj as ICustomActionMap;
 			if (customMap != null)
@@ -172,50 +149,17 @@ namespace UnityEditor.Experimental.EditorVR
 			return null;
 		}
 
-		private void UpdatePlayerHandleMaps()
+		// TODO: Order doesn't matter any more ostensibly, so let's simply add when AMIs are created
+		public void UpdatePlayerHandleMaps()
 		{
 			var maps = m_PlayerHandle.maps;
 			maps.Clear();
 
-			foreach (var deviceData in m_DeviceData.Values)
-			{
-				var mainMenu = deviceData.mainMenu;
-				var mainMenuInput = deviceData.mainMenuInput;
-				if (mainMenu != null && mainMenuInput != null)
-				{
-					mainMenuInput.active = mainMenu.visible;
-
-					if (!maps.Contains(mainMenuInput))
-						maps.Add(mainMenuInput);
-				}
-
-				var alternateMenu = deviceData.alternateMenu;
-				var alternateMenuInput = deviceData.alternateMenuInput;
-				if (alternateMenu != null && alternateMenuInput != null)
-				{
-					alternateMenuInput.active = alternateMenu.visible;
-
-					if (!maps.Contains(alternateMenuInput))
-						maps.Add(alternateMenuInput);
-				}
-
-				maps.Add(deviceData.directSelectInput);
-				maps.Add(deviceData.uiInput);
-			}
-
-			maps.Add(m_TrackedObjectInput);
-
-			foreach (var deviceData in m_DeviceData.Values)
-			{
-				foreach (var td in deviceData.toolData)
-				{
-					if (td.input != null && !maps.Contains(td.input))
-						maps.Add(td.input);
-				}
-			}
+			if (updatePlayerHandleMaps != null)
+				updatePlayerHandleMaps(maps);
 		}
 
-		bool IsValidActionMapForDevice(ActionMap actionMap, InputDevice device)
+		static bool IsValidActionMapForDevice(ActionMap actionMap, InputDevice device)
 		{
 			var untaggedDevicesFound = 0;
 			var taggedDevicesFound = 0;
@@ -259,6 +203,11 @@ namespace UnityEditor.Experimental.EditorVR
 			return true;
 		}
 
+		static void LogError(string error)
+		{
+			Debug.LogError(string.Format("DeviceInputModule: {0}", error));
+		}
+
 		void ConsumeControl(InputControl control)
 		{
 			// Consuming a control inherently locks it (for now), since consuming a control for one frame only might leave
@@ -276,7 +225,7 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 
-		Node? GetDeviceNode(InputDevice device)
+		public Node? GetDeviceNode(InputDevice device)
 		{
 			string[] tags;
 
@@ -299,4 +248,3 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 	}
 }
-#endif

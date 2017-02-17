@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: c883c720c3defaf4fbed425b214ff9c1
+timeCreated: 1484875284
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_KeyboardMalletPrefab: {fileID: 114000013972379212, guid: 55c3df0d3b957354fa26bae2b39cffb3,
+      type: 2}
+  - m_NumericKeyboardPrefab: {fileID: 114000012169358554, guid: 5f76c682f089562449adab190d7a8fc4,
+      type: 2}
+  - m_StandardKeyboardPrefab: {fileID: 114000012076762946, guid: 6a5c5a798b3bb39408f3dbf2bfa77923,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
