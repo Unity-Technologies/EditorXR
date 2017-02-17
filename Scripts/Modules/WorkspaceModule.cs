@@ -10,7 +10,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 	internal class WorkspaceModule : MonoBehaviour, IConnectInterfaces
 	{
 		internal static readonly Vector3 kDefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
-		static readonly Quaternion kDefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
+		internal static readonly Quaternion kDefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
 		internal List<IWorkspace> workspaces { get { return m_Workspaces; } }
 		readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
