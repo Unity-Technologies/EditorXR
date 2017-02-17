@@ -67,6 +67,8 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 			foreach (var h in m_AllHandles)
 				h.gameObject.SetActive(h == handle);
 
+			OnDragStarted();
+
 			dragging = true;
 		}
 

@@ -66,7 +66,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	public Action<GameObject, bool> setLocked { private get; set; }
 	public Func<GameObject, bool> isLocked { private get; set; }
 
-	public event Action<List<InspectorData>, PropertyData> arraySizeChanged = delegate {};
+	public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
 
 #if UNITY_EDITOR
 	protected override void Setup()
@@ -125,13 +125,30 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			m_ScrollReturn = -totalOffset + m_ItemSize.Value.z; // m_ItemSize will be equal to the size of the last visible item
 	}
 
+	public void OnObjectModified()
+	{
+		foreach (var listViewItem in m_ListItems.Values)
+		{
+			var item = (InspectorListItem)listViewItem;
+			item.OnObjectModified();
+		}
+	}
+
 	void UpdateRecursively(List<InspectorData> data, ref float totalOffset, int depth = 0)
 	{
 		foreach (var datum in data)
 		{
+			if (datum.instanceID == null)
+			{
+				Recycle(datum);
+				RecycleChildren(datum);
+				continue;
+			}
+
 			bool expanded;
-			if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
-				m_ExpandStates[datum.instanceID] = false;
+			var instanceID = datum.instanceID.Value;
+			if (!m_ExpandStates.TryGetValue(instanceID, out expanded))
+				m_ExpandStates[instanceID] = false;
 
 			m_ItemSize = m_TemplateSizes[datum.template];
 			var itemSize = m_ItemSize.Value;
@@ -242,20 +259,25 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	void ToggleExpanded(InspectorData data)
 	{
-		m_ExpandStates[data.instanceID] = !m_ExpandStates[data.instanceID];
+		var instanceID = data.instanceID.Value;
+		m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
 	}
 
 	void OnArraySizeChanged(PropertyData element)
 	{
-		arraySizeChanged(m_Data, element);
+		if (arraySizeChanged != null)
+			arraySizeChanged(m_Data, element);
 	}
 
 	void ExpandComponentRows(List<InspectorData> data)
 	{
 		foreach (var datum in data)
 		{
+			if (datum.instanceID == null)
+				continue;
+
 			var targetObject = datum.serializedObject.targetObject;
-			m_ExpandStates[datum.instanceID] = targetObject is Component || targetObject is GameObject;
+			m_ExpandStates[datum.instanceID.Value] = targetObject is Component || targetObject is GameObject;
 
 			if (datum.children != null)
 				ExpandComponentRows(datum.children);

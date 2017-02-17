@@ -17,11 +17,13 @@ public class InspectorRectItem : InspectorPropertyItem
 	{
 		base.Setup(data);
 
-		UpdateInputFields(m_SerializedProperty.rectValue);
+		UpdateInputFields();
 	}
 
-	void UpdateInputFields(Rect rect)
+	void UpdateInputFields()
 	{
+		var rect = m_SerializedProperty.rectValue;
+
 		for (var i = 0; i < m_CenterFields.Length; i++)
 		{
 			m_CenterFields[i].text = rect.center[i].ToString();
@@ -38,9 +40,23 @@ public class InspectorRectItem : InspectorPropertyItem
 		for (var i = 0; i < m_CenterFields.Length; i++)
 		{
 			var index = i;
-			m_CenterFields[i].onValueChanged.AddListener(value => SetValue(value, index, true));
-			m_SizeFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+			m_CenterFields[i].onValueChanged.AddListener(value =>
+			{
+				if (SetValue(value, index, true))
+					data.serializedObject.ApplyModifiedProperties();
+			});
+			m_SizeFields[i].onValueChanged.AddListener(value =>
+			{
+				if (SetValue(value, index))
+					data.serializedObject.ApplyModifiedProperties();
+			});
 		}
+	}
+
+	public override void OnObjectModified()
+	{
+		base.OnObjectModified();
+		UpdateInputFields();
 	}
 
 	bool SetValue(string input, int index, bool center = false)
@@ -60,13 +76,12 @@ public class InspectorRectItem : InspectorPropertyItem
 			else
 				rect.size = vector;
 
-			UpdateInputFields(rect);
-
 			m_SerializedProperty.rectValue = rect;
-			data.serializedObject.ApplyModifiedProperties();
+			UpdateInputFields();
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 
 	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -76,14 +91,18 @@ public class InspectorRectItem : InspectorPropertyItem
 
 		if (inputfields.Length > 3) // If we've grabbed all of the fields
 			dropObject = m_SerializedProperty.rectValue;
+
 		if (inputfields.Length > 1) // If we've grabbed one vector
 		{
 			if (m_CenterFields.Intersect(inputfields).Any())
 				dropObject = m_SerializedProperty.rectValue.center;
 			else
 				dropObject = m_SerializedProperty.rectValue.size;
-		} else if (inputfields.Length > 0) // If we've grabbed a single field
+		}
+		else if (inputfields.Length > 0) // If we've grabbed a single field
+		{
 			dropObject = inputfields[0].text;
+		}
 
 		return dropObject;
 	}
@@ -105,6 +124,8 @@ public class InspectorRectItem : InspectorPropertyItem
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
+
+				FinalizeModifications();
 			}
 
 			index = Array.IndexOf(m_CenterFields, inputField);
@@ -112,6 +133,8 @@ public class InspectorRectItem : InspectorPropertyItem
 			{
 				inputField.text = str;
 				inputField.ForceUpdateLabel();
+
+				FinalizeModifications();
 			}
 		}
 
@@ -119,9 +142,8 @@ public class InspectorRectItem : InspectorPropertyItem
 		{
 			m_SerializedProperty.rectValue = (Rect)dropObject;
 
-			UpdateInputFields(m_SerializedProperty.rectValue);
-
-			data.serializedObject.ApplyModifiedProperties();
+			UpdateInputFields();
+			FinalizeModifications();
 		}
 
 		if (dropObject is Vector2 || dropObject is Vector3 || dropObject is Vector4)
@@ -137,9 +159,8 @@ public class InspectorRectItem : InspectorPropertyItem
 
 			m_SerializedProperty.rectValue = rect;
 
-			UpdateInputFields(rect);
-
-			data.serializedObject.ApplyModifiedProperties();
+			UpdateInputFields();
+			FinalizeModifications();
 		}
 	}
 #endif

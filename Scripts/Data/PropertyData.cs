@@ -8,7 +8,7 @@ namespace UnityEngine.Experimental.EditorVR.Data
 #if UNITY_EDITOR
 		public SerializedProperty property { get; private set; }
 
-		public override int instanceID
+		public override int? instanceID
 		{
 			get { return property.GetHashCode(); }
 		}
