@@ -431,13 +431,13 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			while (transitionAmount < 1)
 			{
 				m_FrameMaterial.SetColor(kMaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, transitionAmount * kFasterMotionMultiplier));
-				m_MenuInset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, transitionAmount);
+				m_MenuInset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, transitionAmount * 2f);
 				m_InsetMaterial.SetFloat(kMaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, transitionAmount));
 				m_IconMaterial.SetColor(kMaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, transitionAmount));
 				var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
 				transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedTransitionAmount);
 				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedTransitionAmount);
-				transitionAmount += Time.unscaledDeltaTime * positionWait;
+				transitionAmount += Time.unscaledDeltaTime * positionWait * 3f;
 				CorrectIconRotation();
 				yield return null;
 			}
