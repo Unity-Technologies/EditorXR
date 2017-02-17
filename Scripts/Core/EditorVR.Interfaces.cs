@@ -282,9 +282,9 @@ namespace UnityEditor.Experimental.EditorVR
 				if (requestStencilRef != null)
 					requestStencilRef.requestStencilRef = RequestStencilRef;
 
-				var moveViewerPivot = obj as IMoveCameraRig;
-				if (moveViewerPivot != null)
-					moveViewerPivot.moveCameraRig = Viewer.MoveCameraRig;
+				var moveCameraRig = obj as IMoveCameraRig;
+				if (moveCameraRig != null)
+					moveCameraRig.moveCameraRig = Viewer.MoveCameraRig;
 
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;

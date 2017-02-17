@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var endRotation = cameraRig.rotation * rotationDiff;
 				var viewDirection = endRotation * Vector3.forward;
 
-				evr.StartCoroutine(UpdateViewerPivot(endPosition, viewDirection, () =>
+				evr.StartCoroutine(UpdateCameraRig(endPosition, viewDirection, () =>
 				{
 					playerHead.parent = mainCamera;
 					playerHead.localRotation = Quaternion.identity;
@@ -64,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR
 				}));
 			}
 
-			static IEnumerator UpdateViewerPivot(Vector3 position, Vector3? viewDirection, Action onComplete = null)
+			static IEnumerator UpdateCameraRig(Vector3 position, Vector3? viewDirection, Action onComplete = null)
 			{
 				var cameraRig = U.Camera.GetCameraRig();
 
@@ -100,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal static void MoveCameraRig(Vector3 position, Vector3? viewdirection)
 			{
-				evr.StartCoroutine(UpdateViewerPivot(position, viewdirection));
+				evr.StartCoroutine(UpdateCameraRig(position, viewdirection));
 			}
 		}
 	}
