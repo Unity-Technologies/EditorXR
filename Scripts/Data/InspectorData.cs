@@ -10,9 +10,15 @@ namespace UnityEngine.Experimental.EditorVR.Data
 #if UNITY_EDITOR
 		public SerializedObject serializedObject { get; private set; }
 
-		public virtual int instanceID
+		public virtual int? instanceID
 		{
-			get { return serializedObject.targetObject.GetInstanceID(); }
+			get
+			{
+				if (serializedObject == null || serializedObject.targetObject == null)
+					return null;
+
+				return serializedObject.targetObject.GetInstanceID();
+			}
 		}
 
 		public InspectorData(string template, SerializedObject serializedObject, List<InspectorData> children)

@@ -13,6 +13,17 @@ public class InspectorStringItem : InspectorPropertyItem
 	{
 		base.Setup(data);
 
+		UpdateInputField();
+	}
+
+	public override void OnObjectModified()
+	{
+		base.OnObjectModified();
+		UpdateInputField();
+	}
+
+	void UpdateInputField()
+	{
 		var val = string.Empty;
 		switch (m_SerializedProperty.propertyType)
 		{
@@ -24,10 +35,16 @@ public class InspectorStringItem : InspectorPropertyItem
 				break;
 		}
 
-		SetValue(val);
+		m_InputField.text = val;
+		m_InputField.ForceUpdateLabel();
 	}
 
 	public void SetValue(string input)
+	{
+		if (SetValueIfPossible(input))
+			FinalizeModifications();
+	}
+	bool SetValueIfPossible(string input)
 	{
 		switch (m_SerializedProperty.propertyType)
 		{
@@ -39,7 +56,7 @@ public class InspectorStringItem : InspectorPropertyItem
 					m_InputField.text = input;
 					m_InputField.ForceUpdateLabel();
 
-					data.serializedObject.ApplyModifiedProperties();
+					return true;
 				}
 				break;
 			case SerializedPropertyType.Character:
@@ -51,10 +68,12 @@ public class InspectorStringItem : InspectorPropertyItem
 					m_InputField.text = input;
 					m_InputField.ForceUpdateLabel();
 
-					data.serializedObject.ApplyModifiedProperties();
+					return true;
 				}
 				break;
 		}
+
+		return false;
 	}
 
 	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -69,7 +88,8 @@ public class InspectorStringItem : InspectorPropertyItem
 
 	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 	{
-		SetValue(dropObject.ToString());
+		if (SetValueIfPossible(dropObject.ToString()))
+			FinalizeModifications();
 	}
 #endif
 }
