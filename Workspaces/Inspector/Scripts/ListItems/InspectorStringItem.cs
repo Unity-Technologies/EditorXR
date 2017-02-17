@@ -42,7 +42,7 @@ public class InspectorStringItem : InspectorPropertyItem
 	public void SetValue(string input)
 	{
 		if (SetValueIfPossible(input))
-			data.serializedObject.ApplyModifiedProperties();
+			FinalizeModifications();
 	}
 	bool SetValueIfPossible(string input)
 	{
