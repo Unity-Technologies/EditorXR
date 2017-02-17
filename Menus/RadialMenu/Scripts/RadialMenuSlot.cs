@@ -121,7 +121,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
-		Coroutine m_SemiTransparentCoroutine;
 		Coroutine m_InsetRevealCoroutine;
 
 		public Material borderRendererMaterial
@@ -447,7 +446,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_IconMaterial.SetColor(kMaterialColorProperty, targetIconColor);
 			m_MenuInset.localScale = targetInsetScale;
 			m_IconContainer.localScale = targetIconScale;
-			m_SemiTransparentCoroutine = null;
 		}
 
 		public void OnRayEnter(RayEventData eventData)
