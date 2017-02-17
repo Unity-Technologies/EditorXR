@@ -29,7 +29,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	private State m_State = State.Inactive;
 
-	public Transform viewerPivot { private get; set; }
+	public Transform cameraRig { private get; set; }
 
 	public ActionMap actionMap { get { return m_BlinkActionMap; } }
 	[SerializeField]
@@ -65,7 +65,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		showDefaultRay(rayOrigin);
 	}
 
-	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
 		var blinkInput = (BlinkLocomotion)input;
 		if (m_State == State.Moving || (s_ActiveBlinkTool != null && s_ActiveBlinkTool != this))
@@ -82,7 +82,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			{
 				yawValue = yawValue * yawValue * Mathf.Sign(yawValue);
 
-				viewerPivot.RotateAround(viewerCamera.transform.position, Vector3.up, yawValue * kRotationSpeed * Time.unscaledDeltaTime);
+				cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, yawValue * kRotationSpeed * Time.unscaledDeltaTime);
 				consumeControl(blinkInput.yaw);
 			}
 		}
@@ -95,7 +95,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 				forward.Normalize();
 				forwardValue = forwardValue * forwardValue * Mathf.Sign(forwardValue);
 
-				viewerPivot.Translate(forward * forwardValue * kMoveSpeed * Time.unscaledDeltaTime, Space.World);
+				cameraRig.Translate(forward * forwardValue * kMoveSpeed * Time.unscaledDeltaTime, Space.World);
 				consumeControl(blinkInput.forward);
 			}
 		}
@@ -132,19 +132,19 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	private IEnumerator MoveTowardTarget(Vector3 targetPosition)
 	{
 		m_State = State.Moving;
-		targetPosition = new Vector3(targetPosition.x + (viewerPivot.position.x - U.Camera.GetMainCamera().transform.position.x), viewerPivot.position.y, targetPosition.z + (viewerPivot.position.z - U.Camera.GetMainCamera().transform.position.z));
+		targetPosition = new Vector3(targetPosition.x + (cameraRig.position.x - U.Camera.GetMainCamera().transform.position.x), cameraRig.position.y, targetPosition.z + (cameraRig.position.z - U.Camera.GetMainCamera().transform.position.z));
 		const float kTargetDuration = 0.05f;
-		var currentPosition = viewerPivot.position;
+		var currentPosition = cameraRig.position;
 		var currentDuration = 0f;
 		while (currentDuration < kTargetDuration)
 		{
 			currentDuration += Time.unscaledDeltaTime;
 			currentPosition = Vector3.Lerp(currentPosition, targetPosition, currentDuration / kTargetDuration);
-			viewerPivot.position = currentPosition;
+			cameraRig.position = currentPosition;
 			yield return null;
 		}
 
-		viewerPivot.position = targetPosition;
+		cameraRig.position = targetPosition;
 		m_State = State.Inactive;
 		s_ActiveBlinkTool = null;
 	}

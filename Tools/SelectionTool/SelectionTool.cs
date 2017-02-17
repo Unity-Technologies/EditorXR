@@ -24,7 +24,7 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 
 		public Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { private get; set; }
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			if (rayOrigin == null)
 				return;

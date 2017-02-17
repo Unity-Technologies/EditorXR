@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.Input;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.InputNew;
 
 namespace UnityEngine.Experimental.EditorVR.Proxies
 {
@@ -18,6 +19,8 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 
 		[SerializeField]
 		protected PlayerInput m_PlayerInput;
+
+		internal IInputToEvents m_InputToEvents;
 
 		public Transform leftHand
 		{
@@ -40,7 +43,14 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 
 		public virtual TrackedObject trackedObjectInput { protected get; set; }
 
-		public virtual bool active { get { return true; } }
+		public bool active { get { return m_InputToEvents.active; } }
+
+		public event Action activeChanged
+		{
+			add { m_InputToEvents.activeChanged += value; }
+			remove { m_InputToEvents.activeChanged -= value; }
+		}
+
 
 		public virtual bool hidden
 		{

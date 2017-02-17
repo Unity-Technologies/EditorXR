@@ -83,7 +83,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_RadialMenuUI.getDirectSelection = getDirectSelection;
 		}
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var radialMenuInput = (RadialMenuInput)input;
 			if (radialMenuInput == null || !visible)

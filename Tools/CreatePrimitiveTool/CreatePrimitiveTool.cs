@@ -51,7 +51,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 		createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
 	}
 
-	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
 		var standardInput = (Standard)input;
 
@@ -85,7 +85,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 		m_Freeform = isFreeform;
 	}
 
-	void HandleStartPoint(Standard standardInput, Action<InputControl> consumeControl)
+	void HandleStartPoint(Standard standardInput, ConsumeControlDelegate consumeControl)
 	{
 		if (standardInput.action.wasJustPressed)
 		{
@@ -130,7 +130,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 		m_CurrentGameObject.transform.localScale = (maxCorner - minCorner);
 	}
 
-	void CheckForTriggerRelease(Standard standardInput, Action<InputControl> consumeControl)
+	void CheckForTriggerRelease(Standard standardInput, ConsumeControlDelegate consumeControl)
 	{
 		// Ready for next object to be created
 		if (standardInput.action.wasJustReleased)

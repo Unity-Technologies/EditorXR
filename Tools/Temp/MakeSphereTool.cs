@@ -28,7 +28,7 @@ public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	public Action<GameObject> addToSpatialHash { get; set; }
 	public Action<GameObject> removeFromSpatialHash { get; set; }
 
-	public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
 		var standardAlt = (StandardAlt)input;
 		if (standardAlt.action.wasJustPressed)
