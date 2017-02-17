@@ -23,6 +23,9 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 	[SerializeField]
 	GameObject m_FocusPrefab;
 
+	[SerializeField]
+	GameObject m_CreateEmptyPrefab;
+
 	HierarchyUI m_HierarchyUI;
 	FilterUI m_FilterUI;
 
@@ -82,6 +85,13 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 			connectInterfaces(mb);
 		}
 		focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
+
+		var createEmptyUI = U.Object.Instantiate(m_CreateEmptyPrefab, m_WorkspaceUI.frontPanel, false);
+		foreach (var mb in createEmptyUI.GetComponentsInChildren<MonoBehaviour>())
+		{
+			connectInterfaces(mb);
+		}
+		createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
 
 		var hierarchyListView = m_HierarchyUI.listView;
 		hierarchyListView.selectRow = SelectRow;
@@ -217,5 +227,13 @@ public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISel
 		cameraDiff.y = 0;
 
 		moveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
+	}
+
+	static void CreateEmptyGameObject()
+	{
+		var camera = U.Camera.GetMainCamera().transform;
+		var go = new GameObject();
+		go.transform.position = camera.position + camera.forward;
+		Selection.activeGameObject = go;
 	}
 }
