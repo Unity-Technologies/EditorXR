@@ -52,9 +52,9 @@ public class InspectorComponentItem : InspectorListItem
 			kExpandArrowRotateSpeed);
 	}
 
-	public override void UpdateVisuals()
+	public override void OnObjectModified()
 	{
-		base.UpdateVisuals();
+		base.OnObjectModified();
 		var enabled = EditorUtility.GetObjectEnabled(data.serializedObject.targetObject);
 		m_EnabledToggle.isOn = enabled == 1;
 	}

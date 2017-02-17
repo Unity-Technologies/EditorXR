@@ -16,9 +16,9 @@ public class InspectorStringItem : InspectorPropertyItem
 		UpdateInputField();
 	}
 
-	public override void UpdateVisuals()
+	public override void OnObjectModified()
 	{
-		base.UpdateVisuals();
+		base.OnObjectModified();
 		UpdateInputField();
 	}
 

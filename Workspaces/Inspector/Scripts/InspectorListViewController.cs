@@ -125,12 +125,12 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 			m_ScrollReturn = -totalOffset + m_ItemSize.Value.z; // m_ItemSize will be equal to the size of the last visible item
 	}
 
-	public void UpdateVisuals()
+	public void OnObjectModified()
 	{
 		foreach (var listViewItem in m_ListItems.Values)
 		{
 			var item = (InspectorListItem)listViewItem;
-			item.UpdateVisuals();
+			item.OnObjectModified();
 		}
 	}
 

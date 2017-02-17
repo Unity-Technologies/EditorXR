@@ -87,9 +87,9 @@ public class InspectorVectorItem : InspectorPropertyItem
 		}
 	}
 
-	public override void UpdateVisuals()
+	public override void OnObjectModified()
 	{
-		base.UpdateVisuals();
+		base.OnObjectModified();
 		UpdateInputFields();
 	}
 

@@ -30,9 +30,9 @@ public class InspectorDropDownItem : InspectorPropertyItem
 		m_DropDown.valueChanged += ValueChanged;
 	}
 
-	public override void UpdateVisuals()
+	public override void OnObjectModified()
 	{
-		base.UpdateVisuals();
+		base.OnObjectModified();
 		UpdateDropdown();
 	}
 

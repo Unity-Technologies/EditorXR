@@ -63,7 +63,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		if (Selection.activeGameObject)
 			OnSelectionChanged();
 
-		Undo.postprocessModifications += PostprocessModifications;
+		Undo.postprocessModifications += OnPostprocessModifications;
 		Undo.undoRedoPerformed += OnUndoRedo;
 	}
 
@@ -165,11 +165,11 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		}
 		else
 		{
-			listView.UpdateVisuals();
+			listView.OnObjectModified();
 		}
 	}
 
-	UndoPropertyModification[] PostprocessModifications(UndoPropertyModification[] modifications)
+	UndoPropertyModification[] OnPostprocessModifications(UndoPropertyModification[] modifications)
 	{
 		if (!m_SelectedObject || !IncludesCurrentObject(modifications))
 			return modifications;
@@ -350,7 +350,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 	protected override void OnDestroy()
 	{
-		Undo.postprocessModifications -= PostprocessModifications;
+		Undo.postprocessModifications -= OnPostprocessModifications;
 		Undo.undoRedoPerformed -= OnUndoRedo;
 		base.OnDestroy();
 	}

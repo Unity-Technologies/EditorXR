@@ -150,7 +150,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 			m_CuboidLayout.UpdateObjects();
 	}
 
-	public virtual void UpdateVisuals()
+	public virtual void OnObjectModified()
 	{
 		if (data.serializedObject.targetObject) // An exception is thrown if the targetObject has been deleted
 			data.serializedObject.Update();

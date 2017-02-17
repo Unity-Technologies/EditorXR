@@ -24,12 +24,12 @@ public class InspectorNumberItem : InspectorPropertyItem
 
 		propertyType = m_SerializedProperty.propertyType;
 
-		UpdateVisuals();
+		OnObjectModified();
 	}
 
-	public override void UpdateVisuals()
+	public override void OnObjectModified()
 	{
-		base.UpdateVisuals();
+		base.OnObjectModified();
 		UpdateInputField();
 	}
 

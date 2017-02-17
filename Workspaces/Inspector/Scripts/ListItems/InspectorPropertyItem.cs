@@ -20,19 +20,11 @@ public abstract class InspectorPropertyItem : InspectorListItem
 		m_Label.text = m_SerializedProperty.displayName;
 	}
 
-	public override void UpdateVisuals()
+	public override void OnObjectModified()
 	{
-		base.UpdateVisuals();
+		base.OnObjectModified();
 
-		var property = data.serializedObject.GetIterator();
-		while (property.NextVisible(true))
-		{
-			if (property.propertyPath == m_SerializedProperty.propertyPath)
-			{
-				m_SerializedProperty = property;
-				break;
-			}
-		}
+		m_SerializedProperty = data.serializedObject.FindProperty(m_SerializedProperty.propertyPath);
 	}
 
 	protected void FinalizeModifications()

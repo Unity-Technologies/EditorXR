@@ -24,7 +24,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		m_ObjectTypeName = U.Object.NicifySerializedPropertyType(m_SerializedProperty.type);
 		m_ObjectType = U.Object.TypeNameToType(m_ObjectTypeName);
 
-		UpdateVisuals();
+		OnObjectModified();
 	}
 
 	bool SetObject(Object obj)
@@ -40,7 +40,7 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 
 		m_SerializedProperty.objectReferenceValue = obj;
 
-		UpdateVisuals();
+		OnObjectModified();
 
 		FinalizeModifications();
 
@@ -52,9 +52,9 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		SetObject(null);
 	}
 
-	public override void UpdateVisuals()
+	public override void OnObjectModified()
 	{
-		base.UpdateVisuals();
+		base.OnObjectModified();
 		UpdateUI();
 	}
 

@@ -138,9 +138,9 @@ public class InspectorHeaderItem : InspectorListItem
 		m_Button.sharedMaterials = highlightMaterials;
 	}
 
-	public override void UpdateVisuals()
+	public override void OnObjectModified()
 	{
-		base.UpdateVisuals();
+		base.OnObjectModified();
 		UpdateHeaderUI();
 	}
 

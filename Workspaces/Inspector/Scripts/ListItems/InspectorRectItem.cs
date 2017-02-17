@@ -53,9 +53,9 @@ public class InspectorRectItem : InspectorPropertyItem
 		}
 	}
 
-	public override void UpdateVisuals()
+	public override void OnObjectModified()
 	{
-		base.UpdateVisuals();
+		base.OnObjectModified();
 		UpdateInputFields();
 	}
 
