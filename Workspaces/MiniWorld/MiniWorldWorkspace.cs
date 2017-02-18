@@ -47,6 +47,7 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 	float m_StartScale;
 	float m_StartDistance;
 	Vector3 m_StartPosition;
+	Vector3 m_StartOffset;
 	Vector3 m_StartMidPoint;
 	Vector3 m_StartDirection;
 	float m_StartYaw;
@@ -220,9 +221,19 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 			var midPoint = rayOriginPosition + rayToRay * 0.5f;
 			m_StartScale = referenceTransform.localScale.x;
 			m_StartDistance = rayToRay.magnitude;
-			m_StartMidPoint = midPoint;
+			//m_StartMidPoint = U.Math.ConstrainYawRotation(referenceTransform.rotation) * midPoint * m_StartScale;
+			m_StartMidPoint = miniWorld.miniWorldTransform.InverseTransformPoint(midPoint);
 			m_StartDirection = rayToRay;
 			m_StartDirection.y = 0;
+			m_StartOffset = Quaternion.Inverse(U.Math.ConstrainYawRotation(referenceTransform.rotation))
+				//referenceTransform.rotation
+				* m_StartMidPoint * m_StartScale;
+
+			//GizmoModule.one.position = Vector3.zero;
+			//GizmoModule.two.position = m_StartOffset;
+
+			m_StartPosition += m_StartOffset;
+			//m_StartPosition -= referenceTransform.TransformPoint(m_StartMidPoint); // Offset will be re-applied at scale
 			m_StartYaw = referenceTransform.rotation.eulerAngles.y;
 		}
 		else
@@ -250,7 +261,8 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 			var rayToRay = firstRayPosition - secondRayPosition;
 			var midPoint = secondRayPosition + rayToRay * 0.5f;
 
-			var currentScale = m_StartScale * (m_StartDistance / rayToRay.magnitude);
+			var scaleFactor = m_StartDistance / rayToRay.magnitude;
+			var currentScale = m_StartScale * scaleFactor;
 
 			m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(referenceTransform.localScale.x);
 
@@ -259,12 +271,24 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 			var currentYaw = m_StartYaw + Vector3.Angle(m_StartDirection, rayToRay) * yawSign;
 			var currentRotation = Quaternion.AngleAxis(currentYaw, Vector3.up);
 
-			referenceTransform.position = m_StartPosition +
-				Quaternion.Inverse(transform.rotation) * referenceTransform.rotation
-				* Vector3.Scale(m_StartMidPoint - midPoint, referenceTransform.localScale)
-				/ cameraRig.localScale.x;
+			//midPoint = currentRotation * midPoint * currentScale;
+			var worldMidPoint = miniWorld.miniWorldTransform.InverseTransformPoint(midPoint);
+			GizmoModule.one.position = worldMidPoint * m_StartScale + m_StartPosition;
+			GizmoModule.two.position = worldMidPoint * m_StartScale + m_StartPosition - m_StartOffset;
+
+			//referenceTransform.position = m_StartPosition + m_StartMidPoint
+			//	Quaternion.Inverse(transform.rotation) 
+			//	* Vector3.Scale(m_StartMidPoint - midPoint, referenceTransform.localScale)
+			//	/ cameraRig.localScale.x;
 			referenceTransform.rotation = currentRotation;
 			referenceTransform.localScale = Vector3.one * currentScale;
+			//referenceTransform.position = worldMidPoint * m_StartScale + m_StartPosition - m_StartOffset * scaleFactor;
+
+			referenceTransform.position = m_StartPosition - currentRotation * m_StartOffset * scaleFactor
+				+ currentRotation * (m_StartMidPoint - worldMidPoint) * currentScale;
+
+			GizmoModule.text.text = worldMidPoint - m_StartMidPoint + "";
+
 		}
 		else
 		{
@@ -273,6 +297,10 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 				* Vector3.Scale(m_StartMidPoint - firstRayPosition, referenceTransform.localScale)
 				/ cameraRig.localScale.x;
 		}
+
+		//GizmoModule.two.position = referenceTransform.position;
+		//GizmoModule.two.rotation = referenceTransform.rotation;
+		//GizmoModule.two.localScale = referenceTransform.localScale;
 	}
 
 	void OnPanZoomDragEnded(Transform rayOrigin)
