@@ -139,8 +139,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 						angle += 360f;
 
 					const float kSlotAngleRange = 360f / kSlotCount;
-					const float kPadding = 0.25f;
-
+					var kPadding = m_HighlightedButton ? 0.4f : 0.01; // allow for immediate visibility of the menu if no button has been highlighted yet
 					var index = angle / kSlotAngleRange;
 					var t = index % 1f;
 					// Use padding to prevent unintended button switches
@@ -161,6 +160,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			set
 			{
 				m_SemiTransparent = value;
+
+				if (!value)
+					m_HighlightedButton = null;
 
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
