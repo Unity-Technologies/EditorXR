@@ -43,19 +43,15 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 	private ZoomSliderUI m_ZoomSliderUI;
 	private Transform m_PlayerDirectionButton;
 	private Transform m_PlayerDirectionArrow;
-	private readonly List<RayData> m_RayData = new List<RayData>(2);
-	private float m_ScaleStartDistance;
-	Vector3 m_StartOffset;
-	bool m_PanZooming;
-	Coroutine m_UpdateLocationCoroutine;
+	readonly List<Transform> m_Rays = new List<Transform>(2);
+	float m_StartScale;
+	float m_StartDistance;
+	Vector3 m_StartPosition;
+	Vector3 m_StartMidPoint;
+	Vector3 m_StartDirection;
+	float m_StartYaw;
 
-	private class RayData
-	{
-		public Transform rayOrigin;
-		public Vector3 rayOriginStart;
-		public Vector3 refTransformStartPosition;
-		public Vector3 refTransformStartScale;
-	}
+	Coroutine m_UpdateLocationCoroutine;
 
 	public Func<Transform, object, bool> lockRay { get; set; }
 	public Func<Transform, object, bool> unlockRay { get; set; }
@@ -175,11 +171,8 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 			consumeControl(miniWorldInput.rightGrab);
 		}
 
-		if (miniWorldInput.leftGrab.isHeld)
-			OnPanZoomDragging(leftRayOrigin);
-
-		if (miniWorldInput.rightGrab.isHeld)
-			OnPanZoomDragging(rightRayOrigin);
+		if (miniWorldInput.leftGrab.isHeld || miniWorldInput.rightGrab.isHeld)
+			OnPanZoomDragging();
 
 		if (miniWorldInput.leftGrab.wasJustReleased)
 			OnPanZoomDragEnded(leftRayOrigin);
@@ -214,87 +207,88 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 
 	void OnPanZoomDragStarted(Transform rayOrigin)
 	{
-		m_PanZooming = true;
 		m_WorkspaceUI.topHighlight.visible = true;
 
-		var startPosition = rayOrigin.position;
+		var referenceTransform = miniWorld.referenceTransform;
+		m_StartPosition = referenceTransform.position;
+		var rayOriginPosition = rayOrigin.position;
+
 		// On introduction of second ray
-		if (m_RayData.Count == 1)
+		if (m_Rays.Count == 1)
 		{
-			var firstRayPosition = m_RayData[0].rayOrigin.position;
-			var rayToRay = startPosition - firstRayPosition;
-			m_ScaleStartDistance = (firstRayPosition - rayOrigin.position).magnitude;
-			startPosition = firstRayPosition + rayToRay * 0.5f;
-			m_StartOffset = startPosition - miniWorld.miniWorldTransform.position;
-			startPosition -= m_StartOffset;
-		}
-
-		m_RayData.Add(new RayData
-		{
-			rayOrigin = rayOrigin,
-			rayOriginStart = startPosition,
-			refTransformStartPosition = m_MiniWorld.referenceTransform.position,
-			refTransformStartScale = m_MiniWorld.referenceTransform.localScale
-		});
-	}
-
-	void OnPanZoomDragging(Transform rayOrigin)
-	{
-		if (m_RayData.Count == 0)
-			return;
-
-		var firstRay = m_RayData[0];
-		var firstRayOrigin = firstRay.rayOrigin;
-		if (!rayOrigin.Equals(firstRayOrigin))
-			return;
-
-		var referenceTransform = m_MiniWorld.referenceTransform;
-
-		// If we have two rays, scale
-		if (m_RayData.Count > 1)
-		{
-			var secondRay = m_RayData[1];
-
-			var firstRayPosition = firstRayOrigin.position;
-			var rayToRay = secondRay.rayOrigin.position - firstRayPosition;
-			var midPoint = firstRayPosition + rayToRay * 0.5f;
-
-			var scaleFactor = m_ScaleStartDistance / (secondRay.rayOrigin.position - rayOrigin.position).magnitude;
-
-			referenceTransform.localScale = secondRay.refTransformStartScale * scaleFactor;
-
-			m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(referenceTransform.localScale.x);
-
-			referenceTransform.position = secondRay.refTransformStartPosition
-				+ Quaternion.Inverse(transform.rotation)
-				* Vector3.Scale(secondRay.rayOriginStart - midPoint
-				+ m_StartOffset / scaleFactor,
-				referenceTransform.localScale) / cameraRig.lossyScale.x;
+			var rayToRay = m_Rays[0].position - rayOriginPosition;
+			var midPoint = rayOriginPosition + rayToRay * 0.5f;
+			m_StartScale = referenceTransform.localScale.x;
+			m_StartDistance = rayToRay.magnitude;
+			m_StartMidPoint = midPoint;
+			m_StartDirection = rayToRay;
+			m_StartDirection.y = 0;
+			m_StartYaw = referenceTransform.rotation.eulerAngles.y;
 		}
 		else
 		{
-			referenceTransform.position = firstRay.refTransformStartPosition
-				+ Quaternion.Inverse(transform.rotation)
-				* Vector3.Scale(firstRay.rayOriginStart - rayOrigin.position,
-					referenceTransform.localScale) / cameraRig.lossyScale.x;
+			m_StartMidPoint = rayOriginPosition;
+		}
+
+		m_Rays.Add(rayOrigin);
+	}
+
+	void OnPanZoomDragging()
+	{
+		var rayCount = m_Rays.Count;
+		if (rayCount == 0)
+			return;
+
+		var firstRayPosition = m_Rays[0].position;
+		var referenceTransform = m_MiniWorld.referenceTransform;
+
+		// If we have two rays, scale
+		if (rayCount > 1)
+		{
+			var secondRayPosition = m_Rays[1].position;
+
+			var rayToRay = firstRayPosition - secondRayPosition;
+			var midPoint = secondRayPosition + rayToRay * 0.5f;
+
+			var currentScale = m_StartScale * (m_StartDistance / rayToRay.magnitude);
+
+			m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(referenceTransform.localScale.x);
+
+			rayToRay.y = 0;
+			var yawSign = Mathf.Sign(Vector3.Dot(Quaternion.AngleAxis(90, Vector3.down) * m_StartDirection, rayToRay));
+			var currentYaw = m_StartYaw + Vector3.Angle(m_StartDirection, rayToRay) * yawSign;
+			var currentRotation = Quaternion.AngleAxis(currentYaw, Vector3.up);
+
+			referenceTransform.position = m_StartPosition +
+				Quaternion.Inverse(transform.rotation) * referenceTransform.rotation
+				* Vector3.Scale(m_StartMidPoint - midPoint, referenceTransform.localScale)
+				/ cameraRig.localScale.x;
+			referenceTransform.rotation = currentRotation;
+			referenceTransform.localScale = Vector3.one * currentScale;
+		}
+		else
+		{
+			referenceTransform.position = m_StartPosition +
+				Quaternion.Inverse(transform.rotation) * referenceTransform.rotation
+				* Vector3.Scale(m_StartMidPoint - firstRayPosition, referenceTransform.localScale)
+				/ cameraRig.localScale.x;
 		}
 	}
 
 	void OnPanZoomDragEnded(Transform rayOrigin)
 	{
-		m_PanZooming = false;
 		m_WorkspaceUI.topHighlight.visible = false;
 
-		m_RayData.RemoveAll(rayData => rayData.rayOrigin.Equals(rayOrigin));
+		m_Rays.RemoveAll(rayData => rayData.Equals(rayOrigin));
 
 		// Set up remaining ray with new offset
-		if (m_RayData.Count > 0)
+		if (m_Rays.Count > 0)
 		{
-			var firstRay = m_RayData[0];
+			var firstRay = m_Rays[0];
 			var referenceTransform = m_MiniWorld.referenceTransform;
-			firstRay.rayOriginStart = firstRay.rayOrigin.position;
-			firstRay.refTransformStartPosition = referenceTransform.position;
-			firstRay.refTransformStartScale = referenceTransform.localScale;
+			m_StartMidPoint = firstRay.position;
+			m_StartPosition = referenceTransform.position;
+			m_StartScale = referenceTransform.localScale.x;
 		}
 	}
 

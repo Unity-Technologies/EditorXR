@@ -73,8 +73,10 @@ public class MiniWorldRenderer : MonoBehaviour
 			m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
 			m_MiniCamera.worldToCameraMatrix = GetWorldToCameraMatrix(camera);
 			Shader shader = Shader.Find("Custom/Custom Clip Planes");
-			Shader.SetGlobalVector("_GlobalClipCenter", miniWorld.referenceBounds.center);
+			Shader.SetGlobalVector("_GlobalClipCenter", Quaternion.Inverse(miniWorld.referenceTransform.rotation) * miniWorld.referenceBounds.center);
 			Shader.SetGlobalVector("_GlobalClipExtents", miniWorld.referenceBounds.extents);
+			Shader.SetGlobalMatrix("_InverseRotation", Matrix4x4.TRS(Vector3.zero,
+				Quaternion.Inverse(miniWorld.referenceTransform.rotation), Vector3.one));
 
 			for (var i = 0; i < m_IgnoreList.Count; i++)
 			{

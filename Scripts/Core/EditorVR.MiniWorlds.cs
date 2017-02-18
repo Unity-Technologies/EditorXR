@@ -375,7 +375,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void OnWorkspaceCreated(IWorkspace workspace)
 			{
-				// MiniWorld is a special case that we handle due to all of the mini world interactions
 				var miniWorldWorkspace = workspace as MiniWorldWorkspace;
 				if (!miniWorldWorkspace)
 					return;
@@ -419,20 +418,22 @@ namespace UnityEditor.Experimental.EditorVR
 			internal void OnWorkspaceDestroyed(IWorkspace workspace)
 			{
 				var miniWorldWorkspace = workspace as MiniWorldWorkspace;
-				if (miniWorldWorkspace != null)
-				{
-					var miniWorld = miniWorldWorkspace.miniWorld;
+				if (!miniWorldWorkspace)
+					return;
 
-					//Clean up MiniWorldRays
-					m_Worlds.Remove(miniWorld);
-					var miniWorldRaysCopy = new Dictionary<Transform, MiniWorlds.MiniWorldRay>(m_Rays);
-					foreach (var ray in miniWorldRaysCopy)
-					{
-						var miniWorldRay = ray.Value;
-						if (miniWorldRay.miniWorld == miniWorld)
-							m_Rays.Remove(ray.Key);
-					}
+				var miniWorld = miniWorldWorkspace.miniWorld;
+
+				//Clean up MiniWorldRays
+				m_Worlds.Remove(miniWorld);
+				var miniWorldRaysCopy = new Dictionary<Transform, MiniWorlds.MiniWorldRay>(m_Rays);
+				foreach (var ray in miniWorldRaysCopy)
+				{
+					var miniWorldRay = ray.Value;
+					if (miniWorldRay.miniWorld == miniWorld)
+						m_Rays.Remove(ray.Key);
 				}
+
+				m_MiniWorldInputs.Remove(miniWorldWorkspace);
 			}
 		}
 	}
