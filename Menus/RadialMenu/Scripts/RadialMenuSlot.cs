@@ -422,7 +422,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var currentInsetAlpha = m_InsetMaterial.GetFloat(kMaterialAlphaProperty);
 			var targetInsetAlpha = makeSemiTransparent ? 0.25f : 1f;
 			var currentIconColor = m_IconMaterial.GetColor(kMaterialColorProperty);
-			var targetIconColor = makeSemiTransparent ? m_SemiTransparentFrameColor : Color.white;
+			var targetIconColor = makeSemiTransparent ? m_SemiTransparentFrameColor * 2 : Color.white;
 			var currentInsetScale = m_MenuInset.localScale;
 			var targetInsetScale = makeSemiTransparent ? m_HighlightedInsetLocalScale * 4 : m_VisibleInsetLocalScale;
 			var currentIconScale = m_IconContainer.localScale;
