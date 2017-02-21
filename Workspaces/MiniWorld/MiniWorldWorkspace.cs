@@ -212,25 +212,21 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 
 		var referenceTransform = miniWorld.referenceTransform;
 		m_StartPosition = referenceTransform.position;
-		var rayOriginPosition = rayOrigin.position;
+		var rayOriginPosition = miniWorld.miniWorldTransform.InverseTransformPoint(rayOrigin.position);
 
 		// On introduction of second ray
 		if (m_Rays.Count == 1)
 		{
-			var rayToRay = m_Rays[0].position - rayOriginPosition;
+			var rayToRay = miniWorld.miniWorldTransform.InverseTransformPoint(m_Rays[0].position) - rayOriginPosition;
 			var midPoint = rayOriginPosition + rayToRay * 0.5f;
 			m_StartScale = referenceTransform.localScale.x;
 			m_StartDistance = rayToRay.magnitude;
-			//m_StartMidPoint = U.Math.ConstrainYawRotation(referenceTransform.rotation) * midPoint * m_StartScale;
-			m_StartMidPoint = miniWorld.miniWorldTransform.InverseTransformPoint(midPoint);
+			m_StartMidPoint = U.Math.ConstrainYawRotation(referenceTransform.rotation) * midPoint;
 			m_StartDirection = rayToRay;
 			m_StartDirection.y = 0;
-			m_StartOffset = Quaternion.Inverse(U.Math.ConstrainYawRotation(referenceTransform.rotation))
-				//referenceTransform.rotation
-				* m_StartMidPoint * m_StartScale;
+			m_StartOffset = m_StartMidPoint * m_StartScale;
 
 			m_StartPosition += m_StartOffset;
-			//m_StartPosition -= referenceTransform.TransformPoint(m_StartMidPoint); // Offset will be re-applied at scale
 			m_StartYaw = referenceTransform.rotation.eulerAngles.y;
 		}
 		else
@@ -247,13 +243,13 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 		if (rayCount == 0)
 			return;
 
-		var firstRayPosition = m_Rays[0].position;
+		var firstRayPosition = miniWorld.miniWorldTransform.InverseTransformPoint(m_Rays[0].position);
 		var referenceTransform = m_MiniWorld.referenceTransform;
 
 		// If we have two rays, scale
 		if (rayCount > 1)
 		{
-			var secondRayPosition = m_Rays[1].position;
+			var secondRayPosition = miniWorld.miniWorldTransform.InverseTransformPoint(m_Rays[1].position);
 
 			var rayToRay = firstRayPosition - secondRayPosition;
 			var midPoint = secondRayPosition + rayToRay * 0.5f;
@@ -265,34 +261,20 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 
 			rayToRay.y = 0;
 			var yawSign = Mathf.Sign(Vector3.Dot(Quaternion.AngleAxis(90, Vector3.down) * m_StartDirection, rayToRay));
-			var currentYaw = m_StartYaw + Vector3.Angle(m_StartDirection, rayToRay) * yawSign;
-			var currentRotation = Quaternion.AngleAxis(currentYaw, Vector3.up);
-
-			//midPoint = currentRotation * midPoint * currentScale;
-			var worldMidPoint = miniWorld.miniWorldTransform.InverseTransformPoint(midPoint);
-
-			//referenceTransform.position = m_StartPosition + m_StartMidPoint
-			//	Quaternion.Inverse(transform.rotation) 
-			//	* Vector3.Scale(m_StartMidPoint - midPoint, referenceTransform.localScale)
-			//	/ cameraRig.localScale.x;
+			var rotationDiff = Vector3.Angle(m_StartDirection, rayToRay) * yawSign;
+			var currentRotation = Quaternion.AngleAxis(m_StartYaw + rotationDiff, Vector3.up);
+			var worldMidPoint = currentRotation * midPoint;
 			referenceTransform.rotation = currentRotation;
 			referenceTransform.localScale = Vector3.one * currentScale;
-			//referenceTransform.position = worldMidPoint * m_StartScale + m_StartPosition - m_StartOffset * scaleFactor;
 
-			referenceTransform.position = m_StartPosition - currentRotation * m_StartOffset * scaleFactor
-				+ currentRotation * (m_StartMidPoint - worldMidPoint) * currentScale;
+			referenceTransform.position = m_StartPosition - m_StartOffset * scaleFactor
+				+ (m_StartMidPoint - worldMidPoint) * currentScale;
 		}
 		else
 		{
-			referenceTransform.position = m_StartPosition +
-				Quaternion.Inverse(transform.rotation) * referenceTransform.rotation
-				* Vector3.Scale(m_StartMidPoint - firstRayPosition, referenceTransform.localScale)
-				/ cameraRig.localScale.x;
+			referenceTransform.position = m_StartPosition + referenceTransform.rotation
+				* Vector3.Scale(m_StartMidPoint - firstRayPosition, referenceTransform.localScale);
 		}
-
-		//GizmoModule.two.position = referenceTransform.position;
-		//GizmoModule.two.rotation = referenceTransform.rotation;
-		//GizmoModule.two.localScale = referenceTransform.localScale;
 	}
 
 	void OnPanZoomDragEnded(Transform rayOrigin)
@@ -306,7 +288,7 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 		{
 			var firstRay = m_Rays[0];
 			var referenceTransform = m_MiniWorld.referenceTransform;
-			m_StartMidPoint = firstRay.position;
+			m_StartMidPoint = miniWorld.miniWorldTransform.InverseTransformPoint(firstRay.position);
 			m_StartPosition = referenceTransform.position;
 			m_StartScale = referenceTransform.localScale.x;
 		}
