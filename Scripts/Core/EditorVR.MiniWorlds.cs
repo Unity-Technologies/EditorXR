@@ -77,8 +77,8 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					if (!renderer.GetComponent<IntersectionTester>())
 						U.Object.Destroy(renderer.gameObject);
-					else
-						renderer.enabled = false;
+					//else
+					//	renderer.enabled = false;
 				}
 
 				return miniWorldRay;
@@ -139,7 +139,7 @@ namespace UnityEditor.Experimental.EditorVR
 					var referenceTransform = miniWorld.referenceTransform;
 					miniWorldRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
 					miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
-					miniWorldRayOrigin.localScale = Vector3.Scale(miniWorld.miniWorldTransform.localScale.Inverse(), referenceTransform.localScale);
+					miniWorldRayOrigin.localScale = Vector3.Scale(miniWorld.miniWorldTransform.lossyScale.Inverse(), referenceTransform.localScale);
 
 					var directSelection = evr.m_DirectSelection;
 
@@ -151,6 +151,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 					var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
 					var dragObjects = miniWorldRay.dragObjects;
+
+					var cameraRig = U.Camera.GetCameraRig();
 
 					if (dragObjects == null)
 					{
@@ -181,7 +183,7 @@ namespace UnityEditor.Experimental.EditorVR
 								var totalBounds = U.Object.GetBounds(dragGameObjects);
 								var maxSizeComponent = totalBounds.size.MaxComponent();
 								if (!Mathf.Approximately(maxSizeComponent, 0f))
-									miniWorldRay.previewScaleFactor = Vector3.one * (kPreviewScale / maxSizeComponent);
+									miniWorldRay.previewScaleFactor = Vector3.one * (kPreviewScale * cameraRig.localScale.x / maxSizeComponent);
 
 								miniWorldRay.originalScales = scales;
 							}
