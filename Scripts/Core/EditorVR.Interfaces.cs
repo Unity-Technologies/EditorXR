@@ -41,17 +41,13 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				Transform rayOrigin = null;
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.inputDevice == device);
-				var node = Node.LeftHand;
 				if (deviceData != null)
-				{
 					rayOrigin = deviceData.rayOrigin;
-					node = deviceData.node;
-				}
 
-				ConnectInterfaces(obj, rayOrigin, node);
+				ConnectInterfaces(obj, rayOrigin);
 			}
 
-			internal void ConnectInterfaces(object obj, Transform rayOrigin = null, Node node = Node.LeftHand)
+			internal void ConnectInterfaces(object obj, Transform rayOrigin = null)
 			{
 				if (!m_ConnectedInterfaces.Add(obj))
 					return;
@@ -84,17 +80,15 @@ namespace UnityEditor.Experimental.EditorVR
 					if (ray != null)
 						ray.rayOrigin = rayOrigin;
 
-					var handedRay = obj as IUsesHandedRayOrigin;
-					if (handedRay != null)
-						handedRay.node = node;
+					var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+
+					var handedRay = obj as IUsesNode;
+					if (handedRay != null && deviceData != null)
+						handedRay.node = deviceData.node;
 
 					var usesProxy = obj as IUsesProxyType;
-					if (usesProxy != null)
-					{
-						var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
-						if (deviceData != null)
-							usesProxy.proxyType = deviceData.proxy.GetType();
-					}
+					if (usesProxy != null && deviceData != null)
+						usesProxy.proxyType = deviceData.proxy.GetType();
 
 					var menuOrigins = obj as IUsesMenuOrigins;
 					if (menuOrigins != null)

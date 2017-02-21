@@ -101,8 +101,6 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 
 				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
-
-				evr.m_WorkspaceModule.CreateWorkspace(typeof(MiniWorldWorkspace));
 			}
 
 			/// <summary>

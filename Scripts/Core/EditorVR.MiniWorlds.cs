@@ -77,8 +77,8 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					if (!renderer.GetComponent<IntersectionTester>())
 						U.Object.Destroy(renderer.gameObject);
-					//else
-					//	renderer.enabled = false;
+					else
+						renderer.enabled = false;
 				}
 
 				return miniWorldRay;
