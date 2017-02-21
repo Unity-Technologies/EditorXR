@@ -229,9 +229,6 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 				//referenceTransform.rotation
 				* m_StartMidPoint * m_StartScale;
 
-			//GizmoModule.one.position = Vector3.zero;
-			//GizmoModule.two.position = m_StartOffset;
-
 			m_StartPosition += m_StartOffset;
 			//m_StartPosition -= referenceTransform.TransformPoint(m_StartMidPoint); // Offset will be re-applied at scale
 			m_StartYaw = referenceTransform.rotation.eulerAngles.y;
@@ -273,8 +270,6 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 
 			//midPoint = currentRotation * midPoint * currentScale;
 			var worldMidPoint = miniWorld.miniWorldTransform.InverseTransformPoint(midPoint);
-			GizmoModule.one.position = worldMidPoint * m_StartScale + m_StartPosition;
-			GizmoModule.two.position = worldMidPoint * m_StartScale + m_StartPosition - m_StartOffset;
 
 			//referenceTransform.position = m_StartPosition + m_StartMidPoint
 			//	Quaternion.Inverse(transform.rotation) 
@@ -286,9 +281,6 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 
 			referenceTransform.position = m_StartPosition - currentRotation * m_StartOffset * scaleFactor
 				+ currentRotation * (m_StartMidPoint - worldMidPoint) * currentScale;
-
-			GizmoModule.text.text = worldMidPoint - m_StartMidPoint + "";
-
 		}
 		else
 		{
