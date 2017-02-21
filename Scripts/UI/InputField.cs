@@ -1,11 +1,11 @@
 using System;
 using System.Collections;
+using UnityEditor;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
 
 namespace UnityEngine.Experimental.EditorVR.UI
 {
@@ -129,6 +129,10 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 			var keyboardOutOfRange = (m_Keyboard.transform.position - transform.position).magnitude > 0.25f;
 			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(keyboardOutOfRange));
+
+#if UNITY_EDITOR
+			Undo.IncrementCurrentGroup(); // Every time we open the keyboard is a new modification
+#endif
 		}
 
 		IEnumerator MoveKeyboardToInputField(bool instant)

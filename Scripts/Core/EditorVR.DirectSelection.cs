@@ -143,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					// Dropping the player head updates the camera rig position
 					if (grabbedObject.CompareTag(kVRPlayerTag))
-						evr.StartCoroutine(Viewer.MoveCameraRig(grabbedObject));
+						Viewer.DropPlayerHead(grabbedObject);
 					else if (evr.m_Viewer.IsOverShoulder(rayOrigin) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
 						evr.m_SceneObjectModule.DeleteSceneObject(grabbedObject.gameObject);
 				}

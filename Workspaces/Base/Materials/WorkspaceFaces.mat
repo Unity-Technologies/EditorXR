@@ -138,7 +138,7 @@ Material:
       second: 1
     - first:
         name: _StencilRef
-      second: 14
+      second: 3
     - first:
         name: _UVSec
       second: 0

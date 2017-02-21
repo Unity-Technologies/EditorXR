@@ -51,31 +51,7 @@ public class InspectorHeaderItem : InspectorListItem
 
 		m_TargetGameObject = target as GameObject;
 
-		if (m_TargetGameObject)
-		{
-			m_ActiveToggle.isOn = m_TargetGameObject.activeSelf;
-			m_StaticToggle.isOn = m_TargetGameObject.isStatic;
-		}
-
-		m_NameField.text = target.name;
-		m_NameField.ForceUpdateLabel();
-
-		if (m_TargetGameObject)
-		{
-			var tags = UnityEditorInternal.InternalEditorUtility.tags;
-			m_TagDropDown.options = tags;
-			var tagIndex = Array.IndexOf(tags, m_TargetGameObject.tag);
-			if (tagIndex > -1)
-				m_TagDropDown.value = tagIndex;
-			m_TagDropDown.valueChanged += SetTag;
-
-			var layers = UnityEditorInternal.InternalEditorUtility.layers;
-			m_LayerDropDown.options = layers;
-			var layerIndex = Array.IndexOf(layers, LayerMask.LayerToName(m_TargetGameObject.layer));
-			if (layerIndex > -1)
-				m_LayerDropDown.value = layerIndex;
-			m_LayerDropDown.valueChanged += SetLayer;
-		}
+		UpdateHeaderUI();
 	}
 
 	IEnumerator GetAssetPreview()
@@ -160,6 +136,41 @@ public class InspectorHeaderItem : InspectorListItem
 	{
 		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
 		m_Button.sharedMaterials = highlightMaterials;
+	}
+
+	public override void OnObjectModified()
+	{
+		base.OnObjectModified();
+		UpdateHeaderUI();
+	}
+
+	public void UpdateHeaderUI()
+	{
+		if (m_TargetGameObject)
+		{
+			m_ActiveToggle.isOn = m_TargetGameObject.activeSelf;
+			m_StaticToggle.isOn = m_TargetGameObject.isStatic;
+		}
+
+		m_NameField.text = m_TargetGameObject.name;
+		m_NameField.ForceUpdateLabel();
+
+		if (m_TargetGameObject)
+		{
+			var tags = UnityEditorInternal.InternalEditorUtility.tags;
+			m_TagDropDown.options = tags;
+			var tagIndex = Array.IndexOf(tags, m_TargetGameObject.tag);
+			if (tagIndex > -1)
+				m_TagDropDown.value = tagIndex;
+			m_TagDropDown.valueChanged += SetTag;
+
+			var layers = UnityEditorInternal.InternalEditorUtility.layers;
+			m_LayerDropDown.options = layers;
+			var layerIndex = Array.IndexOf(layers, LayerMask.LayerToName(m_TargetGameObject.layer));
+			if (layerIndex > -1)
+				m_LayerDropDown.value = layerIndex;
+			m_LayerDropDown.valueChanged += SetLayer;
+		}
 	}
 #endif
 }

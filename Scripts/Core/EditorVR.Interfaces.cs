@@ -291,6 +291,10 @@ namespace UnityEditor.Experimental.EditorVR
 				if (requestStencilRef != null)
 					requestStencilRef.requestStencilRef = RequestStencilRef;
 
+				var moveCameraRig = obj as IMoveCameraRig;
+				if (moveCameraRig != null)
+					moveCameraRig.moveCameraRig = Viewer.MoveCameraRig;
+
 				var linkedTool = obj as ILinkedTool;
 				if (linkedTool != null)
 				{
