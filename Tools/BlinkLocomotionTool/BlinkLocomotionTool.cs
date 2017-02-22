@@ -27,6 +27,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	private enum State
 	{
 		Inactive = 0,
+		Aiming = 1,
 		Moving = 3
 	}
 
@@ -37,10 +38,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	GameObject m_WorldScaleVisualsPrefab;
 
 	WorldScaleVisuals m_WorldScaleVisuals;
-
-	// It doesn't make sense to be able to activate another blink tool when you already have one active, since you can't
-	// blink to two locations at the same time;
-	static BlinkLocomotionTool s_ActiveBlinkTool;
 
 	private GameObject m_BlinkVisualsGO;
 	private BlinkVisuals m_BlinkVisuals;
@@ -106,8 +103,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	private void OnDisable()
 	{
 		m_State = State.Inactive;
-		if (s_ActiveBlinkTool == this)
-			s_ActiveBlinkTool = null;
 	}
 
 	private void OnDestroy()
@@ -118,8 +113,15 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
 		var blinkInput = (BlinkLocomotion)input;
-		if (m_State == State.Moving || (s_ActiveBlinkTool != null && s_ActiveBlinkTool != this))
+		if (m_State == State.Moving)
 			return;
+
+		foreach (var linkedTool in m_OtherTools)
+		{
+			var blinkTool = (BlinkLocomotionTool)linkedTool;
+			if (blinkTool.m_State != State.Inactive)
+				return;
+		}
 
 		var yawValue = blinkInput.yaw.value;
 		var forwardValue = blinkInput.forward.value;
@@ -277,7 +279,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 		if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 		{
-			s_ActiveBlinkTool = this;
+			m_State = State.Aiming;
 			hideDefaultRay(rayOrigin);
 			lockRay(rayOrigin, this);
 
@@ -285,7 +287,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 			consumeControl(blinkInput.blink);
 		}
-		else if (s_ActiveBlinkTool == this && blinkInput.blink.wasJustReleased)
+		else if (m_State == State.Aiming && blinkInput.blink.wasJustReleased)
 		{
 			unlockRay(rayOrigin, this);
 			showDefaultRay(rayOrigin);
@@ -298,7 +300,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			else
 			{
 				m_BlinkVisuals.enabled = false;
-				s_ActiveBlinkTool = null;
+				m_State = State.Inactive;
 			}
 
 			consumeControl(blinkInput.blink);
@@ -349,6 +351,5 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 		cameraRig.position = targetPosition;
 		m_State = State.Inactive;
-		s_ActiveBlinkTool = null;
 	}
 }
