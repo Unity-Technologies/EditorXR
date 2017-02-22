@@ -8,7 +8,7 @@ using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
-public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesNode,
+public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesHandedRayOrigin,
 	ICustomActionMap, ILinkedTool, IUsesProxyType, IConnectInterfaces
 {
 	const float kFastRotationSpeed = 300f;
@@ -112,7 +112,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	private void OnDestroy()
 	{
-		Debug.Log(rayOrigin);
 		showDefaultRay(rayOrigin);
 	}
 
