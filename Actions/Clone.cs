@@ -5,7 +5,6 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Clone", ActionMenuItemAttribute.kDefaultActionSectionName, 3)]
-	[Tooltip("Clone")]
 	public class Clone : BaseAction, IUsesSpatialHash
 	{
 		public Action<GameObject> addToSpatialHash { get; set; }

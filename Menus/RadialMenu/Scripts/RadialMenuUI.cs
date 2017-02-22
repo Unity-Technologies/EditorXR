@@ -227,7 +227,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				if (i >= kSlotCount)
 					break;
 
-				var action = m_Actions[i].action;
+				var actionMenuData = m_Actions[i];
+				var action = actionMenuData.action;
 				var slot = m_RadialMenuSlots[i];
 				slot.gradientPair = gradientPair;
 				slot.icon = action.icon ?? m_MissingActionIcon;
@@ -242,12 +243,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 					selectedSlot.icon = buttonAction.icon ?? m_MissingActionIcon;
 				});
 
-				var attributes = action.GetType().GetCustomAttributes(typeof(TooltipAttribute), true);
-				foreach (var attribute in attributes)
-				{
-					slot.tooltip = null;
-					slot.tooltipText = ((TooltipAttribute)attribute).text;
-				}
+				slot.tooltip = null;
+				slot.tooltipText = actionMenuData.tooltipText;
 
 				var tooltip = action as ITooltip;
 				if (tooltip != null)

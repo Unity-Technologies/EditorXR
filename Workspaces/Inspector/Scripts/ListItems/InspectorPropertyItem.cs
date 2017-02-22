@@ -5,7 +5,7 @@ using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.UI;
 
-public abstract class InspectorPropertyItem : InspectorListItem, ITooltip, IUsesTooltip
+public abstract class InspectorPropertyItem : InspectorListItem, ITooltip, ITooltipPlacement, IUsesTooltip
 {
 	[SerializeField]
 	Text m_Label;

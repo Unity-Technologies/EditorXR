@@ -5,7 +5,6 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Delete", ActionMenuItemAttribute.kDefaultActionSectionName, 7)]
-	[Tooltip("Delete")]
 	public class Delete : BaseAction, IUsesSpatialHash
 	{
 		public Action<GameObject> addToSpatialHash { get; set; }

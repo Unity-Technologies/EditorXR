@@ -5,25 +5,28 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Utilities;
-using TooltipAttribute = UnityEngine.Experimental.EditorVR.TooltipAttribute;
 
 class TooltipsEditor : EditorWindow
 {
-	readonly Dictionary<Type, TooltipAttribute> m_TooltipAttributes = new Dictionary<Type, TooltipAttribute>();
+	readonly Dictionary<Type, ITooltip> m_TooltipAttributes = new Dictionary<Type, ITooltip>();
 	IEnumerable<Type> m_TooltipClasses;
 	readonly Dictionary<ITooltip, GameObject> m_TooltipsInPrefabs = new Dictionary<ITooltip, GameObject>();
 
 	Vector2 m_Scroll;
+	GUIStyle m_ButtonStyle;
 
-	[MenuItem("Window/Tooltips")]
+	[MenuItem("Edit/Project Settings/EditorVR/Tooltips")]
 	static void Init()
 	{
-		GetWindow<TooltipsEditor>().Show();
+		GetWindow<TooltipsEditor>("Tooltip Editor").Show();
 	}
 
 	void OnEnable()
 	{
+		m_ButtonStyle = new GUIStyle(EditorStyles.miniButton);
+		m_ButtonStyle.alignment = TextAnchor.MiddleLeft;
 		m_TooltipsInPrefabs.Clear();
+
 		foreach (var path in AssetDatabase.GetAllAssetPaths())
 		{
 			if (AssetDatabase.GetMainAssetTypeAtPath(path) == typeof(GameObject))
@@ -55,8 +58,8 @@ class TooltipsEditor : EditorWindow
 
 	void CollectTooltipAttributes(Type type)
 	{
-		var tooltips = type.GetCustomAttributes(typeof(TooltipAttribute), true);
-		foreach (TooltipAttribute tooltip in tooltips)
+		var tooltips = type.GetCustomAttributes(typeof(ITooltip), true);
+		foreach (ITooltip tooltip in tooltips)
 		{
 			m_TooltipAttributes[type] = tooltip;
 		}
@@ -64,58 +67,63 @@ class TooltipsEditor : EditorWindow
 
 	void OnGUI()
 	{
-		EditorGUIUtility.labelWidth = 250;
+		const float columnWidth = 250f;
+		EditorGUIUtility.labelWidth = columnWidth;
+
 		m_Scroll = GUILayout.BeginScrollView(m_Scroll);
-		GUILayout.Label("Tooltips in prefabs");
+		GUILayout.Label("Tooltips in Prefabs", EditorStyles.boldLabel);
 		foreach (var kvp in m_TooltipsInPrefabs)
 		{
 			GUILayout.BeginHorizontal();
+
 			var tooltip = kvp.Key;
 			var prefab = kvp.Value;
 			var mb = (MonoBehaviour)tooltip;
+
 			var label = string.Format("{0}/{1}", prefab.name, mb.name);
+			if (GUILayout.Button(label, m_ButtonStyle, GUILayout.Width(columnWidth)))
+				EditorGUIUtility.PingObject(prefab);
+
 			try
 			{
 				var textProperty = tooltip.GetType().GetProperty("tooltipText");
+
 				var setter = textProperty.GetSetMethod(true);
 				if (setter != null)
 				{
 					EditorGUI.BeginChangeCheck();
 					setter.Invoke(tooltip, new object[]
 					{
-						EditorGUILayout.TextField(label, tooltip.tooltipText)
+						GUILayout.TextField(tooltip.tooltipText)
 					});
+
 					if (EditorGUI.EndChangeCheck())
 						EditorUtility.SetDirty(prefab);
 				}
 				else
 				{
-					EditorGUILayout.LabelField(label, tooltip.tooltipText);
+					GUILayout.Label(tooltip.tooltipText);
 				}
 			}
 			catch
 			{
-				EditorGUILayout.LabelField(label, "Dynamic Text");
+				GUILayout.Label("Dynamic Text");
 			}
 
-			if (GUILayout.Button("Ping", GUILayout.Width(50)))
-			{
-				EditorGUIUtility.PingObject(prefab);
-			}
 			GUILayout.EndHorizontal();
 		}
 
 		EditorGUILayout.Separator();
 
-		GUILayout.Label("Tooltip Attributes");
+		GUILayout.Label("Tooltip Attributes", EditorStyles.boldLabel);
 		foreach (var kvp in m_TooltipAttributes)
 		{
-			EditorGUILayout.LabelField(kvp.Key.Name, kvp.Value.text);
+			EditorGUILayout.LabelField(kvp.Key.Name, kvp.Value.tooltipText);
 		}
 
 		EditorGUILayout.Separator();
 
-		GUILayout.Label("ITooltip Implementers");
+		GUILayout.Label("ITooltip Implementers", EditorStyles.boldLabel);
 		foreach (var tooltipClass in m_TooltipClasses)
 		{
 			EditorGUILayout.LabelField(tooltipClass.Name);

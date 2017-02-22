@@ -5,7 +5,7 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 	/// <summary>
 	/// Used for passing action data for menu purposes
 	/// </summary>
-	public class ActionMenuData
+	public class ActionMenuData : ITooltip
 	{
 		/// <summary>
 		/// The name of this action
@@ -26,5 +26,10 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 		/// An instance of the Action that can be used for execution
 		/// </summary>
 		public IAction action { get; set; }
+
+		/// <summary>
+		/// The tooltip text for this action
+		/// </summary>
+		public string tooltipText { get { return name; } }
 	}
 }

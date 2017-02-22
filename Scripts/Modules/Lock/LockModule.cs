@@ -13,9 +13,6 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		{
 			internal Func<bool> execute;
 			public string tooltipText { get; set; }
-			public Transform tooltipTarget { get { return null; } } // Not used
-			public Transform tooltipSource { get { return null; } } // Not used
-			public TextAlignment tooltipAlignment { get { return default(TextAlignment); } } // Not used
 			public Sprite icon { get; internal set; }
 
 			public void ExecuteAction()

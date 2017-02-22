@@ -5,7 +5,6 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
-	[Tooltip("Paste")]
 	public class Paste : BaseAction, IUsesSpatialHash
 	{
 		public static GameObject[] buffer

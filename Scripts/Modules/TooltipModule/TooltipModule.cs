@@ -12,6 +12,7 @@ class TooltipModule : MonoBehaviour, IUsesCameraRig
 	const float kTransitionDuration = 0.1f;
 	const float kUVScale = 100f;
 	const float kUVScrollSpeed = 1.5f;
+	const float kOffset = 0.05f;
 
 	const string kMaterialColorTopProperty = "_ColorTop";
 	const string kMaterialColorBottomProperty = "_ColorBottom";
@@ -58,7 +59,8 @@ class TooltipModule : MonoBehaviour, IUsesCameraRig
 			var hoverTime = Time.realtimeSinceStartup - tooltipData.startTime;
 			if (hoverTime > kDelay)
 			{
-				var target = tooltip.tooltipTarget;
+				var placement = tooltip as ITooltipPlacement;
+				var target = GetTooltipTarget(tooltip);
 
 				var tooltipUI = tooltipData.tooltipUI;
 				if (!tooltipUI)
@@ -70,17 +72,34 @@ class TooltipModule : MonoBehaviour, IUsesCameraRig
 					var tooltipTransform = tooltipObject.transform;
 					U.Math.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
 					tooltipTransform.localScale = Vector3.zero;
+
+					if (placement == null)
+					{
+						U.Object.Destroy(tooltipUI.dottedLine.gameObject);
+						foreach (var sphere in tooltipUI.spheres)
+						{
+							U.Object.Destroy(sphere.gameObject);
+						}
+					}
 				}
 
 				var lerp = Mathf.Clamp01((hoverTime - kDelay) / kTransitionDuration);
-				UpdateVisuals(tooltip, tooltipUI, lerp);
+				UpdateVisuals(tooltip, tooltipUI, target, lerp);
 			}
 		}
 	}
 
-	void UpdateVisuals(ITooltip tooltip, TooltipUI tooltipUI, float lerp)
+	static Transform GetTooltipTarget(ITooltip tooltip)
 	{
-		var target = tooltip.tooltipTarget;
+		var placement = tooltip as ITooltipPlacement;
+		var target = ((MonoBehaviour)tooltip).transform;
+		if (placement != null)
+			target = placement.tooltipTarget;
+		return target;
+	}
+
+	void UpdateVisuals(ITooltip tooltip, TooltipUI tooltipUI, Transform target, float lerp)
+	{
 		var tooltipTransform = tooltipUI.transform;
 
 		var tooltipText = tooltipUI.text;
@@ -89,16 +108,21 @@ class TooltipModule : MonoBehaviour, IUsesCameraRig
 
 		tooltipTransform.localScale = m_TooltipScale * lerp * cameraRig.localScale.x;
 
+		var placement = tooltip as ITooltipPlacement;
+
 		// Adjust for alignment
 		var offset = Vector3.zero;
-		switch (tooltip.tooltipAlignment)
+		if (placement != null)
 		{
-			case TextAlignment.Right:
-				offset = Vector3.left;
-				break;
-			case TextAlignment.Left:
-				offset = Vector3.right;
-				break;
+			switch (placement.tooltipAlignment)
+			{
+				case TextAlignment.Right:
+					offset = Vector3.left;
+					break;
+				case TextAlignment.Left:
+					offset = Vector3.right;
+					break;
+			}
 		}
 
 		var rectTransform = tooltipUI.GetComponent<RectTransform>();
@@ -106,41 +130,48 @@ class TooltipModule : MonoBehaviour, IUsesCameraRig
 		var halfWidth = rect.width * 0.5f;
 		var halfHeight = rect.height * 0.5f;
 		
-		offset *= halfWidth * rectTransform.lossyScale.x;
+		if (placement != null)
+			offset *= halfWidth * rectTransform.lossyScale.x;
+		else
+			offset = Vector3.back * kOffset;
 
 		U.Math.SetTransformOffset(target, tooltipTransform, offset * lerp, Quaternion.identity);
 
-		var source = tooltip.tooltipSource;
-		var toSource = tooltipTransform.InverseTransformPoint(source.position);
+		if (placement != null)
+		{
+			var source = placement.tooltipSource;
+			var toSource = tooltipTransform.InverseTransformPoint(source.position);
 
-		// Position spheres: one at source, one on the closest edge of the tooltip
-		var spheres = tooltipUI.spheres;
-		spheres[0].position = source.position;
+			// Position spheres: one at source, one on the closest edge of the tooltip
+			var spheres = tooltipUI.spheres;
+			spheres[0].position = source.position;
 
-		var attachedSphere = spheres[1];
-		var boxSlope = halfHeight / halfWidth;
-		var toSourceSlope = Mathf.Abs(toSource.y / toSource.x);
+			var attachedSphere = spheres[1];
+			var boxSlope = halfHeight / halfWidth;
+			var toSourceSlope = Mathf.Abs(toSource.y / toSource.x);
 
-		halfHeight *= Mathf.Sign(toSource.y);
-		halfWidth *= Mathf.Sign(toSource.x);
-		attachedSphere.localPosition = toSourceSlope > boxSlope
-			? new Vector3(0, halfHeight) : new Vector3(halfWidth, 0);
+			halfHeight *= Mathf.Sign(toSource.y);
+			halfWidth *= Mathf.Sign(toSource.x);
+			attachedSphere.localPosition = toSourceSlope > boxSlope
+				? new Vector3(0, halfHeight)
+				: new Vector3(halfWidth, 0);
 
-		// Align dotted line
-		var attachedSpherePosition = attachedSphere.position;
-		toSource = source.position - attachedSpherePosition;
-		var midPoint = attachedSpherePosition + toSource * 0.5f;
-		var dottedLine = tooltipUI.dottedLine;
-		var length = toSource.magnitude;
-		var uvRect = dottedLine.uvRect;
-		uvRect.width = length * kUVScale;
-		uvRect.xMin += kUVScrollSpeed * Time.unscaledDeltaTime;
-		dottedLine.uvRect = uvRect;
+			// Align dotted line
+			var attachedSpherePosition = attachedSphere.position;
+			toSource = source.position - attachedSpherePosition;
+			var midPoint = attachedSpherePosition + toSource * 0.5f;
+			var dottedLine = tooltipUI.dottedLine;
+			var length = toSource.magnitude;
+			var uvRect = dottedLine.uvRect;
+			uvRect.width = length * kUVScale;
+			uvRect.xMin += kUVScrollSpeed * Time.unscaledDeltaTime;
+			dottedLine.uvRect = uvRect;
 
-		var dottedLineTransform = dottedLine.transform.parent.GetComponent<RectTransform>();
-		dottedLineTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, length / tooltipTransform.lossyScale.x);
-		dottedLineTransform.position = midPoint;
-		dottedLineTransform.rotation = Quaternion.LookRotation(toSource, -tooltipTransform.forward);
+			var dottedLineTransform = dottedLine.transform.parent.GetComponent<RectTransform>();
+			dottedLineTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, length / tooltipTransform.lossyScale.x);
+			dottedLineTransform.position = midPoint;
+			dottedLineTransform.rotation = Quaternion.LookRotation(toSource, -tooltipTransform.forward);
+		}
 	}
 
 	public void OnRayEntered(GameObject gameObject, RayEventData eventData)
@@ -185,10 +216,11 @@ class TooltipModule : MonoBehaviour, IUsesCameraRig
 
 	IEnumerator AnimateHide(ITooltip tooltip, TooltipUI tooltipUI)
 	{
+		var target = GetTooltipTarget(tooltip);
 		var startTime = Time.realtimeSinceStartup;
 		while (Time.realtimeSinceStartup - startTime < kTransitionDuration)
 		{
-			UpdateVisuals(tooltip, tooltipUI,
+			UpdateVisuals(tooltip, tooltipUI, target,
 				1 - (Time.realtimeSinceStartup - startTime) / kTransitionDuration);
 			yield return null;
 		}

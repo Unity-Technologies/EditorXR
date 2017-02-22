@@ -1,7 +1,6 @@
 ﻿namespace UnityEngine.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Undo", ActionMenuItemAttribute.kDefaultActionSectionName, 2)]
-	[Tooltip("Undo")]
 	public class Undo : BaseAction
 	{
 		public override void ExecuteAction()

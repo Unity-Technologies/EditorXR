@@ -9,7 +9,7 @@ using Button = UnityEngine.UI.Button;
 
 namespace UnityEngine.Experimental.EditorVR.Menus
 {
-	public class RadialMenuSlot : MonoBehaviour, IUsesTooltip, ITooltip, IRayEnterHandler, IRayExitHandler
+	public class RadialMenuSlot : MonoBehaviour, IUsesTooltip, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler
 	{
 		static readonly Vector3 kHiddenLocalScale = new Vector3(1f, 0f, 1f);
 		const float m_IconHighlightedLocalYOffset = 0.006f;
