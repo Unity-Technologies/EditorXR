@@ -36,6 +36,19 @@ public abstract class InspectorPropertyItem : InspectorListItem, ITooltip, ITool
 
 		m_Label.text = m_SerializedProperty.displayName;
 	}
+
+	public override void OnObjectModified()
+	{
+		base.OnObjectModified();
+
+		m_SerializedProperty = data.serializedObject.FindProperty(m_SerializedProperty.propertyPath);
+	}
+
+	protected void FinalizeModifications()
+	{
+		Undo.IncrementCurrentGroup();
+		data.serializedObject.ApplyModifiedProperties();
+	}
 #else
 	public string tooltipText { get { return string.Empty; } }
 #endif
