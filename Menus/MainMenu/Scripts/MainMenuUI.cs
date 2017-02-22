@@ -12,9 +12,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		public class ButtonData
 		{
-			public string name;
-			public string sectionName;
-			public string description;
+			public string name { get; set; }
+			public string sectionName { get; set; }
+			public string description { get; set; }
 		}
 
 		private enum RotationState

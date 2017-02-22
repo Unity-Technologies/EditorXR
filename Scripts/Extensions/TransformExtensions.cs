@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Extensions
 {
-	public static class TransformExtensions
+	internal static class TransformExtensions
 	{
 		public static Bounds TransformBounds(this Transform transform, Bounds localBounds)
 		{

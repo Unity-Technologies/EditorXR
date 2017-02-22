@@ -25,8 +25,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public List<IAction> actions { get; private set; }
 		public Transform rayOrigin { get; set; }
 
-		public Action<GameObject> addToSpatialHash { get; set; }
-		public Action<GameObject> removeFromSpatialHash { get; set; }
+		public Action<GameObject> addToSpatialHash { private get; set; }
+		public Action<GameObject> removeFromSpatialHash { private get; set; }
 
 		void Awake()
 		{

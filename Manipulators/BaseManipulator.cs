@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	public class BaseManipulator : MonoBehaviour, IManipulator
+	internal class BaseManipulator : MonoBehaviour, IManipulator
 	{
 		public bool dragging { get; protected set; }
 

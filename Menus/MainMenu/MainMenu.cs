@@ -9,7 +9,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType
+	internal sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]

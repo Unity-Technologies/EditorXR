@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Extensions
 {
-	public static class MonoBehaviourExtensions
+	internal static class MonoBehaviourExtensions
 	{
 		public static void StopCoroutine(this MonoBehaviour mb, ref Coroutine coroutine)
 		{

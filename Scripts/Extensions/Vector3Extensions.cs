@@ -2,7 +2,7 @@
 
 namespace UnityEditor.Experimental.EditorVR.Extensions
 {
-	public static class Vector3Extensions
+	internal static class Vector3Extensions
 	{
 		public static Vector3 Inverse(this Vector3 vec)
 		{

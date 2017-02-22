@@ -1,14 +1,14 @@
-﻿namespace UnityEditor.Experimental.EditorVR.Menus
+﻿namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Attribute used to tag items (tools, actions, etc) that can be added to VR menus
 	/// </summary>
 	public class MainMenuItemAttribute : System.Attribute
 	{
-		public string name;
-		public string sectionName;
-		public string description;
-		public bool shown;
+		internal string name;
+		internal string sectionName;
+		internal string description;
+		internal bool shown;
 
 		/// <summary>
 		/// Custom constructor for hiding item from the main menu

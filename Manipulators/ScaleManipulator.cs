@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	public class ScaleManipulator : BaseManipulator
+	internal sealed class ScaleManipulator : BaseManipulator
 	{
 		[SerializeField]
 		private BaseHandle m_UniformHandle;

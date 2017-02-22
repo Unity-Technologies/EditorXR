@@ -5,7 +5,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	/// <summary>
 	/// Decorates objects with functionality to detect RayExit events
 	/// </summary>
-	public interface IRayExitHandler : IEventSystemHandler
+	internal interface IRayExitHandler : IEventSystemHandler
 	{
 		void OnRayExit(RayEventData eventData);
 	}

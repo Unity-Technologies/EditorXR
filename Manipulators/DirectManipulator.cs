@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	public class DirectManipulator : MonoBehaviour, IManipulator
+	internal sealed class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		public Transform target
 		{

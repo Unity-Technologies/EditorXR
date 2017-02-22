@@ -5,7 +5,7 @@ using UnityEditor;
 namespace UnityEditor.Experimental.EditorVR.Data
 {
 
-	public class InspectorData : ListViewItemNestedData<InspectorData>
+	internal class InspectorData : ListViewItemNestedData<InspectorData>
 	{
 #if UNITY_EDITOR
 		public SerializedObject serializedObject { get; private set; }

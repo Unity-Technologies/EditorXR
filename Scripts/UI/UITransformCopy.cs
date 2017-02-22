@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-	public class UITransformCopy : MonoBehaviour
+	internal sealed class UITransformCopy : MonoBehaviour
 	{
 		static readonly Vector2 kTransformPivot = new Vector2(0.5f, 0.5f);
 

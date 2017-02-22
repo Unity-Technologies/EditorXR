@@ -29,8 +29,8 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 
 		static float s_BufferDistance;
 
-		public Action<GameObject> addToSpatialHash { get; set; }
-		public Action<GameObject> removeFromSpatialHash { get; set; }
+		public Action<GameObject> addToSpatialHash { private get; set; }
+		public Action<GameObject> removeFromSpatialHash { private get; set; }
 
 		public override void ExecuteAction()
 		{

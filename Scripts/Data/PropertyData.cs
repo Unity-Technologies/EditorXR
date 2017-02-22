@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-	public class PropertyData : InspectorData
+	internal sealed class PropertyData : InspectorData
 	{
 #if UNITY_EDITOR
 		public SerializedProperty property { get; private set; }

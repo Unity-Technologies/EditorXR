@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	/// <summary>
 	/// Input related EditorVR utilities
 	/// </summary>
-	public static class InputUtils
+	internal static class InputUtils
 	{
 		public static List<InputDevice> CollectInputDevicesFromActionMaps(List<ActionMap> maps)
 		{

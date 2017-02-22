@@ -5,7 +5,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 	/// <summary>
 	/// Event data for BaseHandle.DragEventCallback
 	/// </summary>
-	public class HandleEventData
+	internal class HandleEventData
 	{
 		/// <summary>
 		/// The source transform from where the ray is cast

@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.Tweening
 	// using an interface instead of 
 	// an abstract class as we want the
 	// tweens to be structs.
-	public interface ITweenValue
+	internal interface ITweenValue
 	{
 		void TweenValue(float floatPercentage);
 		bool ignoreTimeScale { get; }
@@ -510,7 +510,7 @@ namespace UnityEditor.Experimental.Tweening
 		}
 	}
 
-	public enum EaseType
+	internal enum EaseType
 	{
 		Linear,
 		EaseInSine,
@@ -524,7 +524,7 @@ namespace UnityEditor.Experimental.Tweening
 		EaseInOutCubic,
 	}
 
-	public enum TweenLoopType
+	internal enum TweenLoopType
 	{
 		Clamp,
 		Loop,

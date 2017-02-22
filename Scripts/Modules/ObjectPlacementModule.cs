@@ -11,8 +11,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float kInstantiateFOVDifference = -5f;
 		const float kGrowDuration = 0.5f;
 
-		public Action<GameObject> addToSpatialHash { get; set; }
-		public Action<GameObject> removeFromSpatialHash { get; set; }
+		public Action<GameObject> addToSpatialHash { private get; set; }
+		public Action<GameObject> removeFromSpatialHash { private get; set; }
 
 		public void PlaceObject(Transform obj, Vector3 targetScale)
 		{

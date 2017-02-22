@@ -12,16 +12,16 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// The Node used to select the object
 		/// </summary>
-		public Node node;
+		public Node node { get; set; }
 
 		/// <summary>
 		/// The object which is selected
 		/// </summary>
-		public GameObject gameObject;
+		public GameObject gameObject { get; set; }
 
 		/// <summary>
 		/// The input which is associated with the rayOrigin
 		/// </summary>
-		public ActionMapInput input;
+		public ActionMapInput input { get; set; }
 	}
 }

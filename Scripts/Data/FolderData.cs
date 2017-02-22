@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Data
 {
 	public sealed class FolderData : ListViewItemNestedData<FolderData>
 	{

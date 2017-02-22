@@ -16,6 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		private Text m_ButtonTitle;
 
+		Transform m_HoveringRayOrigin;
 		Color m_OriginalColor;
 
 		public bool selected
@@ -39,11 +40,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		/// <summary>
-		/// The ray that is hovering over the button
-		/// </summary>
-		public Transform hoveringRayOrigin { get; private set; }
-
 		private void Awake()
 		{
 			m_OriginalColor = m_Button.targetGraphic.color;
@@ -58,13 +54,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public void OnRayEnter(RayEventData eventData)
 		{
 			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
-			hoveringRayOrigin = eventData.rayOrigin;
+			m_HoveringRayOrigin = eventData.rayOrigin;
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			if (hoveringRayOrigin == eventData.rayOrigin)
-				hoveringRayOrigin = null;
+			if (m_HoveringRayOrigin == eventData.rayOrigin)
+				m_HoveringRayOrigin = null;
 		}
 	}
 }

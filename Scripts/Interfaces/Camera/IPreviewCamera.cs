@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Helpers
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// For specifying an alternate preview camera

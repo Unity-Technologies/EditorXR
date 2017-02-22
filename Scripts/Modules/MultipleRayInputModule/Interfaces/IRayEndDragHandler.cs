@@ -5,7 +5,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	/// <summary>
 	/// Decorates objects with functionality to detect RayEndDrag events
 	/// </summary>
-	public interface IRayEndDragHandler : IEventSystemHandler
+	internal interface IRayEndDragHandler : IEventSystemHandler
 	{
 		void OnEndDrag(RayEventData eventData);
 	}

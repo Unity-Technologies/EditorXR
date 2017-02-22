@@ -122,7 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_VisibilityCoroutine = null;
 		}
 
-		public void BeginVisuals()
+		void BeginVisuals()
 		{
 			this.StopCoroutine(ref m_RotationVisualsCoroutine);
 			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(true));

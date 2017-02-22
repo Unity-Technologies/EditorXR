@@ -26,9 +26,9 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 		public Vector3 startDragPosition { get; protected set; }
 
-		public Func<BaseHandle, object, bool> canDrop;
-		public Action<BaseHandle, object> receiveDrop;
-		public Func<BaseHandle, object> getDropObject;
+		public Func<BaseHandle, object, bool> canDrop { private get; set; }
+		public Action<BaseHandle, object> receiveDrop { private get; set; }
+		public Func<BaseHandle, object> getDropObject { private get; set; }
 		public event Action<BaseHandle> dropHoverStarted;
 		public event Action<BaseHandle> dropHoverEnded;
 

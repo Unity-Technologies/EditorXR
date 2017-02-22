@@ -6,7 +6,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 {
 	internal sealed class LinearHandle : BaseHandle
 	{
-		private class LinearHandleEventData : HandleEventData
+		class LinearHandleEventData : HandleEventData
 		{
 			public Vector3 raycastHitWorldPosition;
 

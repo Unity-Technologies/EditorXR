@@ -7,8 +7,8 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 	[ActionMenuItem("Clone", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
 	internal sealed class Clone : BaseAction, IUsesSpatialHash
 	{
-		public Action<GameObject> addToSpatialHash { get; set; }
-		public Action<GameObject> removeFromSpatialHash { get; set; }
+		public Action<GameObject> addToSpatialHash { private get; set; }
+		public Action<GameObject> removeFromSpatialHash { private get; set; }
 
 		public override void ExecuteAction()
 		{

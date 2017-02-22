@@ -56,7 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		private Material m_SphereMaterial;
 
 		public Action<GameObject> addToSpatialHash { private get; set; }
-		public Action<GameObject> removeFromSpatialHash { get; set; }
+		public Action<GameObject> removeFromSpatialHash { private get; set; }
 
 		public GameObject icon
 		{
@@ -172,7 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_Handle.hoverStarted += OnHoverStarted;
 				m_Handle.hoverEnded += OnHoverEnded;
 
-				m_Handle.getDropObject += GetDropObject;
+				m_Handle.getDropObject = GetDropObject;
 
 				m_Setup = true;
 			}
