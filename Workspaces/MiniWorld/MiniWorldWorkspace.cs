@@ -37,6 +37,10 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 	[SerializeField]
 	private GameObject m_ZoomSliderPrefab;
 
+	public ActionMap actionMap { get { return m_MiniWorldActionMap; } }
+	[SerializeField]
+	ActionMap m_MiniWorldActionMap;
+
 	private MiniWorldUI m_MiniWorldUI;
 	private MiniWorld m_MiniWorld;
 	private Material m_GridMaterial;
@@ -59,11 +63,8 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 
 	public IMiniWorld miniWorld { get { return m_MiniWorld; } }
 
-	public ActionMap actionMap { get { return m_MiniWorldActionMap; } }
-	[SerializeField]
-	ActionMap m_MiniWorldActionMap;
-
-	public Transform leftRayOrigin, rightRayOrigin;
+	public Transform leftRayOrigin { get; set; }
+	public Transform rightRayOrigin { get; set; }
 
 	public override void Setup()
 	{
@@ -208,8 +209,6 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 
 	void OnPanZoomDragStarted(Transform rayOrigin)
 	{
-		m_WorkspaceUI.topHighlight.visible = true;
-
 		var referenceTransform = miniWorld.referenceTransform;
 		m_StartPosition = referenceTransform.position;
 		var rayOriginPosition = miniWorld.miniWorldTransform.InverseTransformPoint(rayOrigin.position);
@@ -279,8 +278,6 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 
 	void OnPanZoomDragEnded(Transform rayOrigin)
 	{
-		m_WorkspaceUI.topHighlight.visible = false;
-
 		m_Rays.RemoveAll(rayData => rayData.Equals(rayOrigin));
 
 		// Set up remaining ray with new offset
