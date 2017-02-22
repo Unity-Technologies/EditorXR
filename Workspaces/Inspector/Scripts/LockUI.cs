@@ -22,16 +22,13 @@ public class LockUI : MonoBehaviour, IUsesStencilRef
 
 	public event Action lockButtonPressed;
 
-	void Start()
+	public void Setup()
 	{
 		var mr = GetComponentInChildren<MeshRenderer>();
 		foreach (var sm in mr.sharedMaterials)
 		{
-			var material = Instantiate<Material>(sm);
-			material.SetInt("_StencilRef", stencilRef);
-			m_ButtonMaterials.Add(material);
+			sm.SetInt("_StencilRef", stencilRef);
 		}
-		mr.sharedMaterials = m_ButtonMaterials.ToArray();
 	}
 
 	void OnDestroy()

@@ -72,6 +72,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var evrSelectionModule = evr.m_SelectionModule;
 				var evrUI = evr.m_UI;
 				var evrDeviceData = evr.m_DeviceData;
+				var tooltipModule = evr.m_TooltipModule;
 
 				if (rayOrigin)
 				{
@@ -285,6 +286,13 @@ namespace UnityEditor.Experimental.EditorVR
 				var moveCameraRig = obj as IMoveCameraRig;
 				if (moveCameraRig != null)
 					moveCameraRig.moveCameraRig = Viewer.MoveCameraRig;
+
+				var usesTooltip = obj as ISetTooltipVisibility;
+				if (usesTooltip != null)
+				{
+					usesTooltip.showTooltip = tooltipModule.ShowTooltip;
+					usesTooltip.hideTooltip = tooltipModule.HideTooltip;
+				}
 
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;

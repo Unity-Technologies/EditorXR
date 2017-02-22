@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
 
 namespace UnityEngine.Experimental.EditorVR.UI
 {

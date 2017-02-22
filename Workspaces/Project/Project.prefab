@@ -592,7 +592,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_SelectionFlags: 3
   m_HandleTip: {fileID: 0}
-  m_OrientDragPlaneToRay: 1
+  m_OrientDragPlaneToRay: 0
 --- !u!114 &114000011829900818
 MonoBehaviour:
   m_ObjectHideFlags: 1
