@@ -5,7 +5,7 @@ namespace UnityEngine.Experimental.EditorVR
 	/// <summary>
 	/// Provides access to the ability to show or hide a Tooltip
 	/// </summary>
-	public interface IUsesTooltip
+	public interface ISetTooltipVisibility
 	{
 		/// <summary>
 		/// Show the given Tooltip

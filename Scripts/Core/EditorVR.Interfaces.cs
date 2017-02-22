@@ -287,7 +287,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (moveCameraRig != null)
 					moveCameraRig.moveCameraRig = Viewer.MoveCameraRig;
 
-				var usesTooltip = obj as IUsesTooltip;
+				var usesTooltip = obj as ISetTooltipVisibility;
 				if (usesTooltip != null)
 				{
 					usesTooltip.showTooltip = tooltipModule.ShowTooltip;
