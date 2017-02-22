@@ -133,13 +133,18 @@ namespace UnityEditor.Experimental.EditorVR
 						continue;
 					}
 
-					// Transform into reference space
 					var miniWorld = miniWorldRay.miniWorld;
+					var inverseScale = miniWorld.miniWorldTransform.lossyScale.Inverse();
+
+					if (float.IsInfinity(inverseScale.x) || float.IsNaN(inverseScale.x)) // Extreme scales cause transform errors
+						continue;
+
+					// Transform into reference space
 					var originalRayOrigin = miniWorldRay.originalRayOrigin;
 					var referenceTransform = miniWorld.referenceTransform;
 					miniWorldRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
 					miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
-					miniWorldRayOrigin.localScale = Vector3.Scale(miniWorld.miniWorldTransform.lossyScale.Inverse(), referenceTransform.localScale);
+					miniWorldRayOrigin.localScale = Vector3.Scale(inverseScale, referenceTransform.localScale);
 
 					var directSelection = evr.m_DirectSelection;
 

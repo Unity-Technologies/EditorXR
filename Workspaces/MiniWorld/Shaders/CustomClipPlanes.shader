@@ -26,7 +26,7 @@ Shader "Custom/Custom Clip Planes"
 		struct Input
 		{
 			float2 uv_MainTex;
-			float3 worldPoss;
+			float3 clipPos;
 		};
 		static const fixed4 white = fixed4(1, 1, 1, 1);
 
@@ -39,16 +39,16 @@ Shader "Custom/Custom Clip Planes"
 
 		fixed4 LightingNoLighting(SurfaceOutput s, fixed3 lightDir, fixed atten) { return fixed4(0, 0, 0, 0); }
 
-		void vert(inout appdata_full v, out Input o) {
+		void vert(inout appdata_full v, out Input o)
+		{
 			UNITY_INITIALIZE_OUTPUT(Input, o);
-			//v.vertex = mul(v.vertex, _InverseRotation);
-			o.worldPoss = mul(_InverseRotation, mul(unity_ObjectToWorld, v.vertex));
+			o.clipPos = mul(_InverseRotation, mul(unity_ObjectToWorld, v.vertex));
 		}
 
 		void surf(Input IN, inout SurfaceOutput o)
 		{
 			// Clip if position is outside of clip bounds
-			float3 diff = abs(IN.worldPoss - _GlobalClipCenter);
+			float3 diff = abs(IN.clipPos - _GlobalClipCenter);
 			if (diff.x > _GlobalClipExtents.x || diff.y > _GlobalClipExtents.y || diff.z > _GlobalClipExtents.z)
 				discard;
 
