@@ -32,8 +32,6 @@ Shader "EditorVR/UI/Default-NoDepthTest"
 			Ref [_Stencil]
 			Comp [_StencilComp]
 			Pass [_StencilOp] 
-			ReadMask [_StencilReadMask]
-			WriteMask [_StencilWriteMask]
 		}
 
 		Cull Off
