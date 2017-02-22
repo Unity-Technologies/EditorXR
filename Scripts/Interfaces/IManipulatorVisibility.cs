@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provide access to the system to show or hide manipulator(s) on this tool / workspace / etc.

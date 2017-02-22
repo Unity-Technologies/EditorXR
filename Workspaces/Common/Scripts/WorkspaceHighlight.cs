@@ -1,10 +1,11 @@
 ﻿using System.Collections;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.UI
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	public class WorkspaceHighlight : MonoBehaviour
+	internal sealed class WorkspaceHighlight : MonoBehaviour
 	{
 		const string kTopColorProperty = "_ColorTop";
 		const string kBottomColorProperty = "_ColorBottom";
@@ -38,7 +39,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 		void Awake()
 		{
-			m_TopHighlightMaterial = U.Material.GetMaterialClone(m_TopHighlightRenderer);
+			m_TopHighlightMaterial = MaterialUtils.GetMaterialClone(m_TopHighlightRenderer);
 			m_TopHighlightMaterial.SetColor(kTopColorProperty, UnityBrandColorScheme.sessionGradient.a);
 			m_TopHighlightMaterial.SetColor(kBottomColorProperty, UnityBrandColorScheme.sessionGradient.b);
 			m_TopHighlightMaterial.SetFloat(kAlphaProperty, 0f); // hide the highlight initially
@@ -46,7 +47,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 		void OnDestroy()
 		{
-			U.Object.Destroy(m_TopHighlightMaterial);
+			ObjectUtils.Destroy(m_TopHighlightMaterial);
 		}
 
 		IEnumerator ShowHighlight()
@@ -59,7 +60,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
-				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_TopHighlightMaterial.SetFloat(kAlphaProperty, currentAlpha);
 				yield return null;
 			}
@@ -78,7 +79,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
-				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_TopHighlightMaterial.SetFloat(kAlphaProperty, currentAlpha);
 				yield return null;
 			}

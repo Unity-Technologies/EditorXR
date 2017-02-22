@@ -1,4 +1,6 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Tools
+﻿using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class access to the Viewer Pivot

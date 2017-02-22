@@ -1,10 +1,7 @@
-﻿using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Utilities;
-
-namespace UnityEngine.Experimental.EditorVR.Actions
+﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Copy", ActionMenuItemAttribute.kDefaultActionSectionName, 5)]
-	public class Copy : BaseAction
+	internal sealed class Copy : BaseAction
 	{
 		public override void ExecuteAction()
 		{

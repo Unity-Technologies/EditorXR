@@ -1,7 +1,9 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Actions
+﻿using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("SaveScene", "Scene")]
-	public class SaveScene : BaseAction
+	internal sealed class SaveScene : BaseAction
 	{
 		public override void ExecuteAction()
 		{

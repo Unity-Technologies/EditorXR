@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Modules
+﻿namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Implementors can receive IDroppables

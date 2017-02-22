@@ -1,7 +1,9 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Actions
+﻿using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("OpenScene", "Scene")]
-	public class OpenScene : BaseAction
+	internal sealed class OpenScene : BaseAction
 	{
 		public override void ExecuteAction()
 		{

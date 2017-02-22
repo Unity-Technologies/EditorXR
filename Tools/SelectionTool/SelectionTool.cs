@@ -1,9 +1,10 @@
 using System;
+using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	public class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, ISetHighlight, ISelectObject, ISetManipulatorsVisible
+	internal sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, ISetHighlight, ISelectObject, ISetManipulatorsVisible
 	{
 		GameObject m_HoverGameObject;
 		GameObject m_PressedObject;

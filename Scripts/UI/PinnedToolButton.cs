@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Text;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.UI;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.UI;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class PinnedToolButton : MonoBehaviour, ISelectTool
+	internal sealed class PinnedToolButton : MonoBehaviour, ISelectTool
 	{
 		public Type toolType
 		{
@@ -36,7 +36,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		[SerializeField]
 		GradientButton m_GradientButton;
 
-		public event Action<Transform> selected = delegate { };
 		public Transform rayOrigin { get; set; }
 		public Func<Transform, Type, bool> selectTool { private get; set; }
 

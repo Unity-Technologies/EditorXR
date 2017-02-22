@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 namespace UnityEditor.Experimental.EditorVR
 {
 	[InitializeOnLoad]
-	internal class VRView : EditorWindow
+	internal sealed class VRView : EditorWindow
 	{
 		const string kShowDeviceView = "VRView.ShowDeviceView";
 		const string kUseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
@@ -119,10 +119,10 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 
-		public static event Action onEnable = delegate {};
-		public static event Action onDisable = delegate {};
-		public static event Action<EditorWindow> onGUIDelegate = delegate {};
-		public static event Action onHMDReady = delegate {};
+		public static event Action onEnable;
+		public static event Action onDisable;
+		public static event Action<EditorWindow> onGUIDelegate;
+		public static event Action onHMDReady;
 
 		public static VRView GetWindow()
 		{
@@ -198,19 +198,21 @@ namespace UnityEditor.Experimental.EditorVR
 			// HACK: Fix VRSettings.enabled or some other API to check for missing HMD
 			m_VRInitialized = false;
 #if ENABLE_OVR_INPUT
-			m_VRInitialized |= OVRPlugin.initialized;
+			m_VRInitialized |= true; //OVRPlugin.initialized;
 #endif
 
 #if ENABLE_STEAMVR_INPUT
 			m_VRInitialized |= (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
 #endif
 
-			onEnable();
+			if (onEnable != null)
+				onEnable();
 		}
 
 		public void OnDisable()
 		{
-			onDisable();
+			if (onDisable != null)
+				onDisable();
 
 			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
@@ -257,7 +259,8 @@ namespace UnityEditor.Experimental.EditorVR
 				if (!m_HMDReady)
 				{
 					m_HMDReady = true;
-					onHMDReady();
+					if (onHMDReady != null)
+						onHMDReady();
 				}
 			}
 
@@ -313,7 +316,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private void OnGUI()
 		{
-			onGUIDelegate(this);
+			if (onGUIDelegate != null)
+				onGUIDelegate(this);
+
 			var e = Event.current;
 			if (e.type != EventType.ExecuteCommand && e.type != EventType.used)
 			{
@@ -323,7 +328,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
 				PrepareCameraTargetTexture(cameraRect);
 
-				m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : Tools.visibleLayers;
+				m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : UnityEditor.Tools.visibleLayers;
 
 				// Draw camera
 				bool pushedGUIClip;

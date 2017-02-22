@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	internal class RequiresTagAttribute : Attribute
+	internal sealed class RequiresTagAttribute : Attribute
 	{
 		public string tag;
 

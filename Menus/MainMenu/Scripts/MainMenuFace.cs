@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class MainMenuFace : MonoBehaviour
+	internal sealed class MainMenuFace : MonoBehaviour
 	{
 		[SerializeField]
 		private MeshRenderer m_BorderOutline;
@@ -40,11 +41,11 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		{
 			m_CanvasGroup.alpha = 0f;
 			m_CanvasGroup.interactable = false;
-			m_BorderOutlineMaterial = U.Material.GetMaterialClone(m_BorderOutline);
+			m_BorderOutlineMaterial = MaterialUtils.GetMaterialClone(m_BorderOutline);
 			m_BorderOutlineTransform = m_BorderOutline.transform;
 			m_BorderOutlineOriginalLocalScale = m_BorderOutlineTransform.localScale;
 			m_FaceTitle.text = "Not Set";
-			m_TitleIconMaterial = U.Material.GetMaterialClone(m_TitleIcon);
+			m_TitleIconMaterial = MaterialUtils.GetMaterialClone(m_TitleIcon);
 
 			SetGradientColors(kEmptyGradient);
 		}
@@ -105,7 +106,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var currentDuration = 0f;
 			while (currentDuration < smoothTime)
 			{
-				startingOpacity = U.Math.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				startingOpacity = MathUtilsExt.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				currentDuration += Time.unscaledDeltaTime;
 				m_CanvasGroup.alpha = startingOpacity * startingOpacity;
 				yield return null;
@@ -149,7 +150,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var currentDuration = 0f;
 			while (currentDuration < smoothTime)
 			{
-				currentBlendShapeWeight = U.Math.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBlendShapeWeight = MathUtilsExt.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				currentDuration += Time.unscaledDeltaTime;
 				currentBorderLocalScale = Vector3.Lerp(currentBorderLocalScale, targetBorderLocalScale, currentBlendShapeWeight * kLerpEmphasisWeight);
 				m_BorderOutlineTransform.localScale = currentBorderLocalScale;

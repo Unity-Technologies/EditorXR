@@ -1,54 +1,61 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.UI;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class RaySlider : Slider, ISelectionFlags
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
-	[SerializeField]
-	[FlagsProperty]
-	private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
-
-	public override void OnPointerEnter(PointerEventData eventData)
+	internal sealed class RaySlider : Slider, ISelectionFlags
 	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			base.OnPointerEnter(eventData);
-	}
+		public SelectionFlags selectionFlags
+		{
+			get { return m_SelectionFlags; }
+			set { m_SelectionFlags = value; }
+		}
 
-	public override void OnPointerExit(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			base.OnPointerExit(eventData);
-	}
+		[SerializeField]
+		[FlagsProperty]
+		private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
-	public override void OnPointerDown(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			base.OnPointerDown(eventData);
-	}
+		public override void OnPointerEnter(PointerEventData eventData)
+		{
+			var rayEventData = eventData as RayEventData;
+			if (rayEventData == null || UIUtils.IsValidEvent(rayEventData, selectionFlags))
+				base.OnPointerEnter(eventData);
+		}
 
-	public override void OnPointerUp(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			base.OnPointerUp(eventData);
-	}
+		public override void OnPointerExit(PointerEventData eventData)
+		{
+			var rayEventData = eventData as RayEventData;
+			if (rayEventData == null || UIUtils.IsValidEvent(rayEventData, selectionFlags))
+				base.OnPointerExit(eventData);
+		}
 
-	public override void OnDrag(PointerEventData eventData)
-	{
-		var rayEventData = eventData as RayEventData;
-		if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
-			base.OnDrag(eventData);
-	}
+		public override void OnPointerDown(PointerEventData eventData)
+		{
+			var rayEventData = eventData as RayEventData;
+			if (rayEventData == null || UIUtils.IsValidEvent(rayEventData, selectionFlags))
+				base.OnPointerDown(eventData);
+		}
 
-	public override void OnSelect(BaseEventData eventData)
-	{
-		//Not selectable
+		public override void OnPointerUp(PointerEventData eventData)
+		{
+			var rayEventData = eventData as RayEventData;
+			if (rayEventData == null || UIUtils.IsValidEvent(rayEventData, selectionFlags))
+				base.OnPointerUp(eventData);
+		}
+
+		public override void OnDrag(PointerEventData eventData)
+		{
+			var rayEventData = eventData as RayEventData;
+			if (rayEventData == null || UIUtils.IsValidEvent(rayEventData, selectionFlags))
+				base.OnDrag(eventData);
+		}
+
+		public override void OnSelect(BaseEventData eventData)
+		{
+			//Not selectable
+		}
 	}
 }

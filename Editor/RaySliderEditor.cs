@@ -1,15 +1,17 @@
-﻿using UnityEditor;
-using UnityEditor.UI;
+﻿using UnityEditor.UI;
 
-// Because Slider already has a custom editor, and we need to expose SelectionFlags, we need a custom inspector
-[CustomEditor(typeof(RaySlider))]
-public class RaySliderEditor : SliderEditor
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	public override void OnInspectorGUI()
+	// Because Slider already has a custom editor, and we need to expose SelectionFlags, we need a custom inspector
+	[CustomEditor(typeof(RaySlider))]
+	internal sealed class RaySliderEditor : SliderEditor
 	{
-		serializedObject.Update();
-		EditorGUILayout.PropertyField(serializedObject.FindProperty("m_SelectionFlags"));
-		serializedObject.ApplyModifiedProperties();
-		base.OnInspectorGUI();
+		public override void OnInspectorGUI()
+		{
+			serializedObject.Update();
+			EditorGUILayout.PropertyField(serializedObject.FindProperty("m_SelectionFlags"));
+			serializedObject.ApplyModifiedProperties();
+			base.OnInspectorGUI();
+		}
 	}
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// The main menu that can be shown on device proxies

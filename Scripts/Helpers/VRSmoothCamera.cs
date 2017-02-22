@@ -1,17 +1,16 @@
 ﻿#if !UNITY_EDITORVR
 #pragma warning disable 414, 649
 #endif
-using UnityEditor;
-using UnityEditor.Experimental.EditorVR;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Helpers
+namespace UnityEditor.Experimental.EditorVR.Helpers
 {
 	/// <summary>
 	/// A preview camera that provides for smoothing of the position and look vector
 	/// </summary>
 	[RequireComponent(typeof(Camera))]
 	[RequiresLayer(kHMDOnlyLayer)]
-	public class VRSmoothCamera : MonoBehaviour, IPreviewCamera
+	internal sealed class VRSmoothCamera : MonoBehaviour, IPreviewCamera
 	{
 		/// <summary>
 		/// The camera drawing the preview

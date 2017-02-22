@@ -1,7 +1,7 @@
 ﻿using System;
-using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// An alternate menu that shows on device proxies

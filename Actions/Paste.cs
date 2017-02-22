@@ -1,10 +1,11 @@
 ﻿using System;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Actions
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
-	public class Paste : BaseAction, IUsesSpatialHash
+	internal sealed class Paste : BaseAction, IUsesSpatialHash
 	{
 		public static GameObject[] buffer
 		{
@@ -18,9 +19,9 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 
 				if (value != null)
 				{
-					var bounds = U.Object.GetBounds(value);
+					var bounds = ObjectUtils.GetBounds(value);
 					
-					m_BufferDistance = bounds.size == Vector3.zero ? (bounds.center - U.Camera.GetMainCamera().transform.position).magnitude : 0f;
+					m_BufferDistance = bounds.size == Vector3.zero ? (bounds.center - CameraUtils.GetMainCamera().transform.position).magnitude : 0f;
 				}
 			}
 		}
@@ -37,13 +38,13 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 
 			if (buffer != null)
 			{
-				var bounds = U.Object.GetBounds(buffer);
+				var bounds = ObjectUtils.GetBounds(buffer);
 				foreach (var go in buffer)
 				{
 					var pasted = Instantiate(go);
 					var pastedTransform = pasted.transform;
 					pasted.hideFlags = HideFlags.None;
-					var cameraTransform = U.Camera.GetMainCamera().transform;
+					var cameraTransform = CameraUtils.GetMainCamera().transform;
 					pastedTransform.position = cameraTransform.TransformPoint(Vector3.forward * m_BufferDistance)
 						+ pastedTransform.position - bounds.center;
 					pasted.SetActive(true);

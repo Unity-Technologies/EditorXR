@@ -1,10 +1,11 @@
 ﻿using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Handles
+namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	public class PlaneHandle : BaseHandle
+	internal sealed class PlaneHandle : BaseHandle
 	{
 		private class PlaneHandleEventData : HandleEventData
 		{
@@ -23,7 +24,7 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new PlaneHandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
+			return new PlaneHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
 		}
 
 		protected override void OnHandleDragStarted(HandleEventData eventData)

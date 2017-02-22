@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
 
-/// <summary>
-/// Implementors receive a list of asset types found in the project
-/// </summary>
-public interface IFilterUI
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Set accessor for the filter list
+	/// Implementors receive a list of asset types found in the project
 	/// </summary>
-	List<string> filterList { set; }
+	public interface IFilterUI
+	{
+		/// <summary>
+		/// Set accessor for the filter list
+		/// </summary>
+		List<string> filterList { set; }
+	}
 }

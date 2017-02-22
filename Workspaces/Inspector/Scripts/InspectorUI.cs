@@ -1,17 +1,32 @@
 ﻿using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Handles;
 
-public class InspectorUI : MonoBehaviour
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	public InspectorListViewController listView { get { return m_ListView; } }
-	[SerializeField]
-	InspectorListViewController m_ListView;
+	internal sealed class InspectorUI : MonoBehaviour
+	{
+		public InspectorListViewController listView
+		{
+			get { return m_ListView; }
+		}
 
-	public BaseHandle inspectorScrollHandle { get { return m_InspectorScrollHandle; } }
-	[SerializeField]
-	BaseHandle m_InspectorScrollHandle;
+		[SerializeField]
+		InspectorListViewController m_ListView;
 
-	public RectTransform inspectorPanel { get { return m_InspectorPanel; } }
-	[SerializeField]
-	RectTransform m_InspectorPanel;
+		public BaseHandle inspectorScrollHandle
+		{
+			get { return m_InspectorScrollHandle; }
+		}
+
+		[SerializeField]
+		BaseHandle m_InspectorScrollHandle;
+
+		public RectTransform inspectorPanel
+		{
+			get { return m_InspectorPanel; }
+		}
+
+		[SerializeField]
+		RectTransform m_InspectorPanel;
+	}
 }

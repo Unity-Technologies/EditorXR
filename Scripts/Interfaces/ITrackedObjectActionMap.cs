@@ -1,6 +1,6 @@
 ﻿using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provided to a tool for device input (e.g. position / rotation)

@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace UnityEngine.Experimental.EditorVR.Helpers
+namespace UnityEditor.Experimental.EditorVR.Helpers
 {
 	public class UITransformCopy : MonoBehaviour
 	{

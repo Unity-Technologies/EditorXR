@@ -1,10 +1,9 @@
-﻿using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Tools;
+﻿using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Actions
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Cut", ActionMenuItemAttribute.kDefaultActionSectionName, 4)]
-	public class Cut : BaseAction
+	internal sealed class Cut : BaseAction
 	{
 		public override void ExecuteAction()
 		{

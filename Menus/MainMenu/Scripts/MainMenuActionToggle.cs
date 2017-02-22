@@ -1,8 +1,9 @@
-﻿using UnityEngine.UI;
+﻿using UnityEngine;
+using UnityEngine.UI;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class MainMenuActionToggle : MainMenuActionButton
+	internal sealed class MainMenuActionToggle : MainMenuActionButton
 	{
 		[SerializeField]
 		private Button m_Button2;

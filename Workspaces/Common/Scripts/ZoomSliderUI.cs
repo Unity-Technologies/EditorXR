@@ -1,11 +1,10 @@
 ﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.Experimental.EditorVR.Workspaces
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	public class ZoomSliderUI : MonoBehaviour
+	internal sealed class ZoomSliderUI : MonoBehaviour
 	{
 		public Slider zoomSlider { get { return m_ZoomSlider; } }
 		[SerializeField]

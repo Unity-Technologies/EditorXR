@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Tools
+﻿namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Declares a class as a tool within the system

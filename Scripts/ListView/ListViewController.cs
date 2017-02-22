@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Tools;
 
 namespace ListView
 {

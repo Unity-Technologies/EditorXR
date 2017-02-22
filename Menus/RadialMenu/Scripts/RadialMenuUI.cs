@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Actions;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class RadialMenuUI : MonoBehaviour
+	internal sealed class RadialMenuUI : MonoBehaviour
 	{
 		const float kPhaseOffset = 90f; // Correcting the coordinates, so that 0 degrees is at the top of the radial menu
 		const int kSlotCount = 16;
@@ -186,7 +187,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			for (int i = 0; i < kSlotCount; ++i)
 			{
 				Transform menuSlot = null;
-				menuSlot = U.Object.Instantiate(m_RadialMenuSlotTemplate.gameObject).transform;
+				menuSlot = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject).transform;
 				menuSlot.SetParent(m_SlotContainer);
 				menuSlot.localPosition = Vector3.zero;
 				menuSlot.localRotation = Quaternion.identity;

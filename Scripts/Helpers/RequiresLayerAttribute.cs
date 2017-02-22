@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
-	internal class RequiresLayerAttribute : Attribute
+	internal sealed class RequiresLayerAttribute : Attribute
 	{
 		public string layer;
 

@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Utilities
+namespace UnityEditor.Experimental.EditorVR.Utilities
 {
 	/// <summary>
 	/// Class defining the Unity brancd color swatches & gradients
@@ -155,52 +156,52 @@ namespace UnityEngine.Experimental.EditorVR.Utilities
 		/// </summary>
 		private static void SetupUnityBrandColors()
 		{
-			s_Red = U.Material.HexToColor("F44336");
-			s_RedLight = U.Material.HexToColor("FFEBEE");
-			s_RedDark = U.Material.HexToColor("B71C1C");
+			s_Red = MaterialUtils.HexToColor("F44336");
+			s_RedLight = MaterialUtils.HexToColor("FFEBEE");
+			s_RedDark = MaterialUtils.HexToColor("B71C1C");
 
-			s_Magenta = U.Material.HexToColor("E91E63");
-			s_MagentaLight = U.Material.HexToColor("FCE4EC");
-			s_MagentaDark = U.Material.HexToColor("880E4F");
+			s_Magenta = MaterialUtils.HexToColor("E91E63");
+			s_MagentaLight = MaterialUtils.HexToColor("FCE4EC");
+			s_MagentaDark = MaterialUtils.HexToColor("880E4F");
 
-			s_Purple = U.Material.HexToColor("9C27B0");
-			s_PurpleLight = U.Material.HexToColor("F3E5F5");
-			s_PurpleDark = U.Material.HexToColor("4A148C");
+			s_Purple = MaterialUtils.HexToColor("9C27B0");
+			s_PurpleLight = MaterialUtils.HexToColor("F3E5F5");
+			s_PurpleDark = MaterialUtils.HexToColor("4A148C");
 
-			s_Blue = U.Material.HexToColor("03A9F4");
-			s_BlueLight = U.Material.HexToColor("E1F5FE");
-			s_BlueDark = U.Material.HexToColor("01579B");
+			s_Blue = MaterialUtils.HexToColor("03A9F4");
+			s_BlueLight = MaterialUtils.HexToColor("E1F5FE");
+			s_BlueDark = MaterialUtils.HexToColor("01579B");
 
-			s_Cyan = U.Material.HexToColor("00BCD4");
-			s_CyanLight = U.Material.HexToColor("E0F7FA");
-			s_CyanDark = U.Material.HexToColor("006064");
+			s_Cyan = MaterialUtils.HexToColor("00BCD4");
+			s_CyanLight = MaterialUtils.HexToColor("E0F7FA");
+			s_CyanDark = MaterialUtils.HexToColor("006064");
 
-			s_Teal = U.Material.HexToColor("009688");
-			s_TealLight = U.Material.HexToColor("E0F2F1");
-			s_TealDark = U.Material.HexToColor("004D40");
+			s_Teal = MaterialUtils.HexToColor("009688");
+			s_TealLight = MaterialUtils.HexToColor("E0F2F1");
+			s_TealDark = MaterialUtils.HexToColor("004D40");
 
-			s_Green = U.Material.HexToColor("8AC249");
-			s_GreenLight = U.Material.HexToColor("F1F8E9");
-			s_GreenDark = U.Material.HexToColor("33691E");
+			s_Green = MaterialUtils.HexToColor("8AC249");
+			s_GreenLight = MaterialUtils.HexToColor("F1F8E9");
+			s_GreenDark = MaterialUtils.HexToColor("33691E");
 
-			s_Lime = U.Material.HexToColor("CDDC39");
-			s_LimeLight = U.Material.HexToColor("F9FBE7");
-			s_LimeDark = U.Material.HexToColor("827717");
+			s_Lime = MaterialUtils.HexToColor("CDDC39");
+			s_LimeLight = MaterialUtils.HexToColor("F9FBE7");
+			s_LimeDark = MaterialUtils.HexToColor("827717");
 
-			s_Yellow = U.Material.HexToColor("FFEB3B");
-			s_YellowLight = U.Material.HexToColor("FFFDE7");
-			s_YellowDark = U.Material.HexToColor("F57F17");
+			s_Yellow = MaterialUtils.HexToColor("FFEB3B");
+			s_YellowLight = MaterialUtils.HexToColor("FFFDE7");
+			s_YellowDark = MaterialUtils.HexToColor("F57F17");
 
-			s_Orange = U.Material.HexToColor("FF9800");
-			s_OrangeLight = U.Material.HexToColor("FFF3E0");
-			s_OrangeDark = U.Material.HexToColor("E65100");
+			s_Orange = MaterialUtils.HexToColor("FF9800");
+			s_OrangeLight = MaterialUtils.HexToColor("FFF3E0");
+			s_OrangeDark = MaterialUtils.HexToColor("E65100");
 
-			s_DarkBlue = U.Material.HexToColor("222C37");
-			s_DarkBlueLight = U.Material.HexToColor("E9EBEC");
+			s_DarkBlue = MaterialUtils.HexToColor("222C37");
+			s_DarkBlueLight = MaterialUtils.HexToColor("E9EBEC");
 
-			s_Dark = U.Material.HexToColor("323333");
-			s_Darker = U.Material.HexToColor("1A1A1A");
-			s_Light = U.Material.HexToColor("F5F8F9");
+			s_Dark = MaterialUtils.HexToColor("323333");
+			s_Darker = MaterialUtils.HexToColor("1A1A1A");
+			s_Light = MaterialUtils.HexToColor("F5F8F9");
 
 			// Set default neutral(luma) swatches
 			s_ColorSwatches.Add(s_Red);
@@ -232,7 +233,7 @@ namespace UnityEngine.Experimental.EditorVR.Utilities
 			sessionGradient = new GradientPair(s_Light, s_Dark);
 
 			// Setup grayscale light/dark contrasting session gradient
-			grayscaleSessionGradient = new GradientPair(U.Material.HexToColor("898A8AFF"), s_Light);
+			grayscaleSessionGradient = new GradientPair(MaterialUtils.HexToColor("898A8AFF"), s_Light);
 		}
 
 		/// <summary>

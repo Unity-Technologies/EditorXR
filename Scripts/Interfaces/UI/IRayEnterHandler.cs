@@ -1,6 +1,6 @@
 ﻿using UnityEngine.EventSystems;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	/// <summary>
 	/// Decorates objects with functionality to detect RayEnter events

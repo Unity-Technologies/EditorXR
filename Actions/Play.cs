@@ -1,9 +1,7 @@
-﻿using UnityEditor;
-
-namespace UnityEngine.Experimental.EditorVR.Actions
+﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Play")]
-	public class Play : BaseAction
+	internal sealed class Play : BaseAction
 	{
 		public override void ExecuteAction()
 		{

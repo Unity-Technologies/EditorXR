@@ -2,14 +2,15 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.UI
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	public class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+	internal sealed class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 	{
 		const float kIconHighlightedLocalZOffset = -0.0015f;
 		const string kMaterialAlphaProperty = "_Alpha";
@@ -175,7 +176,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		void Awake()
 		{
 			m_OriginalIconSprite = m_Icon.sprite;
-			m_ButtonMaterial = U.Material.GetMaterialClone(m_ButtonMeshRenderer);
+			m_ButtonMaterial = MaterialUtils.GetMaterialClone(m_ButtonMeshRenderer);
 			m_OriginalLocalScale = transform.localScale;
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_OriginalContentContainerLocalScale = m_ContentContainer.localScale;
@@ -242,7 +243,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 				}
 
 				// Perform the button depth reveal
-				scale = U.Math.SmoothDamp(scale, visibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = MathUtilsExt.SmoothDamp(scale, visibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
@@ -268,7 +269,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			while (currentDuration < kTotalDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
-				scale = U.Math.SmoothDamp(scale, hiddenLocalScale, ref smoothVelocity, kTotalDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = MathUtilsExt.SmoothDamp(scale, hiddenLocalScale, ref smoothVelocity, kTotalDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				transform.localScale = scale;
 				m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, scale.z);
 
@@ -308,7 +309,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 					yield return null;
 				}
 
-				alpha = U.Math.SmoothDamp(alpha, kTargetAlpha, ref opacitySmoothVelocity, targetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				alpha = MathUtilsExt.SmoothDamp(alpha, kTargetAlpha, ref opacitySmoothVelocity, targetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 

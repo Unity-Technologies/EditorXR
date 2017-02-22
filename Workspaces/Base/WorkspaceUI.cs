@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Manipulators;
+using UnityEditor.Experimental.EditorVR.UI;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Manipulators;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.UI;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.Experimental.EditorVR.Workspaces
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	public class WorkspaceUI : MonoBehaviour, IUsesStencilRef
+	internal sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef
 	{
-		public event Action closeClicked = delegate {};
-		public event Action resetSizeClicked = delegate {};
+		public event Action closeClicked;
+		public event Action resetSizeClicked;
 
 		const int kAngledFaceBlendShapeIndex = 2;
 		const int kThinFrameBlendShapeIndex = 3;
@@ -404,11 +404,11 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			const string kShaderVerticalOffset = "_VerticalOffset";
 			const float kTargetDuration = 1.25f;
 
-			m_TopFaceMaterial = U.Material.GetMaterialClone(m_TopFaceContainer.GetComponentInChildren<MeshRenderer>());
+			m_TopFaceMaterial = MaterialUtils.GetMaterialClone(m_TopFaceContainer.GetComponentInChildren<MeshRenderer>());
 			m_TopFaceMaterial.SetFloat("_Alpha", 1f);
 			m_TopFaceMaterial.SetInt(kMaterialStencilRef, stencilRef);
 
-			m_FrontFaceMaterial = U.Material.GetMaterialClone(m_FrameFrontFaceTransform.GetComponentInChildren<MeshRenderer>());
+			m_FrontFaceMaterial = MaterialUtils.GetMaterialClone(m_FrameFrontFaceTransform.GetComponentInChildren<MeshRenderer>());
 			m_FrontFaceMaterial.SetInt(kMaterialStencilRef, stencilRef);
 
 			var originalBlurAmount = m_TopFaceMaterial.GetFloat("_Blur");
@@ -423,7 +423,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
-				currentBlurAmount = U.Math.SmoothDamp(currentBlurAmount, originalBlurAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBlurAmount = MathUtilsExt.SmoothDamp(currentBlurAmount, originalBlurAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_TopFaceMaterial.SetFloat(kShaderBlur, currentBlurAmount);
 
 				float percentageComplete = currentDuration / kTargetDuration;
@@ -489,18 +489,20 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 
 		void OnDestroy()
 		{
-			U.Object.Destroy(m_TopFaceMaterial);
-			U.Object.Destroy(m_FrontFaceMaterial);
+			ObjectUtils.Destroy(m_TopFaceMaterial);
+			ObjectUtils.Destroy(m_FrontFaceMaterial);
 		}
 
 		public void CloseClick()
 		{
-			closeClicked();
+			if (closeClicked != null)
+				closeClicked();
 		}
 
 		public void ResetSizeClick()
 		{
-			resetSizeClicked();
+			if (resetSizeClicked != null)
+				resetSizeClicked();
 		}
 
 		IEnumerator IncreaseFrameThickness()
@@ -513,7 +515,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
-				currentBlendAmount = U.Math.SmoothDamp(currentBlendAmount, kTargetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBlendAmount = MathUtilsExt.SmoothDamp(currentBlendAmount, kTargetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, currentBlendAmount);
 				yield return null;
 			}
@@ -531,7 +533,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
-				currentBlendAmount = U.Math.SmoothDamp(currentBlendAmount, kTargetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBlendAmount = MathUtilsExt.SmoothDamp(currentBlendAmount, kTargetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, currentBlendAmount);
 				yield return null;
 			}
@@ -550,7 +552,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
-				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_TopFaceMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
 				yield return null;
 			}
@@ -569,7 +571,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
-				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_TopFaceMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
 				yield return null;
 			}

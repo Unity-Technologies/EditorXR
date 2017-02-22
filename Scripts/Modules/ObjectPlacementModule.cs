@@ -2,9 +2,9 @@
 using System.Collections;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	internal class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 	{
@@ -31,16 +31,16 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			var startScale = obj.localScale;
 			var startPosition = obj.position;
 			var startRotation = obj.rotation;
-			var targetRotation = U.Math.ConstrainYawRotation(startRotation);
+			var targetRotation = MathUtilsExt.ConstrainYawRotation(startRotation);
 
 			//Get bounds at target scale
 			var origScale = obj.localScale;
 			obj.localScale = targetScale;
-			var bounds = U.Object.GetBounds(obj.gameObject);
+			var bounds = ObjectUtils.GetBounds(obj.gameObject);
 			obj.localScale = origScale;
 
 			// We want to position the object so that it fits within the camera perspective at its original scale
-			var camera = U.Camera.GetMainCamera();
+			var camera = CameraUtils.GetMainCamera();
 			var halfAngle = camera.fieldOfView * 0.5f;
 			var perspective = halfAngle + kInstantiateFOVDifference;
 			var camPosition = camera.transform.position;

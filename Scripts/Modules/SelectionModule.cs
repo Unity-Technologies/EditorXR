@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged
+	internal sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged
 	{
 		GameObject m_CurrentGroupRoot;
 		readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state

@@ -2,11 +2,11 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Actions;
+using UnityEditor.Experimental.EditorVR.Tools;
+using UnityEditor.Experimental.EditorVR.Actions;
 using UnityEditor;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	internal class LockModule : MonoBehaviour, IActions, ISelectionChanged
 	{

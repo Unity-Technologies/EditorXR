@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provide access to show or hide manipulator(s)

@@ -1,13 +1,13 @@
 ﻿using ListView;
 using System;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.Experimental.EditorVR.Data
+namespace UnityEditor.Experimental.EditorVR.Data
 {
-	public class FolderListItem : ListViewItem<FolderData>
+	internal sealed class FolderListItem : ListViewItem<FolderData>
 	{
 		private const float kMargin = 0.01f;
 		private const float kIndent = 0.02f;
@@ -61,7 +61,7 @@ namespace UnityEngine.Experimental.EditorVR.Data
 				// Cube material might change for hover state, so we always instance it
 				m_CubeRenderer = m_Cube.GetComponent<Renderer>();
 				m_NormalColor = m_CubeRenderer.sharedMaterial.color;
-				U.Material.GetMaterialClone(m_CubeRenderer);
+				MaterialUtils.GetMaterialClone(m_CubeRenderer);
 
 				m_ExpandArrow.dragEnded += ToggleExpanded;
 				m_Cube.dragStarted += SelectFolder;
@@ -107,7 +107,7 @@ namespace UnityEngine.Experimental.EditorVR.Data
 			m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / textTransform.localScale.x);
 			textTransform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, textTransform.localPosition.y, 0);
 
-			textTransform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
+			textTransform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
 
 			UpdateArrow(expanded);
 
@@ -153,7 +153,7 @@ namespace UnityEngine.Experimental.EditorVR.Data
 		private void OnDestroy()
 		{
 			if (m_CubeRenderer)
-				U.Object.Destroy(m_CubeRenderer.sharedMaterial);
+				ObjectUtils.Destroy(m_CubeRenderer.sharedMaterial);
 		}
 	}
 }

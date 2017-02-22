@@ -1,6 +1,4 @@
-﻿using UnityEngine.UI;
-
-namespace UnityEngine.Experimental.EditorVR.Actions
+﻿namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Used for passing action data for menu purposes

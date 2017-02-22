@@ -1,9 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provides methods and delegates used to directly select and grab scene objects
@@ -59,15 +58,5 @@ namespace UnityEngine.Experimental.EditorVR
 		/// Params: the selected objects, the rayOrigin
 		/// </summary>
 		event Action<Transform[], Transform> objectsDropped;
-	}
-
-	public static class IGrabObjectsExtension
-	{
-		public static void DropHeldObjects(this IGrabObjects grabObjects, Transform rayOrigin)
-		{
-			Vector3[] positionOffset;
-			Quaternion[] rotationOffset;
-			grabObjects.DropHeldObjects(rayOrigin, out positionOffset, out rotationOffset);
-		}
 	}
 }

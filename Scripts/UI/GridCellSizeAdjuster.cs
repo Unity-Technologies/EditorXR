@@ -1,8 +1,9 @@
-﻿using UnityEngine.UI;
+﻿using UnityEngine;
+using UnityEngine.UI;
 
-namespace UnityEngine.Experimental.EditorVR.Helpers
+namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-	public class GridCellSizeAdjuster : MonoBehaviour
+	internal sealed class GridCellSizeAdjuster : MonoBehaviour
 	{
 		RectTransform m_LayoutGroupTransform;
 

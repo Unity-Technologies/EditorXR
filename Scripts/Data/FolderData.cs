@@ -1,9 +1,10 @@
 ﻿using ListView;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Data;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
-	public class FolderData : ListViewItemNestedData<FolderData>
+	public sealed class FolderData : ListViewItemNestedData<FolderData>
 	{
 		const string kTemplateName = "FolderListItem";
 

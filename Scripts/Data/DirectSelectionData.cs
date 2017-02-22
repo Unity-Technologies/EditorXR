@@ -1,12 +1,13 @@
-﻿using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Tools;
+﻿using UnityEngine;
+using UnityEditor.Experimental.EditorVR;
+using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Stores the state of a direct selection
 	/// </summary>
-	public class DirectSelectionData
+	public sealed class DirectSelectionData
 	{
 		/// <summary>
 		/// The Node used to select the object

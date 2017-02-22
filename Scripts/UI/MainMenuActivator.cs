@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	internal class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IUsesMenuOrigins, IUsesRayOrigin
+	internal sealed class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IUsesMenuOrigins, IUsesRayOrigin
 	{
 		readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
 		static readonly float kAlternateLocationOffset = 0.06f;
@@ -65,15 +65,15 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		public Transform rayOrigin { private get; set; }
 		public Transform menuOrigin { private get; set; }
 
-		public event Action<Transform> hoverStarted = delegate {};
-		public event Action<Transform> hoverEnded = delegate {};
-		public event Action<Transform, Transform> selected = delegate {};
+		public event Action<Transform> hoverStarted;
+		public event Action<Transform> hoverEnded;
+		public event Action<Transform, Transform> selected;
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
 			// A child may have used the event, but still reflect that is was hovered
 			var rayEventData = eventData as RayEventData;
-			if (rayEventData != null)
+			if (rayEventData != null && hoverStarted != null)
 				hoverStarted(rayEventData.rayOrigin);
 
 			if (eventData.used)
@@ -90,7 +90,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		{
 			// A child may have used the event, but still reflect that is was hovered
 			var rayEventData = eventData as RayEventData;
-			if (rayEventData != null)
+			if (rayEventData != null && hoverEnded != null)
 				hoverEnded(rayEventData.rayOrigin);
 
 			if (eventData.used)
@@ -106,7 +106,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		public void OnPointerClick(PointerEventData eventData)
 		{
 			var rayEventData = eventData as RayEventData;
-			selected(rayOrigin, rayEventData != null ? rayEventData.rayOrigin : null);
+			if (selected != null)
+				selected(rayOrigin, rayEventData != null ? rayEventData.rayOrigin : null);
 		}
 
 		IEnumerator Highlight(bool transitionIn = true)

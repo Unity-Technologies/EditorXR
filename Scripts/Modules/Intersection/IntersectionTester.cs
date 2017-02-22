@@ -1,6 +1,8 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Modules
+﻿using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	public class IntersectionTester : MonoBehaviour
+	internal sealed class IntersectionTester : MonoBehaviour
 	{
 		[SerializeField]
 		private Transform[] m_RayTransforms;

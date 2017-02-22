@@ -1,10 +1,11 @@
 ﻿using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Handles
+namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	public class SphereHandle : BaseHandle, IScrollHandler
+	internal sealed class SphereHandle : BaseHandle, IScrollHandler
 	{
 		private class SphereHandleEventData : HandleEventData
 		{
@@ -24,7 +25,7 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new SphereHandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData)) { raycastHitDistance = eventData.pointerCurrentRaycast.distance };
+			return new SphereHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitDistance = eventData.pointerCurrentRaycast.distance };
 		}
 
 		protected override void OnHandleDragStarted(HandleEventData eventData)

@@ -1,8 +1,9 @@
 using System;
 using System.Collections;
+using UnityEngine;
 using UnityEngine.Events;
 
-namespace UnityEngine.Experimental.Tweening
+namespace UnityEditor.Experimental.Tweening
 {
 	// Base interface for tweeners, 
 	// using an interface instead of 

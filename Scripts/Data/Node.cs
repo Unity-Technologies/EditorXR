@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// A tracked node within the system

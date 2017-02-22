@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Manipulators
+namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
 	public class ScaleManipulator : BaseManipulator
 	{

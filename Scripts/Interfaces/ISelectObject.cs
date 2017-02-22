@@ -1,6 +1,6 @@
-﻿using System;
+﻿using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Given a hovered object, find what object would actually be selected

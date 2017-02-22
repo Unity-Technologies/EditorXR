@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class RadialMenuSlot : MonoBehaviour
+	internal sealed class RadialMenuSlot : MonoBehaviour
 	{
 		static readonly Vector3 kHiddenLocalScale = new Vector3(1f, 0f, 1f);
 		const float m_IconHighlightedLocalYOffset = 0.006f;
@@ -96,7 +97,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		
 		public Material borderRendererMaterial
 		{
-			get { return U.Material.GetMaterialClone(m_BorderRenderer); } // return new unique color to the RadialMenuUI for settings in each RadialMenuSlot contained in a given RadialMenu
+			get { return MaterialUtils.GetMaterialClone(m_BorderRenderer); } // return new unique color to the RadialMenuUI for settings in each RadialMenuSlot contained in a given RadialMenu
 			set
 			{
 				m_BorderRendererMaterial = value;
@@ -127,7 +128,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		void Awake()
 		{
-			m_InsetMaterial = U.Material.GetMaterialClone(m_InsetMeshRenderer);
+			m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
 			m_OriginalInsetGradientPair = new GradientPair(m_InsetMaterial.GetColor(kMaterialColorTopProperty), m_InsetMaterial.GetColor(kMaterialColorBottomProperty));
 			hiddenLocalRotation = transform.localRotation;
 			m_VisibleInsetLocalScale = m_MenuInset.localScale;

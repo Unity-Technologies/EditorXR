@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Tools
+﻿namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Receive the default action map from the system

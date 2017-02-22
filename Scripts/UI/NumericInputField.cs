@@ -1,10 +1,11 @@
 using System;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.UI
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	public class NumericInputField : InputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
+	internal sealed class NumericInputField : InputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
 	{
 		public enum NumberType
 		{
@@ -41,7 +42,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 		public void OnBeginDrag(RayEventData eventData)
 		{
-			if (!U.UI.IsValidEvent(eventData, selectionFlags) && MayDrag())
+			if (!UIUtils.IsValidEvent(eventData, selectionFlags) && MayDrag())
 				return;
 
 			m_StartDragPosition = GetLocalPointerPosition(eventData.rayOrigin);
@@ -49,7 +50,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 		public void OnDrag(RayEventData eventData)
 		{
-			if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
+			if (!UIUtils.IsValidEvent(eventData, selectionFlags) || !MayDrag())
 				return;
 
 			SliderDrag(eventData.rayOrigin);
@@ -75,7 +76,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 		public void OnEndDrag(RayEventData eventData)
 		{
-			if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
+			if (!UIUtils.IsValidEvent(eventData, selectionFlags) || !MayDrag())
 				return;
 
 			EndDrag();
@@ -118,7 +119,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		Vector3 GetLocalPointerPosition(Transform rayOrigin)
 		{
 			Vector3 hitPos;
-			U.Math.LinePlaneIntersection(out hitPos, rayOrigin.position, rayOrigin.forward, -transform.forward,
+			MathUtilsExt.LinePlaneIntersection(out hitPos, rayOrigin.position, rayOrigin.forward, -transform.forward,
 				transform.position);
 
 			return transform.InverseTransformPoint(hitPos);

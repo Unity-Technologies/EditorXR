@@ -1,9 +1,7 @@
-﻿using UnityEditor;
-
-namespace UnityEngine.Experimental.EditorVR.Actions
+﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("SelectParent", ActionMenuItemAttribute.kDefaultActionSectionName, 8)]
-	public class SelectParent : BaseAction
+	internal sealed class SelectParent : BaseAction
 	{
 		public override void ExecuteAction()
 		{

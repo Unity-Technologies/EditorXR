@@ -1,10 +1,11 @@
 ﻿using System;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class MainMenuButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
+	internal sealed class MainMenuButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
 	{
 		public Button button { get { return m_Button; } }
 		[SerializeField]
@@ -38,8 +39,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			}
 		}
 
-		public Action clicked;
-
 		/// <summary>
 		/// The ray that is hovering over the button
 		/// </summary>
@@ -47,26 +46,13 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		private void Awake()
 		{
-			m_Button.onClick.AddListener(OnButtonClicked);
-
 			m_OriginalColor = m_Button.targetGraphic.color;
-		}
-
-		private void OnDestroy()
-		{
-			m_Button.onClick.RemoveListener(OnButtonClicked);
 		}
 
 		public void SetData(string name, string description)
 		{
 			m_ButtonTitle.text = name;
 			m_ButtonDescription.text = description;
-		}
-
-		private void OnButtonClicked()
-		{
-			if (clicked != null)
-				clicked();
 		}
 
 		public void OnRayEnter(RayEventData eventData)

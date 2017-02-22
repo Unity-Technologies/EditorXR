@@ -1,11 +1,10 @@
 ﻿using UnityEditor.UI;
-using UnityEngine.Experimental.EditorVR.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
 	[CustomEditor(typeof(InputField))]
 	[CanEditMultipleObjects]
-	public class InputFieldEditor : SelectableEditor
+	internal class InputFieldEditor : SelectableEditor
 	{
 		SerializedProperty m_SelectionFlagsProperty;
 		SerializedProperty m_TextComponentProperty;

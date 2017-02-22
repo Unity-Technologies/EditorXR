@@ -1,17 +1,32 @@
 ﻿using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Handles;
 
-public class MiniWorldUI : MonoBehaviour
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	public Renderer grid { get { return m_Grid; } }
-	[SerializeField]
-	private Renderer m_Grid;
+	internal class MiniWorldUI : MonoBehaviour
+	{
+		public Renderer grid
+		{
+			get { return m_Grid; }
+		}
 
-	public BaseHandle panZoomHandle { get { return m_PanZoomHandle; } }
-	[SerializeField]
-	private BaseHandle m_PanZoomHandle;
+		[SerializeField]
+		private Renderer m_Grid;
 
-	public Transform boundsCube { get { return m_BoundsCube; } }
-	[SerializeField]
-	private Transform m_BoundsCube;
+		public BaseHandle panZoomHandle
+		{
+			get { return m_PanZoomHandle; }
+		}
+
+		[SerializeField]
+		private BaseHandle m_PanZoomHandle;
+
+		public Transform boundsCube
+		{
+			get { return m_BoundsCube; }
+		}
+
+		[SerializeField]
+		private Transform m_BoundsCube;
+	}
 }

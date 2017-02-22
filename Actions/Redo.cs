@@ -1,7 +1,7 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Actions
+﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Redo", ActionMenuItemAttribute.kDefaultActionSectionName, 1)]
-	public class Redo : BaseAction
+	internal sealed class Redo : BaseAction
 	{
 		public override void ExecuteAction()
 		{

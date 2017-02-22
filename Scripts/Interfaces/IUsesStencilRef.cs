@@ -1,4 +1,4 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Tools
+﻿namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Deliver a stencil ref value for use in materials (useful for masks)

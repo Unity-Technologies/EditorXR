@@ -1,39 +1,72 @@
-﻿using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.UI;
+﻿using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEngine;
 
-public class ProjectUI : MonoBehaviour
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	public FolderListViewController folderListView { get { return m_FolderListView; } }
-	[SerializeField]
-	private FolderListViewController m_FolderListView;
+	internal sealed class ProjectUI : MonoBehaviour
+	{
+		public FolderListViewController folderListView
+		{
+			get { return m_FolderListView; }
+		}
 
-	public BaseHandle folderScrollHandle { get { return m_FolderScrollHandle; } }
-	[SerializeField]
-	private BaseHandle m_FolderScrollHandle;
+		[SerializeField]
+		private FolderListViewController m_FolderListView;
 
-	public RectTransform folderPanel { get { return m_FolderPanel; } }
-	[SerializeField]
-	private RectTransform m_FolderPanel;
+		public BaseHandle folderScrollHandle
+		{
+			get { return m_FolderScrollHandle; }
+		}
 
-	public AssetGridViewController assetGridView { get { return m_AssetGridView; } }
-	[SerializeField]
-	private AssetGridViewController m_AssetGridView;
+		[SerializeField]
+		private BaseHandle m_FolderScrollHandle;
 
-	public BaseHandle assetScrollHandle { get { return m_AssetScrollHandle; } }
-	[SerializeField]
-	private BaseHandle m_AssetScrollHandle;
+		public RectTransform folderPanel
+		{
+			get { return m_FolderPanel; }
+		}
 
-	public RectTransform assetPanel { get { return m_AssetPanel; } }
-	[SerializeField]
-	private RectTransform m_AssetPanel;
+		[SerializeField]
+		private RectTransform m_FolderPanel;
 
-	public WorkspaceHighlight assetGridHighlight { get { return m_AssetGridHighlight; } }
-	[SerializeField]
-	WorkspaceHighlight m_AssetGridHighlight;
+		public AssetGridViewController assetGridView
+		{
+			get { return m_AssetGridView; }
+		}
 
-	public WorkspaceHighlight folderPanelHighlight { get { return m_FolderPanelHighlight; } }
-	[SerializeField]
-	WorkspaceHighlight m_FolderPanelHighlight;
+		[SerializeField]
+		private AssetGridViewController m_AssetGridView;
+
+		public BaseHandle assetScrollHandle
+		{
+			get { return m_AssetScrollHandle; }
+		}
+
+		[SerializeField]
+		private BaseHandle m_AssetScrollHandle;
+
+		public RectTransform assetPanel
+		{
+			get { return m_AssetPanel; }
+		}
+
+		[SerializeField]
+		private RectTransform m_AssetPanel;
+
+		public WorkspaceHighlight assetGridHighlight
+		{
+			get { return m_AssetGridHighlight; }
+		}
+
+		[SerializeField]
+		WorkspaceHighlight m_AssetGridHighlight;
+
+		public WorkspaceHighlight folderPanelHighlight
+		{
+			get { return m_FolderPanelHighlight; }
+		}
+
+		[SerializeField]
+		WorkspaceHighlight m_FolderPanelHighlight;
+	}
 }

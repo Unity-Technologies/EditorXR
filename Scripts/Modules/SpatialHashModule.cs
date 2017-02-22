@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
-using UnityEngine.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class SpatialHashModule : MonoBehaviour
+	internal sealed class SpatialHashModule : MonoBehaviour
 	{
 		readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
 		public SpatialHash<Renderer> spatialHash { get; private set; }
