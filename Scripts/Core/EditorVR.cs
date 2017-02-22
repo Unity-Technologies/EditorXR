@@ -151,7 +151,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
 			m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
 
-			m_TooltipModule = U.Object.AddComponent<TooltipModule>(gameObject);
+			m_TooltipModule = AddModule<TooltipModule>();
 			m_Interfaces.ConnectInterfaces(m_TooltipModule);
 			m_InputModule.rayEntered += m_TooltipModule.OnRayEntered;
 			m_InputModule.rayExited += m_TooltipModule.OnRayExited;

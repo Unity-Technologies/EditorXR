@@ -146,7 +146,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		Graphic[] m_HighlightItems;
 
 		[Header("Animated Reveal Settings")]
-		[UnityEngine.Tooltip("Default value is 0.25")]
+		[Tooltip("Default value is 0.25")]
 		// If AnimatedReveal is enabled, wait this duration before performing the reveal
 		[SerializeField]
 		[Range(0f, 2f)]
