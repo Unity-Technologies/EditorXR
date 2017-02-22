@@ -1,6 +1,6 @@
 ﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
-	[ActionMenuItem("SelectParent", ActionMenuItemAttribute.kDefaultActionSectionName, 8)]
+	[ActionMenuItem("SelectParent", ActionMenuItemAttribute.DefaultActionSectionName, 8)]
 	internal sealed class SelectParent : BaseAction
 	{
 		public override void ExecuteAction()

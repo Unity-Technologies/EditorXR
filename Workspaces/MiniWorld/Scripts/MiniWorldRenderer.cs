@@ -6,10 +6,10 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[RequiresTag(kMiniWorldCameraTag)]
-	[RequiresTag(kShowInMiniWorldTag)]
+	[RequiresTag(ShowInMiniWorldTag)]
 	internal sealed class MiniWorldRenderer : MonoBehaviour
 	{
-		public const string kShowInMiniWorldTag = "ShowInMiniWorld";
+		public const string ShowInMiniWorldTag = "ShowInMiniWorld";
 		const string kMiniWorldCameraTag = "MiniWorldCamera";
 		const float kMinScale = 0.001f;
 
@@ -85,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					if (!hiddenRenderer)
 						continue;
 
-					if (hiddenRenderer.CompareTag(kShowInMiniWorldTag))
+					if (hiddenRenderer.CompareTag(ShowInMiniWorldTag))
 					{
 						m_IgnoredObjectLayer[i] = hiddenRenderer.gameObject.layer;
 						hiddenRenderer.gameObject.layer = s_DefaultLayer;
@@ -106,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					if (!hiddenRenderer)
 						continue;
 
-					if (hiddenRenderer.CompareTag(kShowInMiniWorldTag))
+					if (hiddenRenderer.CompareTag(ShowInMiniWorldTag))
 						hiddenRenderer.gameObject.layer = m_IgnoredObjectLayer[i];
 					else
 						m_IgnoreList[i].enabled = m_IgnoreObjectRendererEnabled[i];

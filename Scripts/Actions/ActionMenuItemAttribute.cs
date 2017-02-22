@@ -8,7 +8,7 @@
 		/// <summary>
 		/// Default action section name that gets used for showing items in the alternate menu
 		/// </summary>
-		public const string kDefaultActionSectionName = "DefaultActions";
+		public const string DefaultActionSectionName = "DefaultActions";
 
 		/// <summary>
 		/// The name of this action

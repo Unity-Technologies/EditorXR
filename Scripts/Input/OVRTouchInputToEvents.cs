@@ -13,10 +13,9 @@ namespace UnityEngine.InputNew
 	public class OVRTouchInputToEvents : MonoBehaviour
 	{
 #if ENABLE_OVR_INPUT
-		public const uint kControllerCount = 2;
-		public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
-		public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
-
+		const uint kControllerCount = 2;
+		const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
+		
 		float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
 		Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
 		Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];

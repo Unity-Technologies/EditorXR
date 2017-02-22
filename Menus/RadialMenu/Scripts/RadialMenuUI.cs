@@ -77,7 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (value != null)
 				{
 					m_Actions = value
-						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.kDefaultActionSectionName)
+						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
 						.OrderBy(a => a.priority)
 						.ToList();
 

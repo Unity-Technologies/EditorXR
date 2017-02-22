@@ -2,7 +2,7 @@
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
-	[ActionMenuItem("Cut", ActionMenuItemAttribute.kDefaultActionSectionName, 4)]
+	[ActionMenuItem("Cut", ActionMenuItemAttribute.DefaultActionSectionName, 4)]
 	internal sealed class Cut : BaseAction
 	{
 		public override void ExecuteAction()

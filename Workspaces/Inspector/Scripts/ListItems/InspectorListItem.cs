@@ -273,7 +273,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var numericField = m_ClickedField as NumericInputField;
 				if (numericField)
 				{
-					if (m_DragDistance > NumericInputField.kDragDeadzone)
+					if (m_DragDistance > NumericInputField.DragDeadzone)
 						CancelSingleClick();
 
 					numericField.SliderDrag(eventData.rayOrigin);
@@ -315,7 +315,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var start = Time.realtimeSinceStartup;
 			var currTime = 0f;
-			while (m_SelectIsHeld || currTime < UIUtils.kDoubleClickIntervalMax)
+			while (m_SelectIsHeld || currTime < UIUtils.DoubleClickIntervalMax)
 			{
 				currTime = Time.realtimeSinceStartup - start;
 				yield return null;

@@ -256,8 +256,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var boundsSize = m_Bounds.size;
 
 				// Because BlendShapes cap at 100, our workspace maxes out at 100m wide
-				m_Frame.SetBlendShapeWeight(0, boundsSize.x + Workspace.kHandleMargin);
-				m_Frame.SetBlendShapeWeight(1, boundsSize.z + Workspace.kHandleMargin);
+				m_Frame.SetBlendShapeWeight(0, boundsSize.x + Workspace.HandleMargin);
+				m_Frame.SetBlendShapeWeight(1, boundsSize.z + Workspace.HandleMargin);
 
 				// Resize content container
 				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, boundsSize.x);

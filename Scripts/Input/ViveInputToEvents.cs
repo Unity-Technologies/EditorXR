@@ -77,12 +77,13 @@ namespace UnityEngine.InputNew
 			}
 		}
 
-		public const int controllerCount = 10;
-		public const int buttonCount = (int)EVRButtonId.k_EButton_Max + 1;
-		public const int axisCount = 10; // 5 axes in openVR, each with X and Y.
-		private float[,] m_LastAxisValues = new float[controllerCount, axisCount + buttonCount];
-		private Vector3[] m_LastPositionValues = new Vector3[controllerCount];
-		private Quaternion[] m_LastRotationValues = new Quaternion[controllerCount];
+		const int kControllerCount = 10;
+		const int kButtonCount = (int)EVRButtonId.k_EButton_Max + 1;
+		const int kAxisCount = 10; // 5 axes in openVR, each with X and Y.
+
+		float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount + kButtonCount];
+		Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
+		Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
 
 		private void SendAxisEvents(int steamDeviceIndex, int deviceIndex)
 		{
@@ -126,7 +127,7 @@ namespace UnityEngine.InputNew
 				var isDown = SteamVR_Controller.Input(steamDeviceIndex).GetPressDown(button);
 				var isUp = SteamVR_Controller.Input(steamDeviceIndex).GetPressUp(button);
 				var value = isDown ? 1.0f : 0.0f;
-				var controlIndex = axisCount + (int)button;
+				var controlIndex = kAxisCount + (int)button;
 
 				if (Mathf.Approximately(m_LastAxisValues[steamDeviceIndex, controlIndex], value))
 					continue;

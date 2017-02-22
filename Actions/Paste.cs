@@ -4,30 +4,30 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
-	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
+	[ActionMenuItem("Paste", ActionMenuItemAttribute.DefaultActionSectionName, 6)]
 	internal sealed class Paste : BaseAction, IUsesSpatialHash
 	{
 		public static GameObject[] buffer
 		{
 			get
 			{
-				return m_Buffer;
+				return s_Buffer;
 			}
 			set
 			{
-				m_Buffer = value;
+				s_Buffer = value;
 
 				if (value != null)
 				{
 					var bounds = ObjectUtils.GetBounds(value);
 					
-					m_BufferDistance = bounds.size == Vector3.zero ? (bounds.center - CameraUtils.GetMainCamera().transform.position).magnitude : 0f;
+					s_BufferDistance = bounds.size == Vector3.zero ? (bounds.center - CameraUtils.GetMainCamera().transform.position).magnitude : 0f;
 				}
 			}
 		}
-		static GameObject[] m_Buffer;
+		static GameObject[] s_Buffer;
 
-		static float m_BufferDistance;
+		static float s_BufferDistance;
 
 		public Action<GameObject> addToSpatialHash { get; set; }
 		public Action<GameObject> removeFromSpatialHash { get; set; }
@@ -45,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 					var pastedTransform = pasted.transform;
 					pasted.hideFlags = HideFlags.None;
 					var cameraTransform = CameraUtils.GetMainCamera().transform;
-					pastedTransform.position = cameraTransform.TransformPoint(Vector3.forward * m_BufferDistance)
+					pastedTransform.position = cameraTransform.TransformPoint(Vector3.forward * s_BufferDistance)
 						+ pastedTransform.position - bounds.center;
 					pasted.SetActive(true);
 					addToSpatialHash(pasted);

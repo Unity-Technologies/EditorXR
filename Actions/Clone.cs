@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
-	[ActionMenuItem("Clone", ActionMenuItemAttribute.kDefaultActionSectionName, 3)]
+	[ActionMenuItem("Clone", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
 	internal sealed class Clone : BaseAction, IUsesSpatialHash
 	{
 		public Action<GameObject> addToSpatialHash { get; set; }

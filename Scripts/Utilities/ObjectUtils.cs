@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			if (!Application.isPlaying && runInEditMode)
 			{
 				SetRunInEditModeRecursively(go, runInEditMode);
-				go.hideFlags = EditorVR.kDefaultHideFlags;
+				go.hideFlags = EditorVR.DefaultHideFlags;
 			}
 #endif
 
@@ -53,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			if (String.IsNullOrEmpty(name))
 				name = "Empty";
 #if UNITY_EDITOR
-			empty = EditorUtility.CreateGameObjectWithHideFlags(name, EditorVR.kDefaultHideFlags);
+			empty = EditorUtility.CreateGameObjectWithHideFlags(name, EditorVR.DefaultHideFlags);
 #else
 				empty = new GameObject(name);
 #endif
@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static Component CreateGameObjectWithComponent(Type type, Transform parent = null)
 		{
 #if UNITY_EDITOR
-			Component component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, EditorVR.kDefaultHideFlags, type).GetComponent(type);
+			Component component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, EditorVR.DefaultHideFlags, type).GetComponent(type);
 			if (!Application.isPlaying)
 				SetRunInEditModeRecursively(component.gameObject, true);
 #else

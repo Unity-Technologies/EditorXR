@@ -1,6 +1,6 @@
 ﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
-	[ActionMenuItem("Undo", ActionMenuItemAttribute.kDefaultActionSectionName, 2)]
+	[ActionMenuItem("Undo", ActionMenuItemAttribute.DefaultActionSectionName, 2)]
 	internal sealed class Undo : BaseAction
 	{
 		public override void ExecuteAction()

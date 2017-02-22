@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
 
-		public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
+		public const HideFlags DefaultHideFlags = HideFlags.HideAndDontSave;
 		const string kVRPlayerTag = "VRPlayer";
 		const float kDefaultRayLength = 100f;
 		const float kPreviewScale = 0.1f;
@@ -1580,7 +1580,7 @@ namespace UnityEditor.Experimental.EditorVR
 					var actionMenuData = new ActionMenuData()
 					{
 						name = action.GetType().Name,
-						sectionName = ActionMenuItemAttribute.kDefaultActionSectionName,
+						sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
 						priority = int.MaxValue,
 						action = action,
 					};
@@ -2117,7 +2117,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (r.CompareTag(kVRPlayerTag))
 					continue;
 
-				if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.kShowInMiniWorldTag))
+				if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.ShowInMiniWorldTag))
 					continue;
 
 				ignoreList.Add(r);
@@ -3040,7 +3040,7 @@ namespace UnityEditor.Experimental.EditorVR
 			Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
 
 			s_InputManager = managers[0];
-			s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
+			s_InputManager.gameObject.hideFlags = DefaultHideFlags;
 			ObjectUtils.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
 
 			// These components were allocating memory every frame and aren't currently used in EditorVR

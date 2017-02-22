@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			Int,
 		}
 
-		public const float kDragDeadzone = 0.025f;
+		public const float DragDeadzone = 0.025f;
 
 		const string kFloatFieldFormatString = "g7";
 		const string kIntFieldFormatString = "#######0";
@@ -60,7 +60,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			if (!m_UpdateDrag)
 			{
-				if (Mathf.Abs(GetLocalPointerPosition(rayOrigin).x - m_StartDragPosition.x) > kDragDeadzone)
+				if (Mathf.Abs(GetLocalPointerPosition(rayOrigin).x - m_StartDragPosition.x) > DragDeadzone)
 				{
 					ParseNumberField();
 					m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);

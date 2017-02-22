@@ -11,9 +11,9 @@ namespace UnityEngine.InputNew
 	public class SixenseInputToEvents : MonoBehaviour
 	{
 #if ENABLE_SIXENSE_INPUT
-		public const uint kControllerCount = SixenseInput.MAX_CONTROLLERS;
-		public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
-		public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
+		const uint kControllerCount = SixenseInput.MAX_CONTROLLERS;
+		const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
+		const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
 
 		const float kHydraUnits = 0.001f; // input is in mm
 

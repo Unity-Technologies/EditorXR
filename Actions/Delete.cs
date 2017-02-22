@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
-	[ActionMenuItem("Delete", ActionMenuItemAttribute.kDefaultActionSectionName, 7)]
+	[ActionMenuItem("Delete", ActionMenuItemAttribute.DefaultActionSectionName, 7)]
 	internal sealed class Delete : BaseAction, IUsesSpatialHash
 	{
 		public Action<GameObject> addToSpatialHash { get; set; }
