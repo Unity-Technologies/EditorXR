@@ -1,13 +1,14 @@
-﻿using System;
+﻿using ListView;
+using System;
+using System.Collections;
 using System.Collections.Generic;
-using ListView;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class HierarchyListViewController : NestedListViewController<HierarchyData>
+class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 {
 	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -23,14 +24,28 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 	[SerializeField]
 	Material m_NoClipBackingCubeMaterial;
 
+	[SerializeField]
+	float m_SettleSpeed = 0.4f;
+
+	[SerializeField]
+	float m_SettleDuration = 1f;
+
+	bool m_Settling;
 	Material m_TopDropZoneMaterial;
 	float m_TopDropZoneAlpha;
 
 	int m_SelectedRow;
 
-	readonly Dictionary<int, bool> m_ExpandStates = new Dictionary<int, bool>();
-
 	public Action<int> selectRow { private get; set; }
+
+	public override List<HierarchyData> data
+	{
+		get { return base.data; }
+		set
+		{
+			m_Data = value;
+		}
+	}
 
 	protected override void Setup()
 	{
@@ -63,8 +78,9 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 
 	void UpdateHierarchyItem(HierarchyData data, int offset, int depth, bool expanded)
 	{
-		ListViewItem<HierarchyData> item;
-		if (!m_ListItems.TryGetValue(data, out item))
+		var index = data.index;
+		ListViewItem<HierarchyData, int> item;
+		if (!m_ListItems.TryGetValue(index, out item))
 			item = GetItem(data);
 
 		var width = bounds.size.x - kClipMargin;
@@ -78,25 +94,32 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		dropZoneTransform.localPosition = dropZonePosition;
 
 		var hierarchyItem = (HierarchyListItem)item;
-		hierarchyItem.UpdateSelf(width, depth, expanded, data.instanceID == m_SelectedRow);
+		hierarchyItem.UpdateSelf(width, depth, expanded, data.index == m_SelectedRow);
 
 		SetMaterialClip(hierarchyItem.cubeMaterial, transform.worldToLocalMatrix);
 		SetMaterialClip(hierarchyItem.dropZoneMaterial, transform.worldToLocalMatrix);
 
-		UpdateItemTransform(item.transform, offset);
+		UpdateHierarchyItemTransform(item.transform, offset);
+	}
+
+	void UpdateHierarchyItemTransform(Transform t, int offset)
+	{
+		var destination = m_StartPosition + (offset * m_ItemSize.Value.z + m_ScrollOffset) * Vector3.back;
+		t.localPosition = Vector3.Lerp(t.localPosition, destination, m_Settling ? m_SettleSpeed : 1);
+		t.localRotation = Quaternion.identity;
 	}
 
 	protected override void UpdateRecursively(List<HierarchyData> data, ref int count, int depth = 0)
 	{
 		foreach (var datum in data)
 		{
-			var instanceID = datum.instanceID;
+			var index = datum.index;
 			bool expanded;
-			if (!m_ExpandStates.TryGetValue(instanceID, out expanded))
-				m_ExpandStates[instanceID] = false;
+			if (!m_ExpandStates.TryGetValue(index, out expanded))
+				m_ExpandStates[index] = false;
 
 			if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
-				Recycle(datum);
+				Recycle(index);
 			else
 				UpdateHierarchyItem(datum, count, depth, expanded);
 
@@ -111,23 +134,23 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 			}
 			else
 			{
-				m_ExpandStates[instanceID] = false;
+				m_ExpandStates[index] = false;
 			}
 		}
 	}
 
-	protected override ListViewItem<HierarchyData> GetItem(HierarchyData listData)
+	protected override ListViewItem<HierarchyData, int> GetItem(HierarchyData data)
 	{
-		var item = (HierarchyListItem)base.GetItem(listData);
+		var item = (HierarchyListItem)base.GetItem(data);
 		item.SetMaterials(m_NoClipBackingCubeMaterial, m_TextMaterial, m_ExpandArrowMaterial);
 		item.selectRow = SelectRow;
 
 		item.toggleExpanded = ToggleExpanded;
 		item.setExpanded = SetExpanded;
-
+		item.startSettling = StartSettling;
 		item.isExpanded = GetExpanded;
 
-		item.UpdateArrow(GetExpanded(listData.instanceID), true);
+		item.UpdateArrow(GetExpanded(data.index), true);
 
 		return item;
 	}
@@ -161,7 +184,8 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 
 	bool ExpandToRow(HierarchyData container, int rowID)
 	{
-		if (container.instanceID == rowID)
+		var index = container.index;
+		if (index == rowID)
 			return true;
 
 		var found = false;
@@ -175,14 +199,15 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		}
 
 		if (found)
-			m_ExpandStates[container.instanceID] = true;
+			m_ExpandStates[index] = true;
 
 		return found;
 	}
 
 	void ScrollToRow(HierarchyData container, int rowID, ref float scrollHeight)
 	{
-		if (container.instanceID == rowID)
+		var index = container.index;
+		if (index == rowID)
 		{
 			if (-scrollOffset > scrollHeight || -scrollOffset + bounds.size.z < scrollHeight)
 				scrollOffset = -scrollHeight;
@@ -193,7 +218,7 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		{
 			foreach (var child in container.children)
 			{
-				if (GetExpanded(container.instanceID))
+				if (GetExpanded(index))
 				{
 					ScrollToRow(child, rowID, ref scrollHeight);
 					scrollHeight += itemSize.z;
@@ -207,14 +232,15 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 		return dropObject is HierarchyData && dropObject != data[0];
 	}
 
-	static void RecieveDrop(BaseHandle handle, object dropObject)
+	void RecieveDrop(BaseHandle handle, object dropObject)
 	{
 		var hierarchyData = dropObject as HierarchyData;
 		if (hierarchyData != null)
 		{
-			var gameObject = EditorUtility.InstanceIDToObject(hierarchyData.instanceID) as GameObject;
+			var gameObject = EditorUtility.InstanceIDToObject(hierarchyData.index) as GameObject;
 			gameObject.transform.SetParent(null);
 			gameObject.transform.SetSiblingIndex(0);
+			StartSettling();
 		}
 	}
 
@@ -242,6 +268,20 @@ public class HierarchyListViewController : NestedListViewController<HierarchyDat
 	void SetExpanded(int instanceID, bool expanded)
 	{
 		m_ExpandStates[instanceID] = expanded;
+	}
+
+	void StartSettling()
+	{
+		StartCoroutine(SettlingTimer());
+	}
+
+	IEnumerator SettlingTimer()
+	{
+		m_Settling = true;
+		var startTime = Time.realtimeSinceStartup;
+		while (Time.realtimeSinceStartup - startTime > m_SettleDuration)
+			yield return null;
+		m_Settling = false;
 	}
 
 	private void OnDestroy()

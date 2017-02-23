@@ -9,7 +9,7 @@ using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
 
-public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
+class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
 {
 	private const float kPreviewDuration = 0.1f;
 	private const float kMaxPreviewScale = 0.2f;

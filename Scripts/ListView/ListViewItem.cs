@@ -2,7 +2,7 @@
 
 namespace ListView
 {
-	public class ListViewItem<DataType> : MonoBehaviour where DataType : ListViewItemData
+	public class ListViewItem<DataType, IndexType> : MonoBehaviour where DataType : ListViewItemData<IndexType>
 	{
 		public DataType data;
 

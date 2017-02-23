@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Handles;
 
-public class InspectorUI : MonoBehaviour
+class InspectorUI : MonoBehaviour
 {
 	public InspectorListViewController listView { get { return m_ListView; } }
 	[SerializeField]

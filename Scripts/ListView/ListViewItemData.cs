@@ -1,9 +1,8 @@
-﻿using UnityEngine;
-
-namespace ListView
+﻿namespace ListView
 {
-	public class ListViewItemData
+	public abstract class ListViewItemData<IndexType>
 	{
+		public abstract IndexType index { get; }
 		public string template { get; protected set; }
 	}
 }

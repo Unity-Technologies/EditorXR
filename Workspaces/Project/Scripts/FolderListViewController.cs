@@ -6,7 +6,7 @@ using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class FolderListViewController : NestedListViewController<FolderData>
+class FolderListViewController : NestedListViewController<FolderData, string>
 {
 	private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -18,8 +18,6 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	string m_SelectedFolder;
 
-	readonly Dictionary<string, bool> m_ExpandStates = new Dictionary<string, bool>();
-
 	public Action<FolderData> selectFolder { private get; set; }
 
 	public override List<FolderData> data
@@ -30,7 +28,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 			if (m_Data != null && m_Data.Count > 0) // Expand and select the Assets folder by default
 			{
-				var guid = data[0].guid;
+				var guid = data[0].index;
 				m_ExpandStates[guid] = true;
 				SelectFolder(guid);
 			}
@@ -56,13 +54,14 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	void UpdateFolderItem(FolderData data, int offset, int depth, bool expanded)
 	{
-		ListViewItem<FolderData> item;
-		if (!m_ListItems.TryGetValue(data, out item))
+		var index = data.index;
+		ListViewItem<FolderData, string> item;
+		if (!m_ListItems.TryGetValue(index, out item))
 			item = GetItem(data);
 
 		var folderItem = (FolderListItem)item;
 
-		folderItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.guid == m_SelectedFolder);
+		folderItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, index == m_SelectedFolder);
 
 		SetMaterialClip(folderItem.cubeMaterial, transform.worldToLocalMatrix);
 
@@ -73,12 +72,13 @@ public class FolderListViewController : NestedListViewController<FolderData>
 	{
 		foreach (var datum in data)
 		{
+			var index = datum.index;
 			bool expanded;
-			if (!m_ExpandStates.TryGetValue(datum.guid, out expanded))
-				m_ExpandStates[datum.guid] = false;
+			if (!m_ExpandStates.TryGetValue(index, out expanded))
+				m_ExpandStates[index] = false;
 
 			if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
-				Recycle(datum);
+				Recycle(index);
 			else
 				UpdateFolderItem(datum, count, depth, expanded);
 
@@ -94,7 +94,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		}
 	}
 
-	protected override ListViewItem<FolderData> GetItem(FolderData listData)
+	protected override ListViewItem<FolderData, string> GetItem(FolderData listData)
 	{
 		var item = (FolderListItem)base.GetItem(listData);
 		item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
@@ -103,7 +103,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 		item.toggleExpanded = ToggleExpanded;
 
 		bool expanded;
-		if (m_ExpandStates.TryGetValue(listData.guid, out expanded))
+		if (m_ExpandStates.TryGetValue(listData.index, out expanded))
 			item.UpdateArrow(expanded, true);
 
 		return item;
@@ -111,8 +111,8 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	void ToggleExpanded(FolderData data)
 	{
-		var guid = data.guid;
-		m_ExpandStates[guid] = !m_ExpandStates[guid];
+		var index = data.index;
+		m_ExpandStates[index] = !m_ExpandStates[index];
 	}
 
 	void SelectFolder(string guid)
@@ -128,7 +128,7 @@ public class FolderListViewController : NestedListViewController<FolderData>
 
 	static FolderData GetFolderDataByGUID(FolderData data, string guid)
 	{
-		if (data.guid == guid)
+		if (data.index == guid)
 			return data;
 
 		if (data.children != null)

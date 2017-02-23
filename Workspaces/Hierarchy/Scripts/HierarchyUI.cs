@@ -2,7 +2,7 @@
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.UI;
 
-public class HierarchyUI : MonoBehaviour
+class HierarchyUI : MonoBehaviour
 {
 	public HierarchyListViewController listView { get { return m_ListView; } }
 	[SerializeField]

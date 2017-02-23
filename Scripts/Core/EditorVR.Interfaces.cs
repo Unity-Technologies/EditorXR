@@ -217,14 +217,6 @@ namespace UnityEditor.Experimental.EditorVR
 				if (alternateMenu != null)
 					alternateMenu.menuActions = evrActionsModule.menuActions;
 
-				var usesProjectFolderData = obj as IUsesProjectFolderData;
-				if (usesProjectFolderData != null)
-					evrProjectFolderModule.AddConsumer(usesProjectFolderData);
-
-				var usesHierarchyData = obj as IUsesHierarchyData;
-				if (usesHierarchyData != null)
-					evrHierarchyModule.AddConsumer(usesHierarchyData);
-
 				var filterUI = obj as IFilterUI;
 				if (filterUI != null)
 					evrProjectFolderModule.AddConsumer(filterUI);
@@ -286,6 +278,14 @@ namespace UnityEditor.Experimental.EditorVR
 				var forEachRayOrigin = obj as IForEachRayOrigin;
 				if (forEachRayOrigin != null && IsSameAssembly<IForEachRayOrigin>(obj))
 					forEachRayOrigin.forEachRayOrigin = evrRays.ForEachRayOrigin;
+
+				var usesProjectFolderData = obj as IUsesProjectFolderData;
+				if (usesProjectFolderData != null)
+					evrProjectFolderModule.AddConsumer(usesProjectFolderData);
+
+				var usesHierarchyData = obj as IUsesHierarchyData;
+				if (usesHierarchyData != null)
+					evrHierarchyModule.AddConsumer(usesHierarchyData);
 			}
 
 			static bool IsSameAssembly<T>(object obj)

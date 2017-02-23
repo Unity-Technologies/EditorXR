@@ -8,7 +8,7 @@ using UnityEngine.Experimental.EditorVR.UI;
 using UnityEngine.UI;
 using InputField = UnityEngine.Experimental.EditorVR.UI.InputField;
 
-public class InspectorHeaderItem : InspectorListItem
+class InspectorHeaderItem : InspectorListItem
 {
 	[SerializeField]
 	RawImage m_Icon;

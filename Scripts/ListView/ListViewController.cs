@@ -4,9 +4,9 @@ using UnityEngine.Experimental.EditorVR.Tools;
 
 namespace ListView
 {
-	public abstract class ListViewController<DataType, ItemType> : ListViewControllerBase, IInstantiateUI, IConnectInterfaces
-		where DataType : ListViewItemData
-		where ItemType : ListViewItem<DataType>
+	public abstract class ListViewController<DataType, ItemType, IndexType> : ListViewControllerBase, IInstantiateUI, IConnectInterfaces
+		where DataType : ListViewItemData<IndexType>
+		where ItemType : ListViewItem<DataType, IndexType>
 	{
 		public virtual List<DataType> data
 		{
@@ -15,9 +15,9 @@ namespace ListView
 			{
 				if (m_Data != null)
 				{
-					foreach (var kvp in m_ListItems) // Clear out visuals for old data
+					foreach (var item in m_ListItems.Values) // Clear out visuals for old data
 					{
-						RecycleItem(kvp.Key.template, kvp.Value);
+						RecycleItem(item.data.template, item);
 					}
 
 					m_ListItems.Clear();
@@ -29,7 +29,7 @@ namespace ListView
 		}
 		protected List<DataType> m_Data;
 
-		protected readonly Dictionary<DataType, ItemType> m_ListItems = new Dictionary<DataType, ItemType>();
+		protected readonly Dictionary<IndexType, ItemType> m_ListItems = new Dictionary<IndexType, ItemType>();
 
 		protected override int dataLength { get { return m_Data.Count; } }
 
@@ -42,27 +42,31 @@ namespace ListView
 			{
 				var datum = m_Data[i];
 				if (i + m_DataOffset < -1 || i + m_DataOffset > m_NumRows - 1)
-					Recycle(datum);
+					Recycle(datum.index);
 				else
 					UpdateVisibleItem(datum, i);
 			}
 		}
 
-		protected virtual void Recycle(DataType data)
+		protected virtual void Recycle(IndexType index)
 		{
 			ItemType item;
-			if (m_ListItems.TryGetValue(data, out item))
+			if (m_ListItems.TryGetValue(index, out item))
 			{
-				RecycleItem(data.template, item);
-				m_ListItems.Remove(data);
+				RecycleItem(item.data.template, item);
+				m_ListItems.Remove(index);
 			}
 		}
 
 		protected virtual void UpdateVisibleItem(DataType data, int offset)
 		{
 			ItemType item;
-			if (!m_ListItems.TryGetValue(data, out item))
-				m_ListItems[data] = GetItem(data);
+			var index = data.index;
+			if (!m_ListItems.TryGetValue(index, out item))
+			{
+				item = GetItem(data);
+				m_ListItems[index] = item;
+			}
 
 			UpdateItemTransform(item.transform, offset);
 		}
@@ -71,7 +75,7 @@ namespace ListView
 		{
 			if (data == null)
 			{
-				Debug.LogWarning("Tried to get item with null m_Data");
+				Debug.LogWarning("Tried to get item with null data");
 				return null;
 			}
 
@@ -97,7 +101,7 @@ namespace ListView
 				item.Setup(data);
 			}
 
-			m_ListItems[data] = item;
+			m_ListItems[data.index] = item;
 
 			return item;
 		}

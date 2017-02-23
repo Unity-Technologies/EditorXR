@@ -4,13 +4,13 @@ using UnityEditor;
 
 namespace UnityEngine.Experimental.EditorVR.Data
 {
-
-	public class InspectorData : ListViewItemNestedData<InspectorData>
+	class InspectorData : ListViewItemNestedData<InspectorData, int>
 	{
 #if UNITY_EDITOR
-		public SerializedObject serializedObject { get; private set; }
+		public SerializedObject serializedObject { get { return m_SerializedObject; } }
+		readonly SerializedObject m_SerializedObject;
 
-		public virtual int instanceID
+		public override int index
 		{
 			get { return serializedObject.targetObject.GetInstanceID(); }
 		}
@@ -18,7 +18,7 @@ namespace UnityEngine.Experimental.EditorVR.Data
 		public InspectorData(string template, SerializedObject serializedObject, List<InspectorData> children)
 		{
 			this.template = template;
-			this.serializedObject = serializedObject;
+			m_SerializedObject = serializedObject;
 			m_Children = children;
 		}
 #endif

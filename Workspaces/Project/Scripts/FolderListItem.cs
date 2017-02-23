@@ -1,13 +1,12 @@
 ﻿using ListView;
 using System;
-using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
 
 namespace UnityEngine.Experimental.EditorVR.Data
 {
-	public class FolderListItem : ListViewItem<FolderData>
+	class FolderListItem : ListViewItem<FolderData, string>
 	{
 		private const float kMargin = 0.01f;
 		private const float kIndent = 0.02f;
@@ -137,7 +136,7 @@ namespace UnityEngine.Experimental.EditorVR.Data
 
 		void SelectFolder(BaseHandle baseHandle, HandleEventData eventData)
 		{
-			selectFolder(data.guid);
+			selectFolder(data.index);
 		}
 
 		private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)

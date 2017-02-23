@@ -5,7 +5,7 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-public class InspectorObjectFieldItem : InspectorPropertyItem
+sealed class InspectorObjectFieldItem : InspectorPropertyItem
 {
 	[SerializeField]
 	Text m_FieldLabel;

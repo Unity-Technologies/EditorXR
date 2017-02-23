@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Button = UnityEngine.Experimental.EditorVR.UI.Button;
 
-public class InspectorArrayHeaderItem : InspectorPropertyItem
+class InspectorArrayHeaderItem : InspectorPropertyItem
 {
 	const float kExpandArrowRotateSpeed = 0.4f;
 	static readonly Quaternion kExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);

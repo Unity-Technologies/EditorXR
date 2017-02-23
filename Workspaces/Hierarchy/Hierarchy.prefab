@@ -396,6 +396,8 @@ MonoBehaviour:
     type: 2}
   m_NoClipBackingCubeMaterial: {fileID: 2100000, guid: 1a070009f7968b74abbf1a1ae823b472,
     type: 2}
+  m_SettleSpeed: 0.3
+  m_SettleDuration: 5
 --- !u!114 &114000011690277160
 MonoBehaviour:
   m_ObjectHideFlags: 1

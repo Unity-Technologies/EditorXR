@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.UI;
 
-public class InspectorStringItem : InspectorPropertyItem
+sealed class InspectorStringItem : InspectorPropertyItem
 {
 	[SerializeField]
 	StandardInputField m_InputField;

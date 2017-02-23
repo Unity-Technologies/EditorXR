@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.UI;
 
-public class InspectorColorItem : InspectorPropertyItem
+sealed class InspectorColorItem : InspectorPropertyItem
 {
 #if UNITY_EDITOR
 	public override void Setup(InspectorData data)

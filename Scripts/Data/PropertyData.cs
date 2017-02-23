@@ -3,12 +3,13 @@ using UnityEditor;
 
 namespace UnityEngine.Experimental.EditorVR.Data
 {
-	public class PropertyData : InspectorData
+	class PropertyData : InspectorData
 	{
 #if UNITY_EDITOR
-		public SerializedProperty property { get; private set; }
+		public SerializedProperty property { get { return m_Property; } }
+		readonly SerializedProperty m_Property;
 
-		public override int instanceID
+		public override int index
 		{
 			get { return property.GetHashCode(); }
 		}
@@ -16,7 +17,7 @@ namespace UnityEngine.Experimental.EditorVR.Data
 		public PropertyData(string template, SerializedObject serializedObject, List<InspectorData> children, SerializedProperty property)
 			: base(template, serializedObject, children)
 		{
-			this.property = property;
+			m_Property = property;
 		}
 #endif
 	}

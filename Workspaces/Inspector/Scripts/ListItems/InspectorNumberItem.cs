@@ -6,7 +6,7 @@ using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.UI;
 using UnityEngine.Experimental.EditorVR.Workspaces;
 
-public class InspectorNumberItem : InspectorPropertyItem
+sealed class InspectorNumberItem : InspectorPropertyItem
 {
 	[SerializeField]
 	NumericInputField m_InputField;

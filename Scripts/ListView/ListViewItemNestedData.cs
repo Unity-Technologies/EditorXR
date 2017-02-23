@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ListView
 {
-	public class ListViewItemNestedData<ChildType> : ListViewItemData
+	abstract class ListViewItemNestedData<ChildType, IndexType> : ListViewItemData<IndexType>
 	{
 		public List<ChildType> children
 		{
@@ -18,6 +18,6 @@ namespace ListView
 		}
 		protected List<ChildType> m_Children;
 
-		public event Action<ListViewItemNestedData<ChildType>, List<ChildType>> childrenChanging;
+		public event Action<ListViewItemNestedData<ChildType, IndexType>, List<ChildType>> childrenChanging;
 	}
 }

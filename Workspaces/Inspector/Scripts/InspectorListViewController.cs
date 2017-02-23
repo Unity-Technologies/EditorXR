@@ -7,7 +7,7 @@ using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class InspectorListViewController : NestedListViewController<InspectorData>, IUsesGameObjectLocking, IUsesStencilRef
+class InspectorListViewController : NestedListViewController<InspectorData, int>, IUsesGameObjectLocking, IUsesStencilRef
 {
 	const string kMaterialStencilRef = "_StencilRef";
 	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
@@ -40,8 +40,6 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	Material m_NoClipHighlightMaskMaterial;
 
 	readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
-
-	readonly Dictionary<int, bool> m_ExpandStates = new Dictionary<int, bool>(); 
 
 	public override List<InspectorData> data
 	{
@@ -124,15 +122,16 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	{
 		foreach (var datum in data)
 		{
+			var index = datum.index;
 			bool expanded;
-			if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
-				m_ExpandStates[datum.instanceID] = false;
+			if (!m_ExpandStates.TryGetValue(index, out expanded))
+				m_ExpandStates[index] = false;
 
 			m_ItemSize = m_TemplateSizes[datum.template];
 			var itemSize = m_ItemSize.Value;
 
 			if (totalOffset + scrollOffset + itemSize.z < 0 || totalOffset + scrollOffset > bounds.size.z)
-				Recycle(datum);
+				Recycle(index);
 			else
 				UpdateItemRecursive(datum, totalOffset, depth, expanded);
 
@@ -150,8 +149,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	void UpdateItemRecursive(InspectorData data, float offset, int depth, bool expanded)
 	{
-		ListViewItem<InspectorData> item;
-		if (!m_ListItems.TryGetValue(data, out item))
+		ListViewItem<InspectorData, int> item;
+		if (!m_ListItems.TryGetValue(data.index, out item))
 			item = GetItem(data);
 
 		var inspectorListItem = (InspectorListItem)item;
@@ -167,7 +166,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		t.localRotation = Quaternion.identity;
 	}
 
-	protected override ListViewItem<InspectorData> GetItem(InspectorData listData)
+	protected override ListViewItem<InspectorData, int> GetItem(InspectorData listData)
 	{
 		var item = (InspectorListItem)base.GetItem(listData);
 
@@ -197,7 +196,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		return item;
 	}
 
-	public void OnBeforeChildrenChanged(ListViewItemNestedData<InspectorData> data, List<InspectorData> newData)
+	public void OnBeforeChildrenChanged(ListViewItemNestedData<InspectorData, int> data, List<InspectorData> newData)
 	{
 		InspectorNumberItem arraySizeItem = null;
 		var children = data.children;
@@ -205,14 +204,15 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		{
 			foreach (var child in children)
 			{
-				ListViewItem<InspectorData> item;
-				if (m_ListItems.TryGetValue(child, out item))
+				var index = child.index;
+				ListViewItem<InspectorData, int> item;
+				if (m_ListItems.TryGetValue(index, out item))
 				{
 					var childNumberItem = item as InspectorNumberItem;
 					if (childNumberItem && childNumberItem.propertyType == SerializedPropertyType.ArraySize)
 						arraySizeItem = childNumberItem;
 					else
-						Recycle(child);
+						Recycle(index);
 				}
 			}
 		}
@@ -225,7 +225,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 				var propChild = child as PropertyData;
 				if (propChild != null && propChild.property.propertyType == SerializedPropertyType.ArraySize)
 				{
-					m_ListItems[propChild] = arraySizeItem;
+					m_ListItems[propChild.index] = arraySizeItem;
 					arraySizeItem.data = propChild;
 				}
 			}
@@ -234,7 +234,8 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 
 	void ToggleExpanded(InspectorData data)
 	{
-		m_ExpandStates[data.instanceID] = !m_ExpandStates[data.instanceID];
+		var index = data.index;
+		m_ExpandStates[index] = !m_ExpandStates[index];
 	}
 
 	void OnArraySizeChanged(PropertyData element)
@@ -247,7 +248,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		foreach (var datum in data)
 		{
 			var targetObject = datum.serializedObject.targetObject;
-			m_ExpandStates[datum.instanceID] = targetObject is Component || targetObject is GameObject;
+			m_ExpandStates[datum.index] = targetObject is Component || targetObject is GameObject;
 
 			if (datum.children != null)
 				ExpandComponentRows(datum.children);

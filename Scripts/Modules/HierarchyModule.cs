@@ -107,7 +107,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 						list.Add(CollectHierarchyData(ref hasNext, ref hasChanged, null, hp));
 						hasChanged = true;
 					}
-					else if (list[i].instanceID != hp.instanceID)
+					else if (list[i].index != hp.instanceID)
 					{
 						list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, null, hp);
 						hasChanged = true;

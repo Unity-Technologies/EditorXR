@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.UI;
 
-public class InspectorBoundsItem : InspectorPropertyItem
+sealed class InspectorBoundsItem : InspectorPropertyItem
 {
 	[SerializeField]
 	NumericInputField[] m_CenterFields;

@@ -9,7 +9,7 @@ using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.UI;
 using InputField = UnityEngine.Experimental.EditorVR.UI.InputField;
 
-public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight, IRequestStencilRef
+abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHighlight, IRequestStencilRef
 {
 	const float kIndent = 0.02f;
 

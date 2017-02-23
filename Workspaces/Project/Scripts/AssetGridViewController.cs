@@ -1,11 +1,11 @@
-﻿using System;
+﻿using ListView;
+using System;
 using System.Collections.Generic;
-using ListView;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class AssetGridViewController : ListViewController<AssetData, AssetGridItem>
+sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, string>
 {
 	private const float kPositionFollow = 0.4f;
 
@@ -120,15 +120,16 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		}
 	}
 
-	protected void RecycleGridItem(AssetData data)
+	void RecycleGridItem(AssetData data)
 	{
+		var index = data.index;
 		AssetGridItem item;
-		if (!m_ListItems.TryGetValue(data, out item))
+		if (!m_ListItems.TryGetValue(index, out item))
 			return;
 
 		m_LastHiddenItemOffset = scrollOffset;
 
-		m_ListItems.Remove(data);
+		m_ListItems.Remove(index);
 
 		item.SetVisibility(false, gridItem =>
 		{
@@ -140,7 +141,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	protected override void UpdateVisibleItem(AssetData data, int offset)
 	{
 		AssetGridItem item;
-		if (!m_ListItems.TryGetValue(data, out item))
+		if (!m_ListItems.TryGetValue(data.index, out item))
 			item = GetItem(data);
 
 		if (item)
@@ -184,7 +185,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 		// If this AssetData hasn't fetched its asset yet, do so now
 		if (data.asset == null)
 		{
-			data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid));
+			data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index));
 			data.preview = data.asset as GameObject;
 		}
 
@@ -228,7 +229,7 @@ public class AssetGridViewController : ListViewController<AssetData, AssetGridIt
 	{
 		item.fallbackTexture = null;
 		item.StartCoroutine(U.Object.GetAssetPreview(
-			AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid)),
+			AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index)),
 			texture => item.fallbackTexture = texture));
 	}
 #endif

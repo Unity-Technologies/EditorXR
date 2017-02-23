@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.UI;
 
-public class ProjectUI : MonoBehaviour
+class ProjectUI : MonoBehaviour
 {
 	public FolderListViewController folderListView { get { return m_FolderListView; } }
 	[SerializeField]

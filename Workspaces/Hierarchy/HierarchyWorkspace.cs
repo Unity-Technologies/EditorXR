@@ -8,7 +8,7 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
 
 [MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
-public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged
+class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged
 {
 	const float kYBounds = 0.2f;
 	const float kScrollMargin = 0.03f;

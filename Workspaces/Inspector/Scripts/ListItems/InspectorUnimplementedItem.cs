@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
-using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
 
-public class InspectorUnimplementedItem : InspectorPropertyItem
+sealed class InspectorUnimplementedItem : InspectorPropertyItem
 {
 	[SerializeField]
 	Text m_TypeLabel;

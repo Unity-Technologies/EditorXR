@@ -2,15 +2,19 @@
 
 namespace ListView
 {
-	public class NestedListViewController<DataType> : ListViewController<DataType, ListViewItem<DataType>> where DataType : ListViewItemNestedData<DataType>
+	class NestedListViewController<DataType, IndexType> 
+		: ListViewController<DataType, ListViewItem<DataType, IndexType>, IndexType>
+		where DataType : ListViewItemNestedData<DataType, IndexType>
 	{
 		protected override int dataLength { get { return m_ExpandedDataLength; } }
 
 		protected int m_ExpandedDataLength;
 
+		protected readonly Dictionary<IndexType, bool> m_ExpandStates = new Dictionary<IndexType, bool>();
+
 		protected void RecycleRecursively(DataType data)
 		{
-			Recycle(data);
+			Recycle(data.index);
 
 			if (data.children != null)
 			{
@@ -33,7 +37,7 @@ namespace ListView
 			foreach (var datum in data)
 			{
 				if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
-					Recycle(datum);
+					Recycle(datum.index);
 				else
 					UpdateNestedItem(datum, count, depth);
 
@@ -53,7 +57,7 @@ namespace ListView
 		{
 			foreach (var child in data.children)
 			{
-				Recycle(child);
+				Recycle(child.index);
 
 				if (child.children != null)
 					RecycleChildren(child);

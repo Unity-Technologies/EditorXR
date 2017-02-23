@@ -7,7 +7,7 @@ using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class DraggableListItem<DataType> : ListViewItem<DataType>, IGetPreviewOrigin where DataType : ListViewItemData
+public class DraggableListItem<DataType, IndexType> : ListViewItem<DataType, IndexType>, IGetPreviewOrigin where DataType : ListViewItemData<IndexType>
 {
 	const float kMagnetizeDuration = 0.5f;
 	const float kDragDeadzone = 0.025f;

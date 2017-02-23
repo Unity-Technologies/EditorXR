@@ -3,12 +3,15 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-public class AssetData : ListViewItemData
+sealed class AssetData : ListViewItemData<string>
 {
 	const string kTemplateName = "AssetGridItem";
 
-	public string name { get; private set; }
-	public string guid { get; private set; }
+	public string name { get { return m_Name; } }
+	readonly string m_Name;
+
+	public override string index { get { return m_Guid; } }
+	readonly string m_Guid;
 
 	public string type { get; private set; }
 
@@ -32,8 +35,8 @@ public class AssetData : ListViewItemData
 	public AssetData(string name, string guid, string type)
 	{
 		template = kTemplateName;
-		this.name = name;
-		this.guid = guid;
+		m_Guid = guid;
+		m_Name = name;
 		this.type = type;
 	}
 

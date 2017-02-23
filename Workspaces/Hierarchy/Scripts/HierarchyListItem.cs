@@ -6,7 +6,7 @@ using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
 
-public class HierarchyListItem : DraggableListItem<HierarchyData>
+sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 {
 	const float kMargin = 0.01f;
 	const float kIndent = 0.02f;
@@ -52,6 +52,7 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 	public Action<int> toggleExpanded { private get; set; }
 	public Action<int, bool> setExpanded { private get; set; }
 	public Action<int> selectRow { private get; set; }
+	public Action startSettling { private get; set; }
 
 	public Func<int, bool> isExpanded { private get; set; }
 
@@ -215,12 +216,12 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
 	{
-		toggleExpanded(data.instanceID);
+		toggleExpanded(data.index);
 	}
 
 	void SelectFolder()
 	{
-		selectRow(data.instanceID);
+		selectRow(data.index);
 	}
 
 	void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
@@ -254,8 +255,8 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	bool CanDrop(BaseHandle handle, object dropObject)
 	{
-		var hierarchyData = dropObject as HierarchyData;
-		if (hierarchyData == null)
+		var dropData = dropObject as HierarchyData;
+		if (dropData == null)
 			return false;
 
 		// Dropping on own zone would otherwise move object down
@@ -265,11 +266,12 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 		if (handle == m_Cube)
 			return true;
 
-		if (isExpanded(data.instanceID))
+		var index = data.index;
+		if (isExpanded(index))
 			return true;
 
-		var gameObject = (GameObject)EditorUtility.InstanceIDToObject(data.instanceID);
-		var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(hierarchyData.instanceID);
+		var gameObject = (GameObject)EditorUtility.InstanceIDToObject(index);
+		var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(dropData.index);
 		var transform = gameObject.transform;
 		var dropTransform = dropGameObject.transform;
 
@@ -285,11 +287,13 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 	void ReceiveDrop(BaseHandle handle, object dropObject)
 	{
-		var hierarchyData = dropObject as HierarchyData;
-		if (hierarchyData != null)
+		var dropData = dropObject as HierarchyData;
+		if (dropData != null)
 		{
-			var gameObject = (GameObject)EditorUtility.InstanceIDToObject(data.instanceID);
-			var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(hierarchyData.instanceID);
+			var thisIndex = data.index;
+			var dropIndex = dropData.index;
+			var gameObject = (GameObject)EditorUtility.InstanceIDToObject(thisIndex);
+			var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(dropIndex);
 			var transform = gameObject.transform;
 			var dropTransform = dropGameObject.transform;
 
@@ -297,20 +301,23 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 			{
 				dropTransform.SetParent(transform);
 				dropTransform.SetAsLastSibling();
-				setExpanded(data.instanceID, true);
-				selectRow(hierarchyData.instanceID);
+				setExpanded(thisIndex, true);
+				selectRow(dropIndex);
+				startSettling();
 			}
 			else if (handle == m_DropZone)
 			{
-				if (isExpanded(data.instanceID))
+				if (isExpanded(thisIndex))
 				{
 					dropTransform.SetParent(transform);
 					dropTransform.SetAsFirstSibling();
+					startSettling();
 				}
 				else if (transform.parent)
 				{
 					dropTransform.SetParent(transform.parent);
 					dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
+					startSettling();
 				}
 				else
 				{
@@ -320,6 +327,7 @@ public class HierarchyListItem : DraggableListItem<HierarchyData>
 
 					dropTransform.SetParent(null);
 					dropTransform.SetSiblingIndex(targetIndex);
+					startSettling();
 				}
 			}
 		}

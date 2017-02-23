@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.UI;
 
-public abstract class InspectorPropertyItem : InspectorListItem
+abstract class InspectorPropertyItem : InspectorListItem
 {
 	[SerializeField]
 	Text m_Label;

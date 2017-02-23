@@ -2,7 +2,7 @@
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.UI;
 
-public class InspectorBoolItem : InspectorPropertyItem
+sealed class InspectorBoolItem : InspectorPropertyItem
 {
 	[SerializeField]
 	Toggle m_Toggle;
