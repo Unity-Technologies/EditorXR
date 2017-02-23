@@ -1,10 +1,11 @@
 ﻿using System.Collections;
-using UnityEngine.UI;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Helpers;
 using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.UI;
+using TooltipAttribute = UnityEngine.TooltipAttribute;
 
 namespace UnityEngine.Experimental.EditorVR.Workspaces
 {

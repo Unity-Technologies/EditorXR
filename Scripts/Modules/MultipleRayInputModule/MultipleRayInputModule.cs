@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
-using UnityEngine.InputNew;
 using UnityEngine.Experimental.EditorVR.Proxies;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.UI;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.InputNew;
 
 namespace UnityEngine.Experimental.EditorVR.Modules
 {
@@ -228,8 +228,11 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			{
 				for (var i = 0; i < cachedEventData.hovered.Count; ++i)
 				{
-					ExecuteEvents.Execute(cachedEventData.hovered[i], eventData, ExecuteRayEvents.rayExitHandler);
-					rayExited(cachedEventData.hovered[i], eventData);
+					var hovered = cachedEventData.hovered[i];
+
+					ExecuteEvents.Execute(hovered, eventData, ExecuteRayEvents.rayExitHandler);
+
+					rayExited(hovered, eventData);
 				}
 
 				if (newEnterTarget == null)

@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine.Experimental.EditorVR.UI;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
 
@@ -88,8 +89,8 @@ class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 		}
 		filterList = m_FilterList;
 
-		var sliderPrefab = U.Object.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
-		var zoomSlider = sliderPrefab.GetComponent<ZoomSliderUI>();
+		var sliderObject = U.Object.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
+		var zoomSlider = sliderObject.GetComponent<ZoomSliderUI>();
 		zoomSlider.zoomSlider.minValue = kMinScale;
 		zoomSlider.zoomSlider.maxValue = kMaxScale;
 		zoomSlider.zoomSlider.value = m_ProjectUI.assetGridView.scaleFactor;
@@ -98,6 +99,10 @@ class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 		{
 			connectInterfaces(mb);
 		}
+
+		var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();
+		if (zoomTooltip)
+			zoomTooltip.tooltipText = "Drag the Handle to Zoom the Asset Grid";
 
 		var scrollHandles = new[]
 		{

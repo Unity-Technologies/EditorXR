@@ -52,6 +52,13 @@ class InspectorComponentItem : InspectorListItem
 			kExpandArrowRotateSpeed);
 	}
 
+	public override void OnObjectModified()
+	{
+		base.OnObjectModified();
+		var enabled = EditorUtility.GetObjectEnabled(data.serializedObject.targetObject);
+		m_EnabledToggle.isOn = enabled == 1;
+	}
+
 	public void SetEnabled(bool value)
 	{
 		var serializedObject = data.serializedObject;
@@ -59,6 +66,8 @@ class InspectorComponentItem : InspectorListItem
 		if (value != (EditorUtility.GetObjectEnabled(target) == 1))
 		{
 			EditorUtility.SetObjectEnabled(target, value);
+
+			Undo.IncrementCurrentGroup();
 			serializedObject.ApplyModifiedProperties();
 		}
 	}

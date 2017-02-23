@@ -59,7 +59,7 @@ class InspectorListViewController : NestedListViewController<InspectorData, int>
 	public Action<GameObject, bool> setLocked { private get; set; }
 	public Func<GameObject, bool> isLocked { private get; set; }
 
-	public event Action<List<InspectorData>, PropertyData> arraySizeChanged = delegate {};
+	public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
 
 #if UNITY_EDITOR
 	protected override void Setup()
@@ -118,10 +118,27 @@ class InspectorListViewController : NestedListViewController<InspectorData, int>
 			m_ScrollReturn = -totalOffset + m_ItemSize.Value.z; // m_ItemSize will be equal to the size of the last visible item
 	}
 
+	public void OnObjectModified()
+	{
+		foreach (var listViewItem in m_ListItems.Values)
+		{
+			var item = (InspectorListItem)listViewItem;
+			item.OnObjectModified();
+		}
+	}
+
 	void UpdateRecursively(List<InspectorData> data, ref float totalOffset, int depth = 0)
 	{
 		foreach (var datum in data)
 		{
+			var serializedObject = datum.serializedObject;
+			if (serializedObject == null || serializedObject.targetObject == null)
+			{
+				Recycle(datum.index);
+				RecycleChildren(datum);
+				continue;
+			}
+
 			var index = datum.index;
 			bool expanded;
 			if (!m_ExpandStates.TryGetValue(index, out expanded))
@@ -240,7 +257,8 @@ class InspectorListViewController : NestedListViewController<InspectorData, int>
 
 	void OnArraySizeChanged(PropertyData element)
 	{
-		arraySizeChanged(m_Data, element);
+		if (arraySizeChanged != null)
+			arraySizeChanged(m_Data, element);
 	}
 
 	void ExpandComponentRows(List<InspectorData> data)

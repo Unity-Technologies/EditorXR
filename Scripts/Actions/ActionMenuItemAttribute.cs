@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Attribute used to tag Action classes in order to be added to VR menus
 	/// </summary>
-	public class ActionMenuItemAttribute : System.Attribute
+	public class ActionMenuItemAttribute : System.Attribute, ITooltip
 	{
 		/// <summary>
 		/// Default action section name that gets used for showing items in the alternate menu
@@ -24,6 +24,11 @@
 		/// The order of this action amidst other actions within the same section
 		/// </summary>
 		public int priority;
+
+		/// <summary>
+		/// The tooltip string
+		/// </summary>
+		public string tooltipText { get { return name; } }
 
 		/// <summary>
 		/// Constructor

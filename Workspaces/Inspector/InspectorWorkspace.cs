@@ -40,6 +40,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		m_LockUI = U.Object.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LockUI>();
 		connectInterfaces(m_LockUI);
 		m_LockUI.lockButtonPressed += SetIsLocked;
+		EditorApplication.delayCall += m_LockUI.Setup; // Need to write stencilRef after WorkspaceButton does it
 
 		var listView = m_InspectorUI.listView;
 		connectInterfaces(listView);
@@ -62,6 +63,14 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 		if (Selection.activeGameObject)
 			OnSelectionChanged();
+
+		Undo.postprocessModifications += OnPostprocessModifications;
+		Undo.undoRedoPerformed += OnUndoRedo;
+	}
+
+	void OnUndoRedo()
+	{
+		UpdateCurrentObject(true);
 	}
 
 	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -121,13 +130,19 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 			return;
 		}
 
-		var inspectorData = new List<InspectorData>();
-		var objectChildren = new List<InspectorData>();
+		m_SelectedObject = Selection.activeGameObject;
+		UpdateInspectorData(m_SelectedObject, true);
+	}
 
-		if (Selection.activeGameObject)
+	void UpdateInspectorData(GameObject selection, bool fullReload)
+	{
+		var listView = m_InspectorUI.listView;
+		if (fullReload)
 		{
-			m_SelectedObject = Selection.activeGameObject;
-			foreach (var component in m_SelectedObject.GetComponents<Component>())
+			var inspectorData = new List<InspectorData>();
+			var objectChildren = new List<InspectorData>();
+
+			foreach (var component in selection.GetComponents<Component>())
 			{
 				var obj = new SerializedObject(component);
 
@@ -143,12 +158,55 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 				var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren);
 				objectChildren.Add(componentData);
 			}
+
+			var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(selection), objectChildren);
+			inspectorData.Add(objectData);
+
+			listView.data = inspectorData;
+		}
+		else
+		{
+			listView.OnObjectModified();
+		}
+	}
+
+	UndoPropertyModification[] OnPostprocessModifications(UndoPropertyModification[] modifications)
+	{
+		if (!m_SelectedObject || !IncludesCurrentObject(modifications))
+			return modifications;
+
+		UpdateCurrentObject(false);
+
+		return modifications;
+	}
+
+	bool IncludesCurrentObject(UndoPropertyModification[] modifications)
+	{
+		foreach (var modification in modifications)
+		{
+			if (modification.previousValue.target == m_SelectedObject)
+				return true;
+
+			if (modification.currentValue.target == m_SelectedObject)
+				return true;
+
+			foreach (var component in m_SelectedObject.GetComponents<Component>())
+			{
+				if (modification.previousValue.target == component)
+					return true;
+
+				if (modification.currentValue.target == component)
+					return true;
+			}
 		}
 
-		var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(Selection.activeObject), objectChildren);
-		inspectorData.Add(objectData);
+		return false;
+	}
 
-		m_InspectorUI.listView.data = inspectorData;
+	void UpdateCurrentObject(bool fullReload)
+	{
+		if (m_SelectedObject)
+			UpdateInspectorData(m_SelectedObject, fullReload);
 	}
 
 	PropertyData SerializedPropertyToPropertyData(SerializedProperty property, SerializedObject obj)
@@ -232,6 +290,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 					break;
 			}
 		}
+
 		return children;
 	}
 
@@ -288,6 +347,13 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 
 		if (!m_IsLocked)
 			OnSelectionChanged();
+	}
+
+	protected override void OnDestroy()
+	{
+		Undo.postprocessModifications -= OnPostprocessModifications;
+		Undo.undoRedoPerformed -= OnUndoRedo;
+		base.OnDestroy();
 	}
 #else
 	public void OnSelectionChanged()

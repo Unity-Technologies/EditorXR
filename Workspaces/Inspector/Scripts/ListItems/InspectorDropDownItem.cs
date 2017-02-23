@@ -21,6 +21,23 @@ sealed class InspectorDropDownItem : InspectorPropertyItem
 	{
 		base.Setup(data);
 
+		UpdateDropdown();
+	}
+
+	protected override void FirstTimeSetup()
+	{
+		base.FirstTimeSetup();
+		m_DropDown.valueChanged += ValueChanged;
+	}
+
+	public override void OnObjectModified()
+	{
+		base.OnObjectModified();
+		UpdateDropdown();
+	}
+
+	void UpdateDropdown()
+	{
 		if (m_SerializedProperty.propertyType == SerializedPropertyType.LayerMask)
 		{
 			m_DropDown.multiSelect = true;
@@ -52,12 +69,6 @@ sealed class InspectorDropDownItem : InspectorPropertyItem
 		}
 	}
 
-	protected override void FirstTimeSetup()
-	{
-		base.FirstTimeSetup();
-		m_DropDown.valueChanged += ValueChanged;
-	}
-
 	void ValueChanged(int clicked, int[] values)
 	{
 		if (m_SerializedProperty.propertyType == SerializedPropertyType.LayerMask)
@@ -70,7 +81,8 @@ sealed class InspectorDropDownItem : InspectorPropertyItem
 				if (m_SerializedProperty.intValue == 0)
 					return;
 				m_SerializedProperty.intValue = 0;
-				data.serializedObject.ApplyModifiedProperties();
+
+				FinalizeModifications();
 			}
 			else if (clicked == 1)  // Clicked "Everything"
 			{
@@ -80,7 +92,8 @@ sealed class InspectorDropDownItem : InspectorPropertyItem
 				if (m_SerializedProperty.intValue == ~0)
 					return;
 				m_SerializedProperty.intValue = ~0;
-				data.serializedObject.ApplyModifiedProperties();
+
+				FinalizeModifications();
 			}
 			else
 			{
@@ -96,7 +109,8 @@ sealed class InspectorDropDownItem : InspectorPropertyItem
 				if (m_SerializedProperty.intValue != layerMask)
 				{
 					m_SerializedProperty.intValue = layerMask;
-					data.serializedObject.ApplyModifiedProperties();
+
+					FinalizeModifications();
 				}
 			}
 		}
@@ -105,7 +119,8 @@ sealed class InspectorDropDownItem : InspectorPropertyItem
 			if (m_SerializedProperty.enumValueIndex != values[0])
 			{
 				m_SerializedProperty.enumValueIndex = values[0];
-				data.serializedObject.ApplyModifiedProperties();
+
+				FinalizeModifications();
 			}
 		}
 	}
@@ -114,7 +129,10 @@ sealed class InspectorDropDownItem : InspectorPropertyItem
 	{
 		var values = new int[InternalEditorUtility.layers.Length + 1];
 		for (var i = 0; i < values.Length; i++)
+		{
 			values[i] = i + 1;
+		}
+
 		return values;
 	}
 

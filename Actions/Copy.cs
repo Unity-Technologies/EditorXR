@@ -1,5 +1,4 @@
 ﻿using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEngine.Experimental.EditorVR.Actions
 {

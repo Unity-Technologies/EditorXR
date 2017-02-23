@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.Handles;
@@ -168,6 +169,12 @@ abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHi
 
 		if (m_CuboidLayout)
 			m_CuboidLayout.UpdateObjects();
+	}
+
+	public virtual void OnObjectModified()
+	{
+		if (data.serializedObject.targetObject) // An exception is thrown if the targetObject has been deleted
+			data.serializedObject.Update();
 	}
 
 	public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)

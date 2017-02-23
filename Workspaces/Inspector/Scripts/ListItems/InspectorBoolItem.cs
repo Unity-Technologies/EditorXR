@@ -22,12 +22,19 @@ sealed class InspectorBoolItem : InspectorPropertyItem
 		m_Toggle.onValueChanged.AddListener(SetValue);
 	}
 
+	public override void OnObjectModified()
+	{
+		base.OnObjectModified();
+		m_Toggle.isOn = m_SerializedProperty.boolValue;
+	}
+
 	public void SetValue(bool value)
 	{
 		if (m_SerializedProperty.boolValue != value)
 		{
 			m_SerializedProperty.boolValue = value;
-			data.serializedObject.ApplyModifiedProperties();
+
+			FinalizeModifications();
 		}
 	}
 #endif
