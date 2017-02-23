@@ -275,6 +275,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 					m_RadialMenuSlots[i].visible = false;
 			}
 
+			semiTransparent = false;
 			semiTransparent = true;
 
 			var revealAmount = 0f;
