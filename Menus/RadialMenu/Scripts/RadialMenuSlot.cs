@@ -103,6 +103,32 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		}
 		bool m_SemiTransparent;
 
+		public bool visible
+		{
+			get { return m_Visible; }
+			set
+			{
+				if (value && m_Visible == value) // Allow false to fall through and perform hiding regardless of visibility
+					return;
+
+				m_Visible = value;
+
+				if (value)
+				{
+					gameObject.SetActive(true);
+					m_MenuInset.localScale = m_HiddenInsetLocalScale;
+					m_Pressed = false;
+					m_Highlighted = false;
+					m_CanvasGroup.interactable = false;
+
+					this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
+				}
+				else if (gameObject.activeSelf)
+						this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
+			}
+		}
+		bool m_Visible;
+
 		GradientPair m_OriginalInsetGradientPair;
 		Material m_BorderRendererMaterial;
 		Material m_InsetMaterial;
@@ -189,23 +215,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			U.Object.Destroy(m_InsetMaterial);
 			U.Object.Destroy(m_IconMaterial);
 			U.Object.Destroy(m_FrameMaterial);
-		}
-
-		public void Show()
-		{
-			gameObject.SetActive(true);
-			m_MenuInset.localScale = m_HiddenInsetLocalScale;
-			m_Pressed = false;
-			m_Highlighted = false;
-			m_CanvasGroup.interactable = false;
-
-			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
-		}
-
-		public void Hide()
-		{
-			if (gameObject.activeSelf)
-				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
 		}
 
 		void CorrectIconRotation()

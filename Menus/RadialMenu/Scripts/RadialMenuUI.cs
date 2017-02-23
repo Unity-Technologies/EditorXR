@@ -229,7 +229,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
 				m_PhaseOffset = 270 - (m_Actions.Count * 0.5f) * kRotationSpacing;
 				slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + kRotationSpacing * i, Vector3.down);
-				slot.Hide();
+				slot.visible = false;
 			}
 
 			this.StopCoroutine(ref m_VisibilityCoroutine);
@@ -270,9 +270,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 			{
 				if (i < m_Actions.Count)
-					m_RadialMenuSlots[i].Show();
+					m_RadialMenuSlots[i].visible = true;
 				else
-					m_RadialMenuSlots[i].Hide();
+					m_RadialMenuSlots[i].visible = false;
 			}
 
 			semiTransparent = true;
@@ -308,7 +308,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 
 			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
-				m_RadialMenuSlots[i].Hide();
+				m_RadialMenuSlots[i].visible = false;
 
 			revealAmount = 1;
 			while (revealAmount > 0)
