@@ -278,6 +278,8 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 				yield return null;
 			}
 
+			transform.localScale = targetScale;
+
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
 		}

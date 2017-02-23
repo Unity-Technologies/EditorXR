@@ -7,8 +7,10 @@ using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Menus;
 using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.UI;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
+using Button = UnityEngine.UI.Button;
 
 [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
 public class MiniWorldWorkspace : Workspace, IUsesRayLocking
@@ -34,7 +36,7 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 	private GameObject m_PlayerDirectionArrowPrefab;
 
 	[SerializeField]
-	private GameObject m_UIPrefab;
+	private GameObject m_ZoomSliderPrefab;
 
 	private MiniWorldUI m_MiniWorldUI;
 	private MiniWorld m_MiniWorld;
@@ -109,9 +111,9 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 		panZoomHandle.hoverStarted += OnPanZoomHoverStarted;
 		panZoomHandle.hoverEnded += OnPanZoomHoverEnded;
 
-		// Set up UI
-		var UI = U.Object.Instantiate(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
-		m_ZoomSliderUI = UI.GetComponentInChildren<ZoomSliderUI>();
+		// Set up Zoom Slider
+		var sliderObject = U.Object.Instantiate(m_ZoomSliderPrefab, m_WorkspaceUI.frontPanel, false);
+		m_ZoomSliderUI = sliderObject.GetComponentInChildren<ZoomSliderUI>();
 		m_ZoomSliderUI.sliding += OnSliding;
 		m_ZoomSliderUI.zoomSlider.maxValue = kMaxZoomScale;
 		m_ZoomSliderUI.zoomSlider.minValue = kMinZoomScale;
@@ -121,6 +123,10 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 		{
 			connectInterfaces(mb);
 		}
+
+		var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();
+		if (zoomTooltip)
+			zoomTooltip.tooltipText = "Drag the Handle to Zoom the Mini World";
 
 		var frontHandle = m_WorkspaceUI.directManipulator.GetComponent<BaseHandle>();
 		frontHandle.dragStarted += DragStarted;

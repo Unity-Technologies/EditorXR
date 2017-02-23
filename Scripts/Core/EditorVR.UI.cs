@@ -78,7 +78,7 @@ namespace UnityEditor.Experimental.EditorVR
 				foreach (var mv in m_ManipulatorVisibilities)
 					mv.manipulatorVisible = manipulatorsVisible;
 			}
-		}  
+		}
 	}
 }
 #endif

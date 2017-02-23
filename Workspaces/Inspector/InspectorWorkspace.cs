@@ -40,6 +40,7 @@ public class InspectorWorkspace : Workspace, ISelectionChanged
 		m_LockUI = U.Object.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LockUI>();
 		connectInterfaces(m_LockUI);
 		m_LockUI.lockButtonPressed += SetIsLocked;
+		EditorApplication.delayCall += m_LockUI.Setup; // Need to write stencilRef after WorkspaceButton does it
 
 		var listView = m_InspectorUI.listView;
 		connectInterfaces(listView);

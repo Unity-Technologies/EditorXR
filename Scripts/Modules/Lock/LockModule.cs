@@ -1,18 +1,18 @@
 using System;
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Actions;
 using UnityEditor;
+using UnityEngine.Experimental.EditorVR.Actions;
+using UnityEngine.Experimental.EditorVR.Tools;
 
 namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	internal class LockModule : MonoBehaviour, IActions, ISelectionChanged
 	{
-		class LockModuleAction : IAction
+		class LockModuleAction : IAction, ITooltip
 		{
 			internal Func<bool> execute;
+			public string tooltipText { get; set; }
 			public Sprite icon { get; internal set; }
 
 			public void ExecuteAction()
@@ -43,7 +43,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		void Awake()
 		{
 			m_LockModuleAction.execute = ToggleLocked;
-			UpdateActionIcon(null);
+			UpdateAction(null);
 
 			actions = new List<IAction>() { m_LockModuleAction };
 		}
@@ -80,12 +80,14 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 					m_LockedGameObjects.Remove(go);
 			}
 
-			UpdateActionIcon(go);
+			UpdateAction(go);
 		}
 
-		void UpdateActionIcon(GameObject go)
+		void UpdateAction(GameObject go)
 		{
-			m_LockModuleAction.icon = IsLocked(go) ? m_LockIcon : m_UnlockIcon;
+			var isLocked = IsLocked(go);
+			m_LockModuleAction.tooltipText = isLocked ? "Unlock" : "Lock";
+			m_LockModuleAction.icon = isLocked ? m_LockIcon : m_UnlockIcon;
 		}
 
 		public void OnHovered(GameObject go, Transform rayOrigin)
@@ -115,7 +117,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 					// Don't allow hover menu if over a selected game object
 					if (IsLocked(go) && m_HoverDuration >= kMaxHoverTime)
 					{
-						UpdateActionIcon(go);
+						UpdateAction(go);
 
 						// Open up the menu, so that locking can be changed
 						updateAlternateMenu(rayOrigin, go);
@@ -135,7 +137,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		public void OnSelectionChanged()
 		{
-			UpdateActionIcon(Selection.activeGameObject);
+			UpdateAction(Selection.activeGameObject);
 		}
 	}
 }
