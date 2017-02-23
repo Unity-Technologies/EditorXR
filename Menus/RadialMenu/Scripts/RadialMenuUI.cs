@@ -13,7 +13,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	public class RadialMenuUI : MonoBehaviour, IConnectInterfaces
 	{
-		const int kSlotCount = 16;
+		const int k_SlotCount = 16;
 
 		[SerializeField]
 		Sprite m_MissingActionIcon;
@@ -140,9 +140,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 					if (angle < 0f)
 						angle += 360f;
 
-					const float kSlotAngleRange = 360f / kSlotCount;
+					const float k_SlotAngleRange = 360f / k_SlotCount;
 					var kPadding = m_HighlightedButton ? 0.4f : 0.01; // allow for immediate visibility of the menu if no button has been highlighted yet
-					var index = angle / kSlotAngleRange;
+					var index = angle / k_SlotAngleRange;
 					var t = index % 1f;
 					// Use padding to prevent unintended button switches
 					if (t >= kPadding && t <= 1f - kPadding)
@@ -200,7 +200,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_RadialMenuSlots = new List<RadialMenuSlot>();
 			Material slotBorderMaterial = null;
 
-			for (int i = 0; i < kSlotCount; ++i)
+			for (int i = 0; i < k_SlotCount; ++i)
 			{
 				var menuSlot = U.Object.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
 				connectInterfaces(menuSlot);
@@ -219,14 +219,14 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		void SetupRadialSlotPositions()
 		{
-			const float kRotationSpacing = 360f / kSlotCount;
-			for (int i = 0; i < kSlotCount; ++i)
+			const float k_RotationSpacing = 360f / k_SlotCount;
+			for (int i = 0; i < k_SlotCount; ++i)
 			{
 				var slot = m_RadialMenuSlots[i];
 				// We move in counter-clockwise direction
 				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
-				m_PhaseOffset = 270 - (m_Actions.Count * 0.5f) * kRotationSpacing;
-				slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + kRotationSpacing * i, Vector3.down);
+				m_PhaseOffset = 270 - (m_Actions.Count * 0.5f) * k_RotationSpacing;
+				slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + k_RotationSpacing * i, Vector3.down);
 				slot.visible = false;
 			}
 
@@ -241,7 +241,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			for (int i = 0; i < m_Actions.Count; ++i)
 			{
 				// prevent more actions being added beyond the max slot count
-				if (i >= kSlotCount)
+				if (i >= k_SlotCount)
 					break;
 
 				var actionMenuData = m_Actions[i];
