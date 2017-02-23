@@ -1,8 +1,7 @@
-﻿using UnityEditor.Experimental.EditorVR;
-using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR;
 #if ENABLE_STEAMVR_INPUT
 using System;
-using UnityEngine.InputNew;
 using Valve.VR;
 #endif
 
@@ -170,3 +169,4 @@ namespace UnityEngine.InputNew
 #endif
 	}
 }
+#endif

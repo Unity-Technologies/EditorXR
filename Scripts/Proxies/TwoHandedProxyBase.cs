@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	internal abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
+	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
 	{
 		const int kRendererQueue = 9000;
 
@@ -135,3 +136,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		}
 	}
 }
+#endif

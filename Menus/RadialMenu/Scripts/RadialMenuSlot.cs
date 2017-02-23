@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using UnityEngine.UI;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	internal sealed class RadialMenuSlot : MonoBehaviour
+	sealed class RadialMenuSlot : MonoBehaviour
 	{
 		static readonly Vector3 kHiddenLocalScale = new Vector3(1f, 0f, 1f);
 		const float m_IconHighlightedLocalYOffset = 0.006f;
@@ -346,3 +347,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

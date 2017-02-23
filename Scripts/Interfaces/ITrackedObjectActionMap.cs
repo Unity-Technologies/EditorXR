@@ -1,4 +1,5 @@
-﻿using UnityEngine.InputNew;
+﻿#if UNITY_EDITOR
+using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -10,3 +11,4 @@ namespace UnityEditor.Experimental.EditorVR
 		TrackedObject trackedObjectInput { set; }
 	}
 }
+#endif

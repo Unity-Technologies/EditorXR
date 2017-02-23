@@ -1,11 +1,8 @@
-﻿#if !UNITY_EDITOR
-#pragma warning disable 414, 649
-#endif
+﻿#if UNITY_EDITOR
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Actions;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -13,7 +10,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	internal sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility
+	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility
 	{
 		const float kLazyFollowTranslate = 8f;
 		const float kLazyFollowRotate = 12f;
@@ -566,3 +563,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 #endif
 	}
 }
+#endif

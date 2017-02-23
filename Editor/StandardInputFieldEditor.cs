@@ -1,7 +1,7 @@
 namespace UnityEditor.Experimental.EditorVR.UI
 {
 	[CustomEditor(typeof(StandardInputField))]
-	internal sealed class StandardInputFieldEditor : InputFieldEditor
+	sealed class StandardInputFieldEditor : InputFieldEditor
 	{
 		SerializedProperty m_LineTypeProperty;
 

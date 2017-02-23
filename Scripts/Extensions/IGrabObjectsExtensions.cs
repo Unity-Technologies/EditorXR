@@ -1,9 +1,9 @@
-﻿using UnityEngine;
-using UnityEditor.Experimental.EditorVR;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Extensions
 {
-	internal static class IGrabObjectsExtension
+	static class IGrabObjectsExtension
 	{
 		public static void DropHeldObjects(this IGrabObjects grabObjects, Transform rayOrigin)
 		{
@@ -13,3 +13,4 @@ namespace UnityEditor.Experimental.EditorVR.Extensions
 		}
 	}
 }
+#endif

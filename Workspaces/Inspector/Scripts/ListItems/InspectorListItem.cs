@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -11,7 +12,7 @@ using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight, IRequestStencilRef
+	abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight, IRequestStencilRef
 	{
 		const float kIndent = 0.02f;
 
@@ -351,3 +352,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

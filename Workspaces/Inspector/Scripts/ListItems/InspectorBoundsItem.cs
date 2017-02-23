@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -6,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorBoundsItem : InspectorPropertyItem
+	sealed class InspectorBoundsItem : InspectorPropertyItem
 	{
 		[SerializeField]
 		NumericInputField[] m_CenterFields;
@@ -129,3 +130,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #endif
 	}
 }
+#endif

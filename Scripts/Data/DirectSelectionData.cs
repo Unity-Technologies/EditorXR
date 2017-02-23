@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using UnityEditor.Experimental.EditorVR;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -25,3 +25,4 @@ namespace UnityEditor.Experimental.EditorVR
 		public ActionMapInput input { get; set; }
 	}
 }
+#endif

@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Extensions
 {
-	internal static class Vector3Extensions
+	static class Vector3Extensions
 	{
 		public static Vector3 Inverse(this Vector3 vec)
 		{
@@ -20,3 +21,4 @@ namespace UnityEditor.Experimental.EditorVR.Extensions
 		}
 	}
 }
+#endif

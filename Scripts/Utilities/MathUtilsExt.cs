@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
 	/// <summary>
 	/// Extended math related utilities (named MathUtilsExt to not collide with MathUtils)
 	/// </summary>
-	internal static class MathUtilsExt
+	static class MathUtilsExt
 	{
 		// snaps value to a unit. unit can be any number.
 		// for example, with a unit of 0.2, 0.41 -> 0.4, and 0.52 -> 0.6
@@ -209,3 +210,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 	}
 }
+#endif

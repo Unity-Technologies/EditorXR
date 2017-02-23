@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Handles;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorUI : MonoBehaviour
+	sealed class InspectorUI : MonoBehaviour
 	{
 		public InspectorListViewController listView
 		{
@@ -30,3 +31,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		RectTransform m_InspectorPanel;
 	}
 }
+#endif

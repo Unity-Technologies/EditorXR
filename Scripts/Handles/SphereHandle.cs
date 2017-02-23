@@ -1,11 +1,12 @@
-﻿using UnityEngine.EventSystems;
+﻿#if UNITY_EDITOR
+using UnityEngine.EventSystems;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	internal sealed class SphereHandle : BaseHandle, IScrollHandler
+	sealed class SphereHandle : BaseHandle, IScrollHandler
 	{
 		private class SphereHandleEventData : HandleEventData
 		{
@@ -91,3 +92,4 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		}
 	}
 }
+#endif

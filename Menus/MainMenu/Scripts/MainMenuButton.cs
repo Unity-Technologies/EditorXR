@@ -1,11 +1,11 @@
-﻿using System;
-using UnityEngine.UI;
+﻿#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	internal sealed class MainMenuButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
+	sealed class MainMenuButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
 	{
 		public Button button { get { return m_Button; } }
 		[SerializeField]
@@ -64,3 +64,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

@@ -1,10 +1,10 @@
-﻿using UnityEditor.Experimental.EditorVR.Menus;
+﻿#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("Console", "Workspaces", "View errors, warnings and other messages")]
-	internal sealed class ConsoleWorkspace : Workspace
+	sealed class ConsoleWorkspace : Workspace
 	{
 		[SerializeField]
 		private GameObject m_ConsoleWindowPrefab;
@@ -37,3 +37,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

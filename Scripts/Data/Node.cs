@@ -1,4 +1,5 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// A tracked node within the system
@@ -9,3 +10,4 @@
 		RightHand
 	}
 }
+#endif

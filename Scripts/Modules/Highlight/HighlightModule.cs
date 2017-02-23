@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class HighlightModule : MonoBehaviour
+	class HighlightModule : MonoBehaviour
 	{
 		static readonly Vector3 kHighlightScaleIncrease = Vector3.one * 0.0125f;
 
@@ -62,3 +62,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

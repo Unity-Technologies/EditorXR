@@ -1,15 +1,13 @@
+#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEditor.Experimental.EditorVR;
-using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Tools;
-using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
-	internal sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin, IUsesSpatialHash
+	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin, IUsesSpatialHash
 	{
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
@@ -147,3 +145,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 	}
 }
+#endif

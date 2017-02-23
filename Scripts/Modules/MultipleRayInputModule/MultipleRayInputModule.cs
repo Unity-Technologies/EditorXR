@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -9,7 +10,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-	internal sealed class MultipleRayInputModule : BaseInputModule, IProcessInput
+	sealed class MultipleRayInputModule : BaseInputModule, IProcessInput
 	{
 		public class RaycastSource
 		{
@@ -417,3 +418,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

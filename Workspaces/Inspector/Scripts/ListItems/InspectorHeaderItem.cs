@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -9,7 +10,7 @@ using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorHeaderItem : InspectorListItem
+	sealed class InspectorHeaderItem : InspectorListItem
 	{
 		[SerializeField]
 		RawImage m_Icon;
@@ -44,7 +45,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Action<bool> setLocked;
 
-#if UNITY_EDITOR
 		public override void Setup(InspectorData data)
 		{
 			base.Setup(data);
@@ -166,6 +166,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
 			m_Button.sharedMaterials = highlightMaterials;
 		}
-#endif
 	}
 }
+#endif

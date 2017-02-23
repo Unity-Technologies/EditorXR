@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal sealed class RayEventData : PointerEventData
+	sealed class RayEventData : PointerEventData
 	{
 		/// <summary>
 		/// The root from where the ray is cast
@@ -25,3 +26,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

@@ -1,11 +1,12 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class WorkspaceHighlight : MonoBehaviour
+	sealed class WorkspaceHighlight : MonoBehaviour
 	{
 		const string kTopColorProperty = "_ColorTop";
 		const string kBottomColorProperty = "_ColorBottom";
@@ -89,3 +90,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

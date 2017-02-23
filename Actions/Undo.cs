@@ -1,7 +1,8 @@
-﻿namespace UnityEditor.Experimental.EditorVR.Actions
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Undo", ActionMenuItemAttribute.DefaultActionSectionName, 2)]
-	internal sealed class Undo : BaseAction
+	sealed class Undo : BaseAction
 	{
 		public override void ExecuteAction()
 		{
@@ -11,3 +12,4 @@
 		}
 	}
 }
+#endif

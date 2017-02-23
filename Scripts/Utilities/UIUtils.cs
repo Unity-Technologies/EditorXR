@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -9,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	/// <summary>
 	/// Object related EditorVR utilities
 	/// </summary>
-	internal static class UIUtils
+	static class UIUtils
 	{
 		public const float DoubleClickIntervalMax = 0.3f;
 		const float kDoubleClickIntervalMin = 0.15f;
@@ -95,3 +96,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 	}
 }
+#endif

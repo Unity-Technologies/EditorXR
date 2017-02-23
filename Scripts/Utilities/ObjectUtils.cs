@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	/// <summary>
 	/// Object related EditorVR utilities
 	/// </summary>
-	internal static class ObjectUtils
+	static class ObjectUtils
 	{
 		public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true, bool active = true)
 		{
@@ -289,3 +290,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 	}
 }
+#endif

@@ -1,6 +1,6 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Data;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
@@ -39,3 +39,4 @@ namespace UnityEditor.Experimental.EditorVR.Data
 		}
 	}
 }
+#endif

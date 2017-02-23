@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
 	/// <summary>
 	/// Camera related EditorVR utilities
 	/// </summary>
-	internal static class CameraUtils
+	static class CameraUtils
 	{
 		public static float DistanceToCamera(GameObject obj)
 		{
@@ -67,3 +68,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 	}
 }
+#endif

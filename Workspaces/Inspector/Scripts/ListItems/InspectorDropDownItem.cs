@@ -1,15 +1,14 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
-#if UNITY_EDITOR
 using UnityEditorInternal;
-#endif
 using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorDropDownItem : InspectorPropertyItem
+	sealed class InspectorDropDownItem : InspectorPropertyItem
 	{
 		const string kNothing = "Nothing";
 		const string kEverything = "Everything";
@@ -17,7 +16,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		DropDown m_DropDown;
 
-#if UNITY_EDITOR
 		public override void Setup(InspectorData data)
 		{
 			base.Setup(data);
@@ -172,6 +170,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			return layerMask;
 		}
-#endif
 	}
 }
+#endif

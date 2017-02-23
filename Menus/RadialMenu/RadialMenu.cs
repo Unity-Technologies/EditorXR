@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	internal sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap
+	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap
 	{
 		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]
@@ -113,3 +114,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

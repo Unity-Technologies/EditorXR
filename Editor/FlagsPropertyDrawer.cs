@@ -4,7 +4,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.UI
 {
 	[CustomPropertyDrawer(typeof(FlagsPropertyAttribute))]
-	internal sealed class FlagsPropertyDrawer : PropertyDrawer
+	sealed class FlagsPropertyDrawer : PropertyDrawer
 	{
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEngine;
@@ -10,7 +11,7 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	internal sealed class KeyboardButton : BaseHandle
+	sealed class KeyboardButton : BaseHandle
 	{
 		public enum SelectionState
 		{
@@ -489,3 +490,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

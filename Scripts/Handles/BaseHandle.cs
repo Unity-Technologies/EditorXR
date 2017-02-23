@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -11,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 	/// <summary>
 	/// Base class for providing draggable handles in 3D (requires PhysicsRaycaster)
 	/// </summary>
-	internal class BaseHandle : MonoBehaviour, ISelectionFlags, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IDropReceiver, IDroppable
+	class BaseHandle : MonoBehaviour, ISelectionFlags, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IDropReceiver, IDroppable
 	{
 		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]
@@ -239,3 +240,4 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		}
 	}
 }
+#endif

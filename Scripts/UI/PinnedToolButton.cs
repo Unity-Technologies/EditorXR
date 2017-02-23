@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Text;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -6,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	internal sealed class PinnedToolButton : MonoBehaviour, ISelectTool
+	sealed class PinnedToolButton : MonoBehaviour, ISelectTool
 	{
 		public Type toolType
 		{
@@ -81,3 +82,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

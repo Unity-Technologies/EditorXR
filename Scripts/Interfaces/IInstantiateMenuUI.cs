@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 
@@ -17,3 +18,4 @@ namespace UnityEditor.Experimental.EditorVR
 		Func<Transform, IMenu, GameObject> instantiateMenuUI { set; }
 	}
 }
+#endif

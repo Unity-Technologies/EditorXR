@@ -1,7 +1,6 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Actions;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -9,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	//[MainMenuItem("Cube", "Create", "Create cubes in the scene")]
 	[MainMenuItem(false)]
-	internal sealed class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IActions, IUsesSpatialHash
+	sealed class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IActions, IUsesSpatialHash
 	{
 		class CubeToolAction : IAction
 		{
@@ -50,3 +49,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 	}
 }
+#endif

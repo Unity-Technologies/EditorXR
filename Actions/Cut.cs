@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Cut", ActionMenuItemAttribute.DefaultActionSectionName, 4)]
-	internal sealed class Cut : BaseAction
+	sealed class Cut : BaseAction
 	{
 		public override void ExecuteAction()
 		{
@@ -26,3 +27,4 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 		}
 	}
 }
+#endif

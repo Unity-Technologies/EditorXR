@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal abstract class InspectorPropertyItem : InspectorListItem
+	abstract class InspectorPropertyItem : InspectorListItem
 	{
 		[SerializeField]
 		Text m_Label;

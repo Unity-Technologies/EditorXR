@@ -2,7 +2,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
 	[CanEditMultipleObjects]
 	[CustomEditor(typeof(KeyboardMallet))]
-	internal sealed class KeyboardMalletEditor : Editor
+	sealed class KeyboardMalletEditor : Editor
 	{
 
 		SerializedProperty m_StemOriginProperty;

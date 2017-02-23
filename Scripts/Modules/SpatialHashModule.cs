@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal sealed class SpatialHashModule : MonoBehaviour
+	sealed class SpatialHashModule : MonoBehaviour
 	{
 		readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
 		public SpatialHash<Renderer> spatialHash { get; private set; }
@@ -90,3 +91,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

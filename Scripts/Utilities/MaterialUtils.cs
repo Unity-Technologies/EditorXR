@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using Random = UnityEngine.Random;
 using UnityMaterial = UnityEngine.Material;
 using UnityObject = UnityEngine.Object;
@@ -8,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	/// <summary>
 	/// Material related EditorVR utilities
 	/// </summary>
-	internal static class MaterialUtils
+	static class MaterialUtils
 	{
 		/// <summary>
 		/// Get a material clone; IMPORTANT: Make sure to call U.Destroy() on this material when done!
@@ -116,3 +117,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 	}
 }
+#endif

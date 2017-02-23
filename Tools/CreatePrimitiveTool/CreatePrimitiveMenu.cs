@@ -1,9 +1,10 @@
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	internal sealed class CreatePrimitiveMenu : MonoBehaviour, IMenu
+	sealed class CreatePrimitiveMenu : MonoBehaviour, IMenu
 	{
 		[SerializeField]
 		GameObject[] m_HighlightObjects;
@@ -42,3 +43,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 	}
 }
+#endif

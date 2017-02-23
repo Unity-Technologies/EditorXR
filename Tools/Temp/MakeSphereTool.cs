@@ -1,5 +1,5 @@
-﻿using System;
-using UnityEditor.Experimental.EditorVR.Menus;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	//[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
 	[MainMenuItem(false)]
-	internal sealed class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesSpatialHash
+	sealed class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesSpatialHash
 	{
 		public Transform rayOrigin { get; set; }
 
@@ -39,3 +39,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 	}
 }
+#endif

@@ -1,15 +1,15 @@
-﻿using UnityEditor.Experimental.EditorVR.Data;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorStringItem : InspectorPropertyItem
+	sealed class InspectorStringItem : InspectorPropertyItem
 	{
 		[SerializeField]
 		StandardInputField m_InputField;
 
-#if UNITY_EDITOR
 		public override void Setup(InspectorData data)
 		{
 			base.Setup(data);
@@ -72,6 +72,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			SetValue(dropObject.ToString());
 		}
-#endif
 	}
 }
+#endif

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 //#define ENABLE_MINIWORLD_RAY_SELECTION
 #if !UNITY_EDITORVR
 #pragma warning disable 67, 414, 649
@@ -31,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR
 	[InitializeOnLoad]
 #endif
 	[RequiresTag(kVRPlayerTag)]
-	internal sealed class EditorVR : MonoBehaviour
+	sealed class EditorVR : MonoBehaviour
 	{
 		delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
 
@@ -3059,3 +3060,4 @@ namespace UnityEditor.Experimental.EditorVR
 #endif
 	}
 }
+#endif

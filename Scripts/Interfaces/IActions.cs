@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Actions;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -14,3 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
 		List<IAction> actions { get; }
 	}
 }
+#endif

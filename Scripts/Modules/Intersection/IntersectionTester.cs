@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal sealed class IntersectionTester : MonoBehaviour
+	sealed class IntersectionTester : MonoBehaviour
 	{
 		[SerializeField]
 		private Transform[] m_RayTransforms;
@@ -97,3 +98,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

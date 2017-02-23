@@ -1,11 +1,11 @@
-﻿using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Menus;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("Profiler", "Workspaces", "Analyze your project's performance")]
-	internal sealed class ProfilerWorkspace : Workspace
+	sealed class ProfilerWorkspace : Workspace
 	{
 		[SerializeField]
 		private GameObject m_ProfilerWindowPrefab;
@@ -80,3 +80,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #endif
 	}
 }
+#endif

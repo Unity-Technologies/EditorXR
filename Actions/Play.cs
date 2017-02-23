@@ -1,7 +1,8 @@
-﻿namespace UnityEditor.Experimental.EditorVR.Actions
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Play")]
-	internal sealed class Play : BaseAction
+	sealed class Play : BaseAction
 	{
 		public override void ExecuteAction()
 		{
@@ -11,3 +12,4 @@
 		}
 	}
 }
+#endif

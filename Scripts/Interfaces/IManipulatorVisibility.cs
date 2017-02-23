@@ -1,4 +1,5 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provide access to the system to show or hide manipulator(s) on this tool / workspace / etc.
@@ -11,3 +12,4 @@
 		bool manipulatorVisible { set; }
 	}
 }
+#endif

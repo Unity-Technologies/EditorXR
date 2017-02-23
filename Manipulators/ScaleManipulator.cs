@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	internal sealed class ScaleManipulator : BaseManipulator
+	sealed class ScaleManipulator : BaseManipulator
 	{
 		[SerializeField]
 		private BaseHandle m_UniformHandle;
@@ -80,3 +81,4 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		}
 	}
 }
+#endif

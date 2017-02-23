@@ -1,9 +1,10 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 
 namespace UnityEditor.Experimental.EditorVR
 {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	internal sealed class RequiresTagAttribute : Attribute
+	sealed class RequiresTagAttribute : Attribute
 	{
 		public string tag;
 
@@ -13,3 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 	}
 }
+#endif

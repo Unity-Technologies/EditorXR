@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -6,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class MiniWorld : MonoBehaviour, IMiniWorld
+	sealed class MiniWorld : MonoBehaviour, IMiniWorld
 	{
 		public LayerMask rendererCullingMask
 		{
@@ -103,3 +104,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

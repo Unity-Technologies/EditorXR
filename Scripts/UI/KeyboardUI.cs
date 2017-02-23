@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	internal sealed class KeyboardUI : MonoBehaviour
+	sealed class KeyboardUI : MonoBehaviour
 	{
 		const float kDragWaitTime = 0.2f;
 		const float kKeyLayoutTransitionTime = 0.5f;
@@ -456,3 +457,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

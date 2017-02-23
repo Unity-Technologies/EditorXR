@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -7,7 +8,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class FilterUI : MonoBehaviour, IUsesStencilRef
+	sealed class FilterUI : MonoBehaviour, IUsesStencilRef
 	{
 		private const string kAllText = "All";
 
@@ -256,3 +257,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

@@ -1,14 +1,13 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
-	internal sealed class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged
+	sealed class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged
 	{
 		const float kYBounds = 0.2f;
 		const float kScrollMargin = 0.03f;
@@ -185,3 +184,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

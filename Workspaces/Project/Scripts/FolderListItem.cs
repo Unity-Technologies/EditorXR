@@ -1,4 +1,5 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using System;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -7,7 +8,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-	internal sealed class FolderListItem : ListViewItem<FolderData>
+	sealed class FolderListItem : ListViewItem<FolderData>
 	{
 		private const float kMargin = 0.01f;
 		private const float kIndent = 0.02f;
@@ -157,3 +158,4 @@ namespace UnityEditor.Experimental.EditorVR.Data
 		}
 	}
 }
+#endif

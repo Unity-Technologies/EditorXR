@@ -1,7 +1,8 @@
-﻿namespace UnityEditor.Experimental.EditorVR.Actions
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("SelectParent", ActionMenuItemAttribute.DefaultActionSectionName, 8)]
-	internal sealed class SelectParent : BaseAction
+	sealed class SelectParent : BaseAction
 	{
 		public override void ExecuteAction()
 		{
@@ -21,3 +22,4 @@
 		}
 	}
 }
+#endif

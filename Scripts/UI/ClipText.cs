@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
@@ -6,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 	/// <summary>
 	/// Extension of UI.Text allows the use of a custom clipping material by providing GetModifiedMaterial override
 	/// </summary>
-	internal sealed class ClipText : Text
+	sealed class ClipText : Text
 	{
 		/// <summary>
 		/// Parent transform worldToLocalMatrix
@@ -45,3 +46,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

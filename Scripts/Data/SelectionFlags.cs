@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
@@ -8,9 +9,10 @@ namespace UnityEditor.Experimental.EditorVR.UI
 	/// Ray for when the pointer ray hits far-away objects
 	/// </summary>
 	[Flags]
-	internal enum SelectionFlags
+	enum SelectionFlags
 	{
 		Ray = 1 << 0,
 		Direct = 1 << 1
 	}
 }
+#endif

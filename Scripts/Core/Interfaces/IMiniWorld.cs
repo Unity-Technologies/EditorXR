@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 ﻿using UnityEngine;
 
@@ -7,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// For the purpose of interacting with MiniWorlds
 	/// </summary>
-	public interface IMiniWorld
+	interface IMiniWorld
 	{
 		/// <summary>
 		/// Gets the root transform of the miniWorld itself
@@ -37,3 +38,4 @@ namespace UnityEditor.Experimental.EditorVR
 		List<Renderer> ignoreList { set; }
 	}
 }
+#endif

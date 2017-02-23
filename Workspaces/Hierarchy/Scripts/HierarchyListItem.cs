@@ -1,4 +1,5 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using System;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -7,7 +8,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class HierarchyListItem : ListViewItem<HierarchyData>
+	sealed class HierarchyListItem : ListViewItem<HierarchyData>
 	{
 		const float kMargin = 0.01f;
 		const float kIndent = 0.02f;
@@ -154,3 +155,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

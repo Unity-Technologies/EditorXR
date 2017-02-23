@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorBoolItem : InspectorPropertyItem
+	sealed class InspectorBoolItem : InspectorPropertyItem
 	{
 		[SerializeField]
 		Toggle m_Toggle;
@@ -35,3 +36,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #endif
 	}
 }
+#endif

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -6,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
+	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		private readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		private readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
@@ -146,3 +147,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

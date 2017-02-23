@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	internal sealed class StandardManipulator : BaseManipulator
+	sealed class StandardManipulator : BaseManipulator
 	{
 		[SerializeField]
 		Transform m_PlaneHandlesParent;
@@ -92,3 +93,4 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		}
 	}
 }
+#endif

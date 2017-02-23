@@ -1,4 +1,5 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Attribute used to tag items (tools, actions, etc) that can be added to VR menus
@@ -34,3 +35,4 @@
 		}
 	}
 }
+#endif

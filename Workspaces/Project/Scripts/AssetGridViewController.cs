@@ -1,7 +1,4 @@
-﻿#if !UNITY_EDITOR
-#pragma warning disable 414, 649
-#endif
-
+﻿#if UNITY_EDITOR
 using ListView;
 using System;
 using System.Collections.Generic;
@@ -11,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IConnectInterfaces
+	sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IConnectInterfaces
 	{
 		private const float kPositionFollow = 0.4f;
 
@@ -61,7 +58,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-#if UNITY_EDITOR
 		protected override void Setup()
 		{
 			base.Setup();
@@ -240,6 +236,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid)),
 				texture => item.fallbackTexture = texture));
 		}
-#endif
 	}
 }
+#endif

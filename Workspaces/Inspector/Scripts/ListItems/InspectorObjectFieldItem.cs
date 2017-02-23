@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -7,7 +8,7 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorObjectFieldItem : InspectorPropertyItem
+	sealed class InspectorObjectFieldItem : InspectorPropertyItem
 	{
 		[SerializeField]
 		Text m_FieldLabel;
@@ -87,3 +88,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #endif
 	}
 }
+#endif

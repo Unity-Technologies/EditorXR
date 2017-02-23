@@ -1,10 +1,10 @@
-﻿using System;
-using UnityEditor.Experimental.EditorVR.Tools;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	internal class BaseManipulator : MonoBehaviour, IManipulator
+	class BaseManipulator : MonoBehaviour, IManipulator
 	{
 		public bool dragging { get; protected set; }
 
@@ -41,3 +41,4 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		}
 	}
 }
+#endif

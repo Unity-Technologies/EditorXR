@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -6,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorNumberItem : InspectorPropertyItem
+	sealed class InspectorNumberItem : InspectorPropertyItem
 	{
 		[SerializeField]
 		NumericInputField m_InputField;
@@ -14,7 +15,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		WorkspaceButton[] m_IncrementDecrementButtons;
 
-#if UNITY_EDITOR
 		public SerializedPropertyType propertyType { get; private set; }
 		public event Action<PropertyData> arraySizeChanged;
 
@@ -170,6 +170,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					break;
 			}
 		}
-#endif
 	}
 }
+#endif

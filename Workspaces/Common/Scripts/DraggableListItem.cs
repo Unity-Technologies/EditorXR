@@ -1,4 +1,5 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal class DraggableListItem<DataType> : ListViewItem<DataType>, IGetPreviewOrigin where DataType : ListViewItemData
+	class DraggableListItem<DataType> : ListViewItem<DataType>, IGetPreviewOrigin where DataType : ListViewItemData
 	{
 		const float kMagnetizeDuration = 0.5f;
 
@@ -53,3 +54,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

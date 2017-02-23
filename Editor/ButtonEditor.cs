@@ -2,7 +2,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
 	// Because Button already has a custom editor, and we need to expose SelectionFlags, we need a custom inspector
 	[CustomEditor(typeof(Button))]
-	internal sealed class ButtonEditor : UnityEditor.UI.ButtonEditor
+	sealed class ButtonEditor : UnityEditor.UI.ButtonEditor
 	{
 		SerializedProperty m_SelectionFlagsProperty;
 

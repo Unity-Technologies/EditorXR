@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	internal sealed class MainMenuUI : MonoBehaviour, IInstantiateUI
+	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI
 	{
 		public class ButtonData
 		{
@@ -464,3 +465,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

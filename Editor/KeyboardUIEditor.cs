@@ -3,7 +3,7 @@
 namespace UnityEditor.Experimental.EditorVR.UI
 {
 	[CustomEditor(typeof(KeyboardUI))]
-	internal sealed class KeyboardUIEditor : Editor
+	sealed class KeyboardUIEditor : Editor
 	{
 		SerializedProperty m_ButtonsProperty;
 		SerializedProperty m_VerticalLayoutTransformsProperty;

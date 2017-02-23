@@ -1,8 +1,9 @@
-﻿using UnityEngine.EventSystems;
+﻿#if UNITY_EDITOR
+using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {	
-	internal static class ExecuteRayEvents
+	static class ExecuteRayEvents
 	{
 		public static ExecuteEvents.EventFunction<IRayBeginDragHandler> beginDragHandler { get { return s_BeginDragHandler; } }
 		private static readonly ExecuteEvents.EventFunction<IRayBeginDragHandler> s_BeginDragHandler = Execute;
@@ -53,3 +54,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

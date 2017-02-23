@@ -1,4 +1,5 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Designates a tool as a Transform tool
@@ -7,3 +8,4 @@
 	{
 	}
 }
+#endif

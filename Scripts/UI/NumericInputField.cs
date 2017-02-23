@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -5,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	internal sealed class NumericInputField : InputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
+	sealed class NumericInputField : InputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
 	{
 		public enum NumberType
 		{
@@ -334,3 +335,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

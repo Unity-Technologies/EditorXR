@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
@@ -9,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	internal sealed class MainMenuFace : MonoBehaviour
+	sealed class MainMenuFace : MonoBehaviour
 	{
 		[SerializeField]
 		private MeshRenderer m_BorderOutline;
@@ -165,3 +166,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

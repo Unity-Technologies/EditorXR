@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight, IUsesStencilRef, IConnectInterfaces
+	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight, IUsesStencilRef, IConnectInterfaces
 	{
 		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 
@@ -353,3 +354,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

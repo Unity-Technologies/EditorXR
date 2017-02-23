@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged
+	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged
 	{
 		GameObject m_CurrentGroupRoot;
 		readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state
@@ -69,34 +70,27 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (!m_SelectedObjects.Remove(selection))
 				{
 					m_SelectedObjects.Add(selection);
-#if UNITY_EDITOR
 					Selection.activeObject = selection;
-#endif
 				}
 			}
 			else
 			{
 				m_SelectedObjects.Clear();
-#if UNITY_EDITOR
 				Selection.activeObject = selection;
-#endif
 				m_SelectedObjects.Add(selection);
 			}
 
-#if UNITY_EDITOR
 			Selection.objects = m_SelectedObjects.ToArray();
-#endif
 			if (selected != null)
 				selected(rayOrigin);
 		}
 
 		public void OnSelectionChanged()
 		{
-#if UNITY_EDITOR
 			// Selection can change outside of this module, so stay in sync
 			if (Selection.objects.Length == 0)
 				m_CurrentGroupRoot = null;
-#endif
 		}
 	}
 }
+#endif

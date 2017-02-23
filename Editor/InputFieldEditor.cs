@@ -4,7 +4,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
 	[CustomEditor(typeof(InputField))]
 	[CanEditMultipleObjects]
-	internal class InputFieldEditor : SelectableEditor
+	class InputFieldEditor : SelectableEditor
 	{
 		SerializedProperty m_SelectionFlagsProperty;
 		SerializedProperty m_TextComponentProperty;

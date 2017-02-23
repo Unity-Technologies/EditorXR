@@ -1,11 +1,12 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	internal sealed class TouchProxy : TwoHandedProxyBase
+	sealed class TouchProxy : TwoHandedProxyBase
 	{
 		private OVRTouchInputToEvents m_InputToEvents;
 
@@ -40,3 +41,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		}
 	}
 }
+#endif

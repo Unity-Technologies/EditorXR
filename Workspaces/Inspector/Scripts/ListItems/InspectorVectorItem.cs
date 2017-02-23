@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorVectorItem : InspectorPropertyItem
+	sealed class InspectorVectorItem : InspectorPropertyItem
 	{
 		[SerializeField]
 		GameObject ZGroup;
@@ -13,7 +14,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		GameObject WGroup;
 
-#if UNITY_EDITOR
 		public override void Setup(InspectorData data)
 		{
 			base.Setup(data);
@@ -307,6 +307,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				data.serializedObject.ApplyModifiedProperties();
 			}
 		}
-#endif
 	}
 }
+#endif

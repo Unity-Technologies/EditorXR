@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Handles;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal class MiniWorldUI : MonoBehaviour
+	class MiniWorldUI : MonoBehaviour
 	{
 		public Renderer grid
 		{
@@ -30,3 +31,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		private Transform m_BoundsCube;
 	}
 }
+#endif

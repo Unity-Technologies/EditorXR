@@ -1,16 +1,16 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	internal sealed class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+	sealed class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 	{
 		const float kIconHighlightedLocalZOffset = -0.0015f;
 		const string kMaterialAlphaProperty = "_Alpha";
@@ -529,3 +529,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

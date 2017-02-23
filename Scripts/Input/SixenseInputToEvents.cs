@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR;
 
 [assembly: OptionalDependency("SixenseInput", "ENABLE_SIXENSE_INPUT")]
@@ -201,3 +202,4 @@ namespace UnityEngine.InputNew
 #endif
 	}
 }
+#endif

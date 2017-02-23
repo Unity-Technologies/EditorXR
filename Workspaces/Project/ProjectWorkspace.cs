@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
-	internal sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
+	sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 	{
 		const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 		const float kPaneMargin = 0.01f;
@@ -283,3 +283,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

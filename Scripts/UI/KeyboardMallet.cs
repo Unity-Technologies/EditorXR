@@ -1,10 +1,11 @@
+#if UNITY_EDITOR
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	internal sealed class KeyboardMallet : MonoBehaviour
+	sealed class KeyboardMallet : MonoBehaviour
 	{
 		[SerializeField]
 		private Transform m_StemOrigin;
@@ -153,3 +154,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

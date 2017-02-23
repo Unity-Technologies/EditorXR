@@ -1,12 +1,13 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    /// <summary>
-    /// Gives decorated class the ability to lock and unlock the default ray
-    /// </summary>
-    public interface IUsesRayLocking
+	/// <summary>
+	/// Gives decorated class the ability to lock and unlock the default ray
+	/// </summary>
+	public interface IUsesRayLocking
 	{
 		/// <summary>
 		/// Lock the default ray's show/hide state.
@@ -23,3 +24,4 @@ namespace UnityEditor.Experimental.EditorVR
 		Func<Transform, object, bool> unlockRay { set; }
 	}
 }
+#endif

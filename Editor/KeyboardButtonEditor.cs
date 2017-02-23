@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.UI
 {
 	[CustomEditor(typeof(KeyboardButton))]
-	internal sealed class KeyboardButtonEditor : Editor
+	sealed class KeyboardButtonEditor : Editor
 	{
 		const char kLowercaseStart = 'a';
 		const char kLowercaseEnd = 'z';

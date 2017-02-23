@@ -1,4 +1,4 @@
-﻿using System;
+﻿#if UNITY_EDITOR
 using System.Collections;
 using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -6,7 +6,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	internal sealed class DefaultProxyRay : MonoBehaviour
+	sealed class DefaultProxyRay : MonoBehaviour
 	{
 		[SerializeField]
 		private VRLineRenderer m_LineRenderer;
@@ -222,3 +222,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		}
 	}
 }
+#endif

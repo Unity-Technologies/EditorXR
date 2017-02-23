@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -9,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 	/// <summary>
 	/// Extension of UI.Button includes SelectionFlags to check for direct selection
 	/// </summary>
-	internal sealed class Button : UnityEngine.UI.Button, ISelectionFlags
+	sealed class Button : UnityEngine.UI.Button, ISelectionFlags
 	{
 		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]
@@ -77,3 +78,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

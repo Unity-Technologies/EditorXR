@@ -1,13 +1,8 @@
-﻿#if !UNITY_EDITOR
-#pragma warning disable 414
-#endif
+﻿#if UNITY_EDITOR
 
-using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
 using System;
 using System.Reflection;
-#endif
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
@@ -15,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 	/// <summary>
 	/// Captures a RenderTexture representing an Editor window
 	/// </summary>
-	internal sealed class EditorWindowCapture : MonoBehaviour
+	sealed class EditorWindowCapture : MonoBehaviour
 	{
 		[SerializeField]
 		private string m_WindowClass = "UnityEditor.ProfilerWindow";
@@ -108,3 +103,4 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 #endif
 	}
 }
+#endif

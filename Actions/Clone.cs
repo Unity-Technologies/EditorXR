@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Clone", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
-	internal sealed class Clone : BaseAction, IUsesSpatialHash
+	sealed class Clone : BaseAction, IUsesSpatialHash
 	{
 		public Action<GameObject> addToSpatialHash { private get; set; }
 		public Action<GameObject> removeFromSpatialHash { private get; set; }
@@ -28,3 +29,4 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 		}
 	}
 }
+#endif

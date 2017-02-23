@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	internal sealed class ViveProxy : TwoHandedProxyBase
+	sealed class ViveProxy : TwoHandedProxyBase
 	{
 		private ViveInputToEvents m_InputToEvents;
 
@@ -65,3 +66,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 #endif
 	}
 }
+#endif

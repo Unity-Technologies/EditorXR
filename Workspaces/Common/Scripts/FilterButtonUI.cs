@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Button = UnityEditor.Experimental.EditorVR.UI.Button;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class FilterButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+	sealed class FilterButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 	{
 		private const float kHoverAlpha = 1;
 		private const float kNormalAlpha = 0.95f;
@@ -61,3 +62,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

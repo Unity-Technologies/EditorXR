@@ -1,10 +1,11 @@
-﻿using UnityEditor.Experimental.EditorVR.Modules;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	internal sealed class RadialHandle : BaseHandle
+	sealed class RadialHandle : BaseHandle
 	{
 		private class RadialHandleEventData : HandleEventData
 		{
@@ -121,3 +122,4 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		}
 	}
 }
+#endif

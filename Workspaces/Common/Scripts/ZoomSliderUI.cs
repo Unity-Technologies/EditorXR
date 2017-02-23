@@ -1,10 +1,11 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class ZoomSliderUI : MonoBehaviour
+	sealed class ZoomSliderUI : MonoBehaviour
 	{
 		public Slider zoomSlider { get { return m_ZoomSlider; } }
 		[SerializeField]
@@ -19,3 +20,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

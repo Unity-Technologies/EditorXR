@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -6,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorRectItem : InspectorPropertyItem
+	sealed class InspectorRectItem : InspectorPropertyItem
 	{
 		[SerializeField]
 		NumericInputField[] m_CenterFields;
@@ -14,7 +15,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		NumericInputField[] m_SizeFields;
 
-#if UNITY_EDITOR
 		public override void Setup(InspectorData data)
 		{
 			base.Setup(data);
@@ -145,6 +145,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				data.serializedObject.ApplyModifiedProperties();
 			}
 		}
-#endif
 	}
 }
+#endif

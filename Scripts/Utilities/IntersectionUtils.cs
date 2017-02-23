@@ -1,9 +1,10 @@
+#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
-	internal static class IntersectionUtils
+	static class IntersectionUtils
 	{
 		/// <summary>
 		/// Test whether an object collides with the tester
@@ -164,3 +165,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 	}
 }
+#endif

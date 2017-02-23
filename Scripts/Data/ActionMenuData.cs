@@ -1,4 +1,5 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Used for passing action data for menu purposes
@@ -26,3 +27,4 @@
 		public IAction action { get; set; }
 	}
 }
+#endif

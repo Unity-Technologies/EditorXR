@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿#if UNITY_EDITOR
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.InputNew;
 
@@ -7,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	/// <summary>
 	/// Input related EditorVR utilities
 	/// </summary>
-	internal static class InputUtils
+	static class InputUtils
 	{
 		public static List<InputDevice> CollectInputDevicesFromActionMaps(List<ActionMap> maps)
 		{
@@ -43,3 +44,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 	}
 }
+#endif

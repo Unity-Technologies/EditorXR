@@ -1,4 +1,5 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Decorates a class as a locomotion implementer that uses the Viewer Pivot
@@ -7,3 +8,4 @@
 	{
 	}
 }
+#endif

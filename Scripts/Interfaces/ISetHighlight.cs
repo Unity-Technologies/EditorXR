@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -15,3 +16,4 @@ namespace UnityEditor.Experimental.EditorVR
 		Action<GameObject, bool> setHighlight { set; }
 	}
 }
+#endif

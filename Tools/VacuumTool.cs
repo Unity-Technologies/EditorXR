@@ -1,15 +1,14 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Tools;
-using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	internal sealed class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin
+	sealed class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin
 	{
 		float m_LastClickTime;
 		readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();
@@ -88,3 +87,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 	}
 }
+#endif

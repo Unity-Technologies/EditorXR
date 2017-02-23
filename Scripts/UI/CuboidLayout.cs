@@ -1,11 +1,12 @@
-﻿using UnityEditor.Experimental.EditorVR.Extensions;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	internal sealed class CuboidLayout : UIBehaviour
+	sealed class CuboidLayout : UIBehaviour
 	{
 		static readonly Vector2 kCuboidPivot = new Vector2(0.5f, 0.5f);
 		const float kLayerHeight = 0.004f;
@@ -118,3 +119,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

@@ -1,10 +1,11 @@
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	internal sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, ISetHighlight, ISelectObject, ISetManipulatorsVisible
+	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, ISetHighlight, ISelectObject, ISetManipulatorsVisible
 	{
 		GameObject m_HoverGameObject;
 		GameObject m_PressedObject;
@@ -101,3 +102,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 	}
 }
+#endif

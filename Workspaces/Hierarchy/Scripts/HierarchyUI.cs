@@ -1,9 +1,10 @@
-﻿using UnityEditor.Experimental.EditorVR.Handles;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class HierarchyUI : MonoBehaviour
+	sealed class HierarchyUI : MonoBehaviour
 	{
 		public HierarchyListViewController listView
 		{
@@ -30,3 +31,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		WorkspaceHighlight m_Highlight;
 	}
 }
+#endif

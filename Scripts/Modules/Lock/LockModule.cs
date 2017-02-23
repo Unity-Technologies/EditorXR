@@ -1,14 +1,12 @@
+#if UNITY_EDITOR
 using System;
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Tools;
-using UnityEditor.Experimental.EditorVR.Actions;
-using UnityEditor;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class LockModule : MonoBehaviour, IActions, ISelectionChanged
+	class LockModule : MonoBehaviour, IActions, ISelectionChanged
 	{
 		class LockModuleAction : IAction
 		{
@@ -139,3 +137,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

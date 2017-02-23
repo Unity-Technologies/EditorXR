@@ -1,12 +1,14 @@
-﻿using UnityEngine.EventSystems;
+﻿#if UNITY_EDITOR
+using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	/// <summary>
 	/// Decorates objects with functionality to detect RayEndDrag events
 	/// </summary>
-	internal interface IRayEndDragHandler : IEventSystemHandler
+	interface IRayEndDragHandler : IEventSystemHandler
 	{
 		void OnEndDrag(RayEventData eventData);
 	}
 }
+#endif

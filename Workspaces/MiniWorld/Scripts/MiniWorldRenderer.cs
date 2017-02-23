@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR;
-using UnityEngine;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[RequiresTag(kMiniWorldCameraTag)]
 	[RequiresTag(ShowInMiniWorldTag)]
-	internal sealed class MiniWorldRenderer : MonoBehaviour
+	sealed class MiniWorldRenderer : MonoBehaviour
 	{
 		public const string ShowInMiniWorldTag = "ShowInMiniWorld";
 		const string kMiniWorldCameraTag = "MiniWorldCamera";
@@ -115,3 +115,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

@@ -1,8 +1,9 @@
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	internal sealed class ResetUI : MonoBehaviour
+	sealed class ResetUI : MonoBehaviour
 	{
 		public UnityEngine.UI.Button resetButton
 		{
@@ -13,3 +14,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		UnityEngine.UI.Button m_ResetButton;
 	}
 }
+#endif

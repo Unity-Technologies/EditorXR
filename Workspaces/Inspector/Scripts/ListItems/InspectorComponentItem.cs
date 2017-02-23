@@ -1,7 +1,4 @@
-﻿#if !UNITY_EDITOR
-#pragma warning disable 414
-#endif
-
+﻿#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -10,7 +7,7 @@ using Button = UnityEditor.Experimental.EditorVR.UI.Button;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorComponentItem : InspectorListItem
+	sealed class InspectorComponentItem : InspectorListItem
 	{
 		const float kExpandArrowRotateSpeed = 0.4f;
 		static readonly Quaternion kExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
@@ -28,7 +25,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Text m_NameText;
 
-#if UNITY_EDITOR
 		public override void Setup(InspectorData data)
 		{
 			base.Setup(data);
@@ -67,6 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				serializedObject.ApplyModifiedProperties();
 			}
 		}
-#endif
 	}
 }
+#endif
+	

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
-	internal sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking
+	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking
 	{
 		private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below
 		private const float kInitReferenceScale = 15f; // We want to see a big region by default
@@ -321,3 +322,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

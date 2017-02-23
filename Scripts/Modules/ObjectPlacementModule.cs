@@ -1,12 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
-using UnityEditor;
 using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
+	class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 	{
 		const float kInstantiateFOVDifference = -5f;
 		const float kGrowDuration = 0.5f;
@@ -68,3 +68,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -6,7 +7,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	internal sealed class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesRayOrigin, ICustomActionMap
+	sealed class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesRayOrigin, ICustomActionMap
 	{
 		const float kRotationSpeed = 300f;
 		const float kMoveSpeed = 5f;
@@ -154,3 +155,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 	}
 }
+#endif

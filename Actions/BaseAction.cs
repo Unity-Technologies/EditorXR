@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	/// <summary>
 	/// A convenience class for simple action implementations
 	/// </summary>
-	internal abstract class BaseAction : MonoBehaviour, IAction
+	abstract class BaseAction : MonoBehaviour, IAction
 	{
 		public Sprite icon
 		{
@@ -18,3 +19,4 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 		public abstract void ExecuteAction();
 	}
 }
+#endif

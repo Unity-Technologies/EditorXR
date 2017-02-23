@@ -1,6 +1,4 @@
-﻿#if !UNITY_EDITORVR
-#pragma warning disable 414, 649
-#endif
+﻿#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
@@ -10,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 	/// </summary>
 	[RequireComponent(typeof(Camera))]
 	[RequiresLayer(kHMDOnlyLayer)]
-	internal sealed class VRSmoothCamera : MonoBehaviour, IPreviewCamera
+	sealed class VRSmoothCamera : MonoBehaviour, IPreviewCamera
 	{
 		/// <summary>
 		/// The camera drawing the preview
@@ -109,3 +107,4 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 #endif
 	}
 }
+#endif

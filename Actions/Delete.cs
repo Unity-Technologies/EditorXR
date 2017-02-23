@@ -1,12 +1,12 @@
-﻿using System;
-using UnityEditor;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Delete", ActionMenuItemAttribute.DefaultActionSectionName, 7)]
-	internal sealed class Delete : BaseAction, IUsesSpatialHash
+	sealed class Delete : BaseAction, IUsesSpatialHash
 	{
 		public Action<GameObject> addToSpatialHash { private get; set; }
 		public Action<GameObject> removeFromSpatialHash { private get; set; }
@@ -24,3 +24,4 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 		}
 	}
 }
+#endif

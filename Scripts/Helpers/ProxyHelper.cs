@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
 	/// <summary>
 	/// Reference container for additional content origins on a device
 	/// </summary>
-	internal sealed class ProxyHelper : MonoBehaviour
+	sealed class ProxyHelper : MonoBehaviour
 	{
 		/// <summary>
 		/// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
@@ -63,3 +64,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		private Transform m_MeshRoot;
 	}
 }
+#endif

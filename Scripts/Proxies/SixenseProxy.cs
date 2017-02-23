@@ -1,9 +1,10 @@
-﻿using UnityEditor.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	internal sealed class SixenseProxy : TwoHandedProxyBase
+	sealed class SixenseProxy : TwoHandedProxyBase
 	{
 		private SixenseInputToEvents m_InputToEvents;
 
@@ -23,3 +24,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		}
 	}
 }
+#endif

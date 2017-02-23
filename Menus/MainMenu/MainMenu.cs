@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -9,7 +10,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	internal sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType
+	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -186,3 +187,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

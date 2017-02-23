@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -10,7 +11,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
+	sealed class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
 	{
 		private const float kPreviewDuration = 0.1f;
 		private const float kMaxPreviewScale = 0.2f;
@@ -506,3 +507,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

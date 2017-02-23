@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	internal sealed class DropDown : MonoBehaviour
+	sealed class DropDown : MonoBehaviour
 	{
 		Coroutine m_ShowDropdownCoroutine;
 		Coroutine m_HideDropdownCoroutine;
@@ -306,3 +307,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

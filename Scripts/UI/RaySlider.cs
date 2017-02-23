@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.EditorVR.Modules;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,7 +7,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	internal sealed class RaySlider : Slider, ISelectionFlags
+	sealed class RaySlider : Slider, ISelectionFlags
 	{
 		public SelectionFlags selectionFlags
 		{
@@ -59,3 +60,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

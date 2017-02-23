@@ -2,7 +2,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
 	[CustomEditor(typeof(NumericInputField))]
 	[CanEditMultipleObjects]
-	internal sealed class NumericInputFieldEditor : InputFieldEditor
+	sealed class NumericInputFieldEditor : InputFieldEditor
 	{
 		SerializedProperty m_NumberTypeProperty;
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -24,3 +25,4 @@ namespace UnityEditor.Experimental.EditorVR
 		Bounds outerBounds { get; }
 	}
 }
+#endif

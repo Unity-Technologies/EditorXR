@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -60,3 +61,4 @@ namespace UnityEditor.Experimental.EditorVR
 		event Action<Transform[], Transform> objectsDropped;
 	}
 }
+#endif

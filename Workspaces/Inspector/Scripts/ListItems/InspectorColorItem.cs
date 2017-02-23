@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorColorItem : InspectorPropertyItem
+	sealed class InspectorColorItem : InspectorPropertyItem
 	{
 #if UNITY_EDITOR
 		public override void Setup(InspectorData data)
@@ -144,3 +145,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #endif
 	}
 }
+#endif

@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	internal sealed class BlinkVisuals : MonoBehaviour
+	sealed class BlinkVisuals : MonoBehaviour
 	{
 		private enum State
 		{
@@ -396,3 +397,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 	}
 }
+#endif

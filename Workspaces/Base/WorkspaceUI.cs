@@ -1,16 +1,16 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Manipulators;
-using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef
+	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef
 	{
 		public event Action closeClicked;
 		public event Action resetSizeClicked;
@@ -580,3 +580,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

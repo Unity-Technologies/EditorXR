@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -9,7 +10,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	internal abstract class InputField : Selectable, ISelectionFlags
+	abstract class InputField : Selectable, ISelectionFlags
 	{
 		const float kMoveKeyboardTime = 0.2f;
 		public SelectionFlags selectionFlags
@@ -246,5 +247,5 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		protected abstract void Shift();
 		protected abstract void CapsLock();
 	}
-
 }
+#endif

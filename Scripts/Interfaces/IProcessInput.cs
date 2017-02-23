@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -16,3 +17,4 @@ namespace UnityEditor.Experimental.EditorVR
 		void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl);
 	}
 }
+#endif

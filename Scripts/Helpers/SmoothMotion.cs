@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
 	/// <summary>
 	/// Provides for smooth translation and/or rotation of an object
 	/// </summary>
-	internal sealed class SmoothMotion : MonoBehaviour
+	sealed class SmoothMotion : MonoBehaviour
 	{
 		const float kDefaultTighteningAmount = 20f;
 
@@ -114,3 +115,4 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		}
 	}
 }
+#endif

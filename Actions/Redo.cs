@@ -1,7 +1,8 @@
-﻿namespace UnityEditor.Experimental.EditorVR.Actions
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Redo", ActionMenuItemAttribute.DefaultActionSectionName, 1)]
-	internal sealed class Redo : BaseAction
+	sealed class Redo : BaseAction
 	{
 		public override void ExecuteAction()
 		{
@@ -11,3 +12,4 @@
 		}
 	}
 }
+#endif

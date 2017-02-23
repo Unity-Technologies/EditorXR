@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("OpenScene", "Scene")]
-	internal sealed class OpenScene : BaseAction
+	sealed class OpenScene : BaseAction
 	{
 		public override void ExecuteAction()
 		{
@@ -11,3 +12,4 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 		}
 	}
 }
+#endif

@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using Button = UnityEditor.Experimental.EditorVR.UI.Button;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorArrayHeaderItem : InspectorPropertyItem
+	sealed class InspectorArrayHeaderItem : InspectorPropertyItem
 	{
 		const float kExpandArrowRotateSpeed = 0.4f;
 		static readonly Quaternion kExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
@@ -23,3 +24,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

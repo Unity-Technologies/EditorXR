@@ -1,7 +1,4 @@
-﻿#if !UNITY_EDITOR
-#pragma warning disable 414
-#endif
-
+﻿#if UNITY_EDITOR
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -11,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 	/// <summary>
 	/// Updates a RawImage texture with data from an EditorWindowCapture
 	/// </summary>
-	internal sealed class EditorWindowCaptureUpdater : MonoBehaviour
+	sealed class EditorWindowCaptureUpdater : MonoBehaviour
 	{
 		[SerializeField]
 		private EditorWindowCapture m_EditorWindowCapture;
@@ -92,3 +89,4 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 #endif
 	}
 }
+#endif

@@ -1,7 +1,8 @@
-﻿namespace UnityEditor.Experimental.EditorVR.Actions
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Copy", ActionMenuItemAttribute.DefaultActionSectionName, 5)]
-	internal sealed class Copy : BaseAction
+	sealed class Copy : BaseAction
 	{
 		public override void ExecuteAction()
 		{
@@ -13,3 +14,4 @@
 		}
 	}
 }
+#endif

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -25,3 +26,4 @@ namespace UnityEditor.Experimental.EditorVR
 		DefaultRayVisibilityDelegate hideDefaultRay { set; }
 	}
 }
+#endif

@@ -1,16 +1,15 @@
+#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
-using UnityEngine.UI;
-using UnityEditor.Experimental.EditorVR.Actions;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	internal sealed class RadialMenuUI : MonoBehaviour
+	sealed class RadialMenuUI : MonoBehaviour
 	{
 		const float kPhaseOffset = 90f; // Correcting the coordinates, so that 0 degrees is at the top of the radial menu
 		const int kSlotCount = 16;
@@ -325,3 +324,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

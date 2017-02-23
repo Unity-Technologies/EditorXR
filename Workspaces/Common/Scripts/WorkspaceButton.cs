@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -8,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef
+	sealed class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef
 	{
 		const float kIconHighlightedLocalZOffset = -0.0015f;
 		const string kMaterialAlphaProperty = "_Alpha";
@@ -464,3 +465,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

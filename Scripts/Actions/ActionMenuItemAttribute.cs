@@ -1,4 +1,5 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Attribute used to tag Action classes in order to be added to VR menus
@@ -24,3 +25,4 @@
 		}
 	}
 }
+#endif

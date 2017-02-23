@@ -1,7 +1,4 @@
-﻿#if !UNITY_EDITOR
-#pragma warning disable 414
-#endif
-
+﻿#if UNITY_EDITOR
 using ListView;
 using System;
 using System.Collections.Generic;
@@ -11,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight, IUsesGameObjectLocking, IUsesStencilRef
+	sealed class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight, IUsesGameObjectLocking, IUsesStencilRef
 	{
 		const string kMaterialStencilRef = "_StencilRef";
 		const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
@@ -54,9 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				base.data = value;
 				m_ExpandStates.Clear();
 
-#if UNITY_EDITOR
 				ExpandComponentRows(data);
-#endif
 			}
 		}
 
@@ -71,7 +66,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
 
-#if UNITY_EDITOR
 		protected override void Setup()
 		{
 			base.Setup();
@@ -279,6 +273,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ObjectUtils.Destroy(m_NoClipHighlightMaterial);
 			ObjectUtils.Destroy(m_NoClipHighlightMaskMaterial);
 		}
-#endif
 	}
 }
+#endif

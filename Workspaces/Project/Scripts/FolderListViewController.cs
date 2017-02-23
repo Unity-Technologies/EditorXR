@@ -1,4 +1,5 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class FolderListViewController : NestedListViewController<FolderData>
+	sealed class FolderListViewController : NestedListViewController<FolderData>
 	{
 		private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -151,3 +152,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

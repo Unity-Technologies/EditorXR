@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.DefaultActionSectionName, 6)]
-	internal sealed class Paste : BaseAction, IUsesSpatialHash
+	sealed class Paste : BaseAction, IUsesSpatialHash
 	{
 		public static GameObject[] buffer
 		{
@@ -54,3 +55,4 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 		}
 	}
 }
+#endif

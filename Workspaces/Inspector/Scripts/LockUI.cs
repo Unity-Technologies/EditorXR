@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -6,7 +7,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	internal sealed class LockUI : MonoBehaviour, IUsesStencilRef
+	sealed class LockUI : MonoBehaviour, IUsesStencilRef
 	{
 		[SerializeField]
 		Image m_LockImage;
@@ -55,3 +56,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif
