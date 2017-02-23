@@ -51,6 +51,7 @@ namespace UnityEditor.Experimental.EditorVR
 		MultipleRayInputModule m_InputModule;
 		PixelRaycastModule m_PixelRaycastModule;
 		WorkspaceModule m_WorkspaceModule;
+		TooltipModule m_TooltipModule;
 
 		DirectSelection m_DirectSelection;
 		Interfaces m_Interfaces;
@@ -150,6 +151,11 @@ namespace UnityEditor.Experimental.EditorVR
 			m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
 			m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
 
+			m_TooltipModule = AddModule<TooltipModule>();
+			m_Interfaces.ConnectInterfaces(m_TooltipModule);
+			m_InputModule.rayEntered += m_TooltipModule.OnRayEntered;
+			m_InputModule.rayExited += m_TooltipModule.OnRayExited;
+
 			m_PixelRaycastModule = AddModule<PixelRaycastModule>();
 			m_PixelRaycastModule.ignoreRoot = transform;
 			m_PixelRaycastModule.raycastCamera = m_UI.eventCamera;
@@ -181,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_WorkspaceModule.workspaceDestroyed += m_Vacuumables.OnWorkspaceDestroyed;
 			m_WorkspaceModule.workspaceDestroyed += (workspace) => { m_Interfaces.DisconnectInterfaces(workspace); };
 			m_WorkspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
-		
+
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
 			m_SceneObjectModule = AddModule<SceneObjectModule>();

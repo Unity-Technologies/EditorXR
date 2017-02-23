@@ -7,8 +7,10 @@ using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Handles;
 using UnityEngine.Experimental.EditorVR.Menus;
 using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine.Experimental.EditorVR.UI;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
+using Button = UnityEngine.UI.Button;
 using UnityEngine.InputNew;
 
 [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
@@ -116,6 +118,10 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 		{
 			connectInterfaces(mb);
 		}
+
+		var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();
+		if (zoomTooltip)
+			zoomTooltip.tooltipText = "Drag the Handle to Zoom the Mini World";
 
 		var frontHandle = m_WorkspaceUI.directManipulator.GetComponent<BaseHandle>();
 		frontHandle.dragStarted += DragStarted;
