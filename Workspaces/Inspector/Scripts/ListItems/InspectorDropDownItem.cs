@@ -10,8 +10,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class InspectorDropDownItem : InspectorPropertyItem
 	{
-		const string kNothing = "Nothing";
-		const string kEverything = "Everything";
+		const string k_Nothing = "Nothing";
+		const string k_Everything = "Everything";
 
 		[SerializeField]
 		DropDown m_DropDown;
@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				m_DropDown.multiSelect = true;
 
-				var options = new List<string> { kNothing, kEverything };
+				var options = new List<string> { k_Nothing, k_Everything };
 				options.AddRange(InternalEditorUtility.layers);
 				m_DropDown.options = options.ToArray();
 

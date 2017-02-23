@@ -16,13 +16,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
 	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking
 	{
-		private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below
-		private const float kInitReferenceScale = 15f; // We want to see a big region by default
+		private static readonly float k_InitReferenceYOffset = k_DefaultBounds.y / 2.001f; // Show more space above ground than below
+		private const float k_InitReferenceScale = 15f; // We want to see a big region by default
 
 		//TODO: replace with dynamic values once spatial hash lands
 		// Scale slider min/max (maps to referenceTransform uniform scale)
-		private const float kMinZoomScale = 0.1f;
-		private const float kMaxZoomScale = 200f;
+		private const float k_MinZoomScale = 0.1f;
+		private const float k_MaxZoomScale = 200f;
 
 		[SerializeField]
 		private GameObject m_ContentPrefab;
@@ -69,8 +69,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.25f);
-			m_CustomStartingBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.5f);
+			minBounds = new Vector3(k_MinBounds.x, k_MinBounds.y, 0.25f);
+			m_CustomStartingBounds = new Vector3(k_MinBounds.x, k_MinBounds.y, 0.5f);
 
 			base.Setup();
 
@@ -101,8 +101,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// Set up MiniWorld
 			m_MiniWorld = GetComponentInChildren<MiniWorld>();
-			m_MiniWorld.referenceTransform.position = Vector3.up * kInitReferenceYOffset * kInitReferenceScale;
-			m_MiniWorld.referenceTransform.localScale = Vector3.one * kInitReferenceScale;
+			m_MiniWorld.referenceTransform.position = Vector3.up * k_InitReferenceYOffset * k_InitReferenceScale;
+			m_MiniWorld.referenceTransform.localScale = Vector3.one * k_InitReferenceScale;
 
 			// Set up ControlBox
 			var panZoomHandle = m_MiniWorldUI.panZoomHandle;
@@ -120,10 +120,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var UI = ObjectUtils.Instantiate(m_UIPrefab, m_WorkspaceUI.frontPanel, false);
 			m_ZoomSliderUI = UI.GetComponentInChildren<ZoomSliderUI>();
 			m_ZoomSliderUI.sliding += OnSliding;
-			m_ZoomSliderUI.zoomSlider.maxValue = kMaxZoomScale;
-			m_ZoomSliderUI.zoomSlider.minValue = kMinZoomScale;
+			m_ZoomSliderUI.zoomSlider.maxValue = k_MaxZoomScale;
+			m_ZoomSliderUI.zoomSlider.minValue = k_MinZoomScale;
 			m_ZoomSliderUI.zoomSlider.direction = Slider.Direction.RightToLeft; // Invert direction for expected ux; zoom in as slider moves left to right
-			m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
+			m_ZoomSliderUI.zoomSlider.value = k_InitReferenceScale;
 			foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
 			{
 				connectInterfaces(mb);
@@ -276,10 +276,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void ResetChessboard()
 		{
-			ScaleMiniWorld(kInitReferenceScale);
+			ScaleMiniWorld(k_InitReferenceScale);
 			m_ZoomSliderUI.zoomSlider.value = m_MiniWorld.referenceTransform.localScale.x;
 
-			this.RestartCoroutine(ref m_UpdateLocationCoroutine, UpdateLocation(Vector3.up * kInitReferenceYOffset * kInitReferenceScale));
+			this.RestartCoroutine(ref m_UpdateLocationCoroutine, UpdateLocation(Vector3.up * k_InitReferenceYOffset * k_InitReferenceScale));
 		}
 
 		IEnumerator UpdateLocation(Vector3 targetPosition)

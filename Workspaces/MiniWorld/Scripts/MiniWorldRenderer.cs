@@ -5,13 +5,13 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	[RequiresTag(kMiniWorldCameraTag)]
+	[RequiresTag(k_MiniWorldCameraTag)]
 	[RequiresTag(ShowInMiniWorldTag)]
 	sealed class MiniWorldRenderer : MonoBehaviour
 	{
 		public const string ShowInMiniWorldTag = "ShowInMiniWorld";
-		const string kMiniWorldCameraTag = "MiniWorldCamera";
-		const float kMinScale = 0.001f;
+		const string k_MiniWorldCameraTag = "MiniWorldCamera";
+		const float k_MinScale = 0.001f;
 
 		static int s_DefaultLayer;
 
@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void OnEnable()
 		{
 			GameObject go = new GameObject("MiniWorldCamera", typeof(Camera));
-			go.tag = kMiniWorldCameraTag;
+			go.tag = k_MiniWorldCameraTag;
 			go.hideFlags = HideFlags.DontSave;
 			m_MiniCamera = go.GetComponent<Camera>();
 			go.SetActive(false);
@@ -68,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void RenderMiniWorld(Camera camera)
 		{
 			// Do not render if miniWorld scale is too low to avoid errors in the console
-			if (!camera.gameObject.CompareTag(kMiniWorldCameraTag) && miniWorld && miniWorld.transform.lossyScale.magnitude > kMinScale)
+			if (!camera.gameObject.CompareTag(k_MiniWorldCameraTag) && miniWorld && miniWorld.transform.lossyScale.magnitude > k_MinScale)
 			{
 				m_MiniCamera.CopyFrom(camera);
 

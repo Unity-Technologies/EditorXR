@@ -12,12 +12,12 @@ namespace UnityEngine.InputNew
 	public class OVRTouchInputToEvents : MonoBehaviour
 	{
 #if ENABLE_OVR_INPUT
-		const uint kControllerCount = 2;
-		const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
+		const uint k_ControllerCount = 2;
+		const int k_AxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
 		
-		float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
-		Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
-		Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
+		float[,] m_LastAxisValues = new float[k_ControllerCount, k_AxisCount];
+		Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
+		Quaternion[] m_LastRotationValues = new Quaternion[k_ControllerCount];
 #endif
 
 		public bool active { get; private set; }
@@ -76,7 +76,7 @@ namespace UnityEngine.InputNew
 
 		private void SendAxisEvents(OVRInput.Controller controller, int ovrIndex, int deviceIndex)
 		{
-			for (var axis = 0; axis < kAxisCount; ++axis)
+			for (var axis = 0; axis < k_AxisCount; ++axis)
 			{
 				float value;
 				if (GetAxis(controller, (VRInputDevice.VRControl)axis, out value))

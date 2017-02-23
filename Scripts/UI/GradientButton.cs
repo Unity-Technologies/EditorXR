@@ -12,10 +12,10 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
 	sealed class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 	{
-		const float kIconHighlightedLocalZOffset = -0.0015f;
-		const string kMaterialAlphaProperty = "_Alpha";
-		const string kMaterialColorTopProperty = "_ColorTop";
-		const string kMaterialColorBottomProperty = "_ColorBottom";
+		const float k_IconHighlightedLocalZOffset = -0.0015f;
+		const string k_MaterialAlphaProperty = "_Alpha";
+		const string k_MaterialColorTopProperty = "_ColorTop";
+		const string k_MaterialColorBottomProperty = "_ColorBottom";
 
 		public event Action onClick;
 
@@ -180,8 +180,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			m_OriginalLocalScale = transform.localScale;
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_OriginalContentContainerLocalScale = m_ContentContainer.localScale;
-			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
-			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * kIconHighlightedLocalZOffset;
+			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * k_IconHighlightedLocalZOffset;
+			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * k_IconHighlightedLocalZOffset;
 
 			m_Icon.color = m_NormalContentColor;
 			m_Text.color = m_NormalContentColor;
@@ -215,7 +215,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		IEnumerator AnimateShow()
 		{
 			m_CanvasGroup.interactable = false;
-			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 0f);
+			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 			m_ContentContainer.localScale = m_OriginalContentContainerLocalScale;
 			SetMaterialColors(normalGradientPair);
 
@@ -233,7 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = scale;
-				m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, scale.y);
+				m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, scale.y);
 
 				// Perform initial delay
 				while (delay < m_DelayBeforeReveal)
@@ -247,7 +247,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				yield return null;
 			}
 
-			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 1f);
+			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 1f);
 			transform.localScale = m_OriginalLocalScale;
 			m_VisibilityCoroutine = null;
 		}
@@ -259,7 +259,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			Debug.LogError("Animate hide");
 			m_CanvasGroup.interactable = false;
-			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 0f);
+			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 
 			const float kTotalDuration = 0.25f;
 			var scale = transform.localScale;
@@ -271,12 +271,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				currentDuration += Time.unscaledDeltaTime;
 				scale = MathUtilsExt.SmoothDamp(scale, hiddenLocalScale, ref smoothVelocity, kTotalDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				transform.localScale = scale;
-				m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, scale.z);
+				m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, scale.z);
 
 				yield return null;
 			}
 
-			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 0f);
+			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 			transform.localScale = hiddenLocalScale;
 			m_VisibilityCoroutine = null;
 			gameObject.SetActive(false);
@@ -513,8 +513,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		GradientPair GetMaterialColors()
 		{
 			GradientPair gradientPair;
-			gradientPair.a = m_ButtonMaterial.GetColor(kMaterialColorTopProperty);
-			gradientPair.b = m_ButtonMaterial.GetColor(kMaterialColorBottomProperty);
+			gradientPair.a = m_ButtonMaterial.GetColor(k_MaterialColorTopProperty);
+			gradientPair.b = m_ButtonMaterial.GetColor(k_MaterialColorBottomProperty);
 			return gradientPair;
 		}
 
@@ -524,8 +524,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// <param name="gradientPair">The gradient pair to set on this button's material</param>
 		public void SetMaterialColors(GradientPair gradientPair)
 		{
-			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, gradientPair.a);
-			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, gradientPair.b);
+			m_ButtonMaterial.SetColor(k_MaterialColorTopProperty, gradientPair.a);
+			m_ButtonMaterial.SetColor(k_MaterialColorBottomProperty, gradientPair.b);
 		}
 	}
 }

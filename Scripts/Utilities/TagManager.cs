@@ -5,8 +5,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 {
 	static class TagManager
 	{
-		const int kMaxLayer = 31;
-		const int kMinLayer = 8;
+		const int k_MaxLayer = 31;
+		const int k_MinLayer = 8;
 
 		/// <summary>
 		/// Add a tag to the tag manager if it doesn't already exist
@@ -66,7 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				if (!found)
 				{
 					var added = false;
-					for (var i = kMaxLayer; i >= kMinLayer; i--)
+					for (var i = k_MaxLayer; i >= k_MinLayer; i--)
 					{
 						var layer = layers.GetArrayElementAtIndex(i);
 						if (!string.IsNullOrEmpty(layer.stringValue))

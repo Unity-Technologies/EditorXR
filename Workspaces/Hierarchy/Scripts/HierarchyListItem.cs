@@ -10,10 +10,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class HierarchyListItem : ListViewItem<HierarchyData>
 	{
-		const float kMargin = 0.01f;
-		const float kIndent = 0.02f;
+		const float k_Margin = 0.01f;
+		const float k_Indent = 0.02f;
 
-		const float kExpandArrowRotateSpeed = 0.4f;
+		const float k_ExpandArrowRotateSpeed = 0.4f;
 
 		[SerializeField]
 		Text m_Text;
@@ -96,9 +96,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var arrowWidth = expandArrowTransform.localScale.x * 0.5f;
 			var halfWidth = width * 0.5f;
-			var indent = kIndent * depth;
-			var doubleMargin = kMargin * 2;
-			expandArrowTransform.localPosition = new Vector3(kMargin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
+			var indent = k_Indent * depth;
+			var doubleMargin = k_Margin * 2;
+			expandArrowTransform.localPosition = new Vector3(k_Margin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
 
 			// Text is next to arrow, with a margin and indent, rotated toward camera
 			var textTransform = m_Text.transform;
@@ -125,7 +125,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			// Rotate arrow for expand state
 			expandArrowTransform.localRotation = Quaternion.Lerp(expandArrowTransform.localRotation,
 				Quaternion.AngleAxis(90f, Vector3.right) * (expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
-				immediate ? 1f : kExpandArrowRotateSpeed);
+				immediate ? 1f : k_ExpandArrowRotateSpeed);
 		}
 
 		void ToggleExpanded(BaseHandle handle, HandleEventData eventData)

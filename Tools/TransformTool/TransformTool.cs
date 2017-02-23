@@ -12,8 +12,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility
 	{
-		const float kLazyFollowTranslate = 8f;
-		const float kLazyFollowRotate = 12f;
+		const float k_LazyFollowTranslate = 8f;
+		const float k_LazyFollowRotate = 12f;
 
 		class GrabData
 		{
@@ -359,21 +359,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				var deltaTime = Time.unscaledDeltaTime;
 				var manipulatorTransform = manipulatorGameObject.transform;
-				manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, kLazyFollowTranslate * deltaTime);
+				manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, k_LazyFollowTranslate * deltaTime);
 
 #if UNITY_EDITOR
 				if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
-					manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, kLazyFollowRotate * deltaTime);
+					manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, k_LazyFollowRotate * deltaTime);
 #endif
 
 				foreach (var t in Selection.transforms)
 				{
-					t.rotation = Quaternion.Slerp(t.rotation, m_TargetRotation * m_RotationOffsets[t], kLazyFollowRotate * deltaTime);
+					t.rotation = Quaternion.Slerp(t.rotation, m_TargetRotation * m_RotationOffsets[t], k_LazyFollowRotate * deltaTime);
 
 #if UNITY_EDITOR
 					if (m_PivotMode == PivotMode.Center) // Rotate the position offset from the manipulator when rotating around center
 					{
-						m_PositionOffsetRotation = Quaternion.Slerp(m_PositionOffsetRotation, m_TargetRotation * Quaternion.Inverse(m_StartRotation), kLazyFollowRotate * deltaTime);
+						m_PositionOffsetRotation = Quaternion.Slerp(m_PositionOffsetRotation, m_TargetRotation * Quaternion.Inverse(m_StartRotation), k_LazyFollowRotate * deltaTime);
 						t.position = manipulatorTransform.position + m_PositionOffsetRotation * m_PositionOffsets[t];
 					}
 					else
@@ -382,7 +382,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						t.position = manipulatorTransform.position + m_PositionOffsets[t];
 					}
 
-					t.localScale = Vector3.Lerp(t.localScale, Vector3.Scale(m_TargetScale, m_ScaleOffsets[t]), kLazyFollowTranslate * deltaTime);
+					t.localScale = Vector3.Lerp(t.localScale, Vector3.Scale(m_TargetScale, m_ScaleOffsets[t]), k_LazyFollowTranslate * deltaTime);
 				}
 			}
 		}

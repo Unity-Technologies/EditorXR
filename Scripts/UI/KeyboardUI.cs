@@ -13,12 +13,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
 	sealed class KeyboardUI : MonoBehaviour
 	{
-		const float kDragWaitTime = 0.2f;
-		const float kKeyLayoutTransitionTime = 0.5f;
-		const float kKeyExpandCollapseTime = 0.25f;
-		const float kHandleChangeColorTime = 0.1f;
-		const float kHorizontalThreshold = 0.7f;
-		static Color sHandleDragColor = UnityBrandColorScheme.green;
+		const float k_DragWaitTime = 0.2f;
+		const float k_KeyLayoutTransitionTime = 0.5f;
+		const float k_KeyExpandCollapseTime = 0.25f;
+		const float k_HandleChangeColorTime = 0.1f;
+		const float k_HorizontalThreshold = 0.7f;
+		static Color s_HandleDragColor = UnityBrandColorScheme.green;
 
 		[SerializeField]
 		List<KeyboardButton> m_Buttons = new List<KeyboardButton>();
@@ -139,7 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				var targetPos = horizontal
 					? m_HorizontalLayoutTransforms[i].position
 					: m_VerticalLayoutTransforms[i].position;
-				m_Buttons[i].MoveToPosition(targetPos, kKeyExpandCollapseTime);
+				m_Buttons[i].MoveToPosition(targetPos, k_KeyExpandCollapseTime);
 				i++;
 				yield return null;
 			}
@@ -155,7 +155,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			foreach (var button in m_Buttons)
 			{
-				button.SetTextAlpha(alpha, kHandleChangeColorTime);
+				button.SetTextAlpha(alpha, k_HandleChangeColorTime);
 			}
 		}
 
@@ -195,7 +195,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				}
 
 				var targetPos = handleButton.transform.position;
-				m_Buttons[m_Buttons.Count - 1 - i].MoveToPosition(targetPos, kKeyExpandCollapseTime);
+				m_Buttons[m_Buttons.Count - 1 - i].MoveToPosition(targetPos, k_KeyExpandCollapseTime);
 				i++;
 				yield return null;
 			}
@@ -248,7 +248,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			}
 		}
 
-		IEnumerator MoveKeysToLayoutPositions(float duration = kKeyLayoutTransitionTime)
+		IEnumerator MoveKeysToLayoutPositions(float duration = k_KeyLayoutTransitionTime)
 		{
 			var horizontal = IsHorizontal();
 			var t = 0f;
@@ -328,7 +328,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		bool IsHorizontal()
 		{
-			return Vector3.Dot(transform.up, Vector3.up) < kHorizontalThreshold
+			return Vector3.Dot(transform.up, Vector3.up) < k_HorizontalThreshold
 				&& Vector3.Dot(transform.forward, Vector3.up) < 0f;
 		}
 
@@ -358,7 +358,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		IEnumerator DragAfterDelay()
 		{
 			var t = 0f;
-			while (t < kDragWaitTime)
+			while (t < k_DragWaitTime)
 			{
 				t += Time.unscaledDeltaTime;
 				yield return null;
@@ -385,15 +385,15 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			if (!gameObject.activeInHierarchy) yield break;
 			var t = 0f;
 			var startColor = m_HandleMaterial.color;
-			while (t < kHandleChangeColorTime)
+			while (t < k_HandleChangeColorTime)
 			{
-				var alpha = t / kHandleChangeColorTime;
-				m_HandleMaterial.color = Color.Lerp(startColor, sHandleDragColor, alpha);
+				var alpha = t / k_HandleChangeColorTime;
+				m_HandleMaterial.color = Color.Lerp(startColor, s_HandleDragColor, alpha);
 				t += Time.unscaledDeltaTime;
 				yield return null;
 			}
 
-			m_HandleMaterial.color = sHandleDragColor;
+			m_HandleMaterial.color = s_HandleDragColor;
 
 			m_ChangeDragColorsCoroutine = null;
 		}
@@ -404,9 +404,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 			var t = 0f;
 			var startColor = m_HandleMaterial.color;
-			while (t < kHandleChangeColorTime)
+			while (t < k_HandleChangeColorTime)
 			{
-				var alpha = t / kHandleChangeColorTime;
+				var alpha = t / k_HandleChangeColorTime;
 				m_HandleMaterial.color = Color.Lerp(startColor, handleButton.targetMeshBaseColor, alpha);
 				t += Time.unscaledDeltaTime;
 				yield return null;
@@ -425,7 +425,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				if (m_CurrentlyHorizontal != horizontal)
 				{
 					this.StopCoroutine(ref m_MoveKeysCoroutine);
-					m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(kKeyExpandCollapseTime));
+					m_MoveKeysCoroutine = StartCoroutine(MoveKeysToLayoutPositions(k_KeyExpandCollapseTime));
 
 					m_CurrentlyHorizontal = horizontal;
 				}

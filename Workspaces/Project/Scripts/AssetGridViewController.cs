@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IConnectInterfaces
 	{
-		private const float kPositionFollow = 0.4f;
+		private const float k_PositionFollow = 0.4f;
 
 		private Transform m_GrabbedObject;
 
@@ -175,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var t = item.transform;
 			var zOffset = itemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
 			var xOffset = itemSize.x * (offset % m_NumPerRow);
-			t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, kPositionFollow);
+			t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, k_PositionFollow);
 			t.localRotation = Quaternion.identity;
 		}
 

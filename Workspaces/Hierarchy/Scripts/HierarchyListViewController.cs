@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class HierarchyListViewController : NestedListViewController<HierarchyData>
 	{
-		const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
+		const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 		[SerializeField]
 		Material m_TextMaterial;
@@ -48,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var hierarchyItem = (HierarchyListItem)item;
 
-			hierarchyItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.instanceID == m_SelectedRow);
+			hierarchyItem.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, data.instanceID == m_SelectedRow);
 
 			SetMaterialClip(hierarchyItem.cubeMaterial, transform.worldToLocalMatrix);
 

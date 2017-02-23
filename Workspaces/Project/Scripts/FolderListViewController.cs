@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class FolderListViewController : NestedListViewController<FolderData>
 	{
-		private const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
+		private const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 		[SerializeField]
 		private Material m_TextMaterial;
@@ -64,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var folderItem = (FolderListItem)item;
 
-			folderItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.guid == m_SelectedFolder);
+			folderItem.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, data.guid == m_SelectedFolder);
 
 			SetMaterialClip(folderItem.cubeMaterial, transform.worldToLocalMatrix);
 

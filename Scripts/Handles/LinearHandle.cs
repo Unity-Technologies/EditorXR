@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		[SerializeField]
 		bool m_OrientDragPlaneToRay = true;
 
-		private const float kMaxDragDistance = 1000f;
+		private const float k_MaxDragDistance = 1000f;
 
 		private Plane m_Plane;
 		private Vector3 m_LastPosition;
@@ -106,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			float distance = 0f;
 			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
 			if (m_Plane.Raycast(ray, out distance))
-				worldPosition = ray.GetPoint(Mathf.Min(distance, kMaxDragDistance));
+				worldPosition = ray.GetPoint(Mathf.Min(distance, k_MaxDragDistance));
 
 			var linearEventData = eventData as LinearHandleEventData;
 			linearEventData.raycastHitWorldPosition = worldPosition;

@@ -13,11 +13,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	static class UIUtils
 	{
 		public const float DoubleClickIntervalMax = 0.3f;
-		const float kDoubleClickIntervalMin = 0.15f;
+		const float k_DoubleClickIntervalMin = 0.15f;
 
 		public static bool IsDoubleClick(float timeSinceLastClick)
 		{
-			return timeSinceLastClick <= DoubleClickIntervalMax && timeSinceLastClick >= kDoubleClickIntervalMin;
+			return timeSinceLastClick <= DoubleClickIntervalMax && timeSinceLastClick >= k_DoubleClickIntervalMin;
 		}
 
 		public static bool IsDirectEvent(RayEventData eventData)

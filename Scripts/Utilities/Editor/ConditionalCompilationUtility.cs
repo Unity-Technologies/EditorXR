@@ -32,15 +32,15 @@ namespace ConditionalCompilationUtility
 	[InitializeOnLoad]
 	public class ConditionalCompilationUtility
 	{
-		const string kEnableCCU = "UNITY_CCU";
+		const string k_EnableCCU = "UNITY_CCU";
 
 		static ConditionalCompilationUtility()
 		{
 			var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
 			var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList<string>();
-			if (!defines.Contains(kEnableCCU, StringComparer.OrdinalIgnoreCase))
+			if (!defines.Contains(k_EnableCCU, StringComparer.OrdinalIgnoreCase))
 			{
-				defines.Add(kEnableCCU);
+				defines.Add(k_EnableCCU);
 				PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines.ToArray()));
 
 				// This will trigger another re-compile, which needs to happen, so all the custom attributes will be visible
@@ -58,7 +58,7 @@ namespace ConditionalCompilationUtility
 
 				foreach (var conditional in conditionals)
 				{
-					if (string.Equals(conditional.ConditionString, kEnableCCU, StringComparison.OrdinalIgnoreCase))
+					if (string.Equals(conditional.ConditionString, k_EnableCCU, StringComparison.OrdinalIgnoreCase))
 					{
 						var dependentClassField = type.GetField(kDependentClass);
 						if (dependentClassField == null)

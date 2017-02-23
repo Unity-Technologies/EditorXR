@@ -9,8 +9,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
 	sealed class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged
 	{
-		const float kYBounds = 0.2f;
-		const float kScrollMargin = 0.03f;
+		const float k_YBounds = 0.2f;
+		const float k_ScrollMargin = 0.03f;
 
 		[SerializeField]
 		GameObject m_ContentPrefab;
@@ -55,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(0.375f, kMinBounds.y, 0.5f);
+			minBounds = new Vector3(0.375f, k_MinBounds.y, 0.5f);
 			m_CustomStartingBounds = minBounds;
 
 			base.Setup();
@@ -102,20 +102,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var bounds = contentBounds;
 			var size = bounds.size;
-			size.y = kYBounds;
+			size.y = k_YBounds;
 			size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
 			size.z = size.z - depthCompensation;
 			bounds.size = size;
 			bounds.center = Vector3.zero;
 
-			const float kHalfScrollMargin = kScrollMargin * 0.5f;
-			const float kDoubleScrollMargin = kScrollMargin * 2;
+			const float kHalfScrollMargin = k_ScrollMargin * 0.5f;
+			const float kDoubleScrollMargin = k_ScrollMargin * 2;
 			const float kScrollHandleXPositionOffset = 0.025f;
 			const float kScrollHandleXScaleOffset = 0.015f;
 
 			var scrollHandleTransform = m_HierarchyUI.scrollHandle.transform;
 			scrollHandleTransform.localPosition = new Vector3(-kHalfScrollMargin + kScrollHandleXPositionOffset, -scrollHandleTransform.localScale.y * 0.5f, 0);
-			scrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin + kScrollHandleXScaleOffset, scrollHandleTransform.localScale.y, size.z + kDoubleScrollMargin);
+			scrollHandleTransform.localScale = new Vector3(size.x + k_ScrollMargin + kScrollHandleXScaleOffset, scrollHandleTransform.localScale.y, size.z + kDoubleScrollMargin);
 
 			var listView = m_HierarchyUI.listView;
 			bounds.size = size;

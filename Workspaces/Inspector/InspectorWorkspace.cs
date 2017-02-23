@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
 	sealed class InspectorWorkspace : Workspace, ISelectionChanged
 	{
-		public new static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
+		public static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 
 		[SerializeField]
 		GameObject m_ContentPrefab;
@@ -29,8 +29,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(0.375f, kMinBounds.y, 0.3f);
-			m_CustomStartingBounds = new Vector3(0.375f, kMinBounds.y, 0.6f);
+			minBounds = new Vector3(0.375f, k_MinBounds.y, 0.3f);
+			m_CustomStartingBounds = new Vector3(0.375f, k_MinBounds.y, 0.6f);
 
 			base.Setup();
 			var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);

@@ -13,11 +13,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
 	{
-		private const float kPreviewDuration = 0.1f;
-		private const float kMaxPreviewScale = 0.2f;
-		private const float kRotateSpeed = 50f;
-		private const float kTransitionDuration = 0.1f;
-		const int kPreviewRenderQueue = 9200;
+		private const float k_PreviewDuration = 0.1f;
+		private const float k_MaxPreviewScale = 0.2f;
+		private const float k_RotateSpeed = 50f;
+		private const float k_TransitionDuration = 0.1f;
+		const int k_PreviewRenderQueue = 9200;
 
 		[SerializeField]
 		private Text m_Text;
@@ -97,7 +97,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					ObjectUtils.Destroy(m_SphereMaterial);
 
 				m_SphereMaterial = Instantiate(value);
-				m_SphereMaterial.renderQueue = kPreviewRenderQueue;
+				m_SphereMaterial.renderQueue = k_PreviewRenderQueue;
 				m_Sphere.sharedMaterial = m_SphereMaterial;
 				m_Sphere.gameObject.SetActive(true);
 
@@ -128,7 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					ObjectUtils.Destroy(m_SphereMaterial);
 
 				m_SphereMaterial = new Material(Shader.Find("Standard")) { mainTexture = value };
-				m_SphereMaterial.renderQueue = kPreviewRenderQueue;
+				m_SphereMaterial.renderQueue = k_PreviewRenderQueue;
 				m_Sphere.sharedMaterial = m_SphereMaterial;
 			}
 		}
@@ -205,7 +205,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_TextPanel.transform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
 
 			if (m_Sphere.gameObject.activeInHierarchy)
-				m_Sphere.transform.Rotate(Vector3.up, kRotateSpeed * Time.unscaledDeltaTime, Space.Self);
+				m_Sphere.transform.Rotate(Vector3.up, k_RotateSpeed * Time.unscaledDeltaTime, Space.Self);
 
 			if (data.type == "Scene")
 			{
@@ -274,11 +274,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (previewExtents.z > m_GrabPreviewPivotOffset.z)
 				m_GrabPreviewPivotOffset.z = previewExtents.z;
 
-			if (maxComponent > kMaxPreviewScale)
+			if (maxComponent > k_MaxPreviewScale)
 			{
 				// Object will be preview at the maximum scale
-				m_GrabPreviewTargetScale = Vector3.one * kMaxPreviewScale;
-				m_GrabPreviewPivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * kMaxPreviewScale;
+				m_GrabPreviewTargetScale = Vector3.one * k_MaxPreviewScale;
+				m_GrabPreviewPivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * k_MaxPreviewScale;
 			}
 
 			m_PreviewObjectTransform.gameObject.SetActive(false);
@@ -394,9 +394,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var targetPreviewScale = @out ? Vector3.zero : m_PreviewTargetScale;
 
 			var startTime = Time.realtimeSinceStartup;
-			while (Time.realtimeSinceStartup - startTime < kPreviewDuration)
+			while (Time.realtimeSinceStartup - startTime < k_PreviewDuration)
 			{
-				var t = (Time.realtimeSinceStartup - startTime) / kPreviewDuration;
+				var t = (Time.realtimeSinceStartup - startTime) / k_PreviewDuration;
 
 				icon.transform.localScale = Vector3.Lerp(currentIconScale, targetIconScale, t);
 				m_PreviewObjectTransform.transform.localScale = Vector3.Lerp(currentPreviewScale, targetPreviewScale, t);
@@ -429,10 +429,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var currentScale = transform.localScale;
 			var targetScale = visible ? Vector3.one * scaleFactor : Vector3.zero;
 
-			while (currentTime < kTransitionDuration)
+			while (currentTime < k_TransitionDuration)
 			{
 				currentTime += Time.unscaledDeltaTime;
-				transform.localScale = Vector3.Lerp(currentScale, targetScale, currentTime / kTransitionDuration);
+				transform.localScale = Vector3.Lerp(currentScale, targetScale, currentTime / k_TransitionDuration);
 				yield return null;
 			}
 

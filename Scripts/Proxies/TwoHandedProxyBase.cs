@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 {
 	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
 	{
-		const int kRendererQueue = 9000;
+		const int k_RendererQueue = 9000;
 
 		[SerializeField]
 		protected GameObject m_LeftHandProxyPrefab;
@@ -113,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			// Move controllers up into EVR range, so they render properly over our UI (e.g. manipulators)
 			foreach (var m in m_Materials)
 			{
-				m.renderQueue = kRendererQueue;
+				m.renderQueue = k_RendererQueue;
 			}
 		}
 

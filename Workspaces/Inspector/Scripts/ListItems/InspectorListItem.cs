@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight, IRequestStencilRef
 	{
-		const float kIndent = 0.02f;
+		const float k_Indent = 0.02f;
 
 		protected CuboidLayout m_CuboidLayout;
 
@@ -143,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (depth > 0) // Lose one level of indentation because everything is a child of the header
 				depth--;
 
-			var indent = kIndent * depth;
+			var indent = k_Indent * depth;
 			m_UIContainer.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, indent, width - indent);
 
 			if (m_CuboidLayout)

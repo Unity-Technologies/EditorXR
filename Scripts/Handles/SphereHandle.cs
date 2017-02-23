@@ -15,8 +15,8 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			public SphereHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) {}
 		}
 
-		private const float kInitialScrollRate = 2f;
-		private const float kScrollAcceleration = 14f;
+		private const float k_InitialScrollRate = 2f;
+		private const float k_ScrollAcceleration = 14f;
 
 		readonly static float kScaleBump = 1.1f;
 		
@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 			m_LastPosition = GetRayPoint(eventData);
 
-			m_ScrollRate = kInitialScrollRate;
+			m_ScrollRate = k_InitialScrollRate;
 
 			base.OnHandleDragStarted(eventData);
 		}
@@ -77,9 +77,9 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 			// Scolling changes the radius of the sphere while dragging, and accelerates
 			if (Mathf.Abs(eventData.scrollDelta.y) > 0.5f)
-				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y)*kScrollAcceleration*Time.unscaledDeltaTime;
+				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y)*k_ScrollAcceleration*Time.unscaledDeltaTime;
 			else
-				m_ScrollRate = kInitialScrollRate;
+				m_ScrollRate = k_InitialScrollRate;
 
 			ChangeRadius(m_ScrollRate*eventData.scrollDelta.y*Time.unscaledDeltaTime);
 		}

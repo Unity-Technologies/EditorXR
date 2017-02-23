@@ -6,9 +6,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class InspectorArrayHeaderItem : InspectorPropertyItem
 	{
-		const float kExpandArrowRotateSpeed = 0.4f;
-		static readonly Quaternion kExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
-		static readonly Quaternion kNormalRotation = Quaternion.identity;
+		const float k_ExpandArrowRotateSpeed = 0.4f;
+		static readonly Quaternion k_ExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
+		static readonly Quaternion k_NormalRotation = Quaternion.identity;
 
 		[SerializeField]
 		Button m_ExpandArrow;
@@ -19,8 +19,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// Rotate arrow for expand state
 			m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-				expanded ? kExpandedRotation : kNormalRotation,
-				kExpandArrowRotateSpeed);
+				expanded ? k_ExpandedRotation : k_NormalRotation,
+				k_ExpandArrowRotateSpeed);
 		}
 	}
 }

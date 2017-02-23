@@ -9,8 +9,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesRayOrigin, ICustomActionMap
 	{
-		const float kRotationSpeed = 300f;
-		const float kMoveSpeed = 5f;
+		const float k_RotationSpeed = 300f;
+		const float k_MoveSpeed = 5f;
 
 		private enum State
 		{
@@ -87,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					yawValue = yawValue * yawValue * Mathf.Sign(yawValue);
 
-					viewerPivot.RotateAround(viewerCamera.transform.position, Vector3.up, yawValue * kRotationSpeed * Time.unscaledDeltaTime);
+					viewerPivot.RotateAround(viewerCamera.transform.position, Vector3.up, yawValue * k_RotationSpeed * Time.unscaledDeltaTime);
 					consumeControl(blinkInput.yaw);
 				}
 			}
@@ -100,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					forward.Normalize();
 					forwardValue = forwardValue * forwardValue * Mathf.Sign(forwardValue);
 
-					viewerPivot.Translate(forward * forwardValue * kMoveSpeed * Time.unscaledDeltaTime, Space.World);
+					viewerPivot.Translate(forward * forwardValue * k_MoveSpeed * Time.unscaledDeltaTime, Space.World);
 					consumeControl(blinkInput.forward);
 				}
 			}

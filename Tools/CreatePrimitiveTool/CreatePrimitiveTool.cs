@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
 
-		const float kDrawDistance = 0.075f;
+		const float k_DrawDistance = 0.075f;
 
 		GameObject m_ToolMenu;
 
@@ -93,7 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				// Set starting minimum scale (don't allow zero scale object to be created)
 				const float kMinScale = 0.0025f;
 				m_CurrentGameObject.transform.localScale = Vector3.one * kMinScale;
-				m_StartPoint = rayOrigin.position + rayOrigin.forward * kDrawDistance;
+				m_StartPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance;
 				m_CurrentGameObject.transform.position = m_StartPoint;
 
 				m_State = m_Freeform ? PrimitiveCreationStates.Freeform : PrimitiveCreationStates.EndPoint;
@@ -117,7 +117,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void UpdatePositions()
 		{
-			m_EndPoint = rayOrigin.position + rayOrigin.forward * kDrawDistance;
+			m_EndPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance;
 			m_CurrentGameObject.transform.position = (m_StartPoint + m_EndPoint) * 0.5f;
 		}
 

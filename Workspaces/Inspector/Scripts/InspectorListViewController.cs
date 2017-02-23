@@ -10,8 +10,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class InspectorListViewController : NestedListViewController<InspectorData>, IGetPreviewOrigin, ISetHighlight, IUsesGameObjectLocking, IUsesStencilRef
 	{
-		const string kMaterialStencilRef = "_StencilRef";
-		const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
+		const string k_MaterialStencilRef = "_StencilRef";
+		const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 		[SerializeField]
 		Material m_RowCubeMaterial;
@@ -74,18 +74,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_BackingCubeMaterial = Instantiate(m_BackingCubeMaterial);
 			m_NoClipBackingCubeMaterial = Instantiate(m_NoClipBackingCubeMaterial);
 			m_TextMaterial = Instantiate(m_TextMaterial);
-			m_TextMaterial.SetInt(kMaterialStencilRef, stencilRef);
+			m_TextMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 			m_UIMaterial = Instantiate(m_UIMaterial);
 
 			m_HighlightMaterial = Instantiate(m_HighlightMaterial);
-			m_HighlightMaterial.SetInt(kMaterialStencilRef, stencilRef);
+			m_HighlightMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 			m_HighlightMaskMaterial = Instantiate(m_HighlightMaskMaterial);
-			m_HighlightMaskMaterial.SetInt(kMaterialStencilRef, stencilRef);
+			m_HighlightMaskMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 
 			m_NoClipHighlightMaterial = Instantiate(m_NoClipHighlightMaterial);
-			m_NoClipHighlightMaterial.SetInt(kMaterialStencilRef, 0);
+			m_NoClipHighlightMaterial.SetInt(k_MaterialStencilRef, 0);
 			m_NoClipHighlightMaskMaterial = Instantiate(m_NoClipHighlightMaskMaterial);
-			m_NoClipHighlightMaskMaterial.SetInt(kMaterialStencilRef, 0);
+			m_NoClipHighlightMaskMaterial.SetInt(k_MaterialStencilRef, 0);
 
 			foreach (var template in m_TemplateDictionary)
 				m_TemplateSizes[template.Key] = GetObjectSize(template.Value.prefab);
@@ -158,7 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				item = GetItem(data);
 
 			var inspectorListItem = (InspectorListItem)item;
-			inspectorListItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded);
+			inspectorListItem.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded);
 			inspectorListItem.UpdateClipTexts(transform.worldToLocalMatrix, bounds.extents);
 
 			UpdateItem(item.transform, offset);

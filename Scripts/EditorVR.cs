@@ -31,26 +31,26 @@ namespace UnityEditor.Experimental.EditorVR
 #if UNITY_EDITOR
 	[InitializeOnLoad]
 #endif
-	[RequiresTag(kVRPlayerTag)]
+	[RequiresTag(k_VRPlayerTag)]
 	sealed class EditorVR : MonoBehaviour
 	{
 		delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
 
 		public const HideFlags DefaultHideFlags = HideFlags.HideAndDontSave;
-		const string kVRPlayerTag = "VRPlayer";
-		const float kDefaultRayLength = 100f;
-		const float kPreviewScale = 0.1f;
-		const float kViewerPivotTransitionTime = 0.75f;
-		const byte kMinStencilRef = 2;
+		const string k_VRPlayerTag = "VRPlayer";
+		const float k_DefaultRayLength = 100f;
+		const float k_PreviewScale = 0.1f;
+		const float k_ViewerPivotTransitionTime = 0.75f;
+		const byte k_MinStencilRef = 2;
 
 		// Minimum time to spend loading the project folder before yielding
-		const float kMinProjectFolderLoadTime = 0.005f;
+		const float k_MinProjectFolderLoadTime = 0.005f;
 
 		// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
-		const float kMaxFrameTime = 0.01f;
+		const float k_MaxFrameTime = 0.01f;
 
-		static readonly Vector3 kDefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
-		static readonly Quaternion kDefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
+		static readonly Vector3 k_DefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
+		static readonly Quaternion k_DefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
 		[SerializeField]
 		private ActionMap m_TrackedObjectActionMap;
@@ -225,14 +225,14 @@ namespace UnityEditor.Experimental.EditorVR
 			get { return m_StencilRef; }
 			set
 			{
-				m_StencilRef = (byte)Mathf.Clamp(value, kMinStencilRef, byte.MaxValue);
+				m_StencilRef = (byte)Mathf.Clamp(value, k_MinStencilRef, byte.MaxValue);
 
 				// Wrap
 				if (m_StencilRef == byte.MaxValue)
-					m_StencilRef = kMinStencilRef;
+					m_StencilRef = k_MinStencilRef;
 			}
 		}
-		byte m_StencilRef = kMinStencilRef;
+		byte m_StencilRef = k_MinStencilRef;
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
@@ -792,7 +792,7 @@ namespace UnityEditor.Experimental.EditorVR
 				toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 				AddToolToDeviceData(toolData, devices);
 				var vacuumTool = (VacuumTool)toolData.tool;
-				vacuumTool.defaultOffset = kDefaultWorkspaceOffset;
+				vacuumTool.defaultOffset = k_DefaultWorkspaceOffset;
 				vacuumTool.vacuumables = m_Vacuumables;
 
 				// Using a shared instance of the transform tool across all device tool stacks
@@ -1055,7 +1055,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				foreach (var rayOrigin in proxy.rayOrigins.Values)
 				{
-					var distance = kDefaultRayLength;
+					var distance = k_DefaultRayLength;
 
 					// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
 					// object, so visually show the ray terminating there instead of the object; UI is already given
@@ -1992,12 +1992,12 @@ namespace UnityEditor.Experimental.EditorVR
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
 
-			var offset = kDefaultWorkspaceOffset;
+			var offset = k_DefaultWorkspaceOffset;
 			offset.z += workspace.vacuumBounds.extents.z;
 
 			var workspaceTransform = workspace.transform;
 			workspaceTransform.position = cameraTransform.TransformPoint(offset);
-			workspaceTransform.rotation *= Quaternion.LookRotation(cameraTransform.forward) * kDefaultWorkspaceTilt;
+			workspaceTransform.rotation *= Quaternion.LookRotation(cameraTransform.forward) * k_DefaultWorkspaceTilt;
 
 			m_Vacuumables.Add(workspace);
 
@@ -2115,7 +2115,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			foreach (var r in renderers)
 			{
-				if (r.CompareTag(kVRPlayerTag))
+				if (r.CompareTag(k_VRPlayerTag))
 					continue;
 
 				if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.ShowInMiniWorldTag))
@@ -2198,7 +2198,7 @@ namespace UnityEditor.Experimental.EditorVR
 							var totalBounds = ObjectUtils.GetBounds(dragGameObjects);
 							var maxSizeComponent = totalBounds.size.MaxComponent();
 							if (!Mathf.Approximately(maxSizeComponent, 0f))
-								miniWorldRay.previewScaleFactor = Vector3.one * (kPreviewScale / maxSizeComponent);
+								miniWorldRay.previewScaleFactor = Vector3.one * (k_PreviewScale / maxSizeComponent);
 
 							miniWorldRay.originalScales = scales;
 						}
@@ -2298,7 +2298,7 @@ namespace UnityEditor.Experimental.EditorVR
 						for (var i = 0; i < dragObjects.Length; i++)
 						{
 							var dragObject = dragObjects[i];
-							if (dragObject.CompareTag(kVRPlayerTag))
+							if (dragObject.CompareTag(k_VRPlayerTag))
 							{
 								if (directSelection != null)
 									directSelection.DropHeldObjects(miniWorldRayOrigin);
@@ -2401,7 +2401,7 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-				if (renderer && !renderer.CompareTag(kVRPlayerTag))
+				if (renderer && !renderer.CompareTag(k_VRPlayerTag))
 					return renderer.gameObject;
 			}
 
@@ -2441,7 +2441,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var rayOrigin = rayOriginPair.Value;
 				var input = deviceData.directSelectInput;
 				var obj = GetDirectSelectionForRayOrigin(rayOrigin, input);
-				if (obj && !obj.CompareTag(kVRPlayerTag))
+				if (obj && !obj.CompareTag(k_VRPlayerTag))
 				{
 					m_ActiveStates.Add(input);
 					m_DirectSelectionResults[rayOrigin] = new DirectSelectionData
@@ -2506,7 +2506,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		bool CanGrabObject(GameObject selection, Transform rayOrigin)
 		{
-			if (selection.CompareTag(kVRPlayerTag) && !m_MiniWorldRays.ContainsKey(rayOrigin))
+			if (selection.CompareTag(k_VRPlayerTag) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 				return false;
 
 			return true;
@@ -2515,7 +2515,7 @@ namespace UnityEditor.Experimental.EditorVR
 		static void OnObjectGrabbed(GameObject selection)
 		{
 			// Detach the player head model so that it is not affected by its parent transform
-			if (selection.CompareTag(kVRPlayerTag))
+			if (selection.CompareTag(k_VRPlayerTag))
 				selection.transform.parent = null;
 		}
 
@@ -2524,7 +2524,7 @@ namespace UnityEditor.Experimental.EditorVR
 			foreach (var grabbedObject in grabbedObjects)
 			{
 				// Dropping the player head updates the viewer pivot
-				if (grabbedObject.CompareTag(kVRPlayerTag))
+				if (grabbedObject.CompareTag(k_VRPlayerTag))
 					StartCoroutine(UpdateViewerPivot(grabbedObject));
 				else if (IsOverShoulder(rayOrigin) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 					DeleteSceneObject(grabbedObject.gameObject);
@@ -2546,7 +2546,7 @@ namespace UnityEditor.Experimental.EditorVR
 		static Transform FindGroupRoot(Transform transform)
 		{
 			// Don't allow grouping selection for the player head, otherwise we'd select the EditorVRCamera
-			if (transform.CompareTag(kVRPlayerTag))
+			if (transform.CompareTag(k_VRPlayerTag))
 				return transform;
 
 			var parent = transform.parent;
@@ -2586,10 +2586,10 @@ namespace UnityEditor.Experimental.EditorVR
 			var startTime = Time.realtimeSinceStartup;
 			var diffTime = 0f;
 
-			while (diffTime < kViewerPivotTransitionTime)
+			while (diffTime < k_ViewerPivotTransitionTime)
 			{
 				diffTime = Time.realtimeSinceStartup - startTime;
-				var t = diffTime / kViewerPivotTransitionTime;
+				var t = diffTime / k_ViewerPivotTransitionTime;
 
 				// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
 				viewerPivot.position = Vector3.Lerp(startPosition, endPosition, t);
@@ -2717,7 +2717,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 			foreach (var collider in colliders)
 			{
-				if (collider.CompareTag(kVRPlayerTag))
+				if (collider.CompareTag(k_VRPlayerTag))
 					return true;
 			}
 			return false;
@@ -2803,8 +2803,8 @@ namespace UnityEditor.Experimental.EditorVR
 						hasNext = hp.Next(null);
 
 					// Spend a minimum amount of time in this function, and if we have extra time in the frame, use it
-					if (Time.realtimeSinceStartup - m_ProjectFolderLoadYieldTime > kMaxFrameTime
-						&& Time.realtimeSinceStartup - m_ProjectFolderLoadStartTime > kMinProjectFolderLoadTime)
+					if (Time.realtimeSinceStartup - m_ProjectFolderLoadYieldTime > k_MaxFrameTime
+						&& Time.realtimeSinceStartup - m_ProjectFolderLoadStartTime > k_MinProjectFolderLoadTime)
 					{
 						m_ProjectFolderLoadYieldTime = Time.realtimeSinceStartup;
 						yield return null;

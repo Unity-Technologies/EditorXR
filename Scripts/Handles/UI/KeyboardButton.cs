@@ -21,14 +21,14 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			Disabled
 		}
 
-		const float kRepeatTime = 0.35f;
-		const float kRepeatDecayFactor = 0.75f;
-		const float kClickTime = 0.3f;
-		const float kPressEmission = 1f;
-		const float kEmissionLerpTime = 0.1f;
-		const float kKeyResponseDuration = 0.1f;
-		const float kKeyResponsePositionAmplitude = 0.02f;
-		const float kKeyResponseScaleAmplitude = 0.08f;
+		const float k_RepeatTime = 0.35f;
+		const float k_RepeatDecayFactor = 0.75f;
+		const float k_ClickTime = 0.3f;
+		const float k_PressEmission = 1f;
+		const float k_EmissionLerpTime = 0.1f;
+		const float k_KeyResponseDuration = 0.1f;
+		const float k_KeyResponsePositionAmplitude = 0.02f;
+		const float k_KeyResponseScaleAmplitude = 0.08f;
 
 		public Text textComponent
 		{
@@ -262,7 +262,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 			if (m_RepeatOnHold)
 				HoldKey();
-			else if (Time.realtimeSinceStartup - m_PressDownTime > kClickTime)
+			else if (Time.realtimeSinceStartup - m_PressDownTime > k_ClickTime)
 				m_WorkspaceButton.highlighted = false;
 
 			base.OnHandleDragging(eventData);
@@ -275,7 +275,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 			if (m_RepeatOnHold)
 				EndKeyHold();
-			else if (Time.realtimeSinceStartup - m_PressDownTime < kClickTime)
+			else if (Time.realtimeSinceStartup - m_PressDownTime < k_ClickTime)
 				KeyPressed();
 
 			base.OnHandleDragEnded(eventData);
@@ -343,7 +343,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			m_Holding = true;
 			m_HoldStartTime = Time.realtimeSinceStartup;
-			m_RepeatWaitTime = kRepeatTime;
+			m_RepeatWaitTime = k_RepeatTime;
 		}
 
 		private void HoldKey()
@@ -352,7 +352,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				KeyPressed();
 				m_HoldStartTime = Time.realtimeSinceStartup;
-				m_RepeatWaitTime *= kRepeatDecayFactor;
+				m_RepeatWaitTime *= k_RepeatDecayFactor;
 			}
 		}
 
@@ -394,17 +394,17 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			var t = 0f;
 			Color finalColor;
-			while (t < kEmissionLerpTime)
+			while (t < k_EmissionLerpTime)
 			{
-				var emission = t / kEmissionLerpTime;
-				finalColor = Color.white * Mathf.LinearToGammaSpace(emission * kPressEmission);
+				var emission = t / k_EmissionLerpTime;
+				finalColor = Color.white * Mathf.LinearToGammaSpace(emission * k_PressEmission);
 				m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 				t += Time.unscaledDeltaTime;
 
 				yield return null;
 			}
 
-			finalColor = Color.white * Mathf.LinearToGammaSpace(kPressEmission);
+			finalColor = Color.white * Mathf.LinearToGammaSpace(k_PressEmission);
 			m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 
 			if (!m_Holding)
@@ -417,10 +417,10 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			var t = 0f;
 			Color finalColor;
-			while (t < kEmissionLerpTime)
+			while (t < k_EmissionLerpTime)
 			{
-				var emission = 1f - t / kEmissionLerpTime;
-				finalColor = Color.white * Mathf.LinearToGammaSpace(emission * kPressEmission);
+				var emission = 1f - t / k_EmissionLerpTime;
+				finalColor = Color.white * Mathf.LinearToGammaSpace(emission * k_PressEmission);
 				m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
 				t += Time.unscaledDeltaTime;
 
@@ -438,24 +438,24 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;
 
 			var elapsedTime = 0f;
-			while (elapsedTime < kKeyResponseDuration)
+			while (elapsedTime < k_KeyResponseDuration)
 			{
 				elapsedTime += Time.unscaledDeltaTime;
-				var t = Mathf.Clamp01(elapsedTime / kKeyResponseDuration);
+				var t = Mathf.Clamp01(elapsedTime / k_KeyResponseDuration);
 
-				targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponsePositionAmplitude;
+				targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * k_KeyResponsePositionAmplitude;
 
 				var pos = m_TargetMeshInitialLocalPosition;
-				pos.z = t * kKeyResponsePositionAmplitude;
+				pos.z = t * k_KeyResponsePositionAmplitude;
 				targetMeshTransform.localPosition = pos;
 
 				elapsedTime += Time.unscaledDeltaTime;
 				yield return null;
 			}
 
-			targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * kKeyResponseScaleAmplitude;
+			targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * k_KeyResponseScaleAmplitude;
 			var finalPos = m_TargetMeshInitialLocalPosition;
-			finalPos.z = kKeyResponsePositionAmplitude;
+			finalPos.z = k_KeyResponsePositionAmplitude;
 			targetMeshTransform.localPosition = finalPos;
 
 			if (!m_Holding)
@@ -470,15 +470,15 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			targetMeshTransform.localPosition = m_TargetMeshInitialLocalPosition;
 
 			var elapsedTime = 0f;
-			while (elapsedTime < kKeyResponseDuration)
+			while (elapsedTime < k_KeyResponseDuration)
 			{
 				elapsedTime += Time.unscaledDeltaTime;
-				var t = 1f - Mathf.Clamp01(elapsedTime / kKeyResponseDuration);
+				var t = 1f - Mathf.Clamp01(elapsedTime / k_KeyResponseDuration);
 
-				targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * kKeyResponseScaleAmplitude;
+				targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * k_KeyResponseScaleAmplitude;
 
 				var pos = m_TargetMeshInitialLocalPosition;
-				pos.z = t * kKeyResponsePositionAmplitude;
+				pos.z = t * k_KeyResponsePositionAmplitude;
 				targetMeshTransform.localPosition = pos;
 
 				yield return null;

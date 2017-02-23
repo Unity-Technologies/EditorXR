@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
 	abstract class InputField : Selectable, ISelectionFlags
 	{
-		const float kMoveKeyboardTime = 0.2f;
+		const float k_MoveKeyboardTime = 0.2f;
 		public SelectionFlags selectionFlags
 		{
 			get { return m_SelectionFlags; }
@@ -140,9 +140,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			if (!instant && !m_Keyboard.collapsed)
 			{
 				var t = 0f;
-				while (t < kMoveKeyboardTime)
+				while (t < k_MoveKeyboardTime)
 				{
-					m_Keyboard.transform.position = Vector3.Lerp(m_Keyboard.transform.position, targetPosition, t / kMoveKeyboardTime);
+					m_Keyboard.transform.position = Vector3.Lerp(m_Keyboard.transform.position, targetPosition, t / k_MoveKeyboardTime);
 					m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - CameraUtils.GetMainCamera().transform.position);
 					t += Time.unscaledDeltaTime;
 					yield return null;

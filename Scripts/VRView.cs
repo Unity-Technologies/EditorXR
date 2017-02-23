@@ -16,10 +16,10 @@ namespace UnityEditor.Experimental.EditorVR
 	[InitializeOnLoad]
 	sealed class VRView : EditorWindow
 	{
-		const string kShowDeviceView = "VRView.ShowDeviceView";
-		const string kUseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
-		const string kLaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
-		const float kHMDActivityTimeout = 3f; // in seconds
+		const string k_ShowDeviceView = "VRView.ShowDeviceView";
+		const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
+		const string k_LaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
+		const float k_HMDActivityTimeout = 3f; // in seconds
 
 		DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 
@@ -150,10 +150,10 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private static void ReopenOnExitPlaymode()
 		{
-			bool launch = EditorPrefs.GetBool(kLaunchOnExitPlaymode, false);
+			bool launch = EditorPrefs.GetBool(k_LaunchOnExitPlaymode, false);
 			if (!launch || !EditorApplication.isPlaying)
 			{
-				EditorPrefs.DeleteKey(kLaunchOnExitPlaymode);
+				EditorPrefs.DeleteKey(k_LaunchOnExitPlaymode);
 				EditorApplication.update -= ReopenOnExitPlaymode;
 				if (launch)
 					GetWindow();
@@ -187,8 +187,8 @@ namespace UnityEditor.Experimental.EditorVR
 			m_CameraPivot.position = position;
 			m_CameraPivot.rotation = Quaternion.identity;
 
-			m_ShowDeviceView = EditorPrefs.GetBool(kShowDeviceView, false);
-			m_UseCustomPreviewCamera = EditorPrefs.GetBool(kUseCustomPreviewCamera, false);
+			m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
+			m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
 
 			// Disable other views to increase rendering performance for EditorVR
 			SetOtherViewsEnabled(false);
@@ -218,8 +218,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 			VRSettings.StopRenderingToDevice();
 
-			EditorPrefs.SetBool(kShowDeviceView, m_ShowDeviceView);
-			EditorPrefs.SetBool(kUseCustomPreviewCamera, m_UseCustomPreviewCamera);
+			EditorPrefs.SetBool(k_ShowDeviceView, m_ShowDeviceView);
+			EditorPrefs.SetBool(k_UseCustomPreviewCamera, m_UseCustomPreviewCamera);
 
 			SetOtherViewsEnabled(true);
 
@@ -245,7 +245,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			if (Quaternion.Angle(headRotation, m_LastHeadRotation) > 0.1f)
 			{
-				if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
+				if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + k_HMDActivityTimeout)
 					SetSceneViewsEnabled(false);
 
 				// Keep track of HMD activity by tracking head rotations
@@ -373,7 +373,7 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			if (EditorApplication.isPlayingOrWillChangePlaymode)
 			{
-				EditorPrefs.SetBool(kLaunchOnExitPlaymode, true);
+				EditorPrefs.SetBool(k_LaunchOnExitPlaymode, true);
 				Close();
 			}
 		}
@@ -394,7 +394,7 @@ namespace UnityEditor.Experimental.EditorVR
 			UpdateCamera();
 
 			// Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
-			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
+			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + k_HMDActivityTimeout)
 				SetSceneViewsEnabled(true);
 		}
 

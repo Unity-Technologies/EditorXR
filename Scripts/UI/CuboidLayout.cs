@@ -8,9 +8,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
 	sealed class CuboidLayout : UIBehaviour
 	{
-		static readonly Vector2 kCuboidPivot = new Vector2(0.5f, 0.5f);
-		const float kLayerHeight = 0.004f;
-		const float kExtraSpace = 0.00055f; // To avoid Z-fighting
+		static readonly Vector2 k_CuboidPivot = new Vector2(0.5f, 0.5f);
+		const float k_LayerHeight = 0.004f;
+		const float k_ExtraSpace = 0.00055f; // To avoid Z-fighting
 
 		[SerializeField]
 		RectTransform[] m_TargetTransforms;
@@ -87,16 +87,16 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				var rectSize = m_TargetTransforms[i].rect.size.Abs();
 
 				// Scale pivot by rect size to get correct xy local position
-				var pivotOffset = Vector2.Scale(rectSize, kCuboidPivot - m_TargetTransforms[i].pivot);
+				var pivotOffset = Vector2.Scale(rectSize, k_CuboidPivot - m_TargetTransforms[i].pivot);
 
 				// Add space for target transform
 				var localPosition = m_TargetTransforms[i].localPosition;
-				m_TargetTransforms[i].localPosition = new Vector3(localPosition.x, localPosition.y, -kLayerHeight);
+				m_TargetTransforms[i].localPosition = new Vector3(localPosition.x, localPosition.y, -k_LayerHeight);
 
 				//Offset by 0.5 * height to account for pivot in center
-				const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
+				const float zOffset = k_LayerHeight * 0.5f + k_ExtraSpace;
 				m_CubeTransforms[i].localPosition = new Vector3(pivotOffset.x, pivotOffset.y, zOffset);
-				m_CubeTransforms[i].localScale = new Vector3(rectSize.x + kStandardObjectSideScalePadding, rectSize.y, kLayerHeight);
+				m_CubeTransforms[i].localScale = new Vector3(rectSize.x + kStandardObjectSideScalePadding, rectSize.y, k_LayerHeight);
 			}
 
 			// Update highlight objects
@@ -105,16 +105,16 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				var rectSize = m_TargetHighlightTransforms[i].rect.size.Abs();
 
 				// Scale pivot by rect size to get correct xy local position
-				var pivotOffset = Vector2.Scale(rectSize, kCuboidPivot - m_TargetHighlightTransforms[i].pivot);
+				var pivotOffset = Vector2.Scale(rectSize, k_CuboidPivot - m_TargetHighlightTransforms[i].pivot);
 
 				// Add space for target transform
 				var localPosition = m_TargetHighlightTransforms[i].localPosition;
-				m_TargetHighlightTransforms[i].localPosition = new Vector3(localPosition.x, localPosition.y, -kLayerHeight);
+				m_TargetHighlightTransforms[i].localPosition = new Vector3(localPosition.x, localPosition.y, -k_LayerHeight);
 
 				//Offset by 0.5 * height to account for pivot in center
-				const float zOffset = kLayerHeight * 0.5f + kExtraSpace;
+				const float zOffset = k_LayerHeight * 0.5f + k_ExtraSpace;
 				m_HighlightCubeTransforms[i].localPosition = new Vector3(pivotOffset.x, pivotOffset.y, zOffset);
-				m_HighlightCubeTransforms[i].localScale = new Vector3(rectSize.x, rectSize.y, kLayerHeight);
+				m_HighlightCubeTransforms[i].localScale = new Vector3(rectSize.x, rectSize.y, k_LayerHeight);
 			}
 		}
 	}

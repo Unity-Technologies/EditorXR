@@ -15,12 +15,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public event Action closeClicked;
 		public event Action resetSizeClicked;
 
-		const int kAngledFaceBlendShapeIndex = 2;
-		const int kThinFrameBlendShapeIndex = 3;
-		const float kFaceWidthMatchMultiplier =  7.1375f; // Multiplier that sizes the face to the intended width
-		const float kBackResizeButtonPositionOffset = -0.02f; // Offset to place the back resize buttons in their intended location
-		const float kPanelOffset = 0.0625f; // The panel needs to be pulled back slightly
-		const string kMaterialStencilRef = "_StencilRef";
+		const int k_AngledFaceBlendShapeIndex = 2;
+		const int k_ThinFrameBlendShapeIndex = 3;
+		const float k_FaceWidthMatchMultiplier =  7.1375f; // Multiplier that sizes the face to the intended width
+		const float k_BackResizeButtonPositionOffset = -0.02f; // Offset to place the back resize buttons in their intended location
+		const float k_PanelOffset = 0.0625f; // The panel needs to be pulled back slightly
+		const string k_MaterialStencilRef = "_StencilRef";
 
 		// Cached for optimization
 		float m_OriginalUIContainerLocalYPos;
@@ -264,14 +264,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_UIContentContainer.localPosition = new Vector3(0, m_OriginalUIContainerLocalYPos, -extents.z);
 
 				// Position the back resize handles
-				m_BackResizeIconsContainer.localPosition = new Vector3 (m_BackResizeIconsContainerOriginalLocalPosition.x, m_BackResizeIconsContainerOriginalLocalPosition.y, boundsSize.z + kBackResizeButtonPositionOffset);
+				m_BackResizeIconsContainer.localPosition = new Vector3 (m_BackResizeIconsContainerOriginalLocalPosition.x, m_BackResizeIconsContainerOriginalLocalPosition.y, boundsSize.z + k_BackResizeButtonPositionOffset);
 
 				// Adjust front panel position if dynamic adjustment is enabled
 				if (!m_DynamicFaceAdjustment)
-					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, kPanelOffset);
+					m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, k_PanelOffset);
 
 				// Resize front panel
-				m_FrameFrontFaceTransform.localScale = new Vector3(boundsSize.x * kFaceWidthMatchMultiplier, 1f, 1f);
+				m_FrameFrontFaceTransform.localScale = new Vector3(boundsSize.x * k_FaceWidthMatchMultiplier, 1f, 1f);
 
 				// Position the separator mask if enabled
 				if (m_TopPanelDividerOffset != null)
@@ -391,7 +391,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_BackResizeIconsContainerOriginalLocalPosition = m_BackResizeIconsContainer.localPosition;
 			m_FrontResizeIconsContainerAngledLocalPosition = new Vector3(m_FrontResizeIconsContainerOriginalLocalPosition.x, m_FrontResizeIconsContainerOriginalLocalPosition.y + frontResizeIconsContainerUpOffset, m_FrontResizeIconsContainerOriginalLocalPosition.z + frontResizeIconsContainerForwardOffset);
 
-			m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, 50f); // Set default frame thickness to be in middle for a thinner initial frame
+			m_Frame.SetBlendShapeWeight(k_ThinFrameBlendShapeIndex, 50f); // Set default frame thickness to be in middle for a thinner initial frame
 
 			if (m_TopPanelDividerOffset == null)
 				m_TopPanelDividerTransform.gameObject.SetActive(false);
@@ -406,10 +406,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_TopFaceMaterial = MaterialUtils.GetMaterialClone(m_TopFaceContainer.GetComponentInChildren<MeshRenderer>());
 			m_TopFaceMaterial.SetFloat("_Alpha", 1f);
-			m_TopFaceMaterial.SetInt(kMaterialStencilRef, stencilRef);
+			m_TopFaceMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 
 			m_FrontFaceMaterial = MaterialUtils.GetMaterialClone(m_FrameFrontFaceTransform.GetComponentInChildren<MeshRenderer>());
-			m_FrontFaceMaterial.SetInt(kMaterialStencilRef, stencilRef);
+			m_FrontFaceMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 
 			var originalBlurAmount = m_TopFaceMaterial.GetFloat("_Blur");
 			var currentBlurAmount = 10f; // also the maximum blur amount
@@ -471,10 +471,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			// offset front panel according to workspace rotation angle
 			const float kAdditionalFrontPanelLerpPadding = 1.1f;
 			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, lerpAmount * kAdditionalFrontPanelLerpPadding));
-			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, totalAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(kPanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
+			m_FrontPanel.localPosition = new Vector3(0f, Mathf.Lerp(m_OriginalFontPanelLocalPosition.y, totalAlternateFrontPanelLocalYOffset, lerpAmount), Mathf.Lerp(k_PanelOffset, kMaxAlternateFrontPanelLocalZOffset, lerpAmount));
 
 			// change blendshapes according to workspace rotation angle
-			m_Frame.SetBlendShapeWeight(kAngledFaceBlendShapeIndex, angledAmount * kLerpPadding);
+			m_Frame.SetBlendShapeWeight(k_AngledFaceBlendShapeIndex, angledAmount * kLerpPadding);
 			m_Frame.SetBlendShapeWeight(kRevealCompensationBlendShapeIndex, midRevealCorrectiveShapeAmount);
 
 			// offset the front resize icons to accommodate for the blendshape extending outwards
@@ -510,13 +510,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float kTargetBlendAmount = 0f;
 			const float kTargetDuration = 0.5f;
 			var currentDuration = 0f;
-			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kThinFrameBlendShapeIndex);
+			var currentBlendAmount = m_Frame.GetBlendShapeWeight(k_ThinFrameBlendShapeIndex);
 			var currentVelocity = 0f;
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
 				currentBlendAmount = MathUtilsExt.SmoothDamp(currentBlendAmount, kTargetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
-				m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, currentBlendAmount);
+				m_Frame.SetBlendShapeWeight(k_ThinFrameBlendShapeIndex, currentBlendAmount);
 				yield return null;
 			}
 
@@ -528,13 +528,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float kTargetBlendAmount = 50f;
 			const float kTargetDuration = 0.5f;
 			var currentDuration = 0f;
-			var currentBlendAmount = m_Frame.GetBlendShapeWeight(kThinFrameBlendShapeIndex);
+			var currentBlendAmount = m_Frame.GetBlendShapeWeight(k_ThinFrameBlendShapeIndex);
 			var currentVelocity = 0f;
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
 				currentBlendAmount = MathUtilsExt.SmoothDamp(currentBlendAmount, kTargetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
-				m_Frame.SetBlendShapeWeight(kThinFrameBlendShapeIndex, currentBlendAmount);
+				m_Frame.SetBlendShapeWeight(k_ThinFrameBlendShapeIndex, currentBlendAmount);
 				yield return null;
 			}
 

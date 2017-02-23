@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		GameObject m_CurrentHoverObject;
 		Transform m_HoverRayOrigin;
 		float m_HoverDuration;
-		const float kMaxHoverTime = 2.0f;
+		const float k_MaxHoverTime = 2.0f;
 
 		void Awake()
 		{
@@ -111,7 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					m_HoverDuration += Time.unscaledDeltaTime;
 
 					// Don't allow hover menu if over a selected game object
-					if (IsLocked(go) && m_HoverDuration >= kMaxHoverTime)
+					if (IsLocked(go) && m_HoverDuration >= k_MaxHoverTime)
 					{
 						UpdateActionIcon(go);
 

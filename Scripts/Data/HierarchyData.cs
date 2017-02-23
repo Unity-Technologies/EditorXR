@@ -6,7 +6,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
 	public sealed class HierarchyData : ListViewItemNestedData<HierarchyData>
 	{
-		const string kTemplateName = "HierarchyListItem";
+		const string k_TemplateName = "HierarchyListItem";
 
 		public string name { get; set; }
 
@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		public HierarchyData(string name, int instanceID, List<HierarchyData> children = null)
 		{
-			template = kTemplateName;
+			template = k_TemplateName;
 			this.name = name;
 			this.instanceID = instanceID;
 			m_Children = children;

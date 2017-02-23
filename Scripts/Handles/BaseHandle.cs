@@ -19,10 +19,10 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		[FlagsProperty]
 		private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
-		private const int kDefaultCapacity = 2; // i.e. 2 controllers
+		private const int k_DefaultCapacity = 2; // i.e. 2 controllers
 
-		protected readonly List<Transform> m_HoverSources = new List<Transform>(kDefaultCapacity);
-		protected readonly List<Transform> m_DragSources = new List<Transform>(kDefaultCapacity);
+		protected readonly List<Transform> m_HoverSources = new List<Transform>(k_DefaultCapacity);
+		protected readonly List<Transform> m_DragSources = new List<Transform>(k_DefaultCapacity);
 		protected DateTime m_LastClickTime;
 
 		public Vector3 startDragPosition { get; protected set; }

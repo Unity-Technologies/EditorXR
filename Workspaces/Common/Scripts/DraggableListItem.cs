@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	class DraggableListItem<DataType> : ListViewItem<DataType>, IGetPreviewOrigin where DataType : ListViewItemData
 	{
-		const float kMagnetizeDuration = 0.5f;
+		const float k_MagnetizeDuration = 0.5f;
 
 		protected Transform m_DragObject;
 
@@ -30,10 +30,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var startTime = Time.realtimeSinceStartup;
 			var currTime = 0f;
-			while (currTime < kMagnetizeDuration)
+			while (currTime < k_MagnetizeDuration)
 			{
 				currTime = Time.realtimeSinceStartup - startTime;
-				m_DragLerp = currTime / kMagnetizeDuration;
+				m_DragLerp = currTime / k_MagnetizeDuration;
 				yield return null;
 			}
 			m_DragLerp = 1;

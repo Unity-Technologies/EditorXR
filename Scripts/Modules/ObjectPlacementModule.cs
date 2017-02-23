@@ -8,8 +8,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	class ObjectPlacementModule : MonoBehaviour, IUsesSpatialHash
 	{
-		const float kInstantiateFOVDifference = -5f;
-		const float kGrowDuration = 0.5f;
+		const float k_InstantiateFOVDifference = -5f;
+		const float k_GrowDuration = 0.5f;
 
 		public Action<GameObject> addToSpatialHash { private get; set; }
 		public Action<GameObject> removeFromSpatialHash { private get; set; }
@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			// We want to position the object so that it fits within the camera perspective at its original scale
 			var camera = CameraUtils.GetMainCamera();
 			var halfAngle = camera.fieldOfView * 0.5f;
-			var perspective = halfAngle + kInstantiateFOVDifference;
+			var perspective = halfAngle + k_InstantiateFOVDifference;
 			var camPosition = camera.transform.position;
 			var forward = obj.position - camPosition;
 
@@ -51,10 +51,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (distance > forward.magnitude && obj.localScale != targetScale)
 				targetPosition = camPosition + forward.normalized * distance;
 
-			while (currTime < kGrowDuration)
+			while (currTime < k_GrowDuration)
 			{
 				currTime = Time.realtimeSinceStartup - start;
-				var t = currTime / kGrowDuration;
+				var t = currTime / k_GrowDuration;
 				var tSquared = t * t;
 				obj.localScale = Vector3.Lerp(startScale, targetScale, tSquared);
 				obj.position = Vector3.Lerp(startPosition, targetPosition, tSquared);

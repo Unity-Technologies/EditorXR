@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class FilterUI : MonoBehaviour, IUsesStencilRef
 	{
-		private const string kAllText = "All";
+		private const string k_AllText = "All";
 
 		public Text summaryText
 		{
@@ -79,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				m_FilterTypes = value;
 				m_FilterTypes.Sort();
-				m_FilterTypes.Insert(0, kAllText);
+				m_FilterTypes.Insert(0, k_AllText);
 
 				// Generate new button list
 				m_VisibilityButtons = new FilterButtonUI[m_FilterTypes.Count];
@@ -150,7 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					button.color = m_SearchQuery.Contains("t:") ? m_DisableColor : m_ActiveColor;
 			}
 
-			if (clickedButton.text.text.Equals(kAllText))
+			if (clickedButton.text.text.Equals(k_AllText))
 			{
 				m_SummaryText.text = clickedButton.text.text;
 				m_DescriptionText.text = "All objects are visible";

@@ -7,8 +7,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 	[CustomEditor(typeof(KeyboardButton))]
 	sealed class KeyboardButtonEditor : Editor
 	{
-		const char kLowercaseStart = 'a';
-		const char kLowercaseEnd = 'z';
+		const char k_LowercaseStart = 'a';
+		const char k_LowercaseEnd = 'z';
 
 		SerializedProperty m_SelectionFlagsProperty;
 		SerializedProperty m_CharacterProperty;
@@ -72,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			if (m_UseShiftCharacterProperty.boolValue)
 			{
 				var ch = (char)m_CharacterProperty.intValue;
-				if (ch >= kLowercaseStart && ch <= kLowercaseEnd)
+				if (ch >= k_LowercaseStart && ch <= k_LowercaseEnd)
 				{
 					var upperCase = ((char)m_CharacterProperty.intValue).ToString().ToUpper();
 					m_ShiftCharIsUppercase = upperCase.Equals(((char)m_ShiftCharacterProperty.intValue).ToString());

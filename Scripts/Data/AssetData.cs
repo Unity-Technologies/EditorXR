@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 {
 	public sealed class AssetData : ListViewItemData
 	{
-		const string kTemplateName = "AssetGridItem";
+		const string k_TemplateName = "AssetGridItem";
 
 		public string name { get; private set; }
 		public string guid { get; private set; }
@@ -31,7 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
 		public AssetData(string name, string guid, string type)
 		{
-			template = kTemplateName;
+			template = k_TemplateName;
 			this.name = name;
 			this.guid = guid;
 			this.type = type;

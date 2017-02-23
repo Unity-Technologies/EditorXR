@@ -10,14 +10,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
 	sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 	{
-		const float kLeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
-		const float kPaneMargin = 0.01f;
-		const float kPanelMargin = 0.01f;
-		const float kScrollMargin = 0.03f;
-		const float kYBounds = 0.2f;
+		const float k_LeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
+		const float k_PaneMargin = 0.01f;
+		const float k_PanelMargin = 0.01f;
+		const float k_ScrollMargin = 0.03f;
+		const float k_YBounds = 0.2f;
 
-		const float kMinScale = 0.03f;
-		const float kMaxScale = 0.2f;
+		const float k_MinScale = 0.03f;
+		const float k_MaxScale = 0.2f;
 
 		bool m_AssetGridDragging;
 		bool m_FolderPanelDragging;
@@ -64,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.5f);
+			minBounds = new Vector3(k_MinBounds.x, k_MinBounds.y, 0.5f);
 			m_CustomStartingBounds = minBounds;
 
 			base.Setup();
@@ -92,8 +92,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var sliderPrefab = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
 			var zoomSlider = sliderPrefab.GetComponent<ZoomSliderUI>();
-			zoomSlider.zoomSlider.minValue = kMinScale;
-			zoomSlider.zoomSlider.maxValue = kMaxScale;
+			zoomSlider.zoomSlider.minValue = k_MinScale;
+			zoomSlider.zoomSlider.maxValue = k_MaxScale;
 			zoomSlider.zoomSlider.value = m_ProjectUI.assetGridView.scaleFactor;
 			zoomSlider.sliding += Scale;
 			foreach (var mb in zoomSlider.GetComponentsInChildren<MonoBehaviour>())
@@ -141,22 +141,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			Bounds bounds = contentBounds;
 			Vector3 size = bounds.size;
-			size.x -= kPaneMargin * 2;
-			size.x *= kLeftPaneRatio;
-			size.y = kYBounds;
+			size.x -= k_PaneMargin * 2;
+			size.x *= k_LeftPaneRatio;
+			size.y = k_YBounds;
 			size.z = size.z - depthCompensation;
 			bounds.size = size;
 			bounds.center = Vector3.zero;
 
-			var halfScrollMargin = kScrollMargin * 0.5f;
-			var doubleScrollMargin = kScrollMargin * 2;
-			var xOffset = (contentBounds.size.x - size.x + kPaneMargin) * -0.5f;
+			var halfScrollMargin = k_ScrollMargin * 0.5f;
+			var doubleScrollMargin = k_ScrollMargin * 2;
+			var xOffset = (contentBounds.size.x - size.x + k_PaneMargin) * -0.5f;
 			var folderScrollHandleXPositionOffset = 0.025f;
 			var folderScrollHandleXScaleOffset = 0.015f;
 
 			var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
 			folderScrollHandleTransform.localPosition = new Vector3(xOffset - halfScrollMargin + folderScrollHandleXPositionOffset, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
-			folderScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin + folderScrollHandleXScaleOffset, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
+			folderScrollHandleTransform.localScale = new Vector3(size.x + k_ScrollMargin + folderScrollHandleXScaleOffset, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 			var folderListView = m_ProjectUI.folderListView;
 			size.x -= kSideScrollBoundsShrinkAmount; // set narrow x bounds for scrolling region on left side of folder list view
@@ -167,22 +167,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var folderPanel = m_ProjectUI.folderPanel;
 			folderPanel.transform.localPosition = xOffset * Vector3.right;
-			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + kPanelMargin);
-			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
+			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + k_PanelMargin);
+			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + k_PanelMargin);
 
 			m_FolderPanelHighlightContainer.localScale = new Vector3(size.x + kSideScrollBoundsShrinkAmount, 1f, size.z);
 
 			size = contentBounds.size;
-			size.x -= kPaneMargin * 2; // Reserve space for scroll on both sides
-			size.x *= 1 - kLeftPaneRatio;
+			size.x -= k_PaneMargin * 2; // Reserve space for scroll on both sides
+			size.x *= 1 - k_LeftPaneRatio;
 			size.z = size.z - depthCompensation;
 			bounds.size = size;
 
-			xOffset = (contentBounds.size.x - size.x + kPaneMargin) * 0.5f;
+			xOffset = (contentBounds.size.x - size.x + k_PaneMargin) * 0.5f;
 
 			var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
 			assetScrollHandleTransform.localPosition = new Vector3(xOffset + halfScrollMargin, -assetScrollHandleTransform.localScale.y * 0.5f);
-			assetScrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin, assetScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
+			assetScrollHandleTransform.localScale = new Vector3(size.x + k_ScrollMargin, assetScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 			var assetListView = m_ProjectUI.assetGridView;
 			assetListView.bounds = bounds;
@@ -190,8 +190,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var assetPanel = m_ProjectUI.assetPanel;
 			assetPanel.transform.localPosition = xOffset * Vector3.right;
-			assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + kPanelMargin);
-			assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + kPanelMargin);
+			assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + k_PanelMargin);
+			assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + k_PanelMargin);
 
 			m_AssetGridHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
 		}
