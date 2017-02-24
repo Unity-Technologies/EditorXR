@@ -10,7 +10,7 @@ Material:
   m_Shader: {fileID: 10760, guid: 0000000000000000f000000000000000, type: 0}
   m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1
-  m_CustomRenderQueue: 9498
+  m_CustomRenderQueue: 9104
   stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
@@ -134,6 +134,9 @@ Material:
         name: _StencilReadMask
       second: 255
     - first:
+        name: _StencilRef
+      second: 3
+    - first:
         name: _StencilWriteMask
       second: 255
     - first:
@@ -149,6 +152,9 @@ Material:
         name: _ZWrite
       second: 1
     m_Colors:
+    - first:
+        name: _ClipExtents
+      second: {r: 0.1675, g: 1.7014117e+38, b: 0.22500001, a: 0}
     - first:
         name: _Color
       second: {r: 1, g: 1, b: 1, a: 1}
