@@ -1,17 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// Provides access to other tools of the same type
 /// </summary>
-public interface ILinkedTool
+public interface ILinkedObject
 {
 	/// <summary>
 	/// List of other tools of the same type (not including this one)
 	/// </summary>
-	List<ILinkedTool> otherTools { get; }
+	List<ILinkedObject> linkedObjects { set; }
 
 	/// <summary>
 	/// Whether this is the primary tool (the first to be created, can be either hand)
 	/// </summary>
-	bool primary { get; set; }
+	Func<ILinkedObject, bool> isSharedUpdater { set; }
 }

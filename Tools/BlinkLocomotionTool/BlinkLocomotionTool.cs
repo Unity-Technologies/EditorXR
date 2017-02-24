@@ -9,7 +9,7 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
 public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesHandedRayOrigin,
-	ICustomActionMap, ILinkedTool, IUsesProxyType, IConnectInterfaces
+	ICustomActionMap, ILinkedObject, IUsesProxyType, IConnectInterfaces
 {
 	const float kFastRotationSpeed = 300f;
 	const float kRotationThreshold = 0.9f;
@@ -54,15 +54,13 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	Vector3 m_StartDirection;
 	float m_StartYaw;
 
+	// Allow shared updater to consume these controls for another linked instance
 	InputControl m_Grip;
 	InputControl m_Thumb;
 
 	public ActionMap actionMap { get { return m_BlinkActionMap; } }
 	[SerializeField]
 	private ActionMap m_BlinkActionMap;
-
-	public List<ILinkedTool> otherTools { get { return m_OtherTools; } }
-	readonly List<ILinkedTool> m_OtherTools = new List<ILinkedTool>();
 
 	Camera m_MainCamera;
 	float m_OriginalNearClipPlane;
@@ -76,19 +74,20 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	public Transform rayOrigin { private get; set; }
 	public Node? node { private get; set; }
 
-	public bool primary { get; set; }
-
 	public Type proxyType { private get; set; }
 
 	public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 	public Transform cameraRig { private get; set; }
 
+	public List<ILinkedObject> linkedObjects { private get; set; }
+	public Func<ILinkedObject, bool> isSharedUpdater { private get; set; }
+
 	private void Start()
 	{
 		m_BlinkVisualsGO = U.Object.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
 		m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
-		connectInterfaces(m_BlinkVisuals);
+		m_BlinkVisuals.cameraRig = cameraRig;
 		m_BlinkVisuals.enabled = false;
 		m_BlinkVisuals.showValidTargetIndicator = false; // We don't define valid targets, so always show green
 		m_BlinkVisualsGO.transform.parent = rayOrigin;
@@ -116,9 +115,12 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		if (m_State == State.Moving)
 			return;
 
-		foreach (var linkedTool in m_OtherTools)
+		foreach (var linkedObject in linkedObjects)
 		{
-			var blinkTool = (BlinkLocomotionTool)linkedTool;
+			if (linkedObject == this)
+				continue;
+
+			var blinkTool = (BlinkLocomotionTool)linkedObject;
 			if (blinkTool.m_State != State.Inactive)
 				return;
 		}
@@ -129,16 +131,19 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		m_Grip = blinkInput.grip.isHeld ? blinkInput.grip : null;
 		m_Thumb = blinkInput.thumb.isHeld ? blinkInput.thumb : null;
 
-		if (primary)
+		if (isSharedUpdater(this))
 		{
 			if (m_Grip != null)
 			{
 				if (m_AllowScaling)
 				{
 					var otherGrip = false;
-					foreach (var linkedTool in otherTools)
+					foreach (var linkedObject in linkedObjects)
 					{
-						var blinkTool = (BlinkLocomotionTool)linkedTool;
+						if (linkedObject == this)
+							continue;
+
+						var blinkTool = (BlinkLocomotionTool)linkedObject;
 						if (blinkTool.m_Grip != null)
 						{
 							otherGrip = true;
@@ -309,11 +314,10 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	void CreateWorldScaleVisuals(Transform leftHand, Transform rightHand)
 	{
-		m_WorldScaleVisuals = U.Object.Instantiate(m_WorldScaleVisualsPrefab, cameraRig, false)
-			.GetComponent<WorldScaleVisuals>();
+		m_WorldScaleVisuals = U.Object.Instantiate(m_WorldScaleVisualsPrefab, cameraRig, false).GetComponent<WorldScaleVisuals>();
+		m_WorldScaleVisuals.cameraRig = cameraRig;
 		m_WorldScaleVisuals.leftHand = leftHand;
 		m_WorldScaleVisuals.rightHand = rightHand;
-		connectInterfaces(m_WorldScaleVisuals);
 	}
 
 	void CancelScale()
@@ -321,13 +325,9 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		m_AllowScaling = true;
 		m_Scaling = false;
 
-		if (!m_EnableJoystick)
+		foreach (var linkedObject in linkedObjects)
 		{
-			m_EnableJoystick = true;
-			foreach (var linkedTool in otherTools)
-			{
-				((BlinkLocomotionTool)linkedTool).m_EnableJoystick = true;
-			}
+			((BlinkLocomotionTool)linkedObject).m_EnableJoystick = true;
 		}
 
 		if (m_WorldScaleVisuals)

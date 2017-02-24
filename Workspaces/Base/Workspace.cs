@@ -193,22 +193,27 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 					bounds.size = m_BoundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
 					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
 				}
+
 				if (handle.Equals(m_WorkspaceUI.frontHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
 					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 				}
+
 				if (handle.Equals(m_WorkspaceUI.rightHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
 					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
 				}
+
 				if (handle.Equals(m_WorkspaceUI.backHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
 					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 				}
+
 				contentBounds = bounds;
+
 				if (contentBounds.size == bounds.size) //Don't reposition if we hit minimum bounds
 					transform.position = m_PositionStart + positionOffset * scale;
 			}

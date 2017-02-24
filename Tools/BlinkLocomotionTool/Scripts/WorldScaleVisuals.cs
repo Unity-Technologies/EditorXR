@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
 
-class WorldScaleVisuals : MonoBehaviour, IUsesCameraRig
+class WorldScaleVisuals : MonoBehaviour
 {
 	[SerializeField]
 	float m_IconTranslateCoefficient = -0.16f;

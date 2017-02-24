@@ -297,32 +297,32 @@ namespace UnityEditor.Experimental.EditorVR
 					usesTooltip.hideTooltip = tooltipModule.HideTooltip;
 				}
 
-				var linkedTool = obj as ILinkedTool;
-				if (linkedTool != null)
-				{
-					List<ILinkedTool> otherTools;
+				var linkedObject = obj as ILinkedObject;
+				if (linkedObject != null)				{
 					var type = obj.GetType();
-					var linkedTools = evr.m_Tools.linkedTools;
-					if (linkedTools.TryGetValue(type, out otherTools))
+					var linkedObjects = evrTools.linkedObjects;
+					List<ILinkedObject> linkedObjectList;
+					if (!linkedObjects.TryGetValue(type, out linkedObjectList))
 					{
-						foreach (var otherTool in otherTools)
-						{
-							otherTool.otherTools.Add(linkedTool);
-						}
+						linkedObjectList = new List<ILinkedObject>();
+						linkedObjects[type] = linkedObjectList;
+					}
 
-						linkedTool.otherTools.AddRange(otherTools);
-					}
-					else
-					{
-						linkedTool.primary = true;
-						linkedTools[type] = new List<ILinkedTool> { linkedTool };
-					}
+					linkedObjectList.Add(linkedObject);
+					linkedObject.linkedObjects = linkedObjectList;
+					linkedObject.isSharedUpdater = IsSharedUpdater;
 				}
 
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
 				if (forEachRayOrigin != null && IsSameAssembly<IForEachRayOrigin>(obj))
 					forEachRayOrigin.forEachRayOrigin = evrRays.ForEachRayOrigin;
+			}
+
+			bool IsSharedUpdater(ILinkedObject linkedObject)
+			{
+				var type = linkedObject.GetType();
+				return evr.m_Tools.linkedObjects[type].IndexOf(linkedObject) == 0;
 			}
 
 			static bool IsSameAssembly<T>(object obj)

@@ -28,8 +28,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal List<Type> allTools { get; private set; }
 
-			internal Dictionary<Type, List<ILinkedTool>> linkedTools { get { return m_LinkedTools; } }
-			readonly Dictionary<Type, List<ILinkedTool>> m_LinkedTools = new Dictionary<Type, List<ILinkedTool>>();
+			internal Dictionary<Type, List<ILinkedObject>> linkedObjects { get { return m_LinkedObjects; } }
+			readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
 
 			internal Tools()
 			{

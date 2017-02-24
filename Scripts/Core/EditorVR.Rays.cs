@@ -120,7 +120,7 @@ namespace UnityEditor.Experimental.EditorVR
 							rayTransform.position = rayOriginPairValue.position;
 							rayTransform.rotation = rayOriginPairValue.rotation;
 							var dpr = rayTransform.GetComponent<DefaultProxyRay>();
-							evr.m_Interfaces.ConnectInterfaces(dpr);
+							dpr.cameraRig = U.Camera.GetCameraRig();
 							m_DefaultRays.Add(rayOriginPairValue, dpr);
 
 							evr.m_KeyboardModule.SpawnKeyboardMallet(rayOriginPairValue);

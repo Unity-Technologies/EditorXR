@@ -1,9 +1,8 @@
 ﻿using System.Collections;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class BlinkVisuals : MonoBehaviour, IUsesCameraRig
+public class BlinkVisuals : MonoBehaviour
 {
 	private enum State
 	{
