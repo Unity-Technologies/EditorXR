@@ -26,6 +26,9 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 	Material m_UIMaterial;
 
 	[SerializeField]
+	Material m_UIMaskMaterial;
+
+	[SerializeField]
 	Material m_NoClipBackingCubeMaterial;
 
 	[SerializeField]
@@ -79,6 +82,9 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		m_TextMaterial = Instantiate(m_TextMaterial);
 		m_TextMaterial.SetInt(kMaterialStencilRef, stencilRef);
 		m_UIMaterial = Instantiate(m_UIMaterial);
+		m_UIMaterial.SetInt(kMaterialStencilRef, stencilRef);
+		m_UIMaskMaterial = Instantiate(m_UIMaskMaterial);
+		m_UIMaskMaterial.SetInt(kMaterialStencilRef, stencilRef);
 
 		m_HighlightMaterial = Instantiate(m_HighlightMaterial);
 		m_HighlightMaterial.SetInt(kMaterialStencilRef, stencilRef);
@@ -112,6 +118,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
 		SetMaterialClip(m_TextMaterial, parentMatrix);
 		SetMaterialClip(m_UIMaterial, parentMatrix);
+		SetMaterialClip(m_UIMaskMaterial, parentMatrix);
 		SetMaterialClip(m_HighlightMaterial, parentMatrix);
 		SetMaterialClip(m_HighlightMaskMaterial, parentMatrix);
 	}
@@ -197,7 +204,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		{
 			var highlightMaterials = new[] { m_HighlightMaterial, m_HighlightMaskMaterial };
 			var noClipHighlightMaterials = new[] { m_NoClipHighlightMaterial, m_NoClipHighlightMaskMaterial };
-			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
+			item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_UIMaskMaterial, m_TextMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
 
 			item.setHighlight = setHighlight;
 			item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
@@ -291,6 +298,7 @@ public class InspectorListViewController : NestedListViewController<InspectorDat
 		U.Object.Destroy(m_NoClipBackingCubeMaterial);
 		U.Object.Destroy(m_TextMaterial);
 		U.Object.Destroy(m_UIMaterial);
+		U.Object.Destroy(m_UIMaskMaterial);
 		U.Object.Destroy(m_HighlightMaterial);
 		U.Object.Destroy(m_HighlightMaskMaterial);
 		U.Object.Destroy(m_NoClipHighlightMaterial);

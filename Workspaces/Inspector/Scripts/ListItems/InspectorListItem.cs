@@ -94,7 +94,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 		m_InputFields = GetComponentsInChildren<InputField>(true);
 	}
 
-	public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
+	public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
 	{
 		m_NoClipBackingCube = noClipBackingCube;
 		m_NoClipHighlightMaterials = noClipHighlightMaterials;
@@ -130,7 +130,7 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISet
 		var masks = GetComponentsInChildren<Mask>(true);
 		foreach (var mask in masks)
 		{
-			mask.graphic.material = null;
+			mask.graphic.material = uiMaskMaterial;
 		}
 	}
 
