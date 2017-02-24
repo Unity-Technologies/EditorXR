@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
@@ -16,13 +17,13 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 	BaseHandle m_TopDropZone;
 
 	[SerializeField]
+	BaseHandle m_BottomDropZone;
+
+	[SerializeField]
 	Material m_TextMaterial;
 
 	[SerializeField]
 	Material m_ExpandArrowMaterial;
-
-	[SerializeField]
-	Material m_NoClipBackingCubeMaterial;
 
 	[SerializeField]
 	float m_SettleSpeed = 0.4f;
@@ -31,10 +32,16 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 	float m_SettleDuration = 1f;
 
 	bool m_Settling;
+	Action m_OnSettlingComplete;
+
 	Material m_TopDropZoneMaterial;
-	float m_TopDropZoneAlpha;
+	Material m_BottomDropZoneMaterial;
+	float m_DropZoneAlpha;
+	float m_BottomDropZoneStartHeight;
 
 	int m_SelectedRow;
+
+	readonly Dictionary<int, bool> m_GrabbedRows = new Dictionary<int, bool>();
 
 	public Action<int> selectRow { private get; set; }
 
@@ -44,6 +51,14 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 		set
 		{
 			m_Data = value;
+
+			// Update visible rows
+			foreach (var row in m_ListItems)
+			{
+				var newData = m_Data.FirstOrDefault(data => data.index == row.Key);
+				if (newData != null)
+					row.Value.data = newData;
+			}
 		}
 	}
 
@@ -53,18 +68,24 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 
 		m_TextMaterial = Instantiate(m_TextMaterial);
 		m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
-		m_NoClipBackingCubeMaterial = Instantiate(m_NoClipBackingCubeMaterial);
 
+		m_BottomDropZoneMaterial = U.Material.GetMaterialClone(m_BottomDropZone.GetComponent<Renderer>());
+		m_BottomDropZoneStartHeight = m_BottomDropZone.transform.localScale.z;
 		m_TopDropZoneMaterial = U.Material.GetMaterialClone(m_TopDropZone.GetComponent<Renderer>());
 		var color = m_TopDropZoneMaterial.color;
-		m_TopDropZoneAlpha = color.a;
+		m_DropZoneAlpha = color.a;
 		color.a = 0;
 		m_TopDropZoneMaterial.color = color;
+		m_BottomDropZoneMaterial.color = color;
 
-		m_TopDropZone.canDrop += CanDrop;
-		m_TopDropZone.receiveDrop += RecieveDrop;
-		m_TopDropZone.dropHoverStarted += DropHoverStarted;
-		m_TopDropZone.dropHoverEnded += DropHoverEnded;
+		var dropZones = new []{ m_BottomDropZone, m_TopDropZone };
+		foreach (var dropZone in dropZones)
+		{
+			dropZone.canDrop += CanDrop;
+			dropZone.receiveDrop += RecieveDrop;
+			dropZone.dropHoverStarted += DropHoverStarted;
+			dropZone.dropHoverEnded += DropHoverEnded;
+		}
 	}
 
 	protected override void UpdateItems()
@@ -74,15 +95,8 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
 
 		base.UpdateItems();
-	}
 
-	void UpdateHierarchyItem(HierarchyData data, int offset, int depth, bool expanded)
-	{
-		var index = data.index;
-		ListViewItem<HierarchyData, int> item;
-		if (!m_ListItems.TryGetValue(index, out item))
-			item = GetItem(data);
-
+		// Update Drop Zones
 		var width = bounds.size.x - kClipMargin;
 		var dropZoneTransform = m_TopDropZone.transform;
 		var dropZoneScale = dropZoneTransform.localScale;
@@ -93,7 +107,26 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 		dropZonePosition.z = bounds.extents.z;
 		dropZoneTransform.localPosition = dropZonePosition;
 
+		dropZoneTransform = m_BottomDropZone.transform;
+		dropZoneScale = dropZoneTransform.localScale;
+		dropZoneScale.x = width;
+		dropZoneScale.z = bounds.size.z - m_ExpandedDataLength * m_ItemSize.Value.z;
+		dropZoneTransform.localScale = dropZoneScale;
+
+		dropZonePosition = dropZoneTransform.localPosition;
+		dropZonePosition.z -= bounds.extents.z;
+		dropZoneTransform.localPosition = dropZonePosition;
+	}
+
+	void UpdateHierarchyItem(HierarchyData data, int offset, int depth, bool expanded)
+	{
+		var index = data.index;
+		ListViewItem<HierarchyData, int> item;
+		if (!m_ListItems.TryGetValue(index, out item))
+			item = GetItem(data);
+
 		var hierarchyItem = (HierarchyListItem)item;
+		var width = bounds.size.x - kClipMargin;
 		hierarchyItem.UpdateSelf(width, depth, expanded, data.index == m_SelectedRow);
 
 		SetMaterialClip(hierarchyItem.cubeMaterial, transform.worldToLocalMatrix);
@@ -117,6 +150,13 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 			bool expanded;
 			if (!m_ExpandStates.TryGetValue(index, out expanded))
 				m_ExpandStates[index] = false;
+
+			bool grabbed;
+			if (!m_GrabbedRows.TryGetValue(index, out grabbed))
+				m_GrabbedRows[index] = false;
+
+			if (grabbed)
+				continue;
 
 			if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
 				Recycle(index);
@@ -142,13 +182,15 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 	protected override ListViewItem<HierarchyData, int> GetItem(HierarchyData data)
 	{
 		var item = (HierarchyListItem)base.GetItem(data);
-		item.SetMaterials(m_NoClipBackingCubeMaterial, m_TextMaterial, m_ExpandArrowMaterial);
+		item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
 		item.selectRow = SelectRow;
 
 		item.toggleExpanded = ToggleExpanded;
 		item.setExpanded = SetExpanded;
 		item.startSettling = StartSettling;
 		item.isExpanded = GetExpanded;
+		item.setRowGrabbed = SetRowGrabbed;
+		item.getListItem = GetListItem;
 
 		item.UpdateArrow(GetExpanded(data.index), true);
 
@@ -186,7 +228,9 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 	{
 		var index = container.index;
 		if (index == rowID)
+		{
 			return true;
+		}
 
 		var found = false;
 		if (container.children != null)
@@ -234,28 +278,34 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 
 	void RecieveDrop(BaseHandle handle, object dropObject)
 	{
-		var hierarchyData = dropObject as HierarchyData;
-		if (hierarchyData != null)
+		if (handle == m_TopDropZone)
 		{
-			var gameObject = EditorUtility.InstanceIDToObject(hierarchyData.index) as GameObject;
-			gameObject.transform.SetParent(null);
-			gameObject.transform.SetSiblingIndex(0);
-			StartSettling();
+			var hierarchyData = dropObject as HierarchyData;
+			if (hierarchyData != null)
+			{
+				var gameObject = EditorUtility.InstanceIDToObject(hierarchyData.index) as GameObject;
+				gameObject.transform.SetParent(null);
+				gameObject.transform.SetSiblingIndex(0);
+				StartSettling(null);
+			}
 		}
+
 	}
 
 	void DropHoverStarted(BaseHandle handle)
 	{
-		var color = m_TopDropZoneMaterial.color;
-		color.a = m_TopDropZoneAlpha;
-		m_TopDropZoneMaterial.color = color;
+		var material = handle == m_TopDropZone ? m_TopDropZoneMaterial : m_BottomDropZoneMaterial;
+		var color = material.color;
+		color.a = m_DropZoneAlpha;
+		material.color = color;
 	}
 
 	void DropHoverEnded(BaseHandle handle)
 	{
-		var color = m_TopDropZoneMaterial.color;
+		var material = handle == m_TopDropZone ? m_TopDropZoneMaterial : m_BottomDropZoneMaterial;
+		var color = material.color;
 		color.a = 0;
-		m_TopDropZoneMaterial.color = color;
+		material.color = color;
 	}
 
 	bool GetExpanded(int instanceID)
@@ -270,8 +320,15 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 		m_ExpandStates[instanceID] = expanded;
 	}
 
-	void StartSettling()
+	void StartSettling(Action onComplete)
 	{
+		if (m_OnSettlingComplete != null)
+		{
+			m_OnSettlingComplete();
+			StopAllCoroutines();
+		}
+
+		m_OnSettlingComplete = onComplete;
 		StartCoroutine(SettlingTimer());
 	}
 
@@ -279,15 +336,33 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 	{
 		m_Settling = true;
 		var startTime = Time.realtimeSinceStartup;
-		while (Time.realtimeSinceStartup - startTime > m_SettleDuration)
+		while (Time.realtimeSinceStartup - startTime < m_SettleDuration)
 			yield return null;
 		m_Settling = false;
+
+		if (m_OnSettlingComplete != null)
+		{
+			m_OnSettlingComplete();
+			m_OnSettlingComplete = null;
+		}
+	}
+
+	void SetRowGrabbed(int index, bool grabbed)
+	{
+		m_GrabbedRows[index] = grabbed;
+	}
+
+	HierarchyListItem GetListItem(int index)
+	{
+		ListViewItem<HierarchyData, int> item;
+		if (m_ListItems.TryGetValue(index, out item))
+			return (HierarchyListItem)item;
+		return null;
 	}
 
 	private void OnDestroy()
 	{
 		U.Object.Destroy(m_TextMaterial);
 		U.Object.Destroy(m_ExpandArrowMaterial);
-		U.Object.Destroy(m_NoClipBackingCubeMaterial);
 	}
 }

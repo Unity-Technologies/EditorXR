@@ -78,11 +78,14 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			var name = hp.name;
 			var instanceID = hp.instanceID;
 
-			List<HierarchyData> list = null;
-			list = (hd == null || hd.children == null) ? new List<HierarchyData>() : hd.children;
-
+			List<HierarchyData> children = null;
 			if (hp.hasChildren)
 			{
+				if (hd != null && hd.children == null)
+					hasChanged = true;
+
+				children = hd == null || hd.children == null ? new List<HierarchyData>() : hd.children;
+
 				hasNext = hp.Next(null);
 				var i = 0;
 				while (hasNext && hp.depth > depth)
@@ -102,19 +105,19 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 						instanceID = hp.instanceID;
 					}
 
-					if (i >= list.Count)
+					if (i >= children.Count)
 					{
-						list.Add(CollectHierarchyData(ref hasNext, ref hasChanged, null, hp));
+						children.Add(CollectHierarchyData(ref hasNext, ref hasChanged, null, hp));
 						hasChanged = true;
 					}
-					else if (list[i].index != hp.instanceID)
+					else if (children[i].index != hp.instanceID)
 					{
-						list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, null, hp);
+						children[i] = CollectHierarchyData(ref hasNext, ref hasChanged, null, hp);
 						hasChanged = true;
 					}
 					else
 					{
-						list[i] = CollectHierarchyData(ref hasNext, ref hasChanged, list[i], hp);
+						children[i] = CollectHierarchyData(ref hasNext, ref hasChanged, children[i], hp);
 					}
 
 					if (hasNext)
@@ -123,23 +126,20 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 					i++;
 				}
 
-				if (i != list.Count)
+				if (i != children.Count)
 				{
-					list.RemoveRange(i, list.Count - i);
+					children.RemoveRange(i, children.Count - i);
 					hasChanged = true;
 				}
+
+				if (children.Count == 0)
+					children = null;
 
 				if (hasNext)
 					hp.Previous(null);
 			}
-			else
-			{
-				list.Clear();
-			}
-
-			List<HierarchyData> children = null;
-			if (list.Count > 0)
-				children = list;
+			else if (hd != null && hd.children != null)
+				hasChanged = true;
 
 			if (hd != null)
 			{

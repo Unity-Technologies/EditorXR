@@ -64,7 +64,7 @@ public class DraggableListItem<DataType, IndexType> : ListViewItem<DataType, Ind
 	}
 
 	// Smoothly interpolate grabbed object into position, instead of "popping."
-	protected IEnumerator Magnetize()
+	protected virtual IEnumerator Magnetize()
 	{
 		var startTime = Time.realtimeSinceStartup;
 		var currTime = 0f;

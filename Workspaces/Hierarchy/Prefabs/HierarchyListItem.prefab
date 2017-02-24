@@ -313,12 +313,11 @@ MonoBehaviour:
   m_Cube: {fileID: 114000012425087266}
   m_ExpandArrow: {fileID: 114000011118187708}
   m_DropZone: {fileID: 114000014220381596}
-  m_NoClipCubeMaterial: {fileID: 2100000, guid: 66d21d847da9fae44a46053afe8d825b,
-    type: 2}
-  m_NoClipExpandArrowMaterial: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba,
-    type: 2}
+  m_NoClipExpandArrow: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba, type: 2}
+  m_NoClipBackingCube: {fileID: 2100000, guid: 1a070009f7968b74abbf1a1ae823b472, type: 2}
   m_HoverColor: {r: 0.20344828, g: 0.20344828, b: 0.20344828, a: 0}
   m_SelectedColor: {r: 0.36896548, g: 0.36896548, b: 0.36896548, a: 0}
+  m_StackingFraction: 0.3
 --- !u!114 &114000012425087266
 MonoBehaviour:
   m_ObjectHideFlags: 1

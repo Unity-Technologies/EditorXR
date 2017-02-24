@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
@@ -26,10 +27,10 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 	BaseHandle m_DropZone;
 
 	[SerializeField]
-	Material m_NoClipCubeMaterial;
+	Material m_NoClipExpandArrow;
 
 	[SerializeField]
-	Material m_NoClipExpandArrowMaterial;
+	Material m_NoClipBackingCube;
 
 	[SerializeField]
 	Color m_HoverColor;
@@ -37,7 +38,9 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 	[SerializeField]
 	Color m_SelectedColor;
 
-	Material m_NoClipBackingCube;
+	[Tooltip("The fraction of the cube height to use for stacking grabbed rows")]
+	[SerializeField]
+	float m_StackingFraction = 0.3f;
 
 	Color m_NormalColor;
 	bool m_Hovering;
@@ -46,15 +49,21 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 
 	float m_DropZoneHighlightAlpha;
 
+	readonly Dictionary<Graphic, Material> m_OldMaterials = new Dictionary<Graphic, Material>();
+	readonly List<HierarchyListItem> m_VisibleChildren = new List<HierarchyListItem>();
+
+	Material m_ExpandArrowMaterial;
 	public Material cubeMaterial { get; private set; }
 	public Material dropZoneMaterial { get; private set; }
 
 	public Action<int> toggleExpanded { private get; set; }
 	public Action<int, bool> setExpanded { private get; set; }
 	public Action<int> selectRow { private get; set; }
-	public Action startSettling { private get; set; }
+	public Action<Action> startSettling { private get; set; }
 
 	public Func<int, bool> isExpanded { private get; set; }
+	public Action<int, bool> setRowGrabbed { private get; set; }
+	public Func<int, HierarchyListItem> getListItem { private get; set; }
 
 	protected override bool singleClickDrag { get { return false; } }
 
@@ -104,14 +113,13 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 		m_Text.gameObject.SetActive(false);
 		m_Text.gameObject.SetActive(true);
 
-		m_ExpandArrow.gameObject.SetActive(listData.children != null);
 		m_Hovering = false;
 	}
 
-	public void SetMaterials(Material noClipBackingCube, Material textMaterial, Material expandArrowMaterial)
+	public void SetMaterials(Material textMaterial, Material expandArrowMaterial)
 	{
-		m_NoClipBackingCube = noClipBackingCube;
 		m_Text.material = textMaterial;
+		m_ExpandArrowMaterial = expandArrowMaterial;
 		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
 	}
 
@@ -156,6 +164,9 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 
 	public void UpdateArrow(bool expanded, bool immediate = false)
 	{
+		//if (data.name == "New Game Object 3")
+		//	Debug.Log(data.children);
+		m_ExpandArrow.gameObject.SetActive(data.children != null);
 		var expandArrowTransform = m_ExpandArrow.transform;
 		// Rotate arrow for expand state
 		expandArrowTransform.localRotation = Quaternion.Lerp(expandArrowTransform.localRotation,
@@ -174,22 +185,46 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 		var row = handle.transform.parent;
 		if (row)
 		{
-			var clone = (GameObject)Instantiate(row.gameObject, row.parent);
-
-			m_DragObject = clone.transform;
+			m_DragObject = transform;
 
 			StartCoroutine(Magnetize());
 
-			var graphics = clone.GetComponentsInChildren<Graphic>(true);
-			foreach(var graphic in graphics)
+			m_VisibleChildren.Clear();
+			OnGrabRecursive(m_VisibleChildren);
+			startSettling(null);
+		}
+	}
+
+	void OnGrabRecursive(List<HierarchyListItem> visibleChildren)
+	{
+		m_OldMaterials.Clear();
+		var graphics = GetComponentsInChildren<Graphic>(true);
+		foreach (var graphic in graphics)
+		{
+			m_OldMaterials[graphic] = graphic.material;
+			graphic.material = null;
+		}
+
+		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = m_NoClipExpandArrow;
+		m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipBackingCube;
+		m_Text.transform.localRotation = Quaternion.AngleAxis(90, Vector3.right);
+		
+		m_DropZone.gameObject.SetActive(false);
+		m_Cube.GetComponent<Collider>().enabled = false;
+
+		setRowGrabbed(data.index, true);
+
+		if (data.children != null)
+		{
+			foreach (var child in data.children)
 			{
-				graphic.material = null;
+				var item = getListItem(child.index);
+				if (item)
+				{
+					visibleChildren.Add(item);
+					item.OnGrabRecursive(visibleChildren);
+				}
 			}
-
-			var item = clone.GetComponent<HierarchyListItem>();
-			item.m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipBackingCube;
-
-			item.m_DropZone.GetComponent<Renderer>().enabled = false;
 		}
 	}
 
@@ -200,18 +235,71 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 		if (m_DragObject)
 		{
 			var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
-			U.Math.LerpTransform(m_DragObject, previewOrigin.position,
-				U.Math.ConstrainYawRotation(U.Camera.GetMainCamera().transform.rotation)
-				* Quaternion.AngleAxis(90, Vector3.left), m_DragLerp);
+			MagnetizeTransform(previewOrigin, m_DragObject);
+			var offset = 0f;
+			foreach (var child in m_VisibleChildren)
+			{
+				offset += m_Cube.GetComponent<Renderer>().bounds.size.y * m_StackingFraction;
+				MagnetizeTransform(previewOrigin, child.transform, offset);
+			}
 		}
+	}
+
+	void MagnetizeTransform(Transform previewOrigin, Transform transform, float offset = 0)
+	{
+		var rotation = U.Math.ConstrainYawRotation(U.Camera.GetMainCamera().transform.rotation)
+			* Quaternion.AngleAxis(90, Vector3.left);
+		var offsetDirection = rotation * Vector3.one;
+		U.Math.LerpTransform(transform, previewOrigin.position - offsetDirection * offset, rotation, m_DragLerp);
 	}
 
 	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 	{
 		if (m_DragObject)
-			U.Object.Destroy(m_DragObject.gameObject);
+		{
+			OnDragEndRecursive();
+
+			startSettling(OnDragEndAfterSettling);
+		}
 
 		base.OnDragEnded(baseHandle, eventData);
+	}
+
+	void OnDragEndRecursive()
+	{
+		// OnHierarchyChanged doesn't happen until next frame--delay un-grab so the object doesn't start moving to the wrong spot
+		EditorApplication.delayCall += () => 
+		{
+			setRowGrabbed(data.index, false);
+		};
+
+		foreach (var child in m_VisibleChildren)
+		{
+			child.OnDragEndRecursive();
+		}
+	}
+
+	void OnDragEndAfterSettling()
+	{
+		SetClipMaterialsAfterSettling();
+		foreach (var child in m_VisibleChildren)
+		{
+			child.SetClipMaterialsAfterSettling();
+		}
+	}
+
+	void SetClipMaterialsAfterSettling()
+	{
+		foreach (var kvp in m_OldMaterials)
+		{
+			kvp.Key.material = kvp.Value;
+		}
+
+		m_Cube.GetComponent<Renderer>().sharedMaterial = cubeMaterial;
+		m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = m_ExpandArrowMaterial;
+		m_DropZone.gameObject.SetActive(true);
+		m_Cube.GetComponent<Collider>().enabled = true;
+		m_Hovering = false;
 	}
 
 	void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
@@ -301,9 +389,9 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 			{
 				dropTransform.SetParent(transform);
 				dropTransform.SetAsLastSibling();
-				setExpanded(thisIndex, true);
-				selectRow(dropIndex);
-				startSettling();
+
+				EditorApplication.delayCall += () => { setExpanded(thisIndex, true); };
+				startSettling(null);
 			}
 			else if (handle == m_DropZone)
 			{
@@ -311,13 +399,13 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 				{
 					dropTransform.SetParent(transform);
 					dropTransform.SetAsFirstSibling();
-					startSettling();
+					startSettling(null);
 				}
 				else if (transform.parent)
 				{
 					dropTransform.SetParent(transform.parent);
 					dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
-					startSettling();
+					startSettling(null);
 				}
 				else
 				{
@@ -327,7 +415,7 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 
 					dropTransform.SetParent(null);
 					dropTransform.SetSiblingIndex(targetIndex);
-					startSettling();
+					startSettling(null);
 				}
 			}
 		}
