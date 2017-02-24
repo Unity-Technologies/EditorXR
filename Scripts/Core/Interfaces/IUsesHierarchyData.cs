@@ -6,7 +6,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Exposes a property used to provide a hierarchy of scene objects to the object
 	/// </summary>
-	public interface IUsesHierarchyData
+	interface IUsesHierarchyData
 	{
 		/// <summary>
 		/// Set accessor for hierarchy list data

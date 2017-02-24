@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-	public sealed class FolderData : ListViewItemNestedData<FolderData>
+	sealed class FolderData : ListViewItemNestedData<FolderData>
 	{
 		const string k_TemplateName = "FolderListItem";
 

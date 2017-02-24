@@ -5,7 +5,7 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-	public sealed class AssetData : ListViewItemData
+	sealed class AssetData : ListViewItemData
 	{
 		const string k_TemplateName = "AssetGridItem";
 

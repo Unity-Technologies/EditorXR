@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	public sealed class HierarchyData : ListViewItemNestedData<HierarchyData>
+	sealed class HierarchyData : ListViewItemNestedData<HierarchyData>
 	{
 		const string k_TemplateName = "HierarchyListItem";
 

@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Exposes a property used to provide a hierarchy of project folders and assets to the object
 	/// </summary>
-	public interface IUsesProjectFolderData
+	interface IUsesProjectFolderData
 	{
 		/// <summary>
 		/// Set accessor for folder list data
