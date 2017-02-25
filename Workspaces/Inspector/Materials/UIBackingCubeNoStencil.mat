@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: UIBackingCubeNoStencil
-  m_Shader: {fileID: 4800000, guid: 318c14da2f00542499714e565000f7b4, type: 3}
+  m_Shader: {fileID: 4800000, guid: f105b0ff17ffa7f4ca15ba9f6f4e1ad8, type: 3}
   m_ShaderKeywords: _EMISSION _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 0
   m_CustomRenderQueue: -1

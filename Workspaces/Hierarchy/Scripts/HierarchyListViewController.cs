@@ -138,8 +138,10 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 	void UpdateHierarchyItemTransform(Transform t, int offset)
 	{
 		var destination = m_StartPosition + (offset * m_ItemSize.Value.z + m_ScrollOffset) * Vector3.back;
-		t.localPosition = Vector3.Lerp(t.localPosition, destination, m_Settling ? m_SettleSpeed : 1);
-		t.localRotation = Quaternion.identity;
+
+		var settleSpeed = m_Settling ? m_SettleSpeed : 1;
+		t.localPosition = Vector3.Lerp(t.localPosition, destination, settleSpeed);
+		t.localRotation = Quaternion.Lerp(t.localRotation, Quaternion.identity, settleSpeed);
 	}
 
 	protected override void UpdateRecursively(List<HierarchyData> data, ref int count, int depth = 0)
