@@ -140,9 +140,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 					if (angle < 0f)
 						angle += 360f;
 
-					const float k_SlotAngleRange = 360f / k_SlotCount;
+					const float kSlotAngleRange = 360f / k_SlotCount;
 					var kPadding = m_HighlightedButton ? 0.4f : 0.01; // allow for immediate visibility of the menu if no button has been highlighted yet
-					var index = angle / k_SlotAngleRange;
+					var index = angle / kSlotAngleRange;
 					var t = index % 1f;
 					// Use padding to prevent unintended button switches
 					if (t >= kPadding && t <= 1f - kPadding)
@@ -219,14 +219,14 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		void SetupRadialSlotPositions()
 		{
-			const float k_RotationSpacing = 360f / k_SlotCount;
+			const float kRotationSpacing = 360f / k_SlotCount;
 			for (int i = 0; i < k_SlotCount; ++i)
 			{
 				var slot = m_RadialMenuSlots[i];
 				// We move in counter-clockwise direction
 				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
-				m_PhaseOffset = 270 - (m_Actions.Count * 0.5f) * k_RotationSpacing;
-				slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + k_RotationSpacing * i, Vector3.down);
+				m_PhaseOffset = 270 - (m_Actions.Count * 0.5f) * kRotationSpacing;
+				slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + kRotationSpacing * i, Vector3.down);
 				slot.visible = false;
 			}
 
