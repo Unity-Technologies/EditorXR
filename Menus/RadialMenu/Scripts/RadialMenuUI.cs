@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +6,6 @@ using UnityEngine.Experimental.EditorVR.Actions;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.UI;
 
 namespace UnityEngine.Experimental.EditorVR.Menus
 {
@@ -28,8 +26,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		RadialMenuSlot m_HighlightedButton;
 		float m_PhaseOffset; // Correcting the coordinates, based on actions count, so that the menu is centered at the bottom
-
-		public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
 
 		public Transform alternateMenuOrigin
 		{
