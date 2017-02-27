@@ -1,6 +1,7 @@
 ﻿namespace UnityEngine.Experimental.EditorVR.Utilities
 {
 	using UnityEngine;
+	using UnityEngine.UI;
 	using Random = UnityEngine.Random;
 	using UMaterial = UnityEngine.Material;
 	using UObject = UnityEngine.Object;
@@ -18,12 +19,23 @@
 			/// <summary>
 			/// Get a material clone; IMPORTANT: Make sure to call U.Destroy() on this material when done!
 			/// </summary>
-			/// <param name="renderer">Renderer that will have its material clone and replaced</param>
+			/// <param name="renderer">Renderer that will have its material cloned and replaced</param>
 			/// <returns>Cloned material</returns>
 			public static UMaterial GetMaterialClone(Renderer renderer)
 			{
 				// The following is equivalent to renderer.material, but gets rid of the error messages in edit mode
 				return renderer.material = UObject.Instantiate(renderer.sharedMaterial);
+			}
+
+			/// <summary>
+			/// Get a material clone; IMPORTANT: Make sure to call U.Destroy() on this material when done!
+			/// </summary>
+			/// <param name="graphic">Graphic that will have its material cloned and replaced</param>
+			/// <returns>Cloned material</returns>
+			public static UMaterial GetMaterialClone(Graphic graphic)
+			{
+				// The following is equivalent to graphic.material, but gets rid of the error messages in edit mode
+				return graphic.material = UObject.Instantiate(graphic.material);
 			}
 
 			/// <summary>

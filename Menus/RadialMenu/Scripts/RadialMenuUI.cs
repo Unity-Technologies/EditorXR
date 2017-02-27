@@ -6,20 +6,15 @@ using UnityEngine.Experimental.EditorVR.Actions;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.UI;
 
 namespace UnityEngine.Experimental.EditorVR.Menus
 {
 	public class RadialMenuUI : MonoBehaviour, IConnectInterfaces
 	{
-		const float kPhaseOffset = 90f; // Correcting the coordinates, so that 0 degrees is at the top of the radial menu
-		const int kSlotCount = 16;
+		const int k_SlotCount = 16;
 
 		[SerializeField]
 		Sprite m_MissingActionIcon;
-
-		[SerializeField]
-		Image m_SlotsMask;
 
 		[SerializeField]
 		RadialMenuSlot m_RadialMenuSlotTemplate;
@@ -30,6 +25,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		List<RadialMenuSlot> m_RadialMenuSlots;
 		Coroutine m_VisibilityCoroutine;
 		RadialMenuSlot m_HighlightedButton;
+		float m_PhaseOffset; // Correcting the coordinates, based on actions count, so that the menu is centered at the bottom
 
 		public Transform alternateMenuOrigin
 		{
@@ -134,15 +130,14 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				else if (value.magnitude > 0)
 				{
 					var angle = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg;
-					angle -= kPhaseOffset;
+					angle -= m_PhaseOffset;
 
 					// Handle lower quadrant to put it into full 360 degree range
 					if (angle < 0f)
 						angle += 360f;
 
-					const float kSlotAngleRange = 360f / kSlotCount;
-					const float kPadding = 0.25f;
-
+					const float kSlotAngleRange = 360f / k_SlotCount;
+					var kPadding = m_HighlightedButton ? 0.4f : 0.01; // allow for immediate visibility of the menu if no button has been highlighted yet
 					var index = angle / kSlotAngleRange;
 					var t = index % 1f;
 					// Use padding to prevent unintended button switches
@@ -158,12 +153,25 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		}
 		Vector2 m_ButtonInputDirection;
 
-		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
-
-		void Start()
+		private bool semiTransparent
 		{
-			m_SlotsMask.gameObject.SetActive(false);
+			set
+			{
+				m_SemiTransparent = value;
+
+				if (!value)
+					m_HighlightedButton = null;
+
+				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
+				{
+					// Only set the semiTransparent value on menu slots representing actions
+					m_RadialMenuSlots[i].semiTransparent = m_Actions.Count > i ? m_SemiTransparent : false;
+				}
+			}
 		}
+		private bool m_SemiTransparent;
+
+		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 
 		void Update()
 		{
@@ -178,6 +186,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 						radialMenuSlot.icon = action.icon;
 				}
 			}
+
+			if (m_Visible) // don't override transparency if the menu is in the process of hiding itself
+				semiTransparent = !m_RadialMenuSlots.Any(x => x.highlighted);
 		}
 
 		public void Setup()
@@ -185,7 +196,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_RadialMenuSlots = new List<RadialMenuSlot>();
 			Material slotBorderMaterial = null;
 
-			for (int i = 0; i < kSlotCount; ++i)
+			for (int i = 0; i < k_SlotCount; ++i)
 			{
 				var menuSlot = U.Object.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
 				connectInterfaces(menuSlot);
@@ -204,13 +215,15 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		void SetupRadialSlotPositions()
 		{
-			const float kRotationSpacing = 360f / kSlotCount;
-			for (int i = 0; i < kSlotCount; ++i)
+			const float kRotationSpacing = 360f / k_SlotCount;
+			for (int i = 0; i < k_SlotCount; ++i)
 			{
 				var slot = m_RadialMenuSlots[i];
 				// We move in counter-clockwise direction
-				slot.visibleLocalRotation = Quaternion.AngleAxis(kPhaseOffset + kRotationSpacing * i, Vector3.down);
-				slot.Hide();
+				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
+				m_PhaseOffset = 270 - (m_Actions.Count * 0.5f) * kRotationSpacing;
+				slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + kRotationSpacing * i, Vector3.down);
+				slot.visible = false;
 			}
 
 			this.StopCoroutine(ref m_VisibilityCoroutine);
@@ -224,7 +237,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			for (int i = 0; i < m_Actions.Count; ++i)
 			{
 				// prevent more actions being added beyond the max slot count
-				if (i >= kSlotCount)
+				if (i >= k_SlotCount)
 					break;
 
 				var actionMenuData = m_Actions[i];
@@ -254,15 +267,21 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateShow()
 		{
-			m_SlotsMask.gameObject.SetActive(true);
-
 			UpdateRadialSlots();
 
-			m_SlotsMask.fillAmount = 1f;
+			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
+			{
+				if (i < m_Actions.Count)
+					m_RadialMenuSlots[i].visible = true;
+				else
+					m_RadialMenuSlots[i].visible = false;
+			}
+
+			semiTransparent = false;
+			semiTransparent = true;
 
 			var revealAmount = 0f;
-			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;;
-
+			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 			while (revealAmount < 1)
 			{
 				revealAmount += Time.unscaledDeltaTime * 8;
@@ -270,12 +289,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
 					if (i < m_Actions.Count)
-					{
-						m_RadialMenuSlots[i].Show();
 						m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, revealAmount * revealAmount);
-					}
-					else
-						m_RadialMenuSlots[i].Hide();
 				}
 
 				yield return null;
@@ -285,7 +299,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			while (revealAmount < 1)
 			{
 				revealAmount += Time.unscaledDeltaTime;
-				m_SlotsMask.fillAmount = Mathf.Lerp(m_SlotsMask.fillAmount, 0f, revealAmount);
 				yield return null;
 			}
 
@@ -294,16 +307,11 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateHide()
 		{
-			if (!m_SlotsMask.gameObject.activeInHierarchy)
-				yield break;
-
-			m_SlotsMask.fillAmount = 1f;
-
 			var revealAmount = 0f;
 			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 
 			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
-				m_RadialMenuSlots[i].Hide();
+				m_RadialMenuSlots[i].visible = false;
 
 			revealAmount = 1;
 			while (revealAmount > 0)
@@ -316,7 +324,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				yield return null;
 			}
 
-			m_SlotsMask.gameObject.SetActive(false);
+			semiTransparent = false;
 			gameObject.SetActive(false);
 			m_VisibilityCoroutine = null;
 		}
