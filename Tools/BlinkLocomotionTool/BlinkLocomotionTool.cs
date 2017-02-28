@@ -21,7 +21,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	const float kMoveThresholdVive = 0.8f;
 	const float kRotationThresholdVive = 0.8f;
 
-	const float kMinScale = 0.01f;
+	const float kMinScale = 0.1f;
 	const float kMaxScale = 1000f;
 
 	private enum State
@@ -244,15 +244,27 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			var viewerCamera = U.Camera.GetMainCamera();
 
 			if (Mathf.Abs(yawValue) > Mathf.Abs(forwardValue))
-			{
+			{				
 				if (!Mathf.Approximately(yawValue, 0))
 				{
-					var speed = yawValue * kSlowRotationSpeed;
-					var threshold = isVive ? kRotationThresholdVive : kRotationThreshold;
-					if (Mathf.Abs(yawValue) > threshold)
-						speed = kFastRotationSpeed * Mathf.Sign(yawValue);
+					if (node == Node.LeftHand)
+					{
+						var direction = viewerCamera.transform.right;
+						direction.y = 0;
+						direction.Normalize();
 
-					cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.unscaledDeltaTime);
+						Translate(yawValue, isVive, direction);
+					}
+					else
+					{
+						var speed = yawValue * kSlowRotationSpeed;
+						var threshold = isVive ? kRotationThresholdVive : kRotationThreshold;
+						if (Mathf.Abs(yawValue) > threshold)
+							speed = kFastRotationSpeed * Mathf.Sign(yawValue);
+
+						cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.unscaledDeltaTime);
+					}
+
 					consumeControl(blinkInput.yaw);
 				}
 			}
@@ -269,14 +281,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 						direction.Normalize();
 					}
 
-					var speed = forwardValue * kSlowMoveSpeed;
-					var threshold = isVive ? kMoveThresholdVive : kMoveThreshold;
-					if (Mathf.Abs(forwardValue) > threshold)
-						speed = kFastMoveSpeed * Mathf.Sign(forwardValue);
-
-					speed *= cameraRig.localScale.x;
-
-					cameraRig.Translate(direction * speed * Time.unscaledDeltaTime, Space.World);
+					Translate(forwardValue, isVive, direction);
 					consumeControl(blinkInput.forward);
 				}
 			}
@@ -310,6 +315,18 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 			consumeControl(blinkInput.blink);
 		}
+	}
+
+	void Translate(float inputValue, bool isVive, Vector3 direction)
+	{
+		var speed = inputValue * kSlowMoveSpeed;
+		var threshold = isVive ? kMoveThresholdVive : kMoveThreshold;
+		if (Mathf.Abs(inputValue) > threshold)
+			speed = kFastMoveSpeed * Mathf.Sign(inputValue);
+
+		speed *= cameraRig.localScale.x;
+
+		cameraRig.Translate(direction * speed * Time.unscaledDeltaTime, Space.World);
 	}
 
 	void CreateWorldScaleVisuals(Transform leftHand, Transform rightHand)
