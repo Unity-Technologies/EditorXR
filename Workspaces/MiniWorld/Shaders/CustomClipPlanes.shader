@@ -16,7 +16,7 @@ Shader "Custom/Custom Clip Planes"
 
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
-		#pragma surface surf NoLighting noforwardadd fullforwardshadows vertex:vert
+		#pragma surface surf NoLighting nolightmap noforwardadd noshadow nometa vertex:vert
 
 		// Use shader model 3.0 target, to get nicer looking lighting
 		#pragma target 3.0
@@ -62,5 +62,4 @@ Shader "Custom/Custom Clip Planes"
 		}
 		ENDCG
 	}
-	FallBack "Diffuse"
 }

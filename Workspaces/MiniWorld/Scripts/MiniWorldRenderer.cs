@@ -70,6 +70,7 @@ public class MiniWorldRenderer : MonoBehaviour
 			m_MiniCamera.CopyFrom(camera);
 
 			m_MiniCamera.cullingMask = cullingMask;
+			m_MiniCamera.cameraType = CameraType.Game;
 			m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
 			m_MiniCamera.worldToCameraMatrix = GetWorldToCameraMatrix(camera);
 			var shader = Shader.Find("Custom/Custom Clip Planes");
