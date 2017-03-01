@@ -1,10 +1,12 @@
-﻿using System.Collections;
-using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using System.Collections;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
+using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR.Proxies
+namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	public class TouchProxy : TwoHandedProxyBase
+	sealed class TouchProxy : TwoHandedProxyBase
 	{
 		private OVRTouchInputToEvents m_InputToEvents;
 
@@ -19,7 +21,7 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		public override void Awake()
 		{
 			base.Awake();
-			m_InputToEvents = U.Object.AddComponent<OVRTouchInputToEvents>(gameObject);
+			m_InputToEvents = ObjectUtils.AddComponent<OVRTouchInputToEvents>(gameObject);
 		}
 
 		public override IEnumerator Start()
@@ -39,3 +41,4 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		}
 	}
 }
+#endif

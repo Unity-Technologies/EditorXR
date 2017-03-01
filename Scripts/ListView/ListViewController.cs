@@ -1,7 +1,7 @@
-﻿using System;
+﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Tools;
 
 namespace ListView
 {
@@ -111,3 +111,4 @@ namespace ListView
 		}
 	}
 }
+#endif

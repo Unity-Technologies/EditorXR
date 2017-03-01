@@ -1,7 +1,7 @@
-﻿using System;
-using UnityEngine.Experimental.EditorVR.Workspaces;
+﻿#if UNITY_EDITOR
+using System;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Method signature for creating workspaces
@@ -21,3 +21,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		CreateWorkspaceDelegate createWorkspace { set; }
 	}
 }
+#endif

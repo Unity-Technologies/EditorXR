@@ -1,353 +1,355 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.UI;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.UI;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Workspaces;
-using InputField = UnityEngine.Experimental.EditorVR.UI.InputField;
+using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
 
-public abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight, IRequestStencilRef
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	const float kIndent = 0.02f;
-
-	protected CuboidLayout m_CuboidLayout;
-
-	protected InputField[] m_InputFields;
-
-	protected InputField m_ClickedField;
-	protected int m_ClickCount;
-
-	[SerializeField]
-	BaseHandle m_Cube;
-
-	[SerializeField]
-	RectTransform m_UIContainer;
-
-	ClipText[] m_ClipTexts;
-
-	Material m_NoClipBackingCube;
-	Material[] m_NoClipHighlightMaterials;
-
-	bool m_Setup;
-
-	readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform, Vector3>();
-
-	float m_LastClickTime;
-	bool m_SelectIsHeld;
-	float m_DragDistance;
-
-	public bool setup { get; set; }
-
-	public Action<GameObject, bool> setHighlight { private get; set; }
-
-	public Action<InspectorData> toggleExpanded { private get; set; }
-
-	public Func<byte> requestStencilRef { private get; set; }
-
-	public override void Setup(InspectorData data)
+	abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight, IRequestStencilRef
 	{
-		base.Setup(data);
+		const float k_Indent = 0.02f;
 
-		if (!m_Setup)
+		protected CuboidLayout m_CuboidLayout;
+
+		protected InputField[] m_InputFields;
+
+		protected InputField m_ClickedField;
+		protected int m_ClickCount;
+
+		[SerializeField]
+		BaseHandle m_Cube;
+
+		[SerializeField]
+		RectTransform m_UIContainer;
+
+		ClipText[] m_ClipTexts;
+
+		Material m_NoClipBackingCube;
+		Material[] m_NoClipHighlightMaterials;
+
+		bool m_Setup;
+
+		readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform, Vector3>();
+
+		float m_LastClickTime;
+		bool m_SelectIsHeld;
+		float m_DragDistance;
+
+		public bool setup { get; set; }
+
+		public Action<GameObject, bool> setHighlight { private get; set; }
+
+		public Action<InspectorData> toggleExpanded { private get; set; }
+
+		public Func<byte> requestStencilRef { private get; set; }
+
+		public override void Setup(InspectorData data)
 		{
-			m_Setup = true;
-			FirstTimeSetup();
-		}
-	}
+			base.Setup(data);
 
-	protected virtual void FirstTimeSetup()
-	{
-		m_ClipTexts = GetComponentsInChildren<ClipText>(true);
-		m_CuboidLayout = GetComponentInChildren<CuboidLayout>(true);
-		if (m_CuboidLayout)
-			m_CuboidLayout.UpdateObjects();
-
-		var handles = GetComponentsInChildren<BaseHandle>(true);
-		foreach (var handle in handles)
-		{
-			// Ignore m_Cube for now (will be used for Reset action)
-			if (handle.Equals(m_Cube))
-				continue;
-
-			// Toggles can't be dragged
-			if (handle.transform.parent.GetComponentInChildren<Toggle>())
-				continue;
-
-			handle.dragStarted += OnDragStarted;
-			handle.dragging += OnDragging;
-			handle.dragEnded += OnDragEnded;
-
-			handle.dropHoverStarted += OnDropHoverStarted;
-			handle.dropHoverEnded += OnDropHoverEnded;
-
-			handle.canDrop = CanDrop;
-			handle.receiveDrop = ReceiveDrop;
-			handle.getDropObject = GetDropObject;
-		}
-
-		m_InputFields = GetComponentsInChildren<InputField>(true);
-	}
-
-	public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
-	{
-		m_NoClipBackingCube = noClipBackingCube;
-		m_NoClipHighlightMaterials = noClipHighlightMaterials;
-
-		m_Cube.GetComponent<Renderer>().sharedMaterial = rowMaterial;
-
-		var cuboidLayouts = GetComponentsInChildren<CuboidLayout>(true);
-		foreach (var cuboidLayout in cuboidLayouts)
-		{
-			cuboidLayout.SetMaterials(backingCubeMaterial, highlightMaterials);
-		}
-
-		var workspaceButtons = GetComponentsInChildren<WorkspaceButton>(true);
-		foreach (var button in workspaceButtons)
-		{
-			button.buttonMeshRenderer.sharedMaterials = highlightMaterials;
-		}
-
-		var graphics = GetComponentsInChildren<Graphic>(true);
-		foreach (var graphic in graphics)
-		{
-			graphic.material = uiMaterial;
-		}
-
-		// Texts need a specific shader
-		var texts = GetComponentsInChildren<Text>(true);
-		foreach (var text in texts)
-		{
-			text.material = textMaterial;
-		}
-
-		// Don't clip masks
-		var masks = GetComponentsInChildren<Mask>(true);
-		foreach (var mask in masks)
-		{
-			mask.graphic.material = null;
-		}
-	}
-
-	public virtual void UpdateSelf(float width, int depth, bool expanded)
-	{
-		var cubeScale = m_Cube.transform.localScale;
-		cubeScale.x = width;
-		m_Cube.transform.localScale = cubeScale;
-
-		if (depth > 0) // Lose one level of indentation because everything is a child of the header
-			depth--;
-
-		var indent = kIndent * depth;
-		m_UIContainer.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, indent, width - indent);
-
-		if (m_CuboidLayout)
-			m_CuboidLayout.UpdateObjects();
-	}
-
-	public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)
-	{
-		foreach (var clipText in m_ClipTexts)
-		{
-			clipText.clipExtents = clipExtents;
-			clipText.parentMatrix = parentMatrix;
-			clipText.UpdateMaterialClip();
-		}
-	}
-
-	protected virtual void OnDropHoverStarted(BaseHandle handle)
-	{
-		setHighlight(handle.gameObject, true);
-	}
-
-	protected virtual void OnDropHoverEnded(BaseHandle handle)
-	{
-		setHighlight(handle.gameObject, false);
-	}
-
-	object GetDropObject(BaseHandle handle)
-	{
-		return GetDropObjectForFieldBlock(handle.transform.parent);
-	}
-
-	bool CanDrop(BaseHandle handle, object dropObject)
-	{
-		return CanDropForFieldBlock(handle.transform.parent, dropObject);
-	}
-
-	void ReceiveDrop(BaseHandle handle, object dropObject)
-	{
-		ReceiveDropForFieldBlock(handle.transform.parent, dropObject);
-	}
-
-	protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		base.OnDragStarted(baseHandle, eventData);
-		m_DragObject = null;
-
-		var fieldBlock = baseHandle.transform.parent;
-		if (fieldBlock)
-		{
-			if (m_ClickCount == 0)
+			if (!m_Setup)
 			{
-				// Get RayInputField from direct children
-				foreach (Transform child in fieldBlock.transform)
-				{
-					m_ClickedField = child.GetComponent<InputField>();
-					if (m_ClickedField)
-						break;
-				}
-				StartCoroutine(CheckSingleClick());
+				m_Setup = true;
+				FirstTimeSetup();
+			}
+		}
+
+		protected virtual void FirstTimeSetup()
+		{
+			m_ClipTexts = GetComponentsInChildren<ClipText>(true);
+			m_CuboidLayout = GetComponentInChildren<CuboidLayout>(true);
+			if (m_CuboidLayout)
+				m_CuboidLayout.UpdateObjects();
+
+			var handles = GetComponentsInChildren<BaseHandle>(true);
+			foreach (var handle in handles)
+			{
+				// Ignore m_Cube for now (will be used for Reset action)
+				if (handle.Equals(m_Cube))
+					continue;
+
+				// Toggles can't be dragged
+				if (handle.transform.parent.GetComponentInChildren<Toggle>())
+					continue;
+
+				handle.dragStarted += OnDragStarted;
+				handle.dragging += OnDragging;
+				handle.dragEnded += OnDragEnded;
+
+				handle.dropHoverStarted += OnDropHoverStarted;
+				handle.dropHoverEnded += OnDropHoverEnded;
+
+				handle.canDrop = CanDrop;
+				handle.receiveDrop = ReceiveDrop;
+				handle.getDropObject = GetDropObject;
 			}
 
-			m_ClickCount++;
-			m_SelectIsHeld = true;
-			m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
+			m_InputFields = GetComponentsInChildren<InputField>(true);
+		}
 
-			// Grab a field block on double click
-			var timeSinceLastClick = Time.realtimeSinceStartup - m_LastClickTime;
-			m_LastClickTime = Time.realtimeSinceStartup;
-			if (m_ClickCount > 1 && U.UI.IsDoubleClick(timeSinceLastClick))
+		public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
+		{
+			m_NoClipBackingCube = noClipBackingCube;
+			m_NoClipHighlightMaterials = noClipHighlightMaterials;
+
+			m_Cube.GetComponent<Renderer>().sharedMaterial = rowMaterial;
+
+			var cuboidLayouts = GetComponentsInChildren<CuboidLayout>(true);
+			foreach (var cuboidLayout in cuboidLayouts)
 			{
-				CancelSingleClick();
+				cuboidLayout.SetMaterials(backingCubeMaterial, highlightMaterials);
+			}
 
-				var clone = Instantiate(fieldBlock.gameObject, fieldBlock.parent) as GameObject;
-				// Re-center pivot
-				clone.GetComponent<RectTransform>().pivot = Vector2.one * 0.5f;
+			var workspaceButtons = GetComponentsInChildren<WorkspaceButton>(true);
+			foreach (var button in workspaceButtons)
+			{
+				button.buttonMeshRenderer.sharedMaterials = highlightMaterials;
+			}
 
-				//Re-center backing cube
-				foreach (Transform child in clone.transform)
+			var graphics = GetComponentsInChildren<Graphic>(true);
+			foreach (var graphic in graphics)
+			{
+				graphic.material = uiMaterial;
+			}
+
+			// Texts need a specific shader
+			var texts = GetComponentsInChildren<Text>(true);
+			foreach (var text in texts)
+			{
+				text.material = textMaterial;
+			}
+
+			// Don't clip masks
+			var masks = GetComponentsInChildren<Mask>(true);
+			foreach (var mask in masks)
+			{
+				mask.graphic.material = null;
+			}
+		}
+
+		public virtual void UpdateSelf(float width, int depth, bool expanded)
+		{
+			var cubeScale = m_Cube.transform.localScale;
+			cubeScale.x = width;
+			m_Cube.transform.localScale = cubeScale;
+
+			if (depth > 0) // Lose one level of indentation because everything is a child of the header
+				depth--;
+
+			var indent = k_Indent * depth;
+			m_UIContainer.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, indent, width - indent);
+
+			if (m_CuboidLayout)
+				m_CuboidLayout.UpdateObjects();
+		}
+
+		public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)
+		{
+			foreach (var clipText in m_ClipTexts)
+			{
+				clipText.clipExtents = clipExtents;
+				clipText.parentMatrix = parentMatrix;
+				clipText.UpdateMaterialClip();
+			}
+		}
+
+		protected virtual void OnDropHoverStarted(BaseHandle handle)
+		{
+			setHighlight(handle.gameObject, true);
+		}
+
+		protected virtual void OnDropHoverEnded(BaseHandle handle)
+		{
+			setHighlight(handle.gameObject, false);
+		}
+
+		object GetDropObject(BaseHandle handle)
+		{
+			return GetDropObjectForFieldBlock(handle.transform.parent);
+		}
+
+		bool CanDrop(BaseHandle handle, object dropObject)
+		{
+			return CanDropForFieldBlock(handle.transform.parent, dropObject);
+		}
+
+		void ReceiveDrop(BaseHandle handle, object dropObject)
+		{
+			ReceiveDropForFieldBlock(handle.transform.parent, dropObject);
+		}
+
+		protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
+		{
+			base.OnDragStarted(baseHandle, eventData);
+			m_DragObject = null;
+
+			var fieldBlock = baseHandle.transform.parent;
+			if (fieldBlock)
+			{
+				if (m_ClickCount == 0)
 				{
-					if (child.GetComponent<BaseHandle>())
+					// Get RayInputField from direct children
+					foreach (Transform child in fieldBlock.transform)
 					{
-						var localPos = child.localPosition;
-						localPos.x = 0;
-						localPos.y = 0;
-						child.localPosition = localPos;
+						m_ClickedField = child.GetComponent<InputField>();
+						if (m_ClickedField)
+							break;
 					}
+					StartCoroutine(CheckSingleClick());
 				}
 
-				m_DragObject = clone.transform;
-				m_ClickedField = null; // Clear clicked field so we don't drag the value
+				m_ClickCount++;
+				m_SelectIsHeld = true;
+				m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
 
-				var graphics = clone.GetComponentsInChildren<Graphic>(true);
-				foreach (var graphic in graphics)
+				// Grab a field block on double click
+				var timeSinceLastClick = Time.realtimeSinceStartup - m_LastClickTime;
+				m_LastClickTime = Time.realtimeSinceStartup;
+				if (m_ClickCount > 1 && UIUtils.IsDoubleClick(timeSinceLastClick))
 				{
-					graphic.material = null;
-				}
+					CancelSingleClick();
 
-				var stencilRef = requestStencilRef();
-				var renderers = clone.GetComponentsInChildren<Renderer>(true);
-				foreach (var renderer in renderers)
-				{
-					if (renderer.sharedMaterials.Length > 1)
+					var clone = Instantiate(fieldBlock.gameObject, fieldBlock.parent) as GameObject;
+
+					// Re-center pivot
+					clone.GetComponent<RectTransform>().pivot = Vector2.one * 0.5f;
+
+					//Re-center backing cube
+					foreach (Transform child in clone.transform)
 					{
-						foreach (var material in m_NoClipHighlightMaterials)
+						if (child.GetComponent<BaseHandle>())
 						{
-							material.SetInt("_StencilRef", stencilRef);
+							var localPos = child.localPosition;
+							localPos.x = 0;
+							localPos.y = 0;
+							child.localPosition = localPos;
 						}
-						renderer.sharedMaterials = m_NoClipHighlightMaterials;
 					}
-					else
+
+					m_DragObject = clone.transform;
+					m_ClickedField = null; // Clear clicked field so we don't drag the value
+
+					var graphics = clone.GetComponentsInChildren<Graphic>(true);
+					foreach (var graphic in graphics)
 					{
-						renderer.sharedMaterial = m_NoClipBackingCube;
-						m_NoClipBackingCube.SetInt("_StencilRef", stencilRef);
+						graphic.material = null;
+					}
+
+					var stencilRef = requestStencilRef();
+					var renderers = clone.GetComponentsInChildren<Renderer>(true);
+					foreach (var renderer in renderers)
+					{
+						if (renderer.sharedMaterials.Length > 1)
+						{
+							foreach (var material in m_NoClipHighlightMaterials)
+							{
+								material.SetInt("_StencilRef", stencilRef);
+							}
+							renderer.sharedMaterials = m_NoClipHighlightMaterials;
+						}
+						else
+						{
+							renderer.sharedMaterial = m_NoClipBackingCube;
+							m_NoClipBackingCube.SetInt("_StencilRef", stencilRef);
+						}
 					}
 				}
 			}
 		}
-	}
 
-	protected override void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		if (m_ClickedField)
+		protected override void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
 		{
-			var rayOrigin = eventData.rayOrigin;
-			m_DragDistance = (rayOrigin.position - m_DragStarts[rayOrigin]).magnitude;
+			if (m_ClickedField)
+			{
+				var rayOrigin = eventData.rayOrigin;
+				m_DragDistance = (rayOrigin.position - m_DragStarts[rayOrigin]).magnitude;
+
+				var numericField = m_ClickedField as NumericInputField;
+				if (numericField)
+				{
+					if (m_DragDistance > NumericInputField.DragDeadzone)
+						CancelSingleClick();
+
+					numericField.SliderDrag(eventData.rayOrigin);
+				}
+			}
+
+			if (m_DragObject)
+			{
+				var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
+				MathUtilsExt.LerpTransform(m_DragObject, previewOrigin.position,
+					MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation), m_DragLerp);
+			}
+		}
+
+		protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
+		{
+			m_SelectIsHeld = false;
 
 			var numericField = m_ClickedField as NumericInputField;
 			if (numericField)
+				numericField.EndDrag();
+
+			var fieldBlock = baseHandle.transform.parent;
+			if (fieldBlock)
 			{
-				if (m_DragDistance > NumericInputField.kDragDeadzone)
-					CancelSingleClick();
-
-				numericField.SliderDrag(eventData.rayOrigin);
+				if (m_DragObject)
+					ObjectUtils.Destroy(m_DragObject.gameObject);
 			}
+
+			base.OnDragEnded(baseHandle, eventData);
 		}
 
-		if (m_DragObject)
+		void CancelSingleClick()
 		{
-			var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
-			U.Math.LerpTransform(m_DragObject, previewOrigin.position, 
-				U.Math.ConstrainYawRotation(U.Camera.GetMainCamera().transform.rotation), m_DragLerp);
+			m_ClickCount = 0;
 		}
-	}
 
-	protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
-	{
-		m_SelectIsHeld = false;
-
-		var numericField = m_ClickedField as NumericInputField;
-		if (numericField)
-			numericField.EndDrag();
-
-		var fieldBlock = baseHandle.transform.parent;
-		if (fieldBlock)
+		IEnumerator CheckSingleClick()
 		{
-			if (m_DragObject)
-				U.Object.Destroy(m_DragObject.gameObject);
+			var start = Time.realtimeSinceStartup;
+			var currTime = 0f;
+			while (m_SelectIsHeld || currTime < UIUtils.DoubleClickIntervalMax)
+			{
+				currTime = Time.realtimeSinceStartup - start;
+				yield return null;
+			}
+
+			if (m_ClickCount == 1)
+			{
+				foreach (var inputField in m_InputFields)
+					inputField.CloseKeyboard(m_ClickedField == null);
+
+				if (m_ClickedField)
+					m_ClickedField.OpenKeyboard();
+			}
+
+			m_ClickCount = 0;
 		}
 
-		base.OnDragEnded(baseHandle, eventData);
-	}
-
-	void CancelSingleClick()
-	{
-		m_ClickCount = 0;
-	}
-
-	IEnumerator CheckSingleClick()
-	{
-		var start = Time.realtimeSinceStartup;
-		var currTime = 0f;
-		while (m_SelectIsHeld || currTime < U.UI.kDoubleClickIntervalMax)
+		protected virtual object GetDropObjectForFieldBlock(Transform fieldBlock)
 		{
-			currTime = Time.realtimeSinceStartup - start;
-			yield return null;
+			return null;
 		}
 
-		if (m_ClickCount == 1)
+		protected virtual bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 		{
-			foreach (var inputField in m_InputFields)
-				inputField.CloseKeyboard(m_ClickedField == null);
-
-			if (m_ClickedField)
-				m_ClickedField.OpenKeyboard();
+			return false;
 		}
 
-		m_ClickCount = 0;
-	}
+		protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject) {}
 
-	protected virtual object GetDropObjectForFieldBlock(Transform fieldBlock)
-	{
-		return null;
-	}
-
-	protected virtual bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
-	{
-		return false;
-	}
-
-	protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
-	{
-	}
-
-	public void ToggleExpanded()
-	{
-		toggleExpanded(data);
+		public void ToggleExpanded()
+		{
+			toggleExpanded(data);
+		}
 	}
 }
+#endif

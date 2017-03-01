@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -6,7 +7,7 @@ using UnityEngine;
 
 // TODO make ExpressionEvaluator.cs public in source
 // Evaluates simple expressions, supports int & float and operators: + - * / % ^ ( )
-internal class StringExpressionEvaluator
+class StringExpressionEvaluator
 {
 	private readonly static Operator[] s_Operators =
 	{
@@ -428,3 +429,4 @@ internal class StringExpressionEvaluator
 		return success;
 	}
 }
+#endif

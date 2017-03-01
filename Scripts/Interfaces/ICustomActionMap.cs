@@ -1,6 +1,7 @@
-﻿using UnityEngine.InputNew;
+﻿#if UNITY_EDITOR
+using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Decorates tools which supply their own (singular) ActionMap
@@ -13,3 +14,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		ActionMap actionMap { get; }
 	}
 }
+#endif

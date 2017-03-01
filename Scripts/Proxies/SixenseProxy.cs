@@ -1,8 +1,10 @@
-﻿using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR.Proxies
+namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	public class SixenseProxy : TwoHandedProxyBase
+	sealed class SixenseProxy : TwoHandedProxyBase
 	{
 		private SixenseInputToEvents m_InputToEvents;
 
@@ -17,8 +19,9 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		public override void Awake()
 		{
 			base.Awake();
-			transform.position = U.Camera.GetViewerPivot().position; // Reference position should be the viewer pivot, so remove any offsets
-			m_InputToEvents = U.Object.AddComponent<SixenseInputToEvents>(gameObject);
+			transform.position = CameraUtils.GetViewerPivot().position; // Reference position should be the viewer pivot, so remove any offsets
+			m_InputToEvents = ObjectUtils.AddComponent<SixenseInputToEvents>(gameObject);
 		}
 	}
 }
+#endif

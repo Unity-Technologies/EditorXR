@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Manipulators
+namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	public class StandardManipulator : BaseManipulator
+	sealed class StandardManipulator : BaseManipulator
 	{
 		[SerializeField]
 		Transform m_PlaneHandlesParent;
@@ -51,7 +53,7 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 			if (!dragging)
 			{
 				// Place the plane handles in a good location that is accessible to the user
-				var viewerPosition = U.Camera.GetMainCamera().transform.position;
+				var viewerPosition = CameraUtils.GetMainCamera().transform.position;
 				foreach (Transform t in m_PlaneHandlesParent)
 				{
 					var localPos = t.localPosition;
@@ -91,3 +93,4 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 		}
 	}
 }
+#endif

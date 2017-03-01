@@ -1,16 +1,16 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.UI;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Proxies;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.UI;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-	internal class MultipleRayInputModule : BaseInputModule, IProcessInput
+	sealed class MultipleRayInputModule : BaseInputModule, IProcessInput
 	{
 		public class RaycastSource
 		{
@@ -51,10 +51,10 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		public Func<Transform, float> getPointerLength { get; set; }
 
-		public event Action<GameObject, RayEventData> rayEntered = delegate {};
-		public event Action<GameObject, RayEventData> rayExited = delegate {};
-		public event Action<GameObject, RayEventData> dragStarted = delegate {};
-		public event Action<GameObject, RayEventData> dragEnded = delegate {};
+		public event Action<GameObject, RayEventData> rayEntered;
+		public event Action<GameObject, RayEventData> rayExited;
+		public event Action<GameObject, RayEventData> dragStarted;
+		public event Action<GameObject, RayEventData> dragEnded;
 
 		public Action<Transform> preProcessRaycastSource;
 
@@ -182,7 +182,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			hasScrollHandler = false;
 
 			var selectionFlags = currentObject.GetComponent<ISelectionFlags>();
-			if (selectionFlags != null && selectionFlags.selectionFlags == SelectionFlags.Direct && !U.UI.IsDirectEvent(eventData))
+			if (selectionFlags != null && selectionFlags.selectionFlags == SelectionFlags.Direct && !UIUtils.IsDirectEvent(eventData))
 				return false;
 
 			hasScrollHandler = ExecuteEvents.GetEventHandler<IScrollHandler>(currentObject);
@@ -216,7 +216,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			return clone;
 		}
 
-		protected void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget)
+		void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget)
 		{
 			// Cache properties before executing base method, so we can complete additional ray events later
 			var cachedEventData = GetTempEventDataClone(eventData);
@@ -229,7 +229,8 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				for (var i = 0; i < cachedEventData.hovered.Count; ++i)
 				{
 					ExecuteEvents.Execute(cachedEventData.hovered[i], eventData, ExecuteRayEvents.rayExitHandler);
-					rayExited(cachedEventData.hovered[i], eventData);
+					if (rayExited != null)
+						rayExited(cachedEventData.hovered[i], eventData);
 				}
 
 				if (newEnterTarget == null)
@@ -266,7 +267,8 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 						break;
 
 					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayExitHandler);
-					rayExited(t.gameObject, cachedEventData);
+					if (rayExited != null)
+						rayExited(t.gameObject, cachedEventData);
 
 					t = t.parent;
 				}
@@ -278,7 +280,8 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			while (t != null && t.gameObject != commonRoot)
 			{
 				ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
-				rayEntered(t.gameObject, cachedEventData);
+				if (rayEntered != null)
+					rayEntered(t.gameObject, cachedEventData);
 
 				t = t.parent;
 			}
@@ -313,7 +316,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 					if (newPressed == eventData.lastPress)
 					{
 						var diffTime = time - eventData.clickTime;
-						if (U.UI.IsDoubleClick(diffTime))
+						if (UIUtils.IsDoubleClick(diffTime))
 							++eventData.clickCount;
 						else
 							eventData.clickCount = 1;
@@ -328,7 +331,8 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.beginDragHandler);
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.beginDragHandler);
 				eventData.dragging = true;
-				dragStarted(draggedObject, eventData);
+				if (dragStarted != null)
+					dragStarted(draggedObject, eventData);
 
 				eventData.pointerDrag = draggedObject;
 				source.draggedObject = draggedObject;
@@ -348,7 +352,8 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				var draggedObject = source.draggedObject;
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.endDragHandler);
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.endDragHandler);
-				dragEnded(draggedObject, eventData);
+				if (dragEnded != null)
+					dragEnded(draggedObject, eventData);
 
 				if (hoveredObject != null)
 					ExecuteEvents.ExecuteHierarchy(hoveredObject, eventData, ExecuteEvents.dropHandler);
@@ -413,3 +418,4 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

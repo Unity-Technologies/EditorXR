@@ -1,6 +1,7 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provide the ability to request a new unique stencil ref value
@@ -13,3 +14,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		Func<byte> requestStencilRef { set; }
 	}
 }
+#endif

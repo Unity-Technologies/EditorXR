@@ -1,29 +1,15 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Actions
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Attribute used to tag Action classes in order to be added to VR menus
 	/// </summary>
 	public class ActionMenuItemAttribute : System.Attribute
 	{
-		/// <summary>
-		/// Default action section name that gets used for showing items in the alternate menu
-		/// </summary>
-		public const string kDefaultActionSectionName = "DefaultActions";
-
-		/// <summary>
-		/// The name of this action
-		/// </summary>
-		public string name;
-
-		/// <summary>
-		/// Name of section this action should be associated with
-		/// </summary>
-		public string sectionName;
-
-		/// <summary>
-		/// The order of this action amidst other actions within the same section
-		/// </summary>
-		public int priority;
+		internal const string DefaultActionSectionName = "DefaultActions";
+		internal string name;
+		internal string sectionName;
+		internal int priority;
 
 		/// <summary>
 		/// Constructor
@@ -39,3 +25,4 @@
 		}
 	}
 }
+#endif

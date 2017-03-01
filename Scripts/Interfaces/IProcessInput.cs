@@ -1,7 +1,8 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Decorates a class that needs to process input from the system
@@ -16,3 +17,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl);
 	}
 }
+#endif

@@ -1,17 +1,14 @@
-﻿#if !UNITY_EDITORVR
-#pragma warning disable 414, 649
-#endif
-using UnityEditor;
-using UnityEditor.Experimental.EditorVR;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Helpers
+namespace UnityEditor.Experimental.EditorVR.Helpers
 {
 	/// <summary>
 	/// A preview camera that provides for smoothing of the position and look vector
 	/// </summary>
 	[RequireComponent(typeof(Camera))]
-	[RequiresLayer(kHMDOnlyLayer)]
-	public class VRSmoothCamera : MonoBehaviour, IPreviewCamera
+	[RequiresLayer(k_HMDOnlyLayer)]
+	sealed class VRSmoothCamera : MonoBehaviour, IPreviewCamera
 	{
 		/// <summary>
 		/// The camera drawing the preview
@@ -34,7 +31,7 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 		[SerializeField]
 		float m_SmoothingMultiplier = 3;
 
-		const string kHMDOnlyLayer = "HMDOnly";
+		const string k_HMDOnlyLayer = "HMDOnly";
 
 		RenderTexture m_RenderTexture;
 
@@ -44,7 +41,7 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 		/// <summary>
 		/// A layer mask that controls what will always render in the HMD and not in the preview
 		/// </summary>
-		public int hmdOnlyLayerMask { get { return LayerMask.GetMask(kHMDOnlyLayer); } }
+		public int hmdOnlyLayerMask { get { return LayerMask.GetMask(k_HMDOnlyLayer); } }
 
 #if UNITY_EDITORVR
 		void Awake()
@@ -110,3 +107,4 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 #endif
 	}
 }
+#endif

@@ -1,18 +1,19 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using System;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.Experimental.EditorVR.Data
+namespace UnityEditor.Experimental.EditorVR.Data
 {
-	public class FolderListItem : ListViewItem<FolderData>
+	sealed class FolderListItem : ListViewItem<FolderData>
 	{
-		private const float kMargin = 0.01f;
-		private const float kIndent = 0.02f;
+		private const float k_Margin = 0.01f;
+		private const float k_Indent = 0.02f;
 
-		private const float kExpandArrowRotateSpeed = 0.4f;
+		private const float k_ExpandArrowRotateSpeed = 0.4f;
 
 		[SerializeField]
 		private Text m_Text;
@@ -61,7 +62,7 @@ namespace UnityEngine.Experimental.EditorVR.Data
 				// Cube material might change for hover state, so we always instance it
 				m_CubeRenderer = m_Cube.GetComponent<Renderer>();
 				m_NormalColor = m_CubeRenderer.sharedMaterial.color;
-				U.Material.GetMaterialClone(m_CubeRenderer);
+				MaterialUtils.GetMaterialClone(m_CubeRenderer);
 
 				m_ExpandArrow.dragEnded += ToggleExpanded;
 				m_Cube.dragStarted += SelectFolder;
@@ -98,16 +99,16 @@ namespace UnityEngine.Experimental.EditorVR.Data
 
 			var arrowWidth = expandArrowTransform.localScale.x * 0.5f;
 			var halfWidth = width * 0.5f;
-			var indent = kIndent * depth;
-			var doubleMargin = kMargin * 2;
-			expandArrowTransform.localPosition = new Vector3(kMargin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
+			var indent = k_Indent * depth;
+			var doubleMargin = k_Margin * 2;
+			expandArrowTransform.localPosition = new Vector3(k_Margin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
 
 			// Text is next to arrow, with a margin and indent, rotated toward camera
 			var textTransform = m_Text.transform;
 			m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / textTransform.localScale.x);
 			textTransform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, textTransform.localPosition.y, 0);
 
-			textTransform.localRotation = U.Camera.LocalRotateTowardCamera(transform.parent.rotation);
+			textTransform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
 
 			UpdateArrow(expanded);
 
@@ -127,7 +128,7 @@ namespace UnityEngine.Experimental.EditorVR.Data
 			// Rotate arrow for expand state
 			expandArrowTransform.localRotation = Quaternion.Lerp(expandArrowTransform.localRotation,
 				Quaternion.AngleAxis(90f, Vector3.right) * (expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
-				immediate ? 1f : kExpandArrowRotateSpeed);
+				immediate ? 1f : k_ExpandArrowRotateSpeed);
 		}
 
 		void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
@@ -153,7 +154,8 @@ namespace UnityEngine.Experimental.EditorVR.Data
 		private void OnDestroy()
 		{
 			if (m_CubeRenderer)
-				U.Object.Destroy(m_CubeRenderer.sharedMaterial);
+				ObjectUtils.Destroy(m_CubeRenderer.sharedMaterial);
 		}
 	}
 }
+#endif

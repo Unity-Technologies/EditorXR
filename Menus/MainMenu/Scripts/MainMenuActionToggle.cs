@@ -1,8 +1,10 @@
-﻿using UnityEngine.UI;
+﻿#if UNITY_EDITOR
+using UnityEngine;
+using UnityEngine.UI;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class MainMenuActionToggle : MainMenuActionButton
+	sealed class MainMenuActionToggle : MainMenuActionButton
 	{
 		[SerializeField]
 		private Button m_Button2;
@@ -14,3 +16,4 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		private Text m_NameText2;
 	}
 }
+#endif

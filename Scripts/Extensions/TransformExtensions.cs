@@ -1,8 +1,9 @@
+#if UNITY_EDITOR
 using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Extensions
+namespace UnityEditor.Experimental.EditorVR.Extensions
 {
-	public static class TransformExtensions
+	static class TransformExtensions
 	{
 		public static Bounds TransformBounds(this Transform transform, Bounds localBounds)
 		{
@@ -23,3 +24,4 @@ namespace UnityEngine.Experimental.EditorVR.Extensions
 		}
 	}
 }
+#endif

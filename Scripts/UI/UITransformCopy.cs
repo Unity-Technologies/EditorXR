@@ -1,9 +1,10 @@
-﻿using UnityEngine;
-using UnityEngine.EventSystems;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Helpers
+namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-	public class UITransformCopy : MonoBehaviour
+	sealed class UITransformCopy : MonoBehaviour
 	{
 		static readonly Vector2 kTransformPivot = new Vector2(0.5f, 0.5f);
 
@@ -66,3 +67,4 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 		}
 	}
 }
+#endif

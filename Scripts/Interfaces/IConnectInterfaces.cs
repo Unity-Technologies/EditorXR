@@ -1,4 +1,7 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Tools
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Method signature for connecting interfaces
@@ -18,3 +21,4 @@
 		ConnectInterfacesDelegate connectInterfaces { set; }
 	}
 }
+#endif

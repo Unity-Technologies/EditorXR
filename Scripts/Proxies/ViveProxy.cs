@@ -1,9 +1,11 @@
-﻿using System.Collections;
-using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using System.Collections;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR.Proxies
+namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	public class ViveProxy : TwoHandedProxyBase
+	sealed class ViveProxy : TwoHandedProxyBase
 	{
 		private ViveInputToEvents m_InputToEvents;
 
@@ -20,7 +22,7 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		public override void Awake()
 		{
 			base.Awake();
-			m_InputToEvents = U.Object.AddComponent<ViveInputToEvents>(gameObject);
+			m_InputToEvents = ObjectUtils.AddComponent<ViveInputToEvents>(gameObject);
 		}
 
 		public override IEnumerator Start()
@@ -64,3 +66,4 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 #endif
 	}
 }
+#endif

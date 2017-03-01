@@ -1,18 +1,18 @@
+#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Extensions;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class RadialMenuUI : MonoBehaviour
+	sealed class RadialMenuUI : MonoBehaviour
 	{
-		const float kPhaseOffset = 90f; // Correcting the coordinates, so that 0 degrees is at the top of the radial menu
-		const int kSlotCount = 16;
+		const float k_PhaseOffset = 90f; // Correcting the coordinates, so that 0 degrees is at the top of the radial menu
+		const int k_SlotCount = 16;
 
 		[SerializeField]
 		Sprite m_MissingActionIcon;
@@ -76,7 +76,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				if (value != null)
 				{
 					m_Actions = value
-						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.kDefaultActionSectionName)
+						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
 						.OrderBy(a => a.priority)
 						.ToList();
 
@@ -132,13 +132,13 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				else if (value.magnitude > 0)
 				{
 					var angle = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg;
-					angle -= kPhaseOffset;
+					angle -= k_PhaseOffset;
 
 					// Handle lower quadrant to put it into full 360 degree range
 					if (angle < 0f)
 						angle += 360f;
 
-					const float kSlotAngleRange = 360f / kSlotCount;
+					const float kSlotAngleRange = 360f / k_SlotCount;
 					const float kPadding = 0.25f;
 
 					var index = angle / kSlotAngleRange;
@@ -183,10 +183,10 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_RadialMenuSlots = new List<RadialMenuSlot>();
 			Material slotBorderMaterial = null;
 
-			for (int i = 0; i < kSlotCount; ++i)
+			for (int i = 0; i < k_SlotCount; ++i)
 			{
 				Transform menuSlot = null;
-				menuSlot = U.Object.Instantiate(m_RadialMenuSlotTemplate.gameObject).transform;
+				menuSlot = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject).transform;
 				menuSlot.SetParent(m_SlotContainer);
 				menuSlot.localPosition = Vector3.zero;
 				menuSlot.localRotation = Quaternion.identity;
@@ -208,12 +208,12 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		void SetupRadialSlotPositions()
 		{
-			const float kRotationSpacing = 360f / kSlotCount;
-			for (int i = 0; i < kSlotCount; ++i)
+			const float kRotationSpacing = 360f / k_SlotCount;
+			for (int i = 0; i < k_SlotCount; ++i)
 			{
 				var slot = m_RadialMenuSlots[i];
 				// We move in counter-clockwise direction
-				slot.visibleLocalRotation = Quaternion.AngleAxis(kPhaseOffset + kRotationSpacing * i, Vector3.down);
+				slot.visibleLocalRotation = Quaternion.AngleAxis(k_PhaseOffset + kRotationSpacing * i, Vector3.down);
 				slot.Hide();
 			}
 
@@ -228,7 +228,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			for (int i = 0; i < m_Actions.Count; ++i)
 			{
 				// prevent more actions being added beyond the max slot count
-				if (i >= kSlotCount)
+				if (i >= k_SlotCount)
 					break;
 
 				var action = m_Actions[i].action;
@@ -324,3 +324,4 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

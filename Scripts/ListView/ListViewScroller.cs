@@ -1,4 +1,5 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -12,3 +13,4 @@ public class ListViewScroller : MonoBehaviour, IScrollHandler
 		listView.OnScroll(eventData);
 	}
 }
+#endif

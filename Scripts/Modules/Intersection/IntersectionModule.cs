@@ -1,12 +1,13 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Data;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
+	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		private readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		private readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
@@ -27,7 +28,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		public void Setup(SpatialHash<Renderer> hash)
 		{
 			m_SpatialHash = hash;
-			m_CollisionTester = U.Object.CreateGameObjectWithComponent<MeshCollider>(transform);
+			m_CollisionTester = ObjectUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
 		}
 
 		void Update()
@@ -78,7 +79,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 							if (!obj.bounds.Intersects(testerBounds))
 								continue;
 
-							if (U.Intersection.TestObject(m_CollisionTester, obj, tester))
+							if (IntersectionUtils.TestObject(m_CollisionTester, obj, tester))
 							{
 								intersectionFound = true;
 								Renderer currentObject;
@@ -146,3 +147,4 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

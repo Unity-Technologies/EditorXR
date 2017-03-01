@@ -1,14 +1,16 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEngine;
 using UnityEngine.Events;
 
-namespace UnityEngine.Experimental.Tweening
+namespace UnityEditor.Experimental.Tweening
 {
 	// Base interface for tweeners, 
 	// using an interface instead of 
 	// an abstract class as we want the
 	// tweens to be structs.
-	public interface ITweenValue
+	interface ITweenValue
 	{
 		void TweenValue(float floatPercentage);
 		bool ignoreTimeScale { get; }
@@ -37,7 +39,7 @@ namespace UnityEngine.Experimental.Tweening
 	//	{
 	//		transform.position = position;
 	//	}
-	internal struct PositionTween : ITweenValue
+	struct PositionTween : ITweenValue
 	{
 		public class PositionTweenCallback : UnityEvent<Vector3>
 		{
@@ -124,7 +126,7 @@ namespace UnityEngine.Experimental.Tweening
 		}
 	}
 
-	internal struct RotationTween : ITweenValue
+	struct RotationTween : ITweenValue
 	{
 		public class RotationTweenCallback : UnityEvent<Quaternion>
 		{
@@ -217,7 +219,7 @@ namespace UnityEngine.Experimental.Tweening
 		}
 	}
 
-	internal struct ScaleTween : ITweenValue
+	struct ScaleTween : ITweenValue
 	{
 		public class ScaleTweenCallback : UnityEvent<Vector3>
 		{
@@ -312,7 +314,7 @@ namespace UnityEngine.Experimental.Tweening
 	// Color tween class, receives the
 	// TweenValue callback and then sets
 	// the value on the target.
-	internal struct ColorTween : ITweenValue
+	struct ColorTween : ITweenValue
 	{
 		public enum ColorTweenMode
 		{
@@ -426,7 +428,7 @@ namespace UnityEngine.Experimental.Tweening
 	// Float tween class, receives the
 	// TweenValue callback and then sets
 	// the value on the target.
-	internal struct FloatTween : ITweenValue
+	struct FloatTween : ITweenValue
 	{
 		public class FloatTweenCallback : UnityEvent<float> { }
 
@@ -509,7 +511,7 @@ namespace UnityEngine.Experimental.Tweening
 		}
 	}
 
-	public enum EaseType
+	enum EaseType
 	{
 		Linear,
 		EaseInSine,
@@ -523,7 +525,7 @@ namespace UnityEngine.Experimental.Tweening
 		EaseInOutCubic,
 	}
 
-	public enum TweenLoopType
+	internal enum TweenLoopType
 	{
 		Clamp,
 		Loop,
@@ -533,7 +535,7 @@ namespace UnityEngine.Experimental.Tweening
 	// Tween runner, executes the given tween.
 	// The coroutine will live within the given 
 	// behaviour container.
-	internal class TweenRunner<T> where T : struct, ITweenValue // changed from internal to public
+	class TweenRunner<T> where T : struct, ITweenValue
 	{
 		protected MonoBehaviour m_CoroutineContainer;
 		protected IEnumerator m_Tween;
@@ -680,3 +682,4 @@ namespace UnityEngine.Experimental.Tweening
 		}
 	}
 }
+#endif

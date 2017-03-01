@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Manipulators
+namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	public class DirectManipulator : MonoBehaviour, IManipulator
+	sealed class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		public Transform target
 		{
@@ -86,3 +87,4 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 		}
 	}
 }
+#endif

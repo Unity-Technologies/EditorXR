@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 //#define ENABLE_MINIWORLD_RAY_SELECTION
 #if !UNITY_EDITORVR
 #pragma warning disable 67, 414, 649
@@ -7,23 +8,21 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEditor.Experimental.EditorVR.Actions;
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Manipulators;
+using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Tools;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Manipulators;
-using UnityEngine.Experimental.EditorVR.Menus;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Proxies;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.UI;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
 
@@ -32,26 +31,26 @@ namespace UnityEditor.Experimental.EditorVR
 #if UNITY_EDITOR
 	[InitializeOnLoad]
 #endif
-	[RequiresTag(kVRPlayerTag)]
-	internal class EditorVR : MonoBehaviour
+	[RequiresTag(k_VRPlayerTag)]
+	sealed class EditorVR : MonoBehaviour
 	{
 		delegate void ForEachRayOriginCallback(IProxy proxy, KeyValuePair<Node, Transform> rayOriginPair, InputDevice device, DeviceData deviceData);
 
-		public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
-		const string kVRPlayerTag = "VRPlayer";
-		const float kDefaultRayLength = 100f;
-		const float kPreviewScale = 0.1f;
-		const float kViewerPivotTransitionTime = 0.75f;
-		const byte kMinStencilRef = 2;
+		public const HideFlags DefaultHideFlags = HideFlags.HideAndDontSave;
+		const string k_VRPlayerTag = "VRPlayer";
+		const float k_DefaultRayLength = 100f;
+		const float k_PreviewScale = 0.1f;
+		const float k_ViewerPivotTransitionTime = 0.75f;
+		const byte k_MinStencilRef = 2;
 
 		// Minimum time to spend loading the project folder before yielding
-		const float kMinProjectFolderLoadTime = 0.005f;
+		const float k_MinProjectFolderLoadTime = 0.005f;
 
 		// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
-		const float kMaxFrameTime = 0.01f;
+		const float k_MaxFrameTime = 0.01f;
 
-		static readonly Vector3 kDefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
-		static readonly Quaternion kDefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
+		static readonly Vector3 k_DefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
+		static readonly Quaternion k_DefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
 		[SerializeField]
 		private ActionMap m_TrackedObjectActionMap;
@@ -226,14 +225,14 @@ namespace UnityEditor.Experimental.EditorVR
 			get { return m_StencilRef; }
 			set
 			{
-				m_StencilRef = (byte)Mathf.Clamp(value, kMinStencilRef, byte.MaxValue);
+				m_StencilRef = (byte)Mathf.Clamp(value, k_MinStencilRef, byte.MaxValue);
 
 				// Wrap
 				if (m_StencilRef == byte.MaxValue)
-					m_StencilRef = kMinStencilRef;
+					m_StencilRef = k_MinStencilRef;
 			}
 		}
-		byte m_StencilRef = kMinStencilRef;
+		byte m_StencilRef = k_MinStencilRef;
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
@@ -262,7 +261,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var hmdOnlyLayerMask = 0;
 			if (m_PreviewCameraPrefab)
 			{
-				var go = U.Object.Instantiate(m_PreviewCameraPrefab);
+				var go = ObjectUtils.Instantiate(m_PreviewCameraPrefab);
 				m_CustomPreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
 				if (m_CustomPreviewCamera != null)
 				{
@@ -278,25 +277,25 @@ namespace UnityEditor.Experimental.EditorVR
 			CreateAllProxies();
 			CreateDeviceDataForInputDevices();
 
-			m_DragAndDropModule = U.Object.AddComponent<DragAndDropModule>(gameObject);
+			m_DragAndDropModule = ObjectUtils.AddComponent<DragAndDropModule>(gameObject);
 
 			CreateEventSystem();
 
-			m_PixelRaycastModule = U.Object.AddComponent<PixelRaycastModule>(gameObject);
+			m_PixelRaycastModule = ObjectUtils.AddComponent<PixelRaycastModule>(gameObject);
 			m_PixelRaycastModule.ignoreRoot = transform;
-			m_HighlightModule = U.Object.AddComponent<HighlightModule>(gameObject);
-			m_LockModule = U.Object.AddComponent<LockModule>(gameObject);
+			m_HighlightModule = ObjectUtils.AddComponent<HighlightModule>(gameObject);
+			m_LockModule = ObjectUtils.AddComponent<LockModule>(gameObject);
 			m_LockModule.updateAlternateMenu = (rayOrigin, o) => SetAlternateMenuVisibility(rayOrigin, o != null);
 			ConnectInterfaces(m_LockModule);
 
-			m_SelectionModule = U.Object.AddComponent<SelectionModule>(gameObject);
+			m_SelectionModule = ObjectUtils.AddComponent<SelectionModule>(gameObject);
 			m_SelectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 			m_SelectionModule.getGroupRoot = GetGroupRoot;
 			ConnectInterfaces(m_SelectionModule);
 
-			m_AllTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
+			m_AllTools = ObjectUtils.GetImplementationsOfInterface(typeof(ITool)).ToList();
 			m_MainMenuTools = m_AllTools.Where(t => !IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
-			m_AllWorkspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
+			m_AllWorkspaceTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
@@ -419,7 +418,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			CreateSpatialSystem();
 
-			m_ObjectPlacementModule = U.Object.AddComponent<ObjectPlacementModule>(gameObject);
+			m_ObjectPlacementModule = ObjectUtils.AddComponent<ObjectPlacementModule>(gameObject);
 			ConnectInterfaces(m_ObjectPlacementModule);
 
 			SpawnActions();
@@ -484,7 +483,7 @@ namespace UnityEditor.Experimental.EditorVR
 		void OnDestroy()
 		{
 			if (m_CustomPreviewCamera != null)
-				U.Object.Destroy(((MonoBehaviour)m_CustomPreviewCamera).gameObject);
+				ObjectUtils.Destroy(((MonoBehaviour)m_CustomPreviewCamera).gameObject);
 
 			PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
 		}
@@ -586,7 +585,7 @@ namespace UnityEditor.Experimental.EditorVR
 						continue;
 
 					var menuSizes = deviceData.menuSizes;
-					var menuBounds = U.Object.GetBounds(menu.menuContent);
+					var menuBounds = ObjectUtils.GetBounds(menu.menuContent);
 					var menuBoundsSize = menuBounds.size;
 
 					// Because menus can change size, store the maximum size to avoid ping ponging visibility
@@ -749,7 +748,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				toolMaps.Add(t, actionMaps);
 
-				U.Object.Destroy(tool as MonoBehaviour);
+				ObjectUtils.Destroy(tool as MonoBehaviour);
 			}
 			return toolMaps;
 		}
@@ -793,7 +792,7 @@ namespace UnityEditor.Experimental.EditorVR
 				toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 				AddToolToDeviceData(toolData, devices);
 				var vacuumTool = (VacuumTool)toolData.tool;
-				vacuumTool.defaultOffset = kDefaultWorkspaceOffset;
+				vacuumTool.defaultOffset = k_DefaultWorkspaceOffset;
 				vacuumTool.vacuumables = m_Vacuumables;
 
 				// Using a shared instance of the transform tool across all device tool stacks
@@ -988,7 +987,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private void SpawnActions()
 		{
-			IEnumerable<Type> actionTypes = U.Object.GetImplementationsOfInterface(typeof(IAction));
+			IEnumerable<Type> actionTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IAction));
 			m_Actions = new List<IAction>();
 			foreach (Type actionType in actionTypes)
 			{
@@ -996,7 +995,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (actionType.IsNested || !typeof(MonoBehaviour).IsAssignableFrom(actionType))
 					continue;
 
-				var action = U.Object.AddComponent(actionType, gameObject) as IAction;
+				var action = ObjectUtils.AddComponent(actionType, gameObject) as IAction;
 				var attribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
 
 				ConnectInterfaces(action);
@@ -1022,19 +1021,19 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private void CreateAllProxies()
 		{
-			foreach (Type proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
+			foreach (Type proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
 			{
-				IProxy proxy = U.Object.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
+				IProxy proxy = ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.viewerPivot) as IProxy;
 				proxy.trackedObjectInput = m_TrackedObjectInput;
 				foreach (var rayOriginPair in proxy.rayOrigins)
 				{
 					var rayOriginPairValue = rayOriginPair.Value;
-					var rayTransform = U.Object.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
+					var rayTransform = ObjectUtils.Instantiate(m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
 					rayTransform.position = rayOriginPairValue.position;
 					rayTransform.rotation = rayOriginPairValue.rotation;
 					m_DefaultRays.Add(rayOriginPairValue, rayTransform.GetComponent<DefaultProxyRay>());
 
-					var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginPairValue).transform;
+					var malletTransform = ObjectUtils.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOriginPairValue).transform;
 					malletTransform.position = rayOriginPairValue.position;
 					malletTransform.rotation = rayOriginPairValue.rotation;
 					var mallet = malletTransform.GetComponent<KeyboardMallet>();
@@ -1056,7 +1055,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				foreach (var rayOrigin in proxy.rayOrigins.Values)
 				{
-					var distance = kDefaultRayLength;
+					var distance = k_DefaultRayLength;
 
 					// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
 					// object, so visually show the ray terminating there instead of the object; UI is already given
@@ -1090,15 +1089,15 @@ namespace UnityEditor.Experimental.EditorVR
 		private void CreateEventSystem()
 		{
 			// Create event system, input module, and event camera
-			U.Object.AddComponent<EventSystem>(gameObject);
+			ObjectUtils.AddComponent<EventSystem>(gameObject);
 
-			m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
+			m_InputModule = ObjectUtils.AddComponent<MultipleRayInputModule>(gameObject);
 			m_InputModule.getPointerLength = GetPointerLength;
 
 			if (m_CustomPreviewCamera != null)
 				m_InputModule.layerMask |= m_CustomPreviewCamera.hmdOnlyLayerMask;
 
-			m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
+			m_EventCamera = ObjectUtils.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 			m_EventCamera.enabled = false;
 			m_InputModule.eventCamera = m_EventCamera;
 
@@ -1168,9 +1167,9 @@ namespace UnityEditor.Experimental.EditorVR
 		void CreateSpatialSystem()
 		{
 			// Create event system, input module, and event camera
-			m_SpatialHashModule = U.Object.AddComponent<SpatialHashModule>(gameObject);
+			m_SpatialHashModule = ObjectUtils.AddComponent<SpatialHashModule>(gameObject);
 			m_SpatialHashModule.Setup();
-			m_IntersectionModule = U.Object.AddComponent<IntersectionModule>(gameObject);
+			m_IntersectionModule = ObjectUtils.AddComponent<IntersectionModule>(gameObject);
 			ConnectInterfaces(m_IntersectionModule);
 			m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
 
@@ -1184,7 +1183,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
 		{
-			var go = U.Object.Instantiate(prefab);
+			var go = ObjectUtils.Instantiate(prefab);
 			go.transform.SetParent(parent ? parent : transform, worldPositionStays);
 			foreach (var canvas in go.GetComponentsInChildren<Canvas>())
 				canvas.worldCamera = m_EventCamera;
@@ -1240,7 +1239,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			// Check if the prefab has already been instantiated
 			if (m_NumericKeyboard == null)
-				m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
+				m_NumericKeyboard = ObjectUtils.Instantiate(m_NumericKeyboardPrefab.gameObject, CameraUtils.GetViewerPivot()).GetComponent<KeyboardUI>();
 
 			return m_NumericKeyboard;
 		}
@@ -1252,7 +1251,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			// Check if the prefab has already been instantiated
 			if (m_StandardKeyboard == null)
-				m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
+				m_StandardKeyboard = ObjectUtils.Instantiate(m_StandardKeyboardPrefab.gameObject, CameraUtils.GetViewerPivot()).GetComponent<KeyboardUI>();
 
 			return m_StandardKeyboard;
 		}
@@ -1277,7 +1276,7 @@ namespace UnityEditor.Experimental.EditorVR
 			else
 			{
 				// For two-handed tools, the single device won't work, so collect the devices from the action map
-				devices = U.Input.CollectInputDevicesFromActionMaps(new List<ActionMap>() { map });
+				devices = InputUtils.CollectInputDevicesFromActionMaps(new List<ActionMap>() { map });
 				if (actionMapInput.TryInitializeWithDevices(devices))
 					successfulInitialization = true;
 			}
@@ -1357,13 +1356,13 @@ namespace UnityEditor.Experimental.EditorVR
 				return null;
 
 			var deviceSlots = new HashSet<DeviceSlot>();
-			var tool = U.Object.AddComponent(toolType, gameObject) as ITool;
+			var tool = ObjectUtils.AddComponent(toolType, gameObject) as ITool;
 
 			var actionMapInput = CreateActionMapForObject(tool, device);
 			if (actionMapInput != null)
 			{
 				usedDevices.UnionWith(actionMapInput.GetCurrentlyUsedDevices());
-				U.Input.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
+				InputUtils.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
 			}
 
 			ConnectInterfaces(tool, device);
@@ -1384,7 +1383,7 @@ namespace UnityEditor.Experimental.EditorVR
 			if (!typeof(IMainMenu).IsAssignableFrom(type))
 				return null;
 
-			var mainMenu = U.Object.AddComponent(type, gameObject) as IMainMenu;
+			var mainMenu = ObjectUtils.AddComponent(type, gameObject) as IMainMenu;
 			input = CreateActionMapForObject(mainMenu, device);
 			ConnectInterfaces(mainMenu, device);
 			mainMenu.visible = visible;
@@ -1399,7 +1398,7 @@ namespace UnityEditor.Experimental.EditorVR
 			if (!typeof(IAlternateMenu).IsAssignableFrom(type))
 				return null;
 
-			var alternateMenu = U.Object.AddComponent(type, gameObject) as IAlternateMenu;
+			var alternateMenu = ObjectUtils.AddComponent(type, gameObject) as IAlternateMenu;
 			input = CreateActionMapForObject(alternateMenu, device);
 			ConnectInterfaces(alternateMenu, device);
 			alternateMenu.visible = false;
@@ -1409,7 +1408,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private MainMenuActivator SpawnMainMenuActivator(InputDevice device)
 		{
-			var mainMenuActivator = U.Object.Instantiate(m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
+			var mainMenuActivator = ObjectUtils.Instantiate(m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
 			ConnectInterfaces(mainMenuActivator, device);
 
 			return mainMenuActivator;
@@ -1417,7 +1416,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		PinnedToolButton SpawnPinnedToolButton(InputDevice device)
 		{
-			var button = U.Object.Instantiate(m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
+			var button = ObjectUtils.Instantiate(m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
 			ConnectInterfaces(button, device);
 
 			return button;
@@ -1582,7 +1581,7 @@ namespace UnityEditor.Experimental.EditorVR
 					var actionMenuData = new ActionMenuData()
 					{
 						name = action.GetType().Name,
-						sectionName = ActionMenuItemAttribute.kDefaultActionSectionName,
+						sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
 						priority = int.MaxValue,
 						action = action,
 					};
@@ -1662,7 +1661,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			var usesViewerPivot = obj as IUsesViewerPivot;
 			if (usesViewerPivot != null)
-				usesViewerPivot.viewerPivot = U.Camera.GetViewerPivot();
+				usesViewerPivot.viewerPivot = CameraUtils.GetViewerPivot();
 
 			var usesStencilRef = obj as IUsesStencilRef;
 			if (usesStencilRef != null)
@@ -1909,7 +1908,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (tool is IExclusiveMode)
 					SetToolsEnabled(deviceData, true);
 
-				U.Object.Destroy(tool as MonoBehaviour);
+				ObjectUtils.Destroy(tool as MonoBehaviour);
 			}
 		}
 
@@ -1983,9 +1982,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
 		{
-			var cameraTransform = U.Camera.GetMainCamera().transform;
+			var cameraTransform = CameraUtils.GetMainCamera().transform;
 
-			var workspace = (IWorkspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetViewerPivot());
+			var workspace = (IWorkspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetViewerPivot());
 			m_Workspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			ConnectInterfaces(workspace);
@@ -1993,12 +1992,12 @@ namespace UnityEditor.Experimental.EditorVR
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
 
-			var offset = kDefaultWorkspaceOffset;
+			var offset = k_DefaultWorkspaceOffset;
 			offset.z += workspace.vacuumBounds.extents.z;
 
 			var workspaceTransform = workspace.transform;
 			workspaceTransform.position = cameraTransform.TransformPoint(offset);
-			workspaceTransform.rotation *= Quaternion.LookRotation(cameraTransform.forward) * kDefaultWorkspaceTilt;
+			workspaceTransform.rotation *= Quaternion.LookRotation(cameraTransform.forward) * k_DefaultWorkspaceTilt;
 
 			m_Vacuumables.Add(workspace);
 
@@ -2056,14 +2055,14 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		Transform InstantiateMiniWorldRay()
 		{
-			var miniWorldRay = U.Object.Instantiate(m_ProxyRayPrefab.gameObject).transform;
-			U.Object.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());
+			var miniWorldRay = ObjectUtils.Instantiate(m_ProxyRayPrefab.gameObject).transform;
+			ObjectUtils.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());
 
 			var renderers = miniWorldRay.GetComponentsInChildren<Renderer>();
 			foreach (var renderer in renderers)
 			{
 				if (!renderer.GetComponent<IntersectionTester>())
-					U.Object.Destroy(renderer.gameObject);
+					ObjectUtils.Destroy(renderer.gameObject);
 				else
 					renderer.enabled = false;
 			}
@@ -2116,10 +2115,10 @@ namespace UnityEditor.Experimental.EditorVR
 
 			foreach (var r in renderers)
 			{
-				if (r.CompareTag(kVRPlayerTag))
+				if (r.CompareTag(k_VRPlayerTag))
 					continue;
 
-				if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.kShowInMiniWorldTag))
+				if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.ShowInMiniWorldTag))
 					continue;
 
 				ignoreList.Add(r);
@@ -2196,10 +2195,10 @@ namespace UnityEditor.Experimental.EditorVR
 								dragGameObjects[i] = dragObject.gameObject;
 							}
 
-							var totalBounds = U.Object.GetBounds(dragGameObjects);
+							var totalBounds = ObjectUtils.GetBounds(dragGameObjects);
 							var maxSizeComponent = totalBounds.size.MaxComponent();
 							if (!Mathf.Approximately(maxSizeComponent, 0f))
-								miniWorldRay.previewScaleFactor = Vector3.one * (kPreviewScale / maxSizeComponent);
+								miniWorldRay.previewScaleFactor = Vector3.one * (k_PreviewScale / maxSizeComponent);
 
 							miniWorldRay.originalScales = scales;
 						}
@@ -2285,7 +2284,7 @@ namespace UnityEditor.Experimental.EditorVR
 							{
 								var dragObject = dragObjects[i];
 								dragObject.localScale = originalScales[i];
-								U.Math.SetTransformOffset(miniWorldRayOrigin, dragObject, positionOffsets[i], rotationOffsets[i]);
+								MathUtilsExt.SetTransformOffset(miniWorldRayOrigin, dragObject, positionOffsets[i], rotationOffsets[i]);
 							}
 
 							// Add the object (back) to TransformTool
@@ -2299,7 +2298,7 @@ namespace UnityEditor.Experimental.EditorVR
 						for (var i = 0; i < dragObjects.Length; i++)
 						{
 							var dragObject = dragObjects[i];
-							if (dragObject.CompareTag(kVRPlayerTag))
+							if (dragObject.CompareTag(k_VRPlayerTag))
 							{
 								if (directSelection != null)
 									directSelection.DropHeldObjects(miniWorldRayOrigin);
@@ -2353,7 +2352,7 @@ namespace UnityEditor.Experimental.EditorVR
 							var rotation = originalRayOrigin.rotation;
 							var position = originalRayOrigin.position
 								+ rotation * Vector3.Scale(previewScaleFactor, positionOffsets[i]);
-							U.Math.LerpTransform(dragObject, position, rotation * rotationOffsets[i]);
+							MathUtilsExt.LerpTransform(dragObject, position, rotation * rotationOffsets[i]);
 						}
 					}
 				}
@@ -2402,7 +2401,7 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-				if (renderer && !renderer.CompareTag(kVRPlayerTag))
+				if (renderer && !renderer.CompareTag(k_VRPlayerTag))
 					return renderer.gameObject;
 			}
 
@@ -2442,7 +2441,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var rayOrigin = rayOriginPair.Value;
 				var input = deviceData.directSelectInput;
 				var obj = GetDirectSelectionForRayOrigin(rayOrigin, input);
-				if (obj && !obj.CompareTag(kVRPlayerTag))
+				if (obj && !obj.CompareTag(k_VRPlayerTag))
 				{
 					m_ActiveStates.Add(input);
 					m_DirectSelectionResults[rayOrigin] = new DirectSelectionData
@@ -2507,7 +2506,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		bool CanGrabObject(GameObject selection, Transform rayOrigin)
 		{
-			if (selection.CompareTag(kVRPlayerTag) && !m_MiniWorldRays.ContainsKey(rayOrigin))
+			if (selection.CompareTag(k_VRPlayerTag) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 				return false;
 
 			return true;
@@ -2516,7 +2515,7 @@ namespace UnityEditor.Experimental.EditorVR
 		static void OnObjectGrabbed(GameObject selection)
 		{
 			// Detach the player head model so that it is not affected by its parent transform
-			if (selection.CompareTag(kVRPlayerTag))
+			if (selection.CompareTag(k_VRPlayerTag))
 				selection.transform.parent = null;
 		}
 
@@ -2525,7 +2524,7 @@ namespace UnityEditor.Experimental.EditorVR
 			foreach (var grabbedObject in grabbedObjects)
 			{
 				// Dropping the player head updates the viewer pivot
-				if (grabbedObject.CompareTag(kVRPlayerTag))
+				if (grabbedObject.CompareTag(k_VRPlayerTag))
 					StartCoroutine(UpdateViewerPivot(grabbedObject));
 				else if (IsOverShoulder(rayOrigin) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 					DeleteSceneObject(grabbedObject.gameObject);
@@ -2547,7 +2546,7 @@ namespace UnityEditor.Experimental.EditorVR
 		static Transform FindGroupRoot(Transform transform)
 		{
 			// Don't allow grouping selection for the player head, otherwise we'd select the EditorVRCamera
-			if (transform.CompareTag(kVRPlayerTag))
+			if (transform.CompareTag(k_VRPlayerTag))
 				return transform;
 
 			var parent = transform.parent;
@@ -2564,7 +2563,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		IEnumerator UpdateViewerPivot(Transform playerHead)
 		{
-			var viewerPivot = U.Camera.GetViewerPivot();
+			var viewerPivot = CameraUtils.GetViewerPivot();
 
 			// Hide player head to avoid jarring impact
 			var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
@@ -2573,11 +2572,11 @@ namespace UnityEditor.Experimental.EditorVR
 				renderer.enabled = false;
 			}
 
-			var mainCamera = U.Camera.GetMainCamera().transform;
+			var mainCamera = CameraUtils.GetMainCamera().transform;
 			var startPosition = viewerPivot.position;
 			var startRotation = viewerPivot.rotation;
 
-			var rotationDiff = U.Math.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
+			var rotationDiff = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
 			var cameraDiff = viewerPivot.position - mainCamera.position;
 			cameraDiff.y = 0;
 			var rotationOffset = rotationDiff * cameraDiff - cameraDiff;
@@ -2587,10 +2586,10 @@ namespace UnityEditor.Experimental.EditorVR
 			var startTime = Time.realtimeSinceStartup;
 			var diffTime = 0f;
 
-			while (diffTime < kViewerPivotTransitionTime)
+			while (diffTime < k_ViewerPivotTransitionTime)
 			{
 				diffTime = Time.realtimeSinceStartup - startTime;
-				var t = diffTime / kViewerPivotTransitionTime;
+				var t = diffTime / k_ViewerPivotTransitionTime;
 
 				// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
 				viewerPivot.position = Vector3.Lerp(startPosition, endPosition, t);
@@ -2683,7 +2682,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void PreProcessRaycastSource(Transform rayOrigin)
 		{
-			var camera = U.Camera.GetMainCamera();
+			var camera = CameraUtils.GetMainCamera();
 			var cameraPosition = camera.transform.position;
 			var matrix = camera.worldToCameraMatrix;
 
@@ -2708,7 +2707,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void AddPlayerModel()
 		{
-			var playerModel = U.Object.Instantiate(m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
+			var playerModel = ObjectUtils.Instantiate(m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<Renderer>();
 			m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
 		}
 
@@ -2718,7 +2717,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 			foreach (var collider in colliders)
 			{
-				if (collider.CompareTag(kVRPlayerTag))
+				if (collider.CompareTag(k_VRPlayerTag))
 					return true;
 			}
 			return false;
@@ -2732,7 +2731,7 @@ namespace UnityEditor.Experimental.EditorVR
 				m_SpatialHashModule.spatialHash.RemoveObject(renderer);
 			}
 
-			U.Object.Destroy(sceneObject);
+			ObjectUtils.Destroy(sceneObject);
 		}
 
 		List<string> GetFilterList()
@@ -2804,8 +2803,8 @@ namespace UnityEditor.Experimental.EditorVR
 						hasNext = hp.Next(null);
 
 					// Spend a minimum amount of time in this function, and if we have extra time in the frame, use it
-					if (Time.realtimeSinceStartup - m_ProjectFolderLoadYieldTime > kMaxFrameTime
-						&& Time.realtimeSinceStartup - m_ProjectFolderLoadStartTime > kMinProjectFolderLoadTime)
+					if (Time.realtimeSinceStartup - m_ProjectFolderLoadYieldTime > k_MaxFrameTime
+						&& Time.realtimeSinceStartup - m_ProjectFolderLoadStartTime > k_MinProjectFolderLoadTime)
 					{
 						m_ProjectFolderLoadYieldTime = Time.realtimeSinceStartup;
 						yield return null;
@@ -2991,7 +2990,7 @@ namespace UnityEditor.Experimental.EditorVR
 			// Add EVR tags and layers if they don't exist
 			var tags = new List<string>();
 			var layers = new List<string>();
-			U.Object.ForEachType(t =>
+			ObjectUtils.ForEachType(t =>
 			{
 				var tagAttributes = (RequiresTagAttribute[])t.GetCustomAttributes(typeof(RequiresTagAttribute), true);
 				foreach (var attribute in tagAttributes)
@@ -3013,7 +3012,7 @@ namespace UnityEditor.Experimental.EditorVR
 		private static void OnEVREnabled()
 		{
 			InitializeInputManager();
-			s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
+			s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
 		}
 
 		private static void InitializeInputManager()
@@ -3023,7 +3022,7 @@ namespace UnityEditor.Experimental.EditorVR
 			InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
 			foreach (var m in managers)
 			{
-				U.Object.Destroy(m.gameObject);
+				ObjectUtils.Destroy(m.gameObject);
 			}
 
 			managers = Resources.FindObjectsOfTypeAll<InputManager>();
@@ -3042,22 +3041,23 @@ namespace UnityEditor.Experimental.EditorVR
 			Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
 
 			s_InputManager = managers[0];
-			s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
-			U.Object.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
+			s_InputManager.gameObject.hideFlags = DefaultHideFlags;
+			ObjectUtils.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
 
 			// These components were allocating memory every frame and aren't currently used in EditorVR
-			U.Object.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
-			U.Object.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
-			U.Object.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
-			U.Object.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
+			ObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
+			ObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
+			ObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
+			ObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
 		}
 
 		private static void OnEVRDisabled()
 		{
-			U.Object.Destroy(s_Instance.gameObject);
-			U.Object.Destroy(s_InputManager.gameObject);
+			ObjectUtils.Destroy(s_Instance.gameObject);
+			ObjectUtils.Destroy(s_InputManager.gameObject);
 		}
 #endif
 #endif
 	}
 }
+#endif
