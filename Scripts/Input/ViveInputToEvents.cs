@@ -39,7 +39,7 @@ namespace UnityEngine.Experimental.EditorVR.Input
 
 		public void Update()
 		{
-			active = false;
+			var isActive = false;
 			TrackedDevicePose_t[] poses = null;
 			var compositor = OpenVR.Compositor;
 			if (compositor != null)
@@ -65,13 +65,16 @@ namespace UnityEngine.Experimental.EditorVR.Input
 					steamDeviceIndex = steamDeviceIndices[(int)hand];
 				}
 
-				active = true;
+				isActive = true;
 
 				int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
 				SendButtonEvents(steamDeviceIndex, deviceIndex);
 				SendAxisEvents(steamDeviceIndex, deviceIndex);
 				SendTrackingEvents(steamDeviceIndex, deviceIndex, poses);
 			}
+
+			if (active != isActive)
+				active = isActive;
 		}
 
 		public const int controllerCount = 10;
