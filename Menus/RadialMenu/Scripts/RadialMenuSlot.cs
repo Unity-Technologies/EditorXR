@@ -12,7 +12,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 	public class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler
 	{
 		static Color s_FrameOpaqueColor;
-
 		static readonly Vector3 k_HiddenLocalScale = new Vector3(1f, 0f, 1f);
 		const float k_IconHighlightedLocalYOffset = 0.006f;
 		const string k_MaterialAlphaProperty = "_Alpha";
@@ -115,7 +114,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				m_SemiTransparent = value;
 
 				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateSemiTransparent(value));
-				ShowCleanup();
+				PostReveal();
 			}
 
 			get { return m_SemiTransparent; }
@@ -284,14 +283,14 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			}
 
 			transform.localScale = Vector3.one;
-			ShowCleanup();
+			m_BorderRendererMaterial.SetFloat(k_MaterialExpandProperty, 0);
+			PostReveal();
 
 			m_VisibilityCoroutine = null;
 		}
 
-		void ShowCleanup()
+		void PostReveal()
 		{
-			m_BorderRendererMaterial.SetFloat(k_MaterialExpandProperty, 0);
 			m_CanvasGroup.interactable = true;
 			CorrectIconRotation();
 		}
@@ -452,10 +451,10 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				// In case semiTransparency is triggered immedlately upon showing the radial menu
 				this.StopCoroutine(ref m_InsetRevealCoroutine);
 				m_CanvasGroup.alpha = 1f;
-				ShowCleanup();
+				PostReveal();
 			}
 
-			const float k_FasterMotionMultiplier = 2f;
+			const float kFasterMotionMultiplier = 2f;
 			var transitionAmount = Time.unscaledDeltaTime;
 			var positionWait = (orderIndex + 4) * 0.25f; // pad the order index for a faster start to the transition
 			var currentScale = transform.localScale;
@@ -475,11 +474,11 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var targetIconScale = makeSemiTransparent ? semiTransparentTargetIconScale : Vector3.one;
 			while (transitionAmount < 1)
 			{
-				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, transitionAmount * k_FasterMotionMultiplier));
+				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, transitionAmount * kFasterMotionMultiplier));
 				m_MenuInset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, transitionAmount * 2f);
 				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, transitionAmount));
 				m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, transitionAmount));
-				var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * k_FasterMotionMultiplier;
+				var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
 				transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedTransitionAmount);
 				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedTransitionAmount);
 				transitionAmount += Time.unscaledDeltaTime * positionWait * 3f;
