@@ -9,7 +9,7 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
 public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesHandedRayOrigin,
-	ICustomActionMap, ILinkedObject, IUsesProxyType, IConnectInterfaces
+	ICustomActionMap, ILinkedObject, IUsesProxyType
 {
 	const float kFastRotationSpeed = 300f;
 	const float kRotationThreshold = 0.9f;
@@ -21,7 +21,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	const float kMoveThresholdVive = 0.8f;
 	const float kRotationThresholdVive = 0.8f;
 
-	const float kMinScale = 0.1f;
+	const float kMinScale = 0.01f;
 	const float kMaxScale = 1000f;
 
 	private enum State
@@ -76,8 +76,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 	public Type proxyType { private get; set; }
 
-	public ConnectInterfacesDelegate connectInterfaces { get; set; }
-
 	public Transform cameraRig { private get; set; }
 
 	public List<ILinkedObject> linkedObjects { private get; set; }
@@ -87,7 +85,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	{
 		m_BlinkVisualsGO = U.Object.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
 		m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
-		m_BlinkVisuals.cameraRig = cameraRig;
 		m_BlinkVisuals.enabled = false;
 		m_BlinkVisuals.showValidTargetIndicator = false; // We don't define valid targets, so always show green
 		m_BlinkVisualsGO.transform.parent = rayOrigin;
@@ -222,6 +219,9 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 								m_MainCamera.nearClipPlane = m_OriginalNearClipPlane * currentScale;
 								m_MainCamera.farClipPlane = m_OriginalFarClipPlane * currentScale;
+
+								m_WorldScaleVisuals.viewerScale = currentScale;
+								m_BlinkVisuals.viewerScale = currentScale;
 							}
 							break;
 						}
@@ -332,7 +332,6 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	void CreateWorldScaleVisuals(Transform leftHand, Transform rightHand)
 	{
 		m_WorldScaleVisuals = U.Object.Instantiate(m_WorldScaleVisualsPrefab, cameraRig, false).GetComponent<WorldScaleVisuals>();
-		m_WorldScaleVisuals.cameraRig = cameraRig;
 		m_WorldScaleVisuals.leftHand = leftHand;
 		m_WorldScaleVisuals.rightHand = rightHand;
 	}

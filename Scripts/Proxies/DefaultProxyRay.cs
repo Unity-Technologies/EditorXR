@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Extensions;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-internal class DefaultProxyRay : MonoBehaviour, IUsesCameraRig
+internal class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
 {
 	[SerializeField]
 	private VRLineRenderer m_LineRenderer;
@@ -31,7 +32,7 @@ internal class DefaultProxyRay : MonoBehaviour, IUsesCameraRig
 	/// </summary>
 	private object m_LockRayObject;
 
-	public Transform cameraRig { private get; set; }
+	public Func<float> getViewerScale { private get; set; }
 
 	public bool LockRay(object lockCaller)
 	{
@@ -124,9 +125,9 @@ internal class DefaultProxyRay : MonoBehaviour, IUsesCameraRig
 		if (!rayVisible)
 			return;
 
-		var rigScale = cameraRig.localScale.x;
-		var scaledWidth = m_LineWidth * rigScale;
-		var scaledLength = length / rigScale;
+		var viewerScale = getViewerScale();
+		var scaledWidth = m_LineWidth * viewerScale;
+		var scaledLength = length / viewerScale;
 
 		var lineRendererTransform = m_LineRenderer.transform;
 		lineRendererTransform.localScale = Vector3.one * scaledLength;

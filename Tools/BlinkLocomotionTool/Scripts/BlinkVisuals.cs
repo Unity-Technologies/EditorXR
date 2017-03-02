@@ -78,7 +78,7 @@ public class BlinkVisuals : MonoBehaviour
 	public bool validTarget { get; private set; }
 	public bool showValidTargetIndicator { private get; set; }
 
-	public Transform cameraRig { get; set; }
+	public float viewerScale { private get; set; }
 
 	private float pointerStrength { get { return (m_ToolPoint.forward.y + 1.0f) * 0.5f; } }
 
@@ -158,7 +158,7 @@ public class BlinkVisuals : MonoBehaviour
 			DrawMotionSpheres();
 
 			m_RoomScaleTransform.position = U.Math.SmoothDamp(m_RoomScaleLazyPosition, m_LocatorRoot.position,
-				ref m_MovementVelocityDelta, 0.2625f, 100f * cameraRig.localScale.x, Time.unscaledDeltaTime);
+				ref m_MovementVelocityDelta, 0.2625f, 100f * viewerScale, Time.unscaledDeltaTime);
 			// Since the room scale visuals are parented under the locator root it is necessary to cache the position each frame before the locator root gets updated
 			m_RoomScaleLazyPosition = m_RoomScaleTransform.position;
 			m_MovementMagnitudeDelta = (m_RoomScaleTransform.position - m_LocatorRoot.position).magnitude;
@@ -218,7 +218,7 @@ public class BlinkVisuals : MonoBehaviour
 		while (m_State == State.TransitioningIn && currentDuration < kSmoothTime)
 		{
 			scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-			var adjustedScale = scale * cameraRig.localScale.x;
+			var adjustedScale = scale * viewerScale;
 			currentDuration += Time.unscaledDeltaTime;
 			m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
 			m_LocatorRoot.localScale = Vector3.one * scale;
@@ -244,7 +244,7 @@ public class BlinkVisuals : MonoBehaviour
 		while (m_State == State.TransitioningOut && currentDuration < kSmoothTime)
 		{
 			scale = U.Math.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-			var adjustedScale = scale * cameraRig.localScale.x;
+			var adjustedScale = scale * viewerScale;
 			currentDuration += Time.unscaledDeltaTime;
 			SetColors(Color.Lerp(!showValidTargetIndicator || validTarget ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
 			m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
@@ -289,8 +289,7 @@ public class BlinkVisuals : MonoBehaviour
 		// start point
 		m_BezierControlPoints[0] = m_ToolPoint.position;
 		// first handle -- determines how steep the first part will be
-		m_BezierControlPoints[1] = m_ToolPoint.position + m_ToolPoint.forward * pointerStrength * m_Range
-			* cameraRig.localScale.x;
+		m_BezierControlPoints[1] = m_ToolPoint.position + m_ToolPoint.forward * pointerStrength * m_Range * viewerScale;
 
 		const float kArcEndHeight = 0f;
 		m_FinalPosition = new Vector3(m_BezierControlPoints[1].x, kArcEndHeight, m_BezierControlPoints[1].z);
@@ -340,7 +339,7 @@ public class BlinkVisuals : MonoBehaviour
 			motionSphereScale = U.Math.SmoothDamp(motionSphere.localScale.x, motionSphereScale,
 					ref smoothVelocity, 3f, Mathf.Infinity, Time.unscaledDeltaTime)
 				* Mathf.Min((m_Transform.position - motionSphere.position).magnitude
-					* scaleCoefficient / cameraRig.localScale.x, 1f);
+					* scaleCoefficient / viewerScale, 1f);
 
 			motionSphere.localScale = Vector3.one * motionSphereScale;
 			motionSphere.localRotation = Quaternion.identity;

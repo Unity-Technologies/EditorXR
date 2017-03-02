@@ -131,6 +131,7 @@ namespace UnityEditor.Experimental.EditorVR
 					VRView.customPreviewCamera = m_CustomPreviewCamera.previewCamera;
 					m_CustomPreviewCamera.vrCamera = VRView.viewerCamera;
 					hmdOnlyLayerMask = m_CustomPreviewCamera.hmdOnlyLayerMask;
+					m_Interfaces.ConnectInterfaces(m_CustomPreviewCamera);
 				}
 			}
 			VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;

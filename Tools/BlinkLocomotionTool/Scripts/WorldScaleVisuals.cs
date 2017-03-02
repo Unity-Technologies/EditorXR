@@ -29,7 +29,7 @@ class WorldScaleVisuals : MonoBehaviour
 
 	public Transform leftHand { private get; set; }
 	public Transform rightHand { private get; set; }
-	public Transform cameraRig { private get; set; }
+	public float viewerScale { private get; set; }
 
 	void Start()
 	{
@@ -50,7 +50,6 @@ class WorldScaleVisuals : MonoBehaviour
 
 	void SetPosition()
 	{
-		var viewerScale = cameraRig.localScale.x;
 		var iconContainerLocal = m_IconsContainer.localPosition;
 		iconContainerLocal.x = Mathf.Log10(viewerScale) * m_IconTranslateCoefficient + m_IconTranslateOffset;
 		m_IconsContainer.localPosition = iconContainerLocal;

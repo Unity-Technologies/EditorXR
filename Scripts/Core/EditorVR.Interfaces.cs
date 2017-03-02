@@ -290,6 +290,10 @@ namespace UnityEditor.Experimental.EditorVR
 				if (moveCameraRig != null)
 					moveCameraRig.moveCameraRig = Viewer.MoveCameraRig;
 
+				var usesViewerScale = obj as IUsesViewerScale;
+				if (usesViewerScale != null)
+					usesViewerScale.getViewerScale = evrViewer.GetViewerScale;
+
 				var usesTooltip = obj as ISetTooltipVisibility;
 				if (usesTooltip != null)
 				{
@@ -298,7 +302,8 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 
 				var linkedObject = obj as ILinkedObject;
-				if (linkedObject != null)				{
+				if (linkedObject != null)
+				{
 					var type = obj.GetType();
 					var linkedObjects = evrTools.linkedObjects;
 					List<ILinkedObject> linkedObjectList;
