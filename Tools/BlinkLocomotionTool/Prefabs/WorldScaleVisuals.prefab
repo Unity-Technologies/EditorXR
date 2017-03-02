@@ -264,7 +264,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 2100000, guid: 03f6dcebeffad1144b21f910411c732e, type: 2}
   m_Color: {r: 0.9558824, g: 0.9558824, b: 0.9558824, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
