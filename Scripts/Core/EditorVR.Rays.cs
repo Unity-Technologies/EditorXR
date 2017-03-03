@@ -160,7 +160,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 					foreach (var rayOrigin in proxy.rayOrigins.Values)
 					{
-						var distance = kDefaultRayLength;
+						var distance = kDefaultRayLength * Viewer.GetViewerScale();
 
 						// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
 						// object, so visually show the ray terminating there instead of the object; UI is already given

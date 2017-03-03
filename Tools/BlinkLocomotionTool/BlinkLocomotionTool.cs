@@ -21,8 +21,11 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	const float kMoveThresholdVive = 0.8f;
 	const float kRotationThresholdVive = 0.8f;
 
-	const float kMinScale = 0.01f;
+	//TODO: Fix triangle intersection test at tiny scales, so this can go back to 0.01
+	const float kMinScale = 0.1f;
 	const float kMaxScale = 1000f;
+
+	const string kWorldScaleProperty = "_WorldScale";
 
 	private enum State
 	{
@@ -94,6 +97,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		m_MainCamera = U.Camera.GetMainCamera();
 		m_OriginalNearClipPlane = m_MainCamera.nearClipPlane;
 		m_OriginalFarClipPlane = m_MainCamera.farClipPlane;
+
+		Shader.SetGlobalFloat(kWorldScaleProperty, 1);
 	}
 
 	private void OnDisable()
@@ -222,6 +227,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 								m_WorldScaleVisuals.viewerScale = currentScale;
 								m_BlinkVisuals.viewerScale = currentScale;
+								Shader.SetGlobalFloat(kWorldScaleProperty, 1f / currentScale);
 							}
 							break;
 						}

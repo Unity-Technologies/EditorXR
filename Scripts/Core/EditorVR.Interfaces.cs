@@ -292,7 +292,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var usesViewerScale = obj as IUsesViewerScale;
 				if (usesViewerScale != null)
-					usesViewerScale.getViewerScale = evrViewer.GetViewerScale;
+					usesViewerScale.getViewerScale = Viewer.GetViewerScale;
 
 				var usesTooltip = obj as ISetTooltipVisibility;
 				if (usesTooltip != null)

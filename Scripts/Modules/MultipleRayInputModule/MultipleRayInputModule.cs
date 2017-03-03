@@ -386,12 +386,15 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		private GameObject GetRayIntersection(RaycastSource source)
 		{
-			GameObject hit = null;
 			// Move camera to position and rotation for the ray origin
 			m_EventCamera.transform.position = source.rayOrigin.position;
 			m_EventCamera.transform.rotation = source.rayOrigin.rotation;
 
-			RayEventData eventData = source.eventData;
+			var camera = U.Camera.GetMainCamera();
+			m_EventCamera.nearClipPlane = camera.nearClipPlane;
+			m_EventCamera.farClipPlane = camera.farClipPlane;
+
+			var eventData = source.eventData;
 			eventData.Reset();
 			eventData.delta = Vector2.zero;
 			eventData.position = m_EventCamera.pixelRect.center;
@@ -399,7 +402,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 			eventSystem.RaycastAll(eventData, m_RaycastResultCache);
 			eventData.pointerCurrentRaycast = FindFirstRaycast(m_RaycastResultCache);
-			hit = eventData.pointerCurrentRaycast.gameObject;
+			var hit = eventData.pointerCurrentRaycast.gameObject;
 
 			m_RaycastResultCache.Clear();
 			return hit;

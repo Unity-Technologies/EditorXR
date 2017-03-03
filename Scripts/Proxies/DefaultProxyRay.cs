@@ -177,19 +177,25 @@ internal class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
 	{
 		m_Tip.transform.localScale = m_TipStartScale;
 
+		float viewerScale;
+		float scaledWidth;
 		var currentWidth = m_LineRenderer.widthStart;
 		var smoothVelocity = 0f;
 		const float kSmoothTime = 0.3125f;
 		var currentDuration = 0f;
 		while (currentDuration < kSmoothTime)
 		{
+			viewerScale = getViewerScale();
 			currentDuration += Time.unscaledDeltaTime;
 			currentWidth = U.Math.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-			m_LineRenderer.SetWidth(currentWidth, currentWidth);
+			scaledWidth = currentWidth * viewerScale;
+			m_LineRenderer.SetWidth(scaledWidth, scaledWidth);
 			yield return null;
 		}
-		
-		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth);
+
+		viewerScale = getViewerScale();
+		scaledWidth = m_LineWidth * viewerScale;
+		m_LineRenderer.SetWidth(scaledWidth, scaledWidth);
 		m_RayVisibilityCoroutine = null;
 	}
 
