@@ -334,7 +334,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			var highlightedLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, m_VisibleLocalZScale * 2);
 			while (transitionAmount < kTargetTransitionAmount)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 3;
+				transitionAmount += Time.unscaledDeltaTime * 5;
 				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
 				transform.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
 
@@ -392,7 +392,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			var currentPosition = m_IconContainer.localPosition;
 			var targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // forward for highlight, backward for press
 			var transitionAmount = Time.unscaledDeltaTime;
-			var transitionAddMultiplier = !pressed ? 2 : 5; // Faster transition in for highlight; slower for pressed highlight
+			var transitionAddMultiplier = !pressed ? 4 : 7; // Faster transition in for highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
 				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
