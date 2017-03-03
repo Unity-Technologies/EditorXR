@@ -1,11 +1,11 @@
-﻿using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.VR.Modules;
-using UnityEngine.VR.Utilities;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.VR.Handles
+namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	public class RadialHandle : BaseHandle
+	sealed class RadialHandle : BaseHandle
 	{
 		private class RadialHandleEventData : HandleEventData
 		{
@@ -32,7 +32,7 @@ namespace UnityEngine.VR.Handles
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new RadialHandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
+			return new RadialHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
 		}
 
 		protected override void OnHandleHovering(HandleEventData eventData)
@@ -122,3 +122,4 @@ namespace UnityEngine.VR.Handles
 		}
 	}
 }
+#endif

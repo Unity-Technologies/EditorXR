@@ -1,27 +1,59 @@
-﻿using ListView;
-using UnityEditor;
+﻿#if UNITY_EDITOR
+using ListView;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-public class AssetData : ListViewItemData
+namespace UnityEditor.Experimental.EditorVR.Data
 {
-	private const string kTemplateName = "AssetGridItem";
-
-	public string name { get; private set; }
-	public int instanceID { get; private set; }
-	public Texture2D icon { get; private set; }
-	public string type { get; private set; }
-
-	public bool animating { get; set; }
-	public Object asset { get; set; }
-	public GameObject preview { get; set; }
-
-	public AssetData(string name, int instanceID, Texture2D icon, string type)
+	sealed class AssetData : ListViewItemData
 	{
-		template = kTemplateName;
-		this.name = name;
-		this.instanceID = instanceID;
-		this.icon = icon;
-		this.type = type;
+		const string k_TemplateName = "AssetGridItem";
+
+		public string name { get; private set; }
+		public string guid { get; private set; }
+
+		public string type { get; private set; }
+
+		public GameObject preview { get; set; }
+
+		public Object asset
+		{
+			get { return m_Asset; }
+			set
+			{
+				m_Asset = value;
+				if (m_Asset)
+					UpdateType(); // We lazy load assets and don't know the final type until the asset is loaded
+			}
+		}
+
+		Object m_Asset;
+
+		public AssetData(string name, string guid, string type)
+		{
+			template = k_TemplateName;
+			this.name = name;
+			this.guid = guid;
+			this.type = type;
+		}
+
+		void UpdateType()
+		{
+			if (type == "GameObject")
+			{
+#if UNITY_EDITOR
+				switch (PrefabUtility.GetPrefabType(asset))
+				{
+					case PrefabType.ModelPrefab:
+						type = "Model";
+						break;
+					default:
+						type = "Prefab";
+						break;
+				}
+#endif
+			}
+		}
 	}
 }
+#endif

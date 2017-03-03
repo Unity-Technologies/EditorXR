@@ -1,11 +1,13 @@
-﻿using UnityEngine.VR.Modules;
-using UnityEngine.VR.Utilities;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.VR.Handles
+namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	public class LinearHandle : BaseHandle
+	sealed class LinearHandle : BaseHandle
 	{
-		private class LinearHandleEventData : HandleEventData
+		class LinearHandleEventData : HandleEventData
 		{
 			public Vector3 raycastHitWorldPosition;
 
@@ -15,7 +17,10 @@ namespace UnityEngine.VR.Handles
 		[SerializeField]
 		private Transform m_HandleTip;
 
-		private const float kMaxDragDistance = 1000f;
+		[SerializeField]
+		bool m_OrientDragPlaneToRay = true;
+
+		private const float k_MaxDragDistance = 1000f;
 
 		private Plane m_Plane;
 		private Vector3 m_LastPosition;
@@ -28,7 +33,7 @@ namespace UnityEngine.VR.Handles
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new LinearHandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
+			return new LinearHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
 		}
 
 		protected override void OnHandleHovering(HandleEventData eventData)
@@ -64,17 +69,28 @@ namespace UnityEngine.VR.Handles
 			}
 		}
 
+		void UpdatePlaneOrientation(Transform rayOrigin)
+		{
+			if (m_OrientDragPlaneToRay)
+			{
+				// Orient a plane for dragging purposes through the axis that rotates to avoid being parallel to the ray, 
+				// so that you can prevent intersections at infinity
+				var forward = Quaternion.Inverse(transform.rotation) * (rayOrigin.position - transform.position);
+				forward.z = 0;
+				m_Plane.SetNormalAndPosition(transform.rotation * forward.normalized, transform.position);
+			}
+			else
+			{
+				m_Plane.SetNormalAndPosition(transform.up, transform.position);
+			}
+		}
+
 		protected override void OnHandleDragStarted(HandleEventData eventData)
 		{
 			var linearEventData = eventData as LinearHandleEventData;
 			m_LastPosition = linearEventData.raycastHitWorldPosition;
 
-			// Create a plane through the axis that rotates to avoid being parallel to the ray, so that you can prevent
-			// intersections at infinity
-			var forward = Quaternion.Inverse(transform.rotation) * (eventData.rayOrigin.position - transform.position);
-			forward.z = 0;
-			m_Plane.SetNormalAndPosition(transform.rotation * forward.normalized, transform.position);
-
+			UpdatePlaneOrientation(eventData.rayOrigin);
 			UpdateHandleTip(linearEventData);
 
 			base.OnHandleDragStarted(eventData);
@@ -85,27 +101,19 @@ namespace UnityEngine.VR.Handles
 			Transform rayOrigin = eventData.rayOrigin;
 			Vector3 worldPosition = m_LastPosition;
 
-			// Continue to rotate plane, so that the ray direction isn't parallel to the plane
-			var forward = Quaternion.Inverse(transform.rotation) * (rayOrigin.position - transform.position);
-			forward.z = 0;
-			m_Plane.SetNormalAndPosition(transform.rotation * forward.normalized, transform.position);
+			UpdatePlaneOrientation(rayOrigin);
 
 			float distance = 0f;
 			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
 			if (m_Plane.Raycast(ray, out distance))
-				worldPosition = ray.GetPoint(Mathf.Min(distance, kMaxDragDistance));
+				worldPosition = ray.GetPoint(Mathf.Min(distance, k_MaxDragDistance));
 
 			var linearEventData = eventData as LinearHandleEventData;
 			linearEventData.raycastHitWorldPosition = worldPosition;
 
-			var deltaPosition = worldPosition - m_LastPosition;
-			m_LastPosition = worldPosition;
+			eventData.deltaPosition = Vector3.Project(worldPosition - m_LastPosition, transform.forward);
 
-			deltaPosition = transform.InverseTransformVector(deltaPosition);
-			deltaPosition.x = 0;
-			deltaPosition.y = 0;
-			deltaPosition = transform.TransformVector(deltaPosition);
-			eventData.deltaPosition = deltaPosition;
+			m_LastPosition = worldPosition;
 
 			UpdateHandleTip(linearEventData);
 
@@ -120,3 +128,4 @@ namespace UnityEngine.VR.Handles
 		}
 	}
 }
+#endif

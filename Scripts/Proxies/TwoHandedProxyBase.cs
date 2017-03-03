@@ -1,118 +1,139 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections;
+using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Utilities;
 
-namespace UnityEngine.VR.Proxies
+namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
+	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
 	{
+		const int k_RendererQueue = 9000;
+
 		[SerializeField]
 		protected GameObject m_LeftHandProxyPrefab;
+
 		[SerializeField]
 		protected GameObject m_RightHandProxyPrefab;
+
 		[SerializeField]
 		protected PlayerInput m_PlayerInput;
 
 		protected Transform m_LeftHand;
 		protected Transform m_RightHand;
-		
+		readonly List<Material> m_Materials = new List<Material>();
+
 		protected Dictionary<Node, Transform> m_RayOrigins;
-		public virtual Dictionary<Node, Transform> rayOrigins
-		{
-			get { return m_RayOrigins; }
-		}
+
+		List<Transform> m_ProxyMeshRoots = new List<Transform>();
+
+		public virtual Dictionary<Node, Transform> rayOrigins { get { return m_RayOrigins; } }
 
 		public virtual TrackedObject trackedObjectInput { protected get; set; }
 
-		public virtual bool active
-		{
-			get
-			{
-				return true;
-			}
-		}
+		public virtual bool active { get { return true; } }
 
 		public virtual bool hidden
 		{
 			set
 			{
-				var renderers = GetComponentsInChildren<Renderer>();
-				foreach (var r in renderers)
-					r.enabled = !value;
+				if (value != m_Hidden)
+				{
+					m_Hidden = value;
+					m_LeftHand.gameObject.SetActive(!value);
+					m_RightHand.gameObject.SetActive(!value);
+				}
 			}
 		}
 
-		public Dictionary<Node, Transform> menuOrigins { get; set; }
-		public Dictionary<Node, Transform> alternateMenuOrigins { get; set; }
-		public Dictionary<Node, Transform> previewOrigins { get; set; }
+		private bool m_Hidden;
+
+		public Dictionary<Transform, Transform> menuOrigins { get; set; }
+		public Dictionary<Transform, Transform> alternateMenuOrigins { get; set; }
+		public Dictionary<Transform, Transform> previewOrigins { get; set; }
 
 		public virtual void Awake()
 		{
-			m_LeftHand = U.Object.Instantiate(m_LeftHandProxyPrefab, transform).transform;
-			m_RightHand = U.Object.Instantiate(m_RightHandProxyPrefab, transform).transform;
+			m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
+			m_RightHand = ObjectUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;
 			var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
 			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 
-			// The menu target transform should only be on the left hand by default, unless specificed otherwise
-			menuOrigins = new Dictionary<Node, Transform>();
-			alternateMenuOrigins = new Dictionary<Node, Transform>();
-			var leftHandMenuOrigin = leftProxyHelper.menuOrigin;
-			var rightHandMenuOrigin = rightProxyHelper.menuOrigin;
-			var leftHandAlternateMenu = leftProxyHelper.alternateMenuOrigin;
-			var rightHandAlternateMenu = rightProxyHelper.alternateMenuOrigin;
+			m_ProxyMeshRoots.Add(leftProxyHelper.meshRoot);
+			m_ProxyMeshRoots.Add(rightProxyHelper.meshRoot);
 
-			// MS: Unless I misunderstand, these two if blocks are overridden by the setters below
-			if (leftHandAlternateMenu != null)
-			{
-				menuOrigins.Add(Node.LeftHand, leftHandMenuOrigin);
-				alternateMenuOrigins.Add(Node.LeftHand, leftHandAlternateMenu);
-			}
-
-			if (rightHandAlternateMenu != null)
-			{
-				menuOrigins.Add(Node.RightHand, rightHandMenuOrigin);
-				alternateMenuOrigins.Add(Node.RightHand, rightHandAlternateMenu);
-			}
-			
 			m_RayOrigins = new Dictionary<Node, Transform>
 			{
 				{ Node.LeftHand, leftProxyHelper.rayOrigin },
 				{ Node.RightHand, rightProxyHelper.rayOrigin }
 			};
 
-			menuOrigins = new Dictionary<Node, Transform>()
+			menuOrigins = new Dictionary<Transform, Transform>()
 			{
-				{ Node.LeftHand, leftProxyHelper.menuOrigin },
-				{ Node.RightHand, rightProxyHelper.menuOrigin },
+				{ leftProxyHelper.rayOrigin, leftProxyHelper.menuOrigin },
+				{ rightProxyHelper.rayOrigin, rightProxyHelper.menuOrigin },
 			};
 
-			alternateMenuOrigins = new Dictionary<Node, Transform>()
+			alternateMenuOrigins = new Dictionary<Transform, Transform>()
 			{
-				{ Node.LeftHand, leftProxyHelper.alternateMenuOrigin },
-				{ Node.RightHand, rightProxyHelper.alternateMenuOrigin },
+				{ leftProxyHelper.rayOrigin, leftProxyHelper.alternateMenuOrigin },
+				{ rightProxyHelper.rayOrigin, rightProxyHelper.alternateMenuOrigin },
 			};
 
-			previewOrigins = new Dictionary<Node, Transform>
+			previewOrigins = new Dictionary<Transform, Transform>
 			{
-				{ Node.LeftHand, leftProxyHelper.previewOirign },
-				{ Node.RightHand, rightProxyHelper.previewOirign }
+				{ leftProxyHelper.rayOrigin, leftProxyHelper.previewOrigin },
+				{ rightProxyHelper.rayOrigin, rightProxyHelper.previewOrigin }
 			};
 		}
 
-		public virtual void Start()
+		public virtual IEnumerator Start()
 		{
 			// In standalone play-mode usage, attempt to get the TrackedObjectInput 
 			if (trackedObjectInput == null && m_PlayerInput)
 				trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
+
+			List<Renderer> renderers = new List<Renderer>();
+			while (renderers.Count == 0)
+			{
+				yield return null;
+				foreach (var meshRoot in m_ProxyMeshRoots)
+				{
+					// Only add models of the device and not anything else that is spawned underneath the hand (e.g. menu button, cone/ray)
+					renderers.AddRange(meshRoot.GetComponentsInChildren<Renderer>());
+				}
+			}
+
+			foreach (var r in renderers)
+			{
+				m_Materials.AddRange(MaterialUtils.CloneMaterials(r));
+			}
+
+			// Move controllers up into EVR range, so they render properly over our UI (e.g. manipulators)
+			foreach (var m in m_Materials)
+			{
+				m.renderQueue = k_RendererQueue;
+			}
+		}
+
+		public virtual void OnDestroy()
+		{
+			foreach (var m in m_Materials)
+				ObjectUtils.Destroy(m);
 		}
 
 		public virtual void Update()
 		{
-			m_LeftHand.localPosition = trackedObjectInput.leftPosition.vector3;
-			m_LeftHand.localRotation = trackedObjectInput.leftRotation.quaternion;
+			if (active)
+			{
+				m_LeftHand.localPosition = trackedObjectInput.leftPosition.vector3;
+				m_LeftHand.localRotation = trackedObjectInput.leftRotation.quaternion;
 
-			m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
-			m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
+				m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
+				m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
+			}
 		}
 	}
 }
+#endif

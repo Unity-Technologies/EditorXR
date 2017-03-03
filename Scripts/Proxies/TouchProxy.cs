@@ -1,9 +1,12 @@
-﻿using UnityEditor;
-using UnityEngine.VR.Utilities;
+﻿#if UNITY_EDITOR
+using System.Collections;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
+using UnityEngine.InputNew;
 
-namespace UnityEngine.VR.Proxies
+namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	public class TouchProxy : TwoHandedProxyBase
+	sealed class TouchProxy : TwoHandedProxyBase
 	{
 		private OVRTouchInputToEvents m_InputToEvents;
 
@@ -18,10 +21,10 @@ namespace UnityEngine.VR.Proxies
 		public override void Awake()
 		{
 			base.Awake();
-			m_InputToEvents = U.Object.AddComponent<OVRTouchInputToEvents>(gameObject);
+			m_InputToEvents = ObjectUtils.AddComponent<OVRTouchInputToEvents>(gameObject);
 		}
 
-		public override void Start()
+		public override IEnumerator Start()
 		{
 			// Touch controllers should be spawned under a pivot that corresponds to the head with no offsets, since the
 			// local positions of the controllers will be provided that way.
@@ -33,6 +36,9 @@ namespace UnityEngine.VR.Proxies
 #else
 			transform.localPosition = Vector3.zero;
 #endif
+
+			return base.Start();
 		}
 	}
 }
+#endif

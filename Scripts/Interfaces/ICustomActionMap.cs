@@ -1,18 +1,17 @@
-﻿using UnityEngine.InputNew;
+﻿#if UNITY_EDITOR
+using UnityEngine.InputNew;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
-	public interface ICustomActionMap
+	/// <summary>
+	/// Decorates tools which supply their own (singular) ActionMap
+	/// </summary>
+	public interface ICustomActionMap : IProcessInput
 	{
-		ActionMap actionMap
-		{
-			get;
-		}
-
-		ActionMapInput actionMapInput
-		{
-			set;
-			get;
-		}
+		/// <summary>
+		/// Provides access to the custom action map
+		/// </summary>
+		ActionMap actionMap { get; }
 	}
 }
+#endif

@@ -1,12 +1,14 @@
-﻿using UnityEditor;
+﻿using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.VR.Utilities;
 
-[CustomPropertyDrawer(typeof(FlagsPropertyAttribute))]
-public class FlagsPropertyDrawer : PropertyDrawer
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+	[CustomPropertyDrawer(typeof(FlagsPropertyAttribute))]
+	sealed class FlagsPropertyDrawer : PropertyDrawer
 	{
-		property.intValue = U.UI.MaskField(position, label, property.intValue, property.enumNames, U.UI.SerializedPropertyToType(property));
+		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+		{
+			property.intValue = UIUtils.MaskField(position, label, property.intValue, property.enumNames, UIUtils.SerializedPropertyToType(property));
+		}
 	}
 }

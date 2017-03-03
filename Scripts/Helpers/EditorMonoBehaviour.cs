@@ -1,9 +1,13 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
-namespace UnityEditor.VR.Helpers
+namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-	// Used for launching co-routines
-	public class EditorMonoBehaviour : MonoBehaviour
+	/// <summary>
+	/// Used for launching co-routines
+	/// </summary>
+	sealed class EditorMonoBehaviour : MonoBehaviour
 	{
 	}
 }
+#endif

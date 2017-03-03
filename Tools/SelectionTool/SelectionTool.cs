@@ -1,131 +1,105 @@
-﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.VR.Tools;
+#if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
-using UnityEngine.EventSystems;
+using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Utilities;
 
-[UnityEngine.VR.Tools.MainMenuItem("Selection", "Transform", "Select items in the scene")]
-public class SelectionTool : MonoBehaviour, ITool, IRay, IRaycaster, ICustomActionMap, IHighlight
+namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	private static HashSet<GameObject> s_SelectedObjects = new HashSet<GameObject>(); // Selection set is static because multiple selection tools can simulataneously add and remove objects from a shared selection
-
-	private GameObject m_HoverGameObject;
-	private DateTime m_LastSelectTime;
-
-	// The prefab (if any) that was double clicked, whose individual pieces can be selected
-	private static GameObject s_CurrentPrefabOpened; 
-
-	public ActionMap actionMap { get { return m_ActionMap; } }
-	[SerializeField]
-	private ActionMap m_ActionMap;
-
-	public ActionMapInput actionMapInput
+	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, ISetHighlight, ISelectObject, ISetManipulatorsVisible
 	{
-		get { return m_SelectionInput; }
-		set { m_SelectionInput = (SelectionInput)value; }
-	}
-	private SelectionInput m_SelectionInput;
+		GameObject m_HoverGameObject;
+		GameObject m_PressedObject;
 
-	public Func<Transform, GameObject> getFirstGameObject { private get; set; }
+		public ActionMap actionMap { get { return m_ActionMap; } }
+		[SerializeField]
+		ActionMap m_ActionMap;
 
-	public Transform rayOrigin { private get; set; }
+		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
+		public Transform rayOrigin { private get; set; }
+		public Action<GameObject, bool> setHighlight { private get; set; }
 
-	public Action<GameObject, bool> setHighlight { private get; set; }
+		public Func<Transform, bool> isRayActive;
+		public event Action<GameObject, Transform> hovered;
 
-	void Update()
-	{
-		if (rayOrigin == null)
-			return;
+		public GetSelectionCandidateDelegate getSelectionCandidate { private get; set; }
+		public SelectObjectDelegate selectObject { private get; set; }
 
-		// Change activeGameObject selection to its parent transform when parent button is pressed 
-		if (m_SelectionInput.parent.wasJustPressed)
+		public Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { private get; set; }
+
+		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 		{
-			var go = Selection.activeGameObject;
-			if (go != null && go.transform.parent != null)
+			if (rayOrigin == null)
+				return;
+
+			if (!isRayActive(rayOrigin))
+				return;
+
+			var selectionInput = (SelectionInput)input;
+
+			var hoveredObject = getFirstGameObject(rayOrigin);
+
+			if (hovered != null)
+				hovered(hoveredObject, rayOrigin);
+
+			var selectionCandidate = getSelectionCandidate(hoveredObject, true);
+
+			// Can't select this object (it might be locked or static)
+			if (hoveredObject && !selectionCandidate)
+				return;
+
+			if (selectionCandidate)
+				hoveredObject = selectionCandidate;
+
+			// Handle changing highlight
+			if (hoveredObject != m_HoverGameObject)
 			{
-				s_SelectedObjects.Remove(go);
-				s_SelectedObjects.Add(go.transform.parent.gameObject);
-				Selection.objects = s_SelectedObjects.ToArray();
+				if (m_HoverGameObject != null)
+					setHighlight(m_HoverGameObject, false);
+
+				if (hoveredObject != null)
+					setHighlight(hoveredObject, true);
+			}
+
+			m_HoverGameObject = hoveredObject;
+
+			setManipulatorsVisible(this, !selectionInput.multiSelect.isHeld);
+
+			// Capture object on press
+			if (selectionInput.select.wasJustPressed)
+			{
+				m_PressedObject = hoveredObject;
+				consumeControl(selectionInput.select);
+			}
+
+			// Select button on release
+			if (selectionInput.select.wasJustReleased)
+			{
+				if (m_PressedObject == hoveredObject)
+				{
+					selectObject(m_PressedObject, rayOrigin, selectionInput.multiSelect.isHeld, true);
+
+					if (m_PressedObject != null)
+						setHighlight(m_PressedObject, false);
+
+					if (selectionInput.multiSelect.isHeld)
+						consumeControl(selectionInput.multiSelect);
+				}
+
+				if (m_PressedObject != null)
+					consumeControl(selectionInput.select);
+
+				m_PressedObject = null;
 			}
 		}
-		var newHoverGameObject = getFirstGameObject(rayOrigin);
-		var newPrefabRoot = newHoverGameObject;
 
-		if (newHoverGameObject != null)
-		{
-			// If gameObject is within a prefab and not the current prefab, choose prefab root
-			newPrefabRoot = PrefabUtility.FindPrefabRoot(newHoverGameObject);
-			if (newPrefabRoot != s_CurrentPrefabOpened)
-				newHoverGameObject = newPrefabRoot;
-		}
-
-		// Handle changing highlight
-		if (newHoverGameObject != m_HoverGameObject)
+		void OnDisable()
 		{
 			if (m_HoverGameObject != null)
+			{
 				setHighlight(m_HoverGameObject, false);
-
-			if (newHoverGameObject != null)
-				setHighlight(newHoverGameObject, true);
-		}
-
-		m_HoverGameObject = newHoverGameObject;
-
-		// Handle select button press
-		if (m_SelectionInput.select.wasJustPressed) 
-		{
-			// Detect double click
-			var timeSinceLastSelect = (float)(DateTime.Now - m_LastSelectTime).TotalSeconds;
-			m_LastSelectTime = DateTime.Now;
-			if (U.UI.DoubleClick(timeSinceLastSelect))
-			{
-				s_CurrentPrefabOpened = m_HoverGameObject;
-				s_SelectedObjects.Remove(s_CurrentPrefabOpened);
+				m_HoverGameObject = null;
 			}
-			else
-			{
-				// Reset current prefab if selecting outside of it
-				if (newPrefabRoot != s_CurrentPrefabOpened)
-					s_CurrentPrefabOpened = null;
-
-				// Multi-Select
-				if (m_SelectionInput.multiSelect.isHeld)
-				{
-					
-					if (s_SelectedObjects.Contains(m_HoverGameObject))
-					{
-						// Already selected, so remove from selection
-						s_SelectedObjects.Remove(m_HoverGameObject);
-					}
-					else
-					{
-						// Add to selection
-						s_SelectedObjects.Add(m_HoverGameObject); 
-						Selection.activeGameObject = m_HoverGameObject;
-					}
-				}
-				else
-				{
-					s_SelectedObjects.Clear();
-					Selection.activeGameObject = m_HoverGameObject;
-					s_SelectedObjects.Add(m_HoverGameObject);
-				}
-			}
-			Selection.objects = s_SelectedObjects.ToArray();
-		}
-	}
-
-	void OnDisable()
-	{
-		if (m_HoverGameObject != null)
-		{
-			setHighlight(m_HoverGameObject, false);
-			m_HoverGameObject = null;
 		}
 	}
 }
+#endif

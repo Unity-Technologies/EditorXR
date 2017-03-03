@@ -1,17 +1,29 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
-namespace UnityEngine.VR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
-	public interface ICustomRay : IRay
+	/// <summary>
+	/// Method signature for hiding or showing the default ray
+	/// <param name="rayOrigin">The ray to hide or show</param>
+	/// <param name="onlyRay">An optional parameter to hide or show only the ray</param>
+	/// </summary>
+	public delegate void DefaultRayVisibilityDelegate(Transform rayOrigin, bool onlyRay = false);
+
+	/// <summary>
+	/// Implementors can show & hide the default ray
+	/// </summary>
+	public interface ICustomRay : IUsesRayLocking
 	{
 		/// <summary>
-		/// Method handling the enabling & showing of the default proxy ray
+		/// Show the default proxy ray/cone
 		/// </summary>
-		Action showDefaultRay { set; }
+		DefaultRayVisibilityDelegate showDefaultRay { set; }
 
 		/// <summary>
-		/// Method handling the disabling & hiding of the default proxy ray
+		/// Hide the default proxy ray/cone
 		/// </summary>
-		Action hideDefaultRay { set; }
+		DefaultRayVisibilityDelegate hideDefaultRay { set; }
 	}
 }
+#endif

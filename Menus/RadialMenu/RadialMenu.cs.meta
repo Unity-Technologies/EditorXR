@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 11fd46c50e83ee74083fc3e7b3f226d9
+timeCreated: 1474493510
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_RadialMenuActionMap: {fileID: 11400000, guid: 61743ddd29f3db3499ca6536ff255c0a,
+      type: 2}
+  - m_RadialMenuPrefab: {fileID: 114000010592100496, guid: 7cc49adc1d2485a4e812f2c7d9697c2f,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

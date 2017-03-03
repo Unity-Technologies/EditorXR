@@ -1,17 +1,17 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEngine.VR.Workspaces
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	public class ZoomSliderUI : MonoBehaviour
+	sealed class ZoomSliderUI : MonoBehaviour
 	{
 		public Slider zoomSlider { get { return m_ZoomSlider; } }
-
 		[SerializeField]
-		private Slider m_ZoomSlider;
+		Slider m_ZoomSlider;
 
-		public event Action<float> sliding = delegate { };
+		public event Action<float> sliding;
 
 		public void ZoomSlider(float value)
 		{
@@ -20,3 +20,4 @@ namespace UnityEngine.VR.Workspaces
 		}
 	}
 }
+#endif

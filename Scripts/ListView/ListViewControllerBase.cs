@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace ListView
 {
-	public abstract class ListViewControllerBase : MonoBehaviour
+	public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler
 	{
 		public float scrollOffset { get { return m_ScrollOffset; } set { m_ScrollOffset = value; } }
 
@@ -27,10 +29,24 @@ namespace ListView
 		[SerializeField]
 		protected GameObject[] m_Templates;
 
+		public Vector3 itemSize
+		{
+			get
+			{
+				if (!m_ItemSize.HasValue && m_Templates.Length > 0)
+					m_ItemSize = GetObjectSize(m_Templates[0]);
+
+				return m_ItemSize ?? Vector3.zero;
+			}
+		}
+		protected Vector3? m_ItemSize;
+
+		public float scrollSpeed { get { return m_ScrollSpeed; } set { m_ScrollSpeed = value; } }
+		float m_ScrollSpeed = 0.03f;
+
 		protected int m_DataOffset;
 		protected int m_NumRows;
 		protected Vector3 m_StartPosition;
-		protected Vector3 m_ItemSize;
 
 		protected readonly Dictionary<string, ListViewItemTemplate> m_TemplateDictionary = new Dictionary<string, ListViewItemTemplate>();
 
@@ -41,7 +57,6 @@ namespace ListView
 
 		protected abstract int dataLength { get; }
 
-		public Vector3 itemSize { get { return m_ItemSize; } }
 		public Bounds bounds { protected get; set; }
 
 		void Start()
@@ -74,19 +89,15 @@ namespace ListView
 			UpdateItems();
 		}
 
-		public void PreCompute()
-		{
-			ComputeConditions();
-		}
-
 		protected virtual void ComputeConditions()
 		{
 			if (m_Templates.Length > 0) // Use first template to get item size
 				m_ItemSize = GetObjectSize(m_Templates[0]);
 
-			m_NumRows = Mathf.CeilToInt(bounds.size.z / m_ItemSize.z);
+			var itemSize = m_ItemSize.Value;
+			m_NumRows = Mathf.CeilToInt(bounds.size.z / itemSize.z);
 
-			m_StartPosition = (bounds.extents.z - m_ItemSize.z * 0.5f) * Vector3.forward;
+			m_StartPosition = (bounds.extents.z - itemSize.z * 0.5f) * Vector3.forward;
 
 			m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
 			if (m_ScrollOffset < 0)
@@ -94,8 +105,9 @@ namespace ListView
 
 			if (m_Scrolling)
 			{
-				// Compute current velocity
-				m_ScrollDelta = (m_ScrollOffset - m_LastScrollOffset) / Time.unscaledDeltaTime;
+				// Compute current velocity, clamping value for better appearance when applying scrolling momentum
+				const float kScrollDeltaClamp = 0.6f;
+				m_ScrollDelta = Mathf.Clamp((m_ScrollOffset - m_LastScrollOffset) / Time.unscaledDeltaTime, -kScrollDeltaClamp, kScrollDeltaClamp);
 				m_LastScrollOffset = m_ScrollOffset;
 
 				// Clamp velocity to MaxMomentum
@@ -108,11 +120,13 @@ namespace ListView
 			{
 				//Apply scrolling momentum
 				m_ScrollOffset += m_ScrollDelta * Time.unscaledDeltaTime;
+				const float kScrollMomentumShape = 2f;
 				if (m_ScrollReturn < float.MaxValue || m_ScrollOffset > 0)
 					OnScrollEnded();
+
 				if (m_ScrollDelta > 0)
 				{
-					m_ScrollDelta -= m_ScrollDamping * Time.unscaledDeltaTime;
+					m_ScrollDelta -= Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.unscaledDeltaTime;
 					if (m_ScrollDelta < 0)
 					{
 						m_ScrollDelta = 0;
@@ -121,7 +135,7 @@ namespace ListView
 				}
 				else if (m_ScrollDelta < 0)
 				{
-					m_ScrollDelta += m_ScrollDamping * Time.unscaledDeltaTime;
+					m_ScrollDelta += Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.unscaledDeltaTime;
 					if (m_ScrollDelta > 0)
 					{
 						m_ScrollDelta = 0;
@@ -141,12 +155,12 @@ namespace ListView
 
 		public virtual void ScrollNext()
 		{
-			m_ScrollOffset += m_ItemSize.z;
+			m_ScrollOffset += m_ItemSize.Value.z;
 		}
 
 		public virtual void ScrollPrev()
 		{
-			m_ScrollOffset -= m_ItemSize.z;
+			m_ScrollOffset -= m_ItemSize.Value.z;
 		}
 
 		public virtual void ScrollTo(int index)
@@ -154,9 +168,10 @@ namespace ListView
 			m_ScrollOffset = index * itemSize.z;
 		}
 
-		protected virtual void UpdateItem(Transform t, int offset)
+		protected virtual void UpdateItemTransform(Transform t, int offset)
 		{
-			t.position = m_StartPosition + (offset * m_ItemSize.z + m_ScrollOffset) * Vector3.right;
+			t.localPosition = m_StartPosition + (offset * m_ItemSize.Value.z + m_ScrollOffset) * Vector3.back;
+			t.localRotation = Quaternion.identity;
 		}
 
 		protected virtual Vector3 GetObjectSize(GameObject g)
@@ -177,6 +192,7 @@ namespace ListView
 		{
 			if (item == null || template == null)
 				return;
+
 			m_TemplateDictionary[template].pool.Add(item);
 			item.gameObject.SetActive(false);
 		}
@@ -202,5 +218,17 @@ namespace ListView
 				m_ScrollDelta = 0;
 			}
 		}
+
+		protected void SetMaterialClip(Material material, Matrix4x4 parentMatrix)
+		{
+			material.SetMatrix("_ParentMatrix", parentMatrix);
+			material.SetVector("_ClipExtents", bounds.extents);
+		}
+
+		public void OnScroll(PointerEventData eventData)
+		{
+			scrollOffset += eventData.scrollDelta.y * scrollSpeed;
+		}
 	}
 }
+#endif

@@ -1,83 +1,84 @@
-﻿using System;
+﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
-using UnityEngine.VR.Handles;
-using UnityEngine.VR.Tools;
 
-public class ScaleManipulator : MonoBehaviour, IManipulator
+namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	[SerializeField]
-	private BaseHandle m_UniformHandle;
-	[SerializeField]
-	private List<BaseHandle> m_AxesHandles;
-	
-	private readonly List<BaseHandle> m_AllHandles = new List<BaseHandle>();
-
-	public bool dragging { get { return m_Dragging; } }
-	private bool m_Dragging;
-
-	public Action<Vector3> translate { private get; set; }
-	public Action<Quaternion> rotate { private get; set; }
-	public Action<Vector3> scale { private get; set; }
-
-	void Awake()
+	sealed class ScaleManipulator : BaseManipulator
 	{
-		m_AllHandles.Add(m_UniformHandle);
-		m_AllHandles.AddRange(m_AxesHandles);
-	}
+		[SerializeField]
+		private BaseHandle m_UniformHandle;
 
-	void OnEnable()
-	{
-		m_UniformHandle.dragging += OnUniformScaleDragging;
+		[SerializeField]
+		private List<BaseHandle> m_AxesHandles;
 
-		foreach (var h in m_AxesHandles)
-			h.dragging += OnLinearScaleDragging;
+		private readonly List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 
-		foreach (var h in m_AllHandles)
+		void Awake()
 		{
-			h.dragStarted += OnHandleDragStarted;
-			h.dragEnded += OnHandleDragEnded;
+			m_AllHandles.Add(m_UniformHandle);
+			m_AllHandles.AddRange(m_AxesHandles);
 		}
-	}
 
-	void OnDisable()
-	{
-		m_UniformHandle.dragging -= OnUniformScaleDragging;
-
-		foreach (var h in m_AxesHandles)
-			h.dragging -= OnLinearScaleDragging;
-
-		foreach (var h in m_AllHandles)
+		protected override void OnEnable()
 		{
-			h.dragStarted -= OnHandleDragStarted;
-			h.dragEnded -= OnHandleDragEnded;
+			base.OnEnable();
+
+			m_UniformHandle.dragging += OnUniformScaleDragging;
+
+			foreach (var h in m_AxesHandles)
+				h.dragging += OnLinearScaleDragging;
+
+			foreach (var h in m_AllHandles)
+			{
+				h.dragStarted += OnHandleDragStarted;
+				h.dragEnded += OnHandleDragEnded;
+			}
 		}
-	}
 
-	private void OnLinearScaleDragging(BaseHandle handle, HandleEventData eventData)
-	{
-		float delta = handle.transform.InverseTransformVector(eventData.deltaPosition).z / handle.transform.InverseTransformPoint(handle.startDragPosition).z;
-		scale(delta * transform.InverseTransformVector(handle.transform.forward));
-	}
+		protected override void OnDisable()
+		{
+			base.OnDisable();
 
-	private void OnUniformScaleDragging(BaseHandle handle, HandleEventData eventData)
-	{
-		scale(Vector3.one * eventData.deltaPosition.y);
-	}
+			m_UniformHandle.dragging -= OnUniformScaleDragging;
 
-	private void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
-	{
-		foreach (var h in m_AllHandles)
-			h.gameObject.SetActive(h == handle);
+			foreach (var h in m_AxesHandles)
+				h.dragging -= OnLinearScaleDragging;
 
-		m_Dragging = true;
-	}
+			foreach (var h in m_AllHandles)
+			{
+				h.dragStarted -= OnHandleDragStarted;
+				h.dragEnded -= OnHandleDragEnded;
+			}
+		}
 
-	private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
-	{
-		foreach (var h in m_AllHandles)
-			h.gameObject.SetActive(true);
+		void OnLinearScaleDragging(BaseHandle handle, HandleEventData eventData)
+		{
+			float delta = handle.transform.InverseTransformVector(eventData.deltaPosition).z / handle.transform.InverseTransformPoint(handle.startDragPosition).z;
+			scale(delta * transform.InverseTransformVector(handle.transform.forward));
+		}
 
-		m_Dragging = false;
+		void OnUniformScaleDragging(BaseHandle handle, HandleEventData eventData)
+		{
+			scale(Vector3.one * eventData.deltaPosition.y);
+		}
+
+		void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
+		{
+			foreach (var h in m_AllHandles)
+				h.gameObject.SetActive(h == handle);
+
+			dragging = true;
+		}
+
+		private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
+		{
+			foreach (var h in m_AllHandles)
+				h.gameObject.SetActive(true);
+
+			dragging = false;
+		}
 	}
 }
+#endif

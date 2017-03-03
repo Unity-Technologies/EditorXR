@@ -1,31 +1,40 @@
-﻿using UnityEngine;
-using UnityEngine.VR.Workspaces;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
-public class ConsoleWorkspace : Workspace
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	[SerializeField]
-	private GameObject m_ConsoleWindowPrefab;
-
-	private Transform m_ConsoleWindow;
-
-	public override void Setup()
+	[MainMenuItem("Console", "Workspaces", "View errors, warnings and other messages")]
+	sealed class ConsoleWorkspace : Workspace
 	{
-		base.Setup();
+		[SerializeField]
+		private GameObject m_ConsoleWindowPrefab;
 
-		m_ConsoleWindow = instantiateUI(m_ConsoleWindowPrefab).transform;
-		m_ConsoleWindow.SetParent(m_WorkspaceUI.sceneContainer, false);
+		private Transform m_ConsoleWindow;
 
-		var bounds = contentBounds;
-		var size = bounds.size;
-		size.z = 0.1f;
-		bounds.size = size;
-		contentBounds = bounds;
+		public override void Setup()
+		{
+			// Initial bounds must be set before the base.Setup() is called
+			minBounds = new Vector3(0.6f, k_MinBounds.y, 0.5f);
+			m_CustomStartingBounds = minBounds;
 
-		m_ConsoleWindow.localScale = size;
-	}
+			base.Setup();
 
-	protected override void OnBoundsChanged()
-	{
-		m_ConsoleWindow.localScale = contentBounds.size;
+			preventFrontBackResize = true;
+			preventLeftRightResize = true;
+			dynamicFaceAdjustment = false;
+
+			m_ConsoleWindow = instantiateUI(m_ConsoleWindowPrefab).transform;
+			m_ConsoleWindow.SetParent(m_WorkspaceUI.topFaceContainer, false);
+			m_ConsoleWindow.localPosition = new Vector3(0f, -0.007f, -0.5f);
+			m_ConsoleWindow.localRotation = Quaternion.Euler(90f, 0f, 0f);
+			m_ConsoleWindow.localScale = new Vector3(1f, 1f, 1f);
+
+			var bounds = contentBounds;
+			var size = bounds.size;
+			size.z = 0.1f;
+			bounds.size = size;
+			contentBounds = bounds;
+		}
 	}
 }
+#endif

@@ -1,7 +1,9 @@
-﻿using System;
+﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEngine;
 
-namespace UnityEngine.VR.Utilities
+namespace UnityEditor.Experimental.EditorVR.Utilities
 {
 	/// <summary>
 	/// Class defining the Unity brancd color swatches & gradients
@@ -29,7 +31,6 @@ namespace UnityEngine.VR.Utilities
 		/// </summary>
 		private static readonly List<GradientPair> s_Gradients = new List<GradientPair>();
 		private static int s_RandomGradientPairColorAPosition;
-		private static int s_RandomGradientPairColorBPosition;
 		
 		private static Color s_Red;
 		private static Color s_RedLight;
@@ -132,20 +133,16 @@ namespace UnityEngine.VR.Utilities
 		public static Color light { get { return s_Light; } }
 
 		/// <summary>
-		/// Gradient pair container class
+		/// A unique Unity brand color gradient that can be set manually
+		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements
 		/// </summary>
-		[Serializable]
-		public struct GradientPair
-		{
-			public Color a;
-			public Color b;
+		public static GradientPair sessionGradient { get; set; }
 
-			public GradientPair(Color a, Color b)
-			{
-				this.a = a;
-				this.b = b;
-			}
-		}
+		/// <summary>
+		/// A high-contrast/grayscale Unity brand color gradient, having no chroma
+		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements
+		/// </summary>
+		public static GradientPair grayscaleSessionGradient { get; private set; }
 
 		/// <summary>
 		/// Static Constructor that sets up the swatch and gradient data
@@ -160,52 +157,52 @@ namespace UnityEngine.VR.Utilities
 		/// </summary>
 		private static void SetupUnityBrandColors()
 		{
-			s_Red = U.Material.HexToColor("F44336");
-			s_RedLight = U.Material.HexToColor("FFEBEE");
-			s_RedDark = U.Material.HexToColor("B71C1C");
+			s_Red = MaterialUtils.HexToColor("F44336");
+			s_RedLight = MaterialUtils.HexToColor("FFEBEE");
+			s_RedDark = MaterialUtils.HexToColor("B71C1C");
 
-			s_Magenta = U.Material.HexToColor("E91E63");
-			s_MagentaLight = U.Material.HexToColor("FCE4EC");
-			s_MagentaDark = U.Material.HexToColor("880E4F");
+			s_Magenta = MaterialUtils.HexToColor("E91E63");
+			s_MagentaLight = MaterialUtils.HexToColor("FCE4EC");
+			s_MagentaDark = MaterialUtils.HexToColor("880E4F");
 
-			s_Purple = U.Material.HexToColor("9C27B0");
-			s_PurpleLight = U.Material.HexToColor("F3E5F5");
-			s_PurpleDark = U.Material.HexToColor("4A148C");
+			s_Purple = MaterialUtils.HexToColor("9C27B0");
+			s_PurpleLight = MaterialUtils.HexToColor("F3E5F5");
+			s_PurpleDark = MaterialUtils.HexToColor("4A148C");
 
-			s_Blue = U.Material.HexToColor("03A9F4");
-			s_BlueLight = U.Material.HexToColor("E1F5FE");
-			s_BlueDark = U.Material.HexToColor("01579B");
+			s_Blue = MaterialUtils.HexToColor("03A9F4");
+			s_BlueLight = MaterialUtils.HexToColor("E1F5FE");
+			s_BlueDark = MaterialUtils.HexToColor("01579B");
 
-			s_Cyan = U.Material.HexToColor("00BCD4");
-			s_CyanLight = U.Material.HexToColor("E0F7FA");
-			s_CyanDark = U.Material.HexToColor("006064");
+			s_Cyan = MaterialUtils.HexToColor("00BCD4");
+			s_CyanLight = MaterialUtils.HexToColor("E0F7FA");
+			s_CyanDark = MaterialUtils.HexToColor("006064");
 
-			s_Teal = U.Material.HexToColor("009688");
-			s_TealLight = U.Material.HexToColor("E0F2F1");
-			s_TealDark = U.Material.HexToColor("004D40");
+			s_Teal = MaterialUtils.HexToColor("009688");
+			s_TealLight = MaterialUtils.HexToColor("E0F2F1");
+			s_TealDark = MaterialUtils.HexToColor("004D40");
 
-			s_Green = U.Material.HexToColor("8AC249");
-			s_GreenLight = U.Material.HexToColor("F1F8E9");
-			s_GreenDark = U.Material.HexToColor("33691E");
+			s_Green = MaterialUtils.HexToColor("8AC249");
+			s_GreenLight = MaterialUtils.HexToColor("F1F8E9");
+			s_GreenDark = MaterialUtils.HexToColor("33691E");
 
-			s_Lime = U.Material.HexToColor("CDDC39");
-			s_LimeLight = U.Material.HexToColor("F9FBE7");
-			s_LimeDark = U.Material.HexToColor("827717");
+			s_Lime = MaterialUtils.HexToColor("CDDC39");
+			s_LimeLight = MaterialUtils.HexToColor("F9FBE7");
+			s_LimeDark = MaterialUtils.HexToColor("827717");
 
-			s_Yellow = U.Material.HexToColor("FFEB3B");
-			s_YellowLight = U.Material.HexToColor("FFFDE7");
-			s_YellowDark = U.Material.HexToColor("F57F17");
+			s_Yellow = MaterialUtils.HexToColor("FFEB3B");
+			s_YellowLight = MaterialUtils.HexToColor("FFFDE7");
+			s_YellowDark = MaterialUtils.HexToColor("F57F17");
 
-			s_Orange = U.Material.HexToColor("FF9800");
-			s_OrangeLight = U.Material.HexToColor("FFF3E0");
-			s_OrangeDark = U.Material.HexToColor("E65100");
+			s_Orange = MaterialUtils.HexToColor("FF9800");
+			s_OrangeLight = MaterialUtils.HexToColor("FFF3E0");
+			s_OrangeDark = MaterialUtils.HexToColor("E65100");
 
-			s_DarkBlue = U.Material.HexToColor("222C37");
-			s_DarkBlueLight = U.Material.HexToColor("E9EBEC");
+			s_DarkBlue = MaterialUtils.HexToColor("222C37");
+			s_DarkBlueLight = MaterialUtils.HexToColor("E9EBEC");
 
-			s_Dark = U.Material.HexToColor("323333");
-			s_Darker = U.Material.HexToColor("1A1A1A");
-			s_Light = U.Material.HexToColor("F5F8F9");
+			s_Dark = MaterialUtils.HexToColor("323333");
+			s_Darker = MaterialUtils.HexToColor("1A1A1A");
+			s_Light = MaterialUtils.HexToColor("F5F8F9");
 
 			// Set default neutral(luma) swatches
 			s_ColorSwatches.Add(s_Red);
@@ -228,15 +225,22 @@ namespace UnityEngine.VR.Utilities
 			s_Gradients.Add(new GradientPair(s_Teal, s_Lime));
 			s_Gradients.Add(new GradientPair(s_Cyan, s_Red));
 			s_Gradients.Add(new GradientPair(s_Blue, s_Magenta));
-			s_Gradients.Add(new GradientPair(s_Red, s_DarkBlue));
+			s_Gradients.Add(new GradientPair(s_Red, s_Blue));
 			s_Gradients.Add(new GradientPair(s_Blue, s_Lime));
 			s_Gradients.Add(new GradientPair(s_Orange, s_Lime));
+
+			// Setup default session gradient; can be set with a random gradient externally,
+			// allowing all UI objects fetching this gradient to have a uniform color-scheme
+			sessionGradient = new GradientPair(s_Light, s_Dark);
+
+			// Setup grayscale light/dark contrasting session gradient
+			grayscaleSessionGradient = new GradientPair(MaterialUtils.HexToColor("898A8AFF"), s_Light);
 		}
 
 		/// <summary>
 		/// Fetch a Unity brand-specific color swatch
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>Random color swatch</returns>
 		public static Color GetRandomSwatch()
 		{
 			var randomPosition = s_ColorRandom.Next(s_ColorSwatchRange);
@@ -253,18 +257,19 @@ namespace UnityEngine.VR.Utilities
 		/// <summary>
 		/// Fetch a Unity brand-specific color scheme (pair of differing brand-swatches)
 		/// </summary>
-		/// <returns>Gradient pair of 2 brand-swatches</returns>
+		/// <returns>Gradient pair of two brand-swatches</returns>
 		public static GradientPair GetRandomGradient()
 		{
 			var randomPositionA = s_ColorRandom.Next(s_ColorSwatchRange);
 			var randomPositionB = s_ColorRandom.Next(s_ColorSwatchRange);
 
-			// Return a new random colorA that is not the same as the previous A or B
-			while (s_RandomGradientPairColorAPosition == randomPositionA)
+			// Return a new random colorA that is not the same as the previous A
+			while (SwatchesSimilar(s_ColorSwatches[randomPositionA], s_ColorSwatches[s_RandomGradientPairColorAPosition], 0.35f))
 				randomPositionA = s_ColorRandom.Next(s_ColorSwatchRange);
 
 			// Mandate that the second color in the gradient is not the first color
-			while (randomPositionA == randomPositionB || s_RandomGradientPairColorBPosition == randomPositionB || randomPositionB == s_RandomGradientPairColorAPosition)
+			// Require additional swatch chroma separation for the second color chosen, making the gradient contrast more evident
+			while (SwatchesSimilar(s_ColorSwatches[randomPositionB], s_ColorSwatches[randomPositionA], 1.0f))
 				randomPositionB = s_ColorRandom.Next(s_ColorSwatchRange);
 
 			var colorA = s_ColorSwatches[randomPositionA];
@@ -272,9 +277,23 @@ namespace UnityEngine.VR.Utilities
 
 			// Set the first random color position value so it can be compared to the next gradient fetch
 			s_RandomGradientPairColorAPosition = randomPositionA;
-			s_RandomGradientPairColorBPosition = randomPositionB;
 
+			colorA *= colorA; // multiply color to increase contrast/saturation for color A between gradients
 			return new GradientPair(colorA, colorB);
+		}
+
+		/// <summary>
+		/// Validate that two swatches/colors diverge by a minimum amount (or greater)
+		/// </summary>
+		/// <param name="swatchA">First swatch/color</param>
+		/// <param name="swatchB">Second swatch/color</param>
+		/// <param name="requiredMinimumDifference">The minimum amount of divergence required of the swatches</param>
+		/// <returns>Bool denoting that(when false) the two color parameters differ by at least the required minimum</returns>
+		static bool SwatchesSimilar(Color swatchA, Color swatchB, float requiredMinimumDifference = 0.75f)
+		{
+			var difference = Mathf.Abs(swatchA.r - swatchB.r) + Mathf.Abs(swatchA.g - swatchB.g) + Mathf.Abs(swatchA.b - swatchB.b);
+			return difference < requiredMinimumDifference;
 		}
 	}
 }
+#endif

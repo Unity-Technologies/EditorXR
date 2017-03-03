@@ -1,30 +1,42 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
+using System.Collections.Generic;
 
-public class FolderData : ListViewItemNestedData<FolderData>
+namespace UnityEditor.Experimental.EditorVR.Data
 {
-	private const string kTemplateName = "FolderListItem";
-
-	public string name { get { return m_Name; } }
-	private readonly string m_Name;
-
-	public AssetData[] assets { get { return m_Assets; } }
-	private readonly AssetData[] m_Assets;
-
-	public bool selected { get; set; }
-
-	public FolderData(string name, FolderData[] children, AssetData[] assets)
+	sealed class FolderData : ListViewItemNestedData<FolderData>
 	{
-		template = kTemplateName;
-		m_Name = name;
-		this.children = children;
-		m_Assets = assets;
-	}
+		const string k_TemplateName = "FolderListItem";
 
-	public void ClearSelected()
-	{
-		selected = false;
-		if (children != null)
-			foreach (var child in children)
-				child.ClearSelected();
+		public string name
+		{
+			get { return m_Name; }
+		}
+
+		readonly string m_Name;
+
+		public string guid
+		{
+			get { return m_Guid; }
+		}
+
+		readonly string m_Guid;
+
+		public List<AssetData> assets
+		{
+			get { return m_Assets; }
+		}
+
+		readonly List<AssetData> m_Assets;
+
+		public FolderData(string name, List<FolderData> children, List<AssetData> assets, string guid)
+		{
+			template = k_TemplateName;
+			m_Name = name;
+			m_Guid = guid;
+			m_Children = children;
+			m_Assets = assets;
+		}
 	}
 }
+#endif

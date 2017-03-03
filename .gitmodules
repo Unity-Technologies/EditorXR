@@ -1,0 +1,7 @@
+[submodule "libs/input-prototype"]
+	path = libs/input-prototype
+url=https://github.com/Unity-Technologies/input-prototype.git
+	branch = editorvr/main
+[submodule "libs/UnityOctree"]
+	path = libs/UnityOctree
+url=https://github.com/Unity-Technologies/UnityOctree.git

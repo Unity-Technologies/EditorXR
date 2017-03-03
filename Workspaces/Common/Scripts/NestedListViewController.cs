@@ -1,10 +1,26 @@
-﻿namespace ListView
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
+
+namespace ListView
 {
 	public class NestedListViewController<DataType> : ListViewController<DataType, ListViewItem<DataType>> where DataType : ListViewItemNestedData<DataType>
 	{
 		protected override int dataLength { get { return m_ExpandedDataLength; } }
 
 		protected int m_ExpandedDataLength;
+
+		protected void RecycleRecursively(DataType data)
+		{
+			Recycle(data);
+
+			if (data.children != null)
+			{
+				foreach (var child in data.children)
+				{
+					RecycleRecursively(child);
+				}
+			}
+		}
 
 		protected override void UpdateItems()
 		{
@@ -13,24 +29,19 @@
 			m_ExpandedDataLength = count;
 		}
 
-		protected virtual void UpdateRecursively(DataType[] data, ref int count, int depth = 0)
+		protected virtual void UpdateRecursively(List<DataType> data, ref int count, int depth = 0)
 		{
-			foreach (var item in data)
+			foreach (var datum in data)
 			{
-				if (count + m_DataOffset < -1)
-					CleanUpBeginning(item);
-				else if (count + m_DataOffset > m_NumRows - 1)
-					CleanUpEnd(item);
+				if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
+					Recycle(datum);
 				else
-					UpdateNestedItem(item, count, depth);
+					UpdateNestedItem(datum, count, depth);
+
 				count++;
-				if (item.children != null)
-				{
-					if (item.expanded)
-						UpdateRecursively(item.children, ref count, depth + 1);
-					else
-						RecycleChildren(item);
-				}
+
+				if (datum.children != null)
+					UpdateRecursively(datum.children, ref count, depth + 1);
 			}
 		}
 
@@ -43,11 +54,12 @@
 		{
 			foreach (var child in data.children)
 			{
-				RecycleItem(child.template, child.item);
-				child.item = null;
+				Recycle(child);
+
 				if (child.children != null)
 					RecycleChildren(child);
 			}
 		}
 	}
 }
+#endif

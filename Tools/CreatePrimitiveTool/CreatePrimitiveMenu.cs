@@ -1,25 +1,46 @@
-﻿using UnityEngine.VR.Utilities;
+#if UNITY_EDITOR
+using System;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class CreatePrimitiveMenu : MonoBehaviour
+namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	[SerializeField]
-	private Slider m_ScaleSlider;
-
-	[SerializeField]
-	private Text m_ScaleLabel;
-
-	public void CreatePrimitive(int type)
+	sealed class CreatePrimitiveMenu : MonoBehaviour, IMenu
 	{
-		Transform primitive = GameObject.CreatePrimitive((PrimitiveType)type).transform;
-		primitive.position = transform.position;
-		primitive.localScale = Vector3.one*m_ScaleSlider.value;
-		U.Object.Destroy(gameObject);
-	}
+		[SerializeField]
+		GameObject[] m_HighlightObjects;
 
-	public void UpdateScaleValue()
-	{
-		m_ScaleLabel.text = m_ScaleSlider.value.ToString("0.0");
+		public Action<PrimitiveType, bool> selectPrimitive;
+
+		public bool visible
+		{
+			get { return gameObject.activeSelf; }
+			set { gameObject.SetActive(value); }
+		}
+
+		public GameObject menuContent
+		{
+			get { return gameObject; }
+		}
+
+		public void SelectPrimitive(int type)
+		{
+			selectPrimitive((PrimitiveType)type, false);
+
+			// the order of the objects in m_HighlightObjects is matched to the values of the PrimitiveType enum elements
+			for (var i = 0; i < m_HighlightObjects.Length; i++)
+			{
+				var go = m_HighlightObjects[i];
+				go.SetActive(i == type);
+			}
+		}
+
+		public void SelectFreeformCuboid()
+		{
+			selectPrimitive(PrimitiveType.Cube, true);
+
+			foreach (GameObject go in m_HighlightObjects)
+				go.SetActive(false);
+		}
 	}
 }
+#endif

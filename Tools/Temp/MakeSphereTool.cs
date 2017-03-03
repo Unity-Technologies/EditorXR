@@ -1,53 +1,42 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR.Tools;
 
-[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
-[ExecuteInEditMode]
-public class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IRay
-{	
-	public Transform rayOrigin { get; set; }
-
-	public ActionMap actionMap
+namespace UnityEditor.Experimental.EditorVR.Tools
+{
+	//[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
+	[MainMenuItem(false)]
+	sealed class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesSpatialHash
 	{
-		get
-		{
-			return m_ActionMap;
-		}
-		set
-		{
-			m_ActionMap = value;
-		}
-	}
+		public Transform rayOrigin { get; set; }
 
-	public ActionMapInput actionMapInput
-	{
-		get
+		public ActionMap actionMap
 		{
-			return m_Standard;
+			get { return m_ActionMap; }
+			set { m_ActionMap = value; }
 		}
-		set
-		{
-			m_Standard = (StandardAlt)value;
-		}
-	}
 
-	[SerializeField]
-	private ActionMap m_ActionMap;
-	[SerializeField]
-	private StandardAlt m_Standard;
+		[SerializeField]
+		private ActionMap m_ActionMap;
 
-	private void Update()
-	{
-		if (m_Standard.action.wasJustPressed)
+		public Action<GameObject> addToSpatialHash { private get; set; }
+		public Action<GameObject> removeFromSpatialHash { private get; set; }
+
+		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
 		{
-			Transform cube = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
-			if (rayOrigin)
+			var standardAlt = (StandardAlt)input;
+			if (standardAlt.action.wasJustPressed)
 			{
-				cube.position = rayOrigin.position + rayOrigin.forward * 5f;
-				cube.parent = transform;
+				Transform sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+				if (rayOrigin)
+					sphere.position = rayOrigin.position + rayOrigin.forward * 5f;
+
+				addToSpatialHash(sphere.gameObject);
+
+				consumeControl(standardAlt.action);
 			}
 		}
 	}
 }
+#endif

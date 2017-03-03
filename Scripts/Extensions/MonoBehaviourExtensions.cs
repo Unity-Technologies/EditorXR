@@ -1,8 +1,10 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using System.Collections;
+using UnityEngine;
 
-namespace UnityEngine.VR.Extensions
+namespace UnityEditor.Experimental.EditorVR.Extensions
 {
-	public static class MonoBehaviourExtensions
+	static class MonoBehaviourExtensions
 	{
 		public static void StopCoroutine(this MonoBehaviour mb, ref Coroutine coroutine)
 		{
@@ -12,5 +14,12 @@ namespace UnityEngine.VR.Extensions
 				coroutine = null;
 			}
 		}
+
+		public static void RestartCoroutine(this MonoBehaviour mb, ref Coroutine coroutine, IEnumerator routine)
+		{
+			mb.StopCoroutine(ref coroutine);
+			coroutine = mb.StartCoroutine(routine);
+		}
 	}
 }
+#endif
