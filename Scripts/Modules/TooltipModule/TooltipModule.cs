@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
@@ -6,7 +7,7 @@ using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
-class TooltipModule : MonoBehaviour, IUsesCameraRig
+class TooltipModule : MonoBehaviour, IUsesViewerScale
 {
 	const float kDelay = 0; // In case we want to bring back a delay
 	const float kTransitionDuration = 0.1f;
@@ -37,7 +38,7 @@ class TooltipModule : MonoBehaviour, IUsesCameraRig
 	Transform m_TooltipCanvas;
 	Vector3 m_TooltipScale;
 
-	public Transform cameraRig { get; set; }
+	public Func<float> getViewerScale { private get; set; }
 
 	void Start()
 	{
@@ -106,7 +107,8 @@ class TooltipModule : MonoBehaviour, IUsesCameraRig
 		if (tooltipText)
 			tooltipText.text = tooltip.tooltipText;
 
-		tooltipTransform.localScale = m_TooltipScale * lerp * cameraRig.localScale.x;
+		var viewerScale = getViewerScale();
+		tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
 		var placement = tooltip as ITooltipPlacement;
 
@@ -163,7 +165,8 @@ class TooltipModule : MonoBehaviour, IUsesCameraRig
 			var dottedLine = tooltipUI.dottedLine;
 			var length = toSource.magnitude;
 			var uvRect = dottedLine.uvRect;
-			uvRect.width = length * kUVScale;
+			var worldScale = 1 / viewerScale;
+			uvRect.width = length * kUVScale * worldScale;
 			uvRect.xMin += kUVScrollSpeed * Time.unscaledDeltaTime;
 			dottedLine.uvRect = uvRect;
 

@@ -390,6 +390,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			m_EventCamera.transform.position = source.rayOrigin.position;
 			m_EventCamera.transform.rotation = source.rayOrigin.rotation;
 
+			// World scaling also scales clipping planes
 			var camera = U.Camera.GetMainCamera();
 			m_EventCamera.nearClipPlane = camera.nearClipPlane;
 			m_EventCamera.farClipPlane = camera.farClipPlane;
