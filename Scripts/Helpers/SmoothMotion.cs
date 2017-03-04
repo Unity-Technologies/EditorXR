@@ -39,6 +39,8 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 		Quaternion m_LazyRotation;
 		Vector3 m_LazyPosition;
 
+		public Func<float> getViewerScale { get; set; }
+
 		void Start()
 		{
 			if (m_Target == null && transform.parent != null)
@@ -114,7 +116,5 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 			m_SmoothPosition = true;
 			m_TightenPosition = tightenAmount;
 		}
-
-		public Func<float> getViewerScale { get; set; }
 	}
 }
