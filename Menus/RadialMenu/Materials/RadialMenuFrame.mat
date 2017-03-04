@@ -10,7 +10,7 @@ Material:
   m_Shader: {fileID: 4800000, guid: b10f0b677131a2945855a113a27b7093, type: 3}
   m_ShaderKeywords: _ALPHABLEND_ON _EMISSION
   m_LightmapFlags: 1
-  m_CustomRenderQueue: 9000
+  m_CustomRenderQueue: 9499
   stringTagMap:
     RenderType: Transparent
   m_SavedProperties:

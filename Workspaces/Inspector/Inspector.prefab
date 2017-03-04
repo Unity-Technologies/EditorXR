@@ -36,7 +36,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000013435250460}
   - 114: {fileID: 114000010022539490}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Inspector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -202,8 +202,9 @@ MonoBehaviour:
   m_RowCubeMaterial: {fileID: 2100000, guid: 7076eefb0e29024489a88aac0cac7403, type: 2}
   m_BackingCubeMaterial: {fileID: 2100000, guid: de3a472d61ee2cf44b1a333112b4e3a4,
     type: 2}
-  m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
-  m_UIMaterial: {fileID: 2100000, guid: d330a55736490e149910ed6a59d2cbee, type: 2}
+  m_TextMaterial: {fileID: 2100000, guid: fadfdafaec5d1c44f8c141ef0ffc80b8, type: 2}
+  m_UIMaterial: {fileID: 2100000, guid: db6b4bd93c0cf764f83975a0db7dd37a, type: 2}
+  m_UIMaskMaterial: {fileID: 2100000, guid: 933c7c1061aa4954cb9a4297acaf0d63, type: 2}
   m_NoClipBackingCubeMaterial: {fileID: 2100000, guid: 502322ab303686946b1fca122f1b451d,
     type: 2}
   m_HighlightMaterial: {fileID: 2100000, guid: 8d993d4dd9ec99247a30bbe1482df2f4, type: 2}
