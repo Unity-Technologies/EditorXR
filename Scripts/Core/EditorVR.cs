@@ -131,6 +131,7 @@ namespace UnityEditor.Experimental.EditorVR
 					VRView.customPreviewCamera = m_CustomPreviewCamera.previewCamera;
 					m_CustomPreviewCamera.vrCamera = VRView.viewerCamera;
 					hmdOnlyLayerMask = m_CustomPreviewCamera.hmdOnlyLayerMask;
+					m_Interfaces.ConnectInterfaces(m_CustomPreviewCamera);
 				}
 			}
 			VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
@@ -296,7 +297,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
 		{
-			m_MiniWorlds.UpdateMiniWorlds();
+			m_MiniWorlds.UpdateMiniWorlds(consumeControl);
 
 			m_InputModule.ProcessInput(null, consumeControl);
 

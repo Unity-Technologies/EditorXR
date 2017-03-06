@@ -2,12 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputNew;
 using UnityEngine.Experimental.EditorVR.Helpers;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.InputNew;
 
-public class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin
+public class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IUsesViewerScale
 {
 	float m_LastClickTime;
 	readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();
@@ -17,6 +17,9 @@ public class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrig
 	public Transform rayOrigin { get; set; }
 
 	public Vector3 defaultOffset { private get; set; }
+	public Quaternion defaultTilt { private get; set; }
+
+	public Func<float> getViewerScale { private get; set; }
 
 	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
@@ -51,22 +54,17 @@ public class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrig
 	IEnumerator VacuumToViewer(IVacuumable vacuumable)
 	{
 		var vacuumTransform = vacuumable.transform;
-		//m_Vacuuming = true;
 		var startPosition = vacuumTransform.position;
 		var startRotation = vacuumTransform.rotation;
 
-		var camera = U.Camera.GetMainCamera().transform;
-		var cameraForward = camera.forward;
-		cameraForward.y = 0;
-		var vacuumForward = vacuumTransform.forward;
-		vacuumForward.y = 0;
-		var cameraYaw = Quaternion.FromToRotation(vacuumForward, cameraForward);
-
 		var offset = defaultOffset;
 		offset.z += vacuumable.vacuumBounds.extents.z;
+		offset *= getViewerScale();
 
+		var camera = U.Camera.GetMainCamera().transform;
 		var destPosition = camera.position + U.Math.ConstrainYawRotation(camera.rotation) * offset;
-		var destRotation = vacuumTransform.rotation * cameraYaw;
+		var destRotation = Quaternion.LookRotation(camera.forward) * defaultTilt;
+
 		var currentValue = 0f;
 		var currentVelocity = 0f;
 		var currentDuration = 0f;

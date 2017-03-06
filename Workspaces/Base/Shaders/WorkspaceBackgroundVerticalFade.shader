@@ -53,26 +53,28 @@
 						float yPos : FLOAT;
 					};
 
+					sampler2D _GrabTexture;
+					float4 _GrabTexture_TexelSize;
+					float _Blur;
+					float _VerticalOffset;
+					float _WorldScale;
+
 					v2f vert(appdata_t v)
 					{
 						v2f output;
 						output.position = mul(UNITY_MATRIX_MVP, v.position);
 #if UNITY_UV_STARTS_AT_TOP
-						float scale = -1.0;
+						float sign = -1.0;
 						output.yPos = v.texcoord.y;
 #else
-						float scale = 1.0;
+						float sign = 1.0;
 						output.yPos = -v.texcoord.y;
 #endif
-						output.grab.xy = (float2(output.position.x, output.position.y*scale) + output.position.w) * 0.5;
+						output.grab.xy = (float2(output.position.x, output.position.y * sign) + output.position.w) * 0.5;
 						output.grab.zw = output.position.zw;
+						output.grab *= _WorldScale;
 						return output;
 					}
-
-					sampler2D _GrabTexture;
-					float4 _GrabTexture_TexelSize;
-					float _Blur;
-					float _VerticalOffset;
 
 					half4 frag(v2f input) : COLOR
 					{
@@ -120,26 +122,28 @@
 					float yPos : FLOAT;
 				};
 
+				sampler2D _GrabTexture;
+				float4 _GrabTexture_TexelSize;
+				float _Blur;
+				float _VerticalOffset;
+				float _WorldScale;
+
 				v2f vert(appdata_t v)
 				{
 					v2f output;
 					output.position = mul(UNITY_MATRIX_MVP, v.position);
 	#if UNITY_UV_STARTS_AT_TOP
-					float scale = -1.0;
+					float sign = -1.0;
 					output.yPos = v.texcoord.y;
 	#else
-					float scale = 1.0;
+					float sign = 1.0;
 					output.yPos = -v.texcoord.y;
 	#endif
-					output.grab.xy = (float2(output.position.x, output.position.y*scale) + output.position.w) * 0.5;
+					output.grab.xy = (float2(output.position.x, output.position.y * sign) + output.position.w) * 0.5;
 					output.grab.zw = output.position.zw;
+					output.grab *= _WorldScale;
 					return output;
 				}
-
-				sampler2D _GrabTexture;
-				float4 _GrabTexture_TexelSize;
-				float _Blur;
-				float _VerticalOffset;
 
 				half4 frag(v2f input) : COLOR
 				{
@@ -187,27 +191,28 @@
 				};
 
 				float4 _MainTex_ST;
+				fixed4 _Color;
+				sampler2D _GrabTexture;
+				float4 _GrabTexture_TexelSize;
+				sampler2D _MainTex;
+				half _Alpha;
+				float _WorldScale;
 
 				v2f vert(appdata_t v)
 				{
 					v2f output;
 					output.position = mul(UNITY_MATRIX_MVP, v.position);
 	#if UNITY_UV_STARTS_AT_TOP
-					float scale = -1.0;
+					float sign = -1.0;
 	#else
-					float scale = 1.0;
+					float sign = 1.0;
 	#endif
-					output.grab.xy = (float2(output.position.x, output.position.y*scale) + output.position.w) * 0.5;
+					output.grab.xy = (float2(output.position.x, output.position.y * sign) + output.position.w) * 0.5;
 					output.grab.zw = output.position.zw;
+					output.grab *= _WorldScale;
 					output.uvmain = TRANSFORM_TEX(v.texcoord, _MainTex);
 					return output;
 				}
-
-				fixed4 _Color;
-				sampler2D _GrabTexture;
-				float4 _GrabTexture_TexelSize;
-				sampler2D _MainTex;
-				half _Alpha;
 
 				half4 frag(v2f i) : COLOR
 				{

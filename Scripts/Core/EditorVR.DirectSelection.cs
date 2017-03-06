@@ -37,9 +37,9 @@ namespace UnityEditor.Experimental.EditorVR
 					{
 						var miniWorld = ray.miniWorld;
 
-						// As the miniworld gets smaller, the ray length grows, hence localScale.Inverse().
+						// As the miniworld gets smaller, the ray length grows, hence lossyScale.Inverse().
 						// Assume that both transforms have uniform scale, so we just need .x
-						length *= miniWorld.referenceTransform.TransformVector(miniWorld.miniWorldTransform.localScale.Inverse()).x;
+						length *= miniWorld.referenceTransform.TransformVector(miniWorld.miniWorldTransform.lossyScale.Inverse()).x;
 					}
 				}
 

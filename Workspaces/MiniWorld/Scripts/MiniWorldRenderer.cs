@@ -48,7 +48,7 @@ public class MiniWorldRenderer : MonoBehaviour
 
 	void OnEnable()
 	{
-		GameObject go = new GameObject("MiniWorldCamera", typeof(Camera));
+		var go = new GameObject("MiniWorldCamera", typeof(Camera));
 		go.tag = kMiniWorldCameraTag;
 		go.hideFlags = HideFlags.DontSave;
 		m_MiniCamera = go.GetComponent<Camera>();
@@ -70,11 +70,15 @@ public class MiniWorldRenderer : MonoBehaviour
 			m_MiniCamera.CopyFrom(camera);
 
 			m_MiniCamera.cullingMask = cullingMask;
+			m_MiniCamera.cameraType = CameraType.Game;
 			m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
 			m_MiniCamera.worldToCameraMatrix = GetWorldToCameraMatrix(camera);
-			Shader shader = Shader.Find("Custom/Custom Clip Planes");
-			Shader.SetGlobalVector("_GlobalClipCenter", miniWorld.referenceBounds.center);
-			Shader.SetGlobalVector("_GlobalClipExtents", miniWorld.referenceBounds.extents);
+			var shader = Shader.Find("Custom/Custom Clip Planes");
+			var referenceBounds = miniWorld.referenceBounds;
+			var inverseRotation = Quaternion.Inverse(miniWorld.referenceTransform.rotation);
+			Shader.SetGlobalVector("_GlobalClipCenter", inverseRotation * referenceBounds.center);
+			Shader.SetGlobalVector("_GlobalClipExtents", referenceBounds.extents);
+			Shader.SetGlobalMatrix("_InverseRotation", Matrix4x4.TRS(Vector3.zero, inverseRotation, Vector3.one));
 
 			for (var i = 0; i < m_IgnoreList.Count; i++)
 			{

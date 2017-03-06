@@ -7,7 +7,8 @@ using UnityEngine.Experimental.EditorVR.Extensions;
 
 namespace UnityEngine.Experimental.EditorVR.Workspaces
 {
-	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight, IUsesStencilRef, IConnectInterfaces
+	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight,IUsesStencilRef,
+		IConnectInterfaces, IUsesViewerScale
 	{
 		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 
@@ -116,6 +117,8 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 
 		public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
+		public Func<float> getViewerScale { protected get; set; }
+
 		public virtual void Setup()
 		{
 			GameObject baseObject = instantiateUI(m_BasePrefab);
@@ -180,32 +183,39 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		{
 			if (m_Dragging)
 			{
-				Vector3 dragVector = eventData.rayOrigin.position - m_DragStart;
-				Bounds bounds = contentBounds;
-				Vector3 positionOffset = Vector3.zero;
+				var viewerScale = getViewerScale();
+				var dragVector = (eventData.rayOrigin.position - m_DragStart) / viewerScale;
+				var bounds = contentBounds;
+				var positionOffset = Vector3.zero;
+
 				if (handle.Equals(m_WorkspaceUI.leftHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
 					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
 				}
+
 				if (handle.Equals(m_WorkspaceUI.frontHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
 					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 				}
+
 				if (handle.Equals(m_WorkspaceUI.rightHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
 					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
 				}
+
 				if (handle.Equals(m_WorkspaceUI.backHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
 					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 				}
+
 				contentBounds = bounds;
+
 				if (contentBounds.size == bounds.size) //Don't reposition if we hit minimum bounds
-					transform.position = m_PositionStart + positionOffset;
+					transform.position = m_PositionStart + positionOffset * viewerScale;
 			}
 		}
 

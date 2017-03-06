@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.Experimental.EditorVR.Data;
 using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
@@ -8,6 +9,8 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 {
 	internal class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
+		const int kMaxTestsPerTester = 100;
+
 		private readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		private readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
 
@@ -60,24 +63,33 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 						var testerBounds = tester.renderer.bounds;
 						var testerBoundsCenter = testerBounds.center;
 						Array.Sort(intersections, (a, b) => (a.bounds.center - testerBoundsCenter).magnitude.CompareTo((b.bounds.center - testerBoundsCenter).magnitude));
-						foreach (var obj in intersections)
+						var intersectionList = intersections.ToList();
+						intersectionList.RemoveAll(obj =>
 						{
 							// Ignore destroyed objects
 							if (!obj)
-								continue;
+								return true;
 
 							// Ignore inactive objects
 							if (!obj.gameObject.activeInHierarchy)
-								continue;
+								return true;
 
 							// Ignore locked objects
 							if (isLocked(obj.gameObject))
-								continue;
+								return true;
 
 							// Bounds check
 							if (!obj.bounds.Intersects(testerBounds))
-								continue;
+								return true;
 
+							return false;
+						});
+
+						if (intersectionList.Count > kMaxTestsPerTester)
+							continue;
+
+						foreach (var obj in intersectionList)
+						{
 							if (U.Intersection.TestObject(m_CollisionTester, obj, tester))
 							{
 								intersectionFound = true;

@@ -75,12 +75,12 @@ namespace UnityEngine.Experimental.EditorVR.Utilities
 				return empty;
 			}
 
-			public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : Component
+			public static T CreateGameObjectWithComponent<T>(Transform parent = null, bool worldPositionStays = true) where T : Component
 			{
 				return (T)CreateGameObjectWithComponent(typeof(T), parent);
 			}
 
-			public static Component CreateGameObjectWithComponent(Type type, Transform parent = null)
+			public static Component CreateGameObjectWithComponent(Type type, Transform parent = null, bool worldPositionStays = true)
 			{
 #if UNITY_EDITOR && UNITY_EDITORVR
 				Component component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, EditorVR.kDefaultHideFlags, type).GetComponent(type);
@@ -89,7 +89,7 @@ namespace UnityEngine.Experimental.EditorVR.Utilities
 #else
 				Component component = new GameObject(type.Name).AddComponent(type);
 #endif
-				component.transform.parent = parent;
+				component.transform.SetParent(parent, worldPositionStays);
 
 				return component;
 			}

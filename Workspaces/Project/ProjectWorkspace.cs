@@ -16,8 +16,8 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 	const float kScrollMargin = 0.03f;
 	const float kYBounds = 0.2f;
 
-	const float kMinScale = 0.03f;
-	const float kMaxScale = 0.2f;
+	const float kMinScale = 0.04f;
+	const float kMaxScale = 0.09f;
 
 	bool m_AssetGridDragging;
 	bool m_FolderPanelDragging;
@@ -90,9 +90,9 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 
 		var sliderObject = U.Object.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
 		var zoomSlider = sliderObject.GetComponent<ZoomSliderUI>();
-		zoomSlider.zoomSlider.minValue = kMinScale;
-		zoomSlider.zoomSlider.maxValue = kMaxScale;
-		zoomSlider.zoomSlider.value = m_ProjectUI.assetGridView.scaleFactor;
+		zoomSlider.zoomSlider.minValue = Mathf.Log10(kMinScale);
+		zoomSlider.zoomSlider.maxValue = Mathf.Log10(kMaxScale);
+		zoomSlider.zoomSlider.value = Mathf.Log10(m_ProjectUI.assetGridView.scaleFactor);
 		zoomSlider.sliding += Scale;
 		foreach (var mb in zoomSlider.GetComponentsInChildren<MonoBehaviour>())
 		{
@@ -214,10 +214,10 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		if(handle == m_ProjectUI.folderScrollHandle)
-			m_ProjectUI.folderListView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
-		else if(handle == m_ProjectUI.assetScrollHandle)
-			m_ProjectUI.assetGridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
+		if (handle == m_ProjectUI.folderScrollHandle)
+			m_ProjectUI.folderListView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / getViewerScale();
+		else if (handle == m_ProjectUI.assetScrollHandle)
+			m_ProjectUI.assetGridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / getViewerScale();
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -276,7 +276,7 @@ public class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
 
 	void Scale(float value)
 	{
-		m_ProjectUI.assetGridView.scaleFactor = value;
+		m_ProjectUI.assetGridView.scaleFactor = Mathf.Pow(10, value);
 	}
 
 	bool TestFilter(string type)

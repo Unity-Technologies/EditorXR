@@ -1,9 +1,12 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Helpers
+﻿using System;
+using UnityEngine.Experimental.EditorVR.Tools;
+
+namespace UnityEngine.Experimental.EditorVR.Helpers
 {
 	/// <summary>
 	/// Provides for smooth translation and/or rotation of an object
 	/// </summary>
-	public class SmoothMotion : MonoBehaviour
+	public class SmoothMotion : MonoBehaviour, IUsesViewerScale
 	{
 		const float kDefaultTighteningAmount = 20f;
 
@@ -36,6 +39,8 @@
 		Quaternion m_LazyRotation;
 		Vector3 m_LazyPosition;
 
+		public Func<float> getViewerScale { get; set; }
+
 		void Start()
 		{
 			if (m_Target == null && transform.parent != null)
@@ -59,9 +64,10 @@
 			if (m_Target == null)
 				return;
 
+			var scaledTime = Time.unscaledDeltaTime / getViewerScale();
 			const float kMaxSmoothingVelocity = 1f; // m/s
 			var targetPosition = m_Target.position;
-			if (Vector3.Distance(targetPosition, m_LazyPosition) > kMaxSmoothingVelocity * Time.unscaledDeltaTime)
+			if (Vector3.Distance(targetPosition, m_LazyPosition) > kMaxSmoothingVelocity * scaledTime)
 			{
 				m_LazyPosition = transform.position;
 				m_LazyRotation = transform.rotation;
@@ -71,13 +77,13 @@
 			if (m_SmoothRotation)
 			{
 				var targetRotation = m_Target.rotation;
-				m_LazyRotation = Quaternion.Lerp(m_LazyRotation, targetRotation, m_TightenRotation * Time.unscaledDeltaTime);
+				m_LazyRotation = Quaternion.Lerp(m_LazyRotation, targetRotation, m_TightenRotation * scaledTime);
 				transform.rotation = m_LazyRotation;
 			}
 
 			if (m_SmoothPosition)
 			{
-				m_LazyPosition = Vector3.Lerp(m_LazyPosition, targetPosition, m_TightenPosition * Time.unscaledDeltaTime);
+				m_LazyPosition = Vector3.Lerp(m_LazyPosition, targetPosition, m_TightenPosition * scaledTime);
 				transform.position = m_LazyPosition;
 			}
 		}

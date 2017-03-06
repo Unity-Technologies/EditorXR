@@ -1,4 +1,5 @@
 #if UNITY_EDITORVR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -80,13 +81,15 @@ namespace UnityEditor.Experimental.EditorVR
 					if (ray != null)
 						ray.rayOrigin = rayOrigin;
 
+					var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+
+					var handedRay = obj as IUsesNode;
+					if (handedRay != null && deviceData != null)
+						handedRay.node = deviceData.node;
+
 					var usesProxy = obj as IUsesProxyType;
-					if (usesProxy != null)
-					{
-						var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
-						if (deviceData != null)
-							usesProxy.proxyType = deviceData.proxy.GetType();
-					}
+					if (usesProxy != null && deviceData != null)
+						usesProxy.proxyType = deviceData.proxy.GetType();
 
 					var menuOrigins = obj as IUsesMenuOrigins;
 					if (menuOrigins != null)
@@ -287,6 +290,10 @@ namespace UnityEditor.Experimental.EditorVR
 				if (moveCameraRig != null)
 					moveCameraRig.moveCameraRig = Viewer.MoveCameraRig;
 
+				var usesViewerScale = obj as IUsesViewerScale;
+				if (usesViewerScale != null)
+					usesViewerScale.getViewerScale = Viewer.GetViewerScale;
+
 				var usesTooltip = obj as ISetTooltipVisibility;
 				if (usesTooltip != null)
 				{
@@ -294,10 +301,33 @@ namespace UnityEditor.Experimental.EditorVR
 					usesTooltip.hideTooltip = tooltipModule.HideTooltip;
 				}
 
+				var linkedObject = obj as ILinkedObject;
+				if (linkedObject != null)
+				{
+					var type = obj.GetType();
+					var linkedObjects = evrTools.linkedObjects;
+					List<ILinkedObject> linkedObjectList;
+					if (!linkedObjects.TryGetValue(type, out linkedObjectList))
+					{
+						linkedObjectList = new List<ILinkedObject>();
+						linkedObjects[type] = linkedObjectList;
+					}
+
+					linkedObjectList.Add(linkedObject);
+					linkedObject.linkedObjects = linkedObjectList;
+					linkedObject.isSharedUpdater = IsSharedUpdater;
+				}
+
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
 				if (forEachRayOrigin != null && IsSameAssembly<IForEachRayOrigin>(obj))
 					forEachRayOrigin.forEachRayOrigin = evrRays.ForEachRayOrigin;
+			}
+
+			bool IsSharedUpdater(ILinkedObject linkedObject)
+			{
+				var type = linkedObject.GetType();
+				return evr.m_Tools.linkedObjects[type].IndexOf(linkedObject) == 0;
 			}
 
 			static bool IsSameAssembly<T>(object obj)
@@ -354,4 +384,5 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 	}
 }
+
 #endif
