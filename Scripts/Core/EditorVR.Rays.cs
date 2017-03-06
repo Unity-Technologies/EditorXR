@@ -119,7 +119,9 @@ namespace UnityEditor.Experimental.EditorVR
 							var rayTransform = U.Object.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
 							rayTransform.position = rayOriginPairValue.position;
 							rayTransform.rotation = rayOriginPairValue.rotation;
-							m_DefaultRays.Add(rayOriginPairValue, rayTransform.GetComponent<DefaultProxyRay>());
+							var dpr = rayTransform.GetComponent<DefaultProxyRay>();
+							dpr.getViewerScale = Viewer.GetViewerScale;
+							m_DefaultRays.Add(rayOriginPairValue, dpr);
 
 							evr.m_KeyboardModule.SpawnKeyboardMallet(rayOriginPairValue);
 
@@ -158,7 +160,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 					foreach (var rayOrigin in proxy.rayOrigins.Values)
 					{
-						var distance = kDefaultRayLength;
+						var distance = kDefaultRayLength * Viewer.GetViewerScale();
 
 						// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
 						// object, so visually show the ray terminating there instead of the object; UI is already given
@@ -318,4 +320,5 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 	}
 }
+
 #endif

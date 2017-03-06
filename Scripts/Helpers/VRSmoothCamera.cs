@@ -1,6 +1,8 @@
 ﻿#if UNITY_EDITORVR
+using System;
 using UnityEditor;
 using UnityEditor.Experimental.EditorVR;
+using UnityEngine.Experimental.EditorVR.Tools;
 
 namespace UnityEngine.Experimental.EditorVR.Helpers
 {
@@ -9,7 +11,7 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 	/// </summary>
 	[RequireComponent(typeof(Camera))]
 	[RequiresLayer(kHMDOnlyLayer)]
-	public class VRSmoothCamera : MonoBehaviour, IPreviewCamera
+	public class VRSmoothCamera : MonoBehaviour, IPreviewCamera, IUsesViewerScale
 	{
 		/// <summary>
 		/// The camera drawing the preview
@@ -43,6 +45,8 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 		/// A layer mask that controls what will always render in the HMD and not in the preview
 		/// </summary>
 		public int hmdOnlyLayerMask { get { return LayerMask.GetMask(kHMDOnlyLayer); } }
+
+		public Func<float> getViewerScale { private get; set; }
 
 		void Awake()
 		{
@@ -83,7 +87,7 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 
 			const float kPullBackDistance = 1.1f;
 			transform.forward = m_Forward;
-			transform.position = m_Position - transform.forward * kPullBackDistance;
+			transform.position = m_Position - transform.forward * kPullBackDistance * getViewerScale();
 
 			// Don't render any HMD-related visual proxies
 			var hidden = m_VRCamera.GetComponentsInChildren<Renderer>();

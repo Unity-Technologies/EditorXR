@@ -28,6 +28,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal List<Type> allTools { get; private set; }
 
+			internal Dictionary<Type, List<ILinkedObject>> linkedObjects { get { return m_LinkedObjects; } }
+			readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
+
 			internal Tools()
 			{
 				allTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
@@ -66,6 +69,7 @@ namespace UnityEditor.Experimental.EditorVR
 					AddToolToDeviceData(toolData, devices);
 					var vacuumTool = (VacuumTool)toolData.tool;
 					vacuumTool.defaultOffset = WorkspaceModule.kDefaultWorkspaceOffset;
+					vacuumTool.defaultTilt = WorkspaceModule.kDefaultWorkspaceTilt;
 					vacuumTool.vacuumables = evr.m_Vacuumables.vacuumables;
 
 					// Using a shared instance of the transform tool across all device tool stacks
@@ -294,6 +298,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void UpdatePlayerHandleMaps(List<ActionMapInput> maps)
 			{
+				maps.AddRange(evr.m_MiniWorlds.inputs.Values);
+
 				var evrDeviceData = evr.m_DeviceData;
 				foreach (var deviceData in evrDeviceData)
 				{

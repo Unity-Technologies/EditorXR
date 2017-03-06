@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: aab2ab33b5d370b4889c8004fceb7843
-timeCreated: 1484766262
+timeCreated: 1487370324
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
@@ -17,6 +17,10 @@ MonoImporter:
       type: 2}
   - m_ZoomSliderPrefab: {fileID: 1000011177834630, guid: 41f89a1e8d8d49f4f861f7cb581c1227,
       type: 2}
+  - m_MiniWorldActionMap: {fileID: 11400000, guid: 972404fb3f9c3c143919aae1be3b7925,
+      type: 2}
+  - leftRayOrigin: {instanceID: 0}
+  - rightRayOrigin: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -102,6 +102,11 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				evr.StartCoroutine(UpdateCameraRig(position, viewdirection));
 			}
+
+			internal static float GetViewerScale()
+			{
+				return U.Camera.GetCameraRig().localScale.x;
+			}
 		}
 	}
 }

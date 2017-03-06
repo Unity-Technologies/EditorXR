@@ -11,13 +11,8 @@
 	SubShader
 	{
 		Tags { "RenderType"="Transparent" "Queue" = "Overlay+5103" }
+		ZWrite On
 		LOD 200
-
-		Stencil
-		{
-			Ref 0
-			Comp Equal
-		}
 
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types

@@ -11,16 +11,17 @@ using UnityEngine.Experimental.EditorVR.UI;
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.Experimental.EditorVR.Workspaces;
 using Button = UnityEngine.UI.Button;
+using UnityEngine.InputNew;
 
 [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
-public class MiniWorldWorkspace : Workspace, IUsesRayLocking
+public class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 {
 	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below
-	private const float kInitReferenceScale = 15f; // We want to see a big region by default
+	private const float kInitReferenceScale = 10f; // We want to see a big region by default
 
 	//TODO: replace with dynamic values once spatial hash lands
 	// Scale slider min/max (maps to referenceTransform uniform scale)
-	private const float kMinZoomScale = 0.1f;
+	private const float kMinZoomScale = 0.5f;
 	private const float kMaxZoomScale = 200f;
 
 	[SerializeField]
@@ -38,29 +39,34 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 	[SerializeField]
 	private GameObject m_ZoomSliderPrefab;
 
+	public ActionMap actionMap { get { return m_MiniWorldActionMap; } }
+	[SerializeField]
+	ActionMap m_MiniWorldActionMap;
+
 	private MiniWorldUI m_MiniWorldUI;
 	private MiniWorld m_MiniWorld;
 	private Material m_GridMaterial;
 	private ZoomSliderUI m_ZoomSliderUI;
 	private Transform m_PlayerDirectionButton;
 	private Transform m_PlayerDirectionArrow;
-	private readonly List<RayData> m_RayData = new List<RayData>(2);
-	private float m_ScaleStartDistance;
-	bool m_PanZooming;
-	Coroutine m_UpdateLocationCoroutine;
+	readonly List<Transform> m_Rays = new List<Transform>(2);
+	float m_StartScale;
+	float m_StartDistance;
+	Vector3 m_StartPosition;
+	Vector3 m_StartOffset;
+	Vector3 m_StartMidPoint;
+	Vector3 m_StartDirection;
+	float m_StartYaw;
 
-	private class RayData
-	{
-		public Transform rayOrigin;
-		public Vector3 rayOriginStart;
-		public Vector3 refTransformStartPosition;
-		public Vector3 refTransformStartScale;
-	}
+	Coroutine m_UpdateLocationCoroutine;
 
 	public Func<Transform, object, bool> lockRay { get; set; }
 	public Func<Transform, object, bool> unlockRay { get; set; }
 
 	public IMiniWorld miniWorld { get { return m_MiniWorld; } }
+
+	public Transform leftRayOrigin { get; set; }
+	public Transform rightRayOrigin { get; set; }
 
 	public override void Setup()
 	{
@@ -80,7 +86,7 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 		{
 			connectInterfaces(mb);
 		}
-		
+
 		var parent = m_WorkspaceUI.frontPanel.parent;
 		var locatePlayerUI = U.Object.Instantiate(m_LocatePlayerPrefab, parent, false);
 		m_PlayerDirectionButton = locatePlayerUI.transform.GetChild(0);
@@ -94,31 +100,20 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 		var arrow = U.Object.Instantiate(m_PlayerDirectionArrowPrefab, parent, false);
 		arrow.transform.localPosition = new Vector3(-0.232f, 0.03149995f, 0f);
 		m_PlayerDirectionArrow = arrow.transform;
-		
+
 		// Set up MiniWorld
 		m_MiniWorld = GetComponentInChildren<MiniWorld>();
 		m_MiniWorld.referenceTransform.position = Vector3.up * kInitReferenceYOffset * kInitReferenceScale;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * kInitReferenceScale;
 
-		// Set up ControlBox
-		var panZoomHandle = m_MiniWorldUI.panZoomHandle;
-		// ControlBox shouldn't move with miniWorld
-		panZoomHandle.transform.parent = m_WorkspaceUI.sceneContainer;
-		panZoomHandle.transform.localPosition = Vector3.down * panZoomHandle.transform.localScale.y * 0.5f;
-		panZoomHandle.dragStarted += OnPanZoomDragStarted;
-		panZoomHandle.dragging += OnPanZoomDragging;
-		panZoomHandle.dragEnded += OnPanZoomDragEnded;
-		panZoomHandle.hoverStarted += OnPanZoomHoverStarted;
-		panZoomHandle.hoverEnded += OnPanZoomHoverEnded;
-
 		// Set up Zoom Slider
 		var sliderObject = U.Object.Instantiate(m_ZoomSliderPrefab, m_WorkspaceUI.frontPanel, false);
 		m_ZoomSliderUI = sliderObject.GetComponentInChildren<ZoomSliderUI>();
 		m_ZoomSliderUI.sliding += OnSliding;
-		m_ZoomSliderUI.zoomSlider.maxValue = kMaxZoomScale;
-		m_ZoomSliderUI.zoomSlider.minValue = kMinZoomScale;
+		m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(kMaxZoomScale);
+		m_ZoomSliderUI.zoomSlider.minValue = Mathf.Log10(kMinZoomScale);
 		m_ZoomSliderUI.zoomSlider.direction = Slider.Direction.RightToLeft; // Invert direction for expected ux; zoom in as slider moves left to right
-		m_ZoomSliderUI.zoomSlider.value = kInitReferenceScale;
+		m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(kInitReferenceScale);
 		foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
 		{
 			connectInterfaces(mb);
@@ -168,6 +163,32 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 			+ new Vector2(m_MiniWorld.referenceTransform.position.x, m_MiniWorld.referenceTransform.position.z); // Translation offset
 	}
 
+	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
+	{
+		var miniWorldInput = (MiniWorldInput)input;
+
+		if (miniWorld.Contains(leftRayOrigin.position) && miniWorldInput.leftGrab.wasJustPressed)
+		{
+			OnPanZoomDragStarted(leftRayOrigin);
+			consumeControl(miniWorldInput.leftGrab);
+		}
+
+		if (miniWorld.Contains(rightRayOrigin.position) && miniWorldInput.rightGrab.wasJustPressed)
+		{
+			OnPanZoomDragStarted(rightRayOrigin);
+			consumeControl(miniWorldInput.rightGrab);
+		}
+
+		if (miniWorldInput.leftGrab.isHeld || miniWorldInput.rightGrab.isHeld)
+			OnPanZoomDragging();
+
+		if (miniWorldInput.leftGrab.wasJustReleased)
+			OnPanZoomDragEnded(leftRayOrigin);
+
+		if (miniWorldInput.rightGrab.wasJustReleased)
+			OnPanZoomDragEnded(rightRayOrigin);
+	}
+
 	protected override void OnBoundsChanged()
 	{
 		m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
@@ -178,13 +199,11 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 		m_MiniWorldUI.boundsCube.transform.localScale = correctedBounds.size;
 		m_MiniWorldUI.grid.transform.localScale = new Vector3(correctedBounds.size.x, correctedBounds.size.z, 1);
 
-		var controlBox = m_MiniWorldUI.panZoomHandle;
-		controlBox.transform.localScale = new Vector3(correctedBounds.size.x, controlBox.transform.localScale.y, correctedBounds.size.z);
 	}
 
 	private void OnSliding(float value)
 	{
-		ScaleMiniWorld(value);
+		ScaleMiniWorld(Mathf.Pow(10, value));
 	}
 
 	void ScaleMiniWorld(float value)
@@ -194,67 +213,88 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
 	}
 
-	void OnPanZoomDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnPanZoomDragStarted(Transform rayOrigin)
 	{
-		m_PanZooming = true;
-		m_WorkspaceUI.topHighlight.visible = true;
+		var referenceTransform = miniWorld.referenceTransform;
+		m_StartPosition = referenceTransform.position;
+		var rayOriginPosition = miniWorld.miniWorldTransform.InverseTransformPoint(rayOrigin.position);
 
-		if (m_RayData.Count == 1) // On introduction of second ray
-			m_ScaleStartDistance = (m_RayData[0].rayOrigin.position - eventData.rayOrigin.position).magnitude;
-
-		m_RayData.Add(new RayData
+		// On introduction of second ray
+		if (m_Rays.Count == 1)
 		{
-			rayOrigin = eventData.rayOrigin,
-			rayOriginStart = eventData.rayOrigin.position,
-			refTransformStartPosition = m_MiniWorld.referenceTransform.position,
-			refTransformStartScale = m_MiniWorld.referenceTransform.localScale
-		});
+			var rayToRay = miniWorld.miniWorldTransform.InverseTransformPoint(m_Rays[0].position) - rayOriginPosition;
+			var midPoint = rayOriginPosition + rayToRay * 0.5f;
+			m_StartScale = referenceTransform.localScale.x;
+			m_StartDistance = rayToRay.magnitude;
+			m_StartMidPoint = U.Math.ConstrainYawRotation(referenceTransform.rotation) * midPoint;
+			m_StartDirection = rayToRay;
+			m_StartDirection.y = 0;
+			m_StartOffset = m_StartMidPoint * m_StartScale;
+
+			m_StartPosition += m_StartOffset;
+			m_StartYaw = referenceTransform.rotation.eulerAngles.y;
+		}
+		else
+		{
+			m_StartMidPoint = rayOriginPosition;
+		}
+
+		m_Rays.Add(rayOrigin);
 	}
 
-	void OnPanZoomDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnPanZoomDragging()
 	{
-		var rayData = m_RayData[0];
-		if (!eventData.rayOrigin.Equals(rayData.rayOrigin)) // Do not execute for the second ray
+		var rayCount = m_Rays.Count;
+		if (rayCount == 0)
 			return;
 
+		var firstRayPosition = miniWorld.miniWorldTransform.InverseTransformPoint(m_Rays[0].position);
 		var referenceTransform = m_MiniWorld.referenceTransform;
-		var rayOrigin = eventData.rayOrigin;
-		
-		// Rotate translation by inverse workspace yaw
-		Quaternion yawRotation = Quaternion.AngleAxis(transform.rotation.eulerAngles.y, Vector3.down);
-
-		// Translate
-		referenceTransform.position = rayData.refTransformStartPosition
-			+ yawRotation * Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
 
 		// If we have two rays, scale
-		if (m_RayData.Count > 1)
+		if (rayCount > 1)
 		{
-			var otherRay = m_RayData[1];
-			referenceTransform.localScale = otherRay.refTransformStartScale * (m_ScaleStartDistance
-				/ (otherRay.rayOrigin.position - rayOrigin.position).magnitude);
+			var secondRayPosition = miniWorld.miniWorldTransform.InverseTransformPoint(m_Rays[1].position);
 
-			m_ZoomSliderUI.zoomSlider.value = referenceTransform.localScale.x;
+			var rayToRay = firstRayPosition - secondRayPosition;
+			var midPoint = secondRayPosition + rayToRay * 0.5f;
+
+			var scaleFactor = m_StartDistance / rayToRay.magnitude;
+			var currentScale = m_StartScale * scaleFactor;
+
+			m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(referenceTransform.localScale.x);
+
+			rayToRay.y = 0;
+			var yawSign = Mathf.Sign(Vector3.Dot(Quaternion.AngleAxis(90, Vector3.down) * m_StartDirection, rayToRay));
+			var rotationDiff = Vector3.Angle(m_StartDirection, rayToRay) * yawSign;
+			var currentRotation = Quaternion.AngleAxis(m_StartYaw + rotationDiff, Vector3.up);
+			var worldMidPoint = currentRotation * midPoint;
+			referenceTransform.rotation = currentRotation;
+			referenceTransform.localScale = Vector3.one * currentScale;
+
+			referenceTransform.position = m_StartPosition - m_StartOffset * scaleFactor
+				+ (m_StartMidPoint - worldMidPoint) * currentScale;
+		}
+		else
+		{
+			referenceTransform.position = m_StartPosition + referenceTransform.rotation
+				* Vector3.Scale(m_StartMidPoint - firstRayPosition, referenceTransform.localScale);
 		}
 	}
 
-	void OnPanZoomDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+	void OnPanZoomDragEnded(Transform rayOrigin)
 	{
-		m_PanZooming = false;
-		m_WorkspaceUI.topHighlight.visible = false;
+		m_Rays.RemoveAll(rayData => rayData.Equals(rayOrigin));
 
-		m_RayData.RemoveAll(rayData => rayData.rayOrigin.Equals(eventData.rayOrigin));
-	}
-
-	void OnPanZoomHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-	{
-		m_WorkspaceUI.topHighlight.visible = true;
-	}
-
-	void OnPanZoomHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-	{
-		if (!m_PanZooming)
-			m_WorkspaceUI.topHighlight.visible = false;
+		// Set up remaining ray with new offset
+		if (m_Rays.Count > 0)
+		{
+			var firstRay = m_Rays[0];
+			var referenceTransform = m_MiniWorld.referenceTransform;
+			m_StartMidPoint = miniWorld.miniWorldTransform.InverseTransformPoint(firstRay.position);
+			m_StartPosition = referenceTransform.position;
+			m_StartScale = referenceTransform.localScale.x;
+		}
 	}
 
 	void DragStarted(BaseHandle baseHandle, HandleEventData handleEventData)
@@ -275,7 +315,7 @@ public class MiniWorldWorkspace : Workspace, IUsesRayLocking
 	void ResetChessboard()
 	{
 		ScaleMiniWorld(kInitReferenceScale);
-		m_ZoomSliderUI.zoomSlider.value = m_MiniWorld.referenceTransform.localScale.x;
+		m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(m_MiniWorld.referenceTransform.localScale.x);
 
 		this.RestartCoroutine(ref m_UpdateLocationCoroutine, UpdateLocation(Vector3.up * kInitReferenceYOffset * kInitReferenceScale));
 	}

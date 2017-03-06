@@ -8,7 +8,8 @@ using UnityEngine.Experimental.EditorVR.Tools;
 using UnityEngine.Experimental.EditorVR.Utilities;
 
 [MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin, IUsesSpatialHash
+public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
+	IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale
 {
 	[SerializeField]
 	CreatePrimitiveMenu m_MenuPrefab;
@@ -35,6 +36,8 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 
 	public Action<GameObject> addToSpatialHash { get; set; }
 	public Action<GameObject> removeFromSpatialHash { get; set; }
+
+	public Func<float> getViewerScale { private get; set; }
 
 	enum PrimitiveCreationStates
 	{
@@ -93,8 +96,9 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 			
 			// Set starting minimum scale (don't allow zero scale object to be created)
 			const float kMinScale = 0.0025f;
-			m_CurrentGameObject.transform.localScale = Vector3.one * kMinScale;
-			m_StartPoint = rayOrigin.position + rayOrigin.forward * kDrawDistance;
+			var viewerScale = getViewerScale();
+			m_CurrentGameObject.transform.localScale = Vector3.one * kMinScale * viewerScale;
+			m_StartPoint = rayOrigin.position + rayOrigin.forward * kDrawDistance * viewerScale;
 			m_CurrentGameObject.transform.position = m_StartPoint;
 
 			m_State = m_Freeform ? PrimitiveCreationStates.Freeform : PrimitiveCreationStates.EndPoint;
@@ -119,7 +123,7 @@ public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, ICo
 
 	void UpdatePositions()
 	{
-		m_EndPoint = rayOrigin.position + rayOrigin.forward * kDrawDistance;
+		m_EndPoint = rayOrigin.position + rayOrigin.forward * kDrawDistance * getViewerScale();
 		m_CurrentGameObject.transform.position = (m_StartPoint + m_EndPoint) * 0.5f;
 	}
 

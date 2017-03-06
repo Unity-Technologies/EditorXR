@@ -286,11 +286,7 @@ namespace UnityEditor.Experimental.EditorVR
 						{
 							if (deviceData.customMenu == null)
 							{
-								go = evr.m_UI.InstantiateUI(prefab.gameObject);
-
-								go.transform.SetParent(menuOrigin);
-								go.transform.localPosition = Vector3.zero;
-								go.transform.localRotation = Quaternion.identity;
+								go = evr.m_UI.InstantiateUI(prefab.gameObject, menuOrigin, false);
 
 								var customMenu = go.GetComponent<IMenu>();
 								deviceData.customMenu = customMenu;
@@ -361,4 +357,5 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 	}
 }
+
 #endif

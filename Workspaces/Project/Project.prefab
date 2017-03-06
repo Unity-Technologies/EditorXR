@@ -626,12 +626,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ScrollOffset: 0
-  m_Padding: 0.05
+  m_Padding: 0.15
   m_ScrollDamping: 1
   m_MaxMomentum: 200
   m_Templates:
   - {fileID: 1000014066556564, guid: 94a0fcdece43c184c88738ce9401f3d0, type: 2}
-  m_ScaleFactor: 0.075
+  m_ScaleFactor: 0.056
   m_IconTypes:
   - Scene
   - AnimatorController
