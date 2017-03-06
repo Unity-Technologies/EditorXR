@@ -111,7 +111,7 @@ GameObject:
   - 114: {fileID: 114000013219726656}
   - 114: {fileID: 114000012656100854}
   m_Layer: 5
-  m_Name: WorldScaleVisuals
+  m_Name: ViewerScaleVisuals
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

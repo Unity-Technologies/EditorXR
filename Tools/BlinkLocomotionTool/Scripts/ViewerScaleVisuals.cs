@@ -2,7 +2,7 @@
 using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
 
-class WorldScaleVisuals : MonoBehaviour
+class ViewerScaleVisuals : MonoBehaviour
 {
 	[SerializeField]
 	float m_IconTranslateCoefficient = -0.16f;

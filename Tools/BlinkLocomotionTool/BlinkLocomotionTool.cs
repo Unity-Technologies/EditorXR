@@ -38,9 +38,9 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	private GameObject m_BlinkVisualsPrefab;
 
 	[SerializeField]
-	GameObject m_WorldScaleVisualsPrefab;
+	GameObject m_ViewerScaleVisualsPrefab;
 
-	WorldScaleVisuals m_WorldScaleVisuals;
+	ViewerScaleVisuals m_ViewerScaleVisuals;
 
 	private GameObject m_BlinkVisualsGO;
 	private BlinkVisuals m_BlinkVisuals;
@@ -176,7 +176,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 								m_EnableJoystick = false;
 								blinkTool.m_EnableJoystick = false;
 
-								CreateWorldScaleVisuals(rayOrigin, otherRayOrigin);
+								CreateViewerScaleVisuals(rayOrigin, otherRayOrigin);
 							}
 
 							m_Scaling = true;
@@ -201,8 +201,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 								consumeControl(m_Thumb);
 								consumeControl(blinkTool.m_Thumb);
 
-								if (m_WorldScaleVisuals)
-									U.Object.Destroy(m_WorldScaleVisuals.gameObject);
+								if (m_ViewerScaleVisuals)
+									U.Object.Destroy(m_ViewerScaleVisuals.gameObject);
 							}
 
 							if (currentScale < kMinScale)
@@ -225,7 +225,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 								m_MainCamera.nearClipPlane = m_OriginalNearClipPlane * currentScale;
 								m_MainCamera.farClipPlane = m_OriginalFarClipPlane * currentScale;
 
-								m_WorldScaleVisuals.viewerScale = currentScale;
+								m_ViewerScaleVisuals.viewerScale = currentScale;
 								m_BlinkVisuals.viewerScale = currentScale;
 								Shader.SetGlobalFloat(kWorldScaleProperty, 1f / currentScale);
 							}
@@ -335,11 +335,11 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		cameraRig.Translate(direction * speed * Time.unscaledDeltaTime, Space.World);
 	}
 
-	void CreateWorldScaleVisuals(Transform leftHand, Transform rightHand)
+	void CreateViewerScaleVisuals(Transform leftHand, Transform rightHand)
 	{
-		m_WorldScaleVisuals = U.Object.Instantiate(m_WorldScaleVisualsPrefab, cameraRig, false).GetComponent<WorldScaleVisuals>();
-		m_WorldScaleVisuals.leftHand = leftHand;
-		m_WorldScaleVisuals.rightHand = rightHand;
+		m_ViewerScaleVisuals = U.Object.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false).GetComponent<ViewerScaleVisuals>();
+		m_ViewerScaleVisuals.leftHand = leftHand;
+		m_ViewerScaleVisuals.rightHand = rightHand;
 	}
 
 	void CancelScale()
@@ -352,8 +352,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 			((BlinkLocomotionTool)linkedObject).m_EnableJoystick = true;
 		}
 
-		if (m_WorldScaleVisuals)
-			U.Object.Destroy(m_WorldScaleVisuals.gameObject);
+		if (m_ViewerScaleVisuals)
+			U.Object.Destroy(m_ViewerScaleVisuals.gameObject);
 	}
 
 	private IEnumerator MoveTowardTarget(Vector3 targetPosition)

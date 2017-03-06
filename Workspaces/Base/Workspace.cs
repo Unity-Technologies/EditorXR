@@ -183,8 +183,8 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		{
 			if (m_Dragging)
 			{
-				var scale = getViewerScale();
-				var dragVector = (eventData.rayOrigin.position - m_DragStart) / scale;
+				var viewerScale = getViewerScale();
+				var dragVector = (eventData.rayOrigin.position - m_DragStart) / viewerScale;
 				var bounds = contentBounds;
 				var positionOffset = Vector3.zero;
 
@@ -215,7 +215,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 				contentBounds = bounds;
 
 				if (contentBounds.size == bounds.size) //Don't reposition if we hit minimum bounds
-					transform.position = m_PositionStart + positionOffset * scale;
+					transform.position = m_PositionStart + positionOffset * viewerScale;
 			}
 		}
 
