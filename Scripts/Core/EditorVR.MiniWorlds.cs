@@ -157,8 +157,6 @@ namespace UnityEditor.Experimental.EditorVR
 					var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
 					var dragObjects = miniWorldRay.dragObjects;
 
-					var cameraRig = U.Camera.GetCameraRig();
-
 					if (dragObjects == null)
 					{
 						var heldObjects = objectsGrabber.GetHeldObjects(miniWorldRayOrigin);
@@ -188,7 +186,7 @@ namespace UnityEditor.Experimental.EditorVR
 								var totalBounds = U.Object.GetBounds(dragGameObjects);
 								var maxSizeComponent = totalBounds.size.MaxComponent();
 								if (!Mathf.Approximately(maxSizeComponent, 0f))
-									miniWorldRay.previewScaleFactor = Vector3.one * (kPreviewScale * cameraRig.localScale.x / maxSizeComponent);
+									miniWorldRay.previewScaleFactor = Vector3.one * (kPreviewScale * Viewer.GetViewerScale() / maxSizeComponent);
 
 								miniWorldRay.originalScales = scales;
 							}

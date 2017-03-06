@@ -9,7 +9,7 @@ using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
 public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesHandedRayOrigin,
-	ICustomActionMap, ILinkedObject, IUsesProxyType
+	ICustomActionMap, ILinkedObject, IUsesProxyType, IUsesViewerScale
 {
 	const float kFastRotationSpeed = 300f;
 	const float kRotationThreshold = 0.9f;
@@ -80,6 +80,8 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 	public Type proxyType { private get; set; }
 
 	public Transform cameraRig { private get; set; }
+
+	public Func<float> getViewerScale { private get; set; }
 
 	public List<ILinkedObject> linkedObjects { private get; set; }
 	public Func<ILinkedObject, bool> isSharedUpdater { private get; set; }
@@ -166,7 +168,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 
 							if (!m_Scaling)
 							{
-								m_StartScale = cameraRig.localScale.x;
+								m_StartScale = getViewerScale();
 								m_StartDistance = distance;
 								m_StartMidPoint = pivotYaw * midPoint * m_StartScale;
 								m_StartPosition = cameraRig.position;
@@ -330,7 +332,7 @@ public class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay,
 		if (Mathf.Abs(inputValue) > threshold)
 			speed = kFastMoveSpeed * Mathf.Sign(inputValue);
 
-		speed *= cameraRig.localScale.x;
+		speed *= getViewerScale();
 
 		cameraRig.Translate(direction * speed * Time.unscaledDeltaTime, Space.World);
 	}
