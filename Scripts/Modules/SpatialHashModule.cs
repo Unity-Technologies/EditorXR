@@ -21,11 +21,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		internal void Setup()
 		{
-			SetObjectUtilss();
+			SetupObjects();
 			StartCoroutine(UpdateDynamicObjects());
 		}
 
-		void SetObjectUtilss()
+		void SetupObjects()
 		{
 			MeshFilter[] meshFilters = FindObjectsOfType<MeshFilter>();
 			foreach (var mf in meshFilters)

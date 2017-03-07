@@ -198,7 +198,7 @@ namespace UnityEditor.Experimental.EditorVR
 			// HACK: Fix VRSettings.enabled or some other API to check for missing HMD
 			m_VRInitialized = false;
 #if ENABLE_OVR_INPUT
-			m_VRInitialized |= true; //OVRPlugin.initialized;
+			m_VRInitialized |= OVRPlugin.initialized;
 #endif
 
 #if ENABLE_STEAMVR_INPUT
