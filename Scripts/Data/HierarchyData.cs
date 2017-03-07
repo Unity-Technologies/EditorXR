@@ -1,11 +1,12 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using System.Collections.Generic;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
-	public class HierarchyData : ListViewItemNestedData<HierarchyData>
+	sealed class HierarchyData : ListViewItemNestedData<HierarchyData>
 	{
-		const string kTemplateName = "HierarchyListItem";
+		const string k_TemplateName = "HierarchyListItem";
 
 		public string name { get; set; }
 
@@ -13,10 +14,11 @@ namespace UnityEngine.Experimental.EditorVR
 
 		public HierarchyData(string name, int instanceID, List<HierarchyData> children = null)
 		{
-			template = kTemplateName;
+			template = k_TemplateName;
 			this.name = name;
 			this.instanceID = instanceID;
 			m_Children = children;
 		}
 	}
 }
+#endif

@@ -1,16 +1,12 @@
-#if UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Tools;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Menus;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Proxies;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -33,7 +29,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal Tools()
 			{
-				allTools = U.Object.GetImplementationsOfInterface(typeof(ITool)).ToList();
+				allTools = ObjectUtils.GetImplementationsOfInterface(typeof(ITool)).ToList();
 			}
 
 			internal bool IsPermanentTool(Type type)
@@ -68,8 +64,8 @@ namespace UnityEditor.Experimental.EditorVR
 					toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var vacuumTool = (VacuumTool)toolData.tool;
-					vacuumTool.defaultOffset = WorkspaceModule.kDefaultWorkspaceOffset;
-					vacuumTool.defaultTilt = WorkspaceModule.kDefaultWorkspaceTilt;
+					vacuumTool.defaultOffset = WorkspaceModule.k_DefaultWorkspaceOffset;
+					vacuumTool.defaultTilt = WorkspaceModule.k_DefaultWorkspaceTilt;
 					vacuumTool.vacuumables = evr.m_Vacuumables.vacuumables;
 
 					// Using a shared instance of the transform tool across all device tool stacks
@@ -119,13 +115,13 @@ namespace UnityEditor.Experimental.EditorVR
 					return null;
 
 				var deviceSlots = new HashSet<DeviceSlot>();
-				var tool = U.Object.AddComponent(toolType, evr.gameObject) as ITool;
+				var tool = ObjectUtils.AddComponent(toolType, evr.gameObject) as ITool;
 
 				var actionMapInput = evr.m_DeviceInputModule.CreateActionMapInputForObject(tool, device);
 				if (actionMapInput != null)
 				{
 					usedDevices.UnionWith(actionMapInput.GetCurrentlyUsedDevices());
-					U.Input.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
+					InputUtils.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
 				}
 
 				evr.m_Interfaces.ConnectInterfaces(tool, device);
@@ -270,7 +266,7 @@ namespace UnityEditor.Experimental.EditorVR
 					if (tool is IExclusiveMode)
 						SetToolsEnabled(deviceData, true);
 
-					U.Object.Destroy(tool as MonoBehaviour);
+					ObjectUtils.Destroy(tool as MonoBehaviour);
 				}
 			}
 

@@ -1,106 +1,105 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Data;
-using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-public class InspectorObjectFieldItem : InspectorPropertyItem
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	[SerializeField]
-	Text m_FieldLabel;
-
-	[SerializeField]
-	MeshRenderer m_Button;
-
-	Type m_ObjectType;
-	string m_ObjectTypeName;
-
-#if UNITY_EDITOR
-	public override void Setup(InspectorData data)
+	sealed class InspectorObjectFieldItem : InspectorPropertyItem
 	{
-		base.Setup(data);
+		[SerializeField]
+		Text m_FieldLabel;
 
-		m_ObjectTypeName = U.Object.NicifySerializedPropertyType(m_SerializedProperty.type);
-		m_ObjectType = U.Object.TypeNameToType(m_ObjectTypeName);
+		[SerializeField]
+		MeshRenderer m_Button;
 
-		OnObjectModified();
-	}
+		Type m_ObjectType;
+		string m_ObjectTypeName;
 
-	bool SetObject(Object obj)
-	{
-		if (!IsAssignable(obj))
-			return false;
-
-		if (obj == null && m_SerializedProperty.objectReferenceValue == null)
-			return true;
-
-		if (m_SerializedProperty.objectReferenceValue != null && m_SerializedProperty.objectReferenceValue.Equals(obj))
-			return true;
-
-		m_SerializedProperty.objectReferenceValue = obj;
-
-		OnObjectModified();
-
-		FinalizeModifications();
-
-		return true;
-	}
-
-	public void ClearButton()
-	{
-		SetObject(null);
-	}
-
-	public override void OnObjectModified()
-	{
-		base.OnObjectModified();
-		UpdateUI();
-	}
-
-	public void UpdateUI()
-	{
-		var obj = m_SerializedProperty.objectReferenceValue;
-		if (obj == null)
+		public override void Setup(InspectorData data)
 		{
-			m_FieldLabel.text = string.Format("None ({0})", m_ObjectTypeName);
-			return;
+			base.Setup(data);
+
+			m_ObjectTypeName = ObjectUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
+			m_ObjectType = ObjectUtils.TypeNameToType(m_ObjectTypeName);
+
+			OnObjectModified();
 		}
 
-		if (!IsAssignable(obj))
+		bool SetObject(Object obj)
 		{
-			m_FieldLabel.text = "Type Mismatch";
-			return;
+			if (!IsAssignable(obj))
+				return false;
+
+			if (obj == null && m_SerializedProperty.objectReferenceValue == null)
+				return true;
+
+			if (m_SerializedProperty.objectReferenceValue != null && m_SerializedProperty.objectReferenceValue.Equals(obj))
+				return true;
+
+			m_SerializedProperty.objectReferenceValue = obj;
+
+			OnObjectModified();
+
+			FinalizeModifications();
+
+			return true;
 		}
 
-		m_FieldLabel.text = string.Format("{0} ({1})", obj.name, obj.GetType().Name);
-	}
+		public void ClearButton()
+		{
+			SetObject(null);
+		}
 
-	protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
-	{
-		return m_SerializedProperty.objectReferenceValue;
-	}
+		public override void OnObjectModified()
+		{
+			base.OnObjectModified();
+			UpdateUI();
+		}
+		public void UpdateUI()
+		{
+			var obj = m_SerializedProperty.objectReferenceValue;
+			if (obj == null)
+			{
+				m_FieldLabel.text = string.Format("None ({0})", m_ObjectTypeName);
+				return;
+			}
+			if (!IsAssignable(obj))
+			{
+				m_FieldLabel.text = "Type Mismatch";
+				return;
+			}
+			m_FieldLabel.text = string.Format("{0} ({1})", obj.name, obj.GetType().Name);
+		}
+		protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
+		{
+			return m_SerializedProperty.objectReferenceValue;
+		}
 
-	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
-	{
-		var obj = dropObject as Object;
-		return obj != null && IsAssignable(obj);
-	}
+		protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
+		{
+			var obj = dropObject as Object;
+			return obj != null && IsAssignable(obj);
+		}
 
-	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
-	{
-		SetObject(dropObject as Object);
-	}
+		protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+		{
+			SetObject(dropObject as Object);
+		}
 
-	public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
-	{
-		base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, uiMaskMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
-		m_Button.sharedMaterials = highlightMaterials;
-	}
+		public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
+		{
+			base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, uiMaskMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
+			m_Button.sharedMaterials = highlightMaterials;
+		}
 
-	bool IsAssignable(Object obj)
-	{
-		return obj == null || obj.GetType().IsAssignableFrom(m_ObjectType);
+		bool IsAssignable(Object obj)
+		{
+			return obj == null || obj.GetType().IsAssignableFrom(m_ObjectType);
+		}
 	}
-#endif
 }
+#endif

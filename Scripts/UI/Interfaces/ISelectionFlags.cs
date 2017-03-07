@@ -1,9 +1,10 @@
-﻿namespace UnityEngine.Experimental.EditorVR.UI
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR.UI
 {
 	/// <summary>
 	/// Allows fine-grained control of what constitutes a selection
 	/// </summary>
-	public interface ISelectionFlags
+	interface ISelectionFlags
 	{
 		/// <summary>
 		/// Flags to control selection
@@ -11,3 +12,4 @@
 		SelectionFlags selectionFlags { get; set; }
 	}
 }
+#endif

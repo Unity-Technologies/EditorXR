@@ -1,13 +1,17 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Tools
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR
 {
-    /// <summary>
-    /// Gives decorated class access to the camera rig
-    /// </summary>
-    public interface IUsesCameraRig
+	/// <summary>
+	/// Gives decorated class access to the camera rig
+	/// </summary>
+	public interface IUsesCameraRig
 	{
-	    /// <summary>
-	    /// The camera rig root transform
-	    /// </summary>
+		/// <summary>
+		/// The camera rig root transform
+		/// </summary>
 		Transform cameraRig { set; }
 	}
 }
+#endif

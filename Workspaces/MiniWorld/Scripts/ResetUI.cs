@@ -1,9 +1,17 @@
+#if UNITY_EDITOR
 using UnityEngine;
-using UnityEngine.UI;
 
-public class ResetUI : MonoBehaviour
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	public Button resetButton { get { return m_ResetButton; } }
-	[SerializeField]
-	Button m_ResetButton;
+	sealed class ResetUI : MonoBehaviour
+	{
+		public UnityEngine.UI.Button resetButton
+		{
+			get { return m_ResetButton; }
+		}
+
+		[SerializeField]
+		UnityEngine.UI.Button m_ResetButton;
+	}
 }
+#endif

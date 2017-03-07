@@ -1,6 +1,8 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Gives decorated class ability to highlight a given GameObject
@@ -14,3 +16,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		Action<GameObject, bool> setHighlight { set; }
 	}
 }
+#endif

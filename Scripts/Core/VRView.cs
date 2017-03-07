@@ -14,12 +14,12 @@ using Object = UnityEngine.Object;
 namespace UnityEditor.Experimental.EditorVR
 {
 	[InitializeOnLoad]
-	internal class VRView : EditorWindow
+	sealed class VRView : EditorWindow
 	{
-		const string kShowDeviceView = "VRView.ShowDeviceView";
-		const string kUseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
-		const string kLaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
-		const float kHMDActivityTimeout = 3f; // in seconds
+		const string k_ShowDeviceView = "VRView.ShowDeviceView";
+		const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
+		const string k_LaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
+		const float k_HMDActivityTimeout = 3f; // in seconds
 
 		DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 
@@ -119,10 +119,10 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 
-		public static event Action onEnable = delegate {};
-		public static event Action onDisable = delegate {};
-		public static event Action<EditorWindow> onGUIDelegate = delegate {};
-		public static event Action onHMDReady = delegate {};
+		public static event Action onEnable;
+		public static event Action onDisable;
+		public static event Action<EditorWindow> onGUIDelegate;
+		public static event Action onHMDReady;
 
 		public static VRView GetWindow()
 		{
@@ -150,10 +150,10 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private static void ReopenOnExitPlaymode()
 		{
-			bool launch = EditorPrefs.GetBool(kLaunchOnExitPlaymode, false);
+			bool launch = EditorPrefs.GetBool(k_LaunchOnExitPlaymode, false);
 			if (!launch || !EditorApplication.isPlaying)
 			{
-				EditorPrefs.DeleteKey(kLaunchOnExitPlaymode);
+				EditorPrefs.DeleteKey(k_LaunchOnExitPlaymode);
 				EditorApplication.update -= ReopenOnExitPlaymode;
 				if (launch)
 					GetWindow();
@@ -169,12 +169,12 @@ namespace UnityEditor.Experimental.EditorVR
 			autoRepaintOnSceneChange = true;
 			s_ActiveView = this;
 
-			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", EditorVR.kDefaultHideFlags, typeof(Camera));
+			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", EditorVR.DefaultHideFlags, typeof(Camera));
 			m_Camera = cameraGO.GetComponent<Camera>();
 			m_Camera.enabled = false;
 			m_Camera.cameraType = CameraType.VR;
 
-			GameObject rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", EditorVR.kDefaultHideFlags, typeof(EditorMonoBehaviour));
+			GameObject rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", EditorVR.DefaultHideFlags, typeof(EditorMonoBehaviour));
 			m_CameraRig = rigGO.transform;
 			m_Camera.transform.parent = m_CameraRig;
 			m_Camera.nearClipPlane = 0.01f;
@@ -187,8 +187,8 @@ namespace UnityEditor.Experimental.EditorVR
 			m_CameraRig.position = position;
 			m_CameraRig.rotation = Quaternion.identity;
 
-			m_ShowDeviceView = EditorPrefs.GetBool(kShowDeviceView, false);
-			m_UseCustomPreviewCamera = EditorPrefs.GetBool(kUseCustomPreviewCamera, false);
+			m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
+			m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
 
 			// Disable other views to increase rendering performance for EditorVR
 			SetOtherViewsEnabled(false);
@@ -205,19 +205,21 @@ namespace UnityEditor.Experimental.EditorVR
 			m_VRInitialized |= (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
 #endif
 
-			onEnable();
+			if (onEnable != null)
+				onEnable();
 		}
 
 		public void OnDisable()
 		{
-			onDisable();
+			if (onDisable != null)
+				onDisable();
 
 			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
 			VRSettings.StopRenderingToDevice();
 
-			EditorPrefs.SetBool(kShowDeviceView, m_ShowDeviceView);
-			EditorPrefs.SetBool(kUseCustomPreviewCamera, m_UseCustomPreviewCamera);
+			EditorPrefs.SetBool(k_ShowDeviceView, m_ShowDeviceView);
+			EditorPrefs.SetBool(k_UseCustomPreviewCamera, m_UseCustomPreviewCamera);
 
 			SetOtherViewsEnabled(true);
 
@@ -243,7 +245,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			if (Quaternion.Angle(headRotation, m_LastHeadRotation) > 0.1f)
 			{
-				if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
+				if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + k_HMDActivityTimeout)
 					SetSceneViewsEnabled(false);
 
 				// Keep track of HMD activity by tracking head rotations
@@ -257,7 +259,8 @@ namespace UnityEditor.Experimental.EditorVR
 				if (!m_HMDReady)
 				{
 					m_HMDReady = true;
-					onHMDReady();
+					if (onHMDReady != null)
+						onHMDReady();
 				}
 			}
 
@@ -313,7 +316,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private void OnGUI()
 		{
-			onGUIDelegate(this);
+			if (onGUIDelegate != null)
+				onGUIDelegate(this);
+
 			var e = Event.current;
 			if (e.type != EventType.ExecuteCommand && e.type != EventType.used)
 			{
@@ -323,7 +328,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
 				PrepareCameraTargetTexture(cameraRect);
 
-				m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : Tools.visibleLayers;
+				m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : UnityEditor.Tools.visibleLayers;
 
 				// Draw camera
 				bool pushedGUIClip;
@@ -368,7 +373,7 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			if (EditorApplication.isPlayingOrWillChangePlaymode)
 			{
-				EditorPrefs.SetBool(kLaunchOnExitPlaymode, true);
+				EditorPrefs.SetBool(k_LaunchOnExitPlaymode, true);
 				Close();
 			}
 		}
@@ -389,7 +394,7 @@ namespace UnityEditor.Experimental.EditorVR
 			UpdateCamera();
 
 			// Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
-			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
+			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + k_HMDActivityTimeout)
 				SetSceneViewsEnabled(true);
 		}
 

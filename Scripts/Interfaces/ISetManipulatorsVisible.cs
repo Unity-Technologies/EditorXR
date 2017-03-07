@@ -1,6 +1,7 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provide access to show or hide manipulator(s)
@@ -13,3 +14,4 @@ namespace UnityEngine.Experimental.EditorVR
 		Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { set; }
 	}
 }
+#endif

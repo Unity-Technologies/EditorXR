@@ -1,11 +1,10 @@
-#if UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.UI;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.UI;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -26,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR
 			internal void Initialize()
 			{
 				// Create event system, input module, and event camera
-				U.Object.AddComponent<EventSystem>(evr.gameObject);
+				ObjectUtils.AddComponent<EventSystem>(evr.gameObject);
 
 				var inputModule = evr.AddModule<MultipleRayInputModule>();
 				evr.m_InputModule = inputModule;
@@ -35,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (evr.m_CustomPreviewCamera != null)
 					evr.m_InputModule.layerMask |= evr.m_CustomPreviewCamera.hmdOnlyLayerMask;
 
-				eventCamera = U.Object.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
+				eventCamera = ObjectUtils.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
 				eventCamera.enabled = false;
 				inputModule.eventCamera = eventCamera;
 
@@ -44,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
 			{
-				var go = U.Object.Instantiate(prefab);
+				var go = ObjectUtils.Instantiate(prefab);
 				go.transform.SetParent(parent ? parent : evr.transform, worldPositionStays);
 				foreach (var canvas in go.GetComponentsInChildren<Canvas>())
 					canvas.worldCamera = eventCamera;

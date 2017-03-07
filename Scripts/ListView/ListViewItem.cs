@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
 namespace ListView
 {
@@ -12,3 +13,4 @@ namespace ListView
 		}
 	}
 }
+#endif

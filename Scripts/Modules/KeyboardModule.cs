@@ -1,12 +1,14 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Core;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.UI;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class KeyboardModule : MonoBehaviour, ICustomRay, IForEachRayOrigin
+	sealed class KeyboardModule : MonoBehaviour, ICustomRay, IForEachRayOrigin
 	{
 		[SerializeField]
 		KeyboardMallet m_KeyboardMalletPrefab;
@@ -35,7 +37,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 			// Check if the prefab has already been instantiated
 			if (m_NumericKeyboard == null)
-				m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetCameraRig()).GetComponent<KeyboardUI>();
+				m_NumericKeyboard = ObjectUtils.Instantiate(m_NumericKeyboardPrefab.gameObject, CameraUtils.GetCameraRig()).GetComponent<KeyboardUI>();
 
 			return m_NumericKeyboard;
 		}
@@ -47,14 +49,14 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 			// Check if the prefab has already been instantiated
 			if (m_StandardKeyboard == null)
-				m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetCameraRig()).GetComponent<KeyboardUI>();
+				m_StandardKeyboard = ObjectUtils.Instantiate(m_StandardKeyboardPrefab.gameObject, CameraUtils.GetCameraRig()).GetComponent<KeyboardUI>();
 
 			return m_StandardKeyboard;
 		}
 
 		public void SpawnKeyboardMallet(Transform rayOrigin)
 		{
-			var malletTransform = U.Object.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOrigin).transform;
+			var malletTransform = ObjectUtils.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOrigin).transform;
 			malletTransform.position = rayOrigin.position;
 			malletTransform.rotation = rayOrigin.rotation;
 			var mallet = malletTransform.GetComponent<KeyboardMallet>();
@@ -100,3 +102,4 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

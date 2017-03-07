@@ -1,13 +1,13 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class ActionsModule : MonoBehaviour, IConnectInterfaces
+	sealed class ActionsModule : MonoBehaviour, IConnectInterfaces
 	{
 		public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
 		List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
@@ -28,7 +28,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		void SpawnActions()
 		{
-			IEnumerable<Type> actionTypes = U.Object.GetImplementationsOfInterface(typeof(IAction));
+			IEnumerable<Type> actionTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IAction));
 			m_Actions = new List<IAction>();
 			foreach (Type actionType in actionTypes)
 			{
@@ -36,7 +36,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				if (actionType.IsNested || !typeof(MonoBehaviour).IsAssignableFrom(actionType))
 					continue;
 
-				var action = U.Object.AddComponent(actionType, gameObject) as IAction;
+				var action = ObjectUtils.AddComponent(actionType, gameObject) as IAction;
 				var attribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
 
 				connectInterfaces(action);
@@ -61,3 +61,4 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

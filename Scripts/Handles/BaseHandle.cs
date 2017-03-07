@@ -1,45 +1,47 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.UI;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.UI;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.Experimental.EditorVR.Handles
+namespace UnityEditor.Experimental.EditorVR.Handles
 {
 	/// <summary>
 	/// Base class for providing draggable handles in 3D (requires PhysicsRaycaster)
 	/// </summary>
-	public class BaseHandle : MonoBehaviour, ISelectionFlags, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IDropReceiver, IDroppable
+	class BaseHandle : MonoBehaviour, ISelectionFlags, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IDropReceiver, IDroppable
 	{
 		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]
 		[FlagsProperty]
 		private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
-		private const int kDefaultCapacity = 2; // i.e. 2 controllers
+		private const int k_DefaultCapacity = 2; // i.e. 2 controllers
 
-		protected readonly List<Transform> m_HoverSources = new List<Transform>(kDefaultCapacity);
-		protected readonly List<Transform> m_DragSources = new List<Transform>(kDefaultCapacity);
+		protected readonly List<Transform> m_HoverSources = new List<Transform>(k_DefaultCapacity);
+		protected readonly List<Transform> m_DragSources = new List<Transform>(k_DefaultCapacity);
 		protected DateTime m_LastClickTime;
 
 		public Vector3 startDragPosition { get; protected set; }
 
-		public Func<BaseHandle, object, bool> canDrop;
-		public Action<BaseHandle, object> receiveDrop;
-		public Func<BaseHandle, object> getDropObject;
-		public event Action<BaseHandle> dropHoverStarted = delegate {};
-		public event Action<BaseHandle> dropHoverEnded = delegate {};
+		public Func<BaseHandle, object, bool> canDrop { private get; set; }
+		public Action<BaseHandle, object> receiveDrop { private get; set; }
+		public Func<BaseHandle, object> getDropObject { private get; set; }
+		public event Action<BaseHandle> dropHoverStarted;
+		public event Action<BaseHandle> dropHoverEnded;
 
-		public event Action<BaseHandle, HandleEventData> dragStarted = delegate { };
-		public event Action<BaseHandle, HandleEventData> dragging = delegate { };
-		public event Action<BaseHandle, HandleEventData> dragEnded = delegate { };
+		public event Action<BaseHandle, HandleEventData> dragStarted;
+		public event Action<BaseHandle, HandleEventData> dragging;
+		public event Action<BaseHandle, HandleEventData> dragEnded;
 
-		public event Action<BaseHandle, HandleEventData> doubleClick = delegate { };
+		public event Action<BaseHandle, HandleEventData> doubleClick;
 
-		public event Action<BaseHandle, HandleEventData> hoverStarted = delegate { };
-		public event Action<BaseHandle, HandleEventData> hovering = delegate { };
-		public event Action<BaseHandle, HandleEventData> hoverEnded = delegate { };
+		public event Action<BaseHandle, HandleEventData> hoverStarted;
+		public event Action<BaseHandle, HandleEventData> hovering;
+		public event Action<BaseHandle, HandleEventData> hoverEnded;
 
 		void Awake()
 		{
@@ -64,12 +66,12 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 
 		protected virtual HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new HandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData));
+			return new HandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData));
 		}
 
 		public void OnBeginDrag(RayEventData eventData)
 		{
-			if (!U.UI.IsValidEvent(eventData, selectionFlags))
+			if (!UIUtils.IsValidEvent(eventData, selectionFlags))
 				return;
 
 			m_DragSources.Add(eventData.rayOrigin);
@@ -80,7 +82,7 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 			//Double-click logic
 			var timeSinceLastClick = (float) (DateTime.Now - m_LastClickTime).TotalSeconds;
 			m_LastClickTime = DateTime.Now;
-			if (U.UI.IsDoubleClick(timeSinceLastClick))
+			if (UIUtils.IsDoubleClick(timeSinceLastClick))
 			{
 				OnDoubleClick(handleEventData);
 			}
@@ -102,7 +104,7 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			if (!U.UI.IsValidEvent(eventData, selectionFlags))
+			if (!UIUtils.IsValidEvent(eventData, selectionFlags))
 				return;
 
 			m_HoverSources.Add(eventData.rayOrigin);
@@ -145,7 +147,8 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 		/// </summary>
 		protected virtual void OnHandleHoverStarted(HandleEventData eventData)
 		{
-			hoverStarted(this, eventData);
+			if (hoverStarted != null)
+				hoverStarted(this, eventData);
 		}
 
 		/// <summary>
@@ -153,7 +156,8 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 		/// </summary>
 		protected virtual void OnHandleHovering(HandleEventData eventData)
 		{
-			hovering(this, eventData);
+			if (hovering != null)
+				hovering(this, eventData);
 		}
 
 		/// <summary>
@@ -161,7 +165,8 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 		/// </summary>
 		protected virtual void OnHandleHoverEnded(HandleEventData eventData)
 		{
-			hoverEnded(this, eventData);
+			if (hoverEnded != null)
+				hoverEnded(this, eventData);
 		}
 
 		/// <summary>
@@ -169,7 +174,8 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 		/// </summary>
 		protected virtual void OnHandleDragStarted(HandleEventData eventData)
 		{
-			dragStarted(this, eventData);
+			if (dragStarted != null)
+				dragStarted(this, eventData);
 		}
 
 		/// <summary>
@@ -177,7 +183,8 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 		/// </summary>
 		protected virtual void OnHandleDragging(HandleEventData eventData)
 		{
-			dragging(this, eventData);
+			if (dragging != null)
+				dragging(this, eventData);
 		}
 
 		/// <summary>
@@ -185,7 +192,8 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 		/// </summary>
 		protected virtual void OnHandleDragEnded(HandleEventData eventData)
 		{
-			dragEnded(this, eventData);
+			if (dragEnded != null)
+				dragEnded(this, eventData);
 		}
 
 		/// <summary>
@@ -193,7 +201,8 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 		/// </summary>
 		protected virtual void OnDoubleClick(HandleEventData eventData)
 		{
-			doubleClick(this, eventData);
+			if (doubleClick != null)
+				doubleClick(this, eventData);
 		}
 
 		public virtual bool CanDrop(object dropObject)
@@ -220,12 +229,15 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 
 		public void OnDropHoverStarted()
 		{
-			dropHoverStarted(this);
+			if (dropHoverStarted != null)
+				dropHoverStarted(this);
 		}
 
 		public void OnDropHoverEnded()
 		{
-			dropHoverEnded(this);
+			if (dropHoverEnded != null)
+				dropHoverEnded(this);
 		}
 	}
 }
+#endif

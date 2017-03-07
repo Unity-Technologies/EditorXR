@@ -1,17 +1,16 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Workspaces;
+using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Proxies;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Workspaces;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType
+	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -116,7 +115,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		private void OnDestroy()
 		{
-			U.Object.Destroy(m_MainMenuUI.gameObject);
+			ObjectUtils.Destroy(m_MainMenuUI.gameObject);
 		}
 
 		private void CreateFaceButtons(List<Type> types)
@@ -188,3 +187,4 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

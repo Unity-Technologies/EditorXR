@@ -1,7 +1,8 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Method signature for consuming an input control
@@ -22,3 +23,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl);
 	}
 }
+#endif

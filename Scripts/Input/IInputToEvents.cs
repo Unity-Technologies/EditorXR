@@ -1,10 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 
-namespace UnityEngine.Experimental.EditorVR.Input
+namespace UnityEditor.Experimental.EditorVR.Input
 {
-	internal interface IInputToEvents
+	interface IInputToEvents
 	{
 		bool active { get; }
 		event Action activeChanged;
 	}
 }
+#endif
