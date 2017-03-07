@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class Viewer : Nested
 		{
-			const float kCameraRigTransitionTime = 0.75f;
+			const float k_CameraRigTransitionTime = 0.75f;
 
 			internal void AddPlayerModel()
 			{
@@ -81,9 +81,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var diffTime = 0f;
 				var startTime = Time.realtimeSinceStartup;
-				while (diffTime < kCameraRigTransitionTime)
+				while (diffTime < k_CameraRigTransitionTime)
 				{
-					var t = diffTime / kCameraRigTransitionTime;
+					var t = diffTime / k_CameraRigTransitionTime;
 					// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
 					cameraRig.position = Vector3.Lerp(startPosition, position, t);
 					cameraRig.rotation = Quaternion.Lerp(startRotation, rotation, t);

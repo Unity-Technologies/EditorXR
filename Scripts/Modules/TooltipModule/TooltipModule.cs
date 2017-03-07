@@ -9,14 +9,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class TooltipModule : MonoBehaviour, IUsesViewerScale
 	{
-		const float kDelay = 0; // In case we want to bring back a delay
-		const float kTransitionDuration = 0.1f;
-		const float kUVScale = 100f;
-		const float kUVScrollSpeed = 1.5f;
-		const float kOffset = 0.05f;
+		const float k_Delay = 0; // In case we want to bring back a delay
+		const float k_TransitionDuration = 0.1f;
+		const float k_UVScale = 100f;
+		const float k_UVScrollSpeed = 1.5f;
+		const float k_Offset = 0.05f;
 
-		const string kMaterialColorTopProperty = "_ColorTop";
-		const string kMaterialColorBottomProperty = "_ColorBottom";
+		const string k_MaterialColorTopProperty = "_ColorTop";
+		const string k_MaterialColorBottomProperty = "_ColorBottom";
 
 		[SerializeField]
 		GameObject m_TooltipPrefab;
@@ -47,8 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_TooltipScale = m_TooltipPrefab.transform.localScale;
 			m_HighlightMaterial = Instantiate(m_HighlightMaterial);
 			var sessionGradient = UnityBrandColorScheme.sessionGradient;
-			m_HighlightMaterial.SetColor(kMaterialColorTopProperty, sessionGradient.a);
-			m_HighlightMaterial.SetColor(kMaterialColorBottomProperty, sessionGradient.b);
+			m_HighlightMaterial.SetColor(k_MaterialColorTopProperty, sessionGradient.a);
+			m_HighlightMaterial.SetColor(k_MaterialColorBottomProperty, sessionGradient.b);
 		}
 
 		void Update()
@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var tooltip = kvp.Key;
 				var tooltipData = kvp.Value;
 				var hoverTime = Time.realtimeSinceStartup - tooltipData.startTime;
-				if (hoverTime > kDelay)
+				if (hoverTime > k_Delay)
 				{
 					var placement = tooltip as ITooltipPlacement;
 					var target = GetTooltipTarget(tooltip);
@@ -84,7 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						}
 					}
 
-					var lerp = Mathf.Clamp01((hoverTime - kDelay) / kTransitionDuration);
+					var lerp = Mathf.Clamp01((hoverTime - k_Delay) / k_TransitionDuration);
 					UpdateVisuals(tooltip, tooltipUI, target, lerp);
 				}
 			}
@@ -135,7 +135,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (placement != null)
 				offset *= halfWidth * rectTransform.lossyScale.x;
 			else
-				offset = Vector3.back * kOffset;
+				offset = Vector3.back * k_Offset;
 
 			MathUtilsExt.SetTransformOffset(target, tooltipTransform, offset * lerp, Quaternion.identity);
 
@@ -166,8 +166,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var length = toSource.magnitude;
 				var uvRect = dottedLine.uvRect;
 				var worldScale = 1 / viewerScale;
-				uvRect.width = length * kUVScale * worldScale;
-				uvRect.xMin += kUVScrollSpeed * Time.unscaledDeltaTime;
+				uvRect.width = length * k_UVScale * worldScale;
+				uvRect.xMin += k_UVScrollSpeed * Time.unscaledDeltaTime;
 				dottedLine.uvRect = uvRect;
 
 				var dottedLineTransform = dottedLine.transform.parent.GetComponent<RectTransform>();
@@ -221,10 +221,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var target = GetTooltipTarget(tooltip);
 			var startTime = Time.realtimeSinceStartup;
-			while (Time.realtimeSinceStartup - startTime < kTransitionDuration)
+			while (Time.realtimeSinceStartup - startTime < k_TransitionDuration)
 			{
 				UpdateVisuals(tooltip, tooltipUI, target,
-					1 - (Time.realtimeSinceStartup - startTime) / kTransitionDuration);
+					1 - (Time.realtimeSinceStartup - startTime) / k_TransitionDuration);
 				yield return null;
 			}
 

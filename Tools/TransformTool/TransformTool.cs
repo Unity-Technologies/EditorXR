@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools

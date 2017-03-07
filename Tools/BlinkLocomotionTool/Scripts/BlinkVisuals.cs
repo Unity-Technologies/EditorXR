@@ -46,8 +46,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		[SerializeField]
 		private MeshRenderer m_TubeRenderer;
 
-		private readonly Vector3 kGroundOffset = Vector3.one * 0.01f; // Used to offset the room scale visuals to avoid z-fighting
-		private readonly string kTintColor = "_TintColor";
+		private readonly Vector3 k_GroundOffset = Vector3.one * 0.01f; // Used to offset the room scale visuals to avoid z-fighting
+		private readonly string k_TintColor = "_TintColor";
 
 		private float m_CurveLengthEstimate;
 		private Vector3? m_DetachedWorldArcPosition;
@@ -221,7 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		private IEnumerator AnimateShowVisuals()
 		{
 			m_State = State.TransitioningIn;
-			m_RoomScaleTransform.position = m_FinalPosition + kGroundOffset;
+			m_RoomScaleTransform.position = m_FinalPosition + k_GroundOffset;
 			ShowLine();
 
 			for (int i = 0; i < m_MotionSphereCount; ++i)
@@ -324,7 +324,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_BezierControlPoints[2] = m_FinalPosition;
 
 			// set the position of the locator
-			m_LocatorRoot.position = m_DetachedWorldArcPosition == null ? m_FinalPosition + kGroundOffset : (Vector3)m_DetachedWorldArcPosition;
+			m_LocatorRoot.position = m_DetachedWorldArcPosition == null ? m_FinalPosition + k_GroundOffset : (Vector3)m_DetachedWorldArcPosition;
 
 			validTarget = false;
 
@@ -392,7 +392,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			if (!show)
 			{
-				m_RoomScaleRenderer.sharedMaterial.SetColor(kTintColor, Color.clear);
+				m_RoomScaleRenderer.sharedMaterial.SetColor(k_TintColor, Color.clear);
 
 				for (int i = 0; i < m_MotionSphereCount; ++i)
 					m_MotionSpheres[i].localScale = Vector3.zero;
@@ -404,8 +404,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_LineRenderer.SetColors(color, color);
 
 			// Set the color for all object sharind the blink material
-			m_BlinkMaterial.SetColor(kTintColor, color);
-			m_MotionSpheresMaterial.SetColor(kTintColor, color);
+			m_BlinkMaterial.SetColor(k_TintColor, color);
+			m_MotionSpheresMaterial.SetColor(k_TintColor, color);
 		}
 	}
 }

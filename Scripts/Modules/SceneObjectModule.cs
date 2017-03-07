@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	class SceneObjectModule : MonoBehaviour, IUsesSpatialHash
+	sealed class SceneObjectModule : MonoBehaviour, IUsesSpatialHash
 	{
 		const float k_InstantiateFOVDifference = -5f;
 		const float k_GrowDuration = 0.5f;

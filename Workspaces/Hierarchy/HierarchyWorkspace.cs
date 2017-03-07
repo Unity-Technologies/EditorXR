@@ -4,7 +4,6 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces

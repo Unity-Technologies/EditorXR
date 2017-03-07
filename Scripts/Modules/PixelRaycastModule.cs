@@ -1,12 +1,12 @@
 ﻿#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Core;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	class PixelRaycastModule : MonoBehaviour, IForEachRayOrigin
+	sealed class PixelRaycastModule : MonoBehaviour, IForEachRayOrigin
 	{
 		readonly Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
 

@@ -1,6 +1,7 @@
 ﻿using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Core
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	delegate void ForEachRayOriginCallback(Transform rayOrigin);
 

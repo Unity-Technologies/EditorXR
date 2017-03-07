@@ -2,7 +2,6 @@
 using System;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces

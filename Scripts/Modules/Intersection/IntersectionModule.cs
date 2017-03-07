@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
-		const int kMaxTestsPerTester = 100;
+		const int k_MaxTestsPerTester = 100;
 
 		private readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		private readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
@@ -86,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 							return false;
 						});
 
-						if (intersectionList.Count > kMaxTestsPerTester)
+						if (intersectionList.Count > k_MaxTestsPerTester)
 							continue;
 
 						foreach (var obj in intersectionList)

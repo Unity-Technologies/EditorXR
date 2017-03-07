@@ -449,11 +449,11 @@ namespace UnityEditor.Experimental.EditorVR
 #else
 	internal class NoEditorVR
 	{
-		const string kShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
+		const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
 
 		static NoEditorVR()
 		{
-			if (EditorPrefs.GetBool(kShowCustomEditorWarning, true))
+			if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
 			{
 				var message = "EditorVR requires a custom editor build. Please see https://blogs.unity3d.com/2016/12/15/editorvr-experimental-build-available-today/";
 				var result = EditorUtility.DisplayDialogComplex("Custom Editor Build Required", message, "Download", "Ignore", "Remind Me Again");
@@ -463,7 +463,7 @@ namespace UnityEditor.Experimental.EditorVR
 						Application.OpenURL("http://rebrand.ly/EditorVR-build");
 						break;
 					case 1:
-						EditorPrefs.SetBool(kShowCustomEditorWarning, false);
+						EditorPrefs.SetBool(k_ShowCustomEditorWarning, false);
 						break;
 					case 2:
 						Debug.Log("<color=orange>" + message + "</color>");

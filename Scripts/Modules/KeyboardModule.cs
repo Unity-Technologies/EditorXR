@@ -1,14 +1,14 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Core;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class KeyboardModule : MonoBehaviour, ICustomRay, IForEachRayOrigin
+	sealed class KeyboardModule : MonoBehaviour, ICustomRay, IForEachRayOrigin
 	{
 		[SerializeField]
 		KeyboardMallet m_KeyboardMalletPrefab;

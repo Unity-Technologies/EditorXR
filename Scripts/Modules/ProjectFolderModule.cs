@@ -8,13 +8,13 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class ProjectFolderModule : MonoBehaviour
+	sealed class ProjectFolderModule : MonoBehaviour
 	{
 		// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
-		const float kMaxFrameTime = 0.01f;
+		const float k_MaxFrameTime = 0.01f;
 
 		// Minimum time to spend loading the project folder before yielding
-		const float kMinProjectFolderLoadTime = 0.005f;
+		const float k_MinProjectFolderLoadTime = 0.005f;
 
 		readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 
@@ -126,8 +126,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						hasNext = hp.Next(null);
 
 					// Spend a minimum amount of time in this function, and if we have extra time in the frame, use it
-					if (Time.realtimeSinceStartup - m_ProjectFolderLoadYieldTime > kMaxFrameTime
-						&& Time.realtimeSinceStartup - m_ProjectFolderLoadStartTime > kMinProjectFolderLoadTime)
+					if (Time.realtimeSinceStartup - m_ProjectFolderLoadYieldTime > k_MaxFrameTime
+						&& Time.realtimeSinceStartup - m_ProjectFolderLoadStartTime > k_MinProjectFolderLoadTime)
 					{
 						m_ProjectFolderLoadYieldTime = Time.realtimeSinceStartup;
 						yield return null;

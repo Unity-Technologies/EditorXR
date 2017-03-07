@@ -5,9 +5,9 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	class HighlightModule : MonoBehaviour
+	sealed class HighlightModule : MonoBehaviour
 	{
-		static readonly Vector3 kHighlightScaleIncrease = Vector3.one * 0.0125f;
+		static readonly Vector3 k_HighlightScaleIncrease = Vector3.one * 0.0125f;
 
 		[SerializeField]
 		private Material m_HighlightMaterial;
@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				foreach (var m in go.GetComponentsInChildren<MeshFilter>())
 				{
 					var highlightTransform = m.transform;
-					Matrix4x4 highlightScaleIncreaseMatrix = Matrix4x4.TRS(highlightTransform.position, highlightTransform.rotation, highlightTransform.lossyScale + kHighlightScaleIncrease);
+					Matrix4x4 highlightScaleIncreaseMatrix = Matrix4x4.TRS(highlightTransform.position, highlightTransform.rotation, highlightTransform.lossyScale + k_HighlightScaleIncrease);
 
 					if (m.sharedMesh == null)
 						continue;

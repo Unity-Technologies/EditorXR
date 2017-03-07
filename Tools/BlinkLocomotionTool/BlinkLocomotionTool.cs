@@ -13,21 +13,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ICustomActionMap, ILinkedObject, IUsesProxyType, IUsesViewerScale
 
 	{
-		const float kFastRotationSpeed = 300f;
-		const float kRotationThreshold = 0.9f;
-		const float kSlowRotationSpeed = 15f;
-		const float kFastMoveSpeed = 10f;
-		const float kMoveThreshold = 0.9f;
-		const float kSlowMoveSpeed = 3f;
+		const float k_FastRotationSpeed = 300f;
+		const float k_RotationThreshold = 0.9f;
+		const float k_SlowRotationSpeed = 15f;
+		const float k_FastMoveSpeed = 10f;
+		const float k_MoveThreshold = 0.9f;
+		const float k_SlowMoveSpeed = 3f;
 
-		const float kMoveThresholdVive = 0.8f;
-		const float kRotationThresholdVive = 0.8f;
+		const float k_MoveThresholdVive = 0.8f;
+		const float k_RotationThresholdVive = 0.8f;
 
 		//TODO: Fix triangle intersection test at tiny scales, so this can go back to 0.01
-		const float kMinScale = 0.1f;
-		const float kMaxScale = 1000f;
+		const float k_MinScale = 0.1f;
+		const float k_MaxScale = 1000f;
 
-		const string kWorldScaleProperty = "_WorldScale";
+		const string k_WorldScaleProperty = "_WorldScale";
 
 		enum State
 		{
@@ -106,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_OriginalNearClipPlane = m_MainCamera.nearClipPlane;
 			m_OriginalFarClipPlane = m_MainCamera.farClipPlane;
 
-			Shader.SetGlobalFloat(kWorldScaleProperty, 1);
+			Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
 		}
 
 		private void OnDisable()
@@ -214,11 +214,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 										ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
 								}
 
-								if (currentScale < kMinScale)
-									currentScale = kMinScale;
+								if (currentScale < k_MinScale)
+									currentScale = k_MinScale;
 
-								if (currentScale > kMaxScale)
-									currentScale = kMaxScale;
+								if (currentScale > k_MaxScale)
+									currentScale = k_MaxScale;
 
 								if (m_AllowScaling)
 								{
@@ -236,7 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 									m_ViewerScaleVisuals.viewerScale = currentScale;
 									m_BlinkVisuals.viewerScale = currentScale;
-									Shader.SetGlobalFloat(kWorldScaleProperty, 1f / currentScale);
+									Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / currentScale);
 								}
 								break;
 							}
@@ -272,10 +272,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						}
 						else
 						{
-							var speed = yawValue * kSlowRotationSpeed;
-							var threshold = isVive ? kRotationThresholdVive : kRotationThreshold;
+							var speed = yawValue * k_SlowRotationSpeed;
+							var threshold = isVive ? k_RotationThresholdVive : k_RotationThreshold;
 							if (Mathf.Abs(yawValue) > threshold)
-								speed = kFastRotationSpeed * Mathf.Sign(yawValue);
+								speed = k_FastRotationSpeed * Mathf.Sign(yawValue);
 
 							cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.unscaledDeltaTime);
 						}
@@ -334,10 +334,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Translate(float inputValue, bool isVive, Vector3 direction)
 		{
-			var speed = inputValue * kSlowMoveSpeed;
-			var threshold = isVive ? kMoveThresholdVive : kMoveThreshold;
+			var speed = inputValue * k_SlowMoveSpeed;
+			var threshold = isVive ? k_MoveThresholdVive : k_MoveThreshold;
 			if (Mathf.Abs(inputValue) > threshold)
-				speed = kFastMoveSpeed * Mathf.Sign(inputValue);
+				speed = k_FastMoveSpeed * Mathf.Sign(inputValue);
 
 			speed *= getViewerScale();
 

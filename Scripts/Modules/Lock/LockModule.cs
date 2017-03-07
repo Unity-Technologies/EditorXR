@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	class LockModule : MonoBehaviour, IActions, ISelectionChanged
+	sealed class LockModule : MonoBehaviour, IActions, ISelectionChanged
 	{
 		class LockModuleAction : IAction, ITooltip
 		{

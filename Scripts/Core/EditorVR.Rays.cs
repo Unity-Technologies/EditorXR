@@ -1,12 +1,12 @@
 #if UNITY_EDITORVR
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Core;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -19,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
-			const float kDefaultRayLength = 100f;
+			const float k_DefaultRayLength = 100f;
 
 			internal Dictionary<Transform, DefaultProxyRay> defaultRays { get { return m_DefaultRays; } }
 			readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
@@ -159,7 +159,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 					foreach (var rayOrigin in proxy.rayOrigins.Values)
 					{
-						var distance = kDefaultRayLength * Viewer.GetViewerScale();
+						var distance = k_DefaultRayLength * Viewer.GetViewerScale();
 
 						// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
 						// object, so visually show the ray terminating there instead of the object; UI is already given
