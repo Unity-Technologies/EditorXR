@@ -104,17 +104,21 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 		dropZoneTransform.localScale = dropZoneScale;
 
 		var dropZonePosition = dropZoneTransform.localPosition;
-		dropZonePosition.z = bounds.extents.z;
+		dropZonePosition.z = bounds.extents.z + dropZoneScale.z * 0.5f;
 		dropZoneTransform.localPosition = dropZonePosition;
 
 		dropZoneTransform = m_BottomDropZone.transform;
 		dropZoneScale = dropZoneTransform.localScale;
 		dropZoneScale.x = width;
-		dropZoneScale.z = bounds.size.z - m_ExpandedDataLength * m_ItemSize.Value.z;
+		var extraSpace = bounds.size.z - m_ExpandedDataLength * m_ItemSize.Value.z;
+		dropZoneScale.z = extraSpace;
+		if (extraSpace < m_BottomDropZoneStartHeight)
+			dropZoneScale.z = m_BottomDropZoneStartHeight;
+
 		dropZoneTransform.localScale = dropZoneScale;
 
 		dropZonePosition = dropZoneTransform.localPosition;
-		dropZonePosition.z -= bounds.extents.z;
+		dropZonePosition.z = dropZoneScale.z * 0.5f - bounds.extents.z;
 		dropZoneTransform.localPosition = dropZonePosition;
 	}
 

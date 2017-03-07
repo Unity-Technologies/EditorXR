@@ -164,8 +164,6 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 
 	public void UpdateArrow(bool expanded, bool immediate = false)
 	{
-		//if (data.name == "New Game Object 3")
-		//	Debug.Log(data.children);
 		m_ExpandArrow.gameObject.SetActive(data.children != null);
 		var expandArrowTransform = m_ExpandArrow.transform;
 		// Rotate arrow for expand state
@@ -338,7 +336,7 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 
 	object GetDropObject(BaseHandle handle)
 	{
-		return data;
+		return m_DragObject ? data : null;
 	}
 
 	bool CanDrop(BaseHandle handle, object dropObject)
