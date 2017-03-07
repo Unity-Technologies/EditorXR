@@ -8,6 +8,7 @@
 		_MainTex("Texture", 2D) = "white" {}
 		_Alpha("Alpha", Range(0, 1)) = 1
 		_StencilRef("StencilRef", Int) = 3
+		[Toggle] _StencilFailZero("Stencil Fail Zero", Float) = 0
 	}
 
 		Category
@@ -23,7 +24,7 @@
 				Ref [_StencilRef]
 				Comp NotEqual
 				Pass Zero
-				Fail Keep
+				Fail [_StencilFailZero]
 			}
 
 			SubShader

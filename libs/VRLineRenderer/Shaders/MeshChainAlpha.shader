@@ -15,7 +15,7 @@ Shader "VRLineRenderer/MeshChain - Alpha Blended"
 	}
 	SubShader
 	{
-		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent" }
+		Tags{ "RenderType" = "Transparent" "Queue" = "Overlay+5502" }
 		LOD 100
 
 		// We don't want the line segments and caps to draw overtop
@@ -26,14 +26,14 @@ Shader "VRLineRenderer/MeshChain - Alpha Blended"
 			// In the first pass we write only to the alpha channel.
 			// This lets us punch a hole in the background that our 
 			// line color then shows through
-			Blend One One
-			BlendOp Min
-			Cull Off
-			Lighting Off
-			ZWrite Off
-			ColorMask A
-			Offset 0, -.1
-
+			blend srcalpha oneminussrcalpha
+			blendop sub
+			cull off
+			lighting off
+			zwrite on
+			ztest lequal
+			colormask a
+			offset 0, -.1
 			CGPROGRAM
 
 				#pragma vertex vert
@@ -52,12 +52,11 @@ Shader "VRLineRenderer/MeshChain - Alpha Blended"
 			// as the alpha value we wrote before allows through.  To
 			// prevent overlapping lines from adding too much color,
 			// we set the alpha value to one after visiting a pixel.
-			Blend OneMinusDstAlpha DstAlpha, One One
-			BlendOp Add
-			Cull Off
-			Lighting Off
-			ZWrite Off
-			Offset 0, -.1
+			blend oneminusdstalpha dstalpha
+			cull off
+			lighting off
+			zwrite on
+			offset 0, -.1
 
 			CGPROGRAM
 
