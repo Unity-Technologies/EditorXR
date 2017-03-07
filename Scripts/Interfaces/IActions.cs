@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Actions;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Declares that a class has tool actions that should be picked up by the system
@@ -14,3 +14,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		List<IAction> actions { get; }
 	}
 }
+#endif

@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-
+﻿#if UNITY_EDITOR
 namespace ListView
 {
 	public class ListViewItemData
@@ -7,3 +6,4 @@ namespace ListView
 		public string template { get; protected set; }
 	}
 }
+#endif

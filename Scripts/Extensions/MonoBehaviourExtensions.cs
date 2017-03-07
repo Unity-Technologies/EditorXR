@@ -1,8 +1,10 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Extensions
+namespace UnityEditor.Experimental.EditorVR.Extensions
 {
-	public static class MonoBehaviourExtensions
+	static class MonoBehaviourExtensions
 	{
 		public static void StopCoroutine(this MonoBehaviour mb, ref Coroutine coroutine)
 		{
@@ -20,3 +22,4 @@ namespace UnityEngine.Experimental.EditorVR.Extensions
 		}
 	}
 }
+#endif

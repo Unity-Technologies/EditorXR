@@ -1,33 +1,32 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR;
+using UnityEngine;
 using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("SixenseInput", "ENABLE_SIXENSE_INPUT")]
 
-namespace UnityEngine.Experimental.EditorVR.Input
+namespace UnityEditor.Experimental.EditorVR.Input
 {
 	/// <summary>
 	/// Sends events to the input system based on native Sixense SDK calls
 	/// </summary>
-	internal class SixenseInputToEvents : BaseInputToEvents
+	sealed class SixenseInputToEvents : BaseInputToEvents
 	{
 #if ENABLE_SIXENSE_INPUT
-		public const uint kControllerCount = SixenseInput.MAX_CONTROLLERS;
-		public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
-		public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
+		const uint k_ControllerCount = SixenseInput.MAX_CONTROLLERS;
+		const int k_AxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
+		const int k_DeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
 
-		const float kHydraUnits = 0.001f; // input is in mm
+		const float k_HydraUnits = 0.001f; // input is in mm
 
-		readonly float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
-		readonly Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
-		readonly Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
+		readonly float[,] m_LastAxisValues = new float[k_ControllerCount, k_AxisCount];
+		readonly Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
+		readonly Quaternion[] m_LastRotationValues = new Quaternion[k_ControllerCount];
 
 		Vector3[] m_ControllerOffsets = new Vector3[SixenseInput.MAX_CONTROLLERS];
 		Quaternion m_RotationOffset = Quaternion.identity;
-#endif
 
-#if ENABLE_SIXENSE_INPUT
 		void Awake()
 		{
 			if (!FindObjectOfType<SixenseInput>())
@@ -49,7 +48,7 @@ namespace UnityEngine.Experimental.EditorVR.Input
 
 				active = true;
 
-				int deviceIndex = kDeviceOffset + (SixenseInput.Controllers[i].Hand == SixenseHands.LEFT ? 0 : 1);
+				int deviceIndex = k_DeviceOffset + (SixenseInput.Controllers[i].Hand == SixenseHands.LEFT ? 0 : 1);
 				SendButtonEvents(i, deviceIndex);
 				SendAxisEvents(i, deviceIndex);
 				SendTrackingEvents(i, deviceIndex);
@@ -85,7 +84,7 @@ namespace UnityEngine.Experimental.EditorVR.Input
 
 		private void SendAxisEvents(int sixenseDeviceIndex, int deviceIndex)
 		{
-			for (var axis = 0; axis < kAxisCount; ++axis)
+			for (var axis = 0; axis < k_AxisCount; ++axis)
 			{
 				var value = GetAxis(sixenseDeviceIndex, (VRInputDevice.VRControl)axis);
 
@@ -162,7 +161,7 @@ namespace UnityEngine.Experimental.EditorVR.Input
 		private void SendTrackingEvents(int sixenseDeviceIndex, int deviceIndex)
 		{
 			var controller = SixenseInput.Controllers[sixenseDeviceIndex];
-			var localPosition = (m_RotationOffset * controller.Position * kHydraUnits) + m_ControllerOffsets[sixenseDeviceIndex];
+			var localPosition = (m_RotationOffset * controller.Position * k_HydraUnits) + m_ControllerOffsets[sixenseDeviceIndex];
 			var localRotation = m_RotationOffset * controller.Rotation;
 
 			if (localPosition == m_LastPositionValues[sixenseDeviceIndex] && localRotation == m_LastRotationValues[sixenseDeviceIndex])
@@ -185,7 +184,7 @@ namespace UnityEngine.Experimental.EditorVR.Input
 #if UNITY_EDITORVR
 
 			// Assume controllers are on the side of the HMD and facing forward (aligned with base)
-			var span = (SixenseInput.Controllers[1].Position * kHydraUnits - SixenseInput.Controllers[0].Position * kHydraUnits).magnitude;
+			var span = (SixenseInput.Controllers[1].Position * k_HydraUnits - SixenseInput.Controllers[0].Position * k_HydraUnits).magnitude;
 
 			// Distance between controllers
 			var headPivot = VRView.viewerCamera.transform;
@@ -195,11 +194,12 @@ namespace UnityEngine.Experimental.EditorVR.Input
 			if (lookDirection != Vector3.zero)
 				m_RotationOffset = Quaternion.LookRotation(lookDirection);
 			m_ControllerOffsets[0] = VRView.cameraRig.InverseTransformPoint(headPivot.position + (-headPivot.right * span * 0.5f)) -
-				(m_RotationOffset * SixenseInput.Controllers[0].Position * kHydraUnits);
+				(m_RotationOffset * SixenseInput.Controllers[0].Position * k_HydraUnits);
 			m_ControllerOffsets[1] = VRView.cameraRig.InverseTransformPoint(headPivot.position + (headPivot.right * span * 0.5f)) -
-				(m_RotationOffset * SixenseInput.Controllers[1].Position * kHydraUnits);
+				(m_RotationOffset * SixenseInput.Controllers[1].Position * k_HydraUnits);
 #endif
 		}
 #endif
 	}
 }
+#endif

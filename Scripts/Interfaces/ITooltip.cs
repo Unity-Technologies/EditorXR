@@ -1,4 +1,5 @@
-﻿namespace UnityEngine.Experimental.EditorVR
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Decorates classes which can specify tool tip information
@@ -11,3 +12,4 @@
 		string tooltipText { get; }
 	}
 }
+#endif

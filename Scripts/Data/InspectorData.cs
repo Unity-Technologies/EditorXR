@@ -1,11 +1,11 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using System.Collections.Generic;
-using UnityEditor;
 
-namespace UnityEngine.Experimental.EditorVR.Data
+namespace UnityEditor.Experimental.EditorVR.Data
 {
 
-	public class InspectorData : ListViewItemNestedData<InspectorData>
+	class InspectorData : ListViewItemNestedData<InspectorData>
 	{
 #if UNITY_EDITOR
 		public SerializedObject serializedObject { get; private set; }
@@ -30,3 +30,4 @@ namespace UnityEngine.Experimental.EditorVR.Data
 #endif
 	}
 }
+#endif

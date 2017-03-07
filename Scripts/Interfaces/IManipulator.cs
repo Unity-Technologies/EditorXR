@@ -1,6 +1,8 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Gives decorated class access to the GameObject over which a particular ray is hovering
@@ -33,3 +35,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		bool dragging { get; }
 	}
 }
+#endif

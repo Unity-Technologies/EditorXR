@@ -1,7 +1,8 @@
+#if UNITY_EDITOR
 using System;
-using UnityEngine.Experimental.EditorVR.Menus;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provides custom menu instantiation
@@ -17,3 +18,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		Func<Transform, IMenu, GameObject> instantiateMenuUI { set; }
 	}
 }
+#endif

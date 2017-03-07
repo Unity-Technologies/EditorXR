@@ -3,17 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Menus;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Proxies;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
 
@@ -21,11 +16,11 @@ namespace UnityEditor.Experimental.EditorVR
 {
 	[InitializeOnLoad]
 #if UNITY_EDITORVR
-	[RequiresTag(kVRPlayerTag)]
-	partial class EditorVR
+	[RequiresTag(k_VRPlayerTag)]
+	sealed partial class EditorVR
 	{
-		public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
-		const string kVRPlayerTag = "VRPlayer";
+		public const HideFlags DefaultHideFlags = HideFlags.HideAndDontSave;
+		const string k_VRPlayerTag = "VRPlayer";
 
 		[SerializeField]
 		private GameObject m_PlayerModelPrefab;
@@ -124,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR
 			var hmdOnlyLayerMask = 0;
 			if (m_PreviewCameraPrefab)
 			{
-				var go = U.Object.Instantiate(m_PreviewCameraPrefab);
+				var go = ObjectUtils.Instantiate(m_PreviewCameraPrefab);
 				m_CustomPreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
 				if (m_CustomPreviewCamera != null)
 				{
@@ -273,7 +268,7 @@ namespace UnityEditor.Experimental.EditorVR
 		void OnDestroy()
 		{
 			if (m_CustomPreviewCamera != null)
-				U.Object.Destroy(((MonoBehaviour)m_CustomPreviewCamera).gameObject);
+				ObjectUtils.Destroy(((MonoBehaviour)m_CustomPreviewCamera).gameObject);
 
 			m_MiniWorlds.OnDestroy();
 		}
@@ -329,7 +324,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		T AddModule<T>() where T : Component
 		{
-			T module = U.Object.AddComponent<T>(gameObject);
+			T module = ObjectUtils.AddComponent<T>(gameObject);
 			m_Interfaces.ConnectInterfaces(module);
 			return module;
 		}
@@ -349,7 +344,7 @@ namespace UnityEditor.Experimental.EditorVR
 		static Transform FindGroupRoot(Transform transform)
 		{
 			// Don't allow grouping selection for the player head, otherwise we'd select the EditorVRCamera
-			if (transform.CompareTag(kVRPlayerTag))
+			if (transform.CompareTag(k_VRPlayerTag))
 				return transform;
 
 			var parent = transform.parent;
@@ -406,7 +401,7 @@ namespace UnityEditor.Experimental.EditorVR
 		static void OnVRViewEnabled()
 		{
 			InitializeInputManager();
-			s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
+			s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
 		}
 
 		static void InitializeInputManager()
@@ -416,7 +411,7 @@ namespace UnityEditor.Experimental.EditorVR
 			InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
 			foreach (var m in managers)
 			{
-				U.Object.Destroy(m.gameObject);
+				ObjectUtils.Destroy(m.gameObject);
 			}
 
 			managers = Resources.FindObjectsOfTypeAll<InputManager>();
@@ -435,30 +430,30 @@ namespace UnityEditor.Experimental.EditorVR
 			Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
 
 			s_InputManager = managers[0];
-			s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
-			U.Object.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
+			s_InputManager.gameObject.hideFlags = DefaultHideFlags;
+			ObjectUtils.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
 
 			// These components were allocating memory every frame and aren't currently used in EditorVR
-			U.Object.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
-			U.Object.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
-			U.Object.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
-			U.Object.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
+			ObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
+			ObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
+			ObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
+			ObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
 		}
 
 		static void OnVRViewDisabled()
 		{
-			U.Object.Destroy(s_Instance.gameObject);
-			U.Object.Destroy(s_InputManager.gameObject);
+			ObjectUtils.Destroy(s_Instance.gameObject);
+			ObjectUtils.Destroy(s_InputManager.gameObject);
 		}
 	}
 #else
 	internal class NoEditorVR
 	{
-		const string kShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
+		const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
 
 		static NoEditorVR()
 		{
-			if (EditorPrefs.GetBool(kShowCustomEditorWarning, true))
+			if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
 			{
 				var message = "EditorVR requires a custom editor build. Please see https://blogs.unity3d.com/2016/12/15/editorvr-experimental-build-available-today/";
 				var result = EditorUtility.DisplayDialogComplex("Custom Editor Build Required", message, "Download", "Ignore", "Remind Me Again");
@@ -468,7 +463,7 @@ namespace UnityEditor.Experimental.EditorVR
 						Application.OpenURL("http://rebrand.ly/EditorVR-build");
 						break;
 					case 1:
-						EditorPrefs.SetBool(kShowCustomEditorWarning, false);
+						EditorPrefs.SetBool(k_ShowCustomEditorWarning, false);
 						break;
 					case 2:
 						Debug.Log("<color=orange>" + message + "</color>");

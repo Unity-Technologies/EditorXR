@@ -1,7 +1,8 @@
-﻿using System;
-using UnityEngine.Experimental.EditorVR.Tools;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// An alternate menu that shows on device proxies
@@ -14,3 +15,4 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		event Action<Transform> itemWasSelected;
 	}
 }
+#endif

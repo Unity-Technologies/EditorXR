@@ -1,11 +1,12 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using System.Collections.Generic;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Data
 {
-	public class FolderData : ListViewItemNestedData<FolderData>
+	sealed class FolderData : ListViewItemNestedData<FolderData>
 	{
-		const string kTemplateName = "FolderListItem";
+		const string k_TemplateName = "FolderListItem";
 
 		public string name
 		{
@@ -30,7 +31,7 @@ namespace UnityEngine.Experimental.EditorVR
 
 		public FolderData(string name, List<FolderData> children, List<AssetData> assets, string guid)
 		{
-			template = kTemplateName;
+			template = k_TemplateName;
 			m_Name = name;
 			m_Guid = guid;
 			m_Children = children;
@@ -38,3 +39,4 @@ namespace UnityEngine.Experimental.EditorVR
 		}
 	}
 }
+#endif

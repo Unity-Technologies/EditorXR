@@ -1,7 +1,5 @@
-#if UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Workspaces;
 
 namespace UnityEditor.Experimental.EditorVR
 {

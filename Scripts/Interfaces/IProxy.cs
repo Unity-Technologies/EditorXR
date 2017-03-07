@@ -1,8 +1,10 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR.Proxies
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Declares a class as being a proxy for an input device
@@ -77,3 +79,4 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		}
 	}
 }
+#endif

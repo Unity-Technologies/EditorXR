@@ -1,19 +1,21 @@
+#if UNITY_EDITOR
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.UI
+namespace UnityEditor.Experimental.EditorVR.UI
 {
 	/// <summary>
 	/// Extension of UI.Button includes SelectionFlags to check for direct selection
 	/// </summary>
-	public class Button : UnityEngine.UI.Button, ISelectionFlags
+	sealed class Button : UnityEngine.UI.Button, ISelectionFlags
 	{
 		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]
 		[FlagsProperty]
-		protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
+		SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
 		public UnityEvent onEnter = new UnityEvent();
 		public UnityEvent onExit = new UnityEvent();
@@ -23,14 +25,14 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		public override void OnPointerClick(PointerEventData eventData)
 		{
 			var rayEventData = eventData as RayEventData;
-			if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+			if (rayEventData == null || UIUtils.IsValidEvent(rayEventData, selectionFlags))
 				base.OnPointerClick(eventData);
 		}
 
 		public override void OnPointerEnter(PointerEventData eventData)
 		{
 			var rayEventData = eventData as RayEventData;
-			if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+			if (rayEventData == null || UIUtils.IsValidEvent(rayEventData, selectionFlags))
 			{
 				base.OnPointerEnter(eventData);
 				onEnter.Invoke();
@@ -46,7 +48,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		public override void OnPointerDown(PointerEventData eventData)
 		{
 			var rayEventData = eventData as RayEventData;
-			if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+			if (rayEventData == null || UIUtils.IsValidEvent(rayEventData, selectionFlags))
 			{
 				base.OnPointerDown(eventData);
 				onDown.Invoke();
@@ -56,7 +58,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		public override void OnPointerUp(PointerEventData eventData)
 		{
 			var rayEventData = eventData as RayEventData;
-			if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+			if (rayEventData == null || UIUtils.IsValidEvent(rayEventData, selectionFlags))
 			{
 				base.OnPointerUp(eventData);
 				onUp.Invoke();
@@ -66,7 +68,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		public override void OnSubmit(BaseEventData eventData)
 		{
 			var rayEventData = eventData as RayEventData;
-			if (rayEventData == null || U.UI.IsValidEvent(rayEventData, selectionFlags))
+			if (rayEventData == null || UIUtils.IsValidEvent(rayEventData, selectionFlags))
 				base.OnSubmit(eventData);
 		}
 
@@ -76,3 +78,4 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

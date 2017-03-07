@@ -1,6 +1,7 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provides access to the ability to show or hide a Tooltip
@@ -18,3 +19,4 @@ namespace UnityEngine.Experimental.EditorVR
 		Action<ITooltip> hideTooltip { set; }
 	}
 }
+#endif

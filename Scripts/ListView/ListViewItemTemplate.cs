@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using System.Collections.Generic;
 
 namespace ListView
@@ -16,3 +17,4 @@ namespace ListView
 		}
 	}
 }
+#endif

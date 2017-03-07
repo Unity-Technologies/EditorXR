@@ -1,9 +1,8 @@
-﻿using UnityEditor;
-
-namespace UnityEngine.Experimental.EditorVR.Actions
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
-	[ActionMenuItem("Copy", ActionMenuItemAttribute.kDefaultActionSectionName, 5)]
-	public class Copy : BaseAction
+	[ActionMenuItem("Copy", ActionMenuItemAttribute.DefaultActionSectionName, 5)]
+	sealed class Copy : BaseAction
 	{
 		public override void ExecuteAction()
 		{
@@ -15,3 +14,4 @@ namespace UnityEngine.Experimental.EditorVR.Actions
 		}
 	}
 }
+#endif

@@ -1,9 +1,11 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	public interface IUsesViewerScale
 	{
 		Func<float> getViewerScale { set; }
 	}
 }
+#endif

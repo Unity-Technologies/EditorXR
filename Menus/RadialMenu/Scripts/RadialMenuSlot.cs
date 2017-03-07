@@ -1,15 +1,16 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.UI;
-using Button = UnityEngine.UI.Button;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler
+	sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler
 	{
 		static Color s_FrameOpaqueColor;
 		static readonly Vector3 k_HiddenLocalScale = new Vector3(1f, 0f, 1f);
@@ -160,7 +161,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		public Material borderRendererMaterial
 		{
-			get { return U.Material.GetMaterialClone(m_BorderRenderer); } // return new unique color to the RadialMenuUI for settings in each RadialMenuSlot contained in a given RadialMenu
+			get { return MaterialUtils.GetMaterialClone(m_BorderRenderer); } // return new unique color to the RadialMenuUI for settings in each RadialMenuSlot contained in a given RadialMenu
 			set
 			{
 				m_BorderRendererMaterial = value;
@@ -209,8 +210,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		void Awake()
 		{
-			m_InsetMaterial = U.Material.GetMaterialClone(m_InsetMeshRenderer);
-			m_IconMaterial = U.Material.GetMaterialClone(m_Icon);
+			m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
+			m_IconMaterial = MaterialUtils.GetMaterialClone(m_Icon);
 			m_OriginalInsetGradientPair = new GradientPair(m_InsetMaterial.GetColor(k_MaterialColorTopProperty), m_InsetMaterial.GetColor(k_MaterialColorBottomProperty));
 			hiddenLocalRotation = transform.localRotation;
 			m_VisibleInsetLocalScale = m_MenuInset.localScale;
@@ -223,7 +224,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.up * -k_IconHighlightedLocalYOffset;
 
 			semiTransparent = false;
-			m_FrameMaterial = U.Material.GetMaterialClone(m_FrameRenderer);
+			m_FrameMaterial = MaterialUtils.GetMaterialClone(m_FrameRenderer);
 			var frameMaterialColor = m_FrameMaterial.color;
 			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
 			m_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.125f);
@@ -238,9 +239,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		private void OnDestroy()
 		{
-			U.Object.Destroy(m_InsetMaterial);
-			U.Object.Destroy(m_IconMaterial);
-			U.Object.Destroy(m_FrameMaterial);
+			ObjectUtils.Destroy(m_InsetMaterial);
+			ObjectUtils.Destroy(m_IconMaterial);
+			ObjectUtils.Destroy(m_FrameMaterial);
 		}
 
 		void CorrectIconRotation()
@@ -519,3 +520,4 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif
