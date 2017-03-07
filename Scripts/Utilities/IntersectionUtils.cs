@@ -51,17 +51,17 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			var triangles = tester.triangles;
 			var vertices = tester.vertices;
 
-			float maxDistance = collisionTester.bounds.size.magnitude;
+			var maxDistance = collisionTester.bounds.size.magnitude;
 
 			var triangleVertices = new Vector3[3];
 			var testerTransform = tester.transform;
-			for (int i = 0; i < triangles.Length; i += 3)
+			for (var i = 0; i < triangles.Length; i += 3)
 			{
 				triangleVertices[0] = vertices[triangles[i]];
 				triangleVertices[1] = vertices[triangles[i + 1]];
 				triangleVertices[2] = vertices[triangles[i + 2]];
 
-				for (int j = 0; j < 3; j++)
+				for (var j = 0; j < 3; j++)
 				{
 					RaycastHit hitInfo;
 
@@ -137,13 +137,13 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		
 			var boundsSize = collisionTester.bounds.size.magnitude;
 			var maxDistance = boundsSize * 2f;
-			RaycastHit hitInfo;
 
 			// Shoot a ray from outside the object (due to face normals) in the direction of the ray to see if it is inside
 			var forwardRay = new Ray(ray.origin, ray.direction);
 			forwardRay.origin = forwardRay.GetPoint(-boundsSize);
 
 			Vector3 forwardHit;
+			RaycastHit hitInfo;
 			if (collisionTester.Raycast(forwardRay, out hitInfo, maxDistance))
 				forwardHit = hitInfo.point;
 			else

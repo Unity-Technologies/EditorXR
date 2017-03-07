@@ -144,8 +144,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float kSideScrollBoundsShrinkAmount = 0.03f;
 			const float depthCompensation = 0.1375f;
 
-			Bounds bounds = contentBounds;
-			Vector3 size = bounds.size;
+			var bounds = contentBounds;
+			var size = bounds.size;
 			size.x -= k_PaneMargin * 2;
 			size.x *= k_LeftPaneRatio;
 			size.y = k_YBounds;

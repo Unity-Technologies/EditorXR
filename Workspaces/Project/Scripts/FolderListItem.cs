@@ -10,37 +10,37 @@ namespace UnityEditor.Experimental.EditorVR.Data
 {
 	sealed class FolderListItem : ListViewItem<FolderData>
 	{
-		private const float k_Margin = 0.01f;
-		private const float k_Indent = 0.02f;
+		const float k_Margin = 0.01f;
+		const float k_Indent = 0.02f;
 
-		private const float k_ExpandArrowRotateSpeed = 0.4f;
-
-		[SerializeField]
-		private Text m_Text;
+		const float k_ExpandArrowRotateSpeed = 0.4f;
 
 		[SerializeField]
-		private BaseHandle m_Cube;
+		Text m_Text;
 
 		[SerializeField]
-		private BaseHandle m_ExpandArrow;
+		BaseHandle m_Cube;
 
 		[SerializeField]
-		private Material m_NoClipCubeMaterial;
+		BaseHandle m_ExpandArrow;
 
 		[SerializeField]
-		private Material m_NoClipExpandArrowMaterial;
+		Material m_NoClipCubeMaterial;
 
 		[SerializeField]
-		private Color m_HoverColor;
+		Material m_NoClipExpandArrowMaterial;
 
 		[SerializeField]
-		private Color m_SelectedColor;
+		Color m_HoverColor;
 
-		private Color m_NormalColor;
+		[SerializeField]
+		Color m_SelectedColor;
 
-		private bool m_Hovering;
+		Color m_NormalColor;
 
-		private Renderer m_CubeRenderer;
+		bool m_Hovering;
+
+		Renderer m_CubeRenderer;
 
 		Transform m_CubeTransform;
 
@@ -141,17 +141,17 @@ namespace UnityEditor.Experimental.EditorVR.Data
 			selectFolder(data.guid);
 		}
 
-		private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
+		void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
 		{
 			m_Hovering = true;
 		}
 
-		private void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
+		void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
 		{
 			m_Hovering = false;
 		}
 
-		private void OnDestroy()
+		void OnDestroy()
 		{
 			if (m_CubeRenderer)
 				ObjectUtils.Destroy(m_CubeRenderer.sharedMaterial);

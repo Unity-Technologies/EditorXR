@@ -21,23 +21,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		//TODO: replace with dynamic values once spatial hash lands
 		// Scale slider min/max (maps to referenceTransform uniform scale)
-		private const float k_MinZoomScale = 0.5f;
-		private const float k_MaxZoomScale = 200f;
+		const float k_MinZoomScale = 0.5f;
+		const float k_MaxZoomScale = 200f;
 
 		[SerializeField]
-		private GameObject m_ContentPrefab;
+		GameObject m_ContentPrefab;
 
 		[SerializeField]
 		GameObject m_RecenterUIPrefab;
 
 		[SerializeField]
-		private GameObject m_LocatePlayerPrefab;
+		GameObject m_LocatePlayerPrefab;
 
 		[SerializeField]
-		private GameObject m_PlayerDirectionArrowPrefab;
+		GameObject m_PlayerDirectionArrowPrefab;
 
 		[SerializeField]
-		private GameObject m_ZoomSliderPrefab;
+		GameObject m_ZoomSliderPrefab;
 
 		public ActionMap actionMap
 		{
@@ -47,12 +47,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		ActionMap m_MiniWorldActionMap;
 
-		private MiniWorldUI m_MiniWorldUI;
-		private MiniWorld m_MiniWorld;
-		private Material m_GridMaterial;
-		private ZoomSliderUI m_ZoomSliderUI;
-		private Transform m_PlayerDirectionButton;
-		private Transform m_PlayerDirectionArrow;
+		MiniWorldUI m_MiniWorldUI;
+		MiniWorld m_MiniWorld;
+		Material m_GridMaterial;
+		ZoomSliderUI m_ZoomSliderUI;
+		Transform m_PlayerDirectionButton;
+		Transform m_PlayerDirectionArrow;
 		readonly List<Transform> m_Rays = new List<Transform>(2);
 		float m_StartScale;
 		float m_StartDistance;
@@ -137,7 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			OnBoundsChanged();
 		}
 
-		private void Update()
+		void Update()
 		{
 			var inBounds = IsPlayerInBounds();
 			m_PlayerDirectionButton.gameObject.SetActive(!inBounds);

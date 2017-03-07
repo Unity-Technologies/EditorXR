@@ -54,32 +54,33 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		// Note that Color32 and Color implictly convert to each other. You may pass a Color object to this method without first casting it.
 		public static string ColorToHex(Color32 color)
 		{
-			string hex = color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2");
+			var hex = color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2");
 			return hex;
 		}
 
 		public static Color HexToColor(string hex)
 		{
 			hex = hex.Replace("0x", "").Replace("#", "");
-			byte r = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
-			byte g = byte.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
-			byte b = byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
-			byte a = hex.Length == 8 ? byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber) : (byte)255;
+			var r = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+			var g = byte.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+			var b = byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
+			var a = hex.Length == 8 ? byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber) : (byte)255;
 
 			return new Color32(r, g, b, a);
 		}
 
 		public static Color RandomColor()
 		{
-			float r = Random.value;
-			float g = Random.value;
-			float b = Random.value;
+			var r = Random.value;
+			var g = Random.value;
+			var b = Random.value;
+
 			return new Color(r, g, b);
 		}
 
 		public static void SetObjectColor(GameObject obj, Color col)
 		{
-			UnityMaterial material = new UnityMaterial(obj.GetComponent<Renderer>().sharedMaterial);
+			var material = new UnityMaterial(obj.GetComponent<Renderer>().sharedMaterial);
 			material.color = col;
 			obj.GetComponent<Renderer>().sharedMaterial = material;
 		}
@@ -91,17 +92,17 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static void SetObjectAlpha(GameObject obj, float alpha)
 		{
-			Color col = GetObjectColor(obj);
+			var col = GetObjectColor(obj);
 			col.a = alpha;
 			SetObjectColor(obj, col);
 		}
 
 		public static void SetObjectEmissionColor(GameObject obj, Color col)
 		{
-			Renderer r = obj.GetComponent<Renderer>();
+			var r = obj.GetComponent<Renderer>();
 			if (r)
 			{
-				UnityMaterial material = new UnityMaterial(r.sharedMaterial);
+				var material = new UnityMaterial(r.sharedMaterial);
 				if (material.HasProperty("_EmissionColor"))
 				{
 					material.SetColor("_EmissionColor", col);
@@ -116,15 +117,14 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static Color GetObjectEmissionColor(GameObject obj)
 		{
-			Renderer r = obj.GetComponent<Renderer>();
+			var r = obj.GetComponent<Renderer>();
 			if (r)
 			{
-				UnityMaterial material = r.sharedMaterial;
+				var material = r.sharedMaterial;
 				if (material.HasProperty("_EmissionColor"))
-				{
 					return material.GetColor("_EmissionColor");
-				}
 			}
+
 			return Color.white;
 		}
 	}
