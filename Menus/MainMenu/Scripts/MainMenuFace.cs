@@ -1,14 +1,16 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class MainMenuFace : MonoBehaviour
+	sealed class MainMenuFace : MonoBehaviour
 	{
 		[SerializeField]
 		private MeshRenderer m_BorderOutline;
@@ -31,22 +33,22 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		private Coroutine m_VisibilityCoroutine;
 		private Coroutine m_RotationVisualsCoroutine;
 		
-		private const float kBorderScaleMultiplier = 1.0135f;
-		private const string kBottomGradientProperty = "_ColorBottom";
-		private const string kTopGradientProperty = "_ColorTop";
-		private readonly GradientPair kEmptyGradient = new GradientPair(UnityBrandColorScheme.light, UnityBrandColorScheme.darker);
+		private const float k_BorderScaleMultiplier = 1.0135f;
+		private const string k_BottomGradientProperty = "_ColorBottom";
+		private const string k_TopGradientProperty = "_ColorTop";
+		private readonly GradientPair k_EmptyGradient = new GradientPair(UnityBrandColorScheme.light, UnityBrandColorScheme.darker);
 
 		private void Awake()
 		{
 			m_CanvasGroup.alpha = 0f;
 			m_CanvasGroup.interactable = false;
-			m_BorderOutlineMaterial = U.Material.GetMaterialClone(m_BorderOutline);
+			m_BorderOutlineMaterial = MaterialUtils.GetMaterialClone(m_BorderOutline);
 			m_BorderOutlineTransform = m_BorderOutline.transform;
 			m_BorderOutlineOriginalLocalScale = m_BorderOutlineTransform.localScale;
 			m_FaceTitle.text = "Not Set";
-			m_TitleIconMaterial = U.Material.GetMaterialClone(m_TitleIcon);
+			m_TitleIconMaterial = MaterialUtils.GetMaterialClone(m_TitleIcon);
 
-			SetGradientColors(kEmptyGradient);
+			SetGradientColors(k_EmptyGradient);
 		}
 
 		public void SetFaceData(string faceName, List<Transform> buttons, GradientPair gradientPair)
@@ -72,10 +74,10 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		private void SetGradientColors(GradientPair gradientPair)
 		{
-			m_BorderOutlineMaterial.SetColor(kTopGradientProperty, gradientPair.a);
-			m_BorderOutlineMaterial.SetColor(kBottomGradientProperty, gradientPair.b);
-			m_TitleIconMaterial.SetColor(kTopGradientProperty, gradientPair.a);
-			m_TitleIconMaterial.SetColor(kBottomGradientProperty, gradientPair.b);
+			m_BorderOutlineMaterial.SetColor(k_TopGradientProperty, gradientPair.a);
+			m_BorderOutlineMaterial.SetColor(k_BottomGradientProperty, gradientPair.b);
+			m_TitleIconMaterial.SetColor(k_TopGradientProperty, gradientPair.a);
+			m_TitleIconMaterial.SetColor(k_BottomGradientProperty, gradientPair.b);
 		}
 
 		public void Show()
@@ -105,7 +107,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var currentDuration = 0f;
 			while (currentDuration < smoothTime)
 			{
-				startingOpacity = U.Math.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				startingOpacity = MathUtilsExt.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				currentDuration += Time.unscaledDeltaTime;
 				m_CanvasGroup.alpha = startingOpacity * startingOpacity;
 				yield return null;
@@ -121,7 +123,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_VisibilityCoroutine = null;
 		}
 
-		public void BeginVisuals()
+		void BeginVisuals()
 		{
 			this.StopCoroutine(ref m_RotationVisualsCoroutine);
 			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(true));
@@ -138,7 +140,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			if (m_RotationVisualsCoroutine != null)
 				yield break;
 
-			Vector3 targetBorderLocalScale = focus ? m_BorderOutlineOriginalLocalScale * kBorderScaleMultiplier : m_BorderOutlineOriginalLocalScale;
+			Vector3 targetBorderLocalScale = focus ? m_BorderOutlineOriginalLocalScale * k_BorderScaleMultiplier : m_BorderOutlineOriginalLocalScale;
 			Vector3 currentBorderLocalScale = m_BorderOutlineTransform.localScale;
 
 			const float kLerpEmphasisWeight = 0.2f;
@@ -149,7 +151,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var currentDuration = 0f;
 			while (currentDuration < smoothTime)
 			{
-				currentBlendShapeWeight = U.Math.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBlendShapeWeight = MathUtilsExt.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				currentDuration += Time.unscaledDeltaTime;
 				currentBorderLocalScale = Vector3.Lerp(currentBorderLocalScale, targetBorderLocalScale, currentBlendShapeWeight * kLerpEmphasisWeight);
 				m_BorderOutlineTransform.localScale = currentBorderLocalScale;
@@ -164,3 +166,4 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

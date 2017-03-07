@@ -1,6 +1,9 @@
-﻿namespace UnityEngine.Experimental.EditorVR.UI
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	class Tooltip : MonoBehaviour, ITooltip, ITooltipPlacement
+	sealed class Tooltip : MonoBehaviour, ITooltip, ITooltipPlacement
 	{
 		public string tooltipText { get { return m_TooltipText; } set { m_TooltipText = value; } }
 		[SerializeField]
@@ -25,3 +28,4 @@
 		}
 	}
 }
+#endif

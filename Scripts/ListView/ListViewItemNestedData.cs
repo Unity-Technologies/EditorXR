@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 
 namespace ListView
@@ -21,3 +22,4 @@ namespace ListView
 		public event Action<ListViewItemNestedData<ChildType>, List<ChildType>> childrenChanging;
 	}
 }
+#endif

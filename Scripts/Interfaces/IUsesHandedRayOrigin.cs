@@ -1,6 +1,6 @@
-﻿using UnityEngine.Experimental.EditorVR.Tools;
+﻿#if UNITY_EDITOR
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Adds Node information to IUsesRayOrigin to determine which hand the tool is attached to
@@ -9,3 +9,4 @@ namespace UnityEngine.Experimental.EditorVR
 	{
 	}
 }
+#endif

@@ -1,152 +1,154 @@
+#if UNITY_EDITOR
 using System;
 using UnityEditor;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Menus;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
-public class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
-	IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale
+namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	[SerializeField]
-	CreatePrimitiveMenu m_MenuPrefab;
-
-	const float kDrawDistance = 0.075f;
-
-	GameObject m_ToolMenu;
-
-	PrimitiveType m_SelectedPrimitiveType = PrimitiveType.Cube;
-	bool m_Freeform;
-
-	GameObject m_CurrentGameObject;
-
-	Vector3 m_StartPoint = Vector3.zero;
-	Vector3 m_EndPoint = Vector3.zero;
-
-	PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
-
-	public Func<Transform, IMenu, GameObject> instantiateMenuUI { private get; set; }
-
-	public Transform rayOrigin { get; set; }
-
-	public ConnectInterfacesDelegate connectInterfaces { private get; set; }
-
-	public Action<GameObject> addToSpatialHash { get; set; }
-	public Action<GameObject> removeFromSpatialHash { get; set; }
-
-	public Func<float> getViewerScale { private get; set; }
-
-	enum PrimitiveCreationStates
+	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
+	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
+		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale
 	{
-		StartPoint,
-		EndPoint,
-		Freeform,
-	}
+		[SerializeField]
+		CreatePrimitiveMenu m_MenuPrefab;
 
-	void Start()
-	{
-		m_ToolMenu = instantiateMenuUI(rayOrigin, m_MenuPrefab);
-		var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
-		connectInterfaces(createPrimitiveMenu, rayOrigin);
-		createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
-	}
+		const float k_DrawDistance = 0.075f;
 
-	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
-	{
-		var standardInput = (Standard)input;
+		GameObject m_ToolMenu;
 
-		switch (m_State)
+		PrimitiveType m_SelectedPrimitiveType = PrimitiveType.Cube;
+		bool m_Freeform;
+
+		GameObject m_CurrentGameObject;
+
+		Vector3 m_StartPoint = Vector3.zero;
+		Vector3 m_EndPoint = Vector3.zero;
+
+		PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
+
+		public Func<Transform, IMenu, GameObject> instantiateMenuUI { private get; set; }
+
+		public Transform rayOrigin { get; set; }
+
+		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
+
+		public Action<GameObject> addToSpatialHash { private get; set; }
+		public Action<GameObject> removeFromSpatialHash { private get; set; }
+
+		public Func<float> getViewerScale { private get; set; }
+
+		enum PrimitiveCreationStates
 		{
-			case PrimitiveCreationStates.StartPoint:
+			StartPoint,
+			EndPoint,
+			Freeform,
+		}
+
+		void Start()
+		{
+			m_ToolMenu = instantiateMenuUI(rayOrigin, m_MenuPrefab);
+			var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
+			connectInterfaces(createPrimitiveMenu, rayOrigin);
+			createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
+		}
+
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
+		{
+			var standardInput = (Standard)input;
+
+			switch (m_State)
+			{
+				case PrimitiveCreationStates.StartPoint:
 				{
 					HandleStartPoint(standardInput, consumeControl);
 					break;
 				}
-			case PrimitiveCreationStates.EndPoint:
+				case PrimitiveCreationStates.EndPoint:
 				{
 					UpdatePositions();
 					SetScalingForObjectType();
 					CheckForTriggerRelease(standardInput, consumeControl);
 					break;
 				}
-			case PrimitiveCreationStates.Freeform:
+				case PrimitiveCreationStates.Freeform:
 				{
 					UpdatePositions();
 					UpdateFreeformScale();
 					CheckForTriggerRelease(standardInput, consumeControl);
 					break;
 				}
+			}
 		}
-	}
 
-	void SetSelectedPrimitive(PrimitiveType type, bool isFreeform)
-	{
-		m_SelectedPrimitiveType = type;
-		m_Freeform = isFreeform;
-	}
-
-	void HandleStartPoint(Standard standardInput, ConsumeControlDelegate consumeControl)
-	{
-		if (standardInput.action.wasJustPressed)
+		void SetSelectedPrimitive(PrimitiveType type, bool isFreeform)
 		{
-			m_CurrentGameObject = GameObject.CreatePrimitive(m_SelectedPrimitiveType);
-			
-			// Set starting minimum scale (don't allow zero scale object to be created)
-			const float kMinScale = 0.0025f;
-			var viewerScale = getViewerScale();
-			m_CurrentGameObject.transform.localScale = Vector3.one * kMinScale * viewerScale;
-			m_StartPoint = rayOrigin.position + rayOrigin.forward * kDrawDistance * viewerScale;
-			m_CurrentGameObject.transform.position = m_StartPoint;
-
-			m_State = m_Freeform ? PrimitiveCreationStates.Freeform : PrimitiveCreationStates.EndPoint;
-
-			addToSpatialHash(m_CurrentGameObject);
-
-			consumeControl(standardInput.action);
-			Selection.activeGameObject = m_CurrentGameObject;
+			m_SelectedPrimitiveType = type;
+			m_Freeform = isFreeform;
 		}
-	}
 
-	void SetScalingForObjectType()
-	{
-		var corner = (m_EndPoint - m_StartPoint).magnitude;
-
-		// it feels better to scale these primitives vertically with the drawpoint
-		if (m_SelectedPrimitiveType == PrimitiveType.Capsule || m_SelectedPrimitiveType == PrimitiveType.Cylinder || m_SelectedPrimitiveType == PrimitiveType.Cube)
-			m_CurrentGameObject.transform.localScale = Vector3.one * corner * 0.5f;
-		else
-			m_CurrentGameObject.transform.localScale = Vector3.one * corner;
-	}
-
-	void UpdatePositions()
-	{
-		m_EndPoint = rayOrigin.position + rayOrigin.forward * kDrawDistance * getViewerScale();
-		m_CurrentGameObject.transform.position = (m_StartPoint + m_EndPoint) * 0.5f;
-	}
-
-	void UpdateFreeformScale()
-	{
-		var maxCorner = Vector3.Max(m_StartPoint, m_EndPoint);
-		var minCorner = Vector3.Min(m_StartPoint, m_EndPoint);
-		m_CurrentGameObject.transform.localScale = (maxCorner - minCorner);
-	}
-
-	void CheckForTriggerRelease(Standard standardInput, ConsumeControlDelegate consumeControl)
-	{
-		// Ready for next object to be created
-		if (standardInput.action.wasJustReleased)
+		void HandleStartPoint(Standard standardInput, ConsumeControlDelegate consumeControl)
 		{
-			m_State = PrimitiveCreationStates.StartPoint;
+			if (standardInput.action.wasJustPressed)
+			{
+				m_CurrentGameObject = GameObject.CreatePrimitive(m_SelectedPrimitiveType);
 
-			consumeControl(standardInput.action);
+				// Set starting minimum scale (don't allow zero scale object to be created)
+				const float kMinScale = 0.0025f;
+				var viewerScale = getViewerScale();
+				m_CurrentGameObject.transform.localScale = Vector3.one * kMinScale * viewerScale;
+				m_StartPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance * viewerScale;
+				m_CurrentGameObject.transform.position = m_StartPoint;
+
+				m_State = m_Freeform ? PrimitiveCreationStates.Freeform : PrimitiveCreationStates.EndPoint;
+
+				addToSpatialHash(m_CurrentGameObject);
+
+				consumeControl(standardInput.action);
+				Selection.activeGameObject = m_CurrentGameObject;
+			}
 		}
-	}
 
-	void OnDestroy()
-	{
-		U.Object.Destroy(m_ToolMenu);
+		void SetScalingForObjectType()
+		{
+			var corner = (m_EndPoint - m_StartPoint).magnitude;
+
+			// it feels better to scale these primitives vertically with the drawpoint
+			if (m_SelectedPrimitiveType == PrimitiveType.Capsule || m_SelectedPrimitiveType == PrimitiveType.Cylinder || m_SelectedPrimitiveType == PrimitiveType.Cube)
+				m_CurrentGameObject.transform.localScale = Vector3.one * corner * 0.5f;
+			else
+				m_CurrentGameObject.transform.localScale = Vector3.one * corner;
+		}
+
+		void UpdatePositions()
+		{
+			m_EndPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance * getViewerScale();
+			m_CurrentGameObject.transform.position = (m_StartPoint + m_EndPoint) * 0.5f;
+		}
+
+		void UpdateFreeformScale()
+		{
+			var maxCorner = Vector3.Max(m_StartPoint, m_EndPoint);
+			var minCorner = Vector3.Min(m_StartPoint, m_EndPoint);
+			m_CurrentGameObject.transform.localScale = (maxCorner - minCorner);
+		}
+
+		void CheckForTriggerRelease(Standard standardInput, ConsumeControlDelegate consumeControl)
+		{
+			// Ready for next object to be created
+			if (standardInput.action.wasJustReleased)
+			{
+				m_State = PrimitiveCreationStates.StartPoint;
+
+				consumeControl(standardInput.action);
+			}
+		}
+
+		void OnDestroy()
+		{
+			ObjectUtils.Destroy(m_ToolMenu);
+		}
 	}
 }
+#endif

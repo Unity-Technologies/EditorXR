@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Exposes a property used to provide a hierarchy of scene objects to the object
 	/// </summary>
-	public interface IUsesHierarchyData
+	interface IUsesHierarchyData
 	{
 		/// <summary>
 		/// Set accessor for hierarchy list data
@@ -14,3 +15,4 @@ namespace UnityEngine.Experimental.EditorVR
 		List<HierarchyData> hierarchyData { set; }
 	}
 }
+#endif

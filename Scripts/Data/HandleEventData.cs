@@ -1,9 +1,12 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Handles
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR.Handles
 {
 	/// <summary>
 	/// Event data for BaseHandle.DragEventCallback
 	/// </summary>
-	public class HandleEventData
+	class HandleEventData
 	{
 		/// <summary>
 		/// The source transform from where the ray is cast
@@ -34,3 +37,4 @@
 		}
 	}
 }
+#endif

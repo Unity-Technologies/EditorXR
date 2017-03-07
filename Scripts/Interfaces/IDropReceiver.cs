@@ -1,4 +1,5 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Modules
+﻿#if UNITY_EDITOR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Implementors can receive IDroppables
@@ -31,3 +32,4 @@
 		void ReceiveDrop(object dropObject);
 	}
 }
+#endif

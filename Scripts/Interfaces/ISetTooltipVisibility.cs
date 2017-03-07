@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provides access to the ability to show or hide a Tooltip

@@ -1,12 +1,11 @@
 #if UNITY_EDITORVR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Proxies;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -15,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class MiniWorlds : Nested
 		{
-			const float kPreviewScale = 0.1f;
+			const float k_PreviewScale = 0.1f;
 
 			internal class MiniWorldRay
 			{
@@ -69,14 +68,14 @@ namespace UnityEditor.Experimental.EditorVR
 			/// </summary>
 			internal Transform InstantiateMiniWorldRay()
 			{
-				var miniWorldRay = U.Object.Instantiate(evr.m_ProxyRayPrefab.gameObject).transform;
-				U.Object.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());
+				var miniWorldRay = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject).transform;
+				ObjectUtils.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());
 
 				var renderers = miniWorldRay.GetComponentsInChildren<Renderer>();
 				foreach (var renderer in renderers)
 				{
 					if (!renderer.GetComponent<IntersectionTester>())
-						U.Object.Destroy(renderer.gameObject);
+						ObjectUtils.Destroy(renderer.gameObject);
 					else
 						renderer.enabled = false;
 				}
@@ -91,10 +90,10 @@ namespace UnityEditor.Experimental.EditorVR
 
 				foreach (var r in renderers)
 				{
-					if (r.CompareTag(kVRPlayerTag))
+					if (r.CompareTag(k_VRPlayerTag))
 						continue;
 
-					if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.kShowInMiniWorldTag))
+					if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.ShowInMiniWorldTag))
 						continue;
 
 					ignoreList.Add(r);
@@ -183,10 +182,10 @@ namespace UnityEditor.Experimental.EditorVR
 									dragGameObjects[i] = dragObject.gameObject;
 								}
 
-								var totalBounds = U.Object.GetBounds(dragGameObjects);
+								var totalBounds = ObjectUtils.GetBounds(dragGameObjects);
 								var maxSizeComponent = totalBounds.size.MaxComponent();
 								if (!Mathf.Approximately(maxSizeComponent, 0f))
-									miniWorldRay.previewScaleFactor = Vector3.one * (kPreviewScale * Viewer.GetViewerScale() / maxSizeComponent);
+									miniWorldRay.previewScaleFactor = Vector3.one * (k_PreviewScale * Viewer.GetViewerScale() / maxSizeComponent);
 
 								miniWorldRay.originalScales = scales;
 							}
@@ -272,7 +271,7 @@ namespace UnityEditor.Experimental.EditorVR
 								{
 									var dragObject = dragObjects[i];
 									dragObject.localScale = originalScales[i];
-									U.Math.SetTransformOffset(miniWorldRayOrigin, dragObject, positionOffsets[i], rotationOffsets[i]);
+									MathUtilsExt.SetTransformOffset(miniWorldRayOrigin, dragObject, positionOffsets[i], rotationOffsets[i]);
 								}
 
 								// Add the object (back) to TransformTool
@@ -286,7 +285,7 @@ namespace UnityEditor.Experimental.EditorVR
 							for (var i = 0; i < dragObjects.Length; i++)
 							{
 								var dragObject = dragObjects[i];
-								if (dragObject.CompareTag(kVRPlayerTag))
+								if (dragObject.CompareTag(k_VRPlayerTag))
 								{
 									if (directSelection != null)
 										objectsGrabber.DropHeldObjects(miniWorldRayOrigin);
@@ -340,7 +339,7 @@ namespace UnityEditor.Experimental.EditorVR
 								var rotation = originalRayOrigin.rotation;
 								var position = originalRayOrigin.position
 									+ rotation * Vector3.Scale(previewScaleFactor, positionOffsets[i]);
-								U.Math.LerpTransform(dragObject, position, rotation * rotationOffsets[i]);
+								MathUtilsExt.LerpTransform(dragObject, position, rotation * rotationOffsets[i]);
 							}
 						}
 					}

@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Diagnostics;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	[Conditional("UNITY_CCU")]
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-	public class OptionalDependencyAttribute : Attribute
+	sealed class OptionalDependencyAttribute : Attribute
 	{
 		public string dependentClass;
 		public string define;
@@ -17,3 +18,4 @@ namespace UnityEngine.Experimental.EditorVR
 		}
 	}
 }
+#endif

@@ -1,22 +1,27 @@
-﻿using UnityEngine;
-using Button = UnityEngine.Experimental.EditorVR.UI.Button;
+﻿#if UNITY_EDITOR
+using UnityEngine;
+using Button = UnityEditor.Experimental.EditorVR.UI.Button;
 
-public class InspectorArrayHeaderItem : InspectorPropertyItem
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	const float kExpandArrowRotateSpeed = 0.4f;
-	static readonly Quaternion kExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
-	static readonly Quaternion kNormalRotation = Quaternion.identity;
-
-	[SerializeField]
-	Button m_ExpandArrow;
-
-	public override void UpdateSelf(float width, int depth, bool expanded)
+	sealed class InspectorArrayHeaderItem : InspectorPropertyItem
 	{
-		base.UpdateSelf(width, depth, expanded);
+		const float k_ExpandArrowRotateSpeed = 0.4f;
+		static readonly Quaternion k_ExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
+		static readonly Quaternion k_NormalRotation = Quaternion.identity;
 
-		// Rotate arrow for expand state
-		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-			expanded ? kExpandedRotation : kNormalRotation,
-			kExpandArrowRotateSpeed);
+		[SerializeField]
+		Button m_ExpandArrow;
+
+		public override void UpdateSelf(float width, int depth, bool expanded)
+		{
+			base.UpdateSelf(width, depth, expanded);
+
+			// Rotate arrow for expand state
+			m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
+				expanded ? k_ExpandedRotation : k_NormalRotation,
+				k_ExpandArrowRotateSpeed);
+		}
 	}
 }
+#endif

@@ -1,15 +1,15 @@
+#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
+using UnityEngine.UI;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class RadialMenuUI : MonoBehaviour, IConnectInterfaces
+	sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces
 	{
 		const int k_SlotCount = 16;
 
@@ -74,7 +74,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				if (value != null)
 				{
 					m_Actions = value
-						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.kDefaultActionSectionName)
+						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
 						.OrderBy(a => a.priority)
 						.ToList();
 
@@ -198,7 +198,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 			for (int i = 0; i < k_SlotCount; ++i)
 			{
-				var menuSlot = U.Object.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
+				var menuSlot = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
 				connectInterfaces(menuSlot);
 				menuSlot.orderIndex = i;
 				m_RadialMenuSlots.Add(menuSlot);
@@ -336,3 +336,4 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

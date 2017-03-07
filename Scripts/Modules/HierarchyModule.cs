@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using UnityEditor;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class HierarchyModule : MonoBehaviour
+	sealed class HierarchyModule : MonoBehaviour
 	{
 		readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
 		HierarchyData m_HierarchyData;
-#if UNITY_EDITOR
 		HierarchyProperty m_HierarchyProperty;
 
 		void OnEnable()
@@ -20,7 +20,6 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		{
 			EditorApplication.hierarchyWindowChanged -= UpdateHierarchyData;
 		}
-#endif
 
 		public void AddConsumer(IUsesHierarchyData consumer)
 		{
@@ -43,7 +42,6 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		void UpdateHierarchyData()
 		{
-#if UNITY_EDITOR
 			if (m_HierarchyProperty == null)
 			{
 				m_HierarchyProperty = new HierarchyProperty(HierarchyType.GameObjects);
@@ -54,13 +52,10 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 				m_HierarchyProperty.Reset();
 				m_HierarchyProperty.Next(null);
 			}
-#endif
 
 			bool hasChanged = false;
-#if UNITY_EDITOR
 			var hasNext = true;
 			m_HierarchyData = CollectHierarchyData(ref hasNext, ref hasChanged, m_HierarchyData, m_HierarchyProperty);
-#endif
 
 			if (hasChanged)
 			{
@@ -71,7 +66,6 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			}
 		}
 
-#if UNITY_EDITOR
 		HierarchyData CollectHierarchyData(ref bool hasNext, ref bool hasChanged, HierarchyData hd, HierarchyProperty hp)
 		{
 			var depth = hp.depth;
@@ -145,6 +139,6 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 			return hd ?? new HierarchyData(name, instanceID, children);
 		}
-#endif
 	}
 }
+#endif

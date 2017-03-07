@@ -1,27 +1,26 @@
-﻿using System;
-using UnityEngine.Experimental.EditorVR;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEditor.Experimental.EditorVR;
+using UnityEngine;
 using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("OVRInput", "ENABLE_OVR_INPUT")]
 
-namespace UnityEngine.Experimental.EditorVR.Input
+namespace UnityEditor.Experimental.EditorVR.Input
 {
 	/// <summary>
 	/// Sends events to the input system based on native Oculus SDK calls
 	/// </summary>
-	internal class OVRTouchInputToEvents : BaseInputToEvents
+	sealed class OVRTouchInputToEvents : BaseInputToEvents
 	{
 #if ENABLE_OVR_INPUT
-		public const uint kControllerCount = 2;
-		public const int kAxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
-		public const int kDeviceOffset = 3; // magic number for device location in InputDeviceManager.cs
+		const uint k_ControllerCount = 2;
+		const int k_AxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
+		
+		float[,] m_LastAxisValues = new float[k_ControllerCount, k_AxisCount];
+		Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
+		Quaternion[] m_LastRotationValues = new Quaternion[k_ControllerCount];
 
-		float[,] m_LastAxisValues = new float[kControllerCount, kAxisCount];
-		Vector3[] m_LastPositionValues = new Vector3[kControllerCount];
-		Quaternion[] m_LastRotationValues = new Quaternion[kControllerCount];
-#endif
-
-#if ENABLE_OVR_INPUT
 		public void Update()
 		{
 			// Manually update the Touch input
@@ -75,7 +74,7 @@ namespace UnityEngine.Experimental.EditorVR.Input
 
 		private void SendAxisEvents(OVRInput.Controller controller, int ovrIndex, int deviceIndex)
 		{
-			for (var axis = 0; axis < kAxisCount; ++axis)
+			for (var axis = 0; axis < k_AxisCount; ++axis)
 			{
 				float value;
 				if (GetAxis(controller, (VRInputDevice.VRControl)axis, out value))
@@ -163,3 +162,4 @@ namespace UnityEngine.Experimental.EditorVR.Input
 #endif
 	}
 }
+#endif

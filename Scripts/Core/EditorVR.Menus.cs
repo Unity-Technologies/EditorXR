@@ -2,12 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Menus;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -46,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR
 					{
 						var menu = m_UpdateVisibilityMenus[i];
 						var menuSizes = deviceData.menuSizes;
-						var menuBounds = U.Object.GetBounds(menu.menuContent);
+						var menuBounds = ObjectUtils.GetBounds(menu.menuContent);
 						var menuBoundsSize = menuBounds.size;
 						float size; // Because menus can change size, store the maximum size to avoid ping ponging visibility
 						if (!menuSizes.TryGetValue(menu, out size))
@@ -306,7 +305,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (!typeof(IMainMenu).IsAssignableFrom(type))
 					return null;
 
-				var mainMenu = U.Object.AddComponent(type, evr.gameObject) as IMainMenu;
+				var mainMenu = ObjectUtils.AddComponent(type, evr.gameObject) as IMainMenu;
 				input = evr.m_DeviceInputModule.CreateActionMapInputForObject(mainMenu, device);
 				evr.m_Interfaces.ConnectInterfaces(mainMenu, device);
 				mainMenu.visible = visible;
@@ -321,7 +320,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (!typeof(IAlternateMenu).IsAssignableFrom(type))
 					return null;
 
-				var alternateMenu = U.Object.AddComponent(type, evr.gameObject) as IAlternateMenu;
+				var alternateMenu = ObjectUtils.AddComponent(type, evr.gameObject) as IAlternateMenu;
 				input = evr.m_DeviceInputModule.CreateActionMapInputForObject(alternateMenu, device);
 				evr.m_Interfaces.ConnectInterfaces(alternateMenu, device);
 				alternateMenu.visible = false;
@@ -331,7 +330,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal MainMenuActivator SpawnMainMenuActivator(InputDevice device)
 			{
-				var mainMenuActivator = U.Object.Instantiate(evr.m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
+				var mainMenuActivator = ObjectUtils.Instantiate(evr.m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
 				evr.m_Interfaces.ConnectInterfaces(mainMenuActivator, device);
 
 				return mainMenuActivator;
@@ -339,7 +338,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			public PinnedToolButton SpawnPinnedToolButton(InputDevice device)
 			{
-				var button = U.Object.Instantiate(evr.m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
+				var button = ObjectUtils.Instantiate(evr.m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
 				evr.m_Interfaces.ConnectInterfaces(button, device);
 
 				return button;

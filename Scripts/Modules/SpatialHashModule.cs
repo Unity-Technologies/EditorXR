@@ -1,11 +1,13 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Collections;
-using UnityEngine.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class SpatialHashModule : MonoBehaviour
+	sealed class SpatialHashModule : MonoBehaviour
 	{
 		readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
 
@@ -19,11 +21,11 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		internal void Setup()
 		{
-			SetupObjects();
+			SetObjectUtilss();
 			StartCoroutine(UpdateDynamicObjects());
 		}
 
-		void SetupObjects()
+		void SetObjectUtilss()
 		{
 			MeshFilter[] meshFilters = FindObjectsOfType<MeshFilter>();
 			foreach (var mf in meshFilters)
@@ -91,3 +93,4 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

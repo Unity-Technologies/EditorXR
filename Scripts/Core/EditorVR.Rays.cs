@@ -1,13 +1,12 @@
 #if UNITY_EDITORVR
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Manipulators;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Core;
-using UnityEngine.Experimental.EditorVR.Manipulators;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Proxies;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -55,9 +54,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void CreateAllProxies()
 			{
-				foreach (var proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
+				foreach (var proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
 				{
-					var proxy = (IProxy)U.Object.CreateGameObjectWithComponent(proxyType, VRView.cameraRig);
+					var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig);
 					proxy.trackedObjectInput = evr.m_DeviceInputModule.trackedObjectInput;
 					proxy.activeChanged += () => OnProxyActiveChanged(proxy);
 					proxy.hidden = true;
@@ -116,7 +115,7 @@ namespace UnityEditor.Experimental.EditorVR
 							}
 
 							var rayOriginPairValue = rayOriginPair.Value;
-							var rayTransform = U.Object.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
+							var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
 							rayTransform.position = rayOriginPairValue.position;
 							rayTransform.rotation = rayOriginPairValue.rotation;
 							var dpr = rayTransform.GetComponent<DefaultProxyRay>();
@@ -233,7 +232,7 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 					var renderer = intersectionModule.GetIntersectedObjectForTester(tester);
-					if (renderer && !renderer.CompareTag(kVRPlayerTag))
+					if (renderer && !renderer.CompareTag(k_VRPlayerTag))
 						return renderer.gameObject;
 				}
 
@@ -301,7 +300,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void PreProcessRaycastSource(Transform rayOrigin)
 			{
-				var camera = U.Camera.GetMainCamera();
+				var camera = CameraUtils.GetMainCamera();
 				var cameraPosition = camera.transform.position;
 				var matrix = camera.worldToCameraMatrix;
 

@@ -1,4 +1,7 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Helpers
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// For specifying an alternate preview camera
@@ -26,3 +29,4 @@
 		bool enabled { get; set; }
 	}
 }
+#endif

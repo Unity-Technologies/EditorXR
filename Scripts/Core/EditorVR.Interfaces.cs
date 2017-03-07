@@ -1,15 +1,10 @@
 #if UNITY_EDITORVR
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Actions;
 using UnityEngine.Experimental.EditorVR.Core;
-using UnityEngine.Experimental.EditorVR.Menus;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -18,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class Interfaces : Nested
 		{
-			const byte kMinStencilRef = 2;
+			const byte k_MinStencilRef = 2;
 
 			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
@@ -27,15 +22,15 @@ namespace UnityEditor.Experimental.EditorVR
 				get { return m_StencilRef; }
 				set
 				{
-					m_StencilRef = (byte)Mathf.Clamp(value, kMinStencilRef, byte.MaxValue);
+					m_StencilRef = (byte)Mathf.Clamp(value, k_MinStencilRef, byte.MaxValue);
 
 					// Wrap
 					if (m_StencilRef == byte.MaxValue)
-						m_StencilRef = kMinStencilRef;
+						m_StencilRef = k_MinStencilRef;
 				}
 			}
 
-			byte m_StencilRef = kMinStencilRef;
+			byte m_StencilRef = k_MinStencilRef;
 
 			internal void ConnectInterfaces(object obj, InputDevice device)
 			{
@@ -173,7 +168,7 @@ namespace UnityEditor.Experimental.EditorVR
 						var actionMenuData = new ActionMenuData()
 						{
 							name = action.GetType().Name,
-							sectionName = ActionMenuItemAttribute.kDefaultActionSectionName,
+							sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
 							priority = int.MaxValue,
 							action = action,
 						};
@@ -244,7 +239,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var usesCameraRig = obj as IUsesCameraRig;
 				if (usesCameraRig != null)
-					usesCameraRig.cameraRig = U.Camera.GetCameraRig();
+					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
 
 				var usesStencilRef = obj as IUsesStencilRef;
 				if (usesStencilRef != null)

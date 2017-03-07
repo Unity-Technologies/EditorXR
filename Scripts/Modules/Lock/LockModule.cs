@@ -1,13 +1,12 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class LockModule : MonoBehaviour, IActions, ISelectionChanged
+	class LockModule : MonoBehaviour, IActions, ISelectionChanged
 	{
 		class LockModuleAction : IAction, ITooltip
 		{
@@ -38,7 +37,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		GameObject m_CurrentHoverObject;
 		Transform m_HoverRayOrigin;
 		float m_HoverDuration;
-		const float kMaxHoverTime = 2.0f;
+		const float k_MaxHoverTime = 2.0f;
 
 		void Awake()
 		{
@@ -115,7 +114,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 					m_HoverDuration += Time.unscaledDeltaTime;
 
 					// Don't allow hover menu if over a selected game object
-					if (IsLocked(go) && m_HoverDuration >= kMaxHoverTime)
+					if (IsLocked(go) && m_HoverDuration >= k_MaxHoverTime)
 					{
 						UpdateAction(go);
 
@@ -141,3 +140,4 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

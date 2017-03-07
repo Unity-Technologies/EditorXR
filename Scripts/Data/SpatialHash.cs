@@ -1,10 +1,10 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Data
+namespace UnityEditor.Experimental.EditorVR.Data
 {
-	internal class SpatialHash<T>
+	class SpatialHash<T>
 	{
 		private readonly List<T> m_AllObjects = new List<T>();
 		private readonly BoundsOctree<T> m_Octree = new BoundsOctree<T>(100f, Vector3.zero, 0.5f, 1.2f);
@@ -33,3 +33,4 @@ namespace UnityEngine.Experimental.EditorVR.Data
 		}
 	}
 }
+#endif

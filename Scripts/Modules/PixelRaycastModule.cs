@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR.Core;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class PixelRaycastModule : MonoBehaviour, IForEachRayOrigin
+	class PixelRaycastModule : MonoBehaviour, IForEachRayOrigin
 	{
 		readonly Dictionary<Transform, GameObject> m_RaycastGameObjects = new Dictionary<Transform, GameObject>(); // Stores which gameobject the proxys' ray origins are pointing at
 
@@ -21,23 +22,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void OnEnable()
 		{
-#if UNITY_EDITOR
 			EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 			VRView.onGUIDelegate += OnSceneGUI;
-#endif
 		}
 
 		void OnDisable()
 		{
-#if UNITY_EDITOR
 			EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 			VRView.onGUIDelegate -= OnSceneGUI;
-#endif
 		}
 
 		void Update()
 		{
-#if UNITY_EDITOR
 			// HACK: Send a custom event, so that OnSceneGUI gets called, which is requirement for scene picking to occur
 			//		Additionally, on some machines it's required to do a delay call otherwise none of this works
 			//		I noticed that delay calls were queuing up, so it was necessary to protect against that, so only one is processed
@@ -55,8 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				m_UpdateRaycasts = false; // Don't allow another one to queue until the current one is processed
 			}
-#endif
-
 		}
 
 		/// <summary>
@@ -94,7 +88,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_IgnoreList[i] = children[i].gameObject;
 		}
 
-#if UNITY_EDITOR
 		void OnHierarchyChanged()
 		{
 			m_IgnoreListDirty = true;
@@ -118,11 +111,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				Event.current.Use();
 			}
 		}
-#endif
 
 		GameObject Raycast(Ray ray, Camera camera)
 		{
-#if UNITY_EDITOR
 			camera.transform.position = ray.origin;
 			camera.transform.forward = ray.direction;
 
@@ -138,9 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			camera.targetTexture = null;
 
 			return go;
-#else
-			return null;
-#endif
 		}
 	}
 }
+#endif

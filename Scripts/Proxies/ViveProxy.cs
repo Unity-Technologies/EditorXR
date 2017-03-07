@@ -1,26 +1,24 @@
-﻿using System;
+﻿#if UNITY_EDITOR
 using System.Collections;
-using UnityEngine.Experimental.EditorVR.Input;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Input;
+using UnityEditor.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.Experimental.EditorVR.Proxies
+namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	public class ViveProxy : TwoHandedProxyBase
+	sealed class ViveProxy : TwoHandedProxyBase
 	{
 #if ENABLE_STEAMVR_INPUT
 		SteamVR_RenderModel m_RightModel;
 		SteamVR_RenderModel m_LeftModel;
-#endif
 
 		public override void Awake()
 		{
 			base.Awake();
-			m_InputToEvents = U.Object.AddComponent<ViveInputToEvents>(gameObject);
+			m_InputToEvents = ObjectUtils.AddComponent<ViveInputToEvents>(gameObject);
 		}
 
 		public override IEnumerator Start()
 		{
-#if ENABLE_STEAMVR_INPUT
 			SteamVR_Render.instance.transform.parent = gameObject.transform;
 
 			while (!active)
@@ -32,12 +30,8 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 			m_RightModel.enabled = true;
 
 			yield return base.Start();
-#else
-			yield break;
-#endif
 		}
 
-#if ENABLE_STEAMVR_INPUT
 		public override void Update()
 		{
 			if (active && m_LeftModel && m_RightModel)
@@ -62,3 +56,4 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 #endif
 	}
 }
+#endif

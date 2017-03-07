@@ -1,6 +1,8 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provides access to checks that can test against the viewer's body
@@ -13,3 +15,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		Func<Transform, bool> isOverShoulder { set; }
 	}
 }
+#endif

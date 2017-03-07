@@ -1,240 +1,246 @@
-﻿using System.Collections.Generic;
-using UnityEditor;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Menus;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.UI;
 
-[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
-public class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	const float kYBounds = 0.2f;
-	const float kScrollMargin = 0.03f;
-
-	[SerializeField]
-	GameObject m_ContentPrefab;
-
-	[SerializeField]
-	GameObject m_FilterPrefab;
-
-	[SerializeField]
-	GameObject m_FocusPrefab;
-
-	[SerializeField]
-	GameObject m_CreateEmptyPrefab;
-
-	HierarchyUI m_HierarchyUI;
-	FilterUI m_FilterUI;
-
-	HierarchyData m_SelectedRow;
-
-	bool m_Scrolling;
-	Transform m_HighlightContainer;
-
-	public List<HierarchyData> hierarchyData
+	[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
+	sealed class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
 	{
-		set
+		const float k_YBounds = 0.2f;
+		const float k_ScrollMargin = 0.03f;
+
+		[SerializeField]
+		GameObject m_ContentPrefab;
+
+		[SerializeField]
+		GameObject m_FilterPrefab;
+
+		[SerializeField]
+		GameObject m_FocusPrefab;
+
+		[SerializeField]
+		GameObject m_CreateEmptyPrefab;
+
+		HierarchyUI m_HierarchyUI;
+		FilterUI m_FilterUI;
+
+		HierarchyData m_SelectedRow;
+
+		bool m_Scrolling;
+		Transform m_HighlightContainer;
+
+		public List<HierarchyData> hierarchyData
 		{
-			m_HierarchyData = value;
+			set
+			{
+				m_HierarchyData = value;
 
-			if (m_HierarchyUI)
-				m_HierarchyUI.listView.data = value;
+				if (m_HierarchyUI)
+					m_HierarchyUI.listView.data = value;
+			}
 		}
-	}
-	List<HierarchyData> m_HierarchyData;
 
-	public List<string> filterList
-	{
-		set
+		List<HierarchyData> m_HierarchyData;
+
+		public List<string> filterList
 		{
-			m_FilterList = value;
+			set
+			{
+				m_FilterList = value;
 
-			if (m_FilterUI)
-				m_FilterUI.filterList = value;
+				if (m_FilterUI)
+					m_FilterUI.filterList = value;
+			}
 		}
-	}
-	List<string> m_FilterList;
 
-	public MoveCameraRigDelegate moveCameraRig { private get; set; }
+		List<string> m_FilterList;
 
-	public override void Setup()
-	{
-		// Initial bounds must be set before the base.Setup() is called
-		minBounds = new Vector3(0.375f, kMinBounds.y, 0.5f);
-		m_CustomStartingBounds = minBounds;
+		public MoveCameraRigDelegate moveCameraRig { private get; set; }
 
-		base.Setup();
-
-		var contentPrefab = U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
-		m_HierarchyUI = contentPrefab.GetComponent<HierarchyUI>();
-		hierarchyData = m_HierarchyData;
-
-		m_FilterUI = U.Object.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
-		foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
+		public override void Setup()
 		{
-			connectInterfaces(mb);
-		}
-		m_FilterUI.filterList = m_FilterList;
+			// Initial bounds must be set before the base.Setup() is called
+			minBounds = new Vector3(0.375f, k_MinBounds.y, 0.5f);
+			m_CustomStartingBounds = minBounds;
 
-		var focusUI = U.Object.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
-		foreach (var mb in focusUI.GetComponentsInChildren<MonoBehaviour>())
+			base.Setup();
+
+			var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+			m_HierarchyUI = contentPrefab.GetComponent<HierarchyUI>();
+			hierarchyData = m_HierarchyData;
+
+			m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+			foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
+			{
+				connectInterfaces(mb);
+			}
+			m_FilterUI.filterList = m_FilterList;
+
+			var focusUI = ObjectUtils.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
+			foreach (var mb in focusUI.GetComponentsInChildren<MonoBehaviour>())
+			{
+				connectInterfaces(mb);
+			}
+			focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
+
+			var createEmptyUI = ObjectUtils.Instantiate(m_CreateEmptyPrefab, m_WorkspaceUI.frontPanel, false);
+			foreach (var mb in createEmptyUI.GetComponentsInChildren<MonoBehaviour>())
+			{
+				connectInterfaces(mb);
+			}
+			createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
+
+			var hierarchyListView = m_HierarchyUI.listView;
+			hierarchyListView.selectRow = SelectRow;
+
+			var handle = m_HierarchyUI.scrollHandle;
+
+			// Scroll Handle shouldn't move on bounds change
+			handle.transform.parent = m_WorkspaceUI.sceneContainer;
+
+			handle.dragStarted += OnScrollDragStarted;
+			handle.dragging += OnScrollDragging;
+			handle.dragEnded += OnScrollDragEnded;
+
+			// Hookup highlighting calls
+			handle.dragStarted += OnScrollPanelDragHighlightBegin;
+			handle.dragEnded += OnScrollPanelDragHighlightEnd;
+			handle.hoverStarted += OnScrollPanelHoverHighlightBegin;
+			handle.hoverEnded += OnScrollPanelHoverHighlightEnd;
+
+			// Assign highlight references
+			m_HighlightContainer = m_HierarchyUI.highlight.transform.parent.transform;
+
+			// Propagate initial bounds
+			OnBoundsChanged();
+		}
+
+		protected override void OnBoundsChanged()
 		{
-			connectInterfaces(mb);
-		}
-		focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
+			const float depthCompensation = 0.1375f;
 
-		var createEmptyUI = U.Object.Instantiate(m_CreateEmptyPrefab, m_WorkspaceUI.frontPanel, false);
-		foreach (var mb in createEmptyUI.GetComponentsInChildren<MonoBehaviour>())
+			var bounds = contentBounds;
+			var size = bounds.size;
+			size.y = k_YBounds;
+			size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
+			size.z = size.z - depthCompensation;
+			bounds.size = size;
+			bounds.center = Vector3.zero;
+
+			const float kHalfScrollMargin = k_ScrollMargin * 0.5f;
+			const float kDoubleScrollMargin = k_ScrollMargin * 2;
+			const float kScrollHandleXPositionOffset = 0.025f;
+			const float kScrollHandleXScaleOffset = 0.015f;
+
+			var scrollHandleTransform = m_HierarchyUI.scrollHandle.transform;
+			scrollHandleTransform.localPosition = new Vector3(-kHalfScrollMargin + kScrollHandleXPositionOffset, -scrollHandleTransform.localScale.y * 0.5f, 0);
+			scrollHandleTransform.localScale = new Vector3(size.x + k_ScrollMargin + kScrollHandleXScaleOffset, scrollHandleTransform.localScale.y, size.z + kDoubleScrollMargin);
+
+			var listView = m_HierarchyUI.listView;
+			bounds.size = size;
+			listView.bounds = bounds;
+			listView.transform.localPosition = new Vector3(0, listView.itemSize.y * 0.5f, 0); // Center in Y
+
+			m_HighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
+
+			size = contentBounds.size;
+			size.z = size.z - depthCompensation;
+			bounds.size = size;
+		}
+
+		static void SelectRow(int instanceID)
 		{
-			connectInterfaces(mb);
-		}
-		createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
-
-		var hierarchyListView = m_HierarchyUI.listView;
-		hierarchyListView.selectRow = SelectRow;
-
-		var handle = m_HierarchyUI.scrollHandle;
-		// Scroll Handle shouldn't move on bounds change
-		handle.transform.parent = m_WorkspaceUI.sceneContainer;
-
-		handle.dragStarted += OnScrollDragStarted;
-		handle.dragging += OnScrollDragging;
-		handle.dragEnded += OnScrollDragEnded;
-
-		// Hookup highlighting calls
-		handle.dragStarted += OnScrollPanelDragHighlightBegin;
-		handle.dragEnded += OnScrollPanelDragHighlightEnd;
-		handle.hoverStarted += OnScrollPanelHoverHighlightBegin;
-		handle.hoverEnded += OnScrollPanelHoverHighlightEnd;
-
-		// Assign highlight references
-		m_HighlightContainer = m_HierarchyUI.highlight.transform.parent.transform;
-
-		// Propagate initial bounds
-		OnBoundsChanged();
-	}
-
-	protected override void OnBoundsChanged()
-	{
-		const float depthCompensation = 0.1375f;
-
-		var bounds = contentBounds;
-		var size = bounds.size;
-		size.y = kYBounds;
-		size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
-		size.z = size.z - depthCompensation;
-		bounds.size = size;
-		bounds.center = Vector3.zero;
-
-		const float kHalfScrollMargin = kScrollMargin * 0.5f;
-		const float kDoubleScrollMargin = kScrollMargin * 2;
-		const float kScrollHandleXPositionOffset = 0.025f;
-		const float kScrollHandleXScaleOffset = 0.015f;
-
-		var scrollHandleTransform = m_HierarchyUI.scrollHandle.transform;
-		scrollHandleTransform.localPosition = new Vector3(-kHalfScrollMargin + kScrollHandleXPositionOffset, -scrollHandleTransform.localScale.y * 0.5f, 0);
-		scrollHandleTransform.localScale = new Vector3(size.x + kScrollMargin + kScrollHandleXScaleOffset, scrollHandleTransform.localScale.y, size.z + kDoubleScrollMargin);
-
-		var listView = m_HierarchyUI.listView;
-		bounds.size = size;
-		listView.bounds = bounds;
-		listView.transform.localPosition = new Vector3(0, listView.itemSize.y * 0.5f, 0); // Center in Y
-
-		m_HighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
-
-		size = contentBounds.size;
-		size.z = size.z - depthCompensation;
-		bounds.size = size;
-	}
-
-	static void SelectRow(int instanceID)
-	{
 #if UNITY_EDITOR
-		var gameObject = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
-		if (gameObject && Selection.activeGameObject != gameObject)
-			Selection.activeGameObject = gameObject;
-		else
-			Selection.activeGameObject = null;
+			var gameObject = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
+			if (gameObject && Selection.activeGameObject != gameObject)
+				Selection.activeGameObject = gameObject;
+			else
+				Selection.activeGameObject = null;
 #endif
-	}
+		}
 
-	void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-	{
-		m_HierarchyUI.listView.OnBeginScrolling();
-	}
+		void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			m_HierarchyUI.listView.OnBeginScrolling();
+		}
 
-	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-	{
-		m_HierarchyUI.listView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward)
-			/ getViewerScale();
-	}
+		void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			m_HierarchyUI.listView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward)
+				/ getViewerScale();
+		}
 
-	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-	{
-		m_HierarchyUI.listView.OnScrollEnded();
-	}
+		void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			m_HierarchyUI.listView.OnScrollEnded();
+		}
 
-	void OnScrollPanelDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-	{
-		m_Scrolling = true;
-		m_HierarchyUI.highlight.visible = true;
-	}
+		void OnScrollPanelDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			m_Scrolling = true;
+			m_HierarchyUI.highlight.visible = true;
+		}
 
-	void OnScrollPanelDragHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-	{
-		m_Scrolling = false;
-		m_HierarchyUI.highlight.visible = false;
-	}
-
-	void OnScrollPanelHoverHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-	{
-		m_HierarchyUI.highlight.visible = true;
-	}
-
-	void OnScrollPanelHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-	{
-		if (!m_Scrolling)
+		void OnScrollPanelDragHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			m_Scrolling = false;
 			m_HierarchyUI.highlight.visible = false;
-	}
+		}
 
-	public void OnSelectionChanged()
-	{
-		m_HierarchyUI.listView.SelectRow(Selection.activeInstanceID);
-	}
+		void OnScrollPanelHoverHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			m_HierarchyUI.highlight.visible = true;
+		}
 
-	void FocusSelection()
-	{
-		if (Selection.gameObjects.Length == 0)
-			return;
+		void OnScrollPanelHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			if (!m_Scrolling)
+				m_HierarchyUI.highlight.visible = false;
+		}
 
-		var mainCamera = U.Camera.GetMainCamera().transform;
-		var bounds = U.Object.GetBounds(Selection.gameObjects);
+		public void OnSelectionChanged()
+		{
+			m_HierarchyUI.listView.SelectRow(Selection.activeInstanceID);
+		}
 
-		var size = bounds.size;
-		size.y = 0;
-		var maxSize = size.MaxComponent();
+		void FocusSelection()
+		{
+			if (Selection.gameObjects.Length == 0)
+				return;
 
-		const float kExtraDistance = 0.25f; // Add some extra distance so selection isn't in your face
-		maxSize += kExtraDistance;
+			var mainCamera = CameraUtils.GetMainCamera().transform;
+			var bounds = ObjectUtils.GetBounds(Selection.gameObjects);
 
-		var viewDirection = mainCamera.transform.forward;
-		viewDirection.y = 0;
-		viewDirection.Normalize();
+			var size = bounds.size;
+			size.y = 0;
+			var maxSize = size.MaxComponent();
 
-		var cameraDiff = mainCamera.position - U.Camera.GetCameraRig().position;
-		cameraDiff.y = 0;
+			const float kExtraDistance = 0.25f; // Add some extra distance so selection isn't in your face
+			maxSize += kExtraDistance;
 
-		moveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
-	}
+			var viewDirection = mainCamera.transform.forward;
+			viewDirection.y = 0;
+			viewDirection.Normalize();
 
-	static void CreateEmptyGameObject()
-	{
-		var camera = U.Camera.GetMainCamera().transform;
-		var go = new GameObject();
-		go.transform.position = camera.position + camera.forward;
-		Selection.activeGameObject = go;
+			var cameraDiff = mainCamera.position - CameraUtils.GetCameraRig().position;
+			cameraDiff.y = 0;
+
+			moveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
+		}
+
+		static void CreateEmptyGameObject()
+		{
+			var camera = CameraUtils.GetMainCamera().transform;
+			var go = new GameObject();
+			go.transform.position = camera.position + camera.forward;
+			Selection.activeGameObject = go;
+		}
 	}
 }
+#endif

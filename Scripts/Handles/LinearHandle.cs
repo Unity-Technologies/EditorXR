@@ -1,11 +1,13 @@
-﻿using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Handles
+namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	public class LinearHandle : BaseHandle
+	sealed class LinearHandle : BaseHandle
 	{
-		private class LinearHandleEventData : HandleEventData
+		class LinearHandleEventData : HandleEventData
 		{
 			public Vector3 raycastHitWorldPosition;
 
@@ -18,7 +20,7 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 		[SerializeField]
 		bool m_OrientDragPlaneToRay = true;
 
-		private const float kMaxDragDistance = 1000f;
+		private const float k_MaxDragDistance = 1000f;
 
 		private Plane m_Plane;
 		private Vector3 m_LastPosition;
@@ -31,7 +33,7 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new LinearHandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
+			return new LinearHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
 		}
 
 		protected override void OnHandleHovering(HandleEventData eventData)
@@ -104,7 +106,7 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 			float distance = 0f;
 			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
 			if (m_Plane.Raycast(ray, out distance))
-				worldPosition = ray.GetPoint(Mathf.Min(distance, kMaxDragDistance));
+				worldPosition = ray.GetPoint(Mathf.Min(distance, k_MaxDragDistance));
 
 			var linearEventData = eventData as LinearHandleEventData;
 			linearEventData.raycastHitWorldPosition = worldPosition;
@@ -126,3 +128,4 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 		}
 	}
 }
+#endif

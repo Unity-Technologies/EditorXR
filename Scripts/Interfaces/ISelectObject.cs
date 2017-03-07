@@ -1,6 +1,7 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Given a hovered object, find what object would actually be selected
@@ -35,3 +36,4 @@ namespace UnityEngine.Experimental.EditorVR
 		SelectObjectDelegate selectObject { set; }
 	}
 }
+#endif

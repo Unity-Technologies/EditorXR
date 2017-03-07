@@ -1,10 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	internal class ProjectFolderModule : MonoBehaviour
 	{
@@ -72,7 +74,6 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		{
 			m_AssetTypes.Clear();
 
-#if UNITY_EDITOR
 			StartCoroutine(CreateFolderData((folderData, hasNext) =>
 			{
 				m_FolderData = new List<FolderData> { folderData };
@@ -89,10 +90,8 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 					filterUI.filterList = GetFilterList();
 				}
 			}, m_AssetTypes));
-#endif
 		}
 
-#if UNITY_EDITOR
 		IEnumerator CreateFolderData(Action<FolderData, bool> callback, HashSet<string> assetTypes, bool hasNext = true, HierarchyProperty hp = null)
 		{
 			if (hp == null)
@@ -142,7 +141,6 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 			callback(new FolderData(name, folderList.Count > 0 ? folderList : null, assetList, guid), hasNext);
 		}
-#endif
 
 		static AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
 		{
@@ -170,3 +168,4 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif
