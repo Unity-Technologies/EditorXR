@@ -38,4 +38,6 @@ Because this project uses [git-submodule](https://git-scm.com/docs/git-submodule
 Optionally, you could add a [git hook for post-checkout](https://ttboj.wordpress.com/2014/05/06/keeping-git-submodules-in-sync-with-your-branches/) or use a GUI (e.g. SourceTree) that does this automatically for you.
 
 ### Project Settings
-If you plan on making changes to EditorVR and/or contributing back, then you'll need to set the `Asset Serialization` property under Edit->Project Settings->Editor to `Force Text`
+If you plan on making changes to EditorVR and/or contributing back, then you'll need to set the `Asset Serialization` property under Edit->Project Settings->Editor to `Force Text`.
+
+We're using `#if UNITY_EDITOR` for now in order to keep our code out of your player builds. We will eventually explore a possible overlap between EditorVR and player builds. We recommend you do the same for your tools if you plan to distribute them to others.
