@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -10,3 +11,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		Action<ForEachRayOriginCallback> forEachRayOrigin { set; }
 	}
 }
+#endif

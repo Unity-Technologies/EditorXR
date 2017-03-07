@@ -1,4 +1,4 @@
-#if UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR
