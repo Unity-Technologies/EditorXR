@@ -1,6 +1,9 @@
-namespace UnityEngine.Experimental.EditorVR.UI
+#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	public class StandardInputField : InputField
+	sealed class StandardInputField : InputField
 	{
 		public enum LineType
 		{
@@ -103,3 +106,4 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

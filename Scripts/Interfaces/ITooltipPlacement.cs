@@ -1,4 +1,7 @@
-﻿namespace UnityEngine.Experimental.EditorVR
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Decorates classes that provide positioning information for tooltips
@@ -21,3 +24,4 @@
 		TextAlignment tooltipAlignment { get; }
 	}
 }
+#endif

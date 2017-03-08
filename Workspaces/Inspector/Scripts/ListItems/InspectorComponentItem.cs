@@ -1,75 +1,77 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Data;
-using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.UI;
-using Button = UnityEngine.Experimental.EditorVR.UI.Button;
+using Button = UnityEditor.Experimental.EditorVR.UI.Button;
 
-class InspectorComponentItem : InspectorListItem
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	const float kExpandArrowRotateSpeed = 0.4f;
-	static readonly Quaternion kExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
-	static readonly Quaternion kNormalRotation = Quaternion.identity;
-
-	[SerializeField]
-	Button m_ExpandArrow;
-
-	[SerializeField]
-	RawImage m_Icon;
-
-	[SerializeField]
-	Toggle m_EnabledToggle;
-
-	[SerializeField]
-	Text m_NameText;
-
-#if UNITY_EDITOR
-	public override void Setup(InspectorData data)
+	sealed class InspectorComponentItem : InspectorListItem
 	{
-		base.Setup(data);
+		const float k_ExpandArrowRotateSpeed = 0.4f;
+		static readonly Quaternion k_ExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
+		static readonly Quaternion k_NormalRotation = Quaternion.identity;
 
-		var target = data.serializedObject.targetObject;
-		var type = target.GetType();
-		m_NameText.text = type.Name;
+		[SerializeField]
+		Button m_ExpandArrow;
 
-		StopAllCoroutines();
-		StartCoroutine(U.Object.GetAssetPreview(target, texture => m_Icon.texture = texture));
+		[SerializeField]
+		RawImage m_Icon;
 
-		var enabled = EditorUtility.GetObjectEnabled(target);
-		m_EnabledToggle.gameObject.SetActive(enabled != -1);
-		m_EnabledToggle.isOn = enabled == 1;
+		[SerializeField]
+		Toggle m_EnabledToggle;
 
-		m_ExpandArrow.gameObject.SetActive(data.children != null);
-	}
+		[SerializeField]
+		Text m_NameText;
 
-	public override void UpdateSelf(float width, int depth, bool expanded)
-	{
-		base.UpdateSelf(width, depth, expanded);
-
-		// Rotate arrow for expand state
-		m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-			expanded ? kExpandedRotation : kNormalRotation,
-			kExpandArrowRotateSpeed);
-	}
-
-	public override void OnObjectModified()
-	{
-		base.OnObjectModified();
-		var enabled = EditorUtility.GetObjectEnabled(data.serializedObject.targetObject);
-		m_EnabledToggle.isOn = enabled == 1;
-	}
-
-	public void SetEnabled(bool value)
-	{
-		var serializedObject = data.serializedObject;
-		var target = serializedObject.targetObject;
-		if (value != (EditorUtility.GetObjectEnabled(target) == 1))
+		public override void Setup(InspectorData data)
 		{
-			EditorUtility.SetObjectEnabled(target, value);
+			base.Setup(data);
 
-			Undo.IncrementCurrentGroup();
-			serializedObject.ApplyModifiedProperties();
+			var target = data.serializedObject.targetObject;
+			var type = target.GetType();
+			m_NameText.text = type.Name;
+
+			StopAllCoroutines();
+			StartCoroutine(ObjectUtils.GetAssetPreview(target, texture => m_Icon.texture = texture));
+
+			var enabled = EditorUtility.GetObjectEnabled(target);
+			m_EnabledToggle.gameObject.SetActive(enabled != -1);
+			m_EnabledToggle.isOn = enabled == 1;
+
+			m_ExpandArrow.gameObject.SetActive(data.children != null);
+		}
+
+		public override void UpdateSelf(float width, int depth, bool expanded)
+		{
+			base.UpdateSelf(width, depth, expanded);
+
+			// Rotate arrow for expand state
+			m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
+				expanded ? k_ExpandedRotation : k_NormalRotation, k_ExpandArrowRotateSpeed);
+		}
+
+		public override void OnObjectModified()
+		{
+			base.OnObjectModified();
+			var enabled = EditorUtility.GetObjectEnabled(data.serializedObject.targetObject);
+			m_EnabledToggle.isOn = enabled == 1;
+		}
+
+		public void SetEnabled(bool value)
+		{
+			var serializedObject = data.serializedObject;
+			var target = serializedObject.targetObject;
+			if (value != (EditorUtility.GetObjectEnabled(target) == 1))
+			{
+				EditorUtility.SetObjectEnabled(target, value);
+
+				Undo.IncrementCurrentGroup();
+				serializedObject.ApplyModifiedProperties();
+			}
 		}
 	}
-#endif
 }
+#endif
+	

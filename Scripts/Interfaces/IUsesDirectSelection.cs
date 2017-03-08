@@ -1,7 +1,9 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Gives decorated class access to direct selections
@@ -16,3 +18,4 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { set; }
 	}
 }
+#endif

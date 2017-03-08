@@ -1,9 +1,13 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Tools
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Method signature for connecting interfaces
 	/// <param name="obj">Object to connect interfaces on</param>
 	/// <param name="rayOrigin">(Optional) ray origin (needed for connecting ray-based interfaces)</param>
+	/// <param name="node">(Optional) node associated with given ray origin</param>
 	/// </summary>
 	public delegate void ConnectInterfacesDelegate(object obj, Transform rayOrigin = null);
 
@@ -18,3 +22,4 @@
 		ConnectInterfacesDelegate connectInterfaces { set; }
 	}
 }
+#endif

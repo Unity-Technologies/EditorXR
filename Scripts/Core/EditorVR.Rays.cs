@@ -1,13 +1,12 @@
-#if UNITY_EDITORVR
-using System;
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Manipulators;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Core;
-using UnityEngine.Experimental.EditorVR.Manipulators;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Proxies;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -20,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
-			const float kDefaultRayLength = 100f;
+			const float k_DefaultRayLength = 100f;
 
 			internal Dictionary<Transform, DefaultProxyRay> defaultRays { get { return m_DefaultRays; } }
 			readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
@@ -55,9 +54,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void CreateAllProxies()
 			{
-				foreach (var proxyType in U.Object.GetImplementationsOfInterface(typeof(IProxy)))
+				foreach (var proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
 				{
-					var proxy = (IProxy)U.Object.CreateGameObjectWithComponent(proxyType, VRView.cameraRig);
+					var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig);
 					proxy.trackedObjectInput = evr.m_DeviceInputModule.trackedObjectInput;
 					proxy.activeChanged += () => OnProxyActiveChanged(proxy);
 					proxy.hidden = true;
@@ -116,10 +115,12 @@ namespace UnityEditor.Experimental.EditorVR
 							}
 
 							var rayOriginPairValue = rayOriginPair.Value;
-							var rayTransform = U.Object.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
+							var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
 							rayTransform.position = rayOriginPairValue.position;
 							rayTransform.rotation = rayOriginPairValue.rotation;
-							m_DefaultRays.Add(rayOriginPairValue, rayTransform.GetComponent<DefaultProxyRay>());
+							var dpr = rayTransform.GetComponent<DefaultProxyRay>();
+							dpr.getViewerScale = Viewer.GetViewerScale;
+							m_DefaultRays.Add(rayOriginPairValue, dpr);
 
 							evr.m_KeyboardModule.SpawnKeyboardMallet(rayOriginPairValue);
 
@@ -144,9 +145,6 @@ namespace UnityEditor.Experimental.EditorVR
 						}
 
 						evr.m_Tools.SpawnDefaultTools(proxy);
-
-						evr.m_WorkspaceModule.CreateWorkspace(typeof(HierarchyWorkspace));
-						evr.m_WorkspaceModule.CreateWorkspace(typeof(ConsoleWorkspace));
 					}
 				}
 			}
@@ -161,7 +159,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 					foreach (var rayOrigin in proxy.rayOrigins.Values)
 					{
-						var distance = kDefaultRayLength;
+						var distance = k_DefaultRayLength * Viewer.GetViewerScale();
 
 						// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
 						// object, so visually show the ray terminating there instead of the object; UI is already given
@@ -234,7 +232,7 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 					var renderer = intersectionModule.GetIntersectedObjectForTester(tester);
-					if (renderer && !renderer.CompareTag(kVRPlayerTag))
+					if (renderer && !renderer.CompareTag(k_VRPlayerTag))
 						return renderer.gameObject;
 				}
 
@@ -302,7 +300,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void PreProcessRaycastSource(Transform rayOrigin)
 			{
-				var camera = U.Camera.GetMainCamera();
+				var camera = CameraUtils.GetMainCamera();
 				var cameraPosition = camera.transform.position;
 				var matrix = camera.worldToCameraMatrix;
 
@@ -321,4 +319,5 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 	}
 }
+
 #endif

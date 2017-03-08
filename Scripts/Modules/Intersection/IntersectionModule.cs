@@ -1,13 +1,17 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Data;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using System.Linq;
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
+	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
+		const int k_MaxTestsPerTester = 100;
+
 		private readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		private readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
 
@@ -27,7 +31,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		public void Setup(SpatialHash<Renderer> hash)
 		{
 			m_SpatialHash = hash;
-			m_CollisionTester = U.Object.CreateGameObjectWithComponent<MeshCollider>(transform);
+			m_CollisionTester = ObjectUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
 		}
 
 		void Update()
@@ -60,25 +64,34 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 						var testerBounds = tester.renderer.bounds;
 						var testerBoundsCenter = testerBounds.center;
 						Array.Sort(intersections, (a, b) => (a.bounds.center - testerBoundsCenter).magnitude.CompareTo((b.bounds.center - testerBoundsCenter).magnitude));
-						foreach (var obj in intersections)
+						var intersectionList = intersections.ToList();
+						intersectionList.RemoveAll(obj =>
 						{
 							// Ignore destroyed objects
 							if (!obj)
-								continue;
+								return true;
 
 							// Ignore inactive objects
 							if (!obj.gameObject.activeInHierarchy)
-								continue;
+								return true;
 
 							// Ignore locked objects
 							if (isLocked(obj.gameObject))
-								continue;
+								return true;
 
 							// Bounds check
 							if (!obj.bounds.Intersects(testerBounds))
-								continue;
+								return true;
 
-							if (U.Intersection.TestObject(m_CollisionTester, obj, tester))
+							return false;
+						});
+
+						if (intersectionList.Count > k_MaxTestsPerTester)
+							continue;
+
+						foreach (var obj in intersectionList)
+						{
+							if (IntersectionUtils.TestObject(m_CollisionTester, obj, tester))
 							{
 								intersectionFound = true;
 								Renderer currentObject;
@@ -146,3 +159,4 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

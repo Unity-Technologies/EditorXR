@@ -1,4 +1,7 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Tools
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// A proxy can have a single ray origin or multiple ray origins depending on the input device
@@ -12,3 +15,4 @@
 		Transform rayOrigin { set; }
 	}
 }
+#endif

@@ -5,17 +5,17 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 	[InitializeOnLoad]
 	public class BuildPlayerTest
 	{
-		const string kVerifySavingAssets = "VerifySavingAssets";
+		const string k_VerifySavingAssets = "VerifySavingAssets";
 
 		bool? m_VerifySavingAssets;
 
 		[SetUp]
 		public void SetUp()
 		{
-			if (EditorPrefs.HasKey(kVerifySavingAssets))
+			if (EditorPrefs.HasKey(k_VerifySavingAssets))
 			{
-				m_VerifySavingAssets = EditorPrefs.GetBool(kVerifySavingAssets);
-				EditorPrefs.SetBool(kVerifySavingAssets, false);
+				m_VerifySavingAssets = EditorPrefs.GetBool(k_VerifySavingAssets);
+				EditorPrefs.SetBool(k_VerifySavingAssets, false);
 			}
 		}
 
@@ -57,7 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 		public void TearDown()
 		{
 			if (m_VerifySavingAssets.HasValue)
-				EditorPrefs.SetBool(kVerifySavingAssets, m_VerifySavingAssets.Value);
+				EditorPrefs.SetBool(k_VerifySavingAssets, m_VerifySavingAssets.Value);
 		}
 	}
 }

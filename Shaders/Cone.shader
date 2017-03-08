@@ -51,7 +51,7 @@ Shader "Standard/Cone"
 
 	SubShader
 	{
-		Tags { "Queue" = "Transparent+1" "RenderType"="Opaque" "PerformanceChecks"="False" }
+		Tags { "Queue" = "Overlay+5102" "RenderType"="Opaque" "PerformanceChecks"="False" }
 		LOD 300
 	
 

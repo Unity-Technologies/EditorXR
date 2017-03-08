@@ -11,15 +11,16 @@
 
 	SubShader
 	{
-		Tags{ "Queue" = "Overlay+5101" "LightMode" = "Always" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
+		Tags{ "Queue" = "Overlay+5106" "LightMode" = "Always" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
 		ZWrite On
-		ZTest LEqual
+		ZTest GEqual
 		Blend SrcAlpha OneMinusSrcAlpha
 
 		Stencil
 		{
 			Ref[_StencilRef]
 			Comp equal
+			Pass Zero
 		}
 
 		Pass

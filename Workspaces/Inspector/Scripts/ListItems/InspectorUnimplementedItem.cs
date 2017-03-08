@@ -1,19 +1,23 @@
-﻿using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Data;
-using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.UI;
 
-sealed class InspectorUnimplementedItem : InspectorPropertyItem
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	[SerializeField]
-	Text m_TypeLabel;
-
-#if UNITY_EDITOR
-	public override void Setup(InspectorData data)
+	sealed class InspectorUnimplementedItem : InspectorPropertyItem
 	{
-		base.Setup(data);
+		[SerializeField]
+		Text m_TypeLabel;
 
-		m_TypeLabel.text = U.Object.NicifySerializedPropertyType(m_SerializedProperty.type);
+		public override void Setup(InspectorData data)
+		{
+			base.Setup(data);
+
+			m_TypeLabel.text = ObjectUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
+		}
 	}
-#endif
 }
+
+#endif

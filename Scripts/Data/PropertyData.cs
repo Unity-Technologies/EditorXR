@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
-using UnityEditor;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 
-namespace UnityEngine.Experimental.EditorVR.Data
+namespace UnityEditor.Experimental.EditorVR.Data
 {
-	class PropertyData : InspectorData
+	sealed class PropertyData : InspectorData
 	{
 #if UNITY_EDITOR
-		public SerializedProperty property { get { return m_Property; } }
+		public SerializedProperty property
+		{
+			get { return m_Property; }
+		}
 		readonly SerializedProperty m_Property;
 
 		public override int index
@@ -22,3 +25,4 @@ namespace UnityEngine.Experimental.EditorVR.Data
 #endif
 	}
 }
+#endif

@@ -1,4 +1,7 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Helpers
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Declares a class as something that can be vacuumed
@@ -16,3 +19,4 @@
 		Transform transform { get; }
 	}
 }
+#endif

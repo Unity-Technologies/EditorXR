@@ -1,8 +1,8 @@
-#if UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -10,11 +10,11 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class Viewer : Nested
 		{
-			const float kCameraRigTransitionTime = 0.75f;
+			const float k_CameraRigTransitionTime = 0.75f;
 
 			internal void AddPlayerModel()
 			{
-				var playerModel = U.Object.Instantiate(evr.m_PlayerModelPrefab, U.Camera.GetMainCamera().transform, false).GetComponent<Renderer>();
+				var playerModel = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<Renderer>();
 				evr.m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
 			}
 
@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 				foreach (var collider in colliders)
 				{
-					if (collider.CompareTag(kVRPlayerTag))
+					if (collider.CompareTag(k_VRPlayerTag))
 						return true;
 				}
 				return false;
@@ -32,8 +32,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal static void DropPlayerHead(Transform playerHead)
 			{
-				var cameraRig = U.Camera.GetCameraRig();
-				var mainCamera = U.Camera.GetMainCamera().transform;
+				var cameraRig = CameraUtils.GetCameraRig();
+				var mainCamera = CameraUtils.GetMainCamera().transform;
 
 				// Hide player head to avoid jarring impact
 				var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR
 					renderer.enabled = false;
 				}
 
-				var rotationDiff = U.Math.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
+				var rotationDiff = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
 				var cameraDiff = cameraRig.position - mainCamera.position;
 				cameraDiff.y = 0;
 				var rotationOffset = rotationDiff * cameraDiff - cameraDiff;
@@ -66,7 +66,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			static IEnumerator UpdateCameraRig(Vector3 position, Vector3? viewDirection, Action onComplete = null)
 			{
-				var cameraRig = U.Camera.GetCameraRig();
+				var cameraRig = CameraUtils.GetCameraRig();
 
 				var startPosition = cameraRig.position;
 				var startRotation = cameraRig.rotation;
@@ -81,9 +81,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var diffTime = 0f;
 				var startTime = Time.realtimeSinceStartup;
-				while (diffTime < kCameraRigTransitionTime)
+				while (diffTime < k_CameraRigTransitionTime)
 				{
-					var t = diffTime / kCameraRigTransitionTime;
+					var t = diffTime / k_CameraRigTransitionTime;
 					// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
 					cameraRig.position = Vector3.Lerp(startPosition, position, t);
 					cameraRig.rotation = Quaternion.Lerp(startRotation, rotation, t);
@@ -101,6 +101,11 @@ namespace UnityEditor.Experimental.EditorVR
 			internal static void MoveCameraRig(Vector3 position, Vector3? viewdirection)
 			{
 				evr.StartCoroutine(UpdateCameraRig(position, viewdirection));
+			}
+
+			internal static float GetViewerScale()
+			{
+				return CameraUtils.GetCameraRig().localScale.x;
 			}
 		}
 	}

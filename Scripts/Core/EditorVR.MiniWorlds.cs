@@ -1,11 +1,11 @@
-#if UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Proxies;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Workspaces;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class MiniWorlds : Nested
 		{
-			const float kPreviewScale = 0.1f;
+			const float k_PreviewScale = 0.1f;
 
 			internal class MiniWorldRay
 			{
@@ -42,6 +42,9 @@ namespace UnityEditor.Experimental.EditorVR
 			public List<IMiniWorld> worlds { get { return m_Worlds; } }
 			readonly List<IMiniWorld> m_Worlds = new List<IMiniWorld>();
 
+			public Dictionary<MiniWorldWorkspace, ActionMapInput> inputs { get { return m_MiniWorldInputs; } }
+			readonly Dictionary<MiniWorldWorkspace, ActionMapInput> m_MiniWorldInputs = new Dictionary<MiniWorldWorkspace, ActionMapInput>();
+
 			bool m_MiniWorldIgnoreListDirty = true;
 
 			internal MiniWorlds()
@@ -65,14 +68,14 @@ namespace UnityEditor.Experimental.EditorVR
 			/// </summary>
 			internal Transform InstantiateMiniWorldRay()
 			{
-				var miniWorldRay = U.Object.Instantiate(evr.m_ProxyRayPrefab.gameObject).transform;
-				U.Object.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());
+				var miniWorldRay = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject).transform;
+				ObjectUtils.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());
 
 				var renderers = miniWorldRay.GetComponentsInChildren<Renderer>();
 				foreach (var renderer in renderers)
 				{
 					if (!renderer.GetComponent<IntersectionTester>())
-						U.Object.Destroy(renderer.gameObject);
+						ObjectUtils.Destroy(renderer.gameObject);
 					else
 						renderer.enabled = false;
 				}
@@ -87,10 +90,10 @@ namespace UnityEditor.Experimental.EditorVR
 
 				foreach (var r in renderers)
 				{
-					if (r.CompareTag(kVRPlayerTag))
+					if (r.CompareTag(k_VRPlayerTag))
 						continue;
 
-					if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.kShowInMiniWorldTag))
+					if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.ShowInMiniWorldTag))
 						continue;
 
 					ignoreList.Add(r);
@@ -102,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 			}
 
-			internal void UpdateMiniWorlds()
+			internal void UpdateMiniWorlds(ConsumeControlDelegate consumeControl)
 			{
 				if (m_MiniWorldIgnoreListDirty)
 				{
@@ -111,6 +114,11 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 
 				var objectsGrabber = evr.m_DirectSelection.objectsGrabber;
+
+				foreach (var kvp in m_MiniWorldInputs)
+				{
+					kvp.Key.ProcessInput(kvp.Value, consumeControl);
+				}
 
 				// Update MiniWorldRays
 				foreach (var ray in m_Rays)
@@ -124,13 +132,18 @@ namespace UnityEditor.Experimental.EditorVR
 						continue;
 					}
 
-					// Transform into reference space
 					var miniWorld = miniWorldRay.miniWorld;
+					var inverseScale = miniWorld.miniWorldTransform.lossyScale.Inverse();
+
+					if (float.IsInfinity(inverseScale.x) || float.IsNaN(inverseScale.x)) // Extreme scales cause transform errors
+						continue;
+
+					// Transform into reference space
 					var originalRayOrigin = miniWorldRay.originalRayOrigin;
 					var referenceTransform = miniWorld.referenceTransform;
 					miniWorldRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
 					miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
-					miniWorldRayOrigin.localScale = Vector3.Scale(miniWorld.miniWorldTransform.localScale.Inverse(), referenceTransform.localScale);
+					miniWorldRayOrigin.localScale = Vector3.Scale(inverseScale, referenceTransform.localScale);
 
 					var directSelection = evr.m_DirectSelection;
 
@@ -169,10 +182,10 @@ namespace UnityEditor.Experimental.EditorVR
 									dragGameObjects[i] = dragObject.gameObject;
 								}
 
-								var totalBounds = U.Object.GetBounds(dragGameObjects);
+								var totalBounds = ObjectUtils.GetBounds(dragGameObjects);
 								var maxSizeComponent = totalBounds.size.MaxComponent();
 								if (!Mathf.Approximately(maxSizeComponent, 0f))
-									miniWorldRay.previewScaleFactor = Vector3.one * (kPreviewScale / maxSizeComponent);
+									miniWorldRay.previewScaleFactor = Vector3.one * (k_PreviewScale * Viewer.GetViewerScale() / maxSizeComponent);
 
 								miniWorldRay.originalScales = scales;
 							}
@@ -258,7 +271,7 @@ namespace UnityEditor.Experimental.EditorVR
 								{
 									var dragObject = dragObjects[i];
 									dragObject.localScale = originalScales[i];
-									U.Math.SetTransformOffset(miniWorldRayOrigin, dragObject, positionOffsets[i], rotationOffsets[i]);
+									MathUtilsExt.SetTransformOffset(miniWorldRayOrigin, dragObject, positionOffsets[i], rotationOffsets[i]);
 								}
 
 								// Add the object (back) to TransformTool
@@ -272,7 +285,7 @@ namespace UnityEditor.Experimental.EditorVR
 							for (var i = 0; i < dragObjects.Length; i++)
 							{
 								var dragObject = dragObjects[i];
-								if (dragObject.CompareTag(kVRPlayerTag))
+								if (dragObject.CompareTag(k_VRPlayerTag))
 								{
 									if (directSelection != null)
 										objectsGrabber.DropHeldObjects(miniWorldRayOrigin);
@@ -326,7 +339,7 @@ namespace UnityEditor.Experimental.EditorVR
 								var rotation = originalRayOrigin.rotation;
 								var position = originalRayOrigin.position
 									+ rotation * Vector3.Scale(previewScaleFactor, positionOffsets[i]);
-								U.Math.LerpTransform(dragObject, position, rotation * rotationOffsets[i]);
+								MathUtilsExt.LerpTransform(dragObject, position, rotation * rotationOffsets[i]);
 							}
 						}
 					}
@@ -366,7 +379,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void OnWorkspaceCreated(IWorkspace workspace)
 			{
-				// MiniWorld is a special case that we handle due to all of the mini world interactions
 				var miniWorldWorkspace = workspace as MiniWorldWorkspace;
 				if (!miniWorldWorkspace)
 					return;
@@ -374,7 +386,9 @@ namespace UnityEditor.Experimental.EditorVR
 				var miniWorld = miniWorldWorkspace.miniWorld;
 				m_Worlds.Add(miniWorld);
 
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				m_MiniWorldInputs[miniWorldWorkspace] = evr.m_DeviceInputModule.CreateActionMapInputForObject(miniWorldWorkspace, null);
+
+				evr.m_Rays.ForEachProxyDevice(deviceData =>
 				{
 					var miniWorldRayOrigin = InstantiateMiniWorldRay();
 					miniWorldRayOrigin.parent = workspace.transform;
@@ -393,26 +407,37 @@ namespace UnityEditor.Experimental.EditorVR
 					};
 
 					evr.m_IntersectionModule.AddTester(tester);
+
+					if (deviceData.proxy.active)
+					{
+						if (deviceData.node == Node.LeftHand)
+							miniWorldWorkspace.leftRayOrigin = deviceData.rayOrigin;
+
+						if (deviceData.node == Node.RightHand)
+							miniWorldWorkspace.rightRayOrigin = deviceData.rayOrigin;
+					}
 				}, false);
 			}
 
 			internal void OnWorkspaceDestroyed(IWorkspace workspace)
 			{
 				var miniWorldWorkspace = workspace as MiniWorldWorkspace;
-				if (miniWorldWorkspace != null)
-				{
-					var miniWorld = miniWorldWorkspace.miniWorld;
+				if (!miniWorldWorkspace)
+					return;
 
-					//Clean up MiniWorldRays
-					m_Worlds.Remove(miniWorld);
-					var miniWorldRaysCopy = new Dictionary<Transform, MiniWorlds.MiniWorldRay>(m_Rays);
-					foreach (var ray in miniWorldRaysCopy)
-					{
-						var miniWorldRay = ray.Value;
-						if (miniWorldRay.miniWorld == miniWorld)
-							m_Rays.Remove(ray.Key);
-					}
+				var miniWorld = miniWorldWorkspace.miniWorld;
+
+				//Clean up MiniWorldRays
+				m_Worlds.Remove(miniWorld);
+				var miniWorldRaysCopy = new Dictionary<Transform, MiniWorlds.MiniWorldRay>(m_Rays);
+				foreach (var ray in miniWorldRaysCopy)
+				{
+					var miniWorldRay = ray.Value;
+					if (miniWorldRay.miniWorld == miniWorld)
+						m_Rays.Remove(ray.Key);
 				}
+
+				m_MiniWorldInputs.Remove(miniWorldWorkspace);
 			}
 		}
 	}

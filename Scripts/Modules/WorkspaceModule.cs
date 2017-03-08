@@ -1,16 +1,16 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Workspaces;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class WorkspaceModule : MonoBehaviour, IConnectInterfaces
+	sealed class WorkspaceModule : MonoBehaviour, IConnectInterfaces
 	{
-		internal static readonly Vector3 kDefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
-		static readonly Quaternion kDefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
+		internal static readonly Vector3 k_DefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
+		internal static readonly Quaternion k_DefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
 		internal List<IWorkspace> workspaces { get { return m_Workspaces; } }
 		readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
@@ -24,14 +24,14 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		static WorkspaceModule()
 		{
-			workspaceTypes = U.Object.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
+			workspaceTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 		}
 
 		internal void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
 		{
-			var cameraTransform = U.Camera.GetMainCamera().transform;
+			var cameraTransform = CameraUtils.GetMainCamera().transform;
 
-			var workspace = (IWorkspace)U.Object.CreateGameObjectWithComponent(t, U.Camera.GetCameraRig());
+			var workspace = (IWorkspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
 			m_Workspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			connectInterfaces(workspace);
@@ -39,12 +39,12 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
 
-			var offset = kDefaultWorkspaceOffset;
+			var offset = k_DefaultWorkspaceOffset;
 			offset.z += workspace.vacuumBounds.extents.z;
 
 			var workspaceTransform = workspace.transform;
 			workspaceTransform.position = cameraTransform.TransformPoint(offset);
-			workspaceTransform.rotation *= Quaternion.LookRotation(cameraTransform.forward) * kDefaultWorkspaceTilt;
+			workspaceTransform.rotation = Quaternion.LookRotation(cameraTransform.forward) * k_DefaultWorkspaceTilt;
 
 			if (createdCallback != null)
 				createdCallback(workspace);
@@ -62,3 +62,4 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

@@ -1,4 +1,7 @@
-﻿namespace UnityEngine.Experimental.EditorVR
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Method signature for moving the camera rig
@@ -18,3 +21,4 @@
 		MoveCameraRigDelegate moveCameraRig { set; }
 	}
 }
+#endif
