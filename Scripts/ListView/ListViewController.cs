@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
@@ -39,6 +40,8 @@ namespace ListView
 
 		protected override void UpdateItems()
 		{
+			m_SettleTest = true;
+
 			for (int i = 0; i < m_Data.Count; i++)
 			{
 				var datum = m_Data[i];
@@ -47,6 +50,9 @@ namespace ListView
 				else
 					UpdateVisibleItem(datum, i);
 			}
+
+			if (m_Settling && m_SettleTest)
+				EndSettling();
 		}
 
 		protected virtual void Recycle(IndexType index)
@@ -104,7 +110,33 @@ namespace ListView
 
 			m_ListItems[data.index] = item;
 
+			item.startSettling = StartSettling;
+			item.endSettling = EndSettling;
+
+			if (m_Settling)
+				item.OnStartSettling();
+
 			return item;
+		}
+
+		protected override void StartSettling(Action onComplete = null)
+		{
+			foreach (var item in m_ListItems.Values)
+			{
+				item.OnStartSettling();
+			}
+
+			base.StartSettling(onComplete);
+		}
+
+		protected override void EndSettling()
+		{
+			foreach (var item in m_ListItems.Values)
+			{
+				item.OnEndSettling();
+			}
+
+			base.EndSettling();
 		}
 	}
 }

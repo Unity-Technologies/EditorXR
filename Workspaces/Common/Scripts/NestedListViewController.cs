@@ -7,11 +7,46 @@ namespace ListView
 		: ListViewController<DataType, ListViewItem<DataType, IndexType>, IndexType>
 		where DataType : ListViewItemNestedData<DataType, IndexType>
 	{
+
 		protected override int dataLength { get { return m_ExpandedDataLength; } }
 
 		protected int m_ExpandedDataLength;
 
 		protected readonly Dictionary<IndexType, bool> m_ExpandStates = new Dictionary<IndexType, bool>();
+
+		public override List<DataType> data
+		{
+			get { return base.data; }
+			set
+			{
+				m_Data = value;
+
+				// Update visible rows
+				foreach (var row in m_ListItems)
+				{
+					var newData = GetRowRecursive(m_Data, row.Key);
+					if (newData != null)
+						row.Value.Setup(newData);
+				}
+			}
+		}
+
+		static DataType GetRowRecursive(List<DataType> data, IndexType index)
+		{
+			foreach (var datum in data)
+			{
+				if (datum.index.Equals(index))
+					return datum;
+
+				if (datum.children != null)
+				{
+					var result = GetRowRecursive(datum.children, index);
+					if (result != null)
+						return result;
+				}
+			}
+			return null;
+		}
 
 		protected void RecycleRecursively(DataType data)
 		{
@@ -28,9 +63,12 @@ namespace ListView
 
 		protected override void UpdateItems()
 		{
-			int count = 0;
+			m_SettleTest = true;
+			var count = 0;
 			UpdateRecursively(m_Data, ref count);
 			m_ExpandedDataLength = count;
+			if (m_Settling && m_SettleTest)
+				EndSettling();
 		}
 
 		protected virtual void UpdateRecursively(List<DataType> data, ref int count, int depth = 0)

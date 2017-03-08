@@ -24,14 +24,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Material m_ExpandArrowMaterial;
 
-		[SerializeField]
-		float m_SettleSpeed = 0.4f;
-
-		bool m_Settling;
-
-		bool m_SettleTest;
-		Action m_OnSettlingComplete;
-
 		Material m_TopDropZoneMaterial;
 		Material m_BottomDropZoneMaterial;
 		float m_DropZoneAlpha;
@@ -43,40 +35,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		readonly Dictionary<int, bool> m_GrabbedRows = new Dictionary<int, bool>();
 
 		public Action<int> selectRow { private get; set; }
-
-		public override List<HierarchyData> data
-		{
-			get { return base.data; }
-			set
-			{
-				m_Data = value;
-
-				// Update visible rows
-				foreach (var row in m_ListItems)
-				{
-					var newData = GetRowRecursive(m_Data, row.Key);
-					if (newData != null)
-						row.Value.data = newData;
-				}
-			}
-		}
-
-		static HierarchyData GetRowRecursive(List<HierarchyData> data, int index)
-		{
-			foreach (var datum in data)
-			{
-				if (datum.index == index)
-					return datum;
-
-				if (datum.children != null)
-				{
-					var result = GetRowRecursive(datum.children, index);
-					if (result != null)
-						return result;
-				}
-			}
-			return null;
-		}
 
 		protected override void Setup()
 		{
@@ -111,14 +69,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
 
 			m_VisibleItemCount = 0;
-			m_SettleTest = true;
 
 			base.UpdateItems();
 
-			if (m_Settling && m_SettleTest)
-				EndSettling();
+			UpdateDropZones();
+		}
 
-			// Update Drop Zones
+		void UpdateDropZones()
+		{
 			var width = bounds.size.x - k_ClipMargin;
 			var dropZoneTransform = m_TopDropZone.transform;
 			var dropZoneScale = dropZoneTransform.localScale;
@@ -145,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			dropZoneTransform.localPosition = dropZonePosition;
 		}
 
-		void UpdateHierarchyItem(HierarchyData data, int offset, int depth, bool expanded)
+		void UpdateHierarchyItem(HierarchyData data, ref int count, int depth, bool expanded)
 		{
 			var index = data.index;
 			ListViewItem<HierarchyData, int> item;
@@ -154,30 +112,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var hierarchyItem = (HierarchyListItem)item;
 			var width = bounds.size.x - k_ClipMargin;
-			hierarchyItem.UpdateSelf(width, depth, expanded, data.index == m_SelectedRow);
+			hierarchyItem.UpdateSelf(width, depth, expanded, index == m_SelectedRow);
 
 			SetMaterialClip(hierarchyItem.cubeMaterial, transform.worldToLocalMatrix);
 			SetMaterialClip(hierarchyItem.dropZoneMaterial, transform.worldToLocalMatrix);
 
-			UpdateHierarchyItemTransform(item.transform, offset);
-		}
-
-		void UpdateHierarchyItemTransform(Transform t, int offset)
-		{
-			var itemSize = m_ItemSize.Value.z;
-			var destination = m_StartPosition + (offset * itemSize + m_ScrollOffset) * Vector3.back;
-			var destRotation = Quaternion.identity;
-
-			var settleSpeed = m_Settling ? m_SettleSpeed : 1;
-			t.localPosition = Vector3.Lerp(t.localPosition, destination, settleSpeed);
-			if (t.localPosition != destination)
-				m_SettleTest = false;
-
-			t.localRotation = Quaternion.Lerp(t.localRotation, destRotation, settleSpeed);
-			if (t.localRotation != destRotation)
-				m_SettleTest = false;
-
 			m_VisibleItemCount++;
+			UpdateItemTransform(item.transform, count);
+
+			if (hierarchyItem.makeRoom)
+			{
+				count++;
+				m_VisibleItemCount++;
+			}
 		}
 
 		protected override void UpdateRecursively(List<HierarchyData> data, ref int count, int depth = 0)
@@ -204,7 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
 					Recycle(index);
 				else
-					UpdateHierarchyItem(datum, count, depth, expanded);
+					UpdateHierarchyItem(datum, ref count, depth, expanded);
 
 				count++;
 
@@ -233,11 +180,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			item.isExpanded = GetExpanded;
 			item.setRowGrabbed = SetRowGrabbed;
 			item.getListItem = GetListItem;
-			item.startSettling = StartSettling;
-			item.endSettling = EndSettling;
-
-			if (m_Settling)
-				item.OnStartSettling();
 
 			item.UpdateArrow(GetExpanded(data.index), true);
 
@@ -376,33 +318,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ExpandStates[instanceID] = expanded;
 		}
 
-		void StartSettling(Action onComplete)
-		{
-			m_Settling = true;
-			foreach (HierarchyListItem item in m_ListItems.Values)
-			{
-				item.OnStartSettling();
-			}
-
-			if (onComplete != null)
-				m_OnSettlingComplete = onComplete;
-		}
-
-		void EndSettling()
-		{
-			m_Settling = false;
-			foreach (HierarchyListItem item in m_ListItems.Values)
-			{
-				item.OnEndSettling();
-			}
-
-			if (m_OnSettlingComplete != null)
-			{
-				m_OnSettlingComplete();
-				m_OnSettlingComplete = null;
-			}
-		}
-
 		void SetRowGrabbed(int index, bool grabbed)
 		{
 			m_GrabbedRows[index] = grabbed;
@@ -422,12 +337,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				return;
 
 			scrollOffset += delta;
-		}
-
-		public override void OnScrollEnded()
-		{
-			StartSettling(null);
-			base.OnScrollEnded();
 		}
 
 		private void OnDestroy()

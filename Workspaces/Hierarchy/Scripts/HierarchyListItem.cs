@@ -53,8 +53,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		float m_DropZoneHighlightAlpha;
 
-		bool m_Settling;
-
 		readonly Dictionary<Graphic, Material> m_OldMaterials = new Dictionary<Graphic, Material>();
 		readonly List<HierarchyListItem> m_VisibleChildren = new List<HierarchyListItem>();
 
@@ -65,8 +63,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Action<int> toggleExpanded { private get; set; }
 		public Action<int, bool> setExpanded { private get; set; }
 		public Action<int> selectRow { private get; set; }
-		public Action<Action> startSettling { private get; set; }
-		public Action endSettling { private get; set; }
 
 		public Func<int, bool> isExpanded { private get; set; }
 		public Action<int, bool> setRowGrabbed { private get; set; }
@@ -78,6 +74,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			get { return m_DragLerp < 1; }
 		}
+
+		public bool makeRoom { get; private set; }
 
 		public override void Setup(HierarchyData listData)
 		{
@@ -184,16 +182,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			expandArrowTransform.localRotation = Quaternion.Lerp(expandArrowTransform.localRotation,
 				Quaternion.AngleAxis(90f, Vector3.right) * (expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
 				immediate ? 1f : k_ExpandArrowRotateSpeed);
-		}
-
-		public void OnStartSettling()
-		{
-			m_Settling = true;
-		}
-
-		public void OnEndSettling()
-		{
-			m_Settling = false;
 		}
 
 		protected override void OnSingleClick(BaseHandle handle, HandleEventData eventData)
@@ -355,6 +343,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var color = dropZoneMaterial.color;
 			color.a = m_DropZoneHighlightAlpha;
 			dropZoneMaterial.color = color;
+
+			startSettling(null);
+			makeRoom = true;
 		}
 
 		void OnDropHoverEnded(BaseHandle handle)
@@ -362,6 +353,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var color = dropZoneMaterial.color;
 			color.a = 0;
 			dropZoneMaterial.color = color;
+
+			startSettling(null);
+			makeRoom = false;
 		}
 
 		object GetDropObject(BaseHandle handle)
@@ -415,6 +409,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(dropIndex);
 				var transform = gameObject.transform;
 				var dropTransform = dropGameObject.transform;
+
+				makeRoom = false;
 
 				if (handle == m_Cube)
 				{

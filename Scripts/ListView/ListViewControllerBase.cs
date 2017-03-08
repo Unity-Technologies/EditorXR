@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -28,6 +29,13 @@ namespace ListView
 		[Tooltip("Item temlate prefabs (at least one is required)")]
 		[SerializeField]
 		protected GameObject[] m_Templates;
+
+		[SerializeField]
+		protected float m_SettleSpeed = 0.4f;
+
+		protected bool m_Settling;
+		protected bool m_SettleTest;
+		Action m_OnSettlingComplete;
 
 		public Vector3 itemSize
 		{
@@ -170,8 +178,18 @@ namespace ListView
 
 		protected virtual void UpdateItemTransform(Transform t, int offset)
 		{
-			t.localPosition = m_StartPosition + (offset * m_ItemSize.Value.z + m_ScrollOffset) * Vector3.back;
-			t.localRotation = Quaternion.identity;
+			var itemSize = m_ItemSize.Value.z;
+			var destination = m_StartPosition + (offset * itemSize + m_ScrollOffset) * Vector3.back;
+			var destRotation = Quaternion.identity;
+
+			var settleSpeed = m_Settling ? m_SettleSpeed : 1;
+			t.localPosition = Vector3.Lerp(t.localPosition, destination, settleSpeed);
+			if (t.localPosition != destination)
+				m_SettleTest = false;
+
+			t.localRotation = Quaternion.Lerp(t.localRotation, destRotation, settleSpeed);
+			if (t.localRotation != destRotation)
+				m_SettleTest = false;
 		}
 
 		protected virtual Vector3 GetObjectSize(GameObject g)
@@ -204,6 +222,7 @@ namespace ListView
 
 		public virtual void OnScrollEnded()
 		{
+			StartSettling(); // Don't snap back to top
 			m_Scrolling = false;
 
 			if (m_ScrollOffset > 0)
@@ -227,7 +246,29 @@ namespace ListView
 
 		public void OnScroll(PointerEventData eventData)
 		{
+			if (m_Settling)
+				return;
+
 			scrollOffset += eventData.scrollDelta.y * scrollSpeed;
+		}
+
+		protected virtual void StartSettling(Action onComplete = null)
+		{
+			m_Settling = true;
+
+			if (onComplete != null)
+				m_OnSettlingComplete = onComplete;
+		}
+
+		protected virtual void EndSettling()
+		{
+			m_Settling = false;
+
+			if (m_OnSettlingComplete != null)
+			{
+				m_OnSettlingComplete();
+				m_OnSettlingComplete = null;
+			}
 		}
 	}
 }
