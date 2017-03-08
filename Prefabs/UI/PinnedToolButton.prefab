@@ -364,6 +364,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_GradientButton: {fileID: 114000010373680160}
+  m_Tooltip: {fileID: 114000012566785296}
 --- !u!114 &114000012566785296
 MonoBehaviour:
   m_ObjectHideFlags: 1
