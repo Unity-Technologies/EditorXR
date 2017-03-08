@@ -113,30 +113,7 @@ namespace ListView
 			item.startSettling = StartSettling;
 			item.endSettling = EndSettling;
 
-			if (m_Settling)
-				item.OnStartSettling();
-
 			return item;
-		}
-
-		protected override void StartSettling(Action onComplete = null)
-		{
-			foreach (var item in m_ListItems.Values)
-			{
-				item.OnStartSettling();
-			}
-
-			base.StartSettling(onComplete);
-		}
-
-		protected override void EndSettling()
-		{
-			foreach (var item in m_ListItems.Values)
-			{
-				item.OnEndSettling();
-			}
-
-			base.EndSettling();
 		}
 	}
 }

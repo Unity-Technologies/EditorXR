@@ -186,9 +186,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override void OnSingleClick(BaseHandle handle, HandleEventData eventData)
 		{
-			if (m_Settling)
-				return;
-
 			SelectFolder();
 			ToggleExpanded(handle, eventData);
 		}

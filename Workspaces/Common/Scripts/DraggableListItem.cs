@@ -32,6 +32,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Func<Transform, Transform> getPreviewOriginForRayOrigin { set; protected get; }
 
+		public override void Setup(DataType data)
+		{
+			base.Setup(data);
+			m_DragLerp = 0;
+		}
+
 		protected virtual void OnDragStarted(BaseHandle handle, HandleEventData eventData)
 		{
 			if (singleClickDrag)
