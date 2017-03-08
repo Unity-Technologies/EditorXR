@@ -322,11 +322,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_BlinkVisuals.HideVisuals();
 					StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
 				}
-			}
-			else
-			{
-				m_BlinkVisuals.enabled = false;
-				m_State = State.Inactive;
+				else
+				{
+					m_BlinkVisuals.enabled = false;
+					m_State = State.Inactive;
+				}
 			}
 
 			consumeControl(blinkInput.blink);
