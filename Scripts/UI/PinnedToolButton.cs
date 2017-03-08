@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				if (m_ToolType == value)
 					return;
-
+				Debug.LogError("PinnedToolButton setting TYPE : <color=green>" + value.ToString() + "</color>");
 				m_GradientButton.gameObject.SetActive(true);
 
 				m_ToolType = value;
@@ -29,21 +29,82 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType));
 					SetButtonGradients(true);
 					m_GradientButton.visible = true;
+
+					if (m_ToolType == typeof(Tools.SelectionTool))
+					{
+						m_Tooltip.tooltipText = "Selection TOOL!!!!";
+						activeTool = true;
+					}
+					else
+						m_Tooltip.tooltipText = "NOT SELECTION TOOL!!!";
+				}
+				else
+				{
+					m_GradientButton.visible = false;
 				}
 			}
 		}
 		Type m_ToolType;
 
+		public bool activeTool // use this externally to make visible & move a button to the active/inactive position
+		{
+			get { return m_ActiveTool; }
+			set
+			{
+				if (value == m_ActiveTool)
+					return;
+
+				m_ActiveTool = value;
+
+				if (value)
+				{
+					if (m_ToolType == null)
+					{
+						//this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
+						gameObject.SetActive(true);
+					}
+
+					// Perform re-position coroutine here
+					//this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(activePosition));
+					transform.localPosition = activePosition;
+				}
+				else
+				{
+					//this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(inactivePosition));
+					transform.localPosition = inactivePosition;
+				}
+			}
+		}
+		bool m_ActiveTool;
+
+		public Vector3 activePosition
+		{
+			private get { return m_ActivePosition; }
+			set
+			{
+				m_ActivePosition = value;
+				inactivePosition = value * 2.25f; // additional offset for the button when it is visible and inactive
+			}
+		}
+		Vector3 m_ActivePosition;
+
 		[SerializeField]
 		GradientButton m_GradientButton;
+
+		[SerializeField]
+		Tooltip m_Tooltip;
 
 		public Transform rayOrigin { get; set; }
 		public Func<Transform, Type, bool> selectTool { private get; set; }
 
+		Vector3 inactivePosition; // Inactive button offset from the main menu activator
+
 		void Start()
 		{
 			m_GradientButton.onClick += OnClick;
-			m_GradientButton.gameObject.SetActive(false);
+
+			if (m_ToolType == null)
+				m_GradientButton.gameObject.SetActive(false);
 		}
 
 		void OnClick()
