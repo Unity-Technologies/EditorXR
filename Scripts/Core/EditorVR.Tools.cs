@@ -85,11 +85,20 @@ namespace UnityEditor.Experimental.EditorVR
 					mainMenuActivator.hoverStarted += evrMenus.OnMainMenuActivatorHoverStarted;
 					mainMenuActivator.hoverEnded += evrMenus.OnMainMenuActivatorHoverEnded;
 
+					var pinnedToolButtonActivePosition = new Vector3(0f, 0f, -0.035f); // Active button offset from the main menu activator
 					var pinnedToolButton = evrMenus.SpawnPinnedToolButton(inputDevice);
 					deviceData.previousToolButton = pinnedToolButton;
 					var pinnedToolButtonTransform = pinnedToolButton.transform;
 					pinnedToolButtonTransform.SetParent(mainMenuActivator.transform, false);
-					pinnedToolButtonTransform.localPosition = new Vector3(0f, 0f, -0.035f); // Offset from the main menu activator
+					pinnedToolButton.activePosition = pinnedToolButtonActivePosition;
+
+					var selectionToolButton = evrMenus.SpawnPinnedToolButton(inputDevice);
+					deviceData.selectionToolButton = selectionToolButton;
+					var selectionToolButtonTransform = selectionToolButton.transform;
+					selectionToolButtonTransform.SetParent(mainMenuActivator.transform, false);
+					selectionToolButton.activePosition = pinnedToolButtonActivePosition;
+					selectionToolButton.toolType = typeof(SelectionTool); // Selection tool is visible & persistent by default
+					//selectionToolButton.activeTool = true; // Selection tool button is always visible, and defaults as the active tool button
 
 					var alternateMenu = evrMenus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 					deviceData.alternateMenu = alternateMenu;
@@ -151,17 +160,27 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal bool SelectTool(Transform rayOrigin, Type toolType)
 			{
+				Debug.LogError("SelectionTool TYPE : <color=green>" + toolType.ToString() + "</color>");
+				if (toolType == typeof(SelectionTool))
+					Debug.LogError("<color=orange>!!!!! SelectionTool detected</color>");
+
 				var result = false;
 				evr.m_Rays.ForEachProxyDevice((deviceData) =>
 				{
 					if (deviceData.rayOrigin == rayOrigin)
 					{
 						var spawnTool = true;
+						var isSelectionTool = deviceData.currentTool is SelectionTool;
 
 						// If this tool was on the current device already, then simply remove it
 						if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
 						{
-							DespawnTool(deviceData, deviceData.currentTool);
+							// SelectionTool is permanent, and cannot be despawned; it remains as the active tool (button)
+							if (!isSelectionTool)
+							{
+								DespawnTool(deviceData, deviceData.currentTool);
+								deviceData.selectionToolButton.activeTool = true;
+							}
 
 							// Don't spawn a new tool, since we are only removing the old tool
 							spawnTool = false;
@@ -199,8 +218,19 @@ namespace UnityEditor.Experimental.EditorVR
 
 								AddToolToStack(dd, newTool);
 
-								deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
-								deviceData.previousToolButton.rayOrigin = rayOrigin;
+								if (isSelectionTool)
+								{
+									deviceData.selectionToolButton.toolType = toolType; // assign the new current tool type to the active tool button
+									deviceData.selectionToolButton.rayOrigin = rayOrigin;
+								}
+								else
+								{
+									deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
+									deviceData.previousToolButton.rayOrigin = rayOrigin;
+								}
+
+								deviceData.previousToolButton.activeTool = !isSelectionTool;
+								deviceData.selectionToolButton.activeTool = isSelectionTool;
 							}
 						}
 
