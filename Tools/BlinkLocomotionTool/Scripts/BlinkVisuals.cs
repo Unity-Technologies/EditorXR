@@ -113,6 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		private void Awake()
 		{
+			viewerScale = 1;
 			m_LineRenderer = GetComponent<VRLineRenderer>();
 			m_LineRendererMeshRenderer = m_LineRenderer.GetComponent<MeshRenderer>();
 			m_BlinkMaterial = MaterialUtils.GetMaterialClone(m_RoomScaleRenderer);
