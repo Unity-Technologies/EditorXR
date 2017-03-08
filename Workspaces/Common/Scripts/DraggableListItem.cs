@@ -111,11 +111,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_DragObject = null;
 		}
 
-		protected virtual void OnSingleClick(BaseHandle handle, HandleEventData eventData) {}
+		protected virtual void OnSingleClick(BaseHandle handle, HandleEventData eventData)
+		{
+		}
 
-		protected virtual void OnDoubleClick(BaseHandle handle, HandleEventData eventData) {}
+		protected virtual void OnDoubleClick(BaseHandle handle, HandleEventData eventData)
+		{
+		}
 
-		protected virtual void OnSingleClickDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart) {}
+		protected virtual void OnSingleClickDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+		{
+		}
 
 		void CancelSingleClick()
 		{

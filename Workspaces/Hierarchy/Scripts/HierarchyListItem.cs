@@ -34,6 +34,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Material m_NoClipBackingCube;
 
 		[SerializeField]
+		Material m_NoClipBackingText;
+
+		[SerializeField]
 		Color m_HoverColor;
 
 		[SerializeField]
@@ -71,7 +74,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override bool singleClickDrag { get { return false; } }
 
-		public bool isStillSettling { get { return m_DragLerp < 1; } }
+		public bool isStillSettling
+		{
+			get { return m_DragLerp < 1; }
+		}
 
 		public override void Setup(HierarchyData listData)
 		{
@@ -160,8 +166,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			UpdateArrow(expanded);
 
-			m_Text.text = m_Settling ? "Settling" : data.name;
-
 			// Set selected/hover/normal color
 			if (m_Hovering && !m_Settling)
 				cubeMaterial.color = m_HoverColor;
@@ -229,6 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = m_NoClipExpandArrow;
 			m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipBackingCube;
 			m_Text.transform.localRotation = Quaternion.AngleAxis(90, Vector3.right);
+			m_Text.material = m_NoClipBackingText;
 
 			m_DropZone.gameObject.SetActive(false);
 			m_Cube.GetComponent<Collider>().enabled = false;
@@ -440,14 +445,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						dropTransform.SetSiblingIndex(targetIndex);
 					}
 				}
-				else
-				{
-					Debug.Log("huh??");
-				}
-			}
-			else
-			{
-				Debug.Log("huh??");
 			}
 		}
 

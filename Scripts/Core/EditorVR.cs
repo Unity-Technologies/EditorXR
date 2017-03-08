@@ -19,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR
 	[RequiresTag(k_VRPlayerTag)]
 	sealed partial class EditorVR
 	{
-		public const HideFlags DefaultHideFlags = HideFlags.HideAndDontSave;
+		public const HideFlags DefaultHideFlags = HideFlags.DontSave;
 		const string k_VRPlayerTag = "VRPlayer";
 
 		[SerializeField]
