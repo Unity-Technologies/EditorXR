@@ -75,8 +75,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		float m_OriginalNearClipPlane;
 		float m_OriginalFarClipPlane;
 
-		public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
-		public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
 		public Func<Transform, object, bool> lockRay { private get; set; }
 		public Func<Transform, object, bool> unlockRay { private get; set; }
 
@@ -116,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		private void OnDestroy()
 		{
-			showDefaultRay(rayOrigin);
+			this.ShowDefaultRay(rayOrigin);
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -305,7 +303,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 			{
 				m_State = State.Aiming;
-				hideDefaultRay(rayOrigin);
+				this.HideDefaultRay(rayOrigin);
 				lockRay(rayOrigin, this);
 
 				m_BlinkVisuals.ShowVisuals();
@@ -315,7 +313,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			else if (m_State == State.Aiming && blinkInput.blink.wasJustReleased)
 			{
 				unlockRay(rayOrigin, this);
-				showDefaultRay(rayOrigin);
+				this.ShowDefaultRay(rayOrigin);
 
 				if (!m_BlinkVisuals.outOfMaxRange)
 				{

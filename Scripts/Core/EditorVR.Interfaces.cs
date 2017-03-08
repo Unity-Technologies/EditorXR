@@ -1,4 +1,5 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -105,8 +106,18 @@ namespace UnityEditor.Experimental.EditorVR
 				var customRay = obj as ICustomRay;
 				if (customRay != null)
 				{
-					customRay.showDefaultRay = Rays.ShowRay;
-					customRay.hideDefaultRay = Rays.HideRay;
+					BindDelegate bind;
+					if (evr.m_Bindings.TryGetValue(typeof(ICustomRay), out bind))
+						bind();
+
+					//var bindingTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IBinding<ICustomRay>));
+					//foreach (var bindingType in bindingTypes)
+					//{
+					//	var binder = (IBinding<ICustomRay>)Activator.CreateInstance(bindingType);
+					//	binder.Bind();
+					//}
+					//customRay.ShowDefaultRay = Rays.ShowRay;
+					//customRay.HideDefaultRay = Rays.HideRay;
 				}
 
 				var lockableRay = obj as IUsesRayLocking;
@@ -179,7 +190,13 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var directSelection = obj as IUsesDirectSelection;
 				if (directSelection != null)
-					directSelection.getDirectSelection = evrDirectSelection.GetDirectSelection;
+				{
+					BindDelegate bind;
+					if (evr.m_Bindings.TryGetValue(typeof(IUsesDirectSelection), out bind))
+						bind();
+
+					//directSelection.GetDirectSelection = evrDirectSelection.GetDirectSelection;
+				}
 
 				var grabObjects = obj as IGrabObjects;
 				if (grabObjects != null)

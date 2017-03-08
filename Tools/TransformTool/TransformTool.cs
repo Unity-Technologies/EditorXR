@@ -150,12 +150,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		readonly Dictionary<Transform, GameObject> m_HoverObjects = new Dictionary<Transform, GameObject>();
 
-		public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
 		public Func<Transform, bool> isOverShoulder { private get; set; }
 		public Action<GameObject> deleteSceneObject { private get; set; }
-
-		public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
-		public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
 
 		public Func<Transform, object, bool> lockRay { private get; set; }
 		public Func<Transform, object, bool> unlockRay { private get; set; }
@@ -207,7 +203,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var manipulatorGameObject = m_CurrentManipulator.gameObject;
 			if (!m_CurrentManipulator.dragging)
 			{
-				var directSelection = getDirectSelection();
+				var directSelection = this.GetDirectSelection();
 
 				var hasLeft = m_GrabData.ContainsKey(Node.LeftHand);
 				var hasRight = m_GrabData.ContainsKey(Node.RightHand);
@@ -281,7 +277,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						setHighlight(hoveredObject, false);
 
-						hideDefaultRay(rayOrigin, true);
+						this.HideDefaultRay(rayOrigin, true);
 						lockRay(rayOrigin, this);
 
 						// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
@@ -449,7 +445,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_GrabData.Remove(inputNode);
 
 			unlockRay(grabData.rayOrigin, this);
-			showDefaultRay(grabData.rayOrigin, true);
+			this.ShowDefaultRay(grabData.rayOrigin, true);
 		}
 
 		private void Translate(Vector3 delta)

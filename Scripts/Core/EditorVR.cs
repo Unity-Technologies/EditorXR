@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -58,6 +60,10 @@ namespace UnityEditor.Experimental.EditorVR
 		Viewer m_Viewer;
 		Vacuumables m_Vacuumables;
 
+		Dictionary<Type, IBinding<object>> m_Binders = new Dictionary<Type, IBinding<object>>();
+		Dictionary<Type, BindDelegate> m_Bindings = new Dictionary<Type, BindDelegate>();
+		Dictionary<Type, ConnectInterfacesDelegate> m_InterfaceBinders = new Dictionary<Type, ConnectInterfacesDelegate>();
+
 		event Action m_SelectionChanged;
 
 		IPreviewCamera m_CustomPreviewCamera;
@@ -96,12 +102,12 @@ namespace UnityEditor.Experimental.EditorVR
 
 			ClearDeveloperConsoleIfNecessary();
 
-			m_DirectSelection = new DirectSelection();
+			m_DirectSelection = AddNestedModule<DirectSelection>();
 			m_Interfaces = new Interfaces();
 			m_Menus = new Menus();
 			m_MiniWorlds = new MiniWorlds();
-			m_Rays = new Rays();
-			m_Tools = new Tools();
+			m_Rays = AddNestedModule<Rays>();
+			m_Tools = AddNestedModule<Tools>();
 			m_UI = new UI();
 			m_Viewer = new Viewer();
 			m_Vacuumables = new Vacuumables();
@@ -327,6 +333,60 @@ namespace UnityEditor.Experimental.EditorVR
 			T module = ObjectUtils.AddComponent<T>(gameObject);
 			m_Interfaces.ConnectInterfaces(module);
 			return module;
+		}
+
+		private static void ShowInterfaceMapping(Type intType, Type implType)
+		{
+			var sb = new StringBuilder();
+			InterfaceMapping map = implType.GetInterfaceMap(intType);
+			sb.AppendFormat("Mapping of {0} to {1}: \n", map.InterfaceType, map.TargetType);
+			for (int ctr = 0; ctr < map.InterfaceMethods.Length; ctr++)
+			{
+				MethodInfo im = map.InterfaceMethods[ctr];
+				MethodInfo tm = map.TargetMethods[ctr];
+				sb.AppendFormat("   {0} --> {1}\n", im.Name, tm.Name);
+			}
+			sb.AppendLine();
+			Debug.Log(sb.ToString());
+		}
+
+		public bool IsMethodCompatibleWithDelegate<T>(MethodInfo method) where T : class
+		{
+			Type delegateType = typeof(T);
+			MethodInfo delegateSignature = delegateType.GetMethod("Invoke");
+
+			bool parametersEqual = delegateSignature
+				.GetParameters()
+				.Select(x => x.ParameterType)
+				.SequenceEqual(method.GetParameters()
+					.Select(x => x.ParameterType));
+
+			return delegateSignature.ReturnType == method.ReturnType &&
+				   parametersEqual;
+		}
+
+		T AddNestedModule<T>() where T : Nested, new()
+		{
+			T nested = new T();
+			var iface = nested.GetType().GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IBinding<>) && i.GetGenericArguments().Contains(typeof(ICustomRay)));
+			if (iface != null)
+			{
+				var map = nested.GetType().GetInterfaceMap(iface);
+				for (int i = 0; i < map.InterfaceMethods.Length; i++)
+				{
+					var im = map.InterfaceMethods[i];
+					var bd = Delegate.CreateDelegate(typeof(Action<object>), nested, map.TargetMethods[i]) as BindDelegate;
+					if (bd != null)
+						m_Bindings.Add(typeof(ICustomRay), bd);
+
+					//if (IsMethodCompatibleWithDelegate<BindDelegate>(im))
+					//m_Bindings.Add(typeof(ICustomRay), () => { im.Invoke(nested, null); });
+				}
+				ShowInterfaceMapping(iface, nested.GetType());
+				//m_Binders.Add(typeof(ICustomRay), (IBinding<object>)nested);
+				Debug.Log("Has IBinding<ICustomRay>");
+			}
+			return nested;
 		}
 
 		static GameObject GetGroupRoot(GameObject hoveredObject)

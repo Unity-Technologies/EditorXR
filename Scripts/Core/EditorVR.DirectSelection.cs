@@ -1,5 +1,6 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -10,13 +11,24 @@ namespace UnityEditor.Experimental.EditorVR
 {
 	partial class EditorVR
 	{
-		class DirectSelection : Nested
+		class DirectSelection : Nested, IBinding<IUsesDirectSelection>
 		{
 			internal IGrabObjects objectsGrabber { get; set; }
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelectionResults = new Dictionary<Transform, DirectSelectionData>();
 			readonly List<ActionMapInput> m_ActiveStates = new List<ActionMapInput>();
+
+			void IBinding<IUsesDirectSelection>.Bind()
+			{
+				Debug.Log("Binding for DS");
+				IUsesDirectSelectionMethods.s_GetDirectSelection = GetDirectSelection;
+			}
+
+			void IBinding<IUsesDirectSelection>.ConnectInterface(IUsesDirectSelection obj, Transform rayOrigin = null)
+			{
+				// No instance connections
+			}
 
 			// NOTE: This is for the length of the pointer object, not the length of the ray coming out of the pointer
 			internal float GetPointerLength(Transform rayOrigin)

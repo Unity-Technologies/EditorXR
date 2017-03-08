@@ -25,8 +25,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public Func<Transform, object, bool> lockRay { private get; set; }
 		public Func<Transform, object, bool> unlockRay { private get; set; }
-		public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
-		public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
 
 		public Action<ForEachRayOriginCallback> forEachRayOrigin { private get; set; }
 
@@ -91,9 +89,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					mallet.visible = malletVisible;
 					if (malletVisible)
-						hideDefaultRay(rayOrigin);
+						this.HideDefaultRay(rayOrigin);
 					else
-						showDefaultRay(rayOrigin);
+						this.ShowDefaultRay(rayOrigin);
 				}
 
 				// TODO remove this after physics is in

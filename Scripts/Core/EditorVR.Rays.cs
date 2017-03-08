@@ -1,6 +1,9 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -15,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR
 		[SerializeField]
 		DefaultProxyRay m_ProxyRayPrefab;
 
-		class Rays : Nested
+		class Rays : Nested, IBinding<ICustomRay>
 		{
 			internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -30,6 +33,18 @@ namespace UnityEditor.Experimental.EditorVR
 
 			StandardManipulator m_StandardManipulator;
 			ScaleManipulator m_ScaleManipulator;
+
+			void IBinding<ICustomRay>.Bind()
+			{
+				Debug.Log("Binding");
+				ICustomRayMethods.showDefaultRay = ShowRay;
+				ICustomRayMethods.hideDefaultRay = HideRay;
+			}
+
+			void IBinding<ICustomRay>.ConnectInterface(ICustomRay obj, Transform rayOrigin = null)
+			{
+				// No instance connections
+			}
 
 			internal void UpdateRayForDevice(DeviceData deviceData, Transform rayOrigin)
 			{
