@@ -165,7 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			UpdateArrow(expanded);
 
 			// Set selected/hover/normal color
-			if (m_Hovering && !m_Settling)
+			if (m_Hovering)
 				cubeMaterial.color = m_HoverColor;
 			else if (selected)
 				cubeMaterial.color = m_SelectedColor;
@@ -397,9 +397,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void ReceiveDrop(BaseHandle handle, object dropObject)
 		{
-			if (m_Settling)
-				return;
-
 			var dropData = dropObject as HierarchyData;
 			if (dropData != null)
 			{
@@ -410,7 +407,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var transform = gameObject.transform;
 				var dropTransform = dropGameObject.transform;
 
-				makeRoom = false;
+				// OnHierarchyChanged doesn't happen until next frame--delay removal of the extra space
+				EditorApplication.delayCall += () =>
+				{
+					makeRoom = false;
+				};
 
 				if (handle == m_Cube)
 				{
@@ -426,18 +427,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						dropTransform.SetParent(transform);
 						dropTransform.SetAsFirstSibling();
 					}
-					else if (transform.parent)
-					{
-						dropTransform.SetParent(transform.parent);
-						dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
-					}
 					else
 					{
 						var targetIndex = transform.GetSiblingIndex() + 1;
 						if (dropTransform.parent == transform.parent && dropTransform.GetSiblingIndex() < targetIndex)
 							targetIndex--;
 
-						dropTransform.SetParent(null);
+						dropTransform.SetParent(transform.parent);
 						dropTransform.SetSiblingIndex(targetIndex);
 					}
 				}

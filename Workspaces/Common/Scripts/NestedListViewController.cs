@@ -24,7 +24,8 @@ namespace ListView
 				// Update visible rows
 				foreach (var row in m_ListItems)
 				{
-					var newData = GetRowRecursive(m_Data, row.Key);
+					var index = row.Key;
+					var newData = GetRowRecursive(m_Data, index);
 					if (newData != null)
 						row.Value.Setup(newData);
 				}

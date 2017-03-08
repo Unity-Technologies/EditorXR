@@ -179,17 +179,24 @@ namespace ListView
 		protected virtual void UpdateItemTransform(Transform t, int offset)
 		{
 			var itemSize = m_ItemSize.Value.z;
-			var destination = m_StartPosition + (offset * itemSize + m_ScrollOffset) * Vector3.back;
-			var destRotation = Quaternion.identity;
+			var targetPosition = m_StartPosition + (offset * itemSize + m_ScrollOffset) * Vector3.back;
+			var targetRotation = Quaternion.identity;
 
-			var settleSpeed = m_Settling ? m_SettleSpeed : 1;
-			t.localPosition = Vector3.Lerp(t.localPosition, destination, settleSpeed);
-			if (t.localPosition != destination)
-				m_SettleTest = false;
+			if (m_Settling)
+			{
+				t.localPosition = Vector3.Lerp(t.localPosition, targetPosition, m_SettleSpeed);
+				if (t.localPosition != targetPosition)
+					m_SettleTest = false;
 
-			t.localRotation = Quaternion.Lerp(t.localRotation, destRotation, settleSpeed);
-			if (t.localRotation != destRotation)
-				m_SettleTest = false;
+				t.localRotation = Quaternion.Lerp(t.localRotation, targetRotation, m_SettleSpeed);
+				if (t.localRotation != targetRotation)
+					m_SettleTest = false;
+			}
+			else
+			{
+				t.localPosition = targetPosition;
+				t.localRotation = targetRotation;
+			}
 		}
 
 		protected virtual Vector3 GetObjectSize(GameObject g)
