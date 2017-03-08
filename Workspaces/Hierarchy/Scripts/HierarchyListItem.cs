@@ -309,14 +309,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnDragEndAfterSettling()
 		{
-			SetClipMaterialsAfterSettling();
+			ResetAfterSettling();
 			foreach (var child in m_VisibleChildren)
 			{
-				child.SetClipMaterialsAfterSettling();
+				child.ResetAfterSettling();
 			}
 		}
 
-		void SetClipMaterialsAfterSettling()
+		void ResetAfterSettling()
 		{
 			foreach (var kvp in m_OldMaterials)
 			{

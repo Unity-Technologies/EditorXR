@@ -384,7 +384,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				item.OnStartSettling();
 			}
 
-			m_OnSettlingComplete = onComplete;
+			if (onComplete != null)
+				m_OnSettlingComplete = onComplete;
 		}
 
 		void EndSettling()
@@ -396,7 +397,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 
 			if (m_OnSettlingComplete != null)
+			{
 				m_OnSettlingComplete();
+				m_OnSettlingComplete = null;
+			}
 		}
 
 		void SetRowGrabbed(int index, bool grabbed)
