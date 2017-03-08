@@ -49,6 +49,8 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 
 	float m_DropZoneHighlightAlpha;
 
+	bool m_Settling;
+
 	readonly Dictionary<Graphic, Material> m_OldMaterials = new Dictionary<Graphic, Material>();
 	readonly List<HierarchyListItem> m_VisibleChildren = new List<HierarchyListItem>();
 
@@ -60,12 +62,18 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 	public Action<int, bool> setExpanded { private get; set; }
 	public Action<int> selectRow { private get; set; }
 	public Action<Action> startSettling { private get; set; }
+	public Action endSettling { private get; set; }
 
 	public Func<int, bool> isExpanded { private get; set; }
 	public Action<int, bool> setRowGrabbed { private get; set; }
 	public Func<int, HierarchyListItem> getListItem { private get; set; }
 
 	protected override bool singleClickDrag { get { return false; } }
+
+	public bool isStillSettling
+	{
+		get { return m_DragLerp < 1; }
+	}
 
 	public override void Setup(HierarchyData listData)
 	{
@@ -153,8 +161,10 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 
 		UpdateArrow(expanded);
 
+		m_Text.text = m_Settling ? "Settling" : data.name;
+
 		// Set selected/hover/normal color
-		if (m_Hovering)
+		if (m_Hovering && !m_Settling)
 			cubeMaterial.color = m_HoverColor;
 		else if (selected)
 			cubeMaterial.color = m_SelectedColor;
@@ -172,8 +182,21 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 			immediate ? 1f : kExpandArrowRotateSpeed);
 	}
 
+	public void OnStartSettling()
+	{
+		m_Settling = true;
+	}
+
+	public void OnEndSettling()
+	{
+		m_Settling = false;
+	}
+
 	protected override void OnSingleClick(BaseHandle handle, HandleEventData eventData)
 	{
+		if (m_Settling)
+			return;
+
 		SelectFolder();
 		ToggleExpanded(handle, eventData);
 	}
@@ -265,6 +288,7 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 
 	void OnDragEndRecursive()
 	{
+		m_DragLerp = 0;
 		// OnHierarchyChanged doesn't happen until next frame--delay un-grab so the object doesn't start moving to the wrong spot
 		EditorApplication.delayCall += () => 
 		{
@@ -361,8 +385,8 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 		var transform = gameObject.transform;
 		var dropTransform = dropGameObject.transform;
 
-		var siblings = transform.parent == null && dropTransform.parent == null
-			|| transform.parent && dropTransform.parent == transform.parent;
+		var siblings = (transform.parent == null && dropTransform.parent == null)
+			|| (transform.parent && dropTransform.parent == transform.parent);
 
 		// Dropping on previous sibling's zone has no effect
 		if (siblings && transform.GetSiblingIndex() == dropTransform.GetSiblingIndex() - 1)
@@ -373,6 +397,9 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 
 	void ReceiveDrop(BaseHandle handle, object dropObject)
 	{
+		if (m_Settling)
+			return;
+
 		var dropData = dropObject as HierarchyData;
 		if (dropData != null)
 		{
@@ -389,7 +416,6 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 				dropTransform.SetAsLastSibling();
 
 				EditorApplication.delayCall += () => { setExpanded(thisIndex, true); };
-				startSettling(null);
 			}
 			else if (handle == m_DropZone)
 			{
@@ -397,13 +423,11 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 				{
 					dropTransform.SetParent(transform);
 					dropTransform.SetAsFirstSibling();
-					startSettling(null);
 				}
 				else if (transform.parent)
 				{
 					dropTransform.SetParent(transform.parent);
 					dropTransform.SetSiblingIndex(transform.GetSiblingIndex() + 1);
-					startSettling(null);
 				}
 				else
 				{
@@ -413,9 +437,16 @@ sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
 
 					dropTransform.SetParent(null);
 					dropTransform.SetSiblingIndex(targetIndex);
-					startSettling(null);
 				}
 			}
+			else
+			{
+				Debug.Log("huh??");
+			}
+		}
+		else
+		{
+			Debug.Log("huh??");
 		}
 	}
 

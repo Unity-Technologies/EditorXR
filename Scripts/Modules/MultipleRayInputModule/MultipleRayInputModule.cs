@@ -349,9 +349,9 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			if (source.draggedObject)
 			{
 				var draggedObject = source.draggedObject;
+				dragEnded(draggedObject, eventData);
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.endDragHandler);
 				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.endDragHandler);
-				dragEnded(draggedObject, eventData);
 
 				if (hoveredObject != null)
 					ExecuteEvents.ExecuteHierarchy(hoveredObject, eventData, ExecuteEvents.dropHandler);

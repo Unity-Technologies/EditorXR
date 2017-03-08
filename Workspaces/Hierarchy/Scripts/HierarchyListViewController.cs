@@ -1,8 +1,6 @@
 ﻿using ListView;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
@@ -32,12 +30,15 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 	float m_SettleDuration = 1f;
 
 	bool m_Settling;
+
+	bool m_SettleTest;
 	Action m_OnSettlingComplete;
 
 	Material m_TopDropZoneMaterial;
 	Material m_BottomDropZoneMaterial;
 	float m_DropZoneAlpha;
 	float m_BottomDropZoneStartHeight;
+	int m_VisibleItemCount;
 
 	int m_SelectedRow;
 
@@ -55,11 +56,28 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 			// Update visible rows
 			foreach (var row in m_ListItems)
 			{
-				var newData = m_Data.FirstOrDefault(data => data.index == row.Key);
+				var newData = GetRowRecursive(m_Data, row.Key);
 				if (newData != null)
 					row.Value.data = newData;
 			}
 		}
+	}
+
+	static HierarchyData GetRowRecursive(List<HierarchyData> data, int index)
+	{
+		foreach (var datum in data)
+		{
+			if (datum.index == index)
+				return datum;
+
+			if (datum.children != null)
+			{
+				var result = GetRowRecursive(datum.children, index);
+				if (result != null)
+					return result;
+			}
+		}
+		return null;
 	}
 
 	protected override void Setup()
@@ -94,7 +112,13 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 		SetMaterialClip(m_TextMaterial, parentMatrix);
 		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
 
+		m_VisibleItemCount = 0;
+		m_SettleTest = true;
+
 		base.UpdateItems();
+
+		if (m_Settling && m_SettleTest)
+			EndSettling();
 
 		// Update Drop Zones
 		var width = bounds.size.x - kClipMargin;
@@ -110,7 +134,8 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 		dropZoneTransform = m_BottomDropZone.transform;
 		dropZoneScale = dropZoneTransform.localScale;
 		dropZoneScale.x = width;
-		var extraSpace = bounds.size.z - m_ExpandedDataLength * m_ItemSize.Value.z;
+		var itemSize = m_ItemSize.Value.z;
+		var extraSpace = bounds.size.z - m_VisibleItemCount * itemSize - scrollOffset % itemSize;
 		dropZoneScale.z = extraSpace;
 		if (extraSpace < m_BottomDropZoneStartHeight)
 			dropZoneScale.z = m_BottomDropZoneStartHeight;
@@ -141,11 +166,20 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 
 	void UpdateHierarchyItemTransform(Transform t, int offset)
 	{
-		var destination = m_StartPosition + (offset * m_ItemSize.Value.z + m_ScrollOffset) * Vector3.back;
+		var itemSize = m_ItemSize.Value.z;
+		var destination = m_StartPosition + (offset * itemSize + m_ScrollOffset) * Vector3.back;
+		var destRotation = Quaternion.identity;
 
 		var settleSpeed = m_Settling ? m_SettleSpeed : 1;
 		t.localPosition = Vector3.Lerp(t.localPosition, destination, settleSpeed);
-		t.localRotation = Quaternion.Lerp(t.localRotation, Quaternion.identity, settleSpeed);
+		if (t.localPosition != destination)
+			m_SettleTest = false;
+
+		t.localRotation = Quaternion.Lerp(t.localRotation, destRotation, settleSpeed);
+		if (t.localRotation != destRotation)
+			m_SettleTest = false;
+
+		m_VisibleItemCount++;
 	}
 
 	protected override void UpdateRecursively(List<HierarchyData> data, ref int count, int depth = 0)
@@ -162,7 +196,12 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 				m_GrabbedRows[index] = false;
 
 			if (grabbed)
+			{
+				var item = GetListItem(index);
+				if (item && item.isStillSettling)
+					m_SettleTest = false;
 				continue;
+			}
 
 			if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
 				Recycle(index);
@@ -193,10 +232,14 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 
 		item.toggleExpanded = ToggleExpanded;
 		item.setExpanded = SetExpanded;
-		item.startSettling = StartSettling;
 		item.isExpanded = GetExpanded;
 		item.setRowGrabbed = SetRowGrabbed;
 		item.getListItem = GetListItem;
+		item.startSettling = StartSettling;
+		item.endSettling = EndSettling;
+
+		if (m_Settling)
+			item.OnStartSettling();
 
 		item.UpdateArrow(GetExpanded(data.index), true);
 
@@ -279,7 +322,7 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 
 	bool CanDrop(BaseHandle handle, object dropObject)
 	{
-		return dropObject is HierarchyData && dropObject != data[0];
+		return dropObject is HierarchyData;
 	}
 
 	void RecieveDrop(BaseHandle handle, object dropObject)
@@ -291,11 +334,20 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 			{
 				var gameObject = EditorUtility.InstanceIDToObject(hierarchyData.index) as GameObject;
 				gameObject.transform.SetParent(null);
-				gameObject.transform.SetSiblingIndex(0);
-				StartSettling(null);
+				gameObject.transform.SetAsFirstSibling();
 			}
 		}
 
+		if (handle == m_BottomDropZone)
+		{
+			var hierarchyData = dropObject as HierarchyData;
+			if (hierarchyData != null)
+			{
+				var gameObject = EditorUtility.InstanceIDToObject(hierarchyData.index) as GameObject;
+				gameObject.transform.SetParent(null);
+				gameObject.transform.SetAsLastSibling();
+			}
+		}
 	}
 
 	void DropHoverStarted(BaseHandle handle)
@@ -328,29 +380,25 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 
 	void StartSettling(Action onComplete)
 	{
-		if (m_OnSettlingComplete != null)
+		m_Settling = true;
+		foreach (HierarchyListItem item in m_ListItems.Values)
 		{
-			m_OnSettlingComplete();
-			StopAllCoroutines();
+			item.OnStartSettling();
 		}
 
 		m_OnSettlingComplete = onComplete;
-		StartCoroutine(SettlingTimer());
 	}
 
-	IEnumerator SettlingTimer()
+	void EndSettling()
 	{
-		m_Settling = true;
-		var startTime = Time.realtimeSinceStartup;
-		while (Time.realtimeSinceStartup - startTime < m_SettleDuration)
-			yield return null;
 		m_Settling = false;
+		foreach (HierarchyListItem item in m_ListItems.Values)
+		{
+			item.OnEndSettling();
+		}
 
 		if (m_OnSettlingComplete != null)
-		{
 			m_OnSettlingComplete();
-			m_OnSettlingComplete = null;
-		}
 	}
 
 	void SetRowGrabbed(int index, bool grabbed)
@@ -364,6 +412,20 @@ class HierarchyListViewController : NestedListViewController<HierarchyData, int>
 		if (m_ListItems.TryGetValue(index, out item))
 			return (HierarchyListItem)item;
 		return null;
+	}
+
+	public void OnScroll(float delta)
+	{
+		if (m_Settling)
+			return;
+
+		scrollOffset += delta;
+	}
+
+	public override void OnScrollEnded()
+	{
+		StartSettling(null);
+		base.OnScrollEnded();
 	}
 
 	private void OnDestroy()

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.EditorVR;
@@ -170,7 +169,7 @@ class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionC
 
 	void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 	{
-		m_HierarchyUI.listView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
+		m_HierarchyUI.listView.OnScroll(-Vector3.Dot(eventData.deltaPosition, handle.transform.forward));
 	}
 
 	void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
