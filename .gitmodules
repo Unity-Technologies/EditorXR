@@ -5,3 +5,6 @@ url=https://github.com/Unity-Technologies/input-prototype.git
 [submodule "libs/UnityOctree"]
 	path = libs/UnityOctree
 url=https://github.com/Unity-Technologies/UnityOctree.git
+[submodule "libs/VRLineRenderer"]
+	path = libs/VRLineRenderer
+	url = https://github.com/Unity-Technologies/VRLineRenderer
