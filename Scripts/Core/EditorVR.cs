@@ -19,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR
 	[RequiresTag(k_VRPlayerTag)]
 	sealed partial class EditorVR
 	{
-		public const HideFlags DefaultHideFlags = HideFlags.HideAndDontSave;
+		public const HideFlags DefaultHideFlags = HideFlags.None;
 		const string k_VRPlayerTag = "VRPlayer";
 
 		[SerializeField]
@@ -81,6 +81,7 @@ namespace UnityEditor.Experimental.EditorVR
 			public ITool currentTool;
 			public IMenu customMenu;
 			public PinnedToolButton previousToolButton;
+			public PinnedToolButton selectionToolButton;
 			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
 			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
 		}
