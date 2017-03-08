@@ -70,16 +70,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override bool singleClickDrag { get { return false; } }
 
-		public bool isStillSettling
-		{
-			get { return m_DragLerp < 1; }
-		}
+		public bool isStillSettling { private set; get; }
 
 		public bool makeRoom { get; private set; }
 
-		public override void Setup(HierarchyData listData)
+		public override void Setup(HierarchyData data)
 		{
-			base.Setup(listData);
+			base.Setup(data);
 
 			// First time setup
 			if (cubeMaterial == null)
@@ -118,7 +115,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_CubeTransform = m_Cube.transform;
 			m_DropZoneTransform = m_DropZone.transform;
-			m_Text.text = listData.name;
+			m_Text.text = data.name;
 
 			// HACK: We need to kick the canvasRenderer to update the mesh properly
 			m_Text.gameObject.SetActive(false);
@@ -182,6 +179,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			expandArrowTransform.localRotation = Quaternion.Lerp(expandArrowTransform.localRotation,
 				Quaternion.AngleAxis(90f, Vector3.right) * (expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
 				immediate ? 1f : k_ExpandArrowRotateSpeed);
+		}
+
+		protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
+		{
+			base.OnDragStarted(handle, eventData);
+			isStillSettling = true;
 		}
 
 		protected override void OnSingleClick(BaseHandle handle, HandleEventData eventData)
@@ -264,12 +267,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			MathUtilsExt.LerpTransform(transform, previewOrigin.position - offsetDirection * offset, rotation, m_DragLerp);
 		}
 
+		protected override void OnMagnetizeEnded()
+		{
+			base.OnMagnetizeEnded();
+			isStillSettling = false;
+		}
+
 		protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 		{
 			if (m_DragObject)
 			{
 				OnDragEndRecursive();
 
+				isStillSettling = true;
 				startSettling(OnDragEndAfterSettling);
 			}
 
@@ -278,11 +288,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnDragEndRecursive()
 		{
-			m_DragLerp = 0;
-
 			// OnHierarchyChanged doesn't happen until next frame--delay un-grab so the object doesn't start moving to the wrong spot
 			EditorApplication.delayCall += () =>
 			{
+				isStillSettling = false;
 				setRowGrabbed(data.index, false);
 			};
 

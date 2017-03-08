@@ -143,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (grabbed)
 				{
 					var item = GetListItem(index);
-					if (item && item.isStillSettling)
+					if (item && item.isStillSettling) // "Hang on" to settle state until grabbed object is settled in the list
 						m_SettleTest = false;
 					continue;
 				}
