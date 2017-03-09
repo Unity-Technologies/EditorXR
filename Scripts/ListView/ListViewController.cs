@@ -58,6 +58,9 @@ namespace ListView
 
 		protected virtual void Recycle(IndexType index)
 		{
+			if (m_GrabbedRows.ContainsKey(index))
+				return;
+
 			ItemType item;
 			if (m_ListItems.TryGetValue(index, out item))
 			{
