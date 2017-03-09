@@ -30,8 +30,8 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		public Func<BaseHandle, object, bool> canDrop { private get; set; }
 		public Action<BaseHandle, object> receiveDrop { private get; set; }
 		public Func<BaseHandle, object> getDropObject { private get; set; }
-		public event Action<BaseHandle, Transform> dropHoverStarted;
-		public event Action<BaseHandle, Transform> dropHoverEnded;
+		public event Action<BaseHandle> dropHoverStarted;
+		public event Action<BaseHandle> dropHoverEnded;
 
 		public event Action<BaseHandle, HandleEventData> dragStarted;
 		public event Action<BaseHandle, HandleEventData> dragging;
@@ -227,16 +227,16 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			return null;
 		}
 
-		public void OnDropHoverStarted(Transform rayOrigin)
+		public void OnDropHoverStarted()
 		{
 			if (dropHoverStarted != null)
-				dropHoverStarted(this, rayOrigin);
+				dropHoverStarted(this);
 		}
 
-		public void OnDropHoverEnded(Transform rayOrigin)
+		public void OnDropHoverEnded()
 		{
 			if (dropHoverEnded != null)
-				dropHoverEnded(this, rayOrigin);
+				dropHoverEnded(this);
 		}
 	}
 }

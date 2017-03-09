@@ -46,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				if (dropReceiver.CanDrop(GetCurrentDropObject(eventData.rayOrigin)))
 				{
-					dropReceiver.OnDropHoverStarted(eventData.rayOrigin);
+					dropReceiver.OnDropHoverStarted();
 					m_HoverObjects[eventData.rayOrigin] = gameObject;
 					SetCurrentDropReceiver(eventData.rayOrigin, dropReceiver);
 				}
@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				if (m_HoverObjects.Remove(eventData.rayOrigin))
 				{
-					dropReceiver.OnDropHoverEnded(eventData.rayOrigin);
+					dropReceiver.OnDropHoverEnded();
 					SetCurrentDropReceiver(eventData.rayOrigin, null);
 				}
 			}

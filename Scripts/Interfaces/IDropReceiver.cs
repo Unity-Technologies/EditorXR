@@ -20,12 +20,12 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Called when a pointer with a valid drop object starts hovering
 		/// </summary>
-		void OnDropHoverStarted(Transform rayOrigin);
+		void OnDropHoverStarted();
 
 		/// <summary>
 		/// Called when a pointer with a valid drop object stops hovering
 		/// </summary>
-		void OnDropHoverEnded(Transform rayOrigin);
+		void OnDropHoverEnded();
 
 		/// <summary>
 		/// Called when an object is dropped on the receiver

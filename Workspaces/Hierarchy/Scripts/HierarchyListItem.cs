@@ -341,20 +341,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_Hovering = false;
 		}
 
-		void OnDropHoverStarted(BaseHandle handle, Transform rayOrigin)
+		void OnDropHoverStarted(BaseHandle handle)
 		{
 			var color = dropZoneMaterial.color;
 			color.a = m_DropZoneHighlightAlpha;
 			dropZoneMaterial.color = color;
 
 			startSettling(null);
-
-			var grabbedRow = getGrabbedRow(rayOrigin) as HierarchyListItem;
-			if (grabbedRow)
-				extraSpace = grabbedRow.m_VisibleChildren.Count + 1;
+			extraSpace = 1;
 		}
 
-		void OnDropHoverEnded(BaseHandle handle, Transform rayOrigin)
+		void OnDropHoverEnded(BaseHandle handle)
 		{
 			var color = dropZoneMaterial.color;
 			color.a = 0;

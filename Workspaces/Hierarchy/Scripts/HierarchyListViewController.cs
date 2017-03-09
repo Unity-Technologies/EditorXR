@@ -283,7 +283,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void DropHoverStarted(BaseHandle handle, Transform rayOrigin)
+		void DropHoverStarted(BaseHandle handle)
 		{
 			var isTop = handle == m_TopDropZone;
 			var material = handle == m_TopDropZone ? m_TopDropZoneMaterial : m_BottomDropZoneMaterial;
@@ -295,7 +295,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_BottomDropZone.gameObject.SetActive(true); // Don't block scroll interaction
 		}
 
-		void DropHoverEnded(BaseHandle handle, Transform rayOrigin)
+		void DropHoverEnded(BaseHandle handle)
 		{
 			var isTop = handle == m_TopDropZone;
 			var material = isTop ? m_TopDropZoneMaterial : m_BottomDropZoneMaterial;
