@@ -10,13 +10,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 #if ENABLE_STEAMVR_INPUT
 		SteamVR_RenderModel m_RightModel;
 		SteamVR_RenderModel m_LeftModel;
+#endif
 
 		public override void Awake()
 		{
 			base.Awake();
 			m_InputToEvents = ObjectUtils.AddComponent<ViveInputToEvents>(gameObject);
+#if !ENABLE_STEAMVR_INPUT
+			enabled = false;
+#endif
 		}
 
+#if ENABLE_STEAMVR_INPUT
 		public override IEnumerator Start()
 		{
 			SteamVR_Render.instance.transform.parent = gameObject.transform;
