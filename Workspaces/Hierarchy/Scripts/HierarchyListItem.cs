@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>
+	sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>, IUsesViewerBody
 	{
 		const float k_Margin = 0.01f;
 		const float k_Indent = 0.02f;
@@ -70,6 +70,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override bool singleClickDrag { get { return false; } }
 
 		public int extraSpace { get; private set; }
+
+		public Func<Transform, bool> isOverShoulder { private get; set; }
 
 		public override void Setup(HierarchyData data)
 		{
@@ -274,6 +276,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			if (m_DragObject)
 			{
+				if (isOverShoulder(transform))
+				{
+					ObjectUtils.Destroy(EditorUtility.InstanceIDToObject(data.index));
+				}
+
 				// OnHierarchyChanged doesn't happen until next frame--delay un-grab so the object doesn't start moving to the wrong spot
 				EditorApplication.delayCall += () =>
 				{
@@ -368,6 +375,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		bool CanDrop(BaseHandle handle, object dropObject)
 		{
+			if (isOverShoulder(handle.transform))
+				return false;
+
 			var dropData = dropObject as HierarchyData;
 			if (dropData == null)
 				return false;
@@ -400,6 +410,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void ReceiveDrop(BaseHandle handle, object dropObject)
 		{
+			if (isOverShoulder(handle.transform))
+				return;
+
 			var dropData = dropObject as HierarchyData;
 			if (dropData != null)
 			{
