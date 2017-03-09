@@ -32,6 +32,7 @@ namespace ListView
 		protected List<DataType> m_Data;
 
 		protected readonly Dictionary<IndexType, ItemType> m_ListItems = new Dictionary<IndexType, ItemType>();
+		protected readonly Dictionary<IndexType, Transform> m_GrabbedRows = new Dictionary<IndexType, Transform>();
 
 		protected override int dataLength { get { return m_Data.Count; } }
 
@@ -78,6 +79,30 @@ namespace ListView
 			UpdateItemTransform(item.transform, offset);
 		}
 
+		protected void SetRowGrabbed(IndexType index, Transform rayOrigin, bool grabbed)
+		{
+			if (grabbed)
+				m_GrabbedRows[index] = rayOrigin;
+			else
+				m_GrabbedRows.Remove(index);
+		}
+
+		protected ItemType GetGrabbedRow(Transform rayOrigin)
+		{
+			foreach (var row in m_GrabbedRows)
+			{
+				if (row.Value == rayOrigin)
+					return GetListItem(row.Key);
+			}
+			return null;
+		}
+
+		protected ItemType GetListItem(IndexType index)
+		{
+			ItemType item;
+			return m_ListItems.TryGetValue(index, out item) ? item : null;
+		}
+
 		protected virtual ItemType GetItem(DataType data)
 		{
 			if (data == null)
@@ -112,6 +137,9 @@ namespace ListView
 
 			item.startSettling = StartSettling;
 			item.endSettling = EndSettling;
+			item.getListItem = GetListItem;
+			item.setRowGrabbed = SetRowGrabbed;
+			item.getGrabbedRow = GetGrabbedRow;
 
 			return item;
 		}

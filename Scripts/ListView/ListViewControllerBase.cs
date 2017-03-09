@@ -264,7 +264,7 @@ namespace ListView
 			m_Settling = true;
 
 			if (onComplete != null)
-				m_OnSettlingComplete = onComplete;
+				m_OnSettlingComplete += onComplete;
 		}
 
 		protected virtual void EndSettling()

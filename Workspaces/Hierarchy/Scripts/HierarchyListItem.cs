@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using ListView;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -60,18 +61,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Material cubeMaterial { get; private set; }
 		public Material dropZoneMaterial { get; private set; }
 
-		public Action<int> toggleExpanded { private get; set; }
-		public Action<int, bool> setExpanded { private get; set; }
 		public Action<int> selectRow { private get; set; }
 
+		public Action<int> toggleExpanded { private get; set; }
+		public Action<int, bool> setExpanded { private get; set; }
 		public Func<int, bool> isExpanded { private get; set; }
-		public Action<int, Transform, bool> setRowGrabbed { private get; set; }
-		public Func<Transform, HierarchyListItem> getGrabbedRow { private get; set; }
-		public Func<int, HierarchyListItem> getListItem { private get; set; }
 
 		protected override bool singleClickDrag { get { return false; } }
-
-		public bool isStillSettling { private set; get; }
 
 		public int extraSpace { get; private set; }
 
@@ -233,7 +229,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				foreach (var child in data.children)
 				{
-					var item = getListItem(child.index);
+					var item = getListItem(child.index) as HierarchyListItem;
 					if (item)
 					{
 						visibleChildren.Add(item);
@@ -353,7 +349,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			startSettling(null);
 
-			var grabbedRow = getGrabbedRow(rayOrigin);
+			var grabbedRow = getGrabbedRow(rayOrigin) as HierarchyListItem;
 			if (grabbedRow)
 				extraSpace = grabbedRow.m_VisibleChildren.Count + 1;
 		}

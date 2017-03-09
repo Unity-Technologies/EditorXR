@@ -32,8 +32,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		int m_SelectedRow;
 
-		readonly Dictionary<int, Transform> m_GrabbedRows = new Dictionary<int, Transform>();
-
 		public Action<int> selectRow { private get; set; }
 
 		protected override void Setup()
@@ -175,9 +173,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			item.toggleExpanded = ToggleExpanded;
 			item.setExpanded = SetExpanded;
 			item.isExpanded = GetExpanded;
-			item.setRowGrabbed = SetRowGrabbed;
-			item.getGrabbedRow = GetGrabbedRow;
-			item.getListItem = GetListItem;
 
 			item.UpdateArrow(GetExpanded(data.index), true);
 
@@ -322,32 +317,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void SetExpanded(int instanceID, bool expanded)
 		{
 			m_ExpandStates[instanceID] = expanded;
-		}
-
-		void SetRowGrabbed(int index, Transform rayOrigin, bool grabbed)
-		{
-			if (grabbed)
-				m_GrabbedRows[index] = rayOrigin;
-			else
-				m_GrabbedRows.Remove(index);
-		}
-
-		HierarchyListItem GetGrabbedRow(Transform rayOrigin)
-		{
-			foreach (var row in m_GrabbedRows)
-			{
-				if (row.Value == rayOrigin)
-					return GetListItem(row.Key);
-			}
-			return null;
-		}
-
-		HierarchyListItem GetListItem(int index)
-		{
-			ListViewItem<HierarchyData, int> item;
-			if (m_ListItems.TryGetValue(index, out item))
-				return (HierarchyListItem)item;
-			return null;
 		}
 
 		public void OnScroll(float delta)
