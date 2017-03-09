@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Text;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -20,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				if (m_ToolType == value)
 					return;
+
 				Debug.LogError("PinnedToolButton setting TYPE : <color=green>" + value.ToString() + "</color>");
 				m_GradientButton.gameObject.SetActive(true);
 
@@ -30,13 +32,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					SetButtonGradients(true);
 					m_GradientButton.visible = true;
 
-					if (m_ToolType == typeof(Tools.SelectionTool))
+					if (isSelectTool)
 					{
 						m_Tooltip.tooltipText = "Selection TOOL!!!!";
 						activeTool = true;
+						gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
 					}
 					else
+					{
 						m_Tooltip.tooltipText = "NOT SELECTION TOOL!!!";
+
+						// Tools other than select fetch a random gradientPair; also used by the device when highlighted
+						gradientPair = UnityBrandColorScheme.GetRandomGradient();
+					}
 				}
 				else
 				{
@@ -88,6 +96,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		Vector3 m_ActivePosition;
 
+		/// <summary>
+		/// gradientPair should be set with new random gradientPair each time a new Tool is associated with this Button
+		/// This gradientPair is also used to highlight the input device when appropriate
+		/// </summary>
+		public GradientPair gradientPair
+		{
+			get { return _mGradientPair; }
+			private set { _mGradientPair = value; }
+		}
+		GradientPair _mGradientPair;
+
 		[SerializeField]
 		GradientButton m_GradientButton;
 
@@ -96,6 +115,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Transform rayOrigin { get; set; }
 		public Func<Transform, Type, bool> selectTool { private get; set; }
+
+		bool isSelectTool
+		{
+			get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); }
+		}
 
 		Vector3 inactivePosition; // Inactive button offset from the main menu activator
 
@@ -132,13 +156,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			if (active)
 			{
-				m_GradientButton.normalGradientPair = UnityBrandColorScheme.sessionGradient;
+				m_GradientButton.normalGradientPair = gradientPair;
 				m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
 			}
 			else
 			{
 				m_GradientButton.normalGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
-				m_GradientButton.highlightGradientPair = UnityBrandColorScheme.sessionGradient;
+				m_GradientButton.highlightGradientPair = gradientPair;
 			}
 		}
 	}
