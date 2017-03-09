@@ -14,6 +14,13 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	/// </summary>
 	static class ObjectUtils
 	{
+		public static HideFlags hideFlags
+		{
+			get { return s_HideFlags; }
+			set { s_HideFlags = value; }
+		}
+		static HideFlags s_HideFlags = HideFlags.DontSave;
+
 		public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true, bool active = true)
 		{
 			var go = UnityObject.Instantiate(prefab);
@@ -23,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			if (!Application.isPlaying && runInEditMode)
 			{
 				SetRunInEditModeRecursively(go, runInEditMode);
-				go.hideFlags = EditorVR.DefaultHideFlags;
+				go.hideFlags = hideFlags;
 			}
 #endif
 
@@ -58,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				name = "Empty";
 
 #if UNITY_EDITORVR
-			empty = EditorUtility.CreateGameObjectWithHideFlags(name, EditorVR.DefaultHideFlags);
+			empty = EditorUtility.CreateGameObjectWithHideFlags(name, hideFlags);
 			empty.transform.parent = parent;
 			empty.transform.localPosition = Vector3.zero;
 #endif
@@ -74,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static Component CreateGameObjectWithComponent(Type type, Transform parent = null, bool worldPositionStays = true)
 		{
 #if UNITY_EDITORVR
-			var component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, EditorVR.DefaultHideFlags, type).GetComponent(type);
+			var component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type).GetComponent(type);
 			if (!Application.isPlaying)
 				SetRunInEditModeRecursively(component.gameObject, true);
 #else
