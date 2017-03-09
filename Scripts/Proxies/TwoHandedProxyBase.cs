@@ -2,6 +2,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -22,6 +24,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		[SerializeField]
 		protected PlayerInput m_PlayerInput;
 
+		[SerializeField]
+		protected Material m_HighlightMaterial;
+
 		internal IInputToEvents m_InputToEvents;
 
 		public Transform leftHand
@@ -38,6 +43,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		readonly List<Material> m_Materials = new List<Material>();
 
 		protected Dictionary<Node, Transform> m_RayOrigins;
+		protected Dictionary<Node, Material> m_HighlightMaterials;
+		Coroutine m_HighlightCoroutine;
 
 		List<Transform> m_ProxyMeshRoots = new List<Transform>();
 
@@ -52,7 +59,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			add { m_InputToEvents.activeChanged += value; }
 			remove { m_InputToEvents.activeChanged -= value; }
 		}
-
 
 		public virtual bool hidden
 		{
@@ -106,6 +112,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				{ leftProxyHelper.rayOrigin, leftProxyHelper.previewOrigin },
 				{ rightProxyHelper.rayOrigin, rightProxyHelper.previewOrigin }
 			};
+
+			Debug.Log("TODO: Setup EVR friendly shared materials!");
+			m_HighlightMaterials = new Dictionary<Node, Material>
+			{
+				{ Node.LeftHand, new Material(m_HighlightMaterial) },
+				{ Node.RightHand, new Material(m_HighlightMaterial) }
+			};
 		}
 
 		public virtual IEnumerator Start()
@@ -153,6 +166,24 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
 				m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
 			}
+		}
+
+		public void HighlightDevice (Node node, GradientPair gradientPair)
+		{
+			// COULD ALSO use rayOrigin
+			Debug.LogWarning("HighlightDevice called!!!");
+			// use node/transform to detect which material to set gradientPair and perform highlight coroutine on
+			this.RestartCoroutine(ref m_HighlightCoroutine, ShowHighlight(null, gradientPair));
+		}
+
+		IEnumerator ShowHighlight(Material material, GradientPair gradientPair)
+		{
+			// IF the highlight is already running, lerp the gradientPair color to the new target colors
+			// If the highlight is not already running, just set the gradientPair colors, then lerp in alpha
+			// perform a quick opacity fade in then out of the opacity on the material passed in
+
+			Debug.LogWarning("ShowHighlight called!!!");
+			yield break;
 		}
 	}
 }
