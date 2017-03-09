@@ -1,4 +1,4 @@
-﻿Shader "Custom/List Clip Transparent"
+﻿Shader "EditorVR/Custom/List Clip Transparent"
 {
 	Properties
 	{

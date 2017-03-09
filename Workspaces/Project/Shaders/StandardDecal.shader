@@ -1,4 +1,4 @@
-﻿Shader "Standard Decal"
+﻿Shader "EditorVR/Standard Decal"
 {
 	Properties
 	{
