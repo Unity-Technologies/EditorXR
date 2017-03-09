@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Tools;
@@ -217,18 +218,22 @@ namespace UnityEditor.Experimental.EditorVR
 									DespawnTool(deviceData, deviceData.currentTool);
 
 								AddToolToStack(dd, newTool);
+								GradientPair highlightGradientPair;
 
 								if (isSelectionTool)
 								{
 									deviceData.selectionToolButton.toolType = toolType; // assign the new current tool type to the active tool button
 									deviceData.selectionToolButton.rayOrigin = rayOrigin;
+									highlightGradientPair = deviceData.selectionToolButton.gradientPair;
 								}
 								else
 								{
 									deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
 									deviceData.previousToolButton.rayOrigin = rayOrigin;
+									highlightGradientPair = deviceData.previousToolButton.gradientPair;
 								}
 
+								deviceData.proxy.HighlightDevice(deviceData.node, highlightGradientPair); // Perform the higlight on the node with the button's gradient pair
 								deviceData.previousToolButton.activeTool = !isSelectionTool;
 								deviceData.selectionToolButton.activeTool = isSelectionTool;
 							}
