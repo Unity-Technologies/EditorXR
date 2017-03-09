@@ -1,10 +1,15 @@
 fileFormatVersion: 2
 guid: 1075642011deb9841a2eecf5dc0bd444
-timeCreated: 1466801922
+timeCreated: 1489018189
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - m_LeftHandProxyPrefab: {instanceID: 0}
+  - m_RightHandProxyPrefab: {instanceID: 0}
+  - m_PlayerInput: {instanceID: 0}
+  - m_HighlightMaterial: {fileID: 2100000, guid: 40ce8f85e3653a84abffb13adb986781,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
