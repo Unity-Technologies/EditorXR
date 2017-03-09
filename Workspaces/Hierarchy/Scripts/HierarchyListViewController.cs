@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		int m_SelectedRow;
 
-		readonly Dictionary<int, bool> m_GrabbedRows = new Dictionary<int, bool>();
+		readonly Dictionary<int, Transform> m_GrabbedRows = new Dictionary<int, Transform>();
 
 		public Action<int> selectRow { private get; set; }
 
@@ -60,6 +60,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				dropZone.dropHoverStarted += DropHoverStarted;
 				dropZone.dropHoverEnded += DropHoverEnded;
 			}
+
+			m_BottomDropZone.gameObject.SetActive(false); // Don't block scroll interaction
 		}
 
 		protected override void UpdateItems()
@@ -120,11 +122,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_VisibleItemCount++;
 			UpdateItemTransform(item.transform, count);
 
-			if (hierarchyItem.makeRoom)
-			{
-				count++;
-				m_VisibleItemCount++;
-			}
+			count += hierarchyItem.extraSpace;
+			m_VisibleItemCount += hierarchyItem.extraSpace;
 		}
 
 		protected override void UpdateRecursively(List<HierarchyData> data, ref int count, int depth = 0)
@@ -136,9 +135,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (!m_ExpandStates.TryGetValue(index, out expanded))
 					m_ExpandStates[index] = false;
 
-				bool grabbed;
-				if (!m_GrabbedRows.TryGetValue(index, out grabbed))
-					m_GrabbedRows[index] = false;
+				var grabbed = m_GrabbedRows.ContainsKey(index);
 
 				if (grabbed)
 				{
@@ -179,6 +176,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			item.setExpanded = SetExpanded;
 			item.isExpanded = GetExpanded;
 			item.setRowGrabbed = SetRowGrabbed;
+			item.getGrabbedRow = GetGrabbedRow;
 			item.getListItem = GetListItem;
 
 			item.UpdateArrow(GetExpanded(data.index), true);
@@ -290,20 +288,28 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void DropHoverStarted(BaseHandle handle)
+		void DropHoverStarted(BaseHandle handle, Transform rayOrigin)
 		{
+			var isTop = handle == m_TopDropZone;
 			var material = handle == m_TopDropZone ? m_TopDropZoneMaterial : m_BottomDropZoneMaterial;
 			var color = material.color;
 			color.a = m_DropZoneAlpha;
 			material.color = color;
+
+			if (!isTop)
+				m_BottomDropZone.gameObject.SetActive(true); // Don't block scroll interaction
 		}
 
-		void DropHoverEnded(BaseHandle handle)
+		void DropHoverEnded(BaseHandle handle, Transform rayOrigin)
 		{
-			var material = handle == m_TopDropZone ? m_TopDropZoneMaterial : m_BottomDropZoneMaterial;
+			var isTop = handle == m_TopDropZone;
+			var material = isTop ? m_TopDropZoneMaterial : m_BottomDropZoneMaterial;
 			var color = material.color;
 			color.a = 0;
 			material.color = color;
+
+			if (!isTop)
+				m_BottomDropZone.gameObject.SetActive(false);
 		}
 
 		bool GetExpanded(int instanceID)
@@ -318,9 +324,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ExpandStates[instanceID] = expanded;
 		}
 
-		void SetRowGrabbed(int index, bool grabbed)
+		void SetRowGrabbed(int index, Transform rayOrigin, bool grabbed)
 		{
-			m_GrabbedRows[index] = grabbed;
+			if (grabbed)
+				m_GrabbedRows[index] = rayOrigin;
+			else
+				m_GrabbedRows.Remove(index);
+		}
+
+		HierarchyListItem GetGrabbedRow(Transform rayOrigin)
+		{
+			foreach (var row in m_GrabbedRows)
+			{
+				if (row.Value == rayOrigin)
+					return GetListItem(row.Key);
+			}
+			return null;
 		}
 
 		HierarchyListItem GetListItem(int index)

@@ -471,15 +471,12 @@ MonoBehaviour:
   m_MaxMomentum: 200
   m_Templates:
   - {fileID: 1000014066556564, guid: 3a8d15e2004808b45bbe8ddf381a4a53, type: 2}
+  m_SettleSpeed: 0.3
   m_TopDropZone: {fileID: 114000012826007938}
   m_BottomDropZone: {fileID: 114000012340426484}
   m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
   m_ExpandArrowMaterial: {fileID: 2100000, guid: 41165fc29d3ea90418665f906b7fa247,
     type: 2}
-  m_NoClipBackingCubeMaterial: {fileID: 2100000, guid: 1a070009f7968b74abbf1a1ae823b472,
-    type: 2}
-  m_SettleSpeed: 0.1
-  m_SettleDuration: 1
 --- !u!114 &114000011690277160
 MonoBehaviour:
   m_ObjectHideFlags: 1

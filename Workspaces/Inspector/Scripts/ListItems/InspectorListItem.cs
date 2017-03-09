@@ -188,12 +188,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		protected virtual void OnDropHoverStarted(BaseHandle handle)
+		protected virtual void OnDropHoverStarted(BaseHandle handle, Transform rayOrigin)
 		{
 			setHighlight(handle.gameObject, true);
 		}
 
-		protected virtual void OnDropHoverEnded(BaseHandle handle)
+		protected virtual void OnDropHoverEnded(BaseHandle handle, Transform rayOrigin)
 		{
 			setHighlight(handle.gameObject, false);
 		}

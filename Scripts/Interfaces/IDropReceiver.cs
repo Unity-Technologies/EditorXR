@@ -1,4 +1,7 @@
-﻿#if UNITY_EDITOR
+﻿using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEngine;
+
+#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
@@ -17,12 +20,12 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Called when a pointer with a valid drop object starts hovering
 		/// </summary>
-		void OnDropHoverStarted();
+		void OnDropHoverStarted(Transform rayOrigin);
 
 		/// <summary>
 		/// Called when a pointer with a valid drop object stops hovering
 		/// </summary>
-		void OnDropHoverEnded();
+		void OnDropHoverEnded(Transform rayOrigin);
 
 		/// <summary>
 		/// Called when an object is dropped on the receiver

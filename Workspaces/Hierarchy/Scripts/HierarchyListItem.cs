@@ -65,14 +65,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Action<int> selectRow { private get; set; }
 
 		public Func<int, bool> isExpanded { private get; set; }
-		public Action<int, bool> setRowGrabbed { private get; set; }
+		public Action<int, Transform, bool> setRowGrabbed { private get; set; }
+		public Func<Transform, HierarchyListItem> getGrabbedRow { private get; set; }
 		public Func<int, HierarchyListItem> getListItem { private get; set; }
 
 		protected override bool singleClickDrag { get { return false; } }
 
 		public bool isStillSettling { private set; get; }
 
-		public bool makeRoom { get; private set; }
+		public int extraSpace { get; private set; }
 
 		public override void Setup(HierarchyData data)
 		{
@@ -203,12 +204,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				StartCoroutine(Magnetize());
 
 				m_VisibleChildren.Clear();
-				OnGrabRecursive(m_VisibleChildren);
+				OnGrabRecursive(m_VisibleChildren, eventData.rayOrigin);
 				startSettling(null);
 			}
 		}
 
-		void OnGrabRecursive(List<HierarchyListItem> visibleChildren)
+		void OnGrabRecursive(List<HierarchyListItem> visibleChildren, Transform rayOrigin)
 		{
 			m_OldMaterials.Clear();
 			var graphics = GetComponentsInChildren<Graphic>(true);
@@ -226,7 +227,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_DropZone.gameObject.SetActive(false);
 			m_Cube.GetComponent<Collider>().enabled = false;
 
-			setRowGrabbed(data.index, true);
+			setRowGrabbed(data.index, rayOrigin, true);
 
 			if (data.children != null)
 			{
@@ -236,7 +237,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					if (item)
 					{
 						visibleChildren.Add(item);
-						item.OnGrabRecursive(visibleChildren);
+						item.OnGrabRecursive(visibleChildren, rayOrigin);
 					}
 				}
 			}
@@ -277,7 +278,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			if (m_DragObject)
 			{
-				OnDragEndRecursive();
+				// OnHierarchyChanged doesn't happen until next frame--delay un-grab so the object doesn't start moving to the wrong spot
+				EditorApplication.delayCall += () =>
+				{
+					OnDragEndRecursive(eventData.rayOrigin);
+				};
 
 				isStillSettling = true;
 				startSettling(OnDragEndAfterSettling);
@@ -286,18 +291,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.OnDragEnded(baseHandle, eventData);
 		}
 
-		void OnDragEndRecursive()
+		void OnDragEndRecursive(Transform rayOrigin)
 		{
-			// OnHierarchyChanged doesn't happen until next frame--delay un-grab so the object doesn't start moving to the wrong spot
-			EditorApplication.delayCall += () =>
-			{
-				isStillSettling = false;
-				setRowGrabbed(data.index, false);
-			};
+			isStillSettling = false;
+			setRowGrabbed(data.index, rayOrigin, false);
 
 			foreach (var child in m_VisibleChildren)
 			{
-				child.OnDragEndRecursive();
+				child.OnDragEndRecursive(rayOrigin);
 			}
 		}
 
@@ -344,24 +345,27 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_Hovering = false;
 		}
 
-		void OnDropHoverStarted(BaseHandle handle)
+		void OnDropHoverStarted(BaseHandle handle, Transform rayOrigin)
 		{
 			var color = dropZoneMaterial.color;
 			color.a = m_DropZoneHighlightAlpha;
 			dropZoneMaterial.color = color;
 
 			startSettling(null);
-			makeRoom = true;
+
+			var grabbedRow = getGrabbedRow(rayOrigin);
+			if (grabbedRow)
+				extraSpace = grabbedRow.m_VisibleChildren.Count + 1;
 		}
 
-		void OnDropHoverEnded(BaseHandle handle)
+		void OnDropHoverEnded(BaseHandle handle, Transform rayOrigin)
 		{
 			var color = dropZoneMaterial.color;
 			color.a = 0;
 			dropZoneMaterial.color = color;
 
 			startSettling(null);
-			makeRoom = false;
+			extraSpace = 0;
 		}
 
 		object GetDropObject(BaseHandle handle)
@@ -416,7 +420,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				// OnHierarchyChanged doesn't happen until next frame--delay removal of the extra space
 				EditorApplication.delayCall += () =>
 				{
-					makeRoom = false;
+					extraSpace = 0;
 				};
 
 				if (handle == m_Cube)
