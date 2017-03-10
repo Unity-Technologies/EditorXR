@@ -24,7 +24,7 @@ namespace ListView
 
 		[Tooltip("Maximum velocity for scroll momentum")]
 		[SerializeField]
-		public float m_MaxMomentum = 200f;
+		public float m_MaxMomentum = 2f;
 
 		[Tooltip("Item temlate prefabs (at least one is required)")]
 		[SerializeField]
@@ -113,16 +113,8 @@ namespace ListView
 
 			if (m_Scrolling)
 			{
-				// Compute current velocity, clamping value for better appearance when applying scrolling momentum
-				const float kScrollDeltaClamp = 0.6f;
-				m_ScrollDelta = Mathf.Clamp((m_ScrollOffset - m_LastScrollOffset) / Time.unscaledDeltaTime, -kScrollDeltaClamp, kScrollDeltaClamp);
+				m_ScrollDelta = Mathf.Clamp((m_ScrollOffset - m_LastScrollOffset) / Time.unscaledDeltaTime, -m_MaxMomentum, m_MaxMomentum);
 				m_LastScrollOffset = m_ScrollOffset;
-
-				// Clamp velocity to MaxMomentum
-				if (m_ScrollDelta > m_MaxMomentum)
-					m_ScrollDelta = m_MaxMomentum;
-				if (m_ScrollDelta < -m_MaxMomentum)
-					m_ScrollDelta = -m_MaxMomentum;
 			}
 			else
 			{
@@ -229,16 +221,17 @@ namespace ListView
 
 		public virtual void OnScrollEnded()
 		{
-			StartSettling(); // Don't snap back to top
 			m_Scrolling = false;
 
 			if (m_ScrollOffset > 0)
 			{
+				StartSettling();
 				m_ScrollOffset = 0;
 				m_ScrollDelta = 0;
 			}
 			if (m_ScrollReturn < float.MaxValue)
 			{
+				StartSettling();
 				m_ScrollOffset = m_ScrollReturn;
 				m_ScrollReturn = float.MaxValue;
 				m_ScrollDelta = 0;

@@ -467,8 +467,8 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_ScrollOffset: 0
   m_Padding: 0.01
-  m_ScrollDamping: 1
-  m_MaxMomentum: 200
+  m_ScrollDamping: 1.2
+  m_MaxMomentum: 2
   m_Templates:
   - {fileID: 1000014066556564, guid: 3a8d15e2004808b45bbe8ddf381a4a53, type: 2}
   m_SettleSpeed: 0.3

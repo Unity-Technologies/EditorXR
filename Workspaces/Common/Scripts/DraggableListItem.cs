@@ -9,7 +9,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	class DraggableListItem<DataType, IndexType> : ListViewItem<DataType, IndexType>, IGetPreviewOrigin where DataType : ListViewItemData<IndexType>
+	class DraggableListItem<DataType, IndexType> : ListViewItem<DataType, IndexType>, IGetPreviewOrigin, IUsesViewerScale
+		where DataType : ListViewItemData<IndexType>
 	{
 		const float k_MagnetizeDuration = 0.5f;
 		const float kDragDeadzone = 0.025f;
@@ -31,6 +32,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected virtual BaseHandle clickedHandle { get; set; }
 
 		public Func<Transform, Transform> getPreviewOriginForRayOrigin { set; protected get; }
+
+		public Func<float> getViewerScale { get; set; }
 
 		protected virtual void OnDragStarted(BaseHandle handle, HandleEventData eventData)
 		{
@@ -102,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				if (clickedHandle)
 				{
-					if (m_DragDistance > kDragDeadzone)
+					if (m_DragDistance > kDragDeadzone * getViewerScale())
 						CancelSingleClick();
 				}
 

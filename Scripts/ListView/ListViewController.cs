@@ -82,7 +82,7 @@ namespace ListView
 			UpdateItemTransform(item.transform, offset);
 		}
 
-		protected void SetRowGrabbed(IndexType index, Transform rayOrigin, bool grabbed)
+		protected virtual void SetRowGrabbed(IndexType index, Transform rayOrigin, bool grabbed)
 		{
 			if (grabbed)
 				m_GrabbedRows[index] = rayOrigin;
@@ -90,7 +90,7 @@ namespace ListView
 				m_GrabbedRows.Remove(index);
 		}
 
-		protected ItemType GetGrabbedRow(Transform rayOrigin)
+		protected virtual ItemType GetGrabbedRow(Transform rayOrigin)
 		{
 			foreach (var row in m_GrabbedRows)
 			{

@@ -179,6 +179,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			return item;
 		}
 
+		protected override void SetRowGrabbed(int index, Transform rayOrigin, bool grabbed)
+		{
+			base.SetRowGrabbed(index, rayOrigin, grabbed);
+			m_BottomDropZone.gameObject.SetActive(m_GrabbedRows.Count > 0); // Don't block scroll interaction
+		}
+
 		void ToggleExpanded(int instanceID)
 		{
 			m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
@@ -285,26 +291,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void DropHoverStarted(BaseHandle handle)
 		{
-			var isTop = handle == m_TopDropZone;
 			var material = handle == m_TopDropZone ? m_TopDropZoneMaterial : m_BottomDropZoneMaterial;
 			var color = material.color;
 			color.a = m_DropZoneAlpha;
 			material.color = color;
-
-			if (!isTop)
-				m_BottomDropZone.gameObject.SetActive(true); // Don't block scroll interaction
 		}
 
 		void DropHoverEnded(BaseHandle handle)
 		{
-			var isTop = handle == m_TopDropZone;
-			var material = isTop ? m_TopDropZoneMaterial : m_BottomDropZoneMaterial;
+			var material = handle == m_TopDropZone ? m_TopDropZoneMaterial : m_BottomDropZoneMaterial;
 			var color = material.color;
 			color.a = 0;
 			material.color = color;
-
-			if (!isTop)
-				m_BottomDropZone.gameObject.SetActive(false);
 		}
 
 		bool GetExpanded(int instanceID)
