@@ -1,6 +1,8 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections;
 using System.Text;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -8,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolButton : MonoBehaviour, ISelectTool
+	sealed class PinnedToolButton : MonoBehaviour, ISelectTool, ITooltip, ITooltipPlacement
 	{
 		public Type toolType
 		{
@@ -28,27 +30,27 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ToolType = value;
 				if (m_ToolType != null)
 				{
-					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType));
-					SetButtonGradients(true);
-					m_GradientButton.visible = true;
-
 					if (isSelectTool)
 					{
-						m_Tooltip.tooltipText = "Selection TOOL!!!!";
-						activeTool = true;
+						tooltipText = "Selection TOOL";
 						gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
 					}
 					else
 					{
-						m_Tooltip.tooltipText = "NOT SELECTION TOOL!!!";
+						tooltipText = toolType.Name;
 
 						// Tools other than select fetch a random gradientPair; also used by the device when highlighted
 						gradientPair = UnityBrandColorScheme.GetRandomGradient();
 					}
+
+					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType));
+					SetButtonGradients(true);
+					m_GradientButton.visible = true;
 				}
 				else
 				{
 					m_GradientButton.visible = false;
+					gradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
 				}
 			}
 		}
@@ -59,28 +61,34 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_ActiveTool; }
 			set
 			{
-				if (value == m_ActiveTool)
-					return;
+				//if (value == m_ActiveTool)
+					//return;
 
 				m_ActiveTool = value;
 
-				if (value)
+				if (m_ToolType != null)
+					Debug.LogError(m_ToolType.ToString() + " : <color=purple>PinnedToolButton ACTIVE : </color>" + value);
+
+				if (m_ActiveTool)
 				{
 					if (m_ToolType == null)
 					{
 						//this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
-						gameObject.SetActive(true);
+						gameObject.SetActive(m_ActiveTool);
 					}
 
 					// Perform re-position coroutine here
-					//this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(activePosition));
+					this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
 					transform.localPosition = activePosition;
 				}
 				else
 				{
-					//this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(inactivePosition));
-					transform.localPosition = inactivePosition;
+					this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
+					//gameObject.SetActive(false);
+					transform.localPosition = m_InactivePosition;
 				}
+
+				SetButtonGradients(m_ActiveTool);
 			}
 		}
 		bool m_ActiveTool;
@@ -91,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				m_ActivePosition = value;
-				inactivePosition = value * 2.25f; // additional offset for the button when it is visible and inactive
+				m_InactivePosition = value * 2f; // additional offset for the button when it is visible and inactive
 			}
 		}
 		Vector3 m_ActivePosition;
@@ -102,38 +110,67 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// </summary>
 		public GradientPair gradientPair
 		{
-			get { return _mGradientPair; }
-			private set { _mGradientPair = value; }
+			get { return m_GradientPair; }
+			private set { m_GradientPair = value; }
 		}
-		GradientPair _mGradientPair;
+		GradientPair m_GradientPair;
+
+		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
+		string m_TooltipText;
 
 		[SerializeField]
 		GradientButton m_GradientButton;
 
-		[SerializeField]
-		Tooltip m_Tooltip;
+		//[SerializeField]
+		//Tooltip m_Tooltip;
 
+		public Transform tooltipTarget { get { return m_TooltipTarget; } }
+		[SerializeField]
+		Transform m_TooltipTarget;
+
+		public Transform tooltipSource { get { return m_TooltipSource; } }
+		[SerializeField]
+		Transform m_TooltipSource;
+
+		public TextAlignment tooltipAlignment { get; private set; }
 		public Transform rayOrigin { get; set; }
 		public Func<Transform, Type, bool> selectTool { private get; set; }
+		public Node node { get; set; }
+		public ITooltip tooltip { private get; set; } // Overrides text
 
 		bool isSelectTool
 		{
 			get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); }
 		}
 
-		Vector3 inactivePosition; // Inactive button offset from the main menu activator
+		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
+		Coroutine m_PositionCoroutine;
 
 		void Start()
 		{
 			m_GradientButton.onClick += OnClick;
 
 			if (m_ToolType == null)
+			{
+				transform.localPosition = m_InactivePosition;
 				m_GradientButton.gameObject.SetActive(false);
+			}
+			else
+			{
+				transform.localPosition = activePosition;
+			}
+
+			var tooltipSourcePosition = new Vector3(node == Node.LeftHand ? -0.01267f : 0.01267f, tooltipSource.localPosition.y, 0);
+			var tooltipXOffset = node == Node.LeftHand ? -0.05f : 0.05f;
+			tooltipSource.localPosition = tooltipSourcePosition;
+			tooltipAlignment = node == Node.LeftHand ? TextAlignment.Right : TextAlignment.Left;
+			m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
 		}
 
 		void OnClick()
 		{
-			SetButtonGradients(selectTool(rayOrigin, m_ToolType));
+			selectTool(rayOrigin, m_ToolType);
+			SetButtonGradients(activeTool);
 		}
 
 		// Create periodic table-style names for types
@@ -154,16 +191,38 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void SetButtonGradients(bool active)
 		{
+			Debug.LogWarning(m_ToolType.ToString() + "<color=black>" + active + "</color>");
 			if (active)
 			{
 				m_GradientButton.normalGradientPair = gradientPair;
 				m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
+				m_GradientButton.highlighted = true;
+				m_GradientButton.highlighted = false;
 			}
 			else
 			{
 				m_GradientButton.normalGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
 				m_GradientButton.highlightGradientPair = gradientPair;
+				m_GradientButton.highlighted = true;
+				m_GradientButton.highlighted = false;
 			}
+		}
+
+		IEnumerator AnimatePosition()
+		{
+			var duration = 0f;
+			var currentPosition = transform.localPosition;
+			var targetPosition = m_ActiveTool ? activePosition : m_InactivePosition;
+			while (duration < 1)
+			{
+				duration += Time.unscaledDeltaTime * 3;
+				var durationShaped = Mathf.Pow(duration, 4);
+				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
+				yield return null;
+			}
+
+			transform.localPosition = targetPosition;
+			m_PositionCoroutine = null;
 		}
 	}
 }
