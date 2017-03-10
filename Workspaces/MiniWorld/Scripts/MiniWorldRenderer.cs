@@ -53,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var go = new GameObject("MiniWorldCamera", typeof(Camera));
 			go.tag = k_MiniWorldCameraTag;
-			go.hideFlags = HideFlags.DontSave;
+			go.hideFlags = HideFlags.HideAndDontSave;
 			m_MiniCamera = go.GetComponent<Camera>();
 			go.SetActive(false);
 			Camera.onPostRender += RenderMiniWorld;

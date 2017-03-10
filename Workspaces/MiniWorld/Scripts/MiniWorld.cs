@@ -84,7 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		private void OnEnable()
 		{
 			if (!referenceTransform)
-				referenceTransform = new GameObject("MiniWorldReference") { hideFlags = HideFlags.DontSave }.transform;
+				referenceTransform = new GameObject("MiniWorldReference") { hideFlags = HideFlags.HideAndDontSave }.transform;
 
 			m_MiniWorldRenderer = ObjectUtils.AddComponent<MiniWorldRenderer>(CameraUtils.GetMainCamera().gameObject);
 			m_MiniWorldRenderer.miniWorld = this;
@@ -96,7 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		private void OnDisable()
 		{
-			if ((referenceTransform.hideFlags & HideFlags.DontSave) != 0)
+			if ((referenceTransform.hideFlags & HideFlags.HideAndDontSave) != 0)
 				ObjectUtils.Destroy(referenceTransform.gameObject);
 
 			if (m_MiniWorldRenderer)
