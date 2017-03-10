@@ -92,6 +92,7 @@ namespace UnityEditor.Experimental.EditorVR
 					var pinnedToolButtonTransform = pinnedToolButton.transform;
 					pinnedToolButtonTransform.SetParent(mainMenuActivator.transform, false);
 					pinnedToolButton.activePosition = pinnedToolButtonActivePosition;
+					pinnedToolButton.node = deviceData.node;
 
 					var selectionToolButton = evrMenus.SpawnPinnedToolButton(inputDevice);
 					deviceData.selectionToolButton = selectionToolButton;
@@ -99,6 +100,7 @@ namespace UnityEditor.Experimental.EditorVR
 					selectionToolButtonTransform.SetParent(mainMenuActivator.transform, false);
 					selectionToolButton.activePosition = pinnedToolButtonActivePosition;
 					selectionToolButton.toolType = typeof(SelectionTool); // Selection tool is visible & persistent by default
+					selectionToolButton.node = deviceData.node;
 					//selectionToolButton.activeTool = true; // Selection tool button is always visible, and defaults as the active tool button
 
 					var alternateMenu = evrMenus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
@@ -161,27 +163,24 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal bool SelectTool(Transform rayOrigin, Type toolType)
 			{
-				Debug.LogError("SelectionTool TYPE : <color=green>" + toolType.ToString() + "</color>");
+				Debug.LogError("SelectionTool TYPE : <color=black>" + toolType.ToString() + "</color>");
 				if (toolType == typeof(SelectionTool))
-					Debug.LogError("<color=orange>!!!!! SelectionTool detected</color>");
+					Debug.LogError("<color=green>!!!!! SelectionTool detected</color>");
 
 				var result = false;
 				evr.m_Rays.ForEachProxyDevice((deviceData) =>
 				{
 					if (deviceData.rayOrigin == rayOrigin)
 					{
+						Debug.LogError("<color=yellow>deviceDate.CurrentTool : </color>" + deviceData.currentTool.ToString());
 						var spawnTool = true;
-						var isSelectionTool = deviceData.currentTool is SelectionTool;
+						var setSelectAsCurrentTool = toolType == typeof(SelectionTool);//deviceData.currentTool is ILocomotor;
 
 						// If this tool was on the current device already, then simply remove it
-						if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
+						if (deviceData.currentTool != null && (deviceData.currentTool.GetType() == toolType || setSelectAsCurrentTool))
 						{
-							// SelectionTool is permanent, and cannot be despawned; it remains as the active tool (button)
-							if (!isSelectionTool)
-							{
-								DespawnTool(deviceData, deviceData.currentTool);
-								deviceData.selectionToolButton.activeTool = true;
-							}
+							Debug.LogError("Despawing tool !!!! : <color=red>toolType == typeof(SelectionTool) : </color>" + (toolType == typeof(SelectionTool)).ToString());
+							DespawnTool(deviceData, deviceData.currentTool);
 
 							// Don't spawn a new tool, since we are only removing the old tool
 							spawnTool = false;
@@ -218,26 +217,25 @@ namespace UnityEditor.Experimental.EditorVR
 									DespawnTool(deviceData, deviceData.currentTool);
 
 								AddToolToStack(dd, newTool);
-								GradientPair highlightGradientPair;
 
-								if (isSelectionTool)
-								{
-									deviceData.selectionToolButton.toolType = toolType; // assign the new current tool type to the active tool button
-									deviceData.selectionToolButton.rayOrigin = rayOrigin;
-									highlightGradientPair = deviceData.selectionToolButton.gradientPair;
-								}
+								if (setSelectAsCurrentTool)
+									deviceData.selectionToolButton.toolType = toolType; // assign the selection tool to the selection tool button
 								else
-								{
-									deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
-									deviceData.previousToolButton.rayOrigin = rayOrigin;
-									highlightGradientPair = deviceData.previousToolButton.gradientPair;
-								}
+									deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the additional tool button
 
-								deviceData.proxy.HighlightDevice(deviceData.node, highlightGradientPair); // Perform the higlight on the node with the button's gradient pair
-								deviceData.previousToolButton.activeTool = !isSelectionTool;
-								deviceData.selectionToolButton.activeTool = isSelectionTool;
+								deviceData.previousToolButton.rayOrigin = rayOrigin;
+								deviceData.selectionToolButton.rayOrigin = rayOrigin;
 							}
 						}
+
+						var currentToolIsSelect = deviceData.currentTool is ILocomotor;
+						Debug.LogError("<color=orange>currentToolIsSelect : </color>" + currentToolIsSelect);
+						Debug.LogError("<color=orange>deviceDate.CurrentTool : </color>" + deviceData.currentTool.ToString() + "  - selection is current tool : " + setSelectAsCurrentTool);
+						var highlightGradientPair = currentToolIsSelect ? deviceData.selectionToolButton.gradientPair : deviceData.previousToolButton.gradientPair;
+						deviceData.proxy.HighlightDevice(deviceData.node, highlightGradientPair); // Perform the higlight on the node with the button's gradient pair
+						deviceData.previousToolButton.activeTool = !currentToolIsSelect;
+						deviceData.selectionToolButton.activeTool = currentToolIsSelect;
+
 
 						evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
 						result = spawnTool;
@@ -269,7 +267,7 @@ namespace UnityEditor.Experimental.EditorVR
 						topTool = deviceData.toolData.Peek();
 						deviceData.currentTool = topTool.tool;
 
-						// Pop this tool of any other stack that references it (for single instance tools)
+						// Pop this tool off any other stack that references it (for single instance tools)
 						foreach (var otherDeviceData in evr.m_DeviceData)
 						{
 							if (otherDeviceData != deviceData)
