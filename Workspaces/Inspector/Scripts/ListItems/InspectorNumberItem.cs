@@ -128,11 +128,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			base.OnDragging(baseHandle, eventData);
 
-			if (m_ClickedField && m_ClickCount == 0)
-			{
-				foreach (var button in m_IncrementDecrementButtons)
-					button.alternateIconVisible = true;
-			}
+			//if (m_ClickedField && m_ClickCount == 0)
+			//{
+			//	foreach (var button in m_IncrementDecrementButtons)
+			//		button.alternateIconVisible = true;
+			//}
 		}
 
 		protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
@@ -140,28 +140,24 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.OnDragEnded(baseHandle, eventData);
 
 			// Update field value in case drag value was invalid (i.e. array size < 0)
-			if (m_ClickedField)
+			if (m_DraggedField)
 			{
-				var numericField = m_ClickedField as NumericInputField;
-				if (numericField)
+				switch (m_SerializedProperty.propertyType)
 				{
-					switch (m_SerializedProperty.propertyType)
-					{
-						case SerializedPropertyType.ArraySize:
-						case SerializedPropertyType.Integer:
-							numericField.text = m_SerializedProperty.intValue.ToString();
-							numericField.ForceUpdateLabel();
-							break;
-						case SerializedPropertyType.Float:
-							numericField.text = m_SerializedProperty.floatValue.ToString();
-							numericField.ForceUpdateLabel();
-							break;
-					}
+					case SerializedPropertyType.ArraySize:
+					case SerializedPropertyType.Integer:
+						m_DraggedField.text = m_SerializedProperty.intValue.ToString();
+						m_DraggedField.ForceUpdateLabel();
+						break;
+					case SerializedPropertyType.Float:
+						m_DraggedField.text = m_SerializedProperty.floatValue.ToString();
+						m_DraggedField.ForceUpdateLabel();
+						break;
 				}
-
-				foreach (var button in m_IncrementDecrementButtons)
-					button.alternateIconVisible = false;
 			}
+
+			foreach (var button in m_IncrementDecrementButtons)
+				button.alternateIconVisible = false;
 		}
 
 		public void Increment()

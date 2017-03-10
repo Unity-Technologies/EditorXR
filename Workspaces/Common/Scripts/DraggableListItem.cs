@@ -14,22 +14,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	{
 		const float k_MagnetizeDuration = 0.5f;
 		const float kDragDeadzone = 0.025f;
+		const float kHorizThreshold = 0.9f;
 
 		protected Transform m_DragObject;
 
 		protected float m_DragLerp;
 
-		protected int m_ClickCount;
-		bool m_SelectIsHeld;
+		bool m_HorizontalDrag;
 
 		readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform, Vector3>();
 
-		float m_LastClickTime;
-		float m_DragDistance;
-
 		protected virtual bool singleClickDrag { get { return true; } }
-
-		protected virtual BaseHandle clickedHandle { get; set; }
+		//protected virtual BaseHandle clickedHandle { get; set; }
 
 		public Func<Transform, Transform> getPreviewOriginForRayOrigin { set; protected get; }
 
@@ -46,25 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			else
 			{
 				m_DragObject = null;
-
-				if (m_ClickCount == 0)
-				{
-					clickedHandle = handle;
-					StartCoroutine(CheckSingleClick(handle, eventData));
-				}
-
-				m_ClickCount++;
-				m_SelectIsHeld = true;
-
 				m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
-
-				var timeSinceLastClick = Time.realtimeSinceStartup - m_LastClickTime;
-				m_LastClickTime = Time.realtimeSinceStartup;
-				if (m_ClickCount > 1 && UIUtils.IsDoubleClick(timeSinceLastClick))
-				{
-					CancelSingleClick();
-					OnDoubleClick(handle, eventData);
-				}
 			}
 		}
 
@@ -101,56 +79,57 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				var rayOrigin = eventData.rayOrigin;
 				var dragStart = m_DragStarts[rayOrigin];
-				m_DragDistance = (rayOrigin.position - dragStart).magnitude;
+				var dragVector = rayOrigin.position - dragStart;
+				var distance = dragVector.magnitude;
 
-				if (clickedHandle)
+				if (m_DragObject == null && distance > kDragDeadzone * getViewerScale())
 				{
-					if (m_DragDistance > kDragDeadzone * getViewerScale())
-						CancelSingleClick();
+					m_DragObject = handle.transform;
+					m_HorizontalDrag = Mathf.Abs(Vector3.Dot(dragVector, m_DragObject.right)) / distance > kHorizThreshold;
+
+					if (m_HorizontalDrag)
+						OnHorizontalDragStart(handle, eventData);
+					else
+						OnVerticalDragStart(handle, eventData);
 				}
 
-				OnSingleClickDrag(handle, eventData, dragStart);
+				if (m_DragObject)
+				{
+					if (m_HorizontalDrag)
+						OnHorizontalDrag(handle, eventData, dragStart);
+					else
+						OnVerticalDrag(handle, eventData, dragStart);
+				}
 			}
 		}
 
 		protected virtual void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 		{
-			m_SelectIsHeld = false;
 			m_DragObject = null;
 		}
 
-		protected virtual void OnSingleClick(BaseHandle handle, HandleEventData eventData)
+		//protected virtual void OnSingleClick(BaseHandle handle, HandleEventData eventData)
+		//{
+		//}
+
+		//protected virtual void OnDoubleClick(BaseHandle handle, HandleEventData eventData)
+		//{
+		//}
+
+		protected virtual void OnHorizontalDragStart(BaseHandle handle, HandleEventData eventData)
 		{
 		}
 
-		protected virtual void OnDoubleClick(BaseHandle handle, HandleEventData eventData)
+		protected virtual void OnVerticalDragStart(BaseHandle handle, HandleEventData eventData)
 		{
 		}
 
-		protected virtual void OnSingleClickDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+		protected virtual void OnHorizontalDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
 		}
 
-		void CancelSingleClick()
+		protected virtual void OnVerticalDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
-			m_ClickCount = 0;
-		}
-
-		IEnumerator CheckSingleClick(BaseHandle handle, HandleEventData eventData)
-		{
-			var start = Time.realtimeSinceStartup;
-			var currTime = 0f;
-			while (m_SelectIsHeld || currTime < UIUtils.DoubleClickIntervalMax)
-			{
-				currTime = Time.realtimeSinceStartup - start;
-				yield return null;
-			}
-
-			if (m_ClickCount == 1)
-				OnSingleClick(handle, eventData);
-
-			m_ClickCount = 0;
-			clickedHandle = null;
 		}
 	}
 }

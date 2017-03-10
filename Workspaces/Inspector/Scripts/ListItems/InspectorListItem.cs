@@ -18,36 +18,35 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected InputField[] m_InputFields;
 
-		protected override BaseHandle clickedHandle
-		{
-			get { return m_ClickedHandle; }
-			set
-			{
-				m_ClickedHandle = value;
-				m_ClickedField = null;
+		//protected override BaseHandle clickedHandle
+		//{
+		//	get { return m_ClickedHandle; }
+		//	set
+		//	{
+		//		m_ClickedHandle = value;
+		//		m_ClickedField = null;
 
-				if (m_ClickedHandle != null)
-				{
-					var fieldBlock = m_ClickedHandle.transform.parent;
-					if (fieldBlock)
-					{
-						// Get RayInputField from direct children
-						foreach (Transform child in fieldBlock.transform)
-						{
-							var clickedField = child.GetComponent<InputField>();
-							if (clickedField)
-							{
-								m_ClickedField = clickedField;
-								break;
-							}
-						}
-					}
-				}
-			}
-		}
-
-		BaseHandle m_ClickedHandle;
-		protected InputField m_ClickedField;
+		//		if (m_ClickedHandle != null)
+		//		{
+		//			var fieldBlock = m_ClickedHandle.transform.parent;
+		//			if (fieldBlock)
+		//			{
+		//				// Get RayInputField from direct children
+		//				foreach (Transform child in fieldBlock.transform)
+		//				{
+		//					var clickedField = child.GetComponent<InputField>();
+		//					if (clickedField)
+		//					{
+		//						m_ClickedField = clickedField;
+		//						break;
+		//					}
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
+		//BaseHandle m_ClickedHandle;
+		//protected InputField m_ClickedField;
 
 		[SerializeField]
 		BaseHandle m_Cube;
@@ -62,6 +61,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		bool m_Setup;
 
+		Transform m_DragClone;
+		protected NumericInputField m_DraggedField;
+
 		public bool setup { get; set; }
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
@@ -70,7 +72,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Func<byte> requestStencilRef { private get; set; }
 
-		protected override bool singleClickDrag { get { return false; } }
+		protected override bool singleClickDrag
+		{
+			get { return false; }
+		}
 
 		public override void Setup(InspectorData data)
 		{
@@ -213,7 +218,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ReceiveDropForFieldBlock(handle.transform.parent, dropObject);
 		}
 
-		protected override void OnDoubleClick(BaseHandle baseHandle, HandleEventData eventData)
+		protected override void OnVerticalDragStart(BaseHandle baseHandle, HandleEventData eventData)
 		{
 			var fieldBlock = baseHandle.transform.parent;
 			if (fieldBlock)
@@ -223,7 +228,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				// Re-center pivot
 				clone.GetComponent<RectTransform>().pivot = Vector2.one * 0.5f;
 
-				//Re-center backing cube
+				// Re-center backing cube
 				foreach (Transform child in clone.transform)
 				{
 					if (child.GetComponent<BaseHandle>())
@@ -235,14 +240,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					}
 				}
 
-				m_DragObject = clone.transform;
-				m_ClickedField = null; // Prevent dragging on NumericFields
-
-				StartCoroutine(Magnetize());
-
 				var graphics = clone.GetComponentsInChildren<Graphic>(true);
 				foreach (var graphic in graphics)
 				{
+					graphic.raycastTarget = false;
 					graphic.material = null;
 				}
 
@@ -264,57 +265,83 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						m_NoClipBackingCube.SetInt("_StencilRef", stencilRef);
 					}
 				}
+
+				var colliders = clone.GetComponentsInChildren<Collider>();
+				foreach (var collider in colliders)
+				{
+					collider.enabled = false;
+				}
+
+				m_DragClone = clone.transform;
+
+				StartCoroutine(Magnetize());
 			}
 		}
 
-		protected override void OnDragging(BaseHandle handle, HandleEventData eventData)
+		protected override void OnVerticalDrag(BaseHandle baseHandle, HandleEventData eventData, Vector3 dragStart)
 		{
-			base.OnDragging(handle, eventData);
-
-			if (m_DragObject)
+			if (m_DragClone)
 			{
 				var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
-				MathUtilsExt.LerpTransform(m_DragObject, previewOrigin.position,
+				MathUtilsExt.LerpTransform(m_DragClone, previewOrigin.position,
 					MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation), m_DragLerp);
 			}
 		}
 
-		protected override void OnSingleClickDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+		protected override void OnHorizontalDragStart(BaseHandle handle, HandleEventData eventData)
 		{
-			if (m_ClickedField)
+			var fieldBlock = handle.transform.parent;
+			if (fieldBlock)
 			{
-				var numericField = m_ClickedField as NumericInputField;
-				if (numericField)
+				// Get RayInputField from direct children
+				foreach (Transform child in fieldBlock.transform)
 				{
-					numericField.SliderDrag(eventData.rayOrigin);
+					var inputField = child.GetComponent<InputField>();
+					if (inputField)
+					{
+						m_DraggedField = inputField as NumericInputField;
+						break;
+					}
 				}
 			}
 		}
 
-		protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
+		protected override void OnHorizontalDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
-			var numericField = m_ClickedField as NumericInputField;
-			if (numericField)
-				numericField.EndDrag();
-
-
-			if (m_DragObject)
-				ObjectUtils.Destroy(m_DragObject.gameObject);
-
-			base.OnDragEnded(baseHandle, eventData);
+			if (m_DraggedField)
+			{
+				m_DraggedField.SliderDrag(eventData.rayOrigin);
+			}
 		}
 
-		protected override void OnSingleClick(BaseHandle handle, HandleEventData eventData)
+		protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
-			if (m_ClickedField)
+			if (m_DraggedField)
+				m_DraggedField.EndDrag();
+
+			if (m_DragClone)
+				ObjectUtils.Destroy(m_DragClone.gameObject);
+
+			if (!m_DragObject)
 			{
-				foreach (var inputField in m_InputFields)
+				foreach (var field in m_InputFields)
 				{
-					inputField.CloseKeyboard(m_ClickedField == null);
+					field.CloseKeyboard(m_DraggedField == null);
 				}
 
-				m_ClickedField.OpenKeyboard();
+				var fieldBlock = handle.transform.parent;
+				foreach (Transform child in fieldBlock.transform)
+				{
+					var inputField = child.GetComponent<InputField>();
+					if (inputField)
+					{
+						inputField.OpenKeyboard();
+						break;
+					}
+				}
 			}
+
+			base.OnDragEnded(handle, eventData);
 		}
 
 		protected virtual object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -330,4 +357,5 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject) {}
 	}
 }
+
 #endif

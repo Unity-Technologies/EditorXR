@@ -184,15 +184,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			base.OnDragStarted(handle, eventData);
 			isStillSettling = true;
-		}
 
-		protected override void OnSingleClick(BaseHandle handle, HandleEventData eventData)
-		{
 			SelectFolder();
 			ToggleExpanded(handle, eventData);
 		}
 
-		protected override void OnDoubleClick(BaseHandle handle, HandleEventData eventData)
+		protected override void OnVerticalDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
 			var row = handle.transform.parent;
 			if (row)
