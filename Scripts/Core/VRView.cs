@@ -171,6 +171,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave, typeof(Camera));
 			m_Camera = cameraGO.GetComponent<Camera>();
+			m_Camera.useOcclusionCulling = false;
 			m_Camera.enabled = false;
 			m_Camera.cameraType = CameraType.VR;
 
