@@ -5,8 +5,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	//[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
-	[MainMenuItem(false)]
+	[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
+	//[MainMenuItem(false)]
 	sealed class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesSpatialHash
 	{
 		public Transform rayOrigin { get; set; }
