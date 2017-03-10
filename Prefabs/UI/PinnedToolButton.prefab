@@ -20,7 +20,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000012504767854}
   - 114: {fileID: 114000011260412956}
-  - 114: {fileID: 114000012566785296}
   m_Layer: 5
   m_Name: PinnedToolButton
   m_TagString: Untagged
@@ -364,23 +363,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_GradientButton: {fileID: 114000010373680160}
-  m_Tooltip: {fileID: 114000012566785296}
---- !u!114 &114000012566785296
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000010204453368}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_TooltipText: Toggle Current Tool
   m_TooltipTarget: {fileID: 4000010683372396}
   m_TooltipSource: {fileID: 4000013378434912}
-  m_TooltipAlignment: 1
 --- !u!114 &114000012662170858
 MonoBehaviour:
   m_ObjectHideFlags: 1
