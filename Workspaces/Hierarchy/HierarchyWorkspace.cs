@@ -1,13 +1,15 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
-	sealed class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged
+	sealed class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
 	{
 		const float k_YBounds = 0.2f;
 		const float k_ScrollMargin = 0.03f;
@@ -17,6 +19,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		[SerializeField]
 		GameObject m_FilterPrefab;
+
+		[SerializeField]
+		GameObject m_FocusPrefab;
+
+		[SerializeField]
+		GameObject m_CreateEmptyPrefab;
 
 		HierarchyUI m_HierarchyUI;
 		FilterUI m_FilterUI;
@@ -52,6 +60,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		List<string> m_FilterList;
 
+		public MoveCameraRigDelegate moveCameraRig { private get; set; }
+
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
@@ -70,6 +80,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				connectInterfaces(mb);
 			}
 			m_FilterUI.filterList = m_FilterList;
+
+			var focusUI = ObjectUtils.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
+			foreach (var mb in focusUI.GetComponentsInChildren<MonoBehaviour>())
+			{
+				connectInterfaces(mb);
+			}
+			focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
+
+			var createEmptyUI = ObjectUtils.Instantiate(m_CreateEmptyPrefab, m_WorkspaceUI.frontPanel, false);
+			foreach (var mb in createEmptyUI.GetComponentsInChildren<MonoBehaviour>())
+			{
+				connectInterfaces(mb);
+			}
+			createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
 
 			var hierarchyListView = m_HierarchyUI.listView;
 			hierarchyListView.selectRow = SelectRow;
@@ -147,7 +171,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			m_HierarchyUI.listView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
+			m_HierarchyUI.listView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward)
+				/ getViewerScale();
 		}
 
 		void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -181,6 +206,39 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public void OnSelectionChanged()
 		{
 			m_HierarchyUI.listView.SelectRow(Selection.activeInstanceID);
+		}
+
+		void FocusSelection()
+		{
+			if (Selection.gameObjects.Length == 0)
+				return;
+
+			var mainCamera = CameraUtils.GetMainCamera().transform;
+			var bounds = ObjectUtils.GetBounds(Selection.gameObjects);
+
+			var size = bounds.size;
+			size.y = 0;
+			var maxSize = size.MaxComponent();
+
+			const float kExtraDistance = 0.25f; // Add some extra distance so selection isn't in your face
+			maxSize += kExtraDistance;
+
+			var viewDirection = mainCamera.transform.forward;
+			viewDirection.y = 0;
+			viewDirection.Normalize();
+
+			var cameraDiff = mainCamera.position - CameraUtils.GetCameraRig().position;
+			cameraDiff.y = 0;
+
+			moveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
+		}
+
+		static void CreateEmptyGameObject()
+		{
+			var camera = CameraUtils.GetMainCamera().transform;
+			var go = new GameObject();
+			go.transform.position = camera.position + camera.forward;
+			Selection.activeGameObject = go;
 		}
 	}
 }

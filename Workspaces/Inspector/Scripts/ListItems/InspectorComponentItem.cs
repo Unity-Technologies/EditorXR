@@ -49,8 +49,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// Rotate arrow for expand state
 			m_ExpandArrow.transform.localRotation = Quaternion.Lerp(m_ExpandArrow.transform.localRotation,
-				expanded ? k_ExpandedRotation : k_NormalRotation,
-				k_ExpandArrowRotateSpeed);
+				expanded ? k_ExpandedRotation : k_NormalRotation, k_ExpandArrowRotateSpeed);
+		}
+
+		public override void OnObjectModified()
+		{
+			base.OnObjectModified();
+			var enabled = EditorUtility.GetObjectEnabled(data.serializedObject.targetObject);
+			m_EnabledToggle.isOn = enabled == 1;
 		}
 
 		public void SetEnabled(bool value)
@@ -60,6 +66,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (value != (EditorUtility.GetObjectEnabled(target) == 1))
 			{
 				EditorUtility.SetObjectEnabled(target, value);
+
+				Undo.IncrementCurrentGroup();
 				serializedObject.ApplyModifiedProperties();
 			}
 		}

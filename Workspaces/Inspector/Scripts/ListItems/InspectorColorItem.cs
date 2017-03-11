@@ -8,12 +8,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class InspectorColorItem : InspectorPropertyItem
 	{
-#if UNITY_EDITOR
 		public override void Setup(InspectorData data)
 		{
 			base.Setup(data);
 
-			UpdateInputFields(m_SerializedProperty.colorValue);
+			UpdateInputFields();
 		}
 
 		void UpdateInputFields(Color color)
@@ -32,10 +31,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			for (var i = 0; i < m_InputFields.Length; i++)
 			{
 				var index = i;
-				m_InputFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+				m_InputFields[i].onValueChanged.AddListener(value =>
+				{
+					if (SetValue(value, index))
+						data.serializedObject.ApplyModifiedProperties();
+				});
 			}
 		}
 
+		public override void OnObjectModified()
+		{
+			base.OnObjectModified();
+			UpdateInputFields();
+		}
+	
 		public bool SetValue(string input, int index)
 		{
 			float value;
@@ -48,9 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				color[index] = value;
 				m_SerializedProperty.colorValue = color;
 
-				UpdateInputFields(color);
-
-				data.serializedObject.ApplyModifiedProperties();
+				UpdateInputFields();
 
 				return true;
 			}
@@ -58,6 +65,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			return false;
 		}
 
+		void UpdateInputFields()
+		{
+			var color = m_SerializedProperty.colorValue;
+
+			for (var i = 0; i < 4; i++)
+			{
+				m_InputFields[i].text = color[i].ToString();
+				m_InputFields[i].ForceUpdateLabel();
+			}
+		}
 		protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 		{
 			object dropObject = null;
@@ -90,6 +107,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					inputField.text = str;
 					inputField.ForceUpdateLabel();
+
+					FinalizeModifications();
 				}
 			}
 
@@ -97,9 +116,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				m_SerializedProperty.colorValue = (Color)dropObject;
 
-				UpdateInputFields(m_SerializedProperty.colorValue);
+				UpdateInputFields();
 
-				data.serializedObject.ApplyModifiedProperties();
+				FinalizeModifications();
 			}
 
 			var color = m_SerializedProperty.colorValue;
@@ -110,9 +129,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				color.g = vector2.y;
 				m_SerializedProperty.colorValue = color;
 
-				UpdateInputFields(color);
+				UpdateInputFields();
 
-				data.serializedObject.ApplyModifiedProperties();
+				FinalizeModifications();
 			}
 
 			if (dropObject is Vector3)
@@ -123,9 +142,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				color.b = vector3.z;
 				m_SerializedProperty.colorValue = color;
 
-				UpdateInputFields(color);
+				UpdateInputFields();
 
-				data.serializedObject.ApplyModifiedProperties();
+				FinalizeModifications();
 			}
 
 			if (dropObject is Vector4)
@@ -137,12 +156,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				color.a = vector4.w;
 				m_SerializedProperty.colorValue = color;
 
-				UpdateInputFields(color);
+				UpdateInputFields();
 
-				data.serializedObject.ApplyModifiedProperties();
+				FinalizeModifications();
 			}
 		}
-#endif
 	}
 }
 #endif

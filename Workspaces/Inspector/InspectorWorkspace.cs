@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
 	sealed class InspectorWorkspace : Workspace, ISelectionChanged
 	{
-		public static readonly Vector3 kDefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
+		public new static readonly Vector3 k_DefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 
 		[SerializeField]
 		GameObject m_ContentPrefab;
@@ -39,6 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_LockUI = ObjectUtils.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LockUI>();
 			connectInterfaces(m_LockUI);
 			m_LockUI.lockButtonPressed += SetIsLocked;
+			EditorApplication.delayCall += m_LockUI.Setup; // Need to write stencilRef after WorkspaceButton does it
 
 			var listView = m_InspectorUI.listView;
 			connectInterfaces(listView);
@@ -61,6 +62,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			if (Selection.activeGameObject)
 				OnSelectionChanged();
+
+			Undo.postprocessModifications += OnPostprocessModifications;
+			Undo.undoRedoPerformed += OnUndoRedo;
+		}
+
+		void OnUndoRedo()
+		{
+			UpdateCurrentObject(true);
 		}
 
 		void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -75,7 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			m_InspectorUI.listView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
+			m_InspectorUI.listView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / getViewerScale();
 		}
 
 		void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -120,13 +129,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				return;
 			}
 
-			var inspectorData = new List<InspectorData>();
-			var objectChildren = new List<InspectorData>();
+			m_SelectedObject = Selection.activeGameObject;
+			UpdateInspectorData(m_SelectedObject, true);
+		}
 
-			if (Selection.activeGameObject)
+		void UpdateInspectorData(GameObject selection, bool fullReload)
+		{
+			var listView = m_InspectorUI.listView;
+			if (fullReload)
 			{
-				m_SelectedObject = Selection.activeGameObject;
-				foreach (var component in m_SelectedObject.GetComponents<Component>())
+				var inspectorData = new List<InspectorData>();
+				var objectChildren = new List<InspectorData>();
+
+				foreach (var component in selection.GetComponents<Component>())
 				{
 					var obj = new SerializedObject(component);
 
@@ -142,12 +157,55 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					var componentData = new InspectorData("InspectorComponentItem", obj, componentChildren);
 					objectChildren.Add(componentData);
 				}
+
+				var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(selection), objectChildren);
+				inspectorData.Add(objectData);
+
+				listView.data = inspectorData;
+			}
+			else
+			{
+				listView.OnObjectModified();
+			}
+		}
+
+		UndoPropertyModification[] OnPostprocessModifications(UndoPropertyModification[] modifications)
+		{
+			if (!m_SelectedObject || !IncludesCurrentObject(modifications))
+				return modifications;
+
+			UpdateCurrentObject(false);
+
+			return modifications;
+		}
+
+		bool IncludesCurrentObject(UndoPropertyModification[] modifications)
+		{
+			foreach (var modification in modifications)
+			{
+				if (modification.previousValue.target == m_SelectedObject)
+					return true;
+
+				if (modification.currentValue.target == m_SelectedObject)
+					return true;
+
+				foreach (var component in m_SelectedObject.GetComponents<Component>())
+				{
+					if (modification.previousValue.target == component)
+						return true;
+
+					if (modification.currentValue.target == component)
+						return true;
+				}
 			}
 
-			var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(Selection.activeObject), objectChildren);
-			inspectorData.Add(objectData);
+			return false;
+		}
 
-			m_InspectorUI.listView.data = inspectorData;
+		void UpdateCurrentObject(bool fullReload)
+		{
+			if (m_SelectedObject)
+				UpdateInspectorData(m_SelectedObject, fullReload);
 		}
 
 		PropertyData SerializedPropertyToPropertyData(SerializedProperty property, SerializedObject obj)
@@ -231,6 +289,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						break;
 				}
 			}
+
 			return children;
 		}
 
@@ -287,6 +346,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			if (!m_IsLocked)
 				OnSelectionChanged();
+		}
+
+		protected override void OnDestroy()
+		{
+			Undo.postprocessModifications -= OnPostprocessModifications;
+			Undo.undoRedoPerformed -= OnUndoRedo;
+			base.OnDestroy();
 		}
 	}
 }

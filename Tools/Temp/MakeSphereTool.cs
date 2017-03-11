@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Action<GameObject> addToSpatialHash { private get; set; }
 		public Action<GameObject> removeFromSpatialHash { private get; set; }
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var standardAlt = (StandardAlt)input;
 			if (standardAlt.action.wasJustPressed)

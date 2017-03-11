@@ -11,11 +11,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static float DistanceToCamera(GameObject obj)
 		{
 			// from http://forum.unity3d.com/threads/camera-to-object-distance.32643/
-			Camera cam = GetMainCamera();
-			float distance = 0f;
+			var cam = GetMainCamera();
+			var distance = 0f;
 			if (cam)
 			{
-				Vector3 heading = obj.transform.position - cam.transform.position;
+				var heading = obj.transform.position - cam.transform.position;
 				distance = Vector3.Dot(heading, cam.transform.forward);
 			}
 			return distance;
@@ -23,15 +23,18 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static float GetSizeForDistanceToCamera(GameObject obj, float minScale, float scaleAt100)
 		{
-			float dist = DistanceToCamera(obj);
-			float scale = MathUtilsExt.Map(dist, 0, 100, minScale, scaleAt100);
-			if (scale < minScale) scale = minScale;
+			var dist = DistanceToCamera(obj);
+			var scale = MathUtilsExt.Map(dist, 0, 100, minScale, scaleAt100);
+			if (scale < minScale)
+				scale = minScale;
+
 			return scale;
 		}
 
 		public static Camera GetMainCamera()
 		{
-			Camera camera = Camera.main;
+			var camera = Camera.main;
+
 #if UNITY_EDITOR && UNITY_EDITORVR
 			if (!Application.isPlaying && VRView.viewerCamera)
 			{
@@ -42,17 +45,18 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			return camera;
 		}
 
-		public static Transform GetViewerPivot()
+		public static Transform GetCameraRig()
 		{
-			Transform pivot = Camera.main ? Camera.main.transform.parent : null;
+			var rig = Camera.main ? Camera.main.transform.parent : null;
+
 #if UNITY_EDITOR && UNITY_EDITORVR
 			if (!Application.isPlaying)
 			{
 				if (VRView.viewerCamera)
-					pivot = VRView.viewerCamera.transform.parent;
+					rig = VRView.viewerCamera.transform.parent;
 			}
 #endif
-			return pivot;
+			return rig;
 		}
 
 		/// <summary>
@@ -62,7 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns></returns>
 		public static Quaternion LocalRotateTowardCamera(Quaternion parentRotation)
 		{
-			Vector3 camVector = Quaternion.Inverse(parentRotation) * GetMainCamera().transform.forward;
+			var camVector = Quaternion.Inverse(parentRotation) * GetMainCamera().transform.forward;
 			camVector.x = 0;
 			return Quaternion.LookRotation(camVector, Vector3.Dot(camVector, Vector3.forward) > 0 ? Vector3.up : Vector3.down);
 		}

@@ -1,4 +1,8 @@
 #if UNITY_EDITOR
+#if !UNITY_EDITORVR
+#pragma warning disable 649 // "never assigned to" warning
+#endif
+
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -130,6 +134,10 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 			var keyboardOutOfRange = (m_Keyboard.transform.position - transform.position).magnitude > 0.25f;
 			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(keyboardOutOfRange));
+
+#if UNITY_EDITOR
+			Undo.IncrementCurrentGroup(); // Every time we open the keyboard is a new modification
+#endif
 		}
 
 		IEnumerator MoveKeyboardToInputField(bool instant)

@@ -51,10 +51,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnEnable()
 		{
-			GameObject go = new GameObject("MiniWorldCamera", typeof(Camera));
+			m_MiniCamera = (Camera)ObjectUtils.CreateGameObjectWithComponent(typeof(Camera));
+			var go = m_MiniCamera.gameObject;
+			go.name = "MiniWorldCamera";
 			go.tag = k_MiniWorldCameraTag;
-			go.hideFlags = HideFlags.DontSave;
-			m_MiniCamera = go.GetComponent<Camera>();
 			go.SetActive(false);
 			Camera.onPostRender += RenderMiniWorld;
 		}
@@ -73,11 +73,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_MiniCamera.CopyFrom(camera);
 
 				m_MiniCamera.cullingMask = cullingMask;
+				m_MiniCamera.cameraType = CameraType.Game;
 				m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
 				m_MiniCamera.worldToCameraMatrix = GetWorldToCameraMatrix(camera);
-				Shader shader = Shader.Find("Custom/Custom Clip Planes");
-				Shader.SetGlobalVector("_GlobalClipCenter", miniWorld.referenceBounds.center);
-				Shader.SetGlobalVector("_GlobalClipExtents", miniWorld.referenceBounds.extents);
+				var shader = Shader.Find("Custom/Custom Clip Planes");
+				var referenceBounds = miniWorld.referenceBounds;
+				var inverseRotation = Quaternion.Inverse(miniWorld.referenceTransform.rotation);
+				Shader.SetGlobalVector("_GlobalClipCenter", inverseRotation * referenceBounds.center);
+				Shader.SetGlobalVector("_GlobalClipExtents", referenceBounds.extents);
+				Shader.SetGlobalMatrix("_InverseRotation", Matrix4x4.TRS(Vector3.zero, inverseRotation, Vector3.one));
 
 				for (var i = 0; i < m_IgnoreList.Count; i++)
 				{

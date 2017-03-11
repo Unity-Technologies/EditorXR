@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			public void UpdatePositions()
 			{
+				Undo.RecordObjects(grabbedObjects, "Move");
+
 				for (int i = 0; i < grabbedObjects.Length; i++)
 				{
 					MathUtilsExt.SetTransformOffset(rayOrigin, grabbedObjects[i], positionOffsets[i], rotationOffsets[i]);
@@ -56,6 +57,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			public void ScaleObjects(float scaleFactor)
 			{
+				Undo.RecordObjects(grabbedObjects, "Move");
+
 				for (int i = 0; i < grabbedObjects.Length; i++)
 				{
 					var grabbedObject = grabbedObjects[i];
@@ -65,9 +68,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		class TransformAction : IAction
+		class TransformAction : IAction, ITooltip
 		{
 			internal Func<bool> execute;
+			public string tooltipText { get; internal set; }
 			public Sprite icon { get; internal set; }
 
 			public void ExecuteAction()
@@ -130,10 +134,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly Dictionary<Transform, Quaternion> m_RotationOffsets = new Dictionary<Transform, Quaternion>();
 		readonly Dictionary<Transform, Vector3> m_ScaleOffsets = new Dictionary<Transform, Vector3>();
 
-#if UNITY_EDITOR
 		PivotRotation m_PivotRotation = PivotRotation.Local;
 		PivotMode m_PivotMode = PivotMode.Pivot;
-#endif
 
 		readonly Dictionary<Node, GrabData> m_GrabData = new Dictionary<Node, GrabData>();
 		bool m_DirectSelected;
@@ -170,14 +172,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Awake()
 		{
-#if UNITY_EDITOR
 			m_PivotModeToggleAction.execute = TogglePivotMode;
-			UpdatePivotModeToggleIcon();
+			UpdatePivotModeAction();
 			m_PivotRotationToggleAction.execute = TogglePivotRotation;
-			UpdatePivotRotationToggleIcon();
+			UpdatePivotRotationAction();
 			m_ManipulatorToggleAction.execute = ToggleManipulator;
-			UpdateManipulatorToggleIcon();
-#endif
+			UpdateManipulatorAction();
 
 			// Add standard and scale manipulator prefabs to a list (because you cannot add asset references directly to a serialized list)
 			if (m_StandardManipulatorPrefab != null)
@@ -200,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				UpdateCurrentManipulator();
 		}
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var hasObject = false;
 
@@ -213,8 +213,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				var hasRight = m_GrabData.ContainsKey(Node.RightHand);
 				hasObject = directSelection.Count > 0 || hasLeft || hasRight;
 
+				var hoveringSelection = false;
+				foreach (var selection in directSelection.Values)
+				{
+					if (Selection.gameObjects.Contains(selection.gameObject))
+					{
+						hoveringSelection = true;
+						break;
+					}
+				}
+
 				// Disable manipulator on direct hover or drag
-				if (manipulatorGameObject.activeSelf && hasObject)
+				if (manipulatorGameObject.activeSelf && hoveringSelection)
 					manipulatorGameObject.SetActive(false);
 
 				foreach (var selection in m_HoverObjects.Values)
@@ -290,6 +300,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							// A direct selection has been made. Hide the manipulator until the selection changes
 							m_DirectSelected = true;
 						};
+
+						Undo.IncrementCurrentGroup();
 					}
 				}
 
@@ -360,24 +372,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				var deltaTime = Time.unscaledDeltaTime;
 				var manipulatorTransform = manipulatorGameObject.transform;
 				manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, k_LazyFollowTranslate * deltaTime);
-
-#if UNITY_EDITOR
 				if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 					manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, k_LazyFollowRotate * deltaTime);
-#endif
+
+				Undo.RecordObjects(Selection.transforms, "Move");
 
 				foreach (var t in Selection.transforms)
 				{
 					t.rotation = Quaternion.Slerp(t.rotation, m_TargetRotation * m_RotationOffsets[t], k_LazyFollowRotate * deltaTime);
 
-#if UNITY_EDITOR
 					if (m_PivotMode == PivotMode.Center) // Rotate the position offset from the manipulator when rotating around center
 					{
 						m_PositionOffsetRotation = Quaternion.Slerp(m_PositionOffsetRotation, m_TargetRotation * Quaternion.Inverse(m_StartRotation), k_LazyFollowRotate * deltaTime);
 						t.position = manipulatorTransform.position + m_PositionOffsetRotation * m_PositionOffsets[t];
 					}
 					else
-#endif
 					{
 						t.position = manipulatorTransform.position + m_PositionOffsets[t];
 					}
@@ -468,6 +477,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_TargetScale += delta;
 		}
 
+		static void OnDragStarted()
+		{
+			Undo.IncrementCurrentGroup();
+		}
+
 		private void UpdateSelectionBounds()
 		{
 			m_SelectionBounds = ObjectUtils.GetBounds(Selection.gameObjects);
@@ -481,6 +495,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			manipulator.translate = Translate;
 			manipulator.rotate = Rotate;
 			manipulator.scale = Scale;
+			manipulator.dragStarted += OnDragStarted;
 			return manipulator;
 		}
 
@@ -495,11 +510,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			UpdateSelectionBounds();
 			var manipulatorTransform = manipulatorGameObject.transform;
-#if UNITY_EDITOR
 			var activeTransform = Selection.activeTransform;
 			manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? activeTransform.position : m_SelectionBounds.center;
 			manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : activeTransform.rotation;
-#endif
 			m_TargetPosition = manipulatorTransform.position;
 			m_TargetRotation = manipulatorTransform.rotation;
 			m_StartRotation = m_TargetRotation;
@@ -519,31 +532,34 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-#if UNITY_EDITOR
 		bool TogglePivotMode()
 		{
 			m_PivotMode = m_PivotMode == PivotMode.Pivot ? PivotMode.Center : PivotMode.Pivot;
-			UpdatePivotModeToggleIcon();
+			UpdatePivotModeAction();
 			UpdateCurrentManipulator();
 			return true;
 		}
 
-		void UpdatePivotModeToggleIcon()
+		void UpdatePivotModeAction()
 		{
-			m_PivotModeToggleAction.icon = m_PivotMode == PivotMode.Center ? m_OriginCenterIcon : m_OriginPivotIcon;
+			var isCenter = m_PivotMode == PivotMode.Center;
+			m_PivotModeToggleAction.tooltipText = isCenter ? "Manipulator at Center" : "Manipulator at Pivot";
+			m_PivotModeToggleAction.icon = isCenter ? m_OriginCenterIcon : m_OriginPivotIcon;
 		}
 
 		bool TogglePivotRotation()
 		{
 			m_PivotRotation = m_PivotRotation == PivotRotation.Global ? PivotRotation.Local : PivotRotation.Global;
-			UpdatePivotRotationToggleIcon();
+			UpdatePivotRotationAction();
 			UpdateCurrentManipulator();
 			return true;
 		}
 
-		void UpdatePivotRotationToggleIcon()
+		void UpdatePivotRotationAction()
 		{
-			m_PivotRotationToggleAction.icon = m_PivotRotation == PivotRotation.Global ? m_RotationGlobalIcon : m_RotationLocalIcon;
+			var isGlobal = m_PivotRotation == PivotRotation.Global;
+			m_PivotRotationToggleAction.tooltipText = isGlobal ? "Local Rotation" : "Global Rotation";
+			m_PivotRotationToggleAction.icon = isGlobal ? m_RotationGlobalIcon : m_RotationLocalIcon;
 		}
 
 		bool ToggleManipulator()
@@ -551,16 +567,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_CurrentManipulator.gameObject.SetActive(false);
 
 			m_CurrentManipulator = m_CurrentManipulator == m_StandardManipulator ? m_ScaleManipulator : m_StandardManipulator;
-			UpdateManipulatorToggleIcon();
+			UpdateManipulatorAction();
 			UpdateCurrentManipulator();
 			return true;
 		}
 
-		void UpdateManipulatorToggleIcon()
+		void UpdateManipulatorAction()
 		{
-			m_ManipulatorToggleAction.icon = m_CurrentManipulator == m_StandardManipulator ? m_ScaleManipulatorIcon : m_StandardManipulatorIcon;
+			var isStandard = m_CurrentManipulator == m_StandardManipulator;
+			m_ManipulatorToggleAction.tooltipText = isStandard ? "Switch to Scale Manipulator" : "Switch to Standard Manipulator";
+			m_ManipulatorToggleAction.icon = isStandard ? m_ScaleManipulatorIcon : m_StandardManipulatorIcon;
 		}
-#endif
 	}
 }
 #endif

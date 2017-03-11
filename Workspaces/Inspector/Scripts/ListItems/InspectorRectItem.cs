@@ -19,7 +19,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			base.Setup(data);
 
-			UpdateInputFields(m_SerializedProperty.rectValue);
+			UpdateInputFields();
+		}
+
+		void UpdateInputFields()
+		{
+			var rect = m_SerializedProperty.rectValue;
+
+			for (var i = 0; i < m_CenterFields.Length; i++)
+			{
+				m_CenterFields[i].text = rect.center[i].ToString();
+				m_CenterFields[i].ForceUpdateLabel();
+				m_SizeFields[i].text = rect.size[i].ToString();
+				m_SizeFields[i].ForceUpdateLabel();
+			}
 		}
 
 		void UpdateInputFields(Rect rect)
@@ -40,9 +53,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			for (var i = 0; i < m_CenterFields.Length; i++)
 			{
 				var index = i;
-				m_CenterFields[i].onValueChanged.AddListener(value => SetValue(value, index, true));
-				m_SizeFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+				m_CenterFields[i].onValueChanged.AddListener(value =>
+				{
+					if (SetValue(value, index, true))
+						data.serializedObject.ApplyModifiedProperties();
+				});
+				m_SizeFields[i].onValueChanged.AddListener(value =>
+				{
+					if (SetValue(value, index))
+						data.serializedObject.ApplyModifiedProperties();
+				});
 			}
+		}
+		public override void OnObjectModified()
+		{
+			base.OnObjectModified();
+			UpdateInputFields();
 		}
 
 		bool SetValue(string input, int index, bool center = false)
@@ -63,30 +89,31 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					rect.size = vector;
 
 				UpdateInputFields(rect);
-
 				m_SerializedProperty.rectValue = rect;
-				data.serializedObject.ApplyModifiedProperties();
+				UpdateInputFields();
+				return true;
 			}
 
-			return true;
+			return false;
 		}
 
 		protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 		{
 			object dropObject = null;
-			var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
+			var inputFields = fieldBlock.GetComponentsInChildren<NumericInputField>();
 
-			if (inputfields.Length > 3) // If we've grabbed all of the fields
+			if (inputFields.Length > 3) // If we've grabbed all of the fields
 				dropObject = m_SerializedProperty.rectValue;
-			if (inputfields.Length > 1) // If we've grabbed one vector
+
+			if (inputFields.Length > 1) // If we've grabbed one vector
 			{
-				if (m_CenterFields.Intersect(inputfields).Any())
+				if (m_CenterFields.Intersect(inputFields).Any())
 					dropObject = m_SerializedProperty.rectValue.center;
 				else
 					dropObject = m_SerializedProperty.rectValue.size;
 			}
-			else if (inputfields.Length > 0) // If we've grabbed a single field
-				dropObject = inputfields[0].text;
+			else if (inputFields.Length > 0) // If we've grabbed a single field
+				dropObject = inputFields[0].text;
 
 			return dropObject;
 		}
@@ -108,6 +135,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					inputField.text = str;
 					inputField.ForceUpdateLabel();
+
+					FinalizeModifications();
 				}
 
 				index = Array.IndexOf(m_CenterFields, inputField);
@@ -115,6 +144,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					inputField.text = str;
 					inputField.ForceUpdateLabel();
+
+					FinalizeModifications();
 				}
 			}
 
@@ -122,8 +153,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				m_SerializedProperty.rectValue = (Rect)dropObject;
 
-				UpdateInputFields(m_SerializedProperty.rectValue);
-
+				UpdateInputFields();
+				FinalizeModifications();
 				data.serializedObject.ApplyModifiedProperties();
 			}
 
@@ -140,8 +171,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				m_SerializedProperty.rectValue = rect;
 
-				UpdateInputFields(rect);
-
+				UpdateInputFields();
+				FinalizeModifications();
 				data.serializedObject.ApplyModifiedProperties();
 			}
 		}

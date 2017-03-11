@@ -19,7 +19,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Type m_ObjectType;
 		string m_ObjectTypeName;
 
-#if UNITY_EDITOR
 		public override void Setup(InspectorData data)
 		{
 			base.Setup(data);
@@ -27,35 +26,25 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ObjectTypeName = ObjectUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
 			m_ObjectType = ObjectUtils.TypeNameToType(m_ObjectTypeName);
 
-			SetObject(m_SerializedProperty.objectReferenceValue);
+			OnObjectModified();
 		}
 
 		bool SetObject(Object obj)
 		{
-			var objectReference = m_SerializedProperty.objectReferenceValue;
-
-			if (obj == null)
-				m_FieldLabel.text = string.Format("None ({0})", m_ObjectTypeName);
-			else
-			{
-				var objType = obj.GetType();
-				if (!objType.IsAssignableFrom(m_ObjectType))
-				{
-					if (obj.Equals(objectReference)) // Show type mismatch for old serialized data
-						m_FieldLabel.text = "Type Mismatch";
-					return false;
-				}
-				m_FieldLabel.text = string.Format("{0} ({1})", obj.name, obj.GetType().Name);
-			}
+			if (!IsAssignable(obj))
+				return false;
 
 			if (obj == null && m_SerializedProperty.objectReferenceValue == null)
 				return true;
+
 			if (m_SerializedProperty.objectReferenceValue != null && m_SerializedProperty.objectReferenceValue.Equals(obj))
 				return true;
 
 			m_SerializedProperty.objectReferenceValue = obj;
 
-			data.serializedObject.ApplyModifiedProperties();
+			OnObjectModified();
+
+			FinalizeModifications();
 
 			return true;
 		}
@@ -65,6 +54,26 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			SetObject(null);
 		}
 
+		public override void OnObjectModified()
+		{
+			base.OnObjectModified();
+			UpdateUI();
+		}
+		public void UpdateUI()
+		{
+			var obj = m_SerializedProperty.objectReferenceValue;
+			if (obj == null)
+			{
+				m_FieldLabel.text = string.Format("None ({0})", m_ObjectTypeName);
+				return;
+			}
+			if (!IsAssignable(obj))
+			{
+				m_FieldLabel.text = "Type Mismatch";
+				return;
+			}
+			m_FieldLabel.text = string.Format("{0} ({1})", obj.name, obj.GetType().Name);
+		}
 		protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
 		{
 			return m_SerializedProperty.objectReferenceValue;
@@ -72,7 +81,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
 		{
-			return dropObject is Object;
+			var obj = dropObject as Object;
+			return obj != null && IsAssignable(obj);
 		}
 
 		protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
@@ -80,12 +90,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			SetObject(dropObject as Object);
 		}
 
-		public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
+		public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
 		{
-			base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
+			base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, uiMaskMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
 			m_Button.sharedMaterials = highlightMaterials;
 		}
-#endif
+
+		bool IsAssignable(Object obj)
+		{
+			return obj == null || obj.GetType().IsAssignableFrom(m_ObjectType);
+		}
 	}
 }
 #endif

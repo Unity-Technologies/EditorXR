@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -17,6 +18,11 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			get;
 		}
+
+		/// <summary>
+		/// Event called when the active property changes
+		/// </summary>
+		event Action activeChanged;
 
 		/// <summary>
 		/// Provided to a proxy for device input (e.g. position / rotation)

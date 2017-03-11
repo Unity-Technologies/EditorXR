@@ -1,15 +1,17 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR;
+using UnityEngine;
+using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("SixenseInput", "ENABLE_SIXENSE_INPUT")]
 
-namespace UnityEngine.InputNew
+namespace UnityEditor.Experimental.EditorVR.Input
 {
 	/// <summary>
 	/// Sends events to the input system based on native Sixense SDK calls
 	/// </summary>
-	public class SixenseInputToEvents : MonoBehaviour
+	sealed class SixenseInputToEvents : BaseInputToEvents
 	{
 #if ENABLE_SIXENSE_INPUT
 		const uint k_ControllerCount = SixenseInput.MAX_CONTROLLERS;
@@ -24,22 +26,20 @@ namespace UnityEngine.InputNew
 
 		Vector3[] m_ControllerOffsets = new Vector3[SixenseInput.MAX_CONTROLLERS];
 		Quaternion m_RotationOffset = Quaternion.identity;
-#endif
 
-		public bool active { get; private set; }
-
-#if ENABLE_SIXENSE_INPUT
-		private void Awake()
+		void Awake()
 		{
 			if (!FindObjectOfType<SixenseInput>())
 				gameObject.AddComponent<SixenseInput>();
 		}
 
-		private void Update()
+		void Update()
 		{
-			active = false;
 			if (!SixenseInput.IsBaseConnected(0))
+			{
+				active = false;
 				return;
+			}
 
 			for (var i = 0; i < SixenseInput.MAX_CONTROLLERS; i++)
 			{
@@ -190,12 +190,12 @@ namespace UnityEngine.InputNew
 			var headPivot = VRView.viewerCamera.transform;
 			var lookDirection = headPivot.forward;
 			lookDirection.y = 0f;
-			lookDirection = VRView.viewerPivot.InverseTransformDirection(lookDirection.normalized);
+			lookDirection = VRView.cameraRig.InverseTransformDirection(lookDirection.normalized);
 			if (lookDirection != Vector3.zero)
 				m_RotationOffset = Quaternion.LookRotation(lookDirection);
-			m_ControllerOffsets[0] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (-headPivot.right * span * 0.5f)) -
+			m_ControllerOffsets[0] = VRView.cameraRig.InverseTransformPoint(headPivot.position + (-headPivot.right * span * 0.5f)) -
 				(m_RotationOffset * SixenseInput.Controllers[0].Position * k_HydraUnits);
-			m_ControllerOffsets[1] = VRView.viewerPivot.InverseTransformPoint(headPivot.position + (headPivot.right * span * 0.5f)) -
+			m_ControllerOffsets[1] = VRView.cameraRig.InverseTransformPoint(headPivot.position + (headPivot.right * span * 0.5f)) -
 				(m_RotationOffset * SixenseInput.Controllers[1].Position * k_HydraUnits);
 #endif
 		}

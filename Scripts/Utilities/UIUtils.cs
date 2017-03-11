@@ -36,7 +36,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			return false;
 		}
 
-#if UNITY_EDITOR
 		/// <summary>
 		/// Special version of EditorGUI.MaskField which ensures that only the chosen bits are set. We need this version of the
 		/// function to check explicitly whether only a single bit was set.
@@ -47,7 +46,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			mask = EditorGUI.MaskField(position, label, mask, displayedOptions);
 			return ActualEnumFlags(mask, propertyType);
 		}
-#endif
 
 		public static int ActualEnumFlags(int value, Type t)
 		{
@@ -67,7 +65,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			return value;
 		}
 
-#if UNITY_EDITOR
 		public static Type SerializedPropertyToType(SerializedProperty property)
 		{
 			var parts = property.propertyPath.Split('.');
@@ -81,7 +78,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 			return field != null ? field.FieldType : null;
 		}
-#endif
 
 		public static FieldInfo GetFieldInTypeOrParent(Type type, string fieldName)
 		{

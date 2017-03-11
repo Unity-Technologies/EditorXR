@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -6,7 +7,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	sealed class DefaultProxyRay : MonoBehaviour
+	sealed class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
 	{
 		[SerializeField]
 		private VRLineRenderer m_LineRenderer;
@@ -33,7 +34,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		/// </summary>
 		private object m_LockRayObject;
 
+		public Func<float> getViewerScale { private get; set; }
+
 		public bool LockRay(object lockCaller)
+
 		{
 			// Allow the caller to lock the ray
 			// If the reference to the lockCaller is destroyed, and the ray was not properly
@@ -121,14 +125,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			if (!rayVisible)
 				return;
 
-			var lineRendererTransform = m_LineRenderer.transform;
-			lineRendererTransform.localScale = Vector3.one * length;
-			m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth * length);
-			m_Tip.transform.position = transform.position + transform.forward * length;
-			m_Tip.transform.localScale = length * m_TipStartScale;
+			var viewerScale = getViewerScale();
+			var scaledWidth = m_LineWidth * viewerScale;
+			var scaledLength = length / viewerScale;
 
-			const float kLineRendererStartingOffset = 0.085f; // offset the ray starting point in front of the direct-select cone
-			m_LineRenderer.SetPosition(0, new Vector3(0f, 0f, (1f / lineRendererTransform.localScale.x) * kLineRendererStartingOffset));
+			var lineRendererTransform = m_LineRenderer.transform;
+			lineRendererTransform.localScale = Vector3.one * scaledLength;
+			m_LineRenderer.SetWidth(scaledWidth, scaledWidth * scaledLength);
+			m_Tip.transform.position = transform.position + transform.forward * length;
+			m_Tip.transform.localScale = scaledLength * m_TipStartScale;
 		}
 
 		private void Awake()
@@ -169,19 +174,25 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		{
 			m_Tip.transform.localScale = m_TipStartScale;
 
+			float viewerScale;
+			float scaledWidth;
 			var currentWidth = m_LineRenderer.widthStart;
 			var smoothVelocity = 0f;
 			const float kSmoothTime = 0.3125f;
 			var currentDuration = 0f;
 			while (currentDuration < kSmoothTime)
 			{
+				viewerScale = getViewerScale();
 				currentDuration += Time.unscaledDeltaTime;
 				currentWidth = MathUtilsExt.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-				m_LineRenderer.SetWidth(currentWidth, currentWidth);
+				scaledWidth = currentWidth * viewerScale;
+				m_LineRenderer.SetWidth(scaledWidth, scaledWidth);
 				yield return null;
 			}
 
-			m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth);
+			viewerScale = getViewerScale();
+			scaledWidth = m_LineWidth * viewerScale;
+			m_LineRenderer.SetWidth(scaledWidth, scaledWidth);
 			m_RayVisibilityCoroutine = null;
 		}
 

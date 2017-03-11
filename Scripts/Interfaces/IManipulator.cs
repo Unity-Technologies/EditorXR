@@ -25,6 +25,11 @@ namespace UnityEditor.Experimental.EditorVR
 		Action<Vector3> scale { set; }
 
 		/// <summary>
+		/// Delegate that is called once after every drag
+		/// </summary>
+		event Action dragStarted;
+
+		/// <summary>
 		/// Bool denoting the drag-state of a manipulator that implements this interface
 		/// </summary>
 		bool dragging { get; }

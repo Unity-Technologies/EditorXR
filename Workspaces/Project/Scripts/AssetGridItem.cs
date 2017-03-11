@@ -351,7 +351,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 							transform.position = gridItem.transform.position;
 							transform.rotation = MathUtilsExt.ConstrainYawRotation(gridItem.transform.rotation);
 #else
-						var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+							var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
 #endif
 
 							addToSpatialHash(go);

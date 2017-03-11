@@ -1,6 +1,8 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -20,7 +22,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		[SerializeField]
 		protected PlayerInput m_PlayerInput;
 
+		internal IInputToEvents m_InputToEvents;
+
+		public Transform leftHand
+		{
+			get { return m_LeftHand; }
+		}
 		protected Transform m_LeftHand;
+
+		public Transform rightHand
+		{
+			get { return m_RightHand; }
+		}
 		protected Transform m_RightHand;
 		readonly List<Material> m_Materials = new List<Material>();
 
@@ -32,7 +45,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public virtual TrackedObject trackedObjectInput { protected get; set; }
 
-		public virtual bool active { get { return true; } }
+		public bool active { get { return m_InputToEvents.active; } }
+
+		public event Action activeChanged
+		{
+			add { m_InputToEvents.activeChanged += value; }
+			remove { m_InputToEvents.activeChanged -= value; }
+		}
+
 
 		public virtual bool hidden
 		{

@@ -1,6 +1,6 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {

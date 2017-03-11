@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR;
+using UnityEngine;
+using UnityEngine.InputNew;
 #if ENABLE_STEAMVR_INPUT
 using System;
 using Valve.VR;
@@ -7,12 +9,12 @@ using Valve.VR;
 
 [assembly: OptionalDependency("Valve.VR.IVRSystem", "ENABLE_STEAMVR_INPUT")]
 
-namespace UnityEngine.InputNew
+namespace UnityEditor.Experimental.EditorVR.Input
 {
 	/// <summary>
 	/// Sends events to the input system based on native SteamVR SDK calls
 	/// </summary>
-	public class ViveInputToEvents : MonoBehaviour
+	sealed class ViveInputToEvents : BaseInputToEvents
 	{
 #if ENABLE_STEAMVR_INPUT
 		enum XorY
@@ -27,11 +29,15 @@ namespace UnityEngine.InputNew
 		}
 
 		readonly int[] steamDeviceIndices = new int[] { -1, -1 };
-#endif
 
-		public bool active { get; private set; }
+		const int k_ControllerCount = 10;
+		const int k_ButtonCount = (int)EVRButtonId.k_EButton_Max + 1;
+		const int k_AxisCount = 10; // 5 axes in openVR, each with X and Y.
 
-#if ENABLE_STEAMVR_INPUT
+		float[,] m_LastAxisValues = new float[k_ControllerCount, k_AxisCount + k_ButtonCount];
+		Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
+		Quaternion[] m_LastRotationValues = new Quaternion[k_ControllerCount];
+
 		static EVRButtonId[] s_EnumValues;
 
 		static ViveInputToEvents()
@@ -41,7 +47,7 @@ namespace UnityEngine.InputNew
 
 		public void Update()
 		{
-			active = false;
+			var isActive = false;
 			TrackedDevicePose_t[] poses = null;
 			var compositor = OpenVR.Compositor;
 			if (compositor != null)
@@ -67,24 +73,19 @@ namespace UnityEngine.InputNew
 					steamDeviceIndex = steamDeviceIndices[(int)hand];
 				}
 
-				active = true;
+				isActive = true;
 
 				int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
 				SendButtonEvents(steamDeviceIndex, deviceIndex);
 				SendAxisEvents(steamDeviceIndex, deviceIndex);
 				SendTrackingEvents(steamDeviceIndex, deviceIndex, poses);
 			}
+
+			if (active != isActive)
+				active = isActive;
 		}
 
-		const int k_ControllerCount = 10;
-		const int k_ButtonCount = (int)EVRButtonId.k_EButton_Max + 1;
-		const int k_AxisCount = 10; // 5 axes in openVR, each with X and Y.
-
-		float[,] m_LastAxisValues = new float[k_ControllerCount, k_AxisCount + k_ButtonCount];
-		Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
-		Quaternion[] m_LastRotationValues = new Quaternion[k_ControllerCount];
-
-		private void SendAxisEvents(int steamDeviceIndex, int deviceIndex)
+		void SendAxisEvents(int steamDeviceIndex, int deviceIndex)
 		{
 			int a = 0;
 			for (int axis = (int)EVRButtonId.k_EButton_Axis0; axis <= (int)EVRButtonId.k_EButton_Axis4; ++axis)
@@ -113,7 +114,7 @@ namespace UnityEngine.InputNew
 			}
 		}
 
-		private void SendButtonEvents(int steamDeviceIndex, int deviceIndex)
+		void SendButtonEvents(int steamDeviceIndex, int deviceIndex)
 		{
 			for (int i = 0; i < s_EnumValues.Length; i++)
 			{
@@ -146,7 +147,7 @@ namespace UnityEngine.InputNew
 			}
 		}
 
-		private void SendTrackingEvents(int steamDeviceIndex, int deviceIndex, TrackedDevicePose_t[] poses)
+		void SendTrackingEvents(int steamDeviceIndex, int deviceIndex, TrackedDevicePose_t[] poses)
 		{
 			var pose = new SteamVR_Utils.RigidTransform(poses[steamDeviceIndex].mDeviceToAbsoluteTracking);
 			var localPosition = pose.pos;

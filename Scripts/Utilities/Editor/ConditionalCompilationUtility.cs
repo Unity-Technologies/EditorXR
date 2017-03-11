@@ -6,11 +6,11 @@ using System.Reflection;
 using UnityEditor;
 using Debug = UnityEngine.Debug;
 
-namespace ConditionalCompilationUtility
+namespace ConditionalCompilation
 {
 	/// <summary>
 	/// The Conditional Compilation Utility (CCU) will add defines to the build settings once dependendent classes have been detected. 
-	/// In order for this to specified in any project without the project needing to include the CCU, at least one custom attribute 
+	/// In order for this to be specified in any project without the project needing to include the CCU, at least one custom attribute 
 	/// must be created in the following form:
 	/// 
 	/// [Conditional(UNITY_CCU)]									// | This is necessary for CCU to pick up the right attributes
@@ -30,14 +30,25 @@ namespace ConditionalCompilationUtility
 	/// }
 	/// </summary>
 	[InitializeOnLoad]
-	public class ConditionalCompilationUtility
+	public static class ConditionalCompilationUtility
 	{
 		const string k_EnableCCU = "UNITY_CCU";
+
+		public static bool enabled
+		{
+			get
+			{
+				var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+				return PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Contains(k_EnableCCU);
+			}
+		}
+
+		public static string[] defines { private set; get; }
 
 		static ConditionalCompilationUtility()
 		{
 			var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
-			var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList<string>();
+			var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList();
 			if (!defines.Contains(k_EnableCCU, StringComparer.OrdinalIgnoreCase))
 			{
 				defines.Add(k_EnableCCU);
@@ -46,6 +57,8 @@ namespace ConditionalCompilationUtility
 				// This will trigger another re-compile, which needs to happen, so all the custom attributes will be visible
 				return;
 			}
+
+			var ccuDefines = new List<string> { k_EnableCCU };
 
 			var conditionalAttributeType = typeof(ConditionalAttribute);
 
@@ -73,7 +86,6 @@ namespace ConditionalCompilationUtility
 							Debug.LogErrorFormat("[CCU] Attribute type {0} missing field: {1}", type.Name, kDefine);
 							return false;
 						}
-
 					}
 					return true;
 				}
@@ -111,9 +123,13 @@ namespace ConditionalCompilationUtility
 						var define = dependency.Value;
 						if (!defines.Contains(define, StringComparer.OrdinalIgnoreCase))
 							defines.Add(define);
+
+						ccuDefines.Add(define);
 					}
 				}
 			});
+
+			ConditionalCompilationUtility.defines = ccuDefines.ToArray();
 
 			PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines.ToArray()));
 		}

@@ -18,42 +18,53 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			base.Setup(data);
 
-			var vector = Vector4.zero;
-			var count = 4;
 			switch (m_SerializedProperty.propertyType)
 			{
 				case SerializedPropertyType.Vector2:
 					ZGroup.SetActive(false);
 					WGroup.SetActive(false);
+					break;
+				case SerializedPropertyType.Quaternion:
+					ZGroup.SetActive(true);
+					WGroup.SetActive(false);
+					break;
+				case SerializedPropertyType.Vector3:
+					ZGroup.SetActive(true);
+					WGroup.SetActive(false);
+					break;
+				case SerializedPropertyType.Vector4:
+					ZGroup.SetActive(true);
+					WGroup.SetActive(true);
+					break;
+			}
+			m_CuboidLayout.UpdateObjects();
+
+			UpdateInputFields();
+		}
+
+		void UpdateInputFields()
+		{
+			var vector = Vector4.zero;
+			var count = 4;
+			switch (m_SerializedProperty.propertyType)
+			{
+				case SerializedPropertyType.Vector2:
 					vector = m_SerializedProperty.vector2Value;
 					count = 2;
 					break;
 				case SerializedPropertyType.Quaternion:
 					vector = m_SerializedProperty.quaternionValue.eulerAngles;
-					ZGroup.SetActive(true);
-					WGroup.SetActive(false);
 					count = 3;
 					break;
 				case SerializedPropertyType.Vector3:
 					vector = m_SerializedProperty.vector3Value;
-					ZGroup.SetActive(true);
-					WGroup.SetActive(false);
 					count = 3;
 					break;
 				case SerializedPropertyType.Vector4:
 					vector = m_SerializedProperty.vector4Value;
-					ZGroup.SetActive(true);
-					WGroup.SetActive(true);
 					break;
 			}
 
-			m_CuboidLayout.UpdateObjects();
-
-			UpdateInputFields(count, vector);
-		}
-
-		void UpdateInputFields(int count, Vector4 vector)
-		{
 			for (var i = 0; i < count; i++)
 			{
 				m_InputFields[i].text = vector[i].ToString();
@@ -68,14 +79,25 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			for (var i = 0; i < m_InputFields.Length; i++)
 			{
 				var index = i;
-				m_InputFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+				m_InputFields[i].onValueChanged.AddListener(value =>
+				{
+					if (SetValue(value, index))
+						data.serializedObject.ApplyModifiedProperties();
+				});
 			}
+		}
+
+		public override void OnObjectModified()
+		{
+			base.OnObjectModified();
+			UpdateInputFields();
 		}
 
 		public bool SetValue(string input, int index)
 		{
 			float value;
 			if (!float.TryParse(input, out value)) return false;
+
 			switch (m_SerializedProperty.propertyType)
 			{
 				case SerializedPropertyType.Vector2:
@@ -84,7 +106,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					{
 						vector2[index] = value;
 						m_SerializedProperty.vector2Value = vector2;
-						UpdateInputFields(2, vector2);
+						UpdateInputFields();
+						return true;
 					}
 					break;
 				case SerializedPropertyType.Vector3:
@@ -93,7 +116,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					{
 						vector3[index] = value;
 						m_SerializedProperty.vector3Value = vector3;
-						UpdateInputFields(3, vector3);
+						UpdateInputFields();
+						return true;
 					}
 					break;
 				case SerializedPropertyType.Vector4:
@@ -102,7 +126,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					{
 						vector4[index] = value;
 						m_SerializedProperty.vector4Value = vector4;
-						UpdateInputFields(4, vector4);
+						UpdateInputFields();
+						return true;
 					}
 					break;
 				case SerializedPropertyType.Quaternion:
@@ -111,14 +136,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					{
 						euler[index] = value;
 						m_SerializedProperty.quaternionValue = Quaternion.Euler(euler);
-						UpdateInputFields(3, euler);
+						UpdateInputFields();
+						return true;
 					}
 					break;
 			}
 
-			data.serializedObject.ApplyModifiedProperties();
-
-			return true;
+			return false;
 		}
 
 		protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -167,6 +191,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					inputField.text = str;
 					inputField.ForceUpdateLabel();
+					FinalizeModifications();
 				}
 			}
 
@@ -197,9 +222,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						break;
 				}
 
-				UpdateInputFields(2, vector2);
-
-				data.serializedObject.ApplyModifiedProperties();
+				UpdateInputFields();
+				FinalizeModifications();
 			}
 
 			if (dropObject is Vector3)
@@ -223,9 +247,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						break;
 				}
 
-				UpdateInputFields(3, vector3);
-
-				data.serializedObject.ApplyModifiedProperties();
+				UpdateInputFields();
+				FinalizeModifications();
 			}
 
 			if (dropObject is Vector4)
@@ -247,9 +270,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						break;
 				}
 
-				UpdateInputFields(4, vector4);
-
-				data.serializedObject.ApplyModifiedProperties();
+				UpdateInputFields();
+				FinalizeModifications();
 			}
 
 			if (dropObject is Color)
@@ -278,9 +300,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						break;
 				}
 
-				UpdateInputFields(4, color);
-
-				data.serializedObject.ApplyModifiedProperties();
+				UpdateInputFields();
+				FinalizeModifications();
 			}
 
 			if (dropObject is Quaternion)
@@ -302,9 +323,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						break;
 				}
 
-				UpdateInputFields(3, quaternion.eulerAngles);
-
-				data.serializedObject.ApplyModifiedProperties();
+				UpdateInputFields();
+				FinalizeModifications();
 			}
 		}
 	}

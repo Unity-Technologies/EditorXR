@@ -93,7 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			UpdateToolButtons();
 		}
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var mainMenuInput = (MainMenuInput)input;
 			var rotationInput = -mainMenuInput.rotate.rawValue;

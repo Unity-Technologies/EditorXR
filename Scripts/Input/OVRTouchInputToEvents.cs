@@ -1,15 +1,17 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR;
+using UnityEngine;
+using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("OVRInput", "ENABLE_OVR_INPUT")]
 
-namespace UnityEngine.InputNew
+namespace UnityEditor.Experimental.EditorVR.Input
 {
 	/// <summary>
 	/// Sends events to the input system based on native Oculus SDK calls
 	/// </summary>
-	public class OVRTouchInputToEvents : MonoBehaviour
+	sealed class OVRTouchInputToEvents : BaseInputToEvents
 	{
 #if ENABLE_OVR_INPUT
 		const uint k_ControllerCount = 2;
@@ -18,11 +20,7 @@ namespace UnityEngine.InputNew
 		float[,] m_LastAxisValues = new float[k_ControllerCount, k_AxisCount];
 		Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
 		Quaternion[] m_LastRotationValues = new Quaternion[k_ControllerCount];
-#endif
 
-		public bool active { get; private set; }
-
-#if ENABLE_OVR_INPUT
 		public void Update()
 		{
 			// Manually update the Touch input

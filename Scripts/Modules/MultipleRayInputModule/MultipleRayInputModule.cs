@@ -56,7 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public event Action<GameObject, RayEventData> dragStarted;
 		public event Action<GameObject, RayEventData> dragEnded;
 
-		public Action<Transform> preProcessRaycastSource;
+		public Action<Transform> preProcessRaycastSource { private get; set; }
 
 		// Local method use only -- created here to reduce garbage collection
 		RayEventData m_TempRayEvent;
@@ -95,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			// We don't process with all other input modules because we need fine-grained control to consume input
 		}
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			ExecuteUpdateOnSelectedObject();
 
@@ -228,9 +228,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				for (var i = 0; i < cachedEventData.hovered.Count; ++i)
 				{
-					ExecuteEvents.Execute(cachedEventData.hovered[i], eventData, ExecuteRayEvents.rayExitHandler);
+					var hovered = cachedEventData.hovered[i];
+
+					ExecuteEvents.Execute(hovered, eventData, ExecuteRayEvents.rayExitHandler);
 					if (rayExited != null)
-						rayExited(cachedEventData.hovered[i], eventData);
+						rayExited(hovered, eventData);
 				}
 
 				if (newEnterTarget == null)
@@ -388,12 +390,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		private GameObject GetRayIntersection(RaycastSource source)
 		{
-			GameObject hit = null;
 			// Move camera to position and rotation for the ray origin
 			m_EventCamera.transform.position = source.rayOrigin.position;
 			m_EventCamera.transform.rotation = source.rayOrigin.rotation;
 
-			RayEventData eventData = source.eventData;
+			// World scaling also scales clipping planes
+			var camera = CameraUtils.GetMainCamera();
+			m_EventCamera.nearClipPlane = camera.nearClipPlane;
+			m_EventCamera.farClipPlane = camera.farClipPlane;
+
+			var eventData = source.eventData;
 			eventData.Reset();
 			eventData.delta = Vector2.zero;
 			eventData.position = m_EventCamera.pixelRect.center;
@@ -401,7 +407,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			eventSystem.RaycastAll(eventData, m_RaycastResultCache);
 			eventData.pointerCurrentRaycast = FindFirstRaycast(m_RaycastResultCache);
-			hit = eventData.pointerCurrentRaycast.gameObject;
+			var hit = eventData.pointerCurrentRaycast.gameObject;
 
 			m_RaycastResultCache.Clear();
 			return hit;

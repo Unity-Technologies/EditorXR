@@ -14,16 +14,23 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	/// </summary>
 	static class ObjectUtils
 	{
+		public static HideFlags hideFlags
+		{
+			get { return s_HideFlags; }
+			set { s_HideFlags = value; }
+		}
+		static HideFlags s_HideFlags = HideFlags.DontSave;
+
 		public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true, bool active = true)
 		{
-			GameObject go = UnityObject.Instantiate(prefab);
+			var go = UnityObject.Instantiate(prefab);
 			go.transform.SetParent(parent, worldPositionStays);
 			go.SetActive(active);
-#if UNITY_EDITOR
+#if UNITY_EDITORVR
 			if (!Application.isPlaying && runInEditMode)
 			{
 				SetRunInEditModeRecursively(go, runInEditMode);
-				go.hideFlags = EditorVR.DefaultHideFlags;
+				go.hideFlags = hideFlags;
 			}
 #endif
 
@@ -33,8 +40,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static void RemoveAllChildren(GameObject obj)
 		{
 			var children = new List<GameObject>();
-			foreach (Transform child in obj.transform) children.Add(child.gameObject);
-			foreach (GameObject child in children) UnityObject.Destroy(child);
+			foreach (Transform child in obj.transform)
+				children.Add(child.gameObject);
+
+			foreach (var child in children)
+				UnityObject.Destroy(child);
 		}
 
 		public static bool IsInLayer(GameObject o, string s)
@@ -51,42 +61,41 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static GameObject CreateEmptyGameObject(String name = null, Transform parent = null)
 		{
 			GameObject empty = null;
-			if (String.IsNullOrEmpty(name))
+			if (string.IsNullOrEmpty(name))
 				name = "Empty";
-#if UNITY_EDITOR
-			empty = EditorUtility.CreateGameObjectWithHideFlags(name, EditorVR.DefaultHideFlags);
-#else
-				empty = new GameObject(name);
-#endif
+
+#if UNITY_EDITORVR
+			empty = EditorUtility.CreateGameObjectWithHideFlags(name, hideFlags);
 			empty.transform.parent = parent;
 			empty.transform.localPosition = Vector3.zero;
+#endif
 
 			return empty;
 		}
 
-		public static T CreateGameObjectWithComponent<T>(Transform parent = null) where T : Component
+		public static T CreateGameObjectWithComponent<T>(Transform parent = null, bool worldPositionStays = true) where T : Component
 		{
-			return (T)CreateGameObjectWithComponent(typeof(T), parent);
+			return (T)CreateGameObjectWithComponent(typeof(T), parent, worldPositionStays);
 		}
 
-		public static Component CreateGameObjectWithComponent(Type type, Transform parent = null)
+		public static Component CreateGameObjectWithComponent(Type type, Transform parent = null, bool worldPositionStays = true)
 		{
-#if UNITY_EDITOR
-			Component component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, EditorVR.DefaultHideFlags, type).GetComponent(type);
+#if UNITY_EDITORVR
+			var component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type).GetComponent(type);
 			if (!Application.isPlaying)
 				SetRunInEditModeRecursively(component.gameObject, true);
 #else
-				Component component = new GameObject(type.Name).AddComponent(type);
+			var component = new GameObject(type.Name).AddComponent(type);
 #endif
-			component.transform.parent = parent;
+			component.transform.SetParent(parent, worldPositionStays);
 
 			return component;
 		}
 
 		public static void SetLayerRecursively(GameObject root, int layer)
 		{
-			Transform[] transforms = root.GetComponentsInChildren<Transform>();
-			for (int i = 0; i < transforms.Length; i++)
+			var transforms = root.GetComponentsInChildren<Transform>();
+			for (var i = 0; i < transforms.Length; i++)
 				transforms[i].gameObject.layer = layer;
 		}
 
@@ -134,8 +143,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static void SetRunInEditModeRecursively(GameObject go, bool enabled)
 		{
 #if UNITY_EDITOR && UNITY_EDITORVR
-			MonoBehaviour[] monoBehaviours = go.GetComponents<MonoBehaviour>();
-			foreach (MonoBehaviour mb in monoBehaviours)
+			var monoBehaviours = go.GetComponents<MonoBehaviour>();
+			foreach (var mb in monoBehaviours)
 			{
 				if (mb)
 					mb.runInEditMode = enabled;
@@ -155,7 +164,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static Component AddComponent(Type type, GameObject go)
 		{
-			Component component = go.AddComponent(type);
+			var component = go.AddComponent(type);
 			SetRunInEditModeRecursively(go, true);
 			return component;
 		}
@@ -203,16 +212,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		{
 			if (type.IsInterface)
 				return GetAssignableTypes(type);
-			else
-				return Enumerable.Empty<Type>();
+
+			return Enumerable.Empty<Type>();
 		}
 
 		public static IEnumerable<Type> GetExtensionsOfClass(Type type)
 		{
 			if (type.IsClass)
 				return GetAssignableTypes(type);
-			else
-				return Enumerable.Empty<Type>();
+
+			return Enumerable.Empty<Type>();
 		}
 
 		public static void Destroy(UnityObject o, float t = 0f)
@@ -227,16 +236,14 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				if (Mathf.Approximately(t, 0f))
 					UnityObject.DestroyImmediate(o);
 				else
-				{
 					VRView.StartCoroutine(DestroyInSeconds(o, t));
-				}
 			}
 #endif
 		}
 
-		private static IEnumerator DestroyInSeconds(UnityObject o, float t)
+		static IEnumerator DestroyInSeconds(UnityObject o, float t)
 		{
-			float startTime = Time.realtimeSinceStartup;
+			var startTime = Time.realtimeSinceStartup;
 			while (Time.realtimeSinceStartup <= startTime + t)
 				yield return null;
 
@@ -269,10 +276,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static IEnumerator GetAssetPreview(UnityObject obj, Action<Texture> callback)
 		{
-			Texture texture = null;
-
-#if UNITY_EDITOR
-			texture = AssetPreview.GetAssetPreview(obj);
+			var texture = AssetPreview.GetAssetPreview(obj);
 
 			while (AssetPreview.IsLoadingAssetPreview(obj.GetInstanceID()))
 			{
@@ -282,9 +286,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 			if (!texture)
 				texture = AssetPreview.GetMiniThumbnail(obj);
-#else
-				yield return null;
-#endif
 
 			callback(texture);
 		}

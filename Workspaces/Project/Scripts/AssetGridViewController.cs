@@ -27,7 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		[SerializeField]
-		private float m_ScaleFactor = 0.1f;
+		private float m_ScaleFactor = 0.05f;
 
 		[SerializeField]
 		private string[] m_IconTypes;
@@ -95,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override Vector3 GetObjectSize(GameObject g)
 		{
-			return g.GetComponent<BoxCollider>().size * m_ScaleFactor + Vector3.one * m_Padding;
+			return g.GetComponent<BoxCollider>().size * m_ScaleFactor + Vector3.one * m_Padding * m_ScaleFactor;
 		}
 
 		protected override void UpdateItems()
@@ -124,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		public void RecycleGridItem(AssetData data)
+		void RecycleGridItem(AssetData data)
 		{
 			AssetGridItem item;
 			if (!m_ListItems.TryGetValue(data, out item))

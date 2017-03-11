@@ -1,4 +1,6 @@
-﻿using UnityEditor.Experimental.EditorVR.Data;
+#if UNITY_EDITOR
+using System;
+using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +11,35 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Text m_Label;
 
-#if UNITY_EDITOR
+		public Transform tooltipTarget
+		{
+			get { return m_TooltipTarget; }
+		}
+
+		[SerializeField]
+		Transform m_TooltipTarget;
+
+		public Transform tooltipSource
+		{
+			get { return m_TooltipSource; }
+		}
+
+		[SerializeField]
+		Transform m_TooltipSource;
+
+		public TextAlignment tooltipAlignment
+		{
+			get { return TextAlignment.Right; }
+		}
+
+		public Action<ITooltip> showTooltip { get; set; }
+		public Action<ITooltip> hideTooltip { get; set; }
+
+		public string tooltipText
+		{
+			get { return m_SerializedProperty.tooltip; }
+		}
+
 		protected SerializedProperty m_SerializedProperty;
 
 		public override void Setup(InspectorData data)
@@ -20,6 +50,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_Label.text = m_SerializedProperty.displayName;
 		}
-#endif
+
+		public override void OnObjectModified()
+		{
+			base.OnObjectModified();
+
+			m_SerializedProperty = data.serializedObject.FindProperty(m_SerializedProperty.propertyPath);
+		}
+
+		protected void FinalizeModifications()
+		{
+			Undo.IncrementCurrentGroup();
+			data.serializedObject.ApplyModifiedProperties();
+		}
 	}
 }
+#endif

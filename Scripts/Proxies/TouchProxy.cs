@@ -1,23 +1,13 @@
 ﻿#if UNITY_EDITOR
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
 	sealed class TouchProxy : TwoHandedProxyBase
 	{
-		private OVRTouchInputToEvents m_InputToEvents;
-
-		public override bool active
-		{
-			get
-			{
-				return m_InputToEvents.active;
-			}
-		}
-
 		public override void Awake()
 		{
 			base.Awake();
@@ -26,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public override IEnumerator Start()
 		{
-			// Touch controllers should be spawned under a pivot that corresponds to the head with no offsets, since the
+			// Touch controllers should be spawned under a root that corresponds to the head with no offsets, since the
 			// local positions of the controllers will be provided that way.
 #if UNITY_EDITOR
 			EditorApplication.delayCall += () =>

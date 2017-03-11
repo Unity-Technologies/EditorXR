@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		public Action<Vector3> translate { private get; set; }
 		public Action<Quaternion> rotate { private get; set; }
 		public Action<Vector3> scale { private get; set; }
+		public event Action dragStarted;
 
 		void OnEnable()
 		{
@@ -62,6 +63,9 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
 			m_PositionOffset = inverseRotation * (target.transform.position - rayOrigin.position);
 			m_RotationOffset = inverseRotation * target.transform.rotation;
+
+			if (dragStarted != null)
+				dragStarted();
 		}
 
 		private void OnHandleDragging(BaseHandle handle, HandleEventData eventData)

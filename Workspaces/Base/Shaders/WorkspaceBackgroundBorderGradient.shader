@@ -9,7 +9,7 @@
 
 	SubShader
 	{
-		Tags { "Queue"="Transparent-1" "LightMode" = "Always" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
+		Tags { "Queue"="Overlay+5001" "LightMode" = "Always" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
 		
 		Pass
 		{

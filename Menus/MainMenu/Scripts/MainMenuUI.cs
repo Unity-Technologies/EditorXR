@@ -443,7 +443,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			const float kSmoothTime = 0.1f;
 			var currentDelay = 0f;
-			var delayTarget = 0.5f + (faceIndex * 0.1f); // delay duration before starting the face reveal
+			var delayTarget = 0.25f + (faceIndex * 0.1f); // delay duration before starting the face reveal
 			while (currentDelay < delayTarget) // delay the reveal of each face slightly more than the previous
 			{
 				currentDelay += Time.unscaledDeltaTime;

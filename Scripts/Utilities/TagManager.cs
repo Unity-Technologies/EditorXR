@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
@@ -14,12 +15,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <param name="tag">Tag to add</param>
 		public static void AddTag(string tag)
 		{
-			var asset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
-			if ((asset != null) && (asset.Length > 0))
+			SerializedObject so;
+			var tags = GetTagManagerProperty("tags", out so);
+			if (tags != null)
 			{
-				var so = new SerializedObject(asset[0]);
-				var tags = so.FindProperty("tags");
-
 				var found = false;
 				for (var i = 0; i < tags.arraySize; i++)
 				{
@@ -48,11 +47,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <param name="layerName"></param>
 		public static void AddLayer(string layerName)
 		{
-			var asset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
-			if ((asset != null) && (asset.Length > 0))
+			SerializedObject so;
+			var layers = GetTagManagerProperty("layers", out so);
+			if (layers != null)
 			{
-				var so = new SerializedObject(asset[0]);
-				var layers = so.FindProperty("layers");
 				var found = false;
 				for (var i = 0; i < layers.arraySize; i++)
 				{
@@ -83,6 +81,43 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				so.ApplyModifiedProperties();
 				so.Update();
 			}
+		}
+
+		public static SerializedProperty GetTagManagerProperty(string name, out SerializedObject so)
+		{
+			var asset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
+			if ((asset != null) && (asset.Length > 0))
+			{
+				so = new SerializedObject(asset[0]);
+				return so.FindProperty(name);
+			}
+
+			so = null;
+			return null;
+		}
+
+		public static List<string> GetRequiredTags()
+		{
+			var requiredTags = new List<string>();
+			ObjectUtils.ForEachType(t =>
+			{
+				var tagAttributes = (RequiresTagAttribute[])t.GetCustomAttributes(typeof(RequiresTagAttribute), true);
+				foreach (var attribute in tagAttributes)
+					requiredTags.Add(attribute.tag);
+			});
+			return requiredTags;
+		}
+
+		public static List<string> GetRequiredLayers()
+		{
+			var requiredLayers = new List<string>();
+			ObjectUtils.ForEachType(t =>
+			{
+				var layerAttributes = (RequiresLayerAttribute[])t.GetCustomAttributes(typeof(RequiresLayerAttribute), true);
+				foreach (var attribute in layerAttributes)
+					requiredLayers.Add(attribute.layer);
+			});
+			return requiredLayers;
 		}
 	}
 }

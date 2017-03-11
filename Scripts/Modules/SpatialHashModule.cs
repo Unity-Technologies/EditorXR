@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -9,7 +10,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	sealed class SpatialHashModule : MonoBehaviour
 	{
 		readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
+
 		public SpatialHash<Renderer> spatialHash { get; private set; }
+		public Func<GameObject, bool> shouldExcludeObject { private get; set; }
 
 		void Awake()
 		{
@@ -29,8 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				if (mf.sharedMesh)
 				{
-					// Exclude EditorVR objects
-					if (mf.GetComponentInParent<UnityEditor.Experimental.EditorVR.EditorVR>())
+					if (shouldExcludeObject != null && shouldExcludeObject(mf.gameObject))
 						continue;
 
 					Renderer renderer = mf.GetComponent<Renderer>();
@@ -84,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void RemoveObject(GameObject gameObject)
 		{
-			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
+			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>(true))
 			{
 				spatialHash.RemoveObject(renderer);
 			}

@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-
 namespace ListView
 {
 	public class ListViewItemData

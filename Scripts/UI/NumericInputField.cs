@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -66,6 +67,10 @@ namespace UnityEditor.Experimental.EditorVR.UI
 					ParseNumberField();
 					m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
 					m_UpdateDrag = true;
+
+#if UNITY_EDITOR
+					Undo.IncrementCurrentGroup(); // Every drag start is a new modification
+#endif
 				}
 			}
 			else

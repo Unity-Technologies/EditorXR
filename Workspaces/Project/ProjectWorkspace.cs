@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -16,8 +17,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		const float k_ScrollMargin = 0.03f;
 		const float k_YBounds = 0.2f;
 
-		const float k_MinScale = 0.03f;
-		const float k_MaxScale = 0.2f;
+		const float k_MinScale = 0.04f;
+		const float k_MaxScale = 0.09f;
 
 		bool m_AssetGridDragging;
 		bool m_FolderPanelDragging;
@@ -90,16 +91,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 			filterList = m_FilterList;
 
-			var sliderPrefab = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
-			var zoomSlider = sliderPrefab.GetComponent<ZoomSliderUI>();
-			zoomSlider.zoomSlider.minValue = k_MinScale;
-			zoomSlider.zoomSlider.maxValue = k_MaxScale;
-			zoomSlider.zoomSlider.value = m_ProjectUI.assetGridView.scaleFactor;
+			var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
+			var zoomSlider = sliderObject.GetComponent<ZoomSliderUI>();
+			zoomSlider.zoomSlider.minValue = Mathf.Log10(k_MinScale);
+			zoomSlider.zoomSlider.maxValue = Mathf.Log10(k_MaxScale);
+			zoomSlider.zoomSlider.value = Mathf.Log10(m_ProjectUI.assetGridView.scaleFactor);
 			zoomSlider.sliding += Scale;
 			foreach (var mb in zoomSlider.GetComponentsInChildren<MonoBehaviour>())
 			{
 				connectInterfaces(mb);
 			}
+
+			var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();
+			if (zoomTooltip)
+				zoomTooltip.tooltipText = "Drag the Handle to Zoom the Asset Grid";
 
 			var scrollHandles = new[]
 			{
@@ -139,8 +144,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float kSideScrollBoundsShrinkAmount = 0.03f;
 			const float depthCompensation = 0.1375f;
 
-			Bounds bounds = contentBounds;
-			Vector3 size = bounds.size;
+			var bounds = contentBounds;
+			var size = bounds.size;
 			size.x -= k_PaneMargin * 2;
 			size.x *= k_LeftPaneRatio;
 			size.y = k_YBounds;
@@ -172,6 +177,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_FolderPanelHighlightContainer.localScale = new Vector3(size.x + kSideScrollBoundsShrinkAmount, 1f, size.z);
 
+			m_FolderPanelHighlightContainer.localScale = new Vector3(size.x + kSideScrollBoundsShrinkAmount, 1f, size.z);
+
 			size = contentBounds.size;
 			size.x -= k_PaneMargin * 2; // Reserve space for scroll on both sides
 			size.x *= 1 - k_LeftPaneRatio;
@@ -188,6 +195,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			assetListView.bounds = bounds;
 			assetListView.transform.localPosition = Vector3.right * xOffset;
 
+
 			var assetPanel = m_ProjectUI.assetPanel;
 			assetPanel.transform.localPosition = xOffset * Vector3.right;
 			assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + k_PanelMargin);
@@ -195,6 +203,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_AssetGridHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
 		}
+
 
 		void SelectFolder(FolderData data)
 		{
@@ -213,9 +222,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			if (handle == m_ProjectUI.folderScrollHandle)
-				m_ProjectUI.folderListView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
+				m_ProjectUI.folderListView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / getViewerScale();
 			else if (handle == m_ProjectUI.assetScrollHandle)
-				m_ProjectUI.assetGridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward);
+				m_ProjectUI.assetGridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / getViewerScale();
 		}
 
 		void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -274,7 +283,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void Scale(float value)
 		{
-			m_ProjectUI.assetGridView.scaleFactor = value;
+			m_ProjectUI.assetGridView.scaleFactor = Mathf.Pow(10, value);
 		}
 
 		bool TestFilter(string type)

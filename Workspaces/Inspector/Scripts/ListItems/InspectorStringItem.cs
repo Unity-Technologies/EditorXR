@@ -14,6 +14,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			base.Setup(data);
 
+			UpdateInputField();
+		}
+		public override void OnObjectModified()
+		{
+			base.OnObjectModified();
+			UpdateInputField();
+		}
+
+		void UpdateInputField()
+		{
+			base.Setup(data);
+
 			var val = string.Empty;
 			switch (m_SerializedProperty.propertyType)
 			{
@@ -25,10 +37,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					break;
 			}
 
-			SetValue(val);
+			m_InputField.text = val;
+			m_InputField.ForceUpdateLabel();
 		}
 
 		public void SetValue(string input)
+		{
+			if (SetValueIfPossible(input))
+				FinalizeModifications();
+		}
+		bool SetValueIfPossible(string input)
 		{
 			switch (m_SerializedProperty.propertyType)
 			{
@@ -40,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						m_InputField.text = input;
 						m_InputField.ForceUpdateLabel();
 
-						data.serializedObject.ApplyModifiedProperties();
+						return true;
 					}
 					break;
 				case SerializedPropertyType.Character:
@@ -52,10 +70,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						m_InputField.text = input;
 						m_InputField.ForceUpdateLabel();
 
-						data.serializedObject.ApplyModifiedProperties();
+						return true;
 					}
 					break;
 			}
+
+			return false;
 		}
 
 		protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -70,7 +90,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 		{
-			SetValue(dropObject.ToString());
+			if (SetValueIfPossible(dropObject.ToString()))
+				FinalizeModifications();
 		}
 	}
 }

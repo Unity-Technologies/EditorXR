@@ -12,17 +12,17 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		// for example, with a unit of 0.2, 0.41 -> 0.4, and 0.52 -> 0.6
 		public static float SnapValueToUnit(float value, float unit)
 		{
-			float mult = value / unit;
+			var mult = value / unit;
 
 			// find lower and upper boundaries of snapping
-			int lowerMult = Mathf.FloorToInt(mult);
-			int upperMult = Mathf.CeilToInt(mult);
-			float lowerBoundary = lowerMult * unit;
-			float upperBoundary = upperMult * unit;
+			var lowerMult = Mathf.FloorToInt(mult);
+			var upperMult = Mathf.CeilToInt(mult);
+			var lowerBoundary = lowerMult * unit;
+			var upperBoundary = upperMult * unit;
 
 			// figure out which is closest
-			float diffWithLower = value - lowerBoundary;
-			float diffWithHigher = upperBoundary - value;
+			var diffWithLower = value - lowerBoundary;
+			var diffWithHigher = upperBoundary - value;
 			return (diffWithLower < diffWithHigher) ? lowerBoundary : upperBoundary;
 		}
 
@@ -44,8 +44,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		// Like map, but eases in.
 		public static float MapInCubic(float val, float ia, float ib, float oa, float ob)
 		{
-			float t = (val - ia);
-			float d = (ib - ia);
+			var t = (val - ia);
+			var d = (ib - ia);
 			t /= d;
 			return oa + (ob - oa) * (t) * t * t;
 		}
@@ -53,8 +53,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		// Like map, but eases out.
 		public static float MapOutCubic(float val, float ia, float ib, float oa, float ob)
 		{
-			float t = (val - ia);
-			float d = (ib - ia);
+			var t = (val - ia);
+			var d = (ib - ia);
 			t = (t / d) - 1;
 			return oa + (ob - oa) * (t * t * t + 1);
 		}
@@ -69,12 +69,13 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		//create a vector of direction "vector" with length "size"
 		public static Vector3 SetVectorLength(Vector3 vector, float size)
 		{
-
 			//normalize the vector
-			Vector3 vectorNormalized = Vector3.Normalize(vector);
+			var vectorNormalized = Vector3.Normalize(vector);
 
 			//scale the vector
-			return vectorNormalized *= size;
+			vectorNormalized *= size;
+
+			return vectorNormalized;
 		}
 
 		// from http://wiki.unity3d.com/index.php/3d_Math_functions
@@ -82,7 +83,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		//If the line and plane are not parallel, the function outputs true, otherwise false.
 		public static bool LinePlaneIntersection(out Vector3 intersection, Vector3 linePoint, Vector3 lineVec, Vector3 planeNormal, Vector3 planePoint)
 		{
-
 			float length;
 			float dotNumerator;
 			float dotDenominator;
@@ -94,7 +94,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			dotDenominator = Vector3.Dot(lineVec, planeNormal);
 
 			//line and plane are not parallel
-			if (dotDenominator != 0.0f)
+			if (!Mathf.Approximately(dotDenominator,0.0f))
 			{
 				length = dotNumerator / dotDenominator;
 
@@ -106,12 +106,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 				return true;
 			}
-
+			
 			//output not valid
-			else
-			{
-				return false;
-			}
+			return false;
 		}
 
 		public static Vector3 CalculateCubicBezierPoint(float t, Vector3[] points)

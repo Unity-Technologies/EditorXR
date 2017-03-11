@@ -8,7 +8,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin
+	sealed class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IUsesViewerScale
 	{
 		float m_LastClickTime;
 		readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();
@@ -18,8 +18,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Transform rayOrigin { get; set; }
 
 		public Vector3 defaultOffset { private get; set; }
+		public Quaternion defaultTilt { private get; set; }
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public Func<float> getViewerScale { private get; set; }
+
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var standardInput = (Standard)input;
 			if (standardInput.action.wasJustPressed)
@@ -52,23 +55,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		IEnumerator VacuumToViewer(IVacuumable vacuumable)
 		{
 			var vacuumTransform = vacuumable.transform;
-
-			//m_Vacuuming = true;
 			var startPosition = vacuumTransform.position;
 			var startRotation = vacuumTransform.rotation;
 
-			var camera = CameraUtils.GetMainCamera().transform;
-			var cameraForward = camera.forward;
-			cameraForward.y = 0;
-			var vacuumForward = vacuumTransform.forward;
-			vacuumForward.y = 0;
-			var cameraYaw = Quaternion.FromToRotation(vacuumForward, cameraForward);
-
 			var offset = defaultOffset;
 			offset.z += vacuumable.vacuumBounds.extents.z;
+			offset *= getViewerScale();
 
+			var camera = CameraUtils.GetMainCamera().transform;
 			var destPosition = camera.position + MathUtilsExt.ConstrainYawRotation(camera.rotation) * offset;
-			var destRotation = vacuumTransform.rotation * cameraYaw;
+			var destRotation = Quaternion.LookRotation(camera.forward) * defaultTilt;
+
 			var currentValue = 0f;
 			var currentVelocity = 0f;
 			var currentDuration = 0f;

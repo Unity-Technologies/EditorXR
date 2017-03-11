@@ -15,21 +15,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		NumericInputField[] m_ExtentsFields;
 
-#if UNITY_EDITOR
 		public override void Setup(InspectorData data)
 		{
 			base.Setup(data);
 
-			UpdateInputFields(m_SerializedProperty.boundsValue);
-		}
-
-		void UpdateInputFields(Bounds bounds)
-		{
-			for (var i = 0; i < m_CenterFields.Length; i++)
-			{
-				m_CenterFields[i].text = bounds.center[i].ToString();
-				m_ExtentsFields[i].text = bounds.extents[i].ToString();
-			}
+			UpdateInputFields();
 		}
 
 		protected override void FirstTimeSetup()
@@ -39,8 +29,33 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			for (var i = 0; i < m_CenterFields.Length; i++)
 			{
 				var index = i;
-				m_CenterFields[i].onValueChanged.AddListener(value => SetValue(value, index, true));
-				m_ExtentsFields[i].onValueChanged.AddListener(value => SetValue(value, index));
+				m_CenterFields[i].onValueChanged.AddListener(value =>
+				{
+					if (SetValue(value, index, true))
+						data.serializedObject.ApplyModifiedProperties();
+				});
+				m_ExtentsFields[i].onValueChanged.AddListener(value =>
+				{
+					if (SetValue(value, index))
+						data.serializedObject.ApplyModifiedProperties();
+				});
+			}
+		}
+
+		public override void OnObjectModified()
+		{
+			base.OnObjectModified();
+			UpdateInputFields();
+		}
+
+		void UpdateInputFields()
+		{
+			var bounds = m_SerializedProperty.boundsValue;
+
+			for (var i = 0; i < m_CenterFields.Length; i++)
+			{
+				m_CenterFields[i].text = bounds.center[i].ToString();
+				m_ExtentsFields[i].text = bounds.extents[i].ToString();
 			}
 		}
 
@@ -61,10 +76,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				else
 					bounds.extents = vector;
 
-				UpdateInputFields(bounds);
-
 				m_SerializedProperty.boundsValue = bounds;
-				data.serializedObject.ApplyModifiedProperties();
+
+				UpdateInputFields();
 
 				return true;
 			}
@@ -108,6 +122,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					inputField.text = str;
 					inputField.ForceUpdateLabel();
+
+					FinalizeModifications();
 				}
 
 				index = Array.IndexOf(m_CenterFields, inputField);
@@ -115,6 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					inputField.text = str;
 					inputField.ForceUpdateLabel();
+					FinalizeModifications();
 				}
 			}
 
@@ -122,12 +139,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				m_SerializedProperty.boundsValue = (Bounds)dropObject;
 
-				UpdateInputFields(m_SerializedProperty.boundsValue);
+				UpdateInputFields();
 
-				data.serializedObject.ApplyModifiedProperties();
+				FinalizeModifications();
 			}
 		}
-#endif
 	}
 }
 #endif

@@ -8,8 +8,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class FilterButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 	{
-		private const float k_HoverAlpha = 1;
-		private const float k_NormalAlpha = 0.95f;
+		const float k_HoverAlpha = 1;
+		const float k_NormalAlpha = 0.95f;
 
 		public Button button
 		{
@@ -17,16 +17,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		[SerializeField]
-		private Button m_Button;
+		Button m_Button;
 
 		[SerializeField]
-		private Image m_EyePanel;
+		Image m_EyePanel;
 
 		[SerializeField]
-		private Image m_Eye;
+		Image m_Eye;
 
 		[SerializeField]
-		private Image m_TextPanel;
+		Image m_TextPanel;
 
 		public Text text
 		{
@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		[SerializeField]
-		private Text m_Text;
+		Text m_Text;
 
 		public Color color
 		{
@@ -47,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			Color c = m_EyePanel.color;
+			var c = m_EyePanel.color;
 			c.a = k_HoverAlpha;
 			m_EyePanel.color = c;
 			m_TextPanel.color = c;
@@ -55,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void OnPointerExit(PointerEventData eventData)
 		{
-			Color c = m_EyePanel.color;
+			var c = m_EyePanel.color;
 			c.a = k_NormalAlpha;
 			m_EyePanel.color = c;
 			m_TextPanel.color = c;

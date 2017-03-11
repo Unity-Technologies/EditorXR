@@ -5,6 +5,12 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
+	/// Method signature for consuming an input control
+	/// <param name="control">InputControl to consume</param>
+	/// </summary>
+	public delegate void ConsumeControlDelegate(InputControl control);
+
+	/// <summary>
 	/// Decorates a class that needs to process input from the system
 	/// </summary>
 	public interface IProcessInput
@@ -14,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		/// <param name="input">An ActionMapInput if one of the action map interfaces are used</param>
 		/// <param name="consumeControl">A delegate for consuming a control that was used</param>
-		void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl);
+		void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl);
 	}
 }
 #endif

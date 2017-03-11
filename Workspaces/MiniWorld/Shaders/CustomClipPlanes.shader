@@ -1,4 +1,6 @@
-﻿Shader "Custom/Custom Clip Planes"
+﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
+Shader "Custom/Custom Clip Planes"
 {
 	Properties
 	{
@@ -14,7 +16,7 @@
 
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
-		#pragma surface surf NoLighting noforwardadd fullforwardshadows
+		#pragma surface surf NoLighting nolightmap noforwardadd noshadow nometa vertex:vert
 
 		// Use shader model 3.0 target, to get nicer looking lighting
 		#pragma target 3.0
@@ -24,7 +26,7 @@
 		struct Input
 		{
 			float2 uv_MainTex;
-			float3 worldPos;
+			float3 clipPos;
 		};
 		static const fixed4 white = fixed4(1, 1, 1, 1);
 
@@ -33,13 +35,20 @@
 		half _Glossiness;
 		half _Metallic;
 		fixed4 _Color;
+		float4x4 _InverseRotation;
 
 		fixed4 LightingNoLighting(SurfaceOutput s, fixed3 lightDir, fixed atten) { return fixed4(0, 0, 0, 0); }
+
+		void vert(inout appdata_full v, out Input o)
+		{
+			UNITY_INITIALIZE_OUTPUT(Input, o);
+			o.clipPos = mul(_InverseRotation, mul(unity_ObjectToWorld, v.vertex));
+		}
 
 		void surf(Input IN, inout SurfaceOutput o)
 		{
 			// Clip if position is outside of clip bounds
-			float3 diff = abs(IN.worldPos - _GlobalClipCenter);
+			float3 diff = abs(IN.clipPos - _GlobalClipCenter);
 			if (diff.x > _GlobalClipExtents.x || diff.y > _GlobalClipExtents.y || diff.z > _GlobalClipExtents.z)
 				discard;
 
@@ -53,5 +62,4 @@
 		}
 		ENDCG
 	}
-	FallBack "Diffuse"
 }

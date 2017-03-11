@@ -26,6 +26,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Material m_UIMaterial;
 
 		[SerializeField]
+		Material m_UIMaskMaterial;
+		[SerializeField]
 		Material m_NoClipBackingCubeMaterial;
 
 		[SerializeField]
@@ -76,11 +78,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_TextMaterial = Instantiate(m_TextMaterial);
 			m_TextMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 			m_UIMaterial = Instantiate(m_UIMaterial);
+			m_UIMaterial.SetInt(k_MaterialStencilRef, stencilRef);
+			m_UIMaskMaterial = Instantiate(m_UIMaskMaterial);
+			m_UIMaskMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 
 			m_HighlightMaterial = Instantiate(m_HighlightMaterial);
 			m_HighlightMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 			m_HighlightMaskMaterial = Instantiate(m_HighlightMaskMaterial);
 			m_HighlightMaskMaterial.SetInt(k_MaterialStencilRef, stencilRef);
+
+			m_NoClipHighlightMaterial = Instantiate(m_NoClipHighlightMaterial);
+			m_NoClipHighlightMaterial.SetInt(k_MaterialStencilRef, 0);
+			m_NoClipHighlightMaskMaterial = Instantiate(m_NoClipHighlightMaskMaterial);
+			m_NoClipHighlightMaskMaterial.SetInt(k_MaterialStencilRef, 0);
 
 			m_NoClipHighlightMaterial = Instantiate(m_NoClipHighlightMaterial);
 			m_NoClipHighlightMaterial.SetInt(k_MaterialStencilRef, 0);
@@ -109,6 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
 			SetMaterialClip(m_TextMaterial, parentMatrix);
 			SetMaterialClip(m_UIMaterial, parentMatrix);
+			SetMaterialClip(m_UIMaskMaterial, parentMatrix);
 			SetMaterialClip(m_HighlightMaterial, parentMatrix);
 			SetMaterialClip(m_HighlightMaskMaterial, parentMatrix);
 		}
@@ -123,13 +134,30 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_ScrollReturn = -totalOffset + m_ItemSize.Value.z; // m_ItemSize will be equal to the size of the last visible item
 		}
 
+		public void OnObjectModified()
+		{
+			foreach (var listViewItem in m_ListItems.Values)
+			{
+				var item = (InspectorListItem)listViewItem;
+				item.OnObjectModified();
+			}
+		}
+
 		void UpdateRecursively(List<InspectorData> data, ref float totalOffset, int depth = 0)
 		{
 			foreach (var datum in data)
 			{
+				if (datum.instanceID == null)
+				{
+					Recycle(datum);
+					RecycleChildren(datum);
+					continue;
+				}
+
 				bool expanded;
-				if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
-					m_ExpandStates[datum.instanceID] = false;
+				var instanceID = datum.instanceID.Value;
+				if (!m_ExpandStates.TryGetValue(instanceID, out expanded))
+					m_ExpandStates[instanceID] = false;
 
 				m_ItemSize = m_TemplateSizes[datum.template];
 				var itemSize = m_ItemSize.Value;
@@ -178,7 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				var highlightMaterials = new[] { m_HighlightMaterial, m_HighlightMaskMaterial };
 				var noClipHighlightMaterials = new[] { m_NoClipHighlightMaterial, m_NoClipHighlightMaskMaterial };
-				item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_TextMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
+				item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_UIMaskMaterial, m_TextMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
 
 				item.setHighlight = setHighlight;
 				item.getPreviewOriginForRayOrigin = getPreviewOriginForRayOrigin;
@@ -240,7 +268,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void ToggleExpanded(InspectorData data)
 		{
-			m_ExpandStates[data.instanceID] = !m_ExpandStates[data.instanceID];
+			var instanceID = data.instanceID.Value;
+			m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
 		}
 
 		void OnArraySizeChanged(PropertyData element)
@@ -253,8 +282,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			foreach (var datum in data)
 			{
+				if (datum.instanceID == null)
+					continue;
+
 				var targetObject = datum.serializedObject.targetObject;
-				m_ExpandStates[datum.instanceID] = targetObject is Component || targetObject is GameObject;
+				m_ExpandStates[datum.instanceID.Value] = targetObject is Component || targetObject is GameObject;
 
 				if (datum.children != null)
 					ExpandComponentRows(datum.children);
@@ -268,6 +300,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ObjectUtils.Destroy(m_NoClipBackingCubeMaterial);
 			ObjectUtils.Destroy(m_TextMaterial);
 			ObjectUtils.Destroy(m_UIMaterial);
+			ObjectUtils.Destroy(m_UIMaskMaterial);
 			ObjectUtils.Destroy(m_HighlightMaterial);
 			ObjectUtils.Destroy(m_HighlightMaskMaterial);
 			ObjectUtils.Destroy(m_NoClipHighlightMaterial);

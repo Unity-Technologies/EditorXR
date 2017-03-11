@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			actions = new List<IAction>() { m_CubeToolAction };
 		}
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var standardInput = (Standard)input;
 			if (standardInput.action.wasJustPressed)

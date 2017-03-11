@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class FilterUI : MonoBehaviour, IUsesStencilRef
 	{
-		private const string k_AllText = "All";
+		const string k_AllText = "All";
 
 		public Text summaryText
 		{
@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		[SerializeField]
-		private Text m_SummaryText;
+		Text m_SummaryText;
 
 		public Text descriptionText
 		{
@@ -26,19 +26,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		[SerializeField]
-		private Text m_DescriptionText;
+		Text m_DescriptionText;
 
 		[SerializeField]
-		private RectTransform m_ButtonList;
+		RectTransform m_ButtonList;
 
 		[SerializeField]
-		private GameObject m_ButtonPrefab;
+		GameObject m_ButtonPrefab;
 
 		[SerializeField]
-		private Color m_ActiveColor;
+		Color m_ActiveColor;
 
 		[SerializeField]
-		private Color m_DisableColor;
+		Color m_DisableColor;
 
 		[SerializeField]
 		CanvasGroup m_CanvasGroup;
@@ -59,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		string m_SearchQuery = string.Empty;
 
-		private FilterButtonUI[] m_VisibilityButtons;
+		FilterButtonUI[] m_VisibilityButtons;
 		Coroutine m_ShowUICoroutine;
 		Coroutine m_HideUICoroutine;
 		Coroutine m_ShowButtonListCoroutine;

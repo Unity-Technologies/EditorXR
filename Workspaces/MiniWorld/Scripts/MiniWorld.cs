@@ -84,19 +84,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		private void OnEnable()
 		{
 			if (!referenceTransform)
-				referenceTransform = new GameObject("MiniWorldReference") { hideFlags = HideFlags.DontSave }.transform;
+				referenceTransform = ObjectUtils.CreateEmptyGameObject("MiniWorldReference").transform;
 
 			m_MiniWorldRenderer = ObjectUtils.AddComponent<MiniWorldRenderer>(CameraUtils.GetMainCamera().gameObject);
 			m_MiniWorldRenderer.miniWorld = this;
 			m_MiniWorldRenderer.cullingMask = m_RendererCullingMask;
 
-			Transform pivot = CameraUtils.GetViewerPivot();
-			referenceTransform.position = pivot.transform.position;
+			Transform rig = CameraUtils.GetCameraRig();
+			referenceTransform.position = rig.transform.position;
 		}
 
 		private void OnDisable()
 		{
-			if ((referenceTransform.hideFlags & HideFlags.DontSave) != 0)
+			if (referenceTransform)
 				ObjectUtils.Destroy(referenceTransform.gameObject);
 
 			if (m_MiniWorldRenderer)

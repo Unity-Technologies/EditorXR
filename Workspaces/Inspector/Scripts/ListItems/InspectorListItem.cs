@@ -94,7 +94,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_InputFields = GetComponentsInChildren<InputField>(true);
 		}
 
-		public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
+		public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
 		{
 			m_NoClipBackingCube = noClipBackingCube;
 			m_NoClipHighlightMaterials = noClipHighlightMaterials;
@@ -130,7 +130,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var masks = GetComponentsInChildren<Mask>(true);
 			foreach (var mask in masks)
 			{
-				mask.graphic.material = null;
+				mask.graphic.material = uiMaskMaterial;
 			}
 		}
 
@@ -148,6 +148,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			if (m_CuboidLayout)
 				m_CuboidLayout.UpdateObjects();
+		}
+
+		public virtual void OnObjectModified()
+		{
+			if (data.serializedObject.targetObject) // An exception is thrown if the targetObject has been deleted
+				data.serializedObject.Update();
 		}
 
 		public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)

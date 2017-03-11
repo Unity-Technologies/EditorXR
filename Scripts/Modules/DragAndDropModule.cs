@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	class DragAndDropModule : MonoBehaviour
+	sealed class DragAndDropModule : MonoBehaviour
 	{
 		readonly Dictionary<Transform, object> m_DropObjects = new Dictionary<Transform, object>();
 		readonly Dictionary<Transform, IDropReceiver> m_DropReceivers = new Dictionary<Transform, IDropReceiver>();

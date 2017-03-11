@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using UnityEditor;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -7,7 +8,8 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
-	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI, IUsesRayOrigin, IUsesSpatialHash
+	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
+		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale
 	{
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
@@ -35,6 +37,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Action<GameObject> addToSpatialHash { private get; set; }
 		public Action<GameObject> removeFromSpatialHash { private get; set; }
 
+		public Func<float> getViewerScale { private get; set; }
+
 		enum PrimitiveCreationStates
 		{
 			StartPoint,
@@ -50,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
 		}
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var standardInput = (Standard)input;
 
@@ -84,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_Freeform = isFreeform;
 		}
 
-		void HandleStartPoint(Standard standardInput, Action<InputControl> consumeControl)
+		void HandleStartPoint(Standard standardInput, ConsumeControlDelegate consumeControl)
 		{
 			if (standardInput.action.wasJustPressed)
 			{
@@ -92,8 +96,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				// Set starting minimum scale (don't allow zero scale object to be created)
 				const float kMinScale = 0.0025f;
-				m_CurrentGameObject.transform.localScale = Vector3.one * kMinScale;
-				m_StartPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance;
+				var viewerScale = getViewerScale();
+				m_CurrentGameObject.transform.localScale = Vector3.one * kMinScale * viewerScale;
+				m_StartPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance * viewerScale;
 				m_CurrentGameObject.transform.position = m_StartPoint;
 
 				m_State = m_Freeform ? PrimitiveCreationStates.Freeform : PrimitiveCreationStates.EndPoint;
@@ -101,6 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				addToSpatialHash(m_CurrentGameObject);
 
 				consumeControl(standardInput.action);
+				Selection.activeGameObject = m_CurrentGameObject;
 			}
 		}
 
@@ -117,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void UpdatePositions()
 		{
-			m_EndPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance;
+			m_EndPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance * getViewerScale();
 			m_CurrentGameObject.transform.position = (m_StartPoint + m_EndPoint) * 0.5f;
 		}
 
@@ -128,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_CurrentGameObject.transform.localScale = (maxCorner - minCorner);
 		}
 
-		void CheckForTriggerRelease(Standard standardInput, Action<InputControl> consumeControl)
+		void CheckForTriggerRelease(Standard standardInput, ConsumeControlDelegate consumeControl)
 		{
 			// Ready for next object to be created
 			if (standardInput.action.wasJustReleased)

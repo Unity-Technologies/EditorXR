@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		private const float k_InitialScrollRate = 2f;
 		private const float k_ScrollAcceleration = 14f;
 
-		readonly static float kScaleBump = 1.1f;
+		readonly static float k_ScaleBump = 1.1f;
 		
 		private float m_ScrollRate;
 		private Vector3 m_LastPosition;
@@ -54,13 +54,13 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 		protected override void OnHandleHoverStarted(HandleEventData eventData)
 		{
-			transform.localScale *= kScaleBump;
+			transform.localScale *= k_ScaleBump;
 			base.OnHandleHoverStarted(eventData);
 		}
 
 		protected override void OnHandleHoverEnded(HandleEventData eventData)
 		{
-			transform.localScale /= kScaleBump;
+			transform.localScale /= k_ScaleBump;
 			base.OnHandleHoverStarted(eventData);
 		}
 

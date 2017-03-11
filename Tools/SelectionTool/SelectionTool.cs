@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { private get; set; }
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			if (rayOrigin == null)
 				return;
