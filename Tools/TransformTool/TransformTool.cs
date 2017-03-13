@@ -209,8 +209,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				var hasRight = m_GrabData.ContainsKey(Node.RightHand);
 				hasObject = directSelection.Count > 0 || hasLeft || hasRight;
 
+				var hoveringSelection = false;
+				foreach (var selection in directSelection.Values)
+				{
+					if (Selection.gameObjects.Contains(selection.gameObject))
+					{
+						hoveringSelection = true;
+						break;
+					}
+				}
+
 				// Disable manipulator on direct hover or drag
-				if (manipulatorGameObject.activeSelf && hasObject)
+				if (manipulatorGameObject.activeSelf && hoveringSelection)
 					manipulatorGameObject.SetActive(false);
 
 				foreach (var selection in m_HoverObjects.Values)

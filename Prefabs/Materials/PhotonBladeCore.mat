@@ -6,11 +6,11 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: SubtractiveLine
-  m_Shader: {fileID: 4800000, guid: 9d1af3afcc83db644b8abe552f6a0e05, type: 3}
+  m_Name: PhotonBladeCore
+  m_Shader: {fileID: 4800000, guid: 9cf337af42e23a3459efede97d9f4ba0, type: 3}
   m_ShaderKeywords: LINE_MODEL_SPACE LINE_PERSPECTIVE_WIDTH
   m_LightmapFlags: 5
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
@@ -120,23 +120,23 @@ Material:
       second: 1
     - first:
         name: _lineRadius
-      second: 0.5
+      second: 0.05
     - first:
         name: _lineRadiusMin
       second: 0
     m_Colors:
     - first:
         name: _Color
-      second: {r: 0.5882353, g: 0.5882353, b: 0.5882353, a: 1}
+      second: {r: 1, g: 1, b: 1, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}
     - first:
         name: _lineColor
-      second: {r: 0.5882352, g: 0.5882352, b: 0.5882352, a: 1}
+      second: {r: 1, g: 1, b: 1, a: 1}
     - first:
         name: _lineRadius
-      second: {r: 2, g: 0, b: 100, a: 1}
+      second: {r: 1, g: 0, b: 100, a: 1}
     - first:
         name: _lineSettings
-      second: {r: 0, g: 1, b: 0.5, a: 1}
+      second: {r: 0, g: 0.447, b: 0.5019608, a: 1}

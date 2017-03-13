@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	partial class EditorVR : MonoBehaviour
+	partial class EditorVR
 	{
 		class Viewer : Nested
 		{

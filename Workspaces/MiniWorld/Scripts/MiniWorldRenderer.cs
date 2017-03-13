@@ -51,10 +51,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnEnable()
 		{
-			var go = new GameObject("MiniWorldCamera", typeof(Camera));
+			m_MiniCamera = (Camera)ObjectUtils.CreateGameObjectWithComponent(typeof(Camera));
+			var go = m_MiniCamera.gameObject;
+			go.name = "MiniWorldCamera";
 			go.tag = k_MiniWorldCameraTag;
-			go.hideFlags = HideFlags.DontSave;
-			m_MiniCamera = go.GetComponent<Camera>();
 			go.SetActive(false);
 			Camera.onPostRender += RenderMiniWorld;
 		}
