@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class FolderListViewController : NestedListViewController<FolderData, string>
+	sealed class FolderListViewController : NestedListViewController<FolderData, FolderListItem, string>
 	{
 		private const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -59,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void UpdateFolderItem(FolderData data, int offset, int depth, bool expanded)
 		{
 			var index = data.index;
-			ListViewItem<FolderData, string> item;
+			FolderListItem item;
 			if (!m_ListItems.TryGetValue(index, out item))
 				item = GetItem(data);
 
@@ -98,9 +98,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		protected override ListViewItem<FolderData, string> GetItem(FolderData listData)
+		protected override FolderListItem GetItem(FolderData listData)
 		{
-			var item = (FolderListItem)base.GetItem(listData);
+			var item = base.GetItem(listData);
 			item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
 			item.selectFolder = SelectFolder;
 

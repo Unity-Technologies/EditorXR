@@ -13,40 +13,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHighlight, IRequestStencilRef
 	{
 		const float k_Indent = 0.02f;
+		const float k_HorizThreshold = 0.9f;
 
 		protected CuboidLayout m_CuboidLayout;
 
 		protected InputField[] m_InputFields;
-
-		//protected override BaseHandle clickedHandle
-		//{
-		//	get { return m_ClickedHandle; }
-		//	set
-		//	{
-		//		m_ClickedHandle = value;
-		//		m_ClickedField = null;
-
-		//		if (m_ClickedHandle != null)
-		//		{
-		//			var fieldBlock = m_ClickedHandle.transform.parent;
-		//			if (fieldBlock)
-		//			{
-		//				// Get RayInputField from direct children
-		//				foreach (Transform child in fieldBlock.transform)
-		//				{
-		//					var clickedField = child.GetComponent<InputField>();
-		//					if (clickedField)
-		//					{
-		//						m_ClickedField = clickedField;
-		//						break;
-		//					}
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-		//BaseHandle m_ClickedHandle;
-		//protected InputField m_ClickedField;
 
 		[SerializeField]
 		BaseHandle m_Cube;
@@ -60,6 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Material[] m_NoClipHighlightMaterials;
 
 		bool m_Setup;
+		bool m_HorizontalDrag;
 
 		Transform m_DragClone;
 		protected NumericInputField m_DraggedField;
@@ -218,7 +190,27 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ReceiveDropForFieldBlock(handle.transform.parent, dropObject);
 		}
 
-		protected override void OnVerticalDragStart(BaseHandle baseHandle, HandleEventData eventData)
+		protected override void OnGrabDragStart(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+		{
+			var dragVector = eventData.rayOrigin.position - dragStart;
+			var distance = dragVector.magnitude;
+			m_HorizontalDrag = Mathf.Abs(Vector3.Dot(dragVector, m_DragObject.right)) / distance > k_HorizThreshold;
+
+			if (m_HorizontalDrag)
+				OnHorizontalDragStart(handle);
+			else
+				OnVerticalDragStart(handle);
+		}
+
+		protected override void OnGrabDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+		{
+			if (m_HorizontalDrag)
+				OnHorizontalDragging(handle, eventData, dragStart);
+			else
+				OnVerticalDragging(eventData.rayOrigin);
+		}
+
+		void OnVerticalDragStart(BaseHandle baseHandle)
 		{
 			var fieldBlock = baseHandle.transform.parent;
 			if (fieldBlock)
@@ -278,17 +270,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		protected override void OnVerticalDrag(BaseHandle baseHandle, HandleEventData eventData, Vector3 dragStart)
+		void OnVerticalDragging(Transform rayOrigin)
 		{
 			if (m_DragClone)
 			{
-				var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
+				var previewOrigin = getPreviewOriginForRayOrigin(rayOrigin);
 				MathUtilsExt.LerpTransform(m_DragClone, previewOrigin.position,
 					MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation), m_DragLerp);
 			}
 		}
 
-		protected override void OnHorizontalDragStart(BaseHandle handle, HandleEventData eventData)
+		void OnHorizontalDragStart(BaseHandle handle)
 		{
 			var fieldBlock = handle.transform.parent;
 			if (fieldBlock)
@@ -306,7 +298,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		protected override void OnHorizontalDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+		void OnHorizontalDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
 			if (m_DraggedField)
 			{

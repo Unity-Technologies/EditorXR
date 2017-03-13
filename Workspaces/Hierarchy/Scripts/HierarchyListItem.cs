@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using ListView;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -180,28 +179,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				immediate ? 1f : k_ExpandArrowRotateSpeed);
 		}
 
-		protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
+		protected override void OnClick()
 		{
-			base.OnDragStarted(handle, eventData);
-			isStillSettling = true;
-
 			SelectFolder();
-			ToggleExpanded(handle, eventData);
+			toggleExpanded(data.index);
 		}
 
-		protected override void OnVerticalDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+		protected override void OnGrabDragStart(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
-			var row = handle.transform.parent;
-			if (row)
-			{
-				m_DragObject = transform;
+			StartCoroutine(Magnetize());
+			isStillSettling = true;
 
-				StartCoroutine(Magnetize());
-
-				m_VisibleChildren.Clear();
-				OnGrabRecursive(m_VisibleChildren, eventData.rayOrigin);
-				startSettling(null);
-			}
+			m_VisibleChildren.Clear();
+			OnGrabRecursive(m_VisibleChildren, eventData.rayOrigin);
+			startSettling(null);
 		}
 
 		void OnGrabRecursive(List<HierarchyListItem> visibleChildren, Transform rayOrigin)
@@ -238,10 +229,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		protected override void OnDragging(BaseHandle handle, HandleEventData eventData)
+		protected override void OnGrabDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
-			base.OnDragging(handle, eventData);
-
 			if (m_DragObject)
 			{
 				var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);

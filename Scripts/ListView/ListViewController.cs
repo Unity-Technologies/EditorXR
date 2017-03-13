@@ -1,16 +1,15 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 
 namespace ListView
 {
-	public abstract class ListViewController<DataType, ItemType, IndexType> : ListViewControllerBase, IInstantiateUI, IConnectInterfaces
-		where DataType : ListViewItemData<IndexType>
-		where ItemType : ListViewItem<DataType, IndexType>
+	public abstract class ListViewController<TData, TItem, TIndex> : ListViewControllerBase, IInstantiateUI, IConnectInterfaces
+		where TData : ListViewItemData<TIndex>
+		where TItem : ListViewItem<TData, TIndex>
 	{
-		public virtual List<DataType> data
+		public virtual List<TData> data
 		{
 			get { return m_Data; }
 			set
@@ -29,10 +28,10 @@ namespace ListView
 				scrollOffset = 0;
 			}
 		}
-		protected List<DataType> m_Data;
+		protected List<TData> m_Data;
 
-		protected readonly Dictionary<IndexType, ItemType> m_ListItems = new Dictionary<IndexType, ItemType>();
-		protected readonly Dictionary<IndexType, Transform> m_GrabbedRows = new Dictionary<IndexType, Transform>();
+		protected readonly Dictionary<TIndex, TItem> m_ListItems = new Dictionary<TIndex, TItem>();
+		protected readonly Dictionary<TIndex, Transform> m_GrabbedRows = new Dictionary<TIndex, Transform>();
 
 		protected override int dataLength { get { return m_Data.Count; } }
 
@@ -56,12 +55,12 @@ namespace ListView
 				EndSettling();
 		}
 
-		protected virtual void Recycle(IndexType index)
+		protected virtual void Recycle(TIndex index)
 		{
 			if (m_GrabbedRows.ContainsKey(index))
 				return;
 
-			ItemType item;
+			TItem item;
 			if (m_ListItems.TryGetValue(index, out item))
 			{
 				RecycleItem(item.data.template, item);
@@ -69,9 +68,9 @@ namespace ListView
 			}
 		}
 
-		protected virtual void UpdateVisibleItem(DataType data, int offset)
+		protected virtual void UpdateVisibleItem(TData data, int offset)
 		{
-			ItemType item;
+			TItem item;
 			var index = data.index;
 			if (!m_ListItems.TryGetValue(index, out item))
 			{
@@ -82,7 +81,7 @@ namespace ListView
 			UpdateItemTransform(item.transform, offset);
 		}
 
-		protected virtual void SetRowGrabbed(IndexType index, Transform rayOrigin, bool grabbed)
+		protected virtual void SetRowGrabbed(TIndex index, Transform rayOrigin, bool grabbed)
 		{
 			if (grabbed)
 				m_GrabbedRows[index] = rayOrigin;
@@ -90,7 +89,7 @@ namespace ListView
 				m_GrabbedRows.Remove(index);
 		}
 
-		protected virtual ItemType GetGrabbedRow(Transform rayOrigin)
+		protected virtual TItem GetGrabbedRow(Transform rayOrigin)
 		{
 			foreach (var row in m_GrabbedRows)
 			{
@@ -100,13 +99,13 @@ namespace ListView
 			return null;
 		}
 
-		protected ItemType GetListItem(IndexType index)
+		protected TItem GetListItem(TIndex index)
 		{
-			ItemType item;
+			TItem item;
 			return m_ListItems.TryGetValue(index, out item) ? item : null;
 		}
 
-		protected virtual ItemType GetItem(DataType data)
+		protected virtual TItem GetItem(TData data)
 		{
 			if (data == null)
 			{
@@ -120,10 +119,10 @@ namespace ListView
 				return null;
 			}
 
-			ItemType item;
+			TItem item;
 			if (m_TemplateDictionary[data.template].pool.Count > 0)
 			{
-				item = (ItemType) m_TemplateDictionary[data.template].pool[0];
+				item = (TItem) m_TemplateDictionary[data.template].pool[0];
 				m_TemplateDictionary[data.template].pool.RemoveAt(0);
 
 				item.gameObject.SetActive(true);
@@ -131,7 +130,7 @@ namespace ListView
 			}
 			else
 			{
-				item = instantiateUI(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<ItemType>();
+				item = instantiateUI(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<TItem>();
 				connectInterfaces(item);
 				item.Setup(data);
 			}
@@ -141,8 +140,6 @@ namespace ListView
 			item.startSettling = StartSettling;
 			item.endSettling = EndSettling;
 			item.getListItem = GetListItem;
-			item.setRowGrabbed = SetRowGrabbed;
-			item.getGrabbedRow = GetGrabbedRow;
 
 			return item;
 		}

@@ -3,18 +3,19 @@ using System.Collections.Generic;
 
 namespace ListView
 {
-	class NestedListViewController<DataType, IndexType> 
-		: ListViewController<DataType, ListViewItem<DataType, IndexType>, IndexType>
-		where DataType : ListViewItemNestedData<DataType, IndexType>
+	class NestedListViewController<TData, TItem, TIndex> 
+		: ListViewController<TData, TItem, TIndex>
+		where TData : ListViewItemNestedData<TData, TIndex>
+		where TItem : ListViewItem<TData, TIndex>
 	{
 
 		protected override int dataLength { get { return m_ExpandedDataLength; } }
 
 		protected int m_ExpandedDataLength;
 
-		protected readonly Dictionary<IndexType, bool> m_ExpandStates = new Dictionary<IndexType, bool>();
+		protected readonly Dictionary<TIndex, bool> m_ExpandStates = new Dictionary<TIndex, bool>();
 
-		public override List<DataType> data
+		public override List<TData> data
 		{
 			get { return base.data; }
 			set
@@ -22,17 +23,20 @@ namespace ListView
 				m_Data = value;
 
 				// Update visible rows
-				foreach (var row in m_ListItems)
+				var items = new Dictionary<TIndex, TItem>(m_ListItems);
+				foreach (var row in items)
 				{
 					var index = row.Key;
 					var newData = GetRowRecursive(m_Data, index);
 					if (newData != null)
 						row.Value.Setup(newData);
+					else
+						Recycle(index);
 				}
 			}
 		}
 
-		static DataType GetRowRecursive(List<DataType> data, IndexType index)
+		static TData GetRowRecursive(List<TData> data, TIndex index)
 		{
 			foreach (var datum in data)
 			{
@@ -49,7 +53,7 @@ namespace ListView
 			return null;
 		}
 
-		protected void RecycleRecursively(DataType data)
+		protected void RecycleRecursively(TData data)
 		{
 			Recycle(data.index);
 
@@ -72,7 +76,7 @@ namespace ListView
 				EndSettling();
 		}
 
-		protected virtual void UpdateRecursively(List<DataType> data, ref int count, int depth = 0)
+		protected virtual void UpdateRecursively(List<TData> data, ref int count, int depth = 0)
 		{
 			foreach (var datum in data)
 			{
@@ -88,12 +92,12 @@ namespace ListView
 			}
 		}
 
-		protected virtual void UpdateNestedItem(DataType data, int count, int depth)
+		protected virtual void UpdateNestedItem(TData data, int count, int depth)
 		{
 			UpdateVisibleItem(data, count);
 		}
 
-		protected void RecycleChildren(DataType data)
+		protected void RecycleChildren(TData data)
 		{
 			foreach (var child in data.children)
 			{

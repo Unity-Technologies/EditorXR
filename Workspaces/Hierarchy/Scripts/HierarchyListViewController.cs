@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class HierarchyListViewController : NestedListViewController<HierarchyData, int>
+	sealed class HierarchyListViewController : NestedListViewController<HierarchyData, HierarchyListItem, int>
 	{
 		const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -106,22 +106,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void UpdateHierarchyItem(HierarchyData data, ref int count, int depth, bool expanded)
 		{
 			var index = data.index;
-			ListViewItem<HierarchyData, int> item;
+			HierarchyListItem item;
 			if (!m_ListItems.TryGetValue(index, out item))
 				item = GetItem(data);
 
-			var hierarchyItem = (HierarchyListItem)item;
 			var width = bounds.size.x - k_ClipMargin;
-			hierarchyItem.UpdateSelf(width, depth, expanded, index == m_SelectedRow);
+			item.UpdateSelf(width, depth, expanded, index == m_SelectedRow);
 
-			SetMaterialClip(hierarchyItem.cubeMaterial, transform.worldToLocalMatrix);
-			SetMaterialClip(hierarchyItem.dropZoneMaterial, transform.worldToLocalMatrix);
+			SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
+			SetMaterialClip(item.dropZoneMaterial, transform.worldToLocalMatrix);
 
 			m_VisibleItemCount++;
 			UpdateItemTransform(item.transform, count);
 
-			count += hierarchyItem.extraSpace;
-			m_VisibleItemCount += hierarchyItem.extraSpace;
+			var extraSpace = item.extraSpace;
+			count += extraSpace;
+			m_VisibleItemCount += extraSpace;
 		}
 
 		protected override void UpdateRecursively(List<HierarchyData> data, ref int count, int depth = 0)
@@ -164,11 +164,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		protected override ListViewItem<HierarchyData, int> GetItem(HierarchyData data)
+		protected override HierarchyListItem GetItem(HierarchyData data)
 		{
-			var item = (HierarchyListItem)base.GetItem(data);
+			var item = base.GetItem(data);
 			item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
 			item.selectRow = SelectRow;
+
+			item.setRowGrabbed = SetRowGrabbed;
+			item.getGrabbedRow = GetGrabbedRow;
 
 			item.toggleExpanded = ToggleExpanded;
 			item.setExpanded = SetExpanded;
@@ -259,7 +262,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		bool CanDrop(BaseHandle handle, object dropObject)
+		static bool CanDrop(BaseHandle handle, object dropObject)
 		{
 			return dropObject is HierarchyData;
 		}
@@ -325,7 +328,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			scrollOffset += delta;
 		}
 
-		private void OnDestroy()
+		void OnDestroy()
 		{
 			ObjectUtils.Destroy(m_TextMaterial);
 			ObjectUtils.Destroy(m_ExpandArrowMaterial);

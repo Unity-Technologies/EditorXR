@@ -9,23 +9,22 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	class DraggableListItem<DataType, IndexType> : ListViewItem<DataType, IndexType>, IGetPreviewOrigin, IUsesViewerScale
-		where DataType : ListViewItemData<IndexType>
+	class DraggableListItem<TData, TIndex> : ListViewItem<TData, TIndex>, IGetPreviewOrigin, IUsesViewerScale
+		where TData : ListViewItemData<TIndex>
 	{
 		const float k_MagnetizeDuration = 0.5f;
-		const float kDragDeadzone = 0.025f;
-		const float kHorizThreshold = 0.9f;
+		protected const float k_DragDeadzone = 0.025f;
 
 		protected Transform m_DragObject;
 
 		protected float m_DragLerp;
 
-		bool m_HorizontalDrag;
-
 		readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform, Vector3>();
 
 		protected virtual bool singleClickDrag { get { return true; } }
-		//protected virtual BaseHandle clickedHandle { get; set; }
+
+		public Action<TIndex, Transform, bool> setRowGrabbed { protected get; set; }
+		public Func<Transform, ListViewItem<TData, TIndex>> getGrabbedRow { protected get; set; }
 
 		public Func<Transform, Transform> getPreviewOriginForRayOrigin { set; protected get; }
 
@@ -82,54 +81,32 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var dragVector = rayOrigin.position - dragStart;
 				var distance = dragVector.magnitude;
 
-				if (m_DragObject == null && distance > kDragDeadzone * getViewerScale())
+				if (m_DragObject == null && distance > k_DragDeadzone * getViewerScale())
 				{
 					m_DragObject = handle.transform;
-					m_HorizontalDrag = Mathf.Abs(Vector3.Dot(dragVector, m_DragObject.right)) / distance > kHorizThreshold;
-
-					if (m_HorizontalDrag)
-						OnHorizontalDragStart(handle, eventData);
-					else
-						OnVerticalDragStart(handle, eventData);
+					OnGrabDragStart(handle, eventData, dragStart);
 				}
 
 				if (m_DragObject)
-				{
-					if (m_HorizontalDrag)
-						OnHorizontalDrag(handle, eventData, dragStart);
-					else
-						OnVerticalDrag(handle, eventData, dragStart);
-				}
+					OnGrabDragging(handle, eventData, dragStart);
 			}
+		}
+
+		protected virtual void OnClick()
+		{
+		}
+
+		protected virtual void OnGrabDragStart(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+		{
+		}
+
+		protected virtual void OnGrabDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+		{
 		}
 
 		protected virtual void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
 		{
 			m_DragObject = null;
-		}
-
-		//protected virtual void OnSingleClick(BaseHandle handle, HandleEventData eventData)
-		//{
-		//}
-
-		//protected virtual void OnDoubleClick(BaseHandle handle, HandleEventData eventData)
-		//{
-		//}
-
-		protected virtual void OnHorizontalDragStart(BaseHandle handle, HandleEventData eventData)
-		{
-		}
-
-		protected virtual void OnVerticalDragStart(BaseHandle handle, HandleEventData eventData)
-		{
-		}
-
-		protected virtual void OnHorizontalDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
-		{
-		}
-
-		protected virtual void OnVerticalDrag(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
-		{
 		}
 	}
 }

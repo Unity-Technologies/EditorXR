@@ -20,13 +20,13 @@ namespace ListView
 
 		[Tooltip("How quickly scroll momentum fade")]
 		[SerializeField]
-		public float m_ScrollDamping = 5f;
+		float m_ScrollDamping = 5f;
 
 		[Tooltip("Maximum velocity for scroll momentum")]
 		[SerializeField]
-		public float m_MaxMomentum = 2f;
+		float m_MaxMomentum = 2f;
 
-		[Tooltip("Item temlate prefabs (at least one is required)")]
+		[Tooltip("Item template prefabs (at least one is required)")]
 		[SerializeField]
 		protected GameObject[] m_Templates;
 
@@ -193,9 +193,8 @@ namespace ListView
 
 		protected virtual Vector3 GetObjectSize(GameObject g)
 		{
-			Vector3 itemSize = Vector3.one;
-			//TODO: Better method for finding object size
-			Renderer rend = g.GetComponentInChildren<Renderer>();
+			var itemSize = Vector3.one;
+			var rend = g.GetComponentInChildren<Renderer>();
 			if (rend)
 			{
 				itemSize.x = Vector3.Scale(g.transform.lossyScale, rend.bounds.extents).x * 2 + m_Padding;

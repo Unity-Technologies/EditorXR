@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class InspectorListViewController : NestedListViewController<InspectorData, int>, IUsesGameObjectLocking, IUsesStencilRef
+	sealed class InspectorListViewController : NestedListViewController<InspectorData, InspectorListItem, int>, IUsesGameObjectLocking, IUsesStencilRef
 	{
 		const string k_MaterialStencilRef = "_StencilRef";
 		const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
@@ -176,7 +176,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void UpdateItemRecursive(InspectorData data, float offset, int depth, bool expanded)
 		{
-			ListViewItem<InspectorData, int> item;
+			InspectorListItem item;
 			if (!m_ListItems.TryGetValue(data.index, out item))
 				item = GetItem(data);
 
@@ -193,9 +193,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			t.localRotation = Quaternion.identity;
 		}
 
-		protected override ListViewItem<InspectorData, int> GetItem(InspectorData listData)
+		protected override InspectorListItem GetItem(InspectorData listData)
 		{
-			var item = (InspectorListItem)base.GetItem(listData);
+			var item = base.GetItem(listData);
+
+			item.setRowGrabbed = SetRowGrabbed;
+			item.getGrabbedRow = GetGrabbedRow;
 
 			if (!item.setup)
 			{
@@ -232,7 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				foreach (var child in children)
 				{
 					var index = child.index;
-					ListViewItem<InspectorData, int> item;
+					InspectorListItem item;
 					if (m_ListItems.TryGetValue(index, out item))
 					{
 						var childNumberItem = item as InspectorNumberItem;
