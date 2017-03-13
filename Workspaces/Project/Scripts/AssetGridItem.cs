@@ -329,7 +329,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			StartCoroutine(ShowGrabbedObject());
 		}
 
-		protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
+		protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 

@@ -63,10 +63,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			OnMagnetizeEnded();
 		}
 
-		protected virtual void OnMagnetizeEnded()
-		{
-		}
-
 		protected virtual void OnDragging(BaseHandle handle, HandleEventData eventData)
 		{
 			if (singleClickDrag)
@@ -99,10 +95,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		protected virtual void OnClick()
-		{
-		}
-
 		protected virtual void OnGrabDragStart(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
 		}
@@ -111,9 +103,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 		}
 
-		protected virtual void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
+		protected virtual void OnDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			m_DragObject = null;
+		}
+
+		protected virtual void OnMagnetizeEnded()
+		{
 		}
 	}
 }

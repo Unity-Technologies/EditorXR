@@ -11,12 +11,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		readonly Dictionary<Transform, GameObject> m_HoverObjects = new Dictionary<Transform, GameObject>();
 
-		void SetCurrentDroppable(Transform rayOrigin, IDroppable droppable)
-		{
-			if (droppable != null)
-				m_Droppables[rayOrigin] = droppable;
-		}
-
 		object GetCurrentDropObject(Transform rayOrigin)
 		{
 			IDroppable droppable;
@@ -74,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var droppable = gameObject.GetComponent<IDroppable>();
 			if (droppable != null)
-				SetCurrentDroppable(eventData.rayOrigin, droppable);
+				m_Droppables[eventData.rayOrigin] = droppable;
 		}
 
 		public void OnDragEnded(GameObject gameObject, RayEventData eventData)
@@ -83,7 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (droppable != null)
 			{
 				var rayOrigin = eventData.rayOrigin;
-				SetCurrentDroppable(rayOrigin, null);
+				m_Droppables.Remove(rayOrigin);
 
 				var dropReceiver = GetCurrentDropReceiver(rayOrigin);
 				var dropObject = droppable.GetDropObject();

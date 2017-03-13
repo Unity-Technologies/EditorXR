@@ -130,17 +130,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void OnObjectModified()
 		{
-			foreach (var listViewItem in m_ListItems.Values)
+			foreach (var item in m_ListItems.Values)
 			{
-				var item = (InspectorListItem)listViewItem;
 				item.OnObjectModified();
 			}
 		}
 
 		void UpdateRecursively(List<InspectorData> data, ref float totalOffset, int depth = 0)
 		{
-			foreach (var datum in data)
+			for (int i = 0; i < data.Count; i++)
 			{
+				var datum = data[i];
 				var serializedObject = datum.serializedObject;
 				if (serializedObject == null || serializedObject.targetObject == null)
 				{
@@ -180,9 +180,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (!m_ListItems.TryGetValue(data.index, out item))
 				item = GetItem(data);
 
-			var inspectorListItem = (InspectorListItem)item;
-			inspectorListItem.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded);
-			inspectorListItem.UpdateClipTexts(transform.worldToLocalMatrix, bounds.extents);
+			item.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded);
+			item.UpdateClipTexts(transform.worldToLocalMatrix, bounds.extents);
 
 			UpdateItem(item.transform, offset);
 		}
@@ -220,8 +219,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				headerItem.lockToggle.isOn = isLocked(go);
 				headerItem.setLocked = locked => setLocked(go, locked);
 			}
-
-			item.toggleExpanded = ToggleExpanded;
 
 			return item;
 		}
@@ -301,5 +298,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
-
 #endif

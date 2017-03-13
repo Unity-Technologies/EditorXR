@@ -263,7 +263,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		/// <summary>
 		/// Search through all assemblies in the current AppDomain for a class that is assignable to UnityObject and matches the given weak name
-		/// TODO: expoose internal SerialzedProperty.ValidateObjectReferenceValue to remove his hack
+		/// TODO: expose internal SerialzedProperty.ValidateObjectReferenceValue to remove his hack
 		/// </summary>
 		/// <param name="name">Weak type name</param>
 		/// <returns>Best guess System.Type</returns>

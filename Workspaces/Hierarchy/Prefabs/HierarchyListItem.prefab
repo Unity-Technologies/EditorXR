@@ -315,7 +315,7 @@ MonoBehaviour:
   m_DropZone: {fileID: 114000014220381596}
   m_NoClipExpandArrow: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba, type: 2}
   m_NoClipBackingCube: {fileID: 2100000, guid: 1a070009f7968b74abbf1a1ae823b472, type: 2}
-  m_NoClipBackingText: {fileID: 2100000, guid: 0b1d2d3c4b2d7d948bcd67e085daa7d4, type: 2}
+  m_NoClipText: {fileID: 2100000, guid: 0b1d2d3c4b2d7d948bcd67e085daa7d4, type: 2}
   m_HoverColor: {r: 0.20344828, g: 0.20344828, b: 0.20344828, a: 0}
   m_SelectedColor: {r: 0.36896548, g: 0.36896548, b: 0.36896548, a: 0}
   m_StackingFraction: 0.3

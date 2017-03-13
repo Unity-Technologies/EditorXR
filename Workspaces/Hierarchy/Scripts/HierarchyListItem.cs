@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -34,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Material m_NoClipBackingCube;
 
 		[SerializeField]
-		Material m_NoClipBackingText;
+		Material m_NoClipText;
 
 		[SerializeField]
 		Color m_HoverColor;
@@ -94,6 +95,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				m_Cube.hoverStarted += OnHoverStarted;
 				m_Cube.hoverEnded += OnHoverEnded;
+
+				m_Cube.click += OnClick;
 
 				m_Cube.getDropObject = GetDropObject;
 				m_Cube.canDrop = CanDrop;
@@ -182,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				immediate ? 1f : k_ExpandArrowRotateSpeed);
 		}
 
-		protected override void OnClick()
+		void OnClick(BaseHandle baseHandle, PointerEventData pointerEventData)
 		{
 			SelectFolder();
 			toggleExpanded(data.index);
@@ -221,7 +224,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ExpandArrowRenderer.sharedMaterial = m_NoClipExpandArrow;
 			m_CubeRenderer.sharedMaterial = m_NoClipBackingCube;
 			m_Text.transform.localRotation = Quaternion.AngleAxis(90, Vector3.right);
-			m_Text.material = m_NoClipBackingText;
+			m_Text.material = m_NoClipText;
 
 			m_DropZone.gameObject.SetActive(false);
 			m_Cube.GetComponent<Collider>().enabled = false;
@@ -271,7 +274,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			isStillSettling = false;
 		}
 
-		protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
+		protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			if (m_DragObject)
 			{
@@ -290,7 +293,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				startSettling(OnDragEndAfterSettling);
 			}
 
-			base.OnDragEnded(baseHandle, eventData);
+			base.OnDragEnded(handle, eventData);
 		}
 
 		void OnDragEndRecursive(Transform rayOrigin)
@@ -397,8 +400,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var transform = gameObject.transform;
 			var dropTransform = dropGameObject.transform;
 
-			var siblings = (transform.parent == null && dropTransform.parent == null)
-				|| (transform.parent && dropTransform.parent == transform.parent);
+			var siblings = transform.parent == null && dropTransform.parent == null
+				|| transform.parent && dropTransform.parent == transform.parent;
 
 			// Dropping on previous sibling's zone has no effect
 			if (siblings && transform.GetSiblingIndex() == dropTransform.GetSiblingIndex() - 1)

@@ -135,9 +135,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			//}
 		}
 
-		protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
+		protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
-			base.OnDragEnded(baseHandle, eventData);
+			base.OnDragEnded(handle, eventData);
 
 			// Update field value in case drag value was invalid (i.e. array size < 0)
 			if (m_DraggedField)

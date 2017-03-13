@@ -126,8 +126,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override void UpdateRecursively(List<HierarchyData> data, ref int count, int depth = 0)
 		{
-			foreach (var datum in data)
+			for (int i = 0; i < data.Count; i++)
 			{
+				var datum = data[i];
 				var index = datum.index;
 				bool expanded;
 				if (!m_ExpandStates.TryGetValue(index, out expanded))

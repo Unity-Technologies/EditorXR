@@ -78,8 +78,9 @@ namespace ListView
 
 		protected virtual void UpdateRecursively(List<TData> data, ref int count, int depth = 0)
 		{
-			foreach (var datum in data)
+			for (int i = 0; i < data.Count; i++)
 			{
+				var datum = data[i];
 				if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
 					Recycle(datum.index);
 				else

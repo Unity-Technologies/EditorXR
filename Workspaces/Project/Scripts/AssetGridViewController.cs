@@ -10,11 +10,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, string>
 	{
-		private const float k_PositionFollow = 0.4f;
+		const float k_PositionFollow = 0.4f;
 
-		private Transform m_GrabbedObject;
+		Transform m_GrabbedObject;
 
-		private int m_NumPerRow;
+		int m_NumPerRow;
 
 		public float scaleFactor
 		{
@@ -27,13 +27,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		[SerializeField]
-		private float m_ScaleFactor = 0.05f;
+		float m_ScaleFactor = 0.05f;
 
 		[SerializeField]
-		private string[] m_IconTypes;
+		string[] m_IconTypes;
 
 		[SerializeField]
-		private GameObject[] m_Icons;
+		GameObject[] m_Icons;
 
 		float m_LastHiddenItemOffset;
 
@@ -163,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		private void UpdateGridItem(AssetGridItem item, int offset)
+		void UpdateGridItem(AssetGridItem item, int offset)
 		{
 			item.UpdateTransforms(m_ScaleFactor);
 

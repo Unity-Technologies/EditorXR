@@ -55,6 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				if (m_Text == value)
 					return;
+
 				if (value == null)
 					value = "";
 

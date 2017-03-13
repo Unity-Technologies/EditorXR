@@ -25,6 +25,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		RectTransform m_UIContainer;
 
+		[SerializeField]
+		Material m_NoClipText;
+
 		ClipText[] m_ClipTexts;
 
 		Material m_NoClipBackingCube;
@@ -39,8 +42,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public bool setup { get; set; }
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
-
-		public Action<InspectorData> toggleExpanded { private get; set; }
 
 		public Func<byte> requestStencilRef { private get; set; }
 
@@ -196,78 +197,85 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var distance = dragVector.magnitude;
 			m_HorizontalDrag = Mathf.Abs(Vector3.Dot(dragVector, m_DragObject.right)) / distance > k_HorizThreshold;
 
-			if (m_HorizontalDrag)
-				OnHorizontalDragStart(handle);
-			else
-				OnVerticalDragStart(handle);
+			var fieldBlock = handle.transform.parent;
+			if (fieldBlock)
+			{
+				if (m_HorizontalDrag)
+					OnHorizontalDragStart(fieldBlock);
+				else
+					OnVerticalDragStart(fieldBlock);
+			}
 		}
 
 		protected override void OnGrabDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
 			if (m_HorizontalDrag)
-				OnHorizontalDragging(handle, eventData, dragStart);
+				OnHorizontalDragging(eventData.rayOrigin);
 			else
 				OnVerticalDragging(eventData.rayOrigin);
 		}
 
-		void OnVerticalDragStart(BaseHandle baseHandle)
+		void OnVerticalDragStart(Transform fieldBlock)
 		{
-			var fieldBlock = baseHandle.transform.parent;
-			if (fieldBlock)
+			var clone = ((GameObject)Instantiate(fieldBlock.gameObject, fieldBlock.parent)).transform;
+
+			// Re-center pivot
+			clone.GetComponent<RectTransform>().pivot = Vector2.one * 0.5f;
+
+			// Re-center backing cube
+			foreach (Transform child in clone)
 			{
-				var clone = Instantiate(fieldBlock.gameObject, fieldBlock.parent) as GameObject;
-
-				// Re-center pivot
-				clone.GetComponent<RectTransform>().pivot = Vector2.one * 0.5f;
-
-				// Re-center backing cube
-				foreach (Transform child in clone.transform)
+				if (child.GetComponent<BaseHandle>())
 				{
-					if (child.GetComponent<BaseHandle>())
-					{
-						var localPos = child.localPosition;
-						localPos.x = 0;
-						localPos.y = 0;
-						child.localPosition = localPos;
-					}
+					var localPos = child.localPosition;
+					localPos.x = 0;
+					localPos.y = 0;
+					child.localPosition = localPos;
 				}
-
-				var graphics = clone.GetComponentsInChildren<Graphic>(true);
-				foreach (var graphic in graphics)
-				{
-					graphic.raycastTarget = false;
-					graphic.material = null;
-				}
-
-				var stencilRef = requestStencilRef();
-				var renderers = clone.GetComponentsInChildren<Renderer>(true);
-				foreach (var renderer in renderers)
-				{
-					if (renderer.sharedMaterials.Length > 1)
-					{
-						foreach (var material in m_NoClipHighlightMaterials)
-						{
-							material.SetInt("_StencilRef", stencilRef);
-						}
-						renderer.sharedMaterials = m_NoClipHighlightMaterials;
-					}
-					else
-					{
-						renderer.sharedMaterial = m_NoClipBackingCube;
-						m_NoClipBackingCube.SetInt("_StencilRef", stencilRef);
-					}
-				}
-
-				var colliders = clone.GetComponentsInChildren<Collider>();
-				foreach (var collider in colliders)
-				{
-					collider.enabled = false;
-				}
-
-				m_DragClone = clone.transform;
-
-				StartCoroutine(Magnetize());
 			}
+
+			var graphics = clone.GetComponentsInChildren<Graphic>(true);
+			foreach (var graphic in graphics)
+			{
+				graphic.raycastTarget = false;
+				graphic.material = null;
+			}
+
+			var texts = clone.GetComponentsInChildren<Text>(true);
+			foreach (var text in texts)
+			{
+				text.material = m_NoClipText;
+				text.text = "test";
+			}
+
+			var stencilRef = requestStencilRef();
+			var renderers = clone.GetComponentsInChildren<Renderer>(true);
+			foreach (var renderer in renderers)
+			{
+				if (renderer.sharedMaterials.Length > 1)
+				{
+					foreach (var material in m_NoClipHighlightMaterials)
+					{
+						material.SetInt("_StencilRef", stencilRef);
+					}
+					renderer.sharedMaterials = m_NoClipHighlightMaterials;
+				}
+				else
+				{
+					renderer.sharedMaterial = m_NoClipBackingCube;
+					m_NoClipBackingCube.SetInt("_StencilRef", stencilRef);
+				}
+			}
+
+			var colliders = clone.GetComponentsInChildren<Collider>();
+			foreach (var collider in colliders)
+			{
+				collider.enabled = false;
+			}
+
+			m_DragClone = clone;
+
+			StartCoroutine(Magnetize());
 		}
 
 		void OnVerticalDragging(Transform rayOrigin)
@@ -280,30 +288,24 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void OnHorizontalDragStart(BaseHandle handle)
+		void OnHorizontalDragStart(Transform fieldBlock)
 		{
-			var fieldBlock = handle.transform.parent;
-			if (fieldBlock)
+			// Get RayInputField from direct children
+			foreach (Transform child in fieldBlock.transform)
 			{
-				// Get RayInputField from direct children
-				foreach (Transform child in fieldBlock.transform)
+				var inputField = child.GetComponent<InputField>();
+				if (inputField)
 				{
-					var inputField = child.GetComponent<InputField>();
-					if (inputField)
-					{
-						m_DraggedField = inputField as NumericInputField;
-						break;
-					}
+					m_DraggedField = inputField as NumericInputField;
+					break;
 				}
 			}
 		}
 
-		void OnHorizontalDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+		void OnHorizontalDragging(Transform rayOrigin)
 		{
 			if (m_DraggedField)
-			{
-				m_DraggedField.SliderDrag(eventData.rayOrigin);
-			}
+				m_DraggedField.SliderDrag(rayOrigin);
 		}
 
 		protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
@@ -311,8 +313,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (m_DraggedField)
 				m_DraggedField.EndDrag();
 
-			if (m_DragClone)
-				ObjectUtils.Destroy(m_DragClone.gameObject);
+			// Delay call fixes errors when you close the workspace or change data while dragging a field
+			EditorApplication.delayCall += () =>
+			{
+				if (m_DragClone)
+					ObjectUtils.Destroy(m_DragClone.gameObject);
+			};
 
 			if (!m_DragObject)
 			{
@@ -346,7 +352,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			return false;
 		}
 
-		protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject) {}
+		protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+		{
+		}
 	}
 }
 

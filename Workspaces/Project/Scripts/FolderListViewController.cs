@@ -10,13 +10,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class FolderListViewController : NestedListViewController<FolderData, FolderListItem, string>
 	{
-		private const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
+		const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 		[SerializeField]
-		private Material m_TextMaterial;
+		Material m_TextMaterial;
 
 		[SerializeField]
-		private Material m_ExpandArrowMaterial;
+		Material m_ExpandArrowMaterial;
 
 		string m_SelectedFolder;
 
@@ -63,19 +63,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (!m_ListItems.TryGetValue(index, out item))
 				item = GetItem(data);
 
-			var folderItem = (FolderListItem)item;
+			item.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, index == m_SelectedFolder);
 
-			folderItem.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, index == m_SelectedFolder);
-
-			SetMaterialClip(folderItem.cubeMaterial, transform.worldToLocalMatrix);
+			SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 
 			UpdateItemTransform(item.transform, offset);
 		}
 
 		protected override void UpdateRecursively(List<FolderData> data, ref int count, int depth = 0)
 		{
-			foreach (var datum in data)
+			for (int i = 0; i < data.Count; i++)
 			{
+				var datum = data[i];
 				var index = datum.index;
 				bool expanded;
 				if (!m_ExpandStates.TryGetValue(index, out expanded))
@@ -147,7 +146,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			return null;
 		}
 
-		private void OnDestroy()
+		void OnDestroy()
 		{
 			ObjectUtils.Destroy(m_TextMaterial);
 			ObjectUtils.Destroy(m_ExpandArrowMaterial);
