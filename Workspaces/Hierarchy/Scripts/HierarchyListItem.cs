@@ -48,6 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		Color m_NormalColor;
 		bool m_Hovering;
+		Renderer m_CubeRenderer;
 		Transform m_CubeTransform;
 		Transform m_DropZoneTransform;
 
@@ -56,6 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		readonly Dictionary<Graphic, Material> m_OldMaterials = new Dictionary<Graphic, Material>();
 		readonly List<HierarchyListItem> m_VisibleChildren = new List<HierarchyListItem>();
 
+		Renderer m_ExpandArrowRenderer;
 		Material m_ExpandArrowMaterial;
 		public Material cubeMaterial { get; private set; }
 		public Material dropZoneMaterial { get; private set; }
@@ -80,10 +82,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (cubeMaterial == null)
 			{
 				// Cube material might change for hover state, so we always instance it
-				var cubeRenderer = m_Cube.GetComponent<Renderer>();
-				cubeMaterial = MaterialUtils.GetMaterialClone(cubeRenderer);
+				m_CubeRenderer = m_Cube.GetComponent<Renderer>();
+				cubeMaterial = MaterialUtils.GetMaterialClone(m_CubeRenderer);
 				m_NormalColor = cubeMaterial.color;
 
+				m_ExpandArrowRenderer = m_ExpandArrow.GetComponent<Renderer>();
 				m_ExpandArrow.dragEnded += ToggleExpanded;
 				m_Cube.dragStarted += OnDragStarted;
 				m_Cube.dragging += OnDragging;
@@ -126,7 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			m_Text.material = textMaterial;
 			m_ExpandArrowMaterial = expandArrowMaterial;
-			m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
+			m_ExpandArrowRenderer.sharedMaterial = expandArrowMaterial;
 		}
 
 		public void UpdateSelf(float width, int depth, bool expanded, bool selected)
@@ -187,12 +190,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override void OnGrabDragStart(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
-			StartCoroutine(Magnetize());
-			isStillSettling = true;
+			// handle will be the backing cube, not the whole row object
+			var row = handle.transform.parent;
+			if (row)
+			{
+				m_DragObject = row;
+				StartCoroutine(Magnetize());
+				isStillSettling = true;
 
-			m_VisibleChildren.Clear();
-			OnGrabRecursive(m_VisibleChildren, eventData.rayOrigin);
-			startSettling(null);
+				m_VisibleChildren.Clear();
+				OnGrabRecursive(m_VisibleChildren, eventData.rayOrigin);
+				startSettling(null);
+			}
+			else
+			{
+				m_DragObject = null;
+			}
 		}
 
 		void OnGrabRecursive(List<HierarchyListItem> visibleChildren, Transform rayOrigin)
@@ -205,8 +218,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				graphic.material = null;
 			}
 
-			m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = m_NoClipExpandArrow;
-			m_Cube.GetComponent<Renderer>().sharedMaterial = m_NoClipBackingCube;
+			m_ExpandArrowRenderer.sharedMaterial = m_NoClipExpandArrow;
+			m_CubeRenderer.sharedMaterial = m_NoClipBackingCube;
 			m_Text.transform.localRotation = Quaternion.AngleAxis(90, Vector3.right);
 			m_Text.material = m_NoClipBackingText;
 
@@ -238,7 +251,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var offset = 0f;
 				foreach (var child in m_VisibleChildren)
 				{
-					offset += m_Cube.GetComponent<Renderer>().bounds.size.y * m_StackingFraction;
+					offset += m_CubeRenderer.bounds.size.y * m_StackingFraction;
 					MagnetizeTransform(previewOrigin, child.transform, offset);
 				}
 			}
@@ -307,8 +320,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				kvp.Key.material = kvp.Value;
 			}
 
-			m_Cube.GetComponent<Renderer>().sharedMaterial = cubeMaterial;
-			m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = m_ExpandArrowMaterial;
+			m_CubeRenderer.sharedMaterial = cubeMaterial;
+			m_ExpandArrowRenderer.sharedMaterial = m_ExpandArrowMaterial;
 			m_DropZone.gameObject.SetActive(true);
 			m_Cube.GetComponent<Collider>().enabled = true;
 			m_Hovering = false;
