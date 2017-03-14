@@ -11,6 +11,7 @@
 		_StencilReadMask("Stencil Read Mask", Float) = 255
 		_ColorMask("Color Mask", Float) = 15
 		[Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip("Use Alpha Clip", Float) = 0
+		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
 	}
 
 	SubShader

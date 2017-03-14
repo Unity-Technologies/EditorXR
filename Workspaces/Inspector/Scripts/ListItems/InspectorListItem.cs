@@ -10,7 +10,7 @@ using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHighlight, IUsesStencilRef
+	abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHighlight
 	{
 		const float k_Indent = 0.02f;
 		const float k_HorizThreshold = 0.9f;
@@ -42,9 +42,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public bool setup { get; set; }
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
-
-		//public Func<byte> requestStencilRef { private get; set; }
-		public byte stencilRef { get; set; }
 
 		protected override bool singleClickDrag
 		{
@@ -239,6 +236,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			foreach (var graphic in graphics)
 			{
 				graphic.raycastTarget = false;
+
+				if (graphic.GetComponent<Mask>())
+					continue;
+
 				graphic.material = null;
 			}
 
