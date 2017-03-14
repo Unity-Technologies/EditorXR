@@ -41,7 +41,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Func<string, bool> testFilter;
 
-		protected override float listHeight { get { return Mathf.CeilToInt(base.listHeight / m_NumPerRow); } }
+		protected override float listHeight
+		{
+			get
+			{
+				if (m_NumPerRow == 0)
+					return 0;
+
+				return Mathf.CeilToInt(m_Data.Count / m_NumPerRow) * itemSize.z;
+			}
+		}
 
 		public override List<AssetData> data
 		{
@@ -56,6 +65,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override void Setup()
 		{
 			base.Setup();
+
+			m_ScrollOffset = itemSize.z * 0.5f;
 
 			for (int i = 0; i < m_IconTypes.Length; i++)
 			{
@@ -73,18 +84,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
 				return;
 
-			//m_NumRows = (int)(bounds.size.z / itemSize.z);
-
 			m_StartPosition = bounds.extents.z * Vector3.forward + (bounds.extents.x - itemSize.x * 0.5f) * Vector3.left;
-
-			//m_DataOffset = (int)(m_ScrollOffset / itemSize.z);
-			//if (m_ScrollOffset < 0)
-			//	m_DataOffset--;
 
 			// Snap back if list scrolled too far
 			m_ScrollReturn = float.MaxValue;
-			if (listHeight > 0 && -m_ScrollOffset * itemSize.z >= listHeight)
-				m_ScrollReturn = itemSize.z - listHeight + m_ScaleFactor;
+			if (listHeight > 0 && -m_ScrollOffset >= listHeight)
+			{
+				m_ScrollReturn = -listHeight + m_ScaleFactor;
+
+				if (m_Data.Count % m_NumPerRow == 0)
+					m_ScrollReturn += itemSize.z;
+			}
 		}
 
 		protected override Vector3 GetObjectSize(GameObject g)
@@ -95,7 +105,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override void UpdateItems()
 		{
 			var count = 0;
-			var offset = 0f;
 			foreach (var data in m_Data)
 			{
 				if (m_NumPerRow == 0) // If the list is too narrow, display nothing
@@ -110,16 +119,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					continue;
 				}
 
-				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
+				var offset = count / m_NumPerRow * itemSize.z;
+				if (offset + scrollOffset < 0 || offset + scrollOffset > bounds.size.z)
 					RecycleGridItem(data);
 				else
 					UpdateVisibleItem(data, count);
 
-				if (++count > m_NumPerRow)
-				{
-					offset += itemSize.z;
-					count = 0;
-				}
+				count++;
 			}
 		}
 
@@ -147,7 +153,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (!m_ListItems.TryGetValue(data.index, out item))
 				item = GetItem(data);
 
-			UpdateGridItem(item, offset);
+			if (item != null)
+				UpdateGridItem(item, (int)offset);
 		}
 
 		public override void OnScrollEnded()
@@ -166,14 +173,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void UpdateGridItem(AssetGridItem item, float offset)
+		void UpdateGridItem(AssetGridItem item, int count)
 		{
 			item.UpdateTransforms(m_ScaleFactor);
 
 			var itemSize = m_ItemSize.Value;
 			var t = item.transform;
-			var zOffset = itemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
-			var xOffset = itemSize.x * (offset % m_NumPerRow);
+			var zOffset = itemSize.z * (count / m_NumPerRow) + m_ScrollOffset;
+			var xOffset = itemSize.x * (count % m_NumPerRow);
+
 			t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, k_PositionFollow);
 			t.localRotation = Quaternion.identity;
 		}

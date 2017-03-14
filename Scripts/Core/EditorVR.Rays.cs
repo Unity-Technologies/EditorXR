@@ -146,10 +146,6 @@ namespace UnityEditor.Experimental.EditorVR
 						}
 
 						evr.m_Tools.SpawnDefaultTools(proxy);
-
-						evr.m_WorkspaceModule.CreateWorkspace(typeof(ConsoleWorkspace));
-						evr.m_WorkspaceModule.CreateWorkspace(typeof(InspectorWorkspace));
-						//evr.m_WorkspaceModule.CreateWorkspace(typeof(HierarchyWorkspace));
 					}
 				}
 			}
