@@ -68,7 +68,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_RowCubeMaterial = Instantiate(m_RowCubeMaterial);
 			m_BackingCubeMaterial = Instantiate(m_BackingCubeMaterial);
-			m_NoClipBackingCubeMaterial = Instantiate(m_NoClipBackingCubeMaterial);
 			m_TextMaterial = Instantiate(m_TextMaterial);
 			m_TextMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 			m_UIMaterial = Instantiate(m_UIMaterial);
@@ -81,15 +80,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_HighlightMaskMaterial = Instantiate(m_HighlightMaskMaterial);
 			m_HighlightMaskMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 
+			m_NoClipBackingCubeMaterial = Instantiate(m_NoClipBackingCubeMaterial);
 			m_NoClipHighlightMaterial = Instantiate(m_NoClipHighlightMaterial);
-			m_NoClipHighlightMaterial.SetInt(k_MaterialStencilRef, 0);
 			m_NoClipHighlightMaskMaterial = Instantiate(m_NoClipHighlightMaskMaterial);
-			m_NoClipHighlightMaskMaterial.SetInt(k_MaterialStencilRef, 0);
-
-			m_NoClipHighlightMaterial = Instantiate(m_NoClipHighlightMaterial);
-			m_NoClipHighlightMaterial.SetInt(k_MaterialStencilRef, 0);
-			m_NoClipHighlightMaskMaterial = Instantiate(m_NoClipHighlightMaskMaterial);
-			m_NoClipHighlightMaskMaterial.SetInt(k_MaterialStencilRef, 0);
 
 			foreach (var template in m_TemplateDictionary)
 				m_TemplateSizes[template.Key] = GetObjectSize(template.Value.prefab);
@@ -287,12 +280,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			ObjectUtils.Destroy(m_RowCubeMaterial);
 			ObjectUtils.Destroy(m_BackingCubeMaterial);
-			ObjectUtils.Destroy(m_NoClipBackingCubeMaterial);
 			ObjectUtils.Destroy(m_TextMaterial);
 			ObjectUtils.Destroy(m_UIMaterial);
 			ObjectUtils.Destroy(m_UIMaskMaterial);
 			ObjectUtils.Destroy(m_HighlightMaterial);
 			ObjectUtils.Destroy(m_HighlightMaskMaterial);
+			ObjectUtils.Destroy(m_NoClipBackingCubeMaterial);
 			ObjectUtils.Destroy(m_NoClipHighlightMaterial);
 			ObjectUtils.Destroy(m_NoClipHighlightMaskMaterial);
 		}

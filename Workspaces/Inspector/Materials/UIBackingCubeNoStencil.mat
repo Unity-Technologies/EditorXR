@@ -127,7 +127,7 @@ Material:
       second: {r: Infinity, g: Infinity, b: Infinity, a: Infinity}
     - first:
         name: _Color
-      second: {r: 0.1019607, g: 0.1019607, b: 0.1019607, a: 1}
+      second: {r: 0.19607839, g: 0.19999996, b: 0.19999996, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 0.101960756, g: 0.101960756, b: 0.101960756, a: 1}

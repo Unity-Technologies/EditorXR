@@ -10,7 +10,7 @@ using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHighlight, IRequestStencilRef
+	abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHighlight, IUsesStencilRef
 	{
 		const float k_Indent = 0.02f;
 		const float k_HorizThreshold = 0.9f;
@@ -43,7 +43,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
 
-		public Func<byte> requestStencilRef { private get; set; }
+		//public Func<byte> requestStencilRef { private get; set; }
+		public byte stencilRef { get; set; }
 
 		protected override bool singleClickDrag
 		{
@@ -241,30 +242,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				graphic.material = null;
 			}
 
-			var texts = clone.GetComponentsInChildren<Text>(true);
-			foreach (var text in texts)
-			{
-				text.material = m_NoClipText;
-				text.text = "test";
-			}
-
-			var stencilRef = requestStencilRef();
 			var renderers = clone.GetComponentsInChildren<Renderer>(true);
 			foreach (var renderer in renderers)
 			{
 				if (renderer.sharedMaterials.Length > 1)
 				{
-					foreach (var material in m_NoClipHighlightMaterials)
-					{
-						material.SetInt("_StencilRef", stencilRef);
-					}
 					renderer.sharedMaterials = m_NoClipHighlightMaterials;
 				}
 				else
 				{
 					renderer.sharedMaterial = m_NoClipBackingCube;
-					m_NoClipBackingCube.SetInt("_StencilRef", stencilRef);
 				}
+			}
+
+			var texts = clone.GetComponentsInChildren<Text>(true);
+			foreach (var text in texts)
+			{
+				text.material = m_NoClipText;
 			}
 
 			var colliders = clone.GetComponentsInChildren<Collider>();

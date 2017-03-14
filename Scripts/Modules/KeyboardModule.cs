@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class KeyboardModule : MonoBehaviour, ICustomRay, IForEachRayOrigin
+	sealed class KeyboardModule : MonoBehaviour, ICustomRay, IForEachRayOrigin, IConnectInterfaces
 	{
 		[SerializeField]
 		KeyboardMallet m_KeyboardMalletPrefab;
@@ -29,6 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
 
 		public Action<ForEachRayOriginCallback> forEachRayOrigin { private get; set; }
+		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 
 		public KeyboardUI SpawnNumericKeyboard()
 		{
@@ -37,7 +39,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			// Check if the prefab has already been instantiated
 			if (m_NumericKeyboard == null)
+			{
 				m_NumericKeyboard = ObjectUtils.Instantiate(m_NumericKeyboardPrefab.gameObject, CameraUtils.GetCameraRig()).GetComponent<KeyboardUI>();
+				var smoothMotions = m_NumericKeyboard.GetComponentsInChildren<SmoothMotion>(true);
+				foreach (var smoothMotion in smoothMotions)
+				{
+					connectInterfaces(smoothMotion);
+				}
+			}
 
 			return m_NumericKeyboard;
 		}
@@ -49,7 +58,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			// Check if the prefab has already been instantiated
 			if (m_StandardKeyboard == null)
+			{
 				m_StandardKeyboard = ObjectUtils.Instantiate(m_StandardKeyboardPrefab.gameObject, CameraUtils.GetCameraRig()).GetComponent<KeyboardUI>();
+				var smoothMotions = m_StandardKeyboard.GetComponentsInChildren<SmoothMotion>(true);
+				foreach (var smoothMotion in smoothMotions)
+				{
+					connectInterfaces(smoothMotion);
+				}
+			}
 
 			return m_StandardKeyboard;
 		}

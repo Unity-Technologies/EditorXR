@@ -7,10 +7,10 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: ListItemTextNoClip
-  m_Shader: {fileID: 10762, guid: 0000000000000000f000000000000000, type: 0}
-  m_ShaderKeywords: UNITY_UI_ALPHACLIP _EMISSION
+  m_Shader: {fileID: 4800000, guid: 2992b5ebf51d007438cf8b02d0562efb, type: 3}
+  m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1
-  m_CustomRenderQueue: 10000
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
@@ -120,7 +120,7 @@ Material:
       second: 0
     - first:
         name: _StencilComp
-      second: 4.79
+      second: 8
     - first:
         name: _StencilOp
       second: 0
@@ -138,7 +138,7 @@ Material:
       second: 0
     - first:
         name: _UseUIAlphaClip
-      second: 1
+      second: 0
     - first:
         name: _ZWrite
       second: 1
@@ -148,7 +148,7 @@ Material:
       second: {r: 0, g: 0, b: 0, a: 0}
     - first:
         name: _ClipExtents
-      second: {r: 0.1675, g: 1.7014117e+38, b: 0.22500001, a: 0}
+      second: {r: 0, g: 0, b: 0, a: 0}
     - first:
         name: _Color
       second: {r: 1, g: 1, b: 1, a: 1}

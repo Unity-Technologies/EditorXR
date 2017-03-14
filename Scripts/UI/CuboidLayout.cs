@@ -70,6 +70,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 					{
 						if (child.transform != hightlight)
 							child.sharedMaterials = highlightMaterials;
+						else
+							child.sharedMaterial = backingCubeMaterial;
 					}
 				}
 			}
