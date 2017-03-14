@@ -111,16 +111,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			SetMaterialClip(m_HighlightMaskMaterial, parentMatrix);
 		}
 
-		protected override void UpdateItems()
-		{
-			var totalOffset = 0f;
-			UpdateRecursively(m_Data, ref totalOffset);
-
-			// Snap back if list scrolled too far
-			if (totalOffset > 0 && -scrollOffset >= totalOffset)
-				m_ScrollReturn = -totalOffset + m_ItemSize.Value.z; // m_ItemSize will be equal to the size of the last visible item
-		}
-
 		public void OnObjectModified()
 		{
 			foreach (var item in m_ListItems.Values)
@@ -129,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void UpdateRecursively(List<InspectorData> data, ref float totalOffset, int depth = 0)
+		protected override void UpdateRecursively(List<InspectorData> data, ref float offset, int depth = 0)
 		{
 			for (int i = 0; i < data.Count; i++)
 			{
@@ -150,17 +140,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_ItemSize = m_TemplateSizes[datum.template];
 				var itemSize = m_ItemSize.Value;
 
-				if (totalOffset + scrollOffset + itemSize.z < 0 || totalOffset + scrollOffset > bounds.size.z)
+				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
 					Recycle(index);
 				else
-					UpdateItemRecursive(datum, totalOffset, depth, expanded);
+					UpdateItemRecursive(datum, offset, depth, expanded);
 
-				totalOffset += itemSize.z;
+				offset += itemSize.z;
 
 				if (datum.children != null)
 				{
 					if (expanded)
-						UpdateRecursively(datum.children, ref totalOffset, depth + 1);
+						UpdateRecursively(datum.children, ref offset, depth + 1);
 					else
 						RecycleChildren(datum);
 				}
@@ -171,18 +161,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			InspectorListItem item;
 			if (!m_ListItems.TryGetValue(data.index, out item))
+			{
 				item = GetItem(data);
+				UpdateItem(item.transform, offset, true);
+			}
 
 			item.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded);
 			item.UpdateClipTexts(transform.worldToLocalMatrix, bounds.extents);
 
-			UpdateItem(item.transform, offset);
+			UpdateItem(item.transform, offset, false);
 		}
 
-		void UpdateItem(Transform t, float offset)
+		void UpdateItem(Transform t, float offset, bool noSettle)
 		{
-			t.localPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.forward;
-			t.localRotation = Quaternion.identity;
+			var targetPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.forward;
+			var targetRotation = Quaternion.identity;
+
+			UpdateItemTransform(t, targetPosition, targetRotation, noSettle);
 		}
 
 		protected override InspectorListItem GetItem(InspectorData listData)

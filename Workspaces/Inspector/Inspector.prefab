@@ -21,7 +21,7 @@ GameObject:
   - 224: {fileID: 224000012935315334}
   - 114: {fileID: 114000011592582654}
   m_Layer: 5
-  m_Name: InspectorList
+  m_Name: List
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -57,7 +57,7 @@ GameObject:
   - 114: {fileID: 114000010864693748}
   - 114: {fileID: 114000012271505990}
   m_Layer: 5
-  m_Name: InspectorScrollHandle
+  m_Name: ScrollHandle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -151,7 +151,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ListView: {fileID: 114000011592582654}
-  m_InspectorScrollHandle: {fileID: 114000010864693748}
+  m_ScrollHandle: {fileID: 114000010864693748}
   m_InspectorPanel: {fileID: 224000012935315334}
 --- !u!114 &114000010864693748
 MonoBehaviour:

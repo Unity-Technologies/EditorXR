@@ -41,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Func<string, bool> testFilter;
 
-		protected override int dataLength { get { return Mathf.CeilToInt((float)base.dataLength / m_NumPerRow); } }
+		protected override float listHeight { get { return Mathf.CeilToInt(base.listHeight / m_NumPerRow); } }
 
 		public override List<AssetData> data
 		{
@@ -73,19 +73,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
 				return;
 
-			m_NumRows = (int)(bounds.size.z / itemSize.z);
+			//m_NumRows = (int)(bounds.size.z / itemSize.z);
 
 			m_StartPosition = bounds.extents.z * Vector3.forward + (bounds.extents.x - itemSize.x * 0.5f) * Vector3.left;
 
-			m_DataOffset = (int)(m_ScrollOffset / itemSize.z);
-			if (m_ScrollOffset < 0)
-				m_DataOffset--;
-
+			//m_DataOffset = (int)(m_ScrollOffset / itemSize.z);
+			//if (m_ScrollOffset < 0)
+			//	m_DataOffset--;
 
 			// Snap back if list scrolled too far
 			m_ScrollReturn = float.MaxValue;
-			if (-m_DataOffset >= dataLength)
-				m_ScrollReturn = (1 - dataLength) * itemSize.z + m_ScaleFactor;
+			if (listHeight > 0 && -m_ScrollOffset * itemSize.z >= listHeight)
+				m_ScrollReturn = itemSize.z - listHeight + m_ScaleFactor;
 		}
 
 		protected override Vector3 GetObjectSize(GameObject g)
@@ -96,6 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override void UpdateItems()
 		{
 			var count = 0;
+			var offset = 0f;
 			foreach (var data in m_Data)
 			{
 				if (m_NumPerRow == 0) // If the list is too narrow, display nothing
@@ -110,12 +110,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					continue;
 				}
 
-				if (count / m_NumPerRow + m_DataOffset < 0 || count / m_NumPerRow + m_DataOffset > m_NumRows - 1)
+				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
 					RecycleGridItem(data);
 				else
 					UpdateVisibleItem(data, count);
 
-				count++;
+				if (++count > m_NumPerRow)
+				{
+					offset += itemSize.z;
+					count = 0;
+				}
 			}
 		}
 
@@ -137,14 +141,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			});
 		}
 
-		protected override void UpdateVisibleItem(AssetData data, int offset)
+		protected override void UpdateVisibleItem(AssetData data, float offset)
 		{
 			AssetGridItem item;
 			if (!m_ListItems.TryGetValue(data.index, out item))
 				item = GetItem(data);
 
-			if (item)
-				UpdateGridItem(item, offset);
+			UpdateGridItem(item, offset);
 		}
 
 		public override void OnScrollEnded()
@@ -163,7 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void UpdateGridItem(AssetGridItem item, int offset)
+		void UpdateGridItem(AssetGridItem item, float offset)
 		{
 			item.UpdateTransforms(m_ScaleFactor);
 

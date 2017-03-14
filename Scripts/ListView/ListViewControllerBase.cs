@@ -50,10 +50,8 @@ namespace ListView
 		protected Vector3? m_ItemSize;
 
 		public float scrollSpeed { get { return m_ScrollSpeed; } set { m_ScrollSpeed = value; } }
-		float m_ScrollSpeed = 0.03f;
+		float m_ScrollSpeed = 0.3f;
 
-		protected int m_DataOffset;
-		protected int m_NumRows;
 		protected Vector3 m_StartPosition;
 
 		protected readonly Dictionary<string, ListViewItemTemplate> m_TemplateDictionary = new Dictionary<string, ListViewItemTemplate>();
@@ -63,7 +61,7 @@ namespace ListView
 		protected float m_ScrollDelta;
 		protected float m_LastScrollOffset;
 
-		protected abstract int dataLength { get; }
+		protected abstract float listHeight { get; }
 
 		public Bounds bounds { protected get; set; }
 
@@ -103,13 +101,13 @@ namespace ListView
 				m_ItemSize = GetObjectSize(m_Templates[0]);
 
 			var itemSize = m_ItemSize.Value;
-			m_NumRows = Mathf.CeilToInt(bounds.size.z / itemSize.z);
+			//m_NumRows = Mathf.CeilToInt(bounds.size.z / itemSize.z);
 
 			m_StartPosition = (bounds.extents.z - itemSize.z * 0.5f) * Vector3.forward;
 
-			m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
-			if (m_ScrollOffset < 0)
-				m_DataOffset--;
+			//m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
+			//if (m_ScrollOffset < 0)
+			//	m_DataOffset--;
 
 			if (m_Scrolling)
 			{
@@ -146,9 +144,10 @@ namespace ListView
 
 			m_ScrollReturn = float.MaxValue;
 
+			const float epsilon = 1e-6f;
 			// Snap back if list scrolled too far
-			if (dataLength > 0 && -m_DataOffset >= dataLength)
-				m_ScrollReturn = (1 - dataLength) * itemSize.z;
+			if (listHeight > 0 && -m_ScrollOffset >= listHeight)
+				m_ScrollReturn = itemSize.z - listHeight + epsilon;
 		}
 
 		protected abstract void UpdateItems();
@@ -168,13 +167,16 @@ namespace ListView
 			m_ScrollOffset = index * itemSize.z;
 		}
 
-		protected virtual void UpdateItemTransform(Transform t, int offset)
+		protected virtual void UpdateItem(Transform t, float offset)
 		{
-			var itemSize = m_ItemSize.Value.z;
-			var targetPosition = m_StartPosition + (offset * itemSize + m_ScrollOffset) * Vector3.back;
+			var targetPosition = m_StartPosition + offset * Vector3.back;
 			var targetRotation = Quaternion.identity;
+			UpdateItemTransform(t, targetPosition, targetRotation, false);
+		}
 
-			if (m_Settling)
+		protected virtual void UpdateItemTransform(Transform t, Vector3 targetPosition, Quaternion targetRotation, bool noSettle)
+		{
+			if (m_Settling && !noSettle)
 			{
 				t.localPosition = Vector3.Lerp(t.localPosition, targetPosition, m_SettleSpeed);
 				if (t.localPosition != targetPosition)
@@ -248,7 +250,7 @@ namespace ListView
 			if (m_Settling)
 				return;
 
-			scrollOffset += eventData.scrollDelta.y * scrollSpeed;
+			scrollOffset += eventData.scrollDelta.y * scrollSpeed * Time.unscaledDeltaTime;
 		}
 
 		protected virtual void StartSettling(Action onComplete = null)

@@ -33,7 +33,7 @@ namespace ListView
 		protected readonly Dictionary<TIndex, TItem> m_ListItems = new Dictionary<TIndex, TItem>();
 		protected readonly Dictionary<TIndex, Transform> m_GrabbedRows = new Dictionary<TIndex, Transform>();
 
-		protected override int dataLength { get { return m_Data.Count; } }
+		protected override float listHeight { get { return m_Data.Count * itemSize.z; } }
 
 		public InstantiateUIDelegate instantiateUI { private get; set; }
 		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
@@ -42,13 +42,16 @@ namespace ListView
 		{
 			m_SettleTest = true;
 
+			var offset = 0f;
 			for (int i = 0; i < m_Data.Count; i++)
 			{
 				var datum = m_Data[i];
-				if (i + m_DataOffset < -1 || i + m_DataOffset > m_NumRows - 1)
+				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
 					Recycle(datum.index);
 				else
-					UpdateVisibleItem(datum, i);
+					UpdateVisibleItem(datum, i * itemSize.z + m_ScrollOffset);
+
+				offset += itemSize.z;
 			}
 
 			if (m_Settling && m_SettleTest)
@@ -68,7 +71,7 @@ namespace ListView
 			}
 		}
 
-		protected virtual void UpdateVisibleItem(TData data, int offset)
+		protected virtual void UpdateVisibleItem(TData data, float offset)
 		{
 			TItem item;
 			var index = data.index;
@@ -78,7 +81,7 @@ namespace ListView
 				m_ListItems[index] = item;
 			}
 
-			UpdateItemTransform(item.transform, offset);
+			UpdateItem(item.transform, offset);
 		}
 
 		protected virtual void SetRowGrabbed(TIndex index, Transform rayOrigin, bool grabbed)

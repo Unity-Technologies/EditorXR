@@ -32,7 +32,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		HierarchyData m_SelectedRow;
 
 		bool m_Scrolling;
-		Transform m_HighlightContainer;
 
 		public List<HierarchyData> hierarchyData
 		{
@@ -99,23 +98,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			hierarchyListView.selectRow = SelectRow;
 			connectInterfaces(hierarchyListView);
 
-			var handle = m_HierarchyUI.scrollHandle;
+			var scrollHandle = m_HierarchyUI.scrollHandle;
+			scrollHandle.dragStarted += OnScrollDragStarted;
+			scrollHandle.dragging += OnScrollDragging;
+			scrollHandle.dragEnded += OnScrollDragEnded;
+			scrollHandle.hoverStarted += OnScrollHoverStarted;
+			scrollHandle.hoverEnded += OnScrollHoverEnded;
 
-			// Scroll Handle shouldn't move on bounds change
-			handle.transform.parent = m_WorkspaceUI.sceneContainer;
+			contentBounds = new Bounds(Vector3.zero, m_CustomStartingBounds.Value);
 
-			handle.dragStarted += OnScrollDragStarted;
-			handle.dragging += OnScrollDragging;
-			handle.dragEnded += OnScrollDragEnded;
-
-			// Hookup highlighting calls
-			handle.dragStarted += OnScrollPanelDragHighlightBegin;
-			handle.dragEnded += OnScrollPanelDragHighlightEnd;
-			handle.hoverStarted += OnScrollPanelHoverHighlightBegin;
-			handle.hoverEnded += OnScrollPanelHoverHighlightEnd;
-
-			// Assign highlight references
-			m_HighlightContainer = m_HierarchyUI.highlight.transform.parent.transform;
+			var scrollHandleTransform = m_HierarchyUI.scrollHandle.transform;
+			scrollHandleTransform.SetParent(m_WorkspaceUI.topFaceContainer);
+			scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
+			scrollHandleTransform.localPosition = new Vector3(0f, -0.01f, 0f); // Offset from content for collision purposes
 
 			// Propagate initial bounds
 			OnBoundsChanged();
@@ -123,36 +118,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override void OnBoundsChanged()
 		{
-			const float depthCompensation = 0.1375f;
-
-			var bounds = contentBounds;
-			var size = bounds.size;
-			size.y = k_YBounds;
-			size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
-			size.z = size.z - depthCompensation;
-			bounds.size = size;
-			bounds.center = Vector3.zero;
-
-			const float kHalfScrollMargin = k_ScrollMargin * 0.5f;
-			const float kDoubleScrollMargin = k_ScrollMargin * 2;
-			const float kScrollHandleXPositionOffset = 0.025f;
-			const float kScrollHandleXScaleOffset = 0.015f;
-
-			var scrollHandleTransform = m_HierarchyUI.scrollHandle.transform;
-			scrollHandleTransform.localPosition = new Vector3(-kHalfScrollMargin + kScrollHandleXPositionOffset, -scrollHandleTransform.localScale.y * 0.5f, 0);
-			scrollHandleTransform.localScale = new Vector3(size.x + k_ScrollMargin + kScrollHandleXScaleOffset, scrollHandleTransform.localScale.y, size.z + kDoubleScrollMargin);
-
+			var size = contentBounds.size;
 			var listView = m_HierarchyUI.listView;
+			var bounds = contentBounds;
+			size.y = float.MaxValue; // Add height for dropdowns
+			size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
+			size.z -= 0.15f; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
 			bounds.size = size;
 			listView.bounds = bounds;
-			listView.transform.localPosition = new Vector3(0, listView.itemSize.y * 0.5f, 0); // Center in Y
 
-			m_HighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
-
-			size = contentBounds.size;
-			size.z = size.z - depthCompensation;
-			bounds.size = size;
-		}
+			var listPanel = m_HierarchyUI.listPanel;
+			listPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
+			listPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
+	}
 
 		static void SelectRow(int instanceID)
 		{
@@ -167,40 +145,44 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			m_Scrolling = true;
+
+			m_WorkspaceUI.topHighlight.visible = true;
+			m_WorkspaceUI.amplifyTopHighlight = false;
+
 			m_HierarchyUI.listView.OnBeginScrolling();
 		}
 
 		void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			m_HierarchyUI.listView.OnScroll(-Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / getViewerScale());
+			m_HierarchyUI.listView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / getViewerScale();
 		}
 
 		void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
+			m_Scrolling = false;
+
+			m_WorkspaceUI.topHighlight.visible = false;
+
 			m_HierarchyUI.listView.OnScrollEnded();
 		}
 
-		void OnScrollPanelDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			m_Scrolling = true;
-			m_HierarchyUI.highlight.visible = true;
-		}
-
-		void OnScrollPanelDragHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			m_Scrolling = false;
-			m_HierarchyUI.highlight.visible = false;
-		}
-
-		void OnScrollPanelHoverHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			m_HierarchyUI.highlight.visible = true;
-		}
-
-		void OnScrollPanelHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			if (!m_Scrolling)
-				m_HierarchyUI.highlight.visible = false;
+			{
+				m_WorkspaceUI.topHighlight.visible = true;
+				m_WorkspaceUI.amplifyTopHighlight = true;
+			}
+		}
+
+		void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		{
+			if (!m_Scrolling)
+			{
+				m_WorkspaceUI.topHighlight.visible = false;
+				m_WorkspaceUI.amplifyTopHighlight = false;
+			}
 		}
 
 		public void OnSelectionChanged()

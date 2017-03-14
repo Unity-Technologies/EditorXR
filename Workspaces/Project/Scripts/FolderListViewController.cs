@@ -56,7 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.UpdateItems();
 		}
 
-		void UpdateFolderItem(FolderData data, int offset, int depth, bool expanded)
+		void UpdateFolderItem(FolderData data, float offset, int depth, bool expanded)
 		{
 			var index = data.index;
 			FolderListItem item;
@@ -67,10 +67,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 
-			UpdateItemTransform(item.transform, offset);
+			UpdateItem(item.transform, offset);
 		}
 
-		protected override void UpdateRecursively(List<FolderData> data, ref int count, int depth = 0)
+		protected override void UpdateRecursively(List<FolderData> data, ref float offset, int depth = 0)
 		{
 			for (int i = 0; i < data.Count; i++)
 			{
@@ -80,17 +80,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (!m_ExpandStates.TryGetValue(index, out expanded))
 					m_ExpandStates[index] = false;
 
-				if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
+				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
 					Recycle(index);
 				else
-					UpdateFolderItem(datum, count, depth, expanded);
+					UpdateFolderItem(datum, offset + m_ScrollOffset, depth, expanded);
 
-				count++;
+				offset += itemSize.z;
 
 				if (datum.children != null)
 				{
 					if (expanded)
-						UpdateRecursively(datum.children, ref count, depth + 1);
+						UpdateRecursively(datum.children, ref offset, depth + 1);
 					else
 						RecycleChildren(datum);
 				}
