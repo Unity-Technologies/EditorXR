@@ -201,7 +201,7 @@ MonoBehaviour:
   - {fileID: 1000012284357972, guid: fe34d0f58fe4fe94d8e9316a1af1e79b, type: 2}
   m_SettleSpeed: 0.3
   m_RowCubeMaterial: {fileID: 2100000, guid: 7076eefb0e29024489a88aac0cac7403, type: 2}
-  m_BackingCubeMaterial: {fileID: 2100000, guid: de3a472d61ee2cf44b1a333112b4e3a4,
+  m_BackingCubeMaterial: {fileID: 2100000, guid: 7076eefb0e29024489a88aac0cac7403,
     type: 2}
   m_TextMaterial: {fileID: 2100000, guid: fadfdafaec5d1c44f8c141ef0ffc80b8, type: 2}
   m_UIMaterial: {fileID: 2100000, guid: db6b4bd93c0cf764f83975a0db7dd37a, type: 2}

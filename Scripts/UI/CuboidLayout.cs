@@ -30,6 +30,13 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		protected override void Awake()
 		{
+			Setup();
+
+			UpdateObjects();
+		}
+
+		public void Setup()
+		{
 			m_CubeTransforms = new Transform[m_TargetTransforms.Length];
 			for (var i = 0; i < m_CubeTransforms.Length; i++)
 			{
@@ -41,8 +48,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				m_HighlightCubeTransforms[i] = ObjectUtils.Instantiate(m_HighlightCubePrefab, m_TargetHighlightTransforms[i], false).transform;
 			}
-
-			UpdateObjects();
 		}
 
 		protected override void OnRectTransformDimensionsChange()

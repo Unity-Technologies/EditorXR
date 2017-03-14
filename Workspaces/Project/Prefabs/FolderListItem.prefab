@@ -232,7 +232,7 @@ MonoBehaviour:
   m_Text: {fileID: 114000013632537286}
   m_Cube: {fileID: 114000014220381596}
   m_ExpandArrow: {fileID: 114000011118187708}
-  m_NoClipCubeMaterial: {fileID: 2100000, guid: 66d21d847da9fae44a46053afe8d825b,
+  m_NoClipCubeMaterial: {fileID: 2100000, guid: 1a070009f7968b74abbf1a1ae823b472,
     type: 2}
   m_NoClipExpandArrowMaterial: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba,
     type: 2}
