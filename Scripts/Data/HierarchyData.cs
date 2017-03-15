@@ -12,11 +12,14 @@ namespace UnityEditor.Experimental.EditorVR
 
 		public int instanceID { get; set; }
 
-		public HierarchyData(string name, int instanceID, List<HierarchyData> children = null)
+		public bool locked { get; set; }
+
+		public HierarchyData(string name, int instanceID, bool locked, List<HierarchyData> children = null)
 		{
 			template = k_TemplateName;
 			this.name = name;
 			this.instanceID = instanceID;
+			this.locked = locked;
 			m_Children = children;
 		}
 	}

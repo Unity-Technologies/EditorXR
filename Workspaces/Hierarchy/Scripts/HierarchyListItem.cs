@@ -19,6 +19,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Text m_Text;
 
 		[SerializeField]
+		GameObject m_LockIcon;
+
+		[SerializeField]
 		BaseHandle m_Cube;
 
 		[SerializeField]
@@ -80,13 +83,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_Hovering = false;
 		}
 
-		public void SetMaterials(Material textMaterial, Material expandArrowMaterial)
+		public void SetMaterials(Material textMaterial, Material expandArrowMaterial, Material lockIconMaterial)
 		{
 			m_Text.material = textMaterial;
 			m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
+			m_LockIcon.GetComponent<Renderer>().sharedMaterial = lockIconMaterial;
 		}
 
-		public void UpdateSelf(float width, int depth, bool expanded, bool selected)
+		public void UpdateSelf(float width, int depth, bool expanded, bool selected, bool locked)
 		{
 			var cubeScale = m_CubeTransform.localScale;
 			cubeScale.x = width;
@@ -100,12 +104,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var doubleMargin = k_Margin * 2;
 			expandArrowTransform.localPosition = new Vector3(k_Margin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
 
+			if (m_LockIcon.activeSelf != locked)
+				m_LockIcon.SetActive(locked);
+			var lockIconTransform = m_LockIcon.transform;
+			var lockWidth = m_LockIcon.activeSelf ? lockIconTransform.localScale.x * 0.5f : 0f;
+			
 			// Text is next to arrow, with a margin and indent, rotated toward camera
 			var textTransform = m_Text.transform;
 			m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / textTransform.localScale.x);
-			textTransform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, textTransform.localPosition.y, 0);
+			textTransform.localPosition = new Vector3(doubleMargin + indent + arrowWidth + lockWidth - halfWidth, textTransform.localPosition.y, 0);
 
-			textTransform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
+			lockIconTransform.localPosition = new Vector3(textTransform.localPosition.x - lockWidth, lockIconTransform.localPosition.y, 0);
+
+			var localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
+			textTransform.localRotation = localRotation;
+			lockIconTransform.localRotation = localRotation;
 
 			UpdateArrow(expanded);
 

@@ -17,6 +17,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Material m_ExpandArrowMaterial;
 
+		[SerializeField]
+		Material m_LockIconMaterial;
+
 		int m_SelectedRow;
 
 		readonly Dictionary<int, bool> m_ExpandStates = new Dictionary<int, bool>();
@@ -29,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_TextMaterial = Instantiate(m_TextMaterial);
 			m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
+			m_LockIconMaterial = Instantiate(m_LockIconMaterial);
 		}
 
 		protected override void UpdateItems()
@@ -36,6 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var parentMatrix = transform.worldToLocalMatrix;
 			SetMaterialClip(m_TextMaterial, parentMatrix);
 			SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
+			SetMaterialClip(m_LockIconMaterial, parentMatrix);
 
 			base.UpdateItems();
 		}
@@ -48,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var hierarchyItem = (HierarchyListItem)item;
 
-			hierarchyItem.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, data.instanceID == m_SelectedRow);
+			hierarchyItem.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, data.instanceID == m_SelectedRow, data.locked);
 
 			SetMaterialClip(hierarchyItem.cubeMaterial, transform.worldToLocalMatrix);
 
@@ -83,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override ListViewItem<HierarchyData> GetItem(HierarchyData listData)
 		{
 			var item = (HierarchyListItem)base.GetItem(listData);
-			item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
+			item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_LockIconMaterial);
 			item.selectRow = SelectRow;
 
 			item.toggleExpanded = ToggleExpanded;
@@ -173,6 +178,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			ObjectUtils.Destroy(m_TextMaterial);
 			ObjectUtils.Destroy(m_ExpandArrowMaterial);
+			ObjectUtils.Destroy(m_LockIconMaterial);
 		}
 	}
 }

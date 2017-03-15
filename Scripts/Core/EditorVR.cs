@@ -117,7 +117,6 @@ namespace UnityEditor.Experimental.EditorVR
 			m_Viewer = new Viewer();
 			m_Vacuumables = new Vacuumables();
 
-			m_HierarchyModule = AddModule<HierarchyModule>();
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
 
 			VRView.cameraRig.parent = transform; // Parent the camera rig under EditorVR
@@ -174,6 +173,8 @@ namespace UnityEditor.Experimental.EditorVR
 			m_LockModule.updateAlternateMenu = (rayOrigin, o) => m_Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
 
 			m_HighlightModule = AddModule<HighlightModule>();
+
+			m_HierarchyModule = AddModule<HierarchyModule>();
 
 			m_SelectionModule = AddModule<SelectionModule>();
 			m_SelectionModule.selected += m_Rays.SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.

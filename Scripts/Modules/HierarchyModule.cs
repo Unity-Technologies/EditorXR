@@ -1,14 +1,18 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class HierarchyModule : MonoBehaviour
+	sealed class HierarchyModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
 		HierarchyData m_HierarchyData;
 		HierarchyProperty m_HierarchyProperty;
+
+		public Action<GameObject, bool> setLocked { private get; set; }
+		public Func<GameObject, bool> isLocked { private get; set; }
 
 		void OnEnable()
 		{
@@ -81,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var i = 0;
 				while (hasNext && hp.depth > depth)
 				{
-					var go = EditorUtility.InstanceIDToObject(hp.instanceID);
+					var go = EditorUtility.InstanceIDToObject(hp.instanceID) as GameObject;
 
 					if (go == gameObject)
 					{
@@ -130,14 +134,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (list.Count > 0)
 				children = list;
 
+			var hdGO = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
+			var locked = isLocked != null && isLocked(hdGO);
+
 			if (hd != null)
 			{
 				hd.children = children;
 				hd.name = name;
+				hd.locked = locked;
 				hd.instanceID = instanceID;
 			}
 
-			return hd ?? new HierarchyData(name, instanceID, children);
+			return hd ?? new HierarchyData(name, instanceID, locked, children);
 		}
 	}
 }
