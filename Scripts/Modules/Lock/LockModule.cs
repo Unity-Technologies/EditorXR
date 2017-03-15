@@ -72,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 			else
 			{
-				go.hideFlags ^= HideFlags.NotEditable;
+				go.hideFlags &= ~HideFlags.NotEditable;
 			}
 
 			UpdateAction(go);

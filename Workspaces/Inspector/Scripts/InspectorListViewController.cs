@@ -198,6 +198,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			t.localRotation = Quaternion.identity;
 		}
 
+		protected override void RecycleItem(string template, MonoBehaviour item)
+		{
+			var headerItem = item as InspectorHeaderItem;
+			if (headerItem)
+				headerItem.setLocked = null; // Reset, so it doesn't get called for the wrong object when re-used
+
+			base.RecycleItem(template, item);
+		}
+
 		protected override ListViewItem<InspectorData> GetItem(InspectorData listData)
 		{
 			var item = (InspectorListItem)base.GetItem(listData);
@@ -222,8 +231,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (headerItem)
 			{
 				var go = (GameObject)listData.serializedObject.targetObject;
-				headerItem.lockToggle.isOn = isLocked(go);
 				headerItem.setLocked = locked => setLocked(go, locked);
+				headerItem.lockToggle.isOn = isLocked(go);
 			}
 
 			item.toggleExpanded = ToggleExpanded;
