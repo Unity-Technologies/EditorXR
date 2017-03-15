@@ -101,13 +101,8 @@ namespace ListView
 				m_ItemSize = GetObjectSize(m_Templates[0]);
 
 			var itemSize = m_ItemSize.Value;
-			//m_NumRows = Mathf.CeilToInt(bounds.size.z / itemSize.z);
 
 			m_StartPosition = (bounds.extents.z - itemSize.z * 0.5f) * Vector3.forward;
-
-			//m_DataOffset = (int) (m_ScrollOffset / itemSize.z);
-			//if (m_ScrollOffset < 0)
-			//	m_DataOffset--;
 
 			if (m_Scrolling)
 			{

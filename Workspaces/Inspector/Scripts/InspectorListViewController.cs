@@ -186,6 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			item.setRowGrabbed = SetRowGrabbed;
 			item.getGrabbedRow = GetGrabbedRow;
+			item.toggleExpanded = ToggleExpanded;
 
 			if (!item.setup)
 			{
@@ -251,6 +252,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var index = data.index;
 			m_ExpandStates[index] = !m_ExpandStates[index];
+			StartSettling();
 		}
 
 		void OnArraySizeChanged(PropertyData element)

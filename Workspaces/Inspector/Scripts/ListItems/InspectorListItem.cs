@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHighlight
 	{
 		const float k_Indent = 0.02f;
-		const float k_HorizThreshold = 0.9f;
+		const float k_HorizThreshold = 0.85f;
 
 		protected CuboidLayout m_CuboidLayout;
 
@@ -42,6 +42,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public bool setup { get; set; }
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
+
+		public Action<InspectorData> toggleExpanded { private get; set; }
 
 		protected override bool singleClickDrag
 		{
@@ -176,6 +178,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		object GetDropObject(BaseHandle handle)
 		{
+			if (!m_DragObject || m_HorizontalDrag)
+				return null;
+
 			return GetDropObjectForFieldBlock(handle.transform.parent);
 		}
 
@@ -189,6 +194,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ReceiveDropForFieldBlock(handle.transform.parent, dropObject);
 		}
 
+		protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
+		{
+			base.OnDragStarted(handle, eventData);
+			m_HorizontalDrag = false;
+		}
+
 		protected override void OnGrabDragStart(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
 			var dragVector = eventData.rayOrigin.position - dragStart;
@@ -199,7 +210,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (fieldBlock)
 			{
 				if (m_HorizontalDrag)
-					OnHorizontalDragStart(fieldBlock);
+					OnHorizontalDragStart(eventData.rayOrigin, fieldBlock);
 				else
 					OnVerticalDragStart(fieldBlock);
 			}
@@ -213,7 +224,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				OnVerticalDragging(eventData.rayOrigin);
 		}
 
-		void OnVerticalDragStart(Transform fieldBlock)
+		protected virtual void OnVerticalDragStart(Transform fieldBlock)
 		{
 			var clone = ((GameObject)Instantiate(fieldBlock.gameObject, fieldBlock.parent)).transform;
 
@@ -273,7 +284,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			StartCoroutine(Magnetize());
 		}
 
-		void OnVerticalDragging(Transform rayOrigin)
+		protected virtual void OnVerticalDragging(Transform rayOrigin)
 		{
 			if (m_DragClone)
 			{
@@ -283,7 +294,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void OnHorizontalDragStart(Transform fieldBlock)
+		protected virtual void OnHorizontalDragStart(Transform rayOrigin, Transform fieldBlock)
 		{
 			// Get RayInputField from direct children
 			foreach (Transform child in fieldBlock.transform)
@@ -292,12 +303,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (inputField)
 				{
 					m_DraggedField = inputField as NumericInputField;
+					m_DraggedField.BeginSliderDrag(rayOrigin);
 					break;
 				}
 			}
 		}
 
-		void OnHorizontalDragging(Transform rayOrigin)
+		protected virtual void OnHorizontalDragging(Transform rayOrigin)
 		{
 			if (m_DraggedField)
 				m_DraggedField.SliderDrag(rayOrigin);
@@ -306,7 +318,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			if (m_DraggedField)
-				m_DraggedField.EndDrag();
+				m_DraggedField.EndSliderDrag(eventData.rayOrigin);
 
 			// Delay call fixes errors when you close the workspace or change data while dragging a field
 			EditorApplication.delayCall += () =>
@@ -349,6 +361,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
 		{
+		}
+
+		public void ToggleExpanded()
+		{
+			toggleExpanded(data);
 		}
 	}
 }

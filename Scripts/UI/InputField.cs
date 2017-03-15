@@ -45,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		Coroutine m_MoveKeyboardCoroutine;
 
-		public string text
+		public virtual string text
 		{
 			get
 			{

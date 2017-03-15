@@ -153,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (!m_ListItems.TryGetValue(data.index, out item))
 				item = GetItem(data);
 
-			if (item != null)
+			if (item)
 				UpdateGridItem(item, (int)offset);
 		}
 

@@ -68,6 +68,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					int size;
 					if (int.TryParse(input, out size) && m_SerializedProperty.intValue != size)
 					{
+						if (size < 0)
+							return false;
+
 						m_SerializedProperty.arraySize = size;
 
 						m_InputField.text = size.ToString();
@@ -124,15 +127,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				FinalizeModifications();
 		}
 
-		protected override void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
+		protected override void OnHorizontalDragStart(Transform rayOrigin, Transform fieldBlock)
 		{
-			base.OnDragging(baseHandle, eventData);
-
-			//if (m_ClickedField && m_ClickCount == 0)
-			//{
-			//	foreach (var button in m_IncrementDecrementButtons)
-			//		button.alternateIconVisible = true;
-			//}
+			base.OnHorizontalDragStart(rayOrigin, fieldBlock);
+			foreach (var button in m_IncrementDecrementButtons)
+				button.alternateIconVisible = true;
 		}
 
 		protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)

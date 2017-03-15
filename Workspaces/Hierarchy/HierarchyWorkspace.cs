@@ -94,9 +94,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 			createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
 
-			var hierarchyListView = m_HierarchyUI.listView;
-			hierarchyListView.selectRow = SelectRow;
-			connectInterfaces(hierarchyListView);
+			var listView = m_HierarchyUI.listView;
+			listView.selectRow = SelectRow;
+			connectInterfaces(listView);
 
 			var scrollHandle = m_HierarchyUI.scrollHandle;
 			scrollHandle.dragStarted += OnScrollDragStarted;

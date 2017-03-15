@@ -100,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 			var arrowWidth = expandArrowTransform.localScale.x * 0.5f;
 			var halfWidth = width * 0.5f;
 			var indent = k_Indent * depth;
-			var doubleMargin = k_Margin * 2;
+			const float doubleMargin = k_Margin * 2;
 			expandArrowTransform.localPosition = new Vector3(k_Margin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
 
 			// Text is next to arrow, with a margin and indent, rotated toward camera

@@ -294,6 +294,7 @@ GameObject:
   - 222: {fileID: 222000012027497822}
   - 114: {fileID: 114000010242712264}
   - 114: {fileID: 114000014059486202}
+  - 114: {fileID: 114000013764585466}
   m_Layer: 5
   m_Name: InputField
   m_TagString: Untagged
@@ -1887,6 +1888,19 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 2
+--- !u!114 &114000013764585466
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012034728172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_SelectionFlags: 3
 --- !u!114 &114000014059486202
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2295,7 +2309,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013209539630}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.005}
   m_LocalScale: {x: 0.001, y: 0.001, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []

@@ -470,7 +470,7 @@ namespace UnityEditor.Experimental.EditorVR
 				string title = "Show EditorVR GameObjects";
 				string tooltip = "Normally, EditorVR GameObjects are hidden in the Hierarchy. Would you like to show them?";
 				showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), showGameObjects);
-	}
+			}
 
 			EditorGUILayout.EndVertical();
 		}
