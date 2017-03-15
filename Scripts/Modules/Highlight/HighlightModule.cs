@@ -1,11 +1,12 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class HighlightModule : MonoBehaviour
+	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		static readonly Vector3 k_HighlightScaleIncrease = Vector3.one * 0.0125f;
 
@@ -13,6 +14,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		private Material m_HighlightMaterial;
 
 		private readonly Dictionary<GameObject, int> m_HighlightCounts = new Dictionary<GameObject, int>();
+
+		public Action<GameObject, bool> setLocked { private get; set; }
+		public Func<GameObject, bool> isLocked { private get; set; }
 
 		void LateUpdate()
 		{
@@ -37,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void SetHighlight(GameObject go, bool active)
 		{
-			if (go == null || go.isStatic)
+			if (go == null || isLocked(go))
 				return;
 
 			if (active) // Highlight

@@ -42,9 +42,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			if (hoveredObject != null)
 			{
-				if (hoveredObject.isStatic)
-					return false;
-
 				if (useGrouping)
 					return CanSelectObject(GetSelectionCandidate(hoveredObject, true), false);
 			}

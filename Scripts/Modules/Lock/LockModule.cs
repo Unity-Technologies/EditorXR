@@ -32,8 +32,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		// away entirely (e.g. because of HierarchyWorkspace)
 		public Action<Transform, GameObject> updateAlternateMenu { private get; set; }
 
-		readonly List<GameObject> m_LockedGameObjects = new List<GameObject>();
-
 		GameObject m_CurrentHoverObject;
 		Transform m_HoverRayOrigin;
 		float m_HoverDuration;
@@ -49,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public bool IsLocked(GameObject go)
 		{
-			return m_LockedGameObjects.Contains(go);
+			return go && (go.hideFlags & HideFlags.NotEditable) != 0;
 		}
 
 		bool ToggleLocked()
@@ -67,16 +65,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			if (locked)
 			{
-				if (!m_LockedGameObjects.Contains(go))
-					m_LockedGameObjects.Add(go);
+				go.hideFlags |= HideFlags.NotEditable;
 
 				// You shouldn't be able to keep an object selected if you are locking it
 				Selection.objects = Selection.objects.Where(o => o != go).ToArray();
 			}
 			else
 			{
-				if (m_LockedGameObjects.Contains(go))
-					m_LockedGameObjects.Remove(go);
+				go.hideFlags ^= HideFlags.NotEditable;
 			}
 
 			UpdateAction(go);
