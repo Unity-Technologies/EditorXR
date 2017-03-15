@@ -12,6 +12,25 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Set accessor for the filter list
 		/// </summary>
 		List<string> filterList { set; }
+		string searchQuery { get; }
+	}
+
+	public static class FilterUIExtensionMethods
+	{
+		public static bool TestFilter(this IFilterUI filterUI, string type)
+		{
+			var pieces = filterUI.searchQuery.Split(':');
+			if (pieces.Length > 1)
+			{
+				if (pieces[1].StartsWith(type))
+					return true;
+			}
+			else
+			{
+				return true;
+			}
+			return false;
+		}
 	}
 }
 #endif

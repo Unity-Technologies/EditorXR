@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
 
-		public Func<string, bool> testFilter;
+		public Func<string, bool> testFilter { private get; set; }
 
 		protected override float listHeight
 		{

@@ -16,11 +16,14 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 		public int instanceID { private get; set; }
 
-		public HierarchyData(string name, int instanceID, List<HierarchyData> children = null)
+		public HashSet<string> types { get; set; }
+
+		public HierarchyData(string name, int instanceID, HashSet<string> types, List<HierarchyData> children = null)
 		{
 			template = k_TemplateName;
 			this.name = name;
 			this.instanceID = instanceID;
+			this.types = types;
 			m_Children = children;
 		}
 	}

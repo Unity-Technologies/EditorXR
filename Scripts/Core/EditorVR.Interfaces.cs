@@ -218,15 +218,22 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var usesProjectFolderData = obj as IUsesProjectFolderData;
 				if (usesProjectFolderData != null)
+				{
 					evrProjectFolderModule.AddConsumer(usesProjectFolderData);
+
+					var filterUI = obj as IFilterUI;
+					if (filterUI != null)
+						evrProjectFolderModule.AddConsumer(filterUI);
+				}
 
 				var usesHierarchyData = obj as IUsesHierarchyData;
 				if (usesHierarchyData != null)
+				{
 					evrHierarchyModule.AddConsumer(usesHierarchyData);
-
-				var filterUI = obj as IFilterUI;
-				if (filterUI != null)
-					evrProjectFolderModule.AddConsumer(filterUI);
+					var filterUI = obj as IFilterUI;
+					if (filterUI != null)
+						evrHierarchyModule.AddConsumer(filterUI);
+				}
 
 				// Tracked Object action maps shouldn't block each other so we share an instance
 				var trackedObjectMap = obj as ITrackedObjectActionMap;

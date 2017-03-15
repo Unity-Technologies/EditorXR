@@ -11,9 +11,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
 	class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
 	{
-		const float k_YBounds = 0.2f;
-		const float k_ScrollMargin = 0.03f;
-
 		[SerializeField]
 		GameObject m_ContentPrefab;
 
@@ -61,6 +58,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public MoveCameraRigDelegate moveCameraRig { private get; set; }
 
+		public string searchQuery { get { return m_FilterUI.searchQuery; } }
+
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
@@ -96,6 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var listView = m_HierarchyUI.listView;
 			listView.selectRow = SelectRow;
+			listView.testFilter = this.TestFilter;
 			connectInterfaces(listView);
 
 			var scrollHandle = m_HierarchyUI.scrollHandle;

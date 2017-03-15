@@ -1,7 +1,8 @@
 ﻿#if UNITY_EDITOR
-using ListView;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using ListView;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -33,6 +34,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		int m_SelectedRow;
 
 		public Action<int> selectRow { private get; set; }
+
+		public Func<string, bool> testFilter { private get; set; }
 
 		protected override void Setup()
 		{
@@ -144,6 +147,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					continue;
 				}
 
+				var hasChildren = datum.children != null;
+				var filterTestPass = datum.types.Any(type => testFilter(type));
+
+				if (!filterTestPass) // If this item doesn't match the filter, move on to the next item; do not count
+				{
+					Recycle(index);
+
+					if (hasChildren)
+						RecycleChildren(datum);
+
+					continue;
+				}
+
 				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
 					Recycle(index);
 				else
@@ -151,7 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				offset += itemSize.z;
 
-				if (datum.children != null)
+				if (hasChildren)
 				{
 					if (expanded)
 						UpdateRecursively(datum.children, ref offset, depth + 1);

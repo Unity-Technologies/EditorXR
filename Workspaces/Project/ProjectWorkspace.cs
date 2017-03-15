@@ -62,6 +62,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		List<string> m_FilterList;
 
+		public string searchQuery { get { return m_FilterUI.searchQuery; } }
+
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
@@ -77,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var assetGridView = m_ProjectUI.assetGridView;
 			connectInterfaces(assetGridView);
-			assetGridView.testFilter = TestFilter;
+			assetGridView.testFilter = this.TestFilter;
 			assetGridView.data = new List<AssetData>();
 
 			var folderListView = m_ProjectUI.folderListView;
@@ -285,11 +287,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void Scale(float value)
 		{
 			m_ProjectUI.assetGridView.scaleFactor = Mathf.Pow(10, value);
-		}
-
-		bool TestFilter(string type)
-		{
-			return FilterUI.TestFilter(m_FilterUI.searchQuery, type);
 		}
 	}
 }
