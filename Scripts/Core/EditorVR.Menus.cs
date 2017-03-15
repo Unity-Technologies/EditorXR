@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
@@ -19,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR
 		[SerializeField]
 		PinnedToolButton m_PinnedToolButtonPrefab;
 
-		class Menus : Nested
+		class Menus : Nested, IInterfaceConnector
 		{
 			[Flags]
 			internal enum MenuHideFlags
@@ -34,6 +35,28 @@ namespace UnityEditor.Experimental.EditorVR
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<IMenu> m_UpdateVisibilityMenus = new List<IMenu>();
 			readonly List<DeviceData> m_ActiveDeviceData = new List<DeviceData>();
+
+			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			{
+				var evrMenus = evr.m_Menus;
+				var evrTools = evr.m_Tools;
+
+				var instantiateMenuUI = obj as IInstantiateMenuUI;
+				if (instantiateMenuUI != null)
+					instantiateMenuUI.instantiateMenuUI = InstantiateMenuUI;
+
+				var mainMenu = obj as IMainMenu;
+				if (mainMenu != null)
+				{
+					mainMenu.menuTools = evrMenus.mainMenuTools;
+					mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
+					mainMenu.isToolActive = evrTools.IsToolActive;
+				}
+			}
+
+			public void DisconnectInterface(object obj)
+			{
+			}
 
 			internal void UpdateMenuVisibilityNearWorkspaces()
 			{

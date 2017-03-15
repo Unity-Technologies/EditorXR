@@ -23,9 +23,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		KeyboardUI m_NumericKeyboard;
 		KeyboardUI m_StandardKeyboard;
 
-		public Func<Transform, object, bool> lockRay { private get; set; }
-		public Func<Transform, object, bool> unlockRay { private get; set; }
-
 		public Action<ForEachRayOriginCallback> forEachRayOrigin { private get; set; }
 
 		public KeyboardUI SpawnNumericKeyboard()

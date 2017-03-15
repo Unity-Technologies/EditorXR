@@ -4,13 +4,40 @@ using System.Collections;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class Viewer : Nested
+		class Viewer : Nested, IInterfaceConnector
 		{
 			const float k_CameraRigTransitionTime = 0.75f;
+
+			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			{
+				var locomotion = obj as ILocomotor;
+				if (locomotion != null)
+					locomotion.cameraRig = VRView.cameraRig;
+
+				var usesViewerBody = obj as IUsesViewerBody;
+				if (usesViewerBody != null)
+					usesViewerBody.isOverShoulder = IsOverShoulder;
+
+				var usesCameraRig = obj as IUsesCameraRig;
+				if (usesCameraRig != null)
+					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
+
+				var moveCameraRig = obj as IMoveCameraRig;
+				if (moveCameraRig != null)
+					moveCameraRig.moveCameraRig = MoveCameraRig;
+
+				var usesViewerScale = obj as IUsesViewerScale;
+				if (usesViewerScale != null)
+					usesViewerScale.getViewerScale = GetViewerScale;
+			}
+
+			public void DisconnectInterface(object obj)
+			{
+			}
 
 			internal void AddPlayerModel()
 			{

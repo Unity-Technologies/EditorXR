@@ -1,24 +1,20 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Reflection;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
 		[SerializeField]
 		DefaultProxyRay m_ProxyRayPrefab;
 
-		class Rays : Nested, IBinding<ICustomRay>
+		class Rays : Nested, IInterfaceConnector
 		{
 			internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -34,16 +30,66 @@ namespace UnityEditor.Experimental.EditorVR
 			StandardManipulator m_StandardManipulator;
 			ScaleManipulator m_ScaleManipulator;
 
-			void IBinding<ICustomRay>.Bind()
+			public Rays()
 			{
-				Debug.Log("Binding");
 				ICustomRayMethods.showDefaultRay = ShowRay;
 				ICustomRayMethods.hideDefaultRay = HideRay;
+
+				IUsesRayLockingMethods.lockRay = LockRay;
+				IUsesRayLockingMethods.unlockRay = UnlockRay;
 			}
 
-			void IBinding<ICustomRay>.ConnectInterface(ICustomRay obj, Transform rayOrigin = null)
+			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				// No instance connections
+				if (rayOrigin)
+				{
+					var evrDeviceData = evr.m_DeviceData;
+
+					var ray = obj as IUsesRayOrigin;
+					if (ray != null)
+						ray.rayOrigin = rayOrigin;
+
+					var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+
+					var handedRay = obj as IUsesNode;
+					if (handedRay != null && deviceData != null)
+						handedRay.node = deviceData.node;
+
+					var usesProxy = obj as IUsesProxyType;
+					if (usesProxy != null && deviceData != null)
+						usesProxy.proxyType = deviceData.proxy.GetType();
+
+					var menuOrigins = obj as IUsesMenuOrigins;
+					if (menuOrigins != null)
+					{
+						Transform mainMenuOrigin;
+						var proxy = GetProxyForRayOrigin(rayOrigin);
+						if (proxy != null && proxy.menuOrigins.TryGetValue(rayOrigin, out mainMenuOrigin))
+						{
+							menuOrigins.menuOrigin = mainMenuOrigin;
+							Transform alternateMenuOrigin;
+							if (proxy.alternateMenuOrigins.TryGetValue(rayOrigin, out alternateMenuOrigin))
+								menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
+						}
+					}
+				}
+
+				var raycaster = obj as IUsesRaycastResults;
+				if (raycaster != null)
+					raycaster.getFirstGameObject = GetFirstGameObject;
+
+				var positionPreview = obj as IGetPreviewOrigin;
+				if (positionPreview != null)
+					positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
+
+				// Internal interfaces
+				var forEachRayOrigin = obj as IForEachRayOrigin;
+				if (forEachRayOrigin != null && ObjectUtils.IsSameAssembly<IForEachRayOrigin>(obj))
+					forEachRayOrigin.forEachRayOrigin = ForEachRayOrigin;
+			}
+
+			public void DisconnectInterface(object obj)
+			{
 			}
 
 			internal void UpdateRayForDevice(DeviceData deviceData, Transform rayOrigin)
@@ -334,5 +380,4 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 	}
 }
-
 #endif

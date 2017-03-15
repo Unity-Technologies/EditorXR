@@ -8,7 +8,7 @@ using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
@@ -47,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			bool m_MiniWorldIgnoreListDirty = true;
 
-			internal MiniWorlds()
+			public MiniWorlds()
 			{
 				EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 			}

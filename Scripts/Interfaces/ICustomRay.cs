@@ -4,19 +4,10 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Method signature for hiding or showing the default ray
-	/// <param name="rayOrigin">The ray to hide or show</param>
-	/// <param name="onlyRay">An optional parameter to hide or show only the ray</param>
-	/// </summary>
-	
-	/// <summary>
 	/// Implementors can show & hide the default ray
 	/// </summary>
 	public interface ICustomRay : IUsesRayLocking
 	{
-		//DefaultRayVisibilityDelegate ShowDefaultRay { set; }
-
-		//DefaultRayVisibilityDelegate HideDefaultRay { set; }
 	}
 
 	public static class ICustomRayMethods

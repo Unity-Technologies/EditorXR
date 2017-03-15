@@ -64,9 +64,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		Coroutine m_UpdateLocationCoroutine;
 
-		public Func<Transform, object, bool> lockRay { get; set; }
-		public Func<Transform, object, bool> unlockRay { get; set; }
-
 		public IMiniWorld miniWorld
 		{
 			get { return m_MiniWorld; }
@@ -303,12 +300,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void DragStarted(BaseHandle baseHandle, HandleEventData handleEventData)
 		{
-			lockRay(handleEventData.rayOrigin, this);
+			this.LockRay(handleEventData.rayOrigin, this);
 		}
 
 		void DragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
 		{
-			unlockRay(handleEventData.rayOrigin, this);
+			this.UnlockRay(handleEventData.rayOrigin, this);
 		}
 
 		void RecenterOnPlayer()

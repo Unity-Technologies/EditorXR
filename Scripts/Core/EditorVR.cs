@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -14,7 +12,7 @@ using UnityEngine.Assertions;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	[InitializeOnLoad]
 #if UNITY_EDITORVR
@@ -60,9 +58,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Viewer m_Viewer;
 		Vacuumables m_Vacuumables;
 
-		Dictionary<Type, IBinding<object>> m_Binders = new Dictionary<Type, IBinding<object>>();
-		Dictionary<Type, BindDelegate> m_Bindings = new Dictionary<Type, BindDelegate>();
-		Dictionary<Type, ConnectInterfacesDelegate> m_InterfaceBinders = new Dictionary<Type, ConnectInterfacesDelegate>();
+		Dictionary<Type, Nested> m_NestedModules = new Dictionary<Type, Nested>();
 
 		event Action m_SelectionChanged;
 
@@ -113,15 +109,22 @@ namespace UnityEditor.Experimental.EditorVR
 
 			ClearDeveloperConsoleIfNecessary();
 
-			m_DirectSelection = AddNestedModule<DirectSelection>();
-			m_Interfaces = new Interfaces();
-			m_Menus = new Menus();
-			m_MiniWorlds = new MiniWorlds();
-			m_Rays = AddNestedModule<Rays>();
-			m_Tools = AddNestedModule<Tools>();
-			m_UI = new UI();
-			m_Viewer = new Viewer();
-			m_Vacuumables = new Vacuumables();
+			m_Interfaces = (Interfaces)AddNestedModule(typeof(Interfaces));
+
+			var nestedClassTypes = ObjectUtils.GetExtensionsOfClass(typeof(Nested));
+			foreach (var type in nestedClassTypes)
+			{
+				AddNestedModule(type);
+			}
+
+			m_DirectSelection = GetNestedModule<DirectSelection>();
+			m_Menus = GetNestedModule<Menus>();
+			m_MiniWorlds = GetNestedModule<MiniWorlds>();
+			m_Rays = GetNestedModule<Rays>();
+			m_Tools = GetNestedModule<Tools>();
+			m_UI = GetNestedModule<UI>();
+			m_Viewer = GetNestedModule<Viewer>();
+			m_Vacuumables = GetNestedModule<Vacuumables>();
 
 			m_HierarchyModule = AddModule<HierarchyModule>();
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
@@ -347,56 +350,22 @@ namespace UnityEditor.Experimental.EditorVR
 			return module;
 		}
 
-		private static void ShowInterfaceMapping(Type intType, Type implType)
+		T GetNestedModule<T>() where T : Nested
 		{
-			var sb = new StringBuilder();
-			InterfaceMapping map = implType.GetInterfaceMap(intType);
-			sb.AppendFormat("Mapping of {0} to {1}: \n", map.InterfaceType, map.TargetType);
-			for (int ctr = 0; ctr < map.InterfaceMethods.Length; ctr++)
-			{
-				MethodInfo im = map.InterfaceMethods[ctr];
-				MethodInfo tm = map.TargetMethods[ctr];
-				sb.AppendFormat("   {0} --> {1}\n", im.Name, tm.Name);
-			}
-			sb.AppendLine();
-			Debug.Log(sb.ToString());
+			return (T)m_NestedModules[typeof(T)];
 		}
 
-		public bool IsMethodCompatibleWithDelegate<T>(MethodInfo method) where T : class
+		Nested AddNestedModule(Type type)
 		{
-			Type delegateType = typeof(T);
-			MethodInfo delegateSignature = delegateType.GetMethod("Invoke");
-
-			bool parametersEqual = delegateSignature
-				.GetParameters()
-				.Select(x => x.ParameterType)
-				.SequenceEqual(method.GetParameters()
-					.Select(x => x.ParameterType));
-
-			return delegateSignature.ReturnType == method.ReturnType &&
-				   parametersEqual;
-		}
-
-		T AddNestedModule<T>() where T : Nested, new()
-		{
-			T nested = new T();
-			var iface = nested.GetType().GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IBinding<>) && i.GetGenericArguments().Contains(typeof(ICustomRay)));
-			if (iface != null)
+			Nested nested = null;
+			if (!m_NestedModules.TryGetValue(type, out nested))
 			{
-				var map = nested.GetType().GetInterfaceMap(iface);
-				for (int i = 0; i < map.InterfaceMethods.Length; i++)
-				{
-					var im = map.InterfaceMethods[i];
-					var bd = Delegate.CreateDelegate(typeof(Action<object>), nested, map.TargetMethods[i]) as BindDelegate;
-					if (bd != null)
-						m_Bindings.Add(typeof(ICustomRay), bd);
+				nested = (Nested)Activator.CreateInstance(type);
 
-					//if (IsMethodCompatibleWithDelegate<BindDelegate>(im))
-					//m_Bindings.Add(typeof(ICustomRay), () => { im.Invoke(nested, null); });
-				}
-				ShowInterfaceMapping(iface, nested.GetType());
-				//m_Binders.Add(typeof(ICustomRay), (IBinding<object>)nested);
-				Debug.Log("Has IBinding<ICustomRay>");
+				if (m_Interfaces != null)
+					m_Interfaces.AttachInterfaceConnectors(nested);
+
+				m_NestedModules.Add(type, nested);
 			}
 			return nested;
 		}

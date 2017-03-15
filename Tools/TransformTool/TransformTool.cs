@@ -153,9 +153,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Func<Transform, bool> isOverShoulder { private get; set; }
 		public Action<GameObject> deleteSceneObject { private get; set; }
 
-		public Func<Transform, object, bool> lockRay { private get; set; }
-		public Func<Transform, object, bool> unlockRay { private get; set; }
-
 		public Func<GameObject, Transform, bool> canGrabObject { private get; set; }
 		public event Action<GameObject> objectGrabbed;
 		public event Action<Transform[], Transform> objectsDropped;
@@ -288,7 +285,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						setHighlight(hoveredObject, false);
 
 						this.HideDefaultRay(rayOrigin, true);
-						lockRay(rayOrigin, this);
+						this.LockRay(rayOrigin, this);
 
 						// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
 						EditorApplication.delayCall += () =>
@@ -436,8 +433,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					grabData.UpdatePositions();
 
 					// Prevent lock from getting stuck
-					unlockRay(rayOrigin, this);
-					lockRay(destRayOrigin, this);
+					this.UnlockRay(rayOrigin, this);
+					this.LockRay(destRayOrigin, this);
 					return;
 				}
 			}
@@ -454,7 +451,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			objectsDropped(grabData.grabbedObjects.ToArray(), grabData.rayOrigin);
 			m_GrabData.Remove(inputNode);
 
-			unlockRay(grabData.rayOrigin, this);
+			this.UnlockRay(grabData.rayOrigin, this);
 			this.ShowDefaultRay(grabData.rayOrigin, true);
 		}
 

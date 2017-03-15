@@ -75,9 +75,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		float m_OriginalNearClipPlane;
 		float m_OriginalFarClipPlane;
 
-		public Func<Transform, object, bool> lockRay { private get; set; }
-		public Func<Transform, object, bool> unlockRay { private get; set; }
-
 		public Transform rayOrigin { private get; set; }
 		public Node? node { private get; set; }
 
@@ -304,7 +301,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				m_State = State.Aiming;
 				this.HideDefaultRay(rayOrigin);
-				lockRay(rayOrigin, this);
+				this.LockRay(rayOrigin, this);
 
 				m_BlinkVisuals.ShowVisuals();
 
@@ -312,7 +309,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 			else if (m_State == State.Aiming && blinkInput.blink.wasJustReleased)
 			{
-				unlockRay(rayOrigin, this);
+				this.UnlockRay(rayOrigin, this);
 				this.ShowDefaultRay(rayOrigin);
 
 				if (!m_BlinkVisuals.outOfMaxRange)

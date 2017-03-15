@@ -9,13 +9,12 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class Tools : Nested
+		class Tools : Nested, IInterfaceConnector
 		{
-
 			internal class ToolData
 			{
 				public ITool tool;
@@ -24,12 +23,44 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal List<Type> allTools { get; private set; }
 
-			internal Dictionary<Type, List<ILinkedObject>> linkedObjects { get { return m_LinkedObjects; } }
 			readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
 
 			public Tools()
 			{
 				allTools = ObjectUtils.GetImplementationsOfInterface(typeof(ITool)).ToList();
+			}
+
+			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			{
+				var selectTool = obj as ISelectTool;
+				if (selectTool != null)
+					selectTool.selectTool = SelectTool;
+
+				var linkedObject = obj as ILinkedObject;
+				if (linkedObject != null)
+				{
+					var type = obj.GetType();
+					List<ILinkedObject> linkedObjectList;
+					if (!m_LinkedObjects.TryGetValue(type, out linkedObjectList))
+					{
+						linkedObjectList = new List<ILinkedObject>();
+						m_LinkedObjects[type] = linkedObjectList;
+					}
+
+					linkedObjectList.Add(linkedObject);
+					linkedObject.linkedObjects = linkedObjectList;
+					linkedObject.isSharedUpdater = IsSharedUpdater;
+				}
+			}
+
+			public void DisconnectInterface(object obj)
+			{
+			}
+
+			static bool IsSharedUpdater(ILinkedObject linkedObject)
+			{
+				var type = linkedObject.GetType();
+				return evr.m_Tools.m_LinkedObjects[type].IndexOf(linkedObject) == 0;
 			}
 
 			internal bool IsPermanentTool(Type type)

@@ -1,17 +1,16 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class DirectSelection : Nested, IBinding<IUsesDirectSelection>
+		class DirectSelection : Nested, IInterfaceConnector
 		{
 			internal IGrabObjects objectsGrabber { get; set; }
 
@@ -19,15 +18,31 @@ namespace UnityEditor.Experimental.EditorVR
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelectionResults = new Dictionary<Transform, DirectSelectionData>();
 			readonly List<ActionMapInput> m_ActiveStates = new List<ActionMapInput>();
 
-			void IBinding<IUsesDirectSelection>.Bind()
+			public DirectSelection()
 			{
-				Debug.Log("Binding for DS");
-				IUsesDirectSelectionMethods.s_GetDirectSelection = GetDirectSelection;
+				IUsesDirectSelectionMethods.getDirectSelection = GetDirectSelection;
 			}
 
-			void IBinding<IUsesDirectSelection>.ConnectInterface(IUsesDirectSelection obj, Transform rayOrigin = null)
+			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				// No instance connections
+				var grabObjects = obj as IGrabObjects;
+				if (grabObjects != null)
+				{
+					grabObjects.canGrabObject = CanGrabObject;
+					grabObjects.objectGrabbed += OnObjectGrabbed;
+					grabObjects.objectsDropped += OnObjectsDropped;
+				}
+
+			}
+
+			public void DisconnectInterface(object obj)
+			{
+				var grabObjects = obj as IGrabObjects;
+				if (grabObjects != null)
+				{
+					grabObjects.objectGrabbed -= OnObjectGrabbed;
+					grabObjects.objectsDropped -= OnObjectsDropped;
+				}
 			}
 
 			// NOTE: This is for the length of the pointer object, not the length of the ray coming out of the pointer

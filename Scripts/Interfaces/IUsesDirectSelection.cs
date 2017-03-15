@@ -10,24 +10,22 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IUsesDirectSelection
 	{
-		/// <summary>
-		/// ConnectInterfaces provides a delegate which can be called to get a dictionary of the current direct selection
-		/// Key is the rayOrigin used to select the object
-		/// Value is a data class containing the selected object and metadata
-		/// </summary>
-		//Func<Dictionary<Transform, DirectSelectionData>> GetDirectSelection { set; }
 	}
 
 	public static class IUsesDirectSelectionMethods
 	{
 		internal delegate Dictionary<Transform, DirectSelectionData> GetDirectSelectionDelegate();
 
-		internal static GetDirectSelectionDelegate s_GetDirectSelection;
+		internal static GetDirectSelectionDelegate getDirectSelection { get; set; }
 
+		/// <summary>
+		/// Returns a dictionary of direct selections
+		/// </summary>
+		/// <returns>Dictionary (K,V) where K = rayOrigin used to select the object and V = info about the direct selection</returns>
 		public static Dictionary<Transform, DirectSelectionData> GetDirectSelection(this IUsesDirectSelection obj)
 		{
-			if (s_GetDirectSelection != null)
-				return s_GetDirectSelection();
+			if (getDirectSelection != null)
+				return getDirectSelection();
 
 			return null;
 		}
