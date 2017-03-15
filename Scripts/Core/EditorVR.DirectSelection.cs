@@ -135,7 +135,10 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				// Detach the player head model so that it is not affected by its parent transform
 				if (selection.CompareTag(k_VRPlayerTag))
+				{
+					selection.hideFlags = HideFlags.None;
 					selection.transform.parent = null;
+				}
 			}
 
 			internal void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
