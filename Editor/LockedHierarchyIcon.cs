@@ -30,7 +30,7 @@ class LockedHierarchyIcon : ScriptableObject
 		// place the icoon to the right of the list:
 		const float iconSize = 18f;
 		Rect r = new Rect(selectionRect);
-		r.x = 0f; //r.width - 20;
+		r.x = r.xMax - iconSize;
 		r.width = iconSize;
 		r.height = iconSize;
 		
