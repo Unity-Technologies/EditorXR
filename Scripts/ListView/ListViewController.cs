@@ -30,6 +30,7 @@ namespace ListView
 		}
 		protected List<TData> m_Data;
 
+		protected readonly Dictionary<string, ListViewItemTemplate<TItem>> m_TemplateDictionary = new Dictionary<string, ListViewItemTemplate<TItem>>();
 		protected readonly Dictionary<TIndex, TItem> m_ListItems = new Dictionary<TIndex, TItem>();
 		protected readonly Dictionary<TIndex, Transform> m_GrabbedRows = new Dictionary<TIndex, Transform>();
 
@@ -37,6 +38,20 @@ namespace ListView
 
 		public InstantiateUIDelegate instantiateUI { private get; set; }
 		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
+
+		protected override void Setup()
+		{
+			if (m_Templates.Length < 1)
+			{
+				Debug.LogError("No templates!");
+			}
+			foreach (var template in m_Templates)
+			{
+				if (m_TemplateDictionary.ContainsKey(template.name))
+					Debug.LogError("Two templates cannot have the same name");
+				m_TemplateDictionary[template.name] = new ListViewItemTemplate<TItem>(template);
+			}
+		}
 
 		protected override void UpdateItems()
 		{
@@ -69,6 +84,15 @@ namespace ListView
 				RecycleItem(item.data.template, item);
 				m_ListItems.Remove(index);
 			}
+		}
+
+		protected virtual void RecycleItem(string template, TItem item)
+		{
+			if (item == null || template == null)
+				return;
+
+			m_TemplateDictionary[template].pool.Add(item);
+			item.gameObject.SetActive(false);
 		}
 
 		protected virtual void UpdateVisibleItem(TData data, float offset)
@@ -125,7 +149,7 @@ namespace ListView
 			TItem item;
 			if (m_TemplateDictionary[data.template].pool.Count > 0)
 			{
-				item = (TItem) m_TemplateDictionary[data.template].pool[0];
+				item = m_TemplateDictionary[data.template].pool[0];
 				m_TemplateDictionary[data.template].pool.RemoveAt(0);
 
 				item.gameObject.SetActive(true);

@@ -12,13 +12,9 @@ public class CuboidLayoutEditor : Editor
 		var cuboid = (CuboidLayout)target;
 
 		if (GUILayout.Button("Setup"))
-		{
 			cuboid.Setup();
-		}
 
 		if (GUILayout.Button("Update"))
-		{
 			cuboid.UpdateObjects();
-		}
 	}
 }

@@ -33,6 +33,10 @@ namespace ListView
 		[SerializeField]
 		protected float m_SettleSpeed = 0.4f;
 
+		public float scrollSpeed { get { return m_ScrollSpeed; } set { m_ScrollSpeed = value; } }
+		[SerializeField]
+		float m_ScrollSpeed = 0.3f;
+
 		protected bool m_Settling;
 		protected bool m_SettleTest;
 		Action m_OnSettlingComplete;
@@ -49,12 +53,7 @@ namespace ListView
 		}
 		protected Vector3? m_ItemSize;
 
-		public float scrollSpeed { get { return m_ScrollSpeed; } set { m_ScrollSpeed = value; } }
-		float m_ScrollSpeed = 0.3f;
-
 		protected Vector3 m_StartPosition;
-
-		protected readonly Dictionary<string, ListViewItemTemplate> m_TemplateDictionary = new Dictionary<string, ListViewItemTemplate>();
 
 		protected bool m_Scrolling;
 		protected float m_ScrollReturn = float.MaxValue;
@@ -75,19 +74,7 @@ namespace ListView
 			UpdateView();
 		}
 
-		protected virtual void Setup()
-		{
-			if (m_Templates.Length < 1)
-			{
-				Debug.LogError("No templates!");
-			}
-			foreach (var template in m_Templates)
-			{
-				if (m_TemplateDictionary.ContainsKey(template.name))
-					Debug.LogError("Two templates cannot have the same name");
-				m_TemplateDictionary[template.name] = new ListViewItemTemplate(template);
-			}
-		}
+		protected abstract void Setup();
 
 		protected virtual void UpdateView()
 		{
@@ -199,15 +186,6 @@ namespace ListView
 				itemSize.z = Vector3.Scale(g.transform.lossyScale, rend.bounds.extents).z * 2 + m_Padding;
 			}
 			return itemSize;
-		}
-
-		protected virtual void RecycleItem(string template, MonoBehaviour item)
-		{
-			if (item == null || template == null)
-				return;
-
-			m_TemplateDictionary[template].pool.Add(item);
-			item.gameObject.SetActive(false);
 		}
 
 		public virtual void OnBeginScrolling()

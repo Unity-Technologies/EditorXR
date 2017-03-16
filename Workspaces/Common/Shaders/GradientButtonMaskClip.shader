@@ -3,7 +3,7 @@
 	Properties
 	{
 		_StencilRef("StencilRef", Int) = 3
-		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
+		_ClipExtents("Clip Extents", Vector) = (1,1,1,0)
 	}
 
 	SubShader

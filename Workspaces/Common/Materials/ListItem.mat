@@ -123,9 +123,6 @@ Material:
       second: 1
     m_Colors:
     - first:
-        name: _ClipExtents
-      second: {r: Infinity, g: Infinity, b: Infinity, a: Infinity}
-    - first:
         name: _Color
       second: {r: 0.19607839, g: 0.19999996, b: 0.19999996, a: 1}
     - first:
