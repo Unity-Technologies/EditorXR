@@ -338,6 +338,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
 		{
+			startSettling(null);
 			toggleExpanded(data.index);
 		}
 
