@@ -1,13 +1,17 @@
-﻿using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Actions;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 
-/// <summary>
-/// Decorates a class that wants to receive menu actions
-/// </summary>
-public interface IUsesMenuActions
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Collection of actions that can be performed
+	/// Decorates a class that wants to receive menu actions
 	/// </summary>
-	List<ActionMenuData> menuActions { set; }
+	public interface IUsesMenuActions
+	{
+		/// <summary>
+		/// Collection of actions that can be performed
+		/// </summary>
+		List<ActionMenuData> menuActions { set; }
+	}
 }
+#endif

@@ -7,8 +7,8 @@
 	}
 	SubShader
 	{
-		Tags{ "Queue" = "Transparent" "LightMode" = "Always" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
-		ZWrite On
+		Tags{ "Queue" = "Overlay+5103" "LightMode" = "Always" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
+		ZWrite Off
 		Lighting Off
 		Blend SrcAlpha OneMinusSrcAlpha
 		LOD 100
@@ -48,7 +48,7 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				fixed4 col = tex2D(_MainTex, i.uv);
-				col = col + col; // Amplify color
+				col = col + col * col; // Amplify color
 				col.a = _Alpha * (col.r + col.g + col.b);  // Sample alpha as the cumulative r/g/b value of the fragment
 				return col;
 			}

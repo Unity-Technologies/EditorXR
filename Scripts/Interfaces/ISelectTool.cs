@@ -1,10 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
-    /// <summary>
-    /// Gives decorated class the ability to select tools from a menu
-    /// </summary>
+	/// <summary>
+	/// Gives decorated class the ability to select tools from a menu
+	/// </summary>
 	public interface ISelectTool
 	{
 		/// <summary>
@@ -16,3 +18,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		Func<Transform, Type, bool> selectTool { set; }
 	}
 }
+#endif

@@ -1,8 +1,10 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Input
+namespace UnityEditor.Experimental.EditorVR.Input
 {
-	internal class BaseInputToEvents : MonoBehaviour, IInputToEvents
+	class BaseInputToEvents : MonoBehaviour, IInputToEvents
 	{
 		public bool active
 		{
@@ -22,5 +24,5 @@ namespace UnityEngine.Experimental.EditorVR.Input
 
 		public event Action activeChanged;
 	}
-
 }
+#endif

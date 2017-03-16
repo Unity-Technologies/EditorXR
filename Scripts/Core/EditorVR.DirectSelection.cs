@@ -1,8 +1,9 @@
-#if UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Modules;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -37,9 +38,9 @@ namespace UnityEditor.Experimental.EditorVR
 					{
 						var miniWorld = ray.miniWorld;
 
-						// As the miniworld gets smaller, the ray length grows, hence localScale.Inverse().
+						// As the miniworld gets smaller, the ray length grows, hence lossyScale.Inverse().
 						// Assume that both transforms have uniform scale, so we just need .x
-						length *= miniWorld.referenceTransform.TransformVector(miniWorld.miniWorldTransform.localScale.Inverse()).x;
+						length *= miniWorld.referenceTransform.TransformVector(miniWorld.miniWorldTransform.lossyScale.Inverse()).x;
 					}
 				}
 
@@ -58,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR
 					var rayOrigin = deviceData.rayOrigin;
 					var input = deviceData.directSelectInput;
 					var obj = GetDirectSelectionForRayOrigin(rayOrigin, input);
-					if (obj && !obj.CompareTag(kVRPlayerTag))
+					if (obj && !obj.CompareTag(k_VRPlayerTag))
 					{
 						m_ActiveStates.Add(input);
 						m_DirectSelectionResults[rayOrigin] = new DirectSelectionData
@@ -124,7 +125,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal bool CanGrabObject(GameObject selection, Transform rayOrigin)
 			{
-				if (selection.CompareTag(kVRPlayerTag) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
+				if (selection.CompareTag(k_VRPlayerTag) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
 					return false;
 
 				return true;
@@ -133,8 +134,11 @@ namespace UnityEditor.Experimental.EditorVR
 			internal void OnObjectGrabbed(GameObject selection)
 			{
 				// Detach the player head model so that it is not affected by its parent transform
-				if (selection.CompareTag(kVRPlayerTag))
+				if (selection.CompareTag(k_VRPlayerTag))
+				{
+					selection.hideFlags = HideFlags.None;
 					selection.transform.parent = null;
+				}
 			}
 
 			internal void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
@@ -142,8 +146,8 @@ namespace UnityEditor.Experimental.EditorVR
 				foreach (var grabbedObject in grabbedObjects)
 				{
 					// Dropping the player head updates the camera rig position
-					if (grabbedObject.CompareTag(kVRPlayerTag))
-						evr.StartCoroutine(Viewer.MoveCameraRig(grabbedObject));
+					if (grabbedObject.CompareTag(k_VRPlayerTag))
+						Viewer.DropPlayerHead(grabbedObject);
 					else if (evr.m_Viewer.IsOverShoulder(rayOrigin) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
 						evr.m_SceneObjectModule.DeleteSceneObject(grabbedObject.gameObject);
 				}

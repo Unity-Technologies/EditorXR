@@ -1,17 +1,19 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Workspaces
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight, IUsesStencilRef, IConnectInterfaces
+	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight,IUsesStencilRef,
+		IConnectInterfaces, IUsesViewerScale
 	{
-		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
+		public static readonly Vector3 k_DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 
-		public const float kHandleMargin = -0.15f; // Compensate for base size from frame model
+		public const float HandleMargin = -0.15f; // Compensate for base size from frame model
 
 		public event Action<IWorkspace> destroyed;
 
@@ -19,11 +21,11 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 
 		protected Vector3? m_CustomStartingBounds;
 
-		public static readonly Vector3 kMinBounds = new Vector3(0.55f, 0.4f, 0.1f);
+		public static readonly Vector3 k_MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
 
 		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
 		[SerializeField]
-		private Vector3 m_MinBounds = kMinBounds;
+		private Vector3 m_MinBounds = k_MinBounds;
 
 		/// <summary>
 		/// Bounding box for workspace content (ignores value.center) 
@@ -116,6 +118,8 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 
 		public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
+		public Func<float> getViewerScale { protected get; set; }
+
 		public virtual void Setup()
 		{
 			GameObject baseObject = instantiateUI(m_BasePrefab);
@@ -129,7 +133,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-			m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? kDefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
+			m_ContentBounds = new Bounds(Vector3.up * k_DefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? k_DefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
 			UpdateBounds();
 
 			//Set up DirectManipulator
@@ -180,32 +184,39 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		{
 			if (m_Dragging)
 			{
-				Vector3 dragVector = eventData.rayOrigin.position - m_DragStart;
-				Bounds bounds = contentBounds;
-				Vector3 positionOffset = Vector3.zero;
+				var viewerScale = getViewerScale();
+				var dragVector = (eventData.rayOrigin.position - m_DragStart) / viewerScale;
+				var bounds = contentBounds;
+				var positionOffset = Vector3.zero;
+
 				if (handle.Equals(m_WorkspaceUI.leftHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
 					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
 				}
+
 				if (handle.Equals(m_WorkspaceUI.frontHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
 					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 				}
+
 				if (handle.Equals(m_WorkspaceUI.rightHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
 					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
 				}
+
 				if (handle.Equals(m_WorkspaceUI.backHandle))
 				{
 					bounds.size = m_BoundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
 					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 				}
+
 				contentBounds = bounds;
+
 				if (contentBounds.size == bounds.size) //Don't reposition if we hit minimum bounds
-					transform.position = m_PositionStart + positionOffset;
+					transform.position = m_PositionStart + positionOffset * viewerScale;
 			}
 		}
 
@@ -274,9 +285,11 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			{
 				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = scale;
-				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
+
+			transform.localScale = targetScale;
 
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
@@ -293,13 +306,13 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			{
 				currentDuration += Time.unscaledDeltaTime;
 				transform.localScale = scale;
-				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
 
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
-			U.Object.Destroy(gameObject);
+			ObjectUtils.Destroy(gameObject);
 		}
 
 		void OnMoveHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -349,8 +362,8 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			while (currentDuration < kTargetDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
-				currentBoundsCenter = U.Math.SmoothDamp(currentBoundsCenter, targetBoundsCenter, ref smoothVelocityCenter, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
-				currentBoundsSize = U.Math.SmoothDamp(currentBoundsSize, targetBoundsSize, ref smoothVelocitySize, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBoundsCenter = MathUtilsExt.SmoothDamp(currentBoundsCenter, targetBoundsCenter, ref smoothVelocityCenter, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentBoundsSize = MathUtilsExt.SmoothDamp(currentBoundsSize, targetBoundsSize, ref smoothVelocitySize, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				contentBounds = new Bounds(currentBoundsCenter, currentBoundsSize);
 				OnBoundsChanged();
 				yield return null;
@@ -358,3 +371,4 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		}
 	}
 }
+#endif

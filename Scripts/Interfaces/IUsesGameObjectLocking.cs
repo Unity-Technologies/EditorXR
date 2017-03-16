@@ -1,6 +1,8 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Get access to locking features
@@ -18,3 +20,4 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		Func<GameObject,bool> isLocked { set; }
 	}
 }
+#endif

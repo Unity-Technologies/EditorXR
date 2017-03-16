@@ -1,175 +1,179 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#if UNITY_EDITOR
 using ListView;
+using System;
+using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-public class HierarchyListViewController : NestedListViewController<HierarchyData>
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	const float kClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
-
-	[SerializeField]
-	Material m_TextMaterial;
-
-	[SerializeField]
-	Material m_ExpandArrowMaterial;
-
-	int m_SelectedRow;
-
-	readonly Dictionary<int, bool> m_ExpandStates = new Dictionary<int, bool>();
-
-	public Action<int> selectRow;
-
-	protected override void Setup()
+	sealed class HierarchyListViewController : NestedListViewController<HierarchyData>
 	{
-		base.Setup();
+		const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
-		m_TextMaterial = Instantiate(m_TextMaterial);
-		m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
-	}
+		[SerializeField]
+		Material m_TextMaterial;
 
-	protected override void UpdateItems()
-	{
-		var parentMatrix = transform.worldToLocalMatrix;
-		SetMaterialClip(m_TextMaterial, parentMatrix);
-		SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
+		[SerializeField]
+		Material m_ExpandArrowMaterial;
 
-		base.UpdateItems();
-	}
+		int m_SelectedRow;
 
-	void UpdateHierarchyItem(HierarchyData data, int offset, int depth, bool expanded)
-	{
-		ListViewItem<HierarchyData> item;
-		if (!m_ListItems.TryGetValue(data, out item))
-			item = GetItem(data);
+		readonly Dictionary<int, bool> m_ExpandStates = new Dictionary<int, bool>();
 
-		var hierarchyItem = (HierarchyListItem)item;
+		public Action<int> selectRow;
 
-		hierarchyItem.UpdateSelf(bounds.size.x - kClipMargin, depth, expanded, data.instanceID == m_SelectedRow);
-
-		SetMaterialClip(hierarchyItem.cubeMaterial, transform.worldToLocalMatrix);
-
-		UpdateItemTransform(item.transform, offset);
-	}
-
-	protected override void UpdateRecursively(List<HierarchyData> data, ref int count, int depth = 0)
-	{
-		foreach (var datum in data)
+		protected override void Setup()
 		{
-			bool expanded;
-			if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
-				m_ExpandStates[datum.instanceID] = false;
+			base.Setup();
 
-			if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
-				Recycle(datum);
-			else
-				UpdateHierarchyItem(datum, count, depth, expanded);
+			m_TextMaterial = Instantiate(m_TextMaterial);
+			m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
+		}
 
-			count++;
+		protected override void UpdateItems()
+		{
+			var parentMatrix = transform.worldToLocalMatrix;
+			SetMaterialClip(m_TextMaterial, parentMatrix);
+			SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
 
-			if (datum.children != null)
+			base.UpdateItems();
+		}
+
+		void UpdateHierarchyItem(HierarchyData data, int offset, int depth, bool expanded)
+		{
+			ListViewItem<HierarchyData> item;
+			if (!m_ListItems.TryGetValue(data, out item))
+				item = GetItem(data);
+
+			var hierarchyItem = (HierarchyListItem)item;
+
+			hierarchyItem.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, data.instanceID == m_SelectedRow);
+
+			SetMaterialClip(hierarchyItem.cubeMaterial, transform.worldToLocalMatrix);
+
+			UpdateItemTransform(item.transform, offset);
+		}
+
+		protected override void UpdateRecursively(List<HierarchyData> data, ref int count, int depth = 0)
+		{
+			foreach (var datum in data)
 			{
-				if (expanded)
-					UpdateRecursively(datum.children, ref count, depth + 1);
+				bool expanded;
+				if (!m_ExpandStates.TryGetValue(datum.instanceID, out expanded))
+					m_ExpandStates[datum.instanceID] = false;
+
+				if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
+					Recycle(datum);
 				else
-					RecycleChildren(datum);
-			}
-		}
-	}
+					UpdateHierarchyItem(datum, count, depth, expanded);
 
-	protected override ListViewItem<HierarchyData> GetItem(HierarchyData listData)
-	{
-		var item = (HierarchyListItem)base.GetItem(listData);
-		item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
-		item.selectRow = SelectRow;
+				count++;
 
-		item.toggleExpanded = ToggleExpanded;
-
-		bool expanded;
-		if(m_ExpandStates.TryGetValue(listData.instanceID, out expanded))
-			item.UpdateArrow(expanded, true);
-
-		return item;
-	}
-
-	void ToggleExpanded(HierarchyData data)
-	{
-		var instanceID = data.instanceID;
-		m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
-	}
-
-	public void SelectRow(int instanceID)
-	{
-		if (data == null)
-			return;
-
-		m_SelectedRow = instanceID;
-
-		foreach (var datum in data)
-		{
-			ExpandToRow(datum, instanceID);
-		}
-
-		selectRow(instanceID);
-
-		var scrollHeight = 0f;
-		foreach (var datum in data)
-		{
-			ScrollToRow(datum, instanceID, ref scrollHeight);
-			scrollHeight += itemSize.z;
-		}
-	}
-
-	bool ExpandToRow(HierarchyData container, int rowID)
-	{
-		if (container.instanceID == rowID)
-			return true;
-
-		var found = false;
-		if (container.children != null)
-		{
-			foreach (var child in container.children)
-			{
-				if (ExpandToRow(child, rowID))
-					found = true;
-			}
-		}
-
-		if (found)
-			m_ExpandStates[container.instanceID] = true;
-
-		return found;
-	}
-
-	void ScrollToRow(HierarchyData container, int rowID, ref float scrollHeight)
-	{
-		if (container.instanceID == rowID)
-		{
-			if (-scrollOffset > scrollHeight || -scrollOffset + bounds.size.z < scrollHeight)
-				scrollOffset = -scrollHeight;
-			return;
-		}
-
-		bool expanded;
-		m_ExpandStates.TryGetValue(container.instanceID, out expanded);
-
-		if (container.children != null)
-		{
-			foreach (var child in container.children)
-			{
-				if (expanded)
+				if (datum.children != null)
 				{
-					ScrollToRow(child, rowID, ref scrollHeight);
-					scrollHeight += itemSize.z;
+					if (expanded)
+						UpdateRecursively(datum.children, ref count, depth + 1);
+					else
+						RecycleChildren(datum);
 				}
 			}
 		}
-	}
 
-	private void OnDestroy()
-	{
-		U.Object.Destroy(m_TextMaterial);
-		U.Object.Destroy(m_ExpandArrowMaterial);
+		protected override ListViewItem<HierarchyData> GetItem(HierarchyData listData)
+		{
+			var item = (HierarchyListItem)base.GetItem(listData);
+			item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
+			item.selectRow = SelectRow;
+
+			item.toggleExpanded = ToggleExpanded;
+
+			bool expanded;
+			if (m_ExpandStates.TryGetValue(listData.instanceID, out expanded))
+				item.UpdateArrow(expanded, true);
+
+			return item;
+		}
+
+		void ToggleExpanded(HierarchyData data)
+		{
+			var instanceID = data.instanceID;
+			m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
+		}
+
+		public void SelectRow(int instanceID)
+		{
+			if (data == null)
+				return;
+
+			m_SelectedRow = instanceID;
+
+			foreach (var datum in data)
+			{
+				ExpandToRow(datum, instanceID);
+			}
+
+			selectRow(instanceID);
+
+			var scrollHeight = 0f;
+			foreach (var datum in data)
+			{
+				ScrollToRow(datum, instanceID, ref scrollHeight);
+				scrollHeight += itemSize.z;
+			}
+		}
+
+		bool ExpandToRow(HierarchyData container, int rowID)
+		{
+			if (container.instanceID == rowID)
+				return true;
+
+			var found = false;
+			if (container.children != null)
+			{
+				foreach (var child in container.children)
+				{
+					if (ExpandToRow(child, rowID))
+						found = true;
+				}
+			}
+
+			if (found)
+				m_ExpandStates[container.instanceID] = true;
+
+			return found;
+		}
+
+		void ScrollToRow(HierarchyData container, int rowID, ref float scrollHeight)
+		{
+			if (container.instanceID == rowID)
+			{
+				if (-scrollOffset > scrollHeight || -scrollOffset + bounds.size.z < scrollHeight)
+					scrollOffset = -scrollHeight;
+				return;
+			}
+
+			bool expanded;
+			m_ExpandStates.TryGetValue(container.instanceID, out expanded);
+
+			if (container.children != null)
+			{
+				foreach (var child in container.children)
+				{
+					if (expanded)
+					{
+						ScrollToRow(child, rowID, ref scrollHeight);
+						scrollHeight += itemSize.z;
+					}
+				}
+			}
+		}
+
+		private void OnDestroy()
+		{
+			ObjectUtils.Destroy(m_TextMaterial);
+			ObjectUtils.Destroy(m_ExpandArrowMaterial);
+		}
 	}
 }
+#endif

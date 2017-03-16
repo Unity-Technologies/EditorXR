@@ -1,18 +1,34 @@
-﻿using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.UI;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEngine;
 
-public class HierarchyUI : MonoBehaviour
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	public HierarchyListViewController listView { get { return m_ListView; } }
-	[SerializeField]
-	HierarchyListViewController m_ListView;
+	sealed class HierarchyUI : MonoBehaviour
+	{
+		public HierarchyListViewController listView
+		{
+			get { return m_ListView; }
+		}
 
-	public BaseHandle scrollHandle { get { return m_ScrollHandle; } }
-	[SerializeField]
-	BaseHandle m_ScrollHandle;
+		[SerializeField]
+		HierarchyListViewController m_ListView;
 
-	public WorkspaceHighlight highlight { get { return m_Highlight; } }
-	[SerializeField]
-	WorkspaceHighlight m_Highlight;
+		public BaseHandle scrollHandle
+		{
+			get { return m_ScrollHandle; }
+		}
+
+		[SerializeField]
+		BaseHandle m_ScrollHandle;
+
+		public WorkspaceHighlight highlight
+		{
+			get { return m_Highlight; }
+		}
+
+		[SerializeField]
+		WorkspaceHighlight m_Highlight;
+	}
 }
+#endif

@@ -32,14 +32,14 @@ namespace ConditionalCompilation
 	[InitializeOnLoad]
 	public static class ConditionalCompilationUtility
 	{
-		const string kEnableCCU = "UNITY_CCU";
+		const string k_EnableCCU = "UNITY_CCU";
 
 		public static bool enabled
 		{
 			get
 			{
 				var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
-				return PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Contains(kEnableCCU);
+				return PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Contains(k_EnableCCU);
 			}
 		}
 
@@ -49,16 +49,16 @@ namespace ConditionalCompilation
 		{
 			var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
 			var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList();
-			if (!defines.Contains(kEnableCCU, StringComparer.OrdinalIgnoreCase))
+			if (!defines.Contains(k_EnableCCU, StringComparer.OrdinalIgnoreCase))
 			{
-				defines.Add(kEnableCCU);
+				defines.Add(k_EnableCCU);
 				PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines.ToArray()));
 
 				// This will trigger another re-compile, which needs to happen, so all the custom attributes will be visible
 				return;
 			}
 
-			var ccuDefines = new List<string> { kEnableCCU };
+			var ccuDefines = new List<string> { k_EnableCCU };
 
 			var conditionalAttributeType = typeof(ConditionalAttribute);
 
@@ -71,7 +71,7 @@ namespace ConditionalCompilation
 
 				foreach (var conditional in conditionals)
 				{
-					if (string.Equals(conditional.ConditionString, kEnableCCU, StringComparison.OrdinalIgnoreCase))
+					if (string.Equals(conditional.ConditionString, k_EnableCCU, StringComparison.OrdinalIgnoreCase))
 					{
 						var dependentClassField = type.GetField(kDependentClass);
 						if (dependentClassField == null)

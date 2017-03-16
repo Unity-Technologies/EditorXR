@@ -1,12 +1,13 @@
-﻿using System;
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
+using System;
 using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class DeviceInputModule : MonoBehaviour
+	sealed class DeviceInputModule : MonoBehaviour
 	{
 		public TrackedObject trackedObjectInput { get; private set; }
 		[SerializeField]
@@ -114,7 +115,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 			else
 			{
 				// For two-handed tools, the single device won't work, so collect the devices from the action map
-				devices = U.Input.CollectInputDevicesFromActionMaps(new List<ActionMap>() { map });
+				devices = InputUtils.CollectInputDevicesFromActionMaps(new List<ActionMap>() { map });
 				if (actionMapInput.TryInitializeWithDevices(devices))
 					successfulInitialization = true;
 			}
@@ -248,3 +249,4 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

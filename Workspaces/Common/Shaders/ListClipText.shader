@@ -1,4 +1,4 @@
-﻿Shader "Custom/List Clip Text"
+﻿Shader "EditorVR/Custom/List Clip Text"
 {
 	Properties
 	{
@@ -22,25 +22,16 @@
 	{
 		Tags
 		{
-			"Queue" = "Transparent"
+			"Queue" = "Overlay+5103"
 			"IgnoreProjector" = "True"
 			"RenderType" = "Transparent"
 			"PreviewType" = "Plane"
 			"CanUseSpriteAtlas" = "True"
 		}
 
-		Stencil
-		{
-			Ref[_Stencil]
-			Comp[_StencilComp]
-			Pass[_StencilOp]
-			ReadMask[_StencilReadMask]
-			WriteMask[_StencilWriteMask]
-		}
-
 		Cull Off
 		Lighting Off
-		ZWrite Off
+		ZWrite On
 		ZTest[unity_GUIZTestMode]
 		Blend SrcAlpha OneMinusSrcAlpha
 		ColorMask[_ColorMask]

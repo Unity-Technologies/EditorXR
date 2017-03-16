@@ -1,8 +1,9 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
-	internal class RequiresLayerAttribute : Attribute
+	sealed class RequiresLayerAttribute : Attribute
 	{
 		public string layer;
 
@@ -12,3 +13,4 @@ namespace UnityEngine.Experimental.EditorVR
 		}
 	}
 }
+#endif

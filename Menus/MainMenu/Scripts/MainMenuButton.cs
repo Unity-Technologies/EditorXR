@@ -1,10 +1,11 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Modules;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class MainMenuButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
+	sealed class MainMenuButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
 	{
 		public Button button { get { return m_Button; } }
 		[SerializeField]
@@ -15,6 +16,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		[SerializeField]
 		private Text m_ButtonTitle;
 
+		Transform m_HoveringRayOrigin;
 		Color m_OriginalColor;
 
 		public bool selected
@@ -38,23 +40,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			}
 		}
 
-		public Action clicked;
-
-		/// <summary>
-		/// The ray that is hovering over the button
-		/// </summary>
-		public Transform hoveringRayOrigin { get; private set; }
-
 		private void Awake()
 		{
-			m_Button.onClick.AddListener(OnButtonClicked);
-
 			m_OriginalColor = m_Button.targetGraphic.color;
-		}
-
-		private void OnDestroy()
-		{
-			m_Button.onClick.RemoveListener(OnButtonClicked);
 		}
 
 		public void SetData(string name, string description)
@@ -63,22 +51,17 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_ButtonDescription.text = description;
 		}
 
-		private void OnButtonClicked()
-		{
-			if (clicked != null)
-				clicked();
-		}
-
 		public void OnRayEnter(RayEventData eventData)
 		{
 			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
-			hoveringRayOrigin = eventData.rayOrigin;
+			m_HoveringRayOrigin = eventData.rayOrigin;
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			if (hoveringRayOrigin == eventData.rayOrigin)
-				hoveringRayOrigin = null;
+			if (m_HoveringRayOrigin == eventData.rayOrigin)
+				m_HoveringRayOrigin = null;
 		}
 	}
 }
+#endif

@@ -1,14 +1,10 @@
-#if UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Core;
-using UnityEngine.Experimental.EditorVR.Menus;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -17,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class Interfaces : Nested
 		{
-			const byte kMinStencilRef = 2;
+			const byte k_MinStencilRef = 2;
 
 			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
@@ -26,15 +22,15 @@ namespace UnityEditor.Experimental.EditorVR
 				get { return m_StencilRef; }
 				set
 				{
-					m_StencilRef = (byte)Mathf.Clamp(value, kMinStencilRef, byte.MaxValue);
+					m_StencilRef = (byte)Mathf.Clamp(value, k_MinStencilRef, byte.MaxValue);
 
 					// Wrap
 					if (m_StencilRef == byte.MaxValue)
-						m_StencilRef = kMinStencilRef;
+						m_StencilRef = k_MinStencilRef;
 				}
 			}
 
-			byte m_StencilRef = kMinStencilRef;
+			byte m_StencilRef = k_MinStencilRef;
 
 			internal void ConnectInterfaces(object obj, InputDevice device)
 			{
@@ -72,6 +68,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var evrSelectionModule = evr.m_SelectionModule;
 				var evrUI = evr.m_UI;
 				var evrDeviceData = evr.m_DeviceData;
+				var tooltipModule = evr.m_TooltipModule;
 
 				if (rayOrigin)
 				{
@@ -79,13 +76,15 @@ namespace UnityEditor.Experimental.EditorVR
 					if (ray != null)
 						ray.rayOrigin = rayOrigin;
 
+					var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+
+					var handedRay = obj as IUsesNode;
+					if (handedRay != null && deviceData != null)
+						handedRay.node = deviceData.node;
+
 					var usesProxy = obj as IUsesProxyType;
-					if (usesProxy != null)
-					{
-						var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
-						if (deviceData != null)
-							usesProxy.proxyType = deviceData.proxy.GetType();
-					}
+					if (usesProxy != null && deviceData != null)
+						usesProxy.proxyType = deviceData.proxy.GetType();
 
 					var menuOrigins = obj as IUsesMenuOrigins;
 					if (menuOrigins != null)
@@ -169,7 +168,7 @@ namespace UnityEditor.Experimental.EditorVR
 						var actionMenuData = new ActionMenuData()
 						{
 							name = action.GetType().Name,
-							sectionName = ActionMenuItemAttribute.kDefaultActionSectionName,
+							sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
 							priority = int.MaxValue,
 							action = action,
 						};
@@ -240,7 +239,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var usesCameraRig = obj as IUsesCameraRig;
 				if (usesCameraRig != null)
-					usesCameraRig.cameraRig = U.Camera.GetCameraRig();
+					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
 
 				var usesStencilRef = obj as IUsesStencilRef;
 				if (usesStencilRef != null)
@@ -282,10 +281,48 @@ namespace UnityEditor.Experimental.EditorVR
 				if (requestStencilRef != null)
 					requestStencilRef.requestStencilRef = RequestStencilRef;
 
+				var moveCameraRig = obj as IMoveCameraRig;
+				if (moveCameraRig != null)
+					moveCameraRig.moveCameraRig = Viewer.MoveCameraRig;
+
+				var usesViewerScale = obj as IUsesViewerScale;
+				if (usesViewerScale != null)
+					usesViewerScale.getViewerScale = Viewer.GetViewerScale;
+
+				var usesTooltip = obj as ISetTooltipVisibility;
+				if (usesTooltip != null)
+				{
+					usesTooltip.showTooltip = tooltipModule.ShowTooltip;
+					usesTooltip.hideTooltip = tooltipModule.HideTooltip;
+				}
+
+				var linkedObject = obj as ILinkedObject;
+				if (linkedObject != null)
+				{
+					var type = obj.GetType();
+					var linkedObjects = evrTools.linkedObjects;
+					List<ILinkedObject> linkedObjectList;
+					if (!linkedObjects.TryGetValue(type, out linkedObjectList))
+					{
+						linkedObjectList = new List<ILinkedObject>();
+						linkedObjects[type] = linkedObjectList;
+					}
+
+					linkedObjectList.Add(linkedObject);
+					linkedObject.linkedObjects = linkedObjectList;
+					linkedObject.isSharedUpdater = IsSharedUpdater;
+				}
+
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
 				if (forEachRayOrigin != null && IsSameAssembly<IForEachRayOrigin>(obj))
 					forEachRayOrigin.forEachRayOrigin = evrRays.ForEachRayOrigin;
+			}
+
+			bool IsSharedUpdater(ILinkedObject linkedObject)
+			{
+				var type = linkedObject.GetType();
+				return evr.m_Tools.linkedObjects[type].IndexOf(linkedObject) == 0;
 			}
 
 			static bool IsSameAssembly<T>(object obj)
@@ -342,4 +379,5 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 	}
 }
+
 #endif

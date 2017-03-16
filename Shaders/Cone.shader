@@ -1,10 +1,10 @@
-Shader "Standard/Cone"
+Shader "EditorVR/Standard-Cone"
 {
 	Properties
 	{
 		_Color("Color", Color) = (1,1,1,1)
 		_MainTex("Albedo", 2D) = "white" {}
-		
+
 		_Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
 		_Glossiness("Smoothness", Range(0.0, 1.0)) = 0.5
@@ -28,7 +28,7 @@ Shader "Standard/Cone"
 
 		_EmissionColor("Color", Color) = (0,0,0)
 		_EmissionMap("Emission", 2D) = "white" {}
-		
+
 		_DetailMask("Detail Mask", 2D) = "white" {}
 
 		_DetailAlbedoMap("Detail Albedo x2", 2D) = "grey" {}
@@ -51,15 +51,15 @@ Shader "Standard/Cone"
 
 	SubShader
 	{
-		Tags { "Queue" = "Transparent+1" "RenderType"="Opaque" "PerformanceChecks"="False" }
+		Tags { "Queue" = "Overlay+5102" "RenderType"="Opaque" "PerformanceChecks"="False" }
 		LOD 300
-	
+
 
 		// ------------------------------------------------------------------
 		//  Base forward pass (directional light, emission, lightmaps, ...)
 		Pass
 		{
-			Name "FORWARD" 
+			Name "FORWARD"
 			Tags { "LightMode" = "ForwardBase" }
 
 			Blend[_SrcBlend][_DstBlend]
@@ -194,7 +194,7 @@ Shader "Standard/Cone"
 		// This pass it not used during regular rendering.
 		Pass
 		{
-			Name "META" 
+			Name "META"
 			Tags { "LightMode"="Meta" }
 
 			Cull Off

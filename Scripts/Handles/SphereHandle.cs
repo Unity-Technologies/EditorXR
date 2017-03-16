@@ -1,10 +1,12 @@
-﻿using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using UnityEngine.EventSystems;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Handles
+namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	public class SphereHandle : BaseHandle, IScrollHandler
+	sealed class SphereHandle : BaseHandle, IScrollHandler
 	{
 		private class SphereHandleEventData : HandleEventData
 		{
@@ -13,10 +15,10 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 			public SphereHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) {}
 		}
 
-		private const float kInitialScrollRate = 2f;
-		private const float kScrollAcceleration = 14f;
+		private const float k_InitialScrollRate = 2f;
+		private const float k_ScrollAcceleration = 14f;
 
-		readonly static float kScaleBump = 1.1f;
+		readonly static float k_ScaleBump = 1.1f;
 		
 		private float m_ScrollRate;
 		private Vector3 m_LastPosition;
@@ -24,7 +26,7 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new SphereHandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData)) { raycastHitDistance = eventData.pointerCurrentRaycast.distance };
+			return new SphereHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitDistance = eventData.pointerCurrentRaycast.distance };
 		}
 
 		protected override void OnHandleDragStarted(HandleEventData eventData)
@@ -35,7 +37,7 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 
 			m_LastPosition = GetRayPoint(eventData);
 
-			m_ScrollRate = kInitialScrollRate;
+			m_ScrollRate = k_InitialScrollRate;
 
 			base.OnHandleDragStarted(eventData);
 		}
@@ -52,13 +54,13 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 
 		protected override void OnHandleHoverStarted(HandleEventData eventData)
 		{
-			transform.localScale *= kScaleBump;
+			transform.localScale *= k_ScaleBump;
 			base.OnHandleHoverStarted(eventData);
 		}
 
 		protected override void OnHandleHoverEnded(HandleEventData eventData)
 		{
-			transform.localScale /= kScaleBump;
+			transform.localScale /= k_ScaleBump;
 			base.OnHandleHoverStarted(eventData);
 		}
 
@@ -75,9 +77,9 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 
 			// Scolling changes the radius of the sphere while dragging, and accelerates
 			if (Mathf.Abs(eventData.scrollDelta.y) > 0.5f)
-				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y)*kScrollAcceleration*Time.unscaledDeltaTime;
+				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y)*k_ScrollAcceleration*Time.unscaledDeltaTime;
 			else
-				m_ScrollRate = kInitialScrollRate;
+				m_ScrollRate = k_InitialScrollRate;
 
 			ChangeRadius(m_ScrollRate*eventData.scrollDelta.y*Time.unscaledDeltaTime);
 		}
@@ -90,3 +92,4 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 		}
 	}
 }
+#endif

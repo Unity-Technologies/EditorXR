@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Tests
 {
@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 			var outputFile = "Temp/CCUTest.dll";
 
 			var references = new List<string>();
-			U.Object.ForEachAssembly(assembly =>
+			ObjectUtils.ForEachAssembly(assembly =>
 			{
 				// Ignore project assemblies because they will cause conflicts
 				if (assembly.FullName.StartsWith("Assembly-CSharp", StringComparison.OrdinalIgnoreCase))

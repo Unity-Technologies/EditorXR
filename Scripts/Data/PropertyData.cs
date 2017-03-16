@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using UnityEditor;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 
-namespace UnityEngine.Experimental.EditorVR.Data
+namespace UnityEditor.Experimental.EditorVR.Data
 {
-	public class PropertyData : InspectorData
+	sealed class PropertyData : InspectorData
 	{
 #if UNITY_EDITOR
 		public SerializedProperty property { get; private set; }
@@ -21,3 +21,4 @@ namespace UnityEngine.Experimental.EditorVR.Data
 #endif
 	}
 }
+#endif

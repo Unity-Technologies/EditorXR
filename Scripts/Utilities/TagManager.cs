@@ -1,15 +1,13 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
-#if UNITY_EDITOR
-	internal static class TagManager
+	static class TagManager
 	{
-		const int kMaxLayer = 31;
-		const int kMinLayer = 8;
+		const int k_MaxLayer = 31;
+		const int k_MinLayer = 8;
 
 		/// <summary>
 		/// Add a tag to the tag manager if it doesn't already exist
@@ -66,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				if (!found)
 				{
 					var added = false;
-					for (var i = kMaxLayer; i >= kMinLayer; i--)
+					for (var i = k_MaxLayer; i >= k_MinLayer; i--)
 					{
 						var layer = layers.GetArrayElementAtIndex(i);
 						if (!string.IsNullOrEmpty(layer.stringValue))
@@ -101,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static List<string> GetRequiredTags()
 		{
 			var requiredTags = new List<string>();
-			U.Object.ForEachType(t =>
+			ObjectUtils.ForEachType(t =>
 			{
 				var tagAttributes = (RequiresTagAttribute[])t.GetCustomAttributes(typeof(RequiresTagAttribute), true);
 				foreach (var attribute in tagAttributes)
@@ -113,7 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static List<string> GetRequiredLayers()
 		{
 			var requiredLayers = new List<string>();
-			U.Object.ForEachType(t =>
+			ObjectUtils.ForEachType(t =>
 			{
 				var layerAttributes = (RequiresLayerAttribute[])t.GetCustomAttributes(typeof(RequiresLayerAttribute), true);
 				foreach (var attribute in layerAttributes)
@@ -122,5 +120,5 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			return requiredLayers;
 		}
 	}
-#endif
 }
+#endif

@@ -1,7 +1,8 @@
-﻿using System;
-using UnityEngine.Experimental.EditorVR.Helpers;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Workspaces
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Declares a class as a Workspace within the system
@@ -24,3 +25,4 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		Bounds outerBounds { get; }
 	}
 }
+#endif
