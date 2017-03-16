@@ -182,9 +182,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var go = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
 			if (go)
 			{
-				var components = go.GetComponentsInChildren<Component>(true);
-				foreach (var component in components)
+				var components = go.GetComponents<Component>();
+				for (int i = 0; i < components.Length; i++)
 				{
+					var component = components[i];
 					if (component is Transform)
 						continue;
 

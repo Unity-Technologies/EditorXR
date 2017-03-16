@@ -135,7 +135,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ExpandArrowRenderer.sharedMaterial = expandArrowMaterial;
 		}
 
-		public void UpdateSelf(float width, int depth, bool expanded, bool selected)
+		public void UpdateSelf(float width, int depth, bool? expanded, bool selected)
 		{
 			var cubeScale = m_CubeTransform.localScale;
 			cubeScale.x = width;
@@ -174,14 +174,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				cubeMaterial.color = m_NormalColor;
 		}
 
-		public void UpdateArrow(bool expanded, bool immediate = false)
+		public void UpdateArrow(bool? expanded, bool immediate = false)
 		{
+			if (!expanded.HasValue)
+			{
+				m_ExpandArrow.gameObject.SetActive(false);
+				return;
+			}
+
 			m_ExpandArrow.gameObject.SetActive(data.children != null);
 			var expandArrowTransform = m_ExpandArrow.transform;
 
 			// Rotate arrow for expand state
 			expandArrowTransform.localRotation = Quaternion.Lerp(expandArrowTransform.localRotation,
-				Quaternion.AngleAxis(90f, Vector3.right) * (expanded ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
+				Quaternion.AngleAxis(90f, Vector3.right) * (expanded.Value ? Quaternion.AngleAxis(90f, Vector3.back) : Quaternion.identity),
 				immediate ? 1f : k_ExpandArrowRotateSpeed);
 		}
 

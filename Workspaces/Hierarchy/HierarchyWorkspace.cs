@@ -96,6 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var listView = m_HierarchyUI.listView;
 			listView.selectRow = SelectRow;
 			listView.testFilter = this.TestFilter;
+			listView.getSearchQuery = () => searchQuery;
 			connectInterfaces(listView);
 
 			var scrollHandle = m_HierarchyUI.scrollHandle;

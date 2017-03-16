@@ -36,6 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Action<int> selectRow { private get; set; }
 
 		public Func<string, bool> testFilter { private get; set; }
+		public Func<string> getSearchQuery { private get; set; }
 
 		protected override void Setup()
 		{
@@ -106,7 +107,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			dropZoneTransform.localPosition = dropZonePosition;
 		}
 
-		void UpdateHierarchyItem(HierarchyData data, ref float offset, int depth, bool expanded)
+		void UpdateHierarchyItem(HierarchyData data, ref float offset, int depth, bool? expanded)
 		{
 			var index = data.index;
 			HierarchyListItem item;
@@ -148,35 +149,50 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 
 				var hasChildren = datum.children != null;
-				var filterTestPass = datum.types.Any(type => testFilter(type));
 
-				if (!filterTestPass) // If this item doesn't match the filter, move on to the next item; do not count
+				var hasFilterQuery = !string.IsNullOrEmpty(getSearchQuery());
+				var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z;
+				if (hasFilterQuery)
 				{
-					Recycle(index);
+					var filterTestPass = datum.types.Any(type => testFilter(type));
+
+					if (!filterTestPass) // If this item doesn't match the filter, move on to the next item; do not count
+					{
+						Recycle(index);
+					}
+					else
+					{
+						if (shouldRecycle)
+							Recycle(index);
+						else
+							UpdateHierarchyItem(datum, ref offset, 0, null);
+
+						offset += itemSize.z;
+					}
 
 					if (hasChildren)
-						RecycleChildren(datum);
-
-					continue;
+						UpdateRecursively(datum.children, ref offset);
 				}
-
-				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
-					Recycle(index);
 				else
-					UpdateHierarchyItem(datum, ref offset, depth, expanded);
-
-				offset += itemSize.z;
-
-				if (hasChildren)
 				{
-					if (expanded)
-						UpdateRecursively(datum.children, ref offset, depth + 1);
+					if (shouldRecycle)
+						Recycle(index);
 					else
-						RecycleChildren(datum);
-				}
-				else
-				{
-					m_ExpandStates[index] = false;
+						UpdateHierarchyItem(datum, ref offset, depth, expanded);
+
+					offset += itemSize.z;
+
+					if (hasChildren)
+					{
+						if (expanded)
+							UpdateRecursively(datum.children, ref offset, depth + 1);
+						else
+							RecycleChildren(datum);
+					}
+					else
+					{
+						m_ExpandStates[index] = false;
+					}
 				}
 			}
 		}
