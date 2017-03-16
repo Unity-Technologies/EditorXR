@@ -133,10 +133,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			listPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
 	}
 
-		static void SelectRow(int instanceID)
+		static void SelectRow(int index)
 		{
 #if UNITY_EDITOR
-			var gameObject = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
+			var gameObject = EditorUtility.InstanceIDToObject(index) as GameObject;
 			if (gameObject && Selection.activeGameObject != gameObject)
 				Selection.activeGameObject = gameObject;
 			else

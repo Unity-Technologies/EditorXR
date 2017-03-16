@@ -191,7 +191,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				immediate ? 1f : k_ExpandArrowRotateSpeed);
 		}
 
-		void OnClick(BaseHandle baseHandle, PointerEventData pointerEventData)
+		void OnClick(BaseHandle handle, PointerEventData pointerEventData)
 		{
 			SelectFolder();
 			toggleExpanded(data.index);
@@ -338,7 +338,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
 		{
-			startSettling(null);
 			toggleExpanded(data.index);
 		}
 
@@ -347,12 +346,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			selectRow(data.index);
 		}
 
-		void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
+		void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
 			m_Hovering = true;
 		}
 
-		void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
+		void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			m_Hovering = false;
 		}

@@ -248,9 +248,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void ToggleExpanded(InspectorData data)
+		void ToggleExpanded(int index)
 		{
-			var index = data.index;
 			m_ExpandStates[index] = !m_ExpandStates[index];
 			StartSettling();
 		}

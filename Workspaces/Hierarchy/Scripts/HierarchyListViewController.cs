@@ -221,29 +221,30 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_BottomDropZone.gameObject.SetActive(m_GrabbedRows.Count > 0); // Don't block scroll interaction
 		}
 
-		void ToggleExpanded(int instanceID)
+		void ToggleExpanded(int index)
 		{
-			m_ExpandStates[instanceID] = !m_ExpandStates[instanceID];
+			m_ExpandStates[index] = !m_ExpandStates[index];
+			StartSettling();
 		}
 
-		public void SelectRow(int instanceID)
+		public void SelectRow(int index)
 		{
 			if (data == null)
 				return;
 
-			m_SelectedRow = instanceID;
+			m_SelectedRow = index;
 
 			foreach (var datum in data)
 			{
-				ExpandToRow(datum, instanceID);
+				ExpandToRow(datum, index);
 			}
 
-			selectRow(instanceID);
+			selectRow(index);
 
 			var scrollHeight = 0f;
 			foreach (var datum in data)
 			{
-				ScrollToRow(datum, instanceID, ref scrollHeight);
+				ScrollToRow(datum, index, ref scrollHeight);
 				scrollHeight += itemSize.z;
 			}
 		}
@@ -341,16 +342,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			material.color = color;
 		}
 
-		bool GetExpanded(int instanceID)
+		bool GetExpanded(int index)
 		{
 			bool expanded;
-			m_ExpandStates.TryGetValue(instanceID, out expanded);
+			m_ExpandStates.TryGetValue(index, out expanded);
 			return expanded;
 		}
 
-		void SetExpanded(int instanceID, bool expanded)
+		void SetExpanded(int index, bool expanded)
 		{
-			m_ExpandStates[instanceID] = expanded;
+			m_ExpandStates[index] = expanded;
+			StartSettling();
 		}
 
 		public void OnScroll(float delta)

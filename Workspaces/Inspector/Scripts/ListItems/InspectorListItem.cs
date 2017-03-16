@@ -43,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
 
-		public Action<InspectorData> toggleExpanded { private get; set; }
+		public Action<int> toggleExpanded { private get; set; }
 
 		protected override bool singleClickDrag
 		{
@@ -365,7 +365,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void ToggleExpanded()
 		{
-			toggleExpanded(data);
+			toggleExpanded(data.index);
 		}
 	}
 }

@@ -163,7 +163,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					hp.Previous(null);
 			}
 			else if (hd != null && hd.children != null)
+			{
 				hasChanged = true;
+			}
 
 			if (hd != null)
 			{

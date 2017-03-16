@@ -112,10 +112,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			return item;
 		}
 
-		void ToggleExpanded(FolderData data)
+		void ToggleExpanded(string index)
 		{
-			var index = data.index;
 			m_ExpandStates[index] = !m_ExpandStates[index];
+			StartSettling();
 		}
 
 		void SelectFolder(string guid)

@@ -49,7 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 			get { return m_CubeRenderer.sharedMaterial; }
 		}
 
-		public Action<FolderData> toggleExpanded { private get; set; }
+		public Action<string> toggleExpanded { private get; set; }
 		public Action<string> selectFolder { private get; set; }
 
 		public override void Setup(FolderData listData)
@@ -133,20 +133,20 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
 		void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
 		{
-			toggleExpanded(data);
+			toggleExpanded(data.index);
 		}
 
-		void SelectFolder(BaseHandle baseHandle, HandleEventData eventData)
+		void SelectFolder(BaseHandle handle, HandleEventData eventData)
 		{
 			selectFolder(data.index);
 		}
 
-		void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
+		void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
 			m_Hovering = true;
 		}
 
-		void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
+		void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			m_Hovering = false;
 		}
