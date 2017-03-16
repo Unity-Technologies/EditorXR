@@ -140,8 +140,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var datum = data[i];
 				var index = datum.index;
 				bool expanded;
-				if (!m_ExpandStates.TryGetValue(index, out expanded))
-					m_ExpandStates[index] = false;
+				m_ExpandStates.TryGetValue(index, out expanded);
 
 				var grabbed = m_GrabbedRows.ContainsKey(index);
 
