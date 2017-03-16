@@ -319,6 +319,7 @@ MonoBehaviour:
   m_HoverColor: {r: 0.20344828, g: 0.20344828, b: 0.20344828, a: 0}
   m_SelectedColor: {r: 0.36896548, g: 0.36896548, b: 0.36896548, a: 0}
   m_StackingFraction: 0.3
+  m_PreviewOffset: {x: 0, y: -0.05, z: -0.02}
 --- !u!114 &114000012425087266
 MonoBehaviour:
   m_ObjectHideFlags: 1

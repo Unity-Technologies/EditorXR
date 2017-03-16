@@ -28,6 +28,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Material m_NoClipText;
 
+		[Tooltip("The local offset from previewOrigin for grabbed fields")]
+		[SerializeField]
+		Vector3 m_PreviewOffset = new Vector3(0, -0.05f, -0.02f);
+
 		ClipText[] m_ClipTexts;
 
 		Material m_NoClipBackingCube;
@@ -289,8 +293,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (m_DragClone)
 			{
 				var previewOrigin = getPreviewOriginForRayOrigin(rayOrigin);
-				MathUtilsExt.LerpTransform(m_DragClone, previewOrigin.position,
-					MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation), m_DragLerp);
+				var rotation = MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation);
+				MathUtilsExt.LerpTransform(m_DragClone, previewOrigin.position + previewOrigin.rotation * m_PreviewOffset, rotation, m_DragLerp);
 			}
 		}
 

@@ -47,6 +47,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		float m_StackingFraction = 0.3f;
 
+		[Tooltip("The local offset from previewOrigin for grabbed rows")]
+		[SerializeField]
+		Vector3 m_PreviewOffset = new Vector3(0, -0.05f, -0.02f);
+
 		Color m_NormalColor;
 		bool m_Hovering;
 		Renderer m_CubeRenderer;
@@ -266,12 +270,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void MagnetizeTransform(Transform previewOrigin, Transform transform, float offset = 0)
+		void MagnetizeTransform(Transform previewOrigin, Transform transform, float stackingOffset = 0)
 		{
 			var rotation = MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation)
 				* Quaternion.AngleAxis(90, Vector3.left);
-			var offsetDirection = rotation * Vector3.one;
-			MathUtilsExt.LerpTransform(transform, previewOrigin.position - offsetDirection * offset, rotation, m_DragLerp);
+			var stackingDirection = rotation * Vector3.one;
+			MathUtilsExt.LerpTransform(transform, previewOrigin.position - stackingDirection * stackingOffset
+				+ previewOrigin.rotation * m_PreviewOffset, rotation, m_DragLerp);
 		}
 
 		protected override void OnMagnetizeEnded()

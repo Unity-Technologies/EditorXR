@@ -97,14 +97,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var itemSize = m_ItemSize.Value.z;
 			var extraSpace = bounds.size.z - m_VisibleItemHeight - scrollOffset % itemSize;
 			dropZoneScale.z = extraSpace;
-			if (extraSpace < m_BottomDropZoneStartHeight)
-				dropZoneScale.z = m_BottomDropZoneStartHeight;
 
 			dropZoneTransform.localScale = dropZoneScale;
 
 			dropZonePosition = dropZoneTransform.localPosition;
 			dropZonePosition.z = dropZoneScale.z * 0.5f - bounds.extents.z;
 			dropZoneTransform.localPosition = dropZonePosition;
+
+			if (extraSpace < m_BottomDropZoneStartHeight)
+			{
+				dropZoneScale.z = m_BottomDropZoneStartHeight;
+				dropZoneTransform.localScale = dropZoneScale;
+				dropZonePosition.z = -dropZoneScale.z * 0.5f - bounds.extents.z;
+			}
 		}
 
 		void UpdateHierarchyItem(HierarchyData data, ref float offset, int depth, bool? expanded)
