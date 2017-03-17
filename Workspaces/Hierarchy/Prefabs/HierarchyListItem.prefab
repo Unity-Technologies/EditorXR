@@ -79,7 +79,7 @@ GameObject:
   - 65: {fileID: 65000013022621304}
   - 114: {fileID: 114000011118187708}
   m_Layer: 5
-  m_Name: LockIcon
+  m_Name: Lock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -390,7 +390,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_Text: {fileID: 114000013632537286}
-  m_LockIcon: {fileID: 114000011118187708}
+  m_Lock: {fileID: 114000011118187708}
   m_Cube: {fileID: 114000012425087266}
   m_ExpandArrow: {fileID: 114000011951837648}
   m_DropZone: {fileID: 114000014220381596}

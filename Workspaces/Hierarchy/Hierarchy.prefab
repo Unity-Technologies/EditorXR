@@ -330,12 +330,15 @@ MonoBehaviour:
   m_Templates:
   - {fileID: 1000014066556564, guid: 3a8d15e2004808b45bbe8ddf381a4a53, type: 2}
   m_SettleSpeed: 0.3
+  m_ScrollSpeed: 0.3
   m_TopDropZone: {fileID: 114000012826007938}
   m_BottomDropZone: {fileID: 114000012340426484}
   m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
   m_ExpandArrowMaterial: {fileID: 2100000, guid: 41165fc29d3ea90418665f906b7fa247,
     type: 2}
   m_LockIconMaterial: {fileID: 2100000, guid: 133d73ce519075640aaca427a72a9cf5, type: 2}
+  m_UnlockIconMaterial: {fileID: 2100000, guid: ef2b944e310d49546905b735bae7c627,
+    type: 2}
 --- !u!114 &114000011690277160
 MonoBehaviour:
   m_ObjectHideFlags: 1

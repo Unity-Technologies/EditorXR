@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Text m_Text;
 
 		[SerializeField]
-		BaseHandle m_LockIcon;
+		BaseHandle m_Lock;
 
 		[SerializeField]
 		BaseHandle m_Cube;
@@ -64,7 +64,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Renderer m_ExpandArrowRenderer;
 		Material m_ExpandArrowMaterial;
 
-		Renderer m_LockIconRenderer;
+		Renderer m_LockRenderer;
+		Material m_LockIconMaterial;
+		Material m_UnlockIconMaterial;
 
 		public Material cubeMaterial { get; private set; }
 		public Material dropZoneMaterial { get; private set; }
@@ -99,8 +101,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				cubeMaterial = MaterialUtils.GetMaterialClone(m_CubeRenderer);
 				m_NormalColor = cubeMaterial.color;
 
-				m_LockIconRenderer = m_LockIcon.GetComponent<Renderer>();
-				m_LockIcon.dragEnded += ToggleLock;
+				m_LockRenderer = m_Lock.GetComponent<Renderer>();
+				m_Lock.dragEnded += ToggleLock;
 
 				m_ExpandArrowRenderer = m_ExpandArrow.GetComponent<Renderer>();
 				m_ExpandArrow.dragEnded += ToggleExpanded;
@@ -143,12 +145,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_Hovering = false;
 		}
 
-		public void SetMaterials(Material textMaterial, Material expandArrowMaterial, Material lockIconMaterial)
+		public void SetMaterials(Material textMaterial, Material expandArrowMaterial, Material lockIconMaterial, Material unlockIconMaterial)
 		{
 			m_Text.material = textMaterial;
 			m_ExpandArrowMaterial = expandArrowMaterial;
 			m_ExpandArrowRenderer.sharedMaterial = expandArrowMaterial;
-			m_LockIconRenderer.sharedMaterial = lockIconMaterial;
+			m_LockIconMaterial = lockIconMaterial;
+			m_UnlockIconMaterial = unlockIconMaterial;
+			m_LockRenderer.sharedMaterial = unlockIconMaterial;
 		}
 
 		public void UpdateSelf(float width, int depth, bool? expanded, bool selected, bool locked)
@@ -165,9 +169,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float doubleMargin = k_Margin * 2;
 			expandArrowTransform.localPosition = new Vector3(k_Margin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
 
-			if (m_LockIcon.gameObject.activeSelf != locked)
-				m_LockIcon.gameObject.SetActive(locked);
-			var lockIconTransform = m_LockIcon.transform;
+			m_LockRenderer.sharedMaterial = locked ? m_LockIconMaterial : m_UnlockIconMaterial;
+			var lockIconTransform = m_Lock.transform;
 			var lockWidth = lockIconTransform.localScale.x * 0.5f;
 			
 			// Text is next to arrow, with a margin and indent, rotated toward camera

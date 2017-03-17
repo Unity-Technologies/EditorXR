@@ -28,6 +28,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Material m_LockIconMaterial;
 
+		[SerializeField]
+		Material m_UnlockIconMaterial;
+
 		Material m_TopDropZoneMaterial;
 		Material m_BottomDropZoneMaterial;
 		float m_DropZoneAlpha;
@@ -51,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_TextMaterial = Instantiate(m_TextMaterial);
 			m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
 			m_LockIconMaterial = Instantiate(m_LockIconMaterial);
+			m_UnlockIconMaterial = Instantiate(m_UnlockIconMaterial);
 
 			m_BottomDropZoneMaterial = MaterialUtils.GetMaterialClone(m_BottomDropZone.GetComponent<Renderer>());
 			m_BottomDropZoneStartHeight = m_BottomDropZone.transform.localScale.z;
@@ -79,6 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			SetMaterialClip(m_TextMaterial, parentMatrix);
 			SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
 			SetMaterialClip(m_LockIconMaterial, parentMatrix);
+			SetMaterialClip(m_UnlockIconMaterial, parentMatrix);
 
 			m_VisibleItemHeight = 0;
 
@@ -212,7 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override HierarchyListItem GetItem(HierarchyData data)
 		{
 			var item = base.GetItem(data);
-			item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_LockIconMaterial);
+			item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_LockIconMaterial, m_UnlockIconMaterial);
 			item.selectRow = SelectRow;
 
 			item.setRowGrabbed = SetRowGrabbed;
@@ -243,7 +248,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var data = listItem.data;
 				var go = EditorUtility.InstanceIDToObject(data.index) as GameObject;
 				if (go)
+				{
 					setLocked(go, !isLocked(go));
+					data.locked = isLocked(go);
+				}
 			}
 		}
 
@@ -399,6 +407,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ObjectUtils.Destroy(m_TextMaterial);
 			ObjectUtils.Destroy(m_ExpandArrowMaterial);
 			ObjectUtils.Destroy(m_LockIconMaterial);
+			ObjectUtils.Destroy(m_UnlockIconMaterial);
 		}
 	}
 }
