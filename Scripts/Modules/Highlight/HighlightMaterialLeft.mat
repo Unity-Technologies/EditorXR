@@ -7,8 +7,9 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: HighlightMaterialLeft
-  m_Shader: {fileID: 4800000, guid: 9c58ee7b67645404e9542c09f160ccb9, type: 3}
-  m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
+  m_Shader: {fileID: 4800000, guid: 69d506e73fc3d7a4683dd1c1f78ad83a, type: 3}
+  m_ShaderKeywords: ROTATE_GRADIENT _ALPHAPREMULTIPLY_ON _EMISSION _GLOSSYREFLECTIONS_OFF
+    _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -71,6 +72,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - first:
+        name: _Alpha
+      second: 1
+    - first:
         name: _BumpScale
       second: 1
     - first:
@@ -98,11 +102,17 @@ Material:
         name: _Mode
       second: 3
     - first:
+        name: _ObjectScale
+      second: -0.05
+    - first:
         name: _OcclusionStrength
       second: 1
     - first:
         name: _Parallax
       second: 0.02
+    - first:
+        name: _RotateGradient
+      second: 1
     - first:
         name: _SmoothnessTextureChannel
       second: 0
@@ -116,6 +126,9 @@ Material:
         name: _StencilRef
       second: 2
     - first:
+        name: _Thickness
+      second: 0.25
+    - first:
         name: _UVSec
       second: 0
     - first:
@@ -128,6 +141,12 @@ Material:
     - first:
         name: _Color
       second: {r: 0, g: 0.7372549, b: 0.83137256, a: 0.141}
+    - first:
+        name: _ColorBottom
+      second: {r: 0, g: 0.76256925, b: 0.83137256, a: 1}
+    - first:
+        name: _ColorTop
+      second: {r: 0, g: 0.79697084, b: 0.83137256, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}

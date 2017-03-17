@@ -123,7 +123,7 @@ Material:
       second: 0
     - first:
         name: g_flOutlineWidth
-      second: 0.005
+      second: 0.003
     m_Colors:
     - first:
         name: _Color
