@@ -10,7 +10,7 @@ using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHighlight
+	abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHighlight, IGetFieldGrabOrigin
 	{
 		const float k_Indent = 0.02f;
 		const float k_HorizThreshold = 0.85f;
@@ -28,10 +28,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Material m_NoClipText;
 
-		[Tooltip("The local offset from previewOrigin for grabbed fields")]
-		[SerializeField]
-		Vector3 m_PreviewOffset = new Vector3(0, -0.05f, -0.02f);
-
 		ClipText[] m_ClipTexts;
 
 		Material m_NoClipBackingCube;
@@ -46,6 +42,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public bool setup { get; set; }
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
+
+		public Func<Transform, Transform> getFieldGrabOriginForRayOrigin { get; set; }
 
 		public Action<int> toggleExpanded { private get; set; }
 
@@ -292,9 +290,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			if (m_DragClone)
 			{
-				var previewOrigin = getPreviewOriginForRayOrigin(rayOrigin);
+				var fieldGrabOrigin = getFieldGrabOriginForRayOrigin(rayOrigin);
 				var rotation = MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation);
-				MathUtilsExt.LerpTransform(m_DragClone, previewOrigin.position + previewOrigin.rotation * m_PreviewOffset, rotation, m_DragLerp);
+				MathUtilsExt.LerpTransform(m_DragClone, fieldGrabOrigin.position, rotation, m_DragLerp);
 			}
 		}
 

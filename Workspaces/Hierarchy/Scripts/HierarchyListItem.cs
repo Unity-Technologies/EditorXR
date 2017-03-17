@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>, IUsesViewerBody
+	sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>, IUsesViewerBody, IGetFieldGrabOrigin
 	{
 		const float k_Margin = 0.01f;
 		const float k_Indent = 0.02f;
@@ -47,10 +47,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		float m_StackingFraction = 0.3f;
 
-		[Tooltip("The local offset from previewOrigin for grabbed rows")]
-		[SerializeField]
-		Vector3 m_PreviewOffset = new Vector3(0, -0.05f, -0.02f);
-
 		Color m_NormalColor;
 		bool m_Hovering;
 		Renderer m_CubeRenderer;
@@ -81,6 +77,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Func<Transform, bool> isOverShoulder { private get; set; }
 
 		public bool isStillSettling { private set; get; }
+
+		public Func<Transform, Transform> getFieldGrabOriginForRayOrigin { get; set; }
 
 		public override void Setup(HierarchyData data)
 		{
@@ -262,24 +260,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			if (m_DragObject)
 			{
-				var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
-				MagnetizeTransform(previewOrigin, m_DragObject);
+				var fieldGrabOrigin = getFieldGrabOriginForRayOrigin(eventData.rayOrigin);
+				MagnetizeTransform(fieldGrabOrigin, m_DragObject);
 				var offset = 0f;
 				foreach (var child in m_VisibleChildren)
 				{
 					offset += m_CubeRenderer.bounds.size.y * m_StackingFraction;
-					MagnetizeTransform(previewOrigin, child.transform, offset);
+					MagnetizeTransform(fieldGrabOrigin, child.transform, offset);
 				}
 			}
 		}
 
-		void MagnetizeTransform(Transform previewOrigin, Transform transform, float stackingOffset = 0)
+		void MagnetizeTransform(Transform fieldGrabOrigin, Transform transform, float stackingOffset = 0)
 		{
 			var rotation = MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation)
 				* Quaternion.AngleAxis(90, Vector3.left);
 			var stackingDirection = rotation * Vector3.one;
-			MathUtilsExt.LerpTransform(transform, previewOrigin.position - stackingDirection * stackingOffset
-				+ previewOrigin.rotation * m_PreviewOffset, rotation, m_DragLerp);
+			MathUtilsExt.LerpTransform(transform, fieldGrabOrigin.position - stackingDirection * stackingOffset, rotation, m_DragLerp);
 		}
 
 		protected override void OnMagnetizeEnded()

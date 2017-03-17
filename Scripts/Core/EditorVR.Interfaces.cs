@@ -151,9 +151,13 @@ namespace UnityEditor.Experimental.EditorVR
 					locking.isLocked = evrLockModule.IsLocked;
 				}
 
-				var positionPreview = obj as IGetPreviewOrigin;
-				if (positionPreview != null)
-					positionPreview.getPreviewOriginForRayOrigin = evrRays.GetPreviewOriginForRayOrigin;
+				var getPreviewOrigin = obj as IGetPreviewOrigin;
+				if (getPreviewOrigin != null)
+					getPreviewOrigin.getPreviewOriginForRayOrigin = evrRays.GetPreviewOriginForRayOrigin;
+
+				var getFieldGrabOrigin = obj as IGetFieldGrabOrigin;
+				if (getFieldGrabOrigin != null)
+					getFieldGrabOrigin.getFieldGrabOriginForRayOrigin = evrRays.GetFieldGrabOriginForRayOrigin;
 
 				var selectionChanged = obj as ISelectionChanged;
 				if (selectionChanged != null)
