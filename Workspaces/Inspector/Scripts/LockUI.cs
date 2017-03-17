@@ -1,7 +1,5 @@
 #if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,8 +16,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Sprite m_UnlockIcon;
 
-		List<Material> m_ButtonMaterials = new List<Material>();
-
 		public byte stencilRef { get; set; }
 
 		public event Action lockButtonPressed;
@@ -30,15 +26,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			foreach (var sm in mr.sharedMaterials)
 			{
 				sm.SetInt("_StencilRef", stencilRef);
-			}
-			mr.sharedMaterials = m_ButtonMaterials.ToArray();
-		}
-
-		void OnDestroy()
-		{
-			foreach (var bm in m_ButtonMaterials)
-			{
-				ObjectUtils.Destroy(bm);
 			}
 		}
 

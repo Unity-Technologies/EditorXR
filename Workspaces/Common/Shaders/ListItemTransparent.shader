@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Custom/List Clip Transparent"
+﻿Shader "EditorVR/Custom/List Item Transparent"
 {
 	Properties
 	{
@@ -6,7 +6,6 @@
 		_MainTex("Albedo (RGB)", 2D) = "white" {}
 		_Glossiness("Smoothness", Range(0,1)) = 0.5
 		_Metallic("Metallic", Range(0,1)) = 0.0
-
 		_ClipExtents("Clip Extents", Vector) = (1,1,1,0)
 
 		_StencilComp("Stencil Comparison", Float) = 8
@@ -39,8 +38,6 @@
 			fixed4 color;
 		};
 
-		#include "ListClip.cginc"
-
 		sampler2D _MainTex;
 
 		half _Glossiness;
@@ -50,14 +47,11 @@
 		void vert(inout appdata_full v, out Input o)
 		{
 			UNITY_INITIALIZE_OUTPUT(Input, o);
-			o.localPos = listClipLocalPos(v.vertex);
 			o.color = v.color;
 		}
 
 		void surf(Input IN, inout SurfaceOutputStandard o)
 		{
-			listClipFrag(IN.localPos);
-
 			fixed4 c = tex2D(_MainTex, IN.uv_MainTex) *_Color * IN.color;
 			o.Emission = c.rgb;
 			o.Alpha = c.a;

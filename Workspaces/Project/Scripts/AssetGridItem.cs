@@ -11,42 +11,42 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class AssetGridItem : DraggableListItem<AssetData>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
+	sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
 	{
-		private const float k_PreviewDuration = 0.1f;
-		private const float k_MaxPreviewScale = 0.2f;
-		private const float k_RotateSpeed = 50f;
-		private const float k_TransitionDuration = 0.1f;
+		const float k_PreviewDuration = 0.1f;
+		const float k_MaxPreviewScale = 0.2f;
+		const float k_RotateSpeed = 50f;
+		const float k_TransitionDuration = 0.1f;
 		const int k_PreviewRenderQueue = 9200;
 
 		[SerializeField]
-		private Text m_Text;
+		Text m_Text;
 
 		[SerializeField]
-		private BaseHandle m_Handle;
+		BaseHandle m_Handle;
 
 		[SerializeField]
-		private Image m_TextPanel;
+		Image m_TextPanel;
 
 		[SerializeField]
-		private Renderer m_Cube;
+		Renderer m_Cube;
 
 		[SerializeField]
-		private Renderer m_Sphere;
+		Renderer m_Sphere;
 
 		[HideInInspector]
 		[SerializeField] // Serialized so that this remains set after cloning
-		private GameObject m_Icon;
+		GameObject m_Icon;
 
-		private GameObject m_IconPrefab;
+		GameObject m_IconPrefab;
 
 		[HideInInspector]
 		[SerializeField] // Serialized so that this remains set after cloning
-		private Transform m_PreviewObjectTransform;
+		Transform m_PreviewObjectTransform;
 
-		private bool m_Setup;
-		private Vector3 m_PreviewPrefabScale;
-		private Vector3 m_PreviewTargetScale;
+		bool m_Setup;
+		Vector3 m_PreviewPrefabScale;
+		Vector3 m_PreviewTargetScale;
 		Vector3 m_GrabPreviewTargetScale;
 		Vector3 m_GrabPreviewPivotOffset;
 		Transform m_PreviewObjectClone;
@@ -54,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Coroutine m_PreviewCoroutine;
 		Coroutine m_VisibilityCoroutine;
 
-		private Material m_SphereMaterial;
+		Material m_SphereMaterial;
 
 		public Action<GameObject> addToSpatialHash { private get; set; }
 		public Action<GameObject> removeFromSpatialHash { private get; set; }
@@ -214,7 +214,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		private void InstantiatePreview()
+		void InstantiatePreview()
 		{
 			if (m_PreviewObjectTransform)
 				ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
@@ -285,9 +285,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_PreviewObjectTransform.localScale = Vector3.zero;
 		}
 
-		protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
+		protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
 		{
-			base.OnDragStarted(baseHandle, eventData);
+			base.OnDragStarted(handle, eventData);
 
 			var clone = (GameObject)Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 			var cloneItem = clone.GetComponent<AssetGridItem>();
@@ -329,7 +329,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			StartCoroutine(ShowGrabbedObject());
 		}
 
-		protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
+		protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
@@ -363,7 +363,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			StartCoroutine(HideGrabbedObject(m_DragObject.gameObject, gridItem.m_Cube));
 		}
 
-		private void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
+		void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
 			if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
 			{
@@ -372,7 +372,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		private void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
+		void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
 			{
@@ -381,7 +381,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		private IEnumerator AnimatePreview(bool @out)
+		IEnumerator AnimatePreview(bool @out)
 		{
 			icon.SetActive(true);
 			m_PreviewObjectTransform.gameObject.SetActive(true);
@@ -418,7 +418,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(visible, callback));
 		}
 
-		private IEnumerator AnimateVisibility(bool visible, Action<AssetGridItem> callback)
+		IEnumerator AnimateVisibility(bool visible, Action<AssetGridItem> callback)
 		{
 			var currentTime = 0f;
 
@@ -449,7 +449,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			return data.asset;
 		}
 
-		private void OnDestroy()
+		void OnDestroy()
 		{
 			if (m_SphereMaterial)
 				ObjectUtils.Destroy(m_SphereMaterial);

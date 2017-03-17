@@ -697,7 +697,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
+    m_TypeName: UnityEditor.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114000012875770612}
   m_CharacterLimit: 0
@@ -887,7 +887,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
+    m_TypeName: UnityEditor.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114000012444455550}
   m_CharacterLimit: 0
@@ -968,7 +968,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
+    m_TypeName: UnityEditor.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114000010479930076}
   m_CharacterLimit: 0
@@ -1185,6 +1185,8 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Cube: {fileID: 114000011524206158}
   m_UIContainer: {fileID: 224000010867083340}
+  m_NoClipText: {fileID: 2100000, guid: 0b1d2d3c4b2d7d948bcd67e085daa7d4, type: 2}
+  m_PreviewOffset: {x: 0, y: -0.05, z: -0.02}
   m_Label: {fileID: 114000012807327602}
   m_TooltipTarget: {fileID: 224000013374790688}
   m_TooltipSource: {fileID: 224000013281922324}
@@ -1316,7 +1318,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
+    m_TypeName: UnityEditor.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114000011069213394}
   m_CharacterLimit: 0

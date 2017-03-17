@@ -1,8 +1,9 @@
 ﻿#if UNITY_EDITOR
 namespace ListView
 {
-	public class ListViewItemData
+	public abstract class ListViewItemData<TIndex>
 	{
+		public virtual TIndex index { get; protected set; }
 		public string template { get; protected set; }
 	}
 }

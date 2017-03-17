@@ -275,7 +275,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_SelectionFlags: 2
+  m_SelectionFlags: 3
   onEnter:
     m_PersistentCalls:
       m_Calls: []

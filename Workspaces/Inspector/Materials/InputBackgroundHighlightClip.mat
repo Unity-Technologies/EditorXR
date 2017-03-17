@@ -8,7 +8,7 @@ Material:
   m_PrefabInternal: {fileID: 0}
   m_Name: InputBackgroundHighlightClip
   m_Shader: {fileID: 4800000, guid: c2384494d8f01454d87b0d8abe0bbf60, type: 3}
-  m_ShaderKeywords: 
+  m_ShaderKeywords:
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -128,9 +128,6 @@ Material:
         name: _ZWrite
       second: 1
     m_Colors:
-    - first:
-        name: _ClipExtents
-      second: {r: 0.1675, g: 1.7014117e+38, b: 0.22500001, a: 0}
     - first:
         name: _Color
       second: {r: 0.2146139, g: 0.20175552, b: 0.1457231, a: 1}

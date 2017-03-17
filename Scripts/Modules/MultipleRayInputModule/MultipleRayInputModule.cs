@@ -108,62 +108,70 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			//Process events for all different transforms in RayOrigins
 			foreach (var source in m_RaycastSourcesCopy)
 			{
-				if (!(source.rayOrigin.gameObject.activeSelf || source.draggedObject) || !source.proxy.active)
+				var draggedObject = source.draggedObject;
+				var rayOrigin = source.rayOrigin;
+				if (!(rayOrigin.gameObject.activeSelf || draggedObject) || !source.proxy.active)
 					continue;
 
 				if (preProcessRaycastSource != null)
-					preProcessRaycastSource(source.rayOrigin);
+					preProcessRaycastSource(rayOrigin);
 
 				if (source.eventData == null)
 					source.eventData = new RayEventData(base.eventSystem);
-				source.hoveredObject = GetRayIntersection(source); // Check all currently running raycasters
+
+				var hoveredObject = GetRayIntersection(source); // Check all currently running raycasters
+				source.hoveredObject = hoveredObject;
 
 				var eventData = source.eventData;
 				eventData.node = source.node;
-				eventData.rayOrigin = source.rayOrigin;
+				eventData.rayOrigin = rayOrigin;
 				eventData.pointerLength = getPointerLength(eventData.rayOrigin);
 
 				if (!source.isValid(source))
 					continue;
 
-				HandlePointerExitAndEnter(eventData, source.hoveredObject); // Send enter and exit events
+				HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
 
+				var hasObject = source.hasObject;
 				var hasScrollHandler = false;
-				source.actionMapInput.active = source.hasObject && ShouldActivateInput(eventData, source.currentObject, out hasScrollHandler);
+				var sourceAMI = source.actionMapInput;
+				sourceAMI.active = hasObject && ShouldActivateInput(eventData, source.currentObject, out hasScrollHandler);
+
+				var select = sourceAMI.select;
 
 				// Proceed only if pointer is interacting with something
-				if (!source.actionMapInput.active)
-					continue;
-
-				// Send select pressed and released events
-				if (source.actionMapInput.select.wasJustPressed)
+				if (!sourceAMI.active)
 				{
-					OnSelectPressed(source);
-					consumeControl(source.actionMapInput.select);
+					// If we have an object, the ray is blocked--input should not bleed through
+					if (hasObject)
+						consumeControl(select);
+
+					continue;
 				}
 
-				if (source.actionMapInput.select.wasJustReleased)
+				// Send select pressed and released events
+				if (select.wasJustPressed)
+				{
+					OnSelectPressed(source);
+					consumeControl(select);
+				}
+
+				if (select.wasJustReleased)
 					OnSelectReleased(source);
 
-				var draggedObject = source.draggedObject;
-
 				// Send Drag Events
-				if (source.draggedObject != null)
+				if (draggedObject != null)
 				{
 					ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.dragHandler);
 					ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.dragHandler);
 				}
 
 				// Send scroll events
-				var scrollObject = source.hoveredObject;
-				if (!scrollObject)
-					scrollObject = source.draggedObject;
-
+				var scrollObject = source.currentObject;
 				if (scrollObject && hasScrollHandler)
 				{
-					var actionMapInput = source.actionMapInput;
-					var verticalScroll = actionMapInput.verticalScroll;
-					var horizontalScroll = actionMapInput.horizontalScroll;
+					var verticalScroll = sourceAMI.verticalScroll;
+					var horizontalScroll = sourceAMI.horizontalScroll;
 					var verticalScrollValue = verticalScroll.value;
 					var horizontalScrollValue = horizontalScroll.value;
 					if (!Mathf.Approximately(verticalScrollValue, 0f) || !Mathf.Approximately(horizontalScrollValue, 0f))
@@ -352,10 +360,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (source.draggedObject)
 			{
 				var draggedObject = source.draggedObject;
-				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.endDragHandler);
-				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.endDragHandler);
 				if (dragEnded != null)
 					dragEnded(draggedObject, eventData);
+				
+				ExecuteEvents.Execute(draggedObject, eventData, ExecuteEvents.endDragHandler);
+				ExecuteEvents.Execute(draggedObject, eventData, ExecuteRayEvents.endDragHandler);
 
 				if (hoveredObject != null)
 					ExecuteEvents.ExecuteHierarchy(hoveredObject, eventData, ExecuteEvents.dropHandler);
