@@ -266,6 +266,18 @@ namespace UnityEditor.Experimental.EditorVR
 				return null;
 			}
 
+			internal Transform GetFieldGrabOriginForRayOrigin(Transform rayOrigin)
+			{
+				foreach (var proxy in m_Proxies)
+				{
+					Transform fieldGrabOrigins;
+					if (proxy.fieldGrabOrigins.TryGetValue(rayOrigin, out fieldGrabOrigins))
+						return fieldGrabOrigins;
+				}
+
+				return null;
+			}
+
 			internal bool IsRayActive(Transform rayOrigin)
 			{
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();

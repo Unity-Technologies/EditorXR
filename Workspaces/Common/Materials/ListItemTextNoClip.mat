@@ -6,8 +6,8 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: UIBackingCubeClip
-  m_Shader: {fileID: 4800000, guid: 91211d46ba5f0a84ab6786bcda73a95d, type: 3}
+  m_Name: ListItemTextNoClip
+  m_Shader: {fileID: 4800000, guid: 17975436d7927f445a485ec640544e96, type: 3}
   m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
@@ -74,6 +74,9 @@ Material:
         name: _BumpScale
       second: 1
     - first:
+        name: _ColorMask
+      second: 15
+    - first:
         name: _Cutoff
       second: 0.5
     - first:
@@ -113,21 +116,39 @@ Material:
         name: _SrcBlend
       second: 1
     - first:
+        name: _Stencil
+      second: 0
+    - first:
+        name: _StencilComp
+      second: 8
+    - first:
+        name: _StencilOp
+      second: 0
+    - first:
+        name: _StencilReadMask
+      second: 255
+    - first:
+        name: _StencilRef
+      second: 3
+    - first:
+        name: _StencilWriteMask
+      second: 255
+    - first:
         name: _UVSec
+      second: 0
+    - first:
+        name: _UseUIAlphaClip
       second: 0
     - first:
         name: _ZWrite
       second: 1
     m_Colors:
     - first:
-        name: _ClipCenter
-      second: {r: 0, g: 0, b: 0, a: 0}
-    - first:
-        name: _ClipExtents
-      second: {r: 1, g: 1, b: 1, a: 0}
-    - first:
         name: _Color
-      second: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+      second: {r: 1, g: 1, b: 1, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}
+    - first:
+        name: _Tint
+      second: {r: 1, g: 1, b: 1, a: 1}

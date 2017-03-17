@@ -6,9 +6,9 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: ListClipUI
-  m_Shader: {fileID: 4800000, guid: 7a00b76bb9aa9e4499db51bfa1b54fb4, type: 3}
-  m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION
+  m_Name: DropZoneNoClip
+  m_Shader: {fileID: 4800000, guid: 225289d1a5d7d9f4d9a7f3b981bd9089, type: 3}
+  m_ShaderKeywords: _ALPHABLEND_ON _EMISSION
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -90,7 +90,7 @@ Material:
       second: 1
     - first:
         name: _Glossiness
-      second: 0.5
+      second: 0
     - first:
         name: _GlossyReflections
       second: 1
@@ -99,7 +99,7 @@ Material:
       second: 0
     - first:
         name: _Mode
-      second: 3
+      second: 2
     - first:
         name: _OcclusionStrength
       second: 1
@@ -114,7 +114,7 @@ Material:
       second: 1
     - first:
         name: _SrcBlend
-      second: 1
+      second: 5
     - first:
         name: _Stencil
       second: 0
@@ -127,6 +127,9 @@ Material:
     - first:
         name: _StencilReadMask
       second: 255
+    - first:
+        name: _StencilRef
+      second: 3
     - first:
         name: _StencilWriteMask
       second: 255
@@ -141,11 +144,8 @@ Material:
       second: 0
     m_Colors:
     - first:
-        name: _ClipExtents
-      second: {r: 1, g: 1, b: 1, a: 0}
-    - first:
         name: _Color
-      second: {r: 1, g: 1, b: 1, a: 1}
+      second: {r: 0.3065526, g: 0.6803559, b: 0.992647, a: 0.353}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}

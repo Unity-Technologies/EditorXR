@@ -20,12 +20,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		BaseHandle m_ScrollHandle;
 
-		public WorkspaceHighlight highlight
+		public RectTransform listPanel
 		{
-			get { return m_Highlight; }
+			get { return m_ListPanel; }
 		}
 		[SerializeField]
-		WorkspaceHighlight m_Highlight;
+		RectTransform m_ListPanel;
 	}
 }
 #endif

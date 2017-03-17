@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Workspaces/Workspace Text Clip"
+﻿Shader "EditorVR/Workspaces/Workspace Text"
 {
 	Properties
 	{
@@ -63,20 +63,16 @@
 					fixed4 color : COLOR;
 					half2 texcoord  : TEXCOORD0;
 					float4 worldPosition : TEXCOORD1;
-					float4 localPosition : TEXCOORD2;
 				};
 
 				fixed4 _Color;
 				fixed4 _TextureSampleAdd;
 				float4 _ClipRect;
-				float4x4 _ParentMatrix;
-				float4 _ClipExtents;
 
 				v2f vert(appdata_t IN)
 				{
 					v2f OUT;
 					OUT.worldPosition = IN.vertex;
-					OUT.localPosition = mul(_ParentMatrix, mul(UNITY_MATRIX_M, IN.vertex));
 					OUT.vertex = mul(UNITY_MATRIX_MVP, OUT.worldPosition);
 					OUT.texcoord = IN.texcoord;
 
@@ -92,10 +88,6 @@
 
 				fixed4 frag(v2f IN) : SV_Target
 				{
-					float3 diff = abs(IN.localPosition);
-					if (diff.x > _ClipExtents.x || diff.y > _ClipExtents.y || diff.z > _ClipExtents.z)
-						discard;
-
 					half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
 					color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
 

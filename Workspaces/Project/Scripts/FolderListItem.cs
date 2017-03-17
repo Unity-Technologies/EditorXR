@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-	sealed class FolderListItem : ListViewItem<FolderData>
+	sealed class FolderListItem : ListViewItem<FolderData, string>
 	{
 		const float k_Margin = 0.01f;
 		const float k_Indent = 0.02f;
@@ -49,7 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 			get { return m_CubeRenderer.sharedMaterial; }
 		}
 
-		public Action<FolderData> toggleExpanded { private get; set; }
+		public Action<string> toggleExpanded { private get; set; }
 		public Action<string> selectFolder { private get; set; }
 
 		public override void Setup(FolderData listData)
@@ -100,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 			var arrowWidth = expandArrowTransform.localScale.x * 0.5f;
 			var halfWidth = width * 0.5f;
 			var indent = k_Indent * depth;
-			var doubleMargin = k_Margin * 2;
+			const float doubleMargin = k_Margin * 2;
 			expandArrowTransform.localPosition = new Vector3(k_Margin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
 
 			// Text is next to arrow, with a margin and indent, rotated toward camera
@@ -133,20 +133,20 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
 		void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
 		{
-			toggleExpanded(data);
+			toggleExpanded(data.index);
 		}
 
-		void SelectFolder(BaseHandle baseHandle, HandleEventData eventData)
+		void SelectFolder(BaseHandle handle, HandleEventData eventData)
 		{
-			selectFolder(data.guid);
+			selectFolder(data.index);
 		}
 
-		void OnHoverStarted(BaseHandle baseHandle, HandleEventData eventData)
+		void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
 			m_Hovering = true;
 		}
 
-		void OnHoverEnded(BaseHandle baseHandle, HandleEventData eventData)
+		void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			m_Hovering = false;
 		}

@@ -543,7 +543,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  listView: {fileID: 114000011974647448}
+  m_ListView: {fileID: 114000011974647448}
 --- !u!114 &114000011188917062
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -556,7 +556,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  listView: {fileID: 114000011426645376}
+  m_ListView: {fileID: 114000011426645376}
 --- !u!114 &114000011426645376
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -571,10 +571,11 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_ScrollOffset: 0
   m_Padding: 0.01
-  m_ScrollDamping: 1
-  m_MaxMomentum: 200
+  m_ScrollDamping: 1.2
+  m_MaxMomentum: 2
   m_Templates:
   - {fileID: 1000014066556564, guid: 918c55469b1324d46b0c41586835ce87, type: 2}
+  m_SettleSpeed: 0.3
   m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
   m_ExpandArrowMaterial: {fileID: 2100000, guid: 41165fc29d3ea90418665f906b7fa247,
     type: 2}
@@ -627,10 +628,11 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_ScrollOffset: 0
   m_Padding: 0.15
-  m_ScrollDamping: 1
-  m_MaxMomentum: 200
+  m_ScrollDamping: 1.2
+  m_MaxMomentum: 2
   m_Templates:
   - {fileID: 1000014066556564, guid: 94a0fcdece43c184c88738ce9401f3d0, type: 2}
+  m_SettleSpeed: 0.3
   m_ScaleFactor: 0.056
   m_IconTypes:
   - Scene

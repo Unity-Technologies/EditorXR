@@ -4,21 +4,27 @@ using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	sealed class HierarchyData : ListViewItemNestedData<HierarchyData>
+	sealed class HierarchyData : ListViewItemNestedData<HierarchyData, int>
 	{
 		const string k_TemplateName = "HierarchyListItem";
 
 		public string name { get; set; }
 
-		public int instanceID { get; set; }
+		public override int index
+		{
+			get { return instanceID; }
+		}
+		public int instanceID { private get; set; }
 
+		public HashSet<string> types { get; set; }
 		public bool locked { get; set; }
 
-		public HierarchyData(string name, int instanceID, bool locked, List<HierarchyData> children = null)
+		public HierarchyData(string name, int instanceID, HashSet<string> types, bool locked, List<HierarchyData> children = null)
 		{
 			template = k_TemplateName;
 			this.name = name;
 			this.instanceID = instanceID;
+			this.types = types;
 			this.locked = locked;
 			m_Children = children;
 		}

@@ -301,12 +301,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void DragStarted(BaseHandle baseHandle, HandleEventData handleEventData)
+		void DragStarted(BaseHandle handle, HandleEventData handleEventData)
 		{
 			lockRay(handleEventData.rayOrigin, this);
 		}
 
-		void DragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
+		void DragEnded(BaseHandle handle, HandleEventData handleEventData)
 		{
 			unlockRay(handleEventData.rayOrigin, this);
 		}
