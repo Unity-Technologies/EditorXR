@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected float m_DragLerp;
 
 		readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform, Vector3>();
-		bool m_IsDirectGrab;
+		bool m_DirectGrab;
 
 		protected virtual bool singleClickDrag { get { return true; } }
 
@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			else
 			{
 				// Cache eventData.direct because it is always true while dragging
-				m_IsDirectGrab = eventData.direct;
+				m_DirectGrab = eventData.direct;
 				m_DragObject = null;
 				m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
 			}
@@ -76,7 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			else
 			{
 				// Only allow direct grabbing
-				if (!m_IsDirectGrab)
+				if (!m_DirectGrab)
 					return;
 
 				var rayOrigin = eventData.rayOrigin;

@@ -6,11 +6,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 	sealed class PropertyData : InspectorData
 	{
 #if UNITY_EDITOR
-		public SerializedProperty property
-		{
-			get { return m_Property; }
-		}
-		readonly SerializedProperty m_Property;
+		public SerializedProperty property { get; private set; }
 
 		public override int index
 		{
@@ -20,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 		public PropertyData(string template, SerializedObject serializedObject, List<InspectorData> children, SerializedProperty property)
 			: base(template, serializedObject, children)
 		{
-			m_Property = property;
+			this.property = property;
 		}
 #endif
 	}
