@@ -41,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public bool setup { get; set; }
 
-		public Action<GameObject, bool> setHighlight { private get; set; }
+		public Action<GameObject, Transform, bool> setHighlight { private get; set; }
 
 		public Func<Transform, Transform> getFieldGrabOriginForRayOrigin { get; set; }
 
@@ -170,12 +170,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected virtual void OnDropHoverStarted(BaseHandle handle)
 		{
-			setHighlight(handle.gameObject, true);
+			setHighlight(handle.gameObject, null, true);
 		}
 
 		protected virtual void OnDropHoverEnded(BaseHandle handle)
 		{
-			setHighlight(handle.gameObject, false);
+			setHighlight(handle.gameObject, null, false);
 		}
 
 		object GetDropObject(BaseHandle handle)

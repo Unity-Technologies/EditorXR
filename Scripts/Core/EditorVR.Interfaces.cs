@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class Interfaces : Nested
 		{
-			const byte k_MinStencilRef = 2;
+			const byte k_MinStencilRef = 5;
 
 			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 

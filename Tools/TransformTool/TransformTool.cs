@@ -9,7 +9,9 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility
+	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
+		IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject,
+		IManipulatorVisibility
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -164,7 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public event Action<GameObject> objectGrabbed;
 		public event Action<Transform[], Transform> objectsDropped;
 
-		public Action<GameObject, bool> setHighlight { private get; set; }
+		public Action<GameObject, Transform, bool> setHighlight { private get; set; }
 		public GetSelectionCandidateDelegate getSelectionCandidate { private get; set; }
 		public SelectObjectDelegate selectObject { private get; set; }
 
@@ -227,10 +229,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (manipulatorGameObject.activeSelf && hoveringSelection)
 					manipulatorGameObject.SetActive(false);
 
-				foreach (var selection in m_HoverObjects.Values)
+				foreach (var selection in m_HoverObjects)
 				{
-					if (selection)
-						setHighlight(selection, false);
+					var go = selection.Value;
+					if (go)
+						setHighlight(go, selection.Key, false);
 				}
 
 				m_HoverObjects.Clear();
@@ -255,7 +258,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					m_HoverObjects[rayOrigin] = hoveredObject; // Store actual hover object to unhighlight next frame
 
-					setHighlight(hoveredObject, true);
+					setHighlight(hoveredObject, rayOrigin, true);
 
 					var directSelectInput = (DirectSelectInput)selection.input;
 					if (directSelectInput.select.wasJustPressed)
@@ -289,7 +292,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput, Selection.transforms);
 
-						setHighlight(hoveredObject, false);
+						setHighlight(hoveredObject, rayOrigin, false);
 
 						hideDefaultRay(rayOrigin, true);
 						lockRay(rayOrigin, this);

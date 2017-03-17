@@ -5,7 +5,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, ISetHighlight, ISelectObject, ISetManipulatorsVisible
+	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, 
+		ISetHighlight, ISelectObject, ISetManipulatorsVisible
 	{
 		GameObject m_HoverGameObject;
 		GameObject m_PressedObject;
@@ -16,7 +17,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 		public Transform rayOrigin { private get; set; }
-		public Action<GameObject, bool> setHighlight { private get; set; }
+		public Action<GameObject, Transform, bool> setHighlight { private get; set; }
+		public Action<GameObject> clearHighlight { get; set; }
 
 		public Func<Transform, bool> isRayActive;
 		public event Action<GameObject, Transform> hovered;
@@ -54,10 +56,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (hoveredObject != m_HoverGameObject)
 			{
 				if (m_HoverGameObject != null)
-					setHighlight(m_HoverGameObject, false);
+					setHighlight(m_HoverGameObject, rayOrigin, false);
 
 				if (hoveredObject != null)
-					setHighlight(hoveredObject, true);
+					setHighlight(hoveredObject, rayOrigin, true);
 			}
 
 			m_HoverGameObject = hoveredObject;
@@ -79,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					selectObject(m_PressedObject, rayOrigin, selectionInput.multiSelect.isHeld, true);
 
 					if (m_PressedObject != null)
-						setHighlight(m_PressedObject, false);
+						setHighlight(m_PressedObject, rayOrigin, false);
 
 					if (selectionInput.multiSelect.isHeld)
 						consumeControl(selectionInput.multiSelect);
@@ -96,7 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			if (m_HoverGameObject != null)
 			{
-				setHighlight(m_HoverGameObject, false);
+				setHighlight(m_HoverGameObject, rayOrigin, false);
 				m_HoverGameObject = null;
 			}
 		}

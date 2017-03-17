@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// GameObject = Object to highlight
 		/// Bool = If true, highlight the GameObject; if false, disable highlight on the GameObject
 		/// </summary>
-		Action<GameObject, bool> setHighlight { set; }
+		Action<GameObject, Transform, bool> setHighlight { set; }
 	}
 }
 #endif

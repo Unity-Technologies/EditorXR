@@ -347,28 +347,8 @@ namespace UnityEditor.Experimental.EditorVR
 				return null;
 
 			var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
-			if (groupRoot == hoveredObject)
-				groupRoot = FindGroupRoot(hoveredObject.transform).gameObject;
 
 			return groupRoot;
-		}
-
-		static Transform FindGroupRoot(Transform transform)
-		{
-			// Don't allow grouping selection for the player head, otherwise we'd select the EditorVRCamera
-			if (transform.CompareTag(k_VRPlayerTag))
-				return transform;
-
-			var parent = transform.parent;
-			if (parent)
-			{
-				if (parent.GetComponent<Renderer>())
-					return FindGroupRoot(parent);
-
-				return parent;
-			}
-
-			return transform;
 		}
 
 		static EditorVR s_Instance;

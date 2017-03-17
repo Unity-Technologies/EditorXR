@@ -6,13 +6,12 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: HighlightMaterial
-  m_Shader: {fileID: 4800000, guid: 17d79fd9a3d634a40ae219ffcf9befd4, type: 3}
+  m_Name: DefatultHighlightMaterial
+  m_Shader: {fileID: 4800000, guid: 9c58ee7b67645404e9542c09f160ccb9, type: 3}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 1
-  m_CustomRenderQueue: 10000
-  stringTagMap:
-    RenderType: Transparent
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
     m_TexEnvs:
@@ -114,11 +113,17 @@ Material:
         name: _SrcBlend
       second: 1
     - first:
+        name: _StencilRef
+      second: 4
+    - first:
         name: _UVSec
       second: 0
     - first:
         name: _ZWrite
       second: 0
+    - first:
+        name: g_flOutlineWidth
+      second: 0.005
     m_Colors:
     - first:
         name: _Color
@@ -126,3 +131,6 @@ Material:
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}
+    - first:
+        name: g_vOutlineColor
+      second: {r: 0, g: 0.737255, b: 0.83137256, a: 1}

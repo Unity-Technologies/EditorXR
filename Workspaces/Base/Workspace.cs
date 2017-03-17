@@ -80,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public InstantiateUIDelegate instantiateUI { protected get; set; }
 
-		public Action<GameObject, bool> setHighlight { protected get; set; }
+		public Action<GameObject, Transform, bool> setHighlight { protected get; set; }
 
 		public byte stencilRef { get; set; }
 
