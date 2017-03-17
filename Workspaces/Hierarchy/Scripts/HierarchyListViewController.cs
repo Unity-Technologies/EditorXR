@@ -249,7 +249,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void ToggleExpanded(int index)
 		{
-			m_ExpandStates[index] = !m_ExpandStates[index];
+			bool expanded;
+			if (!m_ExpandStates.TryGetValue(index, out expanded))
+				m_ExpandStates[index] = true;
+			else
+				m_ExpandStates[index] = !expanded;
+
 			StartSettling();
 		}
 
