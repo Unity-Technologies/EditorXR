@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Action<int> selectRow { private get; set; }
 
-		public Func<string, bool> testFilter { private get; set; }
+		public Func<string, bool> matchesFilter { private get; set; }
 		public Func<string> getSearchQuery { private get; set; }
 
 		protected override void Setup()
@@ -112,7 +112,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void UpdateHierarchyItem(HierarchyData data, ref float offset, int depth, bool? expanded)
+		void UpdateHierarchyItem(HierarchyData data, ref float offset, int depth, bool? expanded, ref bool doneSettling)
 		{
 			var index = data.index;
 			HierarchyListItem item;
@@ -126,14 +126,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			SetMaterialClip(item.dropZoneMaterial, transform.worldToLocalMatrix);
 
 			m_VisibleItemHeight+= itemSize.z;
-			UpdateItem(item.transform, offset + m_ScrollOffset);
+			UpdateItem(item.transform, offset + m_ScrollOffset, ref doneSettling);
 
 			var extraSpace = item.extraSpace * itemSize.z;
 			offset += extraSpace;
 			m_VisibleItemHeight += extraSpace;
 		}
 
-		protected override void UpdateRecursively(List<HierarchyData> data, ref float offset, int depth = 0)
+		protected override void UpdateRecursively(List<HierarchyData> data, ref float offset, ref bool doneSettling, int depth = 0)
 		{
 			for (int i = 0; i < data.Count; i++)
 			{
@@ -148,7 +148,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					var item = GetListItem(index);
 					if (item && item.isStillSettling) // "Hang on" to settle state until grabbed object is settled in the list
-						m_SettleTest = false;
+						doneSettling = false;
 					continue;
 				}
 
@@ -158,7 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z;
 				if (hasFilterQuery)
 				{
-					var filterTestPass = datum.types.Any(type => testFilter(type));
+					var filterTestPass = datum.types.Any(type => matchesFilter(type));
 
 					if (!filterTestPass) // If this item doesn't match the filter, move on to the next item; do not count
 					{
@@ -169,27 +169,27 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						if (shouldRecycle)
 							Recycle(index);
 						else
-							UpdateHierarchyItem(datum, ref offset, 0, null);
+							UpdateHierarchyItem(datum, ref offset, 0, null, ref doneSettling);
 
 						offset += itemSize.z;
 					}
 
 					if (hasChildren)
-						UpdateRecursively(datum.children, ref offset);
+						UpdateRecursively(datum.children, ref offset, ref doneSettling);
 				}
 				else
 				{
 					if (shouldRecycle)
 						Recycle(index);
 					else
-						UpdateHierarchyItem(datum, ref offset, depth, expanded);
+						UpdateHierarchyItem(datum, ref offset, depth, expanded, ref doneSettling);
 
 					offset += itemSize.z;
 
 					if (hasChildren)
 					{
 						if (expanded)
-							UpdateRecursively(datum.children, ref offset, depth + 1);
+							UpdateRecursively(datum.children, ref offset, ref doneSettling, depth + 1);
 						else
 							RecycleChildren(datum);
 					}

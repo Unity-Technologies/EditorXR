@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
 
-		public Func<string, bool> testFilter { private get; set; }
+		public Func<string, bool> matchesFilter { private get; set; }
 
 		protected override float listHeight
 		{
@@ -113,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					continue;
 				}
 
-				if (!testFilter(data.type)) // If this item doesn't match the filter, move on to the next item; do not count
+				if (!matchesFilter(data.type)) // If this item doesn't match the filter, move on to the next item; do not count
 				{
 					RecycleGridItem(data);
 					continue;
@@ -123,7 +123,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (offset + scrollOffset < 0 || offset + scrollOffset > bounds.size.z)
 					RecycleGridItem(data);
 				else
-					UpdateVisibleItem(data, count);
+				{
+					var ignored = true;
+					UpdateVisibleItem(data, count, ref ignored);
+				}
 
 				count++;
 			}
@@ -147,7 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			});
 		}
 
-		protected override void UpdateVisibleItem(AssetData data, float offset)
+		protected override void UpdateVisibleItem(AssetData data, float offset, ref bool doneSettling)
 		{
 			AssetGridItem item;
 			if (!m_ListItems.TryGetValue(data.index, out item))

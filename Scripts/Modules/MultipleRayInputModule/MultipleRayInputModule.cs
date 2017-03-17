@@ -134,13 +134,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				var hasObject = source.hasObject;
 				var hasScrollHandler = false;
-				var sourceInput = source.actionMapInput;
-				sourceInput.active = hasObject && ShouldActivateInput(eventData, source.currentObject, out hasScrollHandler);
+				var sourceAMI = source.actionMapInput;
+				sourceAMI.active = hasObject && ShouldActivateInput(eventData, source.currentObject, out hasScrollHandler);
 
-				var select = sourceInput.select;
+				var select = sourceAMI.select;
 
 				// Proceed only if pointer is interacting with something
-				if (!sourceInput.active)
+				if (!sourceAMI.active)
 				{
 					// If we have an object, the ray is blocked--input should not bleed through
 					if (hasObject)
@@ -170,8 +170,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var scrollObject = source.currentObject;
 				if (scrollObject && hasScrollHandler)
 				{
-					var verticalScroll = sourceInput.verticalScroll;
-					var horizontalScroll = sourceInput.horizontalScroll;
+					var verticalScroll = sourceAMI.verticalScroll;
+					var horizontalScroll = sourceAMI.horizontalScroll;
 					var verticalScrollValue = verticalScroll.value;
 					var horizontalScrollValue = horizontalScroll.value;
 					if (!Mathf.Approximately(verticalScrollValue, 0f) || !Mathf.Approximately(horizontalScrollValue, 0f))

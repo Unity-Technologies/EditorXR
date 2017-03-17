@@ -9,18 +9,8 @@ namespace UnityEditor.Experimental.EditorVR.Data
 	{
 		const string k_TemplateName = "AssetGridItem";
 
-		public string name
-		{
-			get { return m_Name; }
-		}
-		readonly string m_Name;
-
-		public override string index
-		{
-			get { return m_Guid; }
-		}
-		readonly string m_Guid;
-
+		public string name { get; private set; }
+		
 		public string type { get; private set; }
 
 		public GameObject preview { get; set; }
@@ -41,8 +31,8 @@ namespace UnityEditor.Experimental.EditorVR.Data
 		public AssetData(string name, string guid, string type)
 		{
 			template = k_TemplateName;
-			m_Guid = guid;
-			m_Name = name;
+			index = guid;
+			this.name = name;
 			this.type = type;
 		}
 

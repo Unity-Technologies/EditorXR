@@ -55,7 +55,7 @@ namespace ListView
 
 		protected override void UpdateItems()
 		{
-			m_SettleTest = true;
+			var doneSettling = true;
 
 			var offset = 0f;
 			for (int i = 0; i < m_Data.Count; i++)
@@ -64,12 +64,12 @@ namespace ListView
 				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
 					Recycle(datum.index);
 				else
-					UpdateVisibleItem(datum, i * itemSize.z + m_ScrollOffset);
+					UpdateVisibleItem(datum, i * itemSize.z + m_ScrollOffset, ref doneSettling);
 
 				offset += itemSize.z;
 			}
 
-			if (m_Settling && m_SettleTest)
+			if (m_Settling && doneSettling)
 				EndSettling();
 		}
 
@@ -95,7 +95,7 @@ namespace ListView
 			item.gameObject.SetActive(false);
 		}
 
-		protected virtual void UpdateVisibleItem(TData data, float offset)
+		protected virtual void UpdateVisibleItem(TData data, float offset, ref bool doneSettling)
 		{
 			TItem item;
 			var index = data.index;
@@ -105,7 +105,7 @@ namespace ListView
 				m_ListItems[index] = item;
 			}
 
-			UpdateItem(item.transform, offset);
+			UpdateItem(item.transform, offset, ref doneSettling);
 		}
 
 		protected virtual void SetRowGrabbed(TIndex index, Transform rayOrigin, bool grabbed)

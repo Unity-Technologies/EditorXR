@@ -64,6 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		Renderer m_ExpandArrowRenderer;
 		Material m_ExpandArrowMaterial;
+
 		public Material cubeMaterial { get; private set; }
 		public Material dropZoneMaterial { get; private set; }
 
@@ -78,6 +79,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public int extraSpace { get; private set; }
 
 		public Func<Transform, bool> isOverShoulder { private get; set; }
+
+		public bool isStillSettling { private set; get; }
 
 		public override void Setup(HierarchyData data)
 		{

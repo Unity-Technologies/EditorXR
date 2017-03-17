@@ -230,6 +230,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (usesHierarchyData != null)
 				{
 					evrHierarchyModule.AddConsumer(usesHierarchyData);
+
 					var filterUI = obj as IFilterUI;
 					if (filterUI != null)
 						evrHierarchyModule.AddConsumer(filterUI);

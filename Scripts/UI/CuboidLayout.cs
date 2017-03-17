@@ -35,7 +35,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			UpdateObjects();
 		}
 
-		public void Setup()
+		[ContextMenu("Setup")]
+		void Setup()
 		{
 			m_CubeTransforms = new Transform[m_TargetTransforms.Length];
 			for (var i = 0; i < m_CubeTransforms.Length; i++)
@@ -82,6 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			}
 		}
 
+		[ContextMenu("UpdateObjects")]
 		public void UpdateObjects()
 		{
 			if (m_CubeTransforms == null)

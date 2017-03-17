@@ -15,9 +15,9 @@ namespace UnityEditor.Experimental.EditorVR
 		string searchQuery { get; }
 	}
 
-	public static class FilterUIExtensionMethods
+	public static class IFilterUIMethods
 	{
-		public static bool TestFilter(this IFilterUI filterUI, string type)
+		public static bool MatchesFilter(this IFilterUI filterUI, string type)
 		{
 			var pieces = filterUI.searchQuery.Split(':');
 			if (pieces.Length > 1)
@@ -29,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				return true;
 			}
+
 			return false;
 		}
 	}

@@ -68,15 +68,17 @@ namespace ListView
 
 		protected override void UpdateItems()
 		{
-			m_SettleTest = true;
+			var doneSettling = true;
 			var count = 0f;
-			UpdateRecursively(m_Data, ref count);
+
+			UpdateRecursively(m_Data, ref count, ref doneSettling);
 			m_ExpandedDataLength = count;
-			if (m_Settling && m_SettleTest)
+
+			if (m_Settling && doneSettling)
 				EndSettling();
 		}
 
-		protected virtual void UpdateRecursively(List<TData> data, ref float offset, int depth = 0)
+		protected virtual void UpdateRecursively(List<TData> data, ref float offset, ref bool doneSettling, int depth = 0)
 		{
 			for (int i = 0; i < data.Count; i++)
 			{
@@ -92,23 +94,23 @@ namespace ListView
 				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
 					Recycle(index);
 				else
-					UpdateNestedItem(datum, offset, depth);
+					UpdateNestedItem(datum, offset, depth, ref doneSettling);
 
 				offset += itemSize.z;
 
 				if (datum.children != null)
 				{
 					if (expanded)
-						UpdateRecursively(datum.children, ref offset, depth + 1);
+						UpdateRecursively(datum.children, ref offset, ref doneSettling, depth + 1);
 					else
 						RecycleChildren(datum);
 				}
 			}
 		}
 
-		protected virtual void UpdateNestedItem(TData data, float count, int depth)
+		protected virtual void UpdateNestedItem(TData data, float count, int depth, ref bool doneSettling)
 		{
-			UpdateVisibleItem(data, count);
+			UpdateVisibleItem(data, count, ref doneSettling);
 		}
 
 		protected void RecycleChildren(TData data)

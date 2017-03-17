@@ -9,7 +9,6 @@ namespace ListView
 		public TData data { get; set; }
 		public Action<Action> startSettling { protected get; set; }
 		public Action endSettling { protected get; set; }
-		public bool isStillSettling { protected set; get; }
 		public Func<TIndex, ListViewItem<TData, TIndex>> getListItem { protected get; set; }
 
 		public virtual void Setup(TData data)

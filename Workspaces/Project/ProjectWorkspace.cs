@@ -79,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var assetGridView = m_ProjectUI.assetGridView;
 			connectInterfaces(assetGridView);
-			assetGridView.testFilter = this.TestFilter;
+			assetGridView.matchesFilter = this.MatchesFilter;
 			assetGridView.data = new List<AssetData>();
 
 			var folderListView = m_ProjectUI.folderListView;

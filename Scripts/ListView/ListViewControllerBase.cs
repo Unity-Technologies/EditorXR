@@ -38,8 +38,7 @@ namespace ListView
 		float m_ScrollSpeed = 0.3f;
 
 		protected bool m_Settling;
-		protected bool m_SettleTest;
-		Action m_OnSettlingComplete;
+		event Action settlingCompleted;
 
 		public Vector3 itemSize
 		{
@@ -149,24 +148,24 @@ namespace ListView
 			m_ScrollOffset = index * itemSize.z;
 		}
 
-		protected virtual void UpdateItem(Transform t, float offset)
+		protected virtual void UpdateItem(Transform t, float offset, ref bool doneSettling)
 		{
 			var targetPosition = m_StartPosition + offset * Vector3.back;
 			var targetRotation = Quaternion.identity;
-			UpdateItemTransform(t, targetPosition, targetRotation, false);
+			UpdateItemTransform(t, targetPosition, targetRotation, false, ref doneSettling);
 		}
 
-		protected virtual void UpdateItemTransform(Transform t, Vector3 targetPosition, Quaternion targetRotation, bool noSettle)
+		protected virtual void UpdateItemTransform(Transform t, Vector3 targetPosition, Quaternion targetRotation, bool dontSettle, ref bool doneSettling)
 		{
-			if (m_Settling && !noSettle)
+			if (m_Settling && !dontSettle)
 			{
 				t.localPosition = Vector3.Lerp(t.localPosition, targetPosition, m_SettleSpeed);
 				if (t.localPosition != targetPosition)
-					m_SettleTest = false;
+					doneSettling = false;
 
 				t.localRotation = Quaternion.Lerp(t.localRotation, targetRotation, m_SettleSpeed);
 				if (t.localRotation != targetRotation)
-					m_SettleTest = false;
+					doneSettling = false;
 			}
 			else
 			{
@@ -231,17 +230,17 @@ namespace ListView
 			m_Settling = true;
 
 			if (onComplete != null)
-				m_OnSettlingComplete += onComplete;
+				settlingCompleted += onComplete;
 		}
 
 		protected virtual void EndSettling()
 		{
 			m_Settling = false;
 
-			if (m_OnSettlingComplete != null)
+			if (settlingCompleted != null)
 			{
-				m_OnSettlingComplete();
-				m_OnSettlingComplete = null;
+				settlingCompleted();
+				settlingCompleted = null;
 			}
 		}
 	}
