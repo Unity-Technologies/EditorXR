@@ -5,8 +5,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap, 
-		ISetHighlight, ISelectObject, ISetManipulatorsVisible
+	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
+		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IUsesUIBlocking
 	{
 		GameObject m_HoverGameObject;
 		GameObject m_PressedObject;
@@ -28,13 +28,24 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { private get; set; }
 
+		public Func<Transform, bool> hoveringUI { private get; set; }
+
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			if (rayOrigin == null)
 				return;
 
-			if (!isRayActive(rayOrigin))
+			if (hoveringUI(rayOrigin))
+			{
+				DeactivateHover();
 				return;
+			}
+
+			if (!isRayActive(rayOrigin))
+			{
+				DeactivateHover();
+				return;
+			}
 
 			var selectionInput = (SelectionInput)input;
 
@@ -55,8 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			// Handle changing highlight
 			if (hoveredObject != m_HoverGameObject)
 			{
-				if (m_HoverGameObject != null)
-					setHighlight(m_HoverGameObject, rayOrigin, false);
+				DeactivateHover();
 
 				if (hoveredObject != null)
 					setHighlight(hoveredObject, rayOrigin, true);
@@ -92,6 +102,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				m_PressedObject = null;
 			}
+		}
+
+		void DeactivateHover()
+		{
+			if (m_HoverGameObject != null)
+				setHighlight(m_HoverGameObject, rayOrigin, false);
+			m_HoverGameObject = null;
 		}
 
 		void OnDisable()

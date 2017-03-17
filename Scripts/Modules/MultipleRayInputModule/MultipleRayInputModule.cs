@@ -431,6 +431,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			ExecuteEvents.Execute(base.eventSystem.currentSelectedGameObject, eventData, ExecuteEvents.updateSelectedHandler);
 			return eventData.used;
 		}
+
+		public bool HoveringUI(Transform rayOrigin)
+		{
+			RaycastSource source;
+			return m_RaycastSources.TryGetValue(rayOrigin, out source) && source.hasObject;
+		}
 	}
 }
 #endif
