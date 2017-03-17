@@ -134,6 +134,7 @@ Shader "EditorVR/Valve/Silhouette"
 			ColorMask 0
 			Cull Off
 			ZWrite Off
+			ZTest Off
 			Stencil
 			{
 				Ref[_StencilRef]
@@ -155,7 +156,8 @@ Shader "EditorVR/Valve/Silhouette"
 		{
 			Tags { "LightMode" = "Always" }
 			Cull Off
-			ZWrite On
+			ZWrite Off
+			ZTest Off
 			Stencil
 			{
 				Ref [_StencilRef]
