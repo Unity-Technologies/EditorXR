@@ -1,7 +1,5 @@
 ﻿#if UNITY_EDITOR
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -12,16 +10,14 @@ using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	abstract class InspectorListItem : DraggableListItem<InspectorData>, ISetHighlight, IRequestStencilRef
+	abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHighlight, IGetFieldGrabOrigin
 	{
 		const float k_Indent = 0.02f;
+		const float k_HorizThreshold = 0.85f;
 
 		protected CuboidLayout m_CuboidLayout;
 
 		protected InputField[] m_InputFields;
-
-		protected InputField m_ClickedField;
-		protected int m_ClickCount;
 
 		[SerializeField]
 		BaseHandle m_Cube;
@@ -29,26 +25,32 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		RectTransform m_UIContainer;
 
+		[SerializeField]
+		Material m_NoClipText;
+
 		ClipText[] m_ClipTexts;
 
 		Material m_NoClipBackingCube;
 		Material[] m_NoClipHighlightMaterials;
 
 		bool m_Setup;
+		bool m_HorizontalDrag;
 
-		readonly Dictionary<Transform, Vector3> m_DragStarts = new Dictionary<Transform, Vector3>();
-
-		float m_LastClickTime;
-		bool m_SelectIsHeld;
-		float m_DragDistance;
+		Transform m_DragClone;
+		protected NumericInputField m_DraggedField;
 
 		public bool setup { get; set; }
 
 		public Action<GameObject, bool> setHighlight { private get; set; }
 
-		public Action<InspectorData> toggleExpanded { private get; set; }
+		public Func<Transform, Transform> getFieldGrabOriginForRayOrigin { get; set; }
 
-		public Func<byte> requestStencilRef { private get; set; }
+		public Action<int> toggleExpanded { private get; set; }
+
+		protected override bool singleClickDrag
+		{
+			get { return false; }
+		}
 
 		public override void Setup(InspectorData data)
 		{
@@ -178,6 +180,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		object GetDropObject(BaseHandle handle)
 		{
+			if (!m_DragObject || m_HorizontalDrag)
+				return null;
+
 			return GetDropObjectForFieldBlock(handle.transform.parent);
 		}
 
@@ -191,153 +196,159 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ReceiveDropForFieldBlock(handle.transform.parent, dropObject);
 		}
 
-		protected override void OnDragStarted(BaseHandle baseHandle, HandleEventData eventData)
+		protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
 		{
-			base.OnDragStarted(baseHandle, eventData);
-			m_DragObject = null;
+			base.OnDragStarted(handle, eventData);
+			m_HorizontalDrag = false;
+		}
 
-			var fieldBlock = baseHandle.transform.parent;
+		protected override void OnGrabDragStart(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+		{
+			var dragVector = eventData.rayOrigin.position - dragStart;
+			var distance = dragVector.magnitude;
+			m_HorizontalDrag = Mathf.Abs(Vector3.Dot(dragVector, m_DragObject.right)) / distance > k_HorizThreshold;
+
+			var fieldBlock = handle.transform.parent;
 			if (fieldBlock)
 			{
-				if (m_ClickCount == 0)
-				{
-					// Get RayInputField from direct children
-					foreach (Transform child in fieldBlock.transform)
-					{
-						m_ClickedField = child.GetComponent<InputField>();
-						if (m_ClickedField)
-							break;
-					}
-					StartCoroutine(CheckSingleClick());
-				}
-
-				m_ClickCount++;
-				m_SelectIsHeld = true;
-				m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
-
-				// Grab a field block on double click
-				var timeSinceLastClick = Time.realtimeSinceStartup - m_LastClickTime;
-				m_LastClickTime = Time.realtimeSinceStartup;
-				if (m_ClickCount > 1 && UIUtils.IsDoubleClick(timeSinceLastClick))
-				{
-					CancelSingleClick();
-
-					var clone = Instantiate(fieldBlock.gameObject, fieldBlock.parent) as GameObject;
-
-					// Re-center pivot
-					clone.GetComponent<RectTransform>().pivot = Vector2.one * 0.5f;
-
-					//Re-center backing cube
-					foreach (Transform child in clone.transform)
-					{
-						if (child.GetComponent<BaseHandle>())
-						{
-							var localPos = child.localPosition;
-							localPos.x = 0;
-							localPos.y = 0;
-							child.localPosition = localPos;
-						}
-					}
-
-					m_DragObject = clone.transform;
-					m_ClickedField = null; // Clear clicked field so we don't drag the value
-
-					var graphics = clone.GetComponentsInChildren<Graphic>(true);
-					foreach (var graphic in graphics)
-					{
-						graphic.material = null;
-					}
-
-					var stencilRef = requestStencilRef();
-					var renderers = clone.GetComponentsInChildren<Renderer>(true);
-					foreach (var renderer in renderers)
-					{
-						if (renderer.sharedMaterials.Length > 1)
-						{
-							foreach (var material in m_NoClipHighlightMaterials)
-							{
-								material.SetInt("_StencilRef", stencilRef);
-							}
-							renderer.sharedMaterials = m_NoClipHighlightMaterials;
-						}
-						else
-						{
-							renderer.sharedMaterial = m_NoClipBackingCube;
-							m_NoClipBackingCube.SetInt("_StencilRef", stencilRef);
-						}
-					}
-				}
+				if (m_HorizontalDrag)
+					OnHorizontalDragStart(eventData.rayOrigin, fieldBlock);
+				else
+					OnVerticalDragStart(fieldBlock);
 			}
 		}
 
-		protected override void OnDragging(BaseHandle baseHandle, HandleEventData eventData)
+		protected override void OnGrabDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
 		{
-			if (m_ClickedField)
+			if (m_HorizontalDrag)
+				OnHorizontalDragging(eventData.rayOrigin);
+			else
+				OnVerticalDragging(eventData.rayOrigin);
+		}
+
+		protected virtual void OnVerticalDragStart(Transform fieldBlock)
+		{
+			var clone = ((GameObject)Instantiate(fieldBlock.gameObject, fieldBlock.parent)).transform;
+
+			// Re-center pivot
+			clone.GetComponent<RectTransform>().pivot = Vector2.one * 0.5f;
+
+			// Re-center backing cube
+			foreach (Transform child in clone)
 			{
-				var rayOrigin = eventData.rayOrigin;
-				m_DragDistance = (rayOrigin.position - m_DragStarts[rayOrigin]).magnitude;
-
-				var numericField = m_ClickedField as NumericInputField;
-				if (numericField)
+				if (child.GetComponent<BaseHandle>())
 				{
-					if (m_DragDistance > NumericInputField.DragDeadzone)
-						CancelSingleClick();
-
-					numericField.SliderDrag(eventData.rayOrigin);
+					var localPos = child.localPosition;
+					localPos.x = 0;
+					localPos.y = 0;
+					child.localPosition = localPos;
 				}
 			}
 
-			if (m_DragObject)
+			var graphics = clone.GetComponentsInChildren<Graphic>(true);
+			foreach (var graphic in graphics)
 			{
-				var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
-				MathUtilsExt.LerpTransform(m_DragObject, previewOrigin.position,
-					MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation), m_DragLerp);
+				graphic.raycastTarget = false;
+
+				if (graphic.GetComponent<Mask>())
+					continue;
+
+				graphic.material = null;
+			}
+
+			var renderers = clone.GetComponentsInChildren<Renderer>(true);
+			foreach (var renderer in renderers)
+			{
+				if (renderer.sharedMaterials.Length > 1)
+				{
+					renderer.sharedMaterials = m_NoClipHighlightMaterials;
+				}
+				else
+				{
+					renderer.sharedMaterial = m_NoClipBackingCube;
+				}
+			}
+
+			var texts = clone.GetComponentsInChildren<Text>(true);
+			foreach (var text in texts)
+			{
+				text.material = m_NoClipText;
+			}
+
+			var colliders = clone.GetComponentsInChildren<Collider>();
+			foreach (var collider in colliders)
+			{
+				collider.enabled = false;
+			}
+
+			m_DragClone = clone;
+
+			StartCoroutine(Magnetize());
+		}
+
+		protected virtual void OnVerticalDragging(Transform rayOrigin)
+		{
+			if (m_DragClone)
+			{
+				var fieldGrabOrigin = getFieldGrabOriginForRayOrigin(rayOrigin);
+				var rotation = MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation);
+				MathUtilsExt.LerpTransform(m_DragClone, fieldGrabOrigin.position, rotation, m_DragLerp);
 			}
 		}
 
-		protected override void OnDragEnded(BaseHandle baseHandle, HandleEventData eventData)
+		protected virtual void OnHorizontalDragStart(Transform rayOrigin, Transform fieldBlock)
 		{
-			m_SelectIsHeld = false;
-
-			var numericField = m_ClickedField as NumericInputField;
-			if (numericField)
-				numericField.EndDrag();
-
-			var fieldBlock = baseHandle.transform.parent;
-			if (fieldBlock)
+			// Get RayInputField from direct children
+			foreach (Transform child in fieldBlock.transform)
 			{
-				if (m_DragObject)
-					ObjectUtils.Destroy(m_DragObject.gameObject);
+				var inputField = child.GetComponent<InputField>();
+				if (inputField)
+				{
+					m_DraggedField = inputField as NumericInputField;
+					m_DraggedField.BeginSliderDrag(rayOrigin);
+					break;
+				}
 			}
-
-			base.OnDragEnded(baseHandle, eventData);
 		}
 
-		void CancelSingleClick()
+		protected virtual void OnHorizontalDragging(Transform rayOrigin)
 		{
-			m_ClickCount = 0;
+			if (m_DraggedField)
+				m_DraggedField.SliderDrag(rayOrigin);
 		}
 
-		IEnumerator CheckSingleClick()
+		protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
-			var start = Time.realtimeSinceStartup;
-			var currTime = 0f;
-			while (m_SelectIsHeld || currTime < UIUtils.DoubleClickIntervalMax)
+			if (m_DraggedField)
+				m_DraggedField.EndSliderDrag(eventData.rayOrigin);
+
+			// Delay call fixes errors when you close the workspace or change data while dragging a field
+			EditorApplication.delayCall += () =>
 			{
-				currTime = Time.realtimeSinceStartup - start;
-				yield return null;
+				if (m_DragClone)
+					ObjectUtils.Destroy(m_DragClone.gameObject);
+			};
+
+			if (!m_DragObject)
+			{
+				foreach (var field in m_InputFields)
+				{
+					field.CloseKeyboard(m_DraggedField == null);
+				}
+
+				var fieldBlock = handle.transform.parent;
+				foreach (Transform child in fieldBlock.transform)
+				{
+					var inputField = child.GetComponent<InputField>();
+					if (inputField)
+					{
+						inputField.OpenKeyboard();
+						break;
+					}
+				}
 			}
 
-			if (m_ClickCount == 1)
-			{
-				foreach (var inputField in m_InputFields)
-					inputField.CloseKeyboard(m_ClickedField == null);
-
-				if (m_ClickedField)
-					m_ClickedField.OpenKeyboard();
-			}
-
-			m_ClickCount = 0;
+			base.OnDragEnded(handle, eventData);
 		}
 
 		protected virtual object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -350,12 +361,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			return false;
 		}
 
-		protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject) {}
+		protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+		{
+		}
 
 		public void ToggleExpanded()
 		{
-			toggleExpanded(data);
+			toggleExpanded(data.index);
 		}
 	}
 }
+
 #endif

@@ -14,21 +14,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		InspectorListViewController m_ListView;
 
-		public BaseHandle inspectorScrollHandle
+		public LinearHandle scrollHandle
 		{
-			get { return m_InspectorScrollHandle; }
+			get { return m_ScrollHandle; }
 		}
 
 		[SerializeField]
-		BaseHandle m_InspectorScrollHandle;
+		LinearHandle m_ScrollHandle;
 
-		public RectTransform inspectorPanel
+		public RectTransform listPanel
 		{
-			get { return m_InspectorPanel; }
+			get { return m_ListPanel; }
 		}
 
 		[SerializeField]
-		RectTransform m_InspectorPanel;
+		RectTransform m_ListPanel;
 	}
 }
 #endif

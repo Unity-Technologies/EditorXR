@@ -162,21 +162,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		public static bool TestFilter(string query, string type)
-		{
-			var pieces = query.Split(':');
-			if (pieces.Length > 1)
-			{
-				if (pieces[1].StartsWith(type))
-					return true;
-			}
-			else
-			{
-				return true;
-			}
-			return false;
-		}
-
 		IEnumerator ShowUIContent()
 		{
 			var currentAlpha = m_CanvasGroup.alpha;

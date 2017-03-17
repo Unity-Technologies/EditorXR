@@ -5,13 +5,12 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-	sealed class AssetData : ListViewItemData
+	sealed class AssetData : ListViewItemData<string>
 	{
 		const string k_TemplateName = "AssetGridItem";
 
 		public string name { get; private set; }
-		public string guid { get; private set; }
-
+		
 		public string type { get; private set; }
 
 		public GameObject preview { get; set; }
@@ -32,8 +31,8 @@ namespace UnityEditor.Experimental.EditorVR.Data
 		public AssetData(string name, string guid, string type)
 		{
 			template = k_TemplateName;
+			index = guid;
 			this.name = name;
-			this.guid = guid;
 			this.type = type;
 		}
 

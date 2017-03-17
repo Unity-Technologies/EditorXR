@@ -17,13 +17,13 @@ namespace UnityEditor.Experimental.EditorVR
 	[InitializeOnLoad]
 #if UNITY_EDITORVR
 	[RequiresTag(k_VRPlayerTag)]
-	sealed partial class EditorVR
+	sealed partial class EditorVR : MonoBehaviour
 	{
-		public const HideFlags DefaultHideFlags = HideFlags.None;
+		const string k_ShowGameObjects = "EditorVR.ShowGameObjects";
 		const string k_VRPlayerTag = "VRPlayer";
 
 		[SerializeField]
-		private GameObject m_PlayerModelPrefab;
+		GameObject m_PlayerModelPrefab;
 
 		[SerializeField]
 		GameObject m_PreviewCameraPrefab;
@@ -63,6 +63,17 @@ namespace UnityEditor.Experimental.EditorVR
 		IPreviewCamera m_CustomPreviewCamera;
 
 		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
+
+		static HideFlags defaultHideFlags
+		{
+			get { return showGameObjects ? HideFlags.DontSave : HideFlags.HideAndDontSave; }
+		}
+
+		static bool showGameObjects
+		{
+			get { return EditorPrefs.GetBool(k_ShowGameObjects, false); }
+			set { EditorPrefs.SetBool(k_ShowGameObjects, value); }
+		}
 
 		class DeviceData
 		{
@@ -111,6 +122,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
 
 			VRView.cameraRig.parent = transform; // Parent the camera rig under EditorVR
+			VRView.cameraRig.hideFlags = defaultHideFlags;
 			if (VRSettings.loadedDeviceName == "OpenVR")
 			{
 				// Steam's reference position should be at the feet and not at the head as we do with Oculus
@@ -401,6 +413,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		static void OnVRViewEnabled()
 		{
+			ObjectUtils.hideFlags = defaultHideFlags;
 			InitializeInputManager();
 			s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
 		}
@@ -431,7 +444,7 @@ namespace UnityEditor.Experimental.EditorVR
 			Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
 
 			s_InputManager = managers[0];
-			s_InputManager.gameObject.hideFlags = DefaultHideFlags;
+			s_InputManager.gameObject.hideFlags = defaultHideFlags;
 			ObjectUtils.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
 
 			// These components were allocating memory every frame and aren't currently used in EditorVR
@@ -445,6 +458,22 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			ObjectUtils.Destroy(s_Instance.gameObject);
 			ObjectUtils.Destroy(s_InputManager.gameObject);
+		}
+
+		[PreferenceItem("EditorVR")]
+		static void PreferencesGUI()
+		{
+			EditorGUILayout.BeginVertical();
+			EditorGUILayout.Space();
+
+			// Show EditorVR GameObjects
+			{
+				string title = "Show EditorVR GameObjects";
+				string tooltip = "Normally, EditorVR GameObjects are hidden in the Hierarchy. Would you like to show them?";
+				showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), showGameObjects);
+			}
+
+			EditorGUILayout.EndVertical();
 		}
 	}
 #else

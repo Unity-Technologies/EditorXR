@@ -70,11 +70,20 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 
 		/// <summary>
-		/// Origins for previews that show
+		/// Origins for asset previews
 		/// Key = ray origin
 		/// Value = preview transform
 		/// </summary>
 		Dictionary<Transform, Transform> previewOrigins
+		{
+			get; set;
+		}
+
+		/// Origins for grabbed list fields
+		/// Key = ray origin
+		/// Value = field grab transform
+		/// </summary>
+		Dictionary<Transform, Transform> fieldGrabOrigins
 		{
 			get; set;
 		}

@@ -141,12 +141,6 @@ Material:
       second: 0
     m_Colors:
     - first:
-        name: _ClipCenter
-      second: {r: 0, g: 0, b: 0, a: 0}
-    - first:
-        name: _ClipExtents
-      second: {r: 0.1675, g: 1.7014117e+38, b: 0.22500001, a: 0}
-    - first:
         name: _Color
       second: {r: 1, g: 1, b: 1, a: 1}
     - first:

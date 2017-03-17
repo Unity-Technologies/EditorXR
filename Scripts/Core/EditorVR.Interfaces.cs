@@ -151,9 +151,13 @@ namespace UnityEditor.Experimental.EditorVR
 					locking.isLocked = evrLockModule.IsLocked;
 				}
 
-				var positionPreview = obj as IGetPreviewOrigin;
-				if (positionPreview != null)
-					positionPreview.getPreviewOriginForRayOrigin = evrRays.GetPreviewOriginForRayOrigin;
+				var getPreviewOrigin = obj as IGetPreviewOrigin;
+				if (getPreviewOrigin != null)
+					getPreviewOrigin.getPreviewOriginForRayOrigin = evrRays.GetPreviewOriginForRayOrigin;
+
+				var getFieldGrabOrigin = obj as IGetFieldGrabOrigin;
+				if (getFieldGrabOrigin != null)
+					getFieldGrabOrigin.getFieldGrabOriginForRayOrigin = evrRays.GetFieldGrabOriginForRayOrigin;
 
 				var selectionChanged = obj as ISelectionChanged;
 				if (selectionChanged != null)
@@ -218,15 +222,23 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var usesProjectFolderData = obj as IUsesProjectFolderData;
 				if (usesProjectFolderData != null)
+				{
 					evrProjectFolderModule.AddConsumer(usesProjectFolderData);
+
+					var filterUI = obj as IFilterUI;
+					if (filterUI != null)
+						evrProjectFolderModule.AddConsumer(filterUI);
+				}
 
 				var usesHierarchyData = obj as IUsesHierarchyData;
 				if (usesHierarchyData != null)
+				{
 					evrHierarchyModule.AddConsumer(usesHierarchyData);
 
-				var filterUI = obj as IFilterUI;
-				if (filterUI != null)
-					evrProjectFolderModule.AddConsumer(filterUI);
+					var filterUI = obj as IFilterUI;
+					if (filterUI != null)
+						evrHierarchyModule.AddConsumer(filterUI);
+				}
 
 				// Tracked Object action maps shouldn't block each other so we share an instance
 				var trackedObjectMap = obj as ITrackedObjectActionMap;

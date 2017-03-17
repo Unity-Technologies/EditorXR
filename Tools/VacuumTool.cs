@@ -27,7 +27,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var standardInput = (Standard)input;
 			if (standardInput.action.wasJustPressed)
 			{
-				if (UIUtils.IsDoubleClick(Time.realtimeSinceStartup - m_LastClickTime))
+				var realTime = Time.realtimeSinceStartup;
+				if (UIUtils.IsDoubleClick(realTime - m_LastClickTime))
 				{
 					foreach (var vacuumable in vacuumables)
 					{
@@ -48,7 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					consumeControl(standardInput.action);
 				}
 
-				m_LastClickTime = Time.realtimeSinceStartup;
+				m_LastClickTime = realTime;
 			}
 		}
 

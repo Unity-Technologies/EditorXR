@@ -8,13 +8,13 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem>, IConnectInterfaces
+	sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, string>
 	{
-		private const float k_PositionFollow = 0.4f;
+		const float k_PositionFollow = 0.4f;
 
-		private Transform m_GrabbedObject;
+		Transform m_GrabbedObject;
 
-		private int m_NumPerRow;
+		int m_NumPerRow;
 
 		public float scaleFactor
 		{
@@ -27,25 +27,29 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		[SerializeField]
-		private float m_ScaleFactor = 0.05f;
+		float m_ScaleFactor = 0.05f;
 
 		[SerializeField]
-		private string[] m_IconTypes;
+		string[] m_IconTypes;
 
 		[SerializeField]
-		private GameObject[] m_Icons;
+		GameObject[] m_Icons;
 
 		float m_LastHiddenItemOffset;
 
 		readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
 
-		public ConnectInterfacesDelegate connectInterfaces { get; set; }
+		public Func<string, bool> matchesFilter { private get; set; }
 
-		public Func<string, bool> testFilter;
-
-		protected override int dataLength
+		protected override float listHeight
 		{
-			get { return Mathf.CeilToInt((float)base.dataLength / m_NumPerRow); }
+			get
+			{
+				if (m_NumPerRow == 0)
+					return 0;
+
+				return Mathf.CeilToInt(m_Data.Count / m_NumPerRow) * itemSize.z;
+			}
 		}
 
 		public override List<AssetData> data
@@ -61,6 +65,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override void Setup()
 		{
 			base.Setup();
+
+			m_ScrollOffset = itemSize.z * 0.5f;
 
 			for (int i = 0; i < m_IconTypes.Length; i++)
 			{
@@ -78,19 +84,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
 				return;
 
-			m_NumRows = (int)(bounds.size.z / itemSize.z);
-
 			m_StartPosition = bounds.extents.z * Vector3.forward + (bounds.extents.x - itemSize.x * 0.5f) * Vector3.left;
-
-			m_DataOffset = (int)(m_ScrollOffset / itemSize.z);
-			if (m_ScrollOffset < 0)
-				m_DataOffset--;
-
 
 			// Snap back if list scrolled too far
 			m_ScrollReturn = float.MaxValue;
-			if (-m_DataOffset >= dataLength)
-				m_ScrollReturn = (1 - dataLength) * itemSize.z + m_ScaleFactor;
+			if (listHeight > 0 && -m_ScrollOffset >= listHeight)
+			{
+				m_ScrollReturn = -listHeight + m_ScaleFactor;
+
+				if (m_Data.Count % m_NumPerRow == 0)
+					m_ScrollReturn += itemSize.z;
+			}
 		}
 
 		protected override Vector3 GetObjectSize(GameObject g)
@@ -109,16 +113,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					continue;
 				}
 
-				if (!testFilter(data.type)) // If this item doesn't match the filter, move on to the next item; do not count
+				if (!matchesFilter(data.type)) // If this item doesn't match the filter, move on to the next item; do not count
 				{
 					RecycleGridItem(data);
 					continue;
 				}
 
-				if (count / m_NumPerRow + m_DataOffset < 0 || count / m_NumPerRow + m_DataOffset > m_NumRows - 1)
+				var offset = count / m_NumPerRow * itemSize.z;
+				if (offset + scrollOffset < 0 || offset + scrollOffset > bounds.size.z)
 					RecycleGridItem(data);
 				else
-					UpdateVisibleItem(data, count);
+				{
+					var ignored = true;
+					UpdateVisibleItem(data, count, ref ignored);
+				}
 
 				count++;
 			}
@@ -126,13 +134,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void RecycleGridItem(AssetData data)
 		{
+			var index = data.index;
 			AssetGridItem item;
-			if (!m_ListItems.TryGetValue(data, out item))
+			if (!m_ListItems.TryGetValue(index, out item))
 				return;
 
 			m_LastHiddenItemOffset = scrollOffset;
 
-			m_ListItems.Remove(data);
+			m_ListItems.Remove(index);
 
 			item.SetVisibility(false, gridItem =>
 			{
@@ -141,14 +150,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			});
 		}
 
-		protected override void UpdateVisibleItem(AssetData data, int offset)
+		protected override void UpdateVisibleItem(AssetData data, float offset, ref bool doneSettling)
 		{
 			AssetGridItem item;
-			if (!m_ListItems.TryGetValue(data, out item))
+			if (!m_ListItems.TryGetValue(data.index, out item))
 				item = GetItem(data);
 
 			if (item)
-				UpdateGridItem(item, offset);
+				UpdateGridItem(item, (int)offset);
 		}
 
 		public override void OnScrollEnded()
@@ -167,14 +176,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		private void UpdateGridItem(AssetGridItem item, int offset)
+		void UpdateGridItem(AssetGridItem item, int count)
 		{
 			item.UpdateTransforms(m_ScaleFactor);
 
 			var itemSize = m_ItemSize.Value;
 			var t = item.transform;
-			var zOffset = itemSize.z * (offset / m_NumPerRow) + m_ScrollOffset;
-			var xOffset = itemSize.x * (offset % m_NumPerRow);
+			var zOffset = itemSize.z * (count / m_NumPerRow) + m_ScrollOffset;
+			var xOffset = itemSize.x * (count % m_NumPerRow);
+
 			t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, k_PositionFollow);
 			t.localRotation = Quaternion.identity;
 		}
@@ -188,14 +198,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			// If this AssetData hasn't fetched its asset yet, do so now
 			if (data.asset == null)
 			{
-				data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid));
+				data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index));
 				data.preview = data.asset as GameObject;
 			}
 
 			var item = base.GetItem(data);
 
 			item.transform.localPosition = m_StartPosition;
-			connectInterfaces(item);
 
 			item.scaleFactor = m_ScaleFactor;
 			item.SetVisibility(true);
@@ -233,7 +242,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			item.fallbackTexture = null;
 			item.StartCoroutine(ObjectUtils.GetAssetPreview(
-				AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid)),
+				AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index)),
 				texture => item.fallbackTexture = texture));
 		}
 	}

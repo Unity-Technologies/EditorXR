@@ -13,6 +13,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		const string k_MiniWorldCameraTag = "MiniWorldCamera";
 		const float k_MinScale = 0.001f;
 
+		[SerializeField]
+		Shader m_ClipShader;
+
 		static int s_DefaultLayer;
 
 		public List<Renderer> ignoreList
@@ -51,10 +54,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnEnable()
 		{
-			var go = new GameObject("MiniWorldCamera", typeof(Camera));
+			m_MiniCamera = (Camera)ObjectUtils.CreateGameObjectWithComponent(typeof(Camera));
+			var go = m_MiniCamera.gameObject;
+			go.name = "MiniWorldCamera";
 			go.tag = k_MiniWorldCameraTag;
-			go.hideFlags = HideFlags.DontSave;
-			m_MiniCamera = go.GetComponent<Camera>();
 			go.SetActive(false);
 			Camera.onPostRender += RenderMiniWorld;
 		}
@@ -76,7 +79,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_MiniCamera.cameraType = CameraType.Game;
 				m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
 				m_MiniCamera.worldToCameraMatrix = GetWorldToCameraMatrix(camera);
-				var shader = Shader.Find("Custom/Custom Clip Planes");
 				var referenceBounds = miniWorld.referenceBounds;
 				var inverseRotation = Quaternion.Inverse(miniWorld.referenceTransform.rotation);
 				Shader.SetGlobalVector("_GlobalClipCenter", inverseRotation * referenceBounds.center);
@@ -101,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					}
 				}
 
-				m_MiniCamera.SetReplacementShader(shader, null);
+				m_MiniCamera.SetReplacementShader(m_ClipShader, null);
 				m_MiniCamera.Render();
 
 				for (var i = 0; i < m_IgnoreList.Count; i++)

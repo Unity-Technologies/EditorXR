@@ -14,13 +14,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		private FolderListViewController m_FolderListView;
 
-		public BaseHandle folderScrollHandle
+		public LinearHandle folderScrollHandle
 		{
 			get { return m_FolderScrollHandle; }
 		}
 
 		[SerializeField]
-		private BaseHandle m_FolderScrollHandle;
+		private LinearHandle m_FolderScrollHandle;
 
 		public RectTransform folderPanel
 		{
@@ -38,13 +38,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		private AssetGridViewController m_AssetGridView;
 
-		public BaseHandle assetScrollHandle
+		public LinearHandle assetScrollHandle
 		{
 			get { return m_AssetScrollHandle; }
 		}
 
 		[SerializeField]
-		private BaseHandle m_AssetScrollHandle;
+		private LinearHandle m_AssetScrollHandle;
 
 		public RectTransform assetPanel
 		{

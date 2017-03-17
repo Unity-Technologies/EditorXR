@@ -46,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			listView.data = new List<InspectorData>();
 			listView.arraySizeChanged += OnArraySizeChanged;
 
-			var scrollHandle = m_InspectorUI.inspectorScrollHandle;
+			var scrollHandle = m_InspectorUI.scrollHandle;
 			scrollHandle.dragStarted += OnScrollDragStarted;
 			scrollHandle.dragging += OnScrollDragging;
 			scrollHandle.dragEnded += OnScrollDragEnded;
@@ -55,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			contentBounds = new Bounds(Vector3.zero, m_CustomStartingBounds.Value);
 
-			var scrollHandleTransform = m_InspectorUI.inspectorScrollHandle.transform;
+			var scrollHandleTransform = m_InspectorUI.scrollHandle.transform;
 			scrollHandleTransform.SetParent(m_WorkspaceUI.topFaceContainer);
 			scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
 			scrollHandleTransform.localPosition = new Vector3(0f, -0.01f, 0f); // Offset from content for collision purposes
@@ -326,17 +326,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override void OnBoundsChanged()
 		{
 			var size = contentBounds.size;
-			var inspectorListView = m_InspectorUI.listView;
+			var listView = m_InspectorUI.listView;
 			var bounds = contentBounds;
 			size.y = float.MaxValue; // Add height for dropdowns
 			size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
 			size.z -= 0.15f; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
 			bounds.size = size;
-			inspectorListView.bounds = bounds;
+			listView.bounds = bounds;
 
-			var inspectorPanel = m_InspectorUI.inspectorPanel;
-			inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
-			inspectorPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
+			var listPanel = m_InspectorUI.listPanel;
+			listPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
+			listPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
 		}
 
 		void SetIsLocked()
