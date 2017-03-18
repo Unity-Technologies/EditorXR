@@ -407,6 +407,7 @@ MonoBehaviour:
   - {fileID: 4000010243013896}
   - {fileID: 4000013086257722}
   m_Highlight: {fileID: 114000011868131886}
+  m_Background: {fileID: 114000012161072266}
 --- !u!114 &114000013855091962
 MonoBehaviour:
   m_ObjectHideFlags: 1
