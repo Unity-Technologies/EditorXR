@@ -334,7 +334,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var highlightedLocalScale = new Vector3(m_OriginalContentContainerLocalScale.x, m_OriginalContentContainerLocalScale.y, m_OriginalContentContainerLocalScale.z * m_highlightZScaleMultiplier);
 			while (transitionAmount < kTargetTransitionAmount)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 3;
+				transitionAmount += Time.unscaledDeltaTime * 4;
 				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
 				m_ContentContainer.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
 
@@ -365,7 +365,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var targetScale = m_OriginalContentContainerLocalScale;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 3;
+				transitionAmount += Time.unscaledDeltaTime * 6;
 				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
 				var transitioningGradientPair = GradientPair.Lerp(originalGradientPair, targetGradientPair, shapedTransitionAmount);
 
