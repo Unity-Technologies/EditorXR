@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	sealed class TooltipModule : MonoBehaviour, IUsesViewerScale
 	{
 		const float k_Delay = 0; // In case we want to bring back a delay
-		const float k_TransitionDuration = 0.1f;
+		const float k_TransitionDuration = 0.175f;
 		const float k_UVScale = 100f;
 		const float k_UVScrollSpeed = 1.5f;
 		const float k_Offset = 0.05f;
@@ -107,6 +107,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (tooltipText)
 				tooltipText.text = tooltip.tooltipText;
 
+			lerp = Mathf.Pow(lerp, 3);
 			var viewerScale = getViewerScale();
 			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
