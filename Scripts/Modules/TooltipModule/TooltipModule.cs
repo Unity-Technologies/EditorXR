@@ -27,6 +27,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		[SerializeField]
 		Material m_HighlightMaterial;
 
+		[SerializeField]
+		Material m_TooltipBackgroundMaterial;
+
 		class TooltipData
 		{
 			public float startTime;
@@ -37,6 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		Transform m_TooltipCanvas;
 		Vector3 m_TooltipScale;
+		Color m_OriginalBackgroundColor;
 
 		public Func<float> getViewerScale { private get; set; }
 
@@ -46,6 +50,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_TooltipCanvas.SetParent(transform);
 			m_TooltipScale = m_TooltipPrefab.transform.localScale;
 			m_HighlightMaterial = Instantiate(m_HighlightMaterial);
+			m_TooltipBackgroundMaterial = Instantiate(m_TooltipBackgroundMaterial);
+			m_OriginalBackgroundColor = m_TooltipBackgroundMaterial.color;
 			var sessionGradient = UnityBrandColorScheme.sessionGradient;
 			m_HighlightMaterial.SetColor(k_MaterialColorTopProperty, sessionGradient.a);
 			m_HighlightMaterial.SetColor(k_MaterialColorBottomProperty, sessionGradient.b);
@@ -70,6 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						tooltipUI = tooltipObject.GetComponent<TooltipUI>();
 						tooltipData.tooltipUI = tooltipUI;
 						tooltipUI.highlight.material = m_HighlightMaterial;
+						tooltipUI.background.material = m_TooltipBackgroundMaterial;
 						var tooltipTransform = tooltipObject.transform;
 						MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
 						tooltipTransform.localScale = Vector3.zero;
@@ -103,13 +110,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var tooltipTransform = tooltipUI.transform;
 
-			var tooltipText = tooltipUI.text;
-			if (tooltipText)
-				tooltipText.text = tooltip.tooltipText;
-
-			lerp = Mathf.Pow(lerp, 3);
+			lerp = Mathf.Pow(lerp, 3); // shape the lerp for better presentation
 			var viewerScale = getViewerScale();
 			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
+
+			var tooltipText = tooltipUI.text;
+			if (tooltipText)
+			{
+				tooltipText.text = tooltip.tooltipText;
+				tooltipText.color = Color.Lerp(Color.clear, Color.white, lerp);
+			}
+
+			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(Color.clear, m_OriginalBackgroundColor, lerp));
 
 			var placement = tooltip as ITooltipPlacement;
 

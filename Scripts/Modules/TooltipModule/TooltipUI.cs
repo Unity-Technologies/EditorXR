@@ -21,6 +21,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public Image highlight { get { return m_Highlight; } }
 		[SerializeField]
 		Image m_Highlight;
+
+		public Image background { get { return m_Background; } }
+		[SerializeField]
+		Image m_Background;
 	}
 }
 #endif
