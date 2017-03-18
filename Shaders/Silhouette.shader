@@ -10,13 +10,14 @@ Shader "EditorVR/Valve/Silhouette"
 	Properties
 	{
 		g_vOutlineColor( "Outline Color", Color ) = ( .5, .5, .5, 1 )
-		g_flOutlineWidth( "Outline width", Range ( .001, 0.01 ) ) = .005
+		g_flOutlineWidth( "Outline width", Range ( .001, 0.03 ) ) = .005
 		g_flCornerAdjust( "Corner Adjustment", Range(0, 2)) = .5
 		_StencilRef( "StencilRef", Int) = 2
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 	CGINCLUDE
+
 		//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 		#pragma target 5.0
 
@@ -90,30 +91,30 @@ Shader "EditorVR/Valve/Silhouette"
 			inputTriangle[1].vNormalOs = inputTriangle[1].vNormalOs + normalize(-a + b)  * g_flCornerAdjust;
 			inputTriangle[2].vNormalOs = inputTriangle[2].vNormalOs + normalize(-b + c) * g_flCornerAdjust;
 
-		    PS_INPUT extrudedTriangle0 = Extrude( inputTriangle[0] );
-		    PS_INPUT extrudedTriangle1 = Extrude( inputTriangle[1] );
+			PS_INPUT extrudedTriangle0 = Extrude( inputTriangle[0] );
+			PS_INPUT extrudedTriangle1 = Extrude( inputTriangle[1] );
 			PS_INPUT extrudedTriangle2 = Extrude(inputTriangle[2]);
 
-		    outputStream.Append( inputTriangle[0] );
-		    outputStream.Append( extrudedTriangle0 );
-		    outputStream.Append(inputTriangle[1]);
-		    outputStream.Append( extrudedTriangle0 );
-		    outputStream.Append( extrudedTriangle1 );
-		    outputStream.Append( inputTriangle[1] );
+			outputStream.Append( inputTriangle[0] );
+			outputStream.Append( extrudedTriangle0 );
+			outputStream.Append(inputTriangle[1]);
+			outputStream.Append( extrudedTriangle0 );
+			outputStream.Append( extrudedTriangle1 );
+			outputStream.Append( inputTriangle[1] );
 
-		    outputStream.Append( inputTriangle[1] );
-		    outputStream.Append( extrudedTriangle1 );
-		    outputStream.Append( extrudedTriangle2 );
-		    outputStream.Append( inputTriangle[1] );
-		    outputStream.Append( extrudedTriangle2 );
-		    outputStream.Append( inputTriangle[2] );
+			outputStream.Append( inputTriangle[1] );
+			outputStream.Append( extrudedTriangle1 );
+			outputStream.Append( extrudedTriangle2 );
+			outputStream.Append( inputTriangle[1] );
+			outputStream.Append( extrudedTriangle2 );
+			outputStream.Append( inputTriangle[2] );
 
-		    outputStream.Append( inputTriangle[2] );
-		    outputStream.Append( extrudedTriangle2 );
-		    outputStream.Append(inputTriangle[0]);
-		    outputStream.Append( extrudedTriangle2 );
-		    outputStream.Append( extrudedTriangle0 );
-		    outputStream.Append( inputTriangle[0] );
+			outputStream.Append( inputTriangle[2] );
+			outputStream.Append( extrudedTriangle2 );
+			outputStream.Append(inputTriangle[0]);
+			outputStream.Append( extrudedTriangle2 );
+			outputStream.Append( extrudedTriangle0 );
+			outputStream.Append( inputTriangle[0] );
 		}
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -132,8 +133,7 @@ Shader "EditorVR/Valve/Silhouette"
 
 	SubShader
 	{
-		Tags { "RenderType"="Transparent" "Queue" = "Overlay+5000" }
-		Blend SrcAlpha OneMinusSrcAlpha
+		Tags { "RenderType"="Outline" "Queue" = "Overlay+5000" }
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 		// Render the object with stencil=1 to mask out the part that isn't the silhouette
@@ -164,7 +164,7 @@ Shader "EditorVR/Valve/Silhouette"
 		//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 		Pass
 		{
-			Tags { "RenderType" = "Transparent" "LightMode" = "Always" }
+			Tags { "LightMode" = "Always" }
 			Cull Off
 			ZWrite Off
 			ZTest Off
