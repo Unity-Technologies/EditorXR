@@ -359,7 +359,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			const float kTargetTransitionAmount = 1f;
 			var transitionAmount = Time.unscaledDeltaTime;
 			var shapedTransitionAmount = 0f;
-			var currentGradientPair = GetMaterialColors();
+			var originalGradientPair = GetMaterialColors();
 			var targetGradientPair = normalGradientPair;
 			var currentLocalScale = m_ContentContainer.localScale;
 			var targetScale = m_OriginalContentContainerLocalScale;
@@ -367,9 +367,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				transitionAmount += Time.unscaledDeltaTime * 3;
 				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
-				currentGradientPair = GradientPair.Lerp(currentGradientPair, targetGradientPair, shapedTransitionAmount);
+				var transitioningGradientPair = GradientPair.Lerp(originalGradientPair, targetGradientPair, shapedTransitionAmount);
 
-				SetMaterialColors(normalGradientPair);
+				SetMaterialColors(transitioningGradientPair);
 
 				m_ContentContainer.localScale = Vector3.Lerp(currentLocalScale, targetScale, shapedTransitionAmount);
 				yield return null;
