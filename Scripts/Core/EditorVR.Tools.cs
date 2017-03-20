@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Tools;
@@ -366,6 +365,25 @@ namespace UnityEditor.Experimental.EditorVR
 							maps.Add(td.input);
 					}
 				}
+			}
+
+			internal PinnedToolButton PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType)
+			{
+				// Prevents menu buttons of types other than ITool from triggering any pinned tool button preview actions
+				if (!toolType.GetInterfaces().Contains(typeof(ITool)))
+					return null;
+
+				PinnedToolButton pinnedToolButton = null;
+				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				{
+					if (deviceData.rayOrigin == rayOrigin) // enable pinned tool preview on the opposite (handed) device
+					{
+						pinnedToolButton = deviceData.selectionToolButton.activeTool ? deviceData.selectionToolButton : deviceData.previousToolButton;
+						pinnedToolButton.previewToolType = toolType;
+					}
+				});
+
+				return pinnedToolButton;
 			}
 		}
 	}

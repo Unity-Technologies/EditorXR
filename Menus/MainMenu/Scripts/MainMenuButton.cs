@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +19,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		Transform m_HoveringRayOrigin;
 		Color m_OriginalColor;
+		PinnedToolButton m_HighlightedPinnedToolbutton;
+
+		/// <summary>
+		/// Highlights a pinned tool button when this menu button is highlighted
+		/// </summary>
+		public Func<Transform, Type, PinnedToolButton> previewToolInPinnedToolButton { private get; set; }
+
+		public Type toolType { get; set; }
 
 		public bool selected
 		{
@@ -55,12 +64,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
 			m_HoveringRayOrigin = eventData.rayOrigin;
+
+			// Enable preview-mode on a pinned tool button; Display on the opposite proxy device via the HoveringRayOrigin
+			m_HighlightedPinnedToolbutton = previewToolInPinnedToolButton(m_HoveringRayOrigin, toolType);
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
 			if (m_HoveringRayOrigin == eventData.rayOrigin)
 				m_HoveringRayOrigin = null;
+
+			// Disable preview-mode on pinned tool button
+			if (m_HighlightedPinnedToolbutton)
+				m_HighlightedPinnedToolbutton.previewToolType = null;
 		}
 	}
 }

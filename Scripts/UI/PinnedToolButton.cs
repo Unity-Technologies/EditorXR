@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolButton : MonoBehaviour, ISelectTool, ITooltip, ITooltipPlacement
+	public sealed class PinnedToolButton : MonoBehaviour, ISelectTool, ITooltip, ITooltipPlacement, ISetTooltipVisibility
 	{
 		public Type toolType
 		{
@@ -32,8 +32,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					if (isSelectTool)
 					{
-						tooltipText = "Selection TOOL";
+						tooltipText = "Selection Tool (cannot be closed)";
 						gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
+						activeTool = true;
 					}
 					else
 					{
@@ -105,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_ActivePosition;
 
 		/// <summary>
-		/// gradientPair should be set with new random gradientPair each time a new Tool is associated with this Button
+		/// GradientPair should be set with new random gradientPair each time a new Tool is associated with this Button
 		/// This gradientPair is also used to highlight the input device when appropriate
 		/// </summary>
 		public GradientPair gradientPair
@@ -115,14 +116,42 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		GradientPair m_GradientPair;
 
+		/// <summary>
+		/// Type, that if not null, denotes that preview-mode is enabled
+		/// This is enabled when highlighting a tool on the main menu
+		/// </summary>
+		public Type previewToolType
+		{
+			set
+			{
+				m_previewToolType = value;
+
+				if (m_previewToolType != null) // Show the highlight if the preview type is valid; hide otherwise
+				{
+					// Show the grayscale highlight when previewing a tool on this button
+					m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
+					m_GradientButton.SetContent(GetTypeAbbreviation(m_previewToolType));
+					tooltipText = "Assign " + m_previewToolType.Name;
+					showTooltip(this);
+				}
+				else
+				{
+					SetButtonGradients(activeTool);
+					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType));
+					hideTooltip(this);
+					tooltipText = toolType.Name;
+				}
+
+				m_GradientButton.highlighted = m_previewToolType != null;
+			}
+		}
+		Type m_previewToolType;
+
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		string m_TooltipText;
 
 		[SerializeField]
 		GradientButton m_GradientButton;
-
-		//[SerializeField]
-		//Tooltip m_Tooltip;
 
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
 		[SerializeField]
@@ -137,6 +166,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Func<Transform, Type, bool> selectTool { private get; set; }
 		public Node node { get; set; }
 		public ITooltip tooltip { private get; set; } // Overrides text
+		public Action<ITooltip> showTooltip { private get; set; }
+		public Action<ITooltip> hideTooltip { private get; set; }
 
 		bool isSelectTool
 		{
@@ -191,7 +222,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void SetButtonGradients(bool active)
 		{
-			Debug.LogWarning(m_ToolType.ToString() + "<color=black>" + active + "</color>");
 			if (active)
 			{
 				m_GradientButton.normalGradientPair = gradientPair;
@@ -216,7 +246,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			while (duration < 1)
 			{
 				duration += Time.unscaledDeltaTime * 3;
-				var durationShaped = Mathf.Pow(duration, 4);
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 4);
 				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
 				yield return null;
 			}

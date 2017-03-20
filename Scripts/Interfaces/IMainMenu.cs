@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -32,6 +33,15 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Returns whether the active tool is of the same type
 		/// </summary>
 		Func<Transform, Type, bool> isToolActive { set; }
+
+		/// <summary>
+		/// Highlights a pinned tool button when a menu button is highlighted
+		/// Transform: Ray origin to check
+		/// Type: MenuButton's tool type to preview
+		/// Returns the unoccupied pinned tool button that will display the menu-button-tool preview while the button is highlighted
+		/// The returned PinnedToolButton has its preview mode disabled upon a ray exit of the menu button
+		/// </summary>
+		Func<Transform, Type, PinnedToolButton> previewToolInPinnedToolButton { set; }
 	}
 }
 #endif

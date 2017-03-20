@@ -75,6 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform targetRayOrigin { private get; set; }
 		public Func<Transform, Type, bool> isToolActive { private get; set; }
 		public Type proxyType { private get; set; }
+		public Func<Transform, Type, PinnedToolButton> previewToolInPinnedToolButton { private get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
@@ -174,6 +175,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 								createWorkspace(selectedType);
 						});
 					}
+
+					// Assign pinned tool button preview properties
+					b.toolType = selectedType;
+					b.previewToolInPinnedToolButton = previewToolInPinnedToolButton;
 				});
 			}
 		}
