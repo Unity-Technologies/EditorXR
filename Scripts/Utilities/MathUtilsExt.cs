@@ -204,6 +204,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			source.position = Vector3.Lerp(source.position, targetPosition, t);
 			source.rotation = Quaternion.Slerp(source.rotation, targetRotation, t);
 		}
+
+		/// <summary>
+		/// Perform a smooth in+out interpolation of a 0-1 lerp value
+		/// </summary>
+		/// <param name="lerpAmount">The 0-1 lerp value that is to be shaped by this function</param>
+		/// <returns>The 0-1 smoothed lerp value</returns>
+		public static float SmoothInOutLerpFloat(float lerpAmount)
+		{
+			return Mathf.Pow(lerpAmount, 3) * (lerpAmount * (6f * lerpAmount - 15f) + 10f);
+		}
 	}
 }
 #endif
