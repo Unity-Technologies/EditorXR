@@ -280,7 +280,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			//deviceMaterial.SetColor(k_MaterialColorBottomProperty, m_OriginalInsetGradientPair.b);
 			//m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
 			//deviceMaterial.SetFloat(k_MaterialExpandProperty, 0);
-			var currentAlpha = deviceMaterial.GetFloat(k_MaterialAlphaProperty);
 			var currentThickness = deviceMaterial.GetFloat(k_MaterialThicknessProperty);
 			var currentTopColor = deviceMaterial.GetColor(k_MaterialColorTopProperty);
 			var currentBottomColor = deviceMaterial.GetColor(k_MaterialColorBottomProperty);
