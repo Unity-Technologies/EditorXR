@@ -2,6 +2,7 @@
 //
 // Purpose: Used to show the outline of the object
 //
+// 3/17/17: Used with permission by Valve
 //=============================================================================
 
 Shader "EditorVR/Valve/Silhouette"

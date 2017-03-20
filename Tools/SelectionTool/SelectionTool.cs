@@ -6,7 +6,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
-		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IUsesUIBlocking
+		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI
 	{
 		GameObject m_HoverGameObject;
 		GameObject m_PressedObject;
@@ -18,7 +18,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 		public Transform rayOrigin { private get; set; }
 		public Action<GameObject, Transform, bool> setHighlight { private get; set; }
-		public Action<GameObject> clearHighlight { get; set; }
 
 		public Func<Transform, bool> isRayActive;
 		public event Action<GameObject, Transform> hovered;
@@ -28,14 +27,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { private get; set; }
 
-		public Func<Transform, bool> hoveringUI { private get; set; }
+		public Func<Transform, bool> isHoveringOverUI { private get; set; }
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			if (rayOrigin == null)
 				return;
 
-			if (hoveringUI(rayOrigin))
+			if (isHoveringOverUI(rayOrigin))
 			{
 				DeactivateHover();
 				return;

@@ -7,12 +7,12 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Provides access to checks that can test whether a ray is hovering over a UI element
 	/// </summary>
-	public interface IUsesUIBlocking
+	public interface IIsHoveringOverUI
 	{
 		/// <summary>
 		/// Returns whether the specified ray origin is hovering over a UI element
 		/// </summary>
-		Func<Transform, bool> hoveringUI { set; }
+		Func<Transform, bool> isHoveringOverUI { set; }
 	}
 }
 #endif

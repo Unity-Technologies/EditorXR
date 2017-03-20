@@ -325,9 +325,9 @@ namespace UnityEditor.Experimental.EditorVR
 					linkedObject.isSharedUpdater = IsSharedUpdater;
 				}
 
-				var usesUIBlocking = obj as IUsesUIBlocking;
+				var usesUIBlocking = obj as IIsHoveringOverUI;
 				if (usesUIBlocking != null)
-					usesUIBlocking.hoveringUI = evr.m_InputModule.HoveringUI;
+					usesUIBlocking.isHoveringOverUI = evr.m_InputModule.IsHoveringOverUI;
 
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;

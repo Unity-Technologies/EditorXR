@@ -432,7 +432,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return eventData.used;
 		}
 
-		public bool HoveringUI(Transform rayOrigin)
+		public bool IsHoveringOverUI(Transform rayOrigin)
 		{
 			RaycastSource source;
 			return m_RaycastSources.TryGetValue(rayOrigin, out source) && source.hasObject;
