@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -15,6 +16,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		readonly Dictionary<Material, HashSet<GameObject>> m_Highlights = new Dictionary<Material, HashSet<GameObject>>();
 		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
+
+		public event Func<GameObject, Material, bool> onHighlight
+		{
+			add { m_CustomHighlightFuncs.Add(value); }
+			remove { m_CustomHighlightFuncs.Remove(value); }
+		}
+		readonly List<Func<GameObject, Material, bool>> m_CustomHighlightFuncs = new List<Func<GameObject, Material, bool>>();
 
 		public Color leftColor
 		{
@@ -37,7 +45,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					if (go == null)
 						continue;
 
-					HighlightObject(go, material);
+					var shouldHighlight = true;
+					for (int i = 0; i < m_CustomHighlightFuncs.Count; i++)
+					{
+						var func = m_CustomHighlightFuncs[i];
+						if (func(go, material))
+							shouldHighlight = false;
+					}
+
+					if (shouldHighlight)
+						HighlightObject(go, material);
 				}
 			}
 		}

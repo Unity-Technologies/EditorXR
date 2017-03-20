@@ -503,7 +503,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_PositionOffsetRotation = Quaternion.identity;
 			m_TargetScale = Vector3.one;
 
-			// Save the initial position, rotation, and scale realtive to the manipulator
+			// Save the initial position, rotation, and scale relative to the manipulator
 			m_PositionOffsets.Clear();
 			m_RotationOffsets.Clear();
 			m_ScaleOffsets.Clear();

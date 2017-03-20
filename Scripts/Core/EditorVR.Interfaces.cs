@@ -329,6 +329,10 @@ namespace UnityEditor.Experimental.EditorVR
 				if (usesUIBlocking != null)
 					usesUIBlocking.isHoveringOverUI = evr.m_InputModule.IsHoveringOverUI;
 
+				var customHighlight = obj as ICustomHighlight;
+				if (customHighlight != null)
+					evrHighlightModule.onHighlight += customHighlight.OnHighlight;
+
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
 				if (forEachRayOrigin != null && IsSameAssembly<IForEachRayOrigin>(obj))
@@ -386,6 +390,10 @@ namespace UnityEditor.Experimental.EditorVR
 				var manipulatorVisiblity = obj as IManipulatorVisibility;
 				if (manipulatorVisiblity != null)
 					evr.m_UI.manipulatorVisibilities.Remove(manipulatorVisiblity);
+
+				var customHighlight = obj as ICustomHighlight;
+				if (customHighlight != null)
+					evr.m_HighlightModule.onHighlight += customHighlight.OnHighlight;
 			}
 
 			byte RequestStencilRef()
