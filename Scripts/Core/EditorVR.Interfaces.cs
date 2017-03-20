@@ -331,7 +331,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var customHighlight = obj as ICustomHighlight;
 				if (customHighlight != null)
-					evrHighlightModule.onHighlight += customHighlight.CustomHighlight;
+					evrHighlightModule.customHighlight += customHighlight.OnHighlight;
 
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
@@ -393,7 +393,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var customHighlight = obj as ICustomHighlight;
 				if (customHighlight != null)
-					evr.m_HighlightModule.onHighlight -= customHighlight.CustomHighlight;
+					evr.m_HighlightModule.customHighlight -= customHighlight.OnHighlight;
 			}
 
 			byte RequestStencilRef()

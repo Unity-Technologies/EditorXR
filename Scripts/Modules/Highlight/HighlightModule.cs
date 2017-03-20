@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		readonly Dictionary<Material, HashSet<GameObject>> m_Highlights = new Dictionary<Material, HashSet<GameObject>>();
 		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
 
-		public event Func<GameObject, Material, bool> onHighlight
+		public event Func<GameObject, Material, bool> customHighlight
 		{
 			add { m_CustomHighlightFuncs.Add(value); }
 			remove { m_CustomHighlightFuncs.Remove(value); }
