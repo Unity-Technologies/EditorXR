@@ -147,7 +147,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				UpdatePlayerDirectionArrow();
 
 			//Set grid height, deactivate if out of bounds
-			float gridHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
+			var referenceTransform = m_MiniWorld.referenceTransform;
+			float gridHeight = referenceTransform.position.y / referenceTransform.localScale.y;
 			var grid = m_MiniWorldUI.grid;
 			if (Mathf.Abs(gridHeight) < contentBounds.extents.y)
 			{
@@ -159,14 +160,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				grid.gameObject.SetActive(false);
 			}
 
-			// Update grid material if ClipBox has moved
-			m_GridMaterial.mainTextureScale = new Vector2(
-				m_MiniWorld.referenceTransform.localScale.x * contentBounds.size.x,
-				m_MiniWorld.referenceTransform.localScale.z * contentBounds.size.z);
-			m_GridMaterial.mainTextureOffset =
-				Vector2.one * 0.5f // Center grid
-				+ new Vector2(m_GridMaterial.mainTextureScale.x % 2, m_GridMaterial.mainTextureScale.y % 2) * -0.5f // Scaling offset
-				+ new Vector2(m_MiniWorld.referenceTransform.position.x, m_MiniWorld.referenceTransform.position.z); // Translation offset
+			var referenceScale = referenceTransform.localScale.x;
+			var localBoundsSize = m_MiniWorld.localBounds.size;
+
+			m_GridMaterial.SetVector("_GridScale", new Vector2(localBoundsSize.x, localBoundsSize.z) * referenceScale);
+			m_GridMaterial.SetVector("_GridCenter", -new Vector2(referenceTransform.position.x / (localBoundsSize.x * referenceScale),
+				referenceTransform.position.z / (localBoundsSize.z * referenceScale)));
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)

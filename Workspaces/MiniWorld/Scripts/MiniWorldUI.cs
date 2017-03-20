@@ -14,14 +14,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		private Renderer m_Grid;
 
-		public BaseHandle panZoomHandle
-		{
-			get { return m_PanZoomHandle; }
-		}
-
-		[SerializeField]
-		private BaseHandle m_PanZoomHandle;
-
 		public Transform boundsCube
 		{
 			get { return m_BoundsCube; }
