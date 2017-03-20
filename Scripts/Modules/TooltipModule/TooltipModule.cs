@@ -110,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var tooltipTransform = tooltipUI.transform;
 
-			lerp = Mathf.Pow(lerp, 3); // shape the lerp for better presentation
+			lerp = MathUtilsExt.SmoothInOutLerpFloat(lerp); // shape the lerp for better presentation
 			var viewerScale = getViewerScale();
 			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
