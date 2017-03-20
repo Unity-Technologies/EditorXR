@@ -20,6 +20,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		readonly HashSet<GameObject> m_DefaultHighlights = new HashSet<GameObject>();
 		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
 
+		public Color leftColor
+		{
+			get { return m_LeftHighlightMaterial.color; }
+		}
+
+		public Color rightColor
+		{
+			get { return m_RightHighlightMaterial.color; }
+		}
+
 		void LateUpdate()
 		{
 			foreach (var highlight in m_Highlights)

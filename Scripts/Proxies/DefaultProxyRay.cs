@@ -136,6 +136,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			m_Tip.transform.localScale = scaledLength * m_TipStartScale;
 		}
 
+		public void SetColor(Color c)
+		{
+			var material = MaterialUtils.GetMaterialClone(m_LineRenderer.GetComponent<MeshRenderer>());
+			material.color = c;
+		}
+
 		private void Awake()
 		{
 			m_ConeTransform = m_Cone.transform;

@@ -122,6 +122,7 @@ namespace UnityEditor.Experimental.EditorVR
 							rayTransform.rotation = rayOrigin.rotation;
 							var dpr = rayTransform.GetComponent<DefaultProxyRay>();
 							dpr.getViewerScale = Viewer.GetViewerScale;
+							dpr.SetColor(node == Node.LeftHand ? evr.m_HighlightModule.leftColor : evr.m_HighlightModule.rightColor);
 							m_DefaultRays.Add(rayOrigin, dpr);
 
 							evr.m_KeyboardModule.SpawnKeyboardMallet(rayOrigin);

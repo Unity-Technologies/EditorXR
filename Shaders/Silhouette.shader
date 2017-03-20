@@ -9,7 +9,7 @@ Shader "EditorVR/Valve/Silhouette"
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Properties
 	{
-		g_vOutlineColor( "Outline Color", Color ) = ( .5, .5, .5, 1 )
+		_Color( "Color", Color ) = ( .5, .5, .5, 1 )
 		g_flOutlineWidth( "Outline width", Range ( .001, 0.03 ) ) = .005
 		g_flCornerAdjust( "Corner Adjustment", Range(0, 2)) = .5
 		_StencilRef( "StencilRef", Int) = 2
@@ -25,7 +25,7 @@ Shader "EditorVR/Valve/Silhouette"
 		#include "UnityCG.cginc"
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-		float4 g_vOutlineColor;
+		float4 _Color;
 		float g_flOutlineWidth;
 		float g_flCornerAdjust;
 
@@ -120,7 +120,7 @@ Shader "EditorVR/Valve/Silhouette"
 		//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 		fixed4 MainPs( PS_INPUT i ) : SV_Target
 		{
-			return g_vOutlineColor;
+			return _Color;
 		}
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------------------
