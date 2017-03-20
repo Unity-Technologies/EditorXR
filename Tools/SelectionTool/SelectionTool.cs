@@ -1,12 +1,13 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
-		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI
+		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection
 	{
 		GameObject m_HoverGameObject;
 		GameObject m_PressedObject;
@@ -17,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Func<Transform, GameObject> getFirstGameObject { private get; set; }
 		public Transform rayOrigin { private get; set; }
-		public Action<GameObject, Transform, bool> setHighlight { private get; set; }
+		public SetHighlightDelegate setHighlight { private get; set; }
 
 		public Func<Transform, bool> isRayActive;
 		public event Action<GameObject, Transform> hovered;
@@ -28,6 +29,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { private get; set; }
 
 		public Func<Transform, bool> isHoveringOverUI { private get; set; }
+
+		public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { get; set; }
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
@@ -50,6 +53,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			var hoveredObject = getFirstGameObject(rayOrigin);
 
+			var directSelection = getDirectSelection();
+			DirectSelectionData directSelectionData;
+			if (directSelection.TryGetValue(rayOrigin, out directSelectionData))
+			{
+				if (directSelectionData.gameObject)
+					hoveredObject = directSelectionData.gameObject;
+			}
+
 			if (hovered != null)
 				hovered(hoveredObject, rayOrigin);
 
@@ -68,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				DeactivateHover();
 
 				if (hoveredObject != null)
-					setHighlight(hoveredObject, rayOrigin, true);
+					setHighlight(hoveredObject, true, rayOrigin);
 			}
 
 			m_HoverGameObject = hoveredObject;
@@ -90,7 +101,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					selectObject(m_PressedObject, rayOrigin, selectionInput.multiSelect.isHeld, true);
 
 					if (m_PressedObject != null)
-						setHighlight(m_PressedObject, rayOrigin, false);
+						setHighlight(m_PressedObject, false, rayOrigin);
 
 					if (selectionInput.multiSelect.isHeld)
 						consumeControl(selectionInput.multiSelect);
@@ -106,7 +117,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		void DeactivateHover()
 		{
 			if (m_HoverGameObject != null)
-				setHighlight(m_HoverGameObject, rayOrigin, false);
+				setHighlight(m_HoverGameObject, false, rayOrigin);
 			m_HoverGameObject = null;
 		}
 
@@ -114,7 +125,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			if (m_HoverGameObject != null)
 			{
-				setHighlight(m_HoverGameObject, rayOrigin, false);
+				setHighlight(m_HoverGameObject, false, rayOrigin);
 				m_HoverGameObject = null;
 			}
 		}

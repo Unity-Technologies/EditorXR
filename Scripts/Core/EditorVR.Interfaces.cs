@@ -183,7 +183,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var directSelection = obj as IUsesDirectSelection;
 				if (directSelection != null)
-					directSelection.getDirectSelection = evrDirectSelection.GetDirectSelection;
+					directSelection.getDirectSelection = () => evrDirectSelection.directSelections;
 
 				var grabObjects = obj as IGrabObjects;
 				if (grabObjects != null)

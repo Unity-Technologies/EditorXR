@@ -8,16 +8,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	sealed class HighlightModule : MonoBehaviour
 	{
 		[SerializeField]
-		Material m_DefaultHighlightMaterial;
-
-		[SerializeField]
 		Material m_LeftHighlightMaterial;
 
 		[SerializeField]
 		Material m_RightHighlightMaterial;
 
-		readonly Dictionary<Transform, HashSet<GameObject>> m_Highlights = new Dictionary<Transform, HashSet<GameObject>>();
-		readonly HashSet<GameObject> m_DefaultHighlights = new HashSet<GameObject>();
+		readonly Dictionary<Material, HashSet<GameObject>> m_Highlights = new Dictionary<Material, HashSet<GameObject>>();
 		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
 
 		public Color leftColor
@@ -34,31 +30,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			foreach (var highlight in m_Highlights)
 			{
+				var material = highlight.Key;
 				var highlights = highlight.Value;
 				foreach (var go in highlights)
 				{
 					if (go == null)
 						continue;
 
-					var node = Node.LeftHand;
-					foreach (var kvp in m_NodeMap)
-					{
-						if (kvp.Value.Contains(highlight.Key))
-						{
-							node = kvp.Key;
-							break;
-						}
-					}
-
-					var material = node == Node.LeftHand ? m_LeftHighlightMaterial : m_RightHighlightMaterial;
-
 					HighlightObject(go, material);
 				}
-			}
-
-			foreach (var go in m_DefaultHighlights)
-			{
-				HighlightObject(go, m_DefaultHighlightMaterial);
 			}
 		}
 
@@ -86,10 +66,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			set.Add(rayOrigin);
 		}
 
-		public void SetHighlight(GameObject go, Transform rayOrigin, bool active)
+		public void SetHighlight(GameObject go, bool active, Transform rayOrigin = null, Material material = null)
 		{
 			if (go == null || go.isStatic)
 				return;
+
+			if (rayOrigin == null && material == null)
+			{
+				Debug.LogError("You must specify a rayOrigin or material in order to set highlight");
+				return;
+			}
+
+			if (rayOrigin)
+			{
+				var node = Node.LeftHand;
+				foreach (var kvp in m_NodeMap)
+				{
+					if (kvp.Value.Contains(rayOrigin))
+					{
+						node = kvp.Key;
+						break;
+					}
+				}
+
+				// rayOrigin takes precedent over material
+				material = node == Node.LeftHand ? m_LeftHighlightMaterial : m_RightHighlightMaterial;
+			}
 
 			if (active) // Highlight
 			{
@@ -97,30 +99,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (Selection.transforms.Any(selection => go.transform == selection || go.transform.IsChildOf(selection)))
 					return;
 
-				if (rayOrigin == null)
-				{
-					m_DefaultHighlights.Add(go);
-					return;
-				}
-
 				HashSet<GameObject> gameObjects;
-				if (!m_Highlights.TryGetValue(rayOrigin, out gameObjects))
+				if (!m_Highlights.TryGetValue(material, out gameObjects))
 				{
 					gameObjects = new HashSet<GameObject>();
-					m_Highlights[rayOrigin] = gameObjects;
+					m_Highlights[material] = gameObjects;
 				}
 				gameObjects.Add(go);
 			}
 			else // Unhighlight
 			{
-				if (rayOrigin == null)
-				{
-					m_DefaultHighlights.Remove(go);
-					return;
-				}
-
 				HashSet<GameObject> gameObjects;
-				if (m_Highlights.TryGetValue(rayOrigin, out gameObjects))
+				if (m_Highlights.TryGetValue(material, out gameObjects))
 				{
 					gameObjects.Remove(go);
 				}
