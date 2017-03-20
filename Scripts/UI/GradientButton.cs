@@ -335,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.unscaledDeltaTime * 4;
-				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
+				shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
 				m_ContentContainer.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
 
 				currentGradientPair = GradientPair.Lerp(currentGradientPair, targetGradientPair, shapedTransitionAmount);
@@ -366,7 +366,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.unscaledDeltaTime * 6;
-				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
+				shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
 				var transitioningGradientPair = GradientPair.Lerp(originalGradientPair, targetGradientPair, shapedTransitionAmount);
 
 				SetMaterialColors(transitioningGradientPair);
