@@ -13,10 +13,11 @@ namespace UnityEditor.Experimental.EditorVR
 		class DirectSelection : Nested
 		{
 			internal IGrabObjects objectsGrabber { get; set; }
+
 			internal Dictionary<Transform, DirectSelectionData> directSelections { get { return m_DirectSelections; } }
-			
-			// Local method use only -- created here to reduce garbage collection
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
+
+			// Local method use only -- created here to reduce garbage collection
 			readonly List<ActionMapInput> m_ActiveStates = new List<ActionMapInput>();
 
 			// NOTE: This is for the length of the pointer object, not the length of the ray coming out of the pointer

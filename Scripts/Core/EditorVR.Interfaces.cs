@@ -325,13 +325,13 @@ namespace UnityEditor.Experimental.EditorVR
 					linkedObject.isSharedUpdater = IsSharedUpdater;
 				}
 
-				var usesUIBlocking = obj as IIsHoveringOverUI;
-				if (usesUIBlocking != null)
-					usesUIBlocking.isHoveringOverUI = evr.m_InputModule.IsHoveringOverUI;
+				var isHoveringOverUI = obj as IIsHoveringOverUI;
+				if (isHoveringOverUI != null)
+					isHoveringOverUI.isHoveringOverUI = evr.m_InputModule.IsHoveringOverUI;
 
 				var customHighlight = obj as ICustomHighlight;
 				if (customHighlight != null)
-					evrHighlightModule.onHighlight += customHighlight.OnHighlight;
+					evrHighlightModule.onHighlight += customHighlight.CustomHighlight;
 
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
@@ -393,7 +393,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var customHighlight = obj as ICustomHighlight;
 				if (customHighlight != null)
-					evr.m_HighlightModule.onHighlight += customHighlight.OnHighlight;
+					evr.m_HighlightModule.onHighlight -= customHighlight.CustomHighlight;
 			}
 
 			byte RequestStencilRef()

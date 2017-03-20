@@ -13,6 +13,6 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="go">The object which will be highlighted</param>
 		/// <param name="material">The material which would be used to highlight it</param>
 		/// <returns>Whether to block the normal highlight method</returns>
-		bool OnHighlight(GameObject go, Material material);
+		bool CustomHighlight(GameObject go, Material material);
 	}
 }

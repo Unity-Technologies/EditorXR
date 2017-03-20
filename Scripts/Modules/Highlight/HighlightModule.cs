@@ -9,6 +9,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	sealed class HighlightModule : MonoBehaviour
 	{
 		[SerializeField]
+		Material m_DefaultHighlightMaterial;
+
+		[SerializeField]
 		Material m_LeftHighlightMaterial;
 
 		[SerializeField]
@@ -88,26 +91,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (go == null || go.isStatic)
 				return;
 
-			if (rayOrigin == null && material == null)
+			if (material == null)
 			{
-				Debug.LogError("You must specify a rayOrigin or material in order to set highlight");
-				return;
-			}
-
-			if (rayOrigin)
-			{
-				var node = Node.LeftHand;
-				foreach (var kvp in m_NodeMap)
+				if (rayOrigin)
 				{
-					if (kvp.Value.Contains(rayOrigin))
+					var node = Node.LeftHand;
+					foreach (var kvp in m_NodeMap)
 					{
-						node = kvp.Key;
-						break;
+						if (kvp.Value.Contains(rayOrigin))
+						{
+							node = kvp.Key;
+							break;
+						}
 					}
-				}
 
-				// rayOrigin takes precedent over material
-				material = node == Node.LeftHand ? m_LeftHighlightMaterial : m_RightHighlightMaterial;
+					material = node == Node.LeftHand ? m_LeftHighlightMaterial : m_RightHighlightMaterial;
+				}
+				else
+				{
+					material = m_DefaultHighlightMaterial;
+				}
 			}
 
 			if (active) // Highlight

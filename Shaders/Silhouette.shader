@@ -2,7 +2,8 @@
 //
 // Purpose: Used to show the outline of the object
 //
-// 3/17/17: Used with permission by Valve
+// Used with permission (3/20/17)
+// Copyright (C) 2017 Unity Technologies ApS - Fix for hard edges
 //=============================================================================
 
 Shader "EditorVR/Valve/Silhouette"

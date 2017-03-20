@@ -10,7 +10,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-	sealed class MultipleRayInputModule : BaseInputModule, IProcessInput, IUsesViewerScale
+	sealed class MultipleRayInputModule : BaseInputModule, IProcessInput
 	{
 		public class RaycastSource
 		{
@@ -51,8 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public Func<Transform, float> getPointerLength { get; set; }
 
-		public Func<float> getViewerScale { private get; set; }
-
 		public event Action<GameObject, RayEventData> rayEntered;
 		public event Action<GameObject, RayEventData> rayExited;
 		public event Action<GameObject, RayEventData> dragStarted;
@@ -64,17 +62,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		RayEventData m_TempRayEvent;
 		List<RaycastSource> m_RaycastSourcesCopy = new List<RaycastSource>();
 
-		Camera m_MainCamera;
-		float m_OriginalNearClipPlane;
-		float m_OriginalFarClipPlane;
-
 		protected override void Awake()
 		{
 			base.Awake();
-
-			m_MainCamera = CameraUtils.GetMainCamera();
-			m_OriginalNearClipPlane = m_MainCamera.nearClipPlane;
-			m_OriginalFarClipPlane = m_MainCamera.farClipPlane;
 
 			s_LayerMask = LayerMask.GetMask("UI");
 			m_TempRayEvent = new RayEventData(eventSystem);
@@ -114,9 +104,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				return;
 
 			// World scaling also scales clipping planes
-			var viewerScale = getViewerScale();
-			m_EventCamera.nearClipPlane = m_OriginalNearClipPlane * viewerScale;
-			m_EventCamera.farClipPlane = m_OriginalFarClipPlane * viewerScale;
+			var camera = CameraUtils.GetMainCamera();
+			m_EventCamera.nearClipPlane = camera.nearClipPlane;
+			m_EventCamera.farClipPlane = camera.farClipPlane;
 
 			m_RaycastSourcesCopy.Clear();
 			m_RaycastSourcesCopy.AddRange(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
