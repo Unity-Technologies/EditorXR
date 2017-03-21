@@ -198,7 +198,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_WorkspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
 
 			m_SnappingModule = AddModule<SnappingModule>();
-			m_SnappingModule.groundSnapping = true;
+			m_SnappingModule.raycast = m_IntersectionModule.Raycast;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 

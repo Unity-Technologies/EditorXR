@@ -20,6 +20,12 @@ namespace UnityEditor.Experimental.EditorVR.Data
 			return intersections.Length > 0;
 		}
 
+		public bool GetIntersections(Ray ray, out T[] intersections)
+		{
+			intersections = m_Octree.GetColliding(ray);
+			return intersections.Length > 0;
+		}
+
 		public void AddObject(T obj, Bounds bounds)
 		{
 			m_AllObjects.Add(obj);

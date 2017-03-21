@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
@@ -10,11 +11,11 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 		protected const float k_BaseManipulatorSize = 0.3f;
 
-		public Action<Vector3> translate { protected get; set; }
+		public Action<Vector3, Transform, bool> translate { protected get; set; }
 		public Action<Quaternion> rotate { protected get; set; }
 		public Action<Vector3> scale { protected get; set; }
 		public event Action dragStarted;
-		public event Action dragEnded;
+		public event Action<Transform> dragEnded;
 
 		protected virtual void OnEnable()
 		{
@@ -48,10 +49,10 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 				dragStarted();
 		}
 
-		protected void OnDragEnded()
+		protected void OnDragEnded(Transform rayOrigin)
 		{
 			if (dragEnded != null)
-				dragEnded();
+				dragEnded(rayOrigin);
 		}
 	}
 }

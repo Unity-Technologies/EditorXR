@@ -24,11 +24,11 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		private Vector3 m_PositionOffset;
 		private Quaternion m_RotationOffset;
 
-		public Action<Vector3> translate { private get; set; }
+		public Action<Vector3, Transform, bool> translate { private get; set; }
 		public Action<Quaternion> rotate { private get; set; }
 		public Action<Vector3> scale { private get; set; }
 		public event Action dragStarted;
-		public event Action dragEnded;
+		public event Action<Transform> dragEnded;
 
 		void OnEnable()
 		{
@@ -74,7 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			var target = m_Target == null ? transform : m_Target;
 
 			var rayOrigin = eventData.rayOrigin;
-			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
+			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position, rayOrigin, false);
 			rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
 		}
 
@@ -91,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			dragging = false;
 
 			if (dragEnded != null)
-				dragEnded();
+				dragEnded(eventData.rayOrigin);
 		}
 	}
 }

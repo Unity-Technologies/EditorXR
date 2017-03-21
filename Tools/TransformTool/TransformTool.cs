@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
 		IGrabObjects, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility,
-		IUsesSnapping
+		IUsesSnapping, IUsesSpatialHash
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -169,8 +169,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public bool manipulatorVisible { private get; set; }
 
-		public Func<object, GameObject[], Vector3, Vector3, Vector3> translateWithSnapping { private get; set; }
-		public Action<object> clearSnappingState { private get; set; }
+		public TranslateWithSnappingDelegate translateWithSnapping { private get; set; }
+		public Action<Transform> clearSnappingState { private get; set; }
+
+		public Action<GameObject> addToSpatialHash { private get; set; }
+		public Action<GameObject> removeFromSpatialHash { private get; set; }
 
 		void Awake()
 		{
@@ -450,9 +453,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			showDefaultRay(grabData.rayOrigin, true);
 		}
 
-		private void Translate(Vector3 delta)
+		void Translate(Vector3 delta, Transform rayOrigin, bool constrained)
 		{
-			m_TargetPosition = translateWithSnapping(this, Selection.gameObjects, m_TargetPosition, delta);
+			translateWithSnapping(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta, constrained);
 		}
 
 		private void Rotate(Quaternion delta)
@@ -465,14 +468,22 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_TargetScale += delta;
 		}
 
-		static void OnDragStarted()
+		void OnDragStarted()
 		{
 			Undo.IncrementCurrentGroup();
+			foreach (var go in Selection.gameObjects)
+			{
+				removeFromSpatialHash(go);
+			}
 		}
 
-		void OnDragEnded()
+		void OnDragEnded(Transform rayOrigin)
 		{
-			clearSnappingState(this);
+			clearSnappingState(rayOrigin);
+			foreach (var go in Selection.gameObjects)
+			{
+				addToSpatialHash(go);
+			}
 		}
 
 		private void UpdateSelectionBounds()

@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Delegate that processes the translation, using the vector3 passed in
 		/// </summary>
-		Action<Vector3> translate { set; }
+		Action<Vector3, Transform, bool> translate { set; }
 
 		/// <summary>
 		/// Delegate that processes the rotation, using the quaternion passed in
@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Delegate that is called once after every drag
 		/// </summary>
-		event Action dragEnded;
+		event Action<Transform> dragEnded;
 
 		/// <summary>
 		/// Bool denoting the drag-state of a manipulator that implements this interface

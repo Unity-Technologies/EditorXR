@@ -231,7 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 		}
 
-		private void Translate(Vector3 deltaPosition)
+		private void Translate(Vector3 deltaPosition, Transform rayOrigin, bool constrained)
 		{
 			transform.position += deltaPosition;
 		}

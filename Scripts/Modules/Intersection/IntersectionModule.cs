@@ -8,6 +8,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
+	delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity);
+
 	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		const int k_MaxTestsPerTester = 100;
@@ -156,6 +158,28 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			Renderer obj;
 			m_IntersectedObjects.TryGetValue(tester, out obj);
 			return obj;
+		}
+
+		public bool Raycast(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity)
+		{
+			Renderer[] intersections;
+			if (m_SpatialHash.GetIntersections(ray, out intersections))
+			{
+				foreach (var renderer in intersections)
+				{
+					var transform = renderer.transform;
+					var success = IntersectionUtils.TestRay(m_CollisionTester, transform, ray, out hit, maxDistance);
+					if (success)
+					{
+						hit.point = transform.TransformPoint(hit.point);
+						hit.normal = transform.TransformDirection(hit.normal);
+						return true;
+					}
+				}
+			}
+
+			hit = new RaycastHit();
+			return false;
 		}
 	}
 }

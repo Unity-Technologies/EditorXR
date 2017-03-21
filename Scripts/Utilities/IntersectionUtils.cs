@@ -163,6 +163,18 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			var projection = Vector3.Dot(collisionLine, ray.origin - behindHit);
 			return projection >= 0f && projection <= collisionLine.sqrMagnitude;
 		}
+
+		public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity)
+		{
+			var mf = obj.GetComponent<MeshFilter>();
+			if (mf)
+				collisionTester.sharedMesh = mf.sharedMesh;
+
+			ray.origin = obj.InverseTransformPoint(ray.origin);
+			ray.direction = obj.InverseTransformDirection(ray.direction);
+
+			return collisionTester.Raycast(ray, out hit, maxDistance);
+		}
 	}
 }
 #endif
