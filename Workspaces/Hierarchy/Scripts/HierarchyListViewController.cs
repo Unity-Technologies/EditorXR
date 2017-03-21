@@ -167,13 +167,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				var hasChildren = datum.children != null;
 
-				var hasFilterQuery = !string.IsNullOrEmpty(getSearchQuery());
+				var searchQuery = getSearchQuery();
+				var hasFilterQuery = !string.IsNullOrEmpty(searchQuery);
+				var hasUnselectableQuery = searchQuery.Contains(HierarchyWorkspace.Unselectable);
 				var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z;
 				if (hasFilterQuery)
 				{
-					var filterTestPass = datum.types.Any(type => matchesFilter(type));
+					var filterTestPass = true;
 
-					if (!filterTestPass) // If this item doesn't match the filter, move on to the next item; do not count
+					if (hasUnselectableQuery)
+						filterTestPass = isLocked((GameObject)EditorUtility.InstanceIDToObject(datum.index));
+					else
+						filterTestPass = datum.types.Any(type => matchesFilter(type));
+
+					if (!filterTestPass) // If this item doesn't match, then move on to the next item; do not count
 					{
 						Recycle(index);
 					}

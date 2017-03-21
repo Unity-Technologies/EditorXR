@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
 	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 	{
-		static readonly float k_InitReferenceYOffset = k_DefaultBounds.y / 2.001f; // Show more space above ground than below
+		static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.001f; // Show more space above ground than below
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default
 
 		//TODO: replace with dynamic values once spatial hash lands
@@ -77,8 +77,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(k_MinBounds.x, k_MinBounds.y, 0.25f);
-			m_CustomStartingBounds = new Vector3(k_MinBounds.x, k_MinBounds.y, 0.5f);
+			minBounds = new Vector3(MinBounds.x, MinBounds.y, 0.25f);
+			m_CustomStartingBounds = new Vector3(MinBounds.x, MinBounds.y, 0.5f);
 
 			base.Setup();
 

@@ -11,6 +11,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
 	class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
 	{
+		public const string Unselectable = "Unselectable";
+
 		[SerializeField]
 		GameObject m_ContentPrefab;
 
@@ -48,6 +50,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			set
 			{
 				m_FilterList = value;
+				m_FilterList.Sort();
+				m_FilterList.Insert(0, Unselectable);
 
 				if (m_FilterUI)
 					m_FilterUI.filterList = value;
@@ -63,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(0.375f, k_MinBounds.y, 0.5f);
+			minBounds = new Vector3(0.375f, MinBounds.y, 0.5f);
 			m_CustomStartingBounds = minBounds;
 
 			base.Setup();

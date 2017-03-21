@@ -11,7 +11,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	sealed class FilterUI : MonoBehaviour, IUsesStencilRef
 	{
 		const string k_AllText = "All";
-		const string k_Unselectable = "Unselectable";
 
 		public Text summaryText
 		{
@@ -79,8 +78,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						ObjectUtils.Destroy(button.gameObject);
 
 				m_FilterTypes = value;
-				m_FilterTypes.Sort();
-				m_FilterTypes.Insert(0, k_Unselectable);
 				m_FilterTypes.Insert(0, k_AllText);
 
 				// Generate new button list
@@ -157,11 +154,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				case k_AllText:
 					m_SummaryText.text = clickedButton.text.text;
 					m_DescriptionText.text = "All objects are visible";
-					break;
-
-				case k_Unselectable:
-					m_SummaryText.text = clickedButton.text.text;
-					m_DescriptionText.text = "Unselectable objects are visible";
 					break;
 
 				default:
