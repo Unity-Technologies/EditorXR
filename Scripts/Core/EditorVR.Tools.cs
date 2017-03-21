@@ -87,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 					var pinnedToolButtonActivePosition = new Vector3(0f, 0f, -0.035f); // Active button offset from the main menu activator
 					var pinnedToolButton = evrMenus.SpawnPinnedToolButton(inputDevice);
-					deviceData.previousToolButton = pinnedToolButton;
+					deviceData.pinnedToolButton = pinnedToolButton;
 					var pinnedToolButtonTransform = pinnedToolButton.transform;
 					pinnedToolButtonTransform.SetParent(mainMenuActivator.transform, false);
 					pinnedToolButton.activePosition = pinnedToolButtonActivePosition;
@@ -162,9 +162,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal bool SelectTool(Transform rayOrigin, Type toolType)
 			{
-				Debug.LogError("SelectionTool TYPE : <color=black>" + toolType.ToString() + "</color>");
-				if (toolType == typeof(SelectionTool))
-					Debug.LogError("<color=green>!!!!! SelectionTool detected</color>");
+				//Debug.LogError("SelectionTool TYPE : <color=black>" + toolType.ToString() + "</color>");
+				//if (toolType == typeof(SelectionTool))
+					//Debug.LogError("<color=green>!!!!! SelectionTool detected</color>");
 
 				var result = false;
 				evr.m_Rays.ForEachProxyDevice((deviceData) =>
@@ -220,22 +220,14 @@ namespace UnityEditor.Experimental.EditorVR
 								if (setSelectAsCurrentTool)
 									deviceData.selectionToolButton.toolType = toolType; // assign the selection tool to the selection tool button
 								else
-									deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the additional tool button
+									AddPinnedToolButton(deviceData, toolType);
 
-								deviceData.previousToolButton.rayOrigin = rayOrigin;
+								deviceData.pinnedToolButton.rayOrigin = rayOrigin;
 								deviceData.selectionToolButton.rayOrigin = rayOrigin;
 							}
 						}
 
-						var currentToolIsSelect = deviceData.currentTool is ILocomotor;
-						Debug.LogError("<color=orange>currentToolIsSelect : </color>" + currentToolIsSelect);
-						Debug.LogError("<color=orange>deviceDate.CurrentTool : </color>" + deviceData.currentTool.ToString() + "  - selection is current tool : " + setSelectAsCurrentTool);
-						var highlightGradientPair = currentToolIsSelect ? deviceData.selectionToolButton.gradientPair : deviceData.previousToolButton.gradientPair;
-						deviceData.proxy.HighlightDevice(deviceData.node, highlightGradientPair); // Perform the higlight on the node with the button's gradient pair
-						deviceData.previousToolButton.activeTool = !currentToolIsSelect;
-						deviceData.selectionToolButton.activeTool = currentToolIsSelect;
-
-
+						SetupPinnedToolButtonsForDevice(deviceData);
 						evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
 						result = spawnTool;
 					}
@@ -246,6 +238,40 @@ namespace UnityEditor.Experimental.EditorVR
 				});
 
 				return result;
+			}
+
+			void AddPinnedToolButton(DeviceData deviceData, Type toolType)
+			{
+				// CHECK FOR TOOL ALREADY ADDED AS AN EXISTING PIN, RETURN THE BUTTON GRADIENT
+				deviceData.pinnedToolButton.toolType = toolType; // assign the new current tool type to the additional tool button
+
+				//return new GradientPair();
+			}
+
+			PinnedToolButton SetupPinnedToolButtonsForDevice(DeviceData deviceData)
+			{
+				PinnedToolButton activeButton = null;
+
+				if (deviceData.currentTool is ILocomotor) // Verify that Selection is not already the currently active tool
+				{
+					Debug.LogError("<color=orange>currentToolIsSelect <--</color>");
+					activeButton = deviceData.selectionToolButton;
+					activeButton.activeTool = true;
+					deviceData.pinnedToolButton.activeTool = false; // ITERATE OVER ALL TOOL BUTTONS except for selection
+				}
+				else
+				{
+					// activeButton = ITERATE OVER ALL TOOL BUTTONS except for selection
+					activeButton = deviceData.pinnedToolButton;
+					deviceData.selectionToolButton.activeTool = false;
+					deviceData.pinnedToolButton.activeTool = true; // ITERATE OVER ALL TOOL BUTTONS except for selection
+					// Iternate over the pinnedToolButton array/list searching for the active tool
+				}
+
+				Debug.LogError("<color=orange>deviceDate.CurrentTool : </color>" + deviceData.currentTool.ToString() + "  - selection is current tool : " + (activeButton == deviceData.selectionToolButton));
+				deviceData.proxy.HighlightDevice(deviceData.node, activeButton.gradientPair); // Perform the higlight on the node with the button's gradient pair
+
+				return activeButton;
 			}
 
 			void DespawnTool(DeviceData deviceData, ITool tool)
@@ -378,7 +404,7 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					if (deviceData.rayOrigin == rayOrigin) // enable pinned tool preview on the opposite (handed) device
 					{
-						pinnedToolButton = deviceData.selectionToolButton.activeTool ? deviceData.selectionToolButton : deviceData.previousToolButton;
+						pinnedToolButton = deviceData.selectionToolButton.activeTool ? deviceData.selectionToolButton : deviceData.pinnedToolButton;
 						pinnedToolButton.previewToolType = toolType;
 					}
 				});
