@@ -41,6 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		Transform m_TooltipCanvas;
 		Vector3 m_TooltipScale;
 		Color m_OriginalBackgroundColor;
+		Material m_CustomHighlightMaterial;
 
 		public Func<float> getViewerScale { private get; set; }
 
@@ -50,6 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_TooltipCanvas.SetParent(transform);
 			m_TooltipScale = m_TooltipPrefab.transform.localScale;
 			m_HighlightMaterial = Instantiate(m_HighlightMaterial);
+			m_CustomHighlightMaterial = Instantiate(m_HighlightMaterial);
 			m_TooltipBackgroundMaterial = Instantiate(m_TooltipBackgroundMaterial);
 			m_OriginalBackgroundColor = m_TooltipBackgroundMaterial.color;
 			var sessionGradient = UnityBrandColorScheme.sessionGradient;
@@ -119,6 +121,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				tooltipText.text = tooltip.tooltipText;
 				tooltipText.color = Color.Lerp(Color.clear, Color.white, lerp);
+			}
+
+			var customToolTipColor = tooltip as ISetCustomTooltipColor;
+			if (customToolTipColor != null)
+			{
+				tooltipUI.highlight.material= m_CustomHighlightMaterial;
+				m_CustomHighlightMaterial.SetColor(k_MaterialColorTopProperty, customToolTipColor.customToolTipHighlightColor.a);
+				m_CustomHighlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipColor.customToolTipHighlightColor.b);
 			}
 
 			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(Color.clear, m_OriginalBackgroundColor, lerp));
