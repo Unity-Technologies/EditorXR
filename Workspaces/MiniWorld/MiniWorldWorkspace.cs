@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
 	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 	{
-		static readonly float k_InitReferenceYOffset = k_DefaultBounds.y / 2.001f; // Show more space above ground than below
+		static readonly float k_InitReferenceYOffset = k_DefaultBounds.y / 2.05f; // Show more space above ground than below
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default
 
 		//TODO: replace with dynamic values once spatial hash lands
@@ -150,10 +150,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var referenceTransform = m_MiniWorld.referenceTransform;
 			float gridHeight = referenceTransform.position.y / referenceTransform.localScale.y;
 			var grid = m_MiniWorldUI.grid;
+
+			var inverseRotation = Quaternion.Inverse(referenceTransform.rotation);
+			var gridTransform = grid.transform;
 			if (Mathf.Abs(gridHeight) < contentBounds.extents.y)
 			{
 				grid.gameObject.SetActive(true);
-				grid.transform.localPosition = Vector3.down * gridHeight;
+				gridTransform.localPosition = Vector3.down * gridHeight;
+				gridTransform.localRotation = inverseRotation * Quaternion.AngleAxis(90, Vector3.right);
 			}
 			else
 			{
@@ -161,11 +165,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 
 			var referenceScale = referenceTransform.localScale.x;
-			var localBoundsSize = m_MiniWorld.localBounds.size;
+			var gridScale = gridTransform.localScale.x;
 
-			m_GridMaterial.SetVector("_GridScale", new Vector2(localBoundsSize.x, localBoundsSize.z) * referenceScale);
-			m_GridMaterial.SetVector("_GridCenter", -new Vector2(referenceTransform.position.x / (localBoundsSize.x * referenceScale),
-				referenceTransform.position.z / (localBoundsSize.z * referenceScale)));
+			m_GridMaterial.SetFloat("_GridScale", referenceScale);
+			m_GridMaterial.SetVector("_GridCenter", -new Vector2(referenceTransform.position.x,
+				referenceTransform.position.z) / (gridScale * referenceScale));
+			inverseRotation = Quaternion.Inverse(m_MiniWorld.transform.rotation);
+			m_GridMaterial.SetMatrix("_InverseRotation", Matrix4x4.TRS(Vector3.zero, inverseRotation, Vector3.one));
+			m_GridMaterial.SetVector("_ClipExtents", m_MiniWorld.localBounds.extents);
+			m_GridMaterial.SetVector("_ClipCenter", inverseRotation * m_MiniWorld.transform.position);
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -203,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var correctedBounds = new Bounds(contentBounds.center, new Vector3(contentBounds.size.x, contentBounds.size.y, contentBounds.size.z + kOffsetToAccountForFrameSize));
 			m_MiniWorld.localBounds = correctedBounds;
 			m_MiniWorldUI.boundsCube.transform.localScale = correctedBounds.size;
-			m_MiniWorldUI.grid.transform.localScale = new Vector3(correctedBounds.size.x, correctedBounds.size.z, 1);
+			m_MiniWorldUI.grid.transform.localScale = Vector3.one * new Vector2(correctedBounds.size.x, correctedBounds.size.z).magnitude;
 		}
 
 		void OnSliding(float value)

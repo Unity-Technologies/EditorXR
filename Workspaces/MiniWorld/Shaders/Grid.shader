@@ -5,10 +5,11 @@
 		_GridThickness("Grid Thickness", Float) = 0.5
 		_GridSpacing("Grid Spacing", Float) = (1.0, 1.0, 1.0)
 		_GridCenter("Grid Center", Float) = (0.0, 0.0, 0.0)
-		_GridScale("Grid Scale", Float) = (1.0, 1.0, 1.0)
+		_GridScale("Grid Scale", Float) = 1.0
 		_GridColour("Grid Colour", Color) = (0.5, 1.0, 1.0, 1.0)
 		_Subdivisions("Subdivisions", Float) = 8
 		_SubdivisionTransparency("Subdivision Transparency", Float) = 0.5
+		_ClipExtents("Clip Extents", Float) = (1.0, 1.0, 1.0, 1.0)
 	}
 
 	SubShader
@@ -31,21 +32,24 @@
 				uniform float _GridThickness;
 				uniform float2 _GridSpacing;
 				uniform float4 _GridCenter;
-				uniform float3 _GridScale;
+				uniform float _GridScale;
 				uniform float4 _GridColour;
 				uniform float _Subdivisions;
 				uniform float _SubdivisionTransparency;
+				uniform float4 _ClipExtents;
+				uniform float4 _ClipCenter;
+				uniform float4x4 _InverseRotation;
 
-				struct vertexInput 
+				struct vertexInput
 				{
 					float4 vertex : POSITION;
 				};
 
-				struct vertexOutput 
+				struct vertexOutput
 				{
 					float4 pos : SV_POSITION;
 					float4 objectPos : TEXCOORD0;
-					float3 normal : TEXCOORD1;
+					float4 clipPos : TEXCOORD1;
 				};
 
 				vertexOutput vert(vertexInput input) 
@@ -53,7 +57,7 @@
 					vertexOutput output;
 					output.pos			= UnityObjectToClipPos(input.vertex);
 					output.objectPos	= input.vertex - _GridCenter;
-					output.normal		= mul(unity_ObjectToWorld, float3(0,1,0));
+					output.clipPos = mul(_InverseRotation, mul(unity_ObjectToWorld, input.vertex));
 					return output;
 				}
 
@@ -80,7 +84,11 @@
 
 				float4 frag(vertexOutput input) : COLOR
 				{
-					float	gridDepth = log2(_GridScale.x);
+					float3 diff = abs(input.clipPos - _ClipCenter);
+					if (diff.x > _ClipExtents.x || diff.y > _ClipExtents.y || diff.z > _ClipExtents.z)
+						discard;
+
+					float	gridDepth = log2(_GridScale);
 					float	gridDepthClamp		= max(-4.00, gridDepth);
 					float	gridDepthFloor		= floor(gridDepthClamp);
 					float	gridDepthFade		= 1 - (gridDepthClamp - gridDepthFloor);
@@ -90,8 +98,8 @@
 					float2	lineSize			= float2(0.5 * _GridThickness / lineSizeIncrease, 0.25* _GridThickness / lineSizeIncrease);
 					float2  uv	=	(input.objectPos.xy / input.objectPos.w);
 
-					uv.x *= _GridScale.x;
-					uv.y *= _GridScale.y;
+					uv.x *= _GridScale;
+					uv.y *= _GridScale;
 #if SHADER_TARGET < 25
 					float	p = lineSampler(uv, lineSize, stepSize, gridDepthFade);
 #else
