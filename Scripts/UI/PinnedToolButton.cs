@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public sealed class PinnedToolButton : MonoBehaviour, ISelectTool, ITooltip, ITooltipPlacement, ISetTooltipVisibility
+	public sealed class PinnedToolButton : MonoBehaviour, ISelectTool, ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor
 	{
 		public Type toolType
 		{
@@ -112,7 +112,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public GradientPair gradientPair
 		{
 			get { return m_GradientPair; }
-			private set { m_GradientPair = value; }
+			private set
+			{
+				m_GradientPair = value;
+				customToolTipHighlightColor = value;
+			}
 		}
 		GradientPair m_GradientPair;
 
@@ -132,14 +136,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_previewToolType));
 					tooltipText = "Assign " + m_previewToolType.Name;
+					customToolTipHighlightColor = UnityBrandColorScheme.grayscaleSessionGradient;
 					showTooltip(this);
 				}
 				else
 				{
 					SetButtonGradients(activeTool);
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType));
+					customToolTipHighlightColor = gradientPair;
 					hideTooltip(this);
-					tooltipText = toolType.Name;
+					tooltipText = isSelectTool ? tooltipText = "Selection Tool (cannot be closed)" : toolType.Name;
 				}
 
 				m_GradientButton.highlighted = m_previewToolType != null;
@@ -168,6 +174,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public ITooltip tooltip { private get; set; } // Overrides text
 		public Action<ITooltip> showTooltip { private get; set; }
 		public Action<ITooltip> hideTooltip { private get; set; }
+		public GradientPair customToolTipHighlightColor { get; set; }
 
 		bool isSelectTool
 		{
