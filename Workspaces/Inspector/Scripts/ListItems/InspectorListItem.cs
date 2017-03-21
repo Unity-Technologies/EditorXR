@@ -28,6 +28,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Material m_NoClipText;
 
+		[SerializeField]
+		Material m_DropHighlightMaterial;
+
 		ClipText[] m_ClipTexts;
 
 		Material m_NoClipBackingCube;
@@ -41,7 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public bool setup { get; set; }
 
-		public Action<GameObject, bool> setHighlight { private get; set; }
+		public SetHighlightDelegate setHighlight { private get; set; }
 
 		public Func<Transform, Transform> getFieldGrabOriginForRayOrigin { get; set; }
 
@@ -170,12 +173,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected virtual void OnDropHoverStarted(BaseHandle handle)
 		{
-			setHighlight(handle.gameObject, true);
+			setHighlight(handle.gameObject, true, material: m_DropHighlightMaterial);
 		}
 
 		protected virtual void OnDropHoverEnded(BaseHandle handle)
 		{
-			setHighlight(handle.gameObject, false);
+			setHighlight(handle.gameObject, false, material: m_DropHighlightMaterial);
 		}
 
 		object GetDropObject(BaseHandle handle)
