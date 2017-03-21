@@ -28,6 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		public Action<Quaternion> rotate { private get; set; }
 		public Action<Vector3> scale { private get; set; }
 		public event Action dragStarted;
+		public event Action dragEnded;
 
 		void OnEnable()
 		{
@@ -88,6 +89,9 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			}
 
 			dragging = false;
+
+			if (dragEnded != null)
+				dragEnded();
 		}
 	}
 }

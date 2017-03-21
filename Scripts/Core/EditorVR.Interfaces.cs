@@ -68,7 +68,8 @@ namespace UnityEditor.Experimental.EditorVR
 				var evrSelectionModule = evr.m_SelectionModule;
 				var evrUI = evr.m_UI;
 				var evrDeviceData = evr.m_DeviceData;
-				var tooltipModule = evr.m_TooltipModule;
+				var evrTooltipModule = evr.m_TooltipModule;
+				var evrSnappingModule = evr.m_SnappingModule;
 
 				if (rayOrigin)
 				{
@@ -304,8 +305,8 @@ namespace UnityEditor.Experimental.EditorVR
 				var usesTooltip = obj as ISetTooltipVisibility;
 				if (usesTooltip != null)
 				{
-					usesTooltip.showTooltip = tooltipModule.ShowTooltip;
-					usesTooltip.hideTooltip = tooltipModule.HideTooltip;
+					usesTooltip.showTooltip = evrTooltipModule.ShowTooltip;
+					usesTooltip.hideTooltip = evrTooltipModule.HideTooltip;
 				}
 
 				var linkedObject = obj as ILinkedObject;
@@ -335,7 +336,10 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var usesSnapping = obj as IUsesSnapping;
 				if (usesSnapping != null)
-					usesSnapping.translateWithSnapping = evr.m_SnappingModule.TranslateWithSnapping;
+				{
+					usesSnapping.translateWithSnapping = evrSnappingModule.TranslateWithSnapping;
+					usesSnapping.clearSnappingState = evrSnappingModule.ClearSnappingState;
+				}
 
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;

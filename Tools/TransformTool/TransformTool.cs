@@ -169,7 +169,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public bool manipulatorVisible { private get; set; }
 
-		public Func<object, Vector3, Vector3, Vector3> translateWithSnapping { private get; set; }
+		public Func<object, GameObject[], Vector3, Vector3, Vector3> translateWithSnapping { private get; set; }
+		public Action<object> clearSnappingState { private get; set; }
 
 		void Awake()
 		{
@@ -451,7 +452,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		private void Translate(Vector3 delta)
 		{
-			m_TargetPosition = translateWithSnapping(this, m_TargetPosition, delta);
+			m_TargetPosition = translateWithSnapping(this, Selection.gameObjects, m_TargetPosition, delta);
 		}
 
 		private void Rotate(Quaternion delta)
@@ -469,6 +470,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			Undo.IncrementCurrentGroup();
 		}
 
+		void OnDragEnded()
+		{
+			clearSnappingState(this);
+		}
+
 		private void UpdateSelectionBounds()
 		{
 			m_SelectionBounds = ObjectUtils.GetBounds(Selection.gameObjects);
@@ -483,6 +489,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			manipulator.rotate = Rotate;
 			manipulator.scale = Scale;
 			manipulator.dragStarted += OnDragStarted;
+			manipulator.dragEnded += OnDragEnded;
 			return manipulator;
 		}
 

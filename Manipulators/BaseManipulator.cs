@@ -14,6 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		public Action<Quaternion> rotate { protected get; set; }
 		public Action<Vector3> scale { protected get; set; }
 		public event Action dragStarted;
+		public event Action dragEnded;
 
 		protected virtual void OnEnable()
 		{
@@ -45,6 +46,12 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		{
 			if (dragStarted != null)
 				dragStarted();
+		}
+
+		protected void OnDragEnded()
+		{
+			if (dragEnded != null)
+				dragEnded();
 		}
 	}
 }

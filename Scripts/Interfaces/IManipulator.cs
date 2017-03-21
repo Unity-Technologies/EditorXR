@@ -30,6 +30,11 @@ namespace UnityEditor.Experimental.EditorVR
 		event Action dragStarted;
 
 		/// <summary>
+		/// Delegate that is called once after every drag
+		/// </summary>
+		event Action dragEnded;
+
+		/// <summary>
 		/// Bool denoting the drag-state of a manipulator that implements this interface
 		/// </summary>
 		bool dragging { get; }
