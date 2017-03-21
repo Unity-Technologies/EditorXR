@@ -334,21 +334,25 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			if (!m_DragObject)
 			{
-				foreach (var field in m_InputFields)
-				{
-					field.CloseKeyboard(m_DraggedField == null);
-				}
-
+				InputField inputField = null;
 				var fieldBlock = handle.transform.parent;
 				foreach (Transform child in fieldBlock.transform)
 				{
-					var inputField = child.GetComponent<InputField>();
+					inputField = child.GetComponent<InputField>();
 					if (inputField)
 					{
 						inputField.OpenKeyboard();
 						break;
 					}
 				}
+
+				foreach (var field in m_InputFields)
+				{
+					field.CloseKeyboard(inputField == null);
+				}
+
+				if (inputField)
+					inputField.OpenKeyboard();
 			}
 
 			base.OnDragEnded(handle, eventData);
