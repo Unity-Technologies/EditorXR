@@ -10,7 +10,8 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
-		IGrabObjects, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility
+		IGrabObjects, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility,
+		IUsesSnapping
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -167,6 +168,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public SelectObjectDelegate selectObject { private get; set; }
 
 		public bool manipulatorVisible { private get; set; }
+
+		public Func<object, Vector3, Vector3, Vector3> translateWithSnapping { private get; set; }
 
 		void Awake()
 		{
@@ -448,7 +451,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		private void Translate(Vector3 delta)
 		{
-			m_TargetPosition += delta;
+			m_TargetPosition = translateWithSnapping(this, m_TargetPosition, delta);
 		}
 
 		private void Rotate(Quaternion delta)

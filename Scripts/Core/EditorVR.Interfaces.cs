@@ -333,6 +333,10 @@ namespace UnityEditor.Experimental.EditorVR
 				if (customHighlight != null)
 					evrHighlightModule.customHighlight += customHighlight.OnHighlight;
 
+				var usesSnapping = obj as IUsesSnapping;
+				if (usesSnapping != null)
+					usesSnapping.translateWithSnapping = evr.m_SnappingModule.TranslateWithSnapping;
+
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
 				if (forEachRayOrigin != null && IsSameAssembly<IForEachRayOrigin>(obj))

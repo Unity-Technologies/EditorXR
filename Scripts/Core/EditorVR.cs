@@ -47,6 +47,7 @@ namespace UnityEditor.Experimental.EditorVR
 		PixelRaycastModule m_PixelRaycastModule;
 		WorkspaceModule m_WorkspaceModule;
 		TooltipModule m_TooltipModule;
+		SnappingModule m_SnappingModule;
 
 		DirectSelection m_DirectSelection;
 		Interfaces m_Interfaces;
@@ -195,6 +196,9 @@ namespace UnityEditor.Experimental.EditorVR
 			m_WorkspaceModule.workspaceDestroyed += m_Vacuumables.OnWorkspaceDestroyed;
 			m_WorkspaceModule.workspaceDestroyed += (workspace) => { m_Interfaces.DisconnectInterfaces(workspace); };
 			m_WorkspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
+
+			m_SnappingModule = AddModule<SnappingModule>();
+			m_SnappingModule.groundSnapping = true;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
