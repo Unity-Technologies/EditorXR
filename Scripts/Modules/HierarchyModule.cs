@@ -192,6 +192,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						continue;
 
 					var typeName = component.GetType().Name;
+					if (component is MonoBehaviour)
+						typeName = "MonoBehaviour";
+
 					types.Add(typeName);
 					allTypes.Add(typeName);
 				}
