@@ -1,9 +1,8 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using System.Collections.Generic;
 
 [InitializeOnLoad]
-class LockedHierarchyIcon : ScriptableObject
+class LockableHierarchyGUI : ScriptableSingleton<LockableHierarchyGUI>
 {
 	[SerializeField]
 	Texture2D m_LockIcon;
@@ -11,28 +10,18 @@ class LockedHierarchyIcon : ScriptableObject
 	[SerializeField]
 	Texture2D m_UnlockIcon;
 
-	static LockedHierarchyIcon()
+	static LockableHierarchyGUI()
 	{
-		EditorApplication.delayCall += () => CreateInstance<LockedHierarchyIcon>();
-	}
-
-	void OnEnable()
-	{
+		EditorApplication.hierarchyWindowItemOnGUI -= OnHierarchyItemGUI;
 		EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyItemGUI;
 	}
 
-	void OnDisable()
+	static void OnHierarchyItemGUI(int instanceID, Rect selectionRect)
 	{
-		EditorApplication.hierarchyWindowItemOnGUI -= OnHierarchyItemGUI;
-	}
-
-	void OnHierarchyItemGUI(int instanceID, Rect selectionRect)
-	{
-		const float iconSize = 18f;
 		Rect r = new Rect(selectionRect);
+		var iconSize = r.height;
 		r.x = r.xMax - iconSize;
 		r.width = iconSize;
-		r.height = iconSize;
 
 		var e = Event.current;
 		var mousePosition = e.mousePosition;
@@ -40,9 +29,10 @@ class LockedHierarchyIcon : ScriptableObject
 		var window = EditorWindow.mouseOverWindow;
 		// Normally the HierarchyWindow doesn't repaint often, so this helps improve the responsiveness
 		if (window && mousePosition.x >= 0 && mousePosition.y >= 0
-			&& mousePosition.x <= window.position.width 
+			&& mousePosition.x <= window.position.width
 			&& mousePosition.y <= window.position.height)
 		{
+			window.wantsMouseMove = true;
 			window.Repaint();
 		}
 
@@ -52,11 +42,11 @@ class LockedHierarchyIcon : ScriptableObject
 			Texture2D icon = null;
 			if ((go.hideFlags & HideFlags.NotEditable) != 0)
 			{
-				icon = r.Contains(mousePosition) ? m_UnlockIcon : m_LockIcon;
+				icon = r.Contains(mousePosition) ? instance.m_UnlockIcon : instance.m_LockIcon;
 			}
 			else if (selectionRect.Contains(mousePosition))
 			{
-				icon = m_LockIcon;
+				icon = instance.m_LockIcon;
 				GUI.color = Color.grey;
 			}
 
