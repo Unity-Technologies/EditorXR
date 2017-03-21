@@ -12,7 +12,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var usesHierarchyData = obj as IUsesHierarchyData;
 				if (usesHierarchyData != null)
+				{
 					evrHierarchyModule.AddConsumer(usesHierarchyData);
+
+					var filterUI = obj as IFilterUI;
+					if (filterUI != null)
+						evrHierarchyModule.AddConsumer(filterUI);
+				}
 			}
 
 			public void DisconnectInterface(object obj)
@@ -21,7 +27,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var usesHierarchy = obj as IUsesHierarchyData;
 				if (usesHierarchy != null)
+				{
 					evrHierarchyModule.RemoveConsumer(usesHierarchy);
+
+					var filterUI = obj as IFilterUI;
+					if (filterUI != null)
+						evrHierarchyModule.RemoveConsumer(filterUI);
+				}
 			}
 		}
 	}

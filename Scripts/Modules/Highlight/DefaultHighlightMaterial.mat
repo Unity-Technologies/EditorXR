@@ -6,9 +6,10 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: UIBackingCubeClip
-  m_Shader: {fileID: 4800000, guid: 91211d46ba5f0a84ab6786bcda73a95d, type: 3}
-  m_ShaderKeywords: _EMISSION
+  m_Name: DefaultHighlightMaterial
+  m_Shader: {fileID: 4800000, guid: 9c58ee7b67645404e9542c09f160ccb9, type: 3}
+  m_ShaderKeywords: ROTATE_GRADIENT _ALPHAPREMULTIPLY_ON _EMISSION _GLOSSYREFLECTIONS_OFF
+    _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -71,6 +72,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - first:
+        name: _Alpha
+      second: 1
+    - first:
         name: _BumpScale
       second: 1
     - first:
@@ -81,22 +85,25 @@ Material:
       second: 1
     - first:
         name: _DstBlend
-      second: 0
+      second: 10
     - first:
         name: _GlossMapScale
       second: 1
     - first:
         name: _Glossiness
-      second: 0.5
+      second: 1
     - first:
         name: _GlossyReflections
-      second: 1
+      second: 0
     - first:
         name: _Metallic
       second: 0
     - first:
         name: _Mode
-      second: 0
+      second: 3
+    - first:
+        name: _ObjectScale
+      second: -0.05
     - first:
         name: _OcclusionStrength
       second: 1
@@ -104,30 +111,48 @@ Material:
         name: _Parallax
       second: 0.02
     - first:
+        name: _RotateGradient
+      second: 1
+    - first:
         name: _SmoothnessTextureChannel
       second: 0
     - first:
         name: _SpecularHighlights
-      second: 1
+      second: 0
     - first:
         name: _SrcBlend
       second: 1
+    - first:
+        name: _StencilRef
+      second: 4
+    - first:
+        name: _Thickness
+      second: 0.25
     - first:
         name: _UVSec
       second: 0
     - first:
         name: _ZWrite
-      second: 1
+      second: 0
+    - first:
+        name: g_flCornerAdjust
+      second: 1.3
+    - first:
+        name: g_flOutlineWidth
+      second: 0.003
     m_Colors:
     - first:
-        name: _ClipCenter
-      second: {r: 0, g: 0, b: 0, a: 0}
-    - first:
-        name: _ClipExtents
-      second: {r: 1, g: 1, b: 1, a: 0}
-    - first:
         name: _Color
-      second: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+      second: {r: 1, g: 1, b: 1, a: 1}
+    - first:
+        name: _ColorBottom
+      second: {r: 0, g: 0.76256925, b: 0.83137256, a: 1}
+    - first:
+        name: _ColorTop
+      second: {r: 0, g: 0.79697084, b: 0.83137256, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}
+    - first:
+        name: g_vOutlineColor
+      second: {r: 0.011764706, g: 0.6627451, b: 0.95686275, a: 1}

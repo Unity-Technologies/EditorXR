@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		class Interfaces : Nested
 		{
+			const byte k_MinStencilRef = 5;
 			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
 			event ConnectInterfacesDelegate m_ConnectInterfaces;

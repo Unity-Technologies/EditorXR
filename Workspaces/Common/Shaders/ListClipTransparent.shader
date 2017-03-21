@@ -6,7 +6,8 @@
 		_MainTex("Albedo (RGB)", 2D) = "white" {}
 		_Glossiness("Smoothness", Range(0,1)) = 0.5
 		_Metallic("Metallic", Range(0,1)) = 0.0
-		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
+
+		_ClipExtents("Clip Extents", Vector) = (1,1,1,0)
 
 		_StencilComp("Stencil Comparison", Float) = 8
 		_Stencil("Stencil ID", Float) = 0
@@ -20,9 +21,9 @@
 	}
 	SubShader
 	{
-		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent-1" }
+		Tags{ "RenderType" = "Transparent" "Queue" = "Overlay+5104" }
 		LOD 200
-		ZWrite Off
+		ZWrite On
 
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types

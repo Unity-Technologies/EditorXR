@@ -6,9 +6,9 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: ListClipUI
-  m_Shader: {fileID: 4800000, guid: 7a00b76bb9aa9e4499db51bfa1b54fb4, type: 3}
-  m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION
+  m_Name: ListItemClipText
+  m_Shader: {fileID: 4800000, guid: 3c02d0db608bfc64784bd02246ed8142, type: 3}
+  m_ShaderKeywords: UNITY_UI_ALPHACLIP _EMISSION
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -84,7 +84,7 @@ Material:
       second: 1
     - first:
         name: _DstBlend
-      second: 10
+      second: 0
     - first:
         name: _GlossMapScale
       second: 1
@@ -99,7 +99,7 @@ Material:
       second: 0
     - first:
         name: _Mode
-      second: 3
+      second: 0
     - first:
         name: _OcclusionStrength
       second: 1
@@ -120,13 +120,16 @@ Material:
       second: 0
     - first:
         name: _StencilComp
-      second: 8
+      second: 4.79
     - first:
         name: _StencilOp
       second: 0
     - first:
         name: _StencilReadMask
       second: 255
+    - first:
+        name: _StencilRef
+      second: 3
     - first:
         name: _StencilWriteMask
       second: 255
@@ -135,17 +138,17 @@ Material:
       second: 0
     - first:
         name: _UseUIAlphaClip
-      second: 0
+      second: 1
     - first:
         name: _ZWrite
-      second: 0
+      second: 1
     m_Colors:
-    - first:
-        name: _ClipExtents
-      second: {r: 1, g: 1, b: 1, a: 0}
     - first:
         name: _Color
       second: {r: 1, g: 1, b: 1, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}
+    - first:
+        name: _Tint
+      second: {r: 1, g: 1, b: 1, a: 1}

@@ -1,13 +1,11 @@
 #if UNITY_EDITOR
-using System;
 using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	sealed class NumericInputField : InputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
+	sealed class NumericInputField : InputField
 	{
 		public enum NumberType
 		{
@@ -15,85 +13,51 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			Int,
 		}
 
-		public const float DragDeadzone = 0.025f;
-
 		const string k_FloatFieldFormatString = "g7";
 		const string k_IntFieldFormatString = "#######0";
-		const float k_DragSensitivity = 0.02f;
+		const float k_FloatDragSensitivity = 2f;
+		const float k_IntDragSensitivity = 10f;
 		const string k_AllowedCharactersForFloat = "inftynaeINFTYNAE0123456789.,-*/+%^()";
 		const string k_AllowedCharactersForInt = "0123456789-*/+%^()";
 		const string k_OperandCharacters = "-*/+%^()";
-		const int k_MaxDecimals = 15; // We cannot round to more decimals than 15 according to docs for System.Math.Round.
 
 		public NumberType numberType { get { return m_NumberType; } set { m_NumberType = value; } }
 		[SerializeField]
 		NumberType m_NumberType = NumberType.Float;
 
-		bool m_UpdateDrag;
-		Vector3 m_StartDragPosition;
+		bool m_Dragging;
 		Vector3 m_LastPointerPosition;
 		int m_OperandCount;
-		bool m_UseYSign;
 
-		bool MayDrag()
+		public override string text
 		{
-			return IsActive()
-					&& IsInteractable()
-					&& m_TextComponent != null;
+			get { return base.text; }
+			set
+			{
+				if (m_Dragging)
+					return;
+
+				base.text = value;
+			}
 		}
 
-		public void OnBeginDrag(RayEventData eventData)
+		public void BeginSliderDrag(Transform rayOrigin)
 		{
-			if (!UIUtils.IsValidEvent(eventData, selectionFlags) && MayDrag())
-				return;
-
-			m_StartDragPosition = GetLocalPointerPosition(eventData.rayOrigin);
+			ParseNumberField();
+			m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
+			m_Dragging = true;
+#if UNITY_EDITOR
+			Undo.IncrementCurrentGroup(); // Every drag start is a new modification
+#endif
 		}
 
-		public void OnDrag(RayEventData eventData)
+		public void EndSliderDrag(Transform rayOrigin)
 		{
-			if (!UIUtils.IsValidEvent(eventData, selectionFlags) || !MayDrag())
-				return;
-
-			SliderDrag(eventData.rayOrigin);
+			m_Dragging = false;
+			m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
 		}
 
 		public void SliderDrag(Transform rayOrigin)
-		{
-			if (!m_UpdateDrag)
-			{
-				if (Mathf.Abs(GetLocalPointerPosition(rayOrigin).x - m_StartDragPosition.x) > DragDeadzone)
-				{
-					ParseNumberField();
-					m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
-					m_UpdateDrag = true;
-
-#if UNITY_EDITOR
-					Undo.IncrementCurrentGroup(); // Every drag start is a new modification
-#endif
-				}
-			}
-			else
-			{
-				DragNumberValue(rayOrigin);
-				m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
-			}
-		}
-
-		public void OnEndDrag(RayEventData eventData)
-		{
-			if (!UIUtils.IsValidEvent(eventData, selectionFlags) || !MayDrag())
-				return;
-
-			EndDrag();
-		}
-
-		public void EndDrag()
-		{
-			m_UpdateDrag = false;
-		}
-
-		void DragNumberValue(Transform rayOrigin)
 		{
 			var delta = GetLocalPointerPosition(rayOrigin) - m_LastPointerPosition;
 
@@ -103,10 +67,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				if (!float.TryParse(text, out num))
 					num = 0f;
 
-				var dragSensitivity = CalculateFloatDragSensitivity(num);
-				num += GetNicePointerDelta(delta) * dragSensitivity;
-				num = RoundBasedOnMinimumDifference(num, dragSensitivity);
+				const float maxDelta = 0.1f;
+				var deltaX = Mathf.Clamp(delta.x, -maxDelta, maxDelta);
+				var dragSensitivity = CalculateDragSensitivity(num) * k_FloatDragSensitivity;
+				num += deltaX * dragSensitivity;
 				m_Text = num.ToString(k_FloatFieldFormatString);
+				m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
 			}
 			else
 			{
@@ -114,9 +80,14 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				if (!int.TryParse(text, out intNum))
 					intNum = 0;
 
-				var dragSensitivity = CalculateIntDragSensitivity(intNum);
-				intNum += (int)Math.Round(GetNicePointerDelta(delta) * dragSensitivity);
+				var dragSensitivity = CalculateDragSensitivity(intNum) * k_IntDragSensitivity;
+				var change = (int)(delta.x * dragSensitivity);
+
+				intNum += change;
+
 				m_Text = intNum.ToString(k_IntFieldFormatString);
+				if (change != 0)
+					m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
 			}
 
 			SendOnValueChangedAndUpdateLabel();
@@ -254,35 +225,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			return k_OperandCharacters.Contains(c.ToString()) && !(m_Text.Length == 0 && c == '-');
 		}
 
-		float CalculateFloatDragSensitivity(float value)
+		static float CalculateDragSensitivity(float value)
 		{
 			if (float.IsInfinity(value) || float.IsNaN(value))
 				return 0f;
 
-			return Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f)) * k_DragSensitivity;
-		}
-
-		int CalculateIntDragSensitivity(int value)
-		{
-			return (int)Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f) * k_DragSensitivity);
-		}
-
-		float RoundBasedOnMinimumDifference(float valueToRound, float minDifference)
-		{
-			if (Math.Abs(minDifference) < Mathf.Epsilon)
-				return DiscardLeastSignificantDecimal(valueToRound);
-			return (float)Math.Round(valueToRound, GetNumberOfDecimalsForMinimumDifference(minDifference), MidpointRounding.AwayFromZero);
-		}
-
-		float DiscardLeastSignificantDecimal(float v)
-		{
-			var decimals = Mathf.Clamp((int)(5 - Mathf.Log10(Mathf.Abs(v))), 0, k_MaxDecimals);
-			return (float)Math.Round(v, decimals, MidpointRounding.AwayFromZero);
-		}
-
-		int GetNumberOfDecimalsForMinimumDifference(float minDifference)
-		{
-			return Mathf.Clamp(-Mathf.FloorToInt(Mathf.Log10(Mathf.Abs(minDifference))), 0, k_MaxDecimals);
+			return Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f));
 		}
 
 		void ParseNumberField()
@@ -318,25 +266,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 			if (str != m_Text)
 				SendOnValueChangedAndUpdateLabel();
-		}
-
-		private float GetNicePointerDelta(Vector3 delta)
-		{
-			var d = delta;
-			d.y = -d.y;
-
-			if (Mathf.Abs(Mathf.Abs(d.x) - Mathf.Abs(d.y)) / Mathf.Max(Mathf.Abs(d.x), Mathf.Abs(d.y)) > .1f)
-			{
-				if (Mathf.Abs(d.x) > Mathf.Abs(d.y))
-					m_UseYSign = false;
-				else
-					m_UseYSign = true;
-			}
-
-			if (m_UseYSign)
-				return Mathf.Sign(d.y) * d.magnitude * 100f;
-			else
-				return Mathf.Sign(d.x) * d.magnitude * 100f;
 		}
 	}
 }

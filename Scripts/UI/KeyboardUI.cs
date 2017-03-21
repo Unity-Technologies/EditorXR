@@ -349,7 +349,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				transform.rotation *= deltaRotation;
 		}
 
-		void OnDragStarted(BaseHandle baseHandle, HandleEventData handleEventData)
+		void OnDragStarted(BaseHandle handle, HandleEventData handleEventData)
 		{
 			this.StopCoroutine(ref m_DragAfterDelayCoroutine);
 			m_DragAfterDelayCoroutine = StartCoroutine(DragAfterDelay());
@@ -417,7 +417,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			m_ChangeDragColorsCoroutine = null;
 		}
 
-		void OnDrag(BaseHandle baseHandle, HandleEventData handleEventData)
+		void OnDrag(BaseHandle handle, HandleEventData handleEventData)
 		{
 			if (m_EligibleForDrag)
 			{
@@ -432,7 +432,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			}
 		}
 
-		void OnDragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
+		void OnDragEnded(BaseHandle handle, HandleEventData handleEventData)
 		{
 			this.StopCoroutine(ref m_DragAfterDelayCoroutine);
 			m_DragAfterDelayCoroutine = null;

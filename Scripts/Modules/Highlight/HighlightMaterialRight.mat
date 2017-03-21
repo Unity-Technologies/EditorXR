@@ -6,11 +6,11 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: ListItemText
-  m_Shader: {fileID: 4800000, guid: 3c02d0db608bfc64784bd02246ed8142, type: 3}
-  m_ShaderKeywords: UNITY_UI_ALPHACLIP _EMISSION
+  m_Name: HighlightMaterialRight
+  m_Shader: {fileID: 4800000, guid: 9c58ee7b67645404e9542c09f160ccb9, type: 3}
+  m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 1
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 9001
   stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
@@ -74,9 +74,6 @@ Material:
         name: _BumpScale
       second: 1
     - first:
-        name: _ColorMask
-      second: 15
-    - first:
         name: _Cutoff
       second: 0.5
     - first:
@@ -84,22 +81,22 @@ Material:
       second: 1
     - first:
         name: _DstBlend
-      second: 0
+      second: 10
     - first:
         name: _GlossMapScale
       second: 1
     - first:
         name: _Glossiness
-      second: 0.5
+      second: 1
     - first:
         name: _GlossyReflections
-      second: 1
+      second: 0
     - first:
         name: _Metallic
       second: 0
     - first:
         name: _Mode
-      second: 0
+      second: 3
     - first:
         name: _OcclusionStrength
       second: 1
@@ -111,50 +108,32 @@ Material:
       second: 0
     - first:
         name: _SpecularHighlights
-      second: 1
+      second: 0
     - first:
         name: _SrcBlend
       second: 1
     - first:
-        name: _Stencil
-      second: 0
-    - first:
-        name: _StencilComp
-      second: 4.79
-    - first:
-        name: _StencilOp
-      second: 0
-    - first:
-        name: _StencilReadMask
-      second: 255
-    - first:
         name: _StencilRef
       second: 3
-    - first:
-        name: _StencilWriteMask
-      second: 255
     - first:
         name: _UVSec
       second: 0
     - first:
-        name: _UseUIAlphaClip
-      second: 1
-    - first:
         name: _ZWrite
-      second: 1
+      second: 0
+    - first:
+        name: g_flCornerAdjust
+      second: 1.3
+    - first:
+        name: g_flOutlineWidth
+      second: 0.003
     m_Colors:
     - first:
-        name: _ClipCenter
-      second: {r: 0, g: 0, b: 0, a: 0}
-    - first:
-        name: _ClipExtents
-      second: {r: 0.1675, g: 1.7014117e+38, b: 0.22500001, a: 0}
-    - first:
         name: _Color
-      second: {r: 1, g: 1, b: 1, a: 1}
+      second: {r: 0.5411765, g: 0.7607843, b: 0.28627452, a: 1}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}
     - first:
-        name: _Tint
-      second: {r: 1, g: 1, b: 1, a: 1}
+        name: g_vOutlineColor
+      second: {r: 0.5411765, g: 0.7607843, b: 0.28627452, a: 1}

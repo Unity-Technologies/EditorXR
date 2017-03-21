@@ -931,7 +931,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
+    m_TypeName: UnityEditor.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114000012659711884}
   m_CharacterLimit: 0
@@ -978,7 +978,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
+    m_TypeName: UnityEditor.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114000011069213394}
   m_CharacterLimit: 0
@@ -1203,7 +1203,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
+    m_TypeName: UnityEditor.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114000011639826514}
   m_CharacterLimit: 0
@@ -1312,7 +1312,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
+    m_TypeName: UnityEditor.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114000011952738192}
   m_CharacterLimit: 0
@@ -1359,7 +1359,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
+    m_TypeName: UnityEditor.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114000012565481690}
   m_CharacterLimit: 0
@@ -1509,6 +1509,9 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Cube: {fileID: 114000011524206158}
   m_UIContainer: {fileID: 224000010867083340}
+  m_NoClipText: {fileID: 2100000, guid: 0b1d2d3c4b2d7d948bcd67e085daa7d4, type: 2}
+  m_DropHighlightMaterial: {fileID: 2100000, guid: 4c6cd374ace66ac4ab5999367e0acfeb,
+    type: 2}
   m_Label: {fileID: 114000012039204962}
   m_TooltipTarget: {fileID: 224000012070142272}
   m_TooltipSource: {fileID: 224000013148356112}
@@ -1776,7 +1779,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
+    m_TypeName: UnityEditor.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114000010714605292}
   m_CharacterLimit: 0

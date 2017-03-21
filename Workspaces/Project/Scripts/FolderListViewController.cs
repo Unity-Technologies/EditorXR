@@ -8,15 +8,15 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class FolderListViewController : NestedListViewController<FolderData>
+	sealed class FolderListViewController : NestedListViewController<FolderData, FolderListItem, string>
 	{
-		private const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
+		const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
 		[SerializeField]
-		private Material m_TextMaterial;
+		Material m_TextMaterial;
 
 		[SerializeField]
-		private Material m_ExpandArrowMaterial;
+		Material m_ExpandArrowMaterial;
 
 		string m_SelectedFolder;
 
@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				if (m_Data != null && m_Data.Count > 0) // Expand and select the Assets folder by default
 				{
-					var guid = data[0].guid;
+					var guid = data[0].index;
 					m_ExpandStates[guid] = true;
 					SelectFolder(guid);
 				}
@@ -56,65 +56,66 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.UpdateItems();
 		}
 
-		void UpdateFolderItem(FolderData data, int offset, int depth, bool expanded)
+		void UpdateFolderItem(FolderData data, float offset, int depth, bool expanded, ref bool doneSettling)
 		{
-			ListViewItem<FolderData> item;
-			if (!m_ListItems.TryGetValue(data, out item))
+			var index = data.index;
+			FolderListItem item;
+			if (!m_ListItems.TryGetValue(index, out item))
 				item = GetItem(data);
 
-			var folderItem = (FolderListItem)item;
+			item.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, index == m_SelectedFolder);
 
-			folderItem.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, data.guid == m_SelectedFolder);
+			SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 
-			SetMaterialClip(folderItem.cubeMaterial, transform.worldToLocalMatrix);
-
-			UpdateItemTransform(item.transform, offset);
+			UpdateItem(item.transform, offset, ref doneSettling);
 		}
 
-		protected override void UpdateRecursively(List<FolderData> data, ref int count, int depth = 0)
+		protected override void UpdateRecursively(List<FolderData> data, ref float offset, ref bool doneSettling, int depth = 0)
 		{
-			foreach (var datum in data)
+			for (int i = 0; i < data.Count; i++)
 			{
+				var datum = data[i];
+				var index = datum.index;
 				bool expanded;
-				if (!m_ExpandStates.TryGetValue(datum.guid, out expanded))
-					m_ExpandStates[datum.guid] = false;
+				if (!m_ExpandStates.TryGetValue(index, out expanded))
+					m_ExpandStates[index] = false;
 
-				if (count + m_DataOffset < -1 || count + m_DataOffset > m_NumRows - 1)
-					Recycle(datum);
+				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
+					Recycle(index);
 				else
-					UpdateFolderItem(datum, count, depth, expanded);
+					UpdateFolderItem(datum, offset + m_ScrollOffset, depth, expanded, ref doneSettling);
 
-				count++;
+				offset += itemSize.z;
 
 				if (datum.children != null)
 				{
 					if (expanded)
-						UpdateRecursively(datum.children, ref count, depth + 1);
+						UpdateRecursively(datum.children, ref offset, ref doneSettling, depth + 1);
 					else
 						RecycleChildren(datum);
 				}
 			}
 		}
 
-		protected override ListViewItem<FolderData> GetItem(FolderData listData)
+		protected override FolderListItem GetItem(FolderData listData)
 		{
-			var item = (FolderListItem)base.GetItem(listData);
+			var item = base.GetItem(listData);
 			item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
 			item.selectFolder = SelectFolder;
 
 			item.toggleExpanded = ToggleExpanded;
 
 			bool expanded;
-			if (m_ExpandStates.TryGetValue(listData.guid, out expanded))
+			if (m_ExpandStates.TryGetValue(listData.index, out expanded))
 				item.UpdateArrow(expanded, true);
 
 			return item;
 		}
 
-		void ToggleExpanded(FolderData data)
+		void ToggleExpanded(string index)
 		{
-			var guid = data.guid;
-			m_ExpandStates[guid] = !m_ExpandStates[guid];
+			m_ExpandStates[index] = !m_ExpandStates[index];
+			StartSettling();
 		}
 
 		void SelectFolder(string guid)
@@ -130,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		static FolderData GetFolderDataByGUID(FolderData data, string guid)
 		{
-			if (data.guid == guid)
+			if (data.index == guid)
 				return data;
 
 			if (data.children != null)
@@ -145,7 +146,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			return null;
 		}
 
-		private void OnDestroy()
+		void OnDestroy()
 		{
 			ObjectUtils.Destroy(m_TextMaterial);
 			ObjectUtils.Destroy(m_ExpandArrowMaterial);

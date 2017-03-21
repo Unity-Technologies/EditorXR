@@ -72,6 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public Dictionary<Transform, Transform> menuOrigins { get; set; }
 		public Dictionary<Transform, Transform> alternateMenuOrigins { get; set; }
 		public Dictionary<Transform, Transform> previewOrigins { get; set; }
+		public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
 
 		public virtual void Awake()
 		{
@@ -105,6 +106,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			{
 				{ leftProxyHelper.rayOrigin, leftProxyHelper.previewOrigin },
 				{ rightProxyHelper.rayOrigin, rightProxyHelper.previewOrigin }
+			};
+
+			fieldGrabOrigins = new Dictionary<Transform, Transform>
+			{
+				{ leftProxyHelper.rayOrigin, leftProxyHelper.fieldGrabOrigin },
+				{ rightProxyHelper.rayOrigin, rightProxyHelper.fieldGrabOrigin }
 			};
 		}
 

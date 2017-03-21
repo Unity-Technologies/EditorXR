@@ -298,12 +298,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void DragStarted(BaseHandle baseHandle, HandleEventData handleEventData)
+		void DragStarted(BaseHandle handle, HandleEventData handleEventData)
 		{
 			this.LockRay(handleEventData.rayOrigin, this);
 		}
 
-		void DragEnded(BaseHandle baseHandle, HandleEventData handleEventData)
+		void DragEnded(BaseHandle handle, HandleEventData handleEventData)
 		{
 			this.UnlockRay(handleEventData.rayOrigin, this);
 		}

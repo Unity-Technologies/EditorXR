@@ -6,13 +6,12 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: FrameMaterial
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
-  m_ShaderKeywords: _ALPHABLEND_ON _EMISSION
+  m_Name: DropZone
+  m_Shader: {fileID: 4800000, guid: 7a00b76bb9aa9e4499db51bfa1b54fb4, type: 3}
+  m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1
-  m_CustomRenderQueue: 2996
-  stringTagMap:
-    RenderType: Transparent
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
     m_TexEnvs:
@@ -75,6 +74,9 @@ Material:
         name: _BumpScale
       second: 1
     - first:
+        name: _ColorMask
+      second: 15
+    - first:
         name: _Cutoff
       second: 0.5
     - first:
@@ -82,7 +84,7 @@ Material:
       second: 1
     - first:
         name: _DstBlend
-      second: 10
+      second: 0
     - first:
         name: _GlossMapScale
       second: 1
@@ -97,7 +99,7 @@ Material:
       second: 0
     - first:
         name: _Mode
-      second: 2
+      second: 0
     - first:
         name: _OcclusionStrength
       second: 1
@@ -112,17 +114,38 @@ Material:
       second: 1
     - first:
         name: _SrcBlend
-      second: 5
+      second: 1
+    - first:
+        name: _Stencil
+      second: 0
+    - first:
+        name: _StencilComp
+      second: 8
+    - first:
+        name: _StencilOp
+      second: 0
+    - first:
+        name: _StencilReadMask
+      second: 255
+    - first:
+        name: _StencilRef
+      second: 3
+    - first:
+        name: _StencilWriteMask
+      second: 255
     - first:
         name: _UVSec
       second: 0
     - first:
-        name: _ZWrite
+        name: _UseUIAlphaClip
       second: 0
+    - first:
+        name: _ZWrite
+      second: 1
     m_Colors:
     - first:
         name: _Color
-      second: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 0.5019608}
+      second: {r: 0.30655256, g: 0.6803559, b: 0.992647, a: 0.353}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}

@@ -12,11 +12,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var usesProjectFolderData = obj as IUsesProjectFolderData;
 				if (usesProjectFolderData != null)
+				{
 					evrProjectFolderModule.AddConsumer(usesProjectFolderData);
 
-				var filterUI = obj as IFilterUI;
-				if (filterUI != null)
-					evrProjectFolderModule.AddConsumer(filterUI);
+					var filterUI = obj as IFilterUI;
+					if (filterUI != null)
+						evrProjectFolderModule.AddConsumer(filterUI);
+				}
 			}
 
 			public void DisconnectInterface(object obj)
@@ -25,11 +27,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var usesProjectFolderData = obj as IUsesProjectFolderData;
 				if (usesProjectFolderData != null)
+				{
 					evrProjectFolderModule.RemoveConsumer(usesProjectFolderData);
 
-				var filterUI = obj as IFilterUI;
-				if (filterUI != null)
-					evrProjectFolderModule.RemoveConsumer(filterUI);
+					var filterUI = obj as IFilterUI;
+					if (filterUI != null)
+						evrProjectFolderModule.RemoveConsumer(filterUI);
+				}
 			}
 		}
 	}

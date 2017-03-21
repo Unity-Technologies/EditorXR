@@ -80,6 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				evr.StartCoroutine(UpdateCameraRig(endPosition, viewDirection, () =>
 				{
+					playerHead.hideFlags = defaultHideFlags;
 					playerHead.parent = mainCamera;
 					playerHead.localRotation = Quaternion.identity;
 					playerHead.localPosition = Vector3.zero;

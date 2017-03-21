@@ -78,9 +78,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (raycaster != null)
 					raycaster.getFirstGameObject = GetFirstGameObject;
 
-				var positionPreview = obj as IGetPreviewOrigin;
-				if (positionPreview != null)
-					positionPreview.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
+				var getPreviewOrigin = obj as IGetPreviewOrigin;
+				if (getPreviewOrigin != null)
+					getPreviewOrigin.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
+
+				var getFieldGrabOrigin = obj as IGetFieldGrabOrigin;
+				if (getFieldGrabOrigin != null)
+					getFieldGrabOrigin.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
 
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
@@ -139,26 +143,28 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 						foreach (var rayOriginPair in proxy.rayOrigins)
 						{
+							var node = rayOriginPair.Key;
+
 							var systemDevices = deviceInputModule.GetSystemDevices();
 							for (int j = 0; j < systemDevices.Count; j++)
 							{
 								var device = systemDevices[j];
 
 								// Find device tagged with the node that matches this RayOrigin node
-								var node = deviceInputModule.GetDeviceNode(device);
-								if (node.HasValue && node.Value == rayOriginPair.Key)
+								var deviceNode = deviceInputModule.GetDeviceNode(device);
+								if (deviceNode.HasValue && deviceNode.Value == node)
 								{
 									var deviceData = new DeviceData();
 									evrDeviceData.Add(deviceData);
 									deviceData.proxy = proxy;
-									deviceData.node = rayOriginPair.Key;
+									deviceData.node = node;
 									deviceData.rayOrigin = rayOriginPair.Value;
 									deviceData.inputDevice = device;
 									deviceData.uiInput = deviceInputModule.CreateActionMapInput(evr.m_InputModule.actionMap, device);
 									deviceData.directSelectInput = deviceInputModule.CreateActionMapInput(deviceInputModule.directSelectActionMap, device);
 
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-									evr.m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, source =>
+									evr.m_InputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOriginPair.Value, source =>
 									{
 										foreach (var miniWorld in evr.m_MiniWorlds.worlds)
 										{
@@ -175,15 +181,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								}
 							}
 
-							var rayOriginPairValue = rayOriginPair.Value;
-							var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
-							rayTransform.position = rayOriginPairValue.position;
-							rayTransform.rotation = rayOriginPairValue.rotation;
+							var rayOrigin = rayOriginPair.Value;
+							var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin).transform;
+							rayTransform.position = rayOrigin.position;
+							rayTransform.rotation = rayOrigin.rotation;
 							var dpr = rayTransform.GetComponent<DefaultProxyRay>();
 							dpr.getViewerScale = Viewer.GetViewerScale;
-							m_DefaultRays.Add(rayOriginPairValue, dpr);
+							dpr.SetColor(node == Node.LeftHand ? evr.m_HighlightModule.leftColor : evr.m_HighlightModule.rightColor);
+							m_DefaultRays.Add(rayOrigin, dpr);
 
-							evr.m_KeyboardModule.SpawnKeyboardMallet(rayOriginPairValue);
+							evr.m_KeyboardModule.SpawnKeyboardMallet(rayOrigin);
 
 							var proxyExtras = evr.m_ProxyExtras;
 							if (proxyExtras)
@@ -203,6 +210,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
 							tester.active = proxy.active;
 							evr.m_IntersectionModule.AddTester(tester);
+
+							evr.m_HighlightModule.AddRayOriginForNode(node, rayOrigin);
 						}
 
 						evr.m_Tools.SpawnDefaultTools(proxy);
@@ -322,6 +331,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					Transform previewOrigin;
 					if (proxy.previewOrigins.TryGetValue(rayOrigin, out previewOrigin))
 						return previewOrigin;
+				}
+
+				return null;
+			}
+
+			internal Transform GetFieldGrabOriginForRayOrigin(Transform rayOrigin)
+			{
+				foreach (var proxy in m_Proxies)
+				{
+					Transform fieldGrabOrigins;
+					if (proxy.fieldGrabOrigins.TryGetValue(rayOrigin, out fieldGrabOrigins))
+						return fieldGrabOrigins;
 				}
 
 				return null;

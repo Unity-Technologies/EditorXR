@@ -6,13 +6,12 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: HighlightMaterial
-  m_Shader: {fileID: 4800000, guid: 17d79fd9a3d634a40ae219ffcf9befd4, type: 3}
-  m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
+  m_Name: DropZoneNoClip
+  m_Shader: {fileID: 4800000, guid: 225289d1a5d7d9f4d9a7f3b981bd9089, type: 3}
+  m_ShaderKeywords: _ALPHABLEND_ON _EMISSION
   m_LightmapFlags: 1
-  m_CustomRenderQueue: 10000
-  stringTagMap:
-    RenderType: Transparent
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
     m_TexEnvs:
@@ -75,6 +74,9 @@ Material:
         name: _BumpScale
       second: 1
     - first:
+        name: _ColorMask
+      second: 15
+    - first:
         name: _Cutoff
       second: 0.5
     - first:
@@ -88,16 +90,16 @@ Material:
       second: 1
     - first:
         name: _Glossiness
-      second: 1
+      second: 0
     - first:
         name: _GlossyReflections
-      second: 0
+      second: 1
     - first:
         name: _Metallic
       second: 0
     - first:
         name: _Mode
-      second: 3
+      second: 2
     - first:
         name: _OcclusionStrength
       second: 1
@@ -109,12 +111,33 @@ Material:
       second: 0
     - first:
         name: _SpecularHighlights
-      second: 0
-    - first:
-        name: _SrcBlend
       second: 1
     - first:
+        name: _SrcBlend
+      second: 5
+    - first:
+        name: _Stencil
+      second: 0
+    - first:
+        name: _StencilComp
+      second: 8
+    - first:
+        name: _StencilOp
+      second: 0
+    - first:
+        name: _StencilReadMask
+      second: 255
+    - first:
+        name: _StencilRef
+      second: 3
+    - first:
+        name: _StencilWriteMask
+      second: 255
+    - first:
         name: _UVSec
+      second: 0
+    - first:
+        name: _UseUIAlphaClip
       second: 0
     - first:
         name: _ZWrite
@@ -122,7 +145,7 @@ Material:
     m_Colors:
     - first:
         name: _Color
-      second: {r: 0, g: 0.7372549, b: 0.83137256, a: 0.141}
+      second: {r: 0.3065526, g: 0.6803559, b: 0.992647, a: 0.353}
     - first:
         name: _EmissionColor
       second: {r: 0, g: 0, b: 0, a: 1}

@@ -26,6 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		Vector3 m_OriginalConeLocalScale;
 		Coroutine m_RayVisibilityCoroutine;
 		Coroutine m_ConeVisibilityCoroutine;
+		Material m_RayMaterial;
 
 		/// <summary>
 		/// The object that is set when LockRay is called while the ray is unlocked.
@@ -136,8 +137,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			m_Tip.transform.localScale = scaledLength * m_TipStartScale;
 		}
 
+		public void SetColor(Color c)
+		{
+			m_RayMaterial.color = c;
+		}
+
 		private void Awake()
 		{
+			m_RayMaterial = MaterialUtils.GetMaterialClone(m_LineRenderer.GetComponent<MeshRenderer>());
 			m_ConeTransform = m_Cone.transform;
 			m_OriginalConeLocalScale = m_ConeTransform.localScale;
 		}
@@ -230,6 +237,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			m_ConeTransform.localScale = m_OriginalConeLocalScale;
 			m_ConeVisibilityCoroutine = null;
+		}
+
+		void OnDestroy()
+		{
+			ObjectUtils.Destroy(m_RayMaterial);
 		}
 	}
 }

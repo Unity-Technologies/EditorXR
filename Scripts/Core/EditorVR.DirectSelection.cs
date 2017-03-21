@@ -14,13 +14,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			internal IGrabObjects objectsGrabber { get; set; }
 
+			internal Dictionary<Transform, DirectSelectionData> directSelections { get { return m_DirectSelections; } }
+			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
+
 			// Local method use only -- created here to reduce garbage collection
-			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelectionResults = new Dictionary<Transform, DirectSelectionData>();
 			readonly List<ActionMapInput> m_ActiveStates = new List<ActionMapInput>();
 
 			public DirectSelection()
 			{
-				IUsesDirectSelectionMethods.getDirectSelection = GetDirectSelection;
+				IUsesDirectSelectionMethods.getDirectSelection = () => directSelections;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
@@ -74,9 +76,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return length;
 			}
 
-			internal Dictionary<Transform, DirectSelectionData> GetDirectSelection()
+			internal void UpdateDirectSelection()
 			{
-				m_DirectSelectionResults.Clear();
+				m_DirectSelections.Clear();
 				m_ActiveStates.Clear();
 
 				var directSelection = objectsGrabber;
@@ -89,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (obj && !obj.CompareTag(k_VRPlayerTag))
 					{
 						m_ActiveStates.Add(input);
-						m_DirectSelectionResults[rayOrigin] = new DirectSelectionData
+						m_DirectSelections[rayOrigin] = new DirectSelectionData
 						{
 							gameObject = obj,
 							node = deviceData.node,
@@ -111,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (go != null)
 					{
 						m_ActiveStates.Add(input);
-						m_DirectSelectionResults[rayOrigin] = new DirectSelectionData
+						m_DirectSelections[rayOrigin] = new DirectSelectionData
 						{
 							gameObject = go,
 							node = ray.Value.node,
@@ -132,8 +134,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var input = deviceData.directSelectInput;
 					input.active = m_ActiveStates.Contains(input);
 				});
-
-				return m_DirectSelectionResults;
 			}
 
 			GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, ActionMapInput input)
@@ -162,7 +162,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				// Detach the player head model so that it is not affected by its parent transform
 				if (selection.CompareTag(k_VRPlayerTag))
+				{
+					selection.hideFlags = HideFlags.None;
 					selection.transform.parent = null;
+				}
 			}
 
 			internal void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
