@@ -227,7 +227,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_FrameMaterial = MaterialUtils.GetMaterialClone(m_FrameRenderer);
 			var frameMaterialColor = m_FrameMaterial.color;
 			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
-			m_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.125f);
+			m_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.5f);
 		}
 
 		void OnDisable()
@@ -467,7 +467,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentInsetAlpha = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);
 			var targetInsetAlpha = makeSemiTransparent ? 0.25f : 1f;
 			var currentIconColor = m_IconMaterial.GetColor(k_MaterialColorProperty);
-			var targetIconColor = makeSemiTransparent ? m_SemiTransparentFrameColor * 2 : Color.white;
+			var targetIconColor = makeSemiTransparent ? m_SemiTransparentFrameColor : Color.white;
 			var currentInsetScale = m_MenuInset.localScale;
 			var targetInsetScale = makeSemiTransparent ? m_HighlightedInsetLocalScale * 4 : m_VisibleInsetLocalScale;
 			var currentIconScale = m_IconContainer.localScale;
