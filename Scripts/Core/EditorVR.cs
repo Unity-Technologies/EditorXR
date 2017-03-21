@@ -91,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR
 			public ActionMapInput alternateMenuInput;
 			public ITool currentTool;
 			public IMenu customMenu;
-			public PinnedToolButton pinnedToolButton;
+			public List<PinnedToolButton> pinnedToolButtons; // using a list in order to rely on order for positioning of visual elements
 			public PinnedToolButton selectionToolButton;
 			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
 			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();

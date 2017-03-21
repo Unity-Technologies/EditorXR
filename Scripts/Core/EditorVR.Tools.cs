@@ -85,22 +85,15 @@ namespace UnityEditor.Experimental.EditorVR
 					mainMenuActivator.hoverStarted += evrMenus.OnMainMenuActivatorHoverStarted;
 					mainMenuActivator.hoverEnded += evrMenus.OnMainMenuActivatorHoverEnded;
 
-					var pinnedToolButtonActivePosition = new Vector3(0f, 0f, -0.035f); // Active button offset from the main menu activator
-					var pinnedToolButton = evrMenus.SpawnPinnedToolButton(inputDevice);
-					deviceData.pinnedToolButton = pinnedToolButton;
-					var pinnedToolButtonTransform = pinnedToolButton.transform;
-					pinnedToolButtonTransform.SetParent(mainMenuActivator.transform, false);
-					pinnedToolButton.activePosition = pinnedToolButtonActivePosition;
-					pinnedToolButton.node = deviceData.node;
-
+					var toolButtonActivePosition = new Vector3(0f, 0f, -0.035f); // Frontmost active button offset from the main menu activator
 					var selectionToolButton = evrMenus.SpawnPinnedToolButton(inputDevice);
-					deviceData.selectionToolButton = selectionToolButton;
 					var selectionToolButtonTransform = selectionToolButton.transform;
+					deviceData.pinnedToolButtons = new List<PinnedToolButton>();
+					deviceData.selectionToolButton = selectionToolButton;
 					selectionToolButtonTransform.SetParent(mainMenuActivator.transform, false);
-					selectionToolButton.activePosition = pinnedToolButtonActivePosition;
+					selectionToolButton.activePosition = toolButtonActivePosition;
 					selectionToolButton.toolType = typeof(SelectionTool); // Selection tool is visible & persistent by default
 					selectionToolButton.node = deviceData.node;
-					//selectionToolButton.activeTool = true; // Selection tool button is always visible, and defaults as the active tool button
 
 					var alternateMenu = evrMenus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 					deviceData.alternateMenu = alternateMenu;
@@ -222,12 +215,12 @@ namespace UnityEditor.Experimental.EditorVR
 								else
 									AddPinnedToolButton(deviceData, toolType);
 
-								deviceData.pinnedToolButton.rayOrigin = rayOrigin;
+								//deviceData.pinnedToolButtons.rayOrigin = rayOrigin;
 								deviceData.selectionToolButton.rayOrigin = rayOrigin;
 							}
 						}
 
-						SetupPinnedToolButtonsForDevice(deviceData);
+						SetupPinnedToolButtonsForDevice(deviceData, rayOrigin, toolType);
 						evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
 						result = spawnTool;
 					}
@@ -243,12 +236,25 @@ namespace UnityEditor.Experimental.EditorVR
 			void AddPinnedToolButton(DeviceData deviceData, Type toolType)
 			{
 				// CHECK FOR TOOL ALREADY ADDED AS AN EXISTING PIN, RETURN THE BUTTON GRADIENT
-				deviceData.pinnedToolButton.toolType = toolType; // assign the new current tool type to the additional tool button
+				foreach (var button in deviceData.pinnedToolButtons)
+				{
+					if (button.toolType == toolType)
+						return;
+				}
 
-				//return new GradientPair();
+				var evrMenus = evr.m_Menus;
+				var pinnedToolButton = evrMenus.SpawnPinnedToolButton(deviceData.inputDevice);
+				var pinnedToolButtonTransform = pinnedToolButton.transform;
+				deviceData.pinnedToolButtons.Add(pinnedToolButton);
+				pinnedToolButtonTransform.SetParent(deviceData.mainMenuActivator.transform, false);
+				pinnedToolButton.activePosition = deviceData.selectionToolButton.activePosition;
+				pinnedToolButton.node = deviceData.node;
+				pinnedToolButton.activeTool = true;
+				pinnedToolButton.toolType = toolType; // assign/setup the new current tool type in the new tool button
+				deviceData.selectionToolButton.activeTool = false;
 			}
 
-			PinnedToolButton SetupPinnedToolButtonsForDevice(DeviceData deviceData)
+			PinnedToolButton SetupPinnedToolButtonsForDevice(DeviceData deviceData, Transform rayOrigin, Type activeToolType)
 			{
 				PinnedToolButton activeButton = null;
 
@@ -257,15 +263,26 @@ namespace UnityEditor.Experimental.EditorVR
 					Debug.LogError("<color=orange>currentToolIsSelect <--</color>");
 					activeButton = deviceData.selectionToolButton;
 					activeButton.activeTool = true;
-					deviceData.pinnedToolButton.activeTool = false; // ITERATE OVER ALL TOOL BUTTONS except for selection
+					foreach (var button in deviceData.pinnedToolButtons)
+					{
+						button.rayOrigin = rayOrigin;
+						button.activeTool = false;
+					}
 				}
 				else
 				{
 					// activeButton = ITERATE OVER ALL TOOL BUTTONS except for selection
-					activeButton = deviceData.pinnedToolButton;
 					deviceData.selectionToolButton.activeTool = false;
-					deviceData.pinnedToolButton.activeTool = true; // ITERATE OVER ALL TOOL BUTTONS except for selection
-					// Iternate over the pinnedToolButton array/list searching for the active tool
+					foreach (var button in deviceData.pinnedToolButtons)
+					{
+						button.rayOrigin = rayOrigin;
+						button.activeTool = button.toolType == activeToolType;
+
+						if (button.activeTool)
+							activeButton = button;
+					}
+					//deviceData.pinnedToolButtons.activeTool = true; // ITERATE OVER ALL TOOL BUTTONS except for selection
+					// Iternate over the pinnedToolButtons array/list searching for the active tool
 				}
 
 				Debug.LogError("<color=orange>deviceDate.CurrentTool : </color>" + deviceData.currentTool.ToString() + "  - selection is current tool : " + (activeButton == deviceData.selectionToolButton));
@@ -404,7 +421,7 @@ namespace UnityEditor.Experimental.EditorVR
 				{
 					if (deviceData.rayOrigin == rayOrigin) // enable pinned tool preview on the opposite (handed) device
 					{
-						pinnedToolButton = deviceData.selectionToolButton.activeTool ? deviceData.selectionToolButton : deviceData.pinnedToolButton;
+						pinnedToolButton = deviceData.selectionToolButton.activeTool ? deviceData.selectionToolButton : deviceData.pinnedToolButtons.FirstOrDefault( (x) => x.activeTool);
 						pinnedToolButton.previewToolType = toolType;
 					}
 				});
