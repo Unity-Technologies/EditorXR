@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class Interfaces : Nested
 		{
-			const byte k_MinStencilRef = 2;
+			const byte k_MinStencilRef = 5;
 
 			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
@@ -183,7 +183,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var directSelection = obj as IUsesDirectSelection;
 				if (directSelection != null)
-					directSelection.getDirectSelection = evrDirectSelection.GetDirectSelection;
+					directSelection.getDirectSelection = () => evrDirectSelection.directSelections;
 
 				var grabObjects = obj as IGrabObjects;
 				if (grabObjects != null)
@@ -325,6 +325,14 @@ namespace UnityEditor.Experimental.EditorVR
 					linkedObject.isSharedUpdater = IsSharedUpdater;
 				}
 
+				var isHoveringOverUI = obj as IIsHoveringOverUI;
+				if (isHoveringOverUI != null)
+					isHoveringOverUI.isHoveringOverUI = evr.m_InputModule.IsHoveringOverUI;
+
+				var customHighlight = obj as ICustomHighlight;
+				if (customHighlight != null)
+					evrHighlightModule.customHighlight += customHighlight.OnHighlight;
+
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
 				if (forEachRayOrigin != null && IsSameAssembly<IForEachRayOrigin>(obj))
@@ -382,6 +390,10 @@ namespace UnityEditor.Experimental.EditorVR
 				var manipulatorVisiblity = obj as IManipulatorVisibility;
 				if (manipulatorVisiblity != null)
 					evr.m_UI.manipulatorVisibilities.Remove(manipulatorVisiblity);
+
+				var customHighlight = obj as ICustomHighlight;
+				if (customHighlight != null)
+					evr.m_HighlightModule.customHighlight -= customHighlight.OnHighlight;
 			}
 
 			byte RequestStencilRef()
