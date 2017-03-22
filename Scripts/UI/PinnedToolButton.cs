@@ -45,7 +45,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					{
 						tooltipText = "Selection Tool (cannot be closed)";
 						gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
-						activeTool = true;
 					}
 					else
 					{
@@ -68,43 +67,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		Type m_ToolType;
 
-		bool activeTool // use this externally to make visible & move a button to the active/inactive position
-		{
-			get { return m_ActiveTool; }
-			set
-			{
-				//if (value == m_ActiveTool)
-					//return;
-
-				m_ActiveTool = value;
-
-				//if (m_ToolType != null)
-					//Debug.LogError(m_ToolType.ToString() + " : <color=purple>PinnedToolButton ACTIVE : </color>" + value);
-
-				if (m_ActiveTool)
-				{
-					if (m_ToolType == null)
-					{
-						//this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
-						gameObject.SetActive(m_ActiveTool);
-					}
-
-					// Perform re-position coroutine here
-					//order = 0;
-					//this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
-				}
-				else
-				{
-					//this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
-					//gameObject.SetActive(false);
-					//transform.localPosition = m_InactivePosition;
-				}
-
-				SetButtonGradients(m_ActiveTool);
-			}
-		}
-		bool m_ActiveTool;
-
 		public int order
 		{
 			get { return m_Order; }
@@ -112,10 +74,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				m_Order = value; // Position of this button in relation to other pinned tool buttons
 				//if (m_Order == 0)
-				var zerothPosition = m_Order == 0;
-				activeTool = zerothPosition;
 				m_InactivePosition = s_ActivePosition * ++value; // Additional offset for the button when it is visible and inactive
-				transform.localPosition = zerothPosition ? activePosition : m_InactivePosition;
+				//transform.localPosition = activeTool ? activePosition : m_InactivePosition;
+				SetButtonGradients(activeTool);
+				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
+
 				Debug.LogError(m_ToolType.ToString() + " : <color=purple>Order : </color>" + m_Order + " / " + value);
 			}
 		}
@@ -197,6 +160,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); }
 		}
 
+		bool activeTool { get { return m_Order == 0; } }
 		Coroutine m_PositionCoroutine;
 		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
 
@@ -265,7 +229,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			var duration = 0f;
 			var currentPosition = transform.localPosition;
-			var targetPosition = m_ActiveTool ? activePosition : m_InactivePosition;
+			var targetPosition = activeTool ? activePosition : m_InactivePosition;
 			while (duration < 1)
 			{
 				duration += Time.unscaledDeltaTime * 3;
