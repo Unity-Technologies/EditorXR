@@ -67,7 +67,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		class SnappingState
 		{
 			public Vector3 currentPosition;
-			public Bounds localBounds;
+			public Bounds rotatedBounds;
+			public Bounds identityBounds;
 			public bool groundSnapping;
 			public bool faceSnapping;
 			public Vector3 faceSnappingStartPosition;
@@ -103,12 +104,28 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				SnappingState state;
 				if (!m_SnappingStates.TryGetValue(rayOrigin, out state))
 				{
+					float angle;
+					Vector3 axis;
+					rotation.ToAngleAxis(out angle, out axis);
+					foreach (var go in objects)
+					{
+						go.transform.RotateAround(position, axis, -angle);
+					}
+					var identityBounds = ObjectUtils.GetBounds(objects);
+
+					foreach (var go in objects)
+					{
+						go.transform.RotateAround(position, axis, angle);
+					}
+
 					var totalBounds = ObjectUtils.GetBounds(objects);
 					totalBounds.center -= position;
+					identityBounds.center -= position;
 					state = new SnappingState
 					{
 						currentPosition = position,
-						localBounds = totalBounds
+						rotatedBounds = totalBounds,
+						identityBounds = identityBounds
 					};
 					m_SnappingStates[rayOrigin] = state;
 				}
@@ -117,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var statePosition = state.currentPosition;
 
 				var camera = CameraUtils.GetMainCamera();
-					var distToCamera = Mathf.Max(1, Mathf.Log(Vector3.Distance(camera.transform.position, statePosition)));
+				var distToCamera = Mathf.Max(1, Mathf.Log(Vector3.Distance(camera.transform.position, statePosition)));
 
 				if (faceSnapping && !constrained)
 				{
@@ -126,8 +143,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					if (raycast(ray, out hit, k_MaxRayLength))
 					{
 						state.faceSnapping = true;
+						state.groundSnapping = false;
 						rotation = Quaternion.LookRotation(hit.normal) * Quaternion.AngleAxis(90, Vector3.right);
-						position = hit.point;
+						if (pivotSnapping)
+							position = hit.point;
+						else
+						{
+							var bounds = state.identityBounds;
+							var offset = bounds.center.y - bounds.extents.y;
+							position = hit.point + rotation * Vector3.down * offset;
+						}
+
 						state.faceSnappingStartPosition = position;
 						return;
 					}
@@ -151,8 +177,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					var groundSnapMin = k_GroundSnapMin * distToCamera;
 					var groundSnapMax = k_GroundSnapMax * distToCamera;
 
-					var bounds = state.localBounds;
+					var bounds = state.rotatedBounds;
 					var offset = bounds.center.y - bounds.extents.y;
+
 					if (!pivotSnapping)
 						diffGround = Mathf.Abs(statePosition.y + offset - k_GroundHeight);
 
@@ -169,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						else
 							statePosition.y = k_GroundHeight - offset;
 
-
+						position = statePosition;
 						return;
 					}
 				}
