@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	[MainMenuItem("Cube", "Create", "Create cubes in the scene")]
 	//[MainMenuItem(false)]
-	sealed class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IActions, IUsesSpatialHash
+	sealed class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IUsesSpatialHash
 	{
 		class CubeToolAction : IAction
 		{
