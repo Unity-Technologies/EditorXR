@@ -179,7 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				if (m_OpaqueReveal != value)
 				{
-					m_OpaqueReveal = true;
+					m_OpaqueReveal = value;
 					m_OpaqueRevealCurrentDuration = 0f;
 				}
 			}
