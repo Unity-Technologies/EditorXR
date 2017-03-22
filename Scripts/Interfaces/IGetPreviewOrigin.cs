@@ -9,10 +9,22 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IGetPreviewOrigin
 	{
+	}
+
+	public static class IGetPreviewOriginMethods
+	{
+		internal static Func<Transform, Transform> getPreviewOriginForRayOrigin { get; set; }
+
 		/// <summary>
 		/// Get the preview transform attached to the given rayOrigin
 		/// </summary>
-		Func<Transform, Transform> getPreviewOriginForRayOrigin { set; }
+		public static Transform GetPreviewOriginForRayOrigin(this IGetPreviewOrigin obj, Transform rayOrigin)
+		{
+			if (getPreviewOriginForRayOrigin != null)
+				return getPreviewOriginForRayOrigin(rayOrigin);
+
+			return null;
+		}
 	}
 }
 #endif

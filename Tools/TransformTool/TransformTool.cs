@@ -10,7 +10,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
-		IGrabObjects, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility
+		IGrabObjects, ICustomRay, IProcessInput, ISelectObject, IManipulatorVisibility
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -149,15 +149,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 		readonly TransformAction m_ManipulatorToggleAction = new TransformAction();
 
-		public Func<Transform, bool> isOverShoulder { private get; set; }
-		public Action<GameObject> deleteSceneObject { private get; set; }
-
-		public Func<GameObject, Transform, bool> canGrabObject { private get; set; }
 		public event Action<GameObject> objectGrabbed;
 		public event Action<Transform[], Transform> objectsDropped;
-
-		public GetSelectionCandidateDelegate getSelectionCandidate { private get; set; }
-		public SelectObjectDelegate selectObject { private get; set; }
 
 		public bool manipulatorVisible { private get; set; }
 
@@ -224,7 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var selection = kvp.Value;
 					var hoveredObject = selection.gameObject;
 
-					var selectionCandidate = getSelectionCandidate(hoveredObject, true);
+					var selectionCandidate = this.GetSelectionCandidate(hoveredObject, true);
 
 					// Can't select this object (it might be locked or static)
 					if (hoveredObject && !selectionCandidate)
@@ -233,7 +226,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (selectionCandidate)
 						hoveredObject = selectionCandidate;
 
-					if (!canGrabObject(hoveredObject, rayOrigin))
+					if (!this.CanGrabObject(hoveredObject, rayOrigin))
 						continue;
 
 					var directSelectInput = (DirectSelectInput)selection.input;
@@ -243,7 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						// Only add to selection, don't remove
 						if (!Selection.objects.Contains(hoveredObject))
-							selectObject(hoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
+							this.SelectObject(hoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
 
 						consumeControl(directSelectInput.select);
 

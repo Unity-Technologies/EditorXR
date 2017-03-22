@@ -82,10 +82,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Transform cameraRig { private get; set; }
 
-		public Func<float> getViewerScale { private get; set; }
-
 		public List<ILinkedObject> linkedObjects { private get; set; }
-		public Func<ILinkedObject, bool> isSharedUpdater { private get; set; }
 
 		private void Start()
 		{
@@ -137,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_Grip = blinkInput.grip.isHeld ? blinkInput.grip : null;
 			m_Thumb = blinkInput.thumb.isHeld ? blinkInput.thumb : null;
 
-			if (isSharedUpdater(this))
+			if (this.IsSharedUpdater(this))
 			{
 				if (m_Grip != null)
 				{
@@ -170,7 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 								if (!m_Scaling)
 								{
-									m_StartScale = getViewerScale();
+									m_StartScale = this.GetViewerScale();
 									m_StartDistance = distance;
 									m_StartMidPoint = pivotYaw * midPoint * m_StartScale;
 									m_StartPosition = cameraRig.position;
@@ -334,7 +331,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (Mathf.Abs(inputValue) > threshold)
 				speed = k_FastMoveSpeed * Mathf.Sign(inputValue);
 
-			speed *= getViewerScale();
+			speed *= this.GetViewerScale();
 
 			cameraRig.Translate(direction * speed * Time.unscaledDeltaTime, Space.World);
 		}

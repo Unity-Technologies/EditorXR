@@ -24,9 +24,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		KeyboardUI m_NumericKeyboard;
 		KeyboardUI m_StandardKeyboard;
 
-		public Action<ForEachRayOriginCallback> forEachRayOrigin { private get; set; }
-		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
-
 		public KeyboardUI SpawnNumericKeyboard()
 		{
 			if (m_StandardKeyboard != null)
@@ -39,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var smoothMotions = m_NumericKeyboard.GetComponentsInChildren<SmoothMotion>(true);
 				foreach (var smoothMotion in smoothMotions)
 				{
-					connectInterfaces(smoothMotion);
+					this.ConnectInterfaces(smoothMotion);
 				}
 			}
 
@@ -58,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var smoothMotions = m_StandardKeyboard.GetComponentsInChildren<SmoothMotion>(true);
 				foreach (var smoothMotion in smoothMotions)
 				{
-					connectInterfaces(smoothMotion);
+					this.ConnectInterfaces(smoothMotion);
 				}
 			}
 
@@ -77,7 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void UpdateKeyboardMallets()
 		{
-			forEachRayOrigin(rayOrigin =>
+			this.ForEachRayOrigin(rayOrigin =>
 			{
 				var malletVisible = true;
 				var numericKeyboardNull = false;

@@ -1,27 +1,16 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class TooltipModuleConnector : Nested, IInterfaceConnector
+		class TooltipModuleConnector : Nested, ILateBindInterfaceMethods<TooltipModule>
 		{
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			public void LateBindInterfaceMethods(TooltipModule provider)
 			{
-				var tooltipModule = evr.m_TooltipModule;
-
-				var usesTooltip = obj as ISetTooltipVisibility;
-				if (usesTooltip != null)
-				{
-					usesTooltip.showTooltip = tooltipModule.ShowTooltip;
-					usesTooltip.hideTooltip = tooltipModule.HideTooltip;
-				}
-			}
-
-			public void DisconnectInterface(object obj)
-			{
+				ISetTooltipVisibilityMethods.showTooltip = provider.ShowTooltip;
+				ISetTooltipVisibilityMethods.hideTooltip = provider.HideTooltip;
 			}
 		}
 	}
-
 }

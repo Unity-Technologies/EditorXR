@@ -1,18 +1,20 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class HighlightModuleConnector : Nested, IInterfaceConnector
+		class HighlightModuleConnector : Nested, IInterfaceConnector, ILateBindInterfaceMethods<HighlightModule>
 		{
+			public void LateBindInterfaceMethods(HighlightModule provider)
+			{
+				ISetHighlightMethods.setHighlight = provider.SetHighlight;
+			}
+
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
 				var evrHighlightModule = evr.m_HighlightModule;
-
-				var highlight = obj as ISetHighlight;
-				if (highlight != null)
-					highlight.setHighlight = evrHighlightModule.SetHighlight;
 
 				var customHighlight = obj as ICustomHighlight;
 				if (customHighlight != null)
@@ -29,5 +31,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 	}
-
 }

@@ -116,6 +116,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				AddNestedModule(type);
 			}
+			LateBindNestedModules(nestedClassTypes);
 
 			m_DirectSelection = GetNestedModule<DirectSelection>();
 			m_Menus = GetNestedModule<Menus>();
@@ -347,6 +348,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		T AddModule<T>() where T : Component
 		{
 			T module = ObjectUtils.AddComponent<T>(gameObject);
+
+			foreach (var nested in m_NestedModules.Values)
+			{
+				var lateBinding = nested as ILateBindInterfaceMethods<T>;
+				if (lateBinding != null)
+					lateBinding.LateBindInterfaceMethods(module);
+			}
+
 			m_Interfaces.ConnectInterfaces(module);
 			return module;
 		}
@@ -368,7 +377,37 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				m_NestedModules.Add(type, nested);
 			}
+
 			return nested;
+		}
+
+		void LateBindNestedModules(IEnumerable<Type> types)
+		{
+			foreach (var type in types)
+			{
+				var lateBindings = type.GetInterfaces().Where(i =>
+					i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ILateBindInterfaceMethods<>));
+
+				Nested nestedModule;
+				if (m_NestedModules.TryGetValue(type, out nestedModule))
+				{
+					foreach (var lateBinding in lateBindings)
+					{
+						var dependencyType = lateBinding.GetGenericArguments().First();
+
+						Nested dependency = null;
+						if (m_NestedModules.TryGetValue(dependencyType, out dependency))
+						{
+							var map = type.GetInterfaceMap(lateBinding);
+							if (map.InterfaceMethods.Length == 1)
+							{
+								var tm = map.TargetMethods[0];
+								tm.Invoke(nestedModule, new[] { dependency });
+							}
+						}
+					}
+				}
+			}
 		}
 
 		static GameObject GetGroupRoot(GameObject hoveredObject)

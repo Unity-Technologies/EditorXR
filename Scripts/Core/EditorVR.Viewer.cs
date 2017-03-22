@@ -12,27 +12,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			const float k_CameraRigTransitionTime = 0.75f;
 
+			public Viewer()
+			{
+				IMoveCameraRigMethods.moveCameraRig = MoveCameraRig;
+				IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
+				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
+			}
+
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
 				var locomotion = obj as ILocomotor;
 				if (locomotion != null)
 					locomotion.cameraRig = VRView.cameraRig;
 
-				var usesViewerBody = obj as IUsesViewerBody;
-				if (usesViewerBody != null)
-					usesViewerBody.isOverShoulder = IsOverShoulder;
-
 				var usesCameraRig = obj as IUsesCameraRig;
 				if (usesCameraRig != null)
 					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
-
-				var moveCameraRig = obj as IMoveCameraRig;
-				if (moveCameraRig != null)
-					moveCameraRig.moveCameraRig = MoveCameraRig;
-
-				var usesViewerScale = obj as IUsesViewerScale;
-				if (usesViewerScale != null)
-					usesViewerScale.getViewerScale = GetViewerScale;
 			}
 
 			public void DisconnectInterface(object obj)

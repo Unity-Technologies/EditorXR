@@ -25,9 +25,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
 #endif
 
-		public Action<GameObject, bool> setLocked { private get; set; }
-		public Func<GameObject, bool> isLocked { private get; set; }
-
 		public void Setup(SpatialHash<Renderer> hash)
 		{
 			m_SpatialHash = hash;
@@ -76,7 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 								return true;
 
 							// Ignore locked objects
-							if (isLocked(obj.gameObject))
+							if (this.IsLocked(obj.gameObject))
 								return true;
 
 							// Bounds check

@@ -23,6 +23,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public DirectSelection()
 			{
 				IUsesDirectSelectionMethods.getDirectSelection = () => directSelections;
+
+				IGrabObjectsMethods.canGrabObject = CanGrabObject;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
@@ -30,11 +32,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var grabObjects = obj as IGrabObjects;
 				if (grabObjects != null)
 				{
-					grabObjects.canGrabObject = CanGrabObject;
 					grabObjects.objectGrabbed += OnObjectGrabbed;
 					grabObjects.objectsDropped += OnObjectsDropped;
 				}
-
 			}
 
 			public void DisconnectInterface(object obj)

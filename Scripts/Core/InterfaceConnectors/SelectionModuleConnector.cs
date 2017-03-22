@@ -1,25 +1,23 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class SelectionModuleConnector : Nested, IInterfaceConnector
+		class SelectionModuleConnector : Nested, IInterfaceConnector, ILateBindInterfaceMethods<SelectionModule>
 		{
+			public void LateBindInterfaceMethods(SelectionModule provider)
+			{
+				ISelectObjectMethods.getSelectionCandidate = provider.GetSelectionCandidate;
+				ISelectObjectMethods.selectObject = provider.SelectObject;
+			}
+
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var evrSelectionModule = evr.m_SelectionModule;
-
 				var selectionChanged = obj as ISelectionChanged;
 				if (selectionChanged != null)
 					evr.m_SelectionChanged += selectionChanged.OnSelectionChanged;
-
-				var selectObject = obj as ISelectObject;
-				if (selectObject != null)
-				{
-					selectObject.getSelectionCandidate = evrSelectionModule.GetSelectionCandidate;
-					selectObject.selectObject = evrSelectionModule.SelectObject;
-				}
 			}
 
 			public void DisconnectInterface(object obj)
@@ -30,5 +28,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 	}
-
 }

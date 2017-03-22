@@ -28,14 +28,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public Tools()
 			{
 				allTools = ObjectUtils.GetImplementationsOfInterface(typeof(ITool)).ToList();
+
+				ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
+				ISelectToolMethods.selectTool = SelectTool;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var selectTool = obj as ISelectTool;
-				if (selectTool != null)
-					selectTool.selectTool = SelectTool;
-
 				var linkedObject = obj as ILinkedObject;
 				if (linkedObject != null)
 				{
@@ -49,7 +48,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					linkedObjectList.Add(linkedObject);
 					linkedObject.linkedObjects = linkedObjectList;
-					linkedObject.isSharedUpdater = IsSharedUpdater;
 				}
 			}
 

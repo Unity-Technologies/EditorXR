@@ -1,27 +1,17 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class LockModuleConnector : Nested, IInterfaceConnector
+		class LockModuleConnector : Nested, ILateBindInterfaceMethods<LockModule>
 		{
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			public void LateBindInterfaceMethods(LockModule provider)
 			{
-				var evrLockModule = evr.m_LockModule;
-
-				var locking = obj as IUsesGameObjectLocking;
-				if (locking != null)
-				{
-					locking.setLocked = evrLockModule.SetLocked;
-					locking.isLocked = evrLockModule.IsLocked;
-				}
-			}
-
-			public void DisconnectInterface(object obj)
-			{
+				IUsesGameObjectLockingMethods.setLocked = provider.SetLocked;
+				IUsesGameObjectLockingMethods.isLocked = provider.IsLocked;
 			}
 		}
 	}
-
 }

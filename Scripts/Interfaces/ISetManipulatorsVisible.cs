@@ -8,10 +8,20 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface ISetManipulatorsVisible
 	{
+	}
+
+	public static class ISetManipulatorsVisibleMethods
+	{
+		internal static Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { get; set; }
+
 		/// <summary>
 		/// Show or hide the manipulator(s)
 		/// </summary>
-		Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { set; }
+		public static void SetManipulatorsVisible(this ISetManipulatorsVisible obj, ISetManipulatorsVisible requester, bool visibility)
+		{
+			if (setManipulatorsVisible != null)
+				setManipulatorsVisible(requester, visibility);
+		}
 	}
 }
 #endif

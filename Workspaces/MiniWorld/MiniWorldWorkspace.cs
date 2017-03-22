@@ -87,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			resetUI.resetButton.onClick.AddListener(ResetChessboard);
 			foreach (var mb in resetUI.GetComponentsInChildren<MonoBehaviour>())
 			{
-				connectInterfaces(mb);
+				this.ConnectInterfaces(mb);
 			}
 
 			var parent = m_WorkspaceUI.frontPanel.parent;
@@ -119,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(k_InitReferenceScale);
 			foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
 			{
-				connectInterfaces(mb);
+				this.ConnectInterfaces(mb);
 			}
 
 			var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();

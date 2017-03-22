@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			preventLeftRightResize = true;
 			dynamicFaceAdjustment = false;
 
-			m_ProfilerWindow = instantiateUI(m_ProfilerWindowPrefab).transform;
+			m_ProfilerWindow = this.InstantiateUI(m_ProfilerWindowPrefab).transform;
 			m_ProfilerWindow.SetParent(m_WorkspaceUI.topFaceContainer, false);
 			m_ProfilerWindow.localPosition = new Vector3(0f, -0.007f, -0.5f);
 			m_ProfilerWindow.localRotation = Quaternion.Euler(90f, 0f, 0f);

@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		class UI : Nested, IInterfaceConnector
 		{
-			const byte k_MinStencilRef = 2;
+			const byte k_MinStencilRef = 5;
 
 			byte stencilRef
 			{
@@ -36,19 +36,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal Camera eventCamera { get; private set; }
 
+			public UI()
+			{
+				IInstantiateUIMethods.instantiateUI = InstantiateUI;
+				IRequestStencilRefMethods.requestStencilRef = RequestStencilRef;
+				ISetManipulatorsVisibleMethods.setManipulatorsVisible = SetManipulatorsVisible;
+			}
+
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var instantiateUI = obj as IInstantiateUI;
-				if (instantiateUI != null)
-					instantiateUI.instantiateUI = InstantiateUI;
-
 				var manipulatorVisiblity = obj as IManipulatorVisibility;
 				if (manipulatorVisiblity != null)
 					m_ManipulatorVisibilities.Add(manipulatorVisiblity);
-
-				var setManipulatorsVisible = obj as ISetManipulatorsVisible;
-				if (setManipulatorsVisible != null)
-					setManipulatorsVisible.setManipulatorsVisible = SetManipulatorsVisible;
 
 				var usesStencilRef = obj as IUsesStencilRef;
 				if (usesStencilRef != null)
@@ -70,10 +69,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					usesStencilRef.stencilRef = stencilRef ?? RequestStencilRef();
 				}
-
-				var requestStencilRef = obj as IRequestStencilRef;
-				if (requestStencilRef != null)
-					requestStencilRef.requestStencilRef = RequestStencilRef;
 			}
 
 			public void DisconnectInterface(object obj)

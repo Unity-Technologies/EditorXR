@@ -29,7 +29,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 			return null;
 		}
-
 	}
 }
 #endif

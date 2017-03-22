@@ -1,24 +1,16 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class MultipleRayInputModuleConnector : Nested, IInterfaceConnector
+		class MultipleRayInputModuleConnector : Nested, ILateBindInterfaceMethods<MultipleRayInputModule>
 		{
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			public void LateBindInterfaceMethods(MultipleRayInputModule provider)
 			{
-				var evrInputModule = evr.m_InputModule;
-
-				var isHoveringOverUI = obj as IIsHoveringOverUI;
-				if (isHoveringOverUI != null)
-					isHoveringOverUI.isHoveringOverUI = evrInputModule.IsHoveringOverUI;
-			}
-
-			public void DisconnectInterface(object obj)
-			{
+				IIsHoveringOverUIMethods.isHoveringOverUI = provider.IsHoveringOverUI;
 			}
 		}
 	}
-
 }

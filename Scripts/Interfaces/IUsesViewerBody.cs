@@ -9,10 +9,22 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IUsesViewerBody
 	{
+	}
+
+	public static class IUsesViewerBodyMethods
+	{
+		internal static Func<Transform, bool> isOverShoulder { get; set; }
+
 		/// <summary>
 		/// Returns whether the specified transform is over the viewer's shoulders and behind the head
 		/// </summary>
-		Func<Transform, bool> isOverShoulder { set; }
+		public static bool IsOverShoulder(this IUsesViewerBody obj, Transform transform)
+		{
+			if (isOverShoulder != null)
+				return isOverShoulder(transform);
+
+			return false;
+		}
 	}
 }
 #endif

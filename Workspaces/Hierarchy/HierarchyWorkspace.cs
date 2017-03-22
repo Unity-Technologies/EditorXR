@@ -56,8 +56,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		List<string> m_FilterList;
 
-		public MoveCameraRigDelegate moveCameraRig { private get; set; }
-
 		public string searchQuery { get { return m_FilterUI.searchQuery; } }
 
 		public override void Setup()
@@ -75,21 +73,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
 			foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
 			{
-				connectInterfaces(mb);
+				this.ConnectInterfaces(mb);
 			}
 			m_FilterUI.filterList = m_FilterList;
 
 			var focusUI = ObjectUtils.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
 			foreach (var mb in focusUI.GetComponentsInChildren<MonoBehaviour>())
 			{
-				connectInterfaces(mb);
+				this.ConnectInterfaces(mb);
 			}
 			focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
 
 			var createEmptyUI = ObjectUtils.Instantiate(m_CreateEmptyPrefab, m_WorkspaceUI.frontPanel, false);
 			foreach (var mb in createEmptyUI.GetComponentsInChildren<MonoBehaviour>())
 			{
-				connectInterfaces(mb);
+				this.ConnectInterfaces(mb);
 			}
 			createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
 
@@ -97,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			listView.selectRow = SelectRow;
 			listView.matchesFilter = this.MatchesFilter;
 			listView.getSearchQuery = () => searchQuery;
-			connectInterfaces(listView);
+			this.ConnectInterfaces(listView);
 
 			var scrollHandle = m_HierarchyUI.scrollHandle;
 			scrollHandle.dragStarted += OnScrollDragStarted;
@@ -156,7 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			m_HierarchyUI.listView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / getViewerScale();
+			m_HierarchyUI.listView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / this.GetViewerScale();
 		}
 
 		void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -213,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var cameraDiff = mainCamera.position - CameraUtils.GetCameraRig().position;
 			cameraDiff.y = 0;
 
-			moveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
+			this.MoveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
 		}
 
 		static void CreateEmptyGameObject()

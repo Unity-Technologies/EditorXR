@@ -1,28 +1,17 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class SceneObjectModuleConnector : Nested, IInterfaceConnector
+		class SceneObjectModuleConnector : Nested, ILateBindInterfaceMethods<SceneObjectModule>
 		{
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			public void LateBindInterfaceMethods(SceneObjectModule provider)
 			{
-				var evrSceneObjectModule = evr.m_SceneObjectModule;
-
-				var placeObjects = obj as IPlaceObject;
-				if (placeObjects != null)
-					placeObjects.placeObject = evrSceneObjectModule.PlaceSceneObject;
-
-				var deleteSceneObjects = obj as IDeleteSceneObject;
-				if (deleteSceneObjects != null)
-					deleteSceneObjects.deleteSceneObject = evrSceneObjectModule.DeleteSceneObject;
-			}
-
-			public void DisconnectInterface(object obj)
-			{
+				IDeleteSceneObjectMethods.deleteSceneObject = provider.DeleteSceneObject;
+				IPlaceSceneObjectMethods.placeSceneObject = provider.PlaceSceneObject;
 			}
 		}
 	}
-
 }

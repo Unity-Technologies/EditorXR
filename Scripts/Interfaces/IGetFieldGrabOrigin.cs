@@ -9,10 +9,22 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IGetFieldGrabOrigin
 	{
+	}
+
+	public static class IGetFieldGrabOriginMethods
+	{
+		internal static Func<Transform, Transform> getFieldGrabOriginForRayOrigin { get; set; }
+
 		/// <summary>
 		/// Get the field grab transform attached to the given rayOrigin
 		/// </summary>
-		Func<Transform, Transform> getFieldGrabOriginForRayOrigin { set; }
+		public static Transform GetFieldGrabOriginForRayOrigin(this IGetFieldGrabOrigin obj, Transform rayOrigin)
+		{
+			if (getFieldGrabOriginForRayOrigin != null)
+				return getFieldGrabOriginForRayOrigin(rayOrigin);
+
+			return null;
+		}
 	}
 }
 #endif

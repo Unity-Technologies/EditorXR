@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceObject, IUsesSpatialHash, IUsesViewerBody
+	sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash, IUsesViewerBody
 	{
 		const float k_PreviewDuration = 0.1f;
 		const float k_MaxPreviewScale = 0.2f;
@@ -55,9 +55,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Coroutine m_VisibilityCoroutine;
 
 		Material m_SphereMaterial;
-
-		public Action<GameObject> addToSpatialHash { private get; set; }
-		public Action<GameObject> removeFromSpatialHash { private get; set; }
 
 		public GameObject icon
 		{
@@ -149,8 +146,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		public Action<Transform, Vector3> placeObject { private get; set; }
-		public Func<Transform, bool> isOverShoulder { private get; set; }
 		public float scaleFactor { private get; set; }
 
 		public override void Setup(AssetData listData)
@@ -333,11 +328,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
-			if (!isOverShoulder(eventData.rayOrigin))
+			if (!this.IsOverShoulder(eventData.rayOrigin))
 			{
 				if (gridItem.m_PreviewObjectTransform)
 				{
-					placeObject(gridItem.m_PreviewObjectTransform, m_PreviewPrefabScale);
+					this.PlaceSceneObject(gridItem.m_PreviewObjectTransform, m_PreviewPrefabScale);
 				}
 				else
 				{
@@ -354,7 +349,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 							var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
 #endif
 
-							addToSpatialHash(go);
+							this.AddToSpatialHash(go);
 							break;
 					}
 				}

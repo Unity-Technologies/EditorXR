@@ -11,11 +11,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		class Interfaces : Nested
 		{
-			const byte k_MinStencilRef = 5;
 			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
-			event ConnectInterfacesDelegate m_ConnectInterfaces;
+			event IConnectInterfacesMethods.ConnectInterfacesDelegate m_ConnectInterfaces;
 			event Action<object> m_DisconnectInterfaces;
+
+			public Interfaces()
+			{
+				IConnectInterfacesMethods.connectInterfaces = ConnectInterfaces;
+			}
 
 			internal void AttachInterfaceConnectors(object obj)
 			{
@@ -41,10 +45,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				if (!m_ConnectedInterfaces.Add(obj))
 					return;
-
-				var connectInterfaces = obj as IConnectInterfaces;
-				if (connectInterfaces != null)
-					connectInterfaces.connectInterfaces = ConnectInterfaces;
 
 				if (m_ConnectedInterfaces != null)
 					m_ConnectInterfaces(obj, rayOrigin);

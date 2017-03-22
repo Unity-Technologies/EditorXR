@@ -13,10 +13,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public Func<Transform, Vector3, bool> shouldPlaceObject;
 
-		public Action<GameObject> addToSpatialHash { private get; set; }
-		public Action<GameObject> removeFromSpatialHash { private get; set; }
-
-
 		public void PlaceSceneObject(Transform obj, Vector3 targetScale)
 		{
 			if (shouldPlaceObject == null || shouldPlaceObject(obj, targetScale))
@@ -25,14 +21,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void DeleteSceneObject(GameObject sceneObject)
 		{
-			removeFromSpatialHash(sceneObject);
+			this.RemoveFromSpatialHash(sceneObject);
 			ObjectUtils.Destroy(sceneObject);
 		}
 
 		IEnumerator PlaceSceneObjectCoroutine(Transform obj, Vector3 targetScale)
 		{
 			// Don't let us direct select while placing
-			removeFromSpatialHash(obj.gameObject);
+			this.RemoveFromSpatialHash(obj.gameObject);
 
 			float start = Time.realtimeSinceStartup;
 			var currTime = 0f;
@@ -74,7 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			obj.localScale = targetScale;
 			Selection.activeGameObject = obj.gameObject;
 
-			addToSpatialHash(obj.gameObject);
+			this.AddToSpatialHash(obj.gameObject);
 		}
 	}
 }

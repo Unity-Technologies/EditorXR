@@ -9,10 +9,20 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IDeleteSceneObject
 	{
+	}
+
+	public static class IDeleteSceneObjectMethods
+	{
+		internal static Action<GameObject> deleteSceneObject { get; set; }
+
 		/// <summary>
 		/// Destroy the given game object and remove it from the spatial hash
 		/// </summary>
-		Action<GameObject> deleteSceneObject { set; }
+		public static void DeleteSceneObject(this IDeleteSceneObject obj, GameObject go)
+		{
+			if (deleteSceneObject!= null)
+				deleteSceneObject(go);
+		}
 	}
 }
 #endif

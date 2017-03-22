@@ -1,27 +1,17 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class SpatialHashModuleConnector : Nested, IInterfaceConnector
+		class SpatialHashModuleConnector : Nested, ILateBindInterfaceMethods<SpatialHashModule>
 		{
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			public void LateBindInterfaceMethods(SpatialHashModule provider)
 			{
-				var evrSpatialHashModule = evr.m_SpatialHashModule;
-
-				var spatialHash = obj as IUsesSpatialHash;
-				if (spatialHash != null)
-				{
-					spatialHash.addToSpatialHash = evrSpatialHashModule.AddObject;
-					spatialHash.removeFromSpatialHash = evrSpatialHashModule.RemoveObject;
-				}
-			}
-
-			public void DisconnectInterface(object obj)
-			{
+				IUsesSpatialHashMethods.addToSpatialHash = provider.AddObject;
+				IUsesSpatialHashMethods.removeFromSpatialHash = provider.RemoveObject;
 			}
 		}
 	}
-
 }

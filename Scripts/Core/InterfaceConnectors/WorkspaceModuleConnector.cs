@@ -1,24 +1,16 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class WorkspaceModuleConnector : Nested, IInterfaceConnector
+		class WorkspaceModuleConnector : Nested, ILateBindInterfaceMethods<WorkspaceModule>
 		{
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			public void LateBindInterfaceMethods(WorkspaceModule provider)
 			{
-				var evrWorkspaceModule = evr.m_WorkspaceModule;
-
-				var createWorkspace = obj as ICreateWorkspace;
-				if (createWorkspace != null)
-					createWorkspace.createWorkspace = evrWorkspaceModule.CreateWorkspace;
-			}
-
-			public void DisconnectInterface(object obj)
-			{
+				ICreateWorkspaceMethods.createWorkspace = provider.CreateWorkspace;
 			}
 		}
 	}
-
 }

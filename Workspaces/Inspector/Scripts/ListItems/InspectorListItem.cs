@@ -44,10 +44,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public bool setup { get; set; }
 
-		public SetHighlightDelegate setHighlight { private get; set; }
-
-		public Func<Transform, Transform> getFieldGrabOriginForRayOrigin { get; set; }
-
 		public Action<int> toggleExpanded { private get; set; }
 
 		protected override bool singleClickDrag
@@ -173,12 +169,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected virtual void OnDropHoverStarted(BaseHandle handle)
 		{
-			setHighlight(handle.gameObject, true, material: m_DropHighlightMaterial);
+			this.SetHighlight(handle.gameObject, true, material: m_DropHighlightMaterial);
 		}
 
 		protected virtual void OnDropHoverEnded(BaseHandle handle)
 		{
-			setHighlight(handle.gameObject, false, material: m_DropHighlightMaterial);
+			this.SetHighlight(handle.gameObject, false, material: m_DropHighlightMaterial);
 		}
 
 		object GetDropObject(BaseHandle handle)
@@ -293,7 +289,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			if (m_DragClone)
 			{
-				var fieldGrabOrigin = getFieldGrabOriginForRayOrigin(rayOrigin);
+				var fieldGrabOrigin = this.GetFieldGrabOriginForRayOrigin(rayOrigin);
 				var rotation = MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation);
 				MathUtilsExt.LerpTransform(m_DragClone, fieldGrabOrigin.position, rotation, m_DragLerp);
 			}

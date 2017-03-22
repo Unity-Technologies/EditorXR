@@ -37,6 +37,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				IUsesRayLockingMethods.lockRay = LockRay;
 				IUsesRayLockingMethods.unlockRay = UnlockRay;
+
+				IForEachRayOriginMethods.forEachRayOrigin = ForEachRayOrigin;
+				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
+				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
+				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
@@ -73,23 +78,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 				}
-
-				var raycaster = obj as IUsesRaycastResults;
-				if (raycaster != null)
-					raycaster.getFirstGameObject = GetFirstGameObject;
-
-				var getPreviewOrigin = obj as IGetPreviewOrigin;
-				if (getPreviewOrigin != null)
-					getPreviewOrigin.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
-
-				var getFieldGrabOrigin = obj as IGetFieldGrabOrigin;
-				if (getFieldGrabOrigin != null)
-					getFieldGrabOrigin.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
-
-				// Internal interfaces
-				var forEachRayOrigin = obj as IForEachRayOrigin;
-				if (forEachRayOrigin != null && ObjectUtils.IsSameAssembly<IForEachRayOrigin>(obj))
-					forEachRayOrigin.forEachRayOrigin = ForEachRayOrigin;
 			}
 
 			public void DisconnectInterface(object obj)
@@ -186,7 +174,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							rayTransform.position = rayOrigin.position;
 							rayTransform.rotation = rayOrigin.rotation;
 							var dpr = rayTransform.GetComponent<DefaultProxyRay>();
-							dpr.getViewerScale = Viewer.GetViewerScale;
 							dpr.SetColor(node == Node.LeftHand ? evr.m_HighlightModule.leftColor : evr.m_HighlightModule.rightColor);
 							m_DefaultRays.Add(rayOrigin, dpr);
 
