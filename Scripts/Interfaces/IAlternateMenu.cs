@@ -15,8 +15,8 @@ namespace UnityEditor.Experimental.EditorVR
 		event Action<Transform> itemWasSelected;
 
 		/// <summary>
-		/// If true the menu will maintain visibilty when being revealed/shown
-		/// Used when unlocking objects, in order to maintain full menu opacity for a period of time
+		/// If true the menu will maintain fully-opaque visibilty for a period of time when revealed
+		/// Used when unlocking objects, in order to maintain full menu opacity for a period of time, drawing attention to the menu
 		/// </summary>
 		bool opaqueReveal { set; }
 	}
