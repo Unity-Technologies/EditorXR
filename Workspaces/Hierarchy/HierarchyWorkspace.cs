@@ -42,8 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					m_HierarchyUI.listView.data = value;
 			}
 		}
-
-		List<HierarchyData> m_HierarchyData;
+		protected List<HierarchyData> m_HierarchyData;
 
 		public List<string> filterList
 		{
@@ -57,12 +56,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					m_FilterUI.filterList = value;
 			}
 		}
-
 		List<string> m_FilterList;
 
 		public MoveCameraRigDelegate moveCameraRig { private get; set; }
 
-		public string searchQuery { get { return m_FilterUI.searchQuery; } }
+		public virtual string searchQuery { get { return m_FilterUI.searchQuery; } }
 
 		public override void Setup()
 		{
@@ -76,26 +74,35 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_HierarchyUI = contentPrefab.GetComponent<HierarchyUI>();
 			hierarchyData = m_HierarchyData;
 
-			m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
-			foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
+			if (m_FilterPrefab)
 			{
-				connectInterfaces(mb);
+				m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+				foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
+				{
+					connectInterfaces(mb);
+				}
+				m_FilterUI.filterList = m_FilterList;
 			}
-			m_FilterUI.filterList = m_FilterList;
 
-			var focusUI = ObjectUtils.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
-			foreach (var mb in focusUI.GetComponentsInChildren<MonoBehaviour>())
+			if (m_FocusPrefab)
 			{
-				connectInterfaces(mb);
+				var focusUI = ObjectUtils.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
+				foreach (var mb in focusUI.GetComponentsInChildren<MonoBehaviour>())
+				{
+					connectInterfaces(mb);
+				}
+				focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
 			}
-			focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
 
-			var createEmptyUI = ObjectUtils.Instantiate(m_CreateEmptyPrefab, m_WorkspaceUI.frontPanel, false);
-			foreach (var mb in createEmptyUI.GetComponentsInChildren<MonoBehaviour>())
+			if (m_CreateEmptyPrefab)
 			{
-				connectInterfaces(mb);
+				var createEmptyUI = ObjectUtils.Instantiate(m_CreateEmptyPrefab, m_WorkspaceUI.frontPanel, false);
+				foreach (var mb in createEmptyUI.GetComponentsInChildren<MonoBehaviour>())
+				{
+					connectInterfaces(mb);
+				}
+				createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
 			}
-			createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
 
 			var listView = m_HierarchyUI.listView;
 			listView.selectRow = SelectRow;

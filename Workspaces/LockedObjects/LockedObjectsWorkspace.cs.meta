@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 73c25ff258c691d4ab00efb98e11dd39
+timeCreated: 1490208392
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_BasePrefab: {fileID: 1000011022840156, guid: 3a2153f70c365c540a3703c4cf22bc45,
+      type: 2}
+  - m_ContentPrefab: {fileID: 1000010661511152, guid: f2c0b8f6943094b47b1b5b78b3588658,
+      type: 2}
+  - m_FilterPrefab: {instanceID: 0}
+  - m_FocusPrefab: {instanceID: 0}
+  - m_CreateEmptyPrefab: {instanceID: 0}
+  - m_UnlockAllPrefab: {fileID: 1000014221612502, guid: 55c555dd810fe0a4f8af4e9b647b99cd,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
