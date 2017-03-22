@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SnappingModule : MonoBehaviour
+	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale
 	{
 		const float k_MaxRayLength = 100f;
 
@@ -69,6 +70,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		readonly Dictionary<Transform, SnappingState> m_SnappingStates = new Dictionary<Transform, SnappingState>();
 
+		public Func<float> getViewerScale { get; set; }
+
 		class SnappingState
 		{
 			public Vector3 currentPosition;
@@ -131,23 +134,43 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				state.currentPosition += delta;
 				var statePosition = state.currentPosition;
 
-				if (PerformSnapping(rayOrigin, ref position, ref rotation, constrained, statePosition, state))
+				var camera = CameraUtils.GetMainCamera();
+				var distToCamera = Mathf.Max(1, Mathf.Log(Vector3.Distance(camera.transform.position, statePosition)));
+
+				var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+				if (PerformSnapping(ray, ref position, ref rotation, constrained, statePosition, state, distToCamera))
 					return;
 			}
 
 			position += delta;
 		}
 
-		bool PerformSnapping(Transform rayOrigin, ref Vector3 position, ref Quaternion rotation, bool constrained, Vector3 statePosition, SnappingState state)
+		public bool DirectTransformWithSnapping(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
 		{
-			var camera = CameraUtils.GetMainCamera();
-			var distToCamera = Mathf.Max(1, Mathf.Log(Vector3.Distance(camera.transform.position, statePosition)));
+			if (snappingEnabled)
+			{
+				var state = GetSnappingState(rayOrigin, objects, position, rotation);
 
+				state.currentPosition = targetPosition;
+				var statePosition = state.currentPosition;
+
+				var ray = new Ray(targetPosition, targetRotation * Vector3.down);
+				if (PerformSnapping(ray, ref position, ref rotation, false, statePosition, state, Mathf.Log(getViewerScale()), state.identityBounds.extents.y * 0.5f))
+					return true;
+			}
+
+			position = targetPosition;
+			rotation = targetRotation;
+
+			return false;
+		}
+
+		bool PerformSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, bool constrained, Vector3 statePosition, SnappingState state, float breakScale, float raycastDistance = k_MaxRayLength)
+		{
 			if (faceSnapping && !constrained)
 			{
-				var ray = new Ray(rayOrigin.position, rayOrigin.forward);
 				RaycastHit hit;
-				if (raycast(ray, out hit, k_MaxRayLength))
+				if (raycast(ray, out hit, raycastDistance))
 				{
 					state.faceSnapping = true;
 					state.groundSnapping = false;
@@ -168,7 +191,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				if (state.faceSnapping)
 				{
-					var faceSnapBreakDist = k_FaceSnapBreakDist * distToCamera;
+					var faceSnapBreakDist = k_FaceSnapBreakDist * breakScale;
 					if (Vector3.Distance(state.faceSnappingStartPosition, statePosition) > faceSnapBreakDist)
 					{
 						position = statePosition;
@@ -182,8 +205,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				var diffGround = Mathf.Abs(statePosition.y - k_GroundHeight);
 
-				var groundSnapMin = k_GroundSnapMin * distToCamera;
-				var groundSnapMax = k_GroundSnapMax * distToCamera;
+				var groundSnapMin = k_GroundSnapMin * breakScale;
+				var groundSnapMax = k_GroundSnapMax * breakScale;
 
 				var bounds = state.rotatedBounds;
 				var offset = bounds.center.y - bounds.extents.y;

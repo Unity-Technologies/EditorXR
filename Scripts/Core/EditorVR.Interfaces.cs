@@ -338,6 +338,7 @@ namespace UnityEditor.Experimental.EditorVR
 				if (usesSnapping != null)
 				{
 					usesSnapping.transformWithSnapping = evrSnappingModule.TranslateWithSnapping;
+					usesSnapping.directTransformWithSnapping = evrSnappingModule.DirectTransformWithSnapping;
 					usesSnapping.clearSnappingState = evrSnappingModule.ClearSnappingState;
 				}
 

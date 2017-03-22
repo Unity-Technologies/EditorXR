@@ -15,6 +15,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
+		const float k_DirectLazyFollowTranslate = 20f;
+		const float k_DirectLazyFollowRotate = 30f;
 
 		class GrabData
 		{
@@ -23,13 +25,26 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			public Vector3[] positionOffsets { get; private set; }
 			public Quaternion[] rotationOffsets { get; private set; }
 			public Transform[] grabbedObjects;
+			DirectTransformWithSnappingDelegate directTransformWithSnapping;
 			Vector3[] initialScales;
+			GameObject[] objects;
 
-			public GrabData(Transform rayOrigin, DirectSelectInput input, Transform[] grabbedObjects)
+			public GrabData(Transform rayOrigin, DirectSelectInput input, Transform[] grabbedObjects,
+				DirectTransformWithSnappingDelegate snappingDelegate, Action<GameObject> removeFromSpatialHash)
 			{
 				this.rayOrigin = rayOrigin;
 				this.input = input;
 				this.grabbedObjects = grabbedObjects;
+				directTransformWithSnapping = snappingDelegate;
+
+				objects = new GameObject[grabbedObjects.Length];
+				for (int i = 0; i < grabbedObjects.Length; i++)
+				{
+					var go = grabbedObjects[i].gameObject;
+					removeFromSpatialHash(go);
+					objects[i] = go;
+				}
+
 				Reset();
 			}
 
@@ -53,7 +68,23 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				for (int i = 0; i < grabbedObjects.Length; i++)
 				{
-					MathUtilsExt.SetTransformOffset(rayOrigin, grabbedObjects[i], positionOffsets[i], rotationOffsets[i]);
+					var grabbedObject = grabbedObjects[i];
+					var position = grabbedObject.position;
+					var rotation = grabbedObject.rotation;
+					var targetPosition = rayOrigin.position + rayOrigin.rotation * positionOffsets[i];
+					var targetRotation = rayOrigin.rotation * rotationOffsets[i];
+
+					if (directTransformWithSnapping(rayOrigin, objects, ref position, ref rotation, targetPosition, targetRotation))
+					{
+						var deltaTime = Time.unscaledDeltaTime;
+						grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
+						grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
+					}
+					else
+					{
+						grabbedObject.position = targetPosition;
+						grabbedObject.rotation = targetRotation;
+					}
 				}
 			}
 
@@ -170,6 +201,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public bool manipulatorVisible { private get; set; }
 
 		public TransformWithSnappingDelegate transformWithSnapping { private get; set; }
+		public DirectTransformWithSnappingDelegate directTransformWithSnapping { private get; set; }
 		public Action<Transform> clearSnappingState { private get; set; }
 
 		public Action<GameObject> addToSpatialHash { private get; set; }
@@ -280,7 +312,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							}
 						}
 
-						m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput, Selection.transforms);
+						m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput, Selection.transforms, directTransformWithSnapping, removeFromSpatialHash);
 
 						hideDefaultRay(rayOrigin, true); // This will also unhighlight the object
 						lockRay(rayOrigin, this);
@@ -440,17 +472,23 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void GrabObjects(Node node, Transform rayOrigin, ActionMapInput input, Transform[] objects)
 		{
-			m_GrabData[node] = new GrabData(rayOrigin, (DirectSelectInput)input, objects);
+			m_GrabData[node] = new GrabData(rayOrigin, (DirectSelectInput)input, objects, directTransformWithSnapping, removeFromSpatialHash);
 		}
 
 		void DropObjects(Node inputNode)
 		{
 			var grabData = m_GrabData[inputNode];
-			objectsDropped(grabData.grabbedObjects.ToArray(), grabData.rayOrigin);
+			var grabbedObjects = grabData.grabbedObjects;
+			objectsDropped(grabbedObjects, grabData.rayOrigin);
 			m_GrabData.Remove(inputNode);
 
 			unlockRay(grabData.rayOrigin, this);
 			showDefaultRay(grabData.rayOrigin, true);
+
+			for (int i = 0; i < grabbedObjects.Length; i++)
+			{
+				addToSpatialHash(grabbedObjects[i].gameObject);
+			}
 		}
 
 		void Translate(Vector3 delta, Transform rayOrigin, bool constrained)
@@ -458,12 +496,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			transformWithSnapping(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta, constrained);
 		}
 
-		private void Rotate(Quaternion delta)
+		void Rotate(Quaternion delta)
 		{
 			m_TargetRotation = delta * m_TargetRotation;
 		}
 
-		private void Scale(Vector3 delta)
+		void Scale(Vector3 delta)
 		{
 			m_TargetScale += delta;
 		}
@@ -486,7 +524,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		private void UpdateSelectionBounds()
+		void UpdateSelectionBounds()
 		{
 			m_SelectionBounds = ObjectUtils.GetBounds(Selection.gameObjects);
 		}
@@ -504,7 +542,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			return manipulator;
 		}
 
-		private void UpdateCurrentManipulator()
+		void UpdateCurrentManipulator()
 		{
 			var selectionTransforms = Selection.transforms;
 			if (selectionTransforms.Length <= 0)
