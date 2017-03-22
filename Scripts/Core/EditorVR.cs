@@ -172,7 +172,7 @@ namespace UnityEditor.Experimental.EditorVR
 			m_ActionsModule = AddModule<ActionsModule>();
 
 			m_LockModule = AddModule<LockModule>();
-			m_LockModule.updateAlternateMenu = (rayOrigin, o) => m_Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
+			m_LockModule.updateAlternateMenu = (rayOrigin, o, opaqueReveal) => m_Menus.SetAlternateMenuVisibility(rayOrigin, o != null, opaqueReveal);
 
 			m_SelectionModule = AddModule<SelectionModule>();
 			m_SelectionModule.selected += m_Rays.SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.

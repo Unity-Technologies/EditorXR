@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR
 				Hidden = 1 << 0,
 				OverActivator = 1 << 1,
 				NearWorkspace = 1 << 2,
+				OpaqueReveal = 1 << 3
 			}
 
 			internal List<Type> mainMenuTools { get; set; }
@@ -137,6 +138,20 @@ namespace UnityEditor.Experimental.EditorVR
 			void UpdateAlternateMenuForDevice(DeviceData deviceData)
 			{
 				var alternateMenu = deviceData.alternateMenu;
+				var flags = deviceData.menuHideFlags[alternateMenu];
+				Debug.LogError(deviceData.node + " : <color=orange>AlternateMenu hide flags: </color>" + deviceData.menuHideFlags[alternateMenu]);
+				if ((flags & MenuHideFlags.OpaqueReveal) != 0)
+				{
+					Debug.LogError("<color=yellow>AlternateMenu hide flags: </color>" + deviceData.menuHideFlags[alternateMenu]);
+					deviceData.menuHideFlags[alternateMenu] &= ~MenuHideFlags.OpaqueReveal;
+					deviceData.menuHideFlags[alternateMenu] &= ~MenuHideFlags.Hidden;
+
+					if (alternateMenu.visible)
+						alternateMenu.opaqueReveal = true;
+
+					Debug.LogError("<color=green>AlternateMenu hide flags: </color>" + deviceData.menuHideFlags[alternateMenu]);
+				}
+
 				alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0 && !(deviceData.currentTool is IExclusiveMode);
 
 				// Move the activator button to an alternate position if the alternate menu will be shown
@@ -238,7 +253,7 @@ namespace UnityEditor.Experimental.EditorVR
 				SetAlternateMenuVisibility(rayOrigin, Selection.gameObjects.Length > 0);
 			}
 
-			internal void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
+			internal void SetAlternateMenuVisibility(Transform rayOrigin, bool visible, bool opaqueReveal = false)
 			{
 				evr.m_Rays.ForEachProxyDevice((deviceData) =>
 				{
@@ -247,6 +262,9 @@ namespace UnityEditor.Experimental.EditorVR
 					{
 						var flags = deviceData.menuHideFlags[alternateMenu];
 						deviceData.menuHideFlags[alternateMenu] = (deviceData.rayOrigin == rayOrigin) && visible ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
+
+						if (opaqueReveal && visible && deviceData.rayOrigin == rayOrigin)
+							deviceData.menuHideFlags[alternateMenu] = flags | MenuHideFlags.OpaqueReveal;
 					}
 				});
 			}
