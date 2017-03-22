@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
 	class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
 	{
-		public const string Unselectable = "Unselectable";
+		public const string Locked = "Locked";
 
 		[SerializeField]
 		GameObject m_ContentPrefab;
@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				m_FilterList = value;
 				m_FilterList.Sort();
-				m_FilterList.Insert(0, Unselectable);
+				m_FilterList.Insert(0, Locked);
 
 				if (m_FilterUI)
 					m_FilterUI.filterList = value;

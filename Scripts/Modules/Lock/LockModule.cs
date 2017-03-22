@@ -81,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		void UpdateAction(GameObject go)
 		{
 			var isLocked = IsLocked(go);
-			m_LockModuleAction.tooltipText = isLocked ? "Make Selectable" : "Make Unselectable";
+			m_LockModuleAction.tooltipText = isLocked ? "Unlock" : "Lock";
 			m_LockModuleAction.icon = isLocked ? m_LockIcon : m_UnlockIcon;
 		}
 

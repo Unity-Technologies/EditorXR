@@ -169,13 +169,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				var searchQuery = getSearchQuery();
 				var hasFilterQuery = !string.IsNullOrEmpty(searchQuery);
-				var hasUnselectableQuery = searchQuery.Contains(HierarchyWorkspace.Unselectable);
+				var hasLockedQuery = searchQuery.Contains(HierarchyWorkspace.Locked);
 				var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z;
 				if (hasFilterQuery)
 				{
 					var filterTestPass = true;
 
-					if (hasUnselectableQuery)
+					if (hasLockedQuery)
 						filterTestPass = isLocked((GameObject)EditorUtility.InstanceIDToObject(datum.index));
 					else
 						filterTestPass = datum.types.Any(type => matchesFilter(type));
