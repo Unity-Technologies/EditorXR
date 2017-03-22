@@ -254,11 +254,9 @@ namespace UnityEditor.Experimental.EditorVR
 					if (alternateMenu != null)
 					{
 						var flags = deviceData.menuHideFlags[alternateMenu];
-						var visibileDevice = (deviceData.rayOrigin == rayOrigin) && visible;
-						deviceData.menuHideFlags[alternateMenu] = visibileDevice ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
-
-						if (opaqueReveal && visibileDevice)
-							deviceData.menuHideFlags[alternateMenu] = flags | MenuHideFlags.OpaqueReveal;
+						var visibleDevice = (deviceData.rayOrigin == rayOrigin) && visible;
+						flags = opaqueReveal && visibleDevice ? flags | MenuHideFlags.OpaqueReveal : flags;
+						deviceData.menuHideFlags[alternateMenu] = visibleDevice ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
 					}
 				});
 			}
