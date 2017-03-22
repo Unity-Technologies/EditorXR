@@ -183,7 +183,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					m_RevealOpaque = true;
 					m_OpaqueDuration = 0f;
-					//StartCoroutine(maintainOpacity());
 				}
 			}
 		}
@@ -192,14 +191,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		const float k_OpaqueDurationMax = 1f;
 		float m_OpaqueDuration = 0f;
 
-		IEnumerator maintainOpacity()
+		void OnDisable()
 		{
-			var duration = 0f;
-			while (duration < 3)
-			{
-				duration += Time.unscaledDeltaTime;
-				yield return null;
-			}
 			m_RevealOpaque = false;
 		}
 
@@ -217,13 +210,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 			}
 
-			if (m_RevealOpaque && m_OpaqueDuration < k_OpaqueDurationMax)
-			{
-				m_OpaqueDuration += Time.unscaledDeltaTime;
-
-				if (m_OpaqueDuration > k_OpaqueDurationMax)
-					m_RevealOpaque = false;
-			}
+			if (m_RevealOpaque && (m_OpaqueDuration += Time.unscaledDeltaTime) > k_OpaqueDurationMax)
+				m_RevealOpaque = false;
 
 			if (m_Visible) // don't override transparency if the menu is in the process of hiding itself
 				semiTransparent = !m_RadialMenuSlots.Any(x => x.highlighted) && !m_RevealOpaque;

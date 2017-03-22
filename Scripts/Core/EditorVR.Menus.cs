@@ -139,17 +139,10 @@ namespace UnityEditor.Experimental.EditorVR
 			{
 				var alternateMenu = deviceData.alternateMenu;
 				var flags = deviceData.menuHideFlags[alternateMenu];
-				Debug.LogError(deviceData.node + " : <color=orange>AlternateMenu hide flags: </color>" + deviceData.menuHideFlags[alternateMenu]);
 				if ((flags & MenuHideFlags.OpaqueReveal) != 0)
 				{
-					Debug.LogError("<color=yellow>AlternateMenu hide flags: </color>" + deviceData.menuHideFlags[alternateMenu]);
-					deviceData.menuHideFlags[alternateMenu] &= ~MenuHideFlags.OpaqueReveal;
-					deviceData.menuHideFlags[alternateMenu] &= ~MenuHideFlags.Hidden;
-
-					if (alternateMenu.visible)
-						alternateMenu.opaqueReveal = true;
-
-					Debug.LogError("<color=green>AlternateMenu hide flags: </color>" + deviceData.menuHideFlags[alternateMenu]);
+					deviceData.menuHideFlags[alternateMenu] &= ~(MenuHideFlags.OpaqueReveal | MenuHideFlags.Hidden);
+					alternateMenu.opaqueReveal = true;
 				}
 
 				alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0 && !(deviceData.currentTool is IExclusiveMode);
@@ -261,9 +254,10 @@ namespace UnityEditor.Experimental.EditorVR
 					if (alternateMenu != null)
 					{
 						var flags = deviceData.menuHideFlags[alternateMenu];
-						deviceData.menuHideFlags[alternateMenu] = (deviceData.rayOrigin == rayOrigin) && visible ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
+						var visibileDevice = (deviceData.rayOrigin == rayOrigin) && visible;
+						deviceData.menuHideFlags[alternateMenu] = visibileDevice ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
 
-						if (opaqueReveal && visible && deviceData.rayOrigin == rayOrigin)
+						if (opaqueReveal && visibileDevice)
 							deviceData.menuHideFlags[alternateMenu] = flags | MenuHideFlags.OpaqueReveal;
 					}
 				});
