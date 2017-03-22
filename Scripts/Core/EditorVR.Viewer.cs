@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal bool IsOverShoulder(Transform rayOrigin)
 			{
-				var radius = evr.m_DirectSelection.GetPointerLength(rayOrigin);
+				var radius = evr.GetNestedModule<DirectSelection>().GetPointerLength(rayOrigin);
 				var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 				foreach (var collider in colliders)
 				{

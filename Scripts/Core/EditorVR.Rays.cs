@@ -154,7 +154,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 									evr.m_InputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOriginPair.Value, source =>
 									{
-										foreach (var miniWorld in evr.m_MiniWorlds.worlds)
+										var miniWorlds = evr.GetNestedModule<MiniWorlds>();
+										foreach (var miniWorld in miniWorlds.worlds)
 										{
 											var targetObject = source.hoveredObject ? source.hoveredObject : source.draggedObject;
 											if (miniWorld.Contains(source.rayOrigin.position))
@@ -186,9 +187,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								List<GameObject> prefabs;
 								if (extraData.TryGetValue(rayOriginPair.Key, out prefabs))
 								{
+									var ui = evr.GetNestedModule<UI>();
 									foreach (var prefab in prefabs)
 									{
-										var go = evr.m_UI.InstantiateUI(prefab);
+										var go = ui.InstantiateUI(prefab);
 										go.transform.SetParent(rayOriginPair.Value, false);
 									}
 								}
@@ -201,7 +203,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							evr.m_HighlightModule.AddRayOriginForNode(node, rayOrigin);
 						}
 
-						evr.m_Tools.SpawnDefaultTools(proxy);
+						evr.GetNestedModule<Tools>().SpawnDefaultTools(proxy);
 					}
 				}
 			}
@@ -293,7 +295,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						return renderer.gameObject;
 				}
 
-				foreach (var ray in evr.m_MiniWorlds.rays)
+				var miniWorlds = evr.GetNestedModule<MiniWorlds>();
+				foreach (var ray in miniWorlds.rays)
 				{
 					var miniWorldRay = ray.Value;
 					if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))

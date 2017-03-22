@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
 				var evrActionsModule = evr.m_ActionsModule;
-				var evrMenus = evr.m_Menus;
+				var evrMenus = evr.GetNestedModule<Menus>();
 
 				var toolActions = obj as IActions;
 				if (toolActions != null)
@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public void DisconnectInterface(object obj)
 			{
 				var evrActionsModule = evr.m_ActionsModule;
-				var evrMenus = evr.m_Menus;
+				var evrMenus = evr.GetNestedModule<Menus>();
 
 				var toolActions = obj as IActions;
 				if (toolActions != null)

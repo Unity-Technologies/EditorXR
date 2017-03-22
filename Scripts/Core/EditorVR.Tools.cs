@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			static bool IsSharedUpdater(ILinkedObject linkedObject)
 			{
 				var type = linkedObject.GetType();
-				return evr.m_Tools.m_LinkedObjects[type].IndexOf(linkedObject) == 0;
+				return evr.GetNestedModule<Tools>().m_LinkedObjects[type].IndexOf(linkedObject) == 0;
 			}
 
 			internal bool IsPermanentTool(Type type)
@@ -75,7 +75,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				HashSet<InputDevice> devices;
 
 				var transformTool = SpawnTool(typeof(TransformTool), out devices);
-				evr.m_DirectSelection.objectsGrabber = transformTool.tool as IGrabObjects;
+				evr.GetNestedModule<DirectSelection>().objectsGrabber = transformTool.tool as IGrabObjects;
+
+				var rays = evr.GetNestedModule<Rays>();
+				var vacuumables = evr.GetNestedModule<Vacuumables>();
+
 
 				foreach (var deviceData in evr.m_DeviceData)
 				{
@@ -88,14 +92,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					AddToolToDeviceData(toolData, devices);
 					var selectionTool = (SelectionTool)toolData.tool;
 					selectionTool.hovered += evr.m_LockModule.OnHovered;
-					selectionTool.isRayActive = evr.m_Rays.IsRayActive;
+					selectionTool.isRayActive = rays.IsRayActive;
 
 					toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var vacuumTool = (VacuumTool)toolData.tool;
 					vacuumTool.defaultOffset = WorkspaceModule.k_DefaultWorkspaceOffset;
 					vacuumTool.defaultTilt = WorkspaceModule.k_DefaultWorkspaceTilt;
-					vacuumTool.vacuumables = evr.m_Vacuumables.vacuumables;
+					vacuumTool.vacuumables = vacuumables.vacuumables;
 
 					// Using a shared instance of the transform tool across all device tool stacks
 					AddToolToStack(deviceData, transformTool);
@@ -103,7 +107,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 
-					var evrMenus = evr.m_Menus;
+					var evrMenus = evr.GetNestedModule<Menus>();
 					var mainMenu = evrMenus.SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
 					deviceData.mainMenu = mainMenu;
 					deviceData.menuHideFlags[mainMenu] = Menus.MenuHideFlags.Hidden;
@@ -181,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal bool SelectTool(Transform rayOrigin, Type toolType)
 			{
 				var result = false;
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				evr.GetNestedModule<Rays>().ForEachProxyDevice((deviceData) =>
 				{
 					if (deviceData.rayOrigin == rayOrigin)
 					{
@@ -323,7 +327,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void UpdatePlayerHandleMaps(List<ActionMapInput> maps)
 			{
-				maps.AddRange(evr.m_MiniWorlds.inputs.Values);
+				maps.AddRange(evr.GetNestedModule<MiniWorlds>().inputs.Values);
 
 				var evrDeviceData = evr.m_DeviceData;
 				foreach (var deviceData in evrDeviceData)

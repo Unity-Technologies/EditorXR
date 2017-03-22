@@ -48,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var evrMenus = evr.m_Menus;
+				var evrMenus = evr.GetNestedModule<Menus>();
 
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)
@@ -64,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void UpdateMenuVisibilityNearWorkspaces()
 			{
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				evr.GetNestedModule<Rays>().ForEachProxyDevice((deviceData) =>
 				{
 					m_UpdateVisibilityMenus.Clear();
 					m_UpdateVisibilityMenus.AddRange(deviceData.menuHideFlags.Keys);
@@ -175,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void UpdateMenuVisibilities()
 			{
 				m_ActiveDeviceData.Clear();
-				var evrRays = evr.m_Rays;
+				var evrRays = evr.GetNestedModule<Rays>();
 				evrRays.ForEachProxyDevice((deviceData) =>
 				{
 					m_ActiveDeviceData.Add(deviceData);
@@ -267,7 +267,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
 			{
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				evr.GetNestedModule<Rays>().ForEachProxyDevice((deviceData) =>
 				{
 					var alternateMenu = deviceData.alternateMenu;
 					if (alternateMenu != null)
@@ -301,7 +301,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
 			{
 				GameObject go = null;
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				evr.GetNestedModule<Rays>().ForEachProxyDevice((deviceData) =>
 				{
 					var proxy = deviceData.proxy;
 					var otherRayOrigin = deviceData.rayOrigin;
@@ -312,7 +312,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						{
 							if (deviceData.customMenu == null)
 							{
-								go = evr.m_UI.InstantiateUI(prefab.gameObject, menuOrigin, false);
+								go = evr.GetNestedModule<UI>().InstantiateUI(prefab.gameObject, menuOrigin, false);
 
 								var customMenu = go.GetComponent<IMenu>();
 								deviceData.customMenu = customMenu;

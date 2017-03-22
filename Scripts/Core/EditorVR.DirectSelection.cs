@@ -54,11 +54,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				// Check if this is a MiniWorldRay
 				MiniWorlds.MiniWorldRay ray;
-				if (evr.m_MiniWorlds.rays.TryGetValue(rayOrigin, out ray))
+				if (evr.GetNestedModule<MiniWorlds>().rays.TryGetValue(rayOrigin, out ray))
 					rayOrigin = ray.originalRayOrigin;
 
+				var rays = evr.GetNestedModule<Rays>();
 				DefaultProxyRay dpr;
-				if (evr.m_Rays.defaultRays.TryGetValue(rayOrigin, out dpr))
+				if (rays.defaultRays.TryGetValue(rayOrigin, out dpr))
 				{
 					length = dpr.pointerLength;
 
@@ -81,9 +82,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				m_DirectSelections.Clear();
 				m_ActiveStates.Clear();
 
+				var rays = evr.GetNestedModule<Rays>();
 				var directSelection = objectsGrabber;
-				var evrRays = evr.m_Rays;
-				evrRays.ForEachProxyDevice((deviceData) =>
+				rays.ForEachProxyDevice((deviceData) =>
 				{
 					var rayOrigin = deviceData.rayOrigin;
 					var input = deviceData.directSelectInput;
@@ -104,7 +105,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 				});
 
-				foreach (var ray in evr.m_MiniWorlds.rays)
+				var miniWorlds = evr.GetNestedModule<MiniWorlds>();
+				foreach (var ray in miniWorlds.rays)
 				{
 					var rayOrigin = ray.Key;
 					var miniWorldRay = ray.Value;
@@ -129,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				// Only activate direct selection input if the cone is inside of an object, so a trigger press can be detected,
 				// and keep it active if we are dragging
-				evrRays.ForEachProxyDevice((deviceData) =>
+				rays.ForEachProxyDevice((deviceData) =>
 				{
 					var input = deviceData.directSelectInput;
 					input.active = m_ActiveStates.Contains(input);
@@ -152,7 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal bool CanGrabObject(GameObject selection, Transform rayOrigin)
 			{
-				if (selection.CompareTag(k_VRPlayerTag) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
+				if (selection.CompareTag(k_VRPlayerTag) && !evr.GetNestedModule<MiniWorlds>().rays.ContainsKey(rayOrigin))
 					return false;
 
 				return true;
@@ -175,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					// Dropping the player head updates the camera rig position
 					if (grabbedObject.CompareTag(k_VRPlayerTag))
 						Viewer.DropPlayerHead(grabbedObject);
-					else if (evr.m_Viewer.IsOverShoulder(rayOrigin) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
+					else if (evr.GetNestedModule<Viewer>().IsOverShoulder(rayOrigin) && !evr.GetNestedModule<MiniWorlds>().rays.ContainsKey(rayOrigin))
 						evr.m_SceneObjectModule.DeleteSceneObject(grabbedObject.gameObject);
 				}
 			}

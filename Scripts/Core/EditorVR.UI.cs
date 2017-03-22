@@ -85,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var inputModule = evr.AddModule<MultipleRayInputModule>();
 				evr.m_InputModule = inputModule;
-				evr.m_InputModule.getPointerLength = evr.m_DirectSelection.GetPointerLength;
+				evr.m_InputModule.getPointerLength = evr.GetNestedModule<DirectSelection>().GetPointerLength;
 
 				if (evr.m_CustomPreviewCamera != null)
 					evr.m_InputModule.layerMask |= evr.m_CustomPreviewCamera.hmdOnlyLayerMask;
@@ -94,7 +94,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				eventCamera.enabled = false;
 				inputModule.eventCamera = eventCamera;
 
-				inputModule.preProcessRaycastSource = evr.m_Rays.PreProcessRaycastSource;
+				inputModule.preProcessRaycastSource = evr.GetNestedModule<Rays>().PreProcessRaycastSource;
 			}
 
 			internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
