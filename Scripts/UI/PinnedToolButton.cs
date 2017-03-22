@@ -12,6 +12,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
 	public sealed class PinnedToolButton : MonoBehaviour, ISelectTool, ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor
 	{
+		public static Vector3 activePosition
+		{
+			get { return s_ActivePosition; }
+			set
+			{
+				s_ActivePosition = value;
+				//m_InactivePosition = value * 2f; // additional offset for the button when it is visible and inactive
+			}
+		}
+		static Vector3 s_ActivePosition;
+
 		public Type toolType
 		{
 			get
@@ -24,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (m_ToolType == value)
 					return;
 
-				Debug.LogError("PinnedToolButton setting TYPE : <color=green>" + value.ToString() + "</color>");
+				//Debug.LogError("PinnedToolButton setting TYPE : <color=green>" + value.ToString() + "</color>");
 				m_GradientButton.gameObject.SetActive(true);
 
 				m_ToolType = value;
@@ -57,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		Type m_ToolType;
 
-		public bool activeTool // use this externally to make visible & move a button to the active/inactive position
+		bool activeTool // use this externally to make visible & move a button to the active/inactive position
 		{
 			get { return m_ActiveTool; }
 			set
@@ -67,8 +78,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				m_ActiveTool = value;
 
-				if (m_ToolType != null)
-					Debug.LogError(m_ToolType.ToString() + " : <color=purple>PinnedToolButton ACTIVE : </color>" + value);
+				//if (m_ToolType != null)
+					//Debug.LogError(m_ToolType.ToString() + " : <color=purple>PinnedToolButton ACTIVE : </color>" + value);
 
 				if (m_ActiveTool)
 				{
@@ -79,14 +90,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					}
 
 					// Perform re-position coroutine here
-					this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
-					transform.localPosition = activePosition;
+					//order = 0;
+					//this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
 				}
 				else
 				{
-					this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
+					//this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
 					//gameObject.SetActive(false);
-					transform.localPosition = m_InactivePosition;
+					//transform.localPosition = m_InactivePosition;
 				}
 
 				SetButtonGradients(m_ActiveTool);
@@ -94,16 +105,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		bool m_ActiveTool;
 
-		public Vector3 activePosition
+		public int order
 		{
-			get { return m_ActivePosition; }
+			get { return m_Order; }
 			set
 			{
-				m_ActivePosition = value;
-				m_InactivePosition = value * 2f; // additional offset for the button when it is visible and inactive
+				m_Order = value; // Position of this button in relation to other pinned tool buttons
+				//if (m_Order == 0)
+				var zerothPosition = m_Order == 0;
+				activeTool = zerothPosition;
+				m_InactivePosition = s_ActivePosition * ++value; // Additional offset for the button when it is visible and inactive
+				transform.localPosition = zerothPosition ? activePosition : m_InactivePosition;
+				Debug.LogError(m_ToolType.ToString() + " : <color=purple>Order : </color>" + m_Order + " / " + value);
 			}
 		}
-		Vector3 m_ActivePosition;
+		int m_Order;
 
 		/// <summary>
 		/// GradientPair should be set with new random gradientPair each time a new Tool is associated with this Button
@@ -176,13 +192,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<ITooltip> hideTooltip { private get; set; }
 		public GradientPair customToolTipHighlightColor { get; set; }
 
-		bool isSelectTool
+		public bool isSelectTool
 		{
 			get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); }
 		}
 
-		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
 		Coroutine m_PositionCoroutine;
+		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
 
 		void Start()
 		{
