@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var evrHighlightModule = evr.m_HighlightModule;
+				var evrHighlightModule = evr.GetModule<HighlightModule>();
 
 				var customHighlight = obj as ICustomHighlight;
 				if (customHighlight != null)
@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void DisconnectInterface(object obj)
 			{
-				var evrHighlightModule = evr.m_HighlightModule;
+				var evrHighlightModule = evr.GetModule<HighlightModule>();
 
 				var customHighlight = obj as ICustomHighlight;
 				if (customHighlight != null)

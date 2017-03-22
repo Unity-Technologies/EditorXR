@@ -347,6 +347,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					// Release the current object if the trigger is no longer held
 					if (directSelectInput.select.wasJustReleased)
 					{
+						var sceneObjectModule = evr.GetModule<SceneObjectModule>();
+
 						var rayPosition = originalRayOrigin.position;
 						for (var i = 0; i < dragObjects.Length; i++)
 						{
@@ -357,7 +359,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							{
 								if (evr.GetNestedModule<Viewer>().IsOverShoulder(originalRayOrigin))
 								{
-									evr.m_SceneObjectModule.DeleteSceneObject(dragObject.gameObject);
+									sceneObjectModule.DeleteSceneObject(dragObject.gameObject);
 								}
 								else
 								{
@@ -386,8 +388,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var miniWorld = miniWorldWorkspace.miniWorld;
 				m_Worlds.Add(miniWorld);
 
-				m_MiniWorldInputs[miniWorldWorkspace] = evr.m_DeviceInputModule.CreateActionMapInputForObject(miniWorldWorkspace, null);
+				m_MiniWorldInputs[miniWorldWorkspace] = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(miniWorldWorkspace, null);
 
+				var intersectionModule = evr.GetModule<IntersectionModule>();
 				evr.GetNestedModule<Rays>().ForEachProxyDevice(deviceData =>
 				{
 					var miniWorldRayOrigin = InstantiateMiniWorldRay();
@@ -406,7 +409,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						tester = tester
 					};
 
-					evr.m_IntersectionModule.AddTester(tester);
+					intersectionModule.AddTester(tester);
 
 					if (deviceData.proxy.active)
 					{

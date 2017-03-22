@@ -140,7 +140,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, ActionMapInput input)
 			{
-				var intersectionModule = evr.m_IntersectionModule;
+				var intersectionModule = evr.GetModule<IntersectionModule>();
 				if (intersectionModule)
 				{
 					var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
@@ -172,13 +172,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
 			{
+				var sceneObjectModule = evr.GetModule<SceneObjectModule>();
 				foreach (var grabbedObject in grabbedObjects)
 				{
 					// Dropping the player head updates the camera rig position
 					if (grabbedObject.CompareTag(k_VRPlayerTag))
 						Viewer.DropPlayerHead(grabbedObject);
 					else if (evr.GetNestedModule<Viewer>().IsOverShoulder(rayOrigin) && !evr.GetNestedModule<MiniWorlds>().rays.ContainsKey(rayOrigin))
-						evr.m_SceneObjectModule.DeleteSceneObject(grabbedObject.gameObject);
+						sceneObjectModule.DeleteSceneObject(grabbedObject.gameObject);
 				}
 			}
 		}

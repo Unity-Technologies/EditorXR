@@ -64,6 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void UpdateMenuVisibilityNearWorkspaces()
 			{
+				var workspaceModule = evr.GetModule<WorkspaceModule>();
 				evr.GetNestedModule<Rays>().ForEachProxyDevice((deviceData) =>
 				{
 					m_UpdateVisibilityMenus.Clear();
@@ -91,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 
 						var intersection = false;
-						var workspaces = evr.m_WorkspaceModule.workspaces;
+						var workspaces = workspaceModule.workspaces;
 						for (int j = 0; j < workspaces.Count; j++)
 						{
 							var workspace = workspaces[j];
@@ -231,7 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					evrRays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
 				});
 
-				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
+				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
 			}
 
 			internal void OnMainMenuActivatorHoverStarted(Transform rayOrigin)
@@ -333,7 +334,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					return null;
 
 				var mainMenu = ObjectUtils.AddComponent(type, evr.gameObject) as IMainMenu;
-				input = evr.m_DeviceInputModule.CreateActionMapInputForObject(mainMenu, device);
+				input = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(mainMenu, device);
 				evr.m_Interfaces.ConnectInterfaces(mainMenu, device);
 				mainMenu.visible = visible;
 
@@ -348,7 +349,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					return null;
 
 				var alternateMenu = ObjectUtils.AddComponent(type, evr.gameObject) as IAlternateMenu;
-				input = evr.m_DeviceInputModule.CreateActionMapInputForObject(alternateMenu, device);
+				input = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(alternateMenu, device);
 				evr.m_Interfaces.ConnectInterfaces(alternateMenu, device);
 				alternateMenu.visible = false;
 
@@ -373,11 +374,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void UpdateAlternateMenuActions()
 			{
+				var actionsModule = evr.GetModule<ActionsModule>();
 				foreach (var deviceData in evr.m_DeviceData)
 				{
 					var altMenu = deviceData.alternateMenu;
 					if (altMenu != null)
-						altMenu.menuActions = evr.m_ActionsModule.menuActions;
+						altMenu.menuActions = actionsModule.menuActions;
 				}
 			}
 		}

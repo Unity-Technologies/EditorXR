@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -8,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var evrHierarchyModule = evr.m_HierarchyModule;
+				var evrHierarchyModule = evr.GetModule<HierarchyModule>();
 
 				var usesHierarchyData = obj as IUsesHierarchyData;
 				if (usesHierarchyData != null)
@@ -23,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void DisconnectInterface(object obj)
 			{
-				var evrHierarchyModule = evr.m_HierarchyModule;
+				var evrHierarchyModule = evr.GetModule<HierarchyModule>();
 
 				var usesHierarchy = obj as IUsesHierarchyData;
 				if (usesHierarchy != null)

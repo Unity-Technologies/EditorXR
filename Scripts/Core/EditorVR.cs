@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
+using Valve.VR.InteractionSystem;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -31,25 +32,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		ProxyExtras m_ProxyExtras;
 
-		DragAndDropModule m_DragAndDropModule;
-		HighlightModule m_HighlightModule;
-		SceneObjectModule m_SceneObjectModule;
-		LockModule m_LockModule;
-		SelectionModule m_SelectionModule;
-		HierarchyModule m_HierarchyModule;
-		ProjectFolderModule m_ProjectFolderModule;
-		ActionsModule m_ActionsModule;
-		KeyboardModule m_KeyboardModule;
-		SpatialHashModule m_SpatialHashModule;
-		IntersectionModule m_IntersectionModule;
-		DeviceInputModule m_DeviceInputModule;
-		MultipleRayInputModule m_InputModule;
-		PixelRaycastModule m_PixelRaycastModule;
-		WorkspaceModule m_WorkspaceModule;
-		TooltipModule m_TooltipModule;
+		Dictionary<Type, MonoBehaviour> m_Modules = new Dictionary<Type, MonoBehaviour>();
 
 		Interfaces m_Interfaces;
-		
+
 		Dictionary<Type, Nested> m_NestedModules = new Dictionary<Type, Nested>();
 
 		event Action m_SelectionChanged;
@@ -110,8 +96,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 			LateBindNestedModules(nestedClassTypes);
 
-			m_HierarchyModule = AddModule<HierarchyModule>();
-			m_ProjectFolderModule = AddModule<ProjectFolderModule>();
+			AddModule<HierarchyModule>();
+			AddModule<ProjectFolderModule>();
 
 			VRView.cameraRig.parent = transform; // Parent the camera rig under EditorVR
 			VRView.cameraRig.hideFlags = defaultHideFlags;
@@ -138,71 +124,72 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			var tools = GetNestedModule<Tools>();
 
-			m_DeviceInputModule = AddModule<DeviceInputModule>();
-			m_DeviceInputModule.InitializePlayerHandle();
-			m_DeviceInputModule.CreateDefaultActionMapInputs();
-			m_DeviceInputModule.processInput = ProcessInput;
-			m_DeviceInputModule.updatePlayerHandleMaps = tools.UpdatePlayerHandleMaps;
+			var deviceInputModule = AddModule<DeviceInputModule>();
+			deviceInputModule.InitializePlayerHandle();
+			deviceInputModule.CreateDefaultActionMapInputs();
+			deviceInputModule.processInput = ProcessInput;
+			deviceInputModule.updatePlayerHandleMaps = tools.UpdatePlayerHandleMaps;
 
 			var ui = GetNestedModule<UI>();
 			ui.Initialize();
 
-			m_KeyboardModule = AddModule<KeyboardModule>();
+			AddModule<KeyboardModule>();
 
-			m_DragAndDropModule = AddModule<DragAndDropModule>();
-			m_InputModule.rayEntered += m_DragAndDropModule.OnRayEntered;
-			m_InputModule.rayExited += m_DragAndDropModule.OnRayExited;
-			m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
-			m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
+			var dragAndDropModule = AddModule<DragAndDropModule>();
+			var inputModule = GetModule<MultipleRayInputModule>();
+			inputModule.rayEntered += dragAndDropModule.OnRayEntered;
+			inputModule.rayExited += dragAndDropModule.OnRayExited;
+			inputModule.dragStarted += dragAndDropModule.OnDragStarted;
+			inputModule.dragEnded += dragAndDropModule.OnDragEnded;
 
-			m_TooltipModule = AddModule<TooltipModule>();
-			m_Interfaces.ConnectInterfaces(m_TooltipModule);
-			m_InputModule.rayEntered += m_TooltipModule.OnRayEntered;
-			m_InputModule.rayExited += m_TooltipModule.OnRayExited;
+			var tooltipModule = AddModule<TooltipModule>();
+			m_Interfaces.ConnectInterfaces(tooltipModule);
+			inputModule.rayEntered += tooltipModule.OnRayEntered;
+			inputModule.rayExited += tooltipModule.OnRayExited;
 
-			m_PixelRaycastModule = AddModule<PixelRaycastModule>();
-			m_PixelRaycastModule.ignoreRoot = transform;
-			m_PixelRaycastModule.raycastCamera = ui.eventCamera;
+			var pixelRaycastModule = AddModule<PixelRaycastModule>();
+			pixelRaycastModule.ignoreRoot = transform;
+			pixelRaycastModule.raycastCamera = ui.eventCamera;
 
-			m_HighlightModule = AddModule<HighlightModule>();
-			m_ActionsModule = AddModule<ActionsModule>();
+			AddModule<ActionsModule>();
+			AddModule<HighlightModule>();
 
 			var menus = GetNestedModule<Menus>();
 
-			m_LockModule = AddModule<LockModule>();
-			m_LockModule.updateAlternateMenu = (rayOrigin, o) => menus.SetAlternateMenuVisibility(rayOrigin, o != null);
+			var lockModule = AddModule<LockModule>();
+			lockModule.updateAlternateMenu = (rayOrigin, o) => menus.SetAlternateMenuVisibility(rayOrigin, o != null);
 
 			var rays = GetNestedModule<Rays>();
 
-			m_SelectionModule = AddModule<SelectionModule>();
-			m_SelectionModule.selected += rays.SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
-			m_SelectionModule.getGroupRoot = GetGroupRoot;
+			var selectionModule = AddModule<SelectionModule>();
+			selectionModule.selected += rays.SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			selectionModule.getGroupRoot = GetGroupRoot;
 
-			m_SpatialHashModule = AddModule<SpatialHashModule>();
-			m_SpatialHashModule.shouldExcludeObject = go => go.GetComponentInParent<EditorVR>();
-			m_SpatialHashModule.Setup();
+			var spatialHashModule = AddModule<SpatialHashModule>();
+			spatialHashModule.shouldExcludeObject = go => go.GetComponentInParent<EditorVR>();
+			spatialHashModule.Setup();
 
-			m_IntersectionModule = AddModule<IntersectionModule>();
-			m_Interfaces.ConnectInterfaces(m_IntersectionModule);
-			m_IntersectionModule.Setup(m_SpatialHashModule.spatialHash);
+			var intersectionModule = AddModule<IntersectionModule>();
+			m_Interfaces.ConnectInterfaces(intersectionModule);
+			intersectionModule.Setup(spatialHashModule.spatialHash);
 
 			menus.mainMenuTools = tools.allTools.Where(t => !tools.IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 
 			var vacuumables = GetNestedModule<Vacuumables>();
 			var miniWorlds = GetNestedModule<MiniWorlds>();
 
-			m_WorkspaceModule = AddModule<WorkspaceModule>();
-			m_WorkspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
-			m_WorkspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
-			m_WorkspaceModule.workspaceCreated += (workspace) => { m_DeviceInputModule.UpdatePlayerHandleMaps(); };
-			m_WorkspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
-			m_WorkspaceModule.workspaceDestroyed += (workspace) => { m_Interfaces.DisconnectInterfaces(workspace); };
-			m_WorkspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
+			var workspaceModule = AddModule<WorkspaceModule>();
+			workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
+			workspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
+			workspaceModule.workspaceCreated += (workspace) => { deviceInputModule.UpdatePlayerHandleMaps(); };
+			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
+			workspaceModule.workspaceDestroyed += (workspace) => { m_Interfaces.DisconnectInterfaces(workspace); };
+			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
-			m_SceneObjectModule = AddModule<SceneObjectModule>();
-			m_SceneObjectModule.shouldPlaceObject = (obj, targetScale) =>
+			var sceneObjectModule = AddModule<SceneObjectModule>();
+			sceneObjectModule.shouldPlaceObject = (obj, targetScale) =>
 			{
 				foreach (var miniWorld in miniWorlds.worlds)
 				{
@@ -296,9 +283,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			GetNestedModule<Rays>().UpdateDefaultProxyRays();
 			GetNestedModule<DirectSelection>().UpdateDirectSelection();
 
-			m_KeyboardModule.UpdateKeyboardMallets();
+			GetModule<KeyboardModule>().UpdateKeyboardMallets();
 
-			m_DeviceInputModule.ProcessInput();
+			GetModule<DeviceInputModule>().ProcessInput();
 
 			var menus = GetNestedModule<Menus>();
 			menus.UpdateMenuVisibilityNearWorkspaces();
@@ -311,7 +298,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			GetNestedModule<MiniWorlds>().UpdateMiniWorlds(consumeControl);
 
-			m_InputModule.ProcessInput(null, consumeControl);
+			GetModule<MultipleRayInputModule>().ProcessInput(null, consumeControl);
 
 			foreach (var deviceData in m_DeviceData)
 			{
@@ -339,19 +326,33 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		}
 
-		T AddModule<T>() where T : Component
+		T GetModule<T>() where T : MonoBehaviour
 		{
-			T module = ObjectUtils.AddComponent<T>(gameObject);
+			MonoBehaviour module;
+			m_Modules.TryGetValue(typeof(T), out module);
+			return (T)module;
+		}
 
-			foreach (var nested in m_NestedModules.Values)
+		T AddModule<T>() where T : MonoBehaviour
+		{
+			MonoBehaviour module = null;
+			var type = typeof(T);
+			if (!m_Modules.TryGetValue(type, out module))
 			{
-				var lateBinding = nested as ILateBindInterfaceMethods<T>;
-				if (lateBinding != null)
-					lateBinding.LateBindInterfaceMethods(module);
+				module = ObjectUtils.AddComponent<T>(gameObject);
+				m_Modules.Add(type, module);
+
+				foreach (var nested in m_NestedModules.Values)
+				{
+					var lateBinding = nested as ILateBindInterfaceMethods<T>;
+					if (lateBinding != null)
+						lateBinding.LateBindInterfaceMethods((T)module);
+				}
+
+				m_Interfaces.ConnectInterfaces(module);
 			}
 
-			m_Interfaces.ConnectInterfaces(module);
-			return module;
+			return (T)module;
 		}
 
 		T GetNestedModule<T>() where T : Nested
@@ -365,11 +366,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			if (!m_NestedModules.TryGetValue(type, out nested))
 			{
 				nested = (Nested)Activator.CreateInstance(type);
+				m_NestedModules.Add(type, nested);
+
 
 				if (m_Interfaces != null)
 					m_Interfaces.AttachInterfaceConnectors(nested);
-
-				m_NestedModules.Add(type, nested);
 			}
 
 			return nested;

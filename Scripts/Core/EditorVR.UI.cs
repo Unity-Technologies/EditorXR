@@ -84,11 +84,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				ObjectUtils.AddComponent<EventSystem>(evr.gameObject);
 
 				var inputModule = evr.AddModule<MultipleRayInputModule>();
-				evr.m_InputModule = inputModule;
-				evr.m_InputModule.getPointerLength = evr.GetNestedModule<DirectSelection>().GetPointerLength;
+				inputModule.getPointerLength = evr.GetNestedModule<DirectSelection>().GetPointerLength;
 
 				if (evr.m_CustomPreviewCamera != null)
-					evr.m_InputModule.layerMask |= evr.m_CustomPreviewCamera.hmdOnlyLayerMask;
+					inputModule.layerMask |= evr.m_CustomPreviewCamera.hmdOnlyLayerMask;
 
 				eventCamera = ObjectUtils.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
 				eventCamera.enabled = false;
@@ -104,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				foreach (var canvas in go.GetComponentsInChildren<Canvas>())
 					canvas.worldCamera = eventCamera;
 
-				var keyboardModule = evr.m_KeyboardModule;
+				var keyboardModule = evr.GetModule<KeyboardModule>();
 				foreach (var inputField in go.GetComponentsInChildren<InputField>())
 				{
 					if (inputField is NumericInputField)

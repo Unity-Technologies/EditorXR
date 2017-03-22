@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -8,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var evrDeviceInputModule = evr.m_DeviceInputModule;
+				var evrDeviceInputModule = evr.GetModule<DeviceInputModule>();
 
 				// Tracked Object action maps shouldn't block each other so we share an instance
 				var trackedObjectMap = obj as ITrackedObjectActionMap;

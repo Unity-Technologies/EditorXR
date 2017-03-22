@@ -1,6 +1,7 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -37,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void AddPlayerModel()
 			{
 				var playerModel = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<Renderer>();
-				evr.m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
+				evr.GetModule<SpatialHashModule>().spatialHash.AddObject(playerModel, playerModel.bounds);
 			}
 
 			internal bool IsOverShoulder(Transform rayOrigin)

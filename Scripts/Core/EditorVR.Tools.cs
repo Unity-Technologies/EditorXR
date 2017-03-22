@@ -79,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var rays = evr.GetNestedModule<Rays>();
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
-
+				var lockModule = evr.GetModule<LockModule>();
 
 				foreach (var deviceData in evr.m_DeviceData)
 				{
@@ -91,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var selectionTool = (SelectionTool)toolData.tool;
-					selectionTool.hovered += evr.m_LockModule.OnHovered;
+					selectionTool.hovered += lockModule.OnHovered;
 					selectionTool.isRayActive = rays.IsRayActive;
 
 					toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
@@ -130,7 +130,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					alternateMenu.itemWasSelected += evrMenus.UpdateAlternateMenuOnSelectionChanged;
 				}
 
-				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
+				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
 			}
 
 			/// <summary>
@@ -150,7 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var deviceSlots = new HashSet<DeviceSlot>();
 				var tool = ObjectUtils.AddComponent(toolType, evr.gameObject) as ITool;
 
-				var actionMapInput = evr.m_DeviceInputModule.CreateActionMapInputForObject(tool, device);
+				var actionMapInput = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(tool, device);
 				if (actionMapInput != null)
 				{
 					usedDevices.UnionWith(actionMapInput.GetCurrentlyUsedDevices());
@@ -185,6 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal bool SelectTool(Transform rayOrigin, Type toolType)
 			{
 				var result = false;
+				var deviceInputModule = evr.GetModule<DeviceInputModule>();
 				evr.GetNestedModule<Rays>().ForEachProxyDevice((deviceData) =>
 				{
 					if (deviceData.rayOrigin == rayOrigin)
@@ -237,7 +238,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							}
 						}
 
-						evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
+						deviceInputModule.UpdatePlayerHandleMaps();
 						result = spawnTool;
 					}
 					else
@@ -356,7 +357,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					maps.Add(deviceData.uiInput);
 				}
 
-				maps.Add(evr.m_DeviceInputModule.trackedObjectInput);
+				maps.Add(evr.GetModule<DeviceInputModule>().trackedObjectInput);
 
 				foreach (var deviceData in evrDeviceData)
 				{
