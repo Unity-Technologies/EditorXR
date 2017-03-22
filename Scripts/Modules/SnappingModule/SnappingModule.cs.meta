@@ -1,12 +1,13 @@
 fileFormatVersion: 2
 guid: d273530f00c921848b35317113cd0fe5
-timeCreated: 1490126452
+timeCreated: 1490147755
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - m_GroundPlane: {fileID: 1000010670893562, guid: bb3c4478cbdb15d49b1b583b311ec386,
       type: 2}
+  - m_Widget: {fileID: 1000012520273730, guid: 6ed00893e6e67e44c927850a21a90c68, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

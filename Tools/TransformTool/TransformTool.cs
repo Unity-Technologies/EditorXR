@@ -169,7 +169,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public bool manipulatorVisible { private get; set; }
 
-		public TranslateWithSnappingDelegate translateWithSnapping { private get; set; }
+		public TransformWithSnappingDelegate transformWithSnapping { private get; set; }
 		public Action<Transform> clearSnappingState { private get; set; }
 
 		public Action<GameObject> addToSpatialHash { private get; set; }
@@ -455,7 +455,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Translate(Vector3 delta, Transform rayOrigin, bool constrained)
 		{
-			translateWithSnapping(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta, constrained);
+			transformWithSnapping(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta, constrained);
 		}
 
 		private void Rotate(Quaternion delta)
