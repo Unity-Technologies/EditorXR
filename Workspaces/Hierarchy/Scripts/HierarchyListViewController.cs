@@ -39,6 +39,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		int m_SelectedRow;
 
+		public string lockedQueryString { private get; set; }
+
 		public Action<int> selectRow { private get; set; }
 
 		public Func<string, bool> matchesFilter { private get; set; }
@@ -168,17 +170,24 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var hasChildren = datum.children != null;
 
 				var searchQuery = getSearchQuery();
+
+				var hasLockedQuery = searchQuery.Contains(lockedQueryString);
+				if (hasLockedQuery)
+					searchQuery = searchQuery.Replace(lockedQueryString, string.Empty).Trim();
+				
 				var hasFilterQuery = !string.IsNullOrEmpty(searchQuery);
-				var hasLockedQuery = searchQuery.Contains(HierarchyWorkspace.Locked);
+
 				var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z;
-				if (hasFilterQuery)
+
+				if (hasLockedQuery || hasFilterQuery)
 				{
 					var filterTestPass = true;
 
 					if (hasLockedQuery)
 						filterTestPass = isLocked((GameObject)EditorUtility.InstanceIDToObject(datum.index));
-					else
-						filterTestPass = datum.types.Any(type => matchesFilter(type));
+					
+					if (hasFilterQuery)
+						filterTestPass &= datum.types.Any(type => matchesFilter(type));
 
 					if (!filterTestPass) // If this item doesn't match, then move on to the next item; do not count
 					{

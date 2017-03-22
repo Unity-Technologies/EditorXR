@@ -13,7 +13,35 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		GameObject m_UnlockAllPrefab;
 
-		public override string searchQuery { get { return Locked; } }
+		string baseSearchQuery;
+		string m_CachedSearchQuery;
+
+		public override string searchQuery
+		{
+			get
+			{
+				var query = base.searchQuery;
+				if (baseSearchQuery != query)
+				{
+					baseSearchQuery = query;
+					m_CachedSearchQuery = string.Format("{0} {1}", baseSearchQuery, k_LockedQuery);
+				}
+
+				return m_CachedSearchQuery;
+			}
+		}
+
+		public override List<string> filterList
+		{
+			set
+			{
+				m_FilterList = value;
+				m_FilterList.Sort();
+				
+				if (m_FilterUI)
+					m_FilterUI.filterList = value;
+			}
+		}
 
 		public Action<GameObject, bool> setLocked { get; set; }
 		public Func<GameObject, bool> isLocked { get; set; }

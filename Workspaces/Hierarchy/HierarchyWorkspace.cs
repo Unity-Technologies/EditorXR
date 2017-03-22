@@ -11,7 +11,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
 	class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
 	{
-		public const string Locked = "Locked";
+		protected const string k_LockedQuery = "t:" + k_Locked;
+		const string k_Locked = "Locked";
 
 		[SerializeField]
 		GameObject m_ContentPrefab;
@@ -26,7 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		GameObject m_CreateEmptyPrefab;
 
 		HierarchyUI m_HierarchyUI;
-		FilterUI m_FilterUI;
+		protected FilterUI m_FilterUI;
 
 		HierarchyData m_SelectedRow;
 
@@ -44,19 +45,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 		protected List<HierarchyData> m_HierarchyData;
 
-		public List<string> filterList
+		public virtual List<string> filterList
 		{
 			set
 			{
 				m_FilterList = value;
 				m_FilterList.Sort();
-				m_FilterList.Insert(0, Locked);
+				m_FilterList.Insert(0, k_Locked);
 
 				if (m_FilterUI)
 					m_FilterUI.filterList = value;
 			}
 		}
-		List<string> m_FilterList;
+		protected List<string> m_FilterList;
 
 		public MoveCameraRigDelegate moveCameraRig { private get; set; }
 
@@ -72,6 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 			m_HierarchyUI = contentPrefab.GetComponent<HierarchyUI>();
+			m_HierarchyUI.listView.lockedQueryString = k_LockedQuery;
 			hierarchyData = m_HierarchyData;
 
 			if (m_FilterPrefab)
