@@ -18,10 +18,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				s_ActivePosition = value;
-				//m_InactivePosition = value * 2f; // additional offset for the button when it is visible and inactive
 			}
 		}
 		static Vector3 s_ActivePosition;
+
+		const string k_SelectionToolTipText = "Selection Tool (cannot be closed)";
 
 		public Type toolType
 		{
@@ -35,7 +36,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (m_ToolType == value)
 					return;
 
-				//Debug.LogError("PinnedToolButton setting TYPE : <color=green>" + value.ToString() + "</color>");
 				m_GradientButton.gameObject.SetActive(true);
 
 				m_ToolType = value;
@@ -43,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					if (isSelectTool)
 					{
-						tooltipText = "Selection Tool (cannot be closed)";
+						tooltipText = k_SelectionToolTipText;
 						gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
 					}
 					else
@@ -55,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					}
 
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType));
-					SetButtonGradients(true);
+					activeTool = true;
 					m_GradientButton.visible = true;
 				}
 				else
@@ -73,10 +73,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				m_Order = value; // Position of this button in relation to other pinned tool buttons
-				//if (m_Order == 0)
 				m_InactivePosition = s_ActivePosition * ++value; // Additional offset for the button when it is visible and inactive
-				//transform.localPosition = activeTool ? activePosition : m_InactivePosition;
-				SetButtonGradients(activeTool);
+				activeTool = activeTool;
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
 
 				Debug.LogError(m_ToolType.ToString() + " : <color=purple>Order : </color>" + m_Order + " / " + value);
@@ -120,20 +118,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 				else
 				{
-					SetButtonGradients(activeTool);
+					activeTool = activeTool;
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType));
 					customToolTipHighlightColor = gradientPair;
 					hideTooltip(this);
-					tooltipText = isSelectTool ? tooltipText = "Selection Tool (cannot be closed)" : toolType.Name;
+					tooltipText = isSelectTool ? tooltipText = k_SelectionToolTipText : toolType.Name;
 				}
 
 				m_GradientButton.highlighted = m_previewToolType != null;
 			}
 		}
 		Type m_previewToolType;
-
-		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
-		string m_TooltipText;
 
 		[SerializeField]
 		GradientButton m_GradientButton;
@@ -146,6 +141,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Transform m_TooltipSource;
 
+		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
+		string m_TooltipText;
+
 		public TextAlignment tooltipAlignment { get; private set; }
 		public Transform rayOrigin { get; set; }
 		public Func<Transform, Type, bool> selectTool { private get; set; }
@@ -154,15 +152,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<ITooltip> showTooltip { private get; set; }
 		public Action<ITooltip> hideTooltip { private get; set; }
 		public GradientPair customToolTipHighlightColor { get; set; }
+		public bool isSelectTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
 
-		public bool isSelectTool
-		{
-			get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); }
-		}
-
-		bool activeTool { get { return m_Order == 0; } }
 		Coroutine m_PositionCoroutine;
 		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
+
+		bool activeTool
+		{
+			get { return m_Order == 0; }
+			set
+			{
+				m_GradientButton.normalGradientPair = value ? gradientPair : UnityBrandColorScheme.grayscaleSessionGradient;
+				m_GradientButton.highlightGradientPair = value ? UnityBrandColorScheme.grayscaleSessionGradient : gradientPair;
+				m_GradientButton.invertHighlightScale = value;
+				m_GradientButton.highlighted = true;
+				m_GradientButton.highlighted = false;
+			}
+		}
 
 		void Start()
 		{
@@ -188,7 +194,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void OnClick()
 		{
 			selectTool(rayOrigin, m_ToolType);
-			SetButtonGradients(activeTool);
+			activeTool = activeTool;
 		}
 
 		// Create periodic table-style names for types
@@ -205,24 +211,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			return abbreviation.ToString();
-		}
-
-		void SetButtonGradients(bool active)
-		{
-			if (active)
-			{
-				m_GradientButton.normalGradientPair = gradientPair;
-				m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
-				m_GradientButton.highlighted = true;
-				m_GradientButton.highlighted = false;
-			}
-			else
-			{
-				m_GradientButton.normalGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
-				m_GradientButton.highlightGradientPair = gradientPair;
-				m_GradientButton.highlighted = true;
-				m_GradientButton.highlighted = false;
-			}
 		}
 
 		IEnumerator AnimatePosition()
