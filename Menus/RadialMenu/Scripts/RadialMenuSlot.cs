@@ -244,7 +244,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			ObjectUtils.Destroy(m_FrameMaterial);
 		}
 
-		void CorrectIconRotation()
+		public void CorrectIconRotation()
 		{
 			m_IconLookDirection = m_Icon.transform.position + transform.parent.forward * m_IconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
 			m_IconContainer.LookAt(m_IconLookDirection);
