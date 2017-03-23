@@ -48,6 +48,7 @@ namespace UnityEditor.Experimental.EditorVR
 		WorkspaceModule m_WorkspaceModule;
 		TooltipModule m_TooltipModule;
 		SnappingModule m_SnappingModule;
+		GizmoModule m_GizmoModule;
 
 		DirectSelection m_DirectSelection;
 		Interfaces m_Interfaces;
@@ -143,6 +144,9 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 			}
 			VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
+
+			m_GizmoModule = AddModule<GizmoModule>();
+			m_Interfaces.ConnectInterfaces(m_GizmoModule);
 
 			m_DeviceInputModule = AddModule<DeviceInputModule>();
 			m_DeviceInputModule.InitializePlayerHandle();

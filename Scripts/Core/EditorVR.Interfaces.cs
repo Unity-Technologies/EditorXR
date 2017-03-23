@@ -70,6 +70,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var evrDeviceData = evr.m_DeviceData;
 				var evrTooltipModule = evr.m_TooltipModule;
 				var evrSnappingModule = evr.m_SnappingModule;
+				var evrGizmoModule = evr.m_GizmoModule;
 
 				if (rayOrigin)
 				{
@@ -337,9 +338,16 @@ namespace UnityEditor.Experimental.EditorVR
 				var usesSnapping = obj as IUsesSnapping;
 				if (usesSnapping != null)
 				{
-					usesSnapping.transformWithSnapping = evrSnappingModule.TranslateWithSnapping;
+					usesSnapping.translateWithSnapping = evrSnappingModule.TranslateWithSnapping;
 					usesSnapping.directTransformWithSnapping = evrSnappingModule.DirectTransformWithSnapping;
 					usesSnapping.clearSnappingState = evrSnappingModule.ClearSnappingState;
+				}
+
+				var usesGizmos = obj as IUsesGizmos;
+				if (usesGizmos != null)
+				{
+					usesGizmos.drawRay = evrGizmoModule.DrawRay;
+					usesGizmos.drawSphere = evrGizmoModule.DrawSphere;
 				}
 
 				// Internal interfaces

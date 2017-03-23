@@ -170,8 +170,14 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			if (mf)
 				collisionTester.sharedMesh = mf.sharedMesh;
 
+			Graphics.DrawMesh(mf.sharedMesh, collisionTester.transform.localToWorldMatrix, GizmoModule.instance.gizmoMaterial, 0);
+
 			ray.origin = obj.InverseTransformPoint(ray.origin);
-			ray.direction = obj.InverseTransformDirection(ray.direction);
+			ray.direction *= maxDistance;
+			ray.direction = obj.InverseTransformVector(ray.direction);
+			maxDistance = ray.direction.magnitude;
+
+			GizmoModule.instance.DrawRay(ray.origin, ray.direction, Color.black, maxDistance);
 
 			return collisionTester.Raycast(ray, out hit, maxDistance);
 		}

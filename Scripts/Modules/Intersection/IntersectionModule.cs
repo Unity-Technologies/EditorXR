@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity);
 
-	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
+	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking, IUsesGizmos
 	{
 		const int k_MaxTestsPerTester = 100;
 
@@ -168,6 +168,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				foreach (var renderer in intersections)
 				{
 					var transform = renderer.transform;
+
 					var success = IntersectionUtils.TestRay(m_CollisionTester, transform, ray, out hit, maxDistance);
 					if (success)
 					{
@@ -181,6 +182,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			hit = new RaycastHit();
 			return false;
 		}
+
+		public DrawRayDelegate drawRay { get; set; }
+		public DrawSphereDelegate drawSphere { get; set; }
 	}
 }
 #endif

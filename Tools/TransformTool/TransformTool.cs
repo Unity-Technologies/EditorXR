@@ -200,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public bool manipulatorVisible { private get; set; }
 
-		public TransformWithSnappingDelegate transformWithSnapping { private get; set; }
+		public TransformWithSnappingDelegate translateWithSnapping { private get; set; }
 		public DirectTransformWithSnappingDelegate directTransformWithSnapping { private get; set; }
 		public Action<Transform> clearSnappingState { private get; set; }
 
@@ -261,7 +261,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 
 				// Disable manipulator on direct hover or drag
-				if (manipulatorGameObject.activeSelf && hoveringSelection)
+				if (manipulatorGameObject.activeSelf && (hoveringSelection || hasObject))
 					manipulatorGameObject.SetActive(false);
 
 				foreach (var kvp in directSelection)
@@ -493,7 +493,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Translate(Vector3 delta, Transform rayOrigin, bool constrained)
 		{
-			transformWithSnapping(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta, constrained);
+			translateWithSnapping(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta, constrained);
 		}
 
 		void Rotate(Quaternion delta)
