@@ -75,9 +75,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_Order = value; // Position of this button in relation to other pinned tool buttons
 				m_InactivePosition = s_ActivePosition * ++value; // Additional offset for the button when it is visible and inactive
 				activeTool = activeTool;
+				const float kSmoothingMax = 50f;
+				const int kSmoothingIncreaseFactor = 10;
+				var smoothingFactor = Mathf.Clamp(kSmoothingMax- m_Order * kSmoothingIncreaseFactor, 0f, kSmoothingMax);
+				m_SmoothMotion.SetPositionSmoothing(smoothingFactor);
+				m_SmoothMotion.SetRotationSmoothing(smoothingFactor);
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
-
-				Debug.LogError(m_ToolType.ToString() + " : <color=purple>Order : </color>" + m_Order + " / " + value);
 			}
 		}
 		int m_Order;
@@ -132,6 +135,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		GradientButton m_GradientButton;
+
+		[SerializeField]
+		SmoothMotion m_SmoothMotion;
 
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
 		[SerializeField]
