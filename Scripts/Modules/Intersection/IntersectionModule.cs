@@ -163,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public bool Raycast(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity)
 		{
 			Renderer[] intersections;
-			if (m_SpatialHash.GetIntersections(ray, out intersections))
+			if (m_SpatialHash.GetIntersections(ray, out intersections, maxDistance))
 			{
 				foreach (var renderer in intersections)
 				{

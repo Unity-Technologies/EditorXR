@@ -20,9 +20,11 @@ namespace UnityEditor.Experimental.EditorVR.Data
 			return intersections.Length > 0;
 		}
 
-		public bool GetIntersections(Ray ray, out T[] intersections)
+		public bool GetIntersections(Ray ray, out T[] intersections, float maxDistance = Mathf.Infinity)
 		{
-			intersections = m_Octree.GetColliding(ray);
+			intersections = maxDistance < Mathf.Infinity
+				? m_Octree.GetColliding(ray) : m_Octree.GetColliding(ray, maxDistance);
+
 			return intersections.Length > 0;
 		}
 
