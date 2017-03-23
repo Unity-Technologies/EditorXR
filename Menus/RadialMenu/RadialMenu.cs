@@ -71,6 +71,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
 
+		public bool opaqueReveal { set { m_RadialMenuUI.opaqueReveal = value; }}
+
 		void Start()
 		{
 			m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();

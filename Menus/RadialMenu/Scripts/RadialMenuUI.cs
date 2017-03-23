@@ -12,6 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces
 	{
 		const int k_SlotCount = 16;
+		const float k_OpaqueRevealDuration = 1f;
 
 		[SerializeField]
 		Sprite m_MissingActionIcon;
@@ -26,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		RadialMenuSlot m_HighlightedButton;
 		float m_PhaseOffset; // Correcting the coordinates, based on actions count, so that the menu is centered at the bottom
+		float m_OpaqueRevealCurrentDuration = 0f;
 
 		public Transform alternateMenuOrigin
 		{
@@ -171,7 +173,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		private bool m_SemiTransparent;
 
+		public bool opaqueReveal
+		{
+			set
+			{
+				if (m_OpaqueReveal != value)
+				{
+					m_OpaqueReveal = value;
+					m_OpaqueRevealCurrentDuration = 0f;
+				}
+			}
+		}
+		bool m_OpaqueReveal;
+
 		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
+
+		void OnDisable()
+		{
+			m_OpaqueReveal = false;
+		}
 
 		void Update()
 		{
@@ -187,8 +207,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 			}
 
+			if (m_OpaqueReveal && (m_OpaqueRevealCurrentDuration += Time.unscaledDeltaTime) > k_OpaqueRevealDuration)
+				m_OpaqueReveal = false;
+
 			if (m_Visible) // don't override transparency if the menu is in the process of hiding itself
-				semiTransparent = !m_RadialMenuSlots.Any(x => x.highlighted);
+				semiTransparent = !m_RadialMenuSlots.Any(x => x.highlighted) && !m_OpaqueReveal;
 		}
 
 		public void Setup()

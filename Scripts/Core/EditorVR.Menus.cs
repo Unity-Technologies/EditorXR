@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR
 				Hidden = 1 << 0,
 				OverActivator = 1 << 1,
 				NearWorkspace = 1 << 2,
+				OpaqueReveal = 1 << 3
 			}
 
 			internal List<Type> mainMenuTools { get; set; }
@@ -137,6 +138,13 @@ namespace UnityEditor.Experimental.EditorVR
 			void UpdateAlternateMenuForDevice(DeviceData deviceData)
 			{
 				var alternateMenu = deviceData.alternateMenu;
+				var flags = deviceData.menuHideFlags[alternateMenu];
+				if ((flags & MenuHideFlags.OpaqueReveal) != 0)
+				{
+					deviceData.menuHideFlags[alternateMenu] &= ~(MenuHideFlags.OpaqueReveal | MenuHideFlags.Hidden);
+					alternateMenu.opaqueReveal = true;
+				}
+
 				alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0 && !(deviceData.currentTool is IExclusiveMode);
 
 				// Move the activator button to an alternate position if the alternate menu will be shown
@@ -238,7 +246,7 @@ namespace UnityEditor.Experimental.EditorVR
 				SetAlternateMenuVisibility(rayOrigin, Selection.gameObjects.Length > 0);
 			}
 
-			internal void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
+			internal void SetAlternateMenuVisibility(Transform rayOrigin, bool visible, bool opaqueReveal = false)
 			{
 				evr.m_Rays.ForEachProxyDevice((deviceData) =>
 				{
@@ -246,7 +254,9 @@ namespace UnityEditor.Experimental.EditorVR
 					if (alternateMenu != null)
 					{
 						var flags = deviceData.menuHideFlags[alternateMenu];
-						deviceData.menuHideFlags[alternateMenu] = (deviceData.rayOrigin == rayOrigin) && visible ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
+						var visibleDevice = (deviceData.rayOrigin == rayOrigin) && visible;
+						flags = opaqueReveal && visibleDevice ? flags | MenuHideFlags.OpaqueReveal : flags;
+						deviceData.menuHideFlags[alternateMenu] = visibleDevice ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
 					}
 				});
 			}

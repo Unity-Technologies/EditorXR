@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		// TODO: This should go away once the alternate menu stays open or if locking/unlocking from alternate menu goes 
 		// away entirely (e.g. because of HierarchyWorkspace)
-		public Action<Transform, GameObject> updateAlternateMenu { private get; set; }
+		public Action<Transform, GameObject, bool> updateAlternateMenu { private get; set; }
 
 		readonly List<GameObject> m_LockedGameObjects = new List<GameObject>();
 
@@ -104,7 +104,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					// Turn off menu if it was previously shown
 					if (IsLocked(m_CurrentHoverObject))
-						updateAlternateMenu(rayOrigin, null);
+						updateAlternateMenu(rayOrigin, null, false);
 
 					m_HoverRayOrigin = null;
 					m_CurrentHoverObject = null;
@@ -119,14 +119,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						UpdateAction(go);
 
 						// Open up the menu, so that locking can be changed
-						updateAlternateMenu(rayOrigin, go);
+						updateAlternateMenu(rayOrigin, go, true);
+						m_HoverDuration = 0f;
 					}
 				}
 				else // Switch to new hover object on the same ray origin
 				{
 					// Turn off menu if it was previously shown
 					if (IsLocked(m_CurrentHoverObject))
-						updateAlternateMenu(rayOrigin, null);
+						updateAlternateMenu(rayOrigin, null, false);
 
 					m_CurrentHoverObject = go;
 					m_HoverDuration = 0f;
