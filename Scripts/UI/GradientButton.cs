@@ -102,6 +102,16 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 		bool m_Visible;
 
+		Vector3 originalScale
+		{
+			get { return invertHighlightScale ? m_HighlightContentContainerLocalScale : m_OriginalContentContainerLocalScale; }
+		}
+
+		private Vector3 highlightScale
+		{
+			get { return invertHighlightScale ? m_OriginalContentContainerLocalScale : m_HighlightContentContainerLocalScale; }
+		}
+
 		public GradientPair normalGradientPair { get { return m_NormalGradientPair; } set { m_NormalGradientPair = value; } }
 		[SerializeField]
 		GradientPair m_NormalGradientPair;
@@ -160,6 +170,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		Material m_ButtonMaterial;
 		Vector3 m_OriginalIconLocalPosition;
 		Vector3 m_OriginalContentContainerLocalScale;
+		Vector3 m_HighlightContentContainerLocalScale;
 		Vector3 m_IconHighlightedLocalPosition;
 		Vector3 m_IconPressedLocalPosition;
 		Sprite m_OriginalIconSprite;
@@ -173,6 +184,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
 
+		public bool invertHighlightScale { private get; set; }
+
 		void Awake()
 		{
 			m_OriginalIconSprite = m_Icon.sprite;
@@ -180,6 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			m_OriginalLocalScale = transform.localScale;
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_OriginalContentContainerLocalScale = m_ContentContainer.localScale;
+			m_HighlightContentContainerLocalScale = new Vector3(m_OriginalContentContainerLocalScale.x, m_OriginalContentContainerLocalScale.y, m_OriginalContentContainerLocalScale.z * m_highlightZScaleMultiplier);
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * k_IconHighlightedLocalZOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * k_IconHighlightedLocalZOffset;
 
@@ -216,7 +230,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			m_CanvasGroup.interactable = false;
 			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
-			m_ContentContainer.localScale = m_OriginalContentContainerLocalScale;
+			m_ContentContainer.localScale = originalScale;
 			SetMaterialColors(normalGradientPair);
 
 			this.StopCoroutine(ref m_ContentVisibilityCoroutine);
@@ -331,7 +345,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var currentGradientPair = GetMaterialColors();
 			var targetGradientPair = highlightGradientPair;
 			var currentLocalScale = m_ContentContainer.localScale;
-			var highlightedLocalScale = new Vector3(m_OriginalContentContainerLocalScale.x, m_OriginalContentContainerLocalScale.y, m_OriginalContentContainerLocalScale.z * m_highlightZScaleMultiplier);
+			var highlightedLocalScale = highlightScale;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.unscaledDeltaTime * 4;
@@ -362,7 +376,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var originalGradientPair = GetMaterialColors();
 			var targetGradientPair = normalGradientPair;
 			var currentLocalScale = m_ContentContainer.localScale;
-			var targetScale = m_OriginalContentContainerLocalScale;
+			var targetScale = originalScale;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.unscaledDeltaTime * 6;
