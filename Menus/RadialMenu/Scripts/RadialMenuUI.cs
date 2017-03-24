@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
