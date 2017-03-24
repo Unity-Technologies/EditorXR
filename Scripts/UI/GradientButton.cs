@@ -107,7 +107,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			get { return invertHighlightScale ? m_HighlightContentContainerLocalScale : m_OriginalContentContainerLocalScale; }
 		}
 
-		private Vector3 highlightScale
+		Vector3 highlightScale
 		{
 			get { return invertHighlightScale ? m_OriginalContentContainerLocalScale : m_HighlightContentContainerLocalScale; }
 		}
