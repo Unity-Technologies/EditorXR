@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class HierarchyListViewController : NestedListViewController<HierarchyData, HierarchyListItem, int>, IUsesGameObjectLocking
+	sealed class HierarchyListViewController : NestedListViewController<HierarchyData, HierarchyListItem, int>, IUsesGameObjectLocking, ISetHighlight
 	{
 		const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -38,6 +38,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		float m_VisibleItemHeight;
 
 		int m_SelectedRow;
+
+		readonly List<KeyValuePair<Transform, GameObject>> m_HoveredGameObjects = new List<KeyValuePair<Transform, GameObject>>();
 
 		public string lockedQueryString { private get; set; }
 
@@ -130,6 +132,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			HierarchyListItem item;
 			if (!m_ListItems.TryGetValue(index, out item))
 				item = GetItem(data);
+
+			var go = data.gameObject;
+			var kvp = new KeyValuePair<Transform, GameObject>(item.hoveringRayOrigin, go);
+			if (item.hovering || m_HoveredGameObjects.Remove(kvp))
+			{
+				this.SetHighlight(go, item.hovering, item.hoveringRayOrigin, force: item.hovering);
+
+				if (item.hovering)
+					m_HoveredGameObjects.Add(kvp);
+			}
 
 			var width = bounds.size.x - k_ClipMargin;
 			var locked = this.IsLocked(data.gameObject);

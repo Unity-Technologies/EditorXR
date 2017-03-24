@@ -51,7 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		float m_StackingFraction = 0.3f;
 
 		Color m_NormalColor;
-		bool m_Hovering;
 		Renderer m_CubeRenderer;
 		Transform m_CubeTransform;
 		Transform m_DropZoneTransform;
@@ -67,6 +66,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Renderer m_LockRenderer;
 		Material m_LockIconMaterial;
 		Material m_UnlockIconMaterial;
+
+		public bool hovering { get; private set; }
+		public Transform hoveringRayOrigin { get; private set; }
 
 		public Material cubeMaterial { get; private set; }
 		public Material dropZoneMaterial { get; private set; }
@@ -138,7 +140,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_Text.gameObject.SetActive(false);
 			m_Text.gameObject.SetActive(true);
 
-			m_Hovering = false;
+			hovering = false;
 		}
 
 		public void SetMaterials(Material textMaterial, Material expandArrowMaterial, Material lockIconMaterial, Material unlockIconMaterial)
@@ -190,7 +192,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			UpdateArrow(expanded);
 
 			// Set selected/hover/normal color
-			if (m_Hovering)
+			if (hovering)
 				cubeMaterial.color = m_HoverColor;
 			else if (selected)
 				cubeMaterial.color = m_SelectedColor;
@@ -357,7 +359,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ExpandArrowRenderer.sharedMaterial = m_ExpandArrowMaterial;
 			m_DropZone.gameObject.SetActive(true);
 			m_Cube.GetComponent<Collider>().enabled = true;
-			m_Hovering = false;
+			hovering = false;
 		}
 
 		void ToggleLock(BaseHandle handle, HandleEventData eventData)
@@ -378,12 +380,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
-			m_Hovering = true;
+			hovering = true;
+			hoveringRayOrigin = eventData.rayOrigin;
 		}
 
 		void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
 		{
-			m_Hovering = false;
+			hovering = false;
+			hoveringRayOrigin = eventData.rayOrigin;
 		}
 
 		void OnDropHoverStarted(BaseHandle handle)
