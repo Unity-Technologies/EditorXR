@@ -65,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR
 			/// <summary>
 			/// Re-use DefaultProxyRay and strip off objects and components not needed for MiniWorldRays
 			/// </summary>
-			internal Transform InstantiateMiniWorldRay()
+			static Transform InstantiateMiniWorldRay()
 			{
 				var miniWorldRay = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject).transform;
 				ObjectUtils.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());

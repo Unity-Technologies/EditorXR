@@ -79,8 +79,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_MiniCamera.cameraType = CameraType.Game;
 				m_MiniCamera.clearFlags = CameraClearFlags.Nothing;
 				m_MiniCamera.worldToCameraMatrix = GetWorldToCameraMatrix(camera);
+
 				var referenceBounds = miniWorld.referenceBounds;
 				var inverseRotation = Quaternion.Inverse(miniWorld.referenceTransform.rotation);
+
 				Shader.SetGlobalVector("_GlobalClipCenter", inverseRotation * referenceBounds.center);
 				Shader.SetGlobalVector("_GlobalClipExtents", referenceBounds.extents);
 				Shader.SetGlobalMatrix("_InverseRotation", Matrix4x4.TRS(Vector3.zero, inverseRotation, Vector3.one));
@@ -88,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				for (var i = 0; i < m_IgnoreList.Count; i++)
 				{
 					var hiddenRenderer = m_IgnoreList[i];
-					if (!hiddenRenderer)
+					if (!hiddenRenderer || !hiddenRenderer.gameObject.activeInHierarchy)
 						continue;
 
 					if (hiddenRenderer.CompareTag(ShowInMiniWorldTag))
@@ -109,13 +111,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				for (var i = 0; i < m_IgnoreList.Count; i++)
 				{
 					var hiddenRenderer = m_IgnoreList[i];
-					if (!hiddenRenderer)
+					if (!hiddenRenderer || !hiddenRenderer.gameObject.activeInHierarchy)
 						continue;
 
 					if (hiddenRenderer.CompareTag(ShowInMiniWorldTag))
 						hiddenRenderer.gameObject.layer = m_IgnoredObjectLayer[i];
 					else
-						m_IgnoreList[i].enabled = m_IgnoreObjectRendererEnabled[i];
+						hiddenRenderer.enabled = m_IgnoreObjectRendererEnabled[i];
 				}
 			}
 		}

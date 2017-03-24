@@ -446,17 +446,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			showDefaultRay(grabData.rayOrigin, true);
 		}
 
-		private void Translate(Vector3 delta)
+		void Translate(Vector3 delta)
 		{
 			m_TargetPosition += delta;
 		}
 
-		private void Rotate(Quaternion delta)
+		void Rotate(Quaternion delta)
 		{
 			m_TargetRotation = delta * m_TargetRotation;
 		}
 
-		private void Scale(Vector3 delta)
+		void Scale(Vector3 delta)
 		{
 			m_TargetScale += delta;
 		}
@@ -466,7 +466,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			Undo.IncrementCurrentGroup();
 		}
 
-		private void UpdateSelectionBounds()
+		void UpdateSelectionBounds()
 		{
 			m_SelectionBounds = ObjectUtils.GetBounds(Selection.gameObjects);
 		}
@@ -475,7 +475,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			var go = ObjectUtils.Instantiate(prefab, transform, active: false);
 			go.SetActive(false);
-			HideGameObjectRecursively(go); // MiniWorld constantly modifies manipulator, triggering OnHierarchyChanged
 			var manipulator = go.GetComponent<BaseManipulator>();
 			manipulator.translate = Translate;
 			manipulator.rotate = Rotate;
@@ -484,16 +483,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			return manipulator;
 		}
 
-		static void HideGameObjectRecursively(GameObject go)
-		{
-			go.hideFlags |= HideFlags.HideInHierarchy;
-			foreach (Transform child in go.transform)
-			{
-				HideGameObjectRecursively(child.gameObject);
-			}
-		}
-
-		private void UpdateCurrentManipulator()
+		void UpdateCurrentManipulator()
 		{
 			var selectionTransforms = Selection.transforms;
 			if (selectionTransforms.Length <= 0)

@@ -324,13 +324,13 @@ namespace UnityEditor.Experimental.EditorVR
 				if (!m_StandardManipulator)
 					m_StandardManipulator = evr.GetComponentInChildren<StandardManipulator>();
 
-				if (m_StandardManipulator)
+				if (m_StandardManipulator && m_StandardManipulator.adjustScaleForCamera)
 					m_StandardManipulator.AdjustScale(cameraPosition, matrix);
 
 				if (!m_ScaleManipulator)
 					m_ScaleManipulator = evr.GetComponentInChildren<ScaleManipulator>();
 
-				if (m_ScaleManipulator)
+				if (m_ScaleManipulator && m_ScaleManipulator.adjustScaleForCamera)
 					m_ScaleManipulator.AdjustScale(cameraPosition, matrix);
 			}
 		}
