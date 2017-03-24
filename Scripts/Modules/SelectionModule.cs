@@ -11,8 +11,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		GameObject m_CurrentGroupRoot;
 		readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state
 
-		public Action<GameObject, bool> setLocked { private get; set; }
-		public Func<GameObject, bool> isLocked { private get; set; }
 		public Func<GameObject, GameObject> getGroupRoot { private get; set; }
 
 		public event Action<Transform> selected;
@@ -37,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		bool CanSelectObject(GameObject hoveredObject, bool useGrouping)
 		{
-			if (isLocked(hoveredObject))
+			if (this.IsLocked(hoveredObject))
 				return false;
 
 			if (hoveredObject != null)

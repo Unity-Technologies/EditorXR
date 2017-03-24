@@ -13,8 +13,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
 		List<IAction> m_Actions;
 
-		public ConnectInterfacesDelegate connectInterfaces { get; set; }
-
 		public void RemoveActions(List<IAction> actions)
 		{
 			m_MenuActions.Clear();
@@ -39,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var action = ObjectUtils.AddComponent(actionType, gameObject) as IAction;
 				var attribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
 
-				connectInterfaces(action);
+				this.ConnectInterfaces(action);
 
 				if (attribute != null)
 				{

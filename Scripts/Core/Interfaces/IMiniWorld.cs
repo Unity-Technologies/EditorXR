@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Matrix that converts from the mini world space to reference space (which may have scale and translation)
 		/// </summary>
-		Func<Camera, Matrix4x4> getWorldToCameraMatrix { get; }
+		Matrix4x4 GetWorldToCameraMatrix(Camera camera);
 
 		/// <summary>
 		/// Sets a list of renderers to be skipped when rendering the MiniWorld

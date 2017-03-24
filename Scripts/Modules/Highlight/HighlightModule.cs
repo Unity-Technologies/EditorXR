@@ -37,9 +37,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			get { return m_RightHighlightMaterial.color; }
 		}
 
-		public Action<GameObject, bool> setLocked { private get; set; }
-		public Func<GameObject, bool> isLocked { private get; set; }
-
 		void LateUpdate()
 		{
 			foreach (var highlight in m_Highlights)
@@ -91,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void SetHighlight(GameObject go, bool active, Transform rayOrigin = null, Material material = null)
 		{
-			if (go == null || isLocked(go))
+			if (go == null || this.IsLocked(go))
 				return;
 
 			if (material == null)

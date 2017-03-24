@@ -46,9 +46,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Func<string, bool> matchesFilter { private get; set; }
 		public Func<string> getSearchQuery { private get; set; }
 
-		public Action<GameObject, bool> setLocked { get; set; }
-		public Func<GameObject, bool> isLocked { get; set; }
-
 		protected override void Setup()
 		{
 			base.Setup();
@@ -135,7 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				item = GetItem(data);
 
 			var width = bounds.size.x - k_ClipMargin;
-			var locked = isLocked(data.gameObject);
+			var locked = this.IsLocked(data.gameObject);
 			item.UpdateSelf(width, depth, expanded, index == m_SelectedRow, locked);
 
 			SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
@@ -185,7 +182,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					var filterTestPass = true;
 
 					if (hasLockedQuery)
-						filterTestPass = isLocked(datum.gameObject);
+						filterTestPass = this.IsLocked(datum.gameObject);
 					
 					if (hasFilterQuery)
 						filterTestPass &= datum.types.Any(type => matchesFilter(type));
@@ -264,7 +261,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				var data = listItem.data;
 				var go = data.gameObject;
-				setLocked(go, !isLocked(go));
+				this.SetLocked(go, !this.IsLocked(go));
 			}
 		}
 

@@ -65,23 +65,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		private float m_LastRotationInput;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
 
-		public InstantiateUIDelegate instantiateUI { private get; set; }
 		public List<Type> menuTools { private get; set; }
-		public Func<Transform, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public CreateWorkspaceDelegate createWorkspace { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
-		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 		public Transform targetRayOrigin { private get; set; }
-		public Func<Transform, Type, bool> isToolActive { private get; set; }
 		public Type proxyType { private get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
 		void Start()
 		{
-			m_MainMenuUI = instantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
-			connectInterfaces(m_MainMenuUI);
+			m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
+			this.ConnectInterfaces(m_MainMenuUI);
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
@@ -161,7 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						{
 							if (visible && targetRayOrigin)
 							{
-								selectTool(targetRayOrigin, selectedType);
+								this.SelectTool(targetRayOrigin, selectedType);
 								UpdateToolButtons();
 							}
 						});
@@ -171,7 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						b.button.onClick.AddListener(() =>
 						{
 							if (visible)
-								createWorkspace(selectedType);
+								this.CreateWorkspace(selectedType);
 						});
 					}
 				});
@@ -182,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			foreach (var kvp in m_ToolButtons)
 			{
-				kvp.Value.selected = isToolActive(targetRayOrigin, kvp.Key);
+				kvp.Value.selected = this.IsToolActive(targetRayOrigin, kvp.Key);
 			}
 		}
 	}

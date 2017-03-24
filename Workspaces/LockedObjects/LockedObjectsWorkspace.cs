@@ -55,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var unlockAllUI = ObjectUtils.Instantiate(m_UnlockAllPrefab, m_WorkspaceUI.frontPanel, false);
 				foreach (var mb in unlockAllUI.GetComponentsInChildren<MonoBehaviour>())
 				{
-					connectInterfaces(mb);
+					this.ConnectInterfaces(mb);
 				}
 
 				unlockAllUI.GetComponentInChildren<Button>(true).onClick.AddListener(UnlockAll);

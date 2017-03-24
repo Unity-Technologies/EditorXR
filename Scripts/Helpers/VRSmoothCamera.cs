@@ -1,5 +1,5 @@
 ﻿#if UNITY_EDITOR && UNITY_EDITORVR
-using System;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
@@ -44,8 +44,6 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		/// </summary>
 		public int hmdOnlyLayerMask { get { return LayerMask.GetMask(k_HMDOnlyLayer); } }
 
-		public Func<float> getViewerScale { private get; set; }
-
 		void Awake()
 		{
 			m_SmoothCamera = GetComponent<Camera>();
@@ -85,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
 			const float kPullBackDistance = 1.1f;
 			transform.forward = m_Forward;
-			transform.position = m_Position - transform.forward * kPullBackDistance * getViewerScale();
+			transform.position = m_Position - transform.forward * kPullBackDistance * this.GetViewerScale();
 
 			// Don't render any HMD-related visual proxies
 			var hidden = m_VRCamera.GetComponentsInChildren<Renderer>();

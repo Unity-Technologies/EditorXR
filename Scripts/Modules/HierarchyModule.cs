@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class HierarchyModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged
+	sealed class HierarchyModule : MonoBehaviour, ISelectionChanged
 	{
 		readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
 		HierarchyData m_HierarchyData;
@@ -14,9 +14,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 		readonly HashSet<string> m_ObjectTypes = new HashSet<string>();
-
-		public Action<GameObject, bool> setLocked { private get; set; }
-		public Func<GameObject, bool> isLocked { private get; set; }
 
 		void OnEnable()
 		{
@@ -122,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var i = 0;
 				while (hasNext && hp.depth > depth)
 				{
-					var go = EditorUtility.InstanceIDToObject(hp.instanceID) as GameObject;
+					var go = EditorUtility.InstanceIDToObject(hp.instanceID);
 
 					if (go == gameObject)
 					{

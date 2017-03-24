@@ -9,13 +9,22 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface ISelectTool
 	{
+	}
+
+	public static class ISelectToolMethods
+	{
+		internal static Func<Transform, Type, bool> selectTool { get; set; }
+
 		/// <summary>
-		/// Delegate used to select tools from the menu
-		/// Transform = ray origin
-		/// Type = type of tool
+		/// Method used to select tools from the menu
 		/// Returns whether the tool was successfully selected
 		/// </summary>
-		Func<Transform, Type, bool> selectTool { set; }
+		/// <param name="rayOrigin">The rayOrigin that the tool should spawn under</param>
+		/// <param name="toolType">Type of tool to spawn/select</param>
+		public static bool SelectTool(this ISelectTool obj, Transform rayOrigin, Type toolType)
+		{
+			return selectTool(rayOrigin, toolType);
+		}
 	}
 }
 #endif

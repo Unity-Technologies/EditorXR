@@ -40,8 +40,6 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		Quaternion m_LazyRotation;
 		Vector3 m_LazyPosition;
 
-		public Func<float> getViewerScale { get; set; }
-
 		void Start()
 		{
 			if (m_Target == null && transform.parent != null)
@@ -65,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			if (m_Target == null)
 				return;
 
-			var scaledTime = Time.unscaledDeltaTime / getViewerScale();
+			var scaledTime = Time.unscaledDeltaTime / this.GetViewerScale();
 			const float kMaxSmoothingVelocity = 1f; // m/s
 			var targetPosition = m_Target.position;
 			if (Vector3.Distance(targetPosition, m_LazyPosition) > kMaxSmoothingVelocity * scaledTime)

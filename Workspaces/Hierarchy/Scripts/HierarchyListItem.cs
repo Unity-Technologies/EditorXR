@@ -83,11 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public int extraSpace { get; private set; }
 
-		public Func<Transform, bool> isOverShoulder { private get; set; }
-
 		public bool isStillSettling { private set; get; }
-
-		public Func<Transform, Transform> getFieldGrabOriginForRayOrigin { get; set; }
 
 		public override void Setup(HierarchyData data)
 		{
@@ -283,7 +279,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			if (m_DragObject)
 			{
-				var fieldGrabOrigin = getFieldGrabOriginForRayOrigin(eventData.rayOrigin);
+				var fieldGrabOrigin = this.GetFieldGrabOriginForRayOrigin(eventData.rayOrigin);
 				MagnetizeTransform(fieldGrabOrigin, m_DragObject);
 				var offset = 0f;
 				foreach (var child in m_VisibleChildren)
@@ -312,7 +308,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			if (m_DragObject)
 			{
-				if (isOverShoulder(transform))
+				if (this.IsOverShoulder(transform))
 				{
 					ObjectUtils.Destroy(EditorUtility.InstanceIDToObject(data.index));
 				}
@@ -417,7 +413,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		bool CanDrop(BaseHandle handle, object dropObject)
 		{
-			if (isOverShoulder(handle.transform))
+			if (this.IsOverShoulder(handle.transform))
 				return false;
 
 			var dropData = dropObject as HierarchyData;
@@ -452,7 +448,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void ReceiveDrop(BaseHandle handle, object dropObject)
 		{
-			if (isOverShoulder(handle.transform))
+			if (this.IsOverShoulder(handle.transform))
 				return;
 
 			var dropData = dropObject as HierarchyData;

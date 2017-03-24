@@ -4,14 +4,18 @@ using System.Collections.Generic;
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Implementors receive a list of asset types found in the project
+	/// Implementors receive a filtered list of types found
 	/// </summary>
 	public interface IFilterUI
 	{
 		/// <summary>
-		/// Set accessor for the filter list
+		/// The filter list provided
 		/// </summary>
 		List<string> filterList { set; }
+
+		/// <summary>
+		/// The search query to be performed
+		/// </summary>
 		string searchQuery { get; }
 	}
 

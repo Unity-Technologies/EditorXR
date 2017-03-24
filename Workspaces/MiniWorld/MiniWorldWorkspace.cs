@@ -64,9 +64,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		Coroutine m_UpdateLocationCoroutine;
 
-		public Func<Transform, object, bool> lockRay { get; set; }
-		public Func<Transform, object, bool> unlockRay { get; set; }
-
 		public IMiniWorld miniWorld
 		{
 			get { return m_MiniWorld; }
@@ -90,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			resetUI.resetButton.onClick.AddListener(ResetChessboard);
 			foreach (var mb in resetUI.GetComponentsInChildren<MonoBehaviour>())
 			{
-				connectInterfaces(mb);
+				this.ConnectInterfaces(mb);
 			}
 
 			var parent = m_WorkspaceUI.frontPanel.parent;
@@ -122,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(k_InitReferenceScale);
 			foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
 			{
-				connectInterfaces(mb);
+				this.ConnectInterfaces(mb);
 			}
 
 			var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();
@@ -303,12 +300,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void DragStarted(BaseHandle handle, HandleEventData handleEventData)
 		{
-			lockRay(handleEventData.rayOrigin, this);
+			this.LockRay(handleEventData.rayOrigin, this);
 		}
 
 		void DragEnded(BaseHandle handle, HandleEventData handleEventData)
 		{
-			unlockRay(handleEventData.rayOrigin, this);
+			this.UnlockRay(handleEventData.rayOrigin, this);
 		}
 
 		void RecenterOnPlayer()
