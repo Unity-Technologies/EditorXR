@@ -177,18 +177,11 @@ namespace UnityEditor.Experimental.EditorVR
 						}
 						else
 						{
-							// If not hitting UI, then check standard raycast and approximate bounds to set distance
-							var go = GetFirstGameObject(rayOrigin);
-							if (go != null)
-							{
-								var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-								var newDist = distance;
-								foreach (var renderer in go.GetComponentsInChildren<Renderer>())
-								{
-									if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
-										distance = Mathf.Min(distance, newDist);
-								}
-							}
+							var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+							RaycastHit hit;
+							GameObject go;
+							if (evr.m_IntersectionModule.Raycast(ray, out hit, out go, distance))
+								distance = hit.distance;
 						}
 						m_DefaultRays[rayOrigin].SetLength(distance);
 					}
@@ -224,13 +217,14 @@ namespace UnityEditor.Experimental.EditorVR
 				return result;
 			}
 
-			internal GameObject GetFirstGameObject(Transform rayOrigin)
+			internal static GameObject GetFirstGameObject(Transform rayOrigin)
 			{
-				var go = evr.m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
-				if (go)
-					return go;
-
 				var intersectionModule = evr.m_IntersectionModule;
+				var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+				RaycastHit hit;
+				GameObject go;
+				if (intersectionModule.Raycast(ray, out hit, out go, k_DefaultRayLength * Viewer.GetViewerScale()))
+					return go;
 
 				// If a raycast did not find an object use the spatial hash as a final test
 				if (intersectionModule)
@@ -241,9 +235,8 @@ namespace UnityEditor.Experimental.EditorVR
 						return renderer.gameObject;
 				}
 
-				foreach (var ray in evr.m_MiniWorlds.rays)
+				foreach (var miniWorldRay in evr.m_MiniWorlds.rays.Values)
 				{
-					var miniWorldRay = ray.Value;
 					if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
 					{
 						var tester = miniWorldRay.tester;

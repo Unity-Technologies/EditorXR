@@ -192,7 +192,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		bool PerformFaceSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, Vector3 direction, float breakScale, float raycastDistance = k_MaxRayLength)
 		{
 			RaycastHit hit;
-			if (raycast(ray, out hit, raycastDistance))
+			GameObject go;
+			if (raycast(ray, out hit, out go, raycastDistance))
 			{
 				state.faceSnapping = true;
 				state.groundSnapping = false;

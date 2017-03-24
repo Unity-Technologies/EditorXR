@@ -44,7 +44,6 @@ namespace UnityEditor.Experimental.EditorVR
 		IntersectionModule m_IntersectionModule;
 		DeviceInputModule m_DeviceInputModule;
 		MultipleRayInputModule m_InputModule;
-		PixelRaycastModule m_PixelRaycastModule;
 		WorkspaceModule m_WorkspaceModule;
 		TooltipModule m_TooltipModule;
 		SnappingModule m_SnappingModule;
@@ -168,10 +167,6 @@ namespace UnityEditor.Experimental.EditorVR
 			m_Interfaces.ConnectInterfaces(m_TooltipModule);
 			m_InputModule.rayEntered += m_TooltipModule.OnRayEntered;
 			m_InputModule.rayExited += m_TooltipModule.OnRayExited;
-
-			m_PixelRaycastModule = AddModule<PixelRaycastModule>();
-			m_PixelRaycastModule.ignoreRoot = transform;
-			m_PixelRaycastModule.raycastCamera = m_UI.eventCamera;
 
 			m_HighlightModule = AddModule<HighlightModule>();
 			m_ActionsModule = AddModule<ActionsModule>();

@@ -8,17 +8,17 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity);
+	delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity);
 
 	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		const int k_MaxTestsPerTester = 100;
 
-		private readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
-		private readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
+		readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
+		readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
 
-		private SpatialHash<Renderer> m_SpatialHash;
-		private MeshCollider m_CollisionTester;
+		SpatialHash<Renderer> m_SpatialHash;
+		MeshCollider m_CollisionTester;
 
 #if UNITY_EDITOR
 		public bool ready { get { return m_SpatialHash != null; } }
@@ -160,8 +160,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return obj;
 		}
 
-		public bool Raycast(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity)
+		public bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity)
 		{
+			obj = null;
 			hit = new RaycastHit();
 			var result = false;
 			var distance = Mathf.Infinity;
@@ -181,8 +182,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						{
 							result = true;
 							distance = dist;
+							hit.distance = dist;
 							hit.point = point;
 							hit.normal = transform.TransformDirection(tmp.normal);
+							obj = renderer.gameObject;
 						}
 					}
 				}
