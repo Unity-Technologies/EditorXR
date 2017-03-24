@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity);
 
-	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking, IUsesGizmos
+	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		const int k_MaxTestsPerTester = 100;
 
@@ -162,6 +162,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public bool Raycast(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity)
 		{
+			hit = new RaycastHit();
+			var result = false;
+			var distance = Mathf.Infinity;
 			Renderer[] intersections;
 			if (m_SpatialHash.GetIntersections(ray, out intersections, maxDistance))
 			{
@@ -169,22 +172,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					var transform = renderer.transform;
 
-					var success = IntersectionUtils.TestRay(m_CollisionTester, transform, ray, out hit, maxDistance);
-					if (success)
+					RaycastHit tmp;
+					if (IntersectionUtils.TestRay(m_CollisionTester, transform, ray, out tmp, maxDistance))
 					{
-						hit.point = transform.TransformPoint(hit.point);
-						hit.normal = transform.TransformDirection(hit.normal);
-						return true;
+						var point = transform.TransformPoint(tmp.point);
+						var dist = Vector3.Distance(point, ray.origin);
+						if (dist < distance)
+						{
+							result = true;
+							distance = dist;
+							hit.point = point;
+							hit.normal = transform.TransformDirection(tmp.normal);
+						}
 					}
 				}
 			}
 
-			hit = new RaycastHit();
-			return false;
+			return result;
 		}
-
-		public DrawRayDelegate drawRay { get; set; }
-		public DrawSphereDelegate drawSphere { get; set; }
 	}
 }
 #endif
