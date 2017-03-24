@@ -57,7 +57,6 @@ namespace UnityEditor.Experimental.EditorVR
 				EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 			}
 
-			// TODO: Find a better callback for when objects are created or destroyed
 			void OnHierarchyChanged()
 			{
 				m_MiniWorldIgnoreListDirty = true;

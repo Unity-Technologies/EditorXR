@@ -475,12 +475,22 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			var go = ObjectUtils.Instantiate(prefab, transform, active: false);
 			go.SetActive(false);
+			HideGameObjectRecursively(go); // MiniWorld constantly modifies manipulator, triggering OnHierarchyChanged
 			var manipulator = go.GetComponent<BaseManipulator>();
 			manipulator.translate = Translate;
 			manipulator.rotate = Rotate;
 			manipulator.scale = Scale;
 			manipulator.dragStarted += OnDragStarted;
 			return manipulator;
+		}
+
+		static void HideGameObjectRecursively(GameObject go)
+		{
+			go.hideFlags |= HideFlags.HideInHierarchy;
+			foreach (Transform child in go.transform)
+			{
+				HideGameObjectRecursively(child.gameObject);
+			}
 		}
 
 		private void UpdateCurrentManipulator()
