@@ -235,8 +235,10 @@ namespace UnityEditor.Experimental.EditorVR
 						return renderer.gameObject;
 				}
 
-				foreach (var miniWorldRay in evr.m_MiniWorlds.rays.Values)
+				var enumerator = evr.m_MiniWorlds.rays.GetEnumerator();
+				while(enumerator.MoveNext())
 				{
+					var miniWorldRay = enumerator.Current.Value;
 					if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
 					{
 						var tester = miniWorldRay.tester;
@@ -248,6 +250,7 @@ namespace UnityEditor.Experimental.EditorVR
 							return renderer.gameObject;
 					}
 				}
+				enumerator.Dispose();
 
 				return null;
 			}

@@ -30,6 +30,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public Action<GameObject, bool> setLocked { private get; set; }
 		public Func<GameObject, bool> isLocked { private get; set; }
 
+		readonly List<Renderer> m_Intersections = new List<Renderer>();
+
 		public void Setup(SpatialHash<Renderer> hash)
 		{
 			m_SpatialHash = hash;
@@ -44,8 +46,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (m_Testers == null)
 				return;
 
-			foreach (var tester in m_Testers)
+			for(int i = 0; i < m_Testers.Count; i++)
 			{
+				var tester = m_Testers[i];
 				if (!tester.active)
 				{
 					Renderer intersectedObject;
@@ -59,15 +62,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (testerTransform.hasChanged)
 				{
 					var intersectionFound = false;
-					Renderer[] intersections;
-					if (m_SpatialHash.GetIntersections(tester.renderer.bounds, out intersections))
+					m_Intersections.Clear();
+					if (m_SpatialHash.GetIntersections(m_Intersections, tester.renderer.bounds))
 					{
 						//Sort list to try and hit closer object first
 						var testerBounds = tester.renderer.bounds;
 						var testerBoundsCenter = testerBounds.center;
-						Array.Sort(intersections, (a, b) => (a.bounds.center - testerBoundsCenter).magnitude.CompareTo((b.bounds.center - testerBoundsCenter).magnitude));
-						var intersectionList = intersections.ToList();
-						intersectionList.RemoveAll(obj =>
+						m_Intersections.Sort((a, b) => (a.bounds.center - testerBoundsCenter).magnitude.CompareTo((b.bounds.center - testerBoundsCenter).magnitude));
+						m_Intersections.RemoveAll(obj =>
 						{
 							// Ignore destroyed objects
 							if (!obj)
@@ -88,11 +90,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 							return false;
 						});
 
-						if (intersectionList.Count > k_MaxTestsPerTester)
+						if (m_Intersections.Count > k_MaxTestsPerTester)
 							continue;
 
-						foreach (var obj in intersectionList)
+						for (int j = 0; j < m_Intersections.Count; j++)
 						{
+							var obj = m_Intersections[j];
 							if (IntersectionUtils.TestObject(m_CollisionTester, obj, tester))
 							{
 								intersectionFound = true;
@@ -166,11 +169,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			hit = new RaycastHit();
 			var result = false;
 			var distance = Mathf.Infinity;
-			Renderer[] intersections;
-			if (m_SpatialHash.GetIntersections(ray, out intersections, maxDistance))
+			m_Intersections.Clear();
+			if (m_SpatialHash.GetIntersections(m_Intersections, ray, maxDistance))
 			{
-				foreach (var renderer in intersections)
+				for (int i = 0; i < m_Intersections.Count; i++)
 				{
+					var renderer = m_Intersections[i];
 					var gameObject = renderer.gameObject;
 					if (ignoreList != null && ignoreList.Contains(gameObject))
 						continue;

@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: WidgetOuter
+  m_Name: GizmoMaterial
   m_Shader: {fileID: 4800000, guid: 17d79fd9a3d634a40ae219ffcf9befd4, type: 3}
   m_ShaderKeywords: _GLOSSYREFLECTIONS_OFF _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 0

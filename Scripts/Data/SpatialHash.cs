@@ -6,26 +6,28 @@ namespace UnityEditor.Experimental.EditorVR.Data
 {
 	class SpatialHash<T>
 	{
-		private readonly List<T> m_AllObjects = new List<T>();
-		private readonly BoundsOctree<T> m_Octree = new BoundsOctree<T>(100f, Vector3.zero, 0.5f, 1.2f);
+		readonly List<T> m_AllObjects = new List<T>();
+		readonly BoundsOctree<T> m_Octree = new BoundsOctree<T>(100f, Vector3.zero, 0.5f, 1.2f);
 
 		public List<T> allObjects
 		{
 			get { return m_AllObjects; }
 		}
 
-		public bool GetIntersections(Bounds bounds, out T[] intersections)
+		public bool GetIntersections(List<T> intersections, Bounds bounds)
 		{
-			intersections = m_Octree.GetColliding(bounds);
-			return intersections.Length > 0;
+			m_Octree.GetColliding(intersections, bounds);
+			return intersections.Count > 0;
 		}
 
-		public bool GetIntersections(Ray ray, out T[] intersections, float maxDistance = Mathf.Infinity)
+		public bool GetIntersections(List<T> intersections, Ray ray, float maxDistance = Mathf.Infinity)
 		{
-			intersections = maxDistance < Mathf.Infinity
-				? m_Octree.GetColliding(ray) : m_Octree.GetColliding(ray, maxDistance);
+			if (maxDistance < Mathf.Infinity)
+				m_Octree.GetColliding(intersections, ray);
+			else
+				m_Octree.GetColliding(intersections, ray, maxDistance);
 
-			return intersections.Length > 0;
+			return intersections.Count > 0;
 		}
 
 		public void AddObject(T obj, Bounds bounds)
