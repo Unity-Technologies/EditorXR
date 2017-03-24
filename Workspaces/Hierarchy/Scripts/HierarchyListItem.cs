@@ -67,6 +67,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Material m_LockIconMaterial;
 		Material m_UnlockIconMaterial;
 
+		bool m_HoveringLock = false;
+
 		public bool hovering { get; private set; }
 		public Transform hoveringRayOrigin { get; private set; }
 
@@ -100,6 +102,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_NormalColor = cubeMaterial.color;
 
 				m_LockRenderer = m_Lock.GetComponent<Renderer>();
+				m_Lock.hoverStarted += (bh, ed) => { m_HoveringLock = true; };
+				m_Lock.hoverEnded += (bh, ed) => { m_HoveringLock = false; };
 				m_Lock.dragEnded += ToggleLock;
 
 				m_ExpandArrowRenderer = m_ExpandArrow.GetComponent<Renderer>();
@@ -167,7 +171,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float doubleMargin = k_Margin * 2;
 			expandArrowTransform.localPosition = new Vector3(k_Margin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
 
-			m_LockRenderer.sharedMaterial = locked ? m_LockIconMaterial : m_UnlockIconMaterial;
+			m_LockRenderer.sharedMaterial = (!locked && m_HoveringLock) || (locked && !m_HoveringLock) ? m_LockIconMaterial : m_UnlockIconMaterial;
 			var lockIconTransform = m_Lock.transform;
 			var lockWidth = lockIconTransform.localScale.x * 0.5f;
 			
