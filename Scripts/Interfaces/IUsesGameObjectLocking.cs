@@ -19,21 +19,20 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Set a GameObject's locked status
 		/// </summary>
+		/// <param name="go">The GameObject to set locked or unlocked</param>
+		/// <param name="locked">Locked or unlocked status</param>
 		public static void SetLocked(this IUsesGameObjectLocking obj, GameObject go, bool locked)
 		{
-			if (setLocked != null)
-				setLocked(go, locked);
+			setLocked(go, locked);
 		}
 
 		/// <summary>
 		/// Check whether a GameObject is locked
 		/// </summary>
+		/// <param name="go">GameObject locked status to test</param>
 		public static bool IsLocked(this IUsesGameObjectLocking obj, GameObject go)
 		{
-			if (isLocked != null)
-				return isLocked(go);
-
-			return false;
+			return isLocked(go);
 		}
 	}
 }

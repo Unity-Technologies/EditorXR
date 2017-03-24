@@ -24,10 +24,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <returns>Dictionary (K,V) where K = rayOrigin used to select the object and V = info about the direct selection</returns>
 		public static Dictionary<Transform, DirectSelectionData> GetDirectSelection(this IUsesDirectSelection obj)
 		{
-			if (getDirectSelection != null)
-				return getDirectSelection();
-
-			return null;
+			return getDirectSelection();
 		}
 	}
 }

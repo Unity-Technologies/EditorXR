@@ -23,10 +23,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="toolType">Type of tool to spawn/select</param>
 		public static bool SelectTool(this ISelectTool obj, Transform rayOrigin, Type toolType)
 		{
-			if (selectTool != null)
-				return selectTool(rayOrigin, toolType);
-
-			return false;
+			return selectTool(rayOrigin, toolType);
 		}
 	}
 }

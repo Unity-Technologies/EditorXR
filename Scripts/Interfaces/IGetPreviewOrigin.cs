@@ -18,12 +18,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Get the preview transform attached to the given rayOrigin
 		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin where the preview will occur</param>
 		public static Transform GetPreviewOriginForRayOrigin(this IGetPreviewOrigin obj, Transform rayOrigin)
 		{
-			if (getPreviewOriginForRayOrigin != null)
-				return getPreviewOriginForRayOrigin(rayOrigin);
-
-			return null;
+			return getPreviewOriginForRayOrigin(rayOrigin);
 		}
 	}
 }

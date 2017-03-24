@@ -77,7 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var transformTool = SpawnTool(typeof(TransformTool), out devices);
 				evr.GetNestedModule<DirectSelection>().objectsGrabber = transformTool.tool as IGrabObjects;
 
-				var rays = evr.GetNestedModule<Rays>();
+				Func<Transform, bool> isRayActive = evr.GetNestedModule<Rays>().IsRayActive;
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
 				var lockModule = evr.GetModule<LockModule>();
 
@@ -92,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					AddToolToDeviceData(toolData, devices);
 					var selectionTool = (SelectionTool)toolData.tool;
 					selectionTool.hovered += lockModule.OnHovered;
-					selectionTool.isRayActive = rays.IsRayActive;
+					selectionTool.isRayActive = isRayActive;
 
 					toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);

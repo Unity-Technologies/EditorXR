@@ -9,11 +9,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var evrProjectFolderModule = evr.GetModule<ProjectFolderModule>();
-
 				var usesProjectFolderData = obj as IUsesProjectFolderData;
 				if (usesProjectFolderData != null)
 				{
+					var evrProjectFolderModule = evr.GetModule<ProjectFolderModule>();
 					evrProjectFolderModule.AddConsumer(usesProjectFolderData);
 
 					var filterUI = obj as IFilterUI;
@@ -24,11 +23,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void DisconnectInterface(object obj)
 			{
-				var evrProjectFolderModule = evr.GetModule<ProjectFolderModule>();
-
 				var usesProjectFolderData = obj as IUsesProjectFolderData;
 				if (usesProjectFolderData != null)
 				{
+					var evrProjectFolderModule = evr.GetModule<ProjectFolderModule>();
 					evrProjectFolderModule.RemoveConsumer(usesProjectFolderData);
 
 					var filterUI = obj as IFilterUI;

@@ -26,10 +26,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <returns>Returns what object would be selected by selectObject</returns>
 		public static GameObject GetSelectionCandidate(this ISelectObject obj, GameObject hoveredObject, bool useGrouping = false)
 		{
-			if (getSelectionCandidate != null)
-				return getSelectionCandidate(hoveredObject, useGrouping);
-
-			return null;
+			return getSelectionCandidate(hoveredObject, useGrouping);
 		}
 
 		/// <summary>
@@ -41,8 +38,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="useGrouping">Use group selection</param>
 		public static void SelectObject(this ISelectObject obj, GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
 		{
-			if (selectObject != null)
-				selectObject(hoveredObject, rayOrigin, multiSelect, useGrouping);
+			selectObject(hoveredObject, rayOrigin, multiSelect, useGrouping);
 		}
 	}
 }

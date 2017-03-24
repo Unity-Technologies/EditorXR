@@ -18,12 +18,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Returns whether the specified ray origin is hovering over a UI element
 		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin that is being checked</param>
 		public static bool IsHoveringOverUI(this IIsHoveringOverUI obj, Transform rayOrigin)
 		{
-			if (isHoveringOverUI != null)
-				return isHoveringOverUI(rayOrigin);
-
-			return false;
+			return isHoveringOverUI(rayOrigin);
 		}
 	}
 }

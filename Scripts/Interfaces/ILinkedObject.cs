@@ -22,12 +22,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Returns whether the specified ray origin is hovering over a UI element
 		/// </summary>
+		/// <param name="linkedObject">Object among the linked objects to check if it is the central one</param>
 		public static bool IsSharedUpdater(this ILinkedObject obj, ILinkedObject linkedObject)
 		{
-			if (isSharedUpdater != null)
-				return isSharedUpdater(linkedObject);
-
-			return false;
+			return isSharedUpdater(linkedObject);
 		}
 	}
 }

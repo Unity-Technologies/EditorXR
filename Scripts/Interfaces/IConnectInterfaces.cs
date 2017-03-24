@@ -23,8 +23,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="rayOrigin">(Optional) ray origin (needed for connecting ray-based interfaces)</param>
 		public static void ConnectInterfaces(this IConnectInterfaces ci, object obj, Transform rayOrigin = null)
 		{
-			if (connectInterfaces != null)
-				connectInterfaces(obj, rayOrigin);
+			connectInterfaces(obj, rayOrigin);
 		}
 	}
 

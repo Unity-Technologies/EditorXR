@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static InstantiateUIDelegate instantiateUI { get; set; }
 
 		/// <summary>
-		/// Method for instantiating UI
+		/// Method provided by the system for instantiating UI
 		/// </summary>
 		/// <param name="prefab">The prefab to instantiate</param>
 		/// <param name="parent">(Optional) A parent transform to instantiate under</param>
@@ -26,10 +26,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <returns></returns>
 		public static GameObject InstantiateUI(this IInstantiateUI obj, GameObject prefab, Transform parent = null, bool worldPositionStays = true)
 		{
-			if (instantiateUI != null)
-				return instantiateUI(prefab, parent, worldPositionStays);
-
-			return null;
+			return instantiateUI(prefab, parent, worldPositionStays);
 		}
 	}
 }

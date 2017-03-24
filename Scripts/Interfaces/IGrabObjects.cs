@@ -62,14 +62,11 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Returns true if the object can be grabbed
 		/// </summary>
-		/// <param name="selection">The selection</param>
+		/// <param name="go">The selection</param>
 		/// <param name="rayOrigin">The rayOrigin of the proxy that is looking to grab</param>
 		public static bool CanGrabObject(this IGrabObjects obj, GameObject go, Transform rayOrigin)
 		{
-			if (canGrabObject != null)
-				return canGrabObject(go, rayOrigin);
-
-			return false;
+			return canGrabObject(go, rayOrigin);
 		}
 	}
 

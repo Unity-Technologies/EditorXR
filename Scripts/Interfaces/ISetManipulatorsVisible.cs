@@ -17,10 +17,11 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Show or hide the manipulator(s)
 		/// </summary>
+		/// <param name="requester">The requesting object that is wanting to set all manipulators visible or hidden</param>
+		/// <param name="visibility">Whether the manipulators should be shown or hidden</param>
 		public static void SetManipulatorsVisible(this ISetManipulatorsVisible obj, ISetManipulatorsVisible requester, bool visibility)
 		{
-			if (setManipulatorsVisible != null)
-				setManipulatorsVisible(requester, visibility);
+			setManipulatorsVisible(requester, visibility);
 		}
 	}
 }

@@ -16,14 +16,13 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static Action<Transform, Vector3> placeSceneObject { get; set; }
 
 		/// <summary>
-		/// Delegate used to place objects in the scene/MiniWorld
+		/// Method used to place objects in the scene/MiniWorld
 		/// </summary>
 		/// <param name="transform">Transform of the GameObject to place</param>
 		/// <param name="scale">Target scale of placed object</param>
 		public static void PlaceSceneObject(this IPlaceSceneObject obj, Transform transform, Vector3 scale)
 		{
-			if (placeSceneObject != null)
-				placeSceneObject(transform, scale);
+			placeSceneObject(transform, scale);
 		}
 	}
 }

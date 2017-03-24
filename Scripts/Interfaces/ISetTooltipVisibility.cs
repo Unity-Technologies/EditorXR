@@ -18,19 +18,19 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Show the given Tooltip
 		/// </summary>
+		/// <param name="tooltip">The tooltip to show</param>
 		public static void ShowTooltip(this ISetTooltipVisibility obj, ITooltip tooltip)
 		{
-			if (showTooltip != null)
-				showTooltip(tooltip);
+			showTooltip(tooltip);
 		}
 
 		/// <summary>
 		/// Hide the given Tooltip
 		/// </summary>
+		/// <param name="tooltip">The tooltip to hide</param>
 		public static void HideTooltip(this ISetTooltipVisibility obj, ITooltip tooltip)
 		{
-			if (hideTooltip != null)
-				hideTooltip(tooltip);
+			hideTooltip(tooltip);
 		}
 
 	}

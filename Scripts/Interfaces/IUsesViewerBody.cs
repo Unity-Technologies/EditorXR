@@ -18,12 +18,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Returns whether the specified transform is over the viewer's shoulders and behind the head
 		/// </summary>
+		/// <param name="transform">Transform of GameObject to test</param>
 		public static bool IsOverShoulder(this IUsesViewerBody obj, Transform transform)
 		{
-			if (isOverShoulder != null)
-				return isOverShoulder(transform);
-
-			return false;
+			return isOverShoulder(transform);
 		}
 	}
 }

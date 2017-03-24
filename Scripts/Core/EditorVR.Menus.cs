@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				NearWorkspace = 1 << 2,
 			}
 
-			internal List<Type> mainMenuTools { get; set; }
+			internal List<Type> mainMenuTools { private get; set; }
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<IMenu> m_UpdateVisibilityMenus = new List<IMenu>();
@@ -48,12 +48,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var evrMenus = evr.GetNestedModule<Menus>();
-
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)
 				{
-					mainMenu.menuTools = evrMenus.mainMenuTools;
+					mainMenu.menuTools = mainMenuTools;
 					mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
 				}
 			}

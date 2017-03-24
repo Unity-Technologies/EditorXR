@@ -16,10 +16,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		public static float GetViewerScale(this IUsesViewerScale obj)
 		{
-			if (getViewerScale != null)
-				return getViewerScale();
-
-			return 1;
+			return getViewerScale();
 		}
 	}
 }

@@ -25,8 +25,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="obj">The object performing the lock is passed in and must be used for unlocking</param>
 		public static void LockRay(this IUsesRayLocking customRay, Transform rayOrigin, object obj)
 		{
-			if (lockRay != null)
-				lockRay(rayOrigin, obj);
+			lockRay(rayOrigin, obj);
 		}
 
 		/// <summary>
@@ -36,8 +35,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="obj">The object performing the unlock must be passed in and match the one that locked it or null to override</param>
 		public static void UnlockRay(this IUsesRayLocking customRay, Transform rayOrigin, object obj)
 		{
-			if (unlockRay != null)
-				unlockRay(rayOrigin, obj);
+			unlockRay(rayOrigin, obj);
 		}
 	}
 

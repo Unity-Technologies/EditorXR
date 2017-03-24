@@ -2,7 +2,7 @@
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	public interface IInterfaceConnector
+	interface IInterfaceConnector
 	{
 		void ConnectInterface(object obj, Transform rayOrigin = null);
 

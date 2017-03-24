@@ -9,11 +9,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var evrHierarchyModule = evr.GetModule<HierarchyModule>();
-
 				var usesHierarchyData = obj as IUsesHierarchyData;
 				if (usesHierarchyData != null)
 				{
+					var evrHierarchyModule = evr.GetModule<HierarchyModule>();
 					evrHierarchyModule.AddConsumer(usesHierarchyData);
 
 					var filterUI = obj as IFilterUI;
@@ -23,12 +22,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 
 			public void DisconnectInterface(object obj)
-			{
-				var evrHierarchyModule = evr.GetModule<HierarchyModule>();
-
-				var usesHierarchy = obj as IUsesHierarchyData;
+			{				var usesHierarchy = obj as IUsesHierarchyData;
 				if (usesHierarchy != null)
 				{
+					var evrHierarchyModule = evr.GetModule<HierarchyModule>();
 					evrHierarchyModule.RemoveConsumer(usesHierarchy);
 
 					var filterUI = obj as IFilterUI;

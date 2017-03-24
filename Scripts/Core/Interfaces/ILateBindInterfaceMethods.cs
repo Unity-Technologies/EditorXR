@@ -1,8 +1,6 @@
-﻿using UnityEngine;
-
-namespace UnityEditor.Experimental.EditorVR.Core
+﻿namespace UnityEditor.Experimental.EditorVR.Core
 {
-	public interface ILateBindInterfaceMethods<T> where T : class
+	interface ILateBindInterfaceMethods<T> where T : class
 	{
 		void LateBindInterfaceMethods(T provider);
 	}

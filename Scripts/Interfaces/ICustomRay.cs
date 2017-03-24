@@ -24,8 +24,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="rayOnly">An optional parameter to hide or show only the ray</param>
 		public static void ShowDefaultRay(this ICustomRay customRay, Transform rayOrigin, bool rayOnly = false)
 		{
-			if (showDefaultRay != null)
-				showDefaultRay(rayOrigin, rayOnly);
+			showDefaultRay(rayOrigin, rayOnly);
 		}
 
 		/// <summary>
@@ -35,8 +34,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="rayOnly">An optional parameter to hide or show only the ray</param>
 		public static void HideDefaultRay(this ICustomRay customRay, Transform rayOrigin, bool rayOnly = false)
 		{
-			if (hideDefaultRay != null)
-				hideDefaultRay(rayOrigin, rayOnly);
+			hideDefaultRay(rayOrigin, rayOnly);
 		}
 	}
 }

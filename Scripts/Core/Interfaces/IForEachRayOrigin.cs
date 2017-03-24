@@ -16,8 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		public static void ForEachRayOrigin(this IForEachRayOrigin obj, ForEachRayOriginCallback callback)
 		{
-			if (forEachRayOrigin != null)
-				forEachRayOrigin(callback);
+			forEachRayOrigin(callback);
 		}
 	}
 }

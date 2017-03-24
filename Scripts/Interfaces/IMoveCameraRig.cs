@@ -17,14 +17,13 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static MoveCameraRigDelegate moveCameraRig { get; set; }
 
 		/// <summary>
-		/// Method signature for moving the camera rig
+		/// Method for moving the camera rig
 		/// </summary>
 		/// <param name="position">Target position</param>
 		/// <param name="viewDirection">Target view direction in the XZ plane. Y component will be ignored</param>
 		public static void MoveCameraRig(this IMoveCameraRig obj, Vector3 position, Vector3? viewDirection = null)
 		{
-			if (moveCameraRig != null)
-				moveCameraRig(position, viewDirection);
+			moveCameraRig(position, viewDirection);
 		}
 	}
 }

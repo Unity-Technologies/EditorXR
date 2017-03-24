@@ -18,12 +18,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Get the field grab transform attached to the given rayOrigin
 		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin that is grabbing the field</param>
 		public static Transform GetFieldGrabOriginForRayOrigin(this IGetFieldGrabOrigin obj, Transform rayOrigin)
 		{
-			if (getFieldGrabOriginForRayOrigin != null)
-				return getFieldGrabOriginForRayOrigin(rayOrigin);
-
-			return null;
+			return getFieldGrabOriginForRayOrigin(rayOrigin);
 		}
 	}
 }

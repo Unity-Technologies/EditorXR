@@ -22,10 +22,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="menuPrefab">The prefab (with an IMenu component) to instantiate</param>
 		public static GameObject InstantiateMenuUI(this IInstantiateMenuUI obj, Transform rayOrigin, IMenu menuPrefab)
 		{
-			if (instantiateMenuUI != null)
-				return instantiateMenuUI(rayOrigin, menuPrefab);
-
-			return null;
+			return instantiateMenuUI(rayOrigin, menuPrefab);
 		}
 	}
 }

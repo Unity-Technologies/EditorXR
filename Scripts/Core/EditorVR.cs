@@ -11,7 +11,6 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
 using UnityEngine.VR;
-using Valve.VR.InteractionSystem;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -43,6 +42,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		IPreviewCamera m_CustomPreviewCamera;
 
 		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
+
+		// Local method use only -- caching here to prevent frequent lookups in Update
+		Rays m_Rays;
+		DirectSelection m_DirectSelection;
+		Menus m_Menus;
+		UI m_UI;
+		KeyboardModule m_KeyboardModule;
+		DeviceInputModule m_DeviceInputModule;
 
 		static HideFlags defaultHideFlags
 		{
@@ -96,6 +103,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 			LateBindNestedModules(nestedClassTypes);
 
+			m_Rays = GetNestedModule<Rays>();
+			m_DirectSelection = GetNestedModule<DirectSelection>();
+			m_Menus = GetNestedModule<Menus>();
+			m_UI = GetNestedModule<UI>();
+
 			AddModule<HierarchyModule>();
 			AddModule<ProjectFolderModule>();
 
@@ -124,16 +136,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			var tools = GetNestedModule<Tools>();
 
-			var deviceInputModule = AddModule<DeviceInputModule>();
-			deviceInputModule.InitializePlayerHandle();
-			deviceInputModule.CreateDefaultActionMapInputs();
-			deviceInputModule.processInput = ProcessInput;
-			deviceInputModule.updatePlayerHandleMaps = tools.UpdatePlayerHandleMaps;
+			m_DeviceInputModule = AddModule<DeviceInputModule>();
+			m_DeviceInputModule.InitializePlayerHandle();
+			m_DeviceInputModule.CreateDefaultActionMapInputs();
+			m_DeviceInputModule.processInput = ProcessInput;
+			m_DeviceInputModule.updatePlayerHandleMaps = tools.UpdatePlayerHandleMaps;
 
 			var ui = GetNestedModule<UI>();
 			ui.Initialize();
 
-			AddModule<KeyboardModule>();
+			m_KeyboardModule = AddModule<KeyboardModule>();
 
 			var dragAndDropModule = AddModule<DragAndDropModule>();
 			var inputModule = GetModule<MultipleRayInputModule>();
@@ -181,7 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var workspaceModule = AddModule<WorkspaceModule>();
 			workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
 			workspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
-			workspaceModule.workspaceCreated += (workspace) => { deviceInputModule.UpdatePlayerHandleMaps(); };
+			workspaceModule.workspaceCreated += (workspace) => { m_DeviceInputModule.UpdatePlayerHandleMaps(); };
 			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
 			workspaceModule.workspaceDestroyed += (workspace) => { m_Interfaces.DisconnectInterfaces(workspace); };
 			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
@@ -280,18 +292,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			if (m_CustomPreviewCamera != null)
 				m_CustomPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
 
-			GetNestedModule<Rays>().UpdateDefaultProxyRays();
-			GetNestedModule<DirectSelection>().UpdateDirectSelection();
+			m_Rays.UpdateDefaultProxyRays();
+			m_DirectSelection.UpdateDirectSelection();
 
-			GetModule<KeyboardModule>().UpdateKeyboardMallets();
+			m_KeyboardModule.UpdateKeyboardMallets();
 
-			GetModule<DeviceInputModule>().ProcessInput();
+			m_DeviceInputModule.ProcessInput();
 
-			var menus = GetNestedModule<Menus>();
-			menus.UpdateMenuVisibilityNearWorkspaces();
-			menus.UpdateMenuVisibilities();
+			m_Menus.UpdateMenuVisibilityNearWorkspaces();
+			m_Menus.UpdateMenuVisibilities();
 
-			GetNestedModule<UI>().UpdateManipulatorVisibilites();
+			m_UI.UpdateManipulatorVisibilites();
 		}
 
 		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
@@ -367,7 +378,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				nested = (Nested)Activator.CreateInstance(type);
 				m_NestedModules.Add(type, nested);
-
 
 				if (m_Interfaces != null)
 					m_Interfaces.AttachInterfaceConnectors(nested);

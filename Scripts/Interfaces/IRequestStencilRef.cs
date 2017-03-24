@@ -19,10 +19,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		public static byte RequestStencilRef(this IRequestStencilRef obj)
 		{
-			if (requestStencilRef != null)
-				return requestStencilRef();
-
-			return 0;
+			return requestStencilRef();
 		}
 	}
 }

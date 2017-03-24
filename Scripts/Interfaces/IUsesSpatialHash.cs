@@ -19,19 +19,19 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Add all renderers of a GameObject (and its children) to the spatial hash for queries, direct selection, etc.
 		/// </summary>
+		/// <param name="go">The GameObject to add</param>
 		public static void AddToSpatialHash(this IUsesSpatialHash obj, GameObject go)
 		{
-			if (addToSpatialHash != null)
-				addToSpatialHash(go);
+			addToSpatialHash(go);
 		}
 
 		/// <summary>
 		/// Remove all renderers of a GameObject (and its children) from the spatial hash
 		/// </summary>
+		/// <param name="go">The GameObject to remove</param>
 		public static void RemoveFromSpatialHash(this IUsesSpatialHash obj, GameObject go)
 		{
-			if (removeFromSpatialHash != null)
-				removeFromSpatialHash(go);
+			removeFromSpatialHash(go);
 		}
 	}
 }

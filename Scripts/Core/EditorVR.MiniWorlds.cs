@@ -348,7 +348,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (directSelectInput.select.wasJustReleased)
 					{
 						var sceneObjectModule = evr.GetModule<SceneObjectModule>();
-
+						var viewer = evr.GetNestedModule<Viewer>();
 						var rayPosition = originalRayOrigin.position;
 						for (var i = 0; i < dragObjects.Length; i++)
 						{
@@ -357,7 +357,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							// If the user has pulled an object out of the MiniWorld, use PlaceObject to grow it back to its original scale
 							if (!isContained)
 							{
-								if (evr.GetNestedModule<Viewer>().IsOverShoulder(originalRayOrigin))
+								if (viewer.IsOverShoulder(originalRayOrigin))
 								{
 									sceneObjectModule.DeleteSceneObject(dragObject.gameObject);
 								}

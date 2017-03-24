@@ -14,20 +14,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var evrHighlightModule = evr.GetModule<HighlightModule>();
-
 				var customHighlight = obj as ICustomHighlight;
 				if (customHighlight != null)
+				{
+					var evrHighlightModule = evr.GetModule<HighlightModule>();
 					evrHighlightModule.customHighlight += customHighlight.OnHighlight;
+				}
 			}
 
 			public void DisconnectInterface(object obj)
 			{
-				var evrHighlightModule = evr.GetModule<HighlightModule>();
-
 				var customHighlight = obj as ICustomHighlight;
 				if (customHighlight != null)
+				{
+					var evrHighlightModule = evr.GetModule<HighlightModule>();
 					evrHighlightModule.customHighlight -= customHighlight.OnHighlight;
+				}
 			}
 		}
 	}

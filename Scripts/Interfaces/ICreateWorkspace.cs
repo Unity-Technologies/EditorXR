@@ -17,15 +17,13 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static CreateWorkspaceDelegate createWorkspace { get; set; }
 
 		/// <summary>
-		/// Method signature for creating workspaces
+		/// Method for creating workspaces
 		/// </summary>
 		/// <param name="type">Type of the workspace (must inherit from Workspace)</param>
 		/// <param name="createdCallback">Called once the workspace is created</param>
-
 		public static void CreateWorkspace(this ICreateWorkspace ci, Type type, Action<IWorkspace> createdCallback = null)
 		{
-			if (createWorkspace != null)
-				createWorkspace(type, createdCallback);
+			createWorkspace(type, createdCallback);
 		}
 	}
 }

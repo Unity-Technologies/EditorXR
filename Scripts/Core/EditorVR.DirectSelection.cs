@@ -14,7 +14,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			internal IGrabObjects objectsGrabber { get; set; }
 
-			internal Dictionary<Transform, DirectSelectionData> directSelections { get { return m_DirectSelections; } }
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
 
 			// Local method use only -- created here to reduce garbage collection
@@ -22,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public DirectSelection()
 			{
-				IUsesDirectSelectionMethods.getDirectSelection = () => directSelections;
+				IUsesDirectSelectionMethods.getDirectSelection = () => m_DirectSelections;
 
 				IGrabObjectsMethods.canGrabObject = CanGrabObject;
 			}
@@ -173,12 +172,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
 			{
 				var sceneObjectModule = evr.GetModule<SceneObjectModule>();
+				var viewer = evr.GetNestedModule<Viewer>();
+				var miniWorlds = evr.GetNestedModule<MiniWorlds>();
 				foreach (var grabbedObject in grabbedObjects)
 				{
 					// Dropping the player head updates the camera rig position
 					if (grabbedObject.CompareTag(k_VRPlayerTag))
 						Viewer.DropPlayerHead(grabbedObject);
-					else if (evr.GetNestedModule<Viewer>().IsOverShoulder(rayOrigin) && !evr.GetNestedModule<MiniWorlds>().rays.ContainsKey(rayOrigin))
+					else if (viewer.IsOverShoulder(rayOrigin) && !miniWorlds.rays.ContainsKey(rayOrigin))
 						sceneObjectModule.DeleteSceneObject(grabbedObject.gameObject);
 				}
 			}

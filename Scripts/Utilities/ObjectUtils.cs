@@ -59,17 +59,20 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <param name="name">Name of the new GameObject</param>
 		/// <param name="parent">Transform to parent new object under</param>
 		/// <returns>The newly created empty GameObject</returns>
-		public static GameObject CreateEmptyGameObject(String name = null, Transform parent = null)
+		public static GameObject CreateEmptyGameObject(string name = null, Transform parent = null)
 		{
 			GameObject empty = null;
-			if (String.IsNullOrEmpty(name))
-				name = "Empty";
+			if (string.IsNullOrEmpty(name))
+				name = "New Game Object";
 
 #if UNITY_EDITORVR
 			empty = EditorUtility.CreateGameObjectWithHideFlags(name, hideFlags);
+#else
+			empty = new GameObject(name);
+			empty.hideFlags = hideFlags;
+#endif
 			empty.transform.parent = parent;
 			empty.transform.localPosition = Vector3.zero;
-#endif
 
 			return empty;
 		}
@@ -223,13 +226,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				return GetAssignableTypes(type);
 
 			return Enumerable.Empty<Type>();
-		}
-
-		public static bool IsSameAssembly<T>(object obj)
-		{
-			// Until we move EditorVR into it's own assembly, this is a way to enforce 'internal' on interfaces
-			var objType = obj.GetType();
-			return objType.Assembly == typeof(T).Assembly;
 		}
 
 		public static void Destroy(UnityObject o, float t = 0f)

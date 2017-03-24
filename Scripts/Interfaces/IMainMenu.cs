@@ -37,10 +37,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="type">The tool type to compare</param>
 		public static bool IsToolActive(this IMainMenu obj, Transform rayOrigin, Type type)
 		{
-			if (isToolActive != null)
-				return isToolActive(rayOrigin, type);
-
-			return false;
+			return isToolActive(rayOrigin, type);
 		}
 	}
 }
