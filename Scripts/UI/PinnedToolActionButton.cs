@@ -14,6 +14,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		const string k_MaterialAlphaProperty = "_Alpha";
 
 		public event Action onClick;
+		public event Action onHoverEnter;
+		public event Action onHoverExit;
 
 		public bool pressed
 		{
@@ -72,8 +74,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 				m_Visible = value;
 
-				this.StopCoroutine(ref m_VisibilityCoroutine);
-				m_VisibilityCoroutine = value ? StartCoroutine(AnimateShow()) : StartCoroutine(AnimateHide());
+				gameObject.SetActive(value);
+				//this.StopCoroutine(ref m_VisibilityCoroutine);
+				//m_VisibilityCoroutine = value ? StartCoroutine(AnimateShow()) : StartCoroutine(AnimateHide());
 			}
 		}
 		bool m_Visible;
@@ -396,6 +399,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void OnPointerEnter(PointerEventData eventData)
 		{
 			highlighted = true;
+			onHoverEnter();
 			eventData.Use();
 		}
 
@@ -405,6 +409,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void OnPointerExit(PointerEventData eventData)
 		{
 			highlighted = false;
+			onHoverExit();
 			eventData.Use();
 		}
 

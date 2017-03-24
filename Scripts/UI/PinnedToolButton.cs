@@ -182,7 +182,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_GradientButton.highlighted = false;
 
 				m_LeftPinnedToolActionButton.onClick += OnLeftActionButtonClick;
+				m_LeftPinnedToolActionButton.onHoverEnter += OnActionButtonHoverEnter;
+				m_LeftPinnedToolActionButton.onHoverExit += OnActionButtonHoverExit;
 				m_RightPinnedToolActionButton.onClick += OnRightActionButtonClick;
+				m_RightPinnedToolActionButton.onHoverEnter += OnActionButtonHoverEnter;
+				m_RightPinnedToolActionButton.onHoverExit += OnActionButtonHoverExit;
 			}
 		}
 
@@ -247,20 +251,32 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PositionCoroutine = null;
 		}
 
-		/// <summary>
-		/// Called when the left action button (either select or close) is clicked
-		/// </summary>
-		public void OnLeftActionButtonClick()
+		void OnLeftActionButtonClick()
 		{
 			Debug.LogError("Left Action Button clicked!");
 		}
 
-		/// <summary>
-		/// Called when the right action button (either select or close) is clicked
-		/// </summary>
-		public void OnRightActionButtonClick()
+		void OnRightActionButtonClick()
 		{
 			Debug.LogError("Right Action Button clicked!");
+		}
+
+		void OnActionButtonHoverEnter()
+		{
+			Debug.LogError("<color=green>Action Button hover ENTER event raised!</color>");
+			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
+			m_LeftPinnedToolActionButton.visible = true;
+			m_RightPinnedToolActionButton.visible = true;
+		}
+
+		void OnActionButtonHoverExit()
+		{
+			Debug.LogError("<color=red>Action Button hover EXIT event raised!</color>");
+			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
+
+			// allow the coroutine in the action button to allow for a hover from one button to the other without changing the opacity when going between buttons left/right
+			m_LeftPinnedToolActionButton.visible = false;
+			m_RightPinnedToolActionButton.visible = false;
 		}
 	}
 }
