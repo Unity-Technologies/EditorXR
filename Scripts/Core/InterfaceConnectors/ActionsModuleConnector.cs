@@ -13,11 +13,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (actionsModule)
 				{
 					var menuActions = actionsModule.menuActions;
-					var evrMenus = evr.GetNestedModule<Menus>();
 
 					var toolActions = obj as IActions;
 					if (toolActions != null)
 					{
+						var evrMenus = evr.GetNestedModule<Menus>();
+
 						var actions = toolActions.actions;
 						foreach (var action in actions)
 						{

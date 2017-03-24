@@ -22,7 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 
 			public void DisconnectInterface(object obj)
-			{				var usesHierarchy = obj as IUsesHierarchyData;
+			{
+				var usesHierarchy = obj as IUsesHierarchyData;
 				if (usesHierarchy != null)
 				{
 					var evrHierarchyModule = evr.GetModule<HierarchyModule>();
