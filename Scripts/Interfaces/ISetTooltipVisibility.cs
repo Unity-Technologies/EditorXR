@@ -8,15 +8,31 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface ISetTooltipVisibility
 	{
+	}
+
+	public static class ISetTooltipVisibilityMethods
+	{
+		internal static Action<ITooltip> showTooltip { get; set; }
+		internal static Action<ITooltip> hideTooltip { get; set; }
+
 		/// <summary>
 		/// Show the given Tooltip
 		/// </summary>
-		Action<ITooltip> showTooltip { set; }
+		/// <param name="tooltip">The tooltip to show</param>
+		public static void ShowTooltip(this ISetTooltipVisibility obj, ITooltip tooltip)
+		{
+			showTooltip(tooltip);
+		}
 
 		/// <summary>
 		/// Hide the given Tooltip
 		/// </summary>
-		Action<ITooltip> hideTooltip { set; }
+		/// <param name="tooltip">The tooltip to hide</param>
+		public static void HideTooltip(this ISetTooltipVisibility obj, ITooltip tooltip)
+		{
+			hideTooltip(tooltip);
+		}
+
 	}
 }
 #endif

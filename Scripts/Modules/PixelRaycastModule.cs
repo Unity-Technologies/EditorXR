@@ -18,8 +18,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public Transform ignoreRoot { get; set; }
 		public Camera raycastCamera { private get; set; }
 
-		public Action<ForEachRayOriginCallback> forEachRayOrigin { get; set; }
-
 		void OnEnable()
 		{
 			EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
@@ -103,7 +101,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					m_IgnoreListDirty = false;
 				}
 
-				forEachRayOrigin(rayOrigin => UpdateRaycast(rayOrigin, raycastCamera));
+				this.ForEachRayOrigin(rayOrigin => UpdateRaycast(rayOrigin, raycastCamera));
 
 				// Queue up the next round
 				m_UpdateRaycasts = true;

@@ -30,9 +30,6 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 
 		static float s_BufferDistance;
 
-		public Action<GameObject> addToSpatialHash { private get; set; }
-		public Action<GameObject> removeFromSpatialHash { private get; set; }
-
 		public override void ExecuteAction()
 		{
 			//return EditorApplication.ExecuteActionMenuItem("Edit/Paste");
@@ -51,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 					pastedTransform.position = cameraTransform.TransformPoint(Vector3.forward * s_BufferDistance)
 						+ pastedTransform.position - bounds.center;
 					pasted.SetActive(true);
-					addToSpatialHash(pasted);
+					this.AddToSpatialHash(pasted);
 					pastedGameObjects[index++] = pasted;
 				}
 

@@ -13,11 +13,20 @@ namespace UnityEditor.Experimental.EditorVR
 		/// List of other tools of the same type (not including this one)
 		/// </summary>
 		List<ILinkedObject> linkedObjects { set; }
+	}
+
+	public static class ILinkedObjectMethods
+	{
+		internal static Func<ILinkedObject, bool> isSharedUpdater { get; set; }
 
 		/// <summary>
-		/// Whether this is the primary tool (the first to be created, can be either hand)
+		/// Returns whether the specified ray origin is hovering over a UI element
 		/// </summary>
-		Func<ILinkedObject, bool> isSharedUpdater { set; }
+		/// <param name="linkedObject">Object among the linked objects to check if it is the central one</param>
+		public static bool IsSharedUpdater(this ILinkedObject obj, ILinkedObject linkedObject)
+		{
+			return isSharedUpdater(linkedObject);
+		}
 	}
 }
 #endif

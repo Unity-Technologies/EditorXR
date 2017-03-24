@@ -8,7 +8,7 @@ using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
@@ -47,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			bool m_MiniWorldIgnoreListDirty = true;
 
-			internal MiniWorlds()
+			public MiniWorlds()
 			{
 				EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 			}
@@ -113,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR
 					m_MiniWorldIgnoreListDirty = false;
 				}
 
-				var objectsGrabber = evr.m_DirectSelection.objectsGrabber;
+				var objectsGrabber = evr.GetNestedModule<DirectSelection>().objectsGrabber;
 
 				foreach (var kvp in m_MiniWorldInputs)
 				{
@@ -145,7 +145,7 @@ namespace UnityEditor.Experimental.EditorVR
 					miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
 					miniWorldRayOrigin.localScale = Vector3.Scale(inverseScale, referenceTransform.localScale);
 
-					var directSelection = evr.m_DirectSelection;
+					var directSelection = evr.GetNestedModule<DirectSelection>();
 
 					// Set miniWorldRayOrigin active state based on whether controller is inside corresponding MiniWorld
 					var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * directSelection.GetPointerLength(originalRayOrigin);
@@ -347,6 +347,8 @@ namespace UnityEditor.Experimental.EditorVR
 					// Release the current object if the trigger is no longer held
 					if (directSelectInput.select.wasJustReleased)
 					{
+						var sceneObjectModule = evr.GetModule<SceneObjectModule>();
+						var viewer = evr.GetNestedModule<Viewer>();
 						var rayPosition = originalRayOrigin.position;
 						for (var i = 0; i < dragObjects.Length; i++)
 						{
@@ -355,9 +357,9 @@ namespace UnityEditor.Experimental.EditorVR
 							// If the user has pulled an object out of the MiniWorld, use PlaceObject to grow it back to its original scale
 							if (!isContained)
 							{
-								if (evr.m_Viewer.IsOverShoulder(originalRayOrigin))
+								if (viewer.IsOverShoulder(originalRayOrigin))
 								{
-									evr.m_SceneObjectModule.DeleteSceneObject(dragObject.gameObject);
+									sceneObjectModule.DeleteSceneObject(dragObject.gameObject);
 								}
 								else
 								{
@@ -386,9 +388,10 @@ namespace UnityEditor.Experimental.EditorVR
 				var miniWorld = miniWorldWorkspace.miniWorld;
 				m_Worlds.Add(miniWorld);
 
-				m_MiniWorldInputs[miniWorldWorkspace] = evr.m_DeviceInputModule.CreateActionMapInputForObject(miniWorldWorkspace, null);
+				m_MiniWorldInputs[miniWorldWorkspace] = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(miniWorldWorkspace, null);
 
-				evr.m_Rays.ForEachProxyDevice(deviceData =>
+				var intersectionModule = evr.GetModule<IntersectionModule>();
+				evr.GetNestedModule<Rays>().ForEachProxyDevice(deviceData =>
 				{
 					var miniWorldRayOrigin = InstantiateMiniWorldRay();
 					miniWorldRayOrigin.parent = workspace.transform;
@@ -406,7 +409,7 @@ namespace UnityEditor.Experimental.EditorVR
 						tester = tester
 					};
 
-					evr.m_IntersectionModule.AddTester(tester);
+					intersectionModule.AddTester(tester);
 
 					if (deviceData.proxy.active)
 					{

@@ -24,9 +24,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public List<IAction> actions { get; private set; }
 		public Transform rayOrigin { get; set; }
 
-		public Action<GameObject> addToSpatialHash { private get; set; }
-		public Action<GameObject> removeFromSpatialHash { private get; set; }
-
 		void Awake()
 		{
 			m_CubeToolAction.icon = m_Icon;
@@ -42,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (rayOrigin)
 					cube.position = rayOrigin.position + rayOrigin.forward * 5f;
 
-				addToSpatialHash(cube.gameObject);
+				this.AddToSpatialHash(cube.gameObject);
 
 				consumeControl(standardInput.action);
 			}

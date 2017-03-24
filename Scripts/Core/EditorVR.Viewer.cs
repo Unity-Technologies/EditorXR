@@ -1,26 +1,49 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class Viewer : Nested
+		class Viewer : Nested, IInterfaceConnector
 		{
 			const float k_CameraRigTransitionTime = 0.75f;
+
+			public Viewer()
+			{
+				IMoveCameraRigMethods.moveCameraRig = MoveCameraRig;
+				IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
+				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
+			}
+
+			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			{
+				var locomotion = obj as ILocomotor;
+				if (locomotion != null)
+					locomotion.cameraRig = VRView.cameraRig;
+
+				var usesCameraRig = obj as IUsesCameraRig;
+				if (usesCameraRig != null)
+					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
+			}
+
+			public void DisconnectInterface(object obj)
+			{
+			}
 
 			internal void AddPlayerModel()
 			{
 				var playerModel = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<Renderer>();
-				evr.m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
+				evr.GetModule<SpatialHashModule>().spatialHash.AddObject(playerModel, playerModel.bounds);
 			}
 
 			internal bool IsOverShoulder(Transform rayOrigin)
 			{
-				var radius = evr.m_DirectSelection.GetPointerLength(rayOrigin);
+				var radius = evr.GetNestedModule<DirectSelection>().GetPointerLength(rayOrigin);
 				var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 				foreach (var collider in colliders)
 				{

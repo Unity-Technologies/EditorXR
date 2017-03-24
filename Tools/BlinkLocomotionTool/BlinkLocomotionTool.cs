@@ -75,11 +75,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		float m_OriginalNearClipPlane;
 		float m_OriginalFarClipPlane;
 
-		public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
-		public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
-		public Func<Transform, object, bool> lockRay { private get; set; }
-		public Func<Transform, object, bool> unlockRay { private get; set; }
-
 		public Transform rayOrigin { private get; set; }
 		public Node? node { private get; set; }
 
@@ -87,10 +82,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Transform cameraRig { private get; set; }
 
-		public Func<float> getViewerScale { private get; set; }
-
 		public List<ILinkedObject> linkedObjects { private get; set; }
-		public Func<ILinkedObject, bool> isSharedUpdater { private get; set; }
 
 		private void Start()
 		{
@@ -116,7 +108,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		private void OnDestroy()
 		{
-			showDefaultRay(rayOrigin);
+			this.ShowDefaultRay(rayOrigin);
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -142,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_Grip = blinkInput.grip.isHeld ? blinkInput.grip : null;
 			m_Thumb = blinkInput.thumb.isHeld ? blinkInput.thumb : null;
 
-			if (isSharedUpdater(this))
+			if (this.IsSharedUpdater(this))
 			{
 				if (m_Grip != null)
 				{
@@ -175,7 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 								if (!m_Scaling)
 								{
-									m_StartScale = getViewerScale();
+									m_StartScale = this.GetViewerScale();
 									m_StartDistance = distance;
 									m_StartMidPoint = pivotYaw * midPoint * m_StartScale;
 									m_StartPosition = cameraRig.position;
@@ -305,8 +297,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 			{
 				m_State = State.Aiming;
-				hideDefaultRay(rayOrigin);
-				lockRay(rayOrigin, this);
+				this.HideDefaultRay(rayOrigin);
+				this.LockRay(rayOrigin, this);
 
 				m_BlinkVisuals.ShowVisuals();
 
@@ -314,8 +306,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 			else if (m_State == State.Aiming && blinkInput.blink.wasJustReleased)
 			{
-				unlockRay(rayOrigin, this);
-				showDefaultRay(rayOrigin);
+				this.UnlockRay(rayOrigin, this);
+				this.ShowDefaultRay(rayOrigin);
 
 				if (!m_BlinkVisuals.outOfMaxRange)
 				{
@@ -339,7 +331,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (Mathf.Abs(inputValue) > threshold)
 				speed = k_FastMoveSpeed * Mathf.Sign(inputValue);
 
-			speed *= getViewerScale();
+			speed *= this.GetViewerScale();
 
 			cameraRig.Translate(direction * speed * Time.unscaledDeltaTime, Space.World);
 		}

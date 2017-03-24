@@ -109,8 +109,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public InstantiateUIDelegate instantiateUI { private get; set; }
-
 		public float targetRotation { get; set; }
 
 		public int faceCount { get { return m_MenuFaces.Length; } }
@@ -173,7 +171,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			for (var faceCount = 0; faceCount < k_FaceCount; ++faceCount)
 			{
 				// Add faces to the menu
-				var faceTransform = instantiateUI(m_MenuFacePrefab.gameObject).transform;
+				var faceTransform = this.InstantiateUI(m_MenuFacePrefab.gameObject).transform;
 				faceTransform.SetParent(m_MenuFaceContainers[faceCount]);
 				faceTransform.localRotation = Quaternion.identity;
 				faceTransform.localScale = Vector3.one;

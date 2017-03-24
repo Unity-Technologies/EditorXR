@@ -1,7 +1,7 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{

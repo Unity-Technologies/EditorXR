@@ -171,8 +171,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		private bool m_SemiTransparent;
 
-		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
-
 		void Update()
 		{
 			if (m_Actions != null)
@@ -199,7 +197,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			for (int i = 0; i < k_SlotCount; ++i)
 			{
 				var menuSlot = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
-				connectInterfaces(menuSlot);
+				this.ConnectInterfaces(menuSlot);
 				menuSlot.orderIndex = i;
 				m_RadialMenuSlots.Add(menuSlot);
 
