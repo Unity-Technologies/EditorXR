@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		public static Vector3 activePosition
 		{
-			get { return s_ActivePosition; }
+			private get { return s_ActivePosition; }
 			set
 			{
 				s_ActivePosition = value;

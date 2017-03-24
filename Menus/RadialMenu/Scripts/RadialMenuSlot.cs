@@ -57,7 +57,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public bool pressed
 		{
-			get { return m_Pressed; }
 			set
 			{
 				// Proceed only if value is true after previously being false
@@ -107,6 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public bool semiTransparent
 		{
+			get { return m_SemiTransparent; }
 			set
 			{
 				if (value == m_SemiTransparent || !gameObject.activeSelf)
@@ -117,14 +117,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateSemiTransparent(value));
 				PostReveal();
 			}
-
-			get { return m_SemiTransparent; }
 		}
 		bool m_SemiTransparent;
 
 		public bool visible
 		{
-			get { return m_Visible; }
 			set
 			{
 				if (value && m_Visible == value) // Allow false to fall through and perform hiding regardless of visibility
