@@ -271,7 +271,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// </summary>
 		IEnumerator AnimateHide()
 		{
-			Debug.LogError("Animate hide");
 			m_CanvasGroup.interactable = false;
 			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 
