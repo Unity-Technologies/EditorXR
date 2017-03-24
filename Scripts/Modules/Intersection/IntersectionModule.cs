@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity);
+	delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity, GameObject[] ignoreList = null);
 
 	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
@@ -160,7 +160,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return obj;
 		}
 
-		public bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity)
+		public bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, GameObject[] ignoreList = null)
 		{
 			obj = null;
 			hit = new RaycastHit();
@@ -171,6 +171,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				foreach (var renderer in intersections)
 				{
+					var gameObject = renderer.gameObject;
+					if (ignoreList != null && ignoreList.Contains(gameObject))
+						continue;
+
 					var transform = renderer.transform;
 
 					RaycastHit tmp;
@@ -185,7 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 							hit.distance = dist;
 							hit.point = point;
 							hit.normal = transform.TransformDirection(tmp.normal);
-							obj = renderer.gameObject;
+							obj = gameObject;
 						}
 					}
 				}

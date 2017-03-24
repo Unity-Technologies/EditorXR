@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -83,6 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public bool faceSnapping;
 			public Vector3 faceSnappingStartPosition;
 			public Quaternion faceSnappingRotation;
+			public GameObject[] objects;
 		}
 
 		void Awake()
@@ -193,7 +195,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			RaycastHit hit;
 			GameObject go;
-			if (raycast(ray, out hit, out go, raycastDistance))
+			if (raycast(ray, out hit, out go, raycastDistance, state.objects))
 			{
 				state.faceSnapping = true;
 				state.groundSnapping = false;
@@ -300,7 +302,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					currentPosition = position,
 					currentRotation = rotation,
 					rotatedBounds = totalBounds,
-					identityBounds = identityBounds
+					identityBounds = identityBounds,
+					objects = objects
 				};
 				m_SnappingStates[rayOrigin] = state;
 			}

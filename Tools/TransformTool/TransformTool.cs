@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
 		IGrabObjects, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility,
-		IUsesSnapping, IUsesSpatialHash
+		IUsesSnapping
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			GameObject[] objects;
 
 			public GrabData(Transform rayOrigin, DirectSelectInput input, Transform[] grabbedObjects,
-				DirectTransformWithSnappingDelegate snappingDelegate, Action<GameObject> removeFromSpatialHash)
+				DirectTransformWithSnappingDelegate snappingDelegate)
 			{
 				this.rayOrigin = rayOrigin;
 				this.input = input;
@@ -41,7 +41,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				for (int i = 0; i < grabbedObjects.Length; i++)
 				{
 					var go = grabbedObjects[i].gameObject;
-					removeFromSpatialHash(go);
 					objects[i] = go;
 				}
 
@@ -204,9 +203,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public DirectTransformWithSnappingDelegate directTransformWithSnapping { private get; set; }
 		public Action<Transform> clearSnappingState { private get; set; }
 
-		public Action<GameObject> addToSpatialHash { private get; set; }
-		public Action<GameObject> removeFromSpatialHash { private get; set; }
-
 		void Awake()
 		{
 			m_PivotModeToggleAction.execute = TogglePivotMode;
@@ -285,6 +281,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var directSelectInput = (DirectSelectInput)selection.input;
 					if (directSelectInput.select.wasJustPressed)
 					{
+						clearSnappingState(rayOrigin);
+
 						objectGrabbed(hoveredObject);
 
 						// Only add to selection, don't remove
@@ -312,7 +310,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							}
 						}
 
-						m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput, Selection.transforms, directTransformWithSnapping, removeFromSpatialHash);
+						m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput, Selection.transforms, directTransformWithSnapping);
 
 						hideDefaultRay(rayOrigin, true); // This will also unhighlight the object
 						lockRay(rayOrigin, this);
@@ -341,13 +339,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					// Offsets will change while scaling. Whichever hand keeps holding the trigger after scaling is done will need to reset itself
 					m_WasScaling = true;
 
-					m_ScaleFactor = (leftData.rayOrigin.position - rightData.rayOrigin.position).magnitude / m_ScaleStartDistance;
+					var rightRayOrigin = rightData.rayOrigin;
+					var leftRayOrigin = leftData.rayOrigin;
+					m_ScaleFactor = (leftRayOrigin.position - rightRayOrigin.position).magnitude / m_ScaleStartDistance;
 					if (m_ScaleFactor > 0 && m_ScaleFactor < Mathf.Infinity)
 					{
 						if (m_ScaleFirstNode == Node.LeftHand)
+						{
 							leftData.ScaleObjects(m_ScaleFactor);
+							clearSnappingState(leftRayOrigin);
+						}
 						else
+						{
 							rightData.ScaleObjects(m_ScaleFactor);
+							clearSnappingState(rightRayOrigin);
+						}
 					}
 				}
 				else
@@ -472,23 +478,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void GrabObjects(Node node, Transform rayOrigin, ActionMapInput input, Transform[] objects)
 		{
-			m_GrabData[node] = new GrabData(rayOrigin, (DirectSelectInput)input, objects, directTransformWithSnapping, removeFromSpatialHash);
+			m_GrabData[node] = new GrabData(rayOrigin, (DirectSelectInput)input, objects, directTransformWithSnapping);
 		}
 
 		void DropObjects(Node inputNode)
 		{
 			var grabData = m_GrabData[inputNode];
 			var grabbedObjects = grabData.grabbedObjects;
-			objectsDropped(grabbedObjects, grabData.rayOrigin);
+			var rayOrigin = grabData.rayOrigin;
+			objectsDropped(grabbedObjects, rayOrigin);
 			m_GrabData.Remove(inputNode);
 
-			unlockRay(grabData.rayOrigin, this);
-			showDefaultRay(grabData.rayOrigin, true);
+			unlockRay(rayOrigin, this);
+			showDefaultRay(rayOrigin, true);
 
-			for (int i = 0; i < grabbedObjects.Length; i++)
-			{
-				addToSpatialHash(grabbedObjects[i].gameObject);
-			}
+			clearSnappingState(rayOrigin);
 		}
 
 		void Translate(Vector3 delta, Transform rayOrigin, bool constrained)
@@ -509,19 +513,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		void OnDragStarted()
 		{
 			Undo.IncrementCurrentGroup();
-			foreach (var go in Selection.gameObjects)
-			{
-				removeFromSpatialHash(go);
-			}
 		}
 
 		void OnDragEnded(Transform rayOrigin)
 		{
 			clearSnappingState(rayOrigin);
-			foreach (var go in Selection.gameObjects)
-			{
-				addToSpatialHash(go);
-			}
 		}
 
 		void UpdateSelectionBounds()
