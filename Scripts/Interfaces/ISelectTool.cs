@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static Func<Transform, Type, bool> selectTool { get; set; }
 
 		/// <summary>
-		/// Delegate used to select tools from the menu
+		/// Method used to select tools from the menu
 		/// Returns whether the tool was successfully selected
 		/// </summary>
 		/// <param name="rayOrigin">The rayOrigin that the tool should spawn under</param>
