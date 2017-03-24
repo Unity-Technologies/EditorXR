@@ -176,19 +176,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				hasChanged = true;
 			}
 
-			var hdGO = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
-			var locked = isLocked != null && isLocked(hdGO);
-
 			if (hd != null)
 			{
 				hd.children = children;
 				hd.name = name;
 				hd.instanceID = instanceID;
 				hd.types = types;
-				hd.locked = locked;
 			}
 
-			return hd ?? new HierarchyData(name, instanceID, types, locked, children);
+			return hd ?? new HierarchyData(name, instanceID, types, children);
 		}
 
 		static HashSet<string> InstanceIDToComponentTypes(int instanceID, HashSet<string> allTypes)

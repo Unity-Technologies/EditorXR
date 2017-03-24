@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using ListView;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -16,16 +17,16 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 		public int instanceID { private get; set; }
 
-		public HashSet<string> types { get; set; }
-		public bool locked { get; set; }
+		public GameObject gameObject { get { return (GameObject)EditorUtility.InstanceIDToObject(instanceID); } }
 
-		public HierarchyData(string name, int instanceID, HashSet<string> types, bool locked, List<HierarchyData> children = null)
+		public HashSet<string> types { get; set; }
+
+		public HierarchyData(string name, int instanceID, HashSet<string> types, List<HierarchyData> children = null)
 		{
 			template = k_TemplateName;
 			this.name = name;
 			this.instanceID = instanceID;
 			this.types = types;
-			this.locked = locked;
 			m_Children = children;
 		}
 	}

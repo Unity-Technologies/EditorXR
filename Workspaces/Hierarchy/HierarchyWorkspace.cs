@@ -148,13 +148,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		static void SelectRow(int index)
 		{
-#if UNITY_EDITOR
 			var gameObject = EditorUtility.InstanceIDToObject(index) as GameObject;
 			if (gameObject && Selection.activeGameObject != gameObject)
 				Selection.activeGameObject = gameObject;
 			else
 				Selection.activeGameObject = null;
-#endif
 		}
 
 		void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

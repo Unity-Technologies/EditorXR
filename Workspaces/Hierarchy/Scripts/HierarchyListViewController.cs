@@ -135,7 +135,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				item = GetItem(data);
 
 			var width = bounds.size.x - k_ClipMargin;
-			item.UpdateSelf(width, depth, expanded, index == m_SelectedRow, data.locked);
+			var locked = isLocked(data.gameObject);
+			item.UpdateSelf(width, depth, expanded, index == m_SelectedRow, locked);
 
 			SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 			SetMaterialClip(item.dropZoneMaterial, transform.worldToLocalMatrix);
@@ -184,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					var filterTestPass = true;
 
 					if (hasLockedQuery)
-						filterTestPass = isLocked((GameObject)EditorUtility.InstanceIDToObject(datum.index));
+						filterTestPass = isLocked(datum.gameObject);
 					
 					if (hasFilterQuery)
 						filterTestPass &= datum.types.Any(type => matchesFilter(type));
@@ -262,12 +263,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (m_ListItems.TryGetValue(index, out listItem))
 			{
 				var data = listItem.data;
-				var go = EditorUtility.InstanceIDToObject(data.index) as GameObject;
-				if (go)
-				{
-					setLocked(go, !isLocked(go));
-					data.locked = isLocked(go);
-				}
+				var go = data.gameObject;
+				setLocked(go, !isLocked(go));
 			}
 		}
 
@@ -363,7 +360,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var hierarchyData = dropObject as HierarchyData;
 				if (hierarchyData != null)
 				{
-					var gameObject = EditorUtility.InstanceIDToObject(hierarchyData.index) as GameObject;
+					var gameObject = hierarchyData.gameObject;
 					gameObject.transform.SetParent(null);
 					gameObject.transform.SetAsFirstSibling();
 				}
@@ -374,7 +371,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var hierarchyData = dropObject as HierarchyData;
 				if (hierarchyData != null)
 				{
-					var gameObject = EditorUtility.InstanceIDToObject(hierarchyData.index) as GameObject;
+					var gameObject = hierarchyData.gameObject;
 					gameObject.transform.SetParent(null);
 					gameObject.transform.SetAsLastSibling();
 				}

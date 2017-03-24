@@ -435,8 +435,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (isExpanded(index))
 				return true;
 
-			var gameObject = (GameObject)EditorUtility.InstanceIDToObject(index);
-			var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(dropData.index);
+			var gameObject = data.gameObject;
+			var dropGameObject = dropData.gameObject;
 			var transform = gameObject.transform;
 			var dropTransform = dropGameObject.transform;
 
@@ -458,10 +458,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var dropData = dropObject as HierarchyData;
 			if (dropData != null)
 			{
-				var thisIndex = data.index;
-				var dropIndex = dropData.index;
-				var gameObject = (GameObject)EditorUtility.InstanceIDToObject(thisIndex);
-				var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(dropIndex);
+				var index = data.index;
+				var gameObject = data.gameObject;
+				var dropGameObject = dropData.gameObject;
 				var transform = gameObject.transform;
 				var dropTransform = dropGameObject.transform;
 
@@ -476,11 +475,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					dropTransform.SetParent(transform);
 					dropTransform.SetAsLastSibling();
 
-					EditorApplication.delayCall += () => { setExpanded(thisIndex, true); };
+					EditorApplication.delayCall += () => { setExpanded(index, true); };
 				}
 				else if (handle == m_DropZone)
 				{
-					if (isExpanded(thisIndex))
+					if (isExpanded(index))
 					{
 						dropTransform.SetParent(transform);
 						dropTransform.SetAsFirstSibling();

@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		GameObject m_UnlockAllPrefab;
 
-		string baseSearchQuery;
+		string m_BaseSearchQuery;
 		string m_CachedSearchQuery;
 
 		public override string searchQuery
@@ -21,10 +21,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			get
 			{
 				var query = base.searchQuery;
-				if (baseSearchQuery != query)
+				if (m_BaseSearchQuery != query)
 				{
-					baseSearchQuery = query;
-					m_CachedSearchQuery = string.Format("{0} {1}", baseSearchQuery, k_LockedQuery);
+					m_BaseSearchQuery = query;
+					m_CachedSearchQuery = string.Format("{0} {1}", m_BaseSearchQuery, k_LockedQuery);
 				}
 
 				return m_CachedSearchQuery;
@@ -57,6 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					connectInterfaces(mb);
 				}
+
 				unlockAllUI.GetComponentInChildren<Button>(true).onClick.AddListener(UnlockAll);
 			}
 		}
@@ -73,9 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			foreach (var hd in hierarchyData)
 			{
-				var go = (GameObject)EditorUtility.InstanceIDToObject(hd.index);
-				setLocked(go, false);
-				hd.locked = isLocked(go);
+				setLocked(hd.gameObject, false);
 
 				UnlockAll(hd.children);
 			}

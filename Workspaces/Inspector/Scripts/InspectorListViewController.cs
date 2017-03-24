@@ -180,15 +180,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			UpdateItemTransform(t, targetPosition, targetRotation, dontSettle, ref doneSettling);
 		}
 
-		protected override void RecycleItem(string template, InspectorListItem item)
-		{
-			var headerItem = item as InspectorHeaderItem;
-			if (headerItem)
-				headerItem.setLocked = null; // Reset, so it doesn't get called for the wrong object when re-used
-
-			base.RecycleItem(template, item);
-		}
-
 		protected override InspectorListItem GetItem(InspectorData listData)
 		{
 			var item = base.GetItem(listData);

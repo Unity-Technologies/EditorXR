@@ -2918,7 +2918,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Unselectable
+  m_Text: Locked
 --- !u!114 &114000013475963824
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3986,8 +3986,8 @@ RectTransform:
   m_RootOrder: 3
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.103911996, y: -0.034999996}
-  m_SizeDelta: {x: 0.11, y: 0.02}
+  m_AnchoredPosition: {x: -0.075559616, y: -0.034999996}
+  m_SizeDelta: {x: 0.07, y: 0.02}
   m_Pivot: {x: 0, y: 1}
 --- !u!224 &224000011847507420
 RectTransform:
@@ -4444,7 +4444,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011895958286}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -4454,7 +4454,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 1.012, y: 0.114}
+  m_AnchoredPosition: {x: 0.096, y: 0.114}
   m_SizeDelta: {x: 0, y: 0.06}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!224 &224000013777562088
