@@ -1,4 +1,4 @@
-﻿Shader "UI/NoBackface"
+﻿Shader "EditorVR/UI/NoBackface"
 {
 	Properties
 	{

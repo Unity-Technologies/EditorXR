@@ -6,7 +6,7 @@
 		_ColorBottom("Bottom Color", Color) = (1,1,1,1)
 		_Alpha("Alpha", Range(0.0, 1.0)) = 1.0
 		_StencilRef("StencilRef", Int) = 3
-		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
+		_ClipExtents("Clip Extents", Vector) = (1,1,1,0)
 	}
 
 	SubShader

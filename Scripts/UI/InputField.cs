@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	abstract class InputField : Selectable, ISelectionFlags
+	abstract class InputField : Selectable, ISelectionFlags, IUsesViewerScale
 	{
 		const float k_MoveKeyboardTime = 0.2f;
 		public SelectionFlags selectionFlags
@@ -45,7 +45,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		Coroutine m_MoveKeyboardCoroutine;
 
-		public string text
+		public Func<float> getViewerScale { private get; set; }
+
+		public virtual string text
 		{
 			get
 			{
@@ -55,6 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				if (m_Text == value)
 					return;
+
 				if (value == null)
 					value = "";
 
@@ -143,7 +146,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		IEnumerator MoveKeyboardToInputField(bool instant)
 		{
 			const float kKeyboardYOffset = 0.05f;
-			var targetPosition = transform.position + Vector3.up * kKeyboardYOffset;
+			var targetPosition = transform.position + Vector3.up * kKeyboardYOffset * getViewerScale();
 
 			if (!instant && !m_Keyboard.collapsed)
 			{

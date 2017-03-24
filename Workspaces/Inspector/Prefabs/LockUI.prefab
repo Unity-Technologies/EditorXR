@@ -264,7 +264,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_AutoHighlight: 1
-  m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_CustomHighlightColor: {r: 0, g: 0, b: 0, a: 1}
   m_AlternateIconSprite: {fileID: 0}
   m_ButtonMeshRenderer: {fileID: 23000012688190106}
   m_CanvasGroup: {fileID: 225000012263596680}
@@ -312,7 +312,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Sprite: {fileID: 21300000, guid: bda51dfe062f45741aae4c4ac8bb3cef, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f5cf11a93d148a847986732c04258f7b, type: 3}
   m_Type: 3
   m_PreserveAspect: 1
   m_FillCenter: 1

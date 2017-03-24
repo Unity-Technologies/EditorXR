@@ -1,8 +1,8 @@
 ﻿#if UNITY_EDITOR
-using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Data;
-using UnityEngine.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {

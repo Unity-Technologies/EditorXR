@@ -53,6 +53,17 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		private Transform m_PreviewOrigin;
 
 		/// <summary>
+		/// The transform that the display/preview objects will be parented under
+		/// </summary>
+		public Transform fieldGrabOrigin
+		{
+			get { return m_FieldGrabOrigin; }
+		}
+
+		[SerializeField]
+		private Transform m_FieldGrabOrigin;
+
+		/// <summary>
 		/// The root transform of the device/controller mesh-renderers/geometry
 		/// </summary>
 		public Transform meshRoot

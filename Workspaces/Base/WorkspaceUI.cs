@@ -299,58 +299,58 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public byte stencilRef { get; set; }
 
-		void ShowResizeUI(BaseHandle baseHandle, HandleEventData eventData)
+		void ShowResizeUI(BaseHandle handle, HandleEventData eventData)
 		{
 			this.StopCoroutine(ref m_FrameThicknessCoroutine);
 			m_FrameThicknessCoroutine = StartCoroutine(IncreaseFrameThickness());
 
 			const float kOpacityTarget = 0.75f;
 			const float kDuration = 0.25f;
-			if (baseHandle == m_FrontHandle) // in order of potential usage
+			if (handle == m_FrontHandle) // in order of potential usage
 			{
 				m_FrontLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 				m_FrontRightResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 			}
-			else if (baseHandle == m_RightHandle)
+			else if (handle == m_RightHandle)
 			{
 				m_RightSideFrontResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 				m_RightSideBackResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 			}
-			else if (baseHandle == m_LeftHandle)
+			else if (handle == m_LeftHandle)
 			{
 				m_LeftSideFrontResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 				m_LeftSideBackResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 			}
-			else if (baseHandle == m_BackHandle)
+			else if (handle == m_BackHandle)
 			{
 				m_BackLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 				m_BackRightResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 			}
 		}
 
-		void HideResizeUI(BaseHandle baseHandle, HandleEventData eventData)
+		void HideResizeUI(BaseHandle handle, HandleEventData eventData)
 		{
 			this.StopCoroutine(ref m_FrameThicknessCoroutine);
 			m_FrameThicknessCoroutine = StartCoroutine(ResetFrameThickness());
 
 			const float kOpacityTarget = 0f;
 			const float kDuration = 0.2f;
-			if (baseHandle == m_FrontHandle) // in order of potential usage
+			if (handle == m_FrontHandle) // in order of potential usage
 			{
 				m_FrontLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 				m_FrontRightResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 			}
-			else if (baseHandle == m_RightHandle)
+			else if (handle == m_RightHandle)
 			{
 				m_RightSideFrontResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 				m_RightSideBackResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 			}
-			else if (baseHandle == m_LeftHandle)
+			else if (handle == m_LeftHandle)
 			{
 				m_LeftSideFrontResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 				m_LeftSideBackResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 			}
-			else if (baseHandle == m_BackHandle)
+			else if (handle == m_BackHandle)
 			{
 				m_BackLeftResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);
 				m_BackRightResizeIcon.CrossFadeAlpha(kOpacityTarget, kDuration, true);

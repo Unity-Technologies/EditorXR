@@ -15,7 +15,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		SerializedProperty m_UseShiftCharacterProperty;
 		SerializedProperty m_ShiftCharacterProperty;
 		SerializedProperty m_ButtonTextProperty;
-		SerializedProperty m_MatchButtonTextToCharacterProperty;
 		SerializedProperty m_ButtonMeshProperty;
 		SerializedProperty m_RepeatOnHoldProperty;
 		SerializedProperty m_WorkspaceButtonProperty;
@@ -30,7 +29,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			m_UseShiftCharacterProperty = serializedObject.FindProperty("m_UseShiftCharacter");
 			m_ShiftCharacterProperty = serializedObject.FindProperty("m_ShiftCharacter");
 			m_ButtonTextProperty = serializedObject.FindProperty("m_TextComponent");
-			m_MatchButtonTextToCharacterProperty = serializedObject.FindProperty("m_MatchButtonTextToCharacter");
 			m_ButtonMeshProperty = serializedObject.FindProperty("m_TargetMesh");
 			m_RepeatOnHoldProperty = serializedObject.FindProperty("m_RepeatOnHold");
 			m_WorkspaceButtonProperty = serializedObject.FindProperty("m_WorkspaceButton");
@@ -56,15 +54,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			if (m_KeyboardButton.textComponent != null)
 			{
 				EditorGUI.BeginChangeCheck();
-				EditorGUILayout.PropertyField(m_MatchButtonTextToCharacterProperty);
 				if (EditorGUI.EndChangeCheck())
 					UpdateButtonTextAndObjectName(m_CharacterProperty.intValue, updateObjectName);
-
-				if (m_MatchButtonTextToCharacterProperty.boolValue)
-				{
-					if (!m_KeyboardButton.textComponent.font.HasCharacter((char)m_CharacterProperty.intValue))
-						EditorGUILayout.HelpBox("Character not defined in font, consider using an icon", MessageType.Error);
-				}
 			}
 
 			// Handle shift character
@@ -161,9 +152,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		void UpdateButtonTextAndObjectName(int input, bool updateName)
 		{
 			var inputString = ((char)input).ToString();
-
-			if (m_MatchButtonTextToCharacterProperty.boolValue)
-				m_KeyboardButton.textComponent.text = inputString;
 
 			// For valid keycodes, use the string version of those for 
 			if (Enum.IsDefined(typeof(KeyCode), input))

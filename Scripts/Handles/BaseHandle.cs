@@ -12,7 +12,8 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 	/// <summary>
 	/// Base class for providing draggable handles in 3D (requires PhysicsRaycaster)
 	/// </summary>
-	class BaseHandle : MonoBehaviour, ISelectionFlags, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IDropReceiver, IDroppable
+	class BaseHandle : MonoBehaviour, ISelectionFlags, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler,
+		IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IPointerClickHandler, IDropReceiver, IDroppable
 	{
 		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]
@@ -37,6 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		public event Action<BaseHandle, HandleEventData> dragging;
 		public event Action<BaseHandle, HandleEventData> dragEnded;
 
+		public event Action<BaseHandle, PointerEventData> click;
 		public event Action<BaseHandle, HandleEventData> doubleClick;
 
 		public event Action<BaseHandle, HandleEventData> hoverStarted;
@@ -55,11 +57,15 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			{
 				var eventData = GetHandleEventData(new RayEventData(EventSystem.current));
 				for (int i = 0; i < m_HoverSources.Count; i++)
+				{
 					OnHandleHoverEnded(eventData);
+				}
 				m_HoverSources.Clear();
 
 				for (int i = 0; i < m_DragSources.Count; i++)
+				{
 					OnHandleDragEnded(eventData);
+				}
 				m_DragSources.Clear();
 			}
 		}
@@ -205,6 +211,12 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 				doubleClick(this, eventData);
 		}
 
+		public void OnPointerClick(PointerEventData eventData)
+		{
+			if (click != null)
+				click(this, eventData);
+		}
+
 		public virtual bool CanDrop(object dropObject)
 		{
 			if (canDrop != null)
@@ -221,6 +233,9 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 		public virtual object GetDropObject()
 		{
+			if (!this) // If this handle has ben destroyed, return null;
+				return null;
+
 			if (getDropObject != null)
 				return getDropObject(this);
 

@@ -8,8 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight,IUsesStencilRef,
-		IConnectInterfaces, IUsesViewerScale
+	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale
 	{
 		public static readonly Vector3 k_DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 
@@ -79,8 +78,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Bounds vacuumBounds { get { return outerBounds; } }
 
 		public InstantiateUIDelegate instantiateUI { protected get; set; }
-
-		public Action<GameObject, bool> setHighlight { protected get; set; }
 
 		public byte stencilRef { get; set; }
 

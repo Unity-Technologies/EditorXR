@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		class Interfaces : Nested
 		{
-			const byte k_MinStencilRef = 2;
+			const byte k_MinStencilRef = 5;
 
 			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
@@ -151,9 +151,13 @@ namespace UnityEditor.Experimental.EditorVR
 					locking.isLocked = evrLockModule.IsLocked;
 				}
 
-				var positionPreview = obj as IGetPreviewOrigin;
-				if (positionPreview != null)
-					positionPreview.getPreviewOriginForRayOrigin = evrRays.GetPreviewOriginForRayOrigin;
+				var getPreviewOrigin = obj as IGetPreviewOrigin;
+				if (getPreviewOrigin != null)
+					getPreviewOrigin.getPreviewOriginForRayOrigin = evrRays.GetPreviewOriginForRayOrigin;
+
+				var getFieldGrabOrigin = obj as IGetFieldGrabOrigin;
+				if (getFieldGrabOrigin != null)
+					getFieldGrabOrigin.getFieldGrabOriginForRayOrigin = evrRays.GetFieldGrabOriginForRayOrigin;
 
 				var selectionChanged = obj as ISelectionChanged;
 				if (selectionChanged != null)
@@ -179,7 +183,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var directSelection = obj as IUsesDirectSelection;
 				if (directSelection != null)
-					directSelection.getDirectSelection = evrDirectSelection.GetDirectSelection;
+					directSelection.getDirectSelection = () => evrDirectSelection.directSelections;
 
 				var grabObjects = obj as IGrabObjects;
 				if (grabObjects != null)
@@ -218,15 +222,23 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var usesProjectFolderData = obj as IUsesProjectFolderData;
 				if (usesProjectFolderData != null)
+				{
 					evrProjectFolderModule.AddConsumer(usesProjectFolderData);
+
+					var filterUI = obj as IFilterUI;
+					if (filterUI != null)
+						evrProjectFolderModule.AddConsumer(filterUI);
+				}
 
 				var usesHierarchyData = obj as IUsesHierarchyData;
 				if (usesHierarchyData != null)
+				{
 					evrHierarchyModule.AddConsumer(usesHierarchyData);
 
-				var filterUI = obj as IFilterUI;
-				if (filterUI != null)
-					evrProjectFolderModule.AddConsumer(filterUI);
+					var filterUI = obj as IFilterUI;
+					if (filterUI != null)
+						evrHierarchyModule.AddConsumer(filterUI);
+				}
 
 				// Tracked Object action maps shouldn't block each other so we share an instance
 				var trackedObjectMap = obj as ITrackedObjectActionMap;
@@ -313,6 +325,14 @@ namespace UnityEditor.Experimental.EditorVR
 					linkedObject.isSharedUpdater = IsSharedUpdater;
 				}
 
+				var isHoveringOverUI = obj as IIsHoveringOverUI;
+				if (isHoveringOverUI != null)
+					isHoveringOverUI.isHoveringOverUI = evr.m_InputModule.IsHoveringOverUI;
+
+				var customHighlight = obj as ICustomHighlight;
+				if (customHighlight != null)
+					evrHighlightModule.customHighlight += customHighlight.OnHighlight;
+
 				// Internal interfaces
 				var forEachRayOrigin = obj as IForEachRayOrigin;
 				if (forEachRayOrigin != null && IsSameAssembly<IForEachRayOrigin>(obj))
@@ -370,6 +390,10 @@ namespace UnityEditor.Experimental.EditorVR
 				var manipulatorVisiblity = obj as IManipulatorVisibility;
 				if (manipulatorVisiblity != null)
 					evr.m_UI.manipulatorVisibilities.Remove(manipulatorVisiblity);
+
+				var customHighlight = obj as ICustomHighlight;
+				if (customHighlight != null)
+					evr.m_HighlightModule.customHighlight -= customHighlight.OnHighlight;
 			}
 
 			byte RequestStencilRef()

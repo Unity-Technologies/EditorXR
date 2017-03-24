@@ -6,20 +6,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class DragAndDropModule : MonoBehaviour
 	{
-		readonly Dictionary<Transform, object> m_DropObjects = new Dictionary<Transform, object>();
+		readonly Dictionary<Transform, IDroppable> m_Droppables = new Dictionary<Transform, IDroppable>();
 		readonly Dictionary<Transform, IDropReceiver> m_DropReceivers = new Dictionary<Transform, IDropReceiver>();
 
 		readonly Dictionary<Transform, GameObject> m_HoverObjects = new Dictionary<Transform, GameObject>();
 
-		void SetCurrentDropObject(Transform rayOrigin, object obj)
-		{
-			m_DropObjects[rayOrigin] = obj;
-		}
-
 		object GetCurrentDropObject(Transform rayOrigin)
 		{
-			object obj;
-			return m_DropObjects.TryGetValue(rayOrigin, out obj) ? obj : null;
+			IDroppable droppable;
+			return m_Droppables.TryGetValue(rayOrigin, out droppable) ? droppable.GetDropObject() : null;
 		}
 
 		void SetCurrentDropReceiver(Transform rayOrigin, IDropReceiver dropReceiver)
@@ -44,11 +39,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var dropReceiver = gameObject.GetComponent<IDropReceiver>();
 			if (dropReceiver != null)
 			{
-				if (dropReceiver.CanDrop(GetCurrentDropObject(eventData.rayOrigin)))
+				var rayOrigin = eventData.rayOrigin;
+				if (dropReceiver.CanDrop(GetCurrentDropObject(rayOrigin)))
 				{
 					dropReceiver.OnDropHoverStarted();
-					m_HoverObjects[eventData.rayOrigin] = gameObject;
-					SetCurrentDropReceiver(eventData.rayOrigin, dropReceiver);
+					m_HoverObjects[rayOrigin] = gameObject;
+					SetCurrentDropReceiver(rayOrigin, dropReceiver);
 				}
 			}
 		}
@@ -61,10 +57,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var dropReceiver = gameObject.GetComponent<IDropReceiver>();
 			if (dropReceiver != null)
 			{
-				if (m_HoverObjects.Remove(eventData.rayOrigin))
+				var rayOrigin = eventData.rayOrigin;
+				if (m_HoverObjects.Remove(rayOrigin))
 				{
 					dropReceiver.OnDropHoverEnded();
-					SetCurrentDropReceiver(eventData.rayOrigin, null);
+					SetCurrentDropReceiver(rayOrigin, null);
 				}
 			}
 		}
@@ -73,7 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var droppable = gameObject.GetComponent<IDroppable>();
 			if (droppable != null)
-				SetCurrentDropObject(eventData.rayOrigin, droppable.GetDropObject());
+				m_Droppables[eventData.rayOrigin] = droppable;
 		}
 
 		public void OnDragEnded(GameObject gameObject, RayEventData eventData)
@@ -82,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (droppable != null)
 			{
 				var rayOrigin = eventData.rayOrigin;
-				SetCurrentDropObject(rayOrigin, null);
+				m_Droppables.Remove(rayOrigin);
 
 				var dropReceiver = GetCurrentDropReceiver(rayOrigin);
 				var dropObject = droppable.GetDropObject();

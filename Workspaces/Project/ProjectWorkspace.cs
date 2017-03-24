@@ -62,6 +62,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		List<string> m_FilterList;
 
+		public string searchQuery { get { return m_FilterUI.searchQuery; } }
+
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
@@ -76,11 +78,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
 
 			var assetGridView = m_ProjectUI.assetGridView;
-			assetGridView.testFilter = TestFilter;
-			assetGridView.data = new List<AssetData>();
 			connectInterfaces(assetGridView);
+			assetGridView.matchesFilter = this.MatchesFilter;
+			assetGridView.data = new List<AssetData>();
 
 			var folderListView = m_ProjectUI.folderListView;
+			connectInterfaces(folderListView);
 			folderListView.selectFolder = SelectFolder;
 			folderData = m_FolderData;
 
@@ -284,11 +287,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void Scale(float value)
 		{
 			m_ProjectUI.assetGridView.scaleFactor = Mathf.Pow(10, value);
-		}
-
-		bool TestFilter(string type)
-		{
-			return FilterUI.TestFilter(m_FilterUI.searchQuery, type);
 		}
 	}
 }
