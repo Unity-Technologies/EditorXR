@@ -139,6 +139,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		SmoothMotion m_SmoothMotion;
 
+		[SerializeField]
+		PinnedToolActionButton m_LeftPinnedToolActionButton;
+
+		[SerializeField]
+		PinnedToolActionButton m_RightPinnedToolActionButton;
+
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
 		[SerializeField]
 		Transform m_TooltipTarget;
@@ -174,6 +180,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_GradientButton.invertHighlightScale = value;
 				m_GradientButton.highlighted = true;
 				m_GradientButton.highlighted = false;
+
+				m_LeftPinnedToolActionButton.onClick += OnLeftActionButtonClick;
+				m_RightPinnedToolActionButton.onClick += OnRightActionButtonClick;
 			}
 		}
 
@@ -236,6 +245,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			transform.localPosition = targetPosition;
 			m_PositionCoroutine = null;
+		}
+
+		/// <summary>
+		/// Called when the left action button (either select or close) is clicked
+		/// </summary>
+		public void OnLeftActionButtonClick()
+		{
+			Debug.LogError("Left Action Button clicked!");
+		}
+
+		/// <summary>
+		/// Called when the right action button (either select or close) is clicked
+		/// </summary>
+		public void OnRightActionButtonClick()
+		{
+			Debug.LogError("Right Action Button clicked!");
 		}
 	}
 }
