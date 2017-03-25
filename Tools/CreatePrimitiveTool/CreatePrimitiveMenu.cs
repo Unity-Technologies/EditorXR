@@ -10,6 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		GameObject[] m_HighlightObjects;
 
 		public Action<PrimitiveType, bool> selectPrimitive;
+		public Action close;
 
 		public bool visible
 		{
@@ -40,6 +41,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			foreach (GameObject go in m_HighlightObjects)
 				go.SetActive(false);
+		}
+
+		public void Close()
+		{
+			close();
 		}
 	}
 }
