@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Xml.Schema;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -11,11 +12,20 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
 	sealed class PinnedToolActionButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 	{
+		public enum ButtonType
+		{
+			SelectTool,
+			Close
+		}
+
+		static Color s_CloseColor = UnityBrandColorScheme.red;
+		static Color s_SelectColor = UnityBrandColorScheme.green;
+
 		const string k_MaterialAlphaProperty = "_Alpha";
 
-		public event Action onClick;
-		public event Action onHoverEnter;
-		public event Action onHoverExit;
+		//public event Action<PinnedToolActionButton> onClick;
+		//public event Action onHoverEnter;
+		//public event Action onHoverExit;
 
 		public bool pressed
 		{
@@ -38,8 +48,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 		bool m_Pressed;
 
-		bool highlighted
+		public bool highlighted
 		{
+			get { return m_Highlighted; }
 			set
 			{
 				if (m_Highlighted == value)
@@ -80,6 +91,21 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			}
 		}
 		bool m_Visible;
+
+		public ButtonType buttonType
+		{
+			get
+			{
+				return m_ButtonType;
+			}
+
+			set
+			{
+				m_ButtonType = value;
+				m_ButtonColor = buttonType == ButtonType.SelectTool ? s_SelectColor : s_CloseColor;
+			}
+		}
+		ButtonType m_ButtonType;
 
 		[SerializeField]
 		Sprite m_IconSprite;
@@ -131,6 +157,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		Vector3 m_IconPressedLocalPosition;
 		Sprite m_OriginalIconSprite;
 		Vector3 m_OriginalLocalScale;
+		Color m_ButtonColor;
 
 		// The initial button reveal coroutines, before highlighting occurs
 		Coroutine m_VisibilityCoroutine;
@@ -153,6 +180,11 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			}
 		}
 
+		public Action<PinnedToolActionButton> clicked { get; set; }
+		public Action closeButton { get; set; }
+		public Action hoverEnter { get; set; }
+		public Action hoverExit { get; set; }
+
 		void Awake()
 		{
 			m_OriginalIconSprite = m_Icon.sprite;
@@ -161,6 +193,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 
 			m_Icon.color = m_NormalContentColor;
+
+			visible = false; // Initially perform a hide setup on the visuals
 		}
 
 		void OnEnable()
@@ -399,8 +433,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void OnPointerEnter(PointerEventData eventData)
 		{
 			highlighted = true;
-			onHoverEnter();
 			eventData.Use();
+			hoverEnter();
 		}
 
 		/// <summary>
@@ -409,8 +443,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void OnPointerExit(PointerEventData eventData)
 		{
 			highlighted = false;
-			onHoverExit();
 			eventData.Use();
+			hoverExit();
 		}
 
 		/// <summary>
@@ -419,7 +453,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void OnPointerClick(PointerEventData eventData)
 		{
 			SwapIconSprite();
-			onClick();
+			clicked(this);
 		}
 
 		/// <summary>

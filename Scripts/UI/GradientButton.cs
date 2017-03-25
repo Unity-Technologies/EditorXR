@@ -18,6 +18,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		const string k_MaterialColorBottomProperty = "_ColorBottom";
 
 		public event Action onClick;
+		public event Action onHoverEnter;
+		public event Action onHoverExit;
 
 		public Sprite iconSprite
 		{
@@ -465,7 +467,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void OnPointerEnter(PointerEventData eventData)
 		{
 			highlighted = true;
-
+			onHoverEnter();
 			eventData.Use();
 		}
 
@@ -475,7 +477,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void OnPointerExit(PointerEventData eventData)
 		{
 			highlighted = false;
-
+			onHoverExit();
 			eventData.Use();
 		}
 

@@ -180,19 +180,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_GradientButton.invertHighlightScale = value;
 				m_GradientButton.highlighted = true;
 				m_GradientButton.highlighted = false;
-
-				m_LeftPinnedToolActionButton.onClick += OnLeftActionButtonClick;
-				m_LeftPinnedToolActionButton.onHoverEnter += OnActionButtonHoverEnter;
-				m_LeftPinnedToolActionButton.onHoverExit += OnActionButtonHoverExit;
-				m_RightPinnedToolActionButton.onClick += OnRightActionButtonClick;
-				m_RightPinnedToolActionButton.onHoverEnter += OnActionButtonHoverEnter;
-				m_RightPinnedToolActionButton.onHoverExit += OnActionButtonHoverExit;
 			}
 		}
 
 		void Start()
 		{
-			m_GradientButton.onClick += OnClick;
+			//m_GradientButton.onClick += SelectTool; // TODO remove after action button refactor
 
 			if (m_ToolType == null)
 			{
@@ -210,9 +203,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			tooltipAlignment = node == Node.LeftHand ? TextAlignment.Right : TextAlignment.Left;
 			m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
 			connectInterfaces(m_SmoothMotion);
+
+			m_GradientButton.onHoverEnter += BackgroundHovered; // Display the foreground button actions
+
+			m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
+			m_LeftPinnedToolActionButton.closeButton = CloseButton;
+			//m_LeftPinnedToolActionButton.hoverEnter = ActionButtonHoverEnter;
+			m_LeftPinnedToolActionButton.hoverExit = ActionButtonHoverExit;
+			m_RightPinnedToolActionButton.clicked = ActionButtonClicked;
+			m_RightPinnedToolActionButton.closeButton = CloseButton;
+			//m_RightPinnedToolActionButton.hoverEnter = ActionButtonHoverEnter;
+			m_RightPinnedToolActionButton.hoverExit = ActionButtonHoverExit;
+
+			// Assign the select action button to the side closest to the opposite hand, that allows the arrow to also point in the direction the
+			var leftHand = node == Node.LeftHand;
+			m_RightPinnedToolActionButton.buttonType = leftHand ? PinnedToolActionButton.ButtonType.SelectTool : PinnedToolActionButton.ButtonType.Close;
+			m_LeftPinnedToolActionButton.buttonType = leftHand ? PinnedToolActionButton.ButtonType.Close : PinnedToolActionButton.ButtonType.SelectTool;
 		}
 
-		void OnClick()
+		void SelectTool()
 		{
 			selectTool(rayOrigin, m_ToolType);
 			activeTool = activeTool;
@@ -251,32 +260,51 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PositionCoroutine = null;
 		}
 
-		void OnLeftActionButtonClick()
+		void BackgroundHovered ()
 		{
-			Debug.LogError("Left Action Button clicked!");
-		}
+			Debug.LogError("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
+			m_GradientButton.highlighted = true;
+			m_GradientButton.visible = false;
 
-		void OnRightActionButtonClick()
-		{
-			Debug.LogError("Right Action Button clicked!");
-		}
-
-		void OnActionButtonHoverEnter()
-		{
-			Debug.LogError("<color=green>Action Button hover ENTER event raised!</color>");
-			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
 			m_LeftPinnedToolActionButton.visible = true;
 			m_RightPinnedToolActionButton.visible = true;
 		}
 
-		void OnActionButtonHoverExit()
+		void ActionButtonClicked(PinnedToolActionButton button)
 		{
-			Debug.LogError("<color=red>Action Button hover EXIT event raised!</color>");
+			Debug.LogError("Action Button clicked!");
+			if (button.buttonType == PinnedToolActionButton.ButtonType.SelectTool)
+				SelectTool();
+			else
+				button.closeButton();
+		}
+/*
+		void ActionButtonHoverEnter()
+		{
+			Debug.LogError("<color=green>Action Button hover ENTER event raised!</color>");
+			m_LeftPinnedToolActionButton.visible = true;
+			m_RightPinnedToolActionButton.visible = true;
+		}
+*/
+		void ActionButtonHoverExit()
+		{
+
 			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
 
-			// allow the coroutine in the action button to allow for a hover from one button to the other without changing the opacity when going between buttons left/right
-			m_LeftPinnedToolActionButton.visible = false;
-			m_RightPinnedToolActionButton.visible = false;
+			// Hide both action buttons if the user is no longer hovering over the button
+			if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
+			{
+				m_LeftPinnedToolActionButton.visible = false;
+				m_RightPinnedToolActionButton.visible = false;
+				m_GradientButton.visible = true;
+				m_GradientButton.highlighted = false;
+			}
+		}
+
+		void CloseButton()
+		{
+			// TODO add full close functionality
+			gameObject.SetActive(false);
 		}
 	}
 }
