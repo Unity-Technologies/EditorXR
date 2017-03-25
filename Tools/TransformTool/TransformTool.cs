@@ -25,9 +25,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			public Vector3[] positionOffsets { get; private set; }
 			public Quaternion[] rotationOffsets { get; private set; }
 			public Transform[] grabbedObjects;
-			DirectTransformWithSnappingDelegate directTransformWithSnapping;
-			Vector3[] initialScales;
-			GameObject[] objects;
+			DirectTransformWithSnappingDelegate m_DirectTransformWithSnapping;
+			Vector3[] m_InitialScales;
+			GameObject[] m_Objects;
 
 			public GrabData(Transform rayOrigin, DirectSelectInput input, Transform[] grabbedObjects,
 				DirectTransformWithSnappingDelegate snappingDelegate)
@@ -35,13 +35,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				this.rayOrigin = rayOrigin;
 				this.input = input;
 				this.grabbedObjects = grabbedObjects;
-				directTransformWithSnapping = snappingDelegate;
+				m_DirectTransformWithSnapping = snappingDelegate;
 
-				objects = new GameObject[grabbedObjects.Length];
+				m_Objects = new GameObject[grabbedObjects.Length];
 				for (int i = 0; i < grabbedObjects.Length; i++)
 				{
 					var go = grabbedObjects[i].gameObject;
-					objects[i] = go;
+					m_Objects[i] = go;
 				}
 
 				Reset();
@@ -52,12 +52,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				var length = grabbedObjects.Length;
 				positionOffsets = new Vector3[length];
 				rotationOffsets = new Quaternion[length];
-				initialScales = new Vector3[length];
+				m_InitialScales = new Vector3[length];
 				for (int i = 0; i < length; i++)
 				{
 					var grabbedObject = grabbedObjects[i];
 					MathUtilsExt.GetTransformOffset(rayOrigin, grabbedObject, out positionOffsets[i], out rotationOffsets[i]);
-					initialScales[i] = grabbedObject.transform.localScale;
+					m_InitialScales[i] = grabbedObject.transform.localScale;
 				}
 			}
 
@@ -73,7 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var targetPosition = rayOrigin.position + rayOrigin.rotation * positionOffsets[i];
 					var targetRotation = rayOrigin.rotation * rotationOffsets[i];
 
-					if (directTransformWithSnapping(rayOrigin, objects, ref position, ref rotation, targetPosition, targetRotation))
+					if (m_DirectTransformWithSnapping(rayOrigin, m_Objects, ref position, ref rotation, targetPosition, targetRotation))
 					{
 						var deltaTime = Time.unscaledDeltaTime;
 						grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
@@ -95,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					var grabbedObject = grabbedObjects[i];
 					grabbedObject.position = rayOrigin.position + positionOffsets[i] * scaleFactor;
-					grabbedObject.localScale = initialScales[i] * scaleFactor;
+					grabbedObject.localScale = m_InitialScales[i] * scaleFactor;
 				}
 			}
 		}
@@ -332,8 +332,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				GrabData rightData;
 				hasRight = m_GrabData.TryGetValue(Node.RightHand, out rightData);
 
-				var leftHeld = leftData != null && leftData.input.select.isHeld;
-				var rightHeld = rightData != null && rightData.input.select.isHeld;
+				var leftInput = leftData != null ? leftData.input : null;
+				var leftHeld = leftData != null && leftInput.select.isHeld;
+				var rightInput = rightData != null ? rightData.input : null;
+				var rightHeld = rightData != null && rightInput.select.isHeld;
 				if (hasLeft && hasRight && leftHeld && rightHeld) // Two-handed scaling
 				{
 					// Offsets will change while scaling. Whichever hand keeps holding the trigger after scaling is done will need to reset itself
@@ -376,16 +378,36 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						rightData.UpdatePositions();
 				}
 
-				if (hasLeft && leftData.input.select.wasJustReleased)
+				if (hasLeft)
 				{
-					DropObjects(Node.LeftHand);
-					consumeControl(leftData.input.select);
+					if (leftInput.cancel.wasJustPressed)
+					{
+						DropObjects(Node.LeftHand);
+						consumeControl(leftInput.cancel);
+						Undo.PerformUndo();
+					}
+
+					if (leftInput.select.wasJustReleased)
+					{
+						DropObjects(Node.LeftHand);
+						consumeControl(leftInput.select);
+					}
 				}
 
-				if (hasRight && rightData.input.select.wasJustReleased)
+				if (hasRight)
 				{
-					DropObjects(Node.RightHand);
-					consumeControl(rightData.input.select);
+					if (rightInput.cancel.wasJustPressed)
+					{
+						DropObjects(Node.RightHand);
+						consumeControl(rightInput.cancel);
+						Undo.PerformUndo();
+					}
+
+					if (rightInput.select.wasJustReleased)
+					{
+						DropObjects(Node.RightHand);
+						consumeControl(rightInput.select);
+					}
 				}
 			}
 

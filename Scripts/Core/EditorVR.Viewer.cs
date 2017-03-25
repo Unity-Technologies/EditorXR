@@ -15,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR
 			internal void AddPlayerModel()
 			{
 				var playerModel = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<Renderer>();
+				evr.m_SnappingModule.playerHeadObjects = playerModel.GetComponentsInChildren<Renderer>();
 				evr.m_SpatialHashModule.spatialHash.AddObject(playerModel, playerModel.bounds);
 			}
 
