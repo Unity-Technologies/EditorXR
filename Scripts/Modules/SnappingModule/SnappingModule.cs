@@ -97,8 +97,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			groundSnapping = true;
 			faceSnapping = true;
-
-			snapRotation = true;
 		}
 
 		void Update()
@@ -146,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (faceSnapping && !constrained)
 				{
 					var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-					if (PerformFaceSnapping(ray, ref position, ref rotation, statePosition, state, Vector3.down, distToCamera))
+					if (PerformFaceSnapping(ray, ref position, ref rotation, statePosition, state, Vector3.down, rotation, distToCamera))
 						return true;
 				}
 
@@ -176,7 +174,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					{
 						var ray = new Ray(targetPosition + targetRotation * offset, targetRotation * direction);
 						var raycastDistance = state.identityBounds.extents.y;
-						if (PerformFaceSnapping(ray, ref position, ref rotation, targetPosition, state, direction, Mathf.Log(getViewerScale()), raycastDistance))
+						if (PerformFaceSnapping(ray, ref position, ref rotation, targetPosition, state, direction, targetRotation, Mathf.Log(getViewerScale()), raycastDistance))
 							return true;
 					}
 				}
@@ -191,7 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		bool PerformFaceSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, Vector3 direction, float breakScale, float raycastDistance = k_MaxRayLength)
+		bool PerformFaceSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, Vector3 direction, Quaternion targetRotation, float breakScale, float raycastDistance = k_MaxRayLength)
 		{
 			RaycastHit hit;
 			GameObject go;
@@ -199,9 +197,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				state.faceSnapping = true;
 				state.groundSnapping = false;
-				
+
+				var snappedRotation = Quaternion.LookRotation(hit.normal) * Quaternion.AngleAxis(90, Vector3.right);
+
 				if (snapRotation)
-					rotation = Quaternion.LookRotation(hit.normal) * Quaternion.AngleAxis(90, Vector3.right);
+					rotation = snappedRotation;
+				else
+					rotation = targetRotation;
 
 				if (pivotSnapping)
 				{
@@ -215,7 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 
 				state.faceSnappingStartPosition = position;
-				state.faceSnappingRotation = rotation;
+				state.faceSnappingRotation = snappedRotation;
 				return true;
 			}
 
