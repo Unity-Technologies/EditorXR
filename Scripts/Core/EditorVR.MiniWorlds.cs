@@ -57,7 +57,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 			}
 
-			// TODO: Find a better callback for when objects are created or destroyed
 			void OnHierarchyChanged()
 			{
 				m_MiniWorldIgnoreListDirty = true;
@@ -66,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			/// <summary>
 			/// Re-use DefaultProxyRay and strip off objects and components not needed for MiniWorldRays
 			/// </summary>
-			internal Transform InstantiateMiniWorldRay()
+			static Transform InstantiateMiniWorldRay()
 			{
 				var miniWorldRay = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject).transform;
 				ObjectUtils.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());

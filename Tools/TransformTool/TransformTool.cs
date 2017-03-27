@@ -432,17 +432,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.ShowDefaultRay(grabData.rayOrigin, true);
 		}
 
-		private void Translate(Vector3 delta)
+		void Translate(Vector3 delta)
 		{
 			m_TargetPosition += delta;
 		}
 
-		private void Rotate(Quaternion delta)
+		void Rotate(Quaternion delta)
 		{
 			m_TargetRotation = delta * m_TargetRotation;
 		}
 
-		private void Scale(Vector3 delta)
+		void Scale(Vector3 delta)
 		{
 			m_TargetScale += delta;
 		}
@@ -452,7 +452,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			Undo.IncrementCurrentGroup();
 		}
 
-		private void UpdateSelectionBounds()
+		void UpdateSelectionBounds()
 		{
 			m_SelectionBounds = ObjectUtils.GetBounds(Selection.gameObjects);
 		}
@@ -469,7 +469,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			return manipulator;
 		}
 
-		private void UpdateCurrentManipulator()
+		void UpdateCurrentManipulator()
 		{
 			var selectionTransforms = Selection.transforms;
 			if (selectionTransforms.Length <= 0)

@@ -6,18 +6,21 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
 	class BaseManipulator : MonoBehaviour, IManipulator
 	{
-		public bool dragging { get; protected set; }
-
 		protected const float k_BaseManipulatorSize = 0.3f;
+
+		public bool adjustScaleForCamera { get; set; }
 
 		public Action<Vector3> translate { protected get; set; }
 		public Action<Quaternion> rotate { protected get; set; }
 		public Action<Vector3> scale { protected get; set; }
+		public bool dragging { get; protected set; }
+
 		public event Action dragStarted;
 
 		protected virtual void OnEnable()
 		{
-			Camera.onPreRender += OnCameraPreRender;
+			if (adjustScaleForCamera)
+				Camera.onPreRender += OnCameraPreRender;
 		}
 
 		protected virtual void OnDisable()
