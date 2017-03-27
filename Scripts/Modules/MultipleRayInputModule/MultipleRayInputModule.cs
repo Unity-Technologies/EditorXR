@@ -65,6 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		protected override void Awake()
 		{
 			base.Awake();
+
 			s_LayerMask = LayerMask.GetMask("UI");
 			m_TempRayEvent = new RayEventData(eventSystem);
 		}
@@ -101,6 +102,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			if (m_EventCamera == null)
 				return;
+
+			// World scaling also scales clipping planes
+			var camera = CameraUtils.GetMainCamera();
+			m_EventCamera.nearClipPlane = camera.nearClipPlane;
+			m_EventCamera.farClipPlane = camera.farClipPlane;
 
 			m_RaycastSourcesCopy.Clear();
 			m_RaycastSourcesCopy.AddRange(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
@@ -403,11 +409,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_EventCamera.transform.position = source.rayOrigin.position;
 			m_EventCamera.transform.rotation = source.rayOrigin.rotation;
 
-			// World scaling also scales clipping planes
-			var camera = CameraUtils.GetMainCamera();
-			m_EventCamera.nearClipPlane = camera.nearClipPlane;
-			m_EventCamera.farClipPlane = camera.farClipPlane;
-
 			var eventData = source.eventData;
 			eventData.Reset();
 			eventData.delta = Vector2.zero;
@@ -430,6 +431,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			BaseEventData eventData = GetBaseEventData();
 			ExecuteEvents.Execute(base.eventSystem.currentSelectedGameObject, eventData, ExecuteEvents.updateSelectedHandler);
 			return eventData.used;
+		}
+
+		public bool IsHoveringOverUI(Transform rayOrigin)
+		{
+			RaycastSource source;
+			return m_RaycastSources.TryGetValue(rayOrigin, out source) && source.hasObject;
 		}
 	}
 }

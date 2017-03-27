@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities

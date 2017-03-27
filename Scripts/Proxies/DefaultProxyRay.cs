@@ -26,6 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		Vector3 m_OriginalConeLocalScale;
 		Coroutine m_RayVisibilityCoroutine;
 		Coroutine m_ConeVisibilityCoroutine;
+		Material m_RayMaterial;
 
 		/// <summary>
 		/// The object that is set when LockRay is called while the ray is unlocked.
@@ -33,8 +34,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		/// If the object reference becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
 		/// </summary>
 		private object m_LockRayObject;
-
-		public Func<float> getViewerScale { private get; set; }
 
 		public bool LockRay(object lockCaller)
 
@@ -125,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			if (!rayVisible)
 				return;
 
-			var viewerScale = getViewerScale();
+			var viewerScale = this.GetViewerScale();
 			var scaledWidth = m_LineWidth * viewerScale;
 			var scaledLength = length / viewerScale;
 
@@ -136,8 +135,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			m_Tip.transform.localScale = scaledLength * m_TipStartScale;
 		}
 
+		public void SetColor(Color c)
+		{
+			m_RayMaterial.color = c;
+		}
+
 		private void Awake()
 		{
+			m_RayMaterial = MaterialUtils.GetMaterialClone(m_LineRenderer.GetComponent<MeshRenderer>());
 			m_ConeTransform = m_Cone.transform;
 			m_OriginalConeLocalScale = m_ConeTransform.localScale;
 		}
@@ -182,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var currentDuration = 0f;
 			while (currentDuration < kSmoothTime)
 			{
-				viewerScale = getViewerScale();
+				viewerScale = this.GetViewerScale();
 				currentDuration += Time.unscaledDeltaTime;
 				currentWidth = MathUtilsExt.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				scaledWidth = currentWidth * viewerScale;
@@ -190,7 +195,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				yield return null;
 			}
 
-			viewerScale = getViewerScale();
+			viewerScale = this.GetViewerScale();
 			scaledWidth = m_LineWidth * viewerScale;
 			m_LineRenderer.SetWidth(scaledWidth, scaledWidth);
 			m_RayVisibilityCoroutine = null;
@@ -230,6 +235,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			m_ConeTransform.localScale = m_OriginalConeLocalScale;
 			m_ConeVisibilityCoroutine = null;
+		}
+
+		void OnDestroy()
+		{
+			ObjectUtils.Destroy(m_RayMaterial);
 		}
 	}
 }

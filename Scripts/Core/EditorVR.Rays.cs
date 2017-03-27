@@ -1,7 +1,6 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -9,14 +8,14 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
 		[SerializeField]
 		DefaultProxyRay m_ProxyRayPrefab;
 
-		class Rays : Nested
+		class Rays : Nested, IInterfaceConnector
 		{
 			internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -31,6 +30,60 @@ namespace UnityEditor.Experimental.EditorVR
 
 			StandardManipulator m_StandardManipulator;
 			ScaleManipulator m_ScaleManipulator;
+
+			public Rays()
+			{
+				ICustomRayMethods.showDefaultRay = ShowRay;
+				ICustomRayMethods.hideDefaultRay = HideRay;
+
+				IUsesRayLockingMethods.lockRay = LockRay;
+				IUsesRayLockingMethods.unlockRay = UnlockRay;
+
+				IForEachRayOriginMethods.forEachRayOrigin = ForEachRayOrigin;
+				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
+				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
+				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
+			}
+
+			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			{
+				if (rayOrigin)
+				{
+					var evrDeviceData = evr.m_DeviceData;
+
+					var ray = obj as IUsesRayOrigin;
+					if (ray != null)
+						ray.rayOrigin = rayOrigin;
+
+					var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+
+					var handedRay = obj as IUsesNode;
+					if (handedRay != null && deviceData != null)
+						handedRay.node = deviceData.node;
+
+					var usesProxy = obj as IUsesProxyType;
+					if (usesProxy != null && deviceData != null)
+						usesProxy.proxyType = deviceData.proxy.GetType();
+
+					var menuOrigins = obj as IUsesMenuOrigins;
+					if (menuOrigins != null)
+					{
+						Transform mainMenuOrigin;
+						var proxy = GetProxyForRayOrigin(rayOrigin);
+						if (proxy != null && proxy.menuOrigins.TryGetValue(rayOrigin, out mainMenuOrigin))
+						{
+							menuOrigins.menuOrigin = mainMenuOrigin;
+							Transform alternateMenuOrigin;
+							if (proxy.alternateMenuOrigins.TryGetValue(rayOrigin, out alternateMenuOrigin))
+								menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
+						}
+					}
+				}
+			}
+
+			public void DisconnectInterface(object obj)
+			{
+			}
 
 			internal void UpdateRayForDevice(DeviceData deviceData, Transform rayOrigin)
 			{
@@ -55,10 +108,11 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void CreateAllProxies()
 			{
+				var deviceInputModule = evr.GetModule<DeviceInputModule>();
 				foreach (var proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
 				{
 					var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig);
-					proxy.trackedObjectInput = evr.m_DeviceInputModule.trackedObjectInput;
+					proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
 					proxy.activeChanged += () => OnProxyActiveChanged(proxy);
 					proxy.hidden = true;
 
@@ -75,32 +129,40 @@ namespace UnityEditor.Experimental.EditorVR
 					var evrDeviceData = evr.m_DeviceData;
 					if (!evrDeviceData.Any(dd => dd.proxy == proxy))
 					{
-						var deviceInputModule = evr.m_DeviceInputModule;
+						var inputModule = evr.GetModule<MultipleRayInputModule>();
+						var deviceInputModule = evr.GetModule<DeviceInputModule>();
+						var highlightModule = evr.GetModule<HighlightModule>();
+						var keyboardModule = evr.GetModule<KeyboardModule>();
+						var intersectionModule = evr.GetModule<IntersectionModule>();
 
 						foreach (var rayOriginPair in proxy.rayOrigins)
 						{
+							var node = rayOriginPair.Key;
+
 							var systemDevices = deviceInputModule.GetSystemDevices();
+							var actionMap = inputModule.actionMap;
 							for (int j = 0; j < systemDevices.Count; j++)
 							{
 								var device = systemDevices[j];
 
 								// Find device tagged with the node that matches this RayOrigin node
-								var node = deviceInputModule.GetDeviceNode(device);
-								if (node.HasValue && node.Value == rayOriginPair.Key)
+								var deviceNode = deviceInputModule.GetDeviceNode(device);
+								if (deviceNode.HasValue && deviceNode.Value == node)
 								{
 									var deviceData = new DeviceData();
 									evrDeviceData.Add(deviceData);
 									deviceData.proxy = proxy;
-									deviceData.node = rayOriginPair.Key;
+									deviceData.node = node;
 									deviceData.rayOrigin = rayOriginPair.Value;
 									deviceData.inputDevice = device;
-									deviceData.uiInput = deviceInputModule.CreateActionMapInput(evr.m_InputModule.actionMap, device);
+									deviceData.uiInput = deviceInputModule.CreateActionMapInput(actionMap, device);
 									deviceData.directSelectInput = deviceInputModule.CreateActionMapInput(deviceInputModule.directSelectActionMap, device);
 
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-									evr.m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, source =>
+									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOriginPair.Value, source =>
 									{
-										foreach (var miniWorld in evr.m_MiniWorlds.worlds)
+										var miniWorlds = evr.GetNestedModule<MiniWorlds>().worlds;
+										foreach (var miniWorld in miniWorlds)
 										{
 											var targetObject = source.hoveredObject ? source.hoveredObject : source.draggedObject;
 											if (miniWorld.Contains(source.rayOrigin.position))
@@ -115,15 +177,15 @@ namespace UnityEditor.Experimental.EditorVR
 								}
 							}
 
-							var rayOriginPairValue = rayOriginPair.Value;
-							var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOriginPairValue).transform;
-							rayTransform.position = rayOriginPairValue.position;
-							rayTransform.rotation = rayOriginPairValue.rotation;
+							var rayOrigin = rayOriginPair.Value;
+							var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin).transform;
+							rayTransform.position = rayOrigin.position;
+							rayTransform.rotation = rayOrigin.rotation;
 							var dpr = rayTransform.GetComponent<DefaultProxyRay>();
-							dpr.getViewerScale = Viewer.GetViewerScale;
-							m_DefaultRays.Add(rayOriginPairValue, dpr);
+							dpr.SetColor(node == Node.LeftHand ? highlightModule.leftColor : highlightModule.rightColor);
+							m_DefaultRays.Add(rayOrigin, dpr);
 
-							evr.m_KeyboardModule.SpawnKeyboardMallet(rayOriginPairValue);
+							keyboardModule.SpawnKeyboardMallet(rayOrigin);
 
 							var proxyExtras = evr.m_ProxyExtras;
 							if (proxyExtras)
@@ -132,9 +194,10 @@ namespace UnityEditor.Experimental.EditorVR
 								List<GameObject> prefabs;
 								if (extraData.TryGetValue(rayOriginPair.Key, out prefabs))
 								{
+									var ui = evr.GetNestedModule<UI>();
 									foreach (var prefab in prefabs)
 									{
-										var go = evr.m_UI.InstantiateUI(prefab);
+										var go = ui.InstantiateUI(prefab);
 										go.transform.SetParent(rayOriginPair.Value, false);
 									}
 								}
@@ -142,10 +205,12 @@ namespace UnityEditor.Experimental.EditorVR
 
 							var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
 							tester.active = proxy.active;
-							evr.m_IntersectionModule.AddTester(tester);
+							intersectionModule.AddTester(tester);
+
+							highlightModule.AddRayOriginForNode(node, rayOrigin);
 						}
 
-						evr.m_Tools.SpawnDefaultTools(proxy);
+						evr.GetNestedModule<Tools>().SpawnDefaultTools(proxy);
 
 						evr.m_WorkspaceModule.CreateWorkspace(typeof(MiniWorldWorkspace));
 					}
@@ -154,6 +219,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal void UpdateDefaultProxyRays()
 			{
+				var inputModule = evr.GetModule<MultipleRayInputModule>();
+
 				// Set ray lengths based on renderer bounds
 				foreach (var proxy in m_Proxies)
 				{
@@ -167,7 +234,7 @@ namespace UnityEditor.Experimental.EditorVR
 						// Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
 						// object, so visually show the ray terminating there instead of the object; UI is already given
 						// priority on the input side)
-						var uiEventData = evr.m_InputModule.GetPointerEventData(rayOrigin);
+						var uiEventData = inputModule.GetPointerEventData(rayOrigin);
 						if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
 						{
 							// Set ray length to distance to UI objects
@@ -224,11 +291,11 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal GameObject GetFirstGameObject(Transform rayOrigin)
 			{
-				var go = evr.m_PixelRaycastModule.GetFirstGameObject(rayOrigin);
+				var go = evr.GetModule<PixelRaycastModule>().GetFirstGameObject(rayOrigin);
 				if (go)
 					return go;
 
-				var intersectionModule = evr.m_IntersectionModule;
+				var intersectionModule = evr.GetModule<IntersectionModule>();
 
 				// If a raycast did not find an object use the spatial hash as a final test
 				if (intersectionModule)
@@ -239,7 +306,8 @@ namespace UnityEditor.Experimental.EditorVR
 						return renderer.gameObject;
 				}
 
-				foreach (var ray in evr.m_MiniWorlds.rays)
+				var miniWorlds = evr.GetNestedModule<MiniWorlds>();
+				foreach (var ray in miniWorlds.rays)
 				{
 					var miniWorldRay = ray.Value;
 					if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
@@ -334,5 +402,4 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 	}
 }
-
 #endif

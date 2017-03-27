@@ -37,12 +37,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_InspectorUI = contentPrefab.GetComponent<InspectorUI>();
 
 			m_LockUI = ObjectUtils.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LockUI>();
-			connectInterfaces(m_LockUI);
+			this.ConnectInterfaces(m_LockUI);
 			m_LockUI.lockButtonPressed += SetIsLocked;
 			EditorApplication.delayCall += m_LockUI.Setup; // Need to write stencilRef after WorkspaceButton does it
 
 			var listView = m_InspectorUI.listView;
-			connectInterfaces(listView);
+			this.ConnectInterfaces(listView);
 			listView.data = new List<InspectorData>();
 			listView.arraySizeChanged += OnArraySizeChanged;
 
@@ -84,7 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
-			m_InspectorUI.listView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / getViewerScale();
+			m_InspectorUI.listView.scrollOffset += Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / this.GetViewerScale();
 		}
 
 		void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

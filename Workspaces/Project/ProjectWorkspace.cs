@@ -78,19 +78,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
 
 			var assetGridView = m_ProjectUI.assetGridView;
-			connectInterfaces(assetGridView);
+			this.ConnectInterfaces(assetGridView);
 			assetGridView.matchesFilter = this.MatchesFilter;
 			assetGridView.data = new List<AssetData>();
 
 			var folderListView = m_ProjectUI.folderListView;
-			connectInterfaces(folderListView);
+			this.ConnectInterfaces(folderListView);
 			folderListView.selectFolder = SelectFolder;
 			folderData = m_FolderData;
 
 			m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
 			foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
 			{
-				connectInterfaces(mb);
+				this.ConnectInterfaces(mb);
 			}
 			filterList = m_FilterList;
 
@@ -102,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			zoomSlider.sliding += Scale;
 			foreach (var mb in zoomSlider.GetComponentsInChildren<MonoBehaviour>())
 			{
-				connectInterfaces(mb);
+				this.ConnectInterfaces(mb);
 			}
 
 			var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();
@@ -225,9 +225,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			if (handle == m_ProjectUI.folderScrollHandle)
-				m_ProjectUI.folderListView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / getViewerScale();
+				m_ProjectUI.folderListView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / this.GetViewerScale();
 			else if (handle == m_ProjectUI.assetScrollHandle)
-				m_ProjectUI.assetGridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / getViewerScale();
+				m_ProjectUI.assetGridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / this.GetViewerScale();
 		}
 
 		void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

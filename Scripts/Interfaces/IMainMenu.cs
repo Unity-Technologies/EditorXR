@@ -24,14 +24,21 @@ namespace UnityEditor.Experimental.EditorVR
 		/// The ray origin that spawned the menu and will be used for node-specific operations (e.g. selecting a tool)
 		/// </summary>
 		Transform targetRayOrigin { set; }
+	}
+
+	public static class IMainMenuMethods
+	{
+		internal static Func<Transform, Type, bool> isToolActive { get; set; }
 
 		/// <summary>
 		/// Returns true if the active tool on the given ray origin is of the given type
-		/// Transform: Ray origin to check
-		/// Type: Type with which to compare
-		/// Returns whether the active tool is of the same type
 		/// </summary>
-		Func<Transform, Type, bool> isToolActive { set; }
+		/// <param name="rayOrigin">The ray origin to check</param>
+		/// <param name="type">The tool type to compare</param>
+		public static bool IsToolActive(this IMainMenu obj, Transform rayOrigin, Type type)
+		{
+			return isToolActive(rayOrigin, type);
+		}
 	}
 }
 #endif

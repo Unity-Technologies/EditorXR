@@ -9,7 +9,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection, IGrabObjects, ISetHighlight, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility
+	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
+		IGrabObjects, ICustomRay, IProcessInput, ISelectObject, IManipulatorVisibility
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -148,25 +149,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 		readonly TransformAction m_ManipulatorToggleAction = new TransformAction();
 
-		readonly Dictionary<Transform, GameObject> m_HoverObjects = new Dictionary<Transform, GameObject>();
-
-		public Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { private get; set; }
-		public Func<Transform, bool> isOverShoulder { private get; set; }
-		public Action<GameObject> deleteSceneObject { private get; set; }
-
-		public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
-		public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
-
-		public Func<Transform, object, bool> lockRay { private get; set; }
-		public Func<Transform, object, bool> unlockRay { private get; set; }
-
-		public Func<GameObject, Transform, bool> canGrabObject { private get; set; }
 		public event Action<GameObject> objectGrabbed;
 		public event Action<Transform[], Transform> objectsDropped;
-
-		public Action<GameObject, bool> setHighlight { private get; set; }
-		public GetSelectionCandidateDelegate getSelectionCandidate { private get; set; }
-		public SelectObjectDelegate selectObject { private get; set; }
 
 		public bool manipulatorVisible { private get; set; }
 
@@ -207,7 +191,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var manipulatorGameObject = m_CurrentManipulator.gameObject;
 			if (!m_CurrentManipulator.dragging)
 			{
-				var directSelection = getDirectSelection();
+				var directSelection = this.GetDirectSelection();
 
 				var hasLeft = m_GrabData.ContainsKey(Node.LeftHand);
 				var hasRight = m_GrabData.ContainsKey(Node.RightHand);
@@ -227,21 +211,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (manipulatorGameObject.activeSelf && hoveringSelection)
 					manipulatorGameObject.SetActive(false);
 
-				foreach (var selection in m_HoverObjects.Values)
-				{
-					if (selection)
-						setHighlight(selection, false);
-				}
-
-				m_HoverObjects.Clear();
-
 				foreach (var kvp in directSelection)
 				{
 					var rayOrigin = kvp.Key;
 					var selection = kvp.Value;
 					var hoveredObject = selection.gameObject;
 
-					var selectionCandidate = getSelectionCandidate(hoveredObject, true);
+					var selectionCandidate = this.GetSelectionCandidate(hoveredObject, true);
 
 					// Can't select this object (it might be locked or static)
 					if (hoveredObject && !selectionCandidate)
@@ -250,12 +226,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (selectionCandidate)
 						hoveredObject = selectionCandidate;
 
-					if (!canGrabObject(hoveredObject, rayOrigin))
+					if (!this.CanGrabObject(hoveredObject, rayOrigin))
 						continue;
-
-					m_HoverObjects[rayOrigin] = hoveredObject; // Store actual hover object to unhighlight next frame
-
-					setHighlight(hoveredObject, true);
 
 					var directSelectInput = (DirectSelectInput)selection.input;
 					if (directSelectInput.select.wasJustPressed)
@@ -264,7 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						// Only add to selection, don't remove
 						if (!Selection.objects.Contains(hoveredObject))
-							selectObject(hoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
+							this.SelectObject(hoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
 
 						consumeControl(directSelectInput.select);
 
@@ -289,12 +261,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput, Selection.transforms);
 
-						setHighlight(hoveredObject, false);
+						this.HideDefaultRay(rayOrigin, true); // This will also unhighlight the object
+						this.LockRay(rayOrigin, this);
 
-						hideDefaultRay(rayOrigin, true);
-						lockRay(rayOrigin, this);
-
-						// Wait a frame since OnSelectionChanged is called after setting m_DirectSelected to true
+						// Wait a frame since OnSelectionChanged is called at the end of the frame, and will set m_DirectSelected to false
 						EditorApplication.delayCall += () =>
 						{
 							// A direct selection has been made. Hide the manipulator until the selection changes
@@ -440,8 +410,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					grabData.UpdatePositions();
 
 					// Prevent lock from getting stuck
-					unlockRay(rayOrigin, this);
-					lockRay(destRayOrigin, this);
+					this.UnlockRay(rayOrigin, this);
+					this.LockRay(destRayOrigin, this);
 					return;
 				}
 			}
@@ -458,8 +428,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			objectsDropped(grabData.grabbedObjects.ToArray(), grabData.rayOrigin);
 			m_GrabData.Remove(inputNode);
 
-			unlockRay(grabData.rayOrigin, this);
-			showDefaultRay(grabData.rayOrigin, true);
+			this.UnlockRay(grabData.rayOrigin, this);
+			this.ShowDefaultRay(grabData.rayOrigin, true);
 		}
 
 		private void Translate(Vector3 delta)
@@ -519,7 +489,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_PositionOffsetRotation = Quaternion.identity;
 			m_TargetScale = Vector3.one;
 
-			// Save the initial position, rotation, and scale realtive to the manipulator
+			// Save the initial position, rotation, and scale relative to the manipulator
 			m_PositionOffsets.Clear();
 			m_RotationOffsets.Clear();
 			m_ScaleOffsets.Clear();

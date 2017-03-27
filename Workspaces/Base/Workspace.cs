@@ -8,8 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight,IUsesStencilRef,
-		IConnectInterfaces, IUsesViewerScale
+	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale
 	{
 		public static readonly Vector3 k_DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 
@@ -78,13 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Bounds vacuumBounds { get { return outerBounds; } }
 
-		public InstantiateUIDelegate instantiateUI { protected get; set; }
-
-		public Action<GameObject, bool> setHighlight { protected get; set; }
-
 		public byte stencilRef { get; set; }
-
-		public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 		/// <summary>
 		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
@@ -118,15 +111,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
-		public Func<float> getViewerScale { protected get; set; }
-
 		public virtual void Setup()
 		{
-			GameObject baseObject = instantiateUI(m_BasePrefab);
+			GameObject baseObject = this.InstantiateUI(m_BasePrefab);
 			baseObject.transform.SetParent(transform, false);
 
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
-			connectInterfaces(m_WorkspaceUI);
+			this.ConnectInterfaces(m_WorkspaceUI);
 			m_WorkspaceUI.closeClicked += OnCloseClicked;
 			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
 
@@ -184,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			if (m_Dragging)
 			{
-				var viewerScale = getViewerScale();
+				var viewerScale = this.GetViewerScale();
 				var dragVector = (eventData.rayOrigin.position - m_DragStart) / viewerScale;
 				var bounds = contentBounds;
 				var positionOffset = Vector3.zero;

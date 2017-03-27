@@ -57,9 +57,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public byte stencilRef { get; set; }
 
-		public Action<GameObject, bool> setLocked { private get; set; }
-		public Func<GameObject, bool> isLocked { private get; set; }
-
 		public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
 
 		protected override void Setup()
@@ -205,8 +202,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (headerItem)
 			{
 				var go = (GameObject)listData.serializedObject.targetObject;
-				headerItem.lockToggle.isOn = isLocked(go);
-				headerItem.setLocked = locked => setLocked(go, locked);
+				headerItem.lockToggle.isOn = this.IsLocked(go);
+				headerItem.setLocked = locked => this.SetLocked(go, locked);
 			}
 
 			return item;
