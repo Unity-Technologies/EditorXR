@@ -5,7 +5,6 @@ using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
