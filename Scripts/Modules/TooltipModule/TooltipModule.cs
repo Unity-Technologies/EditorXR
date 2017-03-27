@@ -184,9 +184,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void OnRayExited(GameObject gameObject, RayEventData eventData)
 		{
-			var tooltip = gameObject.GetComponent<ITooltip>();
-			if (tooltip != null)
-				HideTooltip(tooltip);
+			if (gameObject)
+			{
+				var tooltip = gameObject.GetComponent<ITooltip>();
+				if (tooltip != null)
+					HideTooltip(tooltip);
+			}
 		}
 
 		public void ShowTooltip(ITooltip tooltip)
