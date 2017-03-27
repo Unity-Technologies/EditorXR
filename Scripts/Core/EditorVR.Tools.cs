@@ -31,6 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
 				ISelectToolMethods.selectTool = SelectTool;
+				ISelectToolMethods.isToolActive = IsToolActive;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
@@ -232,11 +233,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									DespawnTool(deviceData, deviceData.currentTool);
 
 								AddToolToStack(dd, newTool);
-
-								deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
-								deviceData.previousToolButton.rayOrigin = rayOrigin;
 							}
 						}
+
+						deviceData.previousToolButton.rayOrigin = rayOrigin;
+						deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
 
 						deviceInputModule.UpdatePlayerHandleMaps();
 						result = spawnTool;
