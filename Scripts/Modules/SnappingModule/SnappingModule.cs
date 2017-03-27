@@ -19,6 +19,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		const float k_WidgetScale = 0.03f;
 
+		const string k_SnappingEnabled = "EditorVR.SnappingEnabled";
+		const string k_GroundSnapping = "EditorVR.GroundSnapping";
+		const string k_SurfaceSnapping = "EditorVR.SufraceSnapping";
+		const string k_PivotSnapping = "EditorVR.PivotSnapping";
+		const string k_SnapRotation = "EditorVR.SnapRotation";
+		const string k_ManipulatorSnapping = "EditorVR.ManipulatorSnapping";
+		const string k_DirectSnapping = "EditorVR.DirectSnapping";
+
 		[SerializeField]
 		GameObject m_GroundPlane;
 
@@ -182,6 +190,27 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			directSnapping = true;
 			manipulatorSnapping = true;
+
+			if (EditorPrefs.HasKey(k_SnappingEnabled))
+				snappingEnabled = EditorPrefs.GetBool(k_SnappingEnabled);
+
+			if (EditorPrefs.HasKey(k_GroundSnapping))
+				groundSnapping = EditorPrefs.GetBool(k_GroundSnapping);
+
+			if (EditorPrefs.HasKey(k_SurfaceSnapping))
+				surfaceSnapping = EditorPrefs.GetBool(k_SurfaceSnapping);
+
+			if (EditorPrefs.HasKey(k_PivotSnapping))
+				pivotSnapping = EditorPrefs.GetBool(k_PivotSnapping);
+
+			if (EditorPrefs.HasKey(k_SnapRotation))
+				snapRotation = EditorPrefs.GetBool(k_SnapRotation);
+
+			if (EditorPrefs.HasKey(k_ManipulatorSnapping))
+				manipulatorSnapping = EditorPrefs.GetBool(k_ManipulatorSnapping);
+
+			if (EditorPrefs.HasKey(k_DirectSnapping))
+				directSnapping = EditorPrefs.GetBool(k_DirectSnapping);
 		}
 
 		void Update()
@@ -528,6 +557,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var directSnappingUI = m_SnappingModuleUI.directSnapping;
 			if (toggle == directSnappingUI)
 				m_DirectSnapping = directSnappingUI.isOn;
+		}
+
+		void OnDisable()
+		{
+			EditorPrefs.SetBool(k_SnappingEnabled, snappingEnabled);
+			EditorPrefs.SetBool(k_GroundSnapping, groundSnapping);
+			EditorPrefs.SetBool(k_SurfaceSnapping, surfaceSnapping);
+			EditorPrefs.SetBool(k_PivotSnapping, pivotSnapping);
+			EditorPrefs.SetBool(k_SnapRotation, snapRotation);
+			EditorPrefs.SetBool(k_ManipulatorSnapping, manipulatorSnapping);
+			EditorPrefs.SetBool(k_DirectSnapping, directSnapping);
 		}
 	}
 }
