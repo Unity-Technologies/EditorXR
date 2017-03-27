@@ -18,13 +18,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			public string description { get; set; }
 		}
 
-		private enum RotationState
+		enum RotationState
 		{
 			AtRest,
 			Snapping,
 		}
 
-		private enum VisibilityState
+		enum VisibilityState
 		{
 			Hidden,
 			Visible,
@@ -32,12 +32,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			TransitioningOut
 		}
 
-		[SerializeField] private MainMenuButton m_ButtonTemplatePrefab;
-		[SerializeField] private Transform[] m_MenuFaceContainers;
-		[SerializeField] private MainMenuFace m_MenuFacePrefab;
-		[SerializeField] private Transform m_MenuFaceRotationOrigin;
-		[SerializeField] private SkinnedMeshRenderer m_MenuFrameRenderer;
-		[SerializeField] private Transform m_AlternateMenu;
+		[SerializeField]
+		MainMenuButton m_ButtonTemplatePrefab;
+
+		[SerializeField]
+		Transform[] m_MenuFaceContainers;
+
+		[SerializeField]
+		MainMenuFace m_MenuFacePrefab;
+
+		[SerializeField]
+		Transform m_MenuFaceRotationOrigin;
+
+		[SerializeField]
+		SkinnedMeshRenderer m_MenuFrameRenderer;
+
+		[SerializeField]
+		Transform m_AlternateMenu;
 
 		public int targetFaceIndex
 		{
@@ -52,28 +63,28 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_TargetFaceIndex = value % faceCount;
 			}
 		}
-		private int m_TargetFaceIndex;
+		int m_TargetFaceIndex;
 
 		public Dictionary<string, List<Transform>> faceButtons { get { return m_FaceButtons; } }
-		private readonly Dictionary<string, List<Transform>> m_FaceButtons = new Dictionary<string, List<Transform>>();
+		readonly Dictionary<string, List<Transform>> m_FaceButtons = new Dictionary<string, List<Transform>>();
 
-		private const float k_FaceRotationSnapAngle = 90f;
-		private const int k_FaceCount = 4;
-		private const float k_DefaultSnapSpeed = 10f;
-		private const float k_RotationEpsilon = 1f;
+		const float k_FaceRotationSnapAngle = 90f;
+		const int k_FaceCount = 4;
+		const float k_DefaultSnapSpeed = 10f;
+		const float k_RotationEpsilon = 1f;
 
-		private readonly string k_UncategorizedFaceName = "Uncategorized";
-		private readonly Color k_MenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
+		readonly string k_UncategorizedFaceName = "Uncategorized";
+		readonly Color k_MenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
 
-		private VisibilityState m_VisibilityState = VisibilityState.Visible;
-		private RotationState m_RotationState;
-		private MainMenuFace[] m_MenuFaces;
-		private Material m_MenuFacesMaterial;
-		private Color m_MenuFacesColor;
-		private Transform m_MenuOrigin;
-		private Transform m_AlternateMenuOrigin;
-		private Vector3 m_AlternateMenuOriginOriginalLocalScale;
-		private Coroutine m_VisibilityCoroutine;
+		VisibilityState m_VisibilityState = VisibilityState.Visible;
+		RotationState m_RotationState;
+		MainMenuFace[] m_MenuFaces;
+		Material m_MenuFacesMaterial;
+		Color m_MenuFacesColor;
+		Transform m_MenuOrigin;
+		Transform m_AlternateMenuOrigin;
+		Vector3 m_AlternateMenuOriginOriginalLocalScale;
+		Coroutine m_VisibilityCoroutine;
 		Coroutine m_FrameRevealCoroutine;
 		int m_Direction;
 
@@ -329,22 +340,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			return -1;
 		}
 
-		private int GetClosestFaceIndexForRotation(float rotation)
+		int GetClosestFaceIndexForRotation(float rotation)
 		{
 			return Mathf.RoundToInt(rotation / k_FaceRotationSnapAngle) % faceCount;
 		}
 
-		private int GetActualFaceIndexForRotation(float rotation)
+		int GetActualFaceIndexForRotation(float rotation)
 		{
 			return Mathf.FloorToInt(rotation / k_FaceRotationSnapAngle) % faceCount;
 		}
 	
-		private float GetRotationForFaceIndex(int faceIndex)
+		float GetRotationForFaceIndex(int faceIndex)
 		{
 			return faceIndex * k_FaceRotationSnapAngle;
 		}
 
-		private IEnumerator SnapToFace(int faceIndex, float snapSpeed)
+		IEnumerator SnapToFace(int faceIndex, float snapSpeed)
 		{
 			if (m_RotationState == RotationState.Snapping)
 				yield break;
@@ -377,7 +388,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_RotationState = RotationState.AtRest;
 		}
 
-		private IEnumerator AnimateShow()
+		IEnumerator AnimateShow()
 		{
 			if (m_VisibilityCoroutine != null)
 				yield break;
@@ -414,7 +425,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_VisibilityCoroutine = null;
 		}
 
-		private IEnumerator AnimateHide()
+		IEnumerator AnimateHide()
 		{
 			if (m_VisibilityCoroutine != null)
 				yield break;
@@ -461,7 +472,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_VisibilityCoroutine = null;
 		}
 
-		private IEnumerator AnimateFrameRotationShapeChange(RotationState rotationState)
+		IEnumerator AnimateFrameRotationShapeChange(RotationState rotationState)
 		{
 			var smoothTime = 0.0375f;
 			var currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
@@ -480,7 +491,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_MenuFrameRenderer.SetBlendShapeWeight(0, targetWeight);
 		}
 
-		private IEnumerator AnimateFrameReveal(VisibilityState visibilityState)
+		IEnumerator AnimateFrameReveal(VisibilityState visibilityState)
 		{
 			m_MenuFrameRenderer.SetBlendShapeWeight(1, 100f);
 			const float zeroStartBlendShapePadding = 20f; // start the blendShape at a point slightly above the full hidden value for better visibility
