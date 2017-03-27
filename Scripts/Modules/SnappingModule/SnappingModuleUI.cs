@@ -1,5 +1,4 @@
-﻿using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 [ExecuteInEditMode]
@@ -32,4 +31,18 @@ public class SnappingModuleUI : MonoBehaviour
 	public Toggle manipulatorSnapping { get { return m_ManipulatorSnapping; } }
 	[SerializeField]
 	Toggle m_ManipulatorSnapping;
+
+	public void SetToggleValue(Toggle toggle, bool isOn)
+	{
+		var toggleGroup = toggle.GetComponentInParent<ToggleGroup>();
+		var toggles = toggleGroup.GetComponentsInChildren<Toggle>();
+		foreach (var t in toggles)
+		{
+			if (t != toggle)
+			{
+				t.isOn = !isOn;
+			}
+		}
+		toggle.isOn = isOn;
+	}
 }

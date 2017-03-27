@@ -462,31 +462,31 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		void SetupUI()
 		{
 			var snappingEnabledUI = m_SnappingModuleUI.snappingEnabled;
-			snappingEnabledUI.isOn = !m_DisableAll;
+			m_SnappingModuleUI.SetToggleValue(snappingEnabledUI, !m_DisableAll);
 			snappingEnabledUI.onValueChanged.AddListener(b => { OnTogglePressed(snappingEnabledUI); });
 
 			var groundSnappingUI = m_SnappingModuleUI.groundSnapping;
-			groundSnappingUI.isOn = m_GroundSnapping;
+			m_SnappingModuleUI.SetToggleValue(groundSnappingUI, m_GroundSnapping);
 			groundSnappingUI.onValueChanged.AddListener(b => { OnTogglePressed(groundSnappingUI); });
 
 			var surfaceSnappingUI = m_SnappingModuleUI.surfaceSnapping;
-			surfaceSnappingUI.isOn = m_SurfaceSnapping;
+			m_SnappingModuleUI.SetToggleValue(surfaceSnappingUI, m_SurfaceSnapping);
 			surfaceSnappingUI.onValueChanged.AddListener(b => { OnTogglePressed(surfaceSnappingUI); });
 
 			var pivotSnappingUI = m_SnappingModuleUI.pivotSnapping;
-			pivotSnappingUI.isOn = m_PivotSnapping;
+			m_SnappingModuleUI.SetToggleValue(pivotSnappingUI, m_PivotSnapping);
 			pivotSnappingUI.onValueChanged.AddListener(b => { OnTogglePressed(pivotSnappingUI); });
 
 			var snapRotationUI = m_SnappingModuleUI.snapRotation;
-			snapRotationUI.isOn = m_SnapRotation;
+			m_SnappingModuleUI.SetToggleValue(snapRotationUI, m_SnapRotation);
 			snapRotationUI.onValueChanged.AddListener(b => { OnTogglePressed(snapRotationUI); });
 
 			var manipulatorSnappingUI = m_SnappingModuleUI.manipulatorSnapping;
-			manipulatorSnappingUI.isOn = m_ManipulatorSnapping;
+			m_SnappingModuleUI.SetToggleValue(manipulatorSnappingUI, m_ManipulatorSnapping);
 			manipulatorSnappingUI.onValueChanged.AddListener(b => { OnTogglePressed(manipulatorSnappingUI); });
 
 			var directSnappingUI = m_SnappingModuleUI.directSnapping;
-			directSnappingUI.isOn = m_DirectSnapping;
+			m_SnappingModuleUI.SetToggleValue(directSnappingUI, m_DirectSnapping);
 			directSnappingUI.onValueChanged.AddListener(b => { OnTogglePressed(directSnappingUI); });
 		}
 
