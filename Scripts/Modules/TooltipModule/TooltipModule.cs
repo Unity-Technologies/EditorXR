@@ -38,8 +38,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		Transform m_TooltipCanvas;
 		Vector3 m_TooltipScale;
 
-		public Func<float> getViewerScale { private get; set; }
-
 		void Start()
 		{
 			m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
@@ -107,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (tooltipText)
 				tooltipText.text = tooltip.tooltipText;
 
-			var viewerScale = getViewerScale();
+			var viewerScale = this.GetViewerScale();
 			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
 			var placement = tooltip as ITooltipPlacement;

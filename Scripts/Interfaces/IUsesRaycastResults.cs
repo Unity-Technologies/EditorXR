@@ -9,12 +9,21 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IUsesRaycastResults
 	{
+	}
+
+	public static class IUsesRaycastResultsMethods
+	{
+		internal static Func<Transform, GameObject> getFirstGameObject { get; set; }
+
 		/// <summary>
-		/// Delegate used to test hover/intersection
-		/// Transform = object in test
+		/// Method used to test hover/intersection
 		/// Returns the first GameObject being hovered over, or intersected with
 		/// </summary>
-		Func<Transform, GameObject> getFirstGameObject { set; }
+		/// <param name="rayOrigin">The rayOrigin for intersection purposes</param>
+		public static GameObject GetFirstGameObject(this IUsesRaycastResults obj, Transform rayOrigin)
+		{
+			return getFirstGameObject(rayOrigin);
+		}
 	}
 }
 #endif

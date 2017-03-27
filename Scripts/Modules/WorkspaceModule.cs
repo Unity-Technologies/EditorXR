@@ -20,8 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		static internal List<Type> workspaceTypes { get; private set; }
 
-		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
-
 		static WorkspaceModule()
 		{
 			workspaceTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
@@ -34,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var workspace = (IWorkspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
 			m_Workspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
-			connectInterfaces(workspace);
+			this.ConnectInterfaces(workspace);
 
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();

@@ -50,11 +50,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			get { return transform.localToWorldMatrix * referenceTransform.worldToLocalMatrix; }
 		}
 
-		public Func<Camera, Matrix4x4> getWorldToCameraMatrix
-		{
-			get { return m_MiniWorldRenderer.GetWorldToCameraMatrix; }
-		}
-
 		public Bounds referenceBounds
 		{
 			get { return new Bounds(referenceTransform.position, Vector3.Scale(referenceTransform.localScale, m_LocalBoundsSize)); }
@@ -74,6 +69,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public bool Contains(Vector3 position)
 		{
 			return localBounds.Contains(transform.InverseTransformPoint(position));
+		}
+
+		public Matrix4x4 GetWorldToCameraMatrix(Camera camera)
+		{
+			return m_MiniWorldRenderer.GetWorldToCameraMatrix(camera);
 		}
 
 		public List<Renderer> ignoreList

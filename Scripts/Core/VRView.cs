@@ -11,7 +11,7 @@ using Valve.VR;
 #endif
 using Object = UnityEngine.Object;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	[InitializeOnLoad]
 	sealed class VRView : EditorWindow

@@ -79,8 +79,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		readonly Dictionary<Transform, SnappingState> m_SnappingStates = new Dictionary<Transform, SnappingState>();
 
-		public Func<float> getViewerScale { get; set; }
-
 		class SnappingState
 		{
 			public Vector3 currentPosition;
@@ -187,12 +185,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					{
 						var ray = new Ray(targetPosition + targetRotation * offset, targetRotation * GetDirection(i));
 						var raycastDistance = state.identityBounds.extents.y;
-						if (PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, i, targetRotation, Mathf.Log(getViewerScale()), true, raycastDistance))
+						if (PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, i, targetRotation, Mathf.Log(this.GetViewerScale()), true, raycastDistance))
 							return true;
 					}
 				}
 
-				if (groundSnapping && PerformGroundSnapping(ref position, ref rotation, targetPosition, state, Mathf.Log(getViewerScale())))
+				if (groundSnapping && PerformGroundSnapping(ref position, ref rotation, targetPosition, state, Mathf.Log(this.GetViewerScale())))
 					return true;
 			}
 

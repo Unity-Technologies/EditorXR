@@ -65,15 +65,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Transform rayOrigin { private get; set; }
 
-		public InstantiateUIDelegate instantiateUI { get; set; }
-
 		public Transform menuOrigin { get; set; }
 
 		public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
 
 		void Start()
 		{
-			m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
+			m_RadialMenuUI = this.InstantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
 			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_RadialMenuUI.actions = menuActions;
 			m_RadialMenuUI.Setup();

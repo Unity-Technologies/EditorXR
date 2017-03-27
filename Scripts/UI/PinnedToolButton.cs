@@ -38,8 +38,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		GradientButton m_GradientButton;
 
 		public Transform rayOrigin { get; set; }
-		public Func<Transform, Type, bool> selectTool { private get; set; }
-
 		void Start()
 		{
 			m_GradientButton.onClick += OnClick;
@@ -48,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnClick()
 		{
-			SetButtonGradients(selectTool(rayOrigin, m_ToolType));
+			SetButtonGradients(this.SelectTool(rayOrigin, m_ToolType));
 		}
 
 		// Create periodic table-style names for types

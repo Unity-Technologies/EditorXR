@@ -43,12 +43,6 @@ namespace UnityEditor.Experimental.EditorVR
 		void DropHeldObjects(Transform rayOrigin, out Vector3[] positionOffset, out Quaternion[] rotationOffset);
 
 		/// <summary>
-		/// Returns true if the object can be grabbed
-		/// Params: the selection, the rayOrigin
-		/// </summary>
-		Func<GameObject, Transform, bool> canGrabObject { set; }
-
-		/// <summary>
 		/// Must be called by the implementer when an object has been grabbed
 		/// Params: the grabbed object
 		/// </summary>
@@ -60,5 +54,21 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		event Action<Transform[], Transform> objectsDropped;
 	}
+
+	public static class IGrabObjectsMethods
+	{
+		internal static Func<GameObject, Transform, bool> canGrabObject { get; set; }
+
+		/// <summary>
+		/// Returns true if the object can be grabbed
+		/// </summary>
+		/// <param name="go">The selection</param>
+		/// <param name="rayOrigin">The rayOrigin of the proxy that is looking to grab</param>
+		public static bool CanGrabObject(this IGrabObjects obj, GameObject go, Transform rayOrigin)
+		{
+			return canGrabObject(go, rayOrigin);
+		}
+	}
+
 }
 #endif

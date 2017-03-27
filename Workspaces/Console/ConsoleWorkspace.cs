@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			preventLeftRightResize = true;
 			dynamicFaceAdjustment = false;
 
-			m_ConsoleWindow = instantiateUI(m_ConsoleWindowPrefab).transform;
+			m_ConsoleWindow = this.InstantiateUI(m_ConsoleWindowPrefab).transform;
 			m_ConsoleWindow.SetParent(m_WorkspaceUI.topFaceContainer, false);
 			m_ConsoleWindow.localPosition = new Vector3(0f, -0.007f, -0.5f);
 			m_ConsoleWindow.localRotation = Quaternion.Euler(90f, 0f, 0f);

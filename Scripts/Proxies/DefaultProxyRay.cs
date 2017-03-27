@@ -35,8 +35,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		/// </summary>
 		private object m_LockRayObject;
 
-		public Func<float> getViewerScale { private get; set; }
-
 		public bool LockRay(object lockCaller)
 
 		{
@@ -126,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			if (!rayVisible)
 				return;
 
-			var viewerScale = getViewerScale();
+			var viewerScale = this.GetViewerScale();
 			var scaledWidth = m_LineWidth * viewerScale;
 			var scaledLength = length / viewerScale;
 
@@ -189,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var currentDuration = 0f;
 			while (currentDuration < kSmoothTime)
 			{
-				viewerScale = getViewerScale();
+				viewerScale = this.GetViewerScale();
 				currentDuration += Time.unscaledDeltaTime;
 				currentWidth = MathUtilsExt.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 				scaledWidth = currentWidth * viewerScale;
@@ -197,7 +195,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				yield return null;
 			}
 
-			viewerScale = getViewerScale();
+			viewerScale = this.GetViewerScale();
 			scaledWidth = m_LineWidth * viewerScale;
 			m_LineRenderer.SetWidth(scaledWidth, scaledWidth);
 			m_RayVisibilityCoroutine = null;

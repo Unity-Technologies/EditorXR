@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
@@ -58,17 +59,20 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <param name="name">Name of the new GameObject</param>
 		/// <param name="parent">Transform to parent new object under</param>
 		/// <returns>The newly created empty GameObject</returns>
-		public static GameObject CreateEmptyGameObject(String name = null, Transform parent = null)
+		public static GameObject CreateEmptyGameObject(string name = null, Transform parent = null)
 		{
 			GameObject empty = null;
 			if (string.IsNullOrEmpty(name))
-				name = "Empty";
+				name = "New Game Object";
 
 #if UNITY_EDITORVR
 			empty = EditorUtility.CreateGameObjectWithHideFlags(name, hideFlags);
+#else
+			empty = new GameObject(name);
+			empty.hideFlags = hideFlags;
+#endif
 			empty.transform.parent = parent;
 			empty.transform.localPosition = Vector3.zero;
-#endif
 
 			return empty;
 		}
