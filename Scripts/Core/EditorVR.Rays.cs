@@ -211,8 +211,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 
 						evr.GetNestedModule<Tools>().SpawnDefaultTools(proxy);
-
-						evr.m_WorkspaceModule.CreateWorkspace(typeof(MiniWorldWorkspace));
 					}
 				}
 			}

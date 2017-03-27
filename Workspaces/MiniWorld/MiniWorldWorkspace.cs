@@ -19,10 +19,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		static readonly float k_InitReferenceYOffset = k_DefaultBounds.y / 2.05f; // Show more space above ground than below
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default
 
+		const float k_MinScale = 0.01f;
+		const float k_MaxScale = Mathf.Infinity;
+
 		//TODO: replace with dynamic values once spatial hash lands
 		// Scale slider min/max (maps to referenceTransform uniform scale)
-		const float k_MinZoomScale = 0.5f;
-		const float k_MaxZoomScale = 200f;
+		const float k_ZoomSliderMin = 0.5f;
+		const float k_ZoomSliderMax = 200f;
 
 		[SerializeField]
 		GameObject m_ContentPrefab;
@@ -113,8 +116,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var sliderObject = ObjectUtils.Instantiate(m_ZoomSliderPrefab, m_WorkspaceUI.frontPanel, false);
 			m_ZoomSliderUI = sliderObject.GetComponentInChildren<ZoomSliderUI>();
 			m_ZoomSliderUI.sliding += OnSliding;
-			m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(k_MaxZoomScale);
-			m_ZoomSliderUI.zoomSlider.minValue = Mathf.Log10(k_MinZoomScale);
+			m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(k_ZoomSliderMax);
+			m_ZoomSliderUI.zoomSlider.minValue = Mathf.Log10(k_ZoomSliderMin);
 			m_ZoomSliderUI.zoomSlider.direction = Slider.Direction.RightToLeft; // Invert direction for expected ux; zoom in as slider moves left to right
 			m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(k_InitReferenceScale);
 			foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
@@ -169,7 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				referenceTransform.position.z) / (gridScale * referenceScale));
 			inverseRotation = Quaternion.Inverse(m_MiniWorld.transform.rotation);
 			m_GridMaterial.SetMatrix("_InverseRotation", Matrix4x4.TRS(Vector3.zero, inverseRotation, Vector3.one));
-			m_GridMaterial.SetVector("_ClipExtents", m_MiniWorld.localBounds.extents);
+			m_GridMaterial.SetVector("_ClipExtents", m_MiniWorld.localBounds.extents * this.GetViewerScale() * transform.localScale.x);
 			m_GridMaterial.SetVector("_ClipCenter", inverseRotation * m_MiniWorld.transform.position);
 		}
 
@@ -269,6 +272,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				var scaleFactor = m_StartDistance / rayToRay.magnitude;
 				var currentScale = m_StartScale * scaleFactor;
+				currentScale = Mathf.Clamp(currentScale, k_MinScale, k_MaxScale);
+				scaleFactor = currentScale / m_StartScale;
 
 				m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(referenceTransform.localScale.x);
 

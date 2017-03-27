@@ -89,12 +89,11 @@
 						discard;
 
 					float	gridDepth = log2(_GridScale);
-					float	gridDepthClamp		= max(-4.00, gridDepth);
-					float	gridDepthFloor		= floor(gridDepthClamp);
-					float	gridDepthFade		= 1 - (gridDepthClamp - gridDepthFloor);
+					float	gridDepthFloor		= floor(gridDepth);
+					float	gridDepthFade		= 1 - (gridDepth - gridDepthFloor);
 					float2	stepSize			= _GridSpacing * pow(2, gridDepthFloor);
 
-					float	lineSizeIncrease	= max(1, (pow(2, gridDepthClamp - gridDepth)));
+					float	lineSizeIncrease	= max(1, (pow(2, gridDepth - gridDepth)));
 					float2	lineSize			= float2(0.5 * _GridThickness / lineSizeIncrease, 0.25* _GridThickness / lineSizeIncrease);
 					float2  uv	=	(input.objectPos.xy / input.objectPos.w);
 
