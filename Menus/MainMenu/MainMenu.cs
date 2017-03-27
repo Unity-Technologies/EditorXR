@@ -182,7 +182,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					{
 						b.button.onClick.AddListener(() =>
 						{
-							m_MainMenuUI.AddSubmenu(buttonData.sectionName, settingsMenuProviders[selectedType].settingsMenuPrefab);
+							var provider = settingsMenuProviders[selectedType];
+							provider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(buttonData.sectionName, provider.settingsMenuPrefab);
 						});
 					}
 				});

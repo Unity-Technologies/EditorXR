@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -28,6 +29,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		[SerializeField]
 		GameObject m_SettingsMenuPrefab;
 
+		public GameObject settingsMenuInstance
+		{
+			set
+			{
+				if (value == null)
+				{
+					m_SnappingModuleUI = null;
+					return;
+				}
+
+				m_SnappingModuleUI = value.GetComponent<SnappingModuleUI>();
+				SetupUI();
+			}
+		}
+		SnappingModuleUI m_SnappingModuleUI;
+
 		public RaycastDelegate raycast { private get; set; }
 		public Renderer[] playerHeadObjects { private get; set; }
 
@@ -40,7 +57,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			set
 			{
 				Reset();
-				m_DisableAll = value;
+				m_DisableAll = !value;
+
+				if (m_SnappingModuleUI)
+					m_SnappingModuleUI.snappingEnabled.isOn = value;
 			}
 		}
 		bool m_DisableAll;
@@ -56,6 +76,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				Reset();
 				m_GroundSnapping = value;
+
+				if (m_SnappingModuleUI)
+					m_SnappingModuleUI.groundSnapping.isOn = value;
 			}
 		}
 		bool m_GroundSnapping;
@@ -70,16 +93,67 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				Reset();
 				m_SurfaceSnapping = value;
+
+				if (m_SnappingModuleUI)
+					m_SnappingModuleUI.surfaceSnapping.isOn = value;
 			}
 		}
 		bool m_SurfaceSnapping;
 
 		// Modifiers
-		public bool pivotSnapping { get; set; }
-		public bool snapRotation { get; set; }
+		public bool pivotSnapping
+		{
+			get { return m_PivotSnapping; }
+			set
+			{
+				m_PivotSnapping = value;
 
-		public bool directSnapping { get; set; }
-		public bool manipulatorSnapping { get; set; }
+				if (m_SnappingModuleUI)
+					m_SnappingModuleUI.pivotSnapping.isOn = value;
+			}
+		}
+		bool m_PivotSnapping;
+
+		public bool snapRotation
+		{
+			get { return m_SnapRotation; }
+			set
+			{
+				m_SnapRotation = value;
+
+				if (m_SnappingModuleUI)
+					m_SnappingModuleUI.snapRotation.isOn = value;
+			}
+		}
+		bool m_SnapRotation;
+
+		public bool directSnapping
+		{
+			get
+			{
+				return m_DirectSnapping;
+			}
+			set
+			{
+				m_DirectSnapping = value;
+
+				if (m_SnappingModuleUI)
+					m_SnappingModuleUI.directSnapping.isOn = value;
+			}
+		}
+		bool m_DirectSnapping;
+
+		public bool manipulatorSnapping {
+			get { return m_ManipulatorSnapping; }
+			set
+			{
+				m_ManipulatorSnapping = value;
+
+				if (m_SnappingModuleUI)
+					m_SnappingModuleUI.manipulatorSnapping.isOn = value;
+			}
+		}
+		bool m_ManipulatorSnapping;
 
 		readonly Dictionary<Transform, SnappingState> m_SnappingStates = new Dictionary<Transform, SnappingState>();
 
@@ -383,6 +457,77 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		void Reset()
 		{
 			m_SnappingStates.Clear();
+		}
+
+		void SetupUI()
+		{
+			var snappingEnabledUI = m_SnappingModuleUI.snappingEnabled;
+			snappingEnabledUI.isOn = !m_DisableAll;
+			snappingEnabledUI.onValueChanged.AddListener(b => { OnTogglePressed(snappingEnabledUI); });
+
+			var groundSnappingUI = m_SnappingModuleUI.groundSnapping;
+			groundSnappingUI.isOn = m_GroundSnapping;
+			groundSnappingUI.onValueChanged.AddListener(b => { OnTogglePressed(groundSnappingUI); });
+
+			var surfaceSnappingUI = m_SnappingModuleUI.surfaceSnapping;
+			surfaceSnappingUI.isOn = m_SurfaceSnapping;
+			surfaceSnappingUI.onValueChanged.AddListener(b => { OnTogglePressed(surfaceSnappingUI); });
+
+			var pivotSnappingUI = m_SnappingModuleUI.pivotSnapping;
+			pivotSnappingUI.isOn = m_PivotSnapping;
+			pivotSnappingUI.onValueChanged.AddListener(b => { OnTogglePressed(pivotSnappingUI); });
+
+			var snapRotationUI = m_SnappingModuleUI.snapRotation;
+			snapRotationUI.isOn = m_SnapRotation;
+			snapRotationUI.onValueChanged.AddListener(b => { OnTogglePressed(snapRotationUI); });
+
+			var manipulatorSnappingUI = m_SnappingModuleUI.manipulatorSnapping;
+			manipulatorSnappingUI.isOn = m_ManipulatorSnapping;
+			manipulatorSnappingUI.onValueChanged.AddListener(b => { OnTogglePressed(manipulatorSnappingUI); });
+
+			var directSnappingUI = m_SnappingModuleUI.directSnapping;
+			directSnappingUI.isOn = m_DirectSnapping;
+			directSnappingUI.onValueChanged.AddListener(b => { OnTogglePressed(directSnappingUI); });
+		}
+
+		void OnTogglePressed(Toggle toggle)
+		{
+			var snappingEnabledUI = m_SnappingModuleUI.snappingEnabled;
+			if (toggle == snappingEnabledUI)
+			{
+				m_DisableAll = !snappingEnabledUI.isOn;
+				Reset();
+			}
+
+			var groundSnappingUI = m_SnappingModuleUI.groundSnapping;
+			if (toggle == groundSnappingUI)
+			{
+				m_GroundSnapping = groundSnappingUI.isOn;
+				Reset();
+			}
+
+			var surfaceSnappingUI = m_SnappingModuleUI.surfaceSnapping;
+			if (toggle == surfaceSnappingUI)
+			{
+				m_SurfaceSnapping = surfaceSnappingUI.isOn;
+				Reset();
+			}
+
+			var pivotSnappingUI = m_SnappingModuleUI.pivotSnapping;
+			if (toggle == pivotSnappingUI)
+				m_PivotSnapping = pivotSnappingUI.isOn;
+
+			var snapRotationUI = m_SnappingModuleUI.snapRotation;
+			if (toggle == snapRotationUI)
+				m_SnapRotation = snapRotationUI.isOn;
+
+			var manipulatorSnappingUI = m_SnappingModuleUI.manipulatorSnapping;
+			if (toggle == manipulatorSnappingUI)
+				m_ManipulatorSnapping = manipulatorSnappingUI.isOn;
+
+			var directSnappingUI = m_SnappingModuleUI.directSnapping;
+			if (toggle == directSnappingUI)
+				m_DirectSnapping = directSnappingUI.isOn;
 		}
 	}
 }

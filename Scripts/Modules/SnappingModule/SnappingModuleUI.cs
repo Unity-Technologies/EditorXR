@@ -1,69 +1,35 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 using UnityEngine.UI;
 
 [ExecuteInEditMode]
 public class SnappingModuleUI : MonoBehaviour
 {
+	public Toggle snappingEnabled { get { return m_SnappingEnabled; } }
 	[SerializeField]
-	Toggle[] m_OnToggles;
+	Toggle m_SnappingEnabled;
+
+	public Toggle groundSnapping { get { return m_GroundSnapping; } }
 	[SerializeField]
-	Toggle[] m_OffToggles;
+	Toggle m_GroundSnapping;
 
-	//private SnappingModes m_LastFlag;
+	public Toggle surfaceSnapping { get { return m_SurfaceSnapping; } }
+	[SerializeField]
+	Toggle m_SurfaceSnapping;
 
-	//private readonly SnappingModes[] m_SnappingModes = new SnappingModes[]
-	//{
-	//	SnappingModes.SnapToGround,
-	//	SnappingModes.SnapToSurfaceNormal,
-	//	SnappingModes.Throw
-	//};
+	public Toggle pivotSnapping { get { return m_PivotSnapping; } }
+	[SerializeField]
+	Toggle m_PivotSnapping;
 
-	void Start()
-	{
-		//m_LastFlag = Snapping.currentSnappingMode;
+	public Toggle snapRotation { get { return m_SnapRotation; } }
+	[SerializeField]
+	Toggle m_SnapRotation;
 
-		//for (int i = 0; i < 3; i++)
-		//{
-		//	bool hasFlag = Snapping.HasFlag(m_SnappingModes[i]);
-		//	m_OnToggles[i].isOn = hasFlag;
-		//	m_OffToggles[i].isOn = !hasFlag;
+	public Toggle directSnapping { get { return m_DirectSnapping; } }
+	[SerializeField]
+	Toggle m_DirectSnapping;
 
-		//	m_OnToggles[i].onValueChanged.RemoveAllListeners();
-		//	m_OffToggles[i].onValueChanged.RemoveAllListeners();
-
-		//	int index = i;
-		//	m_OnToggles[i].onValueChanged.AddListener(b => { OnTogglePressed(index); });
-		//	m_OffToggles[i].onValueChanged.AddListener(b => { OnTogglePressed(index); });
-		//}
-	}
-
-	void Update()
-	{
-		//if (Snapping.currentSnappingMode != m_LastFlag)
-		//{
-		//	for (int i = 0; i < 3; i++)
-		//	{
-		//		bool hasFlag = Snapping.HasFlag(m_SnappingModes[i]);
-
-		//		m_OnToggles[i].isOn = hasFlag;
-		//		m_OffToggles[i].isOn = !hasFlag;
-		//	}
-
-		//	m_LastFlag = Snapping.currentSnappingMode;
-		//}
-	}
-
-	public void OnTogglePressed(int index)
-	{
-		//bool shouldEnable = m_OnToggles[index].isOn;
-		//SnappingModes mode = m_SnappingModes[index];
-
-		//if (shouldEnable)
-		//	Snapping.currentSnappingMode |= mode;
-		//else
-		//	Snapping.currentSnappingMode &= ~mode;
-
-		//m_LastFlag = Snapping.currentSnappingMode;
-	}
-
+	public Toggle manipulatorSnapping { get { return m_ManipulatorSnapping; } }
+	[SerializeField]
+	Toggle m_ManipulatorSnapping;
 }

@@ -253,13 +253,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public void AddSubmenu(string face, GameObject submenuPrefab)
+		public GameObject AddSubmenu(string face, GameObject submenuPrefab)
 		{
 			int index = FaceNameToIndex(face);
 			if (index > -1)
 			{
 				if (submenuPrefab.GetComponent<SubmenuFace>() == null)
-					return;
+					return null;
 
 				var submenu = this.InstantiateUI(submenuPrefab);
 				AddSubmenuToFace(index, submenu);
@@ -277,7 +277,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_FaceSubmenus[face].Add(submenu);
 				}
 				m_MenuFaces[index].Hide();
+
+				return submenu;
 			}
+
+			return null;
 		}
 
 		void AddSubmenuToFace(int face, GameObject submenu)
