@@ -21,7 +21,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		const float k_MinScale = 0.01f;
 		const float k_MaxScale = Mathf.Infinity;
 
-		//TODO: replace with dynamic values once spatial hash lands
 		// Scale slider min/max (maps to referenceTransform uniform scale)
 		const float k_ZoomSliderMin = 0.5f;
 		const float k_ZoomSliderMax = 200f;
