@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -74,6 +73,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Transform leftRayOrigin { get; set; }
 		public Transform rightRayOrigin { get; set; }
+
+		public float zoomSliderMax
+		{
+			set { m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(value); }
+		}
+
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called

@@ -31,6 +31,11 @@ namespace UnityEditor.Experimental.EditorVR.Data
 			m_AllObjects.Remove(obj);
 			m_Octree.Remove(obj);
 		}
+
+		public Bounds GetMaxBounds()
+		{
+			return m_Octree.GetMaxBounds();
+		}
 	}
 }
 #endif
