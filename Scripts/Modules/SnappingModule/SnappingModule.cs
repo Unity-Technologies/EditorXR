@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_GroundSnapMin = 0.3f;
 		const float k_GroundSnapMax = 0.5f;
 
-		const float k_FaceSnapBreakDist = 0.5f;
+		const float k_SurfaceSnapBreakDist = 0.5f;
 
 		const float k_WidgetScale = 0.03f;
 
@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public bool snappingEnabled
 		{
-			get { return !m_DisableAll && (groundSnapping || faceSnapping); }
+			get { return !m_DisableAll && (groundSnapping || surfaceSnapping); }
 			set
 			{
 				Reset();
@@ -56,19 +56,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 		bool m_GroundSnapping;
 
-		public bool faceSnapping
+		public bool surfaceSnapping
 		{
-			get {return m_FaceSnapping; }
+			get {return m_SurfaceSnapping; }
 			set
 			{
-				if (value == m_FaceSnapping)
+				if (value == m_SurfaceSnapping)
 					return;
 
 				Reset();
-				m_FaceSnapping = value;
+				m_SurfaceSnapping = value;
 			}
 		}
-		bool m_FaceSnapping;
+		bool m_SurfaceSnapping;
 
 		// Modifiers
 		public bool pivotSnapping { get; set; }
@@ -87,9 +87,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public Bounds rotatedBounds;
 			public Bounds identityBounds;
 			public bool groundSnapping;
-			public bool faceSnapping;
-			public Vector3 faceSnappingStartPosition;
-			public Quaternion faceSnappingRotation;
+			public bool surfaceSnapping;
+			public Vector3 surfaceSnappingStartPosition;
+			public Quaternion surfaceSnappingRotation;
 			public GameObject[] objects;
 		}
 
@@ -102,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_Widget.SetActive(false);
 
 			groundSnapping = true;
-			faceSnapping = true;
+			surfaceSnapping = true;
 
 			directSnapping = true;
 			manipulatorSnapping = true;
@@ -112,27 +112,27 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			if (snappingEnabled)
 			{
-				SnappingState faceSnapping = null;
+				SnappingState surfaceSnapping = null;
 				var shouldActivateGroundPlane = false;
 				foreach (var state in m_SnappingStates.Values)
 				{
 					if (state.groundSnapping)
 						shouldActivateGroundPlane = true;
 
-					if (state.faceSnapping)
-						faceSnapping = state;
+					if (state.surfaceSnapping)
+						surfaceSnapping = state;
 				}
 				m_GroundPlane.SetActive(shouldActivateGroundPlane);
 
-				var shouldActivateWidget = faceSnapping != null;
+				var shouldActivateWidget = surfaceSnapping != null;
 				m_Widget.SetActive(shouldActivateWidget);
 				if (shouldActivateWidget)
 				{
-					var statePosition = faceSnapping.faceSnappingStartPosition;
+					var statePosition = surfaceSnapping.surfaceSnappingStartPosition;
 					var camera = CameraUtils.GetMainCamera();
 					var distToCamera = Vector3.Distance(camera.transform.position, statePosition);
 					m_Widget.transform.position = statePosition;
-					m_Widget.transform.rotation = faceSnapping.faceSnappingRotation;
+					m_Widget.transform.rotation = surfaceSnapping.surfaceSnappingRotation;
 					m_Widget.transform.localScale = Vector3.one * k_WidgetScale * distToCamera;
 				}
 			}
@@ -155,10 +155,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var camera = CameraUtils.GetMainCamera();
 				var distToCamera = Mathf.Max(1, Mathf.Log(Vector3.Distance(camera.transform.position, statePosition)));
 
-				if (faceSnapping && !constrained)
+				if (surfaceSnapping && !constrained)
 				{
 					var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-					if (PerformFaceSnapping(ray, ref position, ref rotation, statePosition, state, 0, rotation, distToCamera, false))
+					if (PerformSurfaceSnapping(ray, ref position, ref rotation, statePosition, state, 0, rotation, distToCamera, false))
 						return true;
 				}
 
@@ -179,7 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				state.currentPosition = targetPosition;
 
-				if (faceSnapping)
+				if (surfaceSnapping)
 				{
 					var bounds = state.identityBounds;
 					var offset = bounds.center;
@@ -187,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					{
 						var ray = new Ray(targetPosition + targetRotation * offset, targetRotation * GetDirection(i));
 						var raycastDistance = state.identityBounds.extents.y;
-						if (PerformFaceSnapping(ray, ref position, ref rotation, targetPosition, state, i, targetRotation, Mathf.Log(getViewerScale()), true, raycastDistance))
+						if (PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, i, targetRotation, Mathf.Log(getViewerScale()), true, raycastDistance))
 							return true;
 					}
 				}
@@ -221,7 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		bool PerformFaceSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, int direction, Quaternion targetRotation, float breakScale, bool localOnly, float raycastDistance = k_MaxRayLength)
+		bool PerformSurfaceSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, int direction, Quaternion targetRotation, float breakScale, bool localOnly, float raycastDistance = k_MaxRayLength)
 		{
 			m_IgnoreList.Clear();
 			var objects = state.objects;
@@ -235,7 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_IgnoreList.Add(playerHeadObjects[i].gameObject);
 			}
 
-			var faceSnapBreakDist = k_FaceSnapBreakDist * breakScale;
+			var surfaceSnapBreakDist = k_SurfaceSnapBreakDist * breakScale;
 
 			RaycastHit hit;
 			GameObject go;
@@ -269,26 +269,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 				var snappedPosition = pivotSnapping ? hitPoint : hitPoint + rotation * directionVector;
 
-				if (localOnly && Vector3.Distance(snappedPosition, statePosition) > faceSnapBreakDist)
+				if (localOnly && Vector3.Distance(snappedPosition, statePosition) > surfaceSnapBreakDist)
 					return false;
 
-				state.faceSnapping = true;
+				state.surfaceSnapping = true;
 				state.groundSnapping = false;
 
 				position = snappedPosition;
 				rotation = snapRotation ? snappedRotation : targetRotation;
 
-				state.faceSnappingStartPosition = position;
-				state.faceSnappingRotation = snappedRotation;
+				state.surfaceSnappingStartPosition = position;
+				state.surfaceSnappingRotation = snappedRotation;
 				return true;
 			}
 
-			if (state.faceSnapping)
+			if (state.surfaceSnapping)
 			{
-				if (Vector3.Distance(state.faceSnappingStartPosition, statePosition) > faceSnapBreakDist)
+				if (Vector3.Distance(state.surfaceSnappingStartPosition, statePosition) > surfaceSnapBreakDist)
 				{
 					position = statePosition;
-					state.faceSnapping = false;
+					state.surfaceSnapping = false;
 				}
 
 				return true;
