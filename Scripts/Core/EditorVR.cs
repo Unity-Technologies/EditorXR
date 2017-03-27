@@ -181,7 +181,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_Interfaces.ConnectInterfaces(intersectionModule);
 			intersectionModule.Setup(spatialHashModule.spatialHash);
 
+			var snappingModule = AddModule<SnappingModule>();
+			snappingModule.raycast = intersectionModule.Raycast;
+
 			menus.mainMenuTools = tools.allTools.Where(t => !tools.IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
+			var settingsMenuProviders = new Dictionary<Type, ISettingsMenuProvider>();
+			var settingsMenuProviderTypes = ObjectUtils.GetImplementationsOfInterface(typeof(ISettingsMenuProvider));
+			foreach (var type in settingsMenuProviderTypes)
+			{
+				var settingsMenuProvider = (ISettingsMenuProvider)GetModule(type);
+				if (settingsMenuProvider != null)
+					settingsMenuProviders[type] = settingsMenuProvider;
+			}
+			menus.settingsMenuProviders = settingsMenuProviders;
 
 			var vacuumables = GetNestedModule<Vacuumables>();
 			var miniWorlds = GetNestedModule<MiniWorlds>();
@@ -193,9 +205,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
 			workspaceModule.workspaceDestroyed += (workspace) => { m_Interfaces.DisconnectInterfaces(workspace); };
 			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
-
-			var snappingModule = AddModule<SnappingModule>();
-			snappingModule.raycast = intersectionModule.Raycast;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
@@ -334,6 +343,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
+		}
+
+		object GetModule(Type type)
+		{
+			MonoBehaviour module;
+			m_Modules.TryGetValue(type, out module);
+			return module;
 		}
 
 		T GetModule<T>() where T : MonoBehaviour

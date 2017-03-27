@@ -55,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			if (m_MenuButtons != null && m_MenuButtons.Any())
 				foreach (var button in m_MenuButtons)
-					GameObject.DestroyImmediate(button);
+					ObjectUtils.Destroy(button);
 
 			m_FaceTitle.text = faceName;
 			m_MenuButtons = buttons;

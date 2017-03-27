@@ -1,12 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale
+	[MainMenuItem("Snapping", "Settings", "Select snapping modes")]
+	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider
 	{
 		const float k_MaxRayLength = 100f;
 
@@ -23,6 +23,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		[SerializeField]
 		GameObject m_Widget;
+
+		public GameObject settingsMenuPrefab { get { return m_SettingsMenuPrefab; } }
+		[SerializeField]
+		GameObject m_SettingsMenuPrefab;
 
 		public RaycastDelegate raycast { private get; set; }
 		public Renderer[] playerHeadObjects { private get; set; }
@@ -382,3 +386,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 	}
 }
+#endif

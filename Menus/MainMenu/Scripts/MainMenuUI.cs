@@ -83,6 +83,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_MenuFaceContentOriginalLocalScale;
 		Vector3 m_MenuFaceContentHiddenLocalScale;
 
+		readonly Dictionary<string, List<GameObject>> m_FaceSubmenus = new Dictionary<string, List<GameObject>>();
+
 		public Transform menuOrigin
 		{
 			get { return m_MenuOrigin; }
@@ -251,6 +253,78 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		public void AddSubmenu(string face, GameObject submenuPrefab)
+		{
+			int index = FaceNameToIndex(face);
+			if (index > -1)
+			{
+				if (submenuPrefab.GetComponent<SubmenuFace>() == null)
+					return;
+
+				var submenu = this.InstantiateUI(submenuPrefab);
+				AddSubmenuToFace(index, submenu);
+
+				var submenuFace = submenu.GetComponent<SubmenuFace>();
+				if (submenuFace)
+					submenuFace.SetupBackButton(() => { RemoveSubmenu(face, submenu); });
+
+				if (!m_FaceSubmenus.ContainsKey(face))
+					m_FaceSubmenus.Add(face, new List<GameObject>() { submenu });
+				else
+				{
+					foreach (var faceSubmenu in m_FaceSubmenus[face])
+						faceSubmenu.SetActive(false);
+					m_FaceSubmenus[face].Add(submenu);
+				}
+				m_MenuFaces[index].Hide();
+			}
+		}
+
+		void AddSubmenuToFace(int face, GameObject submenu)
+		{
+			var submenuTrans = submenu.transform;
+
+			submenuTrans.SetParent(m_MenuFaceContainers[face]);
+
+			submenuTrans.localPosition = Vector3.zero;
+			submenuTrans.localScale = Vector3.one;
+			submenuTrans.localRotation = Quaternion.identity;
+		}
+
+		void RemoveSubmenu(string face, GameObject submenu)
+		{
+			int index = FaceNameToIndex(face);
+			if (index > -1)
+			{
+				if (m_FaceSubmenus.ContainsKey(face))
+				{
+					var target = m_FaceSubmenus[face].Last();
+					m_FaceSubmenus[face].Remove(target);
+					target.SetActive(false);
+					ObjectUtils.Destroy(target, .1f);
+
+					if (m_FaceSubmenus[face].Count > 1)
+						m_FaceSubmenus[face].Last().SetActive(true);
+					else
+						m_MenuFaces[index].Show();
+				}
+			}
+		}
+
+		int FaceNameToIndex(string face)
+		{
+			int index = 0;
+			foreach (var faceButtons in m_FaceButtons)
+			{
+				if (faceButtons.Key == face)
+					return index;
+
+				index++;
+			}
+
+			return -1;
+		}
+
 		private int GetClosestFaceIndexForRotation(float rotation)
 		{
 			return Mathf.RoundToInt(rotation / k_FaceRotationSnapAngle) % faceCount;
@@ -345,6 +419,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			foreach (var face in m_MenuFaces)
 				face.Hide();
+
+			foreach (var submenus in m_FaceSubmenus)
+			{
+				foreach (var submenu in submenus.Value)
+					ObjectUtils.Destroy(submenu);
+			}
+			m_FaceSubmenus.Clear();
 
 			if (m_FrameRevealCoroutine != null)
 				StopCoroutine(m_FrameRevealCoroutine);

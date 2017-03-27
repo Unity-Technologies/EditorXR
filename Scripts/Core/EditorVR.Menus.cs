@@ -31,6 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 
 			internal List<Type> mainMenuTools { private get; set; }
+			internal Dictionary<Type, ISettingsMenuProvider> settingsMenuProviders { private get; set; }
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<IMenu> m_UpdateVisibilityMenus = new List<IMenu>();
@@ -53,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					mainMenu.menuTools = mainMenuTools;
 					mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
+					mainMenu.settingsMenuProviders = settingsMenuProviders;
 				}
 			}
 
