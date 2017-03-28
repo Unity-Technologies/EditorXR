@@ -300,6 +300,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			if (m_CustomPreviewCamera != null)
 				m_CustomPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
 
+			m_Rays.UpdateRaycasts();
 			m_Rays.UpdateDefaultProxyRays();
 			m_DirectSelection.UpdateDirectSelection();
 

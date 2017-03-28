@@ -14,9 +14,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
+		readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
 
 		SpatialHash<Renderer> m_SpatialHash;
 		MeshCollider m_CollisionTester;
+
+		class RayIntersection
+		{
+			public GameObject go;
+			public float distance;
+		}
 
 #if UNITY_EDITOR
 		public bool ready { get { return m_SpatialHash != null; } }
@@ -28,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<Renderer> m_Intersections = new List<Renderer>();
 
-		public void Setup(SpatialHash<Renderer> hash)
+		internal void Setup(SpatialHash<Renderer> hash)
 		{
 			m_SpatialHash = hash;
 			m_CollisionTester = ObjectUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
@@ -131,7 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public void AddTester(IntersectionTester tester)
+		internal void AddTester(IntersectionTester tester)
 		{
 			m_IntersectedObjects.Clear();
 			m_Testers.Add(tester);
@@ -152,14 +159,35 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_IntersectedObjects.Remove(tester);
 		}
 
-		public Renderer GetIntersectedObjectForTester(IntersectionTester tester)
+		internal Renderer GetIntersectedObjectForTester(IntersectionTester tester)
 		{
 			Renderer obj;
 			m_IntersectedObjects.TryGetValue(tester, out obj);
 			return obj;
 		}
 
-		public bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null)
+		internal GameObject GetFirstGameObject(Transform rayOrigin, out float distance)
+		{
+			RayIntersection intersection;
+			if (m_RaycastGameObjects.TryGetValue(rayOrigin, out intersection))
+			{
+				distance = intersection.distance;
+				return intersection.go;
+			}
+
+			distance = 0;
+			return null;
+		}
+
+		internal void UpdateRaycast(Transform rayOrigin, float distance)
+		{
+			GameObject go;
+			RaycastHit hit;
+			Raycast(new Ray(rayOrigin.position, rayOrigin.forward), out hit, out go, distance);
+			m_RaycastGameObjects[rayOrigin] = new RayIntersection { go = go, distance = hit.distance };
+		}
+
+		internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null)
 		{
 			obj = null;
 			hit = new RaycastHit();

@@ -214,6 +214,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
+			internal void UpdateRaycasts()
+			{
+				var intersectionModule = evr.GetModule<IntersectionModule>();
+				var distance = k_DefaultRayLength * Viewer.GetViewerScale();
+				ForEachRayOrigin(rayOrigin =>
+				{
+					intersectionModule.UpdateRaycast(rayOrigin, distance);
+				});
+			}
+
 			internal void UpdateDefaultProxyRays()
 			{
 				var inputModule = evr.GetModule<MultipleRayInputModule>();
@@ -240,12 +250,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 						else
 						{
-								var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-							RaycastHit hit;
-							GameObject go;
-							if (intersectionModule.Raycast(ray, out hit, out go, distance))
-								distance = hit.distance;
-								}
+							intersectionModule.GetFirstGameObject(rayOrigin, out distance);
+						}
+
 						m_DefaultRays[rayOrigin].SetLength(distance);
 					}
 				}
