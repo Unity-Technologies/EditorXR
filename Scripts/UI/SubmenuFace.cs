@@ -1,11 +1,9 @@
 using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class SubmenuFace : MonoBehaviour
 {
-
 	[SerializeField]
 	Button m_BackButton;
 
@@ -14,5 +12,4 @@ public class SubmenuFace : MonoBehaviour
 		m_BackButton.onClick.RemoveAllListeners();
 		m_BackButton.onClick.AddListener(backAction);
 	}
-
 }

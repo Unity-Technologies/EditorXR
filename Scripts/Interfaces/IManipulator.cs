@@ -25,12 +25,12 @@ namespace UnityEditor.Experimental.EditorVR
 		Action<Vector3> scale { set; }
 
 		/// <summary>
-		/// Delegate that is called once after every drag
+		/// Delegate that is called once after every drag starts
 		/// </summary>
 		event Action dragStarted;
 
 		/// <summary>
-		/// Delegate that is called once after every drag
+		/// Delegate that is called once after every drag ends
 		/// </summary>
 		event Action<Transform> dragEnded;
 

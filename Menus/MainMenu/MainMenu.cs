@@ -99,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			consumeControl(mainMenuInput.blockY);
 
 			const float kFlickDeltaThreshold = 0.5f;
-			if ((proxyType != typeof(ViveProxy) && Mathf.Abs(rotationInput) >= kFlickDeltaThreshold && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold)
+			if (proxyType != typeof(ViveProxy) && Mathf.Abs(rotationInput) >= kFlickDeltaThreshold && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold
 				|| mainMenuInput.flickFace.wasJustReleased)
 			{
 				m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);

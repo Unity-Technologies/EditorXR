@@ -154,7 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		private int currentFaceIndex
+		int currentFaceIndex
 		{
 			get
 			{
@@ -164,12 +164,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		private float currentRotation
+		float currentRotation
 		{
 			get { return m_MenuFaceRotationOrigin.localRotation.eulerAngles.y; }
 		}
 
-		private void Awake()
+		void Awake()
 		{
 			m_MenuFacesMaterial = MaterialUtils.GetMaterialClone(m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>());
 			m_MenuFacesColor = m_MenuFacesMaterial.color;
@@ -205,13 +205,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_AlternateMenu.localScale = Vector3.zero;
 		}
 
-		private void Update()
+		void Update()
 		{
-			if (m_VisibilityState == VisibilityState.TransitioningIn || m_VisibilityState == VisibilityState.TransitioningOut)
-				return;
-
-			if (m_VisibilityState == VisibilityState.Hidden)
-				return;
+			switch (m_VisibilityState)
+			{
+				case VisibilityState.TransitioningIn:
+				case VisibilityState.TransitioningOut:
+				case VisibilityState.Hidden:
+					return;
+			}
 
 			// Allow any snaps to finish before resuming any other operations
 			if (m_RotationState == RotationState.Snapping)
@@ -223,7 +225,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				StartCoroutine(SnapToFace(faceIndex + m_Direction, k_DefaultSnapSpeed));
 		}
 
-		private void OnDestroy()
+		void OnDestroy()
 		{
 			foreach (var face in m_MenuFaces)
 				ObjectUtils.Destroy(face.gameObject);
@@ -233,7 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			var button = ObjectUtils.Instantiate(m_ButtonTemplatePrefab.gameObject);
 			button.name = buttonData.name;
-			MainMenuButton mainMenuButton = button.GetComponent<MainMenuButton>();
+			var mainMenuButton = button.GetComponent<MainMenuButton>();
 			buttonCreationCallback(mainMenuButton);
 
 			if (string.IsNullOrEmpty(buttonData.sectionName))
@@ -249,13 +251,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 			else
 			{
-				m_FaceButtons.Add(buttonData.sectionName, new List<Transform>() { button.transform });
+				m_FaceButtons.Add(buttonData.sectionName, new List<Transform> { button.transform });
 			}
 		}
 
 		public void SetupMenuFaces()
 		{
-			int position = 0;
+			var position = 0;
 			foreach (var faceButtons in m_FaceButtons)
 			{
 				m_MenuFaces[position].SetFaceData(faceButtons.Key, faceButtons.Value,
@@ -266,7 +268,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public GameObject AddSubmenu(string face, GameObject submenuPrefab)
 		{
-			int index = FaceNameToIndex(face);
+			var index = FaceNameToIndex(face);
 			if (index > -1)
 			{
 				if (submenuPrefab.GetComponent<SubmenuFace>() == null)
@@ -277,10 +279,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				var submenuFace = submenu.GetComponent<SubmenuFace>();
 				if (submenuFace)
-					submenuFace.SetupBackButton(() => { RemoveSubmenu(face, submenu); });
+					submenuFace.SetupBackButton(() => { RemoveSubmenu(face); });
 
 				if (!m_FaceSubmenus.ContainsKey(face))
-					m_FaceSubmenus.Add(face, new List<GameObject>() { submenu });
+					m_FaceSubmenus.Add(face, new List<GameObject> { submenu });
 				else
 				{
 					foreach (var faceSubmenu in m_FaceSubmenus[face])
@@ -306,9 +308,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			submenuTrans.localRotation = Quaternion.identity;
 		}
 
-		void RemoveSubmenu(string face, GameObject submenu)
+		void RemoveSubmenu(string face)
 		{
-			int index = FaceNameToIndex(face);
+			var index = FaceNameToIndex(face);
 			if (index > -1)
 			{
 				if (m_FaceSubmenus.ContainsKey(face))
@@ -328,7 +330,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		int FaceNameToIndex(string face)
 		{
-			int index = 0;
+			var index = 0;
 			foreach (var faceButtons in m_FaceButtons)
 			{
 				if (faceButtons.Key == face)
@@ -350,7 +352,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			return Mathf.FloorToInt(rotation / k_FaceRotationSnapAngle) % faceCount;
 		}
 	
-		float GetRotationForFaceIndex(int faceIndex)
+		static float GetRotationForFaceIndex(int faceIndex)
 		{
 			return faceIndex * k_FaceRotationSnapAngle;
 		}
@@ -365,14 +367,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// When the user releases their input while rotating the menu, snap to the nearest face
 			StartCoroutine(AnimateFrameRotationShapeChange(m_RotationState));
 
-			foreach (var face in m_MenuFaces)
-				face.EndVisuals();
+			var rotation = currentRotation;
+			var faceTargetRotation = GetRotationForFaceIndex(faceIndex);
 
-			float rotation = currentRotation;
-			float faceTargetRotation = GetRotationForFaceIndex(faceIndex);
-
-			float smoothVelocity = 0f;
-			float smoothSnapSpeed = 0.5f;
+			var smoothVelocity = 0f;
+			var smoothSnapSpeed = 0.5f;
 			while (Mathf.Abs(Mathf.DeltaAngle(rotation, faceTargetRotation)) > k_RotationEpsilon)
 			{
 				smoothSnapSpeed = MathUtilsExt.SmoothDamp(smoothSnapSpeed, snapSpeed, ref smoothVelocity, 0.0625f, Mathf.Infinity, Time.unscaledDeltaTime);
@@ -396,7 +395,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_VisibilityState = VisibilityState.TransitioningIn;
 
 			foreach (var face in m_MenuFaces)
+			{
 				face.Show();
+			}
 
 			if (m_FrameRevealCoroutine != null)
 				StopCoroutine(m_FrameRevealCoroutine);
@@ -404,7 +405,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_FrameRevealCoroutine = StartCoroutine(AnimateFrameReveal(m_VisibilityState));
 
 			for (int i = 0; i < m_MenuFaceContainers.Length; ++i)
+			{
 				StartCoroutine(AnimateFaceReveal(i));
+			}
 
 			const float kTargetScale = 1f;
 			const float kSmoothTime = 0.125f;
@@ -433,12 +436,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_VisibilityState = VisibilityState.TransitioningOut;
 
 			foreach (var face in m_MenuFaces)
+			{
 				face.Hide();
+			}
 
 			foreach (var submenus in m_FaceSubmenus)
 			{
 				foreach (var submenu in submenus.Value)
+				{
 					ObjectUtils.Destroy(submenu);
+				}
 			}
 			m_FaceSubmenus.Clear();
 
@@ -465,7 +472,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_VisibilityState = VisibilityState.Hidden;
 
-			float snapRotation = GetRotationForFaceIndex(GetClosestFaceIndexForRotation(currentRotation));
+			var snapRotation = GetRotationForFaceIndex(GetClosestFaceIndexForRotation(currentRotation));
 			m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, snapRotation, 0)); // set intended target rotation
 			m_RotationState = RotationState.AtRest;
 
@@ -474,9 +481,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateFrameRotationShapeChange(RotationState rotationState)
 		{
-			var smoothTime = 0.0375f;
+			const float smoothTime = 0.0375f;
+			const float targetWeight = 0f;
 			var currentBlendShapeWeight = m_MenuFrameRenderer.GetBlendShapeWeight(0);
-			var targetWeight = 0f;
 			var smoothVelocity = 0f;
 			var currentDuration = 0f;
 			while (m_RotationState == rotationState && currentDuration < smoothTime)

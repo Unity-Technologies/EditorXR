@@ -164,6 +164,15 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			return projection >= 0f && projection <= collisionLine.sqrMagnitude;
 		}
 
+		/// <summary>
+		/// Tests a ray against a collider
+		/// </summary>
+		/// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
+		/// <param name="obj">The object to test collision on</param>
+		/// <param name="ray">A ray positioned at a vertex of the tester's collider</param>
+		/// <param name="hit">Info about the raycast hit</param>
+		/// <param name="maxDistance">Maximum distance at which a hit can occur</param>
+		/// <returns>The result of whether the ray intersects with the object</returns>
 		public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity)
 		{
 			var mf = obj.GetComponent<MeshFilter>();

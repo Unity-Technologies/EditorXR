@@ -10,8 +10,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
-		IGrabObjects, ICustomRay, IProcessInput, IUsesViewerBody, IDeleteSceneObject, ISelectObject, IManipulatorVisibility,
-		IUsesSnapping
+		IGrabObjects, ICustomRay, IProcessInput, ISelectObject, IManipulatorVisibility, IUsesSnapping
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -264,7 +263,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					{
 						this.ClearSnappingState(rayOrigin);
 
-						objectGrabbed(hoveredObject);
+						if (objectGrabbed != null)
+							objectGrabbed(hoveredObject);
 
 						// Only add to selection, don't remove
 						if (!Selection.objects.Contains(hoveredObject))
@@ -489,7 +489,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var grabData = m_GrabData[inputNode];
 			var grabbedObjects = grabData.grabbedObjects;
 			var rayOrigin = grabData.rayOrigin;
-			objectsDropped(grabbedObjects, rayOrigin);
+
+			if (objectsDropped != null)
+				objectsDropped(grabbedObjects, rayOrigin);
+
 			m_GrabData.Remove(inputNode);
 
 			this.UnlockRay(grabData.rayOrigin, this);
@@ -513,7 +516,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_TargetScale += delta;
 		}
 
-		void OnDragStarted()
+		static void OnDragStarted()
 		{
 			Undo.IncrementCurrentGroup();
 		}

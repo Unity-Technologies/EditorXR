@@ -235,7 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			EditorApplication.delayCall += OnSelectionChanged;
 		}
 
-		void ClearDeveloperConsoleIfNecessary()
+		static void ClearDeveloperConsoleIfNecessary()
 		{
 			var asm = Assembly.GetAssembly(typeof(Editor));
 			var consoleWindowType = asm.GetType("UnityEditor.ConsoleWindow");
@@ -361,7 +361,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		T AddModule<T>() where T : MonoBehaviour
 		{
-			MonoBehaviour module = null;
+			MonoBehaviour module;
 			var type = typeof(T);
 			if (!m_Modules.TryGetValue(type, out module))
 			{
@@ -388,7 +388,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		Nested AddNestedModule(Type type)
 		{
-			Nested nested = null;
+			Nested nested;
 			if (!m_NestedModules.TryGetValue(type, out nested))
 			{
 				nested = (Nested)Activator.CreateInstance(type);
@@ -415,14 +415,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					{
 						var dependencyType = lateBinding.GetGenericArguments().First();
 
-						Nested dependency = null;
+						Nested dependency;
 						if (m_NestedModules.TryGetValue(dependencyType, out dependency))
 						{
 							var map = type.GetInterfaceMap(lateBinding);
 							if (map.InterfaceMethods.Length == 1)
 							{
 								var tm = map.TargetMethods[0];
-								tm.Invoke(nestedModule, new[] { dependency });
+								tm.Invoke(nestedModule, new object[] { dependency });
 							}
 						}
 					}
@@ -447,7 +447,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		public static void ShowEditorVR()
 		{
 			// Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
-			VRView.GetWindow<VRView>(true, "EditorVR", true);
+			EditorWindow.GetWindow<VRView>(true, "EditorVR", true);
 		}
 
 		[MenuItem("Window/EditorVR %e", true)]
@@ -473,10 +473,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var layers = TagManager.GetRequiredLayers();
 
 			foreach (var tag in tags)
+			{
 				TagManager.AddTag(tag);
+			}
 
 			foreach (var layer in layers)
+			{
 				TagManager.AddLayer(layer);
+			}
 		}
 
 		static void OnVRViewEnabled()
@@ -490,7 +494,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
 			// in edit mode we need to handle lifecycle explicitly
-			InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
+			var managers = Resources.FindObjectsOfTypeAll<InputManager>();
 			foreach (var m in managers)
 			{
 				ObjectUtils.Destroy(m.gameObject);

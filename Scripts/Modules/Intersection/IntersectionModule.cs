@@ -1,7 +1,5 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -27,6 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
 #endif
 
+		// Local method use only -- created here to reduce garbage collection
 		readonly List<Renderer> m_Intersections = new List<Renderer>();
 
 		public void Setup(SpatialHash<Renderer> hash)
@@ -43,14 +42,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (m_Testers == null)
 				return;
 
-			for(int i = 0; i < m_Testers.Count; i++)
+			for (int i = 0; i < m_Testers.Count; i++)
 			{
 				var tester = m_Testers[i];
 				if (!tester.active)
 				{
 					Renderer intersectedObject;
 					if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
-						OnIntersectionExit(tester, intersectedObject);
+						OnIntersectionExit(tester);
 
 					continue;
 				}
@@ -105,7 +104,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 									}
 									else
 									{
-										OnIntersectionExit(tester, currentObject);
+										OnIntersectionExit(tester);
 										OnIntersectionEnter(tester, obj);
 									}
 								}
@@ -124,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					{
 						Renderer intersectedObject;
 						if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
-							OnIntersectionExit(tester, intersectedObject);
+							OnIntersectionExit(tester);
 					}
 
 					testerTransform.hasChanged = false;
@@ -148,7 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_IntersectedObjects[tester] = obj;
 		}
 
-		void OnIntersectionExit(IntersectionTester tester, Renderer obj)
+		void OnIntersectionExit(IntersectionTester tester)
 		{
 			m_IntersectedObjects.Remove(tester);
 		}

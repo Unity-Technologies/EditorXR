@@ -14,19 +14,19 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		}
 
 		[SerializeField]
-		private Transform m_Target;
+		Transform m_Target;
 
 		[SerializeField]
-		private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
+		List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 
-		public bool dragging { get; private set; }
-
-		private Vector3 m_PositionOffset;
-		private Quaternion m_RotationOffset;
+		Vector3 m_PositionOffset;
+		Quaternion m_RotationOffset;
 
 		public Action<Vector3, Transform, bool> translate { private get; set; }
 		public Action<Quaternion> rotate { private get; set; }
 		public Action<Vector3> scale { private get; set; }
+
+		public bool dragging { get; private set; }
 		public event Action dragStarted;
 		public event Action<Transform> dragEnded;
 
@@ -50,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			}
 		}
 
-		private void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
+		void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
 		{
 			foreach (var h in m_AllHandles)
 			{
@@ -69,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 				dragStarted();
 		}
 
-		private void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
+		void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
 		{
 			var target = m_Target == null ? transform : m_Target;
 
@@ -78,7 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
 		}
 
-		private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
+		void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			if (gameObject.activeSelf)
 			{

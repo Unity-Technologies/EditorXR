@@ -25,10 +25,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			readonly List<IProxy> m_Proxies = new List<IProxy>();
 
-			internal Transform lastSelectionRayOrigin { get; private set; }
-
 			StandardManipulator m_StandardManipulator;
 			ScaleManipulator m_ScaleManipulator;
+
+			internal Transform lastSelectionRayOrigin { get; private set; }
 
 			public Rays()
 			{
@@ -88,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var mainMenu = deviceData.mainMenu;
 				var customMenu = deviceData.customMenu;
-				if (mainMenu.visible || (customMenu != null && customMenu.visible))
+				if (mainMenu.visible || customMenu != null && customMenu.visible)
 				{
 					HideRay(rayOrigin);
 					LockRay(rayOrigin, mainMenu);
@@ -244,11 +244,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							if (go != null)
 							{
 								var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-								var newDist = distance;
 								foreach (var renderer in go.GetComponentsInChildren<Renderer>())
 								{
-									if (renderer.bounds.IntersectRay(ray, out newDist) && newDist > 0)
-										distance = Mathf.Min(distance, newDist);
+									float dist;
+									if (renderer.bounds.IntersectRay(ray, out dist) && dist > 0)
+										distance = Mathf.Min(distance, dist);
 								}
 							}
 						}

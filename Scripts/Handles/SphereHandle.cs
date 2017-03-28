@@ -8,22 +8,22 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 {
 	sealed class SphereHandle : BaseHandle, IScrollHandler
 	{
-		private class SphereHandleEventData : HandleEventData
+		class SphereHandleEventData : HandleEventData
 		{
 			public float raycastHitDistance;
 
 			public SphereHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) {}
 		}
 
-		private const float k_InitialScrollRate = 2f;
-		private const float k_ScrollAcceleration = 14f;
+		const float k_InitialScrollRate = 2f;
+		const float k_ScrollAcceleration = 14f;
 
 		const float k_ScaleBump = 1.1f;
 		const float k_HideScale = 0.1f;
 		
-		private float m_ScrollRate;
-		private Vector3 m_LastPosition;
-		private float m_CurrentRadius;
+		float m_ScrollRate;
+		Vector3 m_LastPosition;
+		float m_CurrentRadius;
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 		protected override void OnHandleDragStarted(HandleEventData eventData)
 		{
-			var sphereEventData = eventData as SphereHandleEventData;
+			var sphereEventData = (SphereHandleEventData)eventData;
 
 			m_CurrentRadius = sphereEventData.raycastHitDistance;
 
@@ -84,16 +84,16 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			if (m_DragSources.Count == 0)
 				return;
 
-			// Scolling changes the radius of the sphere while dragging, and accelerates
+			// Scrolling changes the radius of the sphere while dragging, and accelerates
 			if (Mathf.Abs(eventData.scrollDelta.y) > 0.5f)
-				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y)*k_ScrollAcceleration*Time.unscaledDeltaTime;
+				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y) * k_ScrollAcceleration * Time.unscaledDeltaTime;
 			else
 				m_ScrollRate = k_InitialScrollRate;
 
-			ChangeRadius(m_ScrollRate*eventData.scrollDelta.y*Time.unscaledDeltaTime);
+			ChangeRadius(m_ScrollRate * eventData.scrollDelta.y * Time.unscaledDeltaTime);
 		}
 
-		private Vector3 GetRayPoint(HandleEventData eventData)
+		Vector3 GetRayPoint(HandleEventData eventData)
 		{
 			var rayOrigin = eventData.rayOrigin;
 			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
