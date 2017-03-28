@@ -8,8 +8,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			public void LateBindInterfaceMethods(SnappingModule provider)
 			{
-				IUsesSnappingMethods.translateWithSnapping = provider.TranslateWithSnapping;
-				IUsesSnappingMethods.directTransformWithSnapping = provider.DirectTransformWithSnapping;
+				IUsesSnappingMethods.translateWithSnapping = provider.ManipulatorSnapping;
+				IUsesSnappingMethods.directTransformWithSnapping = provider.DirectSnapping;
 				IUsesSnappingMethods.clearSnappingState = provider.ClearSnappingState;
 			}
 		}

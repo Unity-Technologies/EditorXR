@@ -250,7 +250,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 						else
 						{
-							intersectionModule.GetFirstGameObject(rayOrigin, out distance);
+							float dist;
+							if (intersectionModule.GetFirstGameObject(rayOrigin, out dist))
+								distance = dist;
 						}
 
 						m_DefaultRays[rayOrigin].SetLength(distance);
@@ -290,10 +292,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal static GameObject GetFirstGameObject(Transform rayOrigin)
 			{
 				var intersectionModule = evr.GetModule<IntersectionModule>();
-				var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-				RaycastHit hit;
-				GameObject go;
-				if (intersectionModule.Raycast(ray, out hit, out go, k_DefaultRayLength * Viewer.GetViewerScale()))
+				float distance;
+				GameObject go = intersectionModule.GetFirstGameObject(rayOrigin, out distance);
+				if (go)
 					return go;
 
 				// If a raycast did not find an object use the spatial hash as a final test
@@ -390,13 +391,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!m_StandardManipulator)
 					m_StandardManipulator = evr.GetComponentInChildren<StandardManipulator>();
 
-				if (m_StandardManipulator && m_StandardManipulator.adjustScaleForCamera)
+				if (m_StandardManipulator)
 					m_StandardManipulator.AdjustScale(cameraPosition, matrix);
 
 				if (!m_ScaleManipulator)
 					m_ScaleManipulator = evr.GetComponentInChildren<ScaleManipulator>();
 
-				if (m_ScaleManipulator && m_ScaleManipulator.adjustScaleForCamera)
+				if (m_ScaleManipulator)
 					m_ScaleManipulator.AdjustScale(cameraPosition, matrix);
 			}
 		}

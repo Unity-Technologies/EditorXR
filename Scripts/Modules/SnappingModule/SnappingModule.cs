@@ -12,10 +12,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_MaxRayLength = 100f;
 
 		const float k_GroundHeight = 0f;
-		const float k_GroundSnapMin = 0.3f;
-		const float k_GroundSnapMax = 0.5f;
 
-		const float k_SurfaceSnapBreakDist = 0.5f;
+		const float k_ManipulatorGroundSnapMin = 0.3f;
+		const float k_ManipulatorGroundSnapMax = 0.5f;
+		const float k_ManipulatorSurfaceSnapBreakDist = 0.1f;
+
+		const float k_DirectSurfaceSnapBreakDist = 0.1f;
+		const float k_DirectGroundSnapMin = 0.05f;
+		const float k_DirectGroundSnapMax = 0.15f;
 
 		const float k_WidgetScale = 0.03f;
 
@@ -254,7 +258,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public bool TranslateWithSnapping(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta, bool constrained)
+		public bool ManipulatorSnapping(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta, bool constrained)
 		{
 			if (snappingEnabled && manipulatorSnapping)
 			{
@@ -264,16 +268,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var statePosition = state.currentPosition;
 
 				var camera = CameraUtils.GetMainCamera();
-				var distToCamera = Mathf.Max(1, Mathf.Log(Vector3.Distance(camera.transform.position, statePosition)));
+				var breakScale = Vector3.Distance(camera.transform.position, statePosition);
 
 				if (surfaceSnapping && !constrained)
 				{
 					var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-					if (PerformSurfaceSnapping(ray, ref position, ref rotation, statePosition, state, 0, rotation, distToCamera, false))
+					if (PerformSurfaceSnapping(ray, ref position, ref rotation, statePosition, state, 0, rotation, breakScale * k_ManipulatorSurfaceSnapBreakDist, false))
 						return true;
 				}
 
-				if (groundSnapping && PerformGroundSnapping(ref position, ref rotation, statePosition, state, distToCamera))
+				if (groundSnapping && PerformGroundSnapping(ref position, ref rotation, statePosition, state, breakScale * k_ManipulatorGroundSnapMin, breakScale * k_ManipulatorGroundSnapMax))
 					return true;
 			}
 
@@ -282,7 +286,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		public bool DirectTransformWithSnapping(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
+		public bool DirectSnapping(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
 		{
 			if (snappingEnabled && directSnapping)
 			{
@@ -291,7 +295,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				state.currentPosition = targetPosition;
 
 				var viewerScale = this.GetViewerScale();
-				var breakScale = Mathf.Max(viewerScale, Mathf.Log(viewerScale));
+				var breakScale = viewerScale;
 
 				if (surfaceSnapping)
 				{
@@ -301,12 +305,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					{
 						var ray = new Ray(targetPosition + targetRotation * offset, targetRotation * GetDirection(i));
 						var raycastDistance = state.identityBounds.extents.y;
-						if (PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, i, targetRotation, breakScale, true, raycastDistance))
+						if (PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, i, targetRotation, breakScale * k_DirectSurfaceSnapBreakDist, true, raycastDistance))
 							return true;
 					}
 				}
 
-				if (groundSnapping && PerformGroundSnapping(ref position, ref rotation, targetPosition, state, breakScale))
+				if (groundSnapping && PerformGroundSnapping(ref position, ref rotation, targetPosition, state, breakScale * k_DirectGroundSnapMin, breakScale * k_DirectGroundSnapMax))
 					return true;
 			}
 
@@ -335,7 +339,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		bool PerformSurfaceSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, int direction, Quaternion targetRotation, float breakScale, bool localOnly, float raycastDistance = k_MaxRayLength)
+		bool PerformSurfaceSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, int direction, Quaternion targetRotation, float breakDistance, bool localOnly, float raycastDistance = k_MaxRayLength)
 		{
 			m_IgnoreList.Clear();
 			var objects = state.objects;
@@ -348,8 +352,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				m_IgnoreList.Add(playerHeadObjects[i].gameObject);
 			}
-
-			var surfaceSnapBreakDist = k_SurfaceSnapBreakDist * breakScale;
 
 			RaycastHit hit;
 			GameObject go;
@@ -383,7 +385,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 				var snappedPosition = pivotSnapping ? hitPoint : hitPoint + rotation * directionVector;
 
-				if (localOnly && Vector3.Distance(snappedPosition, statePosition) > surfaceSnapBreakDist)
+				if (localOnly && Vector3.Distance(snappedPosition, statePosition) > breakDistance)
 					return false;
 
 				state.surfaceSnapping = true;
@@ -399,7 +401,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			if (state.surfaceSnapping)
 			{
-				if (Vector3.Distance(state.surfaceSnappingStartPosition, statePosition) > surfaceSnapBreakDist)
+				if (Vector3.Distance(state.surfaceSnappingStartPosition, statePosition) > breakDistance)
 				{
 					position = statePosition;
 					state.surfaceSnapping = false;
@@ -412,14 +414,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 
 
-		bool PerformGroundSnapping(ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, float breakScale)
+		bool PerformGroundSnapping(ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, float groundSnapMin, float groundSnapMax)
 		{
 			if(groundSnapping)
 			{
 				var diffGround = Mathf.Abs(statePosition.y - k_GroundHeight);
-
-				var groundSnapMin = k_GroundSnapMin * breakScale;
-				var groundSnapMax = k_GroundSnapMax * breakScale;
 
 				var bounds = state.rotatedBounds;
 				var offset = bounds.center.y - bounds.extents.y;
