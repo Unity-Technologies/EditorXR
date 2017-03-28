@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -63,6 +64,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		List<string> m_FilterList;
 
 		public string searchQuery { get { return m_FilterUI.searchQuery; } }
+
+		[Serializable]
+		struct ProjectWorkspaceUniqueSave
+		{
+			public float scaleFactor;
+		}
+		ProjectWorkspaceUniqueSave m_UniqueSave = new ProjectWorkspaceUniqueSave();
 
 		public override void Setup()
 		{
@@ -287,6 +295,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void Scale(float value)
 		{
 			m_ProjectUI.assetGridView.scaleFactor = Mathf.Pow(10, value);
+			m_UniqueSave.scaleFactor = m_ProjectUI.assetGridView.scaleFactor;
 		}
 	}
 }

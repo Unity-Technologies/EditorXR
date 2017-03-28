@@ -15,6 +15,11 @@ namespace UnityEditor.Experimental.EditorVR
 		void Setup();
 
 		/// <summary>
+		/// Close the workspace
+		/// </summary>
+		void Close();
+
+		/// <summary>
 		/// Call this in OnDestroy to inform the system
 		/// </summary>
 		event Action<IWorkspace> destroyed;

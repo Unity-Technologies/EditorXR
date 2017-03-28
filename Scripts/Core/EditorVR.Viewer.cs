@@ -1,6 +1,7 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -13,10 +14,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			const float k_CameraRigTransitionTime = 0.75f;
 
+			PlayerBody m_PlayerBody;
+
 			public Viewer()
 			{
 				IMoveCameraRigMethods.moveCameraRig = MoveCameraRig;
 				IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
+				IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
 				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
 			}
 
@@ -37,19 +41,32 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void AddPlayerModel()
 			{
-				var playerModel = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<Renderer>();
-				evr.GetModule<SpatialHashModule>().spatialHash.AddObject(playerModel, playerModel.bounds);
+				m_PlayerBody = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
+				var renderer = m_PlayerBody.GetComponent<Renderer>();
+				evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
 			}
 
 			internal bool IsOverShoulder(Transform rayOrigin)
 			{
+				return Overlaps(rayOrigin, m_PlayerBody.overShoulderTrigger);
+			}
+
+			bool IsAboveHead(Transform rayOrigin)
+			{
+				return Overlaps(rayOrigin, m_PlayerBody.aboveHeadTrigger);
+			}
+
+			static bool Overlaps(Transform rayOrigin, Collider trigger)
+			{
 				var radius = evr.GetNestedModule<DirectSelection>().GetPointerLength(rayOrigin);
+
 				var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 				foreach (var collider in colliders)
 				{
-					if (collider.CompareTag(k_VRPlayerTag))
+					if (collider == trigger)
 						return true;
 				}
+
 				return false;
 			}
 
@@ -122,7 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					onComplete();
 			}
 
-			internal static void MoveCameraRig(Vector3 position, Vector3? viewdirection)
+			static void MoveCameraRig(Vector3 position, Vector3? viewdirection)
 			{
 				evr.StartCoroutine(UpdateCameraRig(position, viewdirection));
 			}

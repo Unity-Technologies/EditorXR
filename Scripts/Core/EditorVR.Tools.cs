@@ -67,7 +67,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return typeof(ITransformer).IsAssignableFrom(type)
 					|| typeof(SelectionTool).IsAssignableFrom(type)
 					|| typeof(ILocomotor).IsAssignableFrom(type)
-					|| typeof(VacuumTool).IsAssignableFrom(type);
+					|| typeof(VacuumTool).IsAssignableFrom(type)
+					|| typeof(MoveWorkspacesTool).IsAssignableFrom(type);
 			}
 
 			internal void SpawnDefaultTools(IProxy proxy)
@@ -98,9 +99,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var vacuumTool = (VacuumTool)toolData.tool;
-					vacuumTool.defaultOffset = WorkspaceModule.k_DefaultWorkspaceOffset;
-					vacuumTool.defaultTilt = WorkspaceModule.k_DefaultWorkspaceTilt;
+					vacuumTool.defaultOffset = WorkspaceModule.DefaultWorkspaceOffset;
+					vacuumTool.defaultTilt = WorkspaceModule.DefaultWorkspaceTilt;
 					vacuumTool.vacuumables = vacuumables.vacuumables;
+
+					toolData = SpawnTool(typeof(MoveWorkspacesTool), out devices, inputDevice);
+					AddToolToDeviceData(toolData, devices);
 
 					// Using a shared instance of the transform tool across all device tool stacks
 					AddToolToStack(deviceData, transformTool);

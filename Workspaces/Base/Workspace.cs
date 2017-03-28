@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale
 	{
-		public static readonly Vector3 k_DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
+		public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 
 		public const float HandleMargin = -0.15f; // Compensate for base size from frame model
 
@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
 		[SerializeField]
-		private Vector3 m_MinBounds = k_MinBounds;
+		Vector3 m_MinBounds = k_MinBounds;
 
 		/// <summary>
 		/// Bounding box for workspace content (ignores value.center) 
@@ -47,16 +47,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 			}
 		}
-		private Bounds m_ContentBounds;
+		Bounds m_ContentBounds;
 
 		[SerializeField]
-		private GameObject m_BasePrefab;
+		GameObject m_BasePrefab;
 
-		private Vector3 m_DragStart;
-		private Vector3 m_PositionStart;
-		private Vector3 m_BoundSizeStart;
-		private bool m_Dragging;
-		private bool m_Vacuuming;
+		Vector3 m_DragStart;
+		Vector3 m_PositionStart;
+		Vector3 m_BoundSizeStart;
+		bool m_Dragging;
 		bool m_Moving;
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ResetSizeCoroutine;
@@ -124,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-			m_ContentBounds = new Bounds(Vector3.up * k_DefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? k_DefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
+			m_ContentBounds = new Bounds(Vector3.up * DefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? DefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
 			UpdateBounds();
 
 			//Set up DirectManipulator
@@ -160,6 +159,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			this.StopCoroutine(ref m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
+		}
+
+		public void Close()
+		{
+			this.StopCoroutine(ref m_VisibilityCoroutine);
+			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
 		public virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -237,9 +242,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public virtual void OnCloseClicked()
 		{
-			this.StopCoroutine(ref m_VisibilityCoroutine);
-
-			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+			Close();
 		}
 
 		public virtual void OnResetClicked()
@@ -247,6 +250,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			this.StopCoroutine(ref m_ResetSizeCoroutine);
 
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
+		}
+
+		public void SetUIHighlights(bool value)
+		{
+			m_WorkspaceUI.highlightsVisible = value;
 		}
 
 		private void UpdateBounds()
@@ -267,7 +275,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			m_WorkspaceUI.highlightsVisible = true;
 
-			var targetScale = transform.localScale;
+			var targetScale = Vector3.one;
 			var scale = Vector3.zero;
 			var smoothVelocity = Vector3.zero;
 			var currentDuration = 0f;
@@ -300,6 +308,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
+			transform.localScale = targetScale;
 
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;

@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
 	sealed class InspectorWorkspace : Workspace, ISelectionChanged
 	{
-		public new static readonly Vector3 k_DefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
+		public new static readonly Vector3 DefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 
 		[SerializeField]
 		GameObject m_ContentPrefab;

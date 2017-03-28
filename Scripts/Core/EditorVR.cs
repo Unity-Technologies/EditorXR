@@ -113,6 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			VRView.cameraRig.parent = transform; // Parent the camera rig under EditorVR
 			VRView.cameraRig.hideFlags = defaultHideFlags;
+			VRView.viewerCamera.gameObject.hideFlags = defaultHideFlags;
 			if (VRSettings.loadedDeviceName == "OpenVR")
 			{
 				// Steam's reference position should be at the feet and not at the head as we do with Oculus
