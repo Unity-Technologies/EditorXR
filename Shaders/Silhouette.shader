@@ -184,5 +184,25 @@ Shader "EditorVR/Valve/Silhouette"
 				#pragma fragment MainPs
 			ENDCG
 		}
+
+		Pass
+		{
+			Tags{ "LightMode" = "Always" }
+			ColorMask 0
+			Cull Off
+			ZWrite Off
+			ZTest Off
+			Stencil
+			{
+				Ref 0
+				Comp always
+				Pass replace
+			}
+
+			CGPROGRAM
+				#pragma vertex MainVs
+				#pragma fragment NullPs
+			ENDCG
+		}
 	}
 }

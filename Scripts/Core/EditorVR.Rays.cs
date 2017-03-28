@@ -217,6 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void UpdateDefaultProxyRays()
 			{
 				var inputModule = evr.GetModule<MultipleRayInputModule>();
+				var intersectionModule = evr.GetModule<IntersectionModule>();
 
 				// Set ray lengths based on renderer bounds
 				foreach (var proxy in m_Proxies)
@@ -239,19 +240,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 						else
 						{
-							// If not hitting UI, then check standard raycast and approximate bounds to set distance
-							var go = GetFirstGameObject(rayOrigin);
-							if (go != null)
-							{
 								var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-								foreach (var renderer in go.GetComponentsInChildren<Renderer>())
-								{
-									float dist;
-									if (renderer.bounds.IntersectRay(ray, out dist) && dist > 0)
-										distance = Mathf.Min(distance, dist);
+							RaycastHit hit;
+							GameObject go;
+							if (intersectionModule.Raycast(ray, out hit, out go, distance))
+								distance = hit.distance;
 								}
-							}
-						}
 						m_DefaultRays[rayOrigin].SetLength(distance);
 					}
 				}
