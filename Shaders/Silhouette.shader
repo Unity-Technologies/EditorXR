@@ -14,7 +14,6 @@ Shader "EditorVR/Valve/Silhouette"
 		_Color( "Color", Color ) = ( .5, .5, .5, 1 )
 		g_flOutlineWidth( "Outline width", Range ( .001, 0.03 ) ) = .005
 		g_flCornerAdjust( "Corner Adjustment", Range(0, 2)) = .5
-		_StencilRef( "StencilRef", Int) = 2
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -149,7 +148,7 @@ Shader "EditorVR/Valve/Silhouette"
 			ZTest Off
 			Stencil
 			{
-				Ref[_StencilRef]
+				Ref 1
 				Comp always
 				Pass replace
 			}
@@ -172,7 +171,7 @@ Shader "EditorVR/Valve/Silhouette"
 			ZTest Off
 			Stencil
 			{
-				Ref [_StencilRef]
+				Ref 1
 				Comp notequal
 				Pass keep
 				Fail keep

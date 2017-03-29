@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		class UI : Nested, IInterfaceConnector
 		{
-			const byte k_MinStencilRef = 5;
+			const byte k_MinStencilRef = 2;
 
 			byte stencilRef
 			{
