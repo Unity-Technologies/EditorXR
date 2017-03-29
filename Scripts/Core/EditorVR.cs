@@ -206,8 +206,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			workspaceModule.workspaceDestroyed += workspace => { m_Interfaces.DisconnectInterfaces(workspace); };
 			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
 
-			AddModule<GizmoModule>();
-
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
 			var sceneObjectModule = AddModule<SceneObjectModule>();

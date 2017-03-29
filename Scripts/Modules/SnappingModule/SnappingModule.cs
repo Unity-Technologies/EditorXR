@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	[MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, IUsesGizmos
+	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider
 	{
 		const float k_GroundSnappingMaxRayLength = 25f;
 		const float k_SurfaceSnappingMaxRayLength = 100f;
@@ -401,7 +401,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				else
 					offset += projectedExtents;
 
-				this.DrawRay(ray.origin, ray.direction, GetColor(i), raycastDistance);
 				if (PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, offset, targetRotation, rotationOffset, upVector, m_IgnoreList, breakDistance, raycastDistance))
 					return true;
 			}
@@ -521,12 +520,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			GameObject go;
 			if (raycast(ray, out hit, out go, raycastDistance, ignoreList))
 			{
-				this.DrawSphere(go.transform.position, 0.5f, Color.magenta);
 				var snappedRotation = Quaternion.LookRotation(hit.normal, upVector) * rotationOffset;
 
 				var hitPoint = hit.point;
 				state.hitPosition = hitPoint;
-				this.DrawRay(ray.origin, ray.direction, Color.red, raycastDistance);
 				var snappedPosition = pivotSnapping ? hitPoint : hitPoint + rotation * boundsOffset;
 
 				if (localOnly && Vector3.Distance(snappedPosition, statePosition) > breakDistance)
