@@ -503,7 +503,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Translate(Vector3 delta, Transform rayOrigin, bool constrained)
 		{
-			if (!constrained)
+			if (constrained)
+				m_TargetPosition += delta;
+			else
 				this.TranslateWithSnapping(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta);
 		}
 
