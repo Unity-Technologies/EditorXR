@@ -337,11 +337,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var projectedExtents = Vector3.Project(boundsExtents, Vector3.down);
 			var offset = projectedExtents - bounds.center;
 			var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
-			var upVector = state.startRotation * Vector3.back;
+			var startRotation = state.startRotation;
+			var upVector = startRotation * Vector3.back;
 
 			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
 			return PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, offset, targetRotation, rotationOffset , upVector, m_IgnoreList, breakDistance)
-				|| TryBreakSurfaceSnapping(ref position, targetPosition, state, breakDistance);
+				|| TryBreakSurfaceSnapping(ref position, ref rotation, targetPosition, startRotation, state, breakDistance);
 		}
 
 		bool PerformDirectSurfaceSnapping(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, float breakDistance)
@@ -370,7 +371,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					return true;
 			}
 
-			if (TryBreakSurfaceSnapping(ref position, targetPosition, state, breakDistance))
+			if (TryBreakSurfaceSnapping(ref position, ref rotation, targetPosition, targetRotation, state, breakDistance))
 				return true;
 
 			return false;
@@ -452,13 +453,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		static bool TryBreakSurfaceSnapping(ref Vector3 position, Vector3 targetPosition, SnappingState state, float breakDistance)
+		static bool TryBreakSurfaceSnapping(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float breakDistance)
 		{
 			if (state.surfaceSnapping)
 			{
 				if (Vector3.Distance(state.snappedPosition, targetPosition) > breakDistance)
 				{
 					position = targetPosition;
+					rotation = targetRotation;
 					state.surfaceSnapping = false;
 				}
 
