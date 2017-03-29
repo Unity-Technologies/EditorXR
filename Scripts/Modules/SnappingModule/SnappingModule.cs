@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_ManipulatorSurfaceSnapBreakDist = 0.1f;
 
 		const float k_DirectSurfaceSearchScale = 1.1f;
-		const float k_DirectSurfaceSnapBreakDist = 0.1f;
+		const float k_DirectSurfaceSnapBreakDist = 0.03f;
 		const float k_DirectGroundSnapMin = 0.05f;
 		const float k_DirectGroundSnapMax = 0.15f;
 
@@ -331,7 +331,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			SetupIgnoreList(m_IgnoreList, playerHeadObjects, state.objects);
 			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-			return PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, Vector3.down, targetRotation, Quaternion.AngleAxis(90, Vector3.right), m_IgnoreList, breakDistance)
+			return PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, Vector3.down, targetRotation, Quaternion.AngleAxis(90, Vector3.right), targetRotation * Vector3.back, m_IgnoreList, breakDistance)
 				|| TryBreakSurfaceSnapping(ref position, targetPosition, state, breakDistance);
 		}
 
@@ -342,6 +342,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var boundsCenter = bounds.center;
 			for (int i = 0; i < 6; i++)
 			{
+				var upVector = GetUpVector(i, targetRotation);
 				var directionVector = GetDirection(i);
 				var rotationOffset = GetRotation(i);
 				var ray = new Ray(targetPosition + targetRotation * boundsCenter, targetRotation * directionVector);
@@ -356,7 +357,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					offset += projectedExtents;
 
 				this.DrawRay(ray.origin, ray.direction, GetColor(i), raycastDistance);
-				if (PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, offset, targetRotation, rotationOffset, m_IgnoreList, breakDistance, raycastDistance))
+				if (PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, offset, targetRotation, rotationOffset, upVector, m_IgnoreList, breakDistance, raycastDistance))
 					return true;
 			}
 
@@ -366,7 +367,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-				static Vector3 GetDirection(int i)
+		static Vector3 GetDirection(int i)
 		{
 			switch (i)
 			{
@@ -401,6 +402,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					return Quaternion.AngleAxis(180, Vector3.up);
 				case 5:
 					return Quaternion.AngleAxis(90, Vector3.left);
+			}
+		}
+
+		static Vector3 GetUpVector(int i, Quaternion rotation)
+		{
+			switch (i)
+			{
+				default:
+					return rotation * Vector3.back;
+				case 1:
+					return rotation * Vector3.up;
+				case 2:
+					return rotation * Vector3.up;
+				case 3:
+					return rotation * Vector3.up;
+				case 4:
+					return rotation * Vector3.up;
+				case 5:
+					return rotation * Vector3.forward;
 			}
 		}
 
@@ -452,14 +472,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		bool PerformSurfaceSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, Vector3 boundsOffset, Quaternion targetRotation, Quaternion rotationOffset, List<GameObject> ignoreList, float breakDistance, float raycastDistance = k_MaxRayLength)
+		bool PerformSurfaceSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, Vector3 boundsOffset, Quaternion targetRotation, Quaternion rotationOffset, Vector3 upVector, List<GameObject> ignoreList, float breakDistance, float raycastDistance = k_MaxRayLength)
 		{
 			RaycastHit hit;
 			GameObject go;
 			if (raycast(ray, out hit, out go, raycastDistance, ignoreList))
 			{
 				this.DrawSphere(go.transform.position, 0.5f, Color.magenta);
-				var snappedRotation = Quaternion.LookRotation(hit.normal) * rotationOffset;
+				var snappedRotation = Quaternion.LookRotation(hit.normal, upVector) * rotationOffset;
 
 				var hitPoint = hit.point;
 				state.surfaceSnappingHitPosition = hitPoint;
