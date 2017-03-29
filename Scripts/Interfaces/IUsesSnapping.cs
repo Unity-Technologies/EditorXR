@@ -15,8 +15,8 @@ namespace UnityEditor.Experimental.EditorVR
 		internal delegate bool TransformWithSnappingDelegate(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta);
 		internal delegate bool DirectTransformWithSnappingDelegate(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation);
 
-		internal static TransformWithSnappingDelegate translateWithSnapping { get; set; }
-		internal static DirectTransformWithSnappingDelegate directTransformWithSnapping { get; set; }
+		internal static TransformWithSnappingDelegate manipulatorSnapping { get; set; }
+		internal static DirectTransformWithSnappingDelegate directSnapping { get; set; }
 		internal static Action<Transform> clearSnappingState { get; set; }
 
 		/// <summary>
@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <returns>Whether the position was set to a snapped position</returns>
 		public static bool TranslateWithSnapping(this IUsesSnapping usesSnaping, Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta)
 		{
-			return translateWithSnapping(rayOrigin, objects, ref position, ref rotation, delta);
+			return manipulatorSnapping(rayOrigin, objects, ref position, ref rotation, delta);
 		}
 
 		/// <summary>
@@ -45,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <returns></returns>
 		public static bool DirectTransformWithSnapping(this IUsesSnapping usesSnaping, Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
 		{
-			return directTransformWithSnapping(rayOrigin, objects, ref position, ref rotation, targetPosition, targetRotation);
+			return directSnapping(rayOrigin, objects, ref position, ref rotation, targetPosition, targetRotation);
 		}
 
 		/// <summary>
