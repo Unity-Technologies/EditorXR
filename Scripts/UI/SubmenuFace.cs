@@ -1,15 +1,20 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class SubmenuFace : MonoBehaviour
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	[SerializeField]
-	Button m_BackButton;
-
-	public void SetupBackButton(UnityAction backAction)
+	class SubmenuFace : MonoBehaviour
 	{
-		m_BackButton.onClick.RemoveAllListeners();
-		m_BackButton.onClick.AddListener(backAction);
+		[SerializeField]
+		Button m_BackButton;
+
+		public void SetupBackButton(UnityAction backAction)
+		{
+			m_BackButton.onClick.RemoveAllListeners();
+			m_BackButton.onClick.AddListener(backAction);
+		}
 	}
 }
+#endif

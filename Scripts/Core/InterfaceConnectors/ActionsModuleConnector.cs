@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.EditorVR.Modules;
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -55,3 +56,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		}
 	}
 }
+#endif
