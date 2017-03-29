@@ -5,16 +5,29 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class Viewer : Nested, IInterfaceConnector
+		[SerializeField]
+		GameObject m_PreviewCameraPrefab;
+
+		class Viewer : Nested, IInterfaceConnector, ISerializePreferences
 		{
+			[Serializable]
+			class Preferences
+			{
+				public Vector3 cameraRigPosition;
+				public Quaternion cameraRigRotation;
+			}
+
 			const float k_CameraRigTransitionTime = 0.75f;
 
 			PlayerBody m_PlayerBody;
+
+			internal IPreviewCamera customPreviewCamera { get; private set; }
 
 			public Viewer()
 			{
@@ -22,6 +35,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
 				IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
 				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
+			}
+
+			internal override void OnDestroy()
+			{
+				base.OnDestroy();
+
+				if (customPreviewCamera != null)
+					ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
@@ -37,6 +58,62 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void DisconnectInterface(object obj)
 			{
+			}
+
+			public object OnSerializePreferences()
+			{
+				var cameraRig = CameraUtils.GetCameraRig();
+
+				var preferences = new Preferences();
+				preferences.cameraRigPosition = cameraRig.position;
+				preferences.cameraRigRotation = cameraRig.rotation;
+
+				return preferences;
+			}
+
+			public void OnDeserializePreferences(object obj)
+			{
+				var preferences = (Preferences)obj;
+
+				var cameraRig = CameraUtils.GetCameraRig();
+				cameraRig.position = preferences.cameraRigPosition;
+				cameraRig.rotation = preferences.cameraRigRotation;
+			}
+
+			internal void InitializeCamera()
+			{
+				var cameraRig = CameraUtils.GetCameraRig();
+				cameraRig.parent = evr.transform; // Parent the camera rig under EditorVR
+				cameraRig.hideFlags = defaultHideFlags;
+				var viewerCamera = CameraUtils.GetMainCamera();
+				viewerCamera.gameObject.hideFlags = defaultHideFlags;
+				if (VRSettings.loadedDeviceName == "OpenVR")
+				{
+					// Steam's reference position should be at the feet and not at the head as we do with Oculus
+					cameraRig.localPosition = Vector3.zero;
+				}
+
+				var hmdOnlyLayerMask = 0;
+				if (evr.m_PreviewCameraPrefab)
+				{
+					var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
+
+					customPreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
+					if (customPreviewCamera != null)
+					{
+						VRView.customPreviewCamera = customPreviewCamera.previewCamera;
+						customPreviewCamera.vrCamera = VRView.viewerCamera;
+						hmdOnlyLayerMask = customPreviewCamera.hmdOnlyLayerMask;
+						evr.m_Interfaces.ConnectInterfaces(customPreviewCamera);
+					}
+				}
+				VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
+			}
+
+			internal void UpdateCamera()
+			{
+				if (customPreviewCamera != null)
+					customPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
 			}
 
 			internal void AddPlayerModel()

@@ -10,7 +10,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
-	sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
+	sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, ISerializeWorkspace
 	{
 		const float k_LeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 		const float k_PaneMargin = 0.01f;
@@ -37,6 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		ProjectUI m_ProjectUI;
 		FilterUI m_FilterUI;
+		ZoomSliderUI m_ZoomSliderUI;
 
 		public List<FolderData> folderData
 		{
@@ -66,11 +67,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public string searchQuery { get { return m_FilterUI.searchQuery; } }
 
 		[Serializable]
-		struct ProjectWorkspaceUniqueSave
+		class Preferences
 		{
 			public float scaleFactor;
 		}
-		ProjectWorkspaceUniqueSave m_UniqueSave = new ProjectWorkspaceUniqueSave();
 
 		public override void Setup()
 		{
@@ -103,12 +103,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			filterList = m_FilterList;
 
 			var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
-			var zoomSlider = sliderObject.GetComponent<ZoomSliderUI>();
-			zoomSlider.zoomSlider.minValue = Mathf.Log10(k_MinScale);
-			zoomSlider.zoomSlider.maxValue = Mathf.Log10(k_MaxScale);
-			zoomSlider.zoomSlider.value = Mathf.Log10(m_ProjectUI.assetGridView.scaleFactor);
-			zoomSlider.sliding += Scale;
-			foreach (var mb in zoomSlider.GetComponentsInChildren<MonoBehaviour>())
+			m_ZoomSliderUI = sliderObject.GetComponent<ZoomSliderUI>();
+			m_ZoomSliderUI.zoomSlider.minValue = Mathf.Log10(k_MinScale);
+			m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(k_MaxScale);
+			m_ZoomSliderUI.sliding += Scale;
+			UpdateZoomSliderValue();
+			foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
 			{
 				this.ConnectInterfaces(mb);
 			}
@@ -148,6 +148,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// Propagate initial bounds
 			OnBoundsChanged();
+		}
+
+		public object OnSerializeWorkspace()
+		{
+			var preferences = new Preferences();
+			preferences.scaleFactor = m_ProjectUI.assetGridView.scaleFactor;
+			return preferences;
+		}
+
+		public void OnDeserializeWorkspace(object obj)
+		{
+			var preferences = (Preferences)obj;
+			m_ProjectUI.assetGridView.scaleFactor = preferences.scaleFactor;
+			UpdateZoomSliderValue();
 		}
 
 		protected override void OnBoundsChanged()
@@ -295,7 +309,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void Scale(float value)
 		{
 			m_ProjectUI.assetGridView.scaleFactor = Mathf.Pow(10, value);
-			m_UniqueSave.scaleFactor = m_ProjectUI.assetGridView.scaleFactor;
+		}
+
+		void UpdateZoomSliderValue()
+		{
+			m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(m_ProjectUI.assetGridView.scaleFactor);
 		}
 	}
 }

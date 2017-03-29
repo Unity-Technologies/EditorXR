@@ -79,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var transformTool = SpawnTool(typeof(TransformTool), out devices);
 				evr.GetNestedModule<DirectSelection>().objectsGrabber = transformTool.tool as IGrabObjects;
 
-				Func<Transform, bool> isRayActive = evr.GetNestedModule<Rays>().IsRayActive;
+				Func<Transform, bool> isRayActive = Rays.IsRayActive;
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
 				var lockModule = evr.GetModule<LockModule>();
 
@@ -176,7 +176,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal bool IsToolActive(Transform targetRayOrigin, Type toolType)
+			bool IsToolActive(Transform targetRayOrigin, Type toolType)
 			{
 				var result = false;
 
@@ -187,11 +187,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return result;
 			}
 
-			internal bool SelectTool(Transform rayOrigin, Type toolType)
+			bool SelectTool(Transform rayOrigin, Type toolType)
 			{
 				var result = false;
 				var deviceInputModule = evr.GetModule<DeviceInputModule>();
-				evr.GetNestedModule<Rays>().ForEachProxyDevice((deviceData) =>
+				Rays.ForEachProxyDevice((deviceData) =>
 				{
 					if (deviceData.rayOrigin == rayOrigin)
 					{

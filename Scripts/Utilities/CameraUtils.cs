@@ -53,8 +53,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 #if UNITY_EDITOR && UNITY_EDITORVR
 			if (!Application.isPlaying)
 			{
-				if (VRView.viewerCamera)
-					rig = VRView.viewerCamera.transform.parent;
+				if (VRView.cameraRig)
+					rig = VRView.cameraRig;
 			}
 #endif
 			return rig;

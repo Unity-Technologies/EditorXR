@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -14,7 +15,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
-	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
+	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap, ISerializeWorkspace
 	{
 		static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.05f; // Show more space above ground than below
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default
@@ -50,13 +51,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		ActionMap m_MiniWorldActionMap;
 
 		[Serializable]
-		struct ChessBoardUniqueSave
+		class Preferences
 		{
-			public Vector3 miniWorldRefScale;
-			public Vector3 miniWorldRefPos;
+			public Vector3 miniWorldRefeferenceScale;
+			public Vector3 miniWorldReferencePosition;
 			public float zoomSliderValue;
 		}
-		ChessBoardUniqueSave m_UniqueSave = new ChessBoardUniqueSave();
 
 		MiniWorldUI m_MiniWorldUI;
 		MiniWorld m_MiniWorld;
@@ -151,6 +151,28 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			OnBoundsChanged();
 		}
 
+		public object OnSerializeWorkspace()
+		{
+			var preferences = new Preferences();
+
+			var referenceTransform = m_MiniWorld.referenceTransform;
+			preferences.miniWorldRefeferenceScale = referenceTransform.localScale;
+			preferences.miniWorldReferencePosition = referenceTransform.position;
+			preferences.zoomSliderValue = m_ZoomSliderUI.zoomSlider.value;
+
+			return preferences;
+		}
+
+		public void OnDeserializeWorkspace(object obj)
+		{
+			var preferences = (Preferences)obj;
+
+			var referenceTransform = m_MiniWorld.referenceTransform;
+			referenceTransform.localScale = preferences.miniWorldRefeferenceScale;
+			referenceTransform.position = preferences.miniWorldReferencePosition;
+			m_ZoomSliderUI.zoomSlider.value = preferences.zoomSliderValue;
+		}
+
 		void Update()
 		{
 			var inBounds = IsPlayerInBounds();
@@ -238,9 +260,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var scaleDiff = (value - m_MiniWorld.referenceTransform.localScale.x) / m_MiniWorld.referenceTransform.localScale.x;
 			m_MiniWorld.referenceTransform.position += Vector3.up * m_MiniWorld.referenceBounds.extents.y * scaleDiff;
 			m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
-
-			m_UniqueSave.miniWorldRefScale = m_MiniWorld.referenceTransform.localScale;
-			m_UniqueSave.zoomSliderValue = m_ZoomSliderUI.zoomSlider.value;
 		}
 
 		void OnPanZoomDragStarted(Transform rayOrigin)
@@ -310,9 +329,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				referenceTransform.position = m_StartPosition + referenceTransform.rotation
 					* Vector3.Scale(m_StartMidPoint - firstRayPosition, referenceTransform.localScale);
 			}
-
-			m_UniqueSave.miniWorldRefPos = referenceTransform.position;
-			m_UniqueSave.zoomSliderValue = m_ZoomSliderUI.zoomSlider.value;
 		}
 
 		void OnPanZoomDragEnded(Transform rayOrigin)

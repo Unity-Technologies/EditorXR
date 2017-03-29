@@ -52,8 +52,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
 			}
 
-			public void OnDestroy()
+			internal override void OnDestroy()
 			{
+				base.OnDestroy();
 				EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 			}
 
@@ -393,7 +394,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				m_MiniWorldInputs[miniWorldWorkspace] = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(miniWorldWorkspace, null);
 
 				var intersectionModule = evr.GetModule<IntersectionModule>();
-				evr.GetNestedModule<Rays>().ForEachProxyDevice(deviceData =>
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					var miniWorldRayOrigin = InstantiateMiniWorldRay();
 					miniWorldRayOrigin.parent = workspace.transform;
