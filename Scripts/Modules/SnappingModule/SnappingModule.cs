@@ -16,6 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_ManipulatorGroundSnapMax = 0.5f;
 		const float k_ManipulatorSurfaceSnapBreakDist = 0.1f;
 
+		const float k_DirectSurfaceSearchScale = 1.1f;
 		const float k_DirectSurfaceSnapBreakDist = 0.1f;
 		const float k_DirectGroundSnapMin = 0.05f;
 		const float k_DirectGroundSnapMax = 0.15f;
@@ -326,7 +327,46 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		static Vector3 GetDirection(int i)
+		bool PerformManipulatorSurfaceSnapping(Transform rayOrigin, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, float breakDistance)
+		{
+			SetupIgnoreList(m_IgnoreList, playerHeadObjects, state.objects);
+			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+			return PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, Vector3.down, targetRotation, Quaternion.AngleAxis(90, Vector3.right), m_IgnoreList, breakDistance)
+				|| TryBreakSurfaceSnapping(ref position, targetPosition, state, breakDistance);
+		}
+
+		bool PerformDirectSurfaceSnapping(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, float breakDistance)
+		{
+			SetupIgnoreList(m_IgnoreList, playerHeadObjects, state.objects);
+			var bounds = state.identityBounds;
+			var boundsCenter = bounds.center;
+			for (int i = 0; i < 6; i++)
+			{
+				var directionVector = GetDirection(i);
+				var rotationOffset = GetRotation(i);
+				var ray = new Ray(targetPosition + targetRotation * boundsCenter, targetRotation * directionVector);
+
+				var boundsExtents = bounds.extents;
+				var projectedExtents = Vector3.Project(boundsExtents, directionVector);
+				var raycastDistance = projectedExtents.magnitude * k_DirectSurfaceSearchScale;
+				var offset = -boundsCenter;
+				if (i > 2)
+					offset -= projectedExtents;
+				else
+					offset += projectedExtents;
+
+				this.DrawRay(ray.origin, ray.direction, GetColor(i), raycastDistance);
+				if (PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, offset, targetRotation, rotationOffset, m_IgnoreList, breakDistance, raycastDistance))
+					return true;
+			}
+
+			if (TryBreakSurfaceSnapping(ref position, targetPosition, state, breakDistance))
+				return true;
+
+			return false;
+		}
+
+				static Vector3 GetDirection(int i)
 		{
 			switch (i)
 			{
@@ -342,6 +382,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					return Vector3.forward;
 				case 5:
 					return Vector3.up;
+			}
+		}
+
+		static Quaternion GetRotation(int i)
+		{
+			switch (i)
+			{
+				default:
+					return Quaternion.AngleAxis(90, Vector3.right);
+				case 1:
+					return Quaternion.AngleAxis(90, Vector3.down);
+				case 2:
+					return Quaternion.identity;
+				case 3:
+					return Quaternion.AngleAxis(90, Vector3.up);
+				case 4:
+					return Quaternion.AngleAxis(180, Vector3.up);
+				case 5:
+					return Quaternion.AngleAxis(90, Vector3.left);
 			}
 		}
 
@@ -362,44 +421,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				case 5:
 					return Color.green;
 			}
-		}
-
-		bool PerformManipulatorSurfaceSnapping(Transform rayOrigin, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, float breakDistance)
-		{
-			SetupIgnoreList(m_IgnoreList, playerHeadObjects, state.objects);
-			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-			return PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, Vector3.down, targetRotation, m_IgnoreList, breakDistance)
-				|| TryBreakSurfaceSnapping(ref position, targetPosition, state, breakDistance);
-		}
-
-		bool PerformDirectSurfaceSnapping(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, float breakDistance)
-		{
-			SetupIgnoreList(m_IgnoreList, playerHeadObjects, state.objects);
-			var bounds = state.identityBounds;
-			var boundsCenter = bounds.center;
-			for (int i = 0; i < 6; i++)
-			{
-				var directionVector = GetDirection(i);
-				var ray = new Ray(targetPosition + targetRotation * boundsCenter, targetRotation * directionVector);
-
-				var boundsExtents = bounds.extents;
-				var projectedExtents = Vector3.Project(boundsExtents, directionVector);
-				var raycastDistance = projectedExtents.magnitude;
-				var offset = -boundsCenter;
-				if (i > 2)
-					offset -= projectedExtents;
-				else
-					offset += projectedExtents;
-
-				this.DrawRay(ray.origin, ray.direction, GetColor(i), raycastDistance);
-				if (PerformSurfaceSnapping(ray, ref position, ref rotation, targetPosition, state, offset, targetRotation, m_IgnoreList, breakDistance, raycastDistance))
-					return true;
-			}
-
-			if (TryBreakSurfaceSnapping(ref position, targetPosition, state, breakDistance))
-				return true;
-
-			return false;
 		}
 
 		static bool TryBreakSurfaceSnapping(ref Vector3 position, Vector3 targetPosition, SnappingState state, float breakDistance)
@@ -431,14 +452,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		bool PerformSurfaceSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, Vector3 boundsOffset, Quaternion targetRotation, List<GameObject> ignoreList, float breakDistance, float raycastDistance = k_MaxRayLength)
+		bool PerformSurfaceSnapping(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 statePosition, SnappingState state, Vector3 boundsOffset, Quaternion targetRotation, Quaternion rotationOffset, List<GameObject> ignoreList, float breakDistance, float raycastDistance = k_MaxRayLength)
 		{
 			RaycastHit hit;
 			GameObject go;
 			if (raycast(ray, out hit, out go, raycastDistance, ignoreList))
 			{
 				this.DrawSphere(go.transform.position, 0.5f, Color.magenta);
-				var snappedRotation = Quaternion.LookRotation(hit.normal) * Quaternion.AngleAxis(90, Vector3.right);
+				var snappedRotation = Quaternion.LookRotation(hit.normal) * rotationOffset;
 
 				var hitPoint = hit.point;
 				state.surfaceSnappingHitPosition = hitPoint;
