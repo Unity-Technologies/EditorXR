@@ -55,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public Quaternion snappedRotation;
 			public Quaternion startRotation;
 			public Vector3 hitPosition;
-			public GameObject[] objects;
+			public GameObject go;
 		}
 
 		bool m_DisableAll;
@@ -76,7 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public RaycastDelegate raycast { private get; set; }
 		public Renderer[] playerHeadObjects { private get; set; }
 
-		readonly Dictionary<Transform, SnappingState> m_SnappingStates = new Dictionary<Transform, SnappingState>();
+		readonly Dictionary<Transform, Dictionary<GameObject, SnappingState>> m_SnappingStates = new Dictionary<Transform, Dictionary<GameObject, SnappingState>>();
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<GameObject> m_IgnoreList = new List<GameObject>();
@@ -251,13 +251,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				SnappingState surfaceSnapping = null;
 				var shouldActivateGroundPlane = false;
-				foreach (var state in m_SnappingStates.Values)
+				foreach (var states in m_SnappingStates.Values)
 				{
-					if (state.groundSnapping)
-						shouldActivateGroundPlane = true;
+					foreach (var state in states.Values)
+					{
+						if (state.groundSnapping)
+							shouldActivateGroundPlane = true;
 
-					if (state.surfaceSnapping)
-						surfaceSnapping = state;
+						if (state.surfaceSnapping)
+							surfaceSnapping = state;
+					}
 				}
 				m_GroundPlane.SetActive(shouldActivateGroundPlane);
 
@@ -282,9 +285,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public bool ManipulatorSnapping(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta)
 		{
+			if (objects.Length == 0)
+				return false;
+
 			if (snappingEnabled && manipulatorSnapping)
 			{
-				var state = GetSnappingState(rayOrigin, objects, position, rotation);
+				var state = GetSnappingState(rayOrigin, objects[0], position, rotation);
 
 				state.currentPosition += delta;
 				var targetPosition = state.currentPosition;
@@ -331,11 +337,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		public bool DirectSnapping(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
+		public bool DirectSnapping(Transform rayOrigin, GameObject go, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
 		{
 			if (snappingEnabled && directSnapping)
 			{
-				var state = GetSnappingState(rayOrigin, objects, position, rotation);
+				var state = GetSnappingState(rayOrigin, go, position, rotation);
 
 				state.currentPosition = targetPosition;
 
@@ -358,7 +364,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		bool PerformManipulatorSurfaceSnapping(Transform rayOrigin, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, float breakDistance)
 		{
-			SetupIgnoreList(m_IgnoreList, playerHeadObjects, state.objects);
+			SetupIgnoreList(m_IgnoreList, playerHeadObjects, state.go);
 
 			var bounds = state.identityBounds;
 			var boundsExtents = bounds.extents;
@@ -376,7 +382,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		bool PerformDirectSurfaceSnapping(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, float breakDistance)
 		{
-			SetupIgnoreList(m_IgnoreList, playerHeadObjects, state.objects);
+			SetupIgnoreList(m_IgnoreList, playerHeadObjects, state.go);
 			var bounds = state.identityBounds;
 			var boundsCenter = bounds.center;
 			for (int i = 0; i < 6; i++)
@@ -498,13 +504,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		static void SetupIgnoreList(List<GameObject> ignoreList, Renderer[] playerHeadObjects, GameObject[] objects)
+		static void SetupIgnoreList(List<GameObject> ignoreList, Renderer[] playerHeadObjects, GameObject go)
 		{
 			ignoreList.Clear();
-			for (int i = 0; i < objects.Length; i++)
-			{
-				ignoreList.Add(objects[i]);
-			}
+			ignoreList.Add(go);
 
 			for (int i = 0; i < playerHeadObjects.Length; i++)
 			{
@@ -585,38 +588,38 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		SnappingState GetSnappingState(Transform rayOrigin, GameObject[] objects, Vector3 position, Quaternion rotation)
+		SnappingState GetSnappingState(Transform rayOrigin, GameObject go, Vector3 position, Quaternion rotation)
 		{
-			SnappingState state;
-			if (!m_SnappingStates.TryGetValue(rayOrigin, out state))
+			Dictionary<GameObject, SnappingState> states;
+			if (!m_SnappingStates.TryGetValue(rayOrigin, out states))
 			{
-				float angle;
-				Vector3 axis;
-				rotation.ToAngleAxis(out angle, out axis);
-				foreach (var go in objects)
-				{
-					go.transform.RotateAround(position, axis, -angle);
-				}
+				states = new Dictionary<GameObject, SnappingState>();
+				m_SnappingStates[rayOrigin] = states;
+			}
 
-				var identityBounds = ObjectUtils.GetBounds(objects);
+			SnappingState state;
+			if (!states.TryGetValue(go, out state))
+			{
+				var objTransform = go.transform;
+				var objRotation = objTransform.rotation;
 
-				foreach (var go in objects)
-				{
-					go.transform.RotateAround(position, axis, angle);
-				}
+				var initialBounds = ObjectUtils.GetBounds(go);
+				go.transform.rotation = Quaternion.identity;
+				var identityBounds = ObjectUtils.GetBounds(go);
+				go.transform.rotation = objRotation;
 
-				var totalBounds = ObjectUtils.GetBounds(objects);
-				totalBounds.center -= position;
+				initialBounds.center -= position;
 				identityBounds.center -= position;
+
 				state = new SnappingState
 				{
 					currentPosition = position,
 					startRotation = rotation,
-					rotatedBounds = totalBounds,
+					rotatedBounds = initialBounds,
 					identityBounds = identityBounds,
-					objects = objects
+					go = go
 				};
-				m_SnappingStates[rayOrigin] = state;
+				states[go] = state;
 			}
 			return state;
 		}
