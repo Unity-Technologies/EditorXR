@@ -226,6 +226,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var leftHandFound = false;
 			var rightHandFound = false;
 
+			// Some components depend on both hands existing (e.g. MiniWorldWorkspace), so make sure they exist before restoring
 			while (!(leftHandFound && rightHandFound))
 			{
 				Rays.ForEachProxyDevice(deviceData =>

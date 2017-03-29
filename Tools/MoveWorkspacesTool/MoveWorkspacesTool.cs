@@ -9,7 +9,7 @@ using UnityEngine.InputNew;
 
 [ExecuteInEditMode]
 public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, ICustomRay, IUsesViewerBody, 
-	IMoveWorkspaces, IGetAllWorkspaces
+	IResetWorkspaces, IGetAllWorkspaces
 {
 	float m_TriggerPressedTimeStamp;
 

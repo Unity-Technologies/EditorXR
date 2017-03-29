@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public void LateBindInterfaceMethods(WorkspaceModule provider)
 			{
 				ICreateWorkspaceMethods.createWorkspace = provider.CreateWorkspace;
-				IMoveWorkspacesMethods.resetWorkspaces = provider.ResetWorkspaces;
+				IResetWorkspacesMethods.resetWorkspaces = provider.ResetWorkspaces;
 				IGetAllWorkspacesMethods.getAllWorkspaces = () => provider.workspaces;
 			}
 		}
