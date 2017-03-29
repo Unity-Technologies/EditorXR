@@ -503,7 +503,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Translate(Vector3 delta, Transform rayOrigin, bool constrained)
 		{
-			this.TranslateWithSnapping(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta, constrained);
+			if (!constrained)
+				this.TranslateWithSnapping(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta);
 		}
 
 		void Rotate(Quaternion delta)

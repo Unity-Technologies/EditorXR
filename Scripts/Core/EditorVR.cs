@@ -201,10 +201,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var workspaceModule = AddModule<WorkspaceModule>();
 			workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
 			workspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
-			workspaceModule.workspaceCreated += (workspace) => { m_DeviceInputModule.UpdatePlayerHandleMaps(); };
+			workspaceModule.workspaceCreated += workspace => { m_DeviceInputModule.UpdatePlayerHandleMaps(); };
 			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
-			workspaceModule.workspaceDestroyed += (workspace) => { m_Interfaces.DisconnectInterfaces(workspace); };
+			workspaceModule.workspaceDestroyed += workspace => { m_Interfaces.DisconnectInterfaces(workspace); };
 			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
+
+			AddModule<GizmoModule>();
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 

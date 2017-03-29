@@ -21,6 +21,9 @@ namespace UnityEditor.Experimental.EditorVR
 		Toggle m_SnapRotation;
 
 		[SerializeField]
+		Toggle m_LocalOnly;
+
+		[SerializeField]
 		Toggle m_ManipulatorSnapping;
 
 		[SerializeField]
@@ -49,6 +52,11 @@ namespace UnityEditor.Experimental.EditorVR
 		public Toggle snapRotation
 		{
 			get { return m_SnapRotation; }
+		}
+
+		public Toggle localOnly
+		{
+			get { return m_LocalOnly; }
 		}
 
 		public Toggle manipulatorSnapping

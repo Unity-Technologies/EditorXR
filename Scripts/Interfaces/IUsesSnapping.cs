@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IUsesSnappingMethods
 	{
-		internal delegate bool TransformWithSnappingDelegate(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta, bool constrained);
+		internal delegate bool TransformWithSnappingDelegate(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta);
 		internal delegate bool DirectTransformWithSnappingDelegate(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation);
 
 		internal static TransformWithSnappingDelegate translateWithSnapping { get; set; }
@@ -27,11 +27,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="position">The position being modified by delta. This will be set with a snapped position if possible</param>
 		/// <param name="rotation">The rotation to be modified if rotation snapping is enabled</param>
 		/// <param name="delta">The position delta to apply</param>
-		/// <param name="constrained">Whether this is an axis-constrained translation</param>
 		/// <returns>Whether the position was set to a snapped position</returns>
-		public static bool TranslateWithSnapping(this IUsesSnapping usesSnaping, Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta, bool constrained)
+		public static bool TranslateWithSnapping(this IUsesSnapping usesSnaping, Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta)
 		{
-			return translateWithSnapping(rayOrigin, objects, ref position, ref rotation, delta, constrained);
+			return translateWithSnapping(rayOrigin, objects, ref position, ref rotation, delta);
 		}
 
 		/// <summary>
