@@ -6,6 +6,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 {
 	static class IntersectionUtils
 	{
+		// Local method use only -- created here to reduce garbage collection
+		static readonly Vector3[] s_TriangleVertices = new Vector3[3];
+
 		/// <summary>
 		/// Test whether an object collides with the tester
 		/// </summary>
@@ -53,20 +56,19 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 			var maxDistance = collisionTester.bounds.size.magnitude;
 
-			var triangleVertices = new Vector3[3];
 			var testerTransform = tester.transform;
 			for (var i = 0; i < triangles.Length; i += 3)
 			{
-				triangleVertices[0] = vertices[triangles[i]];
-				triangleVertices[1] = vertices[triangles[i + 1]];
-				triangleVertices[2] = vertices[triangles[i + 2]];
+				s_TriangleVertices[0] = vertices[triangles[i]];
+				s_TriangleVertices[1] = vertices[triangles[i + 1]];
+				s_TriangleVertices[2] = vertices[triangles[i + 2]];
 
 				for (var j = 0; j < 3; j++)
 				{
 					RaycastHit hitInfo;
 
-					var start = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[j]));
-					var end = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[(j + 1) % 3]));
+					var start = obj.InverseTransformPoint(testerTransform.TransformPoint(s_TriangleVertices[j]));
+					var end = obj.InverseTransformPoint(testerTransform.TransformPoint(s_TriangleVertices[(j + 1) % 3]));
 					var direction = (end - start).normalized;
 
 					// Handle degenerate triangles

@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -10,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
-		const int k_MaxTestsPerTester = 100;
+		const int k_MaxTestsPerTester = 250;
 
 		readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
@@ -34,6 +35,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<Renderer> m_Intersections = new List<Renderer>();
+		readonly List<SortableRenderer> m_SortedIntersections = new List<SortableRenderer>();
+		
+		struct SortableRenderer
+		{
+			public Renderer renderer;
+			public float distance;
+		}
 
 		internal void Setup(SpatialHash<Renderer> hash)
 		{
@@ -68,37 +76,45 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					m_Intersections.Clear();
 					if (m_SpatialHash.GetIntersections(m_Intersections, tester.renderer.bounds))
 					{
-						//Sort list to try and hit closer object first
 						var testerBounds = tester.renderer.bounds;
 						var testerBoundsCenter = testerBounds.center;
-						m_Intersections.Sort((a, b) => (a.bounds.center - testerBoundsCenter).magnitude.CompareTo((b.bounds.center - testerBoundsCenter).magnitude));
-						m_Intersections.RemoveAll(obj =>
-						{
-							// Ignore destroyed objects
-							if (!obj)
-								return true;
 
-							// Ignore inactive objects
-							if (!obj.gameObject.activeInHierarchy)
-								return true;
-
-							// Ignore locked objects
-							if (this.IsLocked(obj.gameObject))
-								return true;
-
-							// Bounds check
-							if (!obj.bounds.Intersects(testerBounds))
-								return true;
-
-							return false;
-						});
-
-						if (m_Intersections.Count > k_MaxTestsPerTester)
-							continue;
-
+						m_SortedIntersections.Clear();
 						for (int j = 0; j < m_Intersections.Count; j++)
 						{
 							var obj = m_Intersections[j];
+							// Ignore destroyed objects
+							if (!obj)
+								continue;
+
+							// Ignore inactive objects
+							if (!obj.gameObject.activeInHierarchy)
+								continue;
+
+							// Ignore locked objects
+							if (this.IsLocked(obj.gameObject))
+								continue;
+
+							// Bounds check
+							if (!obj.bounds.Intersects(testerBounds))
+								continue;
+
+							m_SortedIntersections.Add(new SortableRenderer
+							{
+								renderer = obj,
+								distance = (obj.bounds.center - testerBoundsCenter).magnitude
+							});
+						}
+
+						//Sort list to try and hit closer object first
+						m_SortedIntersections.Sort((a, b) => a.distance.CompareTo(b.distance));
+
+						if (m_SortedIntersections.Count > k_MaxTestsPerTester)
+							continue;
+
+						for (int j = 0; j < m_SortedIntersections.Count; j++)
+						{
+							var obj = m_SortedIntersections[j].renderer;
 							if (IntersectionUtils.TestObject(m_CollisionTester, obj, tester))
 							{
 								intersectionFound = true;
