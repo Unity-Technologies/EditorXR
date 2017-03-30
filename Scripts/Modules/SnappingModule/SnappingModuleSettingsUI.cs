@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	public class SnappingModuleUI : MonoBehaviour
+	public class SnappingModuleSettingsUI : MonoBehaviour
 	{
 		[SerializeField]
 		Toggle m_SnappingEnabled;

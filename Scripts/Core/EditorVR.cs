@@ -185,15 +185,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			snappingModule.raycast = intersectionModule.Raycast;
 
 			menus.mainMenuTools = tools.allTools.Where(t => !tools.IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
-			var settingsMenuProviders = new Dictionary<Type, ISettingsMenuProvider>();
-			var settingsMenuProviderTypes = ObjectUtils.GetImplementationsOfInterface(typeof(ISettingsMenuProvider));
-			foreach (var type in settingsMenuProviderTypes)
-			{
-				var settingsMenuProvider = (ISettingsMenuProvider)GetModule(type);
-				if (settingsMenuProvider != null)
-					settingsMenuProviders[type] = settingsMenuProvider;
-			}
-			menus.settingsMenuProviders = settingsMenuProviders;
 
 			var vacuumables = GetNestedModule<Vacuumables>();
 			var miniWorlds = GetNestedModule<MiniWorlds>();
@@ -346,13 +337,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		}
 
-		object GetModule(Type type)
-		{
-			MonoBehaviour module;
-			m_Modules.TryGetValue(type, out module);
-			return module;
-		}
-
 		T GetModule<T>() where T : MonoBehaviour
 		{
 			MonoBehaviour module;
@@ -368,6 +352,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				module = ObjectUtils.AddComponent<T>(gameObject);
 				m_Modules.Add(type, module);
+
+				var settingsMenuProvider = module as ISettingsMenuProvider;
+				if (settingsMenuProvider != null)
+					m_Menus.settingsMenuProviders[type] = settingsMenuProvider;
 
 				foreach (var nested in m_NestedModules.Values)
 				{
@@ -423,7 +411,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							if (map.InterfaceMethods.Length == 1)
 							{
 								var tm = map.TargetMethods[0];
-								tm.Invoke(nestedModule, new object[] { dependency });
+								tm.Invoke(nestedModule, new [] { dependency });
 							}
 						}
 					}

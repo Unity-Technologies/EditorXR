@@ -30,8 +30,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				NearWorkspace = 1 << 2,
 			}
 
+			readonly Dictionary<Type, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<Type, ISettingsMenuProvider>();
+
+			internal Dictionary<Type, ISettingsMenuProvider> settingsMenuProviders { get {return m_SettingsMenuProviders; } }
 			internal List<Type> mainMenuTools { private get; set; }
-			internal Dictionary<Type, ISettingsMenuProvider> settingsMenuProviders { private get; set; }
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<IMenu> m_UpdateVisibilityMenus = new List<IMenu>();

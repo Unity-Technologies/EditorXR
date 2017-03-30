@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var playerModel = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<Renderer>();
 				evr.GetModule<SpatialHashModule>().spatialHash.AddObject(playerModel, playerModel.bounds);
-				evr.GetModule<SnappingModule>().playerHeadObjects = playerModel.GetComponentsInChildren<Renderer>(true);
+				evr.GetModule<SnappingModule>().ignoreList = playerModel.GetComponentsInChildren<Renderer>(true);
 			}
 
 			internal bool IsOverShoulder(Transform rayOrigin)

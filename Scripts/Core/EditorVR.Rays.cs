@@ -88,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var mainMenu = deviceData.mainMenu;
 				var customMenu = deviceData.customMenu;
-				if (mainMenu.visible || customMenu != null && customMenu.visible)
+				if (mainMenu.visible || (customMenu != null && customMenu.visible))
 				{
 					HideRay(rayOrigin);
 					LockRay(rayOrigin, mainMenu);
@@ -218,10 +218,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var intersectionModule = evr.GetModule<IntersectionModule>();
 				var distance = k_DefaultRayLength * Viewer.GetViewerScale();
-				ForEachRayOrigin(rayOrigin =>
-				{
-					intersectionModule.UpdateRaycast(rayOrigin, distance);
-				});
+				ForEachRayOrigin(rayOrigin => { intersectionModule.UpdateRaycast(rayOrigin, distance); });
 			}
 
 			internal void UpdateDefaultProxyRays()
@@ -250,9 +247,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 						else
 						{
-							float dist;
-							if (intersectionModule.GetFirstGameObject(rayOrigin, out dist))
-								distance = dist;
+							float hitDistance;
+							if (intersectionModule.GetFirstGameObject(rayOrigin, out hitDistance))
+								distance = hitDistance;
 						}
 
 						m_DefaultRays[rayOrigin].SetLength(distance);
