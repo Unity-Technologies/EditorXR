@@ -24,9 +24,8 @@ namespace UnityEditor.Experimental.EditorVR
 	[InitializeOnLoad]
 #if UNITY_EDITORVR
 	[RequiresTag(kVRPlayerTag)]
-	partial class EditorVR
+	partial class EditorVR : IEditingContext
 	{
-		public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 		const string kVRPlayerTag = "VRPlayer";
 
 		[SerializeField]
@@ -358,13 +357,14 @@ namespace UnityEditor.Experimental.EditorVR
 
 #if UNITY_EDITOR
 		static EditorVR s_Instance;
-		static InputManager s_InputManager;
 
 		[MenuItem("Window/EditorVR %e", false)]
 		public static void ShowEditorVR()
 		{
 			// Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
-			VRView.GetWindow<VRView>(true, "EditorVR", true);
+			var vrView = VRView.GetWindow<VRView>(true, "EditorVR", true);
+            // for now, we leave the key binding in place and explicilty push EditorVR onto the stack.
+            vrView.PushEditingContext<EditorVR>();
 		}
 
 		[MenuItem("Window/EditorVR %e", true)]
@@ -373,11 +373,18 @@ namespace UnityEditor.Experimental.EditorVR
 			return PlayerSettings.virtualRealitySupported;
 		}
 
-		static EditorVR()
-		{
-			VRView.onEnable += OnEVREnabled;
-			VRView.onDisable += OnEVRDisabled;
+        public void OnSubvertContext()
+        {
+            //for now, nothing to do to subvert.
+        }
 
+        public void OnReviveContext()
+        {
+            //for now, nothing to do to revive.
+        }
+
+        static EditorVR()
+		{
 			if (!PlayerSettings.virtualRealitySupported)
 				Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
 
@@ -396,53 +403,6 @@ namespace UnityEditor.Experimental.EditorVR
 				TagManager.AddLayer(layer);
 		}
 
-		private static void OnEVREnabled()
-		{
-			InitializeInputManager();
-			s_Instance = U.Object.CreateGameObjectWithComponent<EditorVR>();
-		}
-
-		private static void InitializeInputManager()
-		{
-			// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-			// in edit mode we need to handle lifecycle explicitly
-			InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
-			foreach (var m in managers)
-			{
-				U.Object.Destroy(m.gameObject);
-			}
-
-			managers = Resources.FindObjectsOfTypeAll<InputManager>();
-			if (managers.Length == 0)
-			{
-				// Attempt creating object hierarchy via an implicit static constructor call by touching the class
-				InputSystem.ExecuteEvents();
-				managers = Resources.FindObjectsOfTypeAll<InputManager>();
-
-				if (managers.Length == 0)
-				{
-					typeof(InputSystem).TypeInitializer.Invoke(null, null);
-					managers = Resources.FindObjectsOfTypeAll<InputManager>();
-				}
-			}
-			Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
-
-			s_InputManager = managers[0];
-			s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
-			U.Object.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
-
-			// These components were allocating memory every frame and aren't currently used in EditorVR
-			U.Object.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
-			U.Object.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
-			U.Object.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
-			U.Object.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
-		}
-
-		private static void OnEVRDisabled()
-		{
-			U.Object.Destroy(s_Instance.gameObject);
-			U.Object.Destroy(s_InputManager.gameObject);
-		}
 #endif
 	}
 #else
