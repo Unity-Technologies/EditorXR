@@ -62,7 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return evr.GetNestedModule<Tools>().m_LinkedObjects[type].IndexOf(linkedObject) == 0;
 			}
 
-			internal bool IsPermanentTool(Type type)
+			internal static bool IsPermanentTool(Type type)
 			{
 				return typeof(ITransformer).IsAssignableFrom(type)
 					|| typeof(SelectionTool).IsAssignableFrom(type)

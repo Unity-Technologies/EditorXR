@@ -184,8 +184,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var snappingModule = AddModule<SnappingModule>();
 			snappingModule.raycast = intersectionModule.Raycast;
 
-			menus.mainMenuTools = tools.allTools.Where(t => !tools.IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
-
 			var vacuumables = GetNestedModule<Vacuumables>();
 			var miniWorlds = GetNestedModule<MiniWorlds>();
 
@@ -352,10 +350,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				module = ObjectUtils.AddComponent<T>(gameObject);
 				m_Modules.Add(type, module);
-
-				var settingsMenuProvider = module as ISettingsMenuProvider;
-				if (settingsMenuProvider != null)
-					m_Menus.settingsMenuProviders[type] = settingsMenuProvider;
 
 				foreach (var nested in m_NestedModules.Values)
 				{

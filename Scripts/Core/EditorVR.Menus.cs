@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		PinnedToolButton m_PinnedToolButtonPrefab;
 
-		class Menus : Nested, IInterfaceConnector
+		class Menus : Nested, IInterfaceConnector, ILateBindInterfaceMethods<Tools>
 		{
 			[Flags]
 			internal enum MenuHideFlags
@@ -31,9 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 
 			readonly Dictionary<Type, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<Type, ISettingsMenuProvider>();
-
-			internal Dictionary<Type, ISettingsMenuProvider> settingsMenuProviders { get {return m_SettingsMenuProviders; } }
-			internal List<Type> mainMenuTools { private get; set; }
+			List<Type> m_MainMenuTools;
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<IMenu> m_UpdateVisibilityMenus = new List<IMenu>();
@@ -46,17 +44,29 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
+				var settingsMenuProvider = obj as ISettingsMenuProvider;
+				if (settingsMenuProvider != null)
+					m_SettingsMenuProviders[obj.GetType()] = settingsMenuProvider;
+
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)
 				{
-					mainMenu.menuTools = mainMenuTools;
+					mainMenu.menuTools = m_MainMenuTools;
 					mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
-					mainMenu.settingsMenuProviders = settingsMenuProviders;
+					mainMenu.settingsMenuProviders = m_SettingsMenuProviders;
 				}
 			}
 
 			public void DisconnectInterface(object obj)
 			{
+				var settingsMenuProvider = obj as ISettingsMenuProvider;
+				if (settingsMenuProvider != null)
+					m_SettingsMenuProviders.Remove(obj.GetType());
+			}
+
+			public void LateBindInterfaceMethods(Tools provider)
+			{
+				m_MainMenuTools = provider.allTools.Where(t => !Tools.IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 			}
 
 			internal void UpdateMenuVisibilityNearWorkspaces()
