@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+//#define debug
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -10,8 +11,16 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+#if debug
+	[ExecuteInEditMode]
+#endif
 	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef
 	{
+#if debug
+		public Bounds editorBounds;
+		public float width, height, offset;
+#endif
+
 		public event Action closeClicked;
 		public event Action resetSizeClicked;
 
@@ -304,6 +313,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var extents = m_Bounds.extents;
 			var halfWidth = extents.x;
 			var halfDepth = extents.z;
+			var halfZOffset = m_HandleZOffset * -0.5f;
 			var cornerOffset = (m_CornerHandleSize - m_FrameHandleSize) * 0.5f;
 			var scaleOffset = m_CornerHandleSize * 2 - m_FrameHandleSize;
 
@@ -343,9 +353,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				transform = handle.transform;
 				localPosition = transform.localPosition;
 				localPosition.x = -halfWidth;
+				localPosition.z = halfZOffset;
 				transform.localPosition = localPosition;
 
-				transform.localScale = new Vector3(m_FrameHandleSize, m_FrameHandleSize, halfDepth * 2 - scaleOffset);
+				transform.localScale = new Vector3(m_FrameHandleSize, m_FrameHandleSize, halfDepth * 2 - scaleOffset + m_HandleZOffset);
 			}
 
 			foreach (var handle in m_RightHandles)
@@ -353,9 +364,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				transform = handle.transform;
 				localPosition = transform.localPosition;
 				localPosition.x = halfWidth;
+				localPosition.z = halfZOffset;
 				transform.localPosition = localPosition;
 
-				transform.localScale = new Vector3(m_FrameHandleSize, m_FrameHandleSize, halfDepth * 2 - scaleOffset);
+				transform.localScale = new Vector3(m_FrameHandleSize, m_FrameHandleSize, halfDepth * 2 - scaleOffset + m_HandleZOffset);
 			}
 
 			for (int i = 0; i < m_FrontHandles.Length; i++)
@@ -367,8 +379,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				if (i == 1)
 				{
-					var rotationOffset = Quaternion.Lerp(Quaternion.identity, Quaternion.AngleAxis(90, Vector3.left), m_LerpAmount) * Vector3.down * m_FrameHeight;
-					localPosition.y = rotationOffset.y;
+					localPosition.y = -m_FrameHandleSize * 0.5f + (m_FrameHeight - m_FrameHandleSize * 0.5f) * (m_LerpAmount - 1);
 					localPosition.z -= m_HandleZOffset;
 				}
 
@@ -515,12 +526,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void Update()
 		{
+#if debug
+			bounds = editorBounds;
+#endif
+
 			if (!m_DynamicFaceAdjustment)
 				return;
 
 			var currentXRotation = transform.rotation.eulerAngles.x;
+#if !debug
 			if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
 				return; // Exit if no x rotation change occurred for this frame
+#endif
 
 			m_PreviousXRotation = currentXRotation;
 
@@ -536,13 +553,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// offset front panel according to workspace rotation angle
 			const float kAdditionalFrontPanelLerpPadding = 1.1f;
-			const float kFrontPanelYOffset = 0.035f;
-			const float kFrontPanelZOffset = -0.04f;
+			const float kFrontPanelYOffset = 0.03f;
+			const float kFrontPanelZStartOffset = 0.0084f;
+			const float kFrontPanelZEndOffset = -0.05f;
 			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(m_BaseFrontPanelRotation, m_MaxFrontPanelRotation, m_LerpAmount * kAdditionalFrontPanelLerpPadding));
-			m_FrontPanel.localPosition = Vector3.Lerp(Vector3.zero, new Vector3(0, kFrontPanelYOffset, kFrontPanelZOffset), m_LerpAmount);
+#if debug
+			m_FrontPanel.localPosition = Vector3.Lerp(Vector3.forward * offset, new Vector3(0, width, height), m_LerpAmount);
+#else
+			m_FrontPanel.localPosition = Vector3.Lerp(Vector3.forward * kFrontPanelZStartOffset, new Vector3(0, kFrontPanelYOffset, kFrontPanelZEndOffset), m_LerpAmount);
+#endif
 
-			const float kHandleZOffset = 0.09f;
-			m_HandleZOffset = kHandleZOffset * m_LerpAmount;
+			const float kHandleZOffset = 0.1f;
+			m_HandleZOffset = kHandleZOffset * Mathf.Clamp01(m_LerpAmount * kAdditionalFrontPanelLerpPadding);
 
 			UpdateHandles();
 
