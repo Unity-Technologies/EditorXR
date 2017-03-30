@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		PinnedToolButton m_PinnedToolButtonPrefab;
 
-		class Menus : Nested, IInterfaceConnector, ILateBindInterfaceMethods<Tools>
+		class Menus : Nested, IInterfaceConnector
 		{
 			[Flags]
 			internal enum MenuHideFlags
@@ -39,11 +39,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public Menus()
 			{
 				IInstantiateMenuUIMethods.instantiateMenuUI = InstantiateMenuUI;
-			}
-
-			public void LateBindInterfaceMethods(Tools provider)
-			{
-				IMainMenuMethods.isToolActive = provider.IsToolActive;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)

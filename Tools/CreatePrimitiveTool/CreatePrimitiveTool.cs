@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-using System;
-using UnityEditor;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -9,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
-		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale
+		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool
 	{
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
@@ -43,6 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
 			this.ConnectInterfaces(createPrimitiveMenu, rayOrigin);
 			createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
+			createPrimitiveMenu.close = Close;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -134,6 +133,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				consumeControl(standardInput.action);
 			}
+		}
+
+		void Close()
+		{
+			this.SelectTool(rayOrigin, GetType());
 		}
 
 		void OnDestroy()

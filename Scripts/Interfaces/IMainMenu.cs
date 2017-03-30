@@ -25,20 +25,5 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		Transform targetRayOrigin { set; }
 	}
-
-	public static class IMainMenuMethods
-	{
-		internal static Func<Transform, Type, bool> isToolActive { get; set; }
-
-		/// <summary>
-		/// Returns true if the active tool on the given ray origin is of the given type
-		/// </summary>
-		/// <param name="rayOrigin">The ray origin to check</param>
-		/// <param name="type">The tool type to compare</param>
-		public static bool IsToolActive(this IMainMenu obj, Transform rayOrigin, Type type)
-		{
-			return isToolActive(rayOrigin, type);
-		}
-	}
 }
 #endif

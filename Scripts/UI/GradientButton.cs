@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		const string k_MaterialColorTopProperty = "_ColorTop";
 		const string k_MaterialColorBottomProperty = "_ColorBottom";
 
-		public event Action onClick;
+		public event Action click;
 
 		public Sprite iconSprite
 		{
@@ -34,9 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			get { return m_Pressed; }
 			set
 			{
-				if (!m_Highlighted)
-					value = false;
-				else if (value != m_Pressed && value) // proceed only if value is true after previously being false
+				if (value != m_Pressed && value) // proceed only if value is true after previously being false
 				{
 					m_Pressed = value;
 
@@ -54,21 +52,19 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				if (m_Highlighted == value)
 					return;
-				else
-				{
-					// Stop any existing icon highlight coroutines
-					this.StopCoroutine(ref m_IconHighlightCoroutine);
 
-					m_Highlighted = value;
+				// Stop any existing icon highlight coroutines
+				this.StopCoroutine(ref m_IconHighlightCoroutine);
 
-					// Stop any existing begin/end highlight coroutine
-					this.StopCoroutine(ref m_HighlightCoroutine);
+				m_Highlighted = value;
 
-					if (!gameObject.activeInHierarchy)
-						return;
+				// Stop any existing begin/end highlight coroutine
+				this.StopCoroutine(ref m_HighlightCoroutine);
 
-					m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
-				}
+				if (!gameObject.activeInHierarchy)
+					return;
+
+				m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
 			}
 		}
 		bool m_Highlighted;
@@ -472,7 +468,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void OnPointerClick(PointerEventData eventData)
 		{
 			SwapIconSprite();
-			onClick();
+			click();
 		}
 
 		/// <summary>
@@ -526,6 +522,11 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			m_ButtonMaterial.SetColor(k_MaterialColorTopProperty, gradientPair.a);
 			m_ButtonMaterial.SetColor(k_MaterialColorBottomProperty, gradientPair.b);
+		}
+
+		public void UpdateMaterialColors()
+		{
+			SetMaterialColors(m_Highlighted ? highlightGradientPair : normalGradientPair);
 		}
 	}
 }

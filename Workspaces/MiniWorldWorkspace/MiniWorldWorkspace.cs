@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -16,13 +15,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
 	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
 	{
-		static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.001f; // Show more space above ground than below
+		static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.05f; // Show more space above ground than below
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default
 
-		//TODO: replace with dynamic values once spatial hash lands
+		const float k_MinScale = 0.01f;
+		const float k_MaxScale = Mathf.Infinity;
+
 		// Scale slider min/max (maps to referenceTransform uniform scale)
-		const float k_MinZoomScale = 0.5f;
-		const float k_MaxZoomScale = 200f;
+		const float k_ZoomSliderMin = 0.5f;
+		const float k_ZoomSliderMax = 200f;
 
 		[SerializeField]
 		GameObject m_ContentPrefab;
@@ -71,6 +72,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Transform leftRayOrigin { get; set; }
 		public Transform rightRayOrigin { get; set; }
+
+		public float zoomSliderMax
+		{
+			set { m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(value); }
+		}
+
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
@@ -113,8 +120,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var sliderObject = ObjectUtils.Instantiate(m_ZoomSliderPrefab, m_WorkspaceUI.frontPanel, false);
 			m_ZoomSliderUI = sliderObject.GetComponentInChildren<ZoomSliderUI>();
 			m_ZoomSliderUI.sliding += OnSliding;
-			m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(k_MaxZoomScale);
-			m_ZoomSliderUI.zoomSlider.minValue = Mathf.Log10(k_MinZoomScale);
+			m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(k_ZoomSliderMax);
+			m_ZoomSliderUI.zoomSlider.minValue = Mathf.Log10(k_ZoomSliderMin);
 			m_ZoomSliderUI.zoomSlider.direction = Slider.Direction.RightToLeft; // Invert direction for expected ux; zoom in as slider moves left to right
 			m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(k_InitReferenceScale);
 			foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
@@ -144,26 +151,33 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				UpdatePlayerDirectionArrow();
 
 			//Set grid height, deactivate if out of bounds
-			float gridHeight = m_MiniWorld.referenceTransform.position.y / m_MiniWorld.referenceTransform.localScale.y;
+			var referenceTransform = m_MiniWorld.referenceTransform;
+			float gridHeight = referenceTransform.position.y / referenceTransform.localScale.y;
 			var grid = m_MiniWorldUI.grid;
+
+			var inverseRotation = Quaternion.Inverse(referenceTransform.rotation);
+			var gridTransform = grid.transform;
 			if (Mathf.Abs(gridHeight) < contentBounds.extents.y)
 			{
 				grid.gameObject.SetActive(true);
-				grid.transform.localPosition = Vector3.down * gridHeight;
+				gridTransform.localPosition = Vector3.down * gridHeight;
+				gridTransform.localRotation = inverseRotation * Quaternion.AngleAxis(90, Vector3.right);
 			}
 			else
 			{
 				grid.gameObject.SetActive(false);
 			}
 
-			// Update grid material if ClipBox has moved
-			m_GridMaterial.mainTextureScale = new Vector2(
-				m_MiniWorld.referenceTransform.localScale.x * contentBounds.size.x,
-				m_MiniWorld.referenceTransform.localScale.z * contentBounds.size.z);
-			m_GridMaterial.mainTextureOffset =
-				Vector2.one * 0.5f // Center grid
-				+ new Vector2(m_GridMaterial.mainTextureScale.x % 2, m_GridMaterial.mainTextureScale.y % 2) * -0.5f // Scaling offset
-				+ new Vector2(m_MiniWorld.referenceTransform.position.x, m_MiniWorld.referenceTransform.position.z); // Translation offset
+			var referenceScale = referenceTransform.localScale.x;
+			var gridScale = gridTransform.localScale.x;
+
+			m_GridMaterial.SetFloat("_GridScale", referenceScale);
+			m_GridMaterial.SetVector("_GridCenter", -new Vector2(referenceTransform.position.x,
+				referenceTransform.position.z) / (gridScale * referenceScale));
+			inverseRotation = Quaternion.Inverse(m_MiniWorld.transform.rotation);
+			m_GridMaterial.SetMatrix("_InverseRotation", Matrix4x4.TRS(Vector3.zero, inverseRotation, Vector3.one));
+			m_GridMaterial.SetVector("_ClipExtents", m_MiniWorld.localBounds.extents * this.GetViewerScale() * transform.localScale.x);
+			m_GridMaterial.SetVector("_ClipCenter", inverseRotation * m_MiniWorld.transform.position);
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -201,7 +215,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var correctedBounds = new Bounds(contentBounds.center, new Vector3(contentBounds.size.x, contentBounds.size.y, contentBounds.size.z + kOffsetToAccountForFrameSize));
 			m_MiniWorld.localBounds = correctedBounds;
 			m_MiniWorldUI.boundsCube.transform.localScale = correctedBounds.size;
-			m_MiniWorldUI.grid.transform.localScale = new Vector3(correctedBounds.size.x, correctedBounds.size.z, 1);
+			m_MiniWorldUI.grid.transform.localScale = Vector3.one * new Vector2(correctedBounds.size.x, correctedBounds.size.z).magnitude;
 		}
 
 		void OnSliding(float value)
@@ -262,6 +276,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				var scaleFactor = m_StartDistance / rayToRay.magnitude;
 				var currentScale = m_StartScale * scaleFactor;
+				currentScale = Mathf.Clamp(currentScale, k_MinScale, k_MaxScale);
+				scaleFactor = currentScale / m_StartScale;
 
 				m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(referenceTransform.localScale.x);
 

@@ -91,6 +91,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				spatialHash.RemoveObject(renderer);
 			}
 		}
+
+		public Bounds GetMaxBounds()
+		{
+			return spatialHash.GetMaxBounds();
+		}
 	}
 }
 #endif

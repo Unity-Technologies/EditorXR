@@ -57,7 +57,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 			}
 
-			// TODO: Find a better callback for when objects are created or destroyed
 			void OnHierarchyChanged()
 			{
 				m_MiniWorldIgnoreListDirty = true;
@@ -66,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			/// <summary>
 			/// Re-use DefaultProxyRay and strip off objects and components not needed for MiniWorldRays
 			/// </summary>
-			internal Transform InstantiateMiniWorldRay()
+			static Transform InstantiateMiniWorldRay()
 			{
 				var miniWorldRay = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject).transform;
 				ObjectUtils.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());
@@ -385,6 +384,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!miniWorldWorkspace)
 					return;
 
+				miniWorldWorkspace.zoomSliderMax = evr.GetModule<SpatialHashModule>().GetMaxBounds().size.MaxComponent()
+					/ miniWorldWorkspace.contentBounds.size.MaxComponent();
+
 				var miniWorld = miniWorldWorkspace.miniWorld;
 				m_Worlds.Add(miniWorld);
 
@@ -399,7 +401,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 					tester.active = false;
 
-					m_Rays[miniWorldRayOrigin] = new MiniWorlds.MiniWorldRay
+					m_Rays[miniWorldRayOrigin] = new MiniWorldRay
 					{
 						originalRayOrigin = deviceData.rayOrigin,
 						miniWorld = miniWorld,
@@ -432,7 +434,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				//Clean up MiniWorldRays
 				m_Worlds.Remove(miniWorld);
-				var miniWorldRaysCopy = new Dictionary<Transform, MiniWorlds.MiniWorldRay>(m_Rays);
+				var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_Rays);
 				foreach (var ray in miniWorldRaysCopy)
 				{
 					var miniWorldRay = ray.Value;
