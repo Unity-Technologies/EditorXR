@@ -14,15 +14,15 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		}
 
 		[SerializeField]
-		private Transform m_Target;
+		Transform m_Target;
 
 		[SerializeField]
-		private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
+		List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 
 		public bool dragging { get; private set; }
 
-		private Vector3 m_PositionOffset;
-		private Quaternion m_RotationOffset;
+		Vector3 m_PositionOffset;
+		Quaternion m_RotationOffset;
 
 		public Action<Vector3> translate { private get; set; }
 		public Action<Quaternion> rotate { private get; set; }
