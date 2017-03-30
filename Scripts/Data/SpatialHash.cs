@@ -22,11 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
 		public bool GetIntersections(List<T> intersections, Ray ray, float maxDistance = Mathf.Infinity)
 		{
-			if (maxDistance < Mathf.Infinity)
-				m_Octree.GetColliding(intersections, ray);
-			else
-				m_Octree.GetColliding(intersections, ray, maxDistance);
-
+			m_Octree.GetColliding(intersections, ray, maxDistance);
 			return intersections.Count > 0;
 		}
 
