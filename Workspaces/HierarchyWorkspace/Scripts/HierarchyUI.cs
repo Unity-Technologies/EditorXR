@@ -10,7 +10,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			get { return m_ListView; }
 		}
-
 		[SerializeField]
 		HierarchyListViewController m_ListView;
 
@@ -18,7 +17,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			get { return m_ScrollHandle; }
 		}
-
 		[SerializeField]
 		BaseHandle m_ScrollHandle;
 
@@ -26,7 +24,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			get { return m_ListPanel; }
 		}
-
 		[SerializeField]
 		RectTransform m_ListPanel;
 	}

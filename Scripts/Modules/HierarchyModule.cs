@@ -1,11 +1,12 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class HierarchyModule : MonoBehaviour
+	sealed class HierarchyModule : MonoBehaviour, ISelectionChanged
 	{
 		readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
 		HierarchyData m_HierarchyData;
@@ -23,6 +24,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		void OnDisable()
 		{
 			EditorApplication.hierarchyWindowChanged -= UpdateHierarchyData;
+		}
+
+		public void OnSelectionChanged()
+		{
+			UpdateHierarchyData();
 		}
 
 		public void AddConsumer(IUsesHierarchyData consumer)

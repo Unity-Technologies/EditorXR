@@ -10,7 +10,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale
 	{
-		public static readonly Vector3 k_DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
+		public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
+		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
 
 		public const float HandleMargin = -0.15f; // Compensate for base size from frame model
 
@@ -20,11 +21,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected Vector3? m_CustomStartingBounds;
 
-		public static readonly Vector3 k_MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
-
 		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
 		[SerializeField]
-		private Vector3 m_MinBounds = k_MinBounds;
+		private Vector3 m_MinBounds = MinBounds;
 
 		/// <summary>
 		/// Bounding box for workspace content (ignores value.center) 
@@ -124,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-			m_ContentBounds = new Bounds(Vector3.up * k_DefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? k_DefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
+			m_ContentBounds = new Bounds(Vector3.up * DefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? DefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
 			UpdateBounds();
 
 			//Set up DirectManipulator
