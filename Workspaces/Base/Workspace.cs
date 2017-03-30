@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale
 	{
 		public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
+		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
 
 		public const float HandleMargin = -0.15f; // Compensate for base size from frame model
 
@@ -20,11 +21,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected Vector3? m_CustomStartingBounds;
 
-		public static readonly Vector3 k_MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
-
 		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
 		[SerializeField]
-		Vector3 m_MinBounds = k_MinBounds;
+		Vector3 m_MinBounds = MinBounds;
 
 		/// <summary>
 		/// Bounding box for workspace content (ignores value.center) 

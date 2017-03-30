@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using ListView;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -15,6 +16,8 @@ namespace UnityEditor.Experimental.EditorVR
 			get { return instanceID; }
 		}
 		public int instanceID { private get; set; }
+
+		public GameObject gameObject { get { return (GameObject)EditorUtility.InstanceIDToObject(instanceID); } }
 
 		public HashSet<string> types { get; set; }
 
