@@ -11,6 +11,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
 	class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
 	{
+		protected const string k_LockedQuery = "t:" + k_Locked;
+		const string k_Locked = "Locked";
+
 		[SerializeField]
 		GameObject m_ContentPrefab;
 
@@ -24,7 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		GameObject m_CreateEmptyPrefab;
 
 		HierarchyUI m_HierarchyUI;
-		FilterUI m_FilterUI;
+		protected FilterUI m_FilterUI;
 
 		HierarchyData m_SelectedRow;
 
@@ -40,56 +43,66 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					m_HierarchyUI.listView.data = value;
 			}
 		}
+		protected List<HierarchyData> m_HierarchyData;
 
-		List<HierarchyData> m_HierarchyData;
-
-		public List<string> filterList
+		public virtual List<string> filterList
 		{
 			set
 			{
 				m_FilterList = value;
+				m_FilterList.Sort();
+				m_FilterList.Insert(0, k_Locked);
 
 				if (m_FilterUI)
 					m_FilterUI.filterList = value;
 			}
 		}
+		protected List<string> m_FilterList;
 
-		List<string> m_FilterList;
-
-		public string searchQuery { get { return m_FilterUI.searchQuery; } }
+		public virtual string searchQuery { get { return m_FilterUI.searchQuery; } }
 
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(0.375f, k_MinBounds.y, 0.5f);
+			minBounds = new Vector3(0.375f, MinBounds.y, 0.5f);
 			m_CustomStartingBounds = minBounds;
 
 			base.Setup();
 
 			var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 			m_HierarchyUI = contentPrefab.GetComponent<HierarchyUI>();
+			m_HierarchyUI.listView.lockedQueryString = k_LockedQuery;
 			hierarchyData = m_HierarchyData;
 
-			m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
-			foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
+			if (m_FilterPrefab)
 			{
-				this.ConnectInterfaces(mb);
+				m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+				foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
+				{
+					this.ConnectInterfaces(mb);
+				}
+				m_FilterUI.filterList = m_FilterList;
 			}
-			m_FilterUI.filterList = m_FilterList;
 
-			var focusUI = ObjectUtils.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
-			foreach (var mb in focusUI.GetComponentsInChildren<MonoBehaviour>())
+			if (m_FocusPrefab)
 			{
-				this.ConnectInterfaces(mb);
+				var focusUI = ObjectUtils.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
+				foreach (var mb in focusUI.GetComponentsInChildren<MonoBehaviour>())
+				{
+					this.ConnectInterfaces(mb);
+				}
+				focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
 			}
-			focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
 
-			var createEmptyUI = ObjectUtils.Instantiate(m_CreateEmptyPrefab, m_WorkspaceUI.frontPanel, false);
-			foreach (var mb in createEmptyUI.GetComponentsInChildren<MonoBehaviour>())
+			if (m_CreateEmptyPrefab)
 			{
-				this.ConnectInterfaces(mb);
+				var createEmptyUI = ObjectUtils.Instantiate(m_CreateEmptyPrefab, m_WorkspaceUI.frontPanel, false);
+				foreach (var mb in createEmptyUI.GetComponentsInChildren<MonoBehaviour>())
+				{
+					this.ConnectInterfaces(mb);
+				}
+				createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
 			}
-			createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
 
 			var listView = m_HierarchyUI.listView;
 			listView.selectRow = SelectRow;
@@ -133,13 +146,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		static void SelectRow(int index)
 		{
-#if UNITY_EDITOR
 			var gameObject = EditorUtility.InstanceIDToObject(index) as GameObject;
 			if (gameObject && Selection.activeGameObject != gameObject)
 				Selection.activeGameObject = gameObject;
 			else
 				Selection.activeGameObject = null;
-#endif
 		}
 
 		void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

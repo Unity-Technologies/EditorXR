@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class HierarchyListViewController : NestedListViewController<HierarchyData, HierarchyListItem, int>
+	sealed class HierarchyListViewController : NestedListViewController<HierarchyData, HierarchyListItem, int>, IUsesGameObjectLocking, ISetHighlight
 	{
 		const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -25,6 +25,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Material m_ExpandArrowMaterial;
 
+		[SerializeField]
+		Material m_LockIconMaterial;
+
+		[SerializeField]
+		Material m_UnlockIconMaterial;
+
 		Material m_TopDropZoneMaterial;
 		Material m_BottomDropZoneMaterial;
 		float m_DropZoneAlpha;
@@ -32,6 +38,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		float m_VisibleItemHeight;
 
 		int m_SelectedRow;
+
+		readonly List<KeyValuePair<Transform, GameObject>> m_HoveredGameObjects = new List<KeyValuePair<Transform, GameObject>>();
+
+		public string lockedQueryString { private get; set; }
 
 		public Action<int> selectRow { private get; set; }
 
@@ -44,6 +54,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_TextMaterial = Instantiate(m_TextMaterial);
 			m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
+			m_LockIconMaterial = Instantiate(m_LockIconMaterial);
+			m_UnlockIconMaterial = Instantiate(m_UnlockIconMaterial);
 
 			m_BottomDropZoneMaterial = MaterialUtils.GetMaterialClone(m_BottomDropZone.GetComponent<Renderer>());
 			m_BottomDropZoneStartHeight = m_BottomDropZone.transform.localScale.z;
@@ -71,6 +83,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var parentMatrix = transform.worldToLocalMatrix;
 			SetMaterialClip(m_TextMaterial, parentMatrix);
 			SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
+			SetMaterialClip(m_LockIconMaterial, parentMatrix);
+			SetMaterialClip(m_UnlockIconMaterial, parentMatrix);
 
 			m_VisibleItemHeight = 0;
 
@@ -119,8 +133,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (!m_ListItems.TryGetValue(index, out item))
 				item = GetItem(data);
 
+			var go = data.gameObject;
+			var kvp = new KeyValuePair<Transform, GameObject>(item.hoveringRayOrigin, go);
+			if (item.hovering || m_HoveredGameObjects.Remove(kvp))
+			{
+				this.SetHighlight(go, item.hovering, item.hoveringRayOrigin, force: item.hovering);
+
+				if (item.hovering)
+					m_HoveredGameObjects.Add(kvp);
+			}
+
 			var width = bounds.size.x - k_ClipMargin;
-			item.UpdateSelf(width, depth, expanded, index == m_SelectedRow);
+			var locked = this.IsLocked(data.gameObject);
+			item.UpdateSelf(width, depth, expanded, index == m_SelectedRow, locked);
 
 			SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 			SetMaterialClip(item.dropZoneMaterial, transform.worldToLocalMatrix);
@@ -154,13 +179,27 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				var hasChildren = datum.children != null;
 
-				var hasFilterQuery = !string.IsNullOrEmpty(getSearchQuery());
-				var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z;
-				if (hasFilterQuery)
-				{
-					var filterTestPass = datum.types.Any(type => matchesFilter(type));
+				var searchQuery = getSearchQuery();
 
-					if (!filterTestPass) // If this item doesn't match the filter, move on to the next item; do not count
+				var hasLockedQuery = searchQuery.Contains(lockedQueryString);
+				if (hasLockedQuery)
+					searchQuery = searchQuery.Replace(lockedQueryString, string.Empty).Trim();
+				
+				var hasFilterQuery = !string.IsNullOrEmpty(searchQuery);
+
+				var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z;
+
+				if (hasLockedQuery || hasFilterQuery)
+				{
+					var filterTestPass = true;
+
+					if (hasLockedQuery)
+						filterTestPass = this.IsLocked(datum.gameObject);
+					
+					if (hasFilterQuery)
+						filterTestPass &= datum.types.Any(type => matchesFilter(type));
+
+					if (!filterTestPass) // If this item doesn't match, then move on to the next item; do not count
 					{
 						Recycle(index);
 					}
@@ -204,11 +243,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override HierarchyListItem GetItem(HierarchyData data)
 		{
 			var item = base.GetItem(data);
-			item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
+			item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_LockIconMaterial, m_UnlockIconMaterial);
 			item.selectRow = SelectRow;
 
 			item.setRowGrabbed = SetRowGrabbed;
 			item.getGrabbedRow = GetGrabbedRow;
+
+			item.toggleLock = ToggleLock;
 
 			item.toggleExpanded = ToggleExpanded;
 			item.setExpanded = SetExpanded;
@@ -223,6 +264,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			base.SetRowGrabbed(index, rayOrigin, grabbed);
 			m_BottomDropZone.gameObject.SetActive(m_GrabbedRows.Count > 0); // Don't block scroll interaction
+		}
+
+		void ToggleLock(int index)
+		{
+			HierarchyListItem listItem;
+			if (m_ListItems.TryGetValue(index, out listItem))
+			{
+				var data = listItem.data;
+				var go = data.gameObject;
+				this.SetLocked(go, !this.IsLocked(go));
+			}
 		}
 
 		void ToggleExpanded(int index)
@@ -317,7 +369,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var hierarchyData = dropObject as HierarchyData;
 				if (hierarchyData != null)
 				{
-					var gameObject = EditorUtility.InstanceIDToObject(hierarchyData.index) as GameObject;
+					var gameObject = hierarchyData.gameObject;
 					gameObject.transform.SetParent(null);
 					gameObject.transform.SetAsFirstSibling();
 				}
@@ -328,7 +380,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var hierarchyData = dropObject as HierarchyData;
 				if (hierarchyData != null)
 				{
-					var gameObject = EditorUtility.InstanceIDToObject(hierarchyData.index) as GameObject;
+					var gameObject = hierarchyData.gameObject;
 					gameObject.transform.SetParent(null);
 					gameObject.transform.SetAsLastSibling();
 				}
@@ -376,6 +428,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			ObjectUtils.Destroy(m_TextMaterial);
 			ObjectUtils.Destroy(m_ExpandArrowMaterial);
+			ObjectUtils.Destroy(m_LockIconMaterial);
+			ObjectUtils.Destroy(m_UnlockIconMaterial);
 		}
 	}
 }

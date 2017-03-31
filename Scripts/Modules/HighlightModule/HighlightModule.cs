@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class HighlightModule : MonoBehaviour
+	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		[SerializeField]
 		Material m_DefaultHighlightMaterial;
@@ -86,9 +86,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			set.Add(rayOrigin);
 		}
 
-		public void SetHighlight(GameObject go, bool active, Transform rayOrigin = null, Material material = null)
+		public void SetHighlight(GameObject go, bool active, Transform rayOrigin = null, Material material = null, bool force = false)
 		{
-			if (go == null || go.isStatic)
+			if (go == null)
+				return;
+
+			if (!force && active && this.IsLocked(go))
 				return;
 
 			if (material == null)
@@ -116,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (active) // Highlight
 			{
 				// Do not highlight if the selection contains this object or any of its parents
-				if (Selection.transforms.Any(selection => go.transform == selection || go.transform.IsChildOf(selection)))
+				if (!force && Selection.transforms.Any(selection => go.transform == selection || go.transform.IsChildOf(selection)))
 					return;
 
 				HashSet<GameObject> gameObjects;
@@ -129,10 +132,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 			else // Unhighlight
 			{
-				HashSet<GameObject> gameObjects;
-				if (m_Highlights.TryGetValue(material, out gameObjects))
+				if (force)
 				{
-					gameObjects.Remove(go);
+					// A force removal removes the GameObject regardless of how it was highlighted (e.g. with a specific hand)
+					foreach (var gameObjects in m_Highlights.Values)
+					{
+						gameObjects.Remove(go);
+					}
+				}
+				else
+				{
+					HashSet<GameObject> gameObjects;
+					if (m_Highlights.TryGetValue(material, out gameObjects))
+					{
+						gameObjects.Remove(go);
+					}
 				}
 			}
 		}
