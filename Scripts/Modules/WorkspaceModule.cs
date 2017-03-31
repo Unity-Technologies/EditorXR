@@ -39,13 +39,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		internal static List<Type> workspaceTypes { get; private set; }
 
+		public bool preserveWorkspaces { get; set; }
+
 		static WorkspaceModule()
 		{
 			workspaceTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 		}
 
+		public WorkspaceModule()
+		{
+			preserveWorkspaces = true;
+		}
+
 		public object OnSerializePreferences()
 		{
+			if (!preserveWorkspaces)
+				return null;
+
 			var preferences = new Preferences();
 			var workspaceLayouts = preferences.workspaceLayouts;
 			foreach (var workspace in workspaces)
@@ -75,6 +85,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void OnDeserializePreferences(object obj)
 		{
+			if (!preserveWorkspaces)
+				return;
+
 			var preferences = (Preferences)obj;
 
 			foreach (var workspaceLayout in preferences.workspaceLayouts)

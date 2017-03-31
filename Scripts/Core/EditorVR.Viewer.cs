@@ -29,12 +29,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal IPreviewCamera customPreviewCamera { get; private set; }
 
+			public bool preserveCameraRig { get; set; }
+
 			public Viewer()
 			{
 				IMoveCameraRigMethods.moveCameraRig = MoveCameraRig;
 				IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
 				IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
 				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
+
+				preserveCameraRig = true;
 			}
 
 			internal override void OnDestroy()
@@ -62,6 +66,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public object OnSerializePreferences()
 			{
+				if (!preserveCameraRig)
+					return null;
+
 				var cameraRig = CameraUtils.GetCameraRig();
 
 				var preferences = new Preferences();
@@ -73,6 +80,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void OnDeserializePreferences(object obj)
 			{
+				if (!preserveCameraRig)
+					return;
+
 				var preferences = (Preferences)obj;
 
 				var cameraRig = CameraUtils.GetCameraRig();

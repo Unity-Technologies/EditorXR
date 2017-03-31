@@ -126,6 +126,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			AddModule<ProjectFolderModule>();
 
 			m_Viewer = GetNestedModule<Viewer>();
+			m_Viewer.preserveCameraRig = preserveLayout;
 			m_Viewer.InitializeCamera();
 
 			var tools = GetNestedModule<Tools>();
@@ -185,6 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var miniWorlds = GetNestedModule<MiniWorlds>();
 
 			var workspaceModule = AddModule<WorkspaceModule>();
+			workspaceModule.preserveWorkspaces = preserveLayout;
 			workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
 			workspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
 			workspaceModule.workspaceCreated += (workspace) => { m_DeviceInputModule.UpdatePlayerHandleMaps(); };
@@ -241,10 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				yield return null;
 			}
 
-			if (preserveLayout)
-				GetModule<SerializedPreferencesModule>().DeserializePreferences(serializedPreferences);
-			else
-				serializedPreferences = string.Empty;
+			GetModule<SerializedPreferencesModule>().DeserializePreferences(serializedPreferences);
 		}
 
 		void ClearDeveloperConsoleIfNecessary()
@@ -301,8 +300,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void Shutdown()
 		{
-			if (preserveLayout)
-				serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
+			serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
 		}
 
 		void OnDestroy()
