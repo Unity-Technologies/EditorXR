@@ -1,18 +1,31 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Gives decorated class access to direct selections
 	/// </summary>
 	public interface IUsesDirectSelection
 	{
+	}
+
+	public static class IUsesDirectSelectionMethods
+	{
+		internal delegate Dictionary<Transform, DirectSelectionData> GetDirectSelectionDelegate();
+
+		internal static GetDirectSelectionDelegate getDirectSelection { get; set; }
+
 		/// <summary>
-		/// ConnectInterfaces provides a delegate which can be called to get a dictionary of the current direct selection
-		/// Key is the rayOrigin used to select the object
-		/// Value is a data class containing the selected object and metadata
+		/// Returns a dictionary of direct selections
 		/// </summary>
-		Func<Dictionary<Transform, DirectSelectionData>> getDirectSelection { set; }
+		/// <returns>Dictionary (K,V) where K = rayOrigin used to select the object and V = info about the direct selection</returns>
+		public static Dictionary<Transform, DirectSelectionData> GetDirectSelection(this IUsesDirectSelection obj)
+		{
+			return getDirectSelection();
+		}
 	}
 }
+#endif

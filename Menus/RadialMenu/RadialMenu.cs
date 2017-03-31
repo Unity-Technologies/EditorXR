@@ -1,12 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap
+	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap
 	{
 		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]
@@ -65,22 +65,20 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		public Transform rayOrigin { private get; set; }
 
-		public InstantiateUIDelegate instantiateUI { get; set; }
-
 		public Transform menuOrigin { get; set; }
 
 		public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
 
 		void Start()
 		{
-			m_RadialMenuUI = instantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
+			m_RadialMenuUI = this.InstantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
 			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_RadialMenuUI.actions = menuActions;
 			m_RadialMenuUI.Setup();
 			m_RadialMenuUI.visible = m_Visible;
 		}
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var radialMenuInput = (RadialMenuInput)input;
 			if (radialMenuInput == null || !visible)
@@ -114,3 +112,4 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif

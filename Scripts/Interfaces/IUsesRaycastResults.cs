@@ -1,17 +1,29 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
-    /// <summary>
-    /// Gives decorated class access to hover/intersection detection
-    /// </summary>
-    public interface IUsesRaycastResults
+	/// <summary>
+	/// Gives decorated class access to hover/intersection detection
+	/// </summary>
+	public interface IUsesRaycastResults
 	{
-	    /// <summary>
-	    /// Delegate used to test hover/intersection
-	    /// Transform = object in test
-	    /// Returns the first GameObject being hovered over, or intersected with
-	    /// </summary>
-	    Func<Transform, GameObject> getFirstGameObject { set; }
+	}
+
+	public static class IUsesRaycastResultsMethods
+	{
+		internal static Func<Transform, GameObject> getFirstGameObject { get; set; }
+
+		/// <summary>
+		/// Method used to test hover/intersection
+		/// Returns the first GameObject being hovered over, or intersected with
+		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin for intersection purposes</param>
+		public static GameObject GetFirstGameObject(this IUsesRaycastResults obj, Transform rayOrigin)
+		{
+			return getFirstGameObject(rayOrigin);
+		}
 	}
 }
+#endif

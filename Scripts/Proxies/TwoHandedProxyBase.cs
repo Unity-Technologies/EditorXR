@@ -1,14 +1,17 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Input;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.Experimental.EditorVR.Proxies
+namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	public abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
+	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
 	{
-		const int kRendererQueue = 9000;
+		const int k_RendererQueue = 9000;
 
 		[SerializeField]
 		protected GameObject m_LeftHandProxyPrefab;
@@ -18,6 +21,8 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 
 		[SerializeField]
 		protected PlayerInput m_PlayerInput;
+
+		internal IInputToEvents m_InputToEvents;
 
 		public Transform leftHand
 		{
@@ -40,7 +45,14 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 
 		public virtual TrackedObject trackedObjectInput { protected get; set; }
 
-		public virtual bool active { get { return true; } }
+		public bool active { get { return m_InputToEvents.active; } }
+
+		public event Action activeChanged
+		{
+			add { m_InputToEvents.activeChanged += value; }
+			remove { m_InputToEvents.activeChanged -= value; }
+		}
+
 
 		public virtual bool hidden
 		{
@@ -60,11 +72,12 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		public Dictionary<Transform, Transform> menuOrigins { get; set; }
 		public Dictionary<Transform, Transform> alternateMenuOrigins { get; set; }
 		public Dictionary<Transform, Transform> previewOrigins { get; set; }
+		public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
 
 		public virtual void Awake()
 		{
-			m_LeftHand = U.Object.Instantiate(m_LeftHandProxyPrefab, transform).transform;
-			m_RightHand = U.Object.Instantiate(m_RightHandProxyPrefab, transform).transform;
+			m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
+			m_RightHand = ObjectUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;
 			var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
 			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 
@@ -94,6 +107,12 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 				{ leftProxyHelper.rayOrigin, leftProxyHelper.previewOrigin },
 				{ rightProxyHelper.rayOrigin, rightProxyHelper.previewOrigin }
 			};
+
+			fieldGrabOrigins = new Dictionary<Transform, Transform>
+			{
+				{ leftProxyHelper.rayOrigin, leftProxyHelper.fieldGrabOrigin },
+				{ rightProxyHelper.rayOrigin, rightProxyHelper.fieldGrabOrigin }
+			};
 		}
 
 		public virtual IEnumerator Start()
@@ -115,20 +134,20 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 
 			foreach (var r in renderers)
 			{
-				m_Materials.AddRange(U.Material.CloneMaterials(r));
+				m_Materials.AddRange(MaterialUtils.CloneMaterials(r));
 			}
 
 			// Move controllers up into EVR range, so they render properly over our UI (e.g. manipulators)
 			foreach (var m in m_Materials)
 			{
-				m.renderQueue = kRendererQueue;
+				m.renderQueue = k_RendererQueue;
 			}
 		}
 
 		public virtual void OnDestroy()
 		{
 			foreach (var m in m_Materials)
-				U.Object.Destroy(m);
+				ObjectUtils.Destroy(m);
 		}
 
 		public virtual void Update()
@@ -144,3 +163,4 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		}
 	}
 }
+#endif

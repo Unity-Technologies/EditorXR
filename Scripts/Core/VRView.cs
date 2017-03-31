@@ -5,8 +5,8 @@ using UnityEngine.Assertions;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Utilities;
 using System.Reflection;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine.VR;
 using UnityEngine.InputNew;
 
@@ -15,15 +15,15 @@ using Valve.VR;
 #endif
 using Object = UnityEngine.Object;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	[InitializeOnLoad]
-	internal class VRView : EditorWindow
+	sealed class VRView : EditorWindow
 	{
-		const string kShowDeviceView = "VRView.ShowDeviceView";
-		const string kUseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
-		const string kLaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
-		const float kHMDActivityTimeout = 3f; // in seconds
+		const string k_ShowDeviceView = "VRView.ShowDeviceView";
+		const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
+		const string k_LaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
+		const float k_HMDActivityTimeout = 3f; // in seconds
 
 		DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 
@@ -53,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private static VRView s_ActiveView;
 
-		private Transform m_CameraPivot;
+		private Transform m_CameraRig;
 		private Quaternion m_LastHeadRotation = Quaternion.identity;
 		private float m_TimeSinceLastHMDChange;
 		private bool m_LatchHMDValues;
@@ -62,13 +62,13 @@ namespace UnityEditor.Experimental.EditorVR
 		bool m_VRInitialized;
 		bool m_UseCustomPreviewCamera;
 
-		public static Transform viewerPivot
+		public static Transform cameraRig
 		{
 			get
 			{
 				if (s_ActiveView)
 				{
-					return s_ActiveView.m_CameraPivot;
+					return s_ActiveView.m_CameraRig;
 				}
 
 				return null;
@@ -123,8 +123,8 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 
-		public static event Action<EditorWindow> onGUIDelegate = delegate {};
-		public static event Action onHMDReady = delegate {};
+		public static event Action<EditorWindow> onGUIDelegate;
+		public static event Action onHMDReady;
 
 		public static VRView GetWindow()
 		{
@@ -133,9 +133,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 		public static Coroutine StartCoroutine(IEnumerator routine)
 		{
-			if (s_ActiveView && s_ActiveView.m_CameraPivot)
+			if (s_ActiveView && s_ActiveView.m_CameraRig)
 			{
-				var mb = s_ActiveView.m_CameraPivot.GetComponent<EditorMonoBehaviour>();
+				var mb = s_ActiveView.m_CameraRig.GetComponent<EditorMonoBehaviour>();
 				return mb.StartCoroutine(routine);
 			}
 
@@ -152,10 +152,10 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private static void ReopenOnExitPlaymode()
 		{
-			bool launch = EditorPrefs.GetBool(kLaunchOnExitPlaymode, false);
+			bool launch = EditorPrefs.GetBool(k_LaunchOnExitPlaymode, false);
 			if (!launch || !EditorApplication.isPlaying)
 			{
-				EditorPrefs.DeleteKey(kLaunchOnExitPlaymode);
+				EditorPrefs.DeleteKey(k_LaunchOnExitPlaymode);
 				EditorApplication.update -= ReopenOnExitPlaymode;
 				if (launch)
 					GetWindow();
@@ -171,26 +171,27 @@ namespace UnityEditor.Experimental.EditorVR
 			autoRepaintOnSceneChange = true;
 			s_ActiveView = this;
 
-			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCamera", kDefaultHideFlags, typeof(Camera));
+			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave, typeof(Camera));
 			m_Camera = cameraGO.GetComponent<Camera>();
+			m_Camera.useOcclusionCulling = false;
 			m_Camera.enabled = false;
 			m_Camera.cameraType = CameraType.VR;
 
-			GameObject pivotGO = EditorUtility.CreateGameObjectWithHideFlags("EditorVRCameraPivot", kDefaultHideFlags, typeof(EditorMonoBehaviour));
-			m_CameraPivot = pivotGO.transform;
-			m_Camera.transform.parent = m_CameraPivot;
+			GameObject rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", HideFlags.HideAndDontSave, typeof(EditorMonoBehaviour));
+			m_CameraRig = rigGO.transform;
+			m_Camera.transform.parent = m_CameraRig;
 			m_Camera.nearClipPlane = 0.01f;
 			m_Camera.farClipPlane = 1000f;
 
 			// Generally, we want to be at a standing height, so default to that
 			const float kHeadHeight = 1.7f;
-			Vector3 position = m_CameraPivot.position;
+			Vector3 position = m_CameraRig.position;
 			position.y = kHeadHeight;
-			m_CameraPivot.position = position;
-			m_CameraPivot.rotation = Quaternion.identity;
+			m_CameraRig.position = position;
+			m_CameraRig.rotation = Quaternion.identity;
 
-			m_ShowDeviceView = EditorPrefs.GetBool(kShowDeviceView, false);
-			m_UseCustomPreviewCamera = EditorPrefs.GetBool(kUseCustomPreviewCamera, false);
+			m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
+			m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
 
 			// Disable other views to increase rendering performance for EditorVR
 			SetOtherViewsEnabled(false);
@@ -206,29 +207,29 @@ namespace UnityEditor.Experimental.EditorVR
 #if ENABLE_STEAMVR_INPUT
 			m_VRInitialized |= (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
 #endif
-            InitializeInputManager();
+			InitializeInputManager();
 		}
 
 		public void OnDisable()
 		{
-            GameObject currentContext;
-            while (FindCurrentContext(out currentContext))
-            {
-                PopEditingContext();
-            }
-            U.Object.Destroy(s_InputManager.gameObject);
+			GameObject currentContext;
+			while (FindCurrentContext(out currentContext))
+			{
+				PopEditingContext();
+			}
+			ObjectUtils.Destroy(s_InputManager.gameObject);
 
-            EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
+			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
 			VRSettings.StopRenderingToDevice();
 
-			EditorPrefs.SetBool(kShowDeviceView, m_ShowDeviceView);
-			EditorPrefs.SetBool(kUseCustomPreviewCamera, m_UseCustomPreviewCamera);
+			EditorPrefs.SetBool(k_ShowDeviceView, m_ShowDeviceView);
+			EditorPrefs.SetBool(k_UseCustomPreviewCamera, m_UseCustomPreviewCamera);
 
 			SetOtherViewsEnabled(true);
 
-			if (m_CameraPivot)
-				DestroyImmediate(m_CameraPivot.gameObject, true);
+			if (m_CameraRig)
+				DestroyImmediate(m_CameraRig.gameObject, true);
 
 			Assert.IsNotNull(s_ActiveView, "EditorVR should have an active view");
 			s_ActiveView = null;
@@ -249,7 +250,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 			if (Quaternion.Angle(headRotation, m_LastHeadRotation) > 0.1f)
 			{
-				if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
+				if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + k_HMDActivityTimeout)
 					SetSceneViewsEnabled(false);
 
 				// Keep track of HMD activity by tracking head rotations
@@ -263,7 +264,8 @@ namespace UnityEditor.Experimental.EditorVR
 				if (!m_HMDReady)
 				{
 					m_HMDReady = true;
-					onHMDReady();
+					if (onHMDReady != null)
+						onHMDReady();
 				}
 			}
 
@@ -276,7 +278,7 @@ namespace UnityEditor.Experimental.EditorVR
 			bool useSRGBTarget = QualitySettings.activeColorSpace == ColorSpace.Linear;
 
 			int msaa = Mathf.Max(1, QualitySettings.antiAliasing);
-			
+
 			RenderTextureFormat format = hdr ? RenderTextureFormat.ARGBHalf : RenderTextureFormat.ARGB32;
 			if (renderTexture != null)
 			{
@@ -319,7 +321,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 		private void OnGUI()
 		{
-			onGUIDelegate(this);
+			if (onGUIDelegate != null)
+				onGUIDelegate(this);
+
 			var e = Event.current;
 			if (e.type != EventType.ExecuteCommand && e.type != EventType.used)
 			{
@@ -329,7 +333,7 @@ namespace UnityEditor.Experimental.EditorVR
 				var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
 				PrepareCameraTargetTexture(cameraRect);
 
-				m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : Tools.visibleLayers;
+				m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : UnityEditor.Tools.visibleLayers;
 
 				// Draw camera
 				bool pushedGUIClip;
@@ -374,7 +378,7 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			if (EditorApplication.isPlayingOrWillChangePlaymode)
 			{
-				EditorPrefs.SetBool(kLaunchOnExitPlaymode, true);
+				EditorPrefs.SetBool(k_LaunchOnExitPlaymode, true);
 				Close();
 			}
 		}
@@ -395,7 +399,7 @@ namespace UnityEditor.Experimental.EditorVR
 			UpdateCamera();
 
 			// Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
-			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + kHMDActivityTimeout)
+			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + k_HMDActivityTimeout)
 				SetSceneViewsEnabled(true);
 		}
 
@@ -422,111 +426,109 @@ namespace UnityEditor.Experimental.EditorVR
 			SetSceneViewsEnabled(enabled);
 		}
 
-        static InputManager s_InputManager;
-        public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
+		static InputManager s_InputManager;
+		public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
 
-        private static void InitializeInputManager()
-        {
-            // HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-            // in edit mode we need to handle lifecycle explicitly
-            InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
-            foreach (var m in managers)
-            {
-                U.Object.Destroy(m.gameObject);
-            }
+		private static void InitializeInputManager()
+		{
+			// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
+			// in edit mode we need to handle lifecycle explicitly
+			InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
+			foreach (var m in managers)
+			{
+				ObjectUtils.Destroy(m.gameObject);
+			}
 
-            managers = Resources.FindObjectsOfTypeAll<InputManager>();
-            if (managers.Length == 0)
-            {
-                // Attempt creating object hierarchy via an implicit static constructor call by touching the class
-                InputSystem.ExecuteEvents();
-                managers = Resources.FindObjectsOfTypeAll<InputManager>();
+			managers = Resources.FindObjectsOfTypeAll<InputManager>();
+			if (managers.Length == 0)
+			{
+				// Attempt creating object hierarchy via an implicit static constructor call by touching the class
+				InputSystem.ExecuteEvents();
+				managers = Resources.FindObjectsOfTypeAll<InputManager>();
 
-                if (managers.Length == 0)
-                {
-                    typeof(InputSystem).TypeInitializer.Invoke(null, null);
-                    managers = Resources.FindObjectsOfTypeAll<InputManager>();
-                }
-            }
-            Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
+				if (managers.Length == 0)
+				{
+					typeof(InputSystem).TypeInitializer.Invoke(null, null);
+					managers = Resources.FindObjectsOfTypeAll<InputManager>();
+				}
+			}
+			Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
 
-            s_InputManager = managers[0];
-            s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
-            U.Object.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
+			s_InputManager = managers[0];
+			s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
+			ObjectUtils.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
 
-            // These components were allocating memory every frame and aren't currently used in EditorVR
-            U.Object.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
-            U.Object.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
-            U.Object.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
-            U.Object.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
-        }
-
-
-        /// <summary>
-        /// The context stack.  We hold game objects.  But all are expected to have a MonoBehavior that implements IEditingContext.
-        /// </summary>
-        private List<GameObject> m_ContextStack = new List<GameObject>();
-
-        /// <summary>
-        /// Attempt to find and fetch the current context.
-        /// </summary>
-        /// <param name="current">The current context.  Or null if there is none.</param>
-        /// <returns>True if there is a current context.  False otherwise.</returns>
-        private bool FindCurrentContext(out GameObject current)
-        {
-            if (m_ContextStack.Count == 0)
-            {
-                current = null;
-                return false;
-            } else
-            {
-                current = m_ContextStack[m_ContextStack.Count - 1];
-                return true;
-            }
-        }
-
-        public GameObject PushEditingContext<T,C>(C config) where T: MonoBehaviour, IEditingContext<C>
-        {
-            var newContext = PushEditingContext<T>();
-            newContext.GetComponent<T>().Configure(config);
-            return newContext;
-        }
-
-        public GameObject PushEditingContext<T>() where T: MonoBehaviour, IEditingContext
-        {
-            //if there is a current context, we subvert and deactivate it.
-            GameObject previousContext;
-            if (FindCurrentContext(out previousContext))
-            {
-                previousContext.GetComponent<IEditingContext>().OnSubvertContext();
-                previousContext.SetActive(false);
-            }
-
-            //create the new context and add it to the stack.
-            GameObject newContext = U.Object.CreateGameObjectWithComponent<T>().gameObject;
-            m_ContextStack.Add(newContext);
-            return newContext;
-        }
-
-        public void PopEditingContext()
-        {
-            GameObject poppedContext;
-            if (FindCurrentContext(out poppedContext))
-            {
-                poppedContext.SetActive(false);
-                m_ContextStack.RemoveAt(m_ContextStack.Count - 1);
-                U.Object.Destroy(poppedContext);
-            }
-            GameObject revivedContext;
-            if (FindCurrentContext(out revivedContext))
-            {
-                revivedContext.SetActive(true);
-                revivedContext.GetComponent<IEditingContext>().OnReviveContext();
-            }
-        }
+			// These components were allocating memory every frame and aren't currently used in EditorVR
+			ObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
+			ObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
+			ObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
+			ObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
+		}
 
 
+		/// <summary>
+		/// The context stack.  We hold game objects.  But all are expected to have a MonoBehavior that implements IEditingContext.
+		/// </summary>
+		private List<GameObject> m_ContextStack = new List<GameObject>();
 
+		/// <summary>
+		/// Attempt to find and fetch the current context.
+		/// </summary>
+		/// <param name="current">The current context.  Or null if there is none.</param>
+		/// <returns>True if there is a current context.  False otherwise.</returns>
+		private bool FindCurrentContext(out GameObject current)
+		{
+			if (m_ContextStack.Count == 0)
+			{
+				current = null;
+				return false;
+			}
+			else
+			{
+				current = m_ContextStack[m_ContextStack.Count - 1];
+				return true;
+			}
+		}
+
+		public GameObject PushEditingContext<T, C>(C config) where T : MonoBehaviour, IEditingContext<C>
+		{
+			var newContext = PushEditingContext<T>();
+			newContext.GetComponent<T>().Configure(config);
+			return newContext;
+		}
+
+		public GameObject PushEditingContext<T>() where T : MonoBehaviour, IEditingContext
+		{
+			//if there is a current context, we subvert and deactivate it.
+			GameObject previousContext;
+			if (FindCurrentContext(out previousContext))
+			{
+				previousContext.GetComponent<IEditingContext>().OnSubvertContext();
+				previousContext.SetActive(false);
+			}
+
+			//create the new context and add it to the stack.
+			GameObject newContext = ObjectUtils.CreateGameObjectWithComponent<T>().gameObject;
+			m_ContextStack.Add(newContext);
+			return newContext;
+		}
+
+		public void PopEditingContext()
+		{
+			GameObject poppedContext;
+			if (FindCurrentContext(out poppedContext))
+			{
+				poppedContext.SetActive(false);
+				m_ContextStack.RemoveAt(m_ContextStack.Count - 1);
+				ObjectUtils.Destroy(poppedContext);
+			}
+			GameObject revivedContext;
+			if (FindCurrentContext(out revivedContext))
+			{
+				revivedContext.SetActive(true);
+				revivedContext.GetComponent<IEditingContext>().OnReviveContext();
+			}
+		}
 	}
 
 }

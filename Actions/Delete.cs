@@ -1,25 +1,26 @@
-﻿using System;
-using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Actions
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
-	[ActionMenuItem("Delete", ActionMenuItemAttribute.kDefaultActionSectionName, 7)]
-	public class Delete : BaseAction, IUsesSpatialHash
+	[ActionMenuItem("Delete", ActionMenuItemAttribute.DefaultActionSectionName, 7)]
+	sealed class Delete : BaseAction, IDeleteSceneObject
 	{
-		public Action<GameObject> addToSpatialHash { get; set; }
-		public Action<GameObject> removeFromSpatialHash { get; set; }
+		public Action<GameObject> addToSpatialHash { private get; set; }
+		public Action<GameObject> removeFromSpatialHash { private get; set; }
 
 		public override void ExecuteAction()
 		{
 			var gameObjects = Selection.gameObjects;
 			foreach (var go in gameObjects)
 			{
-				removeFromSpatialHash(go);
-				U.Object.Destroy(go);
+				this.DeleteSceneObject(go);
 			}
 
 			Selection.activeGameObject = null;
 		}
 	}
 }
+#endif

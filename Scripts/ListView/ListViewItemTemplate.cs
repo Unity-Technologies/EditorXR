@@ -1,12 +1,13 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using System.Collections.Generic;
 
 namespace ListView
 {
-	public class ListViewItemTemplate
+	public class ListViewItemTemplate<TItem>
 	{
 		public readonly GameObject prefab;
-		public readonly List<MonoBehaviour> pool = new List<MonoBehaviour>();
+		public readonly List<TItem> pool = new List<TItem>();
 
 		public ListViewItemTemplate(GameObject prefab)
 		{
@@ -16,3 +17,4 @@ namespace ListView
 		}
 	}
 }
+#endif

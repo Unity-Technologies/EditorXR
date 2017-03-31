@@ -1,7 +1,10 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Actions
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("SaveScene", "Scene")]
-	public class SaveScene : BaseAction
+	sealed class SaveScene : BaseAction
 	{
 		public override void ExecuteAction()
 		{
@@ -9,3 +12,4 @@
 		}
 	}
 }
+#endif

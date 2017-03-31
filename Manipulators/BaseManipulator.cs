@@ -1,21 +1,26 @@
-﻿using System;
-using UnityEngine.Experimental.EditorVR.Tools;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Manipulators
+namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	public class BaseManipulator : MonoBehaviour, IManipulator
+	class BaseManipulator : MonoBehaviour, IManipulator
 	{
-		public bool dragging { get; protected set; }
+		protected const float k_BaseManipulatorSize = 0.3f;
 
-		protected const float kBaseManipulatorSize = 0.5f;
+		public bool adjustScaleForCamera { get; set; }
 
 		public Action<Vector3> translate { protected get; set; }
 		public Action<Quaternion> rotate { protected get; set; }
 		public Action<Vector3> scale { protected get; set; }
+		public bool dragging { get; protected set; }
+
+		public event Action dragStarted;
 
 		protected virtual void OnEnable()
 		{
-			Camera.onPreRender += OnCameraPreRender;
+			if (adjustScaleForCamera)
+				Camera.onPreRender += OnCameraPreRender;
 		}
 
 		protected virtual void OnDisable()
@@ -36,7 +41,14 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 			var manipulatorPosition = worldToCameraMatrix.MultiplyPoint3x4(transform.position);
 			cameraPosition = worldToCameraMatrix.MultiplyPoint3x4(cameraPosition);
 			var delta = worldToCameraMatrix.inverse.MultiplyPoint3x4(cameraPosition - manipulatorPosition) - originalCameraPosition;
-			transform.localScale = Vector3.one * delta.magnitude * kBaseManipulatorSize;
+			transform.localScale = Vector3.one * delta.magnitude * k_BaseManipulatorSize;
+		}
+
+		protected void OnDragStarted()
+		{
+			if (dragStarted != null)
+				dragStarted();
 		}
 	}
 }
+#endif

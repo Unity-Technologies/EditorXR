@@ -1,18 +1,41 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
-    /// <summary>
-    /// Gives decorated class the ability to select tools from a menu
-    /// </summary>
+	/// <summary>
+	/// Gives decorated class the ability to select tools from a menu
+	/// </summary>
 	public interface ISelectTool
 	{
+	}
+
+	public static class ISelectToolMethods
+	{
+		internal static Func<Transform, Type, bool> selectTool { get; set; }
+		internal static Func<Transform, Type, bool> isToolActive { get; set; }
+
 		/// <summary>
-		/// Delegate used to select tools from the menu
-		/// Transform = ray origin
-		/// Type = type of tool
+		/// Method used to select tools from the menu
 		/// Returns whether the tool was successfully selected
 		/// </summary>
-		Func<Transform, Type, bool> selectTool { set; }
+		/// <param name="rayOrigin">The rayOrigin that the tool should spawn under</param>
+		/// <param name="toolType">Type of tool to spawn/select</param>
+		public static bool SelectTool(this ISelectTool obj, Transform rayOrigin, Type toolType)
+		{
+			return selectTool(rayOrigin, toolType);
+		}
+
+		/// <summary>
+		/// Returns true if the active tool on the given ray origin is of the given type
+		/// </summary>
+		/// <param name="rayOrigin">The ray origin to check</param>
+		/// <param name="type">The tool type to compare</param>
+		public static bool IsToolActive(this ISelectTool obj, Transform rayOrigin, Type type)
+		{
+			return isToolActive(rayOrigin, type);
+		}
 	}
 }
+#endif

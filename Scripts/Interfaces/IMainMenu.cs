@@ -1,8 +1,9 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// The main menu that can be shown on device proxies
@@ -23,13 +24,6 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		/// The ray origin that spawned the menu and will be used for node-specific operations (e.g. selecting a tool)
 		/// </summary>
 		Transform targetRayOrigin { set; }
-
-		/// <summary>
-		/// Returns true if the active tool on the given ray origin is of the given type
-		/// Transform: Ray origin to check
-		/// Type: Type with which to compare
-		/// Returns whether the active tool is of the same type
-		/// </summary>
-		Func<Transform, Type, bool> isToolActive { set; }
 	}
 }
+#endif

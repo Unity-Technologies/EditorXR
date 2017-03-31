@@ -3,12 +3,13 @@
 	Properties
 	{
 		_StencilRef("StencilRef", Int) = 3
+		_ClipExtents("Clip Extents", Vector) = (1,1,1,0)
 	}
 
 	SubShader
 	{
-		Tags { "Queue"="Overlay+5100" "LightMode" = "Always" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
-		ZWrite Off
+		Tags { "Queue"="Overlay+5105" "LightMode" = "Always" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
+		ZWrite On
 		ZTest LEqual
 		ColorMask 0
 

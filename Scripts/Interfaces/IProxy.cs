@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.Experimental.EditorVR.Proxies
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Declares a class as being a proxy for an input device
@@ -16,6 +18,11 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		{
 			get;
 		}
+
+		/// <summary>
+		/// Event called when the active property changes
+		/// </summary>
+		event Action activeChanged;
 
 		/// <summary>
 		/// Provided to a proxy for device input (e.g. position / rotation)
@@ -62,7 +69,7 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		}
 
 		/// <summary>
-		/// Origins for previews that show
+		/// Origins for asset previews
 		/// Key = ray origin
 		/// Value = preview transform
 		/// </summary>
@@ -70,5 +77,16 @@ namespace UnityEngine.Experimental.EditorVR.Proxies
 		{
 			get; set;
 		}
+
+		/// <summary>
+		/// Origins for grabbed list fields
+		/// Key = ray origin
+		/// Value = field grab transform
+		/// </summary>
+		Dictionary<Transform, Transform> fieldGrabOrigins
+		{
+			get; set;
+		}
 	}
 }
+#endif

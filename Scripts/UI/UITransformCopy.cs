@@ -1,11 +1,12 @@
-﻿using UnityEngine;
-using UnityEngine.EventSystems;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Helpers
+namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-	public class UITransformCopy : MonoBehaviour
+	sealed class UITransformCopy : MonoBehaviour
 	{
-		static readonly Vector2 kTransformPivot = new Vector2(0.5f, 0.5f);
+		static readonly Vector2 k_TransformPivot = new Vector2(0.5f, 0.5f);
 
 		Transform m_TargetTransform;
 
@@ -54,7 +55,7 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 			// Drive transform with source RectTransform
 			var rectSize = m_SourceRectTransform.rect.size.Abs();
 			// Scale pivot by rect size to get correct xy local position
-			var pivotOffset = Vector2.Scale(rectSize, kTransformPivot - m_SourceRectTransform.pivot);
+			var pivotOffset = Vector2.Scale(rectSize, k_TransformPivot - m_SourceRectTransform.pivot);
 
 			// Add space for object
 			var localPosition = m_SourceRectTransform.localPosition;
@@ -66,3 +67,4 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 		}
 	}
 }
+#endif

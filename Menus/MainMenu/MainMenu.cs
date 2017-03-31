@@ -1,17 +1,16 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Workspaces;
+using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Actions;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Proxies;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Workspaces;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType
+	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -66,23 +65,18 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		private float m_LastRotationInput;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
 
-		public InstantiateUIDelegate instantiateUI { private get; set; }
 		public List<Type> menuTools { private get; set; }
-		public Func<Transform, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public CreateWorkspaceDelegate createWorkspace { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
-		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 		public Transform targetRayOrigin { private get; set; }
-		public Func<Transform, Type, bool> isToolActive { private get; set; }
 		public Type proxyType { private get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
 		void Start()
 		{
-			m_MainMenuUI = instantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
-			connectInterfaces(m_MainMenuUI);
+			m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
+			this.ConnectInterfaces(m_MainMenuUI);
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
@@ -94,7 +88,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			UpdateToolButtons();
 		}
 
-		public void ProcessInput(ActionMapInput input, Action<InputControl> consumeControl)
+		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var mainMenuInput = (MainMenuInput)input;
 			var rotationInput = -mainMenuInput.rotate.rawValue;
@@ -116,7 +110,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 
 		private void OnDestroy()
 		{
-			U.Object.Destroy(m_MainMenuUI.gameObject);
+			ObjectUtils.Destroy(m_MainMenuUI.gameObject);
 		}
 
 		private void CreateFaceButtons(List<Type> types)
@@ -162,7 +156,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 						{
 							if (visible && targetRayOrigin)
 							{
-								selectTool(targetRayOrigin, selectedType);
+								this.SelectTool(targetRayOrigin, selectedType);
 								UpdateToolButtons();
 							}
 						});
@@ -172,7 +166,7 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 						b.button.onClick.AddListener(() =>
 						{
 							if (visible)
-								createWorkspace(selectedType);
+								this.CreateWorkspace(selectedType);
 						});
 					}
 				});
@@ -183,8 +177,9 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 		{
 			foreach (var kvp in m_ToolButtons)
 			{
-				kvp.Value.selected = isToolActive(targetRayOrigin, kvp.Key);
+				kvp.Value.selected = this.IsToolActive(targetRayOrigin, kvp.Key);
 			}
 		}
 	}
 }
+#endif

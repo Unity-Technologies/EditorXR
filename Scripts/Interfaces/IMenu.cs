@@ -1,4 +1,7 @@
-﻿namespace UnityEngine.Experimental.EditorVR.Menus
+﻿#if UNITY_EDITOR
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Declares a class as a system-level menu
@@ -21,3 +24,4 @@
 		GameObject menuContent { get; }
 	}
 }
+#endif

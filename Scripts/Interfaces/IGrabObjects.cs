@@ -1,9 +1,9 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Experimental.EditorVR.Tools;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provides methods and delegates used to directly select and grab scene objects
@@ -43,12 +43,6 @@ namespace UnityEngine.Experimental.EditorVR
 		void DropHeldObjects(Transform rayOrigin, out Vector3[] positionOffset, out Quaternion[] rotationOffset);
 
 		/// <summary>
-		/// Returns true if the object can be grabbed
-		/// Params: the selection, the rayOrigin
-		/// </summary>
-		Func<GameObject, Transform, bool> canGrabObject { set; }
-
-		/// <summary>
 		/// Must be called by the implementer when an object has been grabbed
 		/// Params: the grabbed object
 		/// </summary>
@@ -61,13 +55,20 @@ namespace UnityEngine.Experimental.EditorVR
 		event Action<Transform[], Transform> objectsDropped;
 	}
 
-	public static class IGrabObjectsExtension
+	public static class IGrabObjectsMethods
 	{
-		public static void DropHeldObjects(this IGrabObjects grabObjects, Transform rayOrigin)
+		internal static Func<GameObject, Transform, bool> canGrabObject { get; set; }
+
+		/// <summary>
+		/// Returns true if the object can be grabbed
+		/// </summary>
+		/// <param name="go">The selection</param>
+		/// <param name="rayOrigin">The rayOrigin of the proxy that is looking to grab</param>
+		public static bool CanGrabObject(this IGrabObjects obj, GameObject go, Transform rayOrigin)
 		{
-			Vector3[] positionOffset;
-			Quaternion[] rotationOffset;
-			grabObjects.DropHeldObjects(rayOrigin, out positionOffset, out rotationOffset);
+			return canGrabObject(go, rayOrigin);
 		}
 	}
+
 }
+#endif

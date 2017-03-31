@@ -1,11 +1,13 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Collections;
-using UnityEngine.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class SpatialHashModule : MonoBehaviour
+	sealed class SpatialHashModule : MonoBehaviour
 	{
 		readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
 
@@ -84,10 +86,16 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		public void RemoveObject(GameObject gameObject)
 		{
-			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
+			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>(true))
 			{
 				spatialHash.RemoveObject(renderer);
 			}
 		}
+
+		public Bounds GetMaxBounds()
+		{
+			return spatialHash.GetMaxBounds();
+		}
 	}
 }
+#endif

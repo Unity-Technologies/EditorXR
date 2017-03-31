@@ -7,22 +7,16 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: ListItem
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
-  m_ShaderKeywords: _EMISSION
-  m_LightmapFlags: 1
-  m_CustomRenderQueue: 9103
+  m_Shader: {fileID: 4800000, guid: 318c14da2f00542499714e565000f7b4, type: 3}
+  m_ShaderKeywords: _EMISSION _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
+  m_LightmapFlags: 0
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
     m_TexEnvs:
     - first:
         name: _BumpMap
-      second:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - first:
-        name: _DecalTex
       second:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -93,10 +87,10 @@ Material:
       second: 1
     - first:
         name: _Glossiness
-      second: 0.5
+      second: 0
     - first:
         name: _GlossyReflections
-      second: 1
+      second: 0
     - first:
         name: _Metallic
       second: 0
@@ -114,10 +108,13 @@ Material:
       second: 0
     - first:
         name: _SpecularHighlights
-      second: 1
+      second: 0
     - first:
         name: _SrcBlend
       second: 1
+    - first:
+        name: _StencilRef
+      second: 3
     - first:
         name: _UVSec
       second: 0
@@ -126,14 +123,8 @@ Material:
       second: 1
     m_Colors:
     - first:
-        name: _ClipCenter
-      second: {r: 0, g: 0, b: 0, a: 0}
-    - first:
-        name: _ClipExtents
-      second: {r: 10.51, g: 13.34, b: 4.72, a: 0}
-    - first:
         name: _Color
-      second: {r: 0, g: 0, b: 0, a: 1}
+      second: {r: 0.19607839, g: 0.19999996, b: 0.19999996, a: 1}
     - first:
         name: _EmissionColor
-      second: {r: 0, g: 0, b: 0, a: 1}
+      second: {r: 0.101960756, g: 0.101960756, b: 0.101960756, a: 1}

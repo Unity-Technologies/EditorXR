@@ -1,15 +1,28 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Decorates objects which can delete objects from the scene
 	/// </summary>
 	public interface IDeleteSceneObject
 	{
+	}
+
+	public static class IDeleteSceneObjectMethods
+	{
+		internal static Action<GameObject> deleteSceneObject { get; set; }
+
 		/// <summary>
-		/// Destroy the given game object and remove it from the spatial hash
+		/// Remove the game object from the scene
 		/// </summary>
-		Action<GameObject> deleteSceneObject { set; }
+		/// <param name="go">The game object to delete from the scene</param>
+		public static void DeleteSceneObject(this IDeleteSceneObject obj, GameObject go)
+		{
+			deleteSceneObject(go);
+		}
 	}
 }
+#endif

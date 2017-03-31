@@ -1,6 +1,8 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Tools
+namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Gives decorated class access to the GameObject over which a particular ray is hovering
@@ -23,8 +25,14 @@ namespace UnityEngine.Experimental.EditorVR.Tools
 		Action<Vector3> scale { set; }
 
 		/// <summary>
+		/// Delegate that is called once after every drag
+		/// </summary>
+		event Action dragStarted;
+
+		/// <summary>
 		/// Bool denoting the drag-state of a manipulator that implements this interface
 		/// </summary>
 		bool dragging { get; }
 	}
 }
+#endif

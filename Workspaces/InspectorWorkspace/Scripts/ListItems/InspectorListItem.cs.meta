@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: a8f8aecb8ec605441ac956a7ca6fbf55
+timeCreated: 1490046610
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_Cube: {instanceID: 0}
+  - m_UIContainer: {instanceID: 0}
+  - m_NoClipText: {instanceID: 0}
+  - m_DropHighlightMaterial: {fileID: 2100000, guid: 4c6cd374ace66ac4ab5999367e0acfeb,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

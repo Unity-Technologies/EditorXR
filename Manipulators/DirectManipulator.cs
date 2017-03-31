@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Manipulators
+namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	public class DirectManipulator : MonoBehaviour, IManipulator
+	sealed class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		public Transform target
 		{
@@ -26,6 +27,7 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 		public Action<Vector3> translate { private get; set; }
 		public Action<Quaternion> rotate { private get; set; }
 		public Action<Vector3> scale { private get; set; }
+		public event Action dragStarted;
 
 		void OnEnable()
 		{
@@ -61,6 +63,9 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 			var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
 			m_PositionOffset = inverseRotation * (target.transform.position - rayOrigin.position);
 			m_RotationOffset = inverseRotation * target.transform.rotation;
+
+			if (dragStarted != null)
+				dragStarted();
 		}
 
 		private void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
@@ -86,3 +91,4 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 		}
 	}
 }
+#endif

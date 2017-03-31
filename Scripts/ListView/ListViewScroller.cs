@@ -1,14 +1,16 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class ListViewScroller : MonoBehaviour, IScrollHandler
 {
 	[SerializeField]
-	ListViewControllerBase listView;
+	ListViewControllerBase m_ListView;
 
 	public void OnScroll(PointerEventData eventData)
 	{
-		listView.OnScroll(eventData);
+		m_ListView.OnScroll(eventData);
 	}
 }
+#endif
