@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -9,6 +10,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		[SerializeField]
 		Button m_BackButton;
+
+		public GradientPair gradientPair { get; set; }
 
 		public void SetupBackButton(UnityAction backAction)
 		{

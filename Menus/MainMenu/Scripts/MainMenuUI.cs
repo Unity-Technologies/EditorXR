@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -87,6 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_FrameRevealCoroutine;
 		int m_Direction;
+		GradientPair m_GradientPair;
 
 		Transform[] m_MenuFaceContentTransforms;
 		Vector3[] m_MenuFaceContentOriginalLocalPositions;
@@ -279,7 +281,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				var submenuFace = submenu.GetComponent<SubmenuFace>();
 				if (submenuFace)
+				{
 					submenuFace.SetupBackButton(() => { RemoveSubmenu(face); });
+					submenuFace.gradientPair = m_MenuFaces[index].gradientPair;
+				}
 
 				if (!m_FaceSubmenus.ContainsKey(face))
 					m_FaceSubmenus.Add(face, new List<GameObject> { submenu });

@@ -2,11 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.UI;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -40,6 +40,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		const string k_BottomGradientProperty = "_ColorBottom";
 		const string k_TopGradientProperty = "_ColorTop";
 		readonly GradientPair k_EmptyGradient = new GradientPair(UnityBrandColorScheme.light, UnityBrandColorScheme.darker);
+
+		public GradientPair gradientPair { get; private set; }
 
 		void Awake()
 		{
@@ -81,6 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void SetGradientColors(GradientPair gradientPair)
 		{
+			this.gradientPair = gradientPair;
 			m_BorderOutlineMaterial.SetColor(k_TopGradientProperty, gradientPair.a);
 			m_BorderOutlineMaterial.SetColor(k_BottomGradientProperty, gradientPair.b);
 			m_TitleIconMaterial.SetColor(k_TopGradientProperty, gradientPair.a);

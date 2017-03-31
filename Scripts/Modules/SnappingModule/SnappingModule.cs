@@ -1,7 +1,11 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -33,6 +37,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const string k_ManipulatorSnapping = "EditorVR.Snapping.Manipulator";
 		const string k_DirectSnapping = "EditorVR.Snapping.Direct";
 
+		const string k_MaterialColorLeftProperty = "_ColorLeft";
+		const string k_MaterialColorRightProperty = "_ColorRight";
+
 		[SerializeField]
 		GameObject m_GroundPlane;
 
@@ -42,7 +49,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		[SerializeField]
 		GameObject m_SettingsMenuPrefab;
 
+		[SerializeField]
+		Material m_ButtonHighlightMaterial;
+
 		SnappingModuleSettingsUI m_SnappingModuleSettingsUI;
+		Material m_ButtonHighlightMaterialClone;
 
 		class SnappingState
 		{
@@ -163,6 +174,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		// Sources
 		bool m_ManipulatorSnappingEnabled;
 		bool m_DirectSnappingEnabled;
+
+		public bool widgetEnabled { get; set; }
 
 		public RaycastDelegate raycast { private get; set; }
 		public Renderer[] ignoreList { private get; set; }
@@ -319,6 +332,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			manipulatorSnappingEnabled = EditorPrefs.GetBool(k_ManipulatorSnapping, true);
 			directSnappingEnabled = EditorPrefs.GetBool(k_DirectSnapping, true);
+
+			m_ButtonHighlightMaterialClone = Instantiate(m_ButtonHighlightMaterial);
 		}
 
 		void Update()
@@ -340,15 +355,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 				m_GroundPlane.SetActive(shouldActivateGroundPlane);
 
-				var shouldActivateWidget = surfaceSnapping != null;
-				m_Widget.SetActive(shouldActivateWidget);
-				if (shouldActivateWidget)
+				if (widgetEnabled)
 				{
-					var camera = CameraUtils.GetMainCamera();
-					var distanceToCamera = Vector3.Distance(camera.transform.position, m_CurrentSurfaceSnappingPosition);
-					m_Widget.transform.position = m_CurrentSurfaceSnappingHit;
-					m_Widget.transform.rotation = m_CurrentSurfaceSnappingRotation;
-					m_Widget.transform.localScale = Vector3.one * k_WidgetScale * distanceToCamera;
+					var shouldActivateWidget = surfaceSnapping != null;
+					m_Widget.SetActive(shouldActivateWidget);
+					if (shouldActivateWidget)
+					{
+						var camera = CameraUtils.GetMainCamera();
+						var distanceToCamera = Vector3.Distance(camera.transform.position, m_CurrentSurfaceSnappingPosition);
+						m_Widget.transform.position = m_CurrentSurfaceSnappingHit;
+						m_Widget.transform.rotation = m_CurrentSurfaceSnappingRotation;
+						m_Widget.transform.localScale = Vector3.one * k_WidgetScale * distanceToCamera;
+					}
 				}
 			}
 			else
@@ -653,15 +671,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		void SetupUI()
 		{
 			var snappingEnabledUI = m_SnappingModuleSettingsUI.snappingEnabled;
-			m_SnappingModuleSettingsUI.SetToggleValue(snappingEnabledUI, !m_DisableAll);
+			var text = snappingEnabledUI.GetComponentInChildren<Text>();
+			snappingEnabledUI.isOn = !m_DisableAll;
 			snappingEnabledUI.onValueChanged.AddListener(b =>
 			{
 				m_DisableAll = !snappingEnabledUI.isOn;
+				text.text = m_DisableAll ? "Snapping disabled" : "Snapping enabled";
 				Reset();
+				SetDependentTogglesGhosted();
 			});
 
+			var handle = snappingEnabledUI.GetComponent<BaseHandle>();
+			handle.hoverStarted += (baseHandle, data) => { text.text = m_DisableAll ? "Enable Snapping" : "Disable snapping"; };
+			handle.hoverEnded += (baseHandle, data) => { text.text = m_DisableAll ? "Snapping disabled" : "Snapping enabled"; };
+
 			var groundSnappingUI = m_SnappingModuleSettingsUI.groundSnapping;
-			m_SnappingModuleSettingsUI.SetToggleValue(groundSnappingUI, m_GroundSnappingEnabled);
+			groundSnappingUI.isOn = m_GroundSnappingEnabled;
 			groundSnappingUI.onValueChanged.AddListener(b =>
 			{
 				m_GroundSnappingEnabled = groundSnappingUI.isOn;
@@ -669,7 +694,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			});
 
 			var surfaceSnappingUI = m_SnappingModuleSettingsUI.surfaceSnapping;
-			m_SnappingModuleSettingsUI.SetToggleValue(surfaceSnappingUI, m_SurfaceSnappingEnabled);
+			surfaceSnappingUI.isOn = m_SurfaceSnappingEnabled;
 			surfaceSnappingUI.onValueChanged.AddListener(b =>
 			{
 				m_SurfaceSnappingEnabled = surfaceSnappingUI.isOn;
@@ -681,20 +706,62 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			pivotSnappingUI.onValueChanged.AddListener(b => { m_PivotSnapping = pivotSnappingUI.isOn; });
 
 			var snapRotationUI = m_SnappingModuleSettingsUI.snapRotation;
-			m_SnappingModuleSettingsUI.SetToggleValue(snapRotationUI, m_SnapRotation);
+			snapRotationUI.isOn = m_SnapRotation;
 			snapRotationUI.onValueChanged.AddListener(b => { m_SnapRotation = snapRotationUI.isOn; });
 
 			var localOnlyUI = m_SnappingModuleSettingsUI.localOnly;
-			m_SnappingModuleSettingsUI.SetToggleValue(localOnlyUI, m_LocalOnly);
+			localOnlyUI.isOn = m_LocalOnly;
 			localOnlyUI.onValueChanged.AddListener(b => { m_LocalOnly = localOnlyUI.isOn; });
 
 			var manipulatorSnappingUI = m_SnappingModuleSettingsUI.manipulatorSnapping;
-			m_SnappingModuleSettingsUI.SetToggleValue(manipulatorSnappingUI, m_ManipulatorSnappingEnabled);
+			manipulatorSnappingUI.isOn =  m_ManipulatorSnappingEnabled;
 			manipulatorSnappingUI.onValueChanged.AddListener(b => { m_ManipulatorSnappingEnabled = manipulatorSnappingUI.isOn; });
 
 			var directSnappingUI = m_SnappingModuleSettingsUI.directSnapping;
-			m_SnappingModuleSettingsUI.SetToggleValue(directSnappingUI, m_DirectSnappingEnabled);
+			directSnappingUI.isOn =  m_DirectSnappingEnabled;
 			directSnappingUI.onValueChanged.AddListener(b => { m_DirectSnappingEnabled = directSnappingUI.isOn; });
+
+			SetDependentTogglesGhosted();
+
+			SetSessionGradientMaterial(m_SnappingModuleSettingsUI.GetComponent<SubmenuFace>().gradientPair);
+		}
+
+		void SetDependentTogglesGhosted()
+		{
+			var toggles = new List<Toggle>
+			{
+				m_SnappingModuleSettingsUI.groundSnapping,
+				m_SnappingModuleSettingsUI.surfaceSnapping,
+				m_SnappingModuleSettingsUI.snapRotation,
+				m_SnappingModuleSettingsUI.localOnly,
+				m_SnappingModuleSettingsUI.manipulatorSnapping,
+				m_SnappingModuleSettingsUI.directSnapping
+			};
+
+			toggles.AddRange(m_SnappingModuleSettingsUI.pivotSnapping.group.GetComponentsInChildren<Toggle>(true));
+
+			foreach (var toggle in toggles)
+			{
+				toggle.interactable = !m_DisableAll;
+				if (toggle.isOn)
+					toggle.graphic.gameObject.SetActive(!m_DisableAll);
+			}
+
+			foreach (var text in m_SnappingModuleSettingsUI.GetComponentsInChildren<Text>(true))
+			{
+				text.color = m_DisableAll ? Color.gray : Color.white;
+			}
+		}
+
+		void SetSessionGradientMaterial(GradientPair gradientPair)
+		{
+			m_ButtonHighlightMaterialClone.SetColor(k_MaterialColorLeftProperty, gradientPair.a);
+			m_ButtonHighlightMaterialClone.SetColor(k_MaterialColorRightProperty, gradientPair.b);
+			foreach (var graphic in m_SnappingModuleSettingsUI.GetComponentsInChildren<Graphic>())
+			{
+				if (graphic.material == m_ButtonHighlightMaterial)
+					graphic.material = m_ButtonHighlightMaterialClone;
+			}
 		}
 
 		void OnDisable()
