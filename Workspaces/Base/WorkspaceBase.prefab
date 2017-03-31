@@ -108,7 +108,6 @@ GameObject:
   - 114: {fileID: 114000011346188294}
   - 114: {fileID: 114000014286123538}
   - 114: {fileID: 114000013983468268}
-  - 114: {fileID: 114000013630531728}
   m_Layer: 5
   m_Name: WorkspaceBase
   m_TagString: Untagged
@@ -2784,28 +2783,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
---- !u!114 &114000013630531728
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000011022840156}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14ee7a591bb7fbb49a0d755d7b58fcb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_Target: {fileID: 0}
-  m_AllHandles:
-  - {fileID: 114000010440193686}
-  - {fileID: 114000013918052582}
-  - {fileID: 114000012268223792}
-  - {fileID: 114000011990842626}
-  - {fileID: 114000010957734132}
-  - {fileID: 114000011326375856}
-  - {fileID: 114000013752542628}
-  - {fileID: 114000012493135682}
 --- !u!114 &114000013666556608
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2946,8 +2923,11 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_SceneContainer: {fileID: 224000012777721742}
   m_FrontPanel: {fileID: 224000013655961458}
-  m_DirectManipulator: {fileID: 114000013630531728}
-  m_MoveHandles:
+  m_Handles:
+  - {fileID: 114000010110436178}
+  - {fileID: 114000013213365218}
+  - {fileID: 114000011131791356}
+  - {fileID: 114000012529469130}
   - {fileID: 114000010440193686}
   - {fileID: 114000013918052582}
   - {fileID: 114000012268223792}

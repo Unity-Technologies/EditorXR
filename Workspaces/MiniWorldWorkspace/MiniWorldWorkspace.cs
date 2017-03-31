@@ -13,7 +13,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
-	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
+	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking
 	{
 		static readonly float k_InitReferenceYOffset = k_DefaultBounds.y / 2.05f; // Show more space above ground than below
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default
@@ -40,14 +40,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		GameObject m_ZoomSliderPrefab;
 
-		public ActionMap actionMap
-		{
-			get { return m_MiniWorldActionMap; }
-		}
-
-		[SerializeField]
-		ActionMap m_MiniWorldActionMap;
-
 		MiniWorldUI m_MiniWorldUI;
 		MiniWorld m_MiniWorld;
 		Material m_GridMaterial;
@@ -69,9 +61,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			get { return m_MiniWorld; }
 		}
-
-		public Transform leftRayOrigin { get; set; }
-		public Transform rightRayOrigin { get; set; }
 
 		public float zoomSliderMax
 		{
@@ -133,7 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (zoomTooltip)
 				zoomTooltip.tooltipText = "Drag the Handle to Zoom the Mini World";
 
-			foreach (var moveHandle in m_WorkspaceUI.moveHandles)
+			foreach (var moveHandle in m_WorkspaceUI.handles)
 			{
 				moveHandle.dragStarted += DragStarted;
 				moveHandle.dragEnded += DragEnded;
@@ -182,29 +171,32 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_GridMaterial.SetVector("_ClipCenter", inverseRotation * m_MiniWorld.transform.position);
 		}
 
-		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
+		public override void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var miniWorldInput = (MiniWorldInput)input;
+			base.ProcessInput(input, consumeControl);
+			var workspaceInput = (WorkspaceInput)input;
 
-			if (miniWorld.Contains(leftRayOrigin.position) && miniWorldInput.leftGrab.wasJustPressed)
+			var leftGrip = workspaceInput.secondaryLeft;
+			if (leftGrip.wasJustPressed && miniWorld.Contains(leftRayOrigin.position))
 			{
 				OnPanZoomDragStarted(leftRayOrigin);
-				consumeControl(miniWorldInput.leftGrab);
+				consumeControl(leftGrip);
 			}
 
-			if (miniWorld.Contains(rightRayOrigin.position) && miniWorldInput.rightGrab.wasJustPressed)
+			var rightGrip = workspaceInput.secondaryRight;
+			if (rightGrip.wasJustPressed && miniWorld.Contains(rightRayOrigin.position))
 			{
 				OnPanZoomDragStarted(rightRayOrigin);
-				consumeControl(miniWorldInput.rightGrab);
+				consumeControl(rightGrip);
 			}
 
-			if (miniWorldInput.leftGrab.isHeld || miniWorldInput.rightGrab.isHeld)
+			if (leftGrip.isHeld || rightGrip.isHeld)
 				OnPanZoomDragging();
 
-			if (miniWorldInput.leftGrab.wasJustReleased)
+			if (leftGrip.wasJustReleased)
 				OnPanZoomDragEnded(leftRayOrigin);
 
-			if (miniWorldInput.rightGrab.wasJustReleased)
+			if (rightGrip.wasJustReleased)
 				OnPanZoomDragEnded(rightRayOrigin);
 		}
 

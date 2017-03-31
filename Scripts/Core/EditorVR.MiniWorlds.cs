@@ -412,15 +412,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					};
 
 					intersectionModule.AddTester(tester);
-
-					if (deviceData.proxy.active)
-					{
-						if (deviceData.node == Node.LeftHand)
-							miniWorldWorkspace.leftRayOrigin = deviceData.rayOrigin;
-
-						if (deviceData.node == Node.RightHand)
-							miniWorldWorkspace.rightRayOrigin = deviceData.rayOrigin;
-					}
 				}, false);
 			}
 

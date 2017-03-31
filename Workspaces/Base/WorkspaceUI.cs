@@ -49,14 +49,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		RectTransform m_FrontPanel;
 
 		public Transform topPanel { get; private set; }
-		
-		public DirectManipulator directManipulator { get { return m_DirectManipulator; } }
-		[SerializeField]
-		DirectManipulator m_DirectManipulator;
 
-		public BaseHandle[] moveHandles { get { return m_MoveHandles; } }
+		public BaseHandle[] handles { get { return m_Handles; } }
 		[SerializeField]
-		BaseHandle[] m_MoveHandles;
+		BaseHandle[] m_Handles;
 
 		public Transform[] leftHandles { get { return m_LeftHandles; } }
 		[SerializeField]
@@ -457,10 +453,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_BackLeftResizeIcon.CrossFadeAlpha(0f, 0f, true);
 			m_BackRightResizeIcon.CrossFadeAlpha(0f, 0f, true);
 
-			foreach (var handle in moveHandles)
+			foreach (var handle in handles)
 			{
-				handle.hoverStarted += OnMoveHandleHoverStarted;
-				handle.hoverEnded += OnMoveHandleHoverEnded;
+				handle.hoverStarted += OnHandleHoverStarted;
+				handle.hoverEnded += OnHandleHoverEnded;
 			}
 
 			m_Frame.SetBlendShapeWeight(k_ThinFrameBlendShapeIndex, 50f); // Set default frame thickness to be in middle for a thinner initial frame
@@ -471,12 +467,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			topPanel = m_TopFaceContainer; // The TopFaceContainer serves as the transform that the workspace expects when fetching the TopPanel
 		}
 
-		static void OnMoveHandleHoverEnded(BaseHandle handle, HandleEventData eventData)
+		static void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			handle.GetComponent<Renderer>().enabled = false;
 		}
 
-		static void OnMoveHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
+		static void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
 			handle.GetComponent<Renderer>().enabled = true;
 		}

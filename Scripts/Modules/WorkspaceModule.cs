@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		internal event Action<IWorkspace> workspaceCreated;
 		internal event Action<IWorkspace> workspaceDestroyed;
 
-		static internal List<Type> workspaceTypes { get; private set; }
+		internal static List<Type> workspaceTypes { get; private set; }
 
 		static WorkspaceModule()
 		{
@@ -43,6 +43,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var workspaceTransform = workspace.transform;
 			workspaceTransform.position = cameraTransform.TransformPoint(offset);
 			workspaceTransform.rotation = Quaternion.LookRotation(cameraTransform.forward) * k_DefaultWorkspaceTilt;
+
+			//evr.GetNestedModule<Rays>().ForEachProxyDevice(deviceData =>
+			//{
+			//	if (deviceData.proxy.active)
+			//	{
+			//		if (deviceData.node == Node.LeftHand)
+			//			miniWorldWorkspace.leftRayOrigin = deviceData.rayOrigin;
+
+			//		if (deviceData.node == Node.RightHand)
+			//			miniWorldWorkspace.rightRayOrigin = deviceData.rayOrigin;
+			//	}
+			//})
 
 			if (createdCallback != null)
 				createdCallback(workspace);
