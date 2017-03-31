@@ -251,12 +251,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
 		}
 
-		public void SetUIHighlights(bool value)
+		public void SetUIHighlightsVisible(bool value)
 		{
 			m_WorkspaceUI.highlightsVisible = value;
 		}
 
-		private void UpdateBounds()
+		void UpdateBounds()
 		{
 			m_WorkspaceUI.bounds = contentBounds;
 		}

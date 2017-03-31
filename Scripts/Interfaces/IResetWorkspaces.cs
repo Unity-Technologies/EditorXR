@@ -8,14 +8,14 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IResetWorkspacesMethods
 	{
-		internal static Action resetWorkspaces { get; set; }
+		internal static Action resetWorkspaceRotations { get; set; }
 
 		/// <summary>
 		/// Reset all open workspaces
 		/// </summary>
-		public static void ResetWorkspaces(this IResetWorkspaces obj)
+		public static void ResetWorkspaceRotations(this IResetWorkspaces obj)
 		{
-			resetWorkspaces();
+			resetWorkspaceRotations();
 		}
 	}
 }

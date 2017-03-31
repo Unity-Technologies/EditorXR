@@ -129,7 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			var workspaceTransform = workspace.transform;
 			workspaceTransform.position = cameraTransform.TransformPoint(offset);
-			ResetWorkspaceRotation(workspace, cameraTransform.forward);
+			ResetRotation(workspace, cameraTransform.forward);
 
 			if (createdCallback != null)
 				createdCallback(workspace);
@@ -146,17 +146,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				workspaceDestroyed(workspace);
 		}
 
-		internal void ResetWorkspaces()
+		internal void ResetWorkspaceRotations()
 		{
 			var cameraTransform = CameraUtils.GetMainCamera().transform;
 			foreach (var ws in workspaces)
 			{
 				var forward = (ws.transform.position - cameraTransform.position).normalized;
-				ResetWorkspaceRotation(ws, forward);
+				ResetRotation(ws, forward);
 			}
 		}
 
-		static void ResetWorkspaceRotation(IWorkspace workspace, Vector3 forward)
+		static void ResetRotation(IWorkspace workspace, Vector3 forward)
 		{
 			workspace.transform.rotation = Quaternion.LookRotation(forward) * DefaultWorkspaceTilt;
 		}
