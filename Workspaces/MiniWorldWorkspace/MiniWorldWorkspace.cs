@@ -53,9 +53,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[Serializable]
 		class Preferences
 		{
-			public Vector3 miniWorldRefeferenceScale;
-			public Vector3 miniWorldReferencePosition;
-			public float zoomSliderValue;
+			[SerializeField]
+			public Vector3 m_MiniWorldRefeferenceScale;
+			[SerializeField]
+			public Vector3 m_MiniWorldReferencePosition;
+			[SerializeField]
+			public float m_ZoomSliderValue;
+
+			public Vector3 miniWorldRefeferenceScale { get { return m_MiniWorldRefeferenceScale; } set { m_MiniWorldRefeferenceScale = value; } }
+			public Vector3 miniWorldReferencePosition { get { return m_MiniWorldReferencePosition; } set { m_MiniWorldReferencePosition = value; } }
+			public float zoomSliderValue { get { return m_ZoomSliderValue; } set { m_ZoomSliderValue = value; } }
 		}
 
 		MiniWorldUI m_MiniWorldUI;

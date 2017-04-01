@@ -14,18 +14,34 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		[Serializable]
 		class Preferences
 		{
-			public List<WorkspaceLayout> workspaceLayouts = new List<WorkspaceLayout>();
+			[SerializeField]
+			List<WorkspaceLayout> m_WorkspaceLayouts = new List<WorkspaceLayout>();
+
+			public List<WorkspaceLayout> workspaceLayouts { get { return m_WorkspaceLayouts; } }
 		}
 
 		[Serializable]
 		class WorkspaceLayout
 		{
-			public string name;
-			public Vector3 localPosition;
-			public Quaternion localRotation;
-			public Bounds bounds;
-			public string payloadType;
-			public string payload;
+			[SerializeField]
+			string m_Name;
+			[SerializeField]
+			Vector3 m_LocalPosition;
+			[SerializeField]
+			Quaternion m_LocalRotation;
+			[SerializeField]
+			Bounds m_Bounds;
+			[SerializeField]
+			string m_PayloadType;
+			[SerializeField]
+			string m_Payload;
+
+			public string name { get { return m_Name; } set { m_Name = value; } }
+			public Vector3 localPosition { get { return m_LocalPosition; } set { m_LocalPosition = value; } }
+			public Quaternion localRotation { get { return m_LocalRotation; } set { m_LocalRotation = value; } }
+			public Bounds bounds { get { return m_Bounds; } set { m_Bounds = value; } }
+			public string payloadType { get { return m_PayloadType; } set { m_PayloadType = value; } }
+			public string payload { get { return m_Payload; } set { m_Payload = value; } }
 		}
 
 		internal static readonly Vector3 DefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);

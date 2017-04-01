@@ -71,7 +71,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[Serializable]
 		class Preferences
 		{
-			public float scaleFactor;
+			[SerializeField]
+			float m_ScaleFactor;
+			[SerializeField]
+			string m_SelectedFolder;
+
+			public float scaleFactor { get { return m_ScaleFactor; } set { m_ScaleFactor = value; } }
+			public string selectedFolder { get { return m_SelectedFolder; } set { m_SelectedFolder = value; } }
 		}
 
 		public override void Setup()
@@ -156,6 +162,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var preferences = new Preferences();
 			preferences.scaleFactor = m_ProjectUI.assetGridView.scaleFactor;
+			preferences.selectedFolder = m_ProjectUI.folderListView.selectedFolder;
 			return preferences;
 		}
 
@@ -163,6 +170,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var preferences = (Preferences)obj;
 			m_ProjectUI.assetGridView.scaleFactor = preferences.scaleFactor;
+			m_ProjectUI.folderListView.SelectFolder(preferences.selectedFolder);
 			UpdateZoomSliderValue();
 		}
 

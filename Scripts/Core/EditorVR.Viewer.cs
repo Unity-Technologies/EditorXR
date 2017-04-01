@@ -19,8 +19,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			[Serializable]
 			class Preferences
 			{
-				public Vector3 cameraRigPosition;
-				public Quaternion cameraRigRotation;
+				[SerializeField]
+				Vector3 m_CameraRigPosition;
+				[SerializeField]
+				Quaternion m_CameraRigRotation;
+
+				public Vector3 cameraRigPosition { get { return m_CameraRigPosition; } set { m_CameraRigPosition = value; } }
+				public Quaternion cameraRigRotation { get { return m_CameraRigRotation; } set { m_CameraRigRotation = value; } }
 			}
 
 			const float k_CameraRigTransitionTime = 0.75f;

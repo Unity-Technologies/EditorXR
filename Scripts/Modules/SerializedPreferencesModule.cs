@@ -14,15 +14,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		[Serializable]
 		class SerializedPreferences
 		{
-			public List<SerializedPreferenceItem> items = new List<SerializedPreferenceItem>();
+			[SerializeField]
+			List<SerializedPreferenceItem> m_Items = new List<SerializedPreferenceItem>();
+
+			public List<SerializedPreferenceItem> items { get { return m_Items; } }
 		}
 
 		[Serializable]
 		class SerializedPreferenceItem
 		{
-			public string name;
-			public string payloadType;
-			public string payload;
+			[SerializeField]
+			string m_Name;
+			[SerializeField]
+			string m_PayloadType;
+			[SerializeField]
+			string m_Payload;
+
+			public string name { get { return m_Name; } set { m_Name = value; } }
+			public string payloadType { get { return m_PayloadType; } set { m_PayloadType = value; } }
+			public string payload { get { return m_Payload; } set { m_Payload = value; } }
 		}
 
 		public void ConnectInterface(object obj, Transform rayOrigin = null)

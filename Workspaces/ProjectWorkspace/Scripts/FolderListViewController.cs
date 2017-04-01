@@ -18,9 +18,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Material m_ExpandArrowMaterial;
 
-		string m_SelectedFolder;
-
 		readonly Dictionary<string, bool> m_ExpandStates = new Dictionary<string, bool>();
+
+		public string selectedFolder { get; private set; }
 
 		public Action<FolderData> selectFolder { private get; set; }
 
@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					var guid = data[0].index;
 					m_ExpandStates[guid] = true;
-					SelectFolder(guid);
+					SelectFolder(selectedFolder ?? guid);
 				}
 			}
 		}
@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (!m_ListItems.TryGetValue(index, out item))
 				item = GetItem(data);
 
-			item.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, index == m_SelectedFolder);
+			item.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, index == selectedFolder);
 
 			SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 
@@ -118,18 +118,26 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			StartSettling();
 		}
 
-		void SelectFolder(string guid)
+		public void SelectFolder(string guid)
 		{
 			if (data == null)
 				return;
 
-			m_SelectedFolder = guid;
+			selectedFolder = guid;
 
-			var folderData = GetFolderDataByGUID(data[0], guid) ?? data[0];
-			selectFolder(folderData);
+			if (data.Count >= 1)
+			{
+				var folderData = GetFolderDataByGUID(data[0], guid, fd =>
+				{
+					// Expand folders from root to selected folder
+					if (fd.index != guid)
+						m_ExpandStates[fd.index] = true;
+				}) ?? data[0];
+				selectFolder(folderData);
+			}
 		}
 
-		static FolderData GetFolderDataByGUID(FolderData data, string guid)
+		static FolderData GetFolderDataByGUID(FolderData data, string guid, Action<FolderData> folderToRootCallback = null)
 		{
 			if (data.index == guid)
 				return data;
@@ -140,7 +148,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					var folder = GetFolderDataByGUID(child, guid);
 					if (folder != null)
+					{
+						if (folderToRootCallback != null)
+							folderToRootCallback(folder);
+
 						return folder;
+					}
 				}
 			}
 			return null;
