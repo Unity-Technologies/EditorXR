@@ -108,30 +108,30 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					var positionOffsetForward = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
 					var positionOffsetRight = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
 
-					if (m_Handle.Equals(workspaceUI.frontLeftHandle))
-					{
-						bounds.size = m_BoundsSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right)
-							+ Vector3.back * Vector3.Dot(dragVector, transform.forward);
-					}
+					//if (m_Handle.Equals(workspaceUI.frontLeftHandle))
+					//{
+					//	bounds.size = m_BoundsSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right)
+					//		+ Vector3.back * Vector3.Dot(dragVector, transform.forward);
+					//}
 
-					if (m_Handle.Equals(workspaceUI.backLeftHandle))
-					{
-						bounds.size = m_BoundsSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right)
-							+ Vector3.forward * Vector3.Dot(dragVector, transform.forward);
-					}
+					//if (m_Handle.Equals(workspaceUI.backLeftHandle))
+					//{
+					//	bounds.size = m_BoundsSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right)
+					//		+ Vector3.forward * Vector3.Dot(dragVector, transform.forward);
+					//}
 
-					if (m_Handle.Equals(workspaceUI.frontRightHandle))
-					{
-						bounds.size = m_BoundsSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right)
-							+ Vector3.back * Vector3.Dot(dragVector, transform.forward);
-					}
+					//if (m_Handle.Equals(workspaceUI.frontRightHandle))
+					//{
+					//	bounds.size = m_BoundsSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right)
+					//		+ Vector3.back * Vector3.Dot(dragVector, transform.forward);
+					//}
 
-					if (m_Handle.Equals(workspaceUI.backRightHandle))
-					{
-						var size = m_BoundsSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right)
-							+ Vector3.forward * Vector3.Dot(dragVector, transform.forward);
-						bounds.size = size;
-					}
+					//if (m_Handle.Equals(workspaceUI.backRightHandle))
+					//{
+					//	var size = m_BoundsSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right)
+					//		+ Vector3.forward * Vector3.Dot(dragVector, transform.forward);
+					//	bounds.size = size;
+					//}
 
 					m_Workspace.contentBounds = bounds;
 
@@ -179,12 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		/// <summary>
 		/// If true, prevent the resizing of a workspace via the front and back resize handles
 		/// </summary>
-		public bool preventFrontBackResize { set { m_WorkspaceUI.preventFrontBackResize = value; } }
-
-		/// <summary>
-		/// If true, prevent the resizing of a workspace via the left and right resize handles
-		/// </summary>
-		public bool preventLeftRightResize { set { m_WorkspaceUI.preventLeftRightResize = value; } }
+		public bool preventResize { set { m_WorkspaceUI.preventResize = value; } }
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement

@@ -47,8 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			base.Setup();
 
-			preventFrontBackResize = true;
-			preventLeftRightResize = true;
+			preventResize = true;
 			dynamicFaceAdjustment = false;
 
 			m_ProfilerWindow = this.InstantiateUI(m_ProfilerWindowPrefab).transform;

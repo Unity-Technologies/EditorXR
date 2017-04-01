@@ -19,8 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			base.Setup();
 
-			preventFrontBackResize = true;
-			preventLeftRightResize = true;
+			preventResize = true;
 			dynamicFaceAdjustment = false;
 
 			m_ConsoleWindow = this.InstantiateUI(m_ConsoleWindowPrefab).transform;
