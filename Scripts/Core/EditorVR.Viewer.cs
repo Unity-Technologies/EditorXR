@@ -136,6 +136,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				m_PlayerBody = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
 				var renderer = m_PlayerBody.GetComponent<Renderer>();
 				evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
+				evr.GetModule<SnappingModule>().ignoreList = renderer.GetComponentsInChildren<Renderer>(true);
 			}
 
 			internal bool IsOverShoulder(Transform rayOrigin)
@@ -150,7 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			static bool Overlaps(Transform rayOrigin, Collider trigger)
 			{
-				var radius = evr.GetNestedModule<DirectSelection>().GetPointerLength(rayOrigin);
+				var radius = evr.m_DirectSelection.GetPointerLength(rayOrigin);
 
 				var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 				foreach (var collider in colliders)

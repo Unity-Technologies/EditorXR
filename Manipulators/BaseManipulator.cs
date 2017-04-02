@@ -10,12 +10,13 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 		public bool adjustScaleForCamera { get; set; }
 
-		public Action<Vector3> translate { protected get; set; }
+		public Action<Vector3, Transform, bool> translate { protected get; set; }
 		public Action<Quaternion> rotate { protected get; set; }
 		public Action<Vector3> scale { protected get; set; }
-		public bool dragging { get; protected set; }
 
+		public bool dragging { get; protected set; }
 		public event Action dragStarted;
+		public event Action<Transform> dragEnded;
 
 		protected virtual void OnEnable()
 		{
@@ -48,6 +49,12 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		{
 			if (dragStarted != null)
 				dragStarted();
+		}
+
+		protected void OnDragEnded(Transform rayOrigin)
+		{
+			if (dragEnded != null)
+				dragEnded(rayOrigin);
 		}
 	}
 }

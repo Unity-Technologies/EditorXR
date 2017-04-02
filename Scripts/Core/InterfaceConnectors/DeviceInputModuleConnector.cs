@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.EditorVR.Modules;
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -12,10 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				// Tracked Object action maps shouldn't block each other so we share an instance
 				var trackedObjectMap = obj as ITrackedObjectActionMap;
 				if (trackedObjectMap != null)
-				{
-					var evrDeviceInputModule = evr.GetModule<DeviceInputModule>();
-					trackedObjectMap.trackedObjectInput = evrDeviceInputModule.trackedObjectInput;
-				}
+					trackedObjectMap.trackedObjectInput = evr.m_DeviceInputModule.trackedObjectInput;
 			}
 
 			public void DisconnectInterface(object obj)
@@ -24,3 +22,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		}
 	}
 }
+#endif

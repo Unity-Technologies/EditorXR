@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -8,3 +9,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		void DisconnectInterface(object obj);
 	}
 }
+#endif
