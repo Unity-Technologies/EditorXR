@@ -208,6 +208,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							intersectionModule.AddTester(tester);
 
 							highlightModule.AddRayOriginForNode(node, rayOrigin);
+
+							var workspaceModule = evr.GetModule<WorkspaceModule>();
+							switch (node)
+							{
+								case Node.LeftHand:
+									workspaceModule.leftRayOrigin = rayOrigin;
+									break;
+								case Node.RightHand:
+									workspaceModule.rightRayOrigin = rayOrigin;
+									break;
+							}
 						}
 
 						evr.GetModule<WorkspaceModule>().CreateWorkspace(typeof(HierarchyWorkspace));

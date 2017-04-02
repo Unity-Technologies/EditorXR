@@ -122,10 +122,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (zoomTooltip)
 				zoomTooltip.tooltipText = "Drag the Handle to Zoom the Mini World";
 
-			foreach (var moveHandle in m_WorkspaceUI.handles)
+			foreach (var handle in m_WorkspaceUI.handles)
 			{
-				moveHandle.dragStarted += DragStarted;
-				moveHandle.dragEnded += DragEnded;
+				handle.dragStarted += DragStarted;
+				handle.dragEnded += DragEnded;
 			}
 
 			// Propagate initial bounds

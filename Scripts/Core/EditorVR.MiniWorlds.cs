@@ -42,9 +42,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public List<IMiniWorld> worlds { get { return m_Worlds; } }
 			readonly List<IMiniWorld> m_Worlds = new List<IMiniWorld>();
 
-			public Dictionary<MiniWorldWorkspace, ActionMapInput> inputs { get { return m_MiniWorldInputs; } }
-			readonly Dictionary<MiniWorldWorkspace, ActionMapInput> m_MiniWorldInputs = new Dictionary<MiniWorldWorkspace, ActionMapInput>();
-
 			bool m_MiniWorldIgnoreListDirty = true;
 
 			public MiniWorlds()
@@ -113,11 +110,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				var objectsGrabber = evr.GetNestedModule<DirectSelection>().objectsGrabber;
-
-				foreach (var kvp in m_MiniWorldInputs)
-				{
-					kvp.Key.ProcessInput(kvp.Value, consumeControl);
-				}
 
 				// Update MiniWorldRays
 				foreach (var ray in m_Rays)
@@ -390,8 +382,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var miniWorld = miniWorldWorkspace.miniWorld;
 				m_Worlds.Add(miniWorld);
 
-				m_MiniWorldInputs[miniWorldWorkspace] = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(miniWorldWorkspace, null);
-
 				var intersectionModule = evr.GetModule<IntersectionModule>();
 				evr.GetNestedModule<Rays>().ForEachProxyDevice(deviceData =>
 				{
@@ -432,8 +422,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (miniWorldRay.miniWorld == miniWorld)
 						m_Rays.Remove(ray.Key);
 				}
-
-				m_MiniWorldInputs.Remove(miniWorldWorkspace);
 			}
 		}
 	}

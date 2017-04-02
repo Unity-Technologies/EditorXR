@@ -193,10 +193,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var workspaceModule = AddModule<WorkspaceModule>();
 			workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
 			workspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
-			workspaceModule.workspaceCreated += (workspace) => { m_DeviceInputModule.UpdatePlayerHandleMaps(); };
+			workspaceModule.workspaceCreated += workspace =>
+			{
+				workspaceModule.workspaceInputs.Add((WorkspaceInput)m_DeviceInputModule.CreateActionMapInputForObject(workspace, null));
+				m_DeviceInputModule.UpdatePlayerHandleMaps();
+			};
 			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
-			workspaceModule.workspaceDestroyed += (workspace) => { m_Interfaces.DisconnectInterfaces(workspace); };
 			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
+			workspaceModule.getPointerLength = m_DirectSelection.GetPointerLength;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
@@ -227,7 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			EditorApplication.delayCall += OnSelectionChanged;
 		}
 
-		void ClearDeveloperConsoleIfNecessary()
+		static void ClearDeveloperConsoleIfNecessary()
 		{
 			var asm = Assembly.GetAssembly(typeof(Editor));
 			var consoleWindowType = asm.GetType("UnityEditor.ConsoleWindow");
@@ -307,6 +311,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
 		{
+			GetModule<WorkspaceModule>().ProcessInputInWorkspaces(consumeControl);
 			GetNestedModule<MiniWorlds>().UpdateMiniWorlds(consumeControl);
 
 			GetModule<MultipleRayInputModule>().ProcessInput(null, consumeControl);

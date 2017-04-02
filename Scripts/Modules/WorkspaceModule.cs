@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -15,10 +16,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		internal List<IWorkspace> workspaces { get { return m_Workspaces; } }
 		readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
 
+		internal List<WorkspaceInput> workspaceInputs { get { return m_WorkspaceInputs; } }
+		readonly List<WorkspaceInput> m_WorkspaceInputs = new List<WorkspaceInput>();
+
 		internal event Action<IWorkspace> workspaceCreated;
 		internal event Action<IWorkspace> workspaceDestroyed;
 
 		internal static List<Type> workspaceTypes { get; private set; }
+
+		internal Transform leftRayOrigin { private get; set; }
+		internal Transform rightRayOrigin { private get; set; }
+
+		public Func<Transform, float> getPointerLength { private get; set; }
 
 		static WorkspaceModule()
 		{
@@ -33,6 +42,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_Workspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			this.ConnectInterfaces(workspace);
+			workspace.leftRayOrigin = leftRayOrigin;
+			workspace.rightRayOrigin = rightRayOrigin;
+			workspace.getPointerLength = getPointerLength;
 
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
@@ -44,18 +56,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			workspaceTransform.position = cameraTransform.TransformPoint(offset);
 			workspaceTransform.rotation = Quaternion.LookRotation(cameraTransform.forward) * k_DefaultWorkspaceTilt;
 
-			//evr.GetNestedModule<Rays>().ForEachProxyDevice(deviceData =>
-			//{
-			//	if (deviceData.proxy.active)
-			//	{
-			//		if (deviceData.node == Node.LeftHand)
-			//			miniWorldWorkspace.leftRayOrigin = deviceData.rayOrigin;
-
-			//		if (deviceData.node == Node.RightHand)
-			//			miniWorldWorkspace.rightRayOrigin = deviceData.rayOrigin;
-			//	}
-			//})
-
 			if (createdCallback != null)
 				createdCallback(workspace);
 
@@ -63,9 +63,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				workspaceCreated(workspace);
 		}
 
+		internal void ProcessInputInWorkspaces(ConsumeControlDelegate consumeControl)
+		{
+			for (int i = 0; i < m_Workspaces.Count; i++)
+			{
+				m_Workspaces[i].ProcessInput(m_WorkspaceInputs[i], consumeControl);
+			}
+		}
+
 		void OnWorkspaceDestroyed(IWorkspace workspace)
 		{
 			m_Workspaces.Remove(workspace);
+
+			this.DisonnectInterfaces(workspace);
 
 			if (workspaceDestroyed != null)
 				workspaceDestroyed(workspace);
