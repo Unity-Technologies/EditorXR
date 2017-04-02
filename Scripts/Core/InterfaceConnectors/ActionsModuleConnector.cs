@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var toolActions = obj as IActions;
 					if (toolActions != null)
 					{
-						var evrMenus = evr.GetNestedModule<Menus>();
+						var evrMenus = evr.m_Menus;
 
 						var actions = toolActions.actions;
 						foreach (var action in actions)
@@ -47,10 +47,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (toolActions != null)
 				{
 					var evrActionsModule = evr.GetModule<ActionsModule>();
-					var evrMenus = evr.GetNestedModule<Menus>();
 
 					evrActionsModule.RemoveActions(toolActions.actions);
-					evrMenus.UpdateAlternateMenuActions();
+					evr.m_Menus.UpdateAlternateMenuActions();
 				}
 			}
 		}

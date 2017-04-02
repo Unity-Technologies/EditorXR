@@ -53,10 +53,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				// Check if this is a MiniWorldRay
 				MiniWorlds.MiniWorldRay ray;
-				if (evr.GetNestedModule<MiniWorlds>().rays.TryGetValue(rayOrigin, out ray))
+				if (evr.m_MiniWorlds.rays.TryGetValue(rayOrigin, out ray))
 					rayOrigin = ray.originalRayOrigin;
 
-				var rays = evr.GetNestedModule<Rays>();
+				var rays = evr.m_Rays;
 				DefaultProxyRay dpr;
 				if (rays.defaultRays.TryGetValue(rayOrigin, out dpr))
 				{
@@ -81,13 +81,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				m_DirectSelections.Clear();
 				m_ActiveStates.Clear();
 
-				var rays = evr.GetNestedModule<Rays>();
+				var rays = evr.m_Rays;
 				var directSelection = objectsGrabber;
-				rays.ForEachProxyDevice((deviceData) =>
+				rays.ForEachProxyDevice(deviceData =>
 				{
 					var rayOrigin = deviceData.rayOrigin;
 					var input = deviceData.directSelectInput;
-					var obj = GetDirectSelectionForRayOrigin(rayOrigin, input);
+					var obj = GetDirectSelectionForRayOrigin(rayOrigin);
 					if (obj && !obj.CompareTag(k_VRPlayerTag))
 					{
 						m_ActiveStates.Add(input);
@@ -104,13 +104,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 				});
 
-				var miniWorlds = evr.GetNestedModule<MiniWorlds>();
-				foreach (var ray in miniWorlds.rays)
+				foreach (var ray in evr.m_MiniWorlds.rays)
 				{
 					var rayOrigin = ray.Key;
 					var miniWorldRay = ray.Value;
 					var input = miniWorldRay.directSelectInput;
-					var go = GetDirectSelectionForRayOrigin(rayOrigin, input);
+					var go = GetDirectSelectionForRayOrigin(rayOrigin);
 					if (go != null)
 					{
 						m_ActiveStates.Add(input);
@@ -130,16 +129,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				// Only activate direct selection input if the cone is inside of an object, so a trigger press can be detected,
 				// and keep it active if we are dragging
-				rays.ForEachProxyDevice((deviceData) =>
+				rays.ForEachProxyDevice(deviceData =>
 				{
 					var input = deviceData.directSelectInput;
 					input.active = m_ActiveStates.Contains(input);
 				});
 			}
 
-			GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, ActionMapInput input)
+			static GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin)
 			{
-				var intersectionModule = evr.GetModule<IntersectionModule>();
+				var intersectionModule = evr.m_IntersectionModule;
 				if (intersectionModule)
 				{
 					var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
@@ -151,15 +150,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			internal bool CanGrabObject(GameObject selection, Transform rayOrigin)
+			bool CanGrabObject(GameObject selection, Transform rayOrigin)
 			{
-				if (selection.CompareTag(k_VRPlayerTag) && !evr.GetNestedModule<MiniWorlds>().rays.ContainsKey(rayOrigin))
+				if (selection.CompareTag(k_VRPlayerTag) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
 					return false;
 
 				return true;
 			}
 
-			internal void OnObjectGrabbed(GameObject selection)
+			static void OnObjectGrabbed(GameObject selection)
 			{
 				// Detach the player head model so that it is not affected by its parent transform
 				if (selection.CompareTag(k_VRPlayerTag))
@@ -169,11 +168,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
+			void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
 			{
 				var sceneObjectModule = evr.GetModule<SceneObjectModule>();
 				var viewer = evr.GetNestedModule<Viewer>();
-				var miniWorlds = evr.GetNestedModule<MiniWorlds>();
+				var miniWorlds = evr.m_MiniWorlds;
 				foreach (var grabbedObject in grabbedObjects)
 				{
 					// Dropping the player head updates the camera rig position
