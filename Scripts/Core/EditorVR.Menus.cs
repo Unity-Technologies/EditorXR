@@ -32,12 +32,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			readonly Dictionary<Type, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<Type, ISettingsMenuProvider>();
 			List<Type> m_MainMenuTools;
+			WorkspaceModule m_WorkspaceModule;
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<IMenu> m_UpdateVisibilityMenus = new List<IMenu>();
 			readonly List<DeviceData> m_ActiveDeviceData = new List<DeviceData>();
-
-			public WorkspaceModule workspaceModule { private get; set; }
 
 			public Menus()
 			{
@@ -99,8 +98,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							menuSizes[menu] = currentMaxComponent;
 						}
 
+						if (m_WorkspaceModule == null)
+							m_WorkspaceModule = evr.GetModule<WorkspaceModule>();
+
 						var intersection = false;
-						var workspaces = workspaceModule.workspaces;
+						var workspaces = m_WorkspaceModule.workspaces;
 						for (int j = 0; j < workspaces.Count; j++)
 						{
 							var workspace = workspaces[j];

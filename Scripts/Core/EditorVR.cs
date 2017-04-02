@@ -177,8 +177,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var intersectionModule = AddModule<IntersectionModule>();
 			m_Interfaces.ConnectInterfaces(intersectionModule);
 			intersectionModule.Setup(spatialHashModule.spatialHash);
-			m_Rays.intersectionModule = intersectionModule;
-			m_DirectSelection.intersectionModule = intersectionModule;
 
 			var snappingModule = AddModule<SnappingModule>();
 			snappingModule.raycast = intersectionModule .Raycast;
@@ -192,7 +190,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
 			workspaceModule.workspaceDestroyed += workspace => { m_Interfaces.DisconnectInterfaces(workspace); };
 			workspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
-			m_Menus.workspaceModule = workspaceModule;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 

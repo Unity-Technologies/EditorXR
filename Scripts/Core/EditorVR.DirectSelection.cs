@@ -13,9 +13,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		class DirectSelection : Nested, IInterfaceConnector
 		{
 			internal IGrabObjects objectsGrabber { get; set; }
-			public IntersectionModule intersectionModule { private get; set; }
 
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
+
+			IntersectionModule m_IntersectionModule;
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<ActionMapInput> m_ActiveStates = new List<ActionMapInput>();
@@ -139,14 +140,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin)
 			{
-				if (intersectionModule)
-				{
-					var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+				if (m_IntersectionModule == null)
+					m_IntersectionModule = evr.GetModule<IntersectionModule>();
 
-					var renderer = intersectionModule.GetIntersectedObjectForTester(tester);
-					if (renderer)
-						return renderer.gameObject;
-				}
+				var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+
+				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+				if (renderer)
+					return renderer.gameObject;
 				return null;
 			}
 
