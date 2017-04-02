@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -29,10 +30,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		const int k_ThinFrameBlendShapeIndex = 3;
 		const string k_MaterialStencilRef = "_StencilRef";
 
-		const float kResizeIconCrossfadeDuration = 0.25f;
+		const float k_ResizeIconCrossfadeDuration = 0.2f;
+		const float k_ResizeIconSmoothFollow = 10f;
 
-		static readonly Vector3 s_BaseFrontPanelRotation = Vector3.zero;
-		static readonly Vector3 s_MaxFrontPanelRotation = new Vector3(90f, 0f, 0f);
+		static readonly Vector3 k_BaseFrontPanelRotation = Vector3.zero;
+		static readonly Vector3 k_MaxFrontPanelRotation = new Vector3(90f, 0f, 0f);
 
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
@@ -122,9 +124,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Image m_BackRightResizeIcon;
 
 		[SerializeField]
-		GameObject m_ResetButton;
-
-		[SerializeField]
 		Transform m_TopHighlightContainer;
 
 		[SerializeField]
@@ -174,17 +173,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			Vector3 m_BoundsSizeStart;
 			ResizeDirection m_Direction;
 
-			public DragState(WorkspaceUI workspaceUI, Transform rayOrigin, Vector3 pointerTipPosition, bool resizing)
+			public DragState(WorkspaceUI workspaceUI, Transform rayOrigin, bool resizing)
 			{
 				m_WorkspaceUI = workspaceUI;
 				this.resizing = resizing;
 
 				if (resizing)
 				{
-					m_DragStart = rayOrigin.position;
+					var pointerPosition = m_WorkspaceUI.GetPointerPositionForRayOrigin(rayOrigin);
+					m_DragStart = pointerPosition;
 					m_PositionStart = workspaceUI.transform.parent.position;
 					m_BoundsSizeStart = workspaceUI.bounds.size;
-					m_Direction = m_WorkspaceUI.GetResizeDirectionForPosition(pointerTipPosition);
+					var localPosition = m_WorkspaceUI.transform.InverseTransformPoint(pointerPosition);
+					m_Direction = m_WorkspaceUI.GetResizeDirectionForLocalPosition(localPosition);
 				}
 				else
 				{
@@ -197,7 +198,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (resizing)
 				{
 					var viewerScale = m_WorkspaceUI.GetViewerScale();
-					var dragVector = (rayOrigin.position - m_DragStart) / viewerScale;
+					var pointerPosition = m_WorkspaceUI.GetPointerPositionForRayOrigin(rayOrigin);
+					var dragVector = (pointerPosition - m_DragStart) / viewerScale;
 					var bounds = m_WorkspaceUI.bounds;
 					var transform = m_WorkspaceUI.transform;
 
@@ -240,31 +242,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 							break;
 					}
 
-					//if (m_Handle.Equals(workspaceUI.frontLeftHandle))
-					//{
-					//	bounds.size = m_BoundsSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right)
-					//		+ Vector3.back * Vector3.Dot(dragVector, transform.forward);
-					//}
-
-					//if (m_Handle.Equals(workspaceUI.backLeftHandle))
-					//{
-					//	bounds.size = m_BoundsSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right)
-					//		+ Vector3.forward * Vector3.Dot(dragVector, transform.forward);
-					//}
-
-					//if (m_Handle.Equals(workspaceUI.frontRightHandle))
-					//{
-					//	bounds.size = m_BoundsSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right)
-					//		+ Vector3.back * Vector3.Dot(dragVector, transform.forward);
-					//}
-
-					//if (m_Handle.Equals(workspaceUI.backRightHandle))
-					//{
-					//	var size = m_BoundsSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right)
-					//		+ Vector3.forward * Vector3.Dot(dragVector, transform.forward);
-					//	bounds.size = size;
-					//}
-
 					if (m_WorkspaceUI.resize != null)
 						m_WorkspaceUI.resize(bounds);
 
@@ -277,8 +254,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						positionOffset += positionOffsetForward;
 
 					m_WorkspaceUI.transform.parent.position = m_PositionStart + positionOffset * viewerScale;
-
-					m_PositionOffset = rayOrigin.position;
 				}
 				else
 				{
@@ -374,12 +349,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				const float kWidthOffset = -0.165f;
 				const float kDepthOffset = -0.038f;
 
-				const float kFaceMargin = 0.025f;
-
 				var width = size.x;
 				var depth = size.z;
-				var faceWidth = width - kFaceMargin;
-				var faceDepth = depth - kFaceMargin;
+				var faceWidth = width - Workspace.FaceMargin;
+				var faceDepth = depth - Workspace.FaceMargin;
 
 				m_Frame.SetBlendShapeWeight(0, width * kWidthMultiplier + kWidthOffset);
 				m_Frame.SetBlendShapeWeight(1, depth * kDepthMultiplier + kDepthOffset);
@@ -517,7 +490,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var resizePositionZ = halfDepth + m_ResizeHandleMargin;
 			transform = m_FrontResizeIcon.transform;
 			var localPosition = transform.localPosition;
-			localPosition.z = -resizePositionZ;
+			localPosition.z = -resizePositionZ - m_HandleZOffset;
 			transform.localPosition = localPosition;
 
 			transform = m_RightResizeIcon.transform;
@@ -541,13 +514,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			transform = m_FrontLeftResizeIcon.transform;
 			localPosition = transform.localPosition;
 			localPosition.x = -resizeCornerPositionX;
-			localPosition.z = -resizeCornerPositionZ;
+			localPosition.z = -resizeCornerPositionZ - m_HandleZOffset;
 			transform.localPosition = localPosition;
 
 			transform = m_FrontRightResizeIcon.transform;
 			localPosition = transform.localPosition;
 			localPosition.x = resizeCornerPositionX;
-			localPosition.z = -resizeCornerPositionZ;
+			localPosition.z = -resizeCornerPositionZ - m_HandleZOffset;
 			transform.localPosition = localPosition;
 
 			transform = m_BackLeftResizeIcon.transform;
@@ -571,14 +544,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_HovereringRayOrigins.Add(eventData.rayOrigin);
 		}
 
-		public ResizeDirection GetResizeDirectionForPosition(Vector3 worldPosition)
+		public ResizeDirection GetResizeDirectionForLocalPosition(Vector3 localPosition)
 		{
-			var localPosition = transform.InverseTransformPoint(worldPosition);
 			var direction = localPosition.x > 0 ? ResizeDirection.Right : ResizeDirection.Left;
 			var zDirection = localPosition.z > 0 ? ResizeDirection.Back : ResizeDirection.Front;
 
 			var cornerX = bounds.extents.x - Mathf.Abs(localPosition.x) < m_ResizeCornerSize;
-			var cornerZ = bounds.extents.z - Mathf.Abs(localPosition.z) < m_ResizeCornerSize;
+			var zDistance = bounds.extents.z - Mathf.Abs(localPosition.z);
+			if (localPosition.z < 0)
+				zDistance += m_HandleZOffset;
+			var cornerZ = zDistance < m_ResizeCornerSize;
 
 			if (cornerX && cornerZ)
 				direction |= zDirection;
@@ -619,7 +594,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				Image lastResizeIcon;
 				if (m_LastResizeIcons.TryGetValue(rayOrigin, out lastResizeIcon))
 				{
-					lastResizeIcon.CrossFadeAlpha(0f, kResizeIconCrossfadeDuration, true);
+					lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
 					m_LastResizeIcons.Remove(rayOrigin);
 				}
 			}
@@ -660,7 +635,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float kFrontPanelYOffset = 0.03f;
 			const float kFrontPanelZStartOffset = 0.0084f;
 			const float kFrontPanelZEndOffset = -0.05f;
-			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(s_BaseFrontPanelRotation, s_MaxFrontPanelRotation, m_LerpAmount * kAdditionalFrontPanelLerpPadding));
+			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(k_BaseFrontPanelRotation, k_MaxFrontPanelRotation, m_LerpAmount * kAdditionalFrontPanelLerpPadding));
 			m_FrontPanel.localPosition = Vector3.Lerp(Vector3.forward * kFrontPanelZStartOffset, new Vector3(0, kFrontPanelYOffset, kFrontPanelZEndOffset), m_LerpAmount);
 
 			const float kHandleZOffset = 0.1f;
@@ -679,54 +654,99 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var primaryRight = input.primaryRight;
 			var secondaryLeft = input.secondaryLeft;
 			var secondaryRight = input.secondaryRight;
-			foreach (var rayOrigin in m_HovereringRayOrigins)
+			if (m_DragStates.Count == 0)
 			{
-				var dragStart = false;
-				var resize = false;
-				if (rayOrigin == leftRayOrigin && primaryLeft.wasJustPressed)
+				foreach (var rayOrigin in m_HovereringRayOrigins)
 				{
-					consumeControl(primaryLeft);
-					dragStart = true;
-					resize = true;
-				}
-				if (rayOrigin == rightRayOrigin && primaryRight.wasJustPressed)
-				{
-					consumeControl(primaryRight);
-					dragStart = true;
-					resize = true;
-				}
-				if (rayOrigin == leftRayOrigin && secondaryLeft.wasJustPressed)
-				{
-					consumeControl(secondaryLeft);
-					dragStart = true;
-				}
-				if (rayOrigin == rightRayOrigin && secondaryRight.wasJustPressed)
-				{
-					consumeControl(secondaryRight);
-					dragStart = true;
-				}
-
-				var pointerTipPosition = rayOrigin.position + rayOrigin.forward * getPointerLength(rayOrigin);
-
-				if (dragStart)
-					m_DragStates[rayOrigin] = new DragState(this, rayOrigin, pointerTipPosition, resize);
-
-				const float kVisibleOpacity = 0.75f;
-				var resizeIcon = GetResizeIconForDirection(GetResizeDirectionForPosition(pointerTipPosition));
-				Image lastResizeIcon;
-				if (m_LastResizeIcons.TryGetValue(rayOrigin, out lastResizeIcon))
-				{
-					if (resizeIcon != lastResizeIcon)
+					var dragStart = false;
+					var resize = false;
+					if (rayOrigin == leftRayOrigin && primaryLeft.wasJustPressed)
 					{
-						resizeIcon.CrossFadeAlpha(kVisibleOpacity, kResizeIconCrossfadeDuration, true);
-						lastResizeIcon.CrossFadeAlpha(0f, kResizeIconCrossfadeDuration, true);
+						consumeControl(primaryLeft);
+						dragStart = true;
+						resize = true;
 					}
+					if (rayOrigin == rightRayOrigin && primaryRight.wasJustPressed)
+					{
+						consumeControl(primaryRight);
+						dragStart = true;
+						resize = true;
+					}
+					if (rayOrigin == leftRayOrigin && secondaryLeft.wasJustPressed)
+					{
+						consumeControl(secondaryLeft);
+						dragStart = true;
+					}
+					if (rayOrigin == rightRayOrigin && secondaryRight.wasJustPressed)
+					{
+						consumeControl(secondaryRight);
+						dragStart = true;
+					}
+
+					Image lastResizeIcon;
+					m_LastResizeIcons.TryGetValue(rayOrigin, out lastResizeIcon);
+
+					if (dragStart)
+					{
+						m_DragStates[rayOrigin] = new DragState(this, rayOrigin, resize);
+						if (lastResizeIcon != null)
+							lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
+
+						foreach (var smoothMotion in GetComponentsInChildren<SmoothMotion>())
+						{
+							smoothMotion.enabled = false;
+						}
+					}
+
+					const float kVisibleOpacity = 0.75f;
+					var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
+					var direction = GetResizeDirectionForLocalPosition(localPosition);
+					var resizeIcon = GetResizeIconForDirection(direction);
+
+					if (lastResizeIcon != null)
+					{
+						if (resizeIcon != lastResizeIcon)
+						{
+							resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
+							lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
+						}
+					}
+					else
+					{
+						resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
+					}
+
+					m_LastResizeIcons[rayOrigin] = resizeIcon;
+
+					var iconTransform = resizeIcon.transform;
+					var iconPosition = iconTransform.localPosition;
+					var smoothFollow = lastResizeIcon == null ? 1 :  k_ResizeIconSmoothFollow * Time.unscaledDeltaTime;
+					var localDirection = localPosition - transform.InverseTransformPoint(rayOrigin.position);
+					switch (direction)
+					{
+						case ResizeDirection.Front:
+						case ResizeDirection.Back:
+							var iconPositionX = iconPosition.x;
+							var positionOffsetX = Mathf.Sign(localDirection.x) * m_ResizeHandleMargin;
+							var tergetPositionX = localPosition.x + positionOffsetX;
+							if (Mathf.Abs(tergetPositionX) > bounds.extents.x - m_ResizeCornerSize)
+								tergetPositionX = localPosition.x - positionOffsetX;
+
+							iconPosition.x = Mathf.Lerp(iconPositionX, tergetPositionX, smoothFollow);
+							break;
+						case ResizeDirection.Left:
+						case ResizeDirection.Right:
+							var iconPositionZ = iconPosition.z;
+							var positionOffsetZ = Mathf.Sign(localDirection.z) * m_ResizeHandleMargin;
+							var tergetPositionZ = localPosition.z + positionOffsetZ;
+							if (Mathf.Abs(tergetPositionZ) > bounds.extents.z - m_ResizeCornerSize)
+								tergetPositionZ = localPosition.z - positionOffsetZ;
+
+							iconPosition.z = Mathf.Lerp(iconPositionZ, tergetPositionZ, smoothFollow);
+							break;
+					}
+					iconTransform.localPosition = iconPosition;
 				}
-				else
-				{
-					resizeIcon.CrossFadeAlpha(kVisibleOpacity, kResizeIconCrossfadeDuration, true);
-				}
-				m_LastResizeIcons[rayOrigin] = resizeIcon;
 			}
 
 			m_DragsEnded.Clear();
@@ -747,15 +767,36 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					m_DragsEnded.Add(rayOrigin);
 			}
 
+			if (m_DragsEnded.Count > 0)
+			{
+				foreach (var smoothMotion in GetComponentsInChildren<SmoothMotion>())
+				{
+					smoothMotion.enabled = true;
+				}
+			}
+
 			for (int i = 0; i < m_DragsEnded.Count; i++)
 			{
-				m_DragStates.Remove(m_DragsEnded[i]);
+				var rayOrigin = m_DragsEnded[i];
+				m_DragStates.Remove(rayOrigin);
+				if (m_HovereringRayOrigins.Contains(rayOrigin))
+				{
+					var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
+					var direction = GetResizeDirectionForLocalPosition(localPosition);
+					GetResizeIconForDirection(direction);
+				}
 			}
 
 			foreach (var kvp in m_DragStates)
 			{
-				kvp.Value.OnDragging(kvp.Key);
+				var rayOrigin = kvp.Key;
+				kvp.Value.OnDragging(rayOrigin);
 			}
+		}
+
+		Vector3 GetPointerPositionForRayOrigin(Transform rayOrigin)
+		{
+			return rayOrigin.position + rayOrigin.forward * getPointerLength(rayOrigin);
 		}
 
 		void OnDestroy()
@@ -847,3 +888,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	}
 }
 #endif
+

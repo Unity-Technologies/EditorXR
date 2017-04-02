@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace ListView
 {
-	class NestedListViewController<TData, TItem, TIndex> 
-		: ListViewController<TData, TItem, TIndex>
+	class NestedListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>
 		where TData : ListViewItemNestedData<TData, TIndex>
 		where TItem : ListViewItem<TData, TIndex>
 	{

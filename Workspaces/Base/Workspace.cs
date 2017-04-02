@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		const float k_MaxFrameSize = 100f;
 		public static readonly Vector3 k_DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 
-		public const float HandleMargin = -0.15f; // Compensate for base size from frame model
+		public const float FaceMargin = 0.025f; // Compensate for base size from frame model
 
 		public event Action<IWorkspace> destroyed;
 

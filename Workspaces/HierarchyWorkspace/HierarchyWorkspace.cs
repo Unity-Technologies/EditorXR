@@ -121,8 +121,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var listView = m_HierarchyUI.listView;
 			var bounds = contentBounds;
 			size.y = float.MaxValue; // Add height for dropdowns
-			size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
-			size.z -= 0.15f; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
+			size.x -= FaceMargin * 2; // Shrink the content width, so that there is space allowed to grab and scroll
+			size.z -= FaceMargin * 2; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
 			bounds.size = size;
 			listView.bounds = bounds;
 
