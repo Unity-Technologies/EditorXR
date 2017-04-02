@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		const float k_LeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 		const float k_PaneMargin = 0.01f;
 		const float k_PanelMargin = 0.01f;
-		const float k_ScrollMargin = 0.03f;
+		const float k_ScrollMargin = -0.03f;
 		const float k_YBounds = 0.2f;
 
 		const float k_MinScale = 0.04f;
@@ -67,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(k_MinBounds.x, k_MinBounds.y, 0.5f);
+			minBounds = new Vector3(MinBounds.x, MinBounds.y, 0.5f);
 			m_CustomStartingBounds = minBounds;
 
 			base.Setup();
@@ -145,47 +145,41 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override void OnBoundsChanged()
 		{
 			const float kSideScrollBoundsShrinkAmount = 0.03f;
-			const float depthCompensation = 0.1375f;
 
 			var bounds = contentBounds;
 			var size = bounds.size;
-			size.x -= k_PaneMargin * 2;
 			size.x *= k_LeftPaneRatio;
 			size.y = k_YBounds;
-			size.z = size.z - depthCompensation;
 			bounds.size = size;
 			bounds.center = Vector3.zero;
 
 			var halfScrollMargin = k_ScrollMargin * 0.5f;
 			var doubleScrollMargin = k_ScrollMargin * 2;
-			var xOffset = (contentBounds.size.x - size.x + k_PaneMargin) * -0.5f;
+			var xOffset = (contentBounds.size.x - size.x) * -0.5f;
 			var folderScrollHandleXPositionOffset = 0.025f;
 			var folderScrollHandleXScaleOffset = 0.015f;
 
 			var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
-			folderScrollHandleTransform.localPosition = new Vector3(xOffset - halfScrollMargin + folderScrollHandleXPositionOffset, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
-			folderScrollHandleTransform.localScale = new Vector3(size.x + k_ScrollMargin + folderScrollHandleXScaleOffset, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
+			folderScrollHandleTransform.localPosition = new Vector3(xOffset, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
+			folderScrollHandleTransform.localScale = new Vector3(size.x - FaceMargin, folderScrollHandleTransform.localScale.y, size.z);
 
 			var folderListView = m_ProjectUI.folderListView;
 			size.x -= kSideScrollBoundsShrinkAmount; // set narrow x bounds for scrolling region on left side of folder list view
 			bounds.size = size;
 			folderListView.bounds = bounds;
-			const float kFolderListShrinkAmount = kSideScrollBoundsShrinkAmount / 2.2f; // Empirically determined value to allow for scroll borders
-			folderListView.transform.localPosition = new Vector3(xOffset + kFolderListShrinkAmount, folderListView.itemSize.y * 0.5f, 0); // Center in Y
+			//const float kFolderListShrinkAmount = kSideScrollBoundsShrinkAmount / 2.2f; // Empirically determined value to allow for scroll borders
+			folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0); // Center in Y
 
 			var folderPanel = m_ProjectUI.folderPanel;
 			folderPanel.transform.localPosition = xOffset * Vector3.right;
-			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + k_PanelMargin);
-			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + k_PanelMargin);
-
-			m_FolderPanelHighlightContainer.localScale = new Vector3(size.x + kSideScrollBoundsShrinkAmount, 1f, size.z);
+			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x - FaceMargin);
+			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z - FaceMargin);
 
 			m_FolderPanelHighlightContainer.localScale = new Vector3(size.x + kSideScrollBoundsShrinkAmount, 1f, size.z);
 
 			size = contentBounds.size;
 			size.x -= k_PaneMargin * 2; // Reserve space for scroll on both sides
 			size.x *= 1 - k_LeftPaneRatio;
-			size.z = size.z - depthCompensation;
 			bounds.size = size;
 
 			xOffset = (contentBounds.size.x - size.x + k_PaneMargin) * 0.5f;

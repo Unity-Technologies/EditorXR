@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-//#define debug
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,16 +12,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-#if debug
-	[ExecuteInEditMode]
-#endif
 	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale
 	{
-#if debug
-		public Bounds editorBounds;
-		public float width, height, offset;
-#endif
-
 		public event Action closeClicked;
 		public event Action resetSizeClicked;
 
@@ -203,26 +194,26 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					var bounds = m_WorkspaceUI.bounds;
 					var transform = m_WorkspaceUI.transform;
 
-					var positionOffsetForward = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
-					var positionOffsetRight = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
+					var positionOffsetForward = Vector3.Dot(dragVector, transform.forward) * 0.5f;
+					var positionOffsetRight = Vector3.Dot(dragVector, transform.right) * 0.5f;
 
 					switch (m_Direction)
 					{
 						default:
 							bounds.size = m_BoundsSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
-							positionOffsetRight = Vector3.zero;
+							positionOffsetRight = 0;
 							break;
 						case ResizeDirection.Back:
-							bounds.size = m_BoundsSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
-							positionOffsetRight = Vector3.zero;
+							bounds.size = m_BoundsSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
+							positionOffsetRight = 0;
 							break;
 						case ResizeDirection.Left:
 							bounds.size = m_BoundsSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
-							positionOffsetForward = Vector3.zero;
+							positionOffsetForward = 0;
 							break;
 						case ResizeDirection.Right:
 							bounds.size = m_BoundsSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
-							positionOffsetForward = Vector3.zero;
+							positionOffsetForward = 0;
 							break;
 						case ResizeDirection.Front | ResizeDirection.Left:
 							bounds.size = m_BoundsSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right)
@@ -245,13 +236,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					if (m_WorkspaceUI.resize != null)
 						m_WorkspaceUI.resize(bounds);
 
-					var currentSize = m_WorkspaceUI.bounds.size;
-					var positionOffset = Vector3.zero;
-					if (Mathf.Approximately(currentSize.x, bounds.size.x))
-						positionOffset += positionOffsetRight;
-
-					if (Mathf.Approximately(currentSize.z, bounds.size.z))
-						positionOffset += positionOffsetForward;
+					var currentExtents = m_WorkspaceUI.bounds.extents;
+					var extents = bounds.extents;
+					var absRight = Mathf.Abs(positionOffsetRight);
+					var absForward = Mathf.Abs(positionOffsetForward);
+					var positionOffset = transform.right * (absRight - (currentExtents.x - extents.x)) * Mathf.Sign(positionOffsetRight)
+						+ transform.forward * (absForward - (currentExtents.z - extents.z)) * Mathf.Sign(positionOffsetForward);
 
 					m_WorkspaceUI.transform.parent.position = m_PositionStart + positionOffset * viewerScale;
 				}
@@ -363,10 +353,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				localPosition.z = -extents.z;
 				m_UIContentContainer.localPosition = localPosition;
 
-				// Adjust front panel position if dynamic adjustment is enabled
-				//if (!m_DynamicFaceAdjustment)
-				//	m_FrontPanel.localPosition = new Vector3(0f, m_OriginalFontPanelLocalPosition.y, k_PanelOffset);
-
 				// Resize front panel
 				m_FrameFrontFaceTransform.localScale = new Vector3(faceWidth, 1f, 1f);
 				const float kFrontFaceHighlightMargin = 0.0008f;
@@ -375,9 +361,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				// Position the separator mask if enabled
 				if (m_TopPanelDividerOffset != null)
 				{
-					const float kDepthCompensation = 0.1375f;
 					m_TopPanelDividerTransform.localPosition = new Vector3(size.x * 0.5f * m_TopPanelDividerOffset.Value, 0f, 0f);
-					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, size.z - kDepthCompensation);
+					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, faceDepth);
 				}
 
 				// Scale the Top Face and the Top Face Highlight
@@ -538,7 +523,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
-			if (m_HovereringRayOrigins.Count == 0)
+			if (m_HovereringRayOrigins.Count == 0 && m_DragStates.Count == 0)
 				IncreaseFrameThickness();
 
 			m_HovereringRayOrigins.Add(eventData.rayOrigin);
@@ -546,19 +531,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public ResizeDirection GetResizeDirectionForLocalPosition(Vector3 localPosition)
 		{
-			var direction = localPosition.x > 0 ? ResizeDirection.Right : ResizeDirection.Left;
-			var zDirection = localPosition.z > 0 ? ResizeDirection.Back : ResizeDirection.Front;
+			var direction = localPosition.z > 0 ? ResizeDirection.Back : ResizeDirection.Front;
+			var xDirection = localPosition.x > 0 ? ResizeDirection.Right : ResizeDirection.Left;
 
-			var cornerX = bounds.extents.x - Mathf.Abs(localPosition.x) < m_ResizeCornerSize;
 			var zDistance = bounds.extents.z - Mathf.Abs(localPosition.z);
 			if (localPosition.z < 0)
 				zDistance += m_HandleZOffset;
 			var cornerZ = zDistance < m_ResizeCornerSize;
+			var cornerX = bounds.extents.x - Mathf.Abs(localPosition.x) < m_ResizeCornerSize;
 
-			if (cornerX && cornerZ)
-				direction |= zDirection;
-			else if (cornerZ)
-				direction = zDirection;
+			if (cornerZ && cornerX)
+				direction |= xDirection;
+			else if (cornerX)
+				direction = xDirection;
 
 			return direction;
 		}
@@ -605,18 +590,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void Update()
 		{
-#if debug
-			bounds = editorBounds;
-#endif
-
 			if (!m_DynamicFaceAdjustment)
 				return;
 
 			var currentXRotation = transform.rotation.eulerAngles.x;
-#if !debug
 			if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
 				return; // Exit if no x rotation change occurred for this frame
-#endif
 
 			m_PreviousXRotation = currentXRotation;
 
@@ -660,13 +639,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					var dragStart = false;
 					var resize = false;
-					if (rayOrigin == leftRayOrigin && primaryLeft.wasJustPressed)
+					if (rayOrigin == leftRayOrigin && primaryLeft.wasJustPressed && !preventResize)
 					{
 						consumeControl(primaryLeft);
 						dragStart = true;
 						resize = true;
 					}
-					if (rayOrigin == rightRayOrigin && primaryRight.wasJustPressed)
+					if (rayOrigin == rightRayOrigin && primaryRight.wasJustPressed && !preventResize)
 					{
 						consumeControl(primaryRight);
 						dragStart = true;
@@ -692,60 +671,65 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						if (lastResizeIcon != null)
 							lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
 
+						ResetFrameThickness();
+
 						foreach (var smoothMotion in GetComponentsInChildren<SmoothMotion>())
 						{
 							smoothMotion.enabled = false;
 						}
 					}
 
-					const float kVisibleOpacity = 0.75f;
-					var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
-					var direction = GetResizeDirectionForLocalPosition(localPosition);
-					var resizeIcon = GetResizeIconForDirection(direction);
-
-					if (lastResizeIcon != null)
+					if (!preventResize)
 					{
-						if (resizeIcon != lastResizeIcon)
+						const float kVisibleOpacity = 0.75f;
+						var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
+						var direction = GetResizeDirectionForLocalPosition(localPosition);
+						var resizeIcon = GetResizeIconForDirection(direction);
+
+						if (lastResizeIcon != null)
+						{
+							if (resizeIcon != lastResizeIcon)
+							{
+								resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
+								lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
+							}
+						}
+						else
 						{
 							resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
-							lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
 						}
+
+						m_LastResizeIcons[rayOrigin] = resizeIcon;
+
+						var iconTransform = resizeIcon.transform;
+						var iconPosition = iconTransform.localPosition;
+						var smoothFollow = lastResizeIcon == null ? 1 : k_ResizeIconSmoothFollow * Time.unscaledDeltaTime;
+						var localDirection = localPosition - transform.InverseTransformPoint(rayOrigin.position);
+						switch (direction)
+						{
+							case ResizeDirection.Front:
+							case ResizeDirection.Back:
+								var iconPositionX = iconPosition.x;
+								var positionOffsetX = Mathf.Sign(localDirection.x) * m_ResizeHandleMargin;
+								var tergetPositionX = localPosition.x + positionOffsetX;
+								if (Mathf.Abs(tergetPositionX) > bounds.extents.x - m_ResizeCornerSize)
+									tergetPositionX = localPosition.x - positionOffsetX;
+
+								iconPosition.x = Mathf.Lerp(iconPositionX, tergetPositionX, smoothFollow);
+								break;
+							case ResizeDirection.Left:
+							case ResizeDirection.Right:
+								var iconPositionZ = iconPosition.z;
+								var positionOffsetZ = Mathf.Sign(localDirection.z) * m_ResizeHandleMargin;
+								var tergetPositionZ = localPosition.z + positionOffsetZ;
+								if (Mathf.Abs(tergetPositionZ) > bounds.extents.z - m_ResizeCornerSize)
+									tergetPositionZ = localPosition.z - positionOffsetZ;
+
+								iconPosition.z = Mathf.Lerp(iconPositionZ, tergetPositionZ, smoothFollow);
+								break;
+						}
+						iconTransform.localPosition = iconPosition;
 					}
-					else
-					{
-						resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
-					}
-
-					m_LastResizeIcons[rayOrigin] = resizeIcon;
-
-					var iconTransform = resizeIcon.transform;
-					var iconPosition = iconTransform.localPosition;
-					var smoothFollow = lastResizeIcon == null ? 1 :  k_ResizeIconSmoothFollow * Time.unscaledDeltaTime;
-					var localDirection = localPosition - transform.InverseTransformPoint(rayOrigin.position);
-					switch (direction)
-					{
-						case ResizeDirection.Front:
-						case ResizeDirection.Back:
-							var iconPositionX = iconPosition.x;
-							var positionOffsetX = Mathf.Sign(localDirection.x) * m_ResizeHandleMargin;
-							var tergetPositionX = localPosition.x + positionOffsetX;
-							if (Mathf.Abs(tergetPositionX) > bounds.extents.x - m_ResizeCornerSize)
-								tergetPositionX = localPosition.x - positionOffsetX;
-
-							iconPosition.x = Mathf.Lerp(iconPositionX, tergetPositionX, smoothFollow);
-							break;
-						case ResizeDirection.Left:
-						case ResizeDirection.Right:
-							var iconPositionZ = iconPosition.z;
-							var positionOffsetZ = Mathf.Sign(localDirection.z) * m_ResizeHandleMargin;
-							var tergetPositionZ = localPosition.z + positionOffsetZ;
-							if (Mathf.Abs(tergetPositionZ) > bounds.extents.z - m_ResizeCornerSize)
-								tergetPositionZ = localPosition.z - positionOffsetZ;
-
-							iconPosition.z = Mathf.Lerp(iconPositionZ, tergetPositionZ, smoothFollow);
-							break;
-					}
-					iconTransform.localPosition = iconPosition;
 				}
 			}
 
@@ -833,7 +817,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		IEnumerator ChangeFrameThickness(float targetBlendAmount)
 		{
-			const float kTargetDuration = 0.5f;
+			const float kTargetDuration = 0.25f;
 			var currentDuration = 0f;
 			var currentBlendAmount = m_Frame.GetBlendShapeWeight(k_ThinFrameBlendShapeIndex);
 			var currentVelocity = 0f;
@@ -888,4 +872,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	}
 }
 #endif
-

@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
 	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking
 	{
-		static readonly float k_InitReferenceYOffset = k_DefaultBounds.y / 2.05f; // Show more space above ground than below
+		static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.05f; // Show more space above ground than below
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default
 
 		const float k_MinScale = 0.01f;
@@ -70,8 +70,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(k_MinBounds.x, k_MinBounds.y, 0.25f);
-			m_CustomStartingBounds = new Vector3(k_MinBounds.x, k_MinBounds.y, 0.5f);
+			minBounds = new Vector3(MinBounds.x, MinBounds.y, 0.25f);
+			m_CustomStartingBounds = new Vector3(MinBounds.x, MinBounds.y, 0.5f);
 
 			base.Setup();
 
@@ -203,13 +203,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override void OnBoundsChanged()
 		{
 			m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
-			const float kOffsetToAccountForFrameSize = -0.14f;
 
-			// NOTE: We are correcting bounds because the mesh needs to be updated
-			var correctedBounds = new Bounds(contentBounds.center, new Vector3(contentBounds.size.x, contentBounds.size.y, contentBounds.size.z + kOffsetToAccountForFrameSize));
-			m_MiniWorld.localBounds = correctedBounds;
-			m_MiniWorldUI.boundsCube.transform.localScale = correctedBounds.size;
-			m_MiniWorldUI.grid.transform.localScale = Vector3.one * new Vector2(correctedBounds.size.x, correctedBounds.size.z).magnitude;
+			var boundsWithMargin = contentBounds;
+			var size = contentBounds.size;
+			size.x -= FaceMargin;
+			size.z -= FaceMargin;
+			boundsWithMargin.size = size;
+			m_MiniWorld.localBounds = boundsWithMargin;
+			m_MiniWorldUI.boundsCube.transform.localScale = size;
+			m_MiniWorldUI.grid.transform.localScale = Vector3.one * new Vector2(size.x, size.z).magnitude;
 		}
 
 		void OnSliding(float value)
