@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				if (!value.Equals(contentBounds))
 				{
-					Vector3 size = value.size;
+					var size = value.size;
 					size.x = Mathf.Max(size.x, minBounds.x);
 					size.y = Mathf.Max(size.y, minBounds.y);
 					size.z = Mathf.Max(size.z, minBounds.z);
@@ -46,16 +46,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 			}
 		}
-		private Bounds m_ContentBounds;
+		Bounds m_ContentBounds;
 
 		[SerializeField]
-		private GameObject m_BasePrefab;
+		GameObject m_BasePrefab;
 
-		private Vector3 m_DragStart;
-		private Vector3 m_PositionStart;
-		private Vector3 m_BoundSizeStart;
-		private bool m_Dragging;
-		private bool m_Vacuuming;
+		Vector3 m_DragStart;
+		Vector3 m_PositionStart;
+		Vector3 m_BoundSizeStart;
+		bool m_Dragging;
 		bool m_Moving;
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ResetSizeCoroutine;
@@ -112,7 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public virtual void Setup()
 		{
-			GameObject baseObject = this.InstantiateUI(m_BasePrefab);
+			var baseObject = this.InstantiateUI(m_BasePrefab);
 			baseObject.transform.SetParent(transform, false);
 
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
@@ -123,7 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-			m_ContentBounds = new Bounds(Vector3.up * DefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? DefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
+			m_ContentBounds = new Bounds(Vector3.up * DefaultBounds.y * 0.5f, m_CustomStartingBounds ?? DefaultBounds); // If custom bounds have been set, use them as the initial bounds
 			UpdateBounds();
 
 			//Set up DirectManipulator
@@ -132,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			directManipulator.translate = Translate;
 			directManipulator.rotate = Rotate;
 
-			//Set up the front "move" handle highglight, the move handle is used to translate/rotate the workspace
+			//Set up the front "move" handle highlight, the move handle is used to translate/rotate the workspace
 			var moveHandle = m_WorkspaceUI.moveHandle;
 			moveHandle.dragStarted += OnMoveHandleDragStarted;
 			moveHandle.dragEnded += OnMoveHandleDragEnded;
@@ -224,12 +223,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 		}
 
-		private void Translate(Vector3 deltaPosition)
+		void Translate(Vector3 deltaPosition, Transform rayOrigin, bool constrained)
 		{
 			transform.position += deltaPosition;
 		}
 
-		private void Rotate(Quaternion deltaRotation)
+		void Rotate(Quaternion deltaRotation)
 		{
 			transform.rotation *= deltaRotation;
 		}
@@ -248,7 +247,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
 		}
 
-		private void UpdateBounds()
+		void UpdateBounds()
 		{
 			m_WorkspaceUI.bounds = contentBounds;
 		}
@@ -343,7 +342,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var currentBoundsSize = contentBounds.size;
 			var currentBoundsCenter = contentBounds.center;
-			var targetBoundsSize = m_CustomStartingBounds != null ? m_CustomStartingBounds.Value : minBounds;
+			var targetBoundsSize = m_CustomStartingBounds ?? minBounds;
 			var targetBoundsCenter = Vector3.zero;
 			var smoothVelocitySize = Vector3.zero;
 			var smoothVelocityCenter = Vector3.zero;

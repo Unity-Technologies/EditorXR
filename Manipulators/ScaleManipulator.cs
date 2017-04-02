@@ -8,12 +8,12 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 	sealed class ScaleManipulator : BaseManipulator
 	{
 		[SerializeField]
-		private BaseHandle m_UniformHandle;
+		BaseHandle m_UniformHandle;
 
 		[SerializeField]
-		private List<BaseHandle> m_AxesHandles;
+		List<BaseHandle> m_AxesHandles;
 
-		private readonly List<BaseHandle> m_AllHandles = new List<BaseHandle>();
+		readonly List<BaseHandle> m_AllHandles = new List<BaseHandle>();
 
 		void Awake()
 		{
@@ -74,10 +74,12 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			dragging = true;
 		}
 
-		private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
+		void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			foreach (var h in m_AllHandles)
 				h.gameObject.SetActive(true);
+
+			OnDragEnded(eventData.rayOrigin);
 
 			dragging = false;
 		}

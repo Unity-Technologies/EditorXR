@@ -39,11 +39,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var playerModel = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<Renderer>();
 				evr.GetModule<SpatialHashModule>().spatialHash.AddObject(playerModel, playerModel.bounds);
+				evr.GetModule<SnappingModule>().ignoreList = playerModel.GetComponentsInChildren<Renderer>(true);
 			}
 
 			internal bool IsOverShoulder(Transform rayOrigin)
 			{
-				var radius = evr.GetNestedModule<DirectSelection>().GetPointerLength(rayOrigin);
+				var radius = evr.m_DirectSelection.GetPointerLength(rayOrigin);
 				var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 				foreach (var collider in colliders)
 				{
