@@ -2200,13 +2200,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_SnappingEnabled: {fileID: 114000013726484858}
-  m_GroundSnapping: {fileID: 114000011740143044}
-  m_SurfaceSnapping: {fileID: 114000012943056720}
-  m_PivotSnapping: {fileID: 114000013071561082}
-  m_SnapRotation: {fileID: 114000010532990664}
+  m_GroundSnappingEnabled: {fileID: 114000011740143044}
+  m_SurfaceSnappingEnabled: {fileID: 114000012943056720}
+  m_PivotSnappingEnabled: {fileID: 114000013071561082}
+  m_RotationSnappingEnabled: {fileID: 114000010532990664}
   m_LocalOnly: {fileID: 114000012781285154}
-  m_ManipulatorSnapping: {fileID: 114000010948304686}
-  m_DirectSnapping: {fileID: 114000013490178622}
+  m_ManipulatorSnappingEnabled: {fileID: 114000010948304686}
+  m_DirectSnappingEnabled: {fileID: 114000013490178622}
 --- !u!114 &114000013560910782
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3462,10 +3462,10 @@ RectTransform:
   - {fileID: 224000011535763916}
   m_Father: {fileID: 224000013685981678}
   m_RootOrder: 2
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 139.89926, y: -251}
+  m_SizeDelta: {x: 263.2, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!224 &224000013236744868
 RectTransform:
@@ -3519,10 +3519,10 @@ RectTransform:
   - {fileID: 224000013320694852}
   m_Father: {fileID: 224000013685981678}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 139.89926, y: -1}
+  m_SizeDelta: {x: 263.2, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!224 &224000013515673278
 RectTransform:

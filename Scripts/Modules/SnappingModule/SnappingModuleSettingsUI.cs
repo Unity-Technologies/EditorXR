@@ -10,49 +10,49 @@ namespace UnityEditor.Experimental.EditorVR
 		Toggle m_SnappingEnabled;
 
 		[SerializeField]
-		Toggle m_GroundSnapping;
+		Toggle m_GroundSnappingEnabled;
 
 		[SerializeField]
-		Toggle m_SurfaceSnapping;
+		Toggle m_SurfaceSnappingEnabled;
 
 		[SerializeField]
-		Toggle m_PivotSnapping;
+		Toggle m_PivotSnappingEnabled;
 
 		[SerializeField]
-		Toggle m_SnapRotation;
+		Toggle m_RotationSnappingEnabled;
 
 		[SerializeField]
 		Toggle m_LocalOnly;
 
 		[SerializeField]
-		Toggle m_ManipulatorSnapping;
+		Toggle m_ManipulatorSnappingEnabled;
 
 		[SerializeField]
-		Toggle m_DirectSnapping;
+		Toggle m_DirectSnappingEnabled;
 
 		public Toggle snappingEnabled
 		{
 			get { return m_SnappingEnabled; }
 		}
 
-		public Toggle groundSnapping
+		public Toggle groundSnappingEnabled
 		{
-			get { return m_GroundSnapping; }
+			get { return m_GroundSnappingEnabled; }
 		}
 
-		public Toggle surfaceSnapping
+		public Toggle surfaceSnappingEnabled
 		{
-			get { return m_SurfaceSnapping; }
+			get { return m_SurfaceSnappingEnabled; }
 		}
 
-		public Toggle pivotSnapping
+		public Toggle pivotSnappingEnabled
 		{
-			get { return m_PivotSnapping; }
+			get { return m_PivotSnappingEnabled; }
 		}
 
-		public Toggle snapRotation
+		public Toggle rotationSnappingEnabled
 		{
-			get { return m_SnapRotation; }
+			get { return m_RotationSnappingEnabled; }
 		}
 
 		public Toggle localOnly
@@ -60,14 +60,14 @@ namespace UnityEditor.Experimental.EditorVR
 			get { return m_LocalOnly; }
 		}
 
-		public Toggle manipulatorSnapping
+		public Toggle manipulatorSnappingEnabled
 		{
-			get { return m_ManipulatorSnapping; }
+			get { return m_ManipulatorSnappingEnabled; }
 		}
 
-		public Toggle directSnapping
+		public Toggle directSnappingEnabled
 		{
-			get { return m_DirectSnapping; }
+			get { return m_DirectSnappingEnabled; }
 		}
 
 		public void SetToggleValue(Toggle toggle, bool isOn)

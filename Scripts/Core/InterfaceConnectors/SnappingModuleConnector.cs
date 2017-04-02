@@ -9,8 +9,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			public void LateBindInterfaceMethods(SnappingModule provider)
 			{
-				IUsesSnappingMethods.manipulatorSnapping = provider.ManipulatorSnapping;
-				IUsesSnappingMethods.directSnapping = provider.DirectSnapping;
+				IUsesSnappingMethods.manipulatorSnap = provider.ManipulatorSnap;
+				IUsesSnappingMethods.directSnap = provider.DirectSnap;
 				IUsesSnappingMethods.clearSnappingState = provider.ClearSnappingState;
 			}
 		}

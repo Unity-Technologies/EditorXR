@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var targetPosition = rayOrigin.position + rayOrigin.rotation * positionOffsets[i];
 					var targetRotation = rayOrigin.rotation * rotationOffsets[i];
 
-					if (m_UsesSnapping.DirectSnapping(rayOrigin, grabbedObject.gameObject, ref position, ref rotation, targetPosition, targetRotation))
+					if (m_UsesSnapping.DirectSnap(rayOrigin, grabbedObject.gameObject, ref position, ref rotation, targetPosition, targetRotation))
 					{
 						var deltaTime = Time.unscaledDeltaTime;
 						grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
@@ -506,7 +506,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (constrained)
 				m_TargetPosition += delta;
 			else
-				this.ManipulatorSnapping(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta);
+				this.ManipulatorSnap(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta);
 		}
 
 		void Rotate(Quaternion delta)
