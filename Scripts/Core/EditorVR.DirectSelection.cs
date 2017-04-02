@@ -13,6 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		class DirectSelection : Nested, IInterfaceConnector
 		{
 			internal IGrabObjects objectsGrabber { get; set; }
+			public IntersectionModule intersectionModule { private get; set; }
 
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
 
@@ -136,9 +137,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 			}
 
-			static GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin)
+			GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin)
 			{
-				var intersectionModule = evr.m_IntersectionModule;
 				if (intersectionModule)
 				{
 					var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();

@@ -29,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			ScaleManipulator m_ScaleManipulator;
 
 			internal Transform lastSelectionRayOrigin { get; private set; }
+			internal IntersectionModule intersectionModule { private get; set; }
 
 			public Rays()
 			{
@@ -131,7 +132,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var inputModule = evr.m_MultipleRayInputModule;
 						var deviceInputModule = evr.m_DeviceInputModule;
 						var keyboardModule = evr.m_KeyboardModule;
-						var intersectionModule = evr.m_IntersectionModule;
 						var highlightModule = evr.GetModule<HighlightModule>();
 
 						foreach (var rayOriginPair in proxy.rayOrigins)
@@ -216,7 +216,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void UpdateRaycasts()
 			{
-				var intersectionModule = evr.m_IntersectionModule;
 				var distance = k_DefaultRayLength * Viewer.GetViewerScale();
 				ForEachRayOrigin(rayOrigin => { intersectionModule.UpdateRaycast(rayOrigin, distance); });
 			}
@@ -224,7 +223,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void UpdateDefaultProxyRays()
 			{
 				var inputModule = evr.m_MultipleRayInputModule;
-				var intersectionModule = evr.m_IntersectionModule;
 
 				// Set ray lengths based on renderer bounds
 				foreach (var proxy in m_Proxies)
@@ -286,9 +284,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return result;
 			}
 
-			internal static GameObject GetFirstGameObject(Transform rayOrigin)
+			internal GameObject GetFirstGameObject(Transform rayOrigin)
 			{
-				var intersectionModule = evr.m_IntersectionModule;
 				float distance;
 				GameObject go = intersectionModule.GetFirstGameObject(rayOrigin, out distance);
 				if (go)

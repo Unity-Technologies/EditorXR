@@ -33,6 +33,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		Dictionary<Type, MonoBehaviour> m_Modules = new Dictionary<Type, MonoBehaviour>();
 
+		Interfaces m_Interfaces;
+
 		Dictionary<Type, Nested> m_NestedModules = new Dictionary<Type, Nested>();
 
 		event Action m_SelectionChanged;
@@ -46,13 +48,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		DirectSelection m_DirectSelection;
 		Menus m_Menus;
 		UI m_UI;
-		Interfaces m_Interfaces;
 		MiniWorlds m_MiniWorlds;
 		KeyboardModule m_KeyboardModule;
 		DeviceInputModule m_DeviceInputModule;
 		MultipleRayInputModule m_MultipleRayInputModule;
-		IntersectionModule m_IntersectionModule;
-		WorkspaceModule m_WorkspaceModule;
 
 		static HideFlags defaultHideFlags
 		{
@@ -175,22 +174,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			spatialHashModule.shouldExcludeObject = go => go.GetComponentInParent<EditorVR>();
 			spatialHashModule.Setup();
 
-			m_IntersectionModule = AddModule<IntersectionModule>();
-			m_Interfaces.ConnectInterfaces(m_IntersectionModule);
-			m_IntersectionModule.Setup(spatialHashModule.spatialHash);
+			var intersectionModule = AddModule<IntersectionModule>();
+			m_Interfaces.ConnectInterfaces(intersectionModule);
+			intersectionModule.Setup(spatialHashModule.spatialHash);
+			m_Rays.intersectionModule = intersectionModule;
+			m_DirectSelection.intersectionModule = intersectionModule;
 
 			var snappingModule = AddModule<SnappingModule>();
-			snappingModule.raycast = m_IntersectionModule.Raycast;
+			snappingModule.raycast = intersectionModule .Raycast;
 
 			var vacuumables = GetNestedModule<Vacuumables>();
 
-			m_WorkspaceModule = AddModule<WorkspaceModule>();
-			m_WorkspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
-			m_WorkspaceModule.workspaceCreated += m_MiniWorlds.OnWorkspaceCreated;
-			m_WorkspaceModule.workspaceCreated += workspace => { m_DeviceInputModule.UpdatePlayerHandleMaps(); };
-			m_WorkspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
-			m_WorkspaceModule.workspaceDestroyed += workspace => { m_Interfaces.DisconnectInterfaces(workspace); };
-			m_WorkspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
+			var workspaceModule = AddModule<WorkspaceModule>();
+			workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
+			workspaceModule.workspaceCreated += m_MiniWorlds.OnWorkspaceCreated;
+			workspaceModule.workspaceCreated += workspace => { m_DeviceInputModule.UpdatePlayerHandleMaps(); };
+			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
+			workspaceModule.workspaceDestroyed += workspace => { m_Interfaces.DisconnectInterfaces(workspace); };
+			workspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
+			m_Menus.workspaceModule = workspaceModule;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 

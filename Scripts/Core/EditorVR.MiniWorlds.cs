@@ -392,7 +392,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				m_MiniWorldInputs[miniWorldWorkspace] = evr.m_DeviceInputModule.CreateActionMapInputForObject(miniWorldWorkspace, null);
 
-				var intersectionModule = evr.m_IntersectionModule;
+				var intersectionModule = evr.GetModule<IntersectionModule>();
 				evr.m_Rays.ForEachProxyDevice(deviceData =>
 				{
 					var miniWorldRayOrigin = InstantiateMiniWorldRay();

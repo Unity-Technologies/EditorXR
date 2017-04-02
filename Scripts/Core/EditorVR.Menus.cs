@@ -37,6 +37,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			readonly List<IMenu> m_UpdateVisibilityMenus = new List<IMenu>();
 			readonly List<DeviceData> m_ActiveDeviceData = new List<DeviceData>();
 
+			public WorkspaceModule workspaceModule { private get; set; }
+
 			public Menus()
 			{
 				IInstantiateMenuUIMethods.instantiateMenuUI = InstantiateMenuUI;
@@ -71,7 +73,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void UpdateMenuVisibilityNearWorkspaces()
 			{
-				var workspaceModule = evr.m_WorkspaceModule;
 				evr.m_Rays.ForEachProxyDevice(deviceData =>
 				{
 					m_UpdateVisibilityMenus.Clear();
