@@ -20,6 +20,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Text m_Text;
 
 		[SerializeField]
+		BaseHandle m_Lock;
+
+		[SerializeField]
 		BaseHandle m_Cube;
 
 		[SerializeField]
@@ -48,7 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		float m_StackingFraction = 0.3f;
 
 		Color m_NormalColor;
-		bool m_Hovering;
 		Renderer m_CubeRenderer;
 		Transform m_CubeTransform;
 		Transform m_DropZoneTransform;
@@ -61,10 +63,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Renderer m_ExpandArrowRenderer;
 		Material m_ExpandArrowMaterial;
 
+		Renderer m_LockRenderer;
+		Material m_LockIconMaterial;
+		Material m_UnlockIconMaterial;
+
+		bool m_HoveringLock = false;
+
+		public bool hovering { get; private set; }
+		public Transform hoveringRayOrigin { get; private set; }
+
 		public Material cubeMaterial { get; private set; }
 		public Material dropZoneMaterial { get; private set; }
 
 		public Action<int> selectRow { private get; set; }
+
+		public Action<int> toggleLock { private get; set; }
 
 		public Action<int> toggleExpanded { private get; set; }
 		public Action<int, bool> setExpanded { private get; set; }
@@ -87,6 +100,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_CubeRenderer = m_Cube.GetComponent<Renderer>();
 				cubeMaterial = MaterialUtils.GetMaterialClone(m_CubeRenderer);
 				m_NormalColor = cubeMaterial.color;
+
+				m_LockRenderer = m_Lock.GetComponent<Renderer>();
+				m_Lock.hoverStarted += (bh, ed) => { m_HoveringLock = true; };
+				m_Lock.hoverEnded += (bh, ed) => { m_HoveringLock = false; };
+				m_Lock.dragEnded += ToggleLock;
 
 				m_ExpandArrowRenderer = m_ExpandArrow.GetComponent<Renderer>();
 				m_ExpandArrow.dragEnded += ToggleExpanded;
@@ -126,17 +144,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_Text.gameObject.SetActive(false);
 			m_Text.gameObject.SetActive(true);
 
-			m_Hovering = false;
+			hovering = false;
 		}
 
-		public void SetMaterials(Material textMaterial, Material expandArrowMaterial)
+		public void SetMaterials(Material textMaterial, Material expandArrowMaterial, Material lockIconMaterial, Material unlockIconMaterial)
 		{
 			m_Text.material = textMaterial;
 			m_ExpandArrowMaterial = expandArrowMaterial;
 			m_ExpandArrowRenderer.sharedMaterial = expandArrowMaterial;
+			m_LockIconMaterial = lockIconMaterial;
+			m_UnlockIconMaterial = unlockIconMaterial;
+			m_LockRenderer.sharedMaterial = unlockIconMaterial;
 		}
 
-		public void UpdateSelf(float width, int depth, bool? expanded, bool selected)
+		public void UpdateSelf(float width, int depth, bool? expanded, bool selected, bool locked)
 		{
 			var cubeScale = m_CubeTransform.localScale;
 			cubeScale.x = width;
@@ -150,12 +171,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float doubleMargin = k_Margin * 2;
 			expandArrowTransform.localPosition = new Vector3(k_Margin + indent - halfWidth, expandArrowTransform.localPosition.y, 0);
 
+			m_LockRenderer.sharedMaterial = (!locked && m_HoveringLock) || (locked && !m_HoveringLock) ? m_LockIconMaterial : m_UnlockIconMaterial;
+			var lockIconTransform = m_Lock.transform;
+			var lockWidth = lockIconTransform.localScale.x * 0.5f;
+			
 			// Text is next to arrow, with a margin and indent, rotated toward camera
 			var textTransform = m_Text.transform;
 			m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / textTransform.localScale.x);
 			textTransform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, textTransform.localPosition.y, 0);
 
-			textTransform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
+			lockIconTransform.localPosition = new Vector3(halfWidth - lockWidth - k_Margin, lockIconTransform.localPosition.y, 0);
+
+			var localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
+			textTransform.localRotation = localRotation;
+			lockIconTransform.localRotation = localRotation;
 
 			var dropZoneScale = m_DropZoneTransform.localScale;
 			dropZoneScale.x = width - indent;
@@ -167,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			UpdateArrow(expanded);
 
 			// Set selected/hover/normal color
-			if (m_Hovering)
+			if (hovering)
 				cubeMaterial.color = m_HoverColor;
 			else if (selected)
 				cubeMaterial.color = m_SelectedColor;
@@ -334,7 +363,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ExpandArrowRenderer.sharedMaterial = m_ExpandArrowMaterial;
 			m_DropZone.gameObject.SetActive(true);
 			m_Cube.GetComponent<Collider>().enabled = true;
-			m_Hovering = false;
+			hovering = false;
+		}
+
+		void ToggleLock(BaseHandle handle, HandleEventData eventData)
+		{
+			if (toggleLock != null)
+				toggleLock(data.index);
 		}
 
 		void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
@@ -349,12 +384,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
-			m_Hovering = true;
+			hovering = true;
+			hoveringRayOrigin = eventData.rayOrigin;
 		}
 
 		void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
 		{
-			m_Hovering = false;
+			hovering = false;
+			hoveringRayOrigin = eventData.rayOrigin;
 		}
 
 		void OnDropHoverStarted(BaseHandle handle)
@@ -402,8 +439,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (isExpanded(index))
 				return true;
 
-			var gameObject = (GameObject)EditorUtility.InstanceIDToObject(index);
-			var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(dropData.index);
+			var gameObject = data.gameObject;
+			var dropGameObject = dropData.gameObject;
 			var transform = gameObject.transform;
 			var dropTransform = dropGameObject.transform;
 
@@ -425,10 +462,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var dropData = dropObject as HierarchyData;
 			if (dropData != null)
 			{
-				var thisIndex = data.index;
-				var dropIndex = dropData.index;
-				var gameObject = (GameObject)EditorUtility.InstanceIDToObject(thisIndex);
-				var dropGameObject = (GameObject)EditorUtility.InstanceIDToObject(dropIndex);
+				var index = data.index;
+				var gameObject = data.gameObject;
+				var dropGameObject = dropData.gameObject;
 				var transform = gameObject.transform;
 				var dropTransform = dropGameObject.transform;
 
@@ -443,11 +479,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					dropTransform.SetParent(transform);
 					dropTransform.SetAsLastSibling();
 
-					EditorApplication.delayCall += () => { setExpanded(thisIndex, true); };
+					EditorApplication.delayCall += () => { setExpanded(index, true); };
 				}
 				else if (handle == m_DropZone)
 				{
-					if (isExpanded(thisIndex))
+					if (isExpanded(index))
 					{
 						dropTransform.SetParent(transform);
 						dropTransform.SetAsFirstSibling();

@@ -78,7 +78,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						ObjectUtils.Destroy(button.gameObject);
 
 				m_FilterTypes = value;
-				m_FilterTypes.Sort();
 				m_FilterTypes.Insert(0, k_AllText);
 
 				// Generate new button list
@@ -150,15 +149,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					button.color = m_SearchQuery.Contains("t:") ? m_DisableColor : m_ActiveColor;
 			}
 
-			if (clickedButton.text.text.Equals(k_AllText))
+			switch (clickedButton.text.text)
 			{
-				m_SummaryText.text = clickedButton.text.text;
-				m_DescriptionText.text = "All objects are visible";
-			}
-			else
-			{
-				m_SummaryText.text = clickedButton.text.text + "s";
-				m_DescriptionText.text = "Only " + m_SummaryText.text + " are visible";
+				case k_AllText:
+					m_SummaryText.text = clickedButton.text.text;
+					m_DescriptionText.text = "All objects are visible";
+					break;
+
+				default:
+					m_SummaryText.text = clickedButton.text.text + "s";
+					m_DescriptionText.text = "Only " + m_SummaryText.text + " are visible";
+					break;
 			}
 		}
 

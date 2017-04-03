@@ -11,8 +11,9 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		/// <summary>
 		/// Delegate that processes the translation, using the vector3 passed in
+		/// Caller also provides the ray origin that is doing the action, and whether or not this translation is axis-constrained
 		/// </summary>
-		Action<Vector3> translate { set; }
+		Action<Vector3, Transform, bool> translate { set; }
 
 		/// <summary>
 		/// Delegate that processes the rotation, using the quaternion passed in
@@ -25,9 +26,14 @@ namespace UnityEditor.Experimental.EditorVR
 		Action<Vector3> scale { set; }
 
 		/// <summary>
-		/// Delegate that is called once after every drag
+		/// Delegate that is called once after every drag starts
 		/// </summary>
 		event Action dragStarted;
+
+		/// <summary>
+		/// Delegate that is called once after every drag ends
+		/// </summary>
+		event Action<Transform> dragEnded;
 
 		/// <summary>
 		/// Bool denoting the drag-state of a manipulator that implements this interface

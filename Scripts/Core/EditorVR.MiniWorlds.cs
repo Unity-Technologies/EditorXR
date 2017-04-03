@@ -109,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_MiniWorldIgnoreListDirty = false;
 				}
 
-				var objectsGrabber = evr.GetNestedModule<DirectSelection>().objectsGrabber;
+				var objectsGrabber = evr.m_DirectSelection.objectsGrabber;
 
 				// Update MiniWorldRays
 				foreach (var ray in m_Rays)
@@ -136,7 +136,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
 					miniWorldRayOrigin.localScale = Vector3.Scale(inverseScale, referenceTransform.localScale);
 
-					var directSelection = evr.GetNestedModule<DirectSelection>();
+					var directSelection = evr.m_DirectSelection;
 
 					// Set miniWorldRayOrigin active state based on whether controller is inside corresponding MiniWorld
 					var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * directSelection.GetPointerLength(originalRayOrigin);
@@ -383,7 +383,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				m_Worlds.Add(miniWorld);
 
 				var intersectionModule = evr.GetModule<IntersectionModule>();
-				evr.GetNestedModule<Rays>().ForEachProxyDevice(deviceData =>
+				evr.m_Rays.ForEachProxyDevice(deviceData =>
 				{
 					var miniWorldRayOrigin = InstantiateMiniWorldRay();
 					miniWorldRayOrigin.parent = workspace.transform;

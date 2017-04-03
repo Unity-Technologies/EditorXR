@@ -67,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 		void OnTranslateDragging(BaseHandle handle, HandleEventData eventData)
 		{
-			translate(eventData.deltaPosition);
+			translate(eventData.deltaPosition, eventData.rayOrigin, !(handle is SphereHandle));
 		}
 
 		void OnRotateDragging(BaseHandle handle, HandleEventData eventData)
@@ -90,6 +90,8 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			if (gameObject.activeSelf)
 				foreach (var h in m_AllHandles)
 					h.gameObject.SetActive(true);
+
+			OnDragEnded(eventData.rayOrigin);
 
 			dragging = false;
 		}

@@ -55,6 +55,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			set
 			{
 				m_FilterList = value;
+				m_FilterList.Sort();
+
 				if (m_FilterUI)
 					m_FilterUI.filterList = value;
 			}

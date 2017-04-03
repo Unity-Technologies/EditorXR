@@ -202,8 +202,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (headerItem)
 			{
 				var go = (GameObject)listData.serializedObject.targetObject;
-				headerItem.lockToggle.isOn = this.IsLocked(go);
 				headerItem.setLocked = locked => this.SetLocked(go, locked);
+				headerItem.lockToggle.isOn = this.IsLocked(go);
 			}
 
 			return item;
