@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class ISetHighlightMethods
 	{
-		internal delegate void SetHighlightDelegate(GameObject go, bool active, Transform rayOrigin = null, Material material = null);
+		internal delegate void SetHighlightDelegate(GameObject go, bool active, Transform rayOrigin = null, Material material = null, bool force = false);
 
 		internal static SetHighlightDelegate setHighlight { get; set; }
 

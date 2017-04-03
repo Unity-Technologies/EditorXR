@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale
+	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IUsesGizmos
 	{
 		public event Action closeClicked;
 		public event Action resetSizeClicked;
@@ -144,7 +144,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Material m_FrontFaceMaterial;
 
 		float m_LerpAmount;
-		float m_HandleZOffset;
+		float m_FrontZOffset;
+
+		DragState m_DragState;
 
 		[Flags]
 		public enum ResizeDirection
@@ -157,6 +159,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		class DragState
 		{
+			public Transform rayOrigin { get; private set; }
 			public bool resizing { get; private set; }
 			Vector3 m_PositionOffset;
 			Quaternion m_RotationOffset;
@@ -170,6 +173,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				m_WorkspaceUI = workspaceUI;
 				this.resizing = resizing;
+				this.rayOrigin = rayOrigin;
 
 				if (resizing)
 				{
@@ -186,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 			}
 
-			public void OnDragging(Transform rayOrigin)
+			public void OnDragging()
 			{
 				if (resizing)
 				{
@@ -255,8 +259,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		readonly List<Transform> m_HovereringRayOrigins = new List<Transform>();
-		readonly Dictionary<Transform, DragState> m_DragStates = new Dictionary<Transform, DragState>();
-		readonly List<Transform> m_DragsEnded = new List<Transform>();
 		readonly Dictionary<Transform, Image> m_LastResizeIcons = new Dictionary<Transform, Image>();
 
 		public bool highlightsVisible
@@ -339,8 +341,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			set
 			{
 				m_Bounds = value;
+
+				m_Bounds.center = Vector3.down * m_FrameHeight * 0.5f;
+
 				var extents = m_Bounds.extents;
 				var size = m_Bounds.size;
+				size.y = m_FrameHeight + m_FrameHandleSize;
+				m_Bounds.size = size;
 
 				// Because BlendShapes cap at 100, our workspaceUI maxes out at 100m wide
 				const float kWidthMultiplier = 0.9616f;
@@ -379,7 +386,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_TopHighlightContainer.localScale = new Vector3(faceWidth + kHighlightMargin, 1f, faceDepth + kHighlightMargin);
 				m_TopFaceContainer.localScale = new Vector3(faceWidth, 1f, faceDepth);
 
-				UpdateHandlesAndIcons();
+				AdjustHandlesAndIcons();
 			}
 		}
 
@@ -445,7 +452,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			yield return null;
 		}
 
-		void UpdateHandlesAndIcons()
+		void AdjustHandlesAndIcons()
 		{
 			// Handles
 			var extents = m_Bounds.extents;
@@ -454,7 +461,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var handleScaleX = size.x - m_FrameHandleSize;
 			var handleScaleZ = size.z + m_FrameHandleSize;
 			var halfHeight = -m_FrameHeight * 0.5f;
-			var halfDepth = extents.z;
+			var halfHandleZOffset = m_FrontZOffset * 0.5f;
+			var halfDepth = extents.z - halfHandleZOffset;
 			var handleHeight = m_FrameHeight + m_FrameHandleSize;
 
 			var transform = m_LeftHandle.transform;
@@ -476,11 +484,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			transform = m_FrontBottomHandle.transform;
 			var halfFrameHandleSize = m_FrameHandleSize * 0.5f;
 			var botHandleYPosition = (m_FrameHeight) * (m_LerpAmount - 1);
-			transform.localPosition = new Vector3(0, botHandleYPosition, -halfDepth - m_HandleZOffset);
+			transform.localPosition = new Vector3(0, botHandleYPosition, -halfDepth - m_FrontZOffset);
 			transform.localScale = new Vector3(handleScaleX + m_FrameHandleSize * 2, m_FrameHandleSize, m_FrameHandleSize);
 
 			const float kLerpScale = 1.15f;
-			var halfHandleZOffset = m_HandleZOffset * 0.5f;
 			transform = m_FrontLeftHandle.transform;
 			transform.localPosition = new Vector3(-halfWidth, botHandleYPosition * 0.5f, -halfDepth - halfHandleZOffset);
 			transform.localRotation = Quaternion.AngleAxis(Mathf.Clamp01(m_LerpAmount * kLerpScale) * 90f, Vector3.right);
@@ -495,7 +502,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var cornerScale = m_FrameHeight + m_FrameHandleSize;
 			transform = m_FrontLeftCornerHandle.transform;
-			var zOffset = m_HandleZOffset - k_HandleZOffset * 0.5f;
+			var zOffset = m_FrontZOffset - k_HandleZOffset * 0.5f;
 			transform.localPosition = new Vector3(-halfWidth, -cornerScale * (1f - m_LerpAmount * 0.5f) + m_FrameHandleSize * (1 - m_LerpAmount) * 0.5f, -halfDepth - zOffset - halfFrameHandleSize);
 			transform.localScale = new Vector3(m_FrameHandleSize, (cornerScale - m_FrameHandleSize) * m_LerpAmount, cornerScale - m_FrameHandleSize * 0.75f);
 
@@ -511,7 +518,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var resizePositionZ = halfDepth + m_ResizeHandleMargin;
 			transform = m_FrontResizeIcon.transform;
 			localPosition = transform.localPosition;
-			localPosition.z = -resizePositionZ - m_HandleZOffset;
+			localPosition.z = -resizePositionZ - m_FrontZOffset;
 			transform.localPosition = localPosition;
 
 			transform = m_RightResizeIcon.transform;
@@ -535,13 +542,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			transform = m_FrontLeftResizeIcon.transform;
 			localPosition = transform.localPosition;
 			localPosition.x = -resizeCornerPositionX;
-			localPosition.z = -resizeCornerPositionZ - m_HandleZOffset;
+			localPosition.z = -resizeCornerPositionZ - m_FrontZOffset;
 			transform.localPosition = localPosition;
 
 			transform = m_FrontRightResizeIcon.transform;
 			localPosition = transform.localPosition;
 			localPosition.x = resizeCornerPositionX;
-			localPosition.z = -resizeCornerPositionZ - m_HandleZOffset;
+			localPosition.z = -resizeCornerPositionZ - m_FrontZOffset;
 			transform.localPosition = localPosition;
 
 			transform = m_BackLeftResizeIcon.transform;
@@ -559,7 +566,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
-			if (m_HovereringRayOrigins.Count == 0 && m_DragStates.Count == 0)
+			if (m_HovereringRayOrigins.Count == 0 && m_DragState == null)
 				IncreaseFrameThickness();
 
 			m_HovereringRayOrigins.Add(eventData.rayOrigin);
@@ -572,7 +579,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var zDistance = bounds.extents.z - Mathf.Abs(localPosition.z);
 			if (localPosition.z < 0)
-				zDistance += m_HandleZOffset;
+				zDistance += m_FrontZOffset;
 			var cornerZ = zDistance < m_ResizeCornerSize;
 			var cornerX = bounds.extents.x - Mathf.Abs(localPosition.x) < m_ResizeCornerSize;
 
@@ -654,9 +661,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(k_BaseFrontPanelRotation, k_MaxFrontPanelRotation, paddedLerp * kAdditionalFrontPanelLerpPadding));
 			m_FrontPanel.localPosition = Vector3.Lerp(Vector3.forward * kFrontPanelZStartOffset, new Vector3(0, kFrontPanelYOffset, kFrontPanelZEndOffset), paddedLerp);
 
-			m_HandleZOffset = k_HandleZOffset * Mathf.Clamp01(paddedLerp * kAdditionalFrontPanelLerpPadding);
+			m_FrontZOffset = k_HandleZOffset * Mathf.Clamp01(paddedLerp * kAdditionalFrontPanelLerpPadding);
 
-			UpdateHandlesAndIcons();
+			AdjustHandlesAndIcons();
 
 			// change blendshapes according to workspaceUI rotation angle
 			m_Frame.SetBlendShapeWeight(k_AngledFaceBlendShapeIndex, angledAmount * kLerpPadding);
@@ -665,161 +672,162 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void ProcessInput(WorkspaceInput input, ConsumeControlDelegate consumeControl)
 		{
-			var primaryLeft = input.primaryLeft;
-			var primaryRight = input.primaryRight;
 			var secondaryLeft = input.secondaryLeft;
 			var secondaryRight = input.secondaryRight;
-			if (m_DragStates.Count == 0)
+
+			var primaryLeft = input.primaryLeft;
+			var primaryRight = input.primaryRight;
+
+			if (m_DragState == null)
 			{
-				for (int i = 0; i < m_HovereringRayOrigins.Count; i++)
+				var adjustedBounds = bounds;
+				adjustedBounds.size += Vector3.forward * m_FrontZOffset;
+				adjustedBounds.center += Vector3.back * m_FrontZOffset * 0.5f;
+				Transform dragRayOrigin = null;
+				Image dragResizeIcon = null;
+				var resizing = false;
+
+				var leftPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(leftRayOrigin));
+				if (secondaryLeft.wasJustPressed && adjustedBounds.Contains(leftPosition))
 				{
-					var rayOrigin = m_HovereringRayOrigins[i];
-					var dragStart = false;
-					var resize = false;
-					if (rayOrigin == leftRayOrigin && primaryLeft.wasJustPressed && !preventResize)
-					{
-						consumeControl(primaryLeft);
-						dragStart = true;
-						resize = true;
-					}
-					if (rayOrigin == rightRayOrigin && primaryRight.wasJustPressed && !preventResize)
-					{
-						consumeControl(primaryRight);
-						dragStart = true;
-						resize = true;
-					}
-					if (rayOrigin == leftRayOrigin && secondaryLeft.wasJustPressed)
-					{
-						consumeControl(secondaryLeft);
-						dragStart = true;
-					}
-					if (rayOrigin == rightRayOrigin && secondaryRight.wasJustPressed)
-					{
-						consumeControl(secondaryRight);
-						dragStart = true;
-					}
+					dragRayOrigin = leftRayOrigin;
+					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
+					consumeControl(secondaryLeft);
+				}
 
-					Image lastResizeIcon;
-					m_LastResizeIcons.TryGetValue(rayOrigin, out lastResizeIcon);
+				var rightPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rightRayOrigin));
+				if (secondaryRight.wasJustPressed && adjustedBounds.Contains(rightPosition))
+				{
+					dragRayOrigin = rightRayOrigin;
+					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
+					consumeControl(secondaryRight);
+				}
 
-					if (dragStart)
+				if (!dragRayOrigin)
+				{
+					for (int i = 0; i < m_HovereringRayOrigins.Count; i++)
 					{
-						m_DragStates[rayOrigin] = new DragState(this, rayOrigin, resize);
-						if (lastResizeIcon != null)
-							lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
-
-						ResetFrameThickness();
-
-						foreach (var smoothMotion in GetComponentsInChildren<SmoothMotion>())
+						var rayOrigin = m_HovereringRayOrigins[i];
+						Image lastResizeIcon;
+						m_LastResizeIcons.TryGetValue(rayOrigin, out lastResizeIcon);
+						if (rayOrigin == leftRayOrigin && primaryLeft.wasJustPressed && !preventResize)
 						{
-							smoothMotion.enabled = false;
+							consumeControl(primaryLeft);
+							dragRayOrigin = rayOrigin;
+							dragResizeIcon = lastResizeIcon;
+							resizing = true;
 						}
-					}
-
-					if (!preventResize)
-					{
-						const float kVisibleOpacity = 0.75f;
-						var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
-						var direction = GetResizeDirectionForLocalPosition(localPosition);
-						var resizeIcon = GetResizeIconForDirection(direction);
-
-						if (lastResizeIcon != null)
+						if (rayOrigin == rightRayOrigin && primaryRight.wasJustPressed && !preventResize)
 						{
-							if (resizeIcon != lastResizeIcon)
+							consumeControl(primaryRight);
+							dragRayOrigin = rayOrigin;
+							dragResizeIcon = lastResizeIcon;
+							resizing = true;
+						}
+
+						if (!preventResize)
+						{
+							const float kVisibleOpacity = 0.75f;
+							var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
+							var direction = GetResizeDirectionForLocalPosition(localPosition);
+							var resizeIcon = GetResizeIconForDirection(direction);
+
+							if (lastResizeIcon != null)
+							{
+								if (resizeIcon != lastResizeIcon)
+								{
+									resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
+									lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
+								}
+							}
+							else
 							{
 								resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
-								lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
 							}
+
+							m_LastResizeIcons[rayOrigin] = resizeIcon;
+
+							var iconTransform = resizeIcon.transform;
+							var iconPosition = iconTransform.localPosition;
+							var smoothFollow = lastResizeIcon == null ? 1 : k_ResizeIconSmoothFollow * Time.unscaledDeltaTime;
+							var localDirection = localPosition - transform.InverseTransformPoint(rayOrigin.position);
+							switch (direction)
+							{
+								case ResizeDirection.Front:
+								case ResizeDirection.Back:
+									var iconPositionX = iconPosition.x;
+									var positionOffsetX = Mathf.Sign(localDirection.x) * m_ResizeHandleMargin;
+									var tergetPositionX = localPosition.x + positionOffsetX;
+									if (Mathf.Abs(tergetPositionX) > bounds.extents.x - m_ResizeCornerSize)
+										tergetPositionX = localPosition.x - positionOffsetX;
+
+									iconPosition.x = Mathf.Lerp(iconPositionX, tergetPositionX, smoothFollow);
+									break;
+								case ResizeDirection.Left:
+								case ResizeDirection.Right:
+									var iconPositionZ = iconPosition.z;
+									var positionOffsetZ = Mathf.Sign(localDirection.z) * m_ResizeHandleMargin;
+									var tergetPositionZ = localPosition.z + positionOffsetZ;
+									if (Mathf.Abs(tergetPositionZ) > bounds.extents.z - m_ResizeCornerSize)
+										tergetPositionZ = localPosition.z - positionOffsetZ;
+
+									iconPosition.z = Mathf.Lerp(iconPositionZ, tergetPositionZ, smoothFollow);
+									break;
+							}
+							iconTransform.localPosition = iconPosition;
 						}
-						else
-						{
-							resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
-						}
+					}
+				}
 
-						m_LastResizeIcons[rayOrigin] = resizeIcon;
+				if (dragRayOrigin)
+				{
+					m_DragState = new DragState(this, dragRayOrigin, resizing);
+					if (dragResizeIcon != null)
+						dragResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
 
-						var iconTransform = resizeIcon.transform;
-						var iconPosition = iconTransform.localPosition;
-						var smoothFollow = lastResizeIcon == null ? 1 : k_ResizeIconSmoothFollow * Time.unscaledDeltaTime;
-						var localDirection = localPosition - transform.InverseTransformPoint(rayOrigin.position);
-						switch (direction)
-						{
-							case ResizeDirection.Front:
-							case ResizeDirection.Back:
-								var iconPositionX = iconPosition.x;
-								var positionOffsetX = Mathf.Sign(localDirection.x) * m_ResizeHandleMargin;
-								var tergetPositionX = localPosition.x + positionOffsetX;
-								if (Mathf.Abs(tergetPositionX) > bounds.extents.x - m_ResizeCornerSize)
-									tergetPositionX = localPosition.x - positionOffsetX;
+					ResetFrameThickness();
 
-								iconPosition.x = Mathf.Lerp(iconPositionX, tergetPositionX, smoothFollow);
-								break;
-							case ResizeDirection.Left:
-							case ResizeDirection.Right:
-								var iconPositionZ = iconPosition.z;
-								var positionOffsetZ = Mathf.Sign(localDirection.z) * m_ResizeHandleMargin;
-								var tergetPositionZ = localPosition.z + positionOffsetZ;
-								if (Mathf.Abs(tergetPositionZ) > bounds.extents.z - m_ResizeCornerSize)
-									tergetPositionZ = localPosition.z - positionOffsetZ;
-
-								iconPosition.z = Mathf.Lerp(iconPositionZ, tergetPositionZ, smoothFollow);
-								break;
-						}
-						iconTransform.localPosition = iconPosition;
+					foreach (var smoothMotion in GetComponentsInChildren<SmoothMotion>())
+					{
+						smoothMotion.enabled = false;
 					}
 				}
 			}
 
-			m_DragsEnded.Clear();
-
-			var enumerator = m_DragStates.GetEnumerator();
-			while (enumerator.MoveNext())
+			if (m_DragState != null)
 			{
-				var kvp = enumerator.Current;
-				var rayOrigin = kvp.Key;
-				var state = kvp.Value;
+				var rayOrigin = m_DragState.rayOrigin;
+				var resizing = m_DragState.resizing;
 
-				var resizeEnded = state.resizing
+				var resizeEnded = resizing
 					&& ((rayOrigin == leftRayOrigin && primaryLeft.wasJustReleased)
-					|| (rayOrigin == rightRayOrigin && primaryRight.wasJustReleased));
+						|| (rayOrigin == rightRayOrigin && primaryRight.wasJustReleased));
 
-				var moveEnded = !state.resizing
+				var moveEnded = !resizing
 					&& ((rayOrigin == leftRayOrigin && secondaryLeft.wasJustReleased)
-					|| (rayOrigin == rightRayOrigin && secondaryRight.wasJustReleased));
+						|| (rayOrigin == rightRayOrigin && secondaryRight.wasJustReleased));
 
 				if (resizeEnded || moveEnded)
-					m_DragsEnded.Add(rayOrigin);
-			}
-			enumerator.Dispose();
-
-			if (m_DragsEnded.Count > 0)
-			{
-				foreach (var smoothMotion in GetComponentsInChildren<SmoothMotion>())
 				{
-					smoothMotion.enabled = true;
+					m_DragState = null;
+
+					foreach (var smoothMotion in GetComponentsInChildren<SmoothMotion>())
+					{
+						smoothMotion.enabled = true;
+					}
+
+					if (m_HovereringRayOrigins.Contains(rayOrigin))
+					{
+						var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
+						var direction = GetResizeDirectionForLocalPosition(localPosition);
+						GetResizeIconForDirection(direction);
+					}
+				}
+				else
+				{
+					m_DragState.OnDragging();
 				}
 			}
-
-			for (int i = 0; i < m_DragsEnded.Count; i++)
-			{
-				var rayOrigin = m_DragsEnded[i];
-				m_DragStates.Remove(rayOrigin);
-				if (m_HovereringRayOrigins.Contains(rayOrigin))
-				{
-					var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
-					var direction = GetResizeDirectionForLocalPosition(localPosition);
-					GetResizeIconForDirection(direction);
-				}
-			}
-
-			enumerator = m_DragStates.GetEnumerator();
-			while (enumerator.MoveNext())
-			{
-				var kvp = enumerator.Current;
-				var rayOrigin = kvp.Key;
-				kvp.Value.OnDragging(rayOrigin);
-			}
-			enumerator.Dispose();
 		}
 
 		Vector3 GetPointerPositionForRayOrigin(Transform rayOrigin)
