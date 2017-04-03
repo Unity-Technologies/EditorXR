@@ -10,8 +10,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class WorkspaceModule : MonoBehaviour, IConnectInterfaces
 	{
-		internal static readonly Vector3 k_DefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
-		internal static readonly Quaternion k_DefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
+		internal static readonly Vector3 DefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
+		internal static readonly Quaternion DefaultWorkspaceTilt = Quaternion.AngleAxis(-20, Vector3.right);
 
 		internal List<IWorkspace> workspaces { get { return m_Workspaces; } }
 		readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
@@ -49,12 +49,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
 
-			var offset = k_DefaultWorkspaceOffset;
+			var offset = DefaultWorkspaceOffset;
 			offset.z += workspace.vacuumBounds.extents.z;
 
 			var workspaceTransform = workspace.transform;
 			workspaceTransform.position = cameraTransform.TransformPoint(offset);
-			workspaceTransform.rotation = Quaternion.LookRotation(cameraTransform.forward) * k_DefaultWorkspaceTilt;
+			workspaceTransform.rotation = Quaternion.LookRotation(cameraTransform.forward) * DefaultWorkspaceTilt;
 
 			if (createdCallback != null)
 				createdCallback(workspace);

@@ -24,56 +24,55 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		const float k_ResizeIconCrossfadeDuration = 0.2f;
 		const float k_ResizeIconSmoothFollow = 10f;
 
+		const float k_HandleZOffset = 0.1f;
+
 		static readonly Vector3 k_BaseFrontPanelRotation = Vector3.zero;
 		static readonly Vector3 k_MaxFrontPanelRotation = new Vector3(90f, 0f, 0f);
 
-		public Transform sceneContainer { get { return m_SceneContainer; } }
 		[SerializeField]
 		Transform m_SceneContainer;
 
-		public RectTransform frontPanel { get { return m_FrontPanel; } }
 		[SerializeField]
 		RectTransform m_FrontPanel;
 
-		public Transform topPanel { get; private set; }
-
-		public BaseHandle[] handles { get { return m_Handles; } }
 		[SerializeField]
 		BaseHandle[] m_Handles;
 
 		[SerializeField]
 		Image[] m_ResizeIcons;
 
-		public Transform leftHandle { get { return m_LeftHandle; } }
 		[SerializeField]
 		Transform m_LeftHandle;
 
-		public Transform rightHandle { get { return m_RightHandle; } }
 		[SerializeField]
 		Transform m_RightHandle;
 
-		public Transform backHandle { get { return m_BackHandle; } }
 		[SerializeField]
 		Transform m_BackHandle;
 
-		public Transform frontTopHandle { get { return m_FrontTopHandle; } }
 		[SerializeField]
 		Transform m_FrontTopHandle;
 
-		public Transform frontBottomHandle { get { return m_FrontBottomHandle; } }
+		[SerializeField]
+		Transform m_FrontLeftHandle;
+
+		[SerializeField]
+		Transform m_FrontLeftCornerHandle;
+
+		[SerializeField]
+		Transform m_FrontRightHandle;
+
+		[SerializeField]
+		Transform m_FrontRightCornerHandle;
+
 		[SerializeField]
 		Transform m_FrontBottomHandle;
 
-		public Transform topFaceContainer { get { return m_TopFaceContainer; } }
 		[SerializeField]
 		Transform m_TopFaceContainer;
 
-		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
 		[SerializeField]
 		WorkspaceHighlight m_TopHighlight;
-
-		public bool dynamicFaceAdjustment { get { return m_DynamicFaceAdjustment; } set { m_DynamicFaceAdjustment = value; } }
-		bool m_DynamicFaceAdjustment = true;
 
 		[SerializeField]
 		SkinnedMeshRenderer m_Frame;
@@ -131,6 +130,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		[SerializeField]
 		float m_ResizeCornerSize = 0.05f;
+
+		[SerializeField]
+		bool m_DynamicFaceAdjustment = true;
 
 		Bounds m_Bounds;
 
@@ -314,6 +316,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 		float? m_TopPanelDividerOffset;
 
+		public Transform topFaceContainer { get { return m_TopFaceContainer; } set { m_TopFaceContainer = value; } }
+		public Transform sceneContainer { get { return m_SceneContainer; } }
+		public BaseHandle[] handles { get { return m_Handles; } }
+		public RectTransform frontPanel { get { return m_FrontPanel; } }
+		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
+		public bool dynamicFaceAdjustment { get { return m_DynamicFaceAdjustment; } set { m_DynamicFaceAdjustment = value; } }
+
 		public bool preventResize { get; set; }
 
 		public byte stencilRef { get; set; }
@@ -370,7 +379,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_TopHighlightContainer.localScale = new Vector3(faceWidth + kHighlightMargin, 1f, faceDepth + kHighlightMargin);
 				m_TopFaceContainer.localScale = new Vector3(faceWidth, 1f, faceDepth);
 
-				UpdateHandles();
+				UpdateHandlesAndIcons();
 			}
 		}
 
@@ -391,8 +400,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				handle.hoverStarted += OnHandleHoverStarted;
 				handle.hoverEnded += OnHandleHoverEnded;
 			}
-
-			topPanel = m_TopFaceContainer; // The TopFaceContainer serves as the transform that the workspaceUI expects when fetching the TopPanel
 		}
 
 		IEnumerator Start()
@@ -438,24 +445,24 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			yield return null;
 		}
 
-		void UpdateHandles()
+		void UpdateHandlesAndIcons()
 		{
+			// Handles
 			var extents = m_Bounds.extents;
 			var size = m_Bounds.size;
 			var halfWidth = extents.x;
 			var handleScaleX = size.x - m_FrameHandleSize;
-			var handleScaleZ = size.z + m_FrameHandleSize + m_HandleZOffset;
+			var handleScaleZ = size.z + m_FrameHandleSize;
 			var halfHeight = -m_FrameHeight * 0.5f;
 			var halfDepth = extents.z;
-			var halfZOffset = m_HandleZOffset * -0.5f;
 			var handleHeight = m_FrameHeight + m_FrameHandleSize;
 
 			var transform = m_LeftHandle.transform;
-			transform.localPosition = new Vector3(-halfWidth, halfHeight, halfZOffset);
+			transform.localPosition = new Vector3(-halfWidth, halfHeight, 0);
 			transform.localScale = new Vector3(m_FrameHandleSize, handleHeight, handleScaleZ);
 
 			transform = m_RightHandle.transform;
-			transform.localPosition = new Vector3(halfWidth, halfHeight, halfZOffset);
+			transform.localPosition = new Vector3(halfWidth, halfHeight, 0);
 			transform.localScale = new Vector3(m_FrameHandleSize, handleHeight, handleScaleZ);
 
 			transform = m_BackHandle.transform;
@@ -467,14 +474,43 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			transform.localScale = new Vector3(handleScaleX, m_FrameHandleSize, m_FrameHandleSize);
 
 			transform = m_FrontBottomHandle.transform;
-			var botHandleYPosition = -m_FrameHandleSize * 0.5f + (m_FrameHeight - m_FrameHandleSize * 0.5f) * (m_LerpAmount - 1);
+			var halfFrameHandleSize = m_FrameHandleSize * 0.5f;
+			var botHandleYPosition = (m_FrameHeight) * (m_LerpAmount - 1);
 			transform.localPosition = new Vector3(0, botHandleYPosition, -halfDepth - m_HandleZOffset);
-			transform.localScale = new Vector3(handleScaleX, m_FrameHandleSize, m_FrameHandleSize);
+			transform.localScale = new Vector3(handleScaleX + m_FrameHandleSize * 2, m_FrameHandleSize, m_FrameHandleSize);
 
+			const float kLerpScale = 1.15f;
+			var halfHandleZOffset = m_HandleZOffset * 0.5f;
+			transform = m_FrontLeftHandle.transform;
+			transform.localPosition = new Vector3(-halfWidth, botHandleYPosition * 0.5f, -halfDepth - halfHandleZOffset);
+			transform.localRotation = Quaternion.AngleAxis(Mathf.Clamp01(m_LerpAmount * kLerpScale) * 90f, Vector3.right);
+			transform.localScale = new Vector3(m_FrameHandleSize, m_FrameHeight, m_FrameHandleSize);
+
+			var rightTransform = m_FrontRightHandle.transform;
+			var localPosition = transform.localPosition;
+			localPosition.x = halfWidth;
+			rightTransform.localPosition = localPosition;
+			rightTransform.localRotation = transform.localRotation;
+			rightTransform.localScale = transform.localScale;
+
+			var cornerScale = m_FrameHeight + m_FrameHandleSize;
+			transform = m_FrontLeftCornerHandle.transform;
+			var zOffset = m_HandleZOffset - k_HandleZOffset * 0.5f;
+			transform.localPosition = new Vector3(-halfWidth, -cornerScale * (1f - m_LerpAmount * 0.5f) + m_FrameHandleSize * (1 - m_LerpAmount) * 0.5f, -halfDepth - zOffset - halfFrameHandleSize);
+			transform.localScale = new Vector3(m_FrameHandleSize, (cornerScale - m_FrameHandleSize) * m_LerpAmount, cornerScale - m_FrameHandleSize * 0.75f);
+
+			rightTransform = m_FrontRightCornerHandle.transform;
+			localPosition = transform.localPosition;
+			localPosition.x = halfWidth;
+			rightTransform.localPosition = localPosition;
+			rightTransform.localRotation = transform.localRotation;
+			rightTransform.localScale = transform.localScale;
+
+			// Resize icons
 			var resizePositionX = halfWidth + m_ResizeHandleMargin;
 			var resizePositionZ = halfDepth + m_ResizeHandleMargin;
 			transform = m_FrontResizeIcon.transform;
-			var localPosition = transform.localPosition;
+			localPosition = transform.localPosition;
 			localPosition.z = -resizePositionZ - m_HandleZOffset;
 			transform.localPosition = localPosition;
 
@@ -607,20 +643,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 90f);
 			var midRevealCorrectiveShapeAmount = Mathf.PingPong(angledAmount * kCorrectiveRevealShapeMultiplier, 90);
 			// add lerp padding to reach and maintain the target value sooner
-			m_LerpAmount = (angledAmount / 90f) * kLerpPadding;
+			m_LerpAmount = angledAmount / 90f;
+			var paddedLerp = m_LerpAmount * kLerpPadding;
 
 			// offset front panel according to workspaceUI rotation angle
 			const float kAdditionalFrontPanelLerpPadding = 1.1f;
 			const float kFrontPanelYOffset = 0.03f;
 			const float kFrontPanelZStartOffset = 0.0084f;
 			const float kFrontPanelZEndOffset = -0.05f;
-			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(k_BaseFrontPanelRotation, k_MaxFrontPanelRotation, m_LerpAmount * kAdditionalFrontPanelLerpPadding));
-			m_FrontPanel.localPosition = Vector3.Lerp(Vector3.forward * kFrontPanelZStartOffset, new Vector3(0, kFrontPanelYOffset, kFrontPanelZEndOffset), m_LerpAmount);
+			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(k_BaseFrontPanelRotation, k_MaxFrontPanelRotation, paddedLerp * kAdditionalFrontPanelLerpPadding));
+			m_FrontPanel.localPosition = Vector3.Lerp(Vector3.forward * kFrontPanelZStartOffset, new Vector3(0, kFrontPanelYOffset, kFrontPanelZEndOffset), paddedLerp);
 
-			const float kHandleZOffset = 0.1f;
-			m_HandleZOffset = kHandleZOffset * Mathf.Clamp01(m_LerpAmount * kAdditionalFrontPanelLerpPadding);
+			m_HandleZOffset = k_HandleZOffset * Mathf.Clamp01(paddedLerp * kAdditionalFrontPanelLerpPadding);
 
-			UpdateHandles();
+			UpdateHandlesAndIcons();
 
 			// change blendshapes according to workspaceUI rotation angle
 			m_Frame.SetBlendShapeWeight(k_AngledFaceBlendShapeIndex, angledAmount * kLerpPadding);

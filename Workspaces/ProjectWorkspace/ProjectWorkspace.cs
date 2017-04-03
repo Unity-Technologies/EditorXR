@@ -158,8 +158,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var halfScrollMargin = k_ScrollMargin * 0.5f;
 			var doubleScrollMargin = k_ScrollMargin * 2;
 			var xOffset = (contentBounds.size.x - size.x) * -0.5f;
-			var folderScrollHandleXPositionOffset = 0.025f;
-			var folderScrollHandleXScaleOffset = 0.015f;
 
 			var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
 			folderScrollHandleTransform.localPosition = new Vector3(xOffset, -folderScrollHandleTransform.localScale.y * 0.5f, 0);

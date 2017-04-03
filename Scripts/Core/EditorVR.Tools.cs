@@ -98,8 +98,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var vacuumTool = (VacuumTool)toolData.tool;
-					vacuumTool.defaultOffset = WorkspaceModule.k_DefaultWorkspaceOffset;
-					vacuumTool.defaultTilt = WorkspaceModule.k_DefaultWorkspaceTilt;
+					vacuumTool.defaultOffset = WorkspaceModule.DefaultWorkspaceOffset;
+					vacuumTool.defaultTilt = WorkspaceModule.DefaultWorkspaceTilt;
 					vacuumTool.vacuumables = vacuumables.vacuumables;
 
 					// Using a shared instance of the transform tool across all device tool stacks

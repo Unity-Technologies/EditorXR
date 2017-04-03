@@ -100,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		public Transform topPanel { get { return m_WorkspaceUI.topPanel; } }
+		public Transform topPanel { get { return m_WorkspaceUI.topFaceContainer; } }
 
 		public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
