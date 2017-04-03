@@ -671,8 +671,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var secondaryRight = input.secondaryRight;
 			if (m_DragStates.Count == 0)
 			{
-				foreach (var rayOrigin in m_HovereringRayOrigins)
+				for (int i = 0; i < m_HovereringRayOrigins.Count; i++)
 				{
+					var rayOrigin = m_HovereringRayOrigins[i];
 					var dragStart = false;
 					var resize = false;
 					if (rayOrigin == leftRayOrigin && primaryLeft.wasJustPressed && !preventResize)
@@ -770,8 +771,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 
 			m_DragsEnded.Clear();
-			foreach (var kvp in m_DragStates)
+
+			var enumerator = m_DragStates.GetEnumerator();
+			while (enumerator.MoveNext())
 			{
+				var kvp = enumerator.Current;
 				var rayOrigin = kvp.Key;
 				var state = kvp.Value;
 
@@ -786,6 +790,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (resizeEnded || moveEnded)
 					m_DragsEnded.Add(rayOrigin);
 			}
+			enumerator.Dispose();
 
 			if (m_DragsEnded.Count > 0)
 			{
@@ -807,11 +812,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 			}
 
-			foreach (var kvp in m_DragStates)
+			enumerator = m_DragStates.GetEnumerator();
+			while (enumerator.MoveNext())
 			{
+				var kvp = enumerator.Current;
 				var rayOrigin = kvp.Key;
 				kvp.Value.OnDragging(rayOrigin);
 			}
+			enumerator.Dispose();
 		}
 
 		Vector3 GetPointerPositionForRayOrigin(Transform rayOrigin)
