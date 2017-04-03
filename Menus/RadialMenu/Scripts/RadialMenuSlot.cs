@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -95,9 +94,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 
 				if (m_Highlighted)
-					showTooltip(this);
+					this.ShowTooltip(this);
 				else
-					hideTooltip(this);
+					this.HideTooltip(this);
 			}
 
 			get { return m_Highlighted; }
@@ -198,9 +197,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public static Quaternion hiddenLocalRotation { get; set; } // All menu slots share the same hidden location
 
 		public Quaternion visibleLocalRotation { get; set; }
-
-		public Action<ITooltip> showTooltip { private get; set; }
-		public Action<ITooltip> hideTooltip { private get; set; }
 
 		// For overriding text (i.e. TransformActions)
 		public ITooltip tooltip { private get; set; }
@@ -317,7 +313,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateHide()
 		{
-			hideTooltip(this);
+			this.HideTooltip(this);
 
 			m_CanvasGroup.interactable = false;
 			m_Pressed = false;
@@ -355,7 +351,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MenuInset.localScale = m_HiddenInsetLocalScale;
 			CorrectIconRotation();
 			transform.localScale = Vector3.zero;
-			hideTooltip(this);
+			this.HideTooltip(this);
 		}
 
 		IEnumerator Highlight()

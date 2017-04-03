@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Delete", ActionMenuItemAttribute.DefaultActionSectionName, 7)]
-	sealed class Delete : BaseAction, IUsesSpatialHash
+	sealed class Delete : BaseAction, IDeleteSceneObject
 	{
 		public Action<GameObject> addToSpatialHash { private get; set; }
 		public Action<GameObject> removeFromSpatialHash { private get; set; }
@@ -16,8 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 			var gameObjects = Selection.gameObjects;
 			foreach (var go in gameObjects)
 			{
-				removeFromSpatialHash(go);
-				ObjectUtils.Destroy(go);
+				this.DeleteSceneObject(go);
 			}
 
 			Selection.activeGameObject = null;

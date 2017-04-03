@@ -8,9 +8,6 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 	[ActionMenuItem("Clone", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
 	sealed class Clone : BaseAction, IUsesSpatialHash
 	{
-		public Action<GameObject> addToSpatialHash { private get; set; }
-		public Action<GameObject> removeFromSpatialHash { private get; set; }
-
 		public override void ExecuteAction()
 		{
 			var selection = Selection.gameObjects;
@@ -26,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 				var viewDirection = cloneTransform.position - cameraTransform.position;
 				cloneTransform.position = cameraTransform.TransformPoint(Vector3.forward * viewDirection.magnitude)
 					+ cloneTransform.position - bounds.center;
-				addToSpatialHash(clone);
+				this.AddToSpatialHash(clone);
 				clones[index++] = clone;
 			}
 			Selection.objects = clones;

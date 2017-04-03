@@ -36,9 +36,6 @@ namespace ListView
 
 		protected override float listHeight { get { return m_Data.Count * itemSize.z; } }
 
-		public InstantiateUIDelegate instantiateUI { private get; set; }
-		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
-
 		protected override void Setup()
 		{
 			if (m_Templates.Length < 1)
@@ -157,8 +154,8 @@ namespace ListView
 			}
 			else
 			{
-				item = instantiateUI(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<TItem>();
-				connectInterfaces(item);
+				item = this.InstantiateUI(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<TItem>();
+				this.ConnectInterfaces(item);
 				item.Setup(data);
 			}
 

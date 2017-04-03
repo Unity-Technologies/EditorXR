@@ -60,7 +60,7 @@ GameObject:
   - 114: {fileID: 114000013616855498}
   m_Layer: 5
   m_Name: ScaleManipulator
-  m_TagString: ShowInMiniWorld
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -543,6 +543,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_SelectionFlags: 3
   m_HandleTip: {fileID: 0}
+  m_OrientDragPlaneToRay: 1
 --- !u!114 &114000011147854508
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -557,6 +558,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_SelectionFlags: 3
   m_HandleTip: {fileID: 4000011529957722}
+  m_OrientDragPlaneToRay: 1
 --- !u!114 &114000011988091676
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -571,6 +573,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_SelectionFlags: 3
   m_HandleTip: {fileID: 4000012243801892}
+  m_OrientDragPlaneToRay: 1
 --- !u!114 &114000013052707070
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -585,6 +588,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_SelectionFlags: 3
   m_HandleTip: {fileID: 4000012628356964}
+  m_OrientDragPlaneToRay: 1
 --- !u!114 &114000013616855498
 MonoBehaviour:
   m_ObjectHideFlags: 1

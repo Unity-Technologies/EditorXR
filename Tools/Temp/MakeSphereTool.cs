@@ -20,9 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		[SerializeField]
 		private ActionMap m_ActionMap;
 
-		public Action<GameObject> addToSpatialHash { private get; set; }
-		public Action<GameObject> removeFromSpatialHash { private get; set; }
-
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var standardAlt = (StandardAlt)input;
@@ -32,7 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (rayOrigin)
 					sphere.position = rayOrigin.position + rayOrigin.forward * 5f;
 
-				addToSpatialHash(sphere.gameObject);
+				this.AddToSpatialHash(sphere.gameObject);
 
 				consumeControl(standardAlt.action);
 			}

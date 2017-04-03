@@ -30,12 +30,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				return m_ToolType;
 			}
-
 			set
 			{
-				if (m_ToolType == value)
-					return;
-
 				m_GradientButton.gameObject.SetActive(true);
 
 				m_ToolType = value;
@@ -158,7 +154,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public TextAlignment tooltipAlignment { get; private set; }
 		public Transform rayOrigin { get; set; }
-		public Func<Transform, Type, bool> selectTool { private get; set; }
 		public Node node { get; set; }
 		public ITooltip tooltip { private get; set; } // Overrides text
 		public Action<ITooltip> showTooltip { private get; set; }
@@ -219,12 +214,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var leftHand = node == Node.LeftHand;
 			m_RightPinnedToolActionButton.buttonType = leftHand ? PinnedToolActionButton.ButtonType.SelectTool : PinnedToolActionButton.ButtonType.Close;
 			m_LeftPinnedToolActionButton.buttonType = leftHand ? PinnedToolActionButton.ButtonType.Close : PinnedToolActionButton.ButtonType.SelectTool;
+
+			//m_GradientButton.click += OnClick;
+			//m_GradientButton.gameObject.SetActive(false);
 		}
 
 		void SelectTool()
 		{
 			selectTool(rayOrigin, m_ToolType);
 			activeTool = activeTool;
+			//SetButtonGradients(this.SelectTool(rayOrigin, m_ToolType));
 		}
 
 		// Create periodic table-style names for types
@@ -299,6 +298,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_GradientButton.visible = true;
 				m_GradientButton.highlighted = false;
 			}
+
+			m_GradientButton.UpdateMaterialColors();
 		}
 
 		void CloseButton()

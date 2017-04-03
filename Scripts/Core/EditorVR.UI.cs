@@ -6,21 +6,77 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
 		[SerializeField]
 		Camera m_EventCameraPrefab;
 
-		class UI : Nested
+		class UI : Nested, IInterfaceConnector
 		{
-			internal List<IManipulatorVisibility> manipulatorVisibilities { get { return m_ManipulatorVisibilities; } }
-			readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
+			const byte k_MinStencilRef = 2;
 
+			byte stencilRef
+			{
+				get { return m_StencilRef; }
+				set
+				{
+					m_StencilRef = (byte)Mathf.Clamp(value, k_MinStencilRef, byte.MaxValue);
+
+					// Wrap
+					if (m_StencilRef == byte.MaxValue)
+						m_StencilRef = k_MinStencilRef;
+				}
+			}
+			byte m_StencilRef = k_MinStencilRef;
+
+			readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
 			readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
 
 			internal Camera eventCamera { get; private set; }
+
+			public UI()
+			{
+				IInstantiateUIMethods.instantiateUI = InstantiateUI;
+				IRequestStencilRefMethods.requestStencilRef = RequestStencilRef;
+				ISetManipulatorsVisibleMethods.setManipulatorsVisible = SetManipulatorsVisible;
+			}
+
+			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			{
+				var manipulatorVisiblity = obj as IManipulatorVisibility;
+				if (manipulatorVisiblity != null)
+					m_ManipulatorVisibilities.Add(manipulatorVisiblity);
+
+				var usesStencilRef = obj as IUsesStencilRef;
+				if (usesStencilRef != null)
+				{
+					byte? stencilRef = null;
+
+					var mb = obj as MonoBehaviour;
+					if (mb)
+					{
+						var parent = mb.transform.parent;
+						if (parent)
+						{
+							// For workspaces and tools, it's likely that the stencil ref should be shared internally
+							var parentStencilRef = parent.GetComponentInParent<IUsesStencilRef>();
+							if (parentStencilRef != null)
+								stencilRef = parentStencilRef.stencilRef;
+						}
+					}
+
+					usesStencilRef.stencilRef = stencilRef ?? RequestStencilRef();
+				}
+			}
+
+			public void DisconnectInterface(object obj)
+			{
+				var manipulatorVisiblity = obj as IManipulatorVisibility;
+				if (manipulatorVisiblity != null)
+					m_ManipulatorVisibilities.Remove(manipulatorVisiblity);
+			}
 
 			internal void Initialize()
 			{
@@ -28,11 +84,11 @@ namespace UnityEditor.Experimental.EditorVR
 				ObjectUtils.AddComponent<EventSystem>(evr.gameObject);
 
 				var inputModule = evr.AddModule<MultipleRayInputModule>();
-				evr.m_InputModule = inputModule;
-				evr.m_InputModule.getPointerLength = evr.m_DirectSelection.GetPointerLength;
+				evr.m_MultipleRayInputModule = inputModule;
+				inputModule.getPointerLength = evr.m_DirectSelection.GetPointerLength;
 
 				if (evr.m_CustomPreviewCamera != null)
-					evr.m_InputModule.layerMask |= evr.m_CustomPreviewCamera.hmdOnlyLayerMask;
+					inputModule.layerMask |= evr.m_CustomPreviewCamera.hmdOnlyLayerMask;
 
 				eventCamera = ObjectUtils.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
 				eventCamera.enabled = false;
@@ -63,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR
 				return go;
 			}
 
-			internal void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
+			void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
 			{
 				if (visible)
 					m_ManipulatorsHiddenRequests.Remove(setter);
@@ -76,6 +132,11 @@ namespace UnityEditor.Experimental.EditorVR
 				var manipulatorsVisible = m_ManipulatorsHiddenRequests.Count == 0;
 				foreach (var mv in m_ManipulatorVisibilities)
 					mv.manipulatorVisible = manipulatorsVisible;
+			}
+
+			byte RequestStencilRef()
+			{
+				return stencilRef++;
 			}
 		}
 	}

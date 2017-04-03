@@ -43,8 +43,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		Color m_OriginalBackgroundColor;
 		Material m_CustomHighlightMaterial;
 
-		public Func<float> getViewerScale { private get; set; }
-
 		void Start()
 		{
 			m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
@@ -113,8 +111,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var tooltipTransform = tooltipUI.transform;
 
 			lerp = MathUtilsExt.SmoothInOutLerpFloat(lerp); // shape the lerp for better presentation
-			var viewerScale = getViewerScale();
-			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
 			var tooltipText = tooltipUI.text;
 			if (tooltipText)
@@ -122,6 +118,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				tooltipText.text = tooltip.tooltipText;
 				tooltipText.color = Color.Lerp(Color.clear, Color.white, lerp);
 			}
+
+			var viewerScale = this.GetViewerScale();
+			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
 			var customToolTipColor = tooltip as ISetCustomTooltipColor;
 			if (customToolTipColor != null)
@@ -209,9 +208,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void OnRayExited(GameObject gameObject, RayEventData eventData)
 		{
-			var tooltip = gameObject.GetComponent<ITooltip>();
-			if (tooltip != null)
-				HideTooltip(tooltip);
+			if (gameObject)
+			{
+				var tooltip = gameObject.GetComponent<ITooltip>();
+				if (tooltip != null)
+					HideTooltip(tooltip);
+			}
 		}
 
 		public void ShowTooltip(ITooltip tooltip)

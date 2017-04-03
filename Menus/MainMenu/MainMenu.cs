@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
-		private ActionMap m_MainMenuActionMap;
+		ActionMap m_MainMenuActionMap;
 
 		public Transform alternateMenuOrigin
 		{
@@ -29,7 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_MainMenuUI.alternateMenuOrigin = value;
 			}
 		}
-		private Transform m_AlternateMenuOrigin;
+		Transform m_AlternateMenuOrigin;
 
 		public Transform menuOrigin
 		{
@@ -41,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_MainMenuUI.menuOrigin = value;
 			}
 		}
-		private Transform m_MenuOrigin;
+		Transform m_MenuOrigin;
 
 		public bool visible
 		{
@@ -56,24 +56,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 			}
 		}
-		private bool m_Visible;
+		bool m_Visible;
 
 		[SerializeField]
-		private MainMenuUI m_MainMenuPrefab;
+		MainMenuUI m_MainMenuPrefab;
 
-		private MainMenuUI m_MainMenuUI;
-		private float m_LastRotationInput;
+		MainMenuUI m_MainMenuUI;
+		float m_LastRotationInput;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
 
-		public InstantiateUIDelegate instantiateUI { private get; set; }
 		public List<Type> menuTools { private get; set; }
-		public Func<Transform, Type, bool> selectTool { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public CreateWorkspaceDelegate createWorkspace { private get; set; }
+		public Dictionary<Type, ISettingsMenuProvider> settingsMenuProviders { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
-		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
 		public Transform targetRayOrigin { private get; set; }
-		public Func<Transform, Type, bool> isToolActive { private get; set; }
 		public Type proxyType { private get; set; }
 		public Func<Transform, Type, PinnedToolButton> previewToolInPinnedToolButton { private get; set; }
 
@@ -81,8 +77,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void Start()
 		{
-			m_MainMenuUI = instantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
-			connectInterfaces(m_MainMenuUI);
+			m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
+			this.ConnectInterfaces(m_MainMenuUI);
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
@@ -90,6 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
+			CreateFaceButtons(settingsMenuProviders.Keys.ToList());
 			m_MainMenuUI.SetupMenuFaces();
 			UpdateToolButtons();
 		}
@@ -114,12 +111,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_LastRotationInput = rotationInput;
 		}
 
-		private void OnDestroy()
+		void OnDestroy()
 		{
 			ObjectUtils.Destroy(m_MainMenuUI.gameObject);
 		}
 
-		private void CreateFaceButtons(List<Type> types)
+		void CreateFaceButtons(List<Type> types)
 		{
 			foreach (var type in types)
 			{
@@ -129,6 +126,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				var isTool = typeof(ITool).IsAssignableFrom(type);
 				var isWorkspace = typeof(Workspace).IsAssignableFrom(type);
+				var isSettingsProvider = typeof(ISettingsMenuProvider).IsAssignableFrom(type);
 
 				var buttonData = new MainMenuUI.ButtonData();
 				buttonData.name = type.Name;
@@ -149,20 +147,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					buttonData.name = type.Name.Replace("Workspace", string.Empty);
 					buttonData.sectionName = "Workspaces";
 				}
+				else if (isSettingsProvider)
+				{
+					// For workspaces that haven't specified a custom attribute, do some menu categorization automatically
+					buttonData.name = type.Name.Replace("Module", string.Empty);
+					buttonData.sectionName = "Settings";
+				}
 
 				var selectedType = type; // Local variable for proper closure
-				m_MainMenuUI.CreateFaceButton(buttonData, (b) =>
+				m_MainMenuUI.CreateFaceButton(buttonData, b =>
 				{
 					b.button.onClick.RemoveAllListeners();
 					if (isTool)
 					{
-						m_ToolButtons[type] = b;
+						m_ToolButtons[selectedType] = b;
 
 						b.button.onClick.AddListener(() =>
 						{
 							if (visible && targetRayOrigin)
 							{
-								selectTool(targetRayOrigin, selectedType);
+								this.SelectTool(targetRayOrigin, selectedType);
 								UpdateToolButtons();
 							}
 						});
@@ -172,7 +176,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						b.button.onClick.AddListener(() =>
 						{
 							if (visible)
-								createWorkspace(selectedType);
+								this.CreateWorkspace(selectedType);
+						});
+					}
+					else if (isSettingsProvider)
+					{
+						b.button.onClick.AddListener(() =>
+						{
+							var provider = settingsMenuProviders[selectedType];
+							provider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(buttonData.sectionName, provider.settingsMenuPrefab);
 						});
 					}
 
@@ -187,7 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			foreach (var kvp in m_ToolButtons)
 			{
-				kvp.Value.selected = isToolActive(targetRayOrigin, kvp.Key);
+				kvp.Value.selected = this.IsToolActive(targetRayOrigin, kvp.Key);
 			}
 		}
 	}

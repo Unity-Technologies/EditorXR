@@ -10,7 +10,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale
 	{
-		public static readonly Vector3 k_DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
+		public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
+		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
 
 		public const float HandleMargin = -0.15f; // Compensate for base size from frame model
 
@@ -20,11 +21,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected Vector3? m_CustomStartingBounds;
 
-		public static readonly Vector3 k_MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
-
 		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
 		[SerializeField]
-		private Vector3 m_MinBounds = k_MinBounds;
+		private Vector3 m_MinBounds = MinBounds;
 
 		/// <summary>
 		/// Bounding box for workspace content (ignores value.center) 
@@ -36,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				if (!value.Equals(contentBounds))
 				{
-					Vector3 size = value.size;
+					var size = value.size;
 					size.x = Mathf.Max(size.x, minBounds.x);
 					size.y = Mathf.Max(size.y, minBounds.y);
 					size.z = Mathf.Max(size.z, minBounds.z);
@@ -47,16 +46,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 			}
 		}
-		private Bounds m_ContentBounds;
+		Bounds m_ContentBounds;
 
 		[SerializeField]
-		private GameObject m_BasePrefab;
+		GameObject m_BasePrefab;
 
-		private Vector3 m_DragStart;
-		private Vector3 m_PositionStart;
-		private Vector3 m_BoundSizeStart;
-		private bool m_Dragging;
-		private bool m_Vacuuming;
+		Vector3 m_DragStart;
+		Vector3 m_PositionStart;
+		Vector3 m_BoundSizeStart;
+		bool m_Dragging;
 		bool m_Moving;
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ResetSizeCoroutine;
@@ -77,11 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Bounds vacuumBounds { get { return outerBounds; } }
 
-		public InstantiateUIDelegate instantiateUI { protected get; set; }
-
 		public byte stencilRef { get; set; }
-
-		public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 		/// <summary>
 		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
@@ -115,22 +109,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
-		public Func<float> getViewerScale { protected get; set; }
-
 		public virtual void Setup()
 		{
-			GameObject baseObject = instantiateUI(m_BasePrefab);
+			var baseObject = this.InstantiateUI(m_BasePrefab);
 			baseObject.transform.SetParent(transform, false);
 
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
-			connectInterfaces(m_WorkspaceUI);
+			this.ConnectInterfaces(m_WorkspaceUI);
 			m_WorkspaceUI.closeClicked += OnCloseClicked;
 			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
 
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-			m_ContentBounds = new Bounds(Vector3.up * k_DefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? k_DefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
+			m_ContentBounds = new Bounds(Vector3.up * DefaultBounds.y * 0.5f, m_CustomStartingBounds ?? DefaultBounds); // If custom bounds have been set, use them as the initial bounds
 			UpdateBounds();
 
 			//Set up DirectManipulator
@@ -139,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			directManipulator.translate = Translate;
 			directManipulator.rotate = Rotate;
 
-			//Set up the front "move" handle highglight, the move handle is used to translate/rotate the workspace
+			//Set up the front "move" handle highlight, the move handle is used to translate/rotate the workspace
 			var moveHandle = m_WorkspaceUI.moveHandle;
 			moveHandle.dragStarted += OnMoveHandleDragStarted;
 			moveHandle.dragEnded += OnMoveHandleDragEnded;
@@ -181,7 +173,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			if (m_Dragging)
 			{
-				var viewerScale = getViewerScale();
+				var viewerScale = this.GetViewerScale();
 				var dragVector = (eventData.rayOrigin.position - m_DragStart) / viewerScale;
 				var bounds = contentBounds;
 				var positionOffset = Vector3.zero;
@@ -231,12 +223,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 		}
 
-		private void Translate(Vector3 deltaPosition)
+		void Translate(Vector3 deltaPosition, Transform rayOrigin, bool constrained)
 		{
 			transform.position += deltaPosition;
 		}
 
-		private void Rotate(Quaternion deltaRotation)
+		void Rotate(Quaternion deltaRotation)
 		{
 			transform.rotation *= deltaRotation;
 		}
@@ -255,7 +247,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
 		}
 
-		private void UpdateBounds()
+		void UpdateBounds()
 		{
 			m_WorkspaceUI.bounds = contentBounds;
 		}
@@ -350,7 +342,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var currentBoundsSize = contentBounds.size;
 			var currentBoundsCenter = contentBounds.center;
-			var targetBoundsSize = m_CustomStartingBounds != null ? m_CustomStartingBounds.Value : minBounds;
+			var targetBoundsSize = m_CustomStartingBounds ?? minBounds;
 			var targetBoundsCenter = Vector3.zero;
 			var smoothVelocitySize = Vector3.zero;
 			var smoothVelocityCenter = Vector3.zero;
