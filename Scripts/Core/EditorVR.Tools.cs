@@ -433,7 +433,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					return null;
 
 				PinnedToolButton pinnedToolButton = null;
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				Rays.ForEachProxyDevice((deviceData) =>
 				{
 					if (deviceData.rayOrigin == rayOrigin) // enable pinned tool preview on the opposite (handed) device
 					{
