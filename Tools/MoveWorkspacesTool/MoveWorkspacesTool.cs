@@ -9,6 +9,13 @@ using UnityEngine.InputNew;
 public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, ICustomRay, IUsesViewerBody, 
 	IResetWorkspaces, IAllWorkspaces
 {
+	enum State
+	{
+		WaitingForInput,
+		WaitingForReset,
+		MoveWorkspaces
+	}
+
 	float m_TriggerPressedTimeStamp;
 
 	List<IWorkspace> m_Workspaces;
@@ -24,8 +31,8 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 	float m_ThrowingTimeStart;
 	float m_TargetScale = 1.0f;
 
-	bool m_MoveWorkspaces;
-
+	State m_State = State.WaitingForInput;
+	
 	public Transform rayOrigin { private get; set; }
 	public List<IWorkspace> allWorkspaces { private get; set; }
 
@@ -33,21 +40,31 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 	{
 		var action = ((Standard)input).action;
 
-		if (!m_MoveWorkspaces)
+		if (m_State != State.MoveWorkspaces)
 		{
 			if (!this.IsAboveHead(rayOrigin))
 				return;
 
 			if (action.wasJustPressed)
 			{
+				// FIX: Don't allow move after double-click
 				if (UIUtils.IsDoubleClick(Time.realtimeSinceStartup - m_TriggerPressedTimeStamp))
+				{
 					this.ResetWorkspaceRotations();
+					m_State = State.WaitingForReset;
+				}
 
 				m_TriggerPressedTimeStamp = Time.realtimeSinceStartup;
 				consumeControl(action);
 			}
-			else if (action.isHeld)
+			else if (m_State == State.WaitingForInput && action.isHeld)
+			{
 				StartMove();
+			}
+			else if (m_State == State.WaitingForReset && action.wasJustReleased)
+			{
+				m_State = State.WaitingForInput;
+			}
 		}
 		else
 		{
@@ -128,7 +145,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 
 	void StartMove()
 	{
-		const float kEnterMovementModeTime = 1.0f;
+		const float kEnterMovementModeTime = 0.5f;
 
 		if (Time.realtimeSinceStartup - m_TriggerPressedTimeStamp > kEnterMovementModeTime)
 		{
@@ -139,7 +156,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 
 				m_RayOriginPreviousPosition = rayOrigin.position;
 
-				m_MoveWorkspaces = true;
+				m_State = State.MoveWorkspaces;
 
 				this.HideDefaultRay(rayOrigin);
 				this.LockRay(rayOrigin, this);
@@ -164,7 +181,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 			var deltaRotation = rayOrigin.rotation * Quaternion.Inverse(m_RayOriginStartRotation);
 			var deltaPosition = rayOrigin.position - m_RayOriginStartPosition;
 			Quaternion yawRotation = MathUtilsExt.ConstrainYawRotation(deltaRotation);
-			var localOffset = (m_WorkspacePositions[i] - m_RayOriginStartPosition);
+			var localOffset = m_WorkspacePositions[i] - m_RayOriginStartPosition;
 			workspaceTransform.position = m_RayOriginStartPosition + deltaPosition * kMoveMultiplier + yawRotation * localOffset;
 		}
 
@@ -174,7 +191,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 
 	void EndMove()
 	{
-		m_MoveWorkspaces = false;
+		m_State = State.WaitingForInput;
 
 		this.UnlockRay(rayOrigin, this);
 		this.ShowDefaultRay(rayOrigin);

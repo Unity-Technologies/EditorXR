@@ -1,11 +1,13 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using Valve.VR.InteractionSystem;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -75,9 +77,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			float m_ScaleFactor;
 			[SerializeField]
 			string m_SelectedFolder;
+			[SerializeField]
+			List<string> m_ExpandedFolders;
 
 			public float scaleFactor { get { return m_ScaleFactor; } set { m_ScaleFactor = value; } }
 			public string selectedFolder { get { return m_SelectedFolder; } set { m_SelectedFolder = value; } }
+			public List<string> expandedFolders { get { return m_ExpandedFolders; } set { m_ExpandedFolders = value; } }
 		}
 
 		public override void Setup()
@@ -100,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var folderListView = m_ProjectUI.folderListView;
 			this.ConnectInterfaces(folderListView);
-			folderListView.selectFolder = SelectFolder;
+			folderListView.folderSelected += OnFolderSelected;
 			folderData = m_FolderData;
 
 			m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
@@ -160,17 +165,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public object OnSerializeWorkspace()
 		{
+			var folderListView = m_ProjectUI.folderListView;
+
 			var preferences = new Preferences();
 			preferences.scaleFactor = m_ProjectUI.assetGridView.scaleFactor;
-			preferences.selectedFolder = m_ProjectUI.folderListView.selectedFolder;
+			preferences.expandedFolders = folderListView.expandStates.Where(es => es.Value).Select(es => es.Key).ToList();
+			preferences.selectedFolder = folderListView.selectedFolder;
 			return preferences;
 		}
 
 		public void OnDeserializeWorkspace(object obj)
 		{
+			var folderListView = m_ProjectUI.folderListView;
+
 			var preferences = (Preferences)obj;
 			m_ProjectUI.assetGridView.scaleFactor = preferences.scaleFactor;
-			m_ProjectUI.folderListView.SelectFolder(preferences.selectedFolder);
+			preferences.expandedFolders.ForEach(guid => folderListView.expandStates[guid] = true);
+			folderListView.selectedFolder = preferences.selectedFolder;
 			UpdateZoomSliderValue();
 		}
 
@@ -240,7 +251,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 
-		void SelectFolder(FolderData data)
+		void OnFolderSelected(FolderData data)
 		{
 			m_ProjectUI.assetGridView.data = data.assets;
 			m_ProjectUI.assetGridView.scrollOffset = 0;
