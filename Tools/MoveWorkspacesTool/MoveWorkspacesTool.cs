@@ -47,7 +47,6 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 
 			if (action.wasJustPressed)
 			{
-				// FIX: Don't allow move after double-click
 				if (UIUtils.IsDoubleClick(Time.realtimeSinceStartup - m_TriggerPressedTimeStamp))
 				{
 					this.ResetWorkspaceRotations();
