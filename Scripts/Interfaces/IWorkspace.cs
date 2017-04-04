@@ -28,6 +28,11 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Bounding box for entire workspace, including UI handles
 		/// </summary>
 		Bounds outerBounds { get; }
+
+		/// <summary>
+		/// Bounding box for workspace content (ignores value.center) 
+		/// </summary>
+		Bounds contentBounds { get; set; }
 	}
 }
 #endif

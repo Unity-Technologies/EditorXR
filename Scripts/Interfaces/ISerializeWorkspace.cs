@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-
+﻿#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {
 	interface ISerializeWorkspace
@@ -8,3 +7,4 @@ namespace UnityEditor.Experimental.EditorVR
 		void OnDeserializeWorkspace(object obj);
 	}
 }
+#endif

@@ -25,9 +25,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Vector3 m_MinBounds = MinBounds;
 
-		/// <summary>
-		/// Bounding box for workspace content (ignores value.center) 
-		/// </summary>
 		public Bounds contentBounds
 		{
 			get { return m_ContentBounds; }

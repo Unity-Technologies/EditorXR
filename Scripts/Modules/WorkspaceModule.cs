@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			[SerializeField]
 			Quaternion m_LocalRotation;
 			[SerializeField]
-			Bounds m_Bounds;
+			Bounds m_ContentBounds;
 			[SerializeField]
 			string m_PayloadType;
 			[SerializeField]
@@ -39,7 +39,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public string name { get { return m_Name; } set { m_Name = value; } }
 			public Vector3 localPosition { get { return m_LocalPosition; } set { m_LocalPosition = value; } }
 			public Quaternion localRotation { get { return m_LocalRotation; } set { m_LocalRotation = value; } }
-			public Bounds bounds { get { return m_Bounds; } set { m_Bounds = value; } }
+			public Bounds contentBounds { get { return m_ContentBounds; } set { m_ContentBounds = value; } }
+
 			public string payloadType { get { return m_PayloadType; } set { m_PayloadType = value; } }
 			public string payload { get { return m_Payload; } set { m_Payload = value; } }
 		}
@@ -80,10 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				layout.name = workspace.GetType().FullName;
 				layout.localPosition = workspace.transform.localPosition;
 				layout.localRotation = workspace.transform.localRotation;
-
-				var ws = workspace as Workspace;
-				if (ws != null)
-					layout.bounds = ws.contentBounds;
+				layout.contentBounds = workspace.contentBounds;
 
 				var serializeWorkspace = workspace as ISerializeWorkspace;
 				if (serializeWorkspace != null)
@@ -113,10 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					workspace.transform.localPosition = layout.localPosition;
 					workspace.transform.localRotation = layout.localRotation;
-
-					var ws = workspace as Workspace;
-					if (ws != null)
-						ws.contentBounds = layout.bounds;
+					workspace.contentBounds = layout.contentBounds;
 
 					var serializeWorkspace = workspace as ISerializeWorkspace;
 					if (serializeWorkspace != null)
