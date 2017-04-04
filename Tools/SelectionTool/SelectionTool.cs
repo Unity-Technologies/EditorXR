@@ -42,14 +42,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			var hoveredObject = this.GetFirstGameObject(rayOrigin);
 
-			var directSelection = this.GetDirectSelection();
-			DirectSelectionData directSelectionData;
-			if (directSelection.TryGetValue(rayOrigin, out directSelectionData))
-			{
-				if (directSelectionData.gameObject)
-					hoveredObject = directSelectionData.gameObject;
-			}
-
 			if (hovered != null)
 				hovered(hoveredObject, rayOrigin);
 
@@ -67,8 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				DeactivateHover();
 
-				if (hoveredObject != null)
-					this.SetHighlight(hoveredObject, true, rayOrigin);
+				this.SetHighlight(hoveredObject, true, rayOrigin);
 			}
 
 			m_HoverGameObject = hoveredObject;

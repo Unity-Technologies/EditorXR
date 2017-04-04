@@ -415,6 +415,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					intersectionModule.AddTester(tester);
 
+					evr.GetModule<HighlightModule>().AddRayOriginForNode(deviceData.node, miniWorldRayOrigin);
+
 					if (deviceData.proxy.active)
 					{
 						if (deviceData.node == Node.LeftHand)
