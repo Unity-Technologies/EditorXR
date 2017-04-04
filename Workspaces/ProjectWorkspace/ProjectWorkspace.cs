@@ -1,15 +1,18 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using Valve.VR.InteractionSystem;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
-	sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
+	sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, ISerializeWorkspace
 	{
 		const float k_LeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
 		const float k_PaneMargin = 0.01f;
@@ -36,6 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		ProjectUI m_ProjectUI;
 		FilterUI m_FilterUI;
+		ZoomSliderUI m_ZoomSliderUI;
 
 		public List<FolderData> folderData
 		{
@@ -66,6 +70,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public string searchQuery { get { return m_FilterUI.searchQuery; } }
 
+		[Serializable]
+		class Preferences
+		{
+			[SerializeField]
+			float m_ScaleFactor;
+			[SerializeField]
+			string m_SelectedFolder;
+			[SerializeField]
+			List<string> m_ExpandedFolders;
+
+			public float scaleFactor { get { return m_ScaleFactor; } set { m_ScaleFactor = value; } }
+			public string selectedFolder { get { return m_SelectedFolder; } set { m_SelectedFolder = value; } }
+			public List<string> expandedFolders { get { return m_ExpandedFolders; } set { m_ExpandedFolders = value; } }
+		}
+
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
@@ -86,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var folderListView = m_ProjectUI.folderListView;
 			this.ConnectInterfaces(folderListView);
-			folderListView.selectFolder = SelectFolder;
+			folderListView.folderSelected += OnFolderSelected;
 			folderData = m_FolderData;
 
 			m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
@@ -97,12 +116,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			filterList = m_FilterList;
 
 			var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
-			var zoomSlider = sliderObject.GetComponent<ZoomSliderUI>();
-			zoomSlider.zoomSlider.minValue = Mathf.Log10(k_MinScale);
-			zoomSlider.zoomSlider.maxValue = Mathf.Log10(k_MaxScale);
-			zoomSlider.zoomSlider.value = Mathf.Log10(m_ProjectUI.assetGridView.scaleFactor);
-			zoomSlider.sliding += Scale;
-			foreach (var mb in zoomSlider.GetComponentsInChildren<MonoBehaviour>())
+			m_ZoomSliderUI = sliderObject.GetComponent<ZoomSliderUI>();
+			m_ZoomSliderUI.zoomSlider.minValue = Mathf.Log10(k_MinScale);
+			m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(k_MaxScale);
+			m_ZoomSliderUI.sliding += Scale;
+			UpdateZoomSliderValue();
+			foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
 			{
 				this.ConnectInterfaces(mb);
 			}
@@ -142,6 +161,28 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// Propagate initial bounds
 			OnBoundsChanged();
+		}
+
+		public object OnSerializeWorkspace()
+		{
+			var folderListView = m_ProjectUI.folderListView;
+
+			var preferences = new Preferences();
+			preferences.scaleFactor = m_ProjectUI.assetGridView.scaleFactor;
+			preferences.expandedFolders = folderListView.expandStates.Where(es => es.Value).Select(es => es.Key).ToList();
+			preferences.selectedFolder = folderListView.selectedFolder;
+			return preferences;
+		}
+
+		public void OnDeserializeWorkspace(object obj)
+		{
+			var folderListView = m_ProjectUI.folderListView;
+
+			var preferences = (Preferences)obj;
+			m_ProjectUI.assetGridView.scaleFactor = preferences.scaleFactor;
+			preferences.expandedFolders.ForEach(guid => folderListView.expandStates[guid] = true);
+			folderListView.selectedFolder = preferences.selectedFolder;
+			UpdateZoomSliderValue();
 		}
 
 		protected override void OnBoundsChanged()
@@ -210,7 +251,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 
-		void SelectFolder(FolderData data)
+		void OnFolderSelected(FolderData data)
 		{
 			m_ProjectUI.assetGridView.data = data.assets;
 			m_ProjectUI.assetGridView.scrollOffset = 0;
@@ -289,6 +330,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void Scale(float value)
 		{
 			m_ProjectUI.assetGridView.scaleFactor = Mathf.Pow(10, value);
+		}
+
+		void UpdateZoomSliderValue()
+		{
+			m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(m_ProjectUI.assetGridView.scaleFactor);
 		}
 	}
 }

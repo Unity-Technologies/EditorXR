@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		class UI : Nested, IInterfaceConnector
 		{
-			const byte k_MinStencilRef = 5;
+			const byte k_MinStencilRef = 2;
 
 			byte stencilRef
 			{
@@ -84,16 +84,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				ObjectUtils.AddComponent<EventSystem>(evr.gameObject);
 
 				var inputModule = evr.AddModule<MultipleRayInputModule>();
-				inputModule.getPointerLength = evr.GetNestedModule<DirectSelection>().GetPointerLength;
+				evr.m_MultipleRayInputModule = inputModule;
+				inputModule.getPointerLength = evr.m_DirectSelection.GetPointerLength;
 
-				if (evr.m_CustomPreviewCamera != null)
-					inputModule.layerMask |= evr.m_CustomPreviewCamera.hmdOnlyLayerMask;
+				var customPreviewCamera = evr.m_Viewer.customPreviewCamera;
+				if (customPreviewCamera != null)
+					inputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
 
 				eventCamera = ObjectUtils.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
 				eventCamera.enabled = false;
 				inputModule.eventCamera = eventCamera;
 
-				inputModule.preProcessRaycastSource = evr.GetNestedModule<Rays>().PreProcessRaycastSource;
+				inputModule.preProcessRaycastSource = evr.m_Rays.PreProcessRaycastSource;
 			}
 
 			internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
@@ -103,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				foreach (var canvas in go.GetComponentsInChildren<Canvas>())
 					canvas.worldCamera = eventCamera;
 
-				var keyboardModule = evr.GetModule<KeyboardModule>();
+				var keyboardModule = evr.m_KeyboardModule;
 				foreach (var inputField in go.GetComponentsInChildren<InputField>())
 				{
 					if (inputField is NumericInputField)
