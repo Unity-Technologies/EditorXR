@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -141,12 +140,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();
 			if (zoomTooltip)
 				zoomTooltip.tooltipText = "Drag the Handle to Zoom the Mini World";
-
-			foreach (var handle in m_WorkspaceUI.handles)
-			{
-				handle.dragStarted += DragStarted;
-				handle.dragEnded += DragEnded;
-			}
 
 			// Propagate initial bounds
 			OnBoundsChanged();

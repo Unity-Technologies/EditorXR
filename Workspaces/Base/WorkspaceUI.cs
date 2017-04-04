@@ -320,7 +320,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Transform topFaceContainer { get { return m_TopFaceContainer; } set { m_TopFaceContainer = value; } }
 		public Transform sceneContainer { get { return m_SceneContainer; } }
-		public BaseHandle[] handles { get { return m_Handles; } }
 		public RectTransform frontPanel { get { return m_FrontPanel; } }
 		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
 		public bool dynamicFaceAdjustment { get { return m_DynamicFaceAdjustment; } set { m_DynamicFaceAdjustment = value; } }
