@@ -60,12 +60,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		internal static List<Type> workspaceTypes { get; private set; }
 
-		public bool preserveWorkspaces { get; set; }
-
 		internal Transform leftRayOrigin { private get; set; }
 		internal Transform rightRayOrigin { private get; set; }
 
-		public Func<Transform, float> getPointerLength { private get; set; }
+		internal bool preserveWorkspaces { get; set; }
+
+		internal Func<Transform, float> getPointerLength { private get; set; }
 
 		static WorkspaceModule()
 		{

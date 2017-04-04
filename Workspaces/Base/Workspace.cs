@@ -11,22 +11,33 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale
 	{
 		const float k_MaxFrameSize = 100f;
+
 		public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 
 		public const float FaceMargin = 0.025f;
 		public const float HighlightMargin = 0.002f;
 
-		public event Action<IWorkspace> destroyed;
+		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
+
+		[SerializeField]
+		Vector3 m_MinBounds = MinBounds;
+
+		[SerializeField]
+		GameObject m_BasePrefab;
+
+		[SerializeField]
+		ActionMap m_ActionMap;
+
+		Bounds m_ContentBounds;
+
+		Coroutine m_VisibilityCoroutine;
+		Coroutine m_ResetSizeCoroutine;
 
 		protected WorkspaceUI m_WorkspaceUI;
 
 		protected Vector3? m_CustomStartingBounds;
 
-		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
-
 		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
-		[SerializeField]
-		Vector3 m_MinBounds = MinBounds;
 
 		public Bounds contentBounds
 		{
@@ -46,16 +57,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 			}
 		}
-		Bounds m_ContentBounds;
-
-		[SerializeField]
-		GameObject m_BasePrefab;
-
-		[SerializeField]
-		ActionMap m_ActionMap;
-
-		Coroutine m_VisibilityCoroutine;
-		Coroutine m_ResetSizeCoroutine;
 
 		public Bounds outerBounds
 		{
@@ -97,6 +98,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_WorkspaceUI.bounds = contentBounds;
 			}
 		}
+
+		public event Action<IWorkspace> destroyed;
 
 		public Transform topPanel { get { return m_WorkspaceUI.topFaceContainer; } }
 
@@ -142,12 +145,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
-		public virtual void OnCloseClicked()
+		protected virtual void OnCloseClicked()
 		{
 			Close();
 		}
 
-		public virtual void OnResetClicked()
+		protected virtual void OnResetClicked()
 		{
 			this.StopCoroutine(ref m_ResetSizeCoroutine);
 

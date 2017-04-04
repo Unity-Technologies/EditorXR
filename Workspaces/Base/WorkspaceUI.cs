@@ -12,12 +12,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	[ExecuteInEditMode]
 	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale
 	{
-		public event Action closeClicked;
-		public event Action resetSizeClicked;
-
 		const int k_AngledFaceBlendShapeIndex = 2;
 		const int k_ThinFrameBlendShapeIndex = 3;
 		const string k_MaterialStencilRef = "_StencilRef";
@@ -136,6 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		bool m_DynamicFaceAdjustment = true;
 
 		Bounds m_Bounds;
+		float? m_TopPanelDividerOffset;
 
 		// Cached for optimization
 		float m_PreviousXRotation;
@@ -150,7 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		DragState m_DragState;
 
 		[Flags]
-		public enum ResizeDirection
+		enum ResizeDirection
 		{
 			Front = 1,
 			Back = 2,
@@ -262,6 +259,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		readonly List<Transform> m_HovereringRayOrigins = new List<Transform>();
 		readonly Dictionary<Transform, Image> m_LastResizeIcons = new Dictionary<Transform, Image>();
 
+		public event Action closeClicked;
+		public event Action resetSizeClicked;
+
 		public bool highlightsVisible
 		{
 			set
@@ -317,7 +317,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_TopPanelDividerTransform.gameObject.SetActive(true);
 			}
 		}
-		float? m_TopPanelDividerOffset;
 
 		public Transform topFaceContainer { get { return m_TopFaceContainer; } set { m_TopFaceContainer = value; } }
 		public Transform sceneContainer { get { return m_SceneContainer; } }
@@ -573,7 +572,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_HovereringRayOrigins.Add(eventData.rayOrigin);
 		}
 
-		public ResizeDirection GetResizeDirectionForLocalPosition(Vector3 localPosition)
+		ResizeDirection GetResizeDirectionForLocalPosition(Vector3 localPosition)
 		{
 			var direction = localPosition.z > 0 ? ResizeDirection.Back : ResizeDirection.Front;
 			var xDirection = localPosition.x > 0 ? ResizeDirection.Right : ResizeDirection.Left;
@@ -854,14 +853,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				resetSizeClicked();
 		}
 
-		public void IncreaseFrameThickness()
+		void IncreaseFrameThickness()
 		{
 			this.StopCoroutine(ref m_FrameThicknessCoroutine);
 			const float kTargetBlendAmount = 0f;
 			m_FrameThicknessCoroutine = StartCoroutine(ChangeFrameThickness(kTargetBlendAmount));
 		}
 
-		public void ResetFrameThickness()
+		void ResetFrameThickness()
 		{
 			this.StopCoroutine(ref m_FrameThicknessCoroutine);
 			const float kTargetBlendAmount = 50f;
