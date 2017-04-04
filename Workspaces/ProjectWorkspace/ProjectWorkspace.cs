@@ -7,7 +7,6 @@ using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using Valve.VR.InteractionSystem;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
