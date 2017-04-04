@@ -20,8 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		string m_SelectedFolder;
 
-		readonly Dictionary<string, bool> m_ExpandStates = new Dictionary<string, bool>();
-
 		public Action<FolderData> selectFolder { private get; set; }
 
 		public override List<FolderData> data
