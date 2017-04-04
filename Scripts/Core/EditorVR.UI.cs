@@ -87,8 +87,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				evr.m_MultipleRayInputModule = inputModule;
 				inputModule.getPointerLength = evr.m_DirectSelection.GetPointerLength;
 
-				if (evr.m_CustomPreviewCamera != null)
-					inputModule.layerMask |= evr.m_CustomPreviewCamera.hmdOnlyLayerMask;
+				var customPreviewCamera = evr.m_Viewer.customPreviewCamera;
+				if (customPreviewCamera != null)
+					inputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
 
 				eventCamera = ObjectUtils.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
 				eventCamera.enabled = false;
