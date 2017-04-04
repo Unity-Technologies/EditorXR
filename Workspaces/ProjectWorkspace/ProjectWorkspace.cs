@@ -22,8 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		bool m_AssetGridDragging;
 		bool m_FolderPanelDragging;
-		Transform m_AssetGridHighlightContainer;
-		Transform m_FolderPanelHighlightContainer;
 
 		[SerializeField]
 		GameObject m_ContentPrefab;
@@ -136,69 +134,73 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ProjectUI.folderScrollHandle.hoverStarted += OnFolderPanelHoverHighlightBegin;
 			m_ProjectUI.folderScrollHandle.hoverEnded += OnFolderPanelHoverHighlightEnd;
 
-			// Assign highlight references
-			m_FolderPanelHighlightContainer = m_ProjectUI.folderPanelHighlight.transform.parent.transform;
-			m_AssetGridHighlightContainer = m_ProjectUI.assetGridHighlight.transform.parent.transform;
-
 			// Propagate initial bounds
 			OnBoundsChanged();
 		}
 
 		protected override void OnBoundsChanged()
 		{
-			const float kSideScrollBoundsShrinkAmount = 0.03f;
+			const float kScrollHandleHeight = 0.001f;
+			const float kScrollHandleYPosition = -0.002f;
+			//const float kSideScrollBoundsShrinkAmount = 0.03f;
 
 			var bounds = contentBounds;
 			var size = bounds.size;
-			size.x *= k_LeftPaneRatio;
-			size.y = k_YBounds;
-			bounds.size = size;
 			bounds.center = Vector3.zero;
 
-			var halfScrollMargin = k_ScrollMargin * 0.5f;
-			var doubleScrollMargin = k_ScrollMargin * 2;
-			var xOffset = (contentBounds.size.x - size.x) * -0.5f;
+			var sizeX = size.x * k_LeftPaneRatio + HighlightMargin;
+			var sizeZ = size.z - FaceMargin + HighlightMargin;
+			bounds.size = new Vector3(sizeX - FaceMargin, k_YBounds, sizeZ - FaceMargin);
+
+			var xOffset = (contentBounds.size.x - sizeX - FaceMargin) * -0.5f - HighlightMargin * 0.5f;
 
 			var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
-			folderScrollHandleTransform.localPosition = new Vector3(xOffset, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
-			folderScrollHandleTransform.localScale = new Vector3(size.x - FaceMargin, folderScrollHandleTransform.localScale.y, size.z);
+			folderScrollHandleTransform.localPosition = new Vector3(xOffset, kScrollHandleYPosition, 0);
+			folderScrollHandleTransform.localScale = new Vector3(sizeX, kScrollHandleHeight, sizeZ);
 
 			var folderListView = m_ProjectUI.folderListView;
-			size.x -= kSideScrollBoundsShrinkAmount; // set narrow x bounds for scrolling region on left side of folder list view
-			bounds.size = size;
+			////size.x -= kSideScrollBoundsShrinkAmount; // set narrow x bounds for scrolling region on left side of folder list view
+			//bounds.size = size;
 			folderListView.bounds = bounds;
-			//const float kFolderListShrinkAmount = kSideScrollBoundsShrinkAmount / 2.2f; // Empirically determined value to allow for scroll borders
+			////const float kFolderListShrinkAmount = kSideScrollBoundsShrinkAmount / 2.2f; // Empirically determined value to allow for scroll borders
 			folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0); // Center in Y
 
-			var folderPanel = m_ProjectUI.folderPanel;
-			folderPanel.transform.localPosition = xOffset * Vector3.right;
-			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x - FaceMargin);
-			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z - FaceMargin);
-
-			m_FolderPanelHighlightContainer.localScale = new Vector3(size.x + kSideScrollBoundsShrinkAmount, 1f, size.z);
-
-			size = contentBounds.size;
-			size.x -= k_PaneMargin * 2; // Reserve space for scroll on both sides
-			size.x *= 1 - k_LeftPaneRatio;
-			bounds.size = size;
-
-			xOffset = (contentBounds.size.x - size.x + k_PaneMargin) * 0.5f;
+			sizeX = contentBounds.size.x * (1 - k_LeftPaneRatio) - FaceMargin;
+			xOffset = (contentBounds.size.x - sizeX - FaceMargin) * 0.5f;
+			sizeX += HighlightMargin;
+			bounds.size = new Vector3(sizeX - FaceMargin, k_YBounds, sizeZ - FaceMargin);
 
 			var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
-			assetScrollHandleTransform.localPosition = new Vector3(xOffset + halfScrollMargin, -assetScrollHandleTransform.localScale.y * 0.5f);
-			assetScrollHandleTransform.localScale = new Vector3(size.x + k_ScrollMargin, assetScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
+			assetScrollHandleTransform.localPosition = new Vector3(xOffset, kScrollHandleYPosition, 0);
+			assetScrollHandleTransform.localScale = new Vector3(sizeX, kScrollHandleHeight, sizeZ);
+
+			//var folderPanel = m_ProjectUI.folderPanel;
+			//folderPanel.transform.localPosition = xOffset * Vector3.right;
+
+			//m_FolderPanelHighlightContainer.localScale = new Vector3(sizeX, 1f, sizeZ);
+
+			//size = contentBounds.size;
+			//size.x -= k_PaneMargin * 2; // Reserve space for scroll on both sides
+			//size.x *= 1 - k_LeftPaneRatio;
+			//bounds.size = size;
+
+			//xOffset = (contentBounds.size.x - size.x + k_PaneMargin) * 0.5f;
+
+			//var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
+			//assetScrollHandleTransform.localPosition = new Vector3(xOffset + halfScrollMargin, -assetScrollHandleTransform.localScale.y * 0.5f);
+			//assetScrollHandleTransform.localScale = new Vector3(size.x + k_ScrollMargin, assetScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
 
 			var assetListView = m_ProjectUI.assetGridView;
 			assetListView.bounds = bounds;
 			assetListView.transform.localPosition = Vector3.right * xOffset;
 
 
-			var assetPanel = m_ProjectUI.assetPanel;
-			assetPanel.transform.localPosition = xOffset * Vector3.right;
-			assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + k_PanelMargin);
-			assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + k_PanelMargin);
+			//var assetPanel = m_ProjectUI.assetPanel;
+			//assetPanel.transform.localPosition = xOffset * Vector3.right;
+			//assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + k_PanelMargin);
+			//assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + k_PanelMargin);
 
-			m_AssetGridHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
+			//m_AssetGridHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
 		}
 
 

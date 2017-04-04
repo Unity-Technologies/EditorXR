@@ -225,6 +225,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							}
 						}
 
+						evr.GetModule<WorkspaceModule>().CreateWorkspace(typeof(ProjectWorkspace));
+
 						evr.GetNestedModule<Tools>().SpawnDefaultTools(proxy);
 					}
 				}

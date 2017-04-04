@@ -378,7 +378,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (m_TopPanelDividerOffset != null)
 				{
 					m_TopPanelDividerTransform.localPosition = new Vector3(size.x * 0.5f * m_TopPanelDividerOffset.Value, 0f, 0f);
-					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, faceDepth);
+					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, faceDepth + Workspace.HighlightMargin);
 				}
 
 				// Scale the Top Face and the Top Face Highlight
@@ -467,29 +467,24 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var transform = m_LeftHandle.transform;
 			transform.localPosition = new Vector3(-halfWidth, halfHeight, 0);
 			transform.localScale = new Vector3(m_FrameHandleSize, handleHeight, handleScaleZ);
-			this.DrawCube(transform.position, transform.rotation, transform.localScale, Color.gray);
 
 			transform = m_RightHandle.transform;
 			transform.localPosition = new Vector3(halfWidth, halfHeight, 0);
 			transform.localScale = new Vector3(m_FrameHandleSize, handleHeight, handleScaleZ);
-			this.DrawCube(transform.position, transform.rotation, transform.localScale, Color.gray);
 
 			transform = m_BackHandle.transform;
 			transform.localPosition = new Vector3(0, halfHeight, halfDepth);
 			transform.localScale = new Vector3(handleScaleX, handleHeight, m_FrameHandleSize);
-			this.DrawCube(transform.position, transform.rotation, transform.localScale, Color.gray);
 
 			transform = m_FrontTopHandle.transform;
 			transform.localPosition = new Vector3(0, 0, -halfDepth);
 			transform.localScale = new Vector3(handleScaleX, m_FrameHandleSize, m_FrameHandleSize);
-			this.DrawCube(transform.position, transform.rotation, transform.localScale, Color.gray);
 
 			transform = m_FrontBottomHandle.transform;
 			var halfFrameHandleSize = m_FrameHandleSize * 0.5f;
 			var botHandleYPosition = (m_FrameHeight) * (m_LerpAmount - 1);
 			transform.localPosition = new Vector3(0, botHandleYPosition, -halfDepth - m_FrontZOffset);
 			transform.localScale = new Vector3(handleScaleX + m_FrameHandleSize * 2, m_FrameHandleSize, m_FrameHandleSize);
-			this.DrawCube(transform.position, transform.rotation, transform.localScale, Color.gray);
 
 			const float kLerpScale = 1.15f;
 			var halfFrontZOffset = m_FrontZOffset * 0.5f;
@@ -497,7 +492,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			transform.localPosition = new Vector3(-halfWidth, botHandleYPosition * 0.5f, -halfDepth - halfFrontZOffset);
 			transform.localRotation = Quaternion.AngleAxis(Mathf.Clamp01(m_LerpAmount * kLerpScale) * 90f, Vector3.right);
 			transform.localScale = new Vector3(m_FrameHandleSize, m_FrameHeight, m_FrameHandleSize);
-			this.DrawCube(transform.position, transform.rotation, transform.localScale, Color.gray);
 
 			var rightTransform = m_FrontRightHandle.transform;
 			var localPosition = transform.localPosition;
@@ -505,14 +499,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			rightTransform.localPosition = localPosition;
 			rightTransform.localRotation = transform.localRotation;
 			rightTransform.localScale = transform.localScale;
-			this.DrawCube(transform.position, transform.rotation, transform.localScale, Color.gray);
 
 			var cornerScale = m_FrameHeight + m_FrameHandleSize;
 			transform = m_FrontLeftCornerHandle.transform;
 			var zOffset = m_FrontZOffset - k_HandleZOffset * 0.5f;
 			transform.localPosition = new Vector3(-halfWidth, -cornerScale * (1f - m_LerpAmount * 0.5f) + m_FrameHandleSize * (1 - m_LerpAmount) * 0.5f, -halfDepth - zOffset - halfFrameHandleSize);
 			transform.localScale = new Vector3(m_FrameHandleSize, (cornerScale - m_FrameHandleSize) * m_LerpAmount, cornerScale - m_FrameHandleSize * 0.75f);
-			this.DrawCube(transform.position, transform.rotation, transform.localScale, Color.gray);
 
 			rightTransform = m_FrontRightCornerHandle.transform;
 			localPosition = transform.localPosition;
@@ -520,7 +512,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			rightTransform.localPosition = localPosition;
 			rightTransform.localRotation = transform.localRotation;
 			rightTransform.localScale = transform.localScale;
-			this.DrawCube(transform.position, transform.rotation, transform.localScale, Color.gray);
 
 			// Resize icons
 			var resizePositionX = halfWidth + m_ResizeHandleMargin;

@@ -14,10 +14,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		LinearHandle m_FolderScrollHandle;
 
-		public RectTransform folderPanel { get { return m_FolderPanel; } }
-		[SerializeField]
-		RectTransform m_FolderPanel;
-
 		public AssetGridViewController assetGridView { get { return m_AssetGridView; } }
 		[SerializeField]
 		AssetGridViewController m_AssetGridView;
@@ -25,10 +21,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public LinearHandle assetScrollHandle { get { return m_AssetScrollHandle; } }
 		[SerializeField]
 		LinearHandle m_AssetScrollHandle;
-
-		public RectTransform assetPanel { get { return m_AssetPanel; } }
-		[SerializeField]
-		RectTransform m_AssetPanel;
 
 		public WorkspaceHighlight assetGridHighlight { get { return m_AssetGridHighlight; } }
 		[SerializeField]
