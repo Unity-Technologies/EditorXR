@@ -47,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!m_ConnectedInterfaces.Add(obj))
 					return;
 
-				if (m_ConnectedInterfaces != null)
+				if (connectInterfaces != null)
 					connectInterfaces(obj, rayOrigin);
 			}
 

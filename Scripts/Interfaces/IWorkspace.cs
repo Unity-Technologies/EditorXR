@@ -16,6 +16,11 @@ namespace UnityEditor.Experimental.EditorVR
 		void Setup();
 
 		/// <summary>
+		/// Close the workspace
+		/// </summary>
+		void Close();
+
+		/// <summary>
 		/// Call this in OnDestroy to inform the system
 		/// </summary>
 		event Action<IWorkspace> destroyed;
@@ -24,6 +29,11 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Bounding box for entire workspace, including UI handles
 		/// </summary>
 		Bounds outerBounds { get; }
+
+		/// <summary>
+		/// Bounding box for workspace content (ignores value.center) 
+		/// </summary>
+		Bounds contentBounds { get; set; }
 
 		Transform leftRayOrigin { set; }
 		Transform rightRayOrigin { set; }

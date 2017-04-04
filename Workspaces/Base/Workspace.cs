@@ -28,9 +28,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Vector3 m_MinBounds = MinBounds;
 
-		/// <summary>
-		/// Bounding box for workspace content (ignores value.center) 
-		/// </summary>
 		public Bounds contentBounds
 		{
 			get { return m_ContentBounds; }
@@ -139,11 +136,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
 
-		public virtual void OnCloseClicked()
+		public void Close()
 		{
 			this.StopCoroutine(ref m_VisibilityCoroutine);
-
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+		}
+
+		public virtual void OnCloseClicked()
+		{
+			Close();
 		}
 
 		public virtual void OnResetClicked()
@@ -151,6 +152,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			this.StopCoroutine(ref m_ResetSizeCoroutine);
 
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
+		}
+
+		public void SetUIHighlightsVisible(bool value)
+		{
+			m_WorkspaceUI.highlightsVisible = value;
 		}
 
 		void UpdateBounds()
@@ -171,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			m_WorkspaceUI.highlightsVisible = true;
 
-			var targetScale = transform.localScale;
+			var targetScale = Vector3.one;
 			var scale = Vector3.zero;
 			var smoothVelocity = Vector3.zero;
 			var currentDuration = 0f;
@@ -204,6 +210,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
+			transform.localScale = targetScale;
 
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
