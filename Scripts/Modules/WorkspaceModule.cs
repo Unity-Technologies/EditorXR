@@ -136,7 +136,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var cameraTransform = CameraUtils.GetMainCamera().transform;
 
-			var workspace = (IWorkspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
+			var workspace = (Workspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
 			m_Workspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			this.ConnectInterfaces(workspace);

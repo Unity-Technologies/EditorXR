@@ -34,10 +34,6 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Bounding box for workspace content (ignores value.center) 
 		/// </summary>
 		Bounds contentBounds { get; set; }
-
-		Transform leftRayOrigin { set; }
-		Transform rightRayOrigin { set; }
-		Func<Transform, float> getPointerLength { set; }
 	}
 }
 #endif
