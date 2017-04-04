@@ -305,8 +305,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var scrollHeight = 0f;
 			foreach (var datum in data)
 			{
-				ScrollToRow(datum, index, ref scrollHeight);
-				scrollHeight += itemSize.z;
+				ScrollToIndex(datum, index, ref scrollHeight);
 			}
 		}
 
@@ -332,29 +331,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_ExpandStates[index] = true;
 
 			return found;
-		}
-
-		void ScrollToRow(HierarchyData container, int rowID, ref float scrollHeight)
-		{
-			var index = container.index;
-			if (index == rowID)
-			{
-				if (-scrollOffset > scrollHeight || -scrollOffset + bounds.size.z < scrollHeight)
-					scrollOffset = -scrollHeight;
-				return;
-			}
-
-			if (container.children != null)
-			{
-				foreach (var child in container.children)
-				{
-					if (GetExpanded(index))
-					{
-						ScrollToRow(child, rowID, ref scrollHeight);
-						scrollHeight += itemSize.z;
-					}
-				}
-			}
 		}
 
 		static bool CanDrop(BaseHandle handle, object dropObject)
@@ -401,19 +377,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var color = material.color;
 			color.a = 0;
 			material.color = color;
-		}
-
-		bool GetExpanded(int index)
-		{
-			bool expanded;
-			m_ExpandStates.TryGetValue(index, out expanded);
-			return expanded;
-		}
-
-		void SetExpanded(int index, bool expanded)
-		{
-			m_ExpandStates[index] = expanded;
-			StartSettling();
 		}
 
 		public void OnScroll(float delta)

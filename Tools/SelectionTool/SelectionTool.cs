@@ -79,7 +79,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (selectionInput.select.wasJustPressed)
 			{
 				m_PressedObject = hoveredObject;
-				consumeControl(selectionInput.select);
+
+				if (m_PressedObject)
+					consumeControl(selectionInput.select);
 			}
 
 			// Select button on release
@@ -96,7 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						consumeControl(selectionInput.multiSelect);
 				}
 
-				if (m_PressedObject != null)
+				if (m_PressedObject)
 					consumeControl(selectionInput.select);
 
 				m_PressedObject = null;

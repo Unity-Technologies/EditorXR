@@ -71,7 +71,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return typeof(ITransformer).IsAssignableFrom(type)
 					|| typeof(SelectionTool).IsAssignableFrom(type)
 					|| typeof(ILocomotor).IsAssignableFrom(type)
-					|| typeof(VacuumTool).IsAssignableFrom(type);
+					|| typeof(VacuumTool).IsAssignableFrom(type)
+					|| typeof(MoveWorkspacesTool).IsAssignableFrom(type);
 			}
 
 			internal void SpawnDefaultTools(IProxy proxy)
@@ -82,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var transformTool = SpawnTool(typeof(TransformTool), out devices);
 				evr.m_DirectSelection.objectsGrabber = transformTool.tool as IGrabObjects;
 
-				Func<Transform, bool> isRayActive = evr.m_Rays.IsRayActive;
+				Func<Transform, bool> isRayActive = Rays.IsRayActive;
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
 				var lockModule = evr.GetModule<LockModule>();
 
@@ -102,9 +103,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var vacuumTool = (VacuumTool)toolData.tool;
-					vacuumTool.defaultOffset = WorkspaceModule.k_DefaultWorkspaceOffset;
-					vacuumTool.defaultTilt = WorkspaceModule.k_DefaultWorkspaceTilt;
+					vacuumTool.defaultOffset = WorkspaceModule.DefaultWorkspaceOffset;
+					vacuumTool.defaultTilt = WorkspaceModule.DefaultWorkspaceTilt;
 					vacuumTool.vacuumables = vacuumables.vacuumables;
+
+					toolData = SpawnTool(typeof(MoveWorkspacesTool), out devices, inputDevice);
+					AddToolToDeviceData(toolData, devices);
 
 					// Using a shared instance of the transform tool across all device tool stacks
 					AddToolToStack(deviceData, transformTool);
@@ -181,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal bool IsToolActive(Transform targetRayOrigin, Type toolType)
+			bool IsToolActive(Transform targetRayOrigin, Type toolType)
 			{
 				var result = false;
 
@@ -192,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return result;
 			}
 
-			internal bool SelectTool(Transform rayOrigin, Type toolType)
+			bool SelectTool(Transform rayOrigin, Type toolType)
 			{
 				//Debug.LogError("SelectionTool TYPE : <color=black>" + toolType.ToString() + "</color>");
 				//if (toolType == typeof(SelectionTool))
@@ -200,7 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var result = false;
 				var deviceInputModule = evr.m_DeviceInputModule;
-				evr.m_Rays.ForEachProxyDevice(deviceData =>
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					if (deviceData.rayOrigin == rayOrigin)
 					{

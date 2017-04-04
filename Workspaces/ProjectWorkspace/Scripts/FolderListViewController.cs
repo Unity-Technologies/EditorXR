@@ -2,6 +2,7 @@
 using ListView;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -20,9 +21,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		string m_SelectedFolder;
 
-		readonly Dictionary<string, bool> m_ExpandStates = new Dictionary<string, bool>();
+		public string selectedFolder
+		{
+			get { return m_SelectedFolder; }
+			set { SelectFolder(value); }
+		}
 
-		public Action<FolderData> selectFolder { private get; set; }
+		public Dictionary<string, bool> expandStates { get { return m_ExpandStates; } }
+
+		public event Action<FolderData> folderSelected;
 
 		public override List<FolderData> data
 		{
@@ -30,11 +37,26 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				base.data = value;
 
-				if (m_Data != null && m_Data.Count > 0) // Expand and select the Assets folder by default
+				if (m_Data != null && m_Data.Count > 0)
 				{
+					// Remove any folders that don't exist any more
+					var missingKeys = m_Data.Select(d => d.index).Except(m_ExpandStates.Keys);
+					foreach (var key in missingKeys)
+					{
+						m_ExpandStates.Remove(key);
+					}
+
+					foreach (var d in m_Data)
+					{
+						if (!m_ExpandStates.ContainsKey(d.index))
+							m_ExpandStates[d.index] = false;
+					}
+
+					// Expand and select the Assets folder by default
 					var guid = data[0].index;
 					m_ExpandStates[guid] = true;
-					SelectFolder(guid);
+
+					SelectFolder(selectedFolder ?? guid);
 				}
 			}
 		}
@@ -63,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (!m_ListItems.TryGetValue(index, out item))
 				item = GetItem(data);
 
-			item.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, index == m_SelectedFolder);
+			item.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, index == selectedFolder);
 
 			SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 
@@ -120,13 +142,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void SelectFolder(string guid)
 		{
+			m_SelectedFolder = guid;
+
 			if (data == null)
 				return;
 
-			m_SelectedFolder = guid;
+			if (data.Count >= 1)
+			{
+				var folderData = GetFolderDataByGUID(data[0], guid) ?? data[0];
 
-			var folderData = GetFolderDataByGUID(data[0], guid) ?? data[0];
-			selectFolder(folderData);
+				if (folderSelected != null)
+					folderSelected(folderData);
+
+				var scrollHeight = 0f;
+				ScrollToIndex(data[0], guid, ref scrollHeight);
+			}
 		}
 
 		static FolderData GetFolderDataByGUID(FolderData data, string guid)

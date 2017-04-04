@@ -123,6 +123,43 @@ namespace ListView
 					RecycleChildren(child);
 			}
 		}
+
+		protected bool GetExpanded(TIndex index)
+		{
+			bool expanded;
+			m_ExpandStates.TryGetValue(index, out expanded);
+			return expanded;
+		}
+
+		protected void SetExpanded(TIndex index, bool expanded)
+		{
+			m_ExpandStates[index] = expanded;
+			StartSettling();
+		}
+
+		protected void ScrollToIndex(TData container, TIndex targetIndex, ref float scrollHeight)
+		{
+			var index = container.index;
+			if (index.Equals(targetIndex))
+			{
+				if (-scrollOffset > scrollHeight || -scrollOffset + bounds.size.z < scrollHeight)
+					scrollOffset = -scrollHeight;
+				return;
+			}
+
+			scrollHeight += itemSize.z;
+
+			if (GetExpanded(index))
+			{
+				if (container.children != null)
+				{
+					foreach (var child in container.children)
+					{
+						ScrollToIndex(child, targetIndex, ref scrollHeight);
+					}
+				}
+			}
+		}
 	}
 }
 #endif

@@ -23,11 +23,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
 		[SerializeField]
-		private Vector3 m_MinBounds = MinBounds;
+		Vector3 m_MinBounds = MinBounds;
 
-		/// <summary>
-		/// Bounding box for workspace content (ignores value.center) 
-		/// </summary>
 		public Bounds contentBounds
 		{
 			get { return m_ContentBounds; }
@@ -160,6 +157,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
 
+		public void Close()
+		{
+			this.StopCoroutine(ref m_VisibilityCoroutine);
+			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+		}
+
 		public virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
 		{
 			m_WorkspaceUI.highlightsVisible = true;
@@ -235,9 +238,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public virtual void OnCloseClicked()
 		{
-			this.StopCoroutine(ref m_VisibilityCoroutine);
-
-			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+			Close();
 		}
 
 		public virtual void OnResetClicked()
@@ -245,6 +246,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			this.StopCoroutine(ref m_ResetSizeCoroutine);
 
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
+		}
+
+		public void SetUIHighlightsVisible(bool value)
+		{
+			m_WorkspaceUI.highlightsVisible = value;
 		}
 
 		void UpdateBounds()
@@ -265,7 +271,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			m_WorkspaceUI.highlightsVisible = true;
 
-			var targetScale = transform.localScale;
+			var targetScale = Vector3.one;
 			var scale = Vector3.zero;
 			var smoothVelocity = Vector3.zero;
 			var currentDuration = 0f;
@@ -298,6 +304,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				yield return null;
 			}
+			transform.localScale = targetScale;
 
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;

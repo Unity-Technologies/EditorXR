@@ -86,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 			}
 
-			internal void UpdateRayForDevice(DeviceData deviceData, Transform rayOrigin)
+			internal static void UpdateRayForDevice(DeviceData deviceData, Transform rayOrigin)
 			{
 				var mainMenu = deviceData.mainMenu;
 				var customMenu = deviceData.customMenu;
@@ -265,7 +265,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal void ForEachProxyDevice(ForEachProxyDeviceCallback callback, bool activeOnly = true)
+			internal static void ForEachProxyDevice(ForEachProxyDeviceCallback callback, bool activeOnly = true)
 			{
 				var evrDeviceData = evr.m_DeviceData;
 				for (var i = 0; i < evrDeviceData.Count; i++)
@@ -279,12 +279,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal void ForEachRayOrigin(ForEachRayOriginCallback callback)
+			static void ForEachRayOrigin(ForEachRayOriginCallback callback)
 			{
 				ForEachProxyDevice(deviceData => callback(deviceData.rayOrigin));
 			}
 
-			internal IProxy GetProxyForRayOrigin(Transform rayOrigin)
+			static IProxy GetProxyForRayOrigin(Transform rayOrigin)
 			{
 				IProxy result = null;
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
@@ -294,7 +294,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return result;
 			}
 
-			internal GameObject GetFirstGameObject(Transform rayOrigin)
+			GameObject GetFirstGameObject(Transform rayOrigin)
 			{
 				if (m_IntersectionModule == null)
 					m_IntersectionModule = evr.GetModule<IntersectionModule>();
@@ -330,7 +330,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			internal Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
+			Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
 			{
 				foreach (var proxy in m_Proxies)
 				{
@@ -342,7 +342,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			internal Transform GetFieldGrabOriginForRayOrigin(Transform rayOrigin)
+			Transform GetFieldGrabOriginForRayOrigin(Transform rayOrigin)
 			{
 				foreach (var proxy in m_Proxies)
 				{
@@ -354,7 +354,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			internal bool IsRayActive(Transform rayOrigin)
+			internal static bool IsRayActive(Transform rayOrigin)
 			{
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 				return dpr == null || dpr.rayVisible;

@@ -1,6 +1,8 @@
 #if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -13,7 +15,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
-	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap
+	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap, ISerializeWorkspace
 	{
 		static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.05f; // Show more space above ground than below
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default
@@ -47,6 +49,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		[SerializeField]
 		ActionMap m_MiniWorldActionMap;
+
+		[Serializable]
+		class Preferences
+		{
+			[SerializeField]
+			public Vector3 m_MiniWorldRefeferenceScale;
+			[SerializeField]
+			public Vector3 m_MiniWorldReferencePosition;
+			[SerializeField]
+			public float m_ZoomSliderValue;
+
+			public Vector3 miniWorldRefeferenceScale { get { return m_MiniWorldRefeferenceScale; } set { m_MiniWorldRefeferenceScale = value; } }
+			public Vector3 miniWorldReferencePosition { get { return m_MiniWorldReferencePosition; } set { m_MiniWorldReferencePosition = value; } }
+			public float zoomSliderValue { get { return m_ZoomSliderValue; } set { m_ZoomSliderValue = value; } }
+		}
 
 		MiniWorldUI m_MiniWorldUI;
 		MiniWorld m_MiniWorld;
@@ -139,6 +156,28 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// Propagate initial bounds
 			OnBoundsChanged();
+		}
+
+		public object OnSerializeWorkspace()
+		{
+			var preferences = new Preferences();
+
+			var referenceTransform = m_MiniWorld.referenceTransform;
+			preferences.miniWorldRefeferenceScale = referenceTransform.localScale;
+			preferences.miniWorldReferencePosition = referenceTransform.position;
+			preferences.zoomSliderValue = m_ZoomSliderUI.zoomSlider.value;
+
+			return preferences;
+		}
+
+		public void OnDeserializeWorkspace(object obj)
+		{
+			var preferences = (Preferences)obj;
+
+			var referenceTransform = m_MiniWorld.referenceTransform;
+			referenceTransform.localScale = preferences.miniWorldRefeferenceScale;
+			referenceTransform.position = preferences.miniWorldReferencePosition;
+			m_ZoomSliderUI.zoomSlider.value = preferences.zoomSliderValue;
 		}
 
 		void Update()

@@ -72,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void UpdateMenuVisibilityNearWorkspaces()
 			{
-				evr.m_Rays.ForEachProxyDevice(deviceData =>
+				Rays.ForEachProxyDevice((deviceData) =>
 				{
 					m_UpdateVisibilityMenus.Clear();
 					m_UpdateVisibilityMenus.AddRange(deviceData.menuHideFlags.Keys);
@@ -186,8 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void UpdateMenuVisibilities()
 			{
 				m_ActiveDeviceData.Clear();
-				var evrRays = evr.m_Rays;
-				evrRays.ForEachProxyDevice(deviceData =>
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					m_ActiveDeviceData.Add(deviceData);
 				});
@@ -229,7 +228,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				// Apply state to UI visibility
-				evrRays.ForEachProxyDevice((deviceData) =>
+				Rays.ForEachProxyDevice((deviceData) =>
 				{
 					var mainMenu = deviceData.mainMenu;
 					mainMenu.visible = deviceData.menuHideFlags[mainMenu] == 0;
@@ -239,7 +238,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						customMenu.visible = deviceData.menuHideFlags[customMenu] == 0;
 
 					UpdateAlternateMenuForDevice(deviceData);
-					evrRays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
+					Rays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
 				});
 
 				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
@@ -278,7 +277,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
 			{
-				evr.m_Rays.ForEachProxyDevice(deviceData =>
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					var alternateMenu = deviceData.alternateMenu;
 					if (alternateMenu != null)
@@ -312,7 +311,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
 			{
 				GameObject go = null;
-				evr.m_Rays.ForEachProxyDevice(deviceData =>
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					var proxy = deviceData.proxy;
 					var otherRayOrigin = deviceData.rayOrigin;
