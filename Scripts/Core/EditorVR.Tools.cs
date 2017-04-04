@@ -329,7 +329,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void UpdatePlayerHandleMaps(List<ActionMapInput> maps)
 			{
-				foreach (var input in evr.GetModule<WorkspaceModule>().workspaceInputs)
+				foreach (var input in evr.m_WorkspaceModule.workspaceInputs)
 				{
 					maps.Add(input);
 				}

@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IUsesGizmos
+	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale
 	{
 		public event Action closeClicked;
 		public event Action resetSizeClicked;

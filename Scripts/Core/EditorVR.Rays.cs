@@ -5,7 +5,6 @@ using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -213,7 +212,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 							highlightModule.AddRayOriginForNode(node, rayOrigin);
 
-							var workspaceModule = evr.GetModule<WorkspaceModule>();
+							var workspaceModule = evr.m_WorkspaceModule;
 							switch (node)
 							{
 								case Node.LeftHand:
@@ -224,8 +223,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									break;
 							}
 						}
-
-						evr.GetModule<WorkspaceModule>().CreateWorkspace(typeof(ProjectWorkspace));
 
 						evr.GetNestedModule<Tools>().SpawnDefaultTools(proxy);
 					}

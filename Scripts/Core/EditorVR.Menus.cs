@@ -99,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 
 						if (m_WorkspaceModule == null)
-							m_WorkspaceModule = evr.GetModule<WorkspaceModule>();
+							m_WorkspaceModule = evr.m_WorkspaceModule;
 
 						var intersection = false;
 						var workspaces = m_WorkspaceModule.workspaces;

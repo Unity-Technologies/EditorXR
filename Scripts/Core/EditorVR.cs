@@ -52,6 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		KeyboardModule m_KeyboardModule;
 		DeviceInputModule m_DeviceInputModule;
 		MultipleRayInputModule m_MultipleRayInputModule;
+		WorkspaceModule m_WorkspaceModule;
 
 		static HideFlags defaultHideFlags
 		{
@@ -183,17 +184,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			var vacuumables = GetNestedModule<Vacuumables>();
 
-			var workspaceModule = AddModule<WorkspaceModule>();
-			workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
-			workspaceModule.workspaceCreated += m_MiniWorlds.OnWorkspaceCreated;
-			workspaceModule.workspaceCreated += workspace =>
+			m_WorkspaceModule = AddModule<WorkspaceModule>();
+			m_WorkspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
+			m_WorkspaceModule.workspaceCreated += m_MiniWorlds.OnWorkspaceCreated;
+			m_WorkspaceModule.workspaceCreated += workspace =>
 			{
-				workspaceModule.workspaceInputs.Add((WorkspaceInput)m_DeviceInputModule.CreateActionMapInputForObject(workspace, null));
+				m_WorkspaceModule.workspaceInputs.Add((WorkspaceInput)m_DeviceInputModule.CreateActionMapInputForObject(workspace, null));
 				m_DeviceInputModule.UpdatePlayerHandleMaps();
 			};
-			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
-			workspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
-			workspaceModule.getPointerLength = m_DirectSelection.GetPointerLength;
+			m_WorkspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
+			m_WorkspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
+			m_WorkspaceModule.getPointerLength = m_DirectSelection.GetPointerLength;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
@@ -215,8 +216,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				return true;
 			};
-
-			AddModule<GizmoModule>();
 
 			GetNestedModule<Viewer>().AddPlayerModel();
 
@@ -307,7 +306,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
 		{
-			GetModule<WorkspaceModule>().ProcessInputInWorkspaces(consumeControl);
+			m_WorkspaceModule.ProcessInputInWorkspaces(consumeControl);
 			m_MiniWorlds.UpdateMiniWorlds(consumeControl);
 
 			m_MultipleRayInputModule.ProcessInput(null, consumeControl);
