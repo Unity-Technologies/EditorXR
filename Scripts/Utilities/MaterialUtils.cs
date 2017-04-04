@@ -46,6 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			{
 				sharedMaterials[i] = UnityObject.Instantiate(sharedMaterials[i]);
 			}
+
 			renderer.sharedMaterials = sharedMaterials;
 			return sharedMaterials;
 		}

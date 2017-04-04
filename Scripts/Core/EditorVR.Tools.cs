@@ -50,6 +50,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					linkedObjectList.Add(linkedObject);
 					linkedObject.linkedObjects = linkedObjectList;
 				}
+
+				var mainMenu = obj as IMainMenu;
+				if (mainMenu != null)
+					mainMenu.previewToolInPinnedToolButton = PreviewToolInPinnedToolButton;
 			}
 
 			public void DisconnectInterface(object obj)

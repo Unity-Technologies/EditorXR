@@ -160,7 +160,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<ITooltip> hideTooltip { private get; set; }
 		public GradientPair customToolTipHighlightColor { get; set; }
 		public bool isSelectTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
-		public ConnectInterfacesDelegate connectInterfaces { get; set; }
+		//public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 		Coroutine m_PositionCoroutine;
 		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
@@ -197,7 +197,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			tooltipSource.localPosition = tooltipSourcePosition;
 			tooltipAlignment = node == Node.LeftHand ? TextAlignment.Right : TextAlignment.Left;
 			m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
-			connectInterfaces(m_SmoothMotion);
+			this.ConnectInterfaces(m_SmoothMotion);
 
 			m_GradientButton.onHoverEnter += BackgroundHovered; // Display the foreground button actions
 
@@ -221,7 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void SelectTool()
 		{
-			selectTool(rayOrigin, m_ToolType);
+			this.SelectTool(rayOrigin, m_ToolType);
 			activeTool = activeTool;
 			//SetButtonGradients(this.SelectTool(rayOrigin, m_ToolType));
 		}

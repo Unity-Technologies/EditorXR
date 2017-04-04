@@ -32,14 +32,6 @@ namespace UnityEditor.Experimental.EditorVR
 		Transform targetRayOrigin { set; }
 
 		/// <summary>
-		/// Returns true if the active tool on the given ray origin is of the given type
-		/// Transform: Ray origin to check
-		/// Type: Type with which to compare
-		/// Returns whether the active tool is of the same type
-		/// </summary>
-		Func<Transform, Type, bool> isToolActive { set; }
-
-		/// <summary>
 		/// Highlights a pinned tool button when a menu button is highlighted
 		/// Transform: Ray origin to check
 		/// Type: MenuButton's tool type to preview

@@ -347,7 +347,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				input = evr.m_DeviceInputModule.CreateActionMapInputForObject(mainMenu, device);
 				evr.m_Interfaces.ConnectInterfaces(mainMenu, device);
 				mainMenu.visible = visible;
-				mainMenu.previewToolInPinnedToolButton = evr.m_Tools.PreviewToolInPinnedToolButton;
+				//mainMenu.previewToolInPinnedToolButton = evr.m_Tools.PreviewToolInPinnedToolButton; // Handled in EditorVR.Tools ConnectInterfaces now
 
 				return mainMenu;
 			}
