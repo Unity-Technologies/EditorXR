@@ -27,16 +27,29 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		/// </summary>
 		public RenderTexture texture { get; private set; }
 
+		public EditorWindow window {get { return m_Window; } }
+
 		public bool capture { get; set; }
 
 		private void Start()
 		{
-			Assembly asm = Assembly.GetAssembly(typeof(UnityEditor.Editor));
-			Type windowType = asm.GetType(m_WindowClass);
-			Type guiViewType = asm.GetType("UnityEditor.GUIView");
+			Type windowType = null;
+			Type guiViewType = null;
+
+			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				var type = assembly.GetType(m_WindowClass);
+				if (type != null)
+					windowType = type;
+
+				type = assembly.GetType("UnityEditor.GUIView");
+				if (type != null)
+					guiViewType = type;
+			}
+
 			if (windowType != null && guiViewType != null)
 			{
-				m_Window = EditorWindow.CreateInstance(windowType) as EditorWindow;
+				m_Window = ScriptableObject.CreateInstance(windowType) as EditorWindow;
 
 				// AE: The first assignment is to undock the window if it was docked and the second is to position it off screen
 				//window.position = rect;

@@ -11,7 +11,7 @@ Material:
   m_ShaderKeywords: ROTATE_GRADIENT _ALPHAPREMULTIPLY_ON _EMISSION _GLOSSYREFLECTIONS_OFF
     _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 1
-  m_CustomRenderQueue: 9002
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
