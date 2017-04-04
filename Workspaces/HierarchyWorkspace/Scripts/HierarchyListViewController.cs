@@ -95,34 +95,35 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void UpdateDropZones()
 		{
-			var width = bounds.size.x - k_ClipMargin;
+			var width = m_Size.x - k_ClipMargin;
 			var dropZoneTransform = m_TopDropZone.transform;
 			var dropZoneScale = dropZoneTransform.localScale;
 			dropZoneScale.x = width;
 			dropZoneTransform.localScale = dropZoneScale;
 
+			var extentsZ = m_Extents.z;
 			var dropZonePosition = dropZoneTransform.localPosition;
-			dropZonePosition.z = bounds.extents.z + dropZoneScale.z * 0.5f;
+			dropZonePosition.z = extentsZ + dropZoneScale.z * 0.5f;
 			dropZoneTransform.localPosition = dropZonePosition;
 
 			dropZoneTransform = m_BottomDropZone.transform;
 			dropZoneScale = dropZoneTransform.localScale;
 			dropZoneScale.x = width;
 			var itemSize = m_ItemSize.Value.z;
-			var extraSpace = bounds.size.z - m_VisibleItemHeight - scrollOffset % itemSize;
+			var extraSpace = extentsZ - m_VisibleItemHeight - scrollOffset % itemSize;
 			dropZoneScale.z = extraSpace;
 
 			dropZoneTransform.localScale = dropZoneScale;
 
 			dropZonePosition = dropZoneTransform.localPosition;
-			dropZonePosition.z = dropZoneScale.z * 0.5f - bounds.extents.z;
+			dropZonePosition.z = dropZoneScale.z * 0.5f - extentsZ;
 			dropZoneTransform.localPosition = dropZonePosition;
 
 			if (extraSpace < m_BottomDropZoneStartHeight)
 			{
 				dropZoneScale.z = m_BottomDropZoneStartHeight;
 				dropZoneTransform.localScale = dropZoneScale;
-				dropZonePosition.z = -dropZoneScale.z * 0.5f - bounds.extents.z;
+				dropZonePosition.z = -dropZoneScale.z * 0.5f - extentsZ;
 			}
 		}
 
@@ -143,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					m_HoveredGameObjects.Add(kvp);
 			}
 
-			var width = bounds.size.x - k_ClipMargin;
+			var width = m_Size.x - k_ClipMargin;
 			var locked = this.IsLocked(data.gameObject);
 			item.UpdateSelf(width, depth, expanded, index == m_SelectedRow, locked);
 
@@ -187,7 +188,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				
 				var hasFilterQuery = !string.IsNullOrEmpty(searchQuery);
 
-				var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z;
+				var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z;
 
 				if (hasLockedQuery || hasFilterQuery)
 				{
@@ -339,7 +340,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var index = container.index;
 			if (index == rowID)
 			{
-				if (-scrollOffset > scrollHeight || -scrollOffset + bounds.size.z < scrollHeight)
+				if (-scrollOffset > scrollHeight || -scrollOffset + m_Size.z < scrollHeight)
 					scrollOffset = -scrollHeight;
 				return;
 			}

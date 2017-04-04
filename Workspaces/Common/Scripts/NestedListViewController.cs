@@ -90,7 +90,7 @@ namespace ListView
 
 				var itemSize = m_ItemSize.Value;
 
-				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
+				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
 					Recycle(index);
 				else
 					UpdateNestedItem(datum, offset, depth, ref doneSettling);

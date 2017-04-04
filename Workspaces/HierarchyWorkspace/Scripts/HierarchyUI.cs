@@ -19,13 +19,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 		[SerializeField]
 		BaseHandle m_ScrollHandle;
-
-		public RectTransform listPanel
-		{
-			get { return m_ListPanel; }
-		}
-		[SerializeField]
-		RectTransform m_ListPanel;
 	}
 }
 #endif

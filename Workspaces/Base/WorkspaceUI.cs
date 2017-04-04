@@ -12,8 +12,10 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+	[ExecuteInEditMode]
 	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale
 	{
+		public Bounds editorBounds;
 		public event Action closeClicked;
 		public event Action resetSizeClicked;
 
@@ -633,12 +635,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void Update()
 		{
+			//bounds = editorBounds;
 			if (!m_DynamicFaceAdjustment)
 				return;
 
 			var currentXRotation = transform.rotation.eulerAngles.x;
-			if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
-				return; // Exit if no x rotation change occurred for this frame
+			//if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
+			//	return; // Exit if no x rotation change occurred for this frame
 
 			m_PreviousXRotation = currentXRotation;
 

@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
-using ListView;
 using System;
 using System.Collections.Generic;
+using ListView;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -61,7 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (!m_ListItems.TryGetValue(index, out item))
 				item = GetItem(data);
 
-			item.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded, index == m_SelectedFolder);
+			item.UpdateSelf(m_Size.x - k_ClipMargin, depth, expanded, index == m_SelectedFolder);
 
 			SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 
@@ -78,7 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (!m_ExpandStates.TryGetValue(index, out expanded))
 					m_ExpandStates[index] = false;
 
-				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
+				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
 					Recycle(index);
 				else
 					UpdateFolderItem(datum, offset + m_ScrollOffset, depth, expanded, ref doneSettling);

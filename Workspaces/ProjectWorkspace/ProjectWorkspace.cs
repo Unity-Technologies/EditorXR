@@ -64,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			// Initial bounds must be set before the base.Setup() is called
 			minBounds = new Vector3(MinBounds.x, MinBounds.y, 0.5f);
-			m_CustomStartingBounds = minBounds;
+			m_CustomStartingBounds = new Vector3(0.8f, 0.4f, 0.5f);
 
 			base.Setup();
 
@@ -139,35 +139,32 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float kScrollHandleHeight = 0.001f;
 			const float kScrollHandleYPosition = -0.002f;
 
-			var bounds = contentBounds;
-			var size = bounds.size;
-			bounds.center = Vector3.zero;
+			var size = contentBounds.size;
 
+			var contentSizeX = size.x;
 			var sizeX = size.x * k_LeftPaneRatio + HighlightMargin;
 			var sizeZ = size.z - FaceMargin + HighlightMargin;
-			bounds.size = new Vector3(sizeX - FaceMargin, k_YBounds, sizeZ - FaceMargin);
 
-			var xOffset = (contentBounds.size.x - sizeX - FaceMargin) * -0.5f - HighlightMargin * 0.5f;
+			var xOffset = (contentSizeX - sizeX - FaceMargin) * -0.5f - HighlightMargin * 0.5f;
 
 			var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
 			folderScrollHandleTransform.localPosition = new Vector3(xOffset, kScrollHandleYPosition, 0);
 			folderScrollHandleTransform.localScale = new Vector3(sizeX, kScrollHandleHeight, sizeZ);
 
 			var folderListView = m_ProjectUI.folderListView;
-			folderListView.bounds = bounds;
+			folderListView.size = new Vector3(sizeX - FaceMargin, k_YBounds, sizeZ - FaceMargin);
 			folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0); // Center in Y
 
-			sizeX = contentBounds.size.x * (1 - k_LeftPaneRatio) - FaceMargin;
-			xOffset = (contentBounds.size.x - sizeX - FaceMargin) * 0.5f;
+			sizeX = contentSizeX * (1 - k_LeftPaneRatio) - FaceMargin;
+			xOffset = (contentSizeX - sizeX - FaceMargin) * 0.5f;
 			sizeX += HighlightMargin;
-			bounds.size = new Vector3(sizeX - FaceMargin, k_YBounds, sizeZ - FaceMargin);
 
 			var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
 			assetScrollHandleTransform.localPosition = new Vector3(xOffset, kScrollHandleYPosition, 0);
 			assetScrollHandleTransform.localScale = new Vector3(sizeX, kScrollHandleHeight, sizeZ);
 
 			var assetListView = m_ProjectUI.assetGridView;
-			assetListView.bounds = bounds;
+			assetListView.size = new Vector3(sizeX - FaceMargin, k_YBounds, sizeZ - FaceMargin);
 			assetListView.transform.localPosition = Vector3.right * xOffset;
 		}
 

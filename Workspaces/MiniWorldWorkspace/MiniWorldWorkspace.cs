@@ -18,12 +18,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.05f; // Show more space above ground than below
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default
 
+		// Scales larger or smaller than this spam errors in the console
 		const float k_MinScale = 0.01f;
-		const float k_MaxScale = Mathf.Infinity;
+		const float k_MaxScale = 1e12f;
 
 		// Scale slider min/max (maps to referenceTransform uniform scale)
 		const float k_ZoomSliderMin = 0.5f;
 		const float k_ZoomSliderMax = 200f;
+
+		static readonly Vector3 k_LocatePlayerOffset = new Vector3(0.075f, 0.035f, -0.05f);
+		static readonly float k_LocatePlayerArrowOffset = 0.05f;
 
 		[SerializeField]
 		GameObject m_ContentPrefab;
@@ -44,6 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		MiniWorld m_MiniWorld;
 		Material m_GridMaterial;
 		ZoomSliderUI m_ZoomSliderUI;
+		Transform m_LocatePlayerUI;
 		Transform m_PlayerDirectionButton;
 		Transform m_PlayerDirectionArrow;
 		readonly List<Transform> m_Rays = new List<Transform>(2);
@@ -87,18 +92,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 
 			var parent = m_WorkspaceUI.frontPanel.parent;
-			var locatePlayerUI = ObjectUtils.Instantiate(m_LocatePlayerPrefab, parent, false);
-			m_PlayerDirectionButton = locatePlayerUI.transform.GetChild(0);
-			foreach (var mb in locatePlayerUI.GetComponentsInChildren<MonoBehaviour>())
+			m_LocatePlayerUI = ObjectUtils.Instantiate(m_LocatePlayerPrefab, parent, false).transform;
+			m_PlayerDirectionButton = m_LocatePlayerUI.GetChild(0);
+			foreach (var mb in m_LocatePlayerUI.GetComponentsInChildren<MonoBehaviour>())
 			{
 				var button = mb as Button;
 				if (button)
 					button.onClick.AddListener(RecenterOnPlayer);
 			}
 
-			var arrow = ObjectUtils.Instantiate(m_PlayerDirectionArrowPrefab, parent, false);
-			arrow.transform.localPosition = new Vector3(-0.232f, 0.03149995f, 0f);
-			m_PlayerDirectionArrow = arrow.transform;
+			m_PlayerDirectionArrow = ObjectUtils.Instantiate(m_PlayerDirectionArrowPrefab, parent, false).transform;
 
 			// Set up MiniWorld
 			m_MiniWorld = GetComponentInChildren<MiniWorld>();
@@ -162,7 +165,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var referenceScale = referenceTransform.localScale.x;
 			var gridScale = gridTransform.localScale.x;
 
-			m_GridMaterial.SetFloat("_GridScale", referenceScale);
+			m_GridMaterial.SetFloat("_GridFade", referenceScale);
+			m_GridMaterial.SetFloat("_GridScale", referenceScale * gridScale);
 			m_GridMaterial.SetVector("_GridCenter", -new Vector2(referenceTransform.position.x,
 				referenceTransform.position.z) / (gridScale * referenceScale));
 			inverseRotation = Quaternion.Inverse(m_MiniWorld.transform.rotation);
@@ -212,6 +216,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_MiniWorld.localBounds = boundsWithMargin;
 			m_MiniWorldUI.boundsCube.transform.localScale = size;
 			m_MiniWorldUI.grid.transform.localScale = Vector3.one * new Vector2(size.x, size.z).magnitude;
+
+			m_LocatePlayerUI.localPosition = Vector3.left * boundsWithMargin.extents.x + k_LocatePlayerOffset;
+			m_PlayerDirectionArrow.localPosition = m_LocatePlayerUI.localPosition + Vector3.up * k_LocatePlayerArrowOffset;
 		}
 
 		void OnSliding(float value)
