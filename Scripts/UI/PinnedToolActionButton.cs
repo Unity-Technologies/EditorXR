@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Security.Cryptography.X509Certificates;
 using System.Xml.Schema;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -80,6 +81,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			set
 			{
+				Debug.LogWarning("Perform graceful showing/hiding of pinned tool action button visual here : start value : " + m_Visible + " - Setting to : " + value);
+
 				if (m_Visible == value)
 					return;
 
@@ -90,7 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				//m_VisibilityCoroutine = value ? StartCoroutine(AnimateShow()) : StartCoroutine(AnimateHide());
 			}
 		}
-		bool m_Visible;
+		bool m_Visible = true;  // Initialize as true in order to allow for the first set to hide the visuals.
 
 		public ButtonType buttonType
 		{
@@ -103,16 +106,14 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				m_ButtonType = value;
 				m_ButtonColor = buttonType == ButtonType.SelectTool ? s_SelectColor : s_CloseColor;
+				m_Background.color = m_ButtonColor;
+				m_Icon.sprite = buttonType == ButtonType.Close ? m_CloseIconSprite : m_Icon.sprite;
 			}
 		}
 		ButtonType m_ButtonType;
 
 		[SerializeField]
 		Sprite m_IconSprite;
-
-		// The inner-button's background gradient MeshRenderer
-		[SerializeField]
-		MeshRenderer m_ButtonMeshRenderer;
 
 		// Transform-root of the contents in the icon container (icons, text, etc)
 		[SerializeField]
@@ -129,9 +130,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		[SerializeField]
 		Image m_Icon;
 
+		[SerializeField]
+		Image m_Background;
+
 		// Alternate icon sprite, shown when the main icon sprite isn't; If set, this button will swap icon sprites OnClick
 		[SerializeField]
-		Sprite m_AlternateIconSprite;
+		Sprite m_CloseIconSprite;
 
 		[SerializeField]
 		Color m_NormalContentColor;
@@ -171,30 +175,35 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			set
 			{
-				if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
-					m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
+				if (m_CloseIconSprite) // Only allow sprite swapping if an alternate sprite exists
+					m_Icon.sprite = value ? m_CloseIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
 			}
 			get
 			{
-				return m_Icon.sprite == m_AlternateIconSprite;
+				return m_Icon.sprite == m_CloseIconSprite;
+			}
+		}
+
+		public bool rotateIcon
+		{
+			set
+			{
+				m_Icon.transform.localRotation = value ? Quaternion.Euler(0f, 0f, 180f) : Quaternion.identity;
 			}
 		}
 
 		public Action<PinnedToolActionButton> clicked { get; set; }
-		public Action closeButton { get; set; }
-		public Action hoverEnter { get; set; }
+		//public Action hoverEnter { get; set; }
 		public Action hoverExit { get; set; }
 
 		void Awake()
 		{
 			m_OriginalIconSprite = m_Icon.sprite;
-			m_ButtonMaterial = MaterialUtils.GetMaterialClone(m_ButtonMeshRenderer);
+			//m_ButtonMaterial = MaterialUtils.GetMaterialClone(m_ButtonMeshRenderer);
 			m_OriginalLocalScale = transform.localScale;
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 
 			m_Icon.color = m_NormalContentColor;
-
-			visible = false; // Initially perform a hide setup on the visuals
 		}
 
 		void OnEnable()
@@ -204,8 +213,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		void OnDisable()
 		{
-			if (!gameObject.activeInHierarchy)
+			if (gameObject.activeSelf)
 			{
+				Debug.LogWarning("Disabling PinnedToolACtionButton");
 				this.StopCoroutine(ref m_IconHighlightCoroutine);
 				this.StopCoroutine(ref m_HighlightCoroutine);
 				this.StopCoroutine(ref m_ContentVisibilityCoroutine);
@@ -234,7 +244,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			while (currentDuration < totalDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
-				transform.localScale = scale;
+				//transform.localScale = scale;
 				m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, scale.y);
 
 				// Perform initial delay
@@ -250,7 +260,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			}
 
 			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 1f);
-			transform.localScale = m_OriginalLocalScale;
+			//transform.localScale = m_OriginalLocalScale;
 			m_VisibilityCoroutine = null;
 		}
 
@@ -271,14 +281,14 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				currentDuration += Time.unscaledDeltaTime;
 				scale = MathUtilsExt.SmoothDamp(scale, hiddenLocalScale, ref smoothVelocity, kTotalDuration, Mathf.Infinity, Time.unscaledDeltaTime);
-				transform.localScale = scale;
+				//transform.localScale = scale;
 				m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, scale.z);
 
 				yield return null;
 			}
 
 			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
-			transform.localScale = hiddenLocalScale;
+			//transform.localScale = hiddenLocalScale;
 			m_VisibilityCoroutine = null;
 			gameObject.SetActive(false);
 		}
@@ -381,7 +391,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 						graphic.color = Color.Lerp(m_NormalContentColor, m_HighlightItemColor, transitionAmount);
 				}
 
-				m_IconContainer.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
+				//m_IconContainer.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
 				yield return null;
 			}
 
@@ -391,7 +401,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 					graphic.color = m_HighlightItemColor;
 			}
 
-			m_IconContainer.localPosition = targetPosition;
+			//m_IconContainer.localPosition = targetPosition;
 			m_IconHighlightCoroutine = null;
 		}
 
@@ -413,7 +423,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 						graphic.color = Color.Lerp(m_NormalContentColor, m_HighlightItemColor, transitionAmount);
 				}
 
-				m_IconContainer.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
+				//m_IconContainer.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
 				yield return null;
 			}
 
@@ -423,7 +433,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 					graphic.color = m_NormalContentColor;
 			}
 
-			m_IconContainer.localPosition = m_OriginalIconLocalPosition;
+			//m_IconContainer.localPosition = m_OriginalIconLocalPosition;
 			m_IconHighlightCoroutine = null;
 		}
 
@@ -434,7 +444,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			highlighted = true;
 			eventData.Use();
-			hoverEnter();
+			//hoverEnter();
 		}
 
 		/// <summary>
@@ -462,7 +472,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		void SwapIconSprite()
 		{
 			// Alternate between the main icon and the alternate icon when the button is clicked
-			if (m_AlternateIconSprite)
+			if (m_CloseIconSprite)
 				alternateIconVisible = !alternateIconVisible;
 		}
 	}
