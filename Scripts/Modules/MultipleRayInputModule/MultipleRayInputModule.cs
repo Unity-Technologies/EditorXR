@@ -149,7 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (!sourceAMI.active)
 				{
 					// If we have an object, the ray is blocked--input should not bleed through
-					if (hasObject && select.wasJustReleased)
+					if (hasObject && select.wasJustPressed)
 						consumeControl(select);
 
 					continue;
