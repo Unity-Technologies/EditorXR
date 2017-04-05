@@ -639,6 +639,7 @@ MonoBehaviour:
   m_SmoothMotion: {fileID: 114000010887893374}
   m_LeftPinnedToolActionButton: {fileID: 114000011926581952}
   m_RightPinnedToolActionButton: {fileID: 114000013773965116}
+  m_RootCollider: {fileID: 65000011941282114}
   m_TooltipTarget: {fileID: 4000010683372396}
   m_TooltipSource: {fileID: 4000013378434912}
 --- !u!114 &114000011796366970

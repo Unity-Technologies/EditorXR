@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			get { return m_Pressed; }
 			set
 			{
-				if (!m_Highlighted)
+				if (!highlighted)
 				{
 					value = false;
 				}
@@ -81,12 +81,14 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			set
 			{
-				Debug.LogWarning("Perform graceful showing/hiding of pinned tool action button visual here : start value : " + m_Visible + " - Setting to : " + value);
-
 				if (m_Visible == value)
 					return;
 
+				Debug.LogWarning("Perform graceful showing/hiding of pinned tool action button visual here : start value : " + m_Visible + " - Setting to : " + value);
+
 				m_Visible = value;
+
+				highlighted = value ? highlighted : false;
 
 				if (value && !gameObject.activeSelf)
 					gameObject.SetActive(value);
@@ -193,8 +195,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 
 		public Action<PinnedToolActionButton> clicked { get; set; }
-		//public Action hoverEnter { get; set; }
+		public Action hoverEnter { get; set; }
 		public Action hoverExit { get; set; }
+		public Collider mainButtonCollider { get; set; }
 
 		void Awake()
 		{
@@ -208,7 +211,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		void OnEnable()
 		{
-			m_ContentContainer.gameObject.SetActive(true);
+			//m_ContentContainer.gameObject.SetActive(true);
+			mainButtonCollider.enabled = false;
 		}
 
 		void OnDisable()
@@ -219,9 +223,10 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				this.StopCoroutine(ref m_IconHighlightCoroutine);
 				this.StopCoroutine(ref m_HighlightCoroutine);
 				this.StopCoroutine(ref m_VisibilityCoroutine);
-				m_ContentContainer.gameObject.SetActive(false);
-				highlighted = false;
+				//m_ContentContainer.gameObject.SetActive(false);
 			//}
+
+			mainButtonCollider.enabled = true;
 		}
 
 		/// <summary>
@@ -234,7 +239,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var currentCanvasAlpha = m_CanvasGroup.alpha;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 2f;
+				transitionAmount += Time.unscaledDeltaTime * 3f;
 				m_CanvasGroup.alpha = Mathf.Lerp(currentCanvasAlpha, 1f, MathUtilsExt.SmoothInOutLerpFloat(transitionAmount));
 				yield return null;
 			}
@@ -253,7 +258,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var currentCanvasAlpha = m_CanvasGroup.alpha;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 1.5f;
+				transitionAmount += Time.unscaledDeltaTime * 2.5f;
 				m_CanvasGroup.alpha = Mathf.Lerp(currentCanvasAlpha, 0f, MathUtilsExt.SmoothInOutLerpFloat(transitionAmount));
 				yield return null;
 			}
@@ -420,7 +425,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			highlighted = true;
 			eventData.Use();
-			//hoverEnter();
+			hoverEnter();
 		}
 
 		/// <summary>
@@ -441,6 +446,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			if (m_VisibilityCoroutine != null)
 				return;
 
+			highlighted = false;
 			SwapIconSprite();
 			clicked(this);
 		}

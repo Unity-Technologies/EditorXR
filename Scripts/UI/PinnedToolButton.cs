@@ -141,6 +141,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		PinnedToolActionButton m_RightPinnedToolActionButton;
 
+		[SerializeField]
+		Collider m_RootCollider;
+
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
 		[SerializeField]
 		Transform m_TooltipTarget;
@@ -204,10 +207,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_GradientButton.hoverEnter += BackgroundHovered; // Display the foreground button actions
 
 			m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
-			//m_LeftPinnedToolActionButton.hoverEnter = ActionButtonHoverEnter;
+			m_LeftPinnedToolActionButton.hoverEnter = ActionButtonHoverEnter;
 			m_LeftPinnedToolActionButton.hoverExit = ActionButtonHoverExit;
 			m_RightPinnedToolActionButton.clicked = ActionButtonClicked;
-			//m_RightPinnedToolActionButton.hoverEnter = ActionButtonHoverEnter;
+			m_RightPinnedToolActionButton.hoverEnter = ActionButtonHoverEnter;
 			m_RightPinnedToolActionButton.hoverExit = ActionButtonHoverExit;
 
 			// Assign the select action button to the side closest to the opposite hand, that allows the arrow to also point in the direction the
@@ -220,6 +223,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_LeftPinnedToolActionButton.visible = false;
 			m_RightPinnedToolActionButton.visible = false;
+
+			m_LeftPinnedToolActionButton.mainButtonCollider = m_RootCollider;
+			m_RightPinnedToolActionButton.mainButtonCollider = m_RootCollider;
 
 			//m_ButtonCollider.enabled = true;
 			//m_GradientButton.click += OnClick;
@@ -268,19 +274,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void BackgroundHovered ()
 		{
-			if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
-			{
+			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
+			//{
 				Debug.LogError("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
+				m_RootCollider.enabled = false;
 				m_GradientButton.highlighted = true;
 				//m_GradientButton.visible = false;
 
-				Debug.LogWarning(
-					"Handle for disabled buttons not being shown, ie the promotote(green) button on the first/selected tool");
+				//Debug.LogWarning("Handle for disabled buttons not being shown, ie the promotote(green) button on the first/selected tool");
 
 				m_RightPinnedToolActionButton.visible = m_RightPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
 				m_LeftPinnedToolActionButton.visible = m_LeftPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
 				//m_ButtonCollider.enabled = false;
-			}
+			//}
 		}
 
 		void ActionButtonClicked(PinnedToolActionButton button)
@@ -298,17 +304,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				CloseButton();
 			}
 		}
-/*
+
 		void ActionButtonHoverEnter()
 		{
 			Debug.LogError("<color=green>Action Button hover ENTER event raised!</color>");
-			m_LeftPinnedToolActionButton.visible = true;
-			m_RightPinnedToolActionButton.visible = true;
+			m_RightPinnedToolActionButton.visible = m_RightPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
+			m_LeftPinnedToolActionButton.visible = m_LeftPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
 		}
-*/
+
 		void ActionButtonHoverExit()
 		{
-			Debug.LogWarning("<color=orange>ActionButtonHoverExit : </color>" + name);
+			Debug.LogWarning("<color=orange>ActionButtonHoverExit : </color>" + name + " : " + toolType);
 			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
 
 			// Hide both action buttons if the user is no longer hovering over the button
