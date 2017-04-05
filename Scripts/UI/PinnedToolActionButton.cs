@@ -43,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 					this.StopCoroutine(ref m_IconHighlightCoroutine);
 
-					m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight(true));
+					//m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight(true));
 				}
 			}
 		}
@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 					if (!gameObject.activeInHierarchy)
 						return;
 
-					m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
+					//m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
 				}
 			}
 		}
@@ -88,9 +88,10 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 				m_Visible = value;
 
-				gameObject.SetActive(value);
-				//this.StopCoroutine(ref m_VisibilityCoroutine);
-				//m_VisibilityCoroutine = value ? StartCoroutine(AnimateShow()) : StartCoroutine(AnimateHide());
+				if (value && !gameObject.activeSelf)
+					gameObject.SetActive(value);
+
+				this.RestartCoroutine(ref m_VisibilityCoroutine, value ? AnimateShow() : AnimateHide());
 			}
 		}
 		bool m_Visible = true;  // Initialize as true in order to allow for the first set to hide the visuals.
@@ -165,7 +166,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		// The initial button reveal coroutines, before highlighting occurs
 		Coroutine m_VisibilityCoroutine;
-		Coroutine m_ContentVisibilityCoroutine;
 
 		// The visibility & highlight coroutines
 		Coroutine m_HighlightCoroutine;
@@ -213,14 +213,15 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		void OnDisable()
 		{
-			if (gameObject.activeSelf)
-			{
+			//if (gameObject.activeSelf) // TODO remove object shouldnt alredy be disabled
+			//{
 				Debug.LogWarning("Disabling PinnedToolACtionButton");
 				this.StopCoroutine(ref m_IconHighlightCoroutine);
 				this.StopCoroutine(ref m_HighlightCoroutine);
-				this.StopCoroutine(ref m_ContentVisibilityCoroutine);
+				this.StopCoroutine(ref m_VisibilityCoroutine);
 				m_ContentContainer.gameObject.SetActive(false);
-			}
+				highlighted = false;
+			//}
 		}
 
 		/// <summary>
@@ -228,39 +229,17 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// </summary>
 		IEnumerator AnimateShow()
 		{
-			m_CanvasGroup.interactable = false;
-			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
-
-			this.StopCoroutine(ref m_ContentVisibilityCoroutine);
-			m_ContentVisibilityCoroutine = StartCoroutine(ShowContent());
-
-			const float kScaleRevealDuration = 0.25f;
-			var delay = 0f;
-			var scale = Vector3.zero;
-			var smoothVelocity = Vector3.zero;
-			var currentDuration = 0f;
-			var totalDuration = m_DelayBeforeReveal + kScaleRevealDuration;
-			var visibleLocalScale = m_OriginalLocalScale;
-			while (currentDuration < totalDuration)
+			const float kTargetTransitionAmount = 1f;
+			var transitionAmount = Time.unscaledDeltaTime;
+			var currentCanvasAlpha = m_CanvasGroup.alpha;
+			while (transitionAmount < kTargetTransitionAmount)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				//transform.localScale = scale;
-				m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, scale.y);
-
-				// Perform initial delay
-				while (delay < m_DelayBeforeReveal)
-				{
-					delay += Time.unscaledDeltaTime;
-					yield return null;
-				}
-
-				// Perform the button depth reveal
-				scale = MathUtilsExt.SmoothDamp(scale, visibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				transitionAmount += Time.unscaledDeltaTime * 2f;
+				m_CanvasGroup.alpha = Mathf.Lerp(currentCanvasAlpha, 1f, MathUtilsExt.SmoothInOutLerpFloat(transitionAmount));
 				yield return null;
 			}
 
-			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 1f);
-			//transform.localScale = m_OriginalLocalScale;
+			m_CanvasGroup.alpha = 1f;
 			m_VisibilityCoroutine = null;
 		}
 
@@ -269,30 +248,67 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// </summary>
 		IEnumerator AnimateHide()
 		{
-			m_CanvasGroup.interactable = false;
-			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
-
-			const float kTotalDuration = 0.25f;
-			var scale = transform.localScale;
-			var smoothVelocity = Vector3.zero;
-			var hiddenLocalScale = Vector3.zero;
-			var currentDuration = 0f;
-			while (currentDuration < kTotalDuration)
+			const float kTargetTransitionAmount = 1f;
+			var transitionAmount = Time.unscaledDeltaTime;
+			var currentCanvasAlpha = m_CanvasGroup.alpha;
+			while (transitionAmount < kTargetTransitionAmount)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				scale = MathUtilsExt.SmoothDamp(scale, hiddenLocalScale, ref smoothVelocity, kTotalDuration, Mathf.Infinity, Time.unscaledDeltaTime);
-				//transform.localScale = scale;
-				m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, scale.z);
-
+				transitionAmount += Time.unscaledDeltaTime * 1.5f;
+				m_CanvasGroup.alpha = Mathf.Lerp(currentCanvasAlpha, 0f, MathUtilsExt.SmoothInOutLerpFloat(transitionAmount));
 				yield return null;
 			}
 
-			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
-			//transform.localScale = hiddenLocalScale;
+			m_CanvasGroup.alpha = 0f;
 			m_VisibilityCoroutine = null;
 			gameObject.SetActive(false);
 		}
 
+		/// <summary>
+		/// Performs the animated beginning of a button's highlighted state
+		/// </summary>
+		IEnumerator BeginHighlight()
+		{
+			//this.StopCoroutine(ref m_IconHighlightCoroutine);
+			//m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
+
+			Debug.LogWarning("BeginHighlight : " + buttonType.ToString());
+			const float kTargetTransitionAmount = 1f;
+			var transitionAmount = Time.unscaledDeltaTime;
+			var shapedTransitionAmount = 0f;
+			var currentCanvasAlpha = m_CanvasGroup.alpha;
+			while (transitionAmount < kTargetTransitionAmount)
+			{
+				transitionAmount += Time.unscaledDeltaTime * 4;
+				shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+				m_CanvasGroup.alpha = Mathf.Lerp(currentCanvasAlpha, 1f, shapedTransitionAmount);
+				yield return null;
+			}
+
+			m_HighlightCoroutine = null;
+		}
+
+		/// <summary>
+		/// Performs the animated ending of a button's highlighted state
+		/// </summary>
+		IEnumerator EndHighlight()
+		{
+			//this.StopCoroutine(ref m_IconHighlightCoroutine);
+			//m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsEndHighlight());
+
+			Debug.LogWarning("EndHighlight : " + buttonType.ToString());
+			const float kTargetTransitionAmount = 1f;
+			var transitionAmount = Time.unscaledDeltaTime;
+			var shapedTransitionAmount = 0f;
+			var currentCanvasAlpha = m_CanvasGroup.alpha;
+			while (transitionAmount < kTargetTransitionAmount)
+			{
+				transitionAmount += Time.unscaledDeltaTime * 6;
+				shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+				m_CanvasGroup.alpha = Mathf.Lerp(currentCanvasAlpha, 0f, shapedTransitionAmount);
+				yield return null;
+			}
+		}
+/*
 		/// <summary>
 		/// Animate the canvas group's alpha to full opacity
 		/// </summary>
@@ -325,48 +341,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			}
 
 			m_CanvasGroup.alpha = 1;
-			m_ContentVisibilityCoroutine = null;
+			m_VisibilityCoroutine = null;
 		}
-
-		/// <summary>
-		/// Performs the animated beginning of a button's highlighted state
-		/// </summary>
-		IEnumerator BeginHighlight()
-		{
-			this.StopCoroutine(ref m_IconHighlightCoroutine);
-			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
-
-			const float kTargetTransitionAmount = 1f;
-			var transitionAmount = Time.unscaledDeltaTime;
-			var shapedTransitionAmount = 0f;
-			while (transitionAmount < kTargetTransitionAmount)
-			{
-				transitionAmount += Time.unscaledDeltaTime * 4;
-				shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-				yield return null;
-			}
-
-			m_HighlightCoroutine = null;
-		}
-
-		/// <summary>
-		/// Performs the animated ending of a button's highlighted state
-		/// </summary>
-		IEnumerator EndHighlight()
-		{
-			this.StopCoroutine(ref m_IconHighlightCoroutine);
-			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsEndHighlight());
-
-			const float kTargetTransitionAmount = 1f;
-			var transitionAmount = Time.unscaledDeltaTime;
-			var shapedTransitionAmount = 0f;
-			while (transitionAmount < kTargetTransitionAmount)
-			{
-				transitionAmount += Time.unscaledDeltaTime * 6;
-				shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-
-				yield return null;
-			}
 
 			m_HighlightCoroutine = null;
 		}
@@ -436,7 +412,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			//m_IconContainer.localPosition = m_OriginalIconLocalPosition;
 			m_IconHighlightCoroutine = null;
 		}
-
+*/
 		/// <summary>
 		/// Enable button highlighting on ray enter if autoHighlight is true
 		/// </summary>
@@ -462,6 +438,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// </summary>
 		public void OnPointerClick(PointerEventData eventData)
 		{
+			if (m_VisibilityCoroutine != null)
+				return;
+
 			SwapIconSprite();
 			clicked(this);
 		}

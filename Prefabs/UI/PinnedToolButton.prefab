@@ -35,6 +35,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 224000013783073276}
+  - 225: {fileID: 225000010875730614}
   m_Layer: 5
   m_Name: IconContainer
   m_TagString: Untagged
@@ -147,7 +148,6 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 224000013167097666}
-  - 225: {fileID: 225000013680203428}
   - 223: {fileID: 223000013382208598}
   m_Layer: 5
   m_Name: ButtonContentContainer
@@ -533,7 +533,7 @@ MonoBehaviour:
   m_ButtonMeshRenderer: {fileID: 23000013664958186}
   m_IconContainer: {fileID: 224000013783073276}
   m_ContentContainer: {fileID: 224000013167097666}
-  m_CanvasGroup: {fileID: 225000013680203428}
+  m_CanvasGroup: {fileID: 225000010875730614}
   m_Text: {fileID: 114000010635728284}
   m_Icon: {fileID: 114000011073612486}
   m_AlternateIconSprite: {fileID: 0}
@@ -1101,7 +1101,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013126942410}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.0018000513}
+  m_LocalPosition: {x: 0, y: 0, z: 0.0018000894}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -1268,6 +1268,17 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &225000010875730614
+CanvasGroup:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010351058842}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!225 &225000011672881634
 CanvasGroup:
   m_ObjectHideFlags: 1
@@ -1278,17 +1289,6 @@ CanvasGroup:
   m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
---- !u!225 &225000013680203428
-CanvasGroup:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012194113842}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
 --- !u!225 &225000013730456080
 CanvasGroup:

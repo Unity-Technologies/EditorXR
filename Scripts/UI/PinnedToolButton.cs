@@ -277,7 +277,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				Debug.LogWarning(
 					"Handle for disabled buttons not being shown, ie the promotote(green) button on the first/selected tool");
 
-
 				m_RightPinnedToolActionButton.visible = m_RightPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
 				m_LeftPinnedToolActionButton.visible = m_LeftPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
 				//m_ButtonCollider.enabled = false;
