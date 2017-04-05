@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Reflection;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -12,14 +13,16 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 	sealed class EditorWindowCapture : MonoBehaviour
 	{
 		[SerializeField]
-		private string m_WindowClass = "UnityEditor.ProfilerWindow";
+		string m_WindowClass = "UnityEditor.ProfilerWindow";
 		[SerializeField]
-		private Rect m_Position = new Rect(0f, 0f, 600f, 400f);
+		Rect m_Position = new Rect(0f, 0f, 600f, 400f);
+
+		RectTransform m_RectTransform;
 
 #if UNITY_EDITOR
-		private EditorWindow m_Window;
-		private Object m_GuiView;
-		private MethodInfo m_GrabPixels;
+		EditorWindow m_Window;
+		Object m_GuiView;
+		MethodInfo m_GrabPixels;
 
 		/// <summary>
 		/// RenderTexture that represents the captured Editor Window
@@ -31,8 +34,10 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
 		public bool capture { get; set; }
 
-		private void Start()
+		void Start()
 		{
+			m_RectTransform = GetComponent<RectTransform>();
+
 			Type windowType = null;
 			Type guiViewType = null;
 
@@ -79,13 +84,13 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			}
 		}
 
-		private void OnDisable()
+		void OnDisable()
 		{
 			if (m_Window)
 				m_Window.Close();
 		}
 
-		private void Update()
+		void Update()
 		{
 			if (m_Window && capture)
 			{
@@ -111,6 +116,37 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
 				m_GrabPixels.Invoke(m_GuiView, new object[] { texture, rect });
 			}
+		}
+
+		public void SendEvent(Transform rayOrigin, Transform workspace, EventType type, Vector2 offset = default(Vector2))
+		{
+			if (m_Window == null)
+				return;
+
+			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+			var plane = new Plane(workspace.up, workspace.position);
+			float distance;
+			plane.Raycast(ray, out distance);
+			var localPosition = workspace.InverseTransformPoint(ray.GetPoint(distance));
+			var worldCorners = new Vector3[4];
+			m_RectTransform.GetWorldCorners(worldCorners);
+			var contentSize = new Vector2((worldCorners[1] - worldCorners[2]).magnitude,
+				(worldCorners[0] - worldCorners[1]).magnitude);
+			localPosition.x /= contentSize.x;
+			localPosition.z /= -contentSize.y;
+			var rectPosition = new Vector2(localPosition.x + 0.5f, localPosition.z + 0.5f);
+
+			var rect = m_Window.position;
+			var clickPosition = Vector2.Scale(rectPosition, rect.size) + offset;
+
+			if (clickPosition.y < 25f) // Click y positions below 25 move the window and cause issues
+				return;
+
+			m_Window.SendEvent(new Event
+			{
+				type = type,
+				mousePosition = clickPosition
+			});
 		}
 #endif
 	}

@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
 
@@ -8,10 +9,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Profiler", "Workspaces", "Analyze your project's performance")]
 	sealed class ProfilerWorkspace : Workspace
 	{
-		[SerializeField]
-		private GameObject m_ProfilerWindowPrefab;
+		static readonly Vector2 k_PointerOffset = new Vector2(0, 20f);
 
-		private Transform m_ProfilerWindow;
+		[SerializeField]
+		GameObject m_ProfilerWindowPrefab;
+
+		Transform m_ProfilerWindow;
+		EditorWindowCapture m_Capture;
+		RectTransform m_CaptureWindowRect;
 
 #if UNITY_EDITORVR
 		bool inView
@@ -36,8 +41,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				return false;
 			}
 		}
-
-		private RectTransform m_CaptureWindowRect;
 
 		public override void Setup()
 		{
@@ -66,6 +69,34 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			UnityEditorInternal.ProfilerDriver.profileEditor = false;
 
 			m_CaptureWindowRect = GetComponentInChildren<EditorWindowCapture>().GetComponent<RectTransform>();
+
+			var handle = m_ProfilerWindow.GetComponent<BaseHandle>();
+			handle.hovering += OnHovering;
+			handle.dragStarted += OnDragStarted;
+			handle.dragging += OnDragging;
+			handle.dragEnded += OnDragEnded;
+
+			m_Capture = m_ProfilerWindow.GetComponent<EditorWindowCapture>();
+		}
+
+		void OnHovering(BaseHandle handle, HandleEventData eventData)
+		{
+			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseMove, k_PointerOffset);
+		}
+
+		void OnDragStarted(BaseHandle handle, HandleEventData eventData)
+		{
+			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseDown, k_PointerOffset);
+		}
+
+		void OnDragging(BaseHandle handle, HandleEventData eventData)
+		{
+			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseDrag, k_PointerOffset);
+		}
+
+		void OnDragEnded(BaseHandle handle, HandleEventData eventData)
+		{
+			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseUp, k_PointerOffset);
 		}
 
 		void Update()

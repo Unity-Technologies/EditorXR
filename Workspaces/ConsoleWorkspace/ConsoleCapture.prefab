@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  m_WindowClass: DebugEvents
+  m_WindowClass: UnityEditor.ConsoleWindow
   m_Position:
     serializedVersion: 2
     x: -600
