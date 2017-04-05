@@ -84,6 +84,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
+		public bool joystickLocomotion { private get; set; }
+
 		private void Start()
 		{
 			m_BlinkVisualsGO = ObjectUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
@@ -98,6 +100,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_OriginalNearClipPlane = m_MainCamera.nearClipPlane;
 			m_OriginalFarClipPlane = m_MainCamera.farClipPlane;
 
+			joystickLocomotion = true;
+
 			Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
 		}
 
@@ -110,6 +114,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			this.ShowDefaultRay(rayOrigin);
 		}
+
+		void Update()
+		{
+			if (UnityEngine.Input.GetKeyUp(KeyCode.Space))
+				joystickLocomotion = !joystickLocomotion;
+		}
+
+		Quaternion lastRotation;
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
@@ -246,82 +258,100 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			bool isVive = proxyType == typeof(ViveProxy);
 
-			if (m_EnableJoystick && (!isVive || m_Thumb != null))
+			if (joystickLocomotion)
 			{
-				var viewerCamera = CameraUtils.GetMainCamera();
-
-				if (Mathf.Abs(yawValue) > Mathf.Abs(forwardValue))
+				if (blinkInput.blink.isHeld)
 				{
-					if (!Mathf.Approximately(yawValue, 0))
+					if (blinkInput.grip.isHeld)
 					{
-						if (node == Node.LeftHand)
-						{
-							var direction = viewerCamera.transform.right;
-							direction.y = 0;
-							direction.Normalize();
+						var viewerCamera = CameraUtils.GetMainCamera();
+						var diff = Quaternion.Lerp(Quaternion.identity, MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(lastRotation) * rayOrigin.rotation), 0.7f);
 
-							Translate(yawValue, isVive, direction);
-						}
-						else
-						{
-							var speed = yawValue * k_SlowRotationSpeed;
-							var threshold = isVive ? k_RotationThresholdVive : k_RotationThreshold;
-							if (Mathf.Abs(yawValue) > threshold)
-								speed = k_FastRotationSpeed * Mathf.Sign(yawValue);
+						cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, diff.eulerAngles.y);
+					}
+					else
+					{
+						cameraRig.Translate(rayOrigin.forward * k_FastMoveSpeed * Time.unscaledDeltaTime);
+					}
+					consumeControl(blinkInput.blink);
 
-							cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.unscaledDeltaTime);
-						}
+					//var viewerCamera = CameraUtils.GetMainCamera();
 
-						consumeControl(blinkInput.yaw);
+					//if (Mathf.Abs(yawValue) > Mathf.Abs(forwardValue))
+					//{
+					//	if (!Mathf.Approximately(yawValue, 0))
+					//	{
+					//		if (node == Node.LeftHand)
+					//		{
+					//			var direction = viewerCamera.transform.right;
+					//			direction.y = 0;
+					//			direction.Normalize();
+
+					//			Translate(yawValue, isVive, direction);
+					//		}
+					//		else
+					//		{
+					//			var speed = yawValue * k_SlowRotationSpeed;
+					//			var threshold = isVive ? k_RotationThresholdVive : k_RotationThreshold;
+					//			if (Mathf.Abs(yawValue) > threshold)
+					//				speed = k_FastRotationSpeed * Mathf.Sign(yawValue);
+
+					//			cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.unscaledDeltaTime);
+					//		}
+
+					//		consumeControl(blinkInput.yaw);
+					//	}
+					//}
+					//else
+					//{
+					//	if (!Mathf.Approximately(forwardValue, 0))
+					//	{
+					//		var direction = Vector3.up;
+
+					//		if (node == Node.LeftHand)
+					//		{
+					//			direction = viewerCamera.transform.forward;
+					//			direction.y = 0;
+					//			direction.Normalize();
+					//		}
+
+					//		Translate(forwardValue, isVive, direction);
+					//		consumeControl(blinkInput.forward);
+					//	}
+					//}
+				}
+			}
+			else
+			{
+				if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
+				{
+					m_State = State.Aiming;
+					this.HideDefaultRay(rayOrigin);
+					this.LockRay(rayOrigin, this);
+
+					m_BlinkVisuals.ShowVisuals();
+
+					consumeControl(blinkInput.blink);
+				}
+				else if (m_State == State.Aiming && blinkInput.blink.wasJustReleased)
+				{
+					this.UnlockRay(rayOrigin, this);
+					this.ShowDefaultRay(rayOrigin);
+
+					if (!m_BlinkVisuals.outOfMaxRange)
+					{
+						m_BlinkVisuals.HideVisuals();
+						StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
+					}
+					else
+					{
+						m_BlinkVisuals.enabled = false;
+						m_State = State.Inactive;
 					}
 				}
-				else
-				{
-					if (!Mathf.Approximately(forwardValue, 0))
-					{
-						var direction = Vector3.up;
-
-						if (node == Node.LeftHand)
-						{
-							direction = viewerCamera.transform.forward;
-							direction.y = 0;
-							direction.Normalize();
-						}
-
-						Translate(forwardValue, isVive, direction);
-						consumeControl(blinkInput.forward);
-					}
-				}
 			}
 
-			if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
-			{
-				m_State = State.Aiming;
-				this.HideDefaultRay(rayOrigin);
-				this.LockRay(rayOrigin, this);
-
-				m_BlinkVisuals.ShowVisuals();
-
-				consumeControl(blinkInput.blink);
-			}
-			else if (m_State == State.Aiming && blinkInput.blink.wasJustReleased)
-			{
-				this.UnlockRay(rayOrigin, this);
-				this.ShowDefaultRay(rayOrigin);
-
-				if (!m_BlinkVisuals.outOfMaxRange)
-				{
-					m_BlinkVisuals.HideVisuals();
-					StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
-				}
-				else
-				{
-					m_BlinkVisuals.enabled = false;
-					m_State = State.Inactive;
-				}
-			}
-
-			consumeControl(blinkInput.blink);
+			lastRotation = rayOrigin.rotation;
 		}
 
 		void Translate(float inputValue, bool isVive, Vector3 direction)
