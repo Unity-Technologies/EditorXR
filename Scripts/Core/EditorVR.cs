@@ -190,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
 			var sceneObjectModule = AddModule<SceneObjectModule>();
-			sceneObjectModule.shouldPlaceObject = (obj, targetScale) =>
+			sceneObjectModule.tryPlaceObject = (obj, targetScale) =>
 			{
 				foreach (var miniWorld in m_MiniWorlds.worlds)
 				{
@@ -202,6 +202,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
 					obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
 					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
+
+					spatialHashModule.AddObject(obj.gameObject);
 					return false;
 				}
 

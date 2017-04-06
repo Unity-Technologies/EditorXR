@@ -11,11 +11,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_InstantiateFOVDifference = -5f;
 		const float k_GrowDuration = 0.5f;
 
-		public Func<Transform, Vector3, bool> shouldPlaceObject;
+		public Func<Transform, Vector3, bool> tryPlaceObject;
 
 		public void PlaceSceneObject(Transform obj, Vector3 targetScale)
 		{
-			if (shouldPlaceObject == null || shouldPlaceObject(obj, targetScale))
+			if (tryPlaceObject == null || tryPlaceObject(obj, targetScale))
 				StartCoroutine(PlaceSceneObjectCoroutine(obj, targetScale));
 		}
 
