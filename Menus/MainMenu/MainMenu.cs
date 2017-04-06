@@ -149,7 +149,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					buttonData.name = type.Name.Replace("Workspace", string.Empty);
 					buttonData.sectionName = "Workspaces";
 				}
-				else if (isSettingsProvider || isSettingsItemProvider)
+
+				if (isSettingsProvider || isSettingsItemProvider)
 				{
 					buttonData.name = type.Name.Replace("Tool", string.Empty);
 					buttonData.name = type.Name.Replace("Module", string.Empty);
