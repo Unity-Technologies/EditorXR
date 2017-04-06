@@ -115,13 +115,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			viewer.preserveCameraRig = preserveLayout;
 			viewer.InitializeCamera();
 
-			var tools = GetNestedModule<Tools>();
-
 			var deviceInputModule = AddModule<DeviceInputModule>();
 			deviceInputModule.InitializePlayerHandle();
 			deviceInputModule.CreateDefaultActionMapInputs();
 			deviceInputModule.processInput = ProcessInput;
-			deviceInputModule.updatePlayerHandleMaps = tools.UpdatePlayerHandleMaps;
+			deviceInputModule.updatePlayerHandleMaps = Tools.UpdatePlayerHandleMaps;
 
 			GetNestedModule<UI>().Initialize();
 
@@ -174,7 +172,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			};
 			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
 			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
-			workspaceModule.getPointerLength = DirectSelection.GetPointerLength;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
@@ -298,6 +295,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			GetNestedModule<Viewer>().UpdateCamera();
 
 			Rays.UpdateRaycasts();
+
 			GetNestedModule<Rays>().UpdateDefaultProxyRays();
 
 			GetNestedModule<DirectSelection>().UpdateDirectSelection();
@@ -316,6 +314,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
 		{
 			GetModule<WorkspaceModule>().ProcessInputInWorkspaces(consumeControl);
+
 			GetNestedModule<MiniWorlds>().UpdateMiniWorlds();
 
 			GetModule<MultipleRayInputModule>().ProcessInput(null, consumeControl);
@@ -343,7 +342,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						process.ProcessInput(toolData.input, consumeControl);
 				}
 			}
-
 		}
 
 		T GetModule<T>() where T : MonoBehaviour

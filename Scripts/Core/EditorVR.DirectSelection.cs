@@ -26,6 +26,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IUsesDirectSelectionMethods.getDirectSelection = () => m_DirectSelections;
 
 				IGrabObjectsMethods.canGrabObject = CanGrabObject;
+
+				IGetPointerLengthMethods.getPointerLength = GetPointerLength;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)

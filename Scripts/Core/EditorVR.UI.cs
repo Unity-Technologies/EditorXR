@@ -84,7 +84,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				ObjectUtils.AddComponent<EventSystem>(evr.gameObject);
 
 				var inputModule = evr.AddModule<MultipleRayInputModule>();
-				inputModule.getPointerLength = DirectSelection.GetPointerLength;
 
 				var customPreviewCamera = evr.GetNestedModule<Viewer>().customPreviewCamera;
 				if (customPreviewCamera != null)

@@ -65,8 +65,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		internal bool preserveWorkspaces { get; set; }
 
-		internal Func<Transform, float> getPointerLength { private get; set; }
-
 		static WorkspaceModule()
 		{
 			workspaceTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
@@ -142,7 +140,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			this.ConnectInterfaces(workspace);
 			workspace.leftRayOrigin = leftRayOrigin;
 			workspace.rightRayOrigin = rightRayOrigin;
-			workspace.getPointerLength = getPointerLength;
 
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();

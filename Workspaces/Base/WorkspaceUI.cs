@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale
+	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength
 	{
 		const int k_AngledFaceBlendShapeIndex = 2;
 		const int k_ThinFrameBlendShapeIndex = 3;
@@ -332,7 +332,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Transform rightRayOrigin { private get; set; }
 
 		public event Action<Bounds> resize;
-		public Func<Transform, float> getPointerLength { private get; set; }
 
 		public Bounds bounds
 		{
@@ -831,7 +830,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		Vector3 GetPointerPositionForRayOrigin(Transform rayOrigin)
 		{
-			return rayOrigin.position + rayOrigin.forward * getPointerLength(rayOrigin);
+			return rayOrigin.position + rayOrigin.forward * this.GetPointerLength(rayOrigin);
 		}
 
 		void OnDestroy()

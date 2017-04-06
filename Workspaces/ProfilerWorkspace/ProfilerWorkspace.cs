@@ -24,14 +24,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_CaptureWindowRect.GetWorldCorners(corners);
 
 				//use a smaller rect than the full viewerCamera to re-enable only when enough of the profiler is in view.
-				var minX = VRView.viewerCamera.pixelRect.width * .25f;
-				var minY = VRView.viewerCamera.pixelRect.height * .25f;
-				var maxX = VRView.viewerCamera.pixelRect.width * .75f;
-				var maxY = VRView.viewerCamera.pixelRect.height * .75f;
+				var camera = VRView.viewerCamera;
+				var minX = camera.pixelRect.width * .25f;
+				var minY = camera.pixelRect.height * .25f;
+				var maxX = camera.pixelRect.width * .75f;
+				var maxY = camera.pixelRect.height * .75f;
 
 				foreach (var vec in corners)
 				{
-					var screenPoint = VRView.viewerCamera.WorldToScreenPoint(vec);
+					var screenPoint = camera.WorldToScreenPoint(vec);
 					if (screenPoint.x > minX && screenPoint.x < maxX && screenPoint.y > minY && screenPoint.y < maxY)
 						return true;
 				}

@@ -13,11 +13,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		const float k_MaxFrameSize = 100f;
 
 		public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
+		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
 
 		public const float FaceMargin = 0.025f;
 		public const float HighlightMargin = 0.002f;
-
-		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
 
 		[SerializeField]
 		Vector3 m_MinBounds = MinBounds;
@@ -110,8 +109,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Transform leftRayOrigin { protected get; set; }
 		public Transform rightRayOrigin { protected get; set; }
 
-		public Func<Transform, float> getPointerLength { private get; set; }
-
 		public virtual void Setup()
 		{
 			var baseObject = this.InstantiateUI(m_BasePrefab);
@@ -126,7 +123,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_WorkspaceUI.rightRayOrigin = rightRayOrigin;
 
 			m_WorkspaceUI.resize += bounds => { contentBounds = bounds; };
-			m_WorkspaceUI.getPointerLength = getPointerLength;
 
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 

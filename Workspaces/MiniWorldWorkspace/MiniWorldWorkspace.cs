@@ -17,6 +17,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ISerializeWorkspace
 	{
 		static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.05f; // Show more space above ground than below
+
+		static readonly Vector3 k_LocatePlayerOffset = new Vector3(0.075f, 0.035f, -0.05f);
+		static readonly float k_LocatePlayerArrowOffset = 0.05f;
+
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default
 
 		// Scales larger or smaller than this spam errors in the console
@@ -26,9 +30,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		// Scale slider min/max (maps to referenceTransform uniform scale)
 		const float k_ZoomSliderMin = 0.5f;
 		const float k_ZoomSliderMax = 200f;
-
-		static readonly Vector3 k_LocatePlayerOffset = new Vector3(0.075f, 0.035f, -0.05f);
-		static readonly float k_LocatePlayerArrowOffset = 0.05f;
 
 		[SerializeField]
 		GameObject m_ContentPrefab;
@@ -50,8 +51,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			[SerializeField]
 			public Vector3 m_MiniWorldRefeferenceScale;
+
 			[SerializeField]
 			public Vector3 m_MiniWorldReferencePosition;
+
 			[SerializeField]
 			public float m_ZoomSliderValue;
 
