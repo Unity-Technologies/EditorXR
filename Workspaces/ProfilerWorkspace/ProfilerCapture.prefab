@@ -23,6 +23,7 @@ GameObject:
   - 114: {fileID: 114000011104356316}
   - 114: {fileID: 114000012014650434}
   - 114: {fileID: 114000012681874434}
+  - 114: {fileID: 114000010425949208}
   m_Layer: 5
   m_Name: ProfilerCapture
   m_TagString: Untagged
@@ -30,6 +31,19 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &114000010425949208
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011330012626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_SelectionFlags: 3
 --- !u!114 &114000011104356316
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -63,7 +77,7 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_Material: {fileID: 2100000, guid: a10189316c1739a4a8b2dbb47096d8c3, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 0
+  m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -114,5 +128,5 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1, y: 1}
+  m_SizeDelta: {x: 1.03, y: 1}
   m_Pivot: {x: 0.5, y: 0}
