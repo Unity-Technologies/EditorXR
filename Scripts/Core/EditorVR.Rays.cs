@@ -159,21 +159,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									deviceData.directSelectInput = deviceInputModule.CreateActionMapInput(deviceInputModule.directSelectActionMap, device);
 
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOriginPair.Value, source =>
-									{
-										var miniWorlds = evr.m_MiniWorlds.worlds;
-										foreach (var miniWorld in miniWorlds)
-										{
-											var targetObject = source.hoveredObject ? source.hoveredObject : source.draggedObject;
-											if (miniWorld.Contains(source.rayOrigin.position))
-											{
-												if (targetObject && !targetObject.transform.IsChildOf(miniWorld.miniWorldTransform.parent))
-													return false;
-											}
-										}
-
-										return true;
-									});
+									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOriginPair.Value);
 								}
 							}
 
