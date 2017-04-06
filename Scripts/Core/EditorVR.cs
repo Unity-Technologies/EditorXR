@@ -41,18 +41,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
 
-		// Local method use only -- caching here to prevent frequent lookups in Update
-		Rays m_Rays;
-		DirectSelection m_DirectSelection;
-		Menus m_Menus;
-		UI m_UI;
-		MiniWorlds m_MiniWorlds;
-		KeyboardModule m_KeyboardModule;
-		DeviceInputModule m_DeviceInputModule;
-		Viewer m_Viewer;
-		MultipleRayInputModule m_MultipleRayInputModule;
-		WorkspaceModule m_WorkspaceModule;
-
 		static HideFlags defaultHideFlags
 		{
 			get { return showGameObjects ? HideFlags.DontSave : HideFlags.HideAndDontSave; }
@@ -120,50 +108,46 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 			LateBindNestedModules(nestedClassTypes);
 
-			m_MiniWorlds = GetNestedModule<MiniWorlds>();
-			m_Rays = GetNestedModule<Rays>();
-			m_DirectSelection = GetNestedModule<DirectSelection>();
-			m_Menus = GetNestedModule<Menus>();
-			m_UI = GetNestedModule<UI>();
-
 			AddModule<HierarchyModule>();
 			AddModule<ProjectFolderModule>();
 
-			m_Viewer = GetNestedModule<Viewer>();
-			m_Viewer.preserveCameraRig = preserveLayout;
-			m_Viewer.InitializeCamera();
+			var viewer = GetNestedModule<Viewer>();
+			viewer.preserveCameraRig = preserveLayout;
+			viewer.InitializeCamera();
 
 			var tools = GetNestedModule<Tools>();
 
-			m_DeviceInputModule = AddModule<DeviceInputModule>();
-			m_DeviceInputModule.InitializePlayerHandle();
-			m_DeviceInputModule.CreateDefaultActionMapInputs();
-			m_DeviceInputModule.processInput = ProcessInput;
-			m_DeviceInputModule.updatePlayerHandleMaps = tools.UpdatePlayerHandleMaps;
+			var deviceInputModule = AddModule<DeviceInputModule>();
+			deviceInputModule.InitializePlayerHandle();
+			deviceInputModule.CreateDefaultActionMapInputs();
+			deviceInputModule.processInput = ProcessInput;
+			deviceInputModule.updatePlayerHandleMaps = tools.UpdatePlayerHandleMaps;
 
-			m_UI.Initialize();
+			GetNestedModule<UI>().Initialize();
 
-			m_KeyboardModule = AddModule<KeyboardModule>();
+			AddModule<KeyboardModule>();
 
+			var multipleRayInputModule = GetModule<MultipleRayInputModule>();
 			var dragAndDropModule = AddModule<DragAndDropModule>();
-			m_MultipleRayInputModule.rayEntered += dragAndDropModule.OnRayEntered;
-			m_MultipleRayInputModule.rayExited += dragAndDropModule.OnRayExited;
-			m_MultipleRayInputModule.dragStarted += dragAndDropModule.OnDragStarted;
-			m_MultipleRayInputModule.dragEnded += dragAndDropModule.OnDragEnded;
+			multipleRayInputModule.rayEntered += dragAndDropModule.OnRayEntered;
+			multipleRayInputModule.rayExited += dragAndDropModule.OnRayExited;
+			multipleRayInputModule.dragStarted += dragAndDropModule.OnDragStarted;
+			multipleRayInputModule.dragEnded += dragAndDropModule.OnDragEnded;
 
 			var tooltipModule = AddModule<TooltipModule>();
 			m_Interfaces.ConnectInterfaces(tooltipModule);
-			m_MultipleRayInputModule.rayEntered += tooltipModule.OnRayEntered;
-			m_MultipleRayInputModule.rayExited += tooltipModule.OnRayExited;
+			multipleRayInputModule.rayEntered += tooltipModule.OnRayEntered;
+			multipleRayInputModule.rayExited += tooltipModule.OnRayExited;
 
 			AddModule<ActionsModule>();
 			AddModule<HighlightModule>();
 
 			var lockModule = AddModule<LockModule>();
-			lockModule.updateAlternateMenu = (rayOrigin, o) => m_Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
+			lockModule.updateAlternateMenu = (rayOrigin, o) => Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
 
+			var rays = GetNestedModule<Rays>();
 			var selectionModule = AddModule<SelectionModule>();
-			selectionModule.selected += m_Rays.SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			selectionModule.selected += rays.SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 			selectionModule.getGroupRoot = GetGroupRoot;
 
 			var spatialHashModule = AddModule<SpatialHashModule>();
@@ -179,24 +163,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			var vacuumables = GetNestedModule<Vacuumables>();
 
-			m_WorkspaceModule = AddModule<WorkspaceModule>();
-			m_WorkspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
-			m_WorkspaceModule.workspaceCreated += m_MiniWorlds.OnWorkspaceCreated;
-			m_WorkspaceModule.workspaceCreated += workspace =>
+			var miniWorlds = GetNestedModule<MiniWorlds>();
+			var workspaceModule = AddModule<WorkspaceModule>();
+			workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
+			workspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
+			workspaceModule.workspaceCreated += workspace =>
 			{
-				m_WorkspaceModule.workspaceInputs.Add((WorkspaceInput)m_DeviceInputModule.CreateActionMapInputForObject(workspace, null));
-				m_DeviceInputModule.UpdatePlayerHandleMaps();
+				workspaceModule.workspaceInputs.Add((WorkspaceInput)deviceInputModule.CreateActionMapInputForObject(workspace, null));
+				deviceInputModule.UpdatePlayerHandleMaps();
 			};
-			m_WorkspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
-			m_WorkspaceModule.workspaceDestroyed += m_MiniWorlds.OnWorkspaceDestroyed;
-			m_WorkspaceModule.getPointerLength = m_DirectSelection.GetPointerLength;
+			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
+			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
+			workspaceModule.getPointerLength = DirectSelection.GetPointerLength;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
 			var sceneObjectModule = AddModule<SceneObjectModule>();
 			sceneObjectModule.shouldPlaceObject = (obj, targetScale) =>
 			{
-				foreach (var miniWorld in m_MiniWorlds.worlds)
+				foreach (var miniWorld in miniWorlds.worlds)
 				{
 					if (!miniWorld.Contains(obj.position))
 						continue;
@@ -212,9 +197,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return true;
 			};
 
-			m_Viewer.AddPlayerModel();
+			viewer.AddPlayerModel();
 
-			m_Rays.CreateAllProxies();
+			rays.CreateAllProxies();
 
 			// In case we have anything selected at start, set up manipulators, inspector, etc.
 			EditorApplication.delayCall += OnSelectionChanged;
@@ -282,7 +267,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			if (m_SelectionChanged != null)
 				m_SelectionChanged();
 
-			m_Menus.UpdateAlternateMenuOnSelectionChanged(m_Rays.lastSelectionRayOrigin);
+			Menus.UpdateAlternateMenuOnSelectionChanged(GetNestedModule<Rays>().lastSelectionRayOrigin);
 		}
 
 		void OnEnable()
@@ -310,28 +295,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void Update()
 		{
-			m_Viewer.UpdateCamera();
+			GetNestedModule<Viewer>().UpdateCamera();
 
-			m_Rays.UpdateRaycasts();
-			m_Rays.UpdateDefaultProxyRays();
-			m_DirectSelection.UpdateDirectSelection();
+			Rays.UpdateRaycasts();
+			GetNestedModule<Rays>().UpdateDefaultProxyRays();
 
-			m_KeyboardModule.UpdateKeyboardMallets();
+			GetNestedModule<DirectSelection>().UpdateDirectSelection();
 
-			m_DeviceInputModule.ProcessInput();
+			GetModule<KeyboardModule>().UpdateKeyboardMallets();
 
-			m_Menus.UpdateMenuVisibilityNearWorkspaces();
-			m_Menus.UpdateMenuVisibilities();
+			GetModule<DeviceInputModule>().ProcessInput();
 
-			m_UI.UpdateManipulatorVisibilites();
+			var menus = GetNestedModule<Menus>();
+			menus.UpdateMenuVisibilityNearWorkspaces();
+			menus.UpdateMenuVisibilities();
+
+			GetNestedModule<UI>().UpdateManipulatorVisibilites();
 		}
 
 		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
 		{
-			m_WorkspaceModule.ProcessInputInWorkspaces(consumeControl);
-			m_MiniWorlds.UpdateMiniWorlds(consumeControl);
+			GetModule<WorkspaceModule>().ProcessInputInWorkspaces(consumeControl);
+			GetNestedModule<MiniWorlds>().UpdateMiniWorlds();
 
-			m_MultipleRayInputModule.ProcessInput(null, consumeControl);
+			GetModule<MultipleRayInputModule>().ProcessInput(null, consumeControl);
 
 			foreach (var deviceData in m_DeviceData)
 			{

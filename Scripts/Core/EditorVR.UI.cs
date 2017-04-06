@@ -31,10 +31,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 			byte m_StencilRef = k_MinStencilRef;
 
+			Camera m_EventCamera;
+
 			readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
 			readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
-
-			internal Camera eventCamera { get; private set; }
 
 			public UI()
 			{
@@ -84,18 +84,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				ObjectUtils.AddComponent<EventSystem>(evr.gameObject);
 
 				var inputModule = evr.AddModule<MultipleRayInputModule>();
-				evr.m_MultipleRayInputModule = inputModule;
-				inputModule.getPointerLength = evr.m_DirectSelection.GetPointerLength;
+				inputModule.getPointerLength = DirectSelection.GetPointerLength;
 
-				var customPreviewCamera = evr.m_Viewer.customPreviewCamera;
+				var customPreviewCamera = evr.GetNestedModule<Viewer>().customPreviewCamera;
 				if (customPreviewCamera != null)
 					inputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
 
-				eventCamera = ObjectUtils.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
-				eventCamera.enabled = false;
-				inputModule.eventCamera = eventCamera;
+				m_EventCamera = ObjectUtils.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
+				m_EventCamera.enabled = false;
+				inputModule.eventCamera = m_EventCamera;
 
-				inputModule.preProcessRaycastSource = evr.m_Rays.PreProcessRaycastSource;
+				inputModule.preProcessRaycastSource = evr.GetNestedModule<Rays>().PreProcessRaycastSource;
 			}
 
 			internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
@@ -103,9 +102,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var go = ObjectUtils.Instantiate(prefab);
 				go.transform.SetParent(parent ? parent : evr.transform, worldPositionStays);
 				foreach (var canvas in go.GetComponentsInChildren<Canvas>())
-					canvas.worldCamera = eventCamera;
+					canvas.worldCamera = m_EventCamera;
 
-				var keyboardModule = evr.m_KeyboardModule;
+				var keyboardModule = evr.GetModule<KeyboardModule>();
 				foreach (var inputField in go.GetComponentsInChildren<InputField>())
 				{
 					if (inputField is NumericInputField)

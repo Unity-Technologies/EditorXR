@@ -102,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal void UpdateMiniWorlds(ConsumeControlDelegate consumeControl)
+			internal void UpdateMiniWorlds()
 			{
 				if (m_MiniWorldIgnoreListDirty)
 				{
@@ -110,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_MiniWorldIgnoreListDirty = false;
 				}
 
-				var objectsGrabber = evr.m_DirectSelection.objectsGrabber;
+				var objectsGrabber = evr.GetNestedModule<DirectSelection>().objectsGrabber;
 
 				// Update MiniWorldRays
 				foreach (var ray in m_Rays)
@@ -137,10 +137,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
 					miniWorldRayOrigin.localScale = Vector3.Scale(inverseScale, referenceTransform.localScale);
 
-					var directSelection = evr.m_DirectSelection;
+					var directSelection = evr.GetNestedModule<DirectSelection>();
 
 					// Set miniWorldRayOrigin active state based on whether controller is inside corresponding MiniWorld
-					var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * directSelection.GetPointerLength(originalRayOrigin);
+					var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * DirectSelection.GetPointerLength(originalRayOrigin);
 					var isContained = miniWorld.Contains(originalPointerPosition);
 					miniWorldRay.tester.active = isContained;
 					miniWorldRayOrigin.gameObject.SetActive(isContained);
@@ -187,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					// Transfer objects to and from original ray and MiniWorld ray (e.g. outside to inside mini world)
 					if (directSelection != null && isContained != miniWorldRay.wasContained)
 					{
-						var pointerLengthDiff = directSelection.GetPointerLength(miniWorldRayOrigin) - directSelection.GetPointerLength(originalRayOrigin);
+						var pointerLengthDiff = DirectSelection.GetPointerLength(miniWorldRayOrigin) - DirectSelection.GetPointerLength(originalRayOrigin);
 						var from = isContained ? originalRayOrigin : miniWorldRayOrigin;
 						var to = isContained ? miniWorldRayOrigin : originalRayOrigin;
 						if (isContained || miniWorldRay.dragObjects == null)

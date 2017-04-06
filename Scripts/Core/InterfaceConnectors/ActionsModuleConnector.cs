@@ -18,8 +18,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var toolActions = obj as IActions;
 					if (toolActions != null)
 					{
-						var evrMenus = evr.m_Menus;
-
 						var actions = toolActions.actions;
 						foreach (var action in actions)
 						{
@@ -32,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							};
 							menuActions.Add(actionMenuData);
 						}
-						evrMenus.UpdateAlternateMenuActions();
+						Menus.UpdateAlternateMenuActions();
 					}
 
 					var alternateMenu = obj as IAlternateMenu;
@@ -49,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var evrActionsModule = evr.GetModule<ActionsModule>();
 
 					evrActionsModule.RemoveActions(toolActions.actions);
-					evr.m_Menus.UpdateAlternateMenuActions();
+					Menus.UpdateAlternateMenuActions();
 				}
 			}
 		}
