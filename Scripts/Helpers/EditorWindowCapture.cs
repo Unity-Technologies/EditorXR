@@ -1,6 +1,8 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -142,12 +144,28 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			if (clickPosition.y < 25f) // Click y positions below 25 move the window and cause issues
 				return;
 
+			// Send a message to cancel context menus in case the user clicked a drop-down
+			// Thread is needed because context menu blocks main thread
+			if (type == EventType.MouseDown)
+			{
+				new Thread(() =>
+				{
+					const int HWND_BROADCAST = 0xffff;
+					const int WM_CANCELMODE = 0x001F;
+					var hwnd = new IntPtr(HWND_BROADCAST);
+					SendMessage(hwnd, WM_CANCELMODE, 0, IntPtr.Zero);
+				}).Start();
+			}
+
 			m_Window.SendEvent(new Event
 			{
 				type = type,
 				mousePosition = clickPosition
 			});
 		}
+
+		[DllImport("User32.dll")]
+		public static extern int SendMessage(IntPtr hWnd, int uMsg, int wParam, IntPtr lParam);
 #endif
 	}
 }
