@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ICustomRay, ICustomActionMap,
+	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ICustomRay, ICustomActionMap,
 		ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider
 	{
 		const float k_FastMoveSpeed = 25f;
@@ -137,7 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var blinkInput = (BlinkLocomotion)input;
+			var blinkInput = (Locomotion)input;
 
 			if (m_State == State.Moving)
 				return;
@@ -147,7 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (linkedObject == this)
 					continue;
 
-				var blinkTool = (BlinkLocomotionTool)linkedObject;
+				var blinkTool = (LocomotionTool)linkedObject;
 				if (blinkTool.m_State != State.Inactive)
 					return;
 			}
@@ -172,7 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		void DoFlying(ConsumeControlDelegate consumeControl, BlinkLocomotion blinkInput)
+		void DoFlying(ConsumeControlDelegate consumeControl, Locomotion blinkInput)
 		{
 			var reverse = blinkInput.reverse.isHeld;
 			var moving = blinkInput.forward.isHeld || reverse;
@@ -226,7 +226,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		void DoCrawl(BlinkLocomotion blinkInput)
+		void DoCrawl(Locomotion blinkInput)
 		{
 			if (!blinkInput.forward.isHeld && !blinkInput.blink.isHeld && blinkInput.grip.isHeld)
 			{
@@ -248,7 +248,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		void DoBlink(ConsumeControlDelegate consumeControl, BlinkLocomotion blinkInput)
+		void DoBlink(ConsumeControlDelegate consumeControl, Locomotion blinkInput)
 		{
 			m_Rotating = false;
 			if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
@@ -293,7 +293,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							if (linkedObject == this)
 								continue;
 
-							var blinkTool = (BlinkLocomotionTool)linkedObject;
+							var blinkTool = (LocomotionTool)linkedObject;
 							if (blinkTool.m_Grip != null)
 							{
 								otherGrip = true;
@@ -399,7 +399,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			foreach (var linkedObject in linkedObjects)
 			{
-				((BlinkLocomotionTool)linkedObject).m_Scaling = false;
+				((LocomotionTool)linkedObject).m_Scaling = false;
 			}
 
 			if (m_ViewerScaleVisuals)

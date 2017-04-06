@@ -105,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					// Using a shared instance of the transform tool across all device tool stacks
 					AddToolToStack(deviceData, transformTool);
 
-					toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
+					toolData = SpawnTool(typeof(LocomotionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 
 					var evrMenus = evr.m_Menus;
