@@ -136,6 +136,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var go = data.gameObject;
 			var kvp = new KeyValuePair<Transform, GameObject>(item.hoveringRayOrigin, go);
+			// Multiple rays can hover and unhover, so it's necessary to keep track of when hover state changes, so that 
+			// highlights can be turned on or off
 			if (item.hovering || m_HoveredGameObjects.Remove(kvp))
 			{
 				this.SetHighlight(go, item.hovering, item.hoveringRayOrigin, force: item.hovering);
