@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ToolType = value;
 				if (m_ToolType != null)
 				{
-					if (isSelectTool)
+					if (isSelectionTool)
 					{
 						tooltipText = k_SelectionToolTipText;
 						gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
@@ -77,6 +77,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_SmoothMotion.SetPositionSmoothing(smoothingFactor);
 				m_SmoothMotion.SetRotationSmoothing(smoothingFactor);
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
+				m_LeftPinnedToolActionButton.visible = false;
+				m_RightPinnedToolActionButton.visible = false;
 			}
 		}
 		int m_Order;
@@ -113,15 +115,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_previewToolType));
 					tooltipText = "Assign " + m_previewToolType.Name;
 					customToolTipHighlightColor = UnityBrandColorScheme.grayscaleSessionGradient;
-					showTooltip(this);
+					this.ShowTooltip(this);
 				}
 				else
 				{
 					activeTool = activeTool;
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType));
 					customToolTipHighlightColor = gradientPair;
-					hideTooltip(this);
-					tooltipText = isSelectTool ? tooltipText = k_SelectionToolTipText : toolType.Name;
+					this.HideTooltip(this);
+					tooltipText = isSelectionTool ? tooltipText = k_SelectionToolTipText : toolType.Name;
 				}
 
 				m_GradientButton.highlighted = m_previewToolType != null;
@@ -162,10 +164,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<ITooltip> showTooltip { private get; set; }
 		public Action<ITooltip> hideTooltip { private get; set; }
 		public GradientPair customToolTipHighlightColor { get; set; }
-		public bool isSelectTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
+		public bool isSelectionTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
+		public Action<Transform, PinnedToolButton> DeletePinnedToolButton { get; set; }
 		//public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 		Coroutine m_PositionCoroutine;
+		Coroutine m_VisibilityCoroutine;
 		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
 
 		private bool activeTool
@@ -204,13 +208,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
 			this.ConnectInterfaces(m_SmoothMotion);
 
-			m_GradientButton.hoverEnter += BackgroundHovered; // Display the foreground button actions
+			m_GradientButton.hoverEnter += BackgroundHoverEnter; // Display the foreground button actions
+			m_GradientButton.hoverExit += ActionButtonHoverExit;
 
 			m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
-			m_LeftPinnedToolActionButton.hoverEnter = ActionButtonHoverEnter;
+			m_LeftPinnedToolActionButton.hoverEnter = HoverButton;
 			m_LeftPinnedToolActionButton.hoverExit = ActionButtonHoverExit;
 			m_RightPinnedToolActionButton.clicked = ActionButtonClicked;
-			m_RightPinnedToolActionButton.hoverEnter = ActionButtonHoverEnter;
+			m_RightPinnedToolActionButton.hoverEnter = HoverButton;
 			m_RightPinnedToolActionButton.hoverExit = ActionButtonHoverExit;
 
 			// Assign the select action button to the side closest to the opposite hand, that allows the arrow to also point in the direction the
@@ -263,7 +268,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			while (duration < 1)
 			{
 				duration += Time.unscaledDeltaTime * 3;
-				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 4);
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 6);
 				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
 				yield return null;
 			}
@@ -272,21 +277,43 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PositionCoroutine = null;
 		}
 
-		void BackgroundHovered ()
+		void BackgroundHoverEnter ()
 		{
 			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
 			//{
 				Debug.LogError("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
-				m_RootCollider.enabled = false;
+				//m_RootCollider.enabled = false;
 				m_GradientButton.highlighted = true;
 				//m_GradientButton.visible = false;
 
 				//Debug.LogWarning("Handle for disabled buttons not being shown, ie the promotote(green) button on the first/selected tool");
 
+			HoverButton();
+			//m_ButtonCollider.enabled = false;
+			//}
+		}
+
+		void HoverButton()
+		{
+			if (isSelectionTool)
+			{
+				if (activeTool)
+				{
+					m_RightPinnedToolActionButton.visible = false;
+					m_LeftPinnedToolActionButton.visible = false;
+					m_RootCollider.enabled = true;
+				}
+				else
+				{
+					m_RightPinnedToolActionButton.visible = m_RightPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? true : false;
+					m_LeftPinnedToolActionButton.visible = m_LeftPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? true : false;
+				}
+			} else
+			{
+				// Hide the select action button if this tool button is already the selected tool, else show the close button
 				m_RightPinnedToolActionButton.visible = m_RightPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
 				m_LeftPinnedToolActionButton.visible = m_LeftPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
-				//m_ButtonCollider.enabled = false;
-			//}
+			}
 		}
 
 		void ActionButtonClicked(PinnedToolActionButton button)
@@ -301,15 +328,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 			else
 			{
-				CloseButton();
+				if (!isSelectionTool)
+					this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateClose());
+				else
+					Debug.LogError("<color=red>CANNOT DELETE THE SELECT TOOL!!!!!</color>");
 			}
-		}
-
-		void ActionButtonHoverEnter()
-		{
-			Debug.LogError("<color=green>Action Button hover ENTER event raised!</color>");
-			m_RightPinnedToolActionButton.visible = m_RightPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
-			m_LeftPinnedToolActionButton.visible = m_LeftPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
 		}
 
 		void ActionButtonHoverExit()
@@ -334,8 +357,30 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void CloseButton()
 		{
 			// TODO add full close functionality
-			Debug.LogWarning("Implement pinnedTool button hiding visuals.  Implement the action button hide visuals as well");
 			gameObject.SetActive(false);
+
+			// perform a graceful hiding of visuals, then destroy this button gameobject
+		}
+
+		IEnumerator AnimateClose()
+		{
+			this.HideTooltip(this);
+			m_RootCollider.enabled = false;
+			var duration = 0f;
+			var currentScale = transform.localScale;
+			var targetScale = Vector3.zero;
+			while (duration < 1)
+			{
+				duration += Time.unscaledDeltaTime * 3f;
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 4);
+				transform.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
+				yield return null;
+			}
+
+			transform.localScale = targetScale;
+			m_VisibilityCoroutine = null;
+			DeletePinnedToolButton(rayOrigin, this);
+			ObjectUtils.Destroy(gameObject, 0.1f);
 		}
 	}
 }

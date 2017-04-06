@@ -1,8 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
-using System.Security.Cryptography.X509Certificates;
-using System.Xml.Schema;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -108,8 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			set
 			{
 				m_ButtonType = value;
-				m_ButtonColor = buttonType == ButtonType.SelectTool ? s_SelectColor : s_CloseColor;
-				m_Background.color = m_ButtonColor;
+				buttonColor = buttonType == ButtonType.SelectTool ? s_SelectColor : s_CloseColor;
 				m_Icon.sprite = buttonType == ButtonType.Close ? m_CloseIconSprite : m_Icon.sprite;
 			}
 		}
@@ -164,7 +161,14 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		Vector3 m_IconPressedLocalPosition;
 		Sprite m_OriginalIconSprite;
 		Vector3 m_OriginalLocalScale;
-		Color m_ButtonColor;
+
+		/// <summary>
+		/// Set a custom button color for the selectTool
+		/// </summary>
+		public Color buttonColor
+		{
+			set { m_Background.color = value; }
+		}
 
 		// The initial button reveal coroutines, before highlighting occurs
 		Coroutine m_VisibilityCoroutine;
@@ -212,7 +216,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		void OnEnable()
 		{
 			//m_ContentContainer.gameObject.SetActive(true);
-			mainButtonCollider.enabled = false;
 		}
 
 		void OnDisable()
@@ -234,12 +237,14 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// </summary>
 		IEnumerator AnimateShow()
 		{
+			mainButtonCollider.enabled = false;
+
 			const float kTargetTransitionAmount = 1f;
 			var transitionAmount = Time.unscaledDeltaTime;
 			var currentCanvasAlpha = m_CanvasGroup.alpha;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 3f;
+				transitionAmount += Time.unscaledDeltaTime * 5f;
 				m_CanvasGroup.alpha = Mathf.Lerp(currentCanvasAlpha, 1f, MathUtilsExt.SmoothInOutLerpFloat(transitionAmount));
 				yield return null;
 			}
@@ -258,7 +263,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var currentCanvasAlpha = m_CanvasGroup.alpha;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 2.5f;
+				transitionAmount += Time.unscaledDeltaTime * 3f;
 				m_CanvasGroup.alpha = Mathf.Lerp(currentCanvasAlpha, 0f, MathUtilsExt.SmoothInOutLerpFloat(transitionAmount));
 				yield return null;
 			}
@@ -423,6 +428,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// </summary>
 		public void OnPointerEnter(PointerEventData eventData)
 		{
+			Debug.LogError("OnPointerEnter");
 			highlighted = true;
 			eventData.Use();
 			hoverEnter();
@@ -433,6 +439,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// </summary>
 		public void OnPointerExit(PointerEventData eventData)
 		{
+			Debug.LogError("OnPointerExit");
 			highlighted = false;
 			eventData.Use();
 			hoverExit();
@@ -447,18 +454,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				return;
 
 			highlighted = false;
-			SwapIconSprite();
 			clicked(this);
-		}
-
-		/// <summary>
-		/// Swap between the main and alternate icon-sprites
-		/// </summary>
-		void SwapIconSprite()
-		{
-			// Alternate between the main icon and the alternate icon when the button is clicked
-			if (m_CloseIconSprite)
-				alternateIconVisible = !alternateIconVisible;
 		}
 	}
 }
