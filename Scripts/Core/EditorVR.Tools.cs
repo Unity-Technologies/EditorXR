@@ -290,6 +290,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				pinnedToolButton.node = deviceData.node;
 				pinnedToolButton.toolType = toolType; // Assign Tool Type before assigning order
 				pinnedToolButton.order = 0; // Zeroth position is the active tool position
+				pinnedToolButton.DeletePinnedToolButton = DeletePinnedToolButton;
 			}
 
 			void SetupPinnedToolButtonsForDevice(DeviceData deviceData, Transform rayOrigin, Type activeToolType)
@@ -305,6 +306,43 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (button.order == 0)
 						deviceData.proxy.HighlightDevice(deviceData.node, button.gradientPair); // Perform the higlight on the node with the button's gradient pair
 				}
+			}
+
+			void DeletePinnedToolButton(Transform rayOrigin, PinnedToolButton buttonToDelete)
+			{
+				// Remove the pinned tool from the device data collection
+				// re-order the current buttons
+				// Highlight the device if the top/selected tool was the one that was closed
+
+				Debug.LogError("<color=orange>DeletePinnedToolButton called</color>");
+
+				//var result = false;
+				//var deviceInputModule = evr.m_DeviceInputModule;
+				Type selectedButtontype = null;
+				Rays.ForEachProxyDevice(deviceData =>
+				{
+					if (deviceData.rayOrigin == rayOrigin)
+					{
+						var buttons = deviceData.pinnedToolButtons;
+						var selectedButtonOrder = buttons.Count;
+						foreach (var pair in deviceData.pinnedToolButtons)
+						{
+							var button = pair.Value;
+							if (button != buttonToDelete)
+							{
+								// Identify the new selected button
+								selectedButtonOrder = button.order < selectedButtonOrder ? button.order : selectedButtonOrder;
+								selectedButtontype = selectedButtonOrder == button.order ? button.toolType : selectedButtontype;
+							}
+						}
+
+
+						Debug.LogError("Removing button : " + buttonToDelete.toolType);
+						buttons.Remove(buttonToDelete.toolType);
+						SelectTool(rayOrigin, buttonToDelete.toolType);
+						SetupPinnedToolButtonsForDevice(deviceData, rayOrigin, selectedButtontype);
+					}
+				});
 			}
 
 			void DespawnTool(DeviceData deviceData, ITool tool)
