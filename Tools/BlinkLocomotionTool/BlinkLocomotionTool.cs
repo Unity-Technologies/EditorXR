@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	{
 		const float k_FastMoveSpeed = 25f;
 		const float k_SlowMoveSpeed = 5f;
+		const float k_RotationDamping = 0.2f;
 
 		//TODO: Fix triangle intersection test at tiny scales, so this can go back to 0.01
 		const float k_MinScale = 0.1f;
@@ -132,6 +133,132 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_Grip = blinkInput.grip.isHeld ? blinkInput.grip : null;
 			m_Thumb = blinkInput.thumb.isHeld ? blinkInput.thumb : null;
 
+			DoTwoHandedScaling(consumeControl);
+
+			if (!m_Scaling)
+			{
+				DoCrawl(blinkInput);
+
+				if (joystickLocomotion)
+					DoFlying(consumeControl, blinkInput);
+				else
+					DoBlink(consumeControl, blinkInput);
+			}
+			else
+			{
+				m_GrabMoving = false;
+			}
+		}
+
+		void DoFlying(ConsumeControlDelegate consumeControl, BlinkLocomotion blinkInput)
+		{
+			var reverse = blinkInput.reverse.isHeld;
+			var moving = blinkInput.forward.isHeld || reverse;
+			if (moving)
+			{
+				if (blinkInput.grip.isHeld)
+				{
+					if (!m_Rotating)
+					{
+						m_Rotating = true;
+						m_RigStartPosition = cameraRig.position;
+						m_RigStartRotation = cameraRig.rotation;
+						m_RayOriginStartRotation = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation);
+						m_CameraStartPosition = CameraUtils.GetMainCamera().transform.position;
+						m_LastRotationDiff = Quaternion.identity;
+					}
+
+					consumeControl(blinkInput.grip);
+					var startOffset = m_RigStartPosition - m_CameraStartPosition;
+					var localRayRotation = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation);
+					var rotation = Quaternion.Inverse(m_RayOriginStartRotation) * localRayRotation;
+					var filteredRotation = Quaternion.Lerp(m_LastRotationDiff, rotation, k_RotationDamping);
+
+					cameraRig.rotation = m_RigStartRotation * filteredRotation;
+					cameraRig.position = m_CameraStartPosition + filteredRotation * startOffset;
+
+					m_LastRotationDiff = filteredRotation;
+				}
+				else
+				{
+					var speed = k_SlowMoveSpeed;
+					if (blinkInput.trigger.isHeld || blinkInput.trigger.wasJustReleased) // Consume control on release to block selection
+					{
+						speed = k_FastMoveSpeed;
+						consumeControl(blinkInput.trigger);
+					}
+
+					speed *= this.GetViewerScale();
+					if (reverse)
+						speed *= -1;
+
+					m_Rotating = false;
+					cameraRig.Translate(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.forward * speed * Time.unscaledDeltaTime);
+				}
+
+				consumeControl(blinkInput.forward);
+			}
+			else
+			{
+				m_Rotating = false;
+			}
+		}
+
+		void DoCrawl(BlinkLocomotion blinkInput)
+		{
+			if (!blinkInput.forward.isHeld && !blinkInput.blink.isHeld && blinkInput.grip.isHeld)
+			{
+				if (!m_GrabMoving)
+				{
+					m_GrabMoving = true;
+					m_RigStartPosition = cameraRig.position;
+					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
+				}
+
+				var localRayPosition = cameraRig.position - rayOrigin.position;
+				cameraRig.position = m_RigStartPosition + (localRayPosition - m_RayOriginStartPosition);
+
+				// Do not consume grip control to allow passing through for multi-select
+			}
+			else
+			{
+				m_GrabMoving = false;
+			}
+		}
+
+		void DoBlink(ConsumeControlDelegate consumeControl, BlinkLocomotion blinkInput)
+		{
+			m_Rotating = false;
+			if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
+			{
+				m_State = State.Aiming;
+				this.HideDefaultRay(rayOrigin);
+				this.LockRay(rayOrigin, this);
+
+				m_BlinkVisuals.ShowVisuals();
+
+				consumeControl(blinkInput.blink);
+			}
+			else if (m_State == State.Aiming && blinkInput.blink.wasJustReleased)
+			{
+				this.UnlockRay(rayOrigin, this);
+				this.ShowDefaultRay(rayOrigin);
+
+				if (!m_BlinkVisuals.outOfMaxRange)
+				{
+					m_BlinkVisuals.HideVisuals();
+					StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
+				}
+				else
+				{
+					m_BlinkVisuals.enabled = false;
+					m_State = State.Inactive;
+				}
+			}
+		}
+
+		void DoTwoHandedScaling(ConsumeControlDelegate consumeControl)
+		{
 			if (this.IsSharedUpdater(this))
 			{
 				if (m_Grip != null)
@@ -179,7 +306,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 								m_Scaling = true;
 
-								var currentScale = m_StartScale * (m_StartDistance / distance);
+								var currentScale = Mathf.Clamp(m_StartScale * (m_StartDistance / distance), k_MinScale, k_MaxScale);
 
 								// Press both thumb buttons to reset
 								if (m_Thumb != null && blinkTool.m_Thumb != null)
@@ -202,12 +329,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									if (m_ViewerScaleVisuals)
 										ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
 								}
-
-								if (currentScale < k_MinScale)
-									currentScale = k_MinScale;
-
-								if (currentScale > k_MaxScale)
-									currentScale = k_MaxScale;
 
 								if (m_AllowScaling)
 								{
@@ -239,110 +360,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					CancelScale();
 				}
-			}
-
-			if (!m_Scaling)
-			{
-				if (!blinkInput.blink.isHeld && blinkInput.grip.isHeld)
-				{
-					if (!m_GrabMoving)
-					{
-						m_GrabMoving = true;
-						m_RigStartPosition = cameraRig.position;
-						m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
-					}
-
-					var localRayPosition = cameraRig.position - rayOrigin.position;
-					cameraRig.position = m_RigStartPosition + (localRayPosition - m_RayOriginStartPosition);
-					// Do not consume grip control to allow passing through for multi-select
-				}
-				else
-				{
-					m_GrabMoving = false;
-				}
-
-				if (joystickLocomotion)
-				{
-					if (blinkInput.blink.isHeld)
-					{
-						if (blinkInput.grip.isHeld)
-						{
-							if (!m_Rotating)
-							{
-								m_Rotating = true;
-								m_RigStartPosition = cameraRig.position;
-								m_RigStartRotation = cameraRig.rotation;
-								m_RayOriginStartRotation = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation);
-								m_CameraStartPosition = CameraUtils.GetMainCamera().transform.position;
-								m_LastRotationDiff = Quaternion.identity;
-							}
-
-							consumeControl(blinkInput.grip);
-							var startOffset = m_RigStartPosition - m_CameraStartPosition;
-							var localRayRotation = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation);
-							var rotation = Quaternion.Inverse(m_RayOriginStartRotation) * localRayRotation;
-							var filteredRotation = Quaternion.Lerp(m_LastRotationDiff, rotation, 0.2f);
-
-							cameraRig.rotation = m_RigStartRotation * filteredRotation;
-							cameraRig.position = m_CameraStartPosition + filteredRotation * startOffset;
-
-							m_LastRotationDiff = filteredRotation;
-						}
-						else
-						{
-							var speed = k_SlowMoveSpeed;
-							if (blinkInput.trigger.isHeld || blinkInput.trigger.wasJustReleased)
-							{
-								speed = k_FastMoveSpeed;
-								consumeControl(blinkInput.trigger);
-							}
-
-							speed *= this.GetViewerScale();
-
-							m_Rotating = false;
-							cameraRig.Translate(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.forward * speed * Time.unscaledDeltaTime);
-						}
-						consumeControl(blinkInput.blink);
-					}
-					else
-					{
-						m_Rotating = false;
-					}
-				}
-				else
-				{
-					m_Rotating = false;
-					if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
-					{
-						m_State = State.Aiming;
-						this.HideDefaultRay(rayOrigin);
-						this.LockRay(rayOrigin, this);
-
-						m_BlinkVisuals.ShowVisuals();
-
-						consumeControl(blinkInput.blink);
-					}
-					else if (m_State == State.Aiming && blinkInput.blink.wasJustReleased)
-					{
-						this.UnlockRay(rayOrigin, this);
-						this.ShowDefaultRay(rayOrigin);
-
-						if (!m_BlinkVisuals.outOfMaxRange)
-						{
-							m_BlinkVisuals.HideVisuals();
-							StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
-						}
-						else
-						{
-							m_BlinkVisuals.enabled = false;
-							m_State = State.Inactive;
-						}
-					}
-				}
-			}
-			else
-			{
-				m_GrabMoving = false;
 			}
 		}
 
