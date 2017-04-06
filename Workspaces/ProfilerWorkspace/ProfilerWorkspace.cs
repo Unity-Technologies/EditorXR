@@ -9,16 +9,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	[MainMenuItem("Profiler", "Workspaces", "Analyze your project's performance")]
 	sealed class ProfilerWorkspace : Workspace
 	{
-		static readonly Vector2 k_PointerOffset = new Vector2(0, 20f);
-
 		[SerializeField]
 		GameObject m_ProfilerWindowPrefab;
+
+#if UNITY_EDITORVR
+		static readonly Vector2 k_PointerOffset = new Vector2(0, 20f);
 
 		Transform m_ProfilerWindow;
 		EditorWindowCapture m_Capture;
 		RectTransform m_CaptureWindowRect;
 
-#if UNITY_EDITORVR
 		bool inView
 		{
 			get

@@ -3,7 +3,6 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -19,9 +18,8 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		[SerializeField]
 		Rect m_Position = new Rect(0f, 0f, 600f, 400f);
 
-		RectTransform m_RectTransform;
-
 #if UNITY_EDITOR
+		RectTransform m_RectTransform;
 		EditorWindow m_Window;
 		Object m_GuiView;
 		MethodInfo m_GrabPixels;
@@ -31,8 +29,6 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		/// Updated frequently, when capture is enabled
 		/// </summary>
 		public RenderTexture texture { get; private set; }
-
-		public EditorWindow window {get { return m_Window; } }
 
 		public bool capture { get; set; }
 
@@ -69,11 +65,11 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 				//    Debug.Log(view.name);             
 				//}
 
-				FieldInfo parentField = windowType.GetField("m_Parent", BindingFlags.Instance | BindingFlags.NonPublic);
+				var parentField = windowType.GetField("m_Parent", BindingFlags.Instance | BindingFlags.NonPublic);
 				m_GuiView = (Object)parentField.GetValue(m_Window);
 
 				// It's necessary to force a repaint on first start-up of window
-				MethodInfo repaint = windowType.GetMethod("RepaintImmediately", BindingFlags.Instance | BindingFlags.NonPublic);
+				var repaint = windowType.GetMethod("RepaintImmediately", BindingFlags.Instance | BindingFlags.NonPublic);
 				repaint.Invoke(m_Window, null);
 
 				m_GrabPixels = guiViewType.GetMethod("GrabPixels", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -96,13 +92,13 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		{
 			if (m_Window && capture)
 			{
-				Rect rect = m_Position;
+				var rect = m_Position;
 
 				// GrabPixels is relative to the GUIView and not the desktop, so we don't care about the offset
 				rect.x = 0f;
 				rect.y = 0f;
-				int width = Mathf.RoundToInt(rect.width);
-				int height = Mathf.RoundToInt(rect.height);
+				var width = Mathf.RoundToInt(rect.width);
+				var height = Mathf.RoundToInt(rect.height);
 
 				if (texture && (texture.width != width || texture.height != height))
 				{
