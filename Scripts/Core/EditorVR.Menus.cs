@@ -31,6 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 
 			readonly Dictionary<Type, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<Type, ISettingsMenuProvider>();
+			readonly Dictionary<Type, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<Type, ISettingsMenuItemProvider>();
 			List<Type> m_MainMenuTools;
 			WorkspaceModule m_WorkspaceModule;
 
@@ -49,12 +50,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (settingsMenuProvider != null)
 					m_SettingsMenuProviders[obj.GetType()] = settingsMenuProvider;
 
+				var settingsMenuItemProvider = obj as ISettingsMenuItemProvider;
+				if (settingsMenuItemProvider != null)
+					m_SettingsMenuItemProviders[obj.GetType()] = settingsMenuItemProvider;
+
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)
 				{
 					mainMenu.menuTools = m_MainMenuTools;
 					mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
 					mainMenu.settingsMenuProviders = m_SettingsMenuProviders;
+					mainMenu.settingsMenuItemProviders = m_SettingsMenuItemProviders;
 				}
 			}
 

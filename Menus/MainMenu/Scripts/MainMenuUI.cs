@@ -257,6 +257,27 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		public void CreateCustomButton(GameObject prefab, ButtonData buttonData, Action<GameObject> buttonCreationCallback)
+		{
+			var button = ObjectUtils.Instantiate(prefab);
+			button.name = buttonData.name;
+			buttonCreationCallback(button);
+
+			if (string.IsNullOrEmpty(buttonData.sectionName))
+				buttonData.sectionName = k_UncategorizedFaceName;
+
+			var found = m_FaceButtons.Any(x => x.Key == buttonData.sectionName);
+			if (found)
+			{
+				var kvp = m_FaceButtons.First(x => x.Key == buttonData.sectionName);
+				kvp.Value.Add(button.transform);
+			}
+			else
+			{
+				m_FaceButtons.Add(buttonData.sectionName, new List<Transform> { button.transform });
+			}
+		}
+
 		public void SetupMenuFaces()
 		{
 			var position = 0;

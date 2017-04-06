@@ -26,6 +26,11 @@ namespace UnityEditor.Experimental.EditorVR
 		Dictionary<Type, ISettingsMenuProvider> settingsMenuProviders { set; }
 
 		/// <summary>
+		/// The types which provide a settings menu item
+		/// </summary>
+		Dictionary<Type, ISettingsMenuItemProvider> settingsMenuItemProviders { set; }
+
+		/// <summary>
 		/// The ray origin that spawned the menu and will be used for node-specific operations (e.g. selecting a tool)
 		/// </summary>
 		Transform targetRayOrigin { set; }

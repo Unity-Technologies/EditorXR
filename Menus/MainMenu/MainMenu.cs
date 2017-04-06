@@ -68,6 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public List<Type> menuTools { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
 		public Dictionary<Type, ISettingsMenuProvider> settingsMenuProviders { private get; set; }
+		public Dictionary<Type, ISettingsMenuItemProvider> settingsMenuItemProviders { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
@@ -86,6 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
 			CreateFaceButtons(settingsMenuProviders.Keys.ToList());
+			CreateFaceButtons(settingsMenuItemProviders.Keys.ToList());
 			m_MainMenuUI.SetupMenuFaces();
 			UpdateToolButtons();
 		}
@@ -126,6 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var isTool = typeof(ITool).IsAssignableFrom(type);
 				var isWorkspace = typeof(Workspace).IsAssignableFrom(type);
 				var isSettingsProvider = typeof(ISettingsMenuProvider).IsAssignableFrom(type);
+				var isSettingsItemProvider = typeof(ISettingsMenuItemProvider).IsAssignableFrom(type);
 
 				var buttonData = new MainMenuUI.ButtonData();
 				buttonData.name = type.Name;
@@ -146,47 +149,58 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					buttonData.name = type.Name.Replace("Workspace", string.Empty);
 					buttonData.sectionName = "Workspaces";
 				}
-				else if (isSettingsProvider)
+				else if (isSettingsProvider || isSettingsItemProvider)
 				{
-					// For workspaces that haven't specified a custom attribute, do some menu categorization automatically
+					buttonData.name = type.Name.Replace("Tool", string.Empty);
 					buttonData.name = type.Name.Replace("Module", string.Empty);
 					buttonData.sectionName = "Settings";
 				}
 
-				var selectedType = type; // Local variable for proper closure
-				m_MainMenuUI.CreateFaceButton(buttonData, b =>
+				if (isSettingsItemProvider)
 				{
-					b.button.onClick.RemoveAllListeners();
-					if (isTool)
+					var itemProvider = settingsMenuItemProviders[type];
+					m_MainMenuUI.CreateCustomButton(itemProvider.settingsMenuItemPrefab, buttonData, b =>
 					{
-						m_ToolButtons[selectedType] = b;
+						itemProvider.settingsMenuItemInstance = b;
+					});
+				}
+				else
+				{
+					var selectedType = type; // Local variable for proper closure
+					m_MainMenuUI.CreateFaceButton(buttonData, b =>
+					{
+						b.button.onClick.RemoveAllListeners();
+						if (isTool)
+						{
+							m_ToolButtons[selectedType] = b;
 
-						b.button.onClick.AddListener(() =>
-						{
-							if (visible && targetRayOrigin)
+							b.button.onClick.AddListener(() =>
 							{
-								this.SelectTool(targetRayOrigin, selectedType);
-								UpdateToolButtons();
-							}
-						});
-					}
-					else if (isWorkspace)
-					{
-						b.button.onClick.AddListener(() =>
+								if (visible && targetRayOrigin)
+								{
+									this.SelectTool(targetRayOrigin, selectedType);
+									UpdateToolButtons();
+								}
+							});
+						}
+						else if (isWorkspace)
 						{
-							if (visible)
-								this.CreateWorkspace(selectedType);
-						});
-					}
-					else if (isSettingsProvider)
-					{
-						b.button.onClick.AddListener(() =>
+							b.button.onClick.AddListener(() =>
+							{
+								if (visible)
+									this.CreateWorkspace(selectedType);
+							});
+						}
+						else if (isSettingsProvider)
 						{
-							var provider = settingsMenuProviders[selectedType];
-							provider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(buttonData.sectionName, provider.settingsMenuPrefab);
-						});
-					}
-				});
+							b.button.onClick.AddListener(() =>
+							{
+								var provider = settingsMenuProviders[selectedType];
+								provider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(buttonData.sectionName, provider.settingsMenuPrefab);
+							});
+						}
+					});
+				}
 			}
 		}
 

@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ICustomRay, ICustomActionMap, ILinkedObject, IUsesViewerScale
+	sealed class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ICustomRay, ICustomActionMap,
+		ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider
 	{
 		const float k_FastMoveSpeed = 25f;
 		const float k_SlowMoveSpeed = 5f;
@@ -34,6 +36,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		[SerializeField]
 		ActionMap m_BlinkActionMap;
+
+		[SerializeField]
+		GameObject m_SettingsMenuItemPrefab;
 
 		ViewerScaleVisuals m_ViewerScaleVisuals;
 
@@ -76,7 +81,26 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
-		public bool joystickLocomotion { private get; set; }
+		public bool blinkMode { private get; set; }
+
+		public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
+
+		public GameObject settingsMenuItemInstance
+		{
+			set
+			{
+				foreach (var toggle in value.GetComponentsInChildren<Toggle>())
+				{
+					if (toggle.isOn)
+					{
+						toggle.onValueChanged.AddListener(isOn =>
+						{
+							blinkMode = !isOn;
+						});
+					}
+				}
+			}
+		}
 
 		void Start()
 		{
@@ -91,8 +115,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_MainCamera = CameraUtils.GetMainCamera();
 			m_OriginalNearClipPlane = m_MainCamera.nearClipPlane;
 			m_OriginalFarClipPlane = m_MainCamera.farClipPlane;
-
-			joystickLocomotion = true;
 
 			Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
 		}
@@ -110,7 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		void Update()
 		{
 			if (UnityEngine.Input.GetKeyUp(KeyCode.Space))
-				joystickLocomotion = !joystickLocomotion;
+				blinkMode = !blinkMode;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -139,10 +161,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				DoCrawl(blinkInput);
 
-				if (joystickLocomotion)
-					DoFlying(consumeControl, blinkInput);
-				else
+				if (blinkMode)
 					DoBlink(consumeControl, blinkInput);
+				else
+					DoFlying(consumeControl, blinkInput);
 			}
 			else
 			{
