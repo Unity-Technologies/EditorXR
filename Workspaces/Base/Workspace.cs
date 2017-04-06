@@ -81,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public bool dynamicFaceAdjustment { set { m_WorkspaceUI.dynamicFaceAdjustment = value; } }
 
 		/// <summary>
-		/// If true, prevent the resizing of a workspace via the front and back resize handles
+		/// If true, prevent the resizing of a workspace
 		/// </summary>
 		public bool preventResize { set { m_WorkspaceUI.preventResize = value; } }
 

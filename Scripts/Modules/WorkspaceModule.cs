@@ -7,6 +7,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
+using Valve.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -134,12 +135,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var cameraTransform = CameraUtils.GetMainCamera().transform;
 
-			var workspace = (Workspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
+			var workspace = (IWorkspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
 			m_Workspaces.Add(workspace);
 			workspace.destroyed += OnWorkspaceDestroyed;
 			this.ConnectInterfaces(workspace);
-			workspace.leftRayOrigin = leftRayOrigin;
-			workspace.rightRayOrigin = rightRayOrigin;
+
+			var evrWorkspace = workspace as Workspace;
+			if (evrWorkspace != null)
+			{
+				evrWorkspace.leftRayOrigin = leftRayOrigin;
+				evrWorkspace.rightRayOrigin = rightRayOrigin;
+			}
 
 			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
 			workspace.Setup();
@@ -149,7 +155,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			var workspaceTransform = workspace.transform;
 			workspaceTransform.position = cameraTransform.TransformPoint(offset);
-			workspaceTransform.rotation = Quaternion.LookRotation(cameraTransform.forward) * DefaultWorkspaceTilt;
 			ResetRotation(workspace, cameraTransform.forward);
 
 			if (createdCallback != null)
