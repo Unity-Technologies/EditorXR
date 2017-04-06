@@ -156,9 +156,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			// Snapping Modes
 			[SerializeField]
-			bool m_GroundSnappingEnabled;
+			bool m_GroundSnappingEnabled = true;
 			[SerializeField]
-			bool m_SurfaceSnappingEnabled;
+			bool m_SurfaceSnappingEnabled = true;
 
 			// Modifiers (do not require reset on value change)
 			[SerializeField]
@@ -170,9 +170,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			// Sources
 			[SerializeField]
-			bool m_ManipulatorSnappingEnabled;
+			bool m_ManipulatorSnappingEnabled = true;
 			[SerializeField]
-			bool m_DirectSnappingEnabled;
+			bool m_DirectSnappingEnabled = true;
 
 			public bool disableAll
 			{
