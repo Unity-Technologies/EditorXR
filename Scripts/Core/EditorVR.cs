@@ -9,16 +9,14 @@ using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.InputNew;
-using UnityEngine.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	[InitializeOnLoad]
 #if UNITY_EDITORVR
 	[RequiresTag(k_VRPlayerTag)]
-	sealed partial class EditorVR : MonoBehaviour, IEditingContext
+	sealed partial class EditorVR : MonoBehaviour
 	{
 		const string k_ShowGameObjects = "EditorVR.ShowGameObjects";
 		const string k_PreserveLayout = "EditorVR.PreserveLayout";
@@ -291,7 +289,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			Selection.selectionChanged -= OnSelectionChanged;
 		}
 
-		void Shutdown()
+		internal void Shutdown()
 		{
 			serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
 		}
@@ -446,33 +444,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			return groupRoot;
 		}
 
-		static EditorVR s_Instance;
-
-		[MenuItem("Window/EditorVR %e", false)]
-		public static void ShowEditorVR()
-		{
-			// Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
-			var vrView = EditorWindow.GetWindow<VRView>(true, "EditorVR", true);
-            // for now, we leave the key binding in place and explicilty push EditorVR onto the stack.
-            vrView.PushEditingContext<EditorVR>();
-		}
-
-		[MenuItem("Window/EditorVR %e", true)]
-		public static bool ShouldShowEditorVR()
-		{
-			return PlayerSettings.virtualRealitySupported;
-		}
-
-        public void OnSubvertContext()
-        {
-            //for now, nothing to do to subvert.
-        }
-
-        public void OnReviveContext()
-        {
-            //for now, nothing to do to revive.
-        }
-
         static EditorVR()
 		{
 			if (!PlayerSettings.virtualRealitySupported)
@@ -496,56 +467,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				TagManager.AddLayer(layer);
 			}
 		}
-
-		//static void OnVRViewEnabled()
-		//{
-		//	ObjectUtils.hideFlags = defaultHideFlags;
-		//	InitializeInputManager();
-		//	s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
-		//}
-
-		//static void InitializeInputManager()
-		//{
-		//	// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-		//	// in edit mode we need to handle lifecycle explicitly
-		//	var managers = Resources.FindObjectsOfTypeAll<InputManager>();
-		//	foreach (var m in managers)
-		//	{
-		//		ObjectUtils.Destroy(m.gameObject);
-		//	}
-
-		//	managers = Resources.FindObjectsOfTypeAll<InputManager>();
-		//	if (managers.Length == 0)
-		//	{
-		//		// Attempt creating object hierarchy via an implicit static constructor call by touching the class
-		//		InputSystem.ExecuteEvents();
-		//		managers = Resources.FindObjectsOfTypeAll<InputManager>();
-
-		//		if (managers.Length == 0)
-		//		{
-		//			typeof(InputSystem).TypeInitializer.Invoke(null, null);
-		//			managers = Resources.FindObjectsOfTypeAll<InputManager>();
-		//		}
-		//	}
-		//	Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
-
-		//	s_InputManager = managers[0];
-		//	s_InputManager.gameObject.hideFlags = defaultHideFlags;
-		//	ObjectUtils.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
-
-		//	// These components were allocating memory every frame and aren't currently used in EditorVR
-		//	ObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
-		//	ObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
-		//	ObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
-		//	ObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
-		//}
-
-		//static void OnVRViewDisabled()
-		//{
-		//	s_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
-		//	ObjectUtils.Destroy(s_Instance.gameObject);
-		//	ObjectUtils.Destroy(s_InputManager.gameObject);
-		//}
 
 		[PreferenceItem("EditorVR")]
 		static void PreferencesGUI()

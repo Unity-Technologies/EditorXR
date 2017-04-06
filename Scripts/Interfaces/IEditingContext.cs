@@ -16,17 +16,21 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Execute cleanup before this context is subverted in favor of a subcontext.  You can assume the context will be revived before it is destroyed.
         /// </summary>
-        void OnSubvertContext();
+        void OnSuspendContext();
 
         /// <summary>
         /// Undo whatever was cleaned or is needed to revive.  You can assume this context was previously subverted.
         /// </summary>
-        void OnReviveContext();
+        void OnResumeContext();
+
+	    void Setup();
+
+	    void Teardown();
     }
 
-    public interface IEditingContext<C> : IEditingContext
+    public interface IEditingContext<T> : IEditingContext
     {
-        void Configure(C config);
+        void Configure(T config);
     }
 
 }

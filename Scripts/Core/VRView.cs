@@ -41,6 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					s_ActiveView.m_CustomPreviewCamera : null;
 			}
 		}
+
 		Camera m_CustomPreviewCamera;
 
 		[NonSerialized]
@@ -103,10 +104,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		public static VRView activeView
 		{
-			get
-			{
-				return s_ActiveView;
-			}
+			get { return s_ActiveView; }
 		}
 
 		public static bool showDeviceView
@@ -123,8 +121,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
+		public static event Action viewEnabled;
+		public static event Action viewDisabled;
 		public static event Action<EditorWindow> onGUIDelegate;
-		public static event Action onHMDReady;
+		public static event Action hmdReady;
 
 		public static VRView GetWindow()
 		{
@@ -150,7 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			EditorApplication.update += ReopenOnExitPlaymode;
 		}
 
-		private static void ReopenOnExitPlaymode()
+		static void ReopenOnExitPlaymode()
 		{
 			bool launch = EditorPrefs.GetBool(k_LaunchOnExitPlaymode, false);
 			if (!launch || !EditorApplication.isPlaying)
@@ -198,6 +198,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			VRSettings.StartRenderingToDevice();
 			InputTracking.Recenter();
+
 			// HACK: Fix VRSettings.enabled or some other API to check for missing HMD
 			m_VRInitialized = false;
 #if ENABLE_OVR_INPUT
@@ -207,17 +208,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if ENABLE_STEAMVR_INPUT
 			m_VRInitialized |= (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
 #endif
-			InitializeInputManager();
+
+			if (viewEnabled != null)
+				viewEnabled();
 		}
 
 		public void OnDisable()
 		{
-			GameObject currentContext;
-			while (FindCurrentContext(out currentContext))
-			{
-				PopEditingContext();
-			}
-			ObjectUtils.Destroy(s_InputManager.gameObject);
+			if (viewDisabled != null)
+				viewDisabled();
 
 			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
@@ -264,8 +263,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!m_HMDReady)
 				{
 					m_HMDReady = true;
-					if (onHMDReady != null)
-						onHMDReady();
+					if (hmdReady != null)
+						hmdReady();
 				}
 			}
 
@@ -278,7 +277,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			bool useSRGBTarget = QualitySettings.activeColorSpace == ColorSpace.Linear;
 
 			int msaa = Mathf.Max(1, QualitySettings.antiAliasing);
-
+			
 			RenderTextureFormat format = hdr ? RenderTextureFormat.ARGBHalf : RenderTextureFormat.ARGB32;
 			if (renderTexture != null)
 			{
@@ -425,111 +424,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			SetGameViewsEnabled(enabled);
 			SetSceneViewsEnabled(enabled);
 		}
-
-		static InputManager s_InputManager;
-		public const HideFlags kDefaultHideFlags = HideFlags.DontSave;
-
-		private static void InitializeInputManager()
-		{
-			// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-			// in edit mode we need to handle lifecycle explicitly
-			InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
-			foreach (var m in managers)
-			{
-				ObjectUtils.Destroy(m.gameObject);
-			}
-
-			managers = Resources.FindObjectsOfTypeAll<InputManager>();
-			if (managers.Length == 0)
-			{
-				// Attempt creating object hierarchy via an implicit static constructor call by touching the class
-				InputSystem.ExecuteEvents();
-				managers = Resources.FindObjectsOfTypeAll<InputManager>();
-
-				if (managers.Length == 0)
-				{
-					typeof(InputSystem).TypeInitializer.Invoke(null, null);
-					managers = Resources.FindObjectsOfTypeAll<InputManager>();
-				}
-			}
-			Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
-
-			s_InputManager = managers[0];
-			s_InputManager.gameObject.hideFlags = kDefaultHideFlags;
-			ObjectUtils.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
-
-			// These components were allocating memory every frame and aren't currently used in EditorVR
-			ObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
-			ObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
-			ObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
-			ObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
-		}
-
-
-		/// <summary>
-		/// The context stack.  We hold game objects.  But all are expected to have a MonoBehavior that implements IEditingContext.
-		/// </summary>
-		private List<GameObject> m_ContextStack = new List<GameObject>();
-
-		/// <summary>
-		/// Attempt to find and fetch the current context.
-		/// </summary>
-		/// <param name="current">The current context.  Or null if there is none.</param>
-		/// <returns>True if there is a current context.  False otherwise.</returns>
-		private bool FindCurrentContext(out GameObject current)
-		{
-			if (m_ContextStack.Count == 0)
-			{
-				current = null;
-				return false;
-			}
-			else
-			{
-				current = m_ContextStack[m_ContextStack.Count - 1];
-				return true;
-			}
-		}
-
-		public GameObject PushEditingContext<T, C>(C config) where T : MonoBehaviour, IEditingContext<C>
-		{
-			var newContext = PushEditingContext<T>();
-			newContext.GetComponent<T>().Configure(config);
-			return newContext;
-		}
-
-		public GameObject PushEditingContext<T>() where T : MonoBehaviour, IEditingContext
-		{
-			//if there is a current context, we subvert and deactivate it.
-			GameObject previousContext;
-			if (FindCurrentContext(out previousContext))
-			{
-				previousContext.GetComponent<IEditingContext>().OnSubvertContext();
-				previousContext.SetActive(false);
-			}
-
-			//create the new context and add it to the stack.
-			GameObject newContext = ObjectUtils.CreateGameObjectWithComponent<T>().gameObject;
-			m_ContextStack.Add(newContext);
-			return newContext;
-		}
-
-		public void PopEditingContext()
-		{
-			GameObject poppedContext;
-			if (FindCurrentContext(out poppedContext))
-			{
-				poppedContext.SetActive(false);
-				m_ContextStack.RemoveAt(m_ContextStack.Count - 1);
-				ObjectUtils.Destroy(poppedContext);
-			}
-			GameObject revivedContext;
-			if (FindCurrentContext(out revivedContext))
-			{
-				revivedContext.SetActive(true);
-				revivedContext.GetComponent<IEditingContext>().OnReviveContext();
-			}
-		}
 	}
-
 }
 #endif
