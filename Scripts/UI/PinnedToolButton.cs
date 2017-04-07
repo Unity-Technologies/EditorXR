@@ -82,7 +82,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				// We move in counter-clockwise direction
 				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
-				const float kMaxPinnedToolButtonCount = 12; // TODO: add max count support in selectTool/setupPinnedToolButtonsForDevice
+				const float kMaxPinnedToolButtonCount = 16; // TODO: add max count support in selectTool/setupPinnedToolButtonsForDevice
 				const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
 				var phaseOffset = 0 - (activeButtonCount * 0.5f) * kRotationSpacing;
 				var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
@@ -404,9 +404,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kIconLookForwardOffset = 0.5f;
 			var iconLookDirection = m_ContentContainer.transform.position + transform.parent.forward * kIconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
 			m_ContentContainer.LookAt(iconLookDirection);
-			m_ContentContainer.localEulerAngles = new Vector3(0f, m_ContentContainer.localEulerAngles.y, 0f);
-			var angle = m_ContentContainer.localEulerAngles.y;
-			m_TooltipTarget.localEulerAngles = new Vector3(90f, angle, 0f);
+			m_ContentContainer.localEulerAngles = new Vector3(0f, 0f, m_ContentContainer.localEulerAngles.z);
+			var angle = m_ContentContainer.localEulerAngles.z;
+			m_TooltipTarget.localEulerAngles = new Vector3(90f, 0f, angle);
 
 			var yaw = transform.localRotation.eulerAngles.y;
 			tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
