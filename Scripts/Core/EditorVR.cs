@@ -11,6 +11,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
+using UnityEngine.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -37,6 +38,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		Dictionary<Type, Nested> m_NestedModules = new Dictionary<Type, Nested>();
 
 		event Action m_SelectionChanged;
+
+		public static event Action<bool> hmdStatusChange;
+		bool m_HMDReady;
 
 		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
 
@@ -129,6 +133,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			m_Viewer = GetNestedModule<Viewer>();
 			m_Viewer.preserveCameraRig = preserveLayout;
+			hmdStatusChange += m_Viewer.OnHMDStatusChange;
 			m_Viewer.InitializeCamera();
 
 			var tools = GetNestedModule<Tools>();
@@ -237,6 +242,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				yield return null;
 			}
 
+			while (!m_HMDReady)
+				yield return null;
+
 			GetModule<SerializedPreferencesModule>().DeserializePreferences(serializedPreferences);
 		}
 
@@ -299,6 +307,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void OnDestroy()
 		{
+			hmdStatusChange -= m_Viewer.OnHMDStatusChange;
+
 			foreach (var nested in m_NestedModules.Values)
 			{
 				nested.OnDestroy();
@@ -307,6 +317,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void Update()
 		{
+			UpdateHMDStatus();
 			m_Viewer.UpdateCamera();
 
 			m_Rays.UpdateRaycasts();
@@ -321,6 +332,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_Menus.UpdateMenuVisibilities();
 
 			m_UI.UpdateManipulatorVisibilites();
+		}
+
+		void UpdateHMDStatus()
+		{
+			if (hmdStatusChange != null)
+			{
+				var ready = GetIsUserPresent();
+				if (m_HMDReady != ready)
+				{
+					m_HMDReady = ready;
+					hmdStatusChange(ready);
+				}
+			}
 		}
 
 		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
@@ -495,6 +519,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			ObjectUtils.hideFlags = defaultHideFlags;
 			InitializeInputManager();
 			s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
+		}
+
+		static bool GetIsUserPresent()
+		{
+#if ENABLE_OVR_INPUT
+			if (VRSettings.loadedDeviceName == "Oculus")
+				return OVRPlugin.userPresent;
+#endif
+#if ENABLE_STEAMVR_INPUT
+			if (VRSettings.loadedDeviceName == "OpenVR")
+				return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
+#endif
+			return true;
 		}
 
 		static void InitializeInputManager()

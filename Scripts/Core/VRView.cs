@@ -54,7 +54,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		private float m_TimeSinceLastHMDChange;
 		private bool m_LatchHMDValues;
 
-		bool m_HMDReady;
 		bool m_VRInitialized;
 		bool m_UseCustomPreviewCamera;
 
@@ -122,7 +121,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		public static event Action onEnable;
 		public static event Action onDisable;
 		public static event Action<EditorWindow> onGUIDelegate;
-		public static event Action onHMDReady;
 
 		public static VRView GetWindow()
 		{
@@ -201,7 +199,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if ENABLE_OVR_INPUT
 			m_VRInitialized |= OVRPlugin.initialized;
 #endif
-
 #if ENABLE_STEAMVR_INPUT
 			m_VRInitialized |= (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
 #endif
@@ -231,7 +228,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			s_ActiveView = null;
 		}
 
-		private void UpdateCamera()
+		void UpdateCamera()
 		{
 			// Latch HMD values early in case it is used in other scripts
 			Vector3 headPosition = InputTracking.GetLocalPosition(VRNode.Head);
@@ -257,12 +254,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				cameraTransform.localPosition = headPosition;
 				cameraTransform.localRotation = headRotation;
-				if (!m_HMDReady)
-				{
-					m_HMDReady = true;
-					if (onHMDReady != null)
-						onHMDReady();
-				}
 			}
 
 			m_LastHeadRotation = headRotation;
