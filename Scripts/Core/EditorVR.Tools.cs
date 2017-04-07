@@ -107,10 +107,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					AddToolToDeviceData(toolData, devices);
 					var transformTool = (TransformTool)toolData.tool;
 					if (transformTool.IsSharedUpdater(transformTool))
-					{
-						transformTool.Setup(); // LinkedObjects array is not avialable at instantiation, so we can't set up in Awake
 						evr.m_DirectSelection.objectsGrabber = transformTool;
-					}
 
 					toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
@@ -164,10 +161,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					usedDevices.UnionWith(actionMapInput.GetCurrentlyUsedDevices());
 					InputUtils.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
 				}
-				else
-				{
+
+				if (usedDevices.Count == 0)
 					usedDevices.Add(device);
-				}
 
 				evr.m_Interfaces.ConnectInterfaces(tool, device);
 

@@ -186,8 +186,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
-		public void Setup()
+		void Start()
 		{
+			if (!this.IsSharedUpdater(this))
+				return;
+
 			m_PivotModeToggleAction.execute = TogglePivotMode;
 			UpdatePivotModeAction();
 			m_PivotRotationToggleAction.execute = TogglePivotRotation;
@@ -274,10 +277,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						if (objectGrabbed != null)
 							objectGrabbed(hoveredObject);
-
-						// Only add to selection, don't remove
-						if (!Selection.objects.Contains(hoveredObject))
-							this.SelectObject(hoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
 
 						consumeControl(directSelectInput.select);
 

@@ -1,6 +1,7 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -49,6 +50,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					if (hover)
 					{
+						GameObject lastHover;
+						if (m_HoverGameObjects.TryGetValue(selectionRayOrigin, out lastHover) && lastHover != hover)
+							this.SetHighlight(lastHover, false, selectionRayOrigin);
+
 						m_SelectionHoverGameObjects[selectionRayOrigin] = hover;
 						m_HoverGameObjects[selectionRayOrigin] = hover;
 					}
@@ -73,7 +78,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				foreach (var kvp in directSelection)
 				{
 					var directRayOrigin = kvp.Key;
-					var directHoveredObject = kvp.Value.gameObject;
+					var directSelectionData = kvp.Value;
+					var directHoveredObject = directSelectionData.gameObject;
 
 					var directSelectionCandidate = this.GetSelectionCandidate(directHoveredObject, true);
 
@@ -86,6 +92,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					if (!this.CanGrabObject(directHoveredObject, rayOrigin))
 						continue;
+
+					var directSelectInput = (DirectSelectInput)directSelectionData.input;
+					
+					// Only add to selection, don't remove
+					if (!Selection.objects.Contains(directHoveredObject))
+						this.SelectObject(directHoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
+
+					GameObject lastHover;
+					if (m_HoverGameObjects.TryGetValue(directRayOrigin, out lastHover) && lastHover != directHoveredObject)
+						this.SetHighlight(lastHover, false, directRayOrigin);
 
 					m_HoverGameObjects[directRayOrigin] = directHoveredObject;
 				}
