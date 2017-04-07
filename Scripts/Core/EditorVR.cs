@@ -204,10 +204,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
 
 					spatialHashModule.AddObject(obj.gameObject);
-					return false;
+					return true;
 				}
 
-				return true;
+				return false;
 			};
 
 			m_Viewer.AddPlayerModel();

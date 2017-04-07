@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void PlaceSceneObject(Transform obj, Vector3 targetScale)
 		{
-			if (tryPlaceObject == null || tryPlaceObject(obj, targetScale))
+			if (tryPlaceObject == null || !tryPlaceObject(obj, targetScale))
 				StartCoroutine(PlaceSceneObjectCoroutine(obj, targetScale));
 		}
 
