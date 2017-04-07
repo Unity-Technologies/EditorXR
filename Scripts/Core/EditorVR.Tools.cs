@@ -74,10 +74,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void SpawnDefaultTools(IProxy proxy)
 			{
 				// Spawn default tools
-				HashSet<InputDevice> devices;
-
-				var transformTool = SpawnTool(typeof(TransformTool), out devices);
-				evr.m_DirectSelection.objectsGrabber = transformTool.tool as IGrabObjects;
 
 				Func<Transform, bool> isRayActive = Rays.IsRayActive;
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
@@ -90,6 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (deviceData.proxy != proxy)
 						continue;
 
+					HashSet<InputDevice> devices;
 					var toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var selectionTool = (SelectionTool)toolData.tool;
@@ -106,8 +103,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					toolData = SpawnTool(typeof(MoveWorkspacesTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 
-					// Using a shared instance of the transform tool across all device tool stacks
-					AddToolToStack(deviceData, transformTool);
+					toolData = SpawnTool(typeof(TransformTool), out devices, inputDevice);
+					AddToolToStack(deviceData, toolData); // Transform doesn't use input, so is added directly to stack
+					var transformTool = (TransformTool)toolData.tool;
+					if (transformTool.IsSharedUpdater(transformTool))
+					{
+						transformTool.Setup();
+						evr.m_DirectSelection.objectsGrabber = transformTool;
+					}
 
 					toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);

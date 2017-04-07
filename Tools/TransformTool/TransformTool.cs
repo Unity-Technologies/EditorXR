@@ -10,7 +10,8 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
-		IGrabObjects, ICustomRay, IProcessInput, ISelectObject, IManipulatorVisibility, IUsesSnapping, ISetHighlight
+		IGrabObjects, ICustomRay, IProcessInput, ISelectObject, IManipulatorVisibility, IUsesSnapping, ISetHighlight,
+		ILinkedObject
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -184,7 +185,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public bool manipulatorVisible { private get; set; }
 
-		void Awake()
+		public List<ILinkedObject> linkedObjects { private get; set; }
+
+		public void Setup()
 		{
 			m_PivotModeToggleAction.execute = TogglePivotMode;
 			UpdatePivotModeAction();
@@ -205,6 +208,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void OnSelectionChanged()
 		{
+			if (!this.IsSharedUpdater(this))
+				return;
+
 			// Reset direct selection state in case of a ray selection
 			m_DirectSelected = false;
 
@@ -216,6 +222,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			if (!this.IsSharedUpdater(this))
+				return;
+
 			var hasObject = false;
 
 			var manipulatorGameObject = m_CurrentManipulator.gameObject;
