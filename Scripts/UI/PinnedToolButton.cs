@@ -73,12 +73,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				activeTool = activeTool;
 				const float kSmoothingMax = 50f;
 				const int kSmoothingIncreaseFactor = 10;
-				var smoothingFactor = Mathf.Clamp(kSmoothingMax- m_Order * kSmoothingIncreaseFactor, 0f, kSmoothingMax);
-				m_SmoothMotion.SetPositionSmoothing(smoothingFactor);
-				m_SmoothMotion.SetRotationSmoothing(smoothingFactor);
-				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
+				//var smoothingFactor = Mathf.Clamp(kSmoothingMax- m_Order * kSmoothingIncreaseFactor, 0f, kSmoothingMax);
+				//m_SmoothMotion.SetPositionSmoothing(smoothingFactor);
+				//m_SmoothMotion.SetRotationSmoothing(smoothingFactor);
+				//this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
 				m_LeftPinnedToolActionButton.visible = false;
 				m_RightPinnedToolActionButton.visible = false;
+
+				// We move in counter-clockwise direction
+				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
+				const float kMaxPinnedToolButtonCount = 12; // TODO: add max count support in selectTool/setupPinnedToolButtonsForDevice
+				const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
+				var phaseOffset = 0 - (activeButtonCount * 0.5f) * kRotationSpacing;
+				var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
+				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(newTargetRotation));
+				//transform.localRotation = newLocalRotation;
 			}
 		}
 		int m_Order;
@@ -144,19 +153,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		PinnedToolActionButton m_RightPinnedToolActionButton;
 
 		[SerializeField]
+		Transform m_ContentContainer;
+
+		[SerializeField]
 		Collider m_RootCollider;
 
-		public Transform tooltipTarget { get { return m_TooltipTarget; } }
 		[SerializeField]
 		Transform m_TooltipTarget;
 
-		public Transform tooltipSource { get { return m_TooltipSource; } }
 		[SerializeField]
 		Transform m_TooltipSource;
 
-		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		string m_TooltipText;
+		Coroutine m_PositionCoroutine;
+		Coroutine m_VisibilityCoroutine;
+		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
 
+		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
+		public Transform tooltipTarget { get { return m_TooltipTarget; } }
+		public Transform tooltipSource { get { return m_TooltipSource; } }
 		public TextAlignment tooltipAlignment { get; private set; }
 		public Transform rayOrigin { get; set; }
 		public Node node { get; set; }
@@ -166,11 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public GradientPair customToolTipHighlightColor { get; set; }
 		public bool isSelectionTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
 		public Action<Transform, PinnedToolButton> DeletePinnedToolButton { get; set; }
-		//public ConnectInterfacesDelegate connectInterfaces { get; set; }
-
-		Coroutine m_PositionCoroutine;
-		Coroutine m_VisibilityCoroutine;
-		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
+		public int activeButtonCount { get; set; }
 
 		private bool activeTool
 		{
@@ -260,20 +271,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			return abbreviation.ToString();
 		}
 
-		IEnumerator AnimatePosition()
+		IEnumerator AnimatePosition(Quaternion targetRotation)
 		{
 			var duration = 0f;
-			var currentPosition = transform.localPosition;
-			var targetPosition = activeTool ? activePosition : m_InactivePosition;
+			//var currentPosition = transform.localPosition;
+			//var targetPosition = activeTool ? activePosition : m_InactivePosition;
+			var currentRotation = transform.localRotation;
 			while (duration < 1)
 			{
 				duration += Time.unscaledDeltaTime * 3;
 				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 6);
-				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
+				transform.localRotation = Quaternion.Lerp(currentRotation, targetRotation, durationShaped);
+				CorrectIconRotation();
+				//transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
 				yield return null;
 			}
 
-			transform.localPosition = targetPosition;
+			//transform.localPosition = targetPosition;
+			transform.localRotation = targetRotation;
+			CorrectIconRotation();
 			m_PositionCoroutine = null;
 		}
 
@@ -381,6 +397,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_VisibilityCoroutine = null;
 			DeletePinnedToolButton(rayOrigin, this);
 			ObjectUtils.Destroy(gameObject, 0.1f);
+		}
+
+		public void CorrectIconRotation()
+		{
+			const float kIconLookForwardOffset = 0.5f;
+			var iconLookDirection = m_ContentContainer.transform.position + transform.parent.forward * kIconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
+			m_ContentContainer.LookAt(iconLookDirection);
+			m_ContentContainer.localEulerAngles = new Vector3(0f, m_ContentContainer.localEulerAngles.y, 0f);
+			var angle = m_ContentContainer.localEulerAngles.y;
+			m_TooltipTarget.localEulerAngles = new Vector3(90f, angle, 0f);
+
+			var yaw = transform.localRotation.eulerAngles.y;
+			tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
 		}
 	}
 }

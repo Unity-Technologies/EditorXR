@@ -296,11 +296,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			void SetupPinnedToolButtonsForDevice(DeviceData deviceData, Transform rayOrigin, Type activeToolType)
 			{
 				Debug.LogError("<color=black>Setting up pinned tool button for type of : </color>" + activeToolType);
+				const int kMaxButtonCount = 6;
 				var order = 0;
-				foreach (var pair in deviceData.pinnedToolButtons)
+				var buttons = deviceData.pinnedToolButtons;
+				var buttonCount = buttons.Count;
+
+				if (buttonCount >= kMaxButtonCount)
+				{
+					Debug.LogError("Attempting to add buttons beyond max count! Handle for removing highest ordered button and adding this new button!");
+					return;
+				}
+
+				foreach (var pair in buttons)
 				{
 					var button = pair.Value;
 					button.rayOrigin = rayOrigin;
+					button.activeButtonCount = buttonCount; // Used to position buttons relative to count
 					button.order = button.toolType == activeToolType ? 0 : ++order;
 
 					if (button.order == 0)
