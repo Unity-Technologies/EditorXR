@@ -104,11 +104,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					AddToolToDeviceData(toolData, devices);
 
 					toolData = SpawnTool(typeof(TransformTool), out devices, inputDevice);
-					AddToolToStack(deviceData, toolData); // Transform doesn't use input, so is added directly to stack
+					AddToolToDeviceData(toolData, devices);
 					var transformTool = (TransformTool)toolData.tool;
 					if (transformTool.IsSharedUpdater(transformTool))
 					{
-						transformTool.Setup();
+						transformTool.Setup(); // LinkedObjects array is not avialable at instantiation, so we can't set up in Awake
 						evr.m_DirectSelection.objectsGrabber = transformTool;
 					}
 
@@ -164,6 +164,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					usedDevices.UnionWith(actionMapInput.GetCurrentlyUsedDevices());
 					InputUtils.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
 				}
+				else
+				{
+					usedDevices.Add(device);
+				}
 
 				evr.m_Interfaces.ConnectInterfaces(tool, device);
 
@@ -215,10 +219,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							HashSet<InputDevice> usedDevices;
 							var device = deviceData.inputDevice;
 							var newTool = SpawnTool(toolType, out usedDevices, device);
-
-							// It's possible this tool uses no action maps, so at least include the device this tool was spawned on
-							if (usedDevices.Count == 0)
-								usedDevices.Add(device);
 
 							var evrDeviceData = evr.m_DeviceData;
 

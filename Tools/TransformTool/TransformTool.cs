@@ -164,7 +164,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly Dictionary<Transform, Vector3> m_PositionOffsets = new Dictionary<Transform, Vector3>();
 		readonly Dictionary<Transform, Quaternion> m_RotationOffsets = new Dictionary<Transform, Quaternion>();
 		readonly Dictionary<Transform, Vector3> m_ScaleOffsets = new Dictionary<Transform, Vector3>();
-		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
 		PivotRotation m_PivotRotation = PivotRotation.Local;
 		PivotMode m_PivotMode = PivotMode.Pivot;
@@ -250,17 +249,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (manipulatorGameObject.activeSelf && (hoveringSelection || hasObject))
 					manipulatorGameObject.SetActive(false);
 
-				var hovers = new Dictionary<Transform, GameObject>(m_HoverGameObjects);
-				foreach (var kvp in hovers)
-				{
-					var rayOrigin = kvp.Key;
-					if (!directSelection.ContainsKey(rayOrigin))
-					{
-						this.SetHighlight(kvp.Value, false, rayOrigin);
-						m_HoverGameObjects.Remove(rayOrigin);
-					}
-				}
-
 				foreach (var kvp in directSelection)
 				{
 					var rayOrigin = kvp.Key;
@@ -271,26 +259,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					// Can't select this object (it might be locked or static)
 					if (hoveredObject && !selectionCandidate)
-						return;
+						continue;
 
 					if (selectionCandidate)
 						hoveredObject = selectionCandidate;
 
 					if (!this.CanGrabObject(hoveredObject, rayOrigin))
 						continue;
-
-					GameObject lastHover;
-					m_HoverGameObjects.TryGetValue(rayOrigin, out lastHover);
-
-					// Handle changing highlight
-					if (hoveredObject != lastHover)
-					{
-						if (lastHover != null)
-							this.SetHighlight(lastHover, false, rayOrigin);
-
-						this.SetHighlight(hoveredObject, true, rayOrigin);
-					}
-					m_HoverGameObjects[rayOrigin] = hoveredObject;
 
 					var directSelectInput = (DirectSelectInput)selection.input;
 					if (directSelectInput.select.wasJustPressed)
