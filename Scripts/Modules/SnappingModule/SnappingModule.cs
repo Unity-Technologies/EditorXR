@@ -522,7 +522,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var maxRayLength = k_SurfaceSnappingMaxRayLength * this.GetViewerScale();
 
 			var pointerRay = new Ray(rayOrigin.position, rayOrigin.forward);
-			return SnapToSurface(pointerRay, ref position, ref rotation, state, offset, targetPosition, targetRotation , rotationOffset, upVector, m_CombinedIgnoreList, breakDistance, maxRayLength)
+			return SnapToSurface(pointerRay, ref position, ref rotation, state, offset, targetPosition, targetRotation , rotationOffset, upVector, breakDistance, maxRayLength)
 				|| TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance);
 		}
 
@@ -547,7 +547,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				else
 					offset += projectedExtents;
 
-				if (SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetPosition, targetRotation, rotationOffset, upVector, m_CombinedIgnoreList, breakDistance, raycastDistance))
+				if (SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, raycastDistance))
 					return true;
 			}
 
@@ -585,7 +585,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			for (int i = 0; i < objects.Length; i++)
 			{
-				m_CombinedIgnoreList.Add(objects[i]);
+				var renderers = objects[i].GetComponentsInChildren<Renderer>();
+				for (var j = 0; j < renderers.Length; j++)
+				{
+					m_CombinedIgnoreList.Add(renderers[j].gameObject);
+				}
 			}
 
 			for (int i = 0; i < ignoreList.Length; i++)
@@ -594,11 +598,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		bool SnapToSurface(Ray ray, ref Vector3 position, ref Quaternion rotation, SnappingState state, Vector3 boundsOffset, Vector3 targetPosition, Quaternion targetRotation, Quaternion rotationOffset, Vector3 upVector, List<GameObject> ignoreList, float breakDistance, float raycastDistance)
+		bool SnapToSurface(Ray ray, ref Vector3 position, ref Quaternion rotation, SnappingState state, Vector3 boundsOffset, Vector3 targetPosition, Quaternion targetRotation, Quaternion rotationOffset, Vector3 upVector, float breakDistance, float raycastDistance)
 		{
 			RaycastHit hit;
 			GameObject go;
-			if (raycast(ray, out hit, out go, raycastDistance, ignoreList))
+			if (raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
 			{
 				var snappedRotation = Quaternion.LookRotation(hit.normal, upVector) * rotationOffset;
 
