@@ -54,11 +54,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		private float m_TimeSinceLastHMDChange;
 		private bool m_LatchHMDValues;
 
-		bool m_HMDReady;
 		bool m_VRInitialized;
 		bool m_UseCustomPreviewCamera;
-
-		bool m_WasUserPresent;
 
 		public static Transform cameraRig
 		{
@@ -124,7 +121,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		public static event Action onEnable;
 		public static event Action onDisable;
 		public static event Action<EditorWindow> onGUIDelegate;
-		public static event Action hmdReady;
 
 		public static VRView GetWindow()
 		{
@@ -258,39 +254,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				cameraTransform.localPosition = headPosition;
 				cameraTransform.localRotation = headRotation;
-
-				if (!m_HMDReady)
-				{
-					var isUserPresent = false;
-
-#if ENABLE_OVR_INPUT
-					if (VRSettings.loadedDeviceName == "Oculus")
-						isUserPresent = OVRPlugin.userPresent;
-#endif
-#if ENABLE_STEAMVR_INPUT
-					if (VRSettings.loadedDeviceName == "OpenVR")
-						isUserPresent = OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
-#endif
-
-					if (!m_WasUserPresent && isUserPresent)
-						OnHMDReady();
-
-					m_WasUserPresent = isUserPresent;
-				}
 			}
 
 			m_LastHeadRotation = headRotation;
-		}
-
-		void OnHMDReady()
-		{
-			if (!m_HMDReady)
-			{
-				m_HMDReady = true;
-
-				if (hmdReady != null)
-					hmdReady();
-			}
 		}
 
 		// TODO: Share this between SceneView/EditorVR in SceneViewUtilies
