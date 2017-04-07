@@ -11,7 +11,6 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
-using UnityEngine.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
