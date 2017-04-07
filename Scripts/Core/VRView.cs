@@ -58,6 +58,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		bool m_VRInitialized;
 		bool m_UseCustomPreviewCamera;
 
+		bool m_WasUserPresent;
+
 		public static Transform cameraRig
 		{
 			get
@@ -122,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		public static event Action onEnable;
 		public static event Action onDisable;
 		public static event Action<EditorWindow> onGUIDelegate;
-		public static event Action onHMDReady;
+		public static event Action hmdReady;
 
 		public static VRView GetWindow()
 		{
@@ -201,7 +203,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if ENABLE_OVR_INPUT
 			m_VRInitialized |= OVRPlugin.initialized;
 #endif
-
 #if ENABLE_STEAMVR_INPUT
 			m_VRInitialized |= (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
 #endif
@@ -231,7 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			s_ActiveView = null;
 		}
 
-		private void UpdateCamera()
+		void UpdateCamera()
 		{
 			// Latch HMD values early in case it is used in other scripts
 			Vector3 headPosition = InputTracking.GetLocalPosition(VRNode.Head);
@@ -257,15 +258,39 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				cameraTransform.localPosition = headPosition;
 				cameraTransform.localRotation = headRotation;
+
 				if (!m_HMDReady)
 				{
-					m_HMDReady = true;
-					if (onHMDReady != null)
-						onHMDReady();
+					var isUserPresent = false;
+
+#if ENABLE_OVR_INPUT
+					if (VRSettings.loadedDeviceName == "Oculus")
+						isUserPresent = OVRPlugin.userPresent;
+#endif
+#if ENABLE_STEAMVR_INPUT
+					if (VRSettings.loadedDeviceName == "OpenVR")
+						isUserPresent = OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
+#endif
+
+					if (!m_WasUserPresent && isUserPresent)
+						OnHMDReady();
+
+					m_WasUserPresent = isUserPresent;
 				}
 			}
 
 			m_LastHeadRotation = headRotation;
+		}
+
+		void OnHMDReady()
+		{
+			if (!m_HMDReady)
+			{
+				m_HMDReady = true;
+
+				if (hmdReady != null)
+					hmdReady();
+			}
 		}
 
 		// TODO: Share this between SceneView/EditorVR in SceneViewUtilies

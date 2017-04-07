@@ -220,6 +220,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			var leftHandFound = false;
 			var rightHandFound = false;
+			var hmdReady = false;
+
+			Action onHMDReady = () => hmdReady = true;
+			VRView.hmdReady += onHMDReady;
 
 			// Some components depend on both hands existing (e.g. MiniWorldWorkspace), so make sure they exist before restoring
 			while (!(leftHandFound && rightHandFound))
@@ -235,6 +239,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				yield return null;
 			}
+
+			while (!hmdReady)
+				yield return null;
+
+			VRView.hmdReady -= onHMDReady;
 
 			GetModule<SerializedPreferencesModule>().DeserializePreferences(serializedPreferences);
 		}
