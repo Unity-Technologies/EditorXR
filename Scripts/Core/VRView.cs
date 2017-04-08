@@ -54,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		private float m_TimeSinceLastHMDChange;
 		private bool m_LatchHMDValues;
 
+		bool m_HMDReady;
 		bool m_VRInitialized;
 		bool m_UseCustomPreviewCamera;
 
@@ -121,9 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		public static event Action onEnable;
 		public static event Action onDisable;
 		public static event Action<EditorWindow> onGUIDelegate;
-
 		public static event Action<bool> hmdStatusChange;
-		bool m_HMDReady;
 
 		public static VRView GetWindow()
 		{
