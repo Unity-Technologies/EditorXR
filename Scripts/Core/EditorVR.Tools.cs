@@ -140,7 +140,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					selectionToolButton.toolType = typeof(SelectionTool); // Selection tool is visible & persistent by default
 					deviceData.pinnedToolButtons.Add(selectionToolButton.toolType, selectionToolButton);
 					selectionToolButton.order = 0; // The "active" tool occupies the zeroth position
-					selectionToolButtonTransform.SetParent(mainMenuActivator.transform, false);
 					selectionToolButton.node = deviceData.node;
 				}
 
@@ -286,7 +285,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var pinnedToolButton = evr.m_Menus.SpawnPinnedToolButton(deviceData.inputDevice);
 				pinnedToolButtons.Add(toolType, pinnedToolButton);
-				pinnedToolButton.transform.SetParent(deviceData.mainMenuActivator.transform, false);
 				pinnedToolButton.node = deviceData.node;
 				pinnedToolButton.toolType = toolType; // Assign Tool Type before assigning order
 				pinnedToolButton.order = 0; // Zeroth position is the active tool position

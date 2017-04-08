@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public sealed class PinnedToolButton : MonoBehaviour, ISelectTool, ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IConnectInterfaces
+	public sealed class PinnedToolButton : MonoBehaviour, ISelectTool, ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IConnectInterfaces, IUsesMenuOrigins
 	{
 		public static Vector3 activePosition
 		{
@@ -39,6 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					if (isSelectionTool)
 					{
+						activeButtonCount = 1;
 						tooltipText = k_SelectionToolTipText;
 						gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
 					}
@@ -61,7 +62,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 			}
 		}
-		Type m_ToolType;
 
 		public int order
 		{
@@ -84,13 +84,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
 				const float kMaxPinnedToolButtonCount = 16; // TODO: add max count support in selectTool/setupPinnedToolButtonsForDevice
 				const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
-				var phaseOffset = 0 - (activeButtonCount * 0.5f) * kRotationSpacing;
+				var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount * 0.5f) * kRotationSpacing;
 				var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(newTargetRotation));
 				//transform.localRotation = newLocalRotation;
 			}
 		}
-		int m_Order;
 
 		/// <summary>
 		/// GradientPair should be set with new random gradientPair each time a new Tool is associated with this Button
@@ -105,7 +104,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				customToolTipHighlightColor = value;
 			}
 		}
-		GradientPair m_GradientPair;
 
 		/// <summary>
 		/// Type, that if not null, denotes that preview-mode is enabled
@@ -138,7 +136,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_GradientButton.highlighted = m_previewToolType != null;
 			}
 		}
-		Type m_previewToolType;
+
+		public Transform alternateMenuOrigin
+		{
+			get { return m_AlternateMenuOrigin; }
+			set
+			{
+				if (m_AlternateMenuOrigin == value)
+					return;
+
+				m_AlternateMenuOrigin = value;
+				transform.SetParent(m_AlternateMenuOrigin);
+				transform.localPosition = Vector3.zero;
+				transform.localRotation = Quaternion.identity;
+			}
+		}
 
 		[SerializeField]
 		GradientButton m_GradientButton;
@@ -168,6 +180,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_PositionCoroutine;
 		Coroutine m_VisibilityCoroutine;
 		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
+		Transform m_AlternateMenuOrigin;
+		Type m_previewToolType;
+		GradientPair m_GradientPair;
+		int m_Order;
+		Type m_ToolType;
 
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
@@ -182,6 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public bool isSelectionTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
 		public Action<Transform, PinnedToolButton> DeletePinnedToolButton { get; set; }
 		public int activeButtonCount { get; set; }
+		public Transform menuOrigin { get; set; }
 
 		private bool activeTool
 		{
@@ -202,14 +220,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			Debug.LogWarning("Hide (L+R) pinned tool action buttons if button is the main menu button Hide select action button if button is in the first position (next to menu button)");
 
+			transform.parent = alternateMenuOrigin;
+
 			if (m_ToolType == null)
 			{
-				transform.localPosition = m_InactivePosition;
+				//transform.localPosition = m_InactivePosition;
 				m_GradientButton.gameObject.SetActive(false);
 			}
 			else
 			{
-				transform.localPosition = activePosition;
+				//transform.localPosition = activePosition;
 			}
 
 			var tooltipSourcePosition = new Vector3(node == Node.LeftHand ? -0.01267f : 0.01267f, tooltipSource.localPosition.y, 0);
@@ -279,8 +299,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentRotation = transform.localRotation;
 			while (duration < 1)
 			{
-				duration += Time.unscaledDeltaTime * 3;
-				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 6);
+				duration += Time.unscaledDeltaTime * 6;
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 3);
 				transform.localRotation = Quaternion.Lerp(currentRotation, targetRotation, durationShaped);
 				CorrectIconRotation();
 				//transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
