@@ -35,11 +35,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			PlayerBody m_PlayerBody;
 
-			Preferences m_Preferences;
+			readonly Preferences m_Preferences = new Preferences();
 
 			internal IPreviewCamera customPreviewCamera { get; private set; }
 
 			public bool preserveCameraRig { private get; set; }
+
+			public bool hmdReady { get; private set; }
 
 			public Viewer()
 			{
@@ -48,12 +50,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
 				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
 
+				VRView.hmdStatusChange += OnHMDStatusChange;
+
 				preserveCameraRig = true;
 			}
 
 			internal override void OnDestroy()
 			{
 				base.OnDestroy();
+
+				VRView.hmdStatusChange -= OnHMDStatusChange;
 
 				if (customPreviewCamera != null)
 					ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
@@ -79,23 +85,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!preserveCameraRig)
 					return null;
 
-				if (m_Preferences == null)
+				if (hmdReady)
 					SaveCameraState();
 
 				return m_Preferences;
 			}
 
-			public void OnHMDStatusChange(bool ready)
+			void OnHMDStatusChange(bool ready)
 			{
+				hmdReady = ready;
 				if (!ready)
 					SaveCameraState();
 			}
 
 			void SaveCameraState()
 			{
-				if (m_Preferences == null)
-					m_Preferences = new Preferences();
-
 				var camera = CameraUtils.GetMainCamera();
 				var cameraRig = CameraUtils.GetCameraRig();
 				var cameraTransform = camera.transform;

@@ -122,6 +122,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		public static event Action onDisable;
 		public static event Action<EditorWindow> onGUIDelegate;
 
+		public static event Action<bool> hmdStatusChange;
+		bool m_HMDReady;
+
 		public static VRView GetWindow()
 		{
 			return EditorWindow.GetWindow<VRView>(true);
@@ -384,10 +387,37 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			SceneViewUtilities.SetSceneRepaintDirty();
 
 			UpdateCamera();
+			UpdateHMDStatus();
 
 			// Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
 			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + k_HMDActivityTimeout)
 				SetSceneViewsEnabled(true);
+		}
+
+		void UpdateHMDStatus()
+		{
+			if (hmdStatusChange != null)
+			{
+				var ready = GetIsUserPresent();
+				if (m_HMDReady != ready)
+				{
+					m_HMDReady = ready;
+					hmdStatusChange(ready);
+				}
+			}
+		}
+
+		static bool GetIsUserPresent()
+		{
+#if ENABLE_OVR_INPUT
+			if (VRSettings.loadedDeviceName == "Oculus")
+				return OVRPlugin.userPresent;
+#endif
+#if ENABLE_STEAMVR_INPUT
+			if (VRSettings.loadedDeviceName == "OpenVR")
+				return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
+#endif
+			return true;
 		}
 
 		private void SetGameViewsEnabled(bool enabled)
