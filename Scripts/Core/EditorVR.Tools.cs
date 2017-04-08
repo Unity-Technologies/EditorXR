@@ -141,6 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					deviceData.pinnedToolButtons.Add(selectionToolButton.toolType, selectionToolButton);
 					selectionToolButton.order = 0; // The "active" tool occupies the zeroth position
 					selectionToolButton.node = deviceData.node;
+					selectionToolButton.highlightPinnedToolButtons = HighlightPinnedToolButtons;
 				}
 
 				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
@@ -283,12 +284,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					pair.Value.order++;
 				}
 
-				var pinnedToolButton = evr.m_Menus.SpawnPinnedToolButton(deviceData.inputDevice);
-				pinnedToolButtons.Add(toolType, pinnedToolButton);
-				pinnedToolButton.node = deviceData.node;
-				pinnedToolButton.toolType = toolType; // Assign Tool Type before assigning order
-				pinnedToolButton.order = 0; // Zeroth position is the active tool position
-				pinnedToolButton.DeletePinnedToolButton = DeletePinnedToolButton;
+				var button = evr.m_Menus.SpawnPinnedToolButton(deviceData.inputDevice);
+				pinnedToolButtons.Add(toolType, button);
+				button.node = deviceData.node;
+				button.toolType = toolType; // Assign Tool Type before assigning order
+				button.order = 0; // Zeroth position is the active tool position
+				button.DeletePinnedToolButton = DeletePinnedToolButton;
+				button.highlightPinnedToolButtons = HighlightPinnedToolButtons;
 			}
 
 			void SetupPinnedToolButtonsForDevice(DeviceData deviceData, Transform rayOrigin, Type activeToolType)
@@ -499,6 +501,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 
 				return pinnedToolButton;
+			}
+
+			internal void HighlightPinnedToolButtons (Transform rayOrigin, bool enableHighlight)
+			{
+				Rays.ForEachProxyDevice(deviceData =>
+				{
+					if (deviceData.rayOrigin == rayOrigin)
+					{
+						var buttons = deviceData.pinnedToolButtons;
+						foreach (var pair in buttons)
+						{
+							pair.Value.highlighted = enableHighlight;
+						}
+					}
+				});
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -12,6 +13,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
 	public sealed class PinnedToolButton : MonoBehaviour, ISelectTool, ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IConnectInterfaces, IUsesMenuOrigins
 	{
+		static Color s_FrameOpaqueColor;
+		static Color s_SemiTransparentFrameColor;
+		static Vector3 s_ActivePosition;
+
 		public static Vector3 activePosition
 		{
 			private get { return s_ActivePosition; }
@@ -20,8 +25,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				s_ActivePosition = value;
 			}
 		}
-		static Vector3 s_ActivePosition;
 
+		const string k_MaterialColorProperty = "_Color";
+		const string k_MaterialAlphaProperty = "_Alpha";
 		const string k_SelectionToolTipText = "Selection Tool (cannot be closed)";
 
 		public Type toolType
@@ -171,6 +177,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Collider m_RootCollider;
 
 		[SerializeField]
+		MeshRenderer m_FrameRenderer;
+
+		[SerializeField]
+		MeshRenderer m_InsetMeshRenderer;
+
+		[SerializeField]
 		Transform m_TooltipTarget;
 
 		[SerializeField]
@@ -179,12 +191,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		string m_TooltipText;
 		Coroutine m_PositionCoroutine;
 		Coroutine m_VisibilityCoroutine;
+		Coroutine m_HighlightCoroutine;
 		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
 		Transform m_AlternateMenuOrigin;
 		Type m_previewToolType;
 		GradientPair m_GradientPair;
 		int m_Order;
 		Type m_ToolType;
+		Material m_FrameMaterial;
+		bool m_Highlighted;
+		Material m_InsetMaterial;
 
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
@@ -200,6 +216,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<Transform, PinnedToolButton> DeletePinnedToolButton { get; set; }
 		public int activeButtonCount { get; set; }
 		public Transform menuOrigin { get; set; }
+		public Action<Transform, bool> highlightPinnedToolButtons { get; set; }
 
 		private bool activeTool
 		{
@@ -212,6 +229,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_GradientButton.highlighted = true;
 				m_GradientButton.highlighted = false;
 			}
+		}
+
+		public bool highlighted
+		{
+			set
+			{
+				//if (m_Highlighted == value || !gameObject.activeSelf)
+					//return;
+
+				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(!value));
+			}
+
+			//get { return m_Highlighted; }
 		}
 
 		void Start()
@@ -238,6 +268,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			tooltipAlignment = node == Node.LeftHand ? TextAlignment.Right : TextAlignment.Left;
 			m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
 			this.ConnectInterfaces(m_SmoothMotion);
+
+			m_FrameMaterial = MaterialUtils.GetMaterialClone(m_FrameRenderer);
+			var frameMaterialColor = m_FrameMaterial.color;
+			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
+			s_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.5f);
+			m_FrameMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
+
+			m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
+			//m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 
 			m_GradientButton.hoverEnter += BackgroundHoverEnter; // Display the foreground button actions
 			m_GradientButton.hoverExit += ActionButtonHoverExit;
@@ -350,6 +389,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_RightPinnedToolActionButton.visible = m_RightPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
 				m_LeftPinnedToolActionButton.visible = m_LeftPinnedToolActionButton.buttonType == PinnedToolActionButton.ButtonType.SelectTool ? !activeTool : true;
 			}
+
+			highlightPinnedToolButtons(rayOrigin, true);
 		}
 
 		void ActionButtonClicked(PinnedToolActionButton button)
@@ -385,6 +426,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_RightPinnedToolActionButton.visible = false;
 				//m_GradientButton.visible = true;
 				m_GradientButton.highlighted = false;
+				highlightPinnedToolButtons(rayOrigin, false);
 			}
 
 			m_GradientButton.UpdateMaterialColors();
@@ -430,6 +472,45 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			var yaw = transform.localRotation.eulerAngles.y;
 			tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
+		}
+
+		IEnumerator AnimateSemiTransparent(bool makeSemiTransparent)
+		{
+			Debug.LogWarning("<color=blue>AnimateSemiTransparent : </color>" + makeSemiTransparent);
+			const float kFasterMotionMultiplier = 2f;
+			var transitionAmount = Time.unscaledDeltaTime;
+			var positionWait = (order + 1) * 0.25f; // pad the order index for a faster start to the transition
+			//var semiTransparentTargetScale = new Vector3(0.9f, 0.15f, 0.9f);
+			var currentFrameColor = m_FrameMaterial.color;
+			var transparentFrameColor = new Color (s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0f);
+			var targetFrameColor = makeSemiTransparent ? s_SemiTransparentFrameColor : s_FrameOpaqueColor;
+			var currentInsetAlpha = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);
+			var targetInsetAlpha = makeSemiTransparent ? 0.25f : 1f;
+			//var currentIconColor = m_IconMaterial.GetColor(k_MaterialColorProperty);
+			//var targetIconColor = makeSemiTransparent ? s_SemiTransparentFrameColor : Color.white;
+			//var currentInsetScale = m_MenuInset.localScale;
+			//var targetInsetScale = makeSemiTransparent ? m_HighlightedInsetLocalScale * 4 : m_VisibleInsetLocalScale;
+			//var currentIconScale = m_IconContainer.localScale;
+			//var semiTransparentTargetIconScale = Vector3.one * 1.5f;
+			//var targetIconScale = makeSemiTransparent ? semiTransparentTargetIconScale : Vector3.one;
+			while (transitionAmount < 1)
+			{
+				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, transparentFrameColor, transitionAmount));
+				//m_MenuInset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, transitionAmount * 2f);
+				//m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, transitionAmount));
+				//m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, transitionAmount));
+				//var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
+				//m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedTransitionAmount);
+				transitionAmount += Time.unscaledDeltaTime * 4f;
+				CorrectIconRotation();
+				yield return null;
+			}
+
+			m_FrameMaterial.SetColor(k_MaterialColorProperty, targetFrameColor);
+			//m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
+			//m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
+			//m_MenuInset.localScale = targetInsetScale;
+			//m_IconContainer.localScale = targetIconScale;
 		}
 	}
 }

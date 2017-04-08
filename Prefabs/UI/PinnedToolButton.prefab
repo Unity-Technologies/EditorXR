@@ -882,6 +882,8 @@ MonoBehaviour:
   m_RightPinnedToolActionButton: {fileID: 114000013773965116}
   m_ContentContainer: {fileID: 4000012190781878}
   m_RootCollider: {fileID: 65000011941282114}
+  m_FrameRenderer: {fileID: 23000013529982034}
+  m_InsetMeshRenderer: {fileID: 23000013623333764}
   m_TooltipTarget: {fileID: 4000010683372396}
   m_TooltipSource: {fileID: 4000013378434912}
 --- !u!114 &114000011796366970
