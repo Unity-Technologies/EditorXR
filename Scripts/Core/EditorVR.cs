@@ -51,6 +51,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		Viewer m_Viewer;
 		MultipleRayInputModule m_MultipleRayInputModule;
 
+		bool m_HasDeserialized;
+
 		static HideFlags defaultHideFlags
 		{
 			get { return showGameObjects ? HideFlags.DontSave : HideFlags.HideAndDontSave; }
@@ -237,7 +239,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				yield return null;
 			}
 
+			var viewer = GetNestedModule<Viewer>();
+			while (!viewer.hmdReady)
+				yield return null;
+
 			GetModule<SerializedPreferencesModule>().DeserializePreferences(serializedPreferences);
+			m_HasDeserialized = true;
 		}
 
 		static void ClearDeveloperConsoleIfNecessary()
@@ -294,7 +301,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void Shutdown()
 		{
-			serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
+			if (m_HasDeserialized)
+				serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
 		}
 
 		void OnDestroy()
