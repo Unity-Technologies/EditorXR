@@ -149,7 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			IEditingContext poppedContext = PeekEditingContext();
 			if (poppedContext != null)
 			{
-				poppedContext.Teardown();
+				poppedContext.Dispose();
 				m_ContextStack.RemoveAt(m_ContextStack.Count - 1);
 			}
 

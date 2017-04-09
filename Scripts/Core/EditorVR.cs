@@ -23,21 +23,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		const string k_SerializedPreferences = "EditorVR.SerializedPreferences";
 		const string k_VRPlayerTag = "VRPlayer";
 
-		[SerializeField]
-		GameObject m_PlayerModelPrefab;
-
-		[SerializeField]
-		ProxyExtras m_ProxyExtras;
-
+		Dictionary<Type, Nested> m_NestedModules = new Dictionary<Type, Nested>();
 		Dictionary<Type, MonoBehaviour> m_Modules = new Dictionary<Type, MonoBehaviour>();
 
 		Interfaces m_Interfaces;
-
-		Dictionary<Type, Nested> m_NestedModules = new Dictionary<Type, Nested>();
+		Type[] m_DefaultTools;
 
 		event Action m_SelectionChanged;
 
 		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
+
+		bool m_HasDeserialized;
 
 		// Local method use only -- caching here to prevent frequent lookups in Update
 		Rays m_Rays;
@@ -49,8 +45,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		DeviceInputModule m_DeviceInputModule;
 		Viewer m_Viewer;
 		MultipleRayInputModule m_MultipleRayInputModule;
-
-		bool m_HasDeserialized;
 
 		static HideFlags defaultHideFlags
 		{
@@ -74,6 +68,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			get { return EditorPrefs.GetString(k_SerializedPreferences, string.Empty); }
 			set { EditorPrefs.SetString(k_SerializedPreferences, value); }
 		}
+
+		internal static Type[] defaultTools { get; set; }
 
 		class DeviceData
 		{
@@ -106,6 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		void Awake()
 		{
 			Nested.evr = this; // Set this once for the convenience of all nested classes 
+			m_DefaultTools = defaultTools;
 
 			ClearDeveloperConsoleIfNecessary();
 

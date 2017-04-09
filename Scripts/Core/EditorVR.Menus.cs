@@ -67,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void LateBindInterfaceMethods(Tools provider)
 			{
-				m_MainMenuTools = provider.allTools.Where(t => !Tools.IsPermanentTool(t)).ToList(); // Don't show tools that can't be selected/toggled
+				m_MainMenuTools = provider.allTools.Where(t => !Tools.IsDefaultTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 			}
 
 			internal void UpdateMenuVisibilityNearWorkspaces()

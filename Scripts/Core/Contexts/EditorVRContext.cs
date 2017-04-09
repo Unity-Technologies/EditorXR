@@ -1,8 +1,6 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
-using System.IO;
-using UnityEditor.Experimental.EditorVR.Helpers;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -18,10 +16,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		public void Setup()
 		{
+			EditorVR.defaultTools = m_DefaultToolStack.Select(ms => ms.GetClass()).ToArray();
 			m_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
 		}
 
-		public void Teardown()
+		public void Dispose()
 		{
 			m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
 			ObjectUtils.Destroy(m_Instance.gameObject);

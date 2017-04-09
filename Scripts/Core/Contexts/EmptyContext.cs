@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 		}
 
-		public void Teardown()
+		public void Dispose()
 		{
 		}
 

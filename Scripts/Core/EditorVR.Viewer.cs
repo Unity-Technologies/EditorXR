@@ -12,6 +12,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	partial class EditorVR
 	{
 		[SerializeField]
+		GameObject m_PlayerModelPrefab;
+
+		[SerializeField]
 		GameObject m_PreviewCameraPrefab;
 
 		class Viewer : Nested, IInterfaceConnector, ISerializePreferences
